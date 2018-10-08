@@ -1,0 +1,72 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2016 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+#include "TransportCommon/ConnectionStatusUpdateNotifier.h"
+#include "TaskFramework/ITask.h"
+#include "PlatformAbstraction/PlatformGuard.h"
+#include "TransportCommon/IConnectionStatusListener.h"
+#include "Utils/LogMacros.h"
+#include "Common/Cpp11Macros.h"
+
+namespace ramses_internal
+{
+    ConnectionStatusUpdateNotifier::ConnectionStatusUpdateNotifier(PlatformLock& frameworkLock)
+        : m_lock(frameworkLock)
+    {
+    }
+
+    ConnectionStatusUpdateNotifier::~ConnectionStatusUpdateNotifier()
+    {
+    }
+
+    void ConnectionStatusUpdateNotifier::registerForConnectionUpdates(IConnectionStatusListener* listener)
+    {
+        PlatformGuard g(m_lock);
+        m_listeners.push_back(listener);
+        ramses_foreach(m_currentState, it)
+        {
+            listener->newParticipantHasConnected(*it);
+        }
+    }
+
+    void ConnectionStatusUpdateNotifier::unregisterForConnectionUpdates(IConnectionStatusListener* listener)
+    {
+        PlatformGuard g(m_lock);
+        Vector<IConnectionStatusListener*>::Iterator positionToDelete = m_listeners.find(listener);
+        if (positionToDelete != m_listeners.end())
+        {
+            m_listeners.erase(positionToDelete);
+        }
+    }
+
+    void ConnectionStatusUpdateNotifier::triggerNotification(const Guid& participant, EConnectionStatus status)
+    {
+        PlatformGuard g(m_lock);
+        assert(status == EConnectionStatus_Connected || status == EConnectionStatus_NotConnected);
+        if (status == EConnectionStatus_Connected)
+        {
+            LOG_INFO(CONTEXT_COMMUNICATION, "ConnectionStatusUpdateNotifier::doStatusUpdate: newParticipantHasConnected " << participant);
+            m_currentState.put(participant);
+            ramses_foreach(m_listeners, it)
+            {
+                IConnectionStatusListener* listener = *it;
+                listener->newParticipantHasConnected(participant);
+            }
+        }
+        else
+        {
+            LOG_INFO(CONTEXT_COMMUNICATION, "ConnectionStatusUpdateNotifier::doStatusUpdate: participantHasDisconnected " << participant);
+            m_currentState.remove(participant);
+            ramses_foreach(m_listeners, it)
+            {
+                IConnectionStatusListener* listener = *it;
+                listener->participantHasDisconnected(participant);
+            }
+        }
+    }
+}

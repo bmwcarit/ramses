@@ -1,0 +1,43 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2017 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+/**
+
+@page Resources RAMSES Resources
+
+There are 3 main types of resources in RAMSES
+    - **Immutable client resources** (texture, index/vertex buffer, effect)
+    - **Scene resources** (render buffer/target, stream texture, blit pass)
+    - **Dynamic resources** (data buffer, texture buffer)
+
+These resource types differ by how are they created, owned and used for rendering a scene. Here are some basic rules for when to use which type:
+
+A typical use case for an **immutable client resource** is any resource that is created once and does not need to be changed for a reasonably long period of time. A client resource
+can be used by multiple scenes as it is owned by a RAMSES client instance and is typically transferred asynchronously (see below). Client resources are designed to efficiently handle
+large data and thus are best fit for static textures.
+
+A **scene resource** represents some kind of GPU buffer (render buffer/target, stream texture) or a rendering construct (blit pass). A scene resource has no initial user provided data
+and its usage is clearly defined by the concrete type. Scene resources are created and owned by a scene and can be used only within that scene, not across scenes as opposed to client resources.
+
+The content of a **dynamic resource** is set by user and can be modified directly at any time during its life cycle via RAMSES API. Even though the concrete types overlap with some of the concrete types
+of client resource (index/vertex buffer, texture), the way dynamic resources are handled in RAMSES is in fact closer to scene resources. Similar to a scene resource a dynamic resource is created
+and owned by a scene and can be used only within that scene. A typical use case is a resource that frequently changes (even if only partially). Dynamic resources should be kept small as they
+are processed synchronously together with other scene state changes.
+
+# Asynchronous processing of client resources
+
+One important aspect of RAMSES, which is different from most other scene graph implementations, is the fact that immutable client resources (Textures, Effects, Vertex arrays etc.) are
+distributed asynchronously. This means that it might happen that a scene arrived on the renderer, but some of its resources are still on the way and it will take more time
+until all the resources are uploaded and ready for rendering. This is true also if the renderer<->client communication is in the same process. Resources are usually big and
+would block the entire rendering chain if they were transported/uploaded synchronously to the rest of the scene objects.
+
+The renderer always waits with the next content change (scene flush) until it has all the resources needed for the new scene content state. Note that this does not affect framerate
+on renderer side, the renderer will simply keep rendering the old state of the scene until it receives all the resources required for the new state. But it can delay the changes
+made in that flush as they are 'blocked' until all the resources are resolved.
+
+*/

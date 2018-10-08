@@ -1,0 +1,68 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2018 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+uniform lowp float floatInput;
+uniform lowp float floatInputArray[3];
+
+uniform vec2 vec2fInput;
+uniform vec2 vec2fInputArray[3];
+uniform vec3 vec3fInput;
+uniform vec3 vec3fInputArray[3];
+uniform vec4 vec4fInput;
+uniform vec4 vec4fInputArray[3];
+
+uniform mat2 matrix22fInput;            // not supported as input object yet
+uniform mat2 matrix22fInputArray[3];    // not supported as input object yet
+uniform mat3 matrix33fInput;            // not supported as input object yet
+uniform mat3 matrix33fInputArray[3];    // not supported as input object yet
+uniform mat4 matrix44fInput;
+uniform mat4 matrix44fInputArray[3];
+
+uniform lowp int integerInput;
+uniform lowp int integerInputArray[3];
+
+uniform ivec2 vec2iInput;
+uniform ivec2 vec2iInputArray[3];
+uniform ivec3 vec3iInput;
+uniform ivec3 vec3iInputArray[3];
+uniform ivec4 vec4iInput;
+uniform ivec4 vec4iInputArray[3];
+
+#ifdef dummy
+attribute float floatArrayInputDummy;
+#else
+attribute float floatArrayInput;
+#endif
+
+attribute vec2 vec2fArrayInput;
+attribute vec3 vec3fArrayInput;
+attribute vec4 vec4fArrayInput;
+
+uniform vec3 vec3OptimizableUniform;
+attribute vec4 vec4OptimizableAttribute;
+
+void main(void)
+{
+    lowp vec4 values = vec4(1) * floatInput* vec2fInput.x * vec3fInput.y* vec4fInput.z;
+    values[0] = float(integerInput) + floatInputArray[0] + floatInputArray[1];
+    values[1] = float(vec2iInput.x)* float(vec3iInput.y)* float(vec4iInput.z);
+    values[2] = vec2fArrayInput.x*vec3fArrayInput.y*vec4fArrayInput.z;
+
+    #ifdef dummy
+    values[3] = floatArrayInputDummy*vec2fArrayInput.x*vec4fArrayInput.z;
+    #else
+    values[3] = floatArrayInput*vec2fArrayInput.x*vec4fArrayInput.z;
+    #endif
+
+    values[0] += floatInputArray[0] + vec2fInputArray[0].x + vec3fInputArray[0].x + vec4fInputArray[0].x;
+    values[1] += matrix44fInputArray[0][0].x + float(integerInputArray[0]);
+    values[2] += float(vec2iInputArray[0].x + vec3iInputArray[0].x + vec4iInputArray[0].x);
+    values[3] += matrix22fInput[0][0] + matrix33fInput[0][0] + matrix22fInputArray[0][0].x + matrix33fInputArray[0][0].x;
+    values = matrix44fInput * values;
+    gl_Position = values + vec4OptimizableAttribute * vec4(vec3OptimizableUniform * 0.0, 0.0);
+}

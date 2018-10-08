@@ -1,0 +1,65 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2016 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+/**
+
+@page ClientAPI RAMSES Client API
+
+# Object scopes
+
+Objects of the RAMSES Client API live in different scopes, which determine
+- who creates the object
+- where this objects can be used
+- who destroys the object (and when)
+
+Scope: RamsesClient Instance
+- Objects are created and destroyed with the RamsesClient object
+- Examples for client objects: Scene, Client resources (immutable Textures, Vertex arrays, Effects...)
+- On destruction of RamsesClient, objects of this RamsesClient instance will be deleted automatically
+- To destroy objects created by RamsesClient, one must explicitly call RamsesClient::destroy(objectToDestroy)
+- Object of this scope can be used for all operations in this RamsesClient instance.
+
+Scope: Scene Instance
+- Objects are created and destroyed with the Scene object
+- Examples for scene objects: GroupNode, MeshNode, Camera, Appearance, ...
+- On destruction of Scene, objects in this Scene instance will be deleted automatically
+- To destroy objects created by Scene, one must explicitly call Scene::destroy(objectToDestroy)
+- Objects of this scene instance can be used only with objects of the same scene instance
+- Mixing up objects of different scene instances will result in error status or undefined behaviour (e.g. setting
+  a parent-child relationship between nodes of different scenes; see Validation)
+
+Scope: Animation System
+- Objects are created and destroyed with the AnimationSystem object.
+- On destruction of AnimationSystem, objects in this AnimationSystem instance will be deleted automatically
+- To destroy objects created by AnimationSystem, one must explicitly call AnimationSystem::destroy()
+- Objects of this AnimationSystem instance can be used only with objects of the AnimationSystem instance
+- Mixing up objects of different AnimationSystem instances will result in error status or undefined behaviour
+
+# Object lifecycle
+
+Object lifecycle is an important topic in any C++ framework. In the case of RAMSES, creation and destruction is strict, straightforward and simple,
+but leaves the responsibility of object deletion in some cases to the user.
+
+As described in the Scopes chapter, the ownership of objects is defined by their scope. A MeshNode is owned by a Scene, which is owned by a RamsesClient. If a RamsesClient
+is destroyed, all of its scenes will be destroyed automatically, which in turn will destroy the MeshNodes in those scenes and so on. This implicit destruction done by
+RAMSES is limited to this case only, ie. when the 'owner' is destroyed then all the objects created within this owner are destroyed and any pointers to those become invalid.
+
+There is no reference counting of any sort therefore RAMSES will not automatically destroy an object if it is not used by any other object and therefore user is responsible
+for destroying unused content to free up resources. Creation and destruction of objects can cause performance hit on both client and renderer so it is recommended to consider
+some caching strategy on the application side.
+
+# Return status
+
+The RAMSES API is designed to check most errors on usage - for example trying to create TextureSampler using a write-only RenderBuffer
+will result in error. The error message will appear in log and/or can be retrieved by using RamsesClient::getStatusMessage and passing
+the status code returned from the API call.
+
+It is highly recommended to check the status of every RAMSES API call, at least in debug configuration.
+See @ref Validation to find out other ways of checking the state of RAMSES objects.
+
+*/

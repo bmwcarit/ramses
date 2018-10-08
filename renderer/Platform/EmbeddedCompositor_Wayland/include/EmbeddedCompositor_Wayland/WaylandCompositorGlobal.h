@@ -1,0 +1,39 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2017 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+#ifndef RAMSES_WAYLANDCOMPOSITORGLOBAL_H
+#define RAMSES_WAYLANDCOMPOSITORGLOBAL_H
+
+#include "EmbeddedCompositor_Wayland/IWaylandCompositorGlobal.h"
+
+struct wl_client;
+struct wl_global;
+
+namespace ramses_internal
+{
+    class IEmbeddedCompositor_Wayland;
+    class IWaylandGlobal;
+
+    class WaylandCompositorGlobal: public IWaylandCompositorGlobal
+    {
+    public:
+        WaylandCompositorGlobal(IEmbeddedCompositor_Wayland& compositor);
+        ~WaylandCompositorGlobal();
+        virtual bool init(IWaylandDisplay& serverDisplay) override;
+        virtual void destroy() override;
+        virtual void compositorBind(IWaylandClient& client, uint32_t version, uint32_t id) override;
+
+    private:
+        static void CompositorBindCallback(wl_client* client, void* data, uint32_t version, uint32_t id);
+
+        IEmbeddedCompositor_Wayland& m_compositor;
+        IWaylandGlobal* m_waylandGlobal = nullptr;
+    };
+}
+
+#endif

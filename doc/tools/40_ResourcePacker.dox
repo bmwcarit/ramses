@@ -1,0 +1,55 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2017 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+/**
+@page ResourcePacker Packing resources into larger files
+
+# Summary
+
+Preparing resources is one of the heaviest operations for any rendering engine, RAMSES
+is no exception. Typically most of the resources (textures, shaders, vertex geometry)
+are immutable and known in advance and can be preprocessed and stored in files.
+
+When deciding how to partition the resources into files, consider keeping resources
+in the same file which are mostly used together or loaded together. This can increase
+loading times because RAMSES will read several of the resources from the file at once.
+
+For convenience, RAMSES provides a tool to pack multiple resource files together.
+
+# Usage
+
+The resource packer tool accepts a list of resource files as input, and a filename where to
+write the resulting combined resource file.
+
+With full named arguments:
+\code
+ramses-resource-packer --in-resource-files-config <filename> --out-resource-file <filename>
+\endcode
+
+With short named arguments:
+\code
+ramses-resource-packer -ir <filename> -or <filename>
+\endcode
+
+## Parameter description:
+<b>--in-resource-files-config/-ir:</b> input, the config file constaining the list of all input resource files.<br>
+<b>--out-resource-file/-or:</b> ouptut, the file where the combined resources will be stored.<br>
+
+## Resource files config description:
+The ramses-resource-packer expects a config file which holds all input resource files as
+a list of filenames separated by new lines. A valid resource files config file looks like this:
+
+\code
+res/effect-resource-1.res<br>
+res/effect-resource-2.res<br>
+res/texture-1.res<br>
+res/texture-2.res<br>
+res/texture-3.res<br>
+\endcode
+
+*/

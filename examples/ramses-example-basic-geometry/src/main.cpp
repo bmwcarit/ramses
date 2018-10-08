@@ -1,0 +1,93 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2014 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+#include "ramses-client.h"
+
+#include <thread>
+
+/**
+ * @example ramses-example-basic-geometry/src/main.cpp
+ * @brief Basic Geometry Example
+ */
+
+int main(int argc, char* argv[])
+{
+    // register at RAMSES daemon
+    ramses::RamsesFramework framework(argc, argv);
+    ramses::RamsesClient ramses("ramses-example-basic-geometry", framework);
+    framework.connect();
+
+    // create a scene for distributing content
+    ramses::Scene* scene = ramses.createScene(123u, ramses::SceneConfig(), "basic geometry scene");
+
+    // every scene needs a render pass with camera
+    ramses::TranslateNode* cameraTranslate = scene->createTranslateNode();
+    cameraTranslate->setTranslation(0.0f, 0.0f, 5.0f);
+    ramses::Camera* camera = scene->createRemoteCamera("my camera");
+    camera->setParent(*cameraTranslate);
+    ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
+    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setCamera(*camera);
+    ramses::RenderGroup* renderGroup = scene->createRenderGroup();
+    renderPass->addRenderGroup(*renderGroup);
+
+    /// [Basic Geometry Example]
+    // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
+    //                 This should not be the case for real applications.
+
+    // prepare triangle geometry: vertex position array and index array
+    float vertexPositionsArray[] = { -1.f, 0.f, -1.f, 1.f, 0.f, -1.f, 0.f, 1.f, -1.f };
+    const ramses::Vector3fArray* vertexPositions = ramses.createConstVector3fArray(3, vertexPositionsArray);
+
+    // create an appearance for red triangle
+    ramses::EffectDescription effectDesc;
+    effectDesc.setVertexShaderFromFile("res/ramses-example-basic-geometry.vert");
+    effectDesc.setFragmentShaderFromFile("res/ramses-example-basic-geometry.frag");
+    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+
+    const ramses::Effect* effect = ramses.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Appearance* appearance = scene->createAppearance(*effect, "triangle appearance");
+
+    // set vertex positions directly in geometry
+    ramses::GeometryBinding* geometry = scene->createGeometryBinding(*effect, "triangle geometry");
+    ramses::AttributeInput positionsInput;
+    effect->findAttributeInput("a_position", positionsInput);
+    geometry->setInputBuffer(positionsInput, *vertexPositions);
+
+    // get input data of appearance and bind required data
+    ramses::UniformInput colorInput;
+    effect->findUniformInput("color", colorInput);
+    appearance->setInputValueVector4f(colorInput, 1.0f, 0.0f, 0.0f, 1.0f);
+
+    // create a mesh node to define the triangle with chosen appearance
+    ramses::MeshNode* meshNode = scene->createMeshNode("triangle mesh node");
+    meshNode->setAppearance(*appearance);
+    meshNode->setIndexCount(3);
+    meshNode->setGeometryBinding(*geometry);
+
+    // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
+    renderGroup->addMeshNode(*meshNode);
+    /// [Basic Geometry Example]
+
+    // signal the scene it is in a state that can be rendered
+    scene->flush();
+
+    // distribute the scene to RAMSES
+    scene->publish();
+
+    // application logic
+    std::this_thread::sleep_for(std::chrono::seconds(10));
+
+    // shutdown: stop distribution, free resources, unregister
+    scene->unpublish();
+    ramses.destroy(*scene);
+    ramses.destroy(*vertexPositions);
+    framework.disconnect();
+
+    return 0;
+}

@@ -1,0 +1,60 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2017 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+/**
+
+@page GeneralIntroduction General introduction to Diagnostic Log and Trace (DLT)
+
+DLT is an open source trace and logging framework developed within the GENIVI alliance.
+It consists of a daemon connected to user applications. A tool called "dlt viewer" is used
+to receive, display and sort the incoming messages. It is possible to control the logging of an
+application using the DLT API, e.g. limit or expand logging and send custom text commands.
+
+# dlt-daemon
+
+dlt-daemon is a system daemon that gathers log messages from connected applications. It is possible
+to build and install the dlt-daemon from the following git repository:
+
+\verbatim
+http://git.projects.genivi.org/dlt-daemon.git
+\endverbatim
+
+# dlt_viewer
+
+dlt_viewer is a Qt-based application to show and filter log messages collected by dlt-daemon. dlt_viewer
+is executed on a host machine and provides a graphical user interface with table-views of the incoming
+messages. dlt_viewer is able to handle connections to multiple target systems.
+The sources are available in the following git repository:
+
+\verbatim
+http://git.projects.genivi.org/dlt-viewer.git
+\endverbatim
+
+The following screenshots show the dialogs to establish a connection to an ECU with a running dlt-daemon:
+
+@image html dltviewer_connect.png "Create a new ECU, general settings"
+
+@image html dltviewer_connect_tcp.png "Create a new ECU, TCP configuration"
+
+After successfully connecting to the system where RAMSES is executed dlt_viewer will show applications and
+contexts that have been registered at dlt-daemon. The following window is located in the top left of dlt_viewer.
+
+@image html dltviewer_contexts.png "List of applications and their contexts"
+
+dlt_viewer arranges incoming messages in a table that can be filtered. Without any filters applied applied all
+messages from all contexts are sorted by their timestamp. The log table window is located at the right side in
+dlt_viewer. The following screenshot shows the output of some dlt log messages from a RAMSES renderer.
+
+@image html dltviewer_messages.png "List of messages"
+
+The messages can be inspected using plugins. The 'Dlt Viewer Plugin' for example shows the message in
+different formats (binary, text, mixed).
+
+@image html dltviewer_plugin.png "Dlt Viewer Plugin"
+
+*/

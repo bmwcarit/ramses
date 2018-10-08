@@ -1,0 +1,48 @@
+#  -------------------------------------------------------------------------
+#  Copyright (C) 2014 BMW Car IT GmbH
+#  -------------------------------------------------------------------------
+#  This Source Code Form is subject to the terms of the Mozilla Public
+#  License, v. 2.0. If a copy of the MPL was not distributed with this
+#  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#  -------------------------------------------------------------------------
+
+# Doxyfile 1.8.2
+
+# This file describes the settings to be used by the documentation system
+# doxygen (www.doxygen.org) for a project
+
+PROJECT_NAME           = "@RAMSES_DOCUMENT_NAME@"
+
+PROJECT_NUMBER         = "@RAMSES_VERSION@"
+
+PROJECT_BRIEF          = "@RAMSES_DOCUMENT_DESCRIPTION@"
+
+PROJECT_LOGO           = "@RAMSES_LOGO_SMALL@"
+
+OUTPUT_DIRECTORY       = "@RAMSES_DOXYGEN_TARGET_DIR@"
+
+EXAMPLE_PATH           = "@RAMSES_EXAMPLE_PATH@"
+
+# hide classes in example applications
+EXCLUDE_SYMBOLS        = ColorSwitchingInputHandler RotateInputHandler QuadSceneInfo TriangleSceneInfo
+
+@RAMSES_DOXYGEN_INPUT_FILES@
+
+INPUT_ENCODING         = ISO-8859-1
+
+FILE_PATTERNS          = *.h
+FILE_PATTERNS         += *.cpp
+FILE_PATTERNS         += *.dox
+
+EXTENSION_MAPPING      = dox=C++
+
+EXCLUDE_PATTERNS       = */test/*
+
+GENERATE_LATEX         = NO
+GENERATE_HTML          = YES
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_NO_PARAMDOC       = YES
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES

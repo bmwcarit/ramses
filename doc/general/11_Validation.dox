@@ -1,0 +1,83 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2017 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+/**
+
+@page Validation RAMSES Validation
+
+# Error checks
+
+The RAMSES API is designed to check most errors on usage - for example trying to create TextureSampler using a write-only RenderBuffer
+will result in error. The error message will appear in log and/or can be retrieved by using RamsesClient::getStatusMessage and passing
+the status code returned from the API call.
+
+However, there are cases where:
+    - invalid states are very expensive to check, or...
+    - valid states which probably do not produce the desired result or are wasteful (eg. having an empty RenderPass which is being cleared every frame)
+
+One good example of an invalid state is a cyclic dependency on the node graph. If one creates three nodes A, B, C
+and sets following parent-child dependencies:
+A->B
+B->C
+C->A
+
+This is not an error that RAMSES checks, because it is very expensive to traverse the whole scene graph every time a new node is
+added as a child of another node.
+
+For development purposes, there are other means to check the state of the scene(s) and understand why the resulting image is not
+as expected.
+
+# Client side validation
+
+The state of a RAMSES object can be checked at any time by calling validate() method on its instance. The validate method
+is available on all RAMSES client objects and will do two things:
+    - return an overall result status of the object (valid or invalid)
+    - produce a human-readable report of the state of that object
+
+The report can be obtained by calling getValidationReport() after calling the validate().
+
+The validate() method works hierarchically - each instance will recursively validate all its objects.
+For example, RamsesClient::validate() will validate all its resources and all its scenes, each scene will
+validate all its objects created within that scene and so on.
+
+It is also possible to call validate from the shell. For that, one must enable the shell by calling RamsesFrameworkConfig::setRequestedRamsesShellType().
+It is also possible to call validate over the so called DLT injections. To do so, send the validate command to shell context "RMSH" and select service port 5000
+(WARNING this may be different based on DLT implementation).
+
+Examples:<br>
+
+\# prints validation report for scene with id 15<br>
+validate 15 <br><br>
+\# prints validation report for object with name "MyMesh" from scene with id 15<br>
+validate 15 info MyMesh<br>
+
+# Renderer side validation
+
+The RAMSES client has a very rich information about a scene - it knows the names of objects, it has detailed scenegraph information.
+The renderer, however, does not necessarily have all this information (the reason for that is that data sent over network to the renderer
+must be kept very minimal).
+
+There can be a case when a scene is in valid state on the client (according to validation described above), but it is not rendered in the the desired way. Such cases can be
+difficult to analyze. One simple tool to show the state of the renderer and get an overview of what is being rendered is to the "rinfo" shell command (only available on renderer side).
+While validate() focuses on scene content, the purpose of "rinfo" is to get overview of how is that content interpreted. It reports all the information about displays, scenes it knows
+and their states, more or less detailed rendering queue for each shown scene and so on.
+
+Examples:<br>
+
+\# prints everything that the renderer knows<br>
+rinfo
+
+\# prints usage of all ramses shell commands, including rinfo command<br>
+help
+
+\# prints only errors from embedded compositor, and verbose_mode=true<br>
+rinfo error -v ec
+
+As with validate, it is possible to invoke "rinfo" using a DLT injection to the "RMSH" log context with service number 5000.
+
+*/

@@ -1,0 +1,147 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2012 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+/**
+
+@page Examples Exemplary API snippets
+
+# RAMSES API Usage by Example
+Note: The following example code snippets
+- omit error checking to keep code snippets small
+- do not represent full applications
+
+The full source code of the examples is available in examples section of this document.
+
+## Minimal
+This client implements the minimal requirements for a client to provide
+content within the RAMSES distributed system.
+@snippet ramses-example-minimal/src/main.cpp Minimal Example
+
+## Basic Geometry
+This code creates a simple geometry.
+@snippet ramses-example-basic-geometry/src/main.cpp Basic Geometry Example
+
+## Basic Scene Graph
+This code creates a simple scene graph with multiple nodes.
+@snippet ramses-example-basic-scenegraph/src/main.cpp Basic Scene Graph Example
+
+## Basic Animation
+This code creates a simple animation of a color of an appearance.
+@snippet ramses-example-basic-animation/src/main.cpp Basic Animation Example
+
+## Basic Realtime Animation
+This code creates a simple realtime animation sequence with three triangles.
+@snippet ramses-example-basic-animation-realtime/src/main.cpp Basic Realtime Animation Example
+
+## Basic Blending
+This code creates a simple scene consisting of three triangles with alpha blending.
+@snippet ramses-example-basic-blending/src/main.cpp Basic Blending Example
+
+## Basic GLSL Import
+This code creates an appearance by importing GLSL ES 2.0
+shader code files. The appearance is then used to render a simple geometry.
+@snippet ramses-example-basic-effect-from-glsl/src/main.cpp Basic GLSL Import Example
+
+## Basic Render Groups Handling
+This code shows the usage of (nested) render groups. Render groups are containing
+renderables which are rendered within the render pass the render group is added to.
+The renderables inside one render group have an order in which they are rendered.
+A render group can also contain other nested render groups with their renderables.
+The example shows a render group containing two elements, a mesh and a nested
+render group with two further meshes.
+@snippet ramses-example-basic-rendergroups/src/main.cpp Basic Render Groups Example
+
+## Render Pass and Camera Setup
+This code shows the usage of renderpasses and cameras. Each renderpass needs to
+have a valid camera assigned. The example creates two renderpasses, each with a camera using
+different projection and viewport parameters. In order for a mesh to be rendered
+it must be added to a renderpass.
+@snippet ramses-example-basic-renderpasses/src/main.cpp Basic Renderpasses Example
+
+## Basic Render Target Handling
+This code shows the usage of a render target in combination with render passes.
+A render target can be assigned to a render pass, so the pass renders its meshes into a render target.
+The render target can be then used as texture input in a following render pass.
+@snippet ramses-example-basic-rendertarget/src/main.cpp Basic Rendertarget Example
+
+## Basic Compositing
+This code creates a stream-texture that consists of a fallback texture and an id for mapping
+to a render-target. The renderer can replace the fallback texture by the content
+of a render-target, when the render-target is connected to the renderer. The id is an integer to identify the
+render-target.
+@snippet ramses-example-basic-compositing/src/main.cpp Basic Compositing Example
+
+## Data Buffers (vertices)
+This example creates a scene with a shape. Some of the shape's vertices
+are changed every frame and thus translated around the scene.
+
+The first part of the example shows the setup of the data buffer objects.
+In contrast to ressources, data buffers get created via the scene
+(and are owned by the scene).
+@snippet ramses-example-data-buffers-vertices/src/main.cpp Data Buffer Example Setup
+The second part of the example shows the application logic. A loop cycling
+over some of the vertices and changing their positions. These positions
+get applied to the data buffer by using \c setData. With \c setData you can
+set either the whole data buffer or just do partial updates using the optional
+offset parameter.
+@snippet ramses-example-data-buffers-vertices/src/main.cpp Data Buffer Example Loop
+
+## Data Buffers (textures)
+This example creates a scene with two quads. Each quad is showing the same
+texture. The difference between both quads is, that they are are showing
+different mipmap levels of the same texture. The texture's content within each
+mipmap layer is changed every frame.
+
+The first part of the example shows the setup of the data buffer objects.
+In contrast to client resources, data buffers get created via the scene
+(and are owned by the scene).
+@snippet ramses-example-data-buffers-texture/src/main.cpp Data Buffer Texture Example create buffer
+To change the data in the two mipmap levels, two data arrays (\c regionDataLevel0 and
+\c regionDataLevel1) have been created. The size of these arrays is the size of the area to be
+changed (\c regionWidth and \c regionHeight).
+
+In the following example you see a for-loop that calculates new pixel data for the two arrays.
+The array-data is then used with \c setData to update the data buffer. Other parameters in the
+\c setData call are the target mipmap level, and the dimensions.
+
+Finally a \c scene->flush() is called to send the updated data to the renderer.
+@snippet ramses-example-data-buffers-texture/src/main.cpp Data Buffer Texture Example Update Loop
+
+## Basic File/Asset Loading
+This code loads an asset (a serialized ramses scene).
+@snippet ramses-example-basic-file-loading/src/main.cpp Basic File Loading Example
+
+## Render Once Render Pass
+This code shows the usage of a render pass that is rendered only once into a render target.
+A heavy content that is mostly static can benefit from this feature where it is rendered only once
+or with low frequency and the result in form of a render buffer is used every frame in the main scene.
+@snippet ramses-example-renderonce/src/main.cpp Render Once Example Setup
+@snippet ramses-example-renderonce/src/main.cpp Render Once Example Retrigger
+
+## Multiple Displays
+This code creates a renderer with two displays and shows how a scene can be mapped to a display.
+@snippet ramses-example-local-displays/src/main.cpp Displays Example
+
+## Data Linking
+This code creates two scenes, maps them to a display and shows how transformation data can be linked from one scene to the other.
+
+Client side configuration:
+@snippet ramses-example-local-datalink/src/main.cpp Data Linking Example Client
+Renderer side link creation:
+@snippet ramses-example-local-datalink/src/main.cpp Data Linking Example Renderer
+
+## Offscreen Buffer
+This code creates a scene with a triangle and a texture consumer, then creates a second scene and renders it into an offscreen buffer.
+The offscreen buffer is then linked to the first scene so that it is used as a texture on the triangle.
+@snippet ramses-example-local-offscreenbuffer/src/main.cpp Offscreen Buffer Example
+
+## Basic Text
+This code creates a basic text using a text API.
+@snippet ramses-example-text-basic/src/main.cpp Basic Text Example
+
+*/

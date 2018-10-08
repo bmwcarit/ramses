@@ -1,0 +1,83 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2016 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+/**
+@page EffectLifecycle Effect lifecycle in RAMSES
+
+# General lifecycle
+
+Effects in RAMSES are immutable client resources, and as such follow the same
+lifecycle as any other client resources:
+- they are created and destroyed by a ramses::RamsesClient
+- they can be stored/loaded from files
+- the same effect can be used in multiple scenes
+- they are being sent asynchronously to subscribed ramses renderers
+
+The typical lifecycle of an effect resource is:
+- load shader(s) from GLSL and create effect E  by calling ramses::RamsesClient::createEffect()
+- create a scene S, use effect E in scene S, publish scene S etc.
+- subscribe to scene S on a renderer (local or remote)
+- renderer sees that scene S uses effect E
+- if renderer has any other scene which already uses effect E, it will reuse it. Otherwise...
+- renderer calls ramses::IBinaryShaderCache::hasBinaryShader() for effect E
+- if result is 'true', renderer gets binary version of effect from ramses::IBinaryShaderCache
+  - effect can be uploaded to GPU right away
+- if result is 'false', renderer will request effect E from client who provided scene S
+  - renderer waits till effect is provided
+  - effect is compiled from shader sources
+  - renderer calls ramses::IBinaryShaderCache::storeBinaryShader() to give the newly compiled binary shader to the application cache so that it can be used in future sessions
+
+# Effect IDs
+
+It is important to note that effects and binary shaders are two different objects,
+and their IDs, despite having relationship to each other, have different values.
+Client-side effects have resource type ID same as any other ramses::Resource - ramses::resourceId_t.
+The renderer, however, refers to the binary shaders for effects by their ramses::effectId_t.
+Both are 128bit numbers, but their values are inherently different for the same effect.
+Tools which deal with effects reflect this behavior and offer the option to
+provide both types by providing a special command-line argument (--out-effect-id-type).
+
+The client-side resourceId can be used to identify effects on the client side (e.g. when loading from files)
+while the renderer-side resourceId can be used with ramses::IBinaryShaderCache, or when using the
+resource caching interface ramses::IRendererResourceCache which follows similar principles.
+
+# Why are effects slow to process
+
+One essential difference between Effects and other resources is that effects
+are considerably more expensive to create during runtime for two reasons:
+1. Effects are being parsed by a GLSlang compiler in ramses::RamsesClient::createEffect(). This step is necessary
+in order for RAMSES to figure out which data is required by the effect, such as uniforms, vertex attributes and textures
+2. For each subscribed renderer, effects are being compiled for the concrete target device. This is necessary because
+RAMSES as a distributed system must make sure that the same effect can be used on different platforms. This would
+not be possible if RAMSES would store and distribute binary shaders instead of effects/GLSL code
+
+# How to skip GLSlang compilation on client side
+
+To skip the GLSlang compilation step in ramses::RamsesClient::createEffect(), the client
+application can simply do this step in a preprocessing step for all known in advance effects
+and store the result in resource files. For convenience, ramses provides a tool for exactly
+this purpose. See (@ref GLSLToEffectResource) for more info how to use it.
+
+# How to skip the OpenGL X.Y compilation step on the renderer
+
+To skip the compilation on the renderer side, it is enough to provide a binary shader
+when asked for it in ramses::IBinaryShaderCache::hasBinaryShader(). In order for this to work,
+the binary shader must match exactly the source code of the original effect.
+In particular, this means:
+- identical source code
+- identical defines and declared GLSL version
+- identical extensions
+- identical uniforms/vertex attributes and other inputs
+
+In order to make this task easier and avoid errors in the generation of binary shaders,
+RAMSES provides specialized tooling to convert GLSL code to binary shaders (@ref GLSLToBinaryShader). RAMSES
+DOES NOT provide the specific offline shader compiler - this is something which is typically
+included in the development SDK of the target platform. RAMSES prepares the shaders only
+to the point where the generated source code can be passed to the offline shader compiler.
+
+*/

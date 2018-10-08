@@ -1,0 +1,59 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2015 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+#include "ramses-framework-api/RamsesFramework.h"
+#include "RamsesFrameworkImpl.h"
+
+#include "APILoggingHelper.h"
+
+namespace ramses
+{
+    RamsesFramework::RamsesFramework(int32_t argc, const char * argv[])
+        : impl(RamsesFrameworkImpl::createImpl(argc, argv))
+    {
+        LOG_HL_CLIENT_API1(LOG_API_VOID, ramses_internal::APILoggingHelper::MakeLoggingString(argc, argv));
+    }
+
+    RamsesFramework::RamsesFramework(int32_t argc, char * argv[])
+        : impl(RamsesFrameworkImpl::createImpl(argc, const_cast<const char**>(argv)))
+    {
+        LOG_HL_CLIENT_API1(LOG_API_VOID, ramses_internal::APILoggingHelper::MakeLoggingString(argc, const_cast<const char**>(argv)));
+    }
+
+    RamsesFramework::RamsesFramework(const RamsesFrameworkConfig& config)
+        : impl(RamsesFrameworkImpl::createImpl(config))
+    {
+        LOG_HL_CLIENT_API1(LOG_API_VOID, LOG_API_GENERIC_OBJECT_STRING(config));
+    }
+
+    RamsesFramework::~RamsesFramework()
+    {
+        LOG_HL_CLIENT_API_NOARG(LOG_API_VOID);
+        delete &impl;
+    }
+
+    status_t RamsesFramework::connect()
+    {
+        const status_t result = impl.connect();
+        LOG_HL_CLIENT_API_NOARG(result);
+        return result;
+    }
+
+    bool RamsesFramework::isConnected() const
+    {
+        return impl.isConnected();
+    }
+
+    status_t RamsesFramework::disconnect()
+    {
+        const status_t result = impl.disconnect();
+        LOG_HL_CLIENT_API_NOARG(result);
+        return result;
+    }
+
+}

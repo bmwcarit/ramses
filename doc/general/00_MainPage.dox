@@ -1,0 +1,71 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2017 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+/**
+
+@mainpage RAMSES General Overview
+
+# Content
+
+This document contains the overview of the RAMSES components, API and usecases.
+The SDK offers an object-oriented API for application development using the RAMSES framework. This API
+provides a full-featured 3D content scene graph with all required primitives and
+relations, as well as API for rendering content from distributed sources.
+
+- @ref ClientAPI
+- @ref Validation
+- @ref Resources
+- @ref Effects
+- @ref TextRendering
+- @ref RendererAPI
+- @ref OffscreenBuffers
+- @ref Examples
+
+# <b>RAMSES</b> - <b>R</b>endering <b>A</b>rchitecture for <b>M</b>ulti-<b>S</b>creen <b>E</b>nvironment<b>S</b>
+
+RAMSES is a framework for distributed rendering of 3D content.
+It was created to enable future automotive use cases with application content being rendered on any display that is available in the car.
+
+The RAMSES concept also extends to different kinds of displays and can be used for seamless CE-Device or Backend Services integration, augmented and virtual reality rendering.
+
+# Components
+
+RAMSES consists of three fundamental components:
+    - client (the instance creating 3D content)
+    - renderer (the instance which rasterizes images and shows them on displays)
+    - daemon (global address broker, exchanges connection info between clients and renderers in case the underlying communication is TCP)
+
+There can only be one daemon (when TCP communication is used), but arbitrary number of client and renderer instances. The daemon
+only "broadcasts" the existence of clients and renderers to each other (providers and consumers of scenes, respectively).
+The role of the ramses daemon is usually taken over by other means in other communication middlewares.
+
+Clients create scenes and manage their content, but cannot decide if and where a scene is shown (similar to a video stream which provides the video, but anyone can subscribe to it).
+Renderers act as content consumers and can subscribe to scenes from clients and show them. Renderers can not change scene content, but can change where and how a scene
+is shown - for example can show two scenes in split screen, or blend one scene on top of another, in special cases can link data accross scenes.
+
+# Example
+
+In a very simplified example, a client instance (e.g. the Navigation process) will create a 3D scene and "publish" it within the connected RAMSES applications (e.g. the renderer of each HMI).
+These renderers will "subscribe" to the published scene and show it on the screen.
+
+# Component deployment and communication
+
+The three RAMSES components (client, renderer, daemon) can all live in the same process, or can be deployed across different processes or
+even different hardware units. Depending on the concrete deployment, RAMSES will use different communication channels to send data from the client to the renderer.
+If the client and renderer are in the same process, they will not use any network communication, but will exchange data over local memory. If the client and renderer are not
+in the same process, the connection will be established over a network protocol (TCP by default).
+
+# Embedded compositing
+
+In addition to distributing 3D scenes, RAMSES can composit other OpenGL native applications using the Wayland protocol. The Wayland protocol, when supported natively
+by the graphics drivers, enables efficient compositing of 2D images with zero copy (i.e. no pixel buffers are copied throughout the system unless when directly rendered to
+the screen). In the RAMSES case, it is called "embedded compositing" because the RAMSES renderer is itself composited into the system compositor. Thus, applications which
+connect to RAMSES via Wayland are "embedded" into the RAMSES renderer, which is in turn "embedded" into the system compositor final rendering. For more details regarding
+embedded compositing see the documentation page dedicated to it.
+
+*/

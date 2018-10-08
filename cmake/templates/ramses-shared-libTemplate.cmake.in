@@ -1,0 +1,101 @@
+#  -------------------------------------------------------------------------
+#  Copyright (C) 2018 BMW Car IT GmbH
+#  -------------------------------------------------------------------------
+#  This Source Code Form is subject to the terms of the Mozilla Public
+#  License, v. 2.0. If a copy of the MPL was not distributed with this
+#  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#  -------------------------------------------------------------------------
+
+INCLUDE(FindPackageHandleStandardArgs)
+SET(ramses-shared-lib_VERSION @RAMSES_VERSION@)
+
+@PACKAGE_INIT@
+
+FIND_PACKAGE(PkgConfig QUIET)
+
+#find include dirs for framework, client and renderer
+FIND_PATH(ramses-framework_INCLUDE_DIR RamsesFramework.h
+    HINTS @PACKAGE_PROJECT_INSTALL_HEADER@/ramses-framework-api
+)
+
+FIND_PATH(ramses-renderer_INCLUDE_DIR RamsesRenderer.h
+    HINTS @PACKAGE_PROJECT_INSTALL_HEADER@/ramses-renderer-api
+)
+
+FIND_PATH(ramses-client_INCLUDE_DIR ramses-client.h
+    HINTS @PACKAGE_PROJECT_INSTALL_HEADER@
+)
+
+# Process COMPONENT parameters
+
+LIST(GET ramses-shared-lib_FIND_COMPONENTS 0 RENDERER_PLATFORM)
+LIST(LENGTH ramses-shared-lib_FIND_COMPONENTS COMPONENTS_LENGTH)
+IF(COMPONENTS_LENGTH GREATER 1)
+    LIST(GET ramses-shared-lib_FIND_COMPONENTS 1 GL_VERSION)
+ELSE()
+    SET(GL_VERSION NOTFOUND)
+ENDIF()
+
+IF("${RENDERER_PLATFORM}" STREQUAL "WINDOWS")
+
+    IF(NOT GL_VERSION)
+        MESSAGE("Using OpenGL 4.2 as no OpenGL version was specified")
+        SET(GL_VERSION "GL4.2")
+    ENDIF()
+
+    IF("${GL_VERSION}" STREQUAL "GL4.2")
+        SET(RAMSES_GL_LIB ramses-shared-lib-windows-wgl-4-2-core)
+    ELSEIF("${GL_VERSION}" STREQUAL "GL4.5")
+        SET(RAMSES_GL_LIB ramses-shared-lib-windows-wgl-4-5)
+    ELSEIF("${GL_VERSION}" STREQUAL "GLES3.0")
+        SET(RAMSES_GL_LIB ramses-shared-lib-windows-wgl-es-3-0)
+    ELSE()
+        MESSAGE(FATAL_ERROR "OpenGL version ${GL_VERSION} not supported on platform ${RENDERER_PLATFORM}. Use one of [GL4.2, GL4.5, GLES3.0]")
+    ENDIF()
+
+    # no shlib versioning support on windows
+    FIND_LIBRARY(ramses-shared-lib_LIBRARY
+        NAMES "${RAMSES_GL_LIB}"
+        HINTS @PACKAGE_PROJECT_INSTALL_SHARED_LIB@
+    )
+
+ELSEIF("${RENDERER_PLATFORM}" STREQUAL "LINUX")
+
+    IF(NOT GL_VERSION)
+        MESSAGE("Using OpenGL ES 3.0 as no OpenGL version was specified")
+        SET(GL_VERSION "GLES3.0")
+    ENDIF()
+
+    IF("${GL_VERSION}" STREQUAL "GLES3.0")
+        SET(RAMSES_GL_LIB libramses-shared-lib-x11-egl-es-3-0.so)
+    ELSE()
+        MESSAGE(FATAL_ERROR "OpenGL version ${GL_VERSION} not supported on platform ${RENDERER_PLATFORM}. Use one of [GLES3.0]")
+    ENDIF()
+
+    # require exact shlib version
+    FIND_LIBRARY(ramses-shared-lib_LIBRARY
+        NAMES "${RAMSES_GL_LIB}.@RAMSES_VERSION_MAJOR@.@RAMSES_VERSION_MINOR@"
+        HINTS @PACKAGE_PROJECT_INSTALL_SHARED_LIB@
+    )
+
+ELSE()
+    MESSAGE("please use component syntax, choose one of WINDOWS, LINUX")
+ENDIF()
+
+
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(ramses-shared-lib
+    FOUND_VAR ramses-shared-lib_FOUND
+    REQUIRED_VARS ramses-shared-lib_LIBRARY ramses-framework_INCLUDE_DIR ramses-renderer_INCLUDE_DIR ramses-client_INCLUDE_DIR
+    VERSION_VAR ramses-shared-lib_VERSION)
+
+SET(ramses-shared-lib_INCLUDE_DIRS ${ramses-framework_INCLUDE_DIR} ${ramses-renderer_INCLUDE_DIR} ${ramses-client_INCLUDE_DIR})
+SET(ramses-shared-lib_LIBRARIES ${ramses-shared-lib_LIBRARY})
+
+message(STATUS "Found ramses-shared-lib libs: ${ramses-shared-lib_LIBRARIES}")
+message(STATUS "Found ramses-shared-lib includes: ${ramses-shared-lib_INCLUDE_DIRS}")
+
+MARK_AS_ADVANCED(
+    ramses-shared-lib_INCLUDE_DIRS
+    ramses-shared-lib_LIBRARIES
+    ramses-shared-lib_FOUND
+)

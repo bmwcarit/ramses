@@ -1,0 +1,29 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2016 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+/**
+@mainpage RAMSES Shader Tools
+
+# Summary
+
+Compiling shaders typically consumes a lot of compute time and resources.
+RAMSES provides a chain of command line tools to help reduce the time for
+loading effects for final deployments by preparing binary versions of them
+and deploying them as cache directly on the renderer side. The last tool in
+the chain - the Resource Packer, can be used to combine not only effects
+into files, but also other types of RAMSES resources.
+
+@ref EffectLifecycle
+
+@ref GLSLToBinaryShader
+
+@ref GLSLToEffectResource
+
+@ref ResourcePacker
+
+ */

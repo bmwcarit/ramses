@@ -1,0 +1,51 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2016 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+/**
+
+@page OffscreenBuffers RAMSES Offscreen Buffers
+
+# Overview
+When a RAMSES Client Scene is subscribed, mapped to display and shown, RAMSES Renderer renders it directly into the display's framebuffer.
+This default behaviour can be modified by assigning the scene to an offscreen buffer using Renderer API, scene will then not be rendered directly
+to display's framebuffer anymore but to a buffer that can be used as texture input in another scene.
+
+# Using Offscreen Buffers
+All scenes that are supposed to be assigned to an offscreen buffer have to be mapped to the same display where the offscreen buffer was created.
+There can be multiple scenes rendered to the same offscreen buffer but a scene can be rendered to exactly one buffer or framebuffer.
+
+An offscreen buffer can then be linked to another scene's (consumer scene) texture input similar to Texture Data Linking.
+Consumer scene where the offscreen buffer is to be used as texture has to have a Texture Consumer which is in fact a TextureSampler with a Data Consumer Id.
+Consumer scene has to also be mapped to the same display as the offscreen buffer (and scenes rendered into it).
+
+## Scene To Offscreen Buffer Assignment Rules
+- Scene has to be mapped to the same display where offscreen buffer was created.
+- If the assigned scene is hidden or unpublished by Client it stops being rendered into the offscreen buffer.
+- If the assigned scene is unmapped from display, it is unassigned from its offscreen buffer. Next time the scene is mapped to a display it will be assigned to the display's framebuffer (even if it is the same display as before).
+- Scene can be reassigned to another offscreen buffer or display's framebuffer, then it stops being rendered into the original offscreen buffer.
+- Offscreen buffer cannot be destroyed if there are any scene assigned to it.
+
+## Offscreen Buffer To Consumer Scene Linking Rules
+These rules are analogical to scene to scene Texture Data Linking.
+- The consumer scene has to be mapped to the same display where the linked offscreen buffer was created.
+- The consumer scene has to have a Texture Consumer which is not linked to any provider or another offscreen buffer.
+- When a linked consumer scene is unmapped from its display, the offscreen buffer is unlinked. Next time the scene is mapped to a display it will have no links (even if it is the same display as before).
+- If an offscreen buffer is destroyed, it is unlinked from any linked scenes. Previously linked consumer scene(s) will then use their original texture.
+
+## Clearing Rules
+Clearing of offscreen buffers is currently implicit and cannot be controlled by user explicitly.
+An offscreen buffer will be cleared at the beginning of every frame only if there is any scene mapped to it.
+This means that if a single scene that is mapped to the offscreen buffer gets unmapped for any of the reasons mentioned above, the offscreen buffer will not be cleared until there is another scene assigned to it.
+However the offscreen buffer would be cleared if it has hidden scenes assigned to it.
+
+## Render Order
+RAMSES Renderer allows user to define scene render order when mapping a scene to a display.
+Assigning a scene to offscreen buffer or linking an offscreen buffer to a consumer scene DOES NOT AFFECT the render order of any of the scenes involved.
+It is user's responsibility to define the render order so that desired result is achieved, this in most cases means to render the scene(s) assigned to an offscreen buffer BEFORE the consumer scene using the contents of the offscreen buffer.
+
+*/

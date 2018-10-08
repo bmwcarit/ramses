@@ -1,0 +1,77 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2016 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+/**
+@page GLSLToBinaryShader Storing GLSL as binary shaders
+
+# Summary
+
+As described in @ref EffectLifecycle, effects need to be preprocessed by
+RAMSES before passing them to an offline shader compiler which in turn
+creates binary shaders. In short, the tool generates two things:
+- parsed shader source code which RAMSES would pass to OpenGL
+- effect ID which will be used by ramses::IBinaryShaderCache to resolve binary shaders on the renderer side
+
+The shader source is stored separately for the vertex and fragment shaders, so that they can be passed directly to an
+offline shader compiler.
+
+# Usage
+
+With full named parameters:
+\code
+ramses-shader-from-glsl-shader --in-vertex-shader <filename> --in-fragment-shader <filename>
+--in-config <filename> --out-vertex-shader <filename> --out-fragment-shader <filename>
+--out-effect-id <filename> --out-effect-id-type <client|renderer>
+\endcode
+
+With short named parameters:
+\code
+ramses-shader-from-glsl-shader -iv <filename> -if <filename> -ic <filename> -ov <filename> -of <filename>
+-oe <filename> -ot <client|renderer>
+\endcode
+
+## Parameter description:
+<b>--in-vertex-shader/-iv:</b> input file containing the vertex shader to convert <br>
+<b>--in-fragment-shader/-if:</b> input file containing the fragment shader to convert <br>
+<b>--in-config/-ic:</b> input config file which contains the definition of Uniform Semantics, Attribute Semantics and Compiler Defines (see below) <br>
+<b>--out-vertex-shader/-ov:</b> path to file where the generated ramses vertex shader will be stored <br>
+<b>--out-fragment-shader/-of:</b> path to file where the generated ramses fragment shader will be stored <br>
+<b>--out-effect-id/-oe:</b> path to file where the ramses effect ID will be stored <br>
+<b>--out-effect-id-type/-ot:</b> which type (client or renderer) of effectId to use when writing the effectId; see @ref EffectLifecycle for more info <br>
+
+## Effect config file description:
+Besides the vertex and fragment shaders, the user also has to provide a
+configuration which contains additional information such as definition of Attribute Semantics, Uniform
+Semantics and Compiler Defines. The config file has a fixed and simple line-based format.
+Below is a complete example of a config file which has all possible types of parameters which can
+be passed to RAMSES. It is possible to omit properties which are not needed.
+
+\code
+UNIFORM_SEMANTIC matrix44fInput EEffectUniformSemantic_ModelViewMatrix
+UNIFORM_SEMANTIC texture2dInput EEffectUniformSemantic_TextTexture
+ATTRIBUTE_SEMANTIC vec2fArrayInput EEffectAttributeSemantic_TextPositions
+DEFINE enable_multidraw
+DEFINE draw_buffers
+\endcode
+
+The configuration properties are exactly the same as those provided to ramses::EffectDescription
+when creating effects with the RAMSES API. See the documentation of ramses::EffectDescription for
+more details.
+
+### Uniform semantic definition: UNIFORM_SEMANTIC inputName EEffectUniformSemantic_XXXX
+To define a Uniform Semantic, start a line with keyword UNIFORM_SEMANTIC. The second token is the inputName for the
+semantic, and the third token is the semantic name.
+
+### Attribute semantic definition: ATTRIBUTE_SEMANTIC inputName EEffectAttributeSemantic_XXX
+To define an attribute semantic, start a line with keyWord ATTRIBUTE_SEMANTIC. The second token is the inputName for the
+semantic, and the third token is the semantic name.
+
+### Compiler defintion: DEFINE nameOrExpression
+To define a compiler defintion, the first Token is the keyword DEFINE, and the second token is the definition statement.
+
+*/
