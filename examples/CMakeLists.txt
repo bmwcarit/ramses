@@ -30,6 +30,7 @@ IF(ramses-sdk_BUILD_EXAMPLES)
     ADD_SUBDIRECTORY(ramses-example-local-offscreenbuffer)
     ADD_SUBDIRECTORY(ramses-example-text-basic)
     ADD_SUBDIRECTORY(ramses-example-text-languages)
+    ADD_SUBDIRECTORY(genivi-tech-summit)
 
 ENDIF()
 
