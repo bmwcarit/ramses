@@ -8,11 +8,17 @@
 
 #version 100
 
-uniform sampler2D textureSampler;
+precision highp float;
 
-varying lowp vec2 v_texcoord;
+uniform highp mat4 mvpMatrix;
 
-void main(void)
+attribute vec2 a_position;
+attribute vec2 a_texcoord;
+
+varying vec2 v_texcoord;
+
+void main()
 {
-    gl_FragColor = texture2D(textureSampler, v_texcoord);
+    v_texcoord = a_texcoord;
+    gl_Position = mvpMatrix * vec4(a_position, 0.0, 1.0);
 }

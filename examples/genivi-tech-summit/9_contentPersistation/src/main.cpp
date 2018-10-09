@@ -153,15 +153,25 @@ void createAndSaveScene()
 
 int main(int argc, char* argv[])
 {
-    createAndSaveScene();
+    createAndSaveScene(); // can comment this after first run to see that scene is indeed loaded from file
 
     ramses::RamsesFramework framework(argc, argv);
     ramses::RamsesClient client("workshop example client", framework);
 
     framework.connect();
 
-    //[add code here] : replace scene with scene from file
-    ramses::Scene* scene = client.createScene(1);
+    ramses::ResourceFileDescription resourcesDesc("resources.res");
+    ramses::ResourceFileDescriptionSet resources;
+    resources.add(resourcesDesc);
+    ramses::Scene* scene = client.loadSceneFromFile("scene.ramses", resources);
+
+    scene->flush(ramses::ESceneFlushMode_SynchronizedWithResources);
+    scene->publish();
+
+    while (1)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
 
     scene->unpublish();
     client.destroy(*scene);

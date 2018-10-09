@@ -8,11 +8,15 @@
 
 #version 100
 
-uniform sampler2D textureSampler;
+precision highp float;
 
-varying lowp vec2 v_texcoord;
+uniform vec3 u_color;
+uniform sampler2D u_texture;
+
+varying vec2 v_texcoord;
 
 void main(void)
 {
-    gl_FragColor = texture2D(textureSampler, v_texcoord);
+    float a = texture2D(u_texture, v_texcoord).r;
+    gl_FragColor = vec4(u_color, a);
 }

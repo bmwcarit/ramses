@@ -16,8 +16,8 @@
 using Vertex = std::array<float, 3>;
 
 void addTexturedQuad(const std::array<Vertex, 4>& vertices,
-    ramses::RamsesClient& ramsesClient, ramses::Scene& scene, const char* /*textureFile*/, ramses::RenderGroup& renderGroup,
-    ramses::GroupNode& groupNode, ramses::Effect& effect)
+    ramses::RamsesClient& ramsesClient, ramses::Scene& scene, const char* textureFile, ramses::RenderGroup& renderGroup,
+    ramses::GroupNode& groupNode, ramses::Effect& effect, const ramses::Vector2fArray& textureCoordsArray)
 {
     std::vector<float> vertexData;
     vertexData.insert(vertexData.end(), vertices[0].begin(), vertices[0].end());
@@ -36,7 +36,17 @@ void addTexturedQuad(const std::array<Vertex, 4>& vertices,
     ramses::GeometryBinding* geometrybinding = scene.createGeometryBinding(effect);
     geometrybinding->setInputBuffer(positionAttributeInput, *vertexArray);
 
-    // [add code here]
+    ramses::AttributeInput textCoordInput;
+    effect.findAttributeInput("a_texcoord", textCoordInput);
+    geometrybinding->setInputBuffer(textCoordInput, textureCoordsArray);
+
+    ramses::Texture2D* texture = ramses::RamsesUtils::CreateTextureResourceFromPng(textureFile, ramsesClient);
+    ramses::TextureSampler* sampler = scene.createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat,
+        ramses::ETextureSamplingMethod_Bilinear, *texture);
+
+    ramses::UniformInput textureSamplerInput;
+    effect.findUniformInput("textureSampler", textureSamplerInput);
+    appearance->setInputTexture(textureSamplerInput, *sampler);
 
     ramses::MeshNode* mesh = scene.createMeshNode();
     mesh->setGeometryBinding(*geometrybinding);
@@ -78,7 +88,13 @@ int main(int argc, char* argv[])
     effectDescription.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
     ramses::Effect* effect = client.createEffect(effectDescription);
 
-    // [add code here]
+    const float textureCoordsData[] = {
+        0.0f, 1.0f,
+        1.0f, 1.0f,
+        0.0f, 0.0f,
+        1.0f, 0.0f
+    };
+    const ramses::Vector2fArray* textureCoordsArray = client.createConstVector2fArray(4, textureCoordsData);
 
     ramses::GroupNode* groupNode = scene->createGroupNode();
 
@@ -102,12 +118,12 @@ int main(int argc, char* argv[])
     const Vertex G = {  0.5f,  0.5f, -0.5f };
     const Vertex H = { -0.5f,  0.5f, -0.5f };
 
-    addTexturedQuad({ A, B, C, D }, client, *scene, "res/cube-face-1.png", *renderGroup, *groupNode, *effect);
-    addTexturedQuad({ B, E, D, G }, client, *scene, "res/cube-face-2.png", *renderGroup, *groupNode, *effect);
-    addTexturedQuad({ C, D, H, G }, client, *scene, "res/cube-face-3.png", *renderGroup, *groupNode, *effect);
-    addTexturedQuad({ E, F, G, H }, client, *scene, "res/cube-face-1.png", *renderGroup, *groupNode, *effect);
-    addTexturedQuad({ F, A, H, C }, client, *scene, "res/cube-face-2.png", *renderGroup, *groupNode, *effect);
-    addTexturedQuad({ F, E, A, B }, client, *scene, "res/cube-face-3.png", *renderGroup, *groupNode, *effect);
+    addTexturedQuad({ A, B, C, D }, client, *scene, "res/cube-face-1.png", *renderGroup, *groupNode, *effect, *textureCoordsArray);
+    addTexturedQuad({ B, E, D, G }, client, *scene, "res/cube-face-2.png", *renderGroup, *groupNode, *effect, *textureCoordsArray);
+    addTexturedQuad({ C, D, H, G }, client, *scene, "res/cube-face-3.png", *renderGroup, *groupNode, *effect, *textureCoordsArray);
+    addTexturedQuad({ E, F, G, H }, client, *scene, "res/cube-face-1.png", *renderGroup, *groupNode, *effect, *textureCoordsArray);
+    addTexturedQuad({ F, A, H, C }, client, *scene, "res/cube-face-2.png", *renderGroup, *groupNode, *effect, *textureCoordsArray);
+    addTexturedQuad({ F, E, A, B }, client, *scene, "res/cube-face-3.png", *renderGroup, *groupNode, *effect, *textureCoordsArray);
 
     groupNode->rotate(-20.0f, 30.0f, 0.0f);
 

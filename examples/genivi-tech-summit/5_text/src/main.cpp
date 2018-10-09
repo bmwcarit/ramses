@@ -13,6 +13,9 @@
 #include "ramses-client.h"
 #include "ramses-utils.h"
 
+#include "ramses-text-api/FontRegistry.h"
+#include "ramses-text-api/TextCache.h"
+
 using Vertex = std::array<float, 3>;
 
 void addTexturedQuad(const std::array<Vertex, 4>& vertices,
@@ -138,7 +141,42 @@ int main(int argc, char* argv[])
         groupNode->translate(1, 0, 0);
     }
 
-    // [add code here]
+    effectDescription.setAttributeSemantic("a_position", ramses::EEffectAttributeSemantic_TextPositions);
+    effectDescription.setAttributeSemantic("a_texcoord", ramses::EEffectAttributeSemantic_TextTextureCoordinates);
+    effectDescription.setUniformSemantic("u_texture", ramses::EEffectUniformSemantic_TextTexture);
+    effectDescription.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+    effectDescription.setVertexShaderFromFile("res/text-cube-letters.vert");
+    effectDescription.setFragmentShaderFromFile("res/text-cube-letters.frag");
+    ramses::Effect* textEffect = client.createEffect(effectDescription);
+
+    // create font registry to hold font memory and text cache to cache text meshes
+    ramses::FontRegistry fontRegistry;
+    ramses::TextCache textCache(*scene, fontRegistry, 2048u, 2048u);
+
+    // create font instance
+    ramses::FontId font = fontRegistry.createFreetype2Font("res/Roboto-Bold.ttf");
+    ramses::FontInstanceId fontInstance = fontRegistry.createFreetype2FontInstance(font, 42);
+
+    // load rasterized glyphs for each character
+    const std::u32string string = U"Hello Genivi!";
+    const ramses::GlyphMetricsVector positionedGlyphs = textCache.getPositionedGlyphs(string, fontInstance);
+
+    // create RAMSES meshes/texture page to hold the glyphs and text geometry
+    const ramses::TextLineId textId = textCache.createTextLine(positionedGlyphs, *textEffect);
+    ramses::TextLine* textLine = textCache.getTextLine(textId);
+
+    textLine->meshNode->getAppearance()->setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
+    textLine->meshNode->getAppearance()->setBlendingFactors(ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha, ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha);
+
+    // add the text meshes to the render pass to show them
+    textLine->meshNode->setParent(*groupNode);
+    textLine->meshNode->setScaling(0.003f, 0.003f, 0.003f);
+    textLine->meshNode->setTranslation(-0.4f, 0.33f, 0.51f);
+
+    ramses::UniformInput colorInput;
+    textEffect->findUniformInput("u_color", colorInput);
+    textLine->meshNode->getAppearance()->setInputValueVector3f(colorInput, 0.1f, 0.05f, 0.7f);
+    renderGroup->addMeshNode(*textLine->meshNode, 1);
 
     scene->flush(ramses::ESceneFlushMode_SynchronizedWithResources);
     scene->publish(ramses::EScenePublicationMode_LocalAndRemote);

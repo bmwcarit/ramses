@@ -141,8 +141,8 @@ int main(int argc, char* argv[])
 
     while (1)
     {
-        //[add code here]
-
+        groupNode->rotate(0.3f, 0.6f, 0.1f);
+        scene->flush();
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
 

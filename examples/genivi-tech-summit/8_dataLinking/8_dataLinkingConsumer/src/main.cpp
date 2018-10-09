@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
     ramses::GroupNode* groupNode = exampleScene->createGroupNode();
     mesh->setParent(*groupNode);
 
-    // [add code here]
+    exampleScene->createTransformationDataConsumer(*groupNode, ConsumerDataId);
 
     exampleScene->flush(ramses::ESceneFlushMode_SynchronizedWithResources);
     exampleScene->publish();

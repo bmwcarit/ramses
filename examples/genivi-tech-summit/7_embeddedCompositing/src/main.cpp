@@ -17,7 +17,7 @@ using Vertex = std::array<float, 3>;
 
 void addTexturedQuad(const std::array<Vertex, 4>& vertices,
     ramses::RamsesClient& ramsesClient, ramses::Scene& scene, const char* textureFile, ramses::RenderGroup& renderGroup,
-    ramses::GroupNode& groupNode, ramses::Effect& effect, const ramses::Vector2fArray& textureCoordsArray)
+    ramses::GroupNode& groupNode, ramses::Effect& effect, const ramses::Vector2fArray& textureCoordsArray, ramses::streamSource_t surfaceId)
 {
     std::vector<float> vertexData;
     vertexData.insert(vertexData.end(), vertices[0].begin(), vertices[0].end());
@@ -29,10 +29,10 @@ void addTexturedQuad(const std::array<Vertex, 4>& vertices,
 
     ramses::Texture2D* fallbackTexture = ramses::RamsesUtils::CreateTextureResourceFromPng(textureFile, ramsesClient);
 
-    // [add code here]
+    ramses::StreamTexture* streamTexture = scene.createStreamTexture(*fallbackTexture, surfaceId, "stream texture");
 
     ramses::TextureSampler* sampler = scene.createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat,
-        ramses::ETextureSamplingMethod_Bilinear, *fallbackTexture);
+        ramses::ETextureSamplingMethod_Bilinear, *streamTexture);
 
     ramses::AttributeInput positionAttributeInput;
     effect.findAttributeInput("a_position", positionAttributeInput);
@@ -121,12 +121,12 @@ int main(int argc, char* argv[])
     const Vertex G = {  0.5f,  0.5f, -0.5f };
     const Vertex H = { -0.5f,  0.5f, -0.5f };
 
-    addTexturedQuad({ A, B, C, D }, client, *scene, "res/fallbacktexture-1.png", *renderGroup, *groupNode, *effect, *textureCoordsArray);
-    addTexturedQuad({ B, E, D, G }, client, *scene, "res/fallbacktexture-2.png", *renderGroup, *groupNode, *effect, *textureCoordsArray);
-    addTexturedQuad({ C, D, H, G }, client, *scene, "res/fallbacktexture-3.png", *renderGroup, *groupNode, *effect, *textureCoordsArray);
-    addTexturedQuad({ E, F, G, H }, client, *scene, "res/fallbacktexture-1.png", *renderGroup, *groupNode, *effect, *textureCoordsArray);
-    addTexturedQuad({ F, A, H, C }, client, *scene, "res/fallbacktexture-2.png", *renderGroup, *groupNode, *effect, *textureCoordsArray);
-    addTexturedQuad({ F, E, A, B }, client, *scene, "res/fallbacktexture-3.png", *renderGroup, *groupNode, *effect, *textureCoordsArray);
+    addTexturedQuad({ A, B, C, D }, client, *scene, "res/fallbacktexture-1.png", *renderGroup, *groupNode, *effect, *textureCoordsArray, ramses::streamSource_t(1));
+    addTexturedQuad({ B, E, D, G }, client, *scene, "res/fallbacktexture-2.png", *renderGroup, *groupNode, *effect, *textureCoordsArray, ramses::streamSource_t(2));
+    addTexturedQuad({ C, D, H, G }, client, *scene, "res/fallbacktexture-3.png", *renderGroup, *groupNode, *effect, *textureCoordsArray, ramses::streamSource_t(3));
+    addTexturedQuad({ E, F, G, H }, client, *scene, "res/fallbacktexture-1.png", *renderGroup, *groupNode, *effect, *textureCoordsArray, ramses::streamSource_t(4));
+    addTexturedQuad({ F, A, H, C }, client, *scene, "res/fallbacktexture-2.png", *renderGroup, *groupNode, *effect, *textureCoordsArray, ramses::streamSource_t(5));
+    addTexturedQuad({ F, E, A, B }, client, *scene, "res/fallbacktexture-3.png", *renderGroup, *groupNode, *effect, *textureCoordsArray, ramses::streamSource_t(6));
 
     groupNode->rotate(-20.0f, 30.0f, 0.0f);
 

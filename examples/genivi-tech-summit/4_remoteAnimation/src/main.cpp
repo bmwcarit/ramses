@@ -137,7 +137,21 @@ int main(int argc, char* argv[])
         groupNode->translate(1, 0, 0);
     }
 
-    // [add code here]
+    ramses::AnimationSystem* animationSystem = scene->createRealTimeAnimationSystem();
+
+    ramses::SplineLinearVector3f* splineRotation = animationSystem->createSplineLinearVector3f();
+    splineRotation->setKey(0, 0.f, 0.f, 0.f);
+    splineRotation->setKey(57600, 1080.f, 2160.f, 360.f); //x-axis: 3 rotations, y-axis: 6 rotations, z-axis: 1 rotation
+
+    ramses::AnimatedProperty* animPropertyRototation = animationSystem->createAnimatedProperty(*groupNode, ramses::EAnimatedProperty_Rotation,
+        ramses::EAnimatedPropertyComponent_All);
+    ramses::Animation* animation = animationSystem->createAnimation(*animPropertyRototation, *splineRotation);
+
+    ramses::AnimationSequence* sequence = animationSystem->createAnimationSequence();
+    sequence->addAnimation(*animation);
+    sequence->setAnimationLooping(*animation);
+    auto now = std::chrono::system_clock::now();
+    sequence->startAt(std::chrono::time_point_cast<std::chrono::milliseconds>(now).time_since_epoch().count());
 
     scene->flush(ramses::ESceneFlushMode_SynchronizedWithResources);
     scene->publish(ramses::EScenePublicationMode_LocalAndRemote);

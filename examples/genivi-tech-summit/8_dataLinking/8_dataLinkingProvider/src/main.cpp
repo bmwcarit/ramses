@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
     mesh->setIndexCount(3);
     mesh->setAppearance(*appearance);
 
-    // [add code here]
+    exampleScene->createTransformationDataProvider(*mesh, ProviderDataId);
 
     exampleScene->flush(ramses::ESceneFlushMode_SynchronizedWithResources);
     exampleScene->publish();

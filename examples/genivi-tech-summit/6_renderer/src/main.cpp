@@ -71,14 +71,36 @@ public:
     {
     }
 
-    // [add code here]
+    virtual void scenePublished(ramses::sceneId_t sceneId) override
+    {
+        if (sceneId == m_scene)
+        {
+            m_published = true;
+        }
+    }
+
+    virtual void sceneSubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
+    {
+        if (ramses::ERendererEventResult_OK == result && sceneId == m_scene)
+        {
+            m_subscribed = true;
+        }
+    }
+
+    virtual void sceneMapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
+    {
+        if (ramses::ERendererEventResult_OK == result && sceneId == m_scene)
+        {
+            m_mapped = true;
+        }
+    }
 
     void waitForPublication()
     {
         while (!m_published)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            // [add code here]
+            m_renderer.dispatchEvents(*this);
         }
     }
 
@@ -87,7 +109,7 @@ public:
         while (!m_subscribed)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            // [add code here]
+            m_renderer.dispatchEvents(*this);
         }
     }
 
@@ -96,7 +118,7 @@ public:
         while (!m_mapped)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            // [add code here]
+            m_renderer.dispatchEvents(*this);
         }
     }
 
@@ -192,7 +214,25 @@ int main(int argc, char* argv[])
     scene->flush(ramses::ESceneFlushMode_SynchronizedWithResources);
     scene->publish(ramses::EScenePublicationMode_LocalAndRemote);
 
-    // [add code here]
+    ramses::RendererConfig rendererConfig(argc, argv);
+    ramses::RamsesRenderer renderer(framework, rendererConfig);
+    renderer.startThread();
+
+    const ramses::displayId_t display = renderer.createDisplay(ramses::DisplayConfig());
+
+    SimpleSceneStateEventHandler eventHandler(renderer, sceneId);
+    eventHandler.waitForPublication();
+
+    renderer.subscribeScene(sceneId);
+    renderer.flush();
+    eventHandler.waitForSubscription();
+
+    renderer.mapScene(display, sceneId);
+    renderer.flush();
+    eventHandler.waitForMapped();
+
+    renderer.showScene(sceneId);
+    renderer.flush();
 
     while (1)
     {
