@@ -131,7 +131,7 @@ ACME2_PROJECT(
     #==========================================================================
     # documentation files, will be installed and packaged
     #==========================================================================
-    FILES_DOCUMENTATION         readme.md
+    FILES_DOCUMENTATION         README.md
                                 LICENSE.txt
     ENABLE_INSTALL_DOCUMENTATION ON
 
