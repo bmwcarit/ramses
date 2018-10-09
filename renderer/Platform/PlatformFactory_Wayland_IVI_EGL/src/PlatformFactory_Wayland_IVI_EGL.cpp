@@ -60,16 +60,6 @@ namespace ramses_internal
         return PlatformFactory_Wayland_EGL::destroyWindow(window);
     }
 
-    Bool PlatformFactory_Wayland_IVI_EGL::isCreatingWaylandEmbeddedCompositorRequired() const
-    {
-        //EC should be created if (any of) display config params are set
-        const Bool areConfigParametersForEmbeddedCompositorSet = !m_rendererConfig.getWaylandSocketEmbedded().empty()
-                || !m_rendererConfig.getWaylandSocketEmbeddedGroup().empty()
-                || 0 <= m_rendererConfig.getWaylandSocketEmbeddedFD();
-
-        return areConfigParametersForEmbeddedCompositorSet;
-    }
-
     IEmbeddedCompositor* PlatformFactory_Wayland_IVI_EGL::createEmbeddedCompositor()
     {
         //TODO Mohamed: remove use of EC dummy as soon as it is possible to create multiple displays on wayland

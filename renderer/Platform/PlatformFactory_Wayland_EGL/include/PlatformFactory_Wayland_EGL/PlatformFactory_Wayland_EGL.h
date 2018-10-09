@@ -30,6 +30,9 @@ namespace ramses_internal
         virtual void getContextAttributes(Vector<EGLint>& attributes) const = 0;
         virtual void getSurfaceAttributes(UInt32 msaaSampleCount, Vector<EGLint>& attributes) const = 0;
 
+        //TODO Mohamed: remove use of EC dummy as soon as it is possible to create multiple displays on wayland
+        Bool isCreatingWaylandEmbeddedCompositorRequired() const;
+
         WindowEventsPollingManager_Wayland m_windowEventsPollingManager;
     };
 }
