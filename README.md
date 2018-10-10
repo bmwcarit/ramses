@@ -19,9 +19,12 @@ applications.
 2 Building and testing
 -----------------------------------
 RAMSES can be cloned from its Genivi repository using git:
+
+```
 git clone https://github.com/GENIVI/ramses <ramses-sdk>
 cd <ramses-sdk>
 git submodule update --init --recursive
+```
 
 Building RAMSES on Windows:
 - start CMake GUI
