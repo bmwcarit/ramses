@@ -3,7 +3,8 @@ RAMSES
 TOC
 -------------------------------------------------
 1. What is RAMSES
-2. License / Open source / Third Party
+2. Building and testing
+3. License / Open source / Third Party
 
 1 What is RAMSES
 --------------
