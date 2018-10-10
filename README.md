@@ -62,15 +62,18 @@ cd <ramses-sdk>/scripts/docker
 Building RAMSES on Linux:
 - install dependencies using Distro of choice package manager. For example, for
 Ubuntu:
+```
 sudo apt-get install libx11-dev libgles2-mesa-dev
 mkdir <build>
 cd <build>
 cmake <ramses-sdk>
+```
 
 You can also check the docker container setup scripts for a reference how to build:
+```
 <ramses-sdk>/scripts/docker/ramses-basic/Dockerfile         -> contains info about build dependencies
 <ramses-sdk>/scripts/docker/runtime-files/build-ramses.sh   -> contains CMake command for building
-
+```
 
 3 License / Open Source / Third Party
 -----------------------------------
