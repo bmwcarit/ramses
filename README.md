@@ -35,6 +35,7 @@ If you want to build the tests, set 'ramses-sdk_BUILD_TESTS' to true in the CMak
 generate -> open solution in Visual Studio.
 
 Building RAMSES on Linux with docker:
+
 We prefer to build RAMSES in Docker because it abstracts the dependency installation
 and the CMake invocations away from the user. Docker is installed slightly differently
 on different distros, check the docker manual for your distro. The instructions below
@@ -60,9 +61,9 @@ cd <ramses-sdk>/scripts/docker
 ./run-unittests.sh
 ```
 
-Building RAMSES on Linux:
-- install dependencies using Distro of choice package manager. For example, for
-Ubuntu:
+Building RAMSES on Linux (without docker):
+
+-Install dependencies using Distro of choice package manager. For example, for Ubuntu:
 ```
 sudo apt-get install libx11-dev libgles2-mesa-dev
 mkdir <build>

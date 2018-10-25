@@ -26,7 +26,8 @@ ACME_MODULE(
     #==========================================================================
     DEPENDENCIES            PlatformFactory_Wayland_EGL
                             Window_Wayland_Shell
-                            EmbeddedCompositor_Dummy
+                            EmbeddedCompositor_Wayland
+                            TextureUploadingAdapter_Wayland
 )
 
 # This module is tested in the renderer sandwich tests (<ramses>/integration/ramses-renderer-tests)

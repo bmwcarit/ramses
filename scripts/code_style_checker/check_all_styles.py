@@ -148,6 +148,7 @@ Takes a path as input and runs style/license header checks with filters where ne
         r'^CHANGELOG\.txt$', # Doesn't need a license
         r'^LICENSE\.txt$',   # Contains license info, not related to code/content
         r'^README\.txt$',    # Doesn't need a license
+        r'^README\.md$',     # Doesn't need a license
         r'^integration/TestContent/res/BigString\.txt$', # Test file with random content - doesn't need license
         r'^cmake/templates/ramses-version\.in$', # Just a template, doesn't need license
         # json doesn't support comments - can't have license header

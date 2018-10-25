@@ -84,4 +84,14 @@ namespace ramses_internal
         }
         return addPlatformSurface(platformSurface);
     }
+
+    Bool PlatformFactory_Wayland_EGL::isCreatingWaylandEmbeddedCompositorRequired() const
+    {
+        //EC should be created if (any of) display config params are set
+        const Bool areConfigParametersForEmbeddedCompositorSet = !m_rendererConfig.getWaylandSocketEmbedded().empty()
+                || !m_rendererConfig.getWaylandSocketEmbeddedGroup().empty()
+                || 0 <= m_rendererConfig.getWaylandSocketEmbeddedFD();
+
+        return areConfigParametersForEmbeddedCompositorSet;
+    }
 }

@@ -23,10 +23,6 @@ namespace ramses_internal
         ITextureUploadingAdapter*    createTextureUploadingAdapter(IDevice& device, IEmbeddedCompositor& embeddedCompositor, IWindow& window) override final;
         IWindow*                     createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override final;
         Bool                         destroyWindow(IWindow& window) override final;
-
-    private:
-        //TODO Mohamed: remove use of EC dummy as soon as it is possible to create multiple displays on wayland
-        Bool isCreatingWaylandEmbeddedCompositorRequired() const;
     };
 }
 
