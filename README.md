@@ -19,7 +19,7 @@ applications.
 
 2 Building and testing
 -----------------------------------
-RAMSES can be cloned from its Genivi repository using git:
+RAMSES can be cloned from its GENIVI repository using git:
 
 ```
 git clone https://github.com/GENIVI/ramses <ramses-sdk>
