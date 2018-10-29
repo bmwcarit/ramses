@@ -77,10 +77,15 @@ You can also check the docker container setup scripts for a reference how to bui
 <ramses-sdk>/scripts/docker/runtime-files/build-ramses.sh   -> contains CMake command for building
 ```
 
-3 License / Open Source / Third Party
+3 Copyright / License / Open Source / Third Party
 -----------------------------------
-Attention: This software uses and contains open-source software!
-RAMSES itself is license under the Mozilla Public License Version 2.0 (see LICENSE.txt).
+RAMSES original code is copyright BMW Car IT
+
+```Copyright (C) 2018 BMW Car IT GmbH```
+
+The source code is licensed under the Mozilla Public License 2.0, please find a
+copy of that license in the LICENSE.txt file.
+
 RAMSES makes use of several open source libraries which can be found in the folder 'external'.
 Some of these are shipped directly with the sourcecode, others are included as git submodule references.
 RAMSES also includes some assets (e.g. font files) which are licensed under different open source licenses.
