@@ -11,11 +11,8 @@ TOC
 RAMSES is an abbreviation for "Rendering Architecture for Multi-Screen
 EnvironmentS". It implements a distributed system for rendering 3D content
 with focus on bandwidth and resource efficiency.
-Within the distributed architecture RAMSES defines 2 main roles for
-applications.
-- Clients provide graphical content using a scene graph interface.
-- Renderers receive graphical content and render it while dealing with all the
-  platform specific constraints.
+
+For more details, see the Wiki pages.
 
 2 Building and testing
 -----------------------------------
