@@ -24,6 +24,50 @@ namespace ramses
     static bool gHasTCPComm = false;
 #endif
 
+    struct TCPCommandLineArguments
+    {
+        explicit TCPCommandLineArguments(const TCPConfig& config)
+            : useFakeConnection                  ("fakeConnection", "fakeConnection", false, "fake connection")
+            , isRamshEnabled                     ("ramsh", "ramsh", false, "ramsh")
+            , enableOffsetPlatformProtocolVersion("pvo", "protocolVersionOffset", false, "protocol version offset")
+            , disablePeriodicLogs                ("disablePeriodicLogs", "disablePeriodicLogs", false, "disable periodic logs")
+            , userProvidedGuid                   ("guid", "guid", "", "guid")
+            , port                               ("myport", "myportnumber", config.getPort(), "my port number")
+            , ipAddress                          ("myip", "myipaddress", config.getIPAddress(), "my ip address")
+            , daemonIP                           ("i", "daemon-ip", config.getDaemonIPAddress(), "daemon ip")
+            , daemonPort                         ("p", "daemon-port", config.getDaemonPort(), "daemon port")
+        {
+        }
+
+        ArgumentBool   useFakeConnection;
+        ArgumentBool   isRamshEnabled;
+        ArgumentBool   enableOffsetPlatformProtocolVersion;
+        ArgumentBool   disablePeriodicLogs;
+        ArgumentString userProvidedGuid;
+        ArgumentUInt16 port;
+        ArgumentString ipAddress;
+        ArgumentString daemonIP;
+        ArgumentUInt16 daemonPort;
+
+        void print()
+        {
+            LOG_INFO_F(CONTEXT_RENDERER, ([&](StringOutputStream& sos) {
+                        sos << "\nTCP arguments:\n";
+
+                        sos << useFakeConnection.getHelpString();
+                        sos << isRamshEnabled.getHelpString();
+                        sos << enableOffsetPlatformProtocolVersion.getHelpString();
+                        sos << disablePeriodicLogs.getHelpString();
+                        sos << userProvidedGuid.getHelpString();
+                        sos << port.getHelpString();
+                        sos << ipAddress.getHelpString();
+                        sos << daemonPort.getHelpString();
+                        sos << daemonIP.getHelpString();
+                    }));
+
+        }
+    };
+
     RamsesFrameworkConfigImpl::RamsesFrameworkConfigImpl(int32_t argc, char const* const* argv)
         : StatusObjectImpl()
         , m_shellType(ERamsesShellType_Default)
@@ -194,5 +238,12 @@ namespace ramses
     ramses_internal::Guid RamsesFrameworkConfigImpl::getUserProvidedGuid() const
     {
         return m_userProvidedGuid;
+    }
+
+    void RamsesFrameworkConfigImpl::PrintCommandLineOptions()
+    {
+        const TCPConfig defaultConfig;
+        TCPCommandLineArguments tcpArgs(defaultConfig);
+        tcpArgs.print();
     }
 }

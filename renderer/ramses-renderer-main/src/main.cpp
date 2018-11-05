@@ -17,6 +17,7 @@
 #include "DisplayManager/DisplayManager.h"
 #include "Common/Cpp11Macros.h"
 #include "PlatformAbstraction/PlatformThread.h"
+#include "RamsesFrameworkConfigImpl.h"
 
 struct MappingCommand
 {
@@ -56,6 +57,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
     if (helpRequested)
     {
         ramses_internal::RendererConfigUtils::PrintCommandLineOptions();
+        ramses::RamsesFrameworkConfigImpl::PrintCommandLineOptions();
         return 0;
     }
 

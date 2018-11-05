@@ -54,6 +54,8 @@ namespace ramses
         ERamsesShellType m_shellType;
         ramses_internal::ThreadWatchdogConfig m_watchdogConfig;
         bool m_periodicLogsEnabled;
+
+        static void PrintCommandLineOptions();
     private:
         RamsesFrameworkConfigImpl();
 
