@@ -3,8 +3,9 @@ RAMSES
 TOC
 -------------------------------------------------
 1. What is RAMSES
-2. Building and testing
-3. License / Open source / Third Party
+2. Obtaining the source code
+3. Building and testing
+4. License / Open source / Third Party
 
 1 What is RAMSES
 --------------
@@ -14,8 +15,9 @@ with focus on bandwidth and resource efficiency.
 
 For more details, see the Wiki pages.
 
-2 Building and testing
------------------------------------
+2 Obtaining the source code
+--------------
+
 RAMSES can be cloned from its Genivi repository using git:
 
 ```
@@ -23,6 +25,24 @@ git clone https://github.com/GENIVI/ramses <ramses-sdk>
 cd <ramses-sdk>
 git submodule update --init --recursive
 ```
+
+If you use the https variant, you will not get the required depenencies
+and have to download them yourself! Therefore we strongly advice to use the
+'git' protocol for download as shown above.
+
+3 Building and testing
+-----------------------------------
+General building tips: RAMSES's build system is based on CMake. It has
+mandatory components and optional components which are built only if
+required dependencies and/or CMake flags are present. The CMake log will
+provide info what was built and what not - a 'plus' indicating that something
+was built, and 'minus' that it wasn't. If an optional component was not built,
+CMake will list the missing dependencies which were not found or not built.
+Check the CMake logs! Typical build errors:
+- not able to find a compiler -> Check that you have a valid compiler!
+- not able to find something in external/ folder -> Check that you downloaded the submodules as shown in section 2.)
+- CMake can't identify the compiler of Visual studio Community edition -> You need to download a Windows SDK 8.1
+- No renderer was built on linux -> Check that you have installed some of the platform packages (x11-dev, egl, openGL, wayland)
 
 Building RAMSES on Windows:
 - start CMake GUI
@@ -74,7 +94,7 @@ You can also check the docker container setup scripts for a reference how to bui
 <ramses-sdk>/scripts/docker/runtime-files/build-ramses.sh   -> contains CMake command for building
 ```
 
-3 Copyright / License / Open Source / Third Party
+4 Copyright / License / Open Source / Third Party
 -----------------------------------
 RAMSES original code is copyright BMW Car IT
 
