@@ -50,6 +50,19 @@ namespace ramses_internal
         m_displayStatistics[display].numFrameBufferSwapped++;
     }
 
+    void RendererStatistics::clientResourceUploaded(UInt byteSize)
+    {
+        m_clientResourcesUploaded++;
+        m_clientResourcesBytesUploaded += byteSize;
+    }
+
+    void RendererStatistics::sceneResourceUploaded(SceneId sceneId, UInt byteSize)
+    {
+        auto& sceneStats = m_sceneStatistics[sceneId];
+        sceneStats.sceneResourcesUploaded++;
+        sceneStats.sceneResourcesBytesUploaded += byteSize;
+    }
+
     void RendererStatistics::streamTextureUpdated(StreamTextureSourceId sourceId, UInt numUpdates)
     {
         auto& strTexStat = m_streamTextureStatistics[sourceId];
@@ -60,6 +73,11 @@ namespace ramses_internal
             strTexStat.lastFrameUpdated = m_frameNumber;
         }
         strTexStat.maxUpdatesPerFrame = std::max(strTexStat.maxUpdatesPerFrame, numUpdates);
+    }
+
+    void RendererStatistics::shaderCompiled()
+    {
+        m_shadersCompiled++;
     }
 
     void RendererStatistics::trackArrivedFlush(SceneId sceneId, UInt numSceneActions, UInt numAddedClientResources, UInt numRemovedClientResources, UInt numSceneResourceActions)
@@ -159,6 +177,9 @@ namespace ramses_internal
         m_drawCalls = 0u;
         m_frameDurationMin = std::numeric_limits<UInt32>::max();
         m_frameDurationMax = 0u;
+        m_clientResourcesUploaded = 0u;
+        m_clientResourcesBytesUploaded = 0u;
+        m_shadersCompiled = 0u;
 
         for (auto& sceneStatIt : m_sceneStatistics)
         {
@@ -178,6 +199,8 @@ namespace ramses_internal
             sceneStat.numClientResourcesAddedPerFlush.reset();
             sceneStat.numClientResourcesRemovedPerFlush.reset();
             sceneStat.numSceneResourceActionsPerFlush.reset();
+            sceneStat.sceneResourcesUploaded = 0u;
+            sceneStat.sceneResourcesBytesUploaded = 0u;
             sceneStat.numRendered = 0u;
         }
 
@@ -211,6 +234,10 @@ namespace ramses_internal
             ", maxFrameTime " << m_frameDurationMax << "us]" <<
             ", drawcallsPerFrame " << getDrawCallsPerFrame() <<
             ", numFrames " << m_frameNumber;
+        if (m_clientResourcesUploaded > 0u)
+            str << ", clientResUploaded " << m_clientResourcesUploaded << " (" << m_clientResourcesBytesUploaded << " B)";
+        if (m_shadersCompiled > 0u)
+            str << ", shadersCompiled " << m_shadersCompiled;
         str << "\n";
 
         for (const auto& dbStat : m_displayStatistics)
@@ -251,6 +278,8 @@ namespace ramses_internal
                 str << ", RC-/F (" << numClientResourcesRemovedPerFlush.minValue << "/" << numClientResourcesRemovedPerFlush.maxValue << "/" << static_cast<float>(numClientResourcesRemovedPerFlush.sum) / sceneStats.numFlushesArrived << ")";
                 str << ", RS/F (" << numSceneResourceActionsPerFlush.minValue << "/" << numSceneResourceActionsPerFlush.maxValue << "/" << static_cast<float>(numSceneResourceActionsPerFlush.sum) / sceneStats.numFlushesArrived << ")";
             }
+            if (sceneStats.sceneResourcesUploaded > 0u)
+                str << ", RSUploaded " << sceneStats.sceneResourcesUploaded << " (" << sceneStats.sceneResourcesBytesUploaded << " B)";
             str << "\n";
         }
 

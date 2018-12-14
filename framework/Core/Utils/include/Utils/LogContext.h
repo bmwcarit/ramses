@@ -35,7 +35,6 @@ namespace ramses_internal
         const char* m_contextName;
         const char* m_contextId;
 
-        bool m_enabled;
         std::atomic<ELogLevel> m_logLevel;
 
         void* m_data;
@@ -44,7 +43,6 @@ namespace ramses_internal
     inline LogContext::LogContext(const char* name, const char* id)
         : m_contextName(name)
         , m_contextId(id)
-        , m_enabled(true)
         , m_logLevel(ELogLevel::Error)
         , m_data(nullptr)
     {
@@ -68,16 +66,6 @@ namespace ramses_internal
     inline const char* LogContext::getContextId() const
     {
         return m_contextId;
-    }
-
-    inline void LogContext::setEnabled(bool enabled)
-    {
-        m_enabled = enabled;
-    }
-
-    inline bool LogContext::isEnabled() const
-    {
-        return m_enabled;
     }
 
     inline void LogContext::setUserData(void* dataPtr)

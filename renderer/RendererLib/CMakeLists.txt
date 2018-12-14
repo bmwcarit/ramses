@@ -8,12 +8,15 @@
 
 file(GLOB
     RAMSES_RENDERER_API_INCLUDE_BASE
-    ../ramses-renderer-api/include)
+    ramses-renderer-api/include)
 
 file(GLOB
     RAMSES_RENDERER_FILES_SOURCE
     ramses-renderer-impl/src/*.cpp)
 
+
+add_library(ramses-renderer-api INTERFACE)
+target_include_directories(ramses-renderer-api INTERFACE ${RAMSES_RENDERER_API_INCLUDE_BASE})
 
 ACME_MODULE(
 
@@ -27,6 +30,9 @@ ACME_MODULE(
     #==========================================================================
     # files of this module
     #==========================================================================
+
+    FILES_PRIVATE_HEADER    ramses-renderer-api/include/*.h
+                            ramses-renderer-api/include/ramses-renderer-api/*.h
 
     # This needs to be fixed in upcoming story regarding renderer lib
     # Not possible to solve now, without splitting in two libs (which is the correct solution)
@@ -63,12 +69,14 @@ ACME_MODULE(
                             ramses-framework
 )
 
+INSTALL(DIRECTORY ramses-renderer-api/include/ DESTINATION "${PROJECT_INSTALL_HEADER}" COMPONENT ramses-sdk-devel)
+
 IF (NOT ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB)
     set(ramses-shared-lib-MIXIN
         ${ramses-shared-lib-MIXIN}
         INCLUDE_BASE ${RAMSES_RENDERER_API_INCLUDE_BASE}
         FILES_SOURCE ${RAMSES_RENDERER_FILES_SOURCE}
-        DEPENDENCIES  ramses-renderer-lib ramses-renderer-api
+        DEPENDENCIES  ramses-renderer-lib
         CACHE INTERNAL "")
 endif()
 

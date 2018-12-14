@@ -9,7 +9,6 @@
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "TaskFramework/TaskExecutingThread.h"
 #include "framework_common_gmock_header.h"
-#include "PlatformAbstraction/PlatformTestUtils.h"
 #include "gmock/gmock.h"
 #include "TaskFramework/ProcessingTaskQueue.h"
 #include "PlatformAbstraction/PlatformEvent.h"

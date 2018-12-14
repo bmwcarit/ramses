@@ -11,7 +11,6 @@
 #include "ramses-utils.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/GroupNode.h"
 
 namespace ramses_internal
 {
@@ -21,19 +20,19 @@ namespace ramses_internal
         , m_subGroup1Node(0)
         , m_subGroup2Node(0)
         , m_subGroup3Node(0)
-        , m_rotateNode1(*m_scene.createGroupNode())
-        , m_rotateNode2(*m_scene.createGroupNode())
-        , m_scaleNode1(*m_scene.createGroupNode())
-        , m_scaleNode2(*m_scene.createGroupNode())
+        , m_rotateNode1(*m_scene.createNode())
+        , m_rotateNode2(*m_scene.createNode())
+        , m_scaleNode1(*m_scene.createNode())
+        , m_scaleNode2(*m_scene.createNode())
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-basic");
         ramses::Triangle redTriangle(m_client, m_scene, *effect, ramses::TriangleAppearance::EColor_Red);
 
-        m_groupNode = m_scene.createGroupNode();
-        ramses::GroupNode* subGroups[3];
+        m_groupNode = m_scene.createNode();
+        ramses::Node* subGroups[3];
         for (int row = 0; row < 3; ++row)
         {
-            ramses::GroupNode* subGroupNode = m_scene.createGroupNode();
+            ramses::Node* subGroupNode = m_scene.createNode();
             for (int column = 0; column < 3; ++column)
             {
                 // create a mesh node to define the triangle with chosen appearance
@@ -42,7 +41,7 @@ namespace ramses_internal
                 meshNode->setAppearance(redTriangle.GetAppearance());
                 meshNode->setGeometryBinding(redTriangle.GetGeometry());
 
-                ramses::GroupNode* transNode = m_scene.createGroupNode();
+                ramses::Node* transNode = m_scene.createNode();
                 transNode->setTranslation(-1.f + column * 2, -3.f + row * 2, -30.f);
                 transNode->setParent(*subGroupNode);
 

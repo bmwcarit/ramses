@@ -72,13 +72,13 @@ namespace ramses_internal
             }
             else
             {
-                LOG_ERROR(CONTEXT_RENDERER, "Logger_Wayland::log Error in VSprintf!")
+                LOG_ERROR(CONTEXT_RENDERER, "Logger_Wayland::log Error in VSprintf!");
                 assert(false);
             }
         }
         else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Logger_Wayland::log Encoding error in VSprintf!")
+            LOG_ERROR(CONTEXT_RENDERER, "Logger_Wayland::log Encoding error in VSprintf!");
         }
 
         va_end(apCopy);

@@ -45,6 +45,7 @@ namespace ramses_internal
         ramses::FontInstanceId m_chineseFont{ ramses::InvalidFontInstanceId };
         ramses::FontInstanceId m_lightFont{ ramses::InvalidFontInstanceId };
         ramses::FontInstanceId m_lightAutoHintFont{ ramses::InvalidFontInstanceId };
+        ramses::FontInstanceId m_lightAutoHintAndReshapeFont{ ramses::InvalidFontInstanceId };
         ramses::FontInstanceId m_shapingArabicFont{ ramses::InvalidFontInstanceId };
         ramses::FontInstanceId m_shapingArabicAutoHintFont{ ramses::InvalidFontInstanceId };
 

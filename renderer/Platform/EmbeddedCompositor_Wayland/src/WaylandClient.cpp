@@ -8,7 +8,6 @@
 
 #include "EmbeddedCompositor_Wayland/WaylandClient.h"
 #include "EmbeddedCompositor_Wayland/WaylandResource.h"
-#include "EmbeddedCompositor_Wayland/WaylandOutputResource.h"
 #include "EmbeddedCompositor_Wayland/WaylandCallbackResource.h"
 
 namespace ramses_internal
@@ -33,12 +32,6 @@ namespace ramses_internal
     {
         wl_resource* resource = wl_resource_create(m_client, interface, version, id);
         return new WaylandResource(resource, true);
-    }
-
-    WaylandOutputResource* WaylandClient::outputResourceCreate(const wl_interface* interface, int version, uint32_t id)
-    {
-        wl_resource* resource = wl_resource_create(m_client, interface, version, id);
-        return new WaylandOutputResource(resource, true);
     }
 
     WaylandCallbackResource* WaylandClient::callbackResourceCreate(const wl_interface* interface, int version, uint32_t id)

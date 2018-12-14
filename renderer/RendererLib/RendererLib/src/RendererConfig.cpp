@@ -70,4 +70,14 @@ namespace ramses_internal
     {
         m_frameCallbackMaxPollTime = pollTime;
     }
+
+    void RendererConfig::setWaylandDisplayForSystemCompositorController(const String& wd)
+    {
+        m_waylandDisplayForSystemCompositorController = wd;
+    }
+
+    const String &RendererConfig::getWaylandDisplayForSystemCompositorController() const
+    {
+        return m_waylandDisplayForSystemCompositorController;
+    }
 }

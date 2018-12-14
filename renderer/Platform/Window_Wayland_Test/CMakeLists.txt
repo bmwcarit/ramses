@@ -27,7 +27,7 @@ ACME_MODULE(
                             EGL
                             LinuxInput
                             RendererTestUtils
-                            UnixUtilities
+                            WaylandTestUtils
                             WindowEventsPollingManager_Wayland
 )
 

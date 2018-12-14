@@ -187,7 +187,7 @@ namespace ramses_internal
     {
         WaylandShellSurface* waylandShellSurface = createWaylandShellSurface();
         waylandShellSurface->surfaceWasDeleted();
-        waylandShellSurface->shellSurfaceSetFullscreen(m_client, 0, 60, nullptr);
+        waylandShellSurface->shellSurfaceSetFullscreen(m_client, 0, 60);
 
         EXPECT_CALL(*m_shellSurfaceResource, setImplementation(_, waylandShellSurface, nullptr));
         delete waylandShellSurface;
@@ -207,7 +207,7 @@ namespace ramses_internal
     {
         WaylandShellSurface* waylandShellSurface = createWaylandShellSurface();
         waylandShellSurface->surfaceWasDeleted();
-        waylandShellSurface->shellSurfaceSetMaximized(m_client, nullptr);
+        waylandShellSurface->shellSurfaceSetMaximized(m_client);
 
         EXPECT_CALL(*m_shellSurfaceResource, setImplementation(_, waylandShellSurface, nullptr));
         delete waylandShellSurface;

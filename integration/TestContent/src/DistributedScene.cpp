@@ -9,7 +9,6 @@
 #include "TestScenes/DistributedScene.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/RenderPass.h"
 #include "RamsesFrameworkImpl.h"
@@ -47,7 +46,7 @@ namespace ramses_internal
         meshNode.setGeometryBinding(triangle.GetGeometry());
         meshNode.setAppearance(triangle.GetAppearance());
 
-        ramses::TranslateNode& transNode = *m_scene.createTranslateNode();
+        ramses::Node& transNode = *m_scene.createNode();
         transNode.setTranslation(0.f, 0.f, -10.f);
         meshNode.setParent(transNode);
     }

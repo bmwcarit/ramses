@@ -10,6 +10,7 @@
 #include "RendererLib/RendererResourceManagerUtils.h"
 #include "RendererLib/IResourceUploader.h"
 #include "RendererLib/FrameTimer.h"
+#include "RendererLib/RendererStatistics.h"
 #include "RendererAPI/IRenderBackend.h"
 #include "RendererAPI/IDevice.h"
 #include "RendererAPI/IEmbeddedCompositingManager.h"
@@ -34,12 +35,14 @@ namespace ramses_internal
         RequesterID requesterId,
         Bool keepEffects,
         const FrameTimer& frameTimer,
+        RendererStatistics& stats,
         UInt64 clientResourceCacheSize)
         : m_id(requesterId)
         , m_resourceProvider(resourceProvider)
         , m_renderBackend(renderBackend)
         , m_embeddedCompositingManager(embeddedCompositingManager)
-        , m_resourceUploadingManager(m_clientResourceRegistry, uploader, renderBackend, keepEffects, frameTimer, clientResourceCacheSize)
+        , m_resourceUploadingManager(m_clientResourceRegistry, uploader, renderBackend, keepEffects, frameTimer, stats, clientResourceCacheSize)
+        , m_stats(stats)
     {
     }
 
@@ -421,6 +424,7 @@ namespace ramses_internal
         }
 
         sceneResources.addRenderBuffer(renderBufferHandle, deviceHandle, memSize, ERenderBufferAccessMode_WriteOnly == renderBuffer.accessMode);
+        m_stats.sceneResourceUploaded(sceneId, memSize);
     }
 
     void RendererResourceManager::unloadRenderTargetBuffer(RenderBufferHandle renderBufferHandle, SceneId sceneId)
@@ -613,6 +617,7 @@ namespace ramses_internal
         assert(deviceHandle.isValid());
 
         sceneResources.addDataBuffer(dataBufferHandle, deviceHandle, dataBufferType, dataSizeInBytes);
+        m_stats.sceneResourceUploaded(sceneId, dataSizeInBytes);
     }
 
     void RendererResourceManager::unloadDataBuffer(DataBufferHandle dataBufferHandle, SceneId sceneId)
@@ -663,6 +668,7 @@ namespace ramses_internal
             LOG_ERROR(CONTEXT_RENDERER, "RendererResourceManager::updateDataBuffer: can not updata data buffer with invalid type!");
             assert(false);
         }
+        m_stats.sceneResourceUploaded(sceneId, dataSizeInBytes);
     }
 
     DeviceResourceHandle RendererResourceManager::getDataBufferDeviceHandle(DataBufferHandle dataBufferHandle, SceneId sceneId) const
@@ -686,7 +692,8 @@ namespace ramses_internal
         DeviceResourceHandle deviceHandle = device.allocateTexture2D(width, height, textureFormat, mipLevelCount, totalSizeInBytes);
         assert(deviceHandle.isValid());
 
-        sceneResources.addTextureBuffer(textureBufferHandle, deviceHandle, totalSizeInBytes);
+        sceneResources.addTextureBuffer(textureBufferHandle, deviceHandle, textureFormat, totalSizeInBytes);
+        m_stats.sceneResourceUploaded(sceneId, totalSizeInBytes);
     }
 
     void RendererResourceManager::unloadTextureBuffer(TextureBufferHandle textureBufferHandle, SceneId sceneId)
@@ -713,6 +720,9 @@ namespace ramses_internal
         IDevice& device = m_renderBackend.getDevice();
         device.bindTexture(deviceHandle);
         device.uploadTextureData(deviceHandle, mipLevel, x, y, 0u, width, height, 1u, data, 0u);
+
+        const UInt32 updateDataSizeInBytes = TextureMathUtils::GetTotalMemoryUsedByMipmappedTexture(GetTexelSizeFromFormat(sceneResources.getTextureBufferFormat(textureBufferHandle)), width, height, 1u, 1u);
+        m_stats.sceneResourceUploaded(sceneId, updateDataSizeInBytes);
     }
 
     DeviceResourceHandle RendererResourceManager::getTextureBufferDeviceHandle(TextureBufferHandle textureBufferHandle, SceneId sceneId) const

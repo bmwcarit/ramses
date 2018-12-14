@@ -48,8 +48,8 @@ enum ERendererEventTestType
     ERendererEventTestType_TextureConsumerCreated,
     ERendererEventTestType_TextureConsumerDestroyed,
     ERendererEventTestType_SceneFlushed,
-    ERendererEventTestType_SceneUpdateLatencyExceededLimit,
-    ERendererEventTestType_SceneUpdateLatencyBackBelowLimit,
+    ERendererEventTestType_SceneExpired,
+    ERendererEventTestType_SceneRecoveredAfterExpiration,
     ERendererEventTestType_WindowClosed,
     ERendererEventTestType_KeyEvent,
     ERendererEventTestType_MouseEvent
@@ -346,7 +346,7 @@ public:
     virtual void sceneUpdateLatencyExceeded(ramses::sceneId_t sceneId)
     {
         RendererTestEvent event;
-        event.eventType = ERendererEventTestType_SceneUpdateLatencyExceededLimit;
+        event.eventType = ERendererEventTestType_SceneExpired;
         event.sceneId = sceneId;
         m_events.push_back(event);
     }
@@ -354,7 +354,7 @@ public:
     virtual void sceneUpdateLatencyBackBelowLimit(ramses::sceneId_t sceneId)
     {
         RendererTestEvent event;
-        event.eventType = ERendererEventTestType_SceneUpdateLatencyBackBelowLimit;
+        event.eventType = ERendererEventTestType_SceneRecoveredAfterExpiration;
         event.sceneId = sceneId;
         m_events.push_back(event);
     }
@@ -365,6 +365,11 @@ public:
         event.eventType = ERendererEventTestType_WindowClosed;
         event.displayId = displayId;
         m_events.push_back(event);
+    }
+
+    virtual void streamAvailabilityChanged(ramses::streamSource_t /*streamId*/, bool /*available*/)
+    {
+        // Tested elsewhere, no need to test here too
     }
 
     virtual void keyEvent(ramses::displayId_t displayId, ramses::EKeyEvent keyEvent, uint32_t keyModifiers, ramses::EKeyCode keyCode)
@@ -613,18 +618,18 @@ public:
         expectEvent(event);
     }
 
-    void expectSceneUpdateLatencyExceeded(ramses::sceneId_t sceneId)
+    void expectSceneExpired(ramses::sceneId_t sceneId)
     {
         RendererTestEvent event;
-        event.eventType = ERendererEventTestType_SceneUpdateLatencyExceededLimit;
+        event.eventType = ERendererEventTestType_SceneExpired;
         event.sceneId = sceneId;
         expectEvent(event);
     }
 
-    void expectSceneUpdateLatencyBackBelowLimit(ramses::sceneId_t sceneId)
+    void expectSceneRecoveredFromExpiration(ramses::sceneId_t sceneId)
     {
         RendererTestEvent event;
-        event.eventType = ERendererEventTestType_SceneUpdateLatencyBackBelowLimit;
+        event.eventType = ERendererEventTestType_SceneRecoveredAfterExpiration;
         event.sceneId = sceneId;
         expectEvent(event);
     }

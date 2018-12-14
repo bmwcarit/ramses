@@ -379,7 +379,7 @@ namespace ramses_internal
     void Window_X11::handleEvents()
     {
         LOG_TRACE(CONTEXT_RENDERER, "Updating X11 window");
-        if (XPending(m_X11WindowData.display))
+        while (XPending(m_X11WindowData.display))
         {
             XEvent event;
             char text[100];

@@ -22,12 +22,8 @@ namespace ramses
         status_t setPublicationMode(EScenePublicationMode publicationMode);
         EScenePublicationMode getPublicationMode() const;
 
-        status_t setMaximumLatency(uint32_t maxLatencyInMilliseconds);
-        std::chrono::milliseconds getMaximumLatency() const;
-
     private:
         EScenePublicationMode m_publicationMode = EScenePublicationMode_LocalAndRemote;
-        std::chrono::milliseconds m_maximumLatency{ 0u };
     };
 }
 

@@ -54,6 +54,7 @@ namespace ramses_internal
         WlContext m_wlContext;
 
     private:
+        const String m_waylandDisplay;
         InputHandling_Wayland m_inputHandling;
 
         const struct FrameRenderingDoneCallback_Listener : public wl_callback_listener

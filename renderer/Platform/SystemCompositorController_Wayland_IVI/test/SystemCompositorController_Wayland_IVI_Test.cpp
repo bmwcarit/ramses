@@ -7,58 +7,58 @@
 //  -------------------------------------------------------------------------
 
 #include "gmock/gmock.h"
+#include "TestWithWaylandEnvironment.h"
 #include "SystemCompositorController_Wayland_IVI/SystemCompositorController_Wayland_IVI.h"
-#include "UnixUtilities/EnvironmentVariableHelper.h"
-#include "UnixUtilities/UnixDomainSocketHelper.h"
+#include "WaylandUtilities/WaylandEnvironmentUtils.h"
+#include "WaylandUtilities/UnixDomainSocketHelper.h"
 #include "Collections/StringOutputStream.h"
 
 namespace ramses_internal
 {
     using namespace testing;
 
-    class ASystemCompositorController_Wayland_IVI : public ::testing::Test
+    class ASystemCompositorController_Wayland_IVI : public TestWithWaylandEnvironment
     {
     protected:
-        EnvironmentVariableHelper              m_environment;
         SystemCompositorController_Wayland_IVI m_scc;
     };
 
 
     TEST_F(ASystemCompositorController_Wayland_IVI, CanBeInited)
     {
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, m_initialValueOfXdgRuntimeDir);
         EXPECT_TRUE(m_scc.init());
     }
 
     TEST_F(ASystemCompositorController_Wayland_IVI, IfXdgRuntimeDirIsNotSetInitWillFail)
     {
-        m_environment.unsetVariable(EnvironmentVariableName::XDGRuntimeDir);
+        ASSERT_STREQ("", WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir).c_str());
+
         EXPECT_FALSE(m_scc.init());
     }
 
     TEST_F(ASystemCompositorController_Wayland_IVI, IfXdgRuntimeDirIsNotCorrectInitWillFail)
     {
-        m_environment.setVariable(EnvironmentVariableName::XDGRuntimeDir, "/this/should/lead/nowhere");
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, "/this/should/lead/nowhere");
         EXPECT_FALSE(m_scc.init());
     }
 
     TEST_F(ASystemCompositorController_Wayland_IVI, IfXdgRuntimeDirIsNotSetButWaylandSocketInitWillSucceed)
     {
-        UnixDomainSocketHelper socketHelper = UnixDomainSocketHelper("wayland-0");
+        ASSERT_STREQ("", WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir).c_str());
 
-        m_environment.unsetVariable(EnvironmentVariableName::XDGRuntimeDir);
-
+        UnixDomainSocketHelper socketHelper = UnixDomainSocketHelper("wayland-0", m_initialValueOfXdgRuntimeDir);
         StringOutputStream fileDescriptor;
         fileDescriptor << socketHelper.createConnectedFileDescriptor(true);
-        m_environment.setVariable(EnvironmentVariableName::WaylandSocket, fileDescriptor.c_str());
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, fileDescriptor.c_str());
 
         EXPECT_TRUE(m_scc.init());
     }
 
     TEST_F(ASystemCompositorController_Wayland_IVI, IfWaylandDisplayIsNotCorrectInitWillFail)
     {
-        m_environment.setVariable(EnvironmentVariableName::WaylandDisplay, "SomeFilenameThatDoesNotExist");
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, m_initialValueOfXdgRuntimeDir);
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandDisplay, "SomeFilenameThatDoesNotExist");
         EXPECT_FALSE(m_scc.init());
     }
-
-
 }

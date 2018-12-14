@@ -11,13 +11,21 @@
 
 #include "Collections/Vector.h"
 #include "SceneAPI/TextureEnums.h"
-#include "SceneAPI/MipMapSize.h"
 #include "Resource/TextureMetaInfo.h"
+#include "Math3d/Quad.h"
 #include <numeric>
+#include <vector>
 
 namespace ramses_internal
 {
-    using MipMapData = Vector<Vector<Byte>>;
+    struct MipMap
+    {
+        UInt32              width = 0u;
+        UInt32              height = 0u;
+        Quad                usedRegion;
+        std::vector<Byte>   data;
+    };
+    using MipMaps = std::vector<MipMap>;
 
     struct TextureBuffer
     {
@@ -28,12 +36,11 @@ namespace ramses_internal
         TextureBuffer& operator=(TextureBuffer&&) = default;
 
         ETextureFormat      textureFormat = ETextureFormat_Invalid;
-        MipMapDimensions    mipMapDimensions;
-        MipMapData          mipMapData;
+        MipMaps              mipMaps;
 
         static UInt32 GetMipMapDataSizeInBytes(const TextureBuffer& buffer)
         {
-            return std::accumulate(buffer.mipMapData.cbegin(), buffer.mipMapData.cend(), 0u, [](UInt32 val, const Vector<Byte>& data) { return val + static_cast<UInt32>(data.size()); });
+            return std::accumulate(buffer.mipMaps.cbegin(), buffer.mipMaps.cend(), 0u, [](UInt32 val, const MipMap& mip) { return val + static_cast<UInt32>(mip.data.size()); });
         }
     };
 

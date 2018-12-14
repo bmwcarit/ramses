@@ -37,6 +37,8 @@ namespace ramses
         uint32_t getWaylandIviSurfaceID() const;
         status_t setWaylandIviLayerID(uint32_t waylandIviLayerID);
         uint32_t getWaylandIviLayerID() const;
+        status_t setWaylandDisplay(const char* waylandDisplay);
+        const char* getWaylandDisplay() const;
         status_t setIntegrityEGLDisplayID(uint32_t eglDisplayID);
         uint32_t getIntegrityEGLDisplayID() const;
         status_t setWindowIviVisible();

@@ -20,7 +20,6 @@ namespace ramses_internal
         MOCK_METHOD3(getCredentials, void(pid_t& processId, uid_t& userId, gid_t& groupId));
         MOCK_METHOD0(postNoMemory, void());
         MOCK_METHOD3(resourceCreate, IWaylandResource*(const wl_interface* interface, int version, uint32_t id));
-        MOCK_METHOD3(outputResourceCreate, WaylandOutputResource*(const wl_interface* interface, int version, uint32_t id));
         MOCK_METHOD3(callbackResourceCreate, WaylandCallbackResource*(const wl_interface* interface, int version, uint32_t id));
     };
 }

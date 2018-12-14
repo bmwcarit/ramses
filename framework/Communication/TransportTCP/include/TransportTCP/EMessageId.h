@@ -19,30 +19,26 @@ namespace ramses_internal
 
     enum EMessageId
     {
-        EMessageId_Start = 0x00040000,
-
-        EMessageId_PublishScene,
+        EMessageId_PublishScene = 1,
         EMessageId_UnpublishScene,
         EMessageId_SubscribeScene,
         EMessageId_UnsubscribeScene,
         EMessageId_SceneNotAvailable,
 
-        EMessageId_TestMessageID = EMessageId_Start + 10,
         EMessageId_ConnectionDescriptionMessage,
         EMessageId_ConnectorAddressExchange,
         EMessageId_InputEvent,
         EMessageId_SendSceneActionList,
 
+        EMessageId_Alive,
+
         // resources
-        EMessageId_TransferResources = EMessageId_Start + 30,
+        EMessageId_TransferResources,
         EMessageId_RequestResources,
         EMessageId_ResourcesNotAvailable,
-        EMessageId_ResourcesBecameUnavailable,
 
-        // scene + nodes
-        EMessageId_CreateScene = EMessageId_Start + 40,
-
-        EMessageId_LastMessageID
+        // scene
+        EMessageId_CreateScene,
     };
 
 #ifndef CreateNameForEnumID
@@ -61,19 +57,19 @@ case ENUMVALUE: return #ENUMVALUE
                 CreateNameForEnumID(EMessageId_UnsubscribeScene);
                 CreateNameForEnumID(EMessageId_SceneNotAvailable);
 
-                CreateNameForEnumID(EMessageId_TestMessageID);
                 CreateNameForEnumID(EMessageId_ConnectionDescriptionMessage);
                 CreateNameForEnumID(EMessageId_ConnectorAddressExchange);
                 CreateNameForEnumID(EMessageId_InputEvent);
                 CreateNameForEnumID(EMessageId_SendSceneActionList);
 
+                CreateNameForEnumID(EMessageId_Alive);
+
                 // resources
                 CreateNameForEnumID(EMessageId_TransferResources);
                 CreateNameForEnumID(EMessageId_RequestResources);
                 CreateNameForEnumID(EMessageId_ResourcesNotAvailable);
-                CreateNameForEnumID(EMessageId_ResourcesBecameUnavailable);
 
-                // scene + nodes
+                // scene
                 CreateNameForEnumID(EMessageId_CreateScene);
             }
             return "Unknown Message Type";

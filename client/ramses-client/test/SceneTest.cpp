@@ -13,7 +13,6 @@
 #include "ramses-client-api/RenderPass.h"
 #include "ramses-client-api/BlitPass.h"
 #include "ramses-client-api/RemoteCamera.h"
-#include "ramses-client-api/ScaleNode.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/DataFloat.h"
 #include "ramses-client-api/TextureSampler.h"
@@ -241,7 +240,7 @@ namespace ramses
     {
         Scene& anotherScene = *client.createScene(12u);
 
-        ScaleNode* node = anotherScene.createScaleNode("node");
+        Node* node = anotherScene.createNode("node");
         ASSERT_TRUE(NULL != node);
 
         EXPECT_NE(StatusOK, m_scene.createTransformationDataProvider(*node, 1u));
@@ -253,7 +252,7 @@ namespace ramses
     {
         Scene& anotherScene = *client.createScene(12u);
 
-        GroupNode* node = anotherScene.createGroupNode("groupNode");
+        Node* node = anotherScene.createNode("groupNode");
         ASSERT_TRUE(NULL != node);
 
         EXPECT_NE(StatusOK, m_scene.createTransformationDataConsumer(*node, 1u));
@@ -306,7 +305,7 @@ namespace ramses
     TEST_F(ASceneWithContent, checksMeshVisibilityChangedByGrandParentVisibilityNode)
     {
         //Add another visibility hierarchy level below mesh 4
-        VisibilityNode& m_node8 = *m_scene.createVisibilityNode("node8");
+        Node& m_node8 = *m_scene.createNode("node8");
         MeshNode& m_node9 = *m_scene.createMeshNode("node9");
         EXPECT_EQ(StatusOK, m_node8.setParent(m_mesh1a));
         EXPECT_EQ(StatusOK, m_node9.setParent(m_node8));
@@ -356,7 +355,7 @@ namespace ramses
         // 'root' invisible
         m_vis1.setVisibility(false);
         // add another visibility node under invisible visibility node
-        VisibilityNode& vis1v = *m_scene.createVisibilityNode();
+        Node& vis1v = *m_scene.createNode();
         m_vis1.addChild(vis1v);
         // reparent meshes under it
         vis1v.addChild(m_mesh1a);
@@ -457,7 +456,7 @@ namespace ramses
     TEST_F(ASceneWithContent, nodeBecomesInvisibleIfAnyOfItsAncestorsIsInvisible)
     {
         // add another visibility node under 'root' visibility node
-        VisibilityNode& vis1a = *m_scene.createVisibilityNode();
+        Node& vis1a = *m_scene.createNode();
         m_vis1.addChild(vis1a);
         // reparent meshes under it
         vis1a.addChild(m_mesh1a);
@@ -484,7 +483,7 @@ namespace ramses
 
     TEST_F(AScene, canCreateATransformDataSlot)
     {
-        GroupNode* node = m_scene.createGroupNode();
+        Node* node = m_scene.createNode();
         EXPECT_EQ(0u, m_scene.impl.getIScene().getDataSlotCount());
 
         EXPECT_EQ(StatusOK, m_scene.createTransformationDataConsumer(*node, dataConsumerId_t(666u)));
@@ -499,7 +498,7 @@ namespace ramses
 
     TEST_F(AScene, removesTransformDataSlotsOfNodeOnDestruction)
     {
-        Node* node = m_scene.createGroupNode();
+        Node* node = m_scene.createNode();
         m_scene.createTransformationDataProvider(*node, dataProviderId_t(1412u));
 
         EXPECT_EQ(1u, m_scene.impl.getIScene().getDataSlotCount());
@@ -513,7 +512,7 @@ namespace ramses
 
     TEST_F(AScene, canNotCreateMoreThanOneTransformationDataSlotForANode)
     {
-        GroupNode* node = m_scene.createGroupNode();
+        Node* node = m_scene.createNode();
         EXPECT_EQ(StatusOK, m_scene.createTransformationDataProvider(*node, dataProviderId_t(1u)));
         EXPECT_NE(StatusOK, m_scene.createTransformationDataProvider(*node, dataProviderId_t(2u)));
         EXPECT_NE(StatusOK, m_scene.createTransformationDataConsumer(*node, dataConsumerId_t(3u)));
@@ -521,8 +520,8 @@ namespace ramses
 
     TEST_F(AScene, canNotCreateMoreThanOneTransformationDataSlotWithTheSameId)
     {
-        GroupNode* node1 = m_scene.createGroupNode();
-        GroupNode* node2 = m_scene.createGroupNode();
+        Node* node1 = m_scene.createNode();
+        Node* node2 = m_scene.createNode();
         EXPECT_EQ(StatusOK, m_scene.createTransformationDataProvider(*node1, dataProviderId_t(1u)));
         EXPECT_NE(StatusOK, m_scene.createTransformationDataProvider(*node2, dataProviderId_t(1u)));
         EXPECT_NE(StatusOK, m_scene.createTransformationDataConsumer(*node2, dataConsumerId_t(1u)));
@@ -1026,29 +1025,5 @@ namespace ramses
         EXPECT_EQ(0u, m_scene.impl.getStatisticCollection().statFlushesTriggered.getCounterValue());
         m_scene.flush();
         EXPECT_EQ(1u, m_scene.impl.getStatisticCollection().statFlushesTriggered.getCounterValue());
-    }
-
-    TEST_F(AScene, canFlushWithValidTimeInfoSceneWithLatencyMonitoring)
-    {
-        SceneConfig config;
-        config.setMaximumLatency(1u);
-        Scene* sceneWithLatency = this->client.createScene(this->getInternalScene().getSceneId().getValue() + 1u, config);
-        EXPECT_EQ(ramses::StatusOK, sceneWithLatency->flushWithTimestamp(1));
-    }
-
-    TEST_F(AScene, reportsErrorIfFlushWithoutTimeInfoIsUsedOnSceneWithLatencyMonitoring)
-    {
-        SceneConfig config;
-        config.setMaximumLatency(1u);
-        Scene* sceneWithLatency = this->client.createScene(this->getInternalScene().getSceneId().getValue() + 1u, config);
-        EXPECT_NE(ramses::StatusOK, sceneWithLatency->flush());
-    }
-
-    TEST_F(AScene, reportsErrorIfFlushWithInvalidTimeStampUsed)
-    {
-        SceneConfig config;
-        config.setMaximumLatency(1u);
-        Scene* sceneWithLatency = this->client.createScene(this->getInternalScene().getSceneId().getValue() + 1u, config);
-        EXPECT_NE(ramses::StatusOK, sceneWithLatency->flushWithTimestamp(0));
     }
 }

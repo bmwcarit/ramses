@@ -58,7 +58,7 @@ namespace ramses_internal
         virtual void handleSceneSubscription(SceneId sceneId, const Guid& subscriber) override;
         virtual void handleSceneUnsubscription(SceneId sceneId, const Guid& subscriber) override;
 
-        virtual void triggerLogMessageForPeriodicLog() const override;
+        virtual void triggerLogMessageForPeriodicLog() override;
 
         void disconnectFromNetwork();
 

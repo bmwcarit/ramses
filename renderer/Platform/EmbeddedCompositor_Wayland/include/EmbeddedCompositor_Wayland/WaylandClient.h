@@ -20,7 +20,6 @@ namespace ramses_internal
         virtual void getCredentials(pid_t& processId, uid_t& userId, gid_t& groupId) override;
         virtual void postNoMemory() override;
         virtual IWaylandResource* resourceCreate(const wl_interface *interface, int version, uint32_t id) override;
-        virtual WaylandOutputResource* outputResourceCreate(const wl_interface* interface, int version, uint32_t id) override;
         virtual WaylandCallbackResource* callbackResourceCreate(const wl_interface* interface, int version, uint32_t id) override;
 
     private:

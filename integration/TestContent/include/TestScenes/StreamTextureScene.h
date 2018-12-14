@@ -15,7 +15,6 @@
 namespace ramses
 {
     class Node;
-    class RotateNode;
 }
 
 namespace ramses_internal
@@ -39,7 +38,7 @@ namespace ramses_internal
         void addPngQuad(const char* pngFilePath, const float* vertexPositionsArray, ramses::streamSource_t surfaceId, ramses::Node* parentNode = nullptr, const char* streamTextureName = "streamTexture", bool forcefallback = false);
 
         const ramses::Effect* m_effect;
-        ramses::RotateNode* m_root;
+        ramses::Node* m_root;
     };
 }
 

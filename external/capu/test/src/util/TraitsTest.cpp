@@ -34,7 +34,7 @@ public:
     template <typename T>
     static uint32_t type(T val)
     {
-        val = val;
+        val = *&val;
         enum
         {
             type = ramses_capu::is_CAPU_PRIMITIVE<T>::Value | ramses_capu::is_CAPU_REFERENCE<T>::Value | ramses_capu::is_CAPU_POINTER<T>::Value

@@ -13,7 +13,6 @@
 #include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
@@ -144,7 +143,7 @@ namespace ramses_internal
             meshNode->setGeometryBinding(greyTriangle.GetGeometry());
         }
 
-        ramses::TranslateNode* translateNode = m_scene.createTranslateNode();
+        ramses::Node* translateNode = m_scene.createNode();
         translateNode->addChild(*meshNode);
         translateNode->translate(0.0f, -0.5f, -5.0f);
 
@@ -207,7 +206,7 @@ namespace ramses_internal
         meshNode->setAppearance(*appearance);
         meshNode->setGeometryBinding(*geometry);
 
-        ramses::TranslateNode* transNode = m_scene.createTranslateNode();
+        ramses::Node* transNode = m_scene.createNode();
         transNode->setTranslation(0.f, 0.f, -4.f);
         meshNode->setParent(*transNode);
 

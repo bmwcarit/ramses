@@ -24,12 +24,8 @@ namespace ramses
     class Scene;
     class AnimationSystem;
     class AnimationSystemRealTime;
-    class GroupNode;
-    class TranslateNode;
-    class RotateNode;
-    class ScaleNode;
+    class Node;
     class MeshNode;
-    class TransformationNode;
     class RemoteCamera;
     class PerspectiveCamera;
     class OrthographicCamera;
@@ -80,7 +76,6 @@ namespace ramses
     class RenderBuffer;
     class RenderTarget;
     class RenderGroup;
-    class VisibilityNode;
     class IndexDataBuffer;
     class VertexDataBuffer;
     class Texture2DBuffer;
@@ -134,12 +129,8 @@ namespace ramses
     template <> Scene*                     CreationHelper::createObjectOfType<Scene                    >(const char* name);
     template <> AnimationSystem*           CreationHelper::createObjectOfType<AnimationSystem          >(const char* name);
     template <> AnimationSystemRealTime*   CreationHelper::createObjectOfType<AnimationSystemRealTime  >(const char* name);
-    template <> GroupNode*                 CreationHelper::createObjectOfType<GroupNode                >(const char* name);
-    template <> TranslateNode*             CreationHelper::createObjectOfType<TranslateNode            >(const char* name);
-    template <> RotateNode*                CreationHelper::createObjectOfType<RotateNode               >(const char* name);
-    template <> ScaleNode*                 CreationHelper::createObjectOfType<ScaleNode                >(const char* name);
+    template <> Node*                      CreationHelper::createObjectOfType<Node                     >(const char* name);
     template <> MeshNode*                  CreationHelper::createObjectOfType<MeshNode                 >(const char* name);
-    template <> TransformationNode*        CreationHelper::createObjectOfType<TransformationNode       >(const char* name);
     template <> RemoteCamera*              CreationHelper::createObjectOfType<RemoteCamera             >(const char* name);
     template <> PerspectiveCamera*         CreationHelper::createObjectOfType<PerspectiveCamera        >(const char* name);
     template <> OrthographicCamera*        CreationHelper::createObjectOfType<OrthographicCamera       >(const char* name);
@@ -189,7 +180,6 @@ namespace ramses
     template <> TextureSampler*            CreationHelper::createObjectOfType<TextureSampler           >(const char* name);
     template <> RenderBuffer*              CreationHelper::createObjectOfType<RenderBuffer             >(const char* name);
     template <> RenderTarget*              CreationHelper::createObjectOfType<RenderTarget             >(const char* name);
-    template <> VisibilityNode*            CreationHelper::createObjectOfType<VisibilityNode           >(const char* name);
     template <> GeometryBinding*           CreationHelper::createObjectOfType<GeometryBinding          >(const char* name);
     template <> DataFloat*                 CreationHelper::createObjectOfType<DataFloat                >(const char* name);
     template <> DataVector2f*              CreationHelper::createObjectOfType<DataVector2f             >(const char* name);

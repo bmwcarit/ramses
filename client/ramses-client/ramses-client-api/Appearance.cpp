@@ -36,7 +36,7 @@ namespace ramses
     status_t Appearance::setBlendingFactors(EBlendFactor srcColor, EBlendFactor destColor, EBlendFactor srcAlpha, EBlendFactor destAlpha)
     {
         const status_t status = impl.setBlendingFactors(srcColor, destColor, srcAlpha, destAlpha);
-        LOG_HL_CLIENT_API4(status, srcColor, destColor, srcAlpha, destAlpha)
+        LOG_HL_CLIENT_API4(status, srcColor, destColor, srcAlpha, destAlpha);
         return status;
     }
 
@@ -48,7 +48,7 @@ namespace ramses
     status_t Appearance::setBlendingOperations(EBlendOperation operationColor, EBlendOperation operationAlpha)
     {
         const status_t status = impl.setBlendingOperations(operationColor, operationAlpha);
-        LOG_HL_CLIENT_API2(status, operationColor, operationAlpha)
+        LOG_HL_CLIENT_API2(status, operationColor, operationAlpha);
         return status;
     }
 
@@ -60,7 +60,7 @@ namespace ramses
     status_t Appearance::setDepthWrite(bool enable)
     {
         const status_t status = impl.setDepthWrite(enable ? EDepthWrite_Enabled : EDepthWrite_Disabled);
-        LOG_HL_CLIENT_API1(status, enable)
+        LOG_HL_CLIENT_API1(status, enable);
         return status;
     }
 
@@ -72,7 +72,7 @@ namespace ramses
     status_t Appearance::setDepthFunction(EDepthFunc func)
     {
         const status_t status = impl.setDepthFunction(func);
-        LOG_HL_CLIENT_API1(status, func)
+        LOG_HL_CLIENT_API1(status, func);
         return status;
     }
 
@@ -84,7 +84,7 @@ namespace ramses
     status_t Appearance::setStencilFunction(EStencilFunc func, uint32_t ref, uint8_t mask)
     {
         const status_t status = impl.setStencilFunc(func, ref, mask);
-        LOG_HL_CLIENT_API3(status, func, ref, mask)
+        LOG_HL_CLIENT_API3(status, func, ref, mask);
         return status;
     }
 
@@ -96,7 +96,7 @@ namespace ramses
     status_t Appearance::setStencilOperation(EStencilOperation sfail, EStencilOperation dpfail, EStencilOperation dppass)
     {
         const status_t status = impl.setStencilOperation(sfail, dpfail, dppass);
-        LOG_HL_CLIENT_API3(status, sfail, dpfail, dppass)
+        LOG_HL_CLIENT_API3(status, sfail, dpfail, dppass);
         return status;
     }
 
@@ -108,7 +108,7 @@ namespace ramses
     status_t Appearance::setCullingMode(ECullMode mode)
     {
         const status_t status = impl.setCullingMode(mode);
-        LOG_HL_CLIENT_API1(status, mode)
+        LOG_HL_CLIENT_API1(status, mode);
         return status;
     }
 
@@ -120,7 +120,7 @@ namespace ramses
     status_t Appearance::setDrawMode(EDrawMode mode)
     {
         const status_t status = impl.setDrawMode(mode);
-        LOG_HL_CLIENT_API1(status, mode)
+        LOG_HL_CLIENT_API1(status, mode);
         return status;
     }
 
@@ -132,7 +132,7 @@ namespace ramses
     status_t Appearance::setColorWriteMask(bool writeRed, bool writeGreen, bool writeBlue, bool writeAlpha)
     {
         const status_t status = impl.setColorWriteMask(writeRed, writeGreen, writeBlue, writeAlpha);
-        LOG_HL_CLIENT_API4(status, writeRed, writeGreen, writeBlue, writeAlpha)
+        LOG_HL_CLIENT_API4(status, writeRed, writeGreen, writeBlue, writeAlpha);
         return status;
     }
 
@@ -400,7 +400,7 @@ namespace ramses
     status_t Appearance::setInputTexture(const UniformInput& input, const TextureSampler& textureSampler)
     {
         const status_t status = impl.setInputTexture(input.impl, textureSampler.impl);
-        LOG_HL_CLIENT_API2(status, LOG_API_GENERIC_OBJECT_STRING(input), LOG_API_RAMSESOBJECT_STRING(textureSampler))
+        LOG_HL_CLIENT_API2(status, LOG_API_GENERIC_OBJECT_STRING(input), LOG_API_RAMSESOBJECT_STRING(textureSampler));
         return status;
     }
 

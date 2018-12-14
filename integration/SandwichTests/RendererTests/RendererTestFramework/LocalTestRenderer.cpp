@@ -169,26 +169,26 @@ void LocalTestRenderer::waitForNamedFlush(ramses::sceneId_t sceneId, ramses::sce
     sceneEventHandler.waitForNamedFlush(sceneId, sceneVersionTag, true);
 }
 
-bool LocalTestRenderer::consumeEventsAndCheckScenesLatencyExceeded(std::initializer_list<ramses::sceneId_t> sceneIds)
+bool LocalTestRenderer::consumeEventsAndCheckExpiredScenes(std::initializer_list<ramses::sceneId_t> sceneIds)
 {
     assert(nullptr != m_renderer);
     RendererTestEventHandler sceneEventHandler(*m_renderer);
     for (auto sceneId : sceneIds)
     {
-        if (!sceneEventHandler.checkAndConsumeSceneExceededLatency(sceneId))
+        if (!sceneEventHandler.checkAndConsumeExpiredScenesEvents(sceneId))
             return false;
     }
 
     return true;
 }
 
-bool LocalTestRenderer::consumeEventsAndCheckScenesLatencyRecovered(std::initializer_list<ramses::sceneId_t> sceneIds)
+bool LocalTestRenderer::consumeEventsAndCheckRecoveredScenes(std::initializer_list<ramses::sceneId_t> sceneIds)
 {
     assert(nullptr != m_renderer);
     RendererTestEventHandler sceneEventHandler(*m_renderer);
     for (auto sceneId : sceneIds)
     {
-        if (!sceneEventHandler.checkAndConsumeSceneRecoveredLatency(sceneId))
+        if (!sceneEventHandler.checkAndConsumeRecoveredScenesEvents(sceneId))
             return false;
     }
 

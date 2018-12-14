@@ -31,7 +31,7 @@ namespace ramses
     status_t RenderPass::setCamera(const Camera& camera)
     {
         const status_t status = impl.setCamera(camera.impl);
-        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(camera))
+        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(camera));
         return status;
     }
 
@@ -74,7 +74,7 @@ namespace ramses
     status_t RenderPass::setRenderTarget(RenderTarget* renderTarget)
     {
         const status_t status = impl.setRenderTarget(renderTarget ? &renderTarget->impl : 0);
-        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_PTR_STRING(renderTarget))
+        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_PTR_STRING(renderTarget));
         return status;
     }
 
@@ -86,7 +86,7 @@ namespace ramses
     status_t RenderPass::setClearColor(float r, float g, float b, float a)
     {
         const status_t status = impl.setClearColor(ramses_internal::Vector4(r, g, b, a));
-        LOG_HL_CLIENT_API4(status, r, g, b, a)
+        LOG_HL_CLIENT_API4(status, r, g, b, a);
         return status;
     }
 
@@ -102,7 +102,7 @@ namespace ramses
     status_t RenderPass::setClearFlags(uint32_t clearFlags)
     {
         const status_t status = impl.setClearFlags(clearFlags);
-        LOG_HL_CLIENT_API1(status, clearFlags)
+        LOG_HL_CLIENT_API1(status, clearFlags);
         return status;
     }
 
@@ -114,7 +114,7 @@ namespace ramses
     status_t RenderPass::setRenderOrder(int32_t renderOrder)
     {
         const status_t status = impl.setRenderOrder(renderOrder);
-        LOG_HL_CLIENT_API1(status, renderOrder)
+        LOG_HL_CLIENT_API1(status, renderOrder);
         return status;
     }
 
@@ -126,7 +126,7 @@ namespace ramses
     status_t RenderPass::setEnabled(bool enable)
     {
         const status_t status = impl.setEnabled(enable);
-        LOG_HL_CLIENT_API1(status, enable)
+        LOG_HL_CLIENT_API1(status, enable);
         return status;
     }
 

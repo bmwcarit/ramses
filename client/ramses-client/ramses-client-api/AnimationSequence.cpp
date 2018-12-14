@@ -32,14 +32,14 @@ namespace ramses
     status_t AnimationSequence::addAnimation(const Animation& animation, sequenceTimeStamp_t startTimeInSequence, sequenceTimeStamp_t stopTimeInSequence)
     {
         const status_t status = impl.addAnimation(animation, startTimeInSequence, stopTimeInSequence);
-        LOG_HL_CLIENT_API3(status, LOG_API_RAMSESOBJECT_STRING(animation), startTimeInSequence, stopTimeInSequence)
+        LOG_HL_CLIENT_API3(status, LOG_API_RAMSESOBJECT_STRING(animation), startTimeInSequence, stopTimeInSequence);
         return status;
     }
 
     status_t AnimationSequence::removeAnimation(const Animation& animation)
     {
         const status_t status = impl.removeAnimation(animation);
-        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(animation))
+        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(animation));
         return status;
     }
 
@@ -53,42 +53,42 @@ namespace ramses
     status_t AnimationSequence::startReverse(timeMilliseconds_t offset)
     {
         const status_t status = impl.startReverse(offset);
-        LOG_HL_CLIENT_API1(status, offset)
+        LOG_HL_CLIENT_API1(status, offset);
         return status;
     }
 
     status_t AnimationSequence::startAt(globalTimeStamp_t timeStamp)
     {
         const status_t status = impl.startAt(timeStamp);
-        LOG_HL_CLIENT_API1(status, timeStamp)
+        LOG_HL_CLIENT_API1(status, timeStamp);
         return status;
     }
 
     status_t AnimationSequence::startReverseAt(globalTimeStamp_t timeStamp)
     {
         const status_t status = impl.startReverseAt(timeStamp);
-        LOG_HL_CLIENT_API1(status, timeStamp)
+        LOG_HL_CLIENT_API1(status, timeStamp);
         return status;
     }
 
     status_t AnimationSequence::stop(timeMilliseconds_t delay)
     {
         const status_t status = impl.stop(delay);
-        LOG_HL_CLIENT_API1(status, delay)
+        LOG_HL_CLIENT_API1(status, delay);
         return status;
     }
 
     status_t AnimationSequence::stopAt(globalTimeStamp_t timeStamp)
     {
         const status_t status = impl.stopAt(timeStamp);
-        LOG_HL_CLIENT_API1(status, timeStamp)
+        LOG_HL_CLIENT_API1(status, timeStamp);
         return status;
     }
 
     status_t AnimationSequence::setPlaybackSpeed(float playbackSpeed)
     {
         const status_t status = impl.setPlaybackSpeed(playbackSpeed);
-        LOG_HL_CLIENT_API1(status, playbackSpeed)
+        LOG_HL_CLIENT_API1(status, playbackSpeed);
         return status;
     }
 
@@ -100,7 +100,7 @@ namespace ramses
     status_t AnimationSequence::setAnimationLooping(const Animation& animation, timeMilliseconds_t loopDuration)
     {
         const status_t status = impl.setAnimationLooping(animation, loopDuration);
-        LOG_HL_CLIENT_API2(status, LOG_API_RAMSESOBJECT_STRING(animation), loopDuration)
+        LOG_HL_CLIENT_API2(status, LOG_API_RAMSESOBJECT_STRING(animation), loopDuration);
         return status;
     }
 
@@ -117,14 +117,14 @@ namespace ramses
     status_t AnimationSequence::setAnimationRelative(const Animation& animation)
     {
         const status_t status = impl.setAnimationRelative(animation);
-        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(animation))
+        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(animation));
         return status;
     }
 
     status_t AnimationSequence::setAnimationAbsolute(const Animation& animation)
     {
         const status_t status = impl.setAnimationAbsolute(animation);
-        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(animation))
+        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(animation));
         return status;
     }
 

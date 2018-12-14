@@ -19,7 +19,7 @@ TextBox::TextBox(std::u32string         string,
                  ramses::RenderGroup*   renderGroup,
                  int32_t                renderOrder)
     : GraphicalItem(scene, renderGroup)
-    , m_translateNode(*scene.createTranslateNode())
+    , m_translateNode(*scene.createNode())
 {
     ramses::LayoutUtils::StringBoundingBox boundingBox;
     createTextNodes(string, textCache, fontInstance, lineHeight, client, m_translateNode, boundingBox);

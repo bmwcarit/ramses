@@ -45,8 +45,8 @@ namespace ramses_internal
         MOCK_METHOD2(sendInitializeScene, bool(const Guid& to, const SceneInfo& sceneInfo));
         MOCK_METHOD4(sendSceneActionList, uint64_t(const Guid& to, const SceneId& sceneId, const SceneActionCollection& actions, const uint64_t& actionListCounter));
 
-        MOCK_CONST_METHOD0(logConnectionInfo, void());
-        MOCK_CONST_METHOD0(triggerLogMessageForPeriodicLog, void());
+        MOCK_METHOD0(logConnectionInfo, void());
+        MOCK_METHOD0(triggerLogMessageForPeriodicLog, void());
 
         virtual CommunicationSendDataSizes getSendDataSizes() const override;
         virtual void setSendDataSizes(const CommunicationSendDataSizes& sizes) override;

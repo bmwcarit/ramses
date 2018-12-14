@@ -114,7 +114,7 @@ namespace ramses_internal
     {
         if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_sceneRendererHandler && to == m_targetCommunicationSystem->m_id)
         {
-            m_targetCommunicationSystem->m_sceneRendererHandler->handleNewScenesAvailable(availableScenes, m_id);
+            m_targetCommunicationSystem->m_sceneRendererHandler->handleNewScenesAvailable(availableScenes, m_id, EScenePublicationMode_LocalAndRemote);
         }
         return true;
     }
@@ -183,11 +183,11 @@ namespace ramses_internal
         m_sceneRendererHandler = handler;
     }
 
-    void ForwardingCommunicationSystem::logConnectionInfo() const
+    void ForwardingCommunicationSystem::logConnectionInfo()
     {
     }
 
-    void ForwardingCommunicationSystem::triggerLogMessageForPeriodicLog() const
+    void ForwardingCommunicationSystem::triggerLogMessageForPeriodicLog()
     {
     }
 

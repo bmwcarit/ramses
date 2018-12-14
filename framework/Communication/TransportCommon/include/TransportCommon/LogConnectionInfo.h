@@ -19,11 +19,11 @@ namespace ramses_internal
     class LogConnectionInfo : public RamshCommand
     {
     public:
-        explicit LogConnectionInfo(const ICommunicationSystem& communicationSystem);
+        explicit LogConnectionInfo(ICommunicationSystem& communicationSystem);
         virtual Bool executeInput(const RamshInput& input) override;
 
     private:
-        const ICommunicationSystem& m_communicationSystem;
+        ICommunicationSystem& m_communicationSystem;
     };
 }
 

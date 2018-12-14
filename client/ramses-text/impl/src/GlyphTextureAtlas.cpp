@@ -45,6 +45,7 @@ namespace ramses
 
     void GlyphTextureAtlas::registerGlyph(const GlyphKey& key, const QuadSize& size, GlyphData&& data)
     {
+        assert(data.empty() == (size.getArea() == 0u)); // assert zero size if data empty or non-zero size if data not empty
         m_glyphInfoMap.insert(std::make_pair(key, GlyphInfo{ size, std::move(data), {} }));
     }
 

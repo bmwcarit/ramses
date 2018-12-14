@@ -156,16 +156,12 @@ int main(int argc, char* argv[])
 
     ramses::UniformInput colorInput;
     effect->findUniformInput("color", colorInput);
-    ramses::TranslateNode* rootTranslate = clientScene->createTranslateNode();
-    rootTranslate->setTranslation(0.0f, 0.0f, -5.0f);
 
-    ramses::RotateNode* rotate = clientScene->createRotateNode("");
-    rotate->setParent(*rootTranslate);
     // create a mesh node to define the triangle with chosen appearance
     ramses::MeshNode* meshNode = clientScene->createMeshNode("triangle mesh node");
+    meshNode->setTranslation(0.0f, 0.0f, -5.0f);
     meshNode->setAppearance(*appearance);
     meshNode->setGeometryBinding(*geometry);
-    meshNode->setParent(*rotate);
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
 
@@ -177,7 +173,7 @@ int main(int argc, char* argv[])
     spline1->setKey(4000u, 360.f);
 
     // create animated property for each translation node with single component animation
-    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*rotate, ramses::EAnimatedPropertyComponent_Z);
+    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode, ramses::EAnimatedProperty_Rotation, ramses::EAnimatedPropertyComponent_Z);
 
     // create three animations
     ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");

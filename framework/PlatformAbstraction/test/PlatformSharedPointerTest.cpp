@@ -301,7 +301,7 @@ namespace ramses_internal
     TEST_F(ASharedPtr, AssignSelf)
     {
         PlatformSharedPointer<BaseClass> sp(new BaseClass(123));
-        sp = sp;
+        sp = *&sp;
         EXPECT_EQ(1, sp.use_count());
     }
 

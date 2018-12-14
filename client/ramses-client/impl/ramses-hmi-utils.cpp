@@ -13,7 +13,6 @@
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/SceneObjectIterator.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/VisibilityNode.h"
 #include "ramses-client-api/SceneGraphIterator.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/Vector3fArray.h"

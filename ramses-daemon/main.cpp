@@ -17,10 +17,10 @@
 #include "Utils/RamsesLogger.h"
 #include "Utils/StatisticCollection.h"
 
-using namespace ramses_internal;
 
 int main(int argc, const char* argv[])
 {
+    using namespace ramses_internal;
 
     ramses::RamsesFrameworkConfigImpl config(argc, argv);
     GetRamsesLogger().initialize(config.getCommandLineParser(), "SMGR", "ramses-daemon", false); // no framework used
@@ -36,7 +36,7 @@ int main(int argc, const char* argv[])
 
     PlatformLock frameworkLock;
     StatisticCollectionFramework statisticCollection;
-    ScopedPointer<IDiscoveryDaemon> discoveryDaemon(CommunicationSystemFactory::ConstructDiscoveryDaemon(config, frameworkLock, statisticCollection));
+    ScopedPointer<IDiscoveryDaemon> discoveryDaemon(CommunicationSystemFactory::ConstructDiscoveryDaemon(config, frameworkLock, statisticCollection, &ramsh));
     discoveryDaemon->start();
     LOG_INFO(CONTEXT_SMOKETEST, "Ramsh commands registered");
 

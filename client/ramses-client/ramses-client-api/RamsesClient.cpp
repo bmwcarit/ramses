@@ -44,49 +44,49 @@ namespace ramses
     Scene* RamsesClient::createScene(sceneId_t sceneId, const SceneConfig& sceneConfig /*= SceneConfig()*/, const char* name)
     {
         Scene* scene =  impl.createScene(sceneId, sceneConfig.impl, name);
-        LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(scene), sceneId, name)
+        LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(scene), sceneId, name);
         return scene;
     }
 
     Effect* RamsesClient::createEffect(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag, const char* name)
     {
         Effect* effect = impl.createEffect(effectDesc, cacheFlag, name);
-        LOG_HL_CLIENT_API3(LOG_API_RESOURCE_PTR_STRING(effect), LOG_API_GENERIC_OBJECT_STRING(effectDesc), cacheFlag.getValue(), name)
+        LOG_HL_CLIENT_API3(LOG_API_RESOURCE_PTR_STRING(effect), LOG_API_GENERIC_OBJECT_STRING(effectDesc), cacheFlag.getValue(), name);
         return effect;
     }
 
     const Vector3fArray* RamsesClient::createConstVector3fArray(uint32_t count, const float* arrayData, resourceCacheFlag_t cacheFlag, const char* name)
     {
         const Vector3fArray* arr = impl.createConstVector3fArray(count, arrayData, cacheFlag, name);
-        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag.getValue(), name)
+        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag.getValue(), name);
         return arr;
     }
 
     const UInt16Array* RamsesClient::createConstUInt16Array(uint32_t count, const uint16_t* arrayData, resourceCacheFlag_t cacheFlag, const char* name)
     {
         const UInt16Array* arr = impl.createConstUInt16Array(count, arrayData, cacheFlag, name);
-        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag.getValue(), name)
+        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag.getValue(), name);
         return arr;
     }
 
     const UInt32Array* RamsesClient::createConstUInt32Array(uint32_t count, const uint32_t* arrayData, resourceCacheFlag_t cacheFlag, const char* name)
     {
         const UInt32Array* arr = impl.createConstUInt32Array(count, arrayData, cacheFlag, name);
-        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag.getValue(), name)
+        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag.getValue(), name);
         return arr;
     }
 
     status_t RamsesClient::destroy(Scene& scene)
     {
         const status_t status = impl.destroy(scene);
-        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(scene))
+        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(scene));
         return status;
     }
 
     status_t RamsesClient::destroy(const Resource& resource)
     {
         const status_t status = impl.destroy(resource);
-        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(resource))
+        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(resource));
         return status;
     }
 
@@ -98,42 +98,42 @@ namespace ramses
     const FloatArray* RamsesClient::createConstFloatArray(uint32_t count, const float* arrayData, resourceCacheFlag_t cacheFlag, const char* name)
     {
         const FloatArray* arr = impl.createConstFloatArray(count, arrayData, cacheFlag, name);
-        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag.getValue(), name)
+        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag.getValue(), name);
         return arr;
     }
 
     const Vector2fArray* RamsesClient::createConstVector2fArray(uint32_t count, const float* arrayData, resourceCacheFlag_t cacheFlag, const char* name)
     {
         const Vector2fArray* arr = impl.createConstVector2fArray(count, arrayData, cacheFlag, name);
-        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag.getValue(), name)
+        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag.getValue(), name);
         return arr;
     }
 
     const Vector4fArray* RamsesClient::createConstVector4fArray(uint32_t count, const float* arrayData, resourceCacheFlag_t cacheFlag, const char* name)
     {
         const Vector4fArray* arr = impl.createConstVector4fArray(count, arrayData, cacheFlag, name);
-        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag.getValue(), name)
+        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag.getValue(), name);
         return arr;
     }
 
     Texture2D* RamsesClient::createTexture2D(uint32_t width, uint32_t height, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name /* = 0 */)
     {
         Texture2D* tex = impl.createTexture2D(width, height, format, mipMapCount, mipLevelData, generateMipChain, cacheFlag, name);
-        LOG_HL_CLIENT_API8(LOG_API_RESOURCE_PTR_STRING(tex), width, height, format, mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, cacheFlag.getValue(), name)
+        LOG_HL_CLIENT_API8(LOG_API_RESOURCE_PTR_STRING(tex), width, height, format, mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, cacheFlag.getValue(), name);
         return tex;
     }
 
     Texture3D* RamsesClient::createTexture3D(uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name /* = 0 */)
     {
         Texture3D* tex = impl.createTexture3D(width, height, depth, format, mipMapCount, mipLevelData, generateMipChain, cacheFlag, name);
-        LOG_HL_CLIENT_API9(LOG_API_RESOURCE_PTR_STRING(tex), width, height, depth, format, mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, cacheFlag.getValue(), name)
+        LOG_HL_CLIENT_API9(LOG_API_RESOURCE_PTR_STRING(tex), width, height, depth, format, mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, cacheFlag.getValue(), name);
         return tex;
     }
 
     TextureCube* RamsesClient::createTextureCube(uint32_t size, ETextureFormat format, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name /* = 0 */)
     {
         TextureCube* tex = impl.createTextureCube(size, format, cacheFlag, name, mipMapCount, mipLevelData, generateMipChain);
-        LOG_HL_CLIENT_API7(LOG_API_RESOURCE_PTR_STRING(tex), size, format, mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, cacheFlag.getValue(), name)
+        LOG_HL_CLIENT_API7(LOG_API_RESOURCE_PTR_STRING(tex), size, format, mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, cacheFlag.getValue(), name);
         return tex;
     }
 

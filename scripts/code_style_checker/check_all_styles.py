@@ -79,7 +79,7 @@ Takes a path as input and runs style/license header checks with filters where ne
     }
 
     # Externals are allowed to have their own code style
-    src_blacklist = shared_blacklist | {r'^proprietary/external/', r'^external/'}
+    src_blacklist = shared_blacklist | {r'^external/'}
 
     src_files = get_all_files_with_filter(path, src_whitelist, src_blacklist)
 
@@ -101,21 +101,16 @@ Takes a path as input and runs style/license header checks with filters where ne
     shared_blacklist_non_src_files = shared_blacklist | {
         # Externals allowed to have own formatting and license
         r'^external',
-        # Only on the build server, needs to be blacklisted
-        r'^envVar\.txt$',
+        r'valgrind/suppressions$',
+        r'\.spdx$',
+        r'^CHANGELOG\.txt$', # Doesn't need a license
+        r'^LICENSE\.txt$',   # Contains license info, not related to code/content
+        r'^.lfsconfig$',     # Doesn't need a license
     }
 
     blacklist_files_formatting = shared_blacklist_non_src_files | {
-        # Not part of ramses
-        r'LZ4/main\.c$',
         # Formatting intended the way it is
-        r'xorg\.conf$',
-        r'empty-lines',
-        r'valgrind/suppressions$',
-        r'\.spdx$',
-        r'\.yaml$',
-        r'^CHANGELOG\.txt$',
-        r'^LICENSE\.txt$',
+        r'with-additional-spaces-and-empty-lines.*config$',
     }
 
     files_formatting = get_all_files_with_filter(path, {r'.*'}, blacklist_files_formatting)
@@ -140,19 +135,12 @@ Takes a path as input and runs style/license header checks with filters where ne
         r'\.config$',
         r'\.conf$',
         r'\.filepathesconfig$',
-        r'valgrind/suppressions$',
         # Excluded on purpose - add new lines reasonibly here!
         r'\.patch$',        # License headers can't be added to patch files
-        r'\.spdx$',         # File content hash-dependent, can't modify
         r'\.tmpl$',         # File content hash-dependent, can't modify
-        r'^CHANGELOG\.txt$', # Doesn't need a license
-        r'^LICENSE\.txt$',   # Contains license info, not related to code/content
         r'^README\.txt$',    # Doesn't need a license
-        r'^README\.md$',     # Doesn't need a license
         r'^integration/TestContent/res/BigString\.txt$', # Test file with random content - doesn't need license
         r'^cmake/templates/ramses-version\.in$', # Just a template, doesn't need license
-        # json doesn't support comments - can't have license header
-        r'\.yaml$', # Config -> no license
     }
     files_license_header = get_all_files_with_filter(path, {r'.*'}, blacklist_license)
 

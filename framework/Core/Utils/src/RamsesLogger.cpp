@@ -163,7 +163,10 @@ namespace ramses_internal
         setLogLevelForAppenderType(ELogAppenderType::Dlt, logLevelDlt);
 
         ArgumentBool enableSmokeTestContext(parser, "estc", "enableSmokeTestContext", "");
-        CONTEXT_SMOKETEST.setEnabled(enableSmokeTestContext.wasDefined());
+        if (!enableSmokeTestContext.wasDefined())
+        {
+            CONTEXT_SMOKETEST.setLogLevel(ELogLevel::Off);
+        }
 
         LOG_INFO(CONTEXT_FRAMEWORK, "Ramses log levels: Contexts " << RamsesLogger::GetLogLevelText(logLevelContexts) <<
                  ", Console " << RamsesLogger::GetLogLevelText(logLevelConsole) <<

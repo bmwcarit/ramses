@@ -18,7 +18,6 @@
 namespace ramses
 {
     class Appearance;
-    class GroupNode;
     class Effect;
     class UInt16Array;
     class Vector2fArray;

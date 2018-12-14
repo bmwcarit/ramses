@@ -26,7 +26,7 @@ namespace ramses
     status_t SplineLinearInt32::setKey(splineTimeStamp_t timeStamp, int32_t value)
     {
         const status_t status = impl.setSplineKeyLinearInt32(timeStamp, value);
-        LOG_HL_CLIENT_API2(status, timeStamp, value)
+        LOG_HL_CLIENT_API2(status, timeStamp, value);
         return status;
     }
 

@@ -82,7 +82,7 @@ default_file_logger = None
 
 #internal(private) method; should not be used outside this class
 def _internal_print(msg, bold=False, foreground='', background=''):
-    if enableLogColors:
+    if enableLogColors and (bold or foreground or background):
         b = ""
         if bold:
             b = text.bold

@@ -18,6 +18,7 @@
 #include "TransportCommon/ServiceHandlerInterfaces.h"
 #include "Utils/Warnings.h"
 #include <unordered_map>
+#include "Scene/EScenePublicationMode.h"
 
 namespace ramses_internal
 {
@@ -44,7 +45,7 @@ namespace ramses_internal
         virtual void handleInitializeScene(const SceneInfo& sceneInfo, const Guid& providerID) override;
         virtual void handleSceneNotAvailable(const SceneId& sceneId, const Guid& providerID) override;
         virtual void handleSceneActionList(const SceneId& sceneId, SceneActionCollection&& actions, const uint64_t& counter, const Guid& providerID) override;
-        virtual void handleNewScenesAvailable(const SceneInfoVector& newScenes, const Guid& providerID) override;
+        virtual void handleNewScenesAvailable(const SceneInfoVector& newScenes, const Guid& providerID, EScenePublicationMode mode) override;
         virtual void handleScenesBecameUnavailable(const SceneInfoVector& unavailableScenes, const Guid& providerID) override;
 
         // IResourceProviderServiceHandler

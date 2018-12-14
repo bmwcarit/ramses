@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "GetObjectTypeTest.h"
-#include "ramses-client-api/TransformationNode.h"
 #include "ramses-client-api/RamsesObjectTypes.h"
 #include "ramses-client-api/Node.h"
 
@@ -17,7 +16,7 @@ void GetObjectTypeTest::initTest(ramses::RamsesClient& client, ramses::Scene& sc
 {
     UNUSED(client);
 
-    m_node = scene.createTransformationNode();
+    m_node = scene.createNode();
 }
 
 void GetObjectTypeTest::preUpdate()
@@ -26,7 +25,7 @@ void GetObjectTypeTest::preUpdate()
 
 void GetObjectTypeTest::update()
 {
-    // Lots of possible types to test against (all false, as the target node is TransformationNode)
+    // Test performance of querying type of multiple RamsesObject types
     static ramses::ERamsesObjectType Types[] =
     {
         ramses::ERamsesObjectType_DataVector2i,
@@ -70,6 +69,7 @@ void GetObjectTypeTest::update()
 
     const uint32_t TypesLength = sizeof(Types) / sizeof(uint32_t);
 
+    // Result will always be false as actual object type is a Node
     bool result = false;
 
     switch (m_testState)

@@ -59,7 +59,7 @@ namespace ramses
     {
         CHECK_RETURN_ERR(SceneObjectImpl::serialize(outStream, serializationContext));
 
-        outStream << m_dataType;
+        outStream << static_cast<uint32_t>(m_dataType);
         outStream << m_layoutHandle;
         outStream << m_dataReference;
 

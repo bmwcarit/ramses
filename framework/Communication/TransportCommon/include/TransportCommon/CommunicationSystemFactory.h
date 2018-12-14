@@ -23,6 +23,7 @@ namespace ramses_internal
     class ICommunicationSystem;
     class PlatformLock;
     class StatisticCollectionFramework;
+    class Ramsh;
 
     class CommunicationSystemFactory
     {
@@ -31,7 +32,7 @@ namespace ramses_internal
             const ParticipantIdentifier& participantIdentifier, PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection);
 
         static IDiscoveryDaemon* ConstructDiscoveryDaemon(const ramses::RamsesFrameworkConfigImpl& config, PlatformLock& frameworkLoc,
-            StatisticCollectionFramework& statisticCollectionk);
+                                                          StatisticCollectionFramework& statisticCollectionk, Ramsh* optionalRamsh = nullptr);
     };
 }
 

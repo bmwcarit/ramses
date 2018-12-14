@@ -16,7 +16,7 @@ ImageBox::ImageBox(ramses::TextureSampler& textureSampler,
                    ramses::Scene&          scene,
                    ramses::RenderGroup*    renderGroup,
                    int32_t                 renderOrder)
-    : m_translateNode(*scene.createTranslateNode())
+    : m_translateNode(*scene.createNode())
 {
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-text-shadow-demo-rgba-texturing.vert");
@@ -49,7 +49,7 @@ ImageBox::ImageBox(ramses::TextureSampler& textureSampler,
                    ramses::Scene&          scene,
                    ramses::RenderGroup*    renderGroup,
                    int32_t                 renderOrder)
-    : m_translateNode(*scene.createTranslateNode())
+    : m_translateNode(*scene.createNode())
 {
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-text-shadow-demo-a-texturing.vert");

@@ -15,7 +15,6 @@
 namespace ramses
 {
     class Node;
-    class GroupNode;
 }
 
 namespace ramses_internal
@@ -38,14 +37,14 @@ namespace ramses_internal
     private:
         void destroySubTree(ramses::Node* rootNode);
 
-        ramses::GroupNode* m_groupNode;
-        ramses::GroupNode* m_subGroup1Node;
-        ramses::GroupNode* m_subGroup2Node;
-        ramses::GroupNode* m_subGroup3Node;
-        ramses::GroupNode& m_rotateNode1;
-        ramses::GroupNode& m_rotateNode2;
-        ramses::GroupNode& m_scaleNode1;
-        ramses::GroupNode& m_scaleNode2;
+        ramses::Node* m_groupNode;
+        ramses::Node* m_subGroup1Node;
+        ramses::Node* m_subGroup2Node;
+        ramses::Node* m_subGroup3Node;
+        ramses::Node& m_rotateNode1;
+        ramses::Node& m_rotateNode2;
+        ramses::Node& m_scaleNode1;
+        ramses::Node& m_scaleNode2;
     };
 }
 

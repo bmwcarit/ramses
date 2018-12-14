@@ -26,12 +26,14 @@ namespace ramses_internal
         void setWaylandSocketEmbedded(const String& socket);
         void setWaylandSocketEmbeddedGroup(const String& groupNameForSocketPermissions);
         void setWaylandSocketEmbeddedFD(int fd);
-
-        const String& getKPIFileName() const;
-        void setKPIFileName(const String& filename);
+        void setWaylandDisplayForSystemCompositorController(const String& wd);
+        const String& getWaylandDisplayForSystemCompositorController() const;
 
         void enableSystemCompositorControl();
         Bool getSystemCompositorControlEnabled() const;
+
+        const String& getKPIFileName() const;
+        void setKPIFileName(const String& filename);
 
         std::chrono::microseconds getFrameCallbackMaxPollTime() const;
         void setFrameCallbackMaxPollTime(std::chrono::microseconds pollTime);
@@ -40,8 +42,9 @@ namespace ramses_internal
         String m_waylandSocketEmbedded;
         String m_waylandSocketEmbeddedGroupName;
         int m_waylandSocketEmbeddedFD = -1;
-        String m_kpiFilename;
+        String m_waylandDisplayForSystemCompositorController;
         Bool m_systemCompositorEnabled = false;
+        String m_kpiFilename;
         std::chrono::microseconds m_frameCallbackMaxPollTime{10000u};
     };
 }

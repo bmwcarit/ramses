@@ -9,44 +9,53 @@
 #ifndef RAMSES_PLATFORMCONDITIONVARIABLE_H
 #define RAMSES_PLATFORMCONDITIONVARIABLE_H
 
-#include <ramses-capu/os/CondVar.h>
+#include <condition_variable>
+#include <cassert>
+#include <type_traits>
 #include <PlatformAbstraction/PlatformLock.h>
 #include <PlatformAbstraction/PlatformError.h>
-
 
 namespace ramses_internal
 {
     class PlatformConditionVariable
     {
     public:
-        EStatus signal();
-        EStatus wait(PlatformLock* lock, UInt32 millisec = 0);
-        EStatus wait(PlatformLightweightLock* lock, UInt32 millisec = 0);
-        EStatus broadcast();
+        void signal()
+        {
+            mCondVar.notify_one();
+        }
+
+        void broadcast()
+        {
+            mCondVar.notify_all();
+        }
+
+        template<class Mutex>
+        EStatus wait(Mutex* mutex, uint32_t millisec = 0)
+        {
+            static_assert(std::is_same<Mutex, PlatformLock>::value ||
+                          std::is_same<Mutex, PlatformLightweightLock>::value,
+                          "Must use PlatformLightweightLock or PlatformLock");
+            if (millisec == 0)
+            {
+                mCondVar.wait(mutex->m_mutex);
+                return EStatus_RAMSES_OK;
+            }
+            else
+            {
+                switch (mCondVar.wait_for(mutex->m_mutex, std::chrono::milliseconds(millisec)))
+                {
+                case std::cv_status::no_timeout: return EStatus_RAMSES_OK;
+                case std::cv_status::timeout: return EStatus_RAMSES_TIMEOUT;
+                }
+                assert(false && "invalid value in std::cv_status");
+                return EStatus_RAMSES_ERROR;
+            }
+        }
 
     private:
-        ramses_capu::CondVar mCondVar;
+        std::condition_variable_any mCondVar;
     };
-
-    inline EStatus PlatformConditionVariable::signal()
-    {
-        return static_cast<EStatus>(mCondVar.signal());
-    }
-
-    inline EStatus PlatformConditionVariable::wait(PlatformLock* lock, UInt32 millisec)
-    {
-        return static_cast<EStatus>(mCondVar.wait(lock->m_mutex, millisec));
-    }
-
-    inline EStatus PlatformConditionVariable::wait(PlatformLightweightLock* lock, UInt32 millisec)
-    {
-        return static_cast<EStatus>(mCondVar.wait(lock->m_mutex, millisec));
-    }
-
-    inline EStatus PlatformConditionVariable::broadcast()
-    {
-        return static_cast<EStatus>(mCondVar.broadcast());
-    }
 }
 
 #endif

@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-#include <iostream>
 #include "gtest/gtest.h"
-#include "ramses-capu/os/Time.h"
 
 GTEST_API_ int main(int argc, char** argv)
 {
-    //initialize pseudo random generate used for all the tests
-    srand(static_cast<uint32_t>(ramses_capu::Time::GetMicrosecondsAbsolute()));
-
     testing::GTEST_FLAG(filter) = "-NonBlockSocketCheckerTest.*:Tcp*:Udp*:Socket*";
 
     testing::InitGoogleTest(&argc, argv);

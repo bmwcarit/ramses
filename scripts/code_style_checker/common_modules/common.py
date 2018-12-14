@@ -12,7 +12,7 @@
 Contains utility functions used by other modules
 """
 
-import sys, re, string, os
+import sys, re, string, os, subprocess
 import config
 
 def clean_string_from_regex(s, regex, marker):
@@ -92,7 +92,7 @@ def read_file(filename):
 
     return (file_contents, clean_file_contents, file_lines, clean_file_lines)
 
-def get_all_files_with_filter(path, positive, negative):
+def get_all_files_with_filter(root, positive, negative):
     """
     Iterates over targets and gets names of all files that do not match positive and negative filter
 
@@ -101,11 +101,11 @@ def get_all_files_with_filter(path, positive, negative):
     negative = [re.compile(n) for n in negative]
 
     filenames = []
-    for (root, _, files) in os.walk(path):
-        for f in files:
+    for f in subprocess.check_output(['git', 'ls-files', root], cwd=root, shell=False).split('\n'):
+        if os.path.isfile(os.path.join(root, f)):
             pos_match = False
             neg_match = False
-            relative_path = os.path.relpath(os.path.join(root, f),path).replace('\\', '/')
+            relative_path = f.replace('\\', '/')
             for pos in positive:
                 if re.search (pos, relative_path):
                     pos_match = True
@@ -113,7 +113,7 @@ def get_all_files_with_filter(path, positive, negative):
                 if re.search(neg, relative_path):
                     neg_match = True
             if pos_match and not neg_match:
-                filenames.append(os.path.join(path,relative_path))
+                filenames.append(os.path.join(root,relative_path))
     return filenames
 
 def get_all_files(targets):

@@ -291,15 +291,18 @@ namespace ramses_internal
         const TextureBufferHandle allocatedHandle = m_textureBuffers.allocate(handle);
         TextureBuffer* textureBuffer = m_textureBuffers.getMemory(allocatedHandle);
         textureBuffer->textureFormat = textureFormat;
-        textureBuffer->mipMapDimensions = mipMapDimensions;
+
+        textureBuffer->mipMaps.resize(mipMapDimensions.size());
 
         const auto texelSize = GetTexelSizeFromFormat(textureFormat);
-        MipMapData& textureMipMapData = textureBuffer->mipMapData;
-        textureMipMapData.resize(mipMapDimensions.size());
         for (UInt32 i = 0u; i < mipMapDimensions.size(); ++i)
         {
+            auto& mip = textureBuffer->mipMaps[i];
             const UInt32 mipLevelSize = mipMapDimensions[i].width * mipMapDimensions[i].height * texelSize;
-            textureMipMapData[i].resize(mipLevelSize);
+
+            mip.width = mipMapDimensions[i].width;
+            mip.height = mipMapDimensions[i].height;
+            mip.data.resize(mipLevelSize);
         }
 
         return allocatedHandle;
@@ -322,19 +325,19 @@ namespace ramses_internal
     void SceneT<MEMORYPOOL>::updateTextureBuffer(TextureBufferHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const Byte* data)
     {
         TextureBuffer& textureBuffer = *m_textureBuffers.getMemory(handle);
-        assert(mipLevel < textureBuffer.mipMapDimensions.size());
+        assert(mipLevel < textureBuffer.mipMaps.size());
 
         const UInt32 texelSize = GetTexelSizeFromFormat(textureBuffer.textureFormat);
         const UInt32 dataSize = width * height * texelSize;
-        const auto& mipDimensions = textureBuffer.mipMapDimensions[mipLevel];
-        const UInt32 mipLevelWidth = mipDimensions.width;
-        const UInt32 mipLevelHeight = mipDimensions.height;
+        auto& mip = textureBuffer.mipMaps[mipLevel];
+        const UInt32 mipLevelWidth = mip.width;
+        const UInt32 mipLevelHeight = mip.height;
 
         assert(x + width <= mipLevelWidth);
         assert(y + height <= mipLevelHeight);
 
         //copy updated part of the texture data in row-major order
-        Byte* const mipLevelDataPtr = textureBuffer.mipMapData[mipLevel].data();
+        Byte* const mipLevelDataPtr = mip.data.data();
         if (0u == x && 0u == y && width == mipLevelWidth && height == mipLevelHeight)
         {
             PlatformMemory::Copy(mipLevelDataPtr, data, dataSize);
@@ -352,6 +355,12 @@ namespace ramses_internal
                 data += dataRowSize;
             }
         }
+
+        //update utilized region
+        const Quad updatedRegion{ Int32(x), Int32(y), Int32(width), Int32(height) };
+        mip.usedRegion = mip.usedRegion.getBoundingQuad(updatedRegion);
+
+        assert(mip.usedRegion.x >= 0 && mip.usedRegion.y >= 0 && mip.usedRegion.width <= Int32(mipLevelWidth) && mip.usedRegion.height <= Int32(mipLevelHeight));
     }
 
     template <template<typename, typename> class MEMORYPOOL>

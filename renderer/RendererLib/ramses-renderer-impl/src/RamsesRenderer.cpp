@@ -21,14 +21,14 @@ namespace ramses
     status_t RamsesRenderer::subscribeScene(sceneId_t sceneId)
     {
         const status_t status = impl.subscribeScene(sceneId);
-        LOG_HL_RENDERER_API1(status, sceneId)
+        LOG_HL_RENDERER_API1(status, sceneId);
         return status;
     }
 
     status_t RamsesRenderer::unsubscribeScene(sceneId_t sceneId)
     {
         const status_t status = impl.unsubscribeScene(sceneId);
-        LOG_HL_RENDERER_API1(status, sceneId)
+        LOG_HL_RENDERER_API1(status, sceneId);
         return status;
     }
 
@@ -102,14 +102,14 @@ namespace ramses
     status_t RamsesRenderer::destroyDisplay(displayId_t displayId)
     {
         const status_t status = impl.destroyDisplay(displayId);
-        LOG_HL_RENDERER_API1(status, displayId)
+        LOG_HL_RENDERER_API1(status, displayId);
         return status;
     }
 
     status_t RamsesRenderer::linkData(sceneId_t providerScene, dataProviderId_t providerId, sceneId_t consumerScene, dataConsumerId_t consumerId)
     {
         const status_t status = impl.linkData(providerScene, providerId, consumerScene, consumerId);
-        LOG_HL_RENDERER_API4(status, providerScene, providerId, consumerScene, consumerId)
+        LOG_HL_RENDERER_API4(status, providerScene, providerId, consumerScene, consumerId);
         return status;
     }
 
@@ -123,7 +123,7 @@ namespace ramses
     status_t RamsesRenderer::unlinkData(sceneId_t consumerScene, dataConsumerId_t consumerId)
     {
         const status_t status = impl.unlinkData(consumerScene, consumerId);
-        LOG_HL_RENDERER_API2(status, consumerScene, consumerId)
+        LOG_HL_RENDERER_API2(status, consumerScene, consumerId);
         return status;
     }
 
@@ -214,28 +214,28 @@ namespace ramses
     status_t RamsesRenderer::setSurfaceVisibility(uint32_t surfaceId, bool visibility)
     {
         const status_t status = impl.systemCompositorSetIviSurfaceVisibility(surfaceId, visibility);
-        LOG_HL_RENDERER_API2(status, surfaceId, visibility)
+        LOG_HL_RENDERER_API2(status, surfaceId, visibility);
         return status;
     }
 
     status_t RamsesRenderer::setSurfaceOpacity(uint32_t surfaceId, float opacity)
     {
         const status_t status = impl.systemCompositorSetIviSurfaceOpacity(surfaceId, opacity);
-        LOG_HL_RENDERER_API2(status, surfaceId, opacity)
+        LOG_HL_RENDERER_API2(status, surfaceId, opacity);
         return status;
     }
 
     status_t RamsesRenderer::setSurfaceRectangle(uint32_t surfaceId, int32_t x, int32_t y, int32_t width, int32_t height)
     {
         const status_t status = impl.systemCompositorSetIviSurfaceRectangle(surfaceId, x, y, width, height);
-        LOG_HL_RENDERER_API5(status, surfaceId, x, y, width, height)
+        LOG_HL_RENDERER_API5(status, surfaceId, x, y, width, height);
         return status;
     }
 
     status_t RamsesRenderer::takeSystemCompositorScreenshot(const char* fileName)
     {
         const status_t status = impl.systemCompositorTakeScreenshot(fileName);
-        LOG_HL_RENDERER_API1(status, fileName)
+        LOG_HL_RENDERER_API1(status, fileName);
         return status;
     }
 
@@ -253,6 +253,13 @@ namespace ramses
         return status;
     }
 
+    status_t RamsesRenderer::SetPendingFlushLimits(RamsesRenderer& renderer, uint32_t forceApplyFlushLimit, uint32_t forceUnsubscribeSceneLimit)
+    {
+        const status_t status = renderer.impl.setPendingFlushLimits(forceApplyFlushLimit, forceUnsubscribeSceneLimit);
+        LOG_HL_RENDERER_STATIC_API2(status, forceApplyFlushLimit, forceUnsubscribeSceneLimit);
+        return status;
+    }
+
     offscreenBufferId_t RamsesRenderer::createInterruptibleOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height)
     {
         const offscreenBufferId_t bufferId = impl.createOffscreenBuffer(display, width, height, true);
@@ -266,4 +273,5 @@ namespace ramses
         LOG_HL_RENDERER_API1(status, enable);
         return status;
     }
+
 }

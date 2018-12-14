@@ -30,8 +30,8 @@ public:
 
 private:
 
-    ramses::TransformationNode* m_targetNode;
-    ramses::TransformationNode* m_leafNode;
+    ramses::Node* m_targetNode;
+    ramses::Node* m_leafNode;
 };
 #endif
 

@@ -9,7 +9,6 @@
 #include "TestScenes/IntegrationScene.h"
 #include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/RamsesClient.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/EffectDescription.h"
@@ -27,7 +26,7 @@ namespace ramses_internal
         , m_scene(scene)
         , m_defaultRenderGroup(*m_scene.createRenderGroup("defaultRenderGroup"))
         , m_defaultRenderPass(*m_scene.createRenderPass("defaultRenderPass"))
-        , m_defaultCameraTranslationNode(*m_scene.createTranslateNode("defaultCameraTranslation"))
+        , m_defaultCameraTranslationNode(*m_scene.createNode("defaultCameraTranslation"))
         , m_defaultCamera(m_scene.createRemoteCamera("defaultCamera"))
     {
         m_defaultCameraTranslationNode.setTranslation(cameraPosition.x, cameraPosition.y, cameraPosition.z);
@@ -73,7 +72,7 @@ namespace ramses_internal
         m_defaultRenderPass.setCamera(*camera);
     }
 
-    ramses::TranslateNode& IntegrationScene::getDefaultCameraTranslationNode()
+    ramses::Node& IntegrationScene::getDefaultCameraTranslationNode()
     {
         return m_defaultCameraTranslationNode;
     }

@@ -36,7 +36,7 @@ namespace ramses_internal
     class DisplayEventHandlerManager;
     class RendererEventCollector;
     class FrameTimer;
-    class LatencyMonitor;
+    class SceneExpirationMonitor;
     class WarpingMeshData;
 
     class Renderer
@@ -44,7 +44,7 @@ namespace ramses_internal
         friend class RendererLogger;
 
     public:
-        Renderer(IPlatformFactory& platformFactory, const RendererScenes& rendererScenes, RendererEventCollector& eventCollector, const FrameTimer& frameTimer, LatencyMonitor& latencyMonitor);
+        Renderer(IPlatformFactory& platformFactory, const RendererScenes& rendererScenes, RendererEventCollector& eventCollector, const FrameTimer& frameTimer, SceneExpirationMonitor& expirationMonitor, RendererStatistics& rendererStatistics);
         virtual ~Renderer();
 
         void                        registerOffscreenBuffer    (DisplayHandle display, DeviceResourceHandle bufferDeviceHandle, UInt32 width, UInt32 height, Bool isInterruptible);
@@ -93,6 +93,7 @@ namespace ramses_internal
         void systemCompositorRemoveIviSurfaceFromIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) const;
         void systemCompositorDestroyIviSurface(WaylandIviSurfaceId surfaceId) const;
 
+        //TODO: remove/refactor those functions
         RendererStatistics&         getStatistics();
         FrameProfilerStatistics&    getProfilerStatistics();
         MemoryStatistics&           getMemoryStatistics();
@@ -134,14 +135,14 @@ namespace ramses_internal
         const RendererScenes&                  m_rendererScenes;
         DisplayEventHandlerManager             m_displayHandlerManager;
 
-        RendererStatistics                     m_statistics;
+        RendererStatistics&                    m_statistics;
         FrameProfilerStatistics                m_profilerStatistics;
         MemoryStatistics                       m_memoryStatistics;
 
         Bool                                   m_skipUnmodifiedBuffers = true;
         RendererInterruptState                 m_rendererInterruptState;
         const FrameTimer&                      m_frameTimer;
-        LatencyMonitor&                        m_latencyMonitor;
+        SceneExpirationMonitor&                        m_expirationMonitor;
 
         HashMap<DisplayHandle, ScreenshotInfoVector> m_scheduledScreenshots;
         ScreenshotInfoVector m_processedScreenshots;

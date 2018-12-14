@@ -234,6 +234,16 @@ namespace ramses_internal
         return m_offscreen;
     }
 
+    void DisplayConfig::setWaylandDisplay(const String& waylandDisplay)
+    {
+        m_waylandDisplay = waylandDisplay;
+    }
+
+    const String& DisplayConfig::getWaylandDisplay() const
+    {
+        return m_waylandDisplay;
+    }
+
     void DisplayConfig::setWindowsWindowHandle(WindowsWindowHandle hwnd)
     {
         m_windowsWindowHandle = hwnd;
@@ -268,7 +278,8 @@ namespace ramses_internal
             m_gpuMemoryCacheSize         == other.m_gpuMemoryCacheSize &&
             m_clearColor                 == other.m_clearColor &&
             m_offscreen                  == other.m_offscreen &&
-            m_windowsWindowHandle        == other.m_windowsWindowHandle;
+            m_windowsWindowHandle        == other.m_windowsWindowHandle &&
+            m_waylandDisplay             == other.m_waylandDisplay;
     }
 
     Bool DisplayConfig::operator != (const DisplayConfig& other) const

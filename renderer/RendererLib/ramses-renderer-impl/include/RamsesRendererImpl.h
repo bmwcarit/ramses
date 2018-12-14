@@ -21,6 +21,7 @@
 #include "RendererLib/RendererPeriodicLogSupplier.h"
 #include "ramses-renderer-api/Types.h"
 #include "RendererAPI/ELoopMode.h"
+#include "RendererLib/RendererStatistics.h"
 
 namespace ramses_internal
 {
@@ -98,12 +99,16 @@ namespace ramses
         status_t setLoopMode(ELoopMode loopMode);
         ELoopMode getLoopMode() const;
         status_t setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForSceneActionsApply, uint64_t limitForOffscreenBufferRender);
+
+        status_t setPendingFlushLimits(uint32_t forceApplyFlushLimit, uint32_t forceUnsubscribeSceneLimit);
         status_t setSkippingOfUnmodifiedBuffers(bool enable);
 
     private:
         const ramses_internal::RendererConfig                                       m_internalConfig;
         ramses_internal::ScopedPointer<ramses_internal::IBinaryShaderCache>         m_binaryShaderCache;
         ramses_internal::ScopedPointer<ramses_internal::IRendererResourceCache>     m_rendererResourceCache;
+
+        ramses_internal::RendererStatistics                                         m_rendererStatistics;
 
         ramses_internal::RendererCommands                                           m_pendingRendererCommands;
         ramses_internal::RendererCommandBuffer                                      m_rendererCommandBuffer;
@@ -116,7 +121,7 @@ namespace ramses
         offscreenBufferId_t                                                         m_nextOffscreenBufferId;
         bool                                                                        m_systemCompositorEnabled;
         ramses_internal::ELoopMode                                                  m_loopMode;
-        mutable ramses_internal::PlatformLock                                       m_lock;
+        mutable ramses_internal::PlatformLightweightLock                            m_lock;
         ramses_internal::PlatformWatchdog                                           m_rendererLoopThreadWatchdog;
         ramses_internal::RendererLoopThreadController                               m_rendererLoopThreadController;
 

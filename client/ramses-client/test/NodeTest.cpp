@@ -6,12 +6,7 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client-api/GroupNode.h"
-#include "ramses-client-api/TranslateNode.h"
-#include "ramses-client-api/RotateNode.h"
-#include "ramses-client-api/ScaleNode.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/TransformationNode.h"
 #include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
@@ -420,9 +415,9 @@ namespace ramses
 
     TYPED_TEST(NodeTest, getsModelMatrixComputedFromTransformationChain)
     {
-        TranslateNode& translationNode = this->template createObject<TranslateNode>();
-        ScaleNode& scaleNode = this->template createObject<ScaleNode>();
-        RotateNode& rotateNode = this->template createObject<RotateNode>();
+        Node& translationNode = this->template createObject<Node>();
+        Node& scaleNode = this->template createObject<Node>();
+        Node& rotateNode = this->template createObject<Node>();
 
         translationNode.setTranslation(1.f, 2.f, 3.f);
         scaleNode.setScaling(4.f, 5.f, 6.f);
@@ -447,9 +442,9 @@ namespace ramses
 
     TYPED_TEST(NodeTest, getsInverseModelMatrixComputedFromTransformationChain)
     {
-        TranslateNode& translationNode = this->template createObject<TranslateNode>();
-        ScaleNode& scaleNode = this->template createObject<ScaleNode>();
-        RotateNode& rotateNode = this->template createObject<RotateNode>();
+        Node& translationNode = this->template createObject<Node>();
+        Node& scaleNode = this->template createObject<Node>();
+        Node& rotateNode = this->template createObject<Node>();
 
         translationNode.setTranslation(1.f, 2.f, 3.f);
         scaleNode.setScaling(4.f, 5.f, 6.f);

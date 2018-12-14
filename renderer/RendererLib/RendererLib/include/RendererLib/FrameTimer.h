@@ -29,34 +29,39 @@ namespace ramses_internal
     public:
         FrameTimer()
         {
-            std::fill(m_sectionBudgets.begin(), m_sectionBudgets.end(), std::numeric_limits<UInt64>::max());
+            std::fill(m_sectionBudgets.begin(), m_sectionBudgets.end(), PlatformTime::InfiniteDuration);
+            m_frameStartTimeStamp = Clock::now();
         }
 
         void startFrame()
         {
-            m_frameStartTimeStamp = PlatformTime::GetMicrosecondsMonotonic();
+            m_frameStartTimeStamp = Clock::now();
         }
 
         void setSectionTimeBudget(EFrameTimerSectionBudget section, UInt64 timeBudgetInMicrosecs)
         {
-            m_sectionBudgets[static_cast<size_t>(section)] = timeBudgetInMicrosecs;
+            // clamp given time budget to InfiniteDuration to avoid potential overflow of chrono when using numeric max of UInt64 or chrono max
+            timeBudgetInMicrosecs = std::min<UInt64>(timeBudgetInMicrosecs, std::chrono::duration_cast<Duration>(PlatformTime::InfiniteDuration).count());
+            m_sectionBudgets[static_cast<size_t>(section)] = Duration(timeBudgetInMicrosecs);
         }
 
         Bool isTimeBudgetExceededForSection(EFrameTimerSectionBudget section) const
         {
-            const UInt64 currTime = PlatformTime::GetMicrosecondsMonotonic();
-            const UInt64 sectionTime = currTime - m_frameStartTimeStamp;
-            return sectionTime >= m_sectionBudgets[static_cast<size_t>(section)];
+            const auto sectionDuration = Clock::now() - m_frameStartTimeStamp;
+            return sectionDuration >= m_sectionBudgets[static_cast<size_t>(section)];
         }
 
-        UInt64 getTimeBudgetForSection(EFrameTimerSectionBudget section) const
+        std::chrono::microseconds getTimeBudgetForSection(EFrameTimerSectionBudget section) const
         {
             return m_sectionBudgets[static_cast<size_t>(section)];
         }
 
     private:
-        UInt64 m_frameStartTimeStamp = 0u;
-        std::array<UInt64, static_cast<size_t>(EFrameTimerSectionBudget::COUNT)> m_sectionBudgets;
+        using Clock = std::chrono::steady_clock;
+        using Duration = std::chrono::microseconds;
+
+        Clock::time_point m_frameStartTimeStamp;
+        std::array<Duration, static_cast<size_t>(EFrameTimerSectionBudget::COUNT)> m_sectionBudgets;
     };
 }
 

@@ -11,7 +11,7 @@
 #include "RendererLib/RendererLogContext.h"
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/DisplayEventHandlerManager.h"
-#include "RendererLib/LatencyMonitor.h"
+#include "RendererLib/SceneExpirationMonitor.h"
 #include "RendererEventCollector.h"
 #include "ComponentMocks.h"
 #include "RendererMock.h"
@@ -25,9 +25,9 @@ namespace ramses_internal
         ASceneStateExecutor()
             : senderID(true)
             , mapDisplayHandle(1u)
-            , latencyMonitor(rendererEventCollector)
             , rendererScenes(rendererEventCollector)
-            , renderer(platformFactory, rendererScenes, rendererEventCollector, latencyMonitor)
+            , expirationMonitor(rendererScenes, rendererEventCollector)
+            , renderer(platformFactory, rendererScenes, rendererEventCollector, expirationMonitor, rendererStatistics)
             , sceneStateExecutor(renderer, sceneGraphConsumerComponent, rendererEventCollector)
         {
         }
@@ -66,7 +66,7 @@ namespace ramses_internal
 
         void publishScene()
         {
-            sceneStateExecutor.setPublished(sceneId, senderID);
+            sceneStateExecutor.setPublished(sceneId, senderID, EScenePublicationMode_LocalAndRemote);
             expectRendererEvent(ERendererEventType_ScenePublished);
             EXPECT_EQ(ESceneState_Published, sceneStateExecutor.getSceneState(sceneId));
         }
@@ -131,8 +131,9 @@ namespace ramses_internal
 
         NiceMock<PlatformFactoryNiceMock> platformFactory;
         RendererEventCollector rendererEventCollector;
-        LatencyMonitor latencyMonitor;
         RendererScenes rendererScenes;
+        SceneExpirationMonitor expirationMonitor;
+        RendererStatistics rendererStatistics;
         NiceMock<RendererMockWithNiceMockDisplay> renderer;
         StrictMock<SceneGraphConsumerComponentMock> sceneGraphConsumerComponent;
         SceneStateExecutor sceneStateExecutor;
@@ -616,7 +617,7 @@ namespace ramses_internal
 
     TEST_F(ASceneStateExecutor, publishesScene)
     {
-        sceneStateExecutor.setPublished(sceneId, senderID);
+        sceneStateExecutor.setPublished(sceneId, senderID, EScenePublicationMode_LocalAndRemote);
         expectRendererEvent(ERendererEventType_ScenePublished);
     }
 

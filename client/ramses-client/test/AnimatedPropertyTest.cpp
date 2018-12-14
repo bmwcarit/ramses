@@ -8,11 +8,6 @@
 
 #include <gtest/gtest.h>
 
-#include "ramses-client-api/TranslateNode.h"
-#include "ramses-client-api/RotateNode.h"
-#include "ramses-client-api/ScaleNode.h"
-#include "ramses-client-api/TransformationNode.h"
-#include "ramses-client-api/GroupNode.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
@@ -45,24 +40,6 @@ namespace ramses
     const AnimatedProperty* createAnimatedProperty(AnimationSystem& animSystem, AnimatableType& animatable, EAnimatedPropertyComponent propertyComponent, EAnimatedProperty property, Appearance&)
     {
         return animSystem.createAnimatedProperty(animatable, property, propertyComponent);
-    }
-
-    template <>
-    const AnimatedProperty* createAnimatedProperty<TranslateNode>(AnimationSystem& animSystem, TranslateNode& animatable, EAnimatedPropertyComponent propertyComponent, EAnimatedProperty, Appearance&)
-    {
-        return animSystem.createAnimatedProperty(animatable, propertyComponent);
-    }
-
-    template <>
-    const AnimatedProperty* createAnimatedProperty<ScaleNode>(AnimationSystem& animSystem, ScaleNode& animatable, EAnimatedPropertyComponent propertyComponent, EAnimatedProperty, Appearance&)
-    {
-        return animSystem.createAnimatedProperty(animatable, propertyComponent);
-    }
-
-    template <>
-    const AnimatedProperty* createAnimatedProperty<RotateNode>(AnimationSystem& animSystem, RotateNode& animatable, EAnimatedPropertyComponent propertyComponent, EAnimatedProperty, Appearance&)
-    {
-        return animSystem.createAnimatedProperty(animatable, propertyComponent);
     }
 
     template <>
@@ -219,12 +196,12 @@ namespace ramses
         EXPECT_TRUE(prop == NULL);
     }
 
-    TEST_F(AnAnimatedProperty, failsToCreateIfPropertyIsFromAnotherScene_TransformNode)
+    TEST_F(AnAnimatedProperty, failsToCreateIfPropertyIsFromAnotherScene_Node)
     {
         Scene* otherScene = sharedEffectCreator->getClient().createScene(12u);
-        TranslateNode& animatable = *otherScene->createTranslateNode();
+        Node& animatable = *otherScene->createNode();
 
-        AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable);
+        AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable, EAnimatedProperty_Translation);
         EXPECT_TRUE(prop == NULL);
     }
 
@@ -269,8 +246,8 @@ namespace ramses
 
     TEST_F(AnAnimatedProperty, removalOfAnimatedPropertyReleasesItsDataBind)
     {
-        TranslateNode& animatable = sharedEffectCreator->createObject<TranslateNode>("animatable");
-        AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable, EAnimatedPropertyComponent_All);
+        Node& animatable = sharedEffectCreator->createObject<Node>("animatable");
+        AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable, EAnimatedProperty_Translation, EAnimatedPropertyComponent_All);
         ASSERT_TRUE(prop != NULL);
         const ramses_internal::DataBindHandle dataBind = prop->impl.getDataBindHandle();
         EXPECT_TRUE(sharedAnimationSystem->impl.getIAnimationSystem().containsDataBinding(dataBind));
@@ -282,16 +259,16 @@ namespace ramses
 
     TEST_F(AnAnimatedProperty, canBeValidated)
     {
-        TranslateNode& animatable = sharedEffectCreator->createObject<TranslateNode>("animatable");
-        AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable, EAnimatedPropertyComponent_All);
+        Node& animatable = sharedEffectCreator->createObject<Node>("animatable");
+        AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable, EAnimatedProperty_Translation, EAnimatedPropertyComponent_All);
         ASSERT_TRUE(prop != NULL);
         EXPECT_EQ(StatusOK, prop->validate());
     }
 
     TEST_F(AnAnimatedProperty, failsValidationWhenItsPropertyRemoved)
     {
-        TranslateNode& animatable = sharedEffectCreator->createObject<TranslateNode>("animatable");
-        AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable, EAnimatedPropertyComponent_All);
+        Node& animatable = sharedEffectCreator->createObject<Node>("animatable");
+        AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable, EAnimatedProperty_Translation, EAnimatedPropertyComponent_All);
         ASSERT_TRUE(prop != NULL);
 
         sharedEffectCreator->getScene().destroy(animatable);
@@ -301,8 +278,8 @@ namespace ramses
 
     TEST_F(AnAnimatedProperty, failsValidationWhenUsedInMultipleAnimations)
     {
-        TranslateNode& animatable = sharedEffectCreator->createObject<TranslateNode>("animatable");
-        AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable, EAnimatedPropertyComponent_All);
+        Node& animatable = sharedEffectCreator->createObject<Node>("animatable");
+        AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable, EAnimatedProperty_Translation, EAnimatedPropertyComponent_All);
         ASSERT_TRUE(prop != NULL);
 
         Spline* spline = sharedAnimationSystem->createSplineLinearVector3f();

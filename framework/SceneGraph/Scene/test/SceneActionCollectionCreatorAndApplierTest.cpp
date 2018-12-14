@@ -134,8 +134,8 @@ namespace ramses_internal
 
     TEST_F(ASceneActionCollectionCreatorAndApplier, canReadFlushTimeInfo)
     {
-        const FlushTimeInformation timeInfo0{ std::chrono::milliseconds(10), FlushTimeClock::time_point(std::chrono::milliseconds(20)), FlushTimeClock::time_point(std::chrono::milliseconds(30)) };
-        const FlushTimeInformation timeInfo1{ std::chrono::milliseconds(100), FlushTimeClock::time_point(std::chrono::milliseconds(200)), FlushTimeClock::time_point(std::chrono::milliseconds(300)) };
+        const FlushTimeInformation timeInfo0{ FlushTime::Clock::time_point(std::chrono::milliseconds(20)), FlushTime::Clock::time_point(std::chrono::milliseconds(30)) };
+        const FlushTimeInformation timeInfo1{ FlushTime::Clock::time_point(std::chrono::milliseconds(200)), FlushTime::Clock::time_point(std::chrono::milliseconds(300)) };
 
         creator.flush(1u, false, false, SceneSizeInformation(), SceneResourceChanges(), timeInfo0);
         creator.flush(2u, false, false, SceneSizeInformation(), SceneResourceChanges(), timeInfo1);
@@ -147,14 +147,12 @@ namespace ramses_internal
         EXPECT_EQ(timeInfo1, timeInfo);
     }
 
-    TEST_F(ASceneActionCollectionCreatorAndApplier, ignoresExternalTimestampWhenLatencyLimitIsZero)
+    TEST_F(ASceneActionCollectionCreatorAndApplier, canReadFlushTimeInfoIfExpirationTimestampNotSet)
     {
-        const FlushTimeInformation timeInfoIn{ std::chrono::milliseconds(0), FlushTimeClock::time_point(std::chrono::milliseconds(20)), FlushTimeClock::time_point(std::chrono::milliseconds(30)) };
+        const FlushTimeInformation timeInfoIn{ FlushTime::InvalidTimestamp, FlushTime::Clock::time_point(std::chrono::milliseconds(30)) };
         creator.flush(1u, false, false, SceneSizeInformation(), SceneResourceChanges(), timeInfoIn);
 
         readFlushByIndex(0);
-        EXPECT_EQ(std::chrono::milliseconds(0), timeInfo.latencyLimit);
-        EXPECT_EQ(FlushTimeClock::time_point(std::chrono::milliseconds(0)), timeInfo.externalTimestamp);
-        EXPECT_EQ(FlushTimeClock::time_point(std::chrono::milliseconds(30)), timeInfo.internalTimestamp);
+        EXPECT_EQ(timeInfoIn, timeInfo);
     }
 }

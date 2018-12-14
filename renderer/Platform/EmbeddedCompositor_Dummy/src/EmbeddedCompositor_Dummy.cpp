@@ -17,7 +17,7 @@ namespace ramses_internal
 
     EmbeddedCompositor_Dummy::EmbeddedCompositor_Dummy()
     {
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Dummy::EmbeddedCompositor_Dummy:  created EmbeddedCompositor_Dummy")
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Dummy::EmbeddedCompositor_Dummy:  created EmbeddedCompositor_Dummy");
     }
 
     EmbeddedCompositor_Dummy::~EmbeddedCompositor_Dummy()
@@ -85,13 +85,6 @@ namespace ramses_internal
     {
         LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Dummy::getTitleOfWaylandIviSurface: streamTextureSourceId: " << waylandSurfaceId.getValue());
         return String();
-    }
-
-    void EmbeddedCompositor_Dummy::getOutputResolution(Int32& width, Int32& height) const
-    {
-        UNUSED(width)
-        UNUSED(height)
-        LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Dummy::getOutputResolution");
     }
 
     void EmbeddedCompositor_Dummy::logInfos(RendererLogContext& context) const

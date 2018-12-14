@@ -58,14 +58,6 @@ void initializeAnimationContent(ramses::RamsesClient& ramses, ramses::Scene& sce
     renderGroup.addMeshNode(*meshNode2);
     renderGroup.addMeshNode(*meshNode3);
 
-    // create a translation node for each mesh node
-    ramses::TranslateNode* transNode1 = scene.createTranslateNode();
-    ramses::TranslateNode* transNode2 = scene.createTranslateNode();
-    ramses::TranslateNode* transNode3 = scene.createTranslateNode();
-    meshNode1->setParent(*transNode1);
-    meshNode2->setParent(*transNode2);
-    meshNode3->setParent(*transNode3);
-
     // create animation system
     ramses::AnimationSystem* animationSystem = scene.createAnimationSystem(ramses::EAnimationSystemFlags_Default, "animation system");
 
@@ -80,9 +72,9 @@ void initializeAnimationContent(ramses::RamsesClient& ramses, ramses::Scene& sce
     spline2->setKey(10000u, 0.f);
 
     // create animated property for each translation node with single component animation
-    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*transNode1, ramses::EAnimatedPropertyComponent_X);
-    ramses::AnimatedProperty* animProperty2 = animationSystem->createAnimatedProperty(*transNode2, ramses::EAnimatedPropertyComponent_X);
-    ramses::AnimatedProperty* animProperty3 = animationSystem->createAnimatedProperty(*transNode3, ramses::EAnimatedPropertyComponent_Y);
+    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode1, ramses::EAnimatedProperty_Translation, ramses::EAnimatedPropertyComponent_X);
+    ramses::AnimatedProperty* animProperty2 = animationSystem->createAnimatedProperty(*meshNode2, ramses::EAnimatedProperty_Translation, ramses::EAnimatedPropertyComponent_X);
+    ramses::AnimatedProperty* animProperty3 = animationSystem->createAnimatedProperty(*meshNode3, ramses::EAnimatedProperty_Translation, ramses::EAnimatedPropertyComponent_Y);
 
     // create three animations
     ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
@@ -119,10 +111,8 @@ int main(int argc, char* argv[])
         ramses::RamsesClient ramses("ramses-example-file-loading", framework);
         ramses::Scene* scene = ramses.createScene(23u, ramses::SceneConfig(), "basic scene loading from file");
         // every scene needs a render pass with camera
-        ramses::TranslateNode* cameraTranslate = scene->createTranslateNode();
-        cameraTranslate->setTranslation(0.0f, 0.0f, 5.0f);
         ramses::Camera* camera = scene->createRemoteCamera("my camera");
-        camera->setParent(*cameraTranslate);
+        camera->setTranslation(0.0f, 0.0f, 5.0f);
         ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
         renderPass->setClearFlags(ramses::EClearFlags_None);
         renderPass->setCamera(*camera);
@@ -177,7 +167,7 @@ int main(int argc, char* argv[])
         effectTex->findUniformInput("textureSampler", textureInput);
         appearance->setInputTexture(textureInput, *sampler);
 
-        ramses::ScaleNode* scaleNode = scene->createScaleNode("scale node");
+        ramses::Node* scaleNode = scene->createNode("scale node");
 
         ramses::MeshNode* meshNode = scene->createMeshNode("textured triangle mesh node");
         meshNode->setAppearance(*appearance);
@@ -215,7 +205,7 @@ int main(int argc, char* argv[])
 
         // make changes to loaded scene
         ramses::RamsesObject* loadedObject = loadedScene->findObjectByName("scale node");
-        ramses::ScaleNode* loadedScaleNode = ramses::RamsesUtils::TryConvert<ramses::ScaleNode>(*loadedObject);
+        ramses::Node* loadedScaleNode = ramses::RamsesUtils::TryConvert<ramses::Node>(*loadedObject);
         /// [Basic File Loading Example]
 
         framework.connect();

@@ -8,7 +8,6 @@
 
 #include "ObjectRegistryTest.h"
 #include "PerformanceTestUtils.h"
-#include "ramses-client-api/TransformationNode.h"
 #include "ramses-client-api/RamsesObjectTypes.h"
 #include "ramses-client-api/Node.h"
 #include "ramses-client-api/Scene.h"

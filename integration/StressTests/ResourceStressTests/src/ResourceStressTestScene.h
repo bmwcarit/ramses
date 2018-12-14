@@ -29,7 +29,6 @@ namespace ramses
     class Appearance;
     class GeometryBinding;
     class OrthographicCamera;
-    class TranslateNode;
     class Effect;
     class MeshNode;
     class TextureSampler;

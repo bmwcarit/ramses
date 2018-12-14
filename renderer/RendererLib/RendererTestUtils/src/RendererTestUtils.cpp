@@ -29,6 +29,7 @@ ramses_internal::String RendererTestUtils::WaylandSocketEmbedded;
 int RendererTestUtils::WaylandSocketEmbeddedFileDescriptor = -1;
 ramses_internal::String RendererTestUtils::WaylandSocketEmbeddedGroup;
 std::chrono::microseconds RendererTestUtils::MaxFrameCallbackPollingTime;
+ramses_internal::String RendererTestUtils::WaylandDisplayForSystemCompositorController;
 
 namespace
 {
@@ -141,6 +142,12 @@ ramses::RendererConfig RendererTestUtils::CreateTestRendererConfig()
     {
         internalRendererConfig.setWaylandSocketEmbeddedGroup(WaylandSocketEmbeddedGroup);
     }
+
+    if(WaylandDisplayForSystemCompositorController.getLength() > 0)
+    {
+        internalRendererConfig.setWaylandDisplayForSystemCompositorController(WaylandDisplayForSystemCompositorController);
+    }
+
     // system compositor always exists internally, this only allows control of it via renderer API which is used in some tests, should not affect anything else
     internalRendererConfig.enableSystemCompositorControl();
 
@@ -152,6 +159,11 @@ ramses::RendererConfig RendererTestUtils::CreateTestRendererConfig()
 void RendererTestUtils::SetWaylandIviLayerID(UInt32 layerId)
 {
     WaylandIviLayerIdForTestDisplayConfig = layerId;
+}
+
+void RendererTestUtils::SetWaylandDisplayForSystemCompositorController(const ramses_internal::String& wd)
+{
+    WaylandDisplayForSystemCompositorController = wd;
 }
 
 void RendererTestUtils::SetWaylandSocketEmbedded(const ramses_internal::String& wse)

@@ -94,12 +94,12 @@ public:
 
     virtual void sceneUpdateLatencyExceeded(ramses::sceneId_t sceneId) override
     {
-        m_scenesWithExceededLatency.put(sceneId);
+        m_expiredScenes.put(sceneId);
     }
 
     virtual void sceneUpdateLatencyBackBelowLimit(ramses::sceneId_t sceneId) override
     {
-        m_scenesWithRecoveredLatency.put(sceneId);
+        m_recoveredScenes.put(sceneId);
     }
 
     virtual void displayCreated(ramses::displayId_t displayId, ramses::ERendererEventResult result) override
@@ -243,19 +243,19 @@ public:
         return receivedFlush && resourceStateAsExpected;
     }
 
-    bool checkAndConsumeSceneExceededLatency(ramses::sceneId_t sceneId)
+    bool checkAndConsumeExpiredScenesEvents(ramses::sceneId_t sceneId)
     {
         m_renderer.dispatchEvents(*this);
-        const bool hasEvent = m_scenesWithExceededLatency.hasElement(sceneId);
-        m_scenesWithExceededLatency.remove(sceneId);
+        const bool hasEvent = m_expiredScenes.hasElement(sceneId);
+        m_expiredScenes.remove(sceneId);
         return hasEvent;
     }
 
-    bool checkAndConsumeSceneRecoveredLatency(ramses::sceneId_t sceneId)
+    bool checkAndConsumeRecoveredScenesEvents(ramses::sceneId_t sceneId)
     {
         m_renderer.dispatchEvents(*this);
-        const bool hasEvent = m_scenesWithRecoveredLatency.hasElement(sceneId);
-        m_scenesWithRecoveredLatency.remove(sceneId);
+        const bool hasEvent = m_recoveredScenes.hasElement(sceneId);
+        m_recoveredScenes.remove(sceneId);
         return hasEvent;
     }
 
@@ -322,8 +322,8 @@ private:
     IdSet m_linkedOffscreenBuffers;
     IdSet m_availableStreamSurfaces;
     IdSet m_unavailableStreamSurfaces;
-    IdSet m_scenesWithExceededLatency;
-    IdSet m_scenesWithRecoveredLatency;
+    IdSet m_expiredScenes;
+    IdSet m_recoveredScenes;
 
     ramses::RamsesRenderer& m_renderer;
     const uint64_t m_timeoutMs;

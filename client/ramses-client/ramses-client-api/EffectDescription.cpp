@@ -23,49 +23,49 @@ namespace ramses
     status_t EffectDescription::setVertexShader(const char* shaderSource)
     {
         const status_t status = impl.setVertexShader(shaderSource);
-        LOG_HL_CLIENT_API1(status, shaderSource)
+        LOG_HL_CLIENT_API1(status, shaderSource);
         return status;
     }
 
     status_t EffectDescription::setFragmentShader(const char* shaderSource)
     {
         const status_t status = impl.setFragmentShader(shaderSource);
-        LOG_HL_CLIENT_API1(status, shaderSource)
+        LOG_HL_CLIENT_API1(status, shaderSource);
         return status;
     }
 
     status_t EffectDescription::setVertexShaderFromFile(const char* shaderSourceFileName)
     {
         const status_t status = impl.setVertexShaderFromFile(shaderSourceFileName);
-        LOG_HL_CLIENT_API1(status, shaderSourceFileName)
+        LOG_HL_CLIENT_API1(status, shaderSourceFileName);
         return status;
     }
 
     status_t EffectDescription::setFragmentShaderFromFile(const char* shaderSourceFileName)
     {
         const status_t status = impl.setFragmentShaderFromFile(shaderSourceFileName);
-        LOG_HL_CLIENT_API1(status, shaderSourceFileName)
+        LOG_HL_CLIENT_API1(status, shaderSourceFileName);
         return status;
     }
 
     status_t EffectDescription::addCompilerDefine(const char* define)
     {
         const status_t status = impl.addCompilerDefine(define);
-        LOG_HL_CLIENT_API1(status, define)
+        LOG_HL_CLIENT_API1(status, define);
         return status;
     }
 
     status_t EffectDescription::setUniformSemantic(const char* inputName, EEffectUniformSemantic semanticType)
     {
         const status_t status = impl.setUniformSemantic(inputName, semanticType);
-        LOG_HL_CLIENT_API2(status, inputName, semanticType)
+        LOG_HL_CLIENT_API2(status, inputName, semanticType);
         return status;
     }
 
     status_t EffectDescription::setAttributeSemantic(const char* inputName, EEffectAttributeSemantic semanticType)
     {
         const status_t status = impl.setAttributeSemantic(inputName, semanticType);
-        LOG_HL_CLIENT_API2(status, inputName, semanticType)
+        LOG_HL_CLIENT_API2(status, inputName, semanticType);
         return status;
     }
 

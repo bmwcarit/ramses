@@ -11,7 +11,6 @@
 #include "TestScenes/RenderTargetScene.h"
 #include "TestScenes/TextScene.h"
 #include "RendererTestUtils.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-renderer-api/WarpingMeshData.h"
 #include "DisplayConfigImpl.h"
 #include "WarpingMeshDataImpl.h"

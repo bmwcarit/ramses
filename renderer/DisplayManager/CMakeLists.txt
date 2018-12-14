@@ -24,8 +24,7 @@ ACME_MODULE(
     #==========================================================================
     # dependencies
     #==========================================================================
-    DEPENDENCIES            ramses-renderer-api
-                            ramses-renderer-lib
+    DEPENDENCIES            ramses-renderer-lib
                             ramses-capu
 )
 

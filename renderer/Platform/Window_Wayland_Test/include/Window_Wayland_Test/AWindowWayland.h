@@ -10,20 +10,17 @@
 #define RAMSES_AWINDOWWAYLAND_H
 
 #include "WindowEventHandlerMock.h"
+#include "TestWithWaylandEnvironment.h"
 #include "RendererLib/DisplayConfig.h"
 #include "RendererTestUtils.h"
 #include "DisplayConfigImpl.h"
-#include "UnixUtilities/EnvironmentVariableHelper.h"
-#include "UnixUtilities/UnixDomainSocketHelper.h"
+#include "WaylandUtilities/UnixDomainSocketHelper.h"
 #include "Utils/StringUtils.h"
-
-using namespace testing;
-
 
 namespace ramses_internal
 {
     template <typename WINDOWTYPE>
-    class AWindowWayland : public testing::Test
+    class AWindowWayland : public TestWithWaylandEnvironment
     {
     public:
         virtual void SetUp() override
@@ -39,6 +36,8 @@ namespace ramses_internal
     protected:
         void createWaylandWindow()
         {
+            WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, m_initialValueOfXdgRuntimeDir);
+
             m_window = new WINDOWTYPE(m_config.impl.getInternalDisplayConfig(), m_eventHandlerMock, 0);
         }
 
@@ -48,10 +47,9 @@ namespace ramses_internal
             m_window = nullptr;
         }
 
-        StrictMock<WindowEventHandlerMock> m_eventHandlerMock;
+        ::testing::StrictMock<WindowEventHandlerMock> m_eventHandlerMock;
         ramses::DisplayConfig              m_config = RendererTestUtils::CreateTestDisplayConfig(0);
         WINDOWTYPE*                        m_window = nullptr;
-        EnvironmentVariableHelper m_environment;
     };
 }
 

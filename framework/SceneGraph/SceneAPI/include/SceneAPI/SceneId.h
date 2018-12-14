@@ -13,6 +13,7 @@
 #include "Common/StronglyTypedValue.h"
 #include "Collections/Vector.h"
 #include "Collections/String.h"
+#include "Scene/EScenePublicationMode.h"
 
 namespace ramses_internal
 {
@@ -24,9 +25,10 @@ namespace ramses_internal
     struct SceneInfo
     {
         SceneInfo() {}
-        SceneInfo(const SceneId& sceneID_, const String& friendlyName_ = String())
+        SceneInfo(const SceneId& sceneID_, const String& friendlyName_ = String(), EScenePublicationMode mode = EScenePublicationMode_LocalAndRemote)
             : sceneID(sceneID_)
             , friendlyName(friendlyName_)
+            , publicationMode(mode)
         {}
 
         friend bool operator==(const SceneInfo& a, const SceneInfo& b)
@@ -41,6 +43,7 @@ namespace ramses_internal
 
         SceneId sceneID;
         String friendlyName;
+        EScenePublicationMode publicationMode = EScenePublicationMode_Unpublished;
     };
     typedef Vector<SceneInfo> SceneInfoVector;
 }

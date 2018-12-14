@@ -10,7 +10,6 @@
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/GeometryBinding.h"
@@ -50,7 +49,7 @@ namespace ramses_internal
         ramses::Appearance& appearance = quad.GetAppearance();
         mesh->setAppearance(appearance);
         mesh->setGeometryBinding(quad.GetGeometry());
-        ramses::TranslateNode* translate = m_scene.createTranslateNode();
+        ramses::Node* translate = m_scene.createNode();
         mesh->setParent(*translate);
 
         addMeshNodeToDefaultRenderGroup(*mesh);

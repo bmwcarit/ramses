@@ -132,7 +132,7 @@ def check_api_change_in_changelog(commitInfo):
                    "    If this change does not have to be documented in the CHANGELOG, type:\n" +
                    "    \"{magicWords}\"\n" +
                    "    as line in the commit message.")
-    patterns = ["^client/ramses-client-api/", "^client/ramses-text-api/", "^renderer/ramses-renderer-api/", "^framework/ramses-framework-api/"]
+    patterns = ['^.*/ramses-[^/]+-api/include']
     return check_paths_must_have_file_changed_in_commit_rule(commitInfo, "NoApiChange", patterns, "CHANGELOG.txt", errorString)
 
 

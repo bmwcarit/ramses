@@ -12,7 +12,6 @@
 #include "Math3d/Vector3.h"
 #include "Math3d/Vector4i.h"
 #include "ramses-client-api/OrthographicCamera.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-client-api/Scene.h"
 #include "Math3d/Vector4.h"
 #include "TestRandom.h"
@@ -89,7 +88,7 @@ namespace ramses_internal
 
         ramses::OrthographicCamera& createOrthoCamera(ramses::Scene& scene) const
         {
-            ramses::TranslateNode* cameraTranslation = scene.createTranslateNode();
+            ramses::Node* cameraTranslation = scene.createNode();
             cameraTranslation->setTranslation(0.0f, 0.0f, 0.5f);
 
             ramses::OrthographicCamera& camera = *scene.createOrthographicCamera();

@@ -133,8 +133,10 @@ TEST_F(APendingSceneResourcesUtils, appliesSceneResourceActions_Unloads)
 TEST_F(APendingSceneResourcesUtils, getsSceneResourcesFromSceneAndApliesThem)
 {
     SceneResourceActionVector actions;
-    SceneResourceUtils::GetAllSceneResourcesFromScene(actions, scene);
+    size_t resSize = 999u;
+    SceneResourceUtils::GetAllSceneResourcesFromScene(actions, scene, resSize);
     EXPECT_FALSE(actions.empty());
+    EXPECT_EQ(21u, resSize);
 
     InSequence seq;
     EXPECT_CALL(resourceManager, uploadRenderTargetBuffer(renderBufferHandle, sceneID, _));

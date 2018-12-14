@@ -36,7 +36,7 @@ TEST_F(ARendererCommandBuffer, gracefullyHandlesSceneActionsArrivingAfterUnsubsc
     const SceneId sceneId(12u);
     const Guid clientID(true);
 
-    queue.publishScene(sceneId, clientID);
+    queue.publishScene(sceneId, clientID, EScenePublicationMode_LocalAndRemote);
     queue.receiveScene(SceneInfo(sceneId));
 
     queue.unsubscribeScene(sceneId, false);
@@ -98,7 +98,7 @@ TEST_F(ARendererCommandBuffer, canFetchAllTypesOfRendererCommands)
     Vector4 clearColor(1.f, 0.f, 0.5f, 0.2f);
 
     //fill queue which is to be fetched by the RendererCommandBuffer
-    queueToFetch.publishScene(sceneId, clientID);
+    queueToFetch.publishScene(sceneId, clientID, EScenePublicationMode_LocalAndRemote);
     queueToFetch.unpublishScene(sceneId);
     queueToFetch.receiveScene(sceneInfo);
     queueToFetch.subscribeScene(sceneId);

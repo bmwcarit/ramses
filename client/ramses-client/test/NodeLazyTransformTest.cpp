@@ -9,12 +9,6 @@
 #include <gtest/gtest.h>
 #include "ClientTestUtils.h"
 
-#include "ramses-client-api/GroupNode.h"
-#include "ramses-client-api/VisibilityNode.h"
-#include "ramses-client-api/TranslateNode.h"
-#include "ramses-client-api/RotateNode.h"
-#include "ramses-client-api/ScaleNode.h"
-#include "ramses-client-api/TransformationNode.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"

@@ -737,7 +737,7 @@ TEST_F(AClientSceneLogic_ShadowCopy, appendsDefaultFlushInfoWhenSendingSceneToNe
 
     this->m_scene.allocateNode(0u, NodeHandle(1));
 
-    const FlushTimeInformation ftiIn{ std::chrono::milliseconds(1), FlushTimeClock::time_point(std::chrono::milliseconds(2)), FlushTimeClock::time_point(std::chrono::milliseconds(3)) };
+    const FlushTimeInformation ftiIn{ FlushTime::Clock::time_point(std::chrono::milliseconds(2)), FlushTime::Clock::time_point(std::chrono::milliseconds(3)) };
     this->m_sceneLogic.flushSceneActions(ESceneFlushMode_Asynchronous, ftiIn);
 
     this->expectSceneSend();
@@ -772,7 +772,7 @@ TEST_F(AClientSceneLogic_Direct, appendsDefaultFlushInfoWhenSendingSceneToNewSub
 
     this->m_scene.allocateNode(0u, NodeHandle(1));
 
-    const FlushTimeInformation ftiInIgnored{ std::chrono::milliseconds(1), FlushTimeClock::time_point(std::chrono::milliseconds(2)), FlushTimeClock::time_point(std::chrono::milliseconds(3)) };
+    const FlushTimeInformation ftiInIgnored{ FlushTime::Clock::time_point(std::chrono::milliseconds(2)), FlushTime::Clock::time_point(std::chrono::milliseconds(3)) };
     this->m_sceneLogic.flushSceneActions(ESceneFlushMode_Asynchronous, ftiInIgnored);
 
     this->expectSceneSend();
@@ -780,7 +780,7 @@ TEST_F(AClientSceneLogic_Direct, appendsDefaultFlushInfoWhenSendingSceneToNewSub
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(Vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce(WithArgs<1>(INVOKE_SAVE_SCENEACTIONCOLLECTION(actionsFromSendScene)));
     this->addSubscriber();
 
-    const FlushTimeInformation ftiInUsed{ std::chrono::milliseconds(4), FlushTimeClock::time_point(std::chrono::milliseconds(5)), FlushTimeClock::time_point(std::chrono::milliseconds(6)) };
+    const FlushTimeInformation ftiInUsed{ FlushTime::Clock::time_point(std::chrono::milliseconds(5)), FlushTime::Clock::time_point(std::chrono::milliseconds(6)) };
     this->flush(ftiInUsed);
 
     ASSERT_EQ(2u, actionsFromSendScene.numberOfActions());

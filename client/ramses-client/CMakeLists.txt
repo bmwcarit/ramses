@@ -14,7 +14,11 @@ file(GLOB
     ramses-client-api/*.cpp)
 file(GLOB
     RAMSES_CLIENT_API_INCLUDE_BASE
-    ../ramses-client-api/include)
+    ramses-client-api/include)
+
+
+add_library(ramses-client-api INTERFACE)
+target_include_directories(ramses-client-api INTERFACE ${RAMSES_CLIENT_API_INCLUDE_BASE})
 
 ACME_MODULE(
 
@@ -32,6 +36,8 @@ ACME_MODULE(
     FILES_PRIVATE_HEADER    impl/*.h
                             impl/glslEffectBlock/*.h
                             impl/ClientCommands/*.h
+                            ramses-client-api/include/*.h
+                            ramses-client-api/include/ramses-client-api/*.h
     FILES_SOURCE            ${RAMSES_CLIENT_FILES_SOURCE}
 
     #==========================================================================
@@ -41,6 +47,8 @@ ACME_MODULE(
                             ramses-framework
                             ramses-glslang
 )
+
+INSTALL(DIRECTORY ramses-client-api/include/ DESTINATION "${PROJECT_INSTALL_HEADER}" COMPONENT ramses-sdk-devel)
 
 
 ACME_MODULE(
@@ -64,8 +72,7 @@ ACME_MODULE(
     #==========================================================================
     # dependencies
     #==========================================================================
-    DEPENDENCIES            ramses-client-api
-                            ramses-client
+    DEPENDENCIES            ramses-client
                             FrameworkTestUtils
                             gmock_main
 )
@@ -74,5 +81,5 @@ set(ramses-shared-lib-MIXIN
     ${ramses-shared-lib-MIXIN}
     INCLUDE_BASE ${RAMSES_CLIENT_API_INCLUDE_BASE}
     FILES_SOURCE ${RAMSES_CLIENT_FILES_SOURCE}
-    DEPENDENCIES  ramses-client ramses-client-api
+    DEPENDENCIES  ramses-client
     CACHE INTERNAL "")

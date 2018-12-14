@@ -37,11 +37,4 @@ namespace ramses
         LOG_HL_CLIENT_API1(status, publicationMode);
         return status;
     }
-
-    status_t SceneConfig::setMaximumLatency(uint32_t maxLatencyInMilliseconds)
-    {
-        const status_t status = impl.setMaximumLatency(maxLatencyInMilliseconds);
-        LOG_HL_CLIENT_API1(status, maxLatencyInMilliseconds);
-        return status;
-    }
 }

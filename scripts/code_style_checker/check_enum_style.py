@@ -39,10 +39,6 @@ def check_enum_style(filename, clean_file_contents):
         if enum_name.upper() == enum_name:
             log_warning("check_enum_style", filename, line_number, "enum must be CamelCase: " + enum_name)
 
-        # first value must be set
-        if len(enum_values) > 0 and '=' not in enum_values[0]:
-            log_warning("check_enum_style", filename, line_number, "first enum value has no value set: " + enum_values[0])
-
         # check that 'old' enum have name prefix on values, enum classes do NOT have name prefix
         for v in enum_values:
             if is_enum_class:

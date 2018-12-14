@@ -55,7 +55,7 @@ namespace ramses
     status_t RendererConfig::enableSystemCompositorControl()
     {
         const status_t status = impl.enableSystemCompositorControl();
-        LOG_HL_RENDERER_API_NOARG(status)
+        LOG_HL_RENDERER_API_NOARG(status);
         return status;
     }
 
@@ -78,5 +78,15 @@ namespace ramses
         const status_t status = impl.setWaylandSocketEmbeddedFD(socketFileDescriptor);
         LOG_HL_RENDERER_API1(status, socketFileDescriptor);
         return status;
+    }
+
+    status_t RendererConfig::setSystemCompositorWaylandDisplay(const char* waylandDisplay)
+    {
+        return impl.setSystemCompositorWaylandDisplay(waylandDisplay);
+    }
+
+    const char* RendererConfig::getSystemCompositorWaylandDisplay() const
+    {
+        return impl.getSystemCompositorWaylandDisplay();
     }
 }

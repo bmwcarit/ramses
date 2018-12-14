@@ -47,12 +47,8 @@ RENDERER_MODULE_PER_CONFIG_STATIC(RendererLifecycleTests
     DEPENDENCIES            TestContent FrameworkTestUtils RendererTestUtils
 )
 
-# TODO Violin/Alex add support for embedded compositing on a renderer with x11-backend
-ACME_MODULE(
-    NAME                    EmbeddedCompositingTests-wayland-ivi-egl-es-3-0
-    TYPE                    TEST
-    TEST_SUFFIX             RNDSANDWICHTEST_SWRAST
-
+# TODO Mohamed: merge/consolidate modules for emb comp tests with and without FD
+set(EmbeddedCompositingTestsCommonModuleVars
     INCLUDE_BASE            RendererTestFramework
                             EmbeddedCompositingTests
                             EmbeddedCompositingTests/EmbeddedCompositingTestFramework
@@ -67,15 +63,26 @@ ACME_MODULE(
                             EmbeddedCompositingTests/EmbeddedCompositingTestFramework/*.cpp
                             EmbeddedCompositingTests/TestWaylandApplication/*.cpp
                             EmbeddedCompositingTests/TestCases/*.cpp
-                            EmbeddedCompositingTests/EmbeddedCompositingTest_RunAllTests/*.cpp
 
     ${RendererTests-resources_MIXIN}
 
     DEPENDENCIES            ramses-renderer-lib
-                            platform-wayland-ivi-egl-es-3-0
                             TestContent
                             FrameworkTestUtils
                             RendererTestUtils
+                            WaylandUtilities
+)
+# TODO Violin/Alex add support for embedded compositing on a renderer with x11-backend
+ACME_MODULE(
+    NAME                    EmbeddedCompositingTests-wayland-ivi-egl-es-3-0
+    TYPE                    TEST
+    TEST_SUFFIX             RNDSANDWICHTEST_SWRAST
+
+    ${EmbeddedCompositingTestsCommonModuleVars}
+
+    FILES_SOURCE            EmbeddedCompositingTests/EmbeddedCompositingTest_RunAllTests/*.cpp
+
+    DEPENDENCIES            platform-wayland-ivi-egl-es-3-0
 )
 
 IF (NOT ${wayland-server_VERSION} VERSION_LESS "1.13.0")
@@ -85,30 +92,11 @@ IF (NOT ${wayland-server_VERSION} VERSION_LESS "1.13.0")
         TYPE                    TEST
         TEST_SUFFIX             RNDSANDWICHTEST_SWRAST
 
-        INCLUDE_BASE            RendererTestFramework
-                                EmbeddedCompositingTests
-                                EmbeddedCompositingTests/EmbeddedCompositingTestFramework
-                                EmbeddedCompositingTests/TestWaylandApplication
-                                EmbeddedCompositingTests/TestCases
+        ${EmbeddedCompositingTestsCommonModuleVars}
 
-        FILES_PRIVATE_HEADER    EmbeddedCompositingTests/EmbeddedCompositingTestFramework/*.h
-                                EmbeddedCompositingTests/TestWaylandApplication/*.h
-                                EmbeddedCompositingTests/TestCases/*.h
+        FILES_SOURCE            EmbeddedCompositingTests/EmbeddedCompositingTest_CheckFileDescriptor/*.cpp
 
-        FILES_SOURCE            RendererTestFramework/*.cpp
-                                EmbeddedCompositingTests/EmbeddedCompositingTestFramework/*.cpp
-                                EmbeddedCompositingTests/TestWaylandApplication/*.cpp
-                                EmbeddedCompositingTests/TestCases/*.cpp
-                                EmbeddedCompositingTests/EmbeddedCompositingTest_CheckFileDescriptor/*.cpp
-
-        ${RendererTests-resources_MIXIN}
-
-        DEPENDENCIES            ramses-renderer-lib
-                                platform-wayland-ivi-egl-es-3-0
-                                TestContent
-                                FrameworkTestUtils
-                                RendererTestUtils
-                                UnixUtilities
+        DEPENDENCIES            platform-wayland-ivi-egl-es-3-0
     )
 ENDIF()
 

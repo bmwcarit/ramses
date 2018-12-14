@@ -15,32 +15,32 @@ namespace ramses_internal
     {
         switch (triangleColor)
         {
-        case ETriangleColor_Red:
+        case ETriangleColor::Red:
             m_triangleColorBGRA[0] = 0x00;
             m_triangleColorBGRA[1] = 0x00;
             m_triangleColorBGRA[2] = 0xff;
             break;
-        case ETriangleColor_Blue:
+        case ETriangleColor::Blue:
             m_triangleColorBGRA[0] = 0xff;
             m_triangleColorBGRA[1] = 0.0f;
             m_triangleColorBGRA[2] = 0.0f;
             break;
-        case ETriangleColor_DarkGrey:
+        case ETriangleColor::DarkGrey:
             m_triangleColorBGRA[0] = 0x3f;
             m_triangleColorBGRA[1] = 0x3f;
             m_triangleColorBGRA[2] = 0x3f;
             break;
-        case ETriangleColor_Grey:
+        case ETriangleColor::Grey:
             m_triangleColorBGRA[0] = 0x7f;
             m_triangleColorBGRA[1] = 0x7f;
             m_triangleColorBGRA[2] = 0x7f;
             break;
-        case ETriangleColor_LightGrey:
+        case ETriangleColor::LightGrey:
             m_triangleColorBGRA[0] = 0xbf;
             m_triangleColorBGRA[1] = 0xbf;
             m_triangleColorBGRA[2] = 0xbf;
             break;
-        case ETriangleColor_White:
+        case ETriangleColor::White:
             m_triangleColorBGRA[0] = 0xff;
             m_triangleColorBGRA[1] = 0xff;
             m_triangleColorBGRA[2] = 0xff;

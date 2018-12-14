@@ -69,8 +69,8 @@ namespace ramses_internal
         virtual void setSceneProviderServiceHandler(ISceneProviderServiceHandler* handler) = 0;
         virtual void setSceneRendererServiceHandler(ISceneRendererServiceHandler* handler) = 0;
 
-        virtual void logConnectionInfo() const = 0;
-        virtual void triggerLogMessageForPeriodicLog() const = 0;
+        virtual void logConnectionInfo() = 0;
+        virtual void triggerLogMessageForPeriodicLog() = 0;
     };
 }
 

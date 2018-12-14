@@ -91,3 +91,11 @@ TEST(ARendererConfig, settingEmbeddedCompositingSocketFDValidatesTrue)
     config.setWaylandSocketEmbeddedFD(23);
     EXPECT_EQ(ramses::StatusOK, config.impl.validate(0u));
 }
+
+TEST(ARendererConfig, setsAndGetsWaylandDisplay)
+{
+    ramses::RendererConfig config;
+    EXPECT_EQ(ramses::StatusOK, config.setSystemCompositorWaylandDisplay("xxx"));
+    EXPECT_STREQ("xxx", config.getSystemCompositorWaylandDisplay());
+    EXPECT_STREQ("xxx", config.impl.getInternalRendererConfig().getWaylandDisplayForSystemCompositorController().c_str());
+}

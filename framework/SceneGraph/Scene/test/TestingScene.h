@@ -545,17 +545,17 @@ namespace ramses_internal
             const TextureBuffer& texBuffer = otherScene.getTextureBuffer(texture2DBuffer);
             EXPECT_EQ(ETextureFormat_R8, texBuffer.textureFormat);
 
-            ASSERT_EQ(3u, texBuffer.mipMapDimensions.size());
-            EXPECT_EQ(8u, texBuffer.mipMapDimensions[0].width);
-            EXPECT_EQ(8u, texBuffer.mipMapDimensions[0].height);
-            EXPECT_EQ(4u, texBuffer.mipMapDimensions[1].width);
-            EXPECT_EQ(4u, texBuffer.mipMapDimensions[1].height);
-            EXPECT_EQ(2u, texBuffer.mipMapDimensions[2].width);
-            EXPECT_EQ(2u, texBuffer.mipMapDimensions[2].height);
+            ASSERT_EQ(3u, texBuffer.mipMaps.size());
+            EXPECT_EQ(8u, texBuffer.mipMaps[0].width);
+            EXPECT_EQ(8u, texBuffer.mipMaps[0].height);
+            EXPECT_EQ(4u, texBuffer.mipMaps[1].width);
+            EXPECT_EQ(4u, texBuffer.mipMaps[1].height);
+            EXPECT_EQ(2u, texBuffer.mipMaps[2].width);
+            EXPECT_EQ(2u, texBuffer.mipMaps[2].height);
             EXPECT_EQ(84u, TextureBuffer::GetMipMapDataSizeInBytes(texBuffer));
 
-            const auto& mipLevel0Data = texBuffer.mipMapData[0u];
-            const auto& mipLevel2Data = texBuffer.mipMapData[2u];
+            const auto& mipLevel0Data = texBuffer.mipMaps[0u].data;
+            const auto& mipLevel2Data = texBuffer.mipMaps[2u].data;
             EXPECT_EQ(134u, mipLevel0Data[4 * 8 + 3]);
             EXPECT_EQ(135u, mipLevel0Data[5 * 8 + 3]);
             EXPECT_EQ(36u,  mipLevel0Data[6 * 8 + 3]);
@@ -564,6 +564,10 @@ namespace ramses_internal
             EXPECT_EQ(10u, mipLevel2Data[0 * 2 + 1]);
             EXPECT_EQ(01u, mipLevel2Data[1 * 2 + 0]);
             EXPECT_EQ(11u, mipLevel2Data[1 * 2 + 1]);
+
+            EXPECT_EQ(Quad(3, 4, 1, 3), texBuffer.mipMaps[0].usedRegion);
+            EXPECT_EQ(Quad(0, 0, 0, 0), texBuffer.mipMaps[1].usedRegion);
+            EXPECT_EQ(Quad(0, 0, 2, 2), texBuffer.mipMaps[2].usedRegion);
         }
 
         template <typename OTHERSCENE>

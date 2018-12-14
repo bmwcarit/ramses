@@ -105,16 +105,16 @@ void TextLayoutDemo::addColoredBox(ramses::Node& parent, float x, float y, float
 
 void TextLayoutDemo::layoutTextInABox(const std::u32string& string, const ramses::FontInstanceOffsets& fonts, float boxX, float boxY, float boxWidth, float boxHeight)
 {
-    const float ascender = std::accumulate(fonts.cbegin(), fonts.cend(), -1e6f, [this](float val, const ramses::FontInstanceOffset& o) { return std::max(val, m_fontRegistry.getFontInstance(o.fontInstance)->getAscender()); });
-    const float descender = std::accumulate(fonts.cbegin(), fonts.cend(), 1e6f, [this](float val, const ramses::FontInstanceOffset& o) { return std::min(val, m_fontRegistry.getFontInstance(o.fontInstance)->getDescender()); });
-    const float fontHeight = std::accumulate(fonts.cbegin(), fonts.cend(), -1e6f, [this](float val, const ramses::FontInstanceOffset& o) { return std::max(val, m_fontRegistry.getFontInstance(o.fontInstance)->getHeight()); });
+    const int ascender = std::accumulate(fonts.cbegin(), fonts.cend(), -1000, [this](int val, const ramses::FontInstanceOffset& o) { return std::max(val, m_fontRegistry.getFontInstance(o.fontInstance)->getAscender()); });
+    const int descender = std::accumulate(fonts.cbegin(), fonts.cend(), 1000, [this](int val, const ramses::FontInstanceOffset& o) { return std::min(val, m_fontRegistry.getFontInstance(o.fontInstance)->getDescender()); });
+    const int fontHeight = std::accumulate(fonts.cbegin(), fonts.cend(), -1000, [this](int val, const ramses::FontInstanceOffset& o) { return std::max(val, m_fontRegistry.getFontInstance(o.fontInstance)->getHeight()); });
 
-    ramses::TranslateNode& boxTopLeftOrigin = *m_scene.createTranslateNode();
+    ramses::Node& boxTopLeftOrigin = *m_scene.createNode();
     boxTopLeftOrigin.setTranslation(boxX, boxY, 0.0f);
 
     addColoredBox(boxTopLeftOrigin, 0.0f, -boxHeight, boxWidth, boxHeight, 0.2f, 0.2f, 0.2f, 1);
 
-    float lineVerticalOffset = -ascender;
+    int lineVerticalOffset = -ascender;
 
     const auto glyphs = m_textCache.getPositionedGlyphs(string, fonts);
     auto itLineBegin = glyphs.cbegin();
@@ -163,8 +163,8 @@ void TextLayoutDemo::layoutTextInABox(const std::u32string& string, const ramses
         const auto lineMesh = lineData->meshNode;
         assert(lineMesh != nullptr);
 
-        ramses::TranslateNode& lineOffset = *m_scene.createTranslateNode();
-        lineOffset.setTranslation(0.0f, lineVerticalOffset, -0.5f);
+        ramses::Node& lineOffset = *m_scene.createNode();
+        lineOffset.setTranslation(0.f, float(lineVerticalOffset), -0.5f);
 
         lineMesh->getAppearance()->setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
         lineMesh->getAppearance()->setBlendingFactors(ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha, ramses::EBlendFactor_One, ramses::EBlendFactor_One);
@@ -173,8 +173,8 @@ void TextLayoutDemo::layoutTextInABox(const std::u32string& string, const ramses
         const float highlightBoxOffset = static_cast<float>(bbox.offsetX);
         const float highlightBoxWidth = static_cast<float>(bbox.width);
         /// Add ascender/descender highlight boxes
-        addColoredBox(lineOffset, highlightBoxOffset, 0.f, highlightBoxWidth, ascender, 0.0, 0.0f, 0.5, 2);
-        addColoredBox(lineOffset, highlightBoxOffset, descender, highlightBoxWidth, -descender, 0.0, 0.5f, 0.0, 2);
+        addColoredBox(lineOffset, highlightBoxOffset, 0.f, highlightBoxWidth, float(ascender), 0.0, 0.0f, 0.5, 2);
+        addColoredBox(lineOffset, highlightBoxOffset, float(descender), highlightBoxWidth, float(-descender), 0.0, 0.5f, 0.0, 2);
 
         boxTopLeftOrigin.addChild(lineOffset);
         lineOffset.addChild(*lineMesh);

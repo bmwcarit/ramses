@@ -20,6 +20,7 @@ namespace ramses_internal
     class IRenderBackend;
     struct RenderBuffer;
     class FrameTimer;
+    class RendererStatistics;
 
     class ClientResourceUploadingManager
     {
@@ -30,6 +31,7 @@ namespace ramses_internal
             IRenderBackend& renderBackend,
             Bool keepEffects,
             const FrameTimer& frameTimer,
+            RendererStatistics& stats,
             UInt64 clientResourceCacheSize);
         ~ClientResourceUploadingManager();
 
@@ -59,6 +61,8 @@ namespace ramses_internal
         SizeMap       m_clientResourceSizes;
         UInt64        m_clientResourceTotalUploadedSize = 0u;
         const UInt64  m_clientResourceCacheSize = 0u;
+
+        RendererStatistics& m_stats;
     };
 }
 

@@ -273,7 +273,7 @@ namespace ramses_display_manager
         }
     }
 
-    void DisplayManager::handleShowCommand(ramses::sceneId_t sceneId, const MappingInfo& mappingInfo)
+    void DisplayManager::handleShowCommand(ramses::sceneId_t sceneId, MappingInfo mappingInfo)
     {
         ESceneState currentSceneState = getCurrentSceneState(sceneId);
 
@@ -295,6 +295,15 @@ namespace ramses_display_manager
             {
                 LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::handleShowCommand: cannot execute show command for scene with id :" << sceneId << " because it was mapped with different parameters before!");
                 return;
+            }
+            // trigger confirmation immediatly when alreay shown (avoids race between command and showing)
+            if (currentSceneState == ESceneState_Rendered)
+            {
+                if (mappingInfo.confirmationText != ramses_internal::String())
+                {
+                    processConfirmationEchoCommand(mappingInfo.confirmationText.c_str());
+                    mappingInfo.confirmationText = "";
+                }
             }
             break;
 

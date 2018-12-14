@@ -51,7 +51,7 @@ namespace ramses_internal
         {
             const auto displayWidth = FirstDisplayWidth >> i;
             const auto displayHeight = FirstDisplayHeight >> i;
-            const auto displayId = m_testRenderer.createDisplay(displayOffset, displayWidth, displayHeight, config.argc, config.argv);
+            const auto displayId = m_testRenderer.createDisplay(displayOffset, displayWidth, displayHeight, uint32_t(i), config.argc, config.argv);
 
             // Offscreen buffers can be smaller, to make the tests run faster
             const auto obWidth = displayWidth / 10;

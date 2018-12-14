@@ -28,12 +28,6 @@
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
 #include "ramses-client-api/BlitPass.h"
-#include "ramses-client-api/GroupNode.h"
-#include "ramses-client-api/RotateNode.h"
-#include "ramses-client-api/ScaleNode.h"
-#include "ramses-client-api/TranslateNode.h"
-#include "ramses-client-api/TransformationNode.h"
-#include "ramses-client-api/VisibilityNode.h"
 #include "ramses-client-api/EffectDescription.h"
 #include "ramses-client-api/Vector3fArray.h"
 #include "ramses-client-api/UInt16Array.h"
@@ -292,7 +286,7 @@ namespace ramses
     {
         MeshNode* meshNode = this->m_scene.createMeshNode("a meshnode");
 
-        VisibilityNode* visibilityParent = this->m_scene.createVisibilityNode("vis node");
+        Node* visibilityParent = this->m_scene.createNode("vis node");
         visibilityParent->setVisibility(false);
         visibilityParent->addChild(*meshNode);
 
@@ -339,15 +333,15 @@ namespace ramses
         EXPECT_FALSE(loadedMeshNode->impl.getFlattenedVisibility());
     }
 
-    TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteAVisibilityNode)
+    TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteANodeWithVisibility)
     {
-        VisibilityNode* visibilityNode = this->m_scene.createVisibilityNode("a visibilitynode");
+        Node* visibilityNode = this->m_scene.createNode("a visibilitynode");
 
         visibilityNode->setVisibility(false);
 
         doWriteReadCycle();
 
-        VisibilityNode* loadedVisibilityNode = this->getObjectForTesting<VisibilityNode>("a visibilitynode");
+        Node* loadedVisibilityNode = this->getObjectForTesting<Node>("a visibilitynode");
 
         EXPECT_FALSE(loadedVisibilityNode->getVisibility());
     }
@@ -655,16 +649,16 @@ namespace ramses
 
         //iscene
         const ramses_internal::TextureBuffer& loadedInternalBuffer = m_scene.impl.getIScene().getTextureBuffer(loadedBuffer->impl.getTextureBufferHandle());
-        EXPECT_EQ(2u, loadedInternalBuffer.mipMapDimensions.size());
-        EXPECT_EQ(3u, loadedInternalBuffer.mipMapDimensions[0].width);
-        EXPECT_EQ(4u, loadedInternalBuffer.mipMapDimensions[0].height);
-        EXPECT_EQ(1u, loadedInternalBuffer.mipMapDimensions[1].width);
-        EXPECT_EQ(2u, loadedInternalBuffer.mipMapDimensions[1].height);
+        ASSERT_EQ(2u, loadedInternalBuffer.mipMaps.size());
+        EXPECT_EQ(3u, loadedInternalBuffer.mipMaps[0].width);
+        EXPECT_EQ(4u, loadedInternalBuffer.mipMaps[0].height);
+        EXPECT_EQ(1u, loadedInternalBuffer.mipMaps[1].width);
+        EXPECT_EQ(2u, loadedInternalBuffer.mipMaps[1].height);
         EXPECT_EQ(56u, ramses_internal::TextureBuffer::GetMipMapDataSizeInBytes(loadedInternalBuffer));
         EXPECT_EQ(ramses_internal::ETextureFormat_RGBA8, loadedInternalBuffer.textureFormat);
 
-        const uint32_t* loadedBufferDataMip0 = reinterpret_cast<const uint32_t*>(loadedInternalBuffer.mipMapData[0].data());
-        const uint32_t* loadedBufferDataMip1 = reinterpret_cast<const uint32_t*>(loadedInternalBuffer.mipMapData[1].data());
+        const uint32_t* loadedBufferDataMip0 = reinterpret_cast<const uint32_t*>(loadedInternalBuffer.mipMaps[0].data.data());
+        const uint32_t* loadedBufferDataMip1 = reinterpret_cast<const uint32_t*>(loadedInternalBuffer.mipMaps[1].data.data());
         EXPECT_EQ(12u, loadedBufferDataMip0[0]);
         EXPECT_EQ(23u, loadedBufferDataMip0[1]);
         EXPECT_EQ(34u, loadedBufferDataMip0[3 * 1 + 0]);
@@ -719,18 +713,23 @@ namespace ramses
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteANode)
     {
         //generic node cannot be created, therefore using group node
-        GroupNode* grandParent = this->m_scene.createGroupNode("groupnode1");
-        GroupNode* parent = this->m_scene.createGroupNode("groupnode2");
-        GroupNode* child = this->m_scene.createGroupNode("groupnode3");
+        Node* grandParent = this->m_scene.createNode("node1");
+        Node* parent = this->m_scene.createNode("node2");
+        Node* child = this->m_scene.createNode("node3");
 
         grandParent->addChild(*parent);
         child->setParent(*parent);
 
+        child->setTranslation(1, 2, 3);
+        child->setVisibility(false);
+        child->setRotation(1, 2, 3);
+        child->setScaling(1, 2, 3);
+
         doWriteReadCycle();
 
-        GroupNode* loadedGrandParent = this->getObjectForTesting<GroupNode>("groupnode1");
-        GroupNode* loadedParent = this->getObjectForTesting<GroupNode>("groupnode2");
-        GroupNode* loadedChild = this->getObjectForTesting<GroupNode>("groupnode3");
+        Node* loadedGrandParent = this->getObjectForTesting<Node>("node1");
+        Node* loadedParent = this->getObjectForTesting<Node>("node2");
+        Node* loadedChild = this->getObjectForTesting<Node>("node3");
         ASSERT_TRUE(NULL != loadedGrandParent);
         ASSERT_TRUE(NULL != loadedParent);
         ASSERT_TRUE(NULL != loadedChild);
@@ -740,20 +739,46 @@ namespace ramses
         EXPECT_EQ(1u, loadedGrandParent->getChildCount());
         EXPECT_EQ(1u, loadedParent->getChildCount());
         EXPECT_EQ(0u, loadedChild->getChildCount());
+
+        float tx = 0;
+        float ty = 0;
+        float tz = 0;
+        EXPECT_EQ(StatusOK, loadedChild->getTranslation(tx, ty, tz));
+        EXPECT_FLOAT_EQ(1, tx);
+        EXPECT_FLOAT_EQ(2, ty);
+        EXPECT_FLOAT_EQ(3, tz);
+
+        EXPECT_FALSE(loadedChild->getVisibility());
+
+        float rx = 0;
+        float ry = 0;
+        float rz = 0;
+        EXPECT_EQ(StatusOK, loadedChild->getRotation(rx, ry, rz));
+        EXPECT_FLOAT_EQ(1, rx);
+        EXPECT_FLOAT_EQ(2, ry);
+        EXPECT_FLOAT_EQ(3, rz);
+
+        float sx = 0;
+        float sy = 0;
+        float sz = 0;
+        EXPECT_EQ(StatusOK, loadedChild->getScaling(sx, sy, sz));
+        EXPECT_FLOAT_EQ(1, sx);
+        EXPECT_FLOAT_EQ(2, sy);
+        EXPECT_FLOAT_EQ(3, sz);
     }
 
-    TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteATranslateNode)
+    TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteANodeWithTranslation)
     {
-        TranslateNode* node = this->m_scene.createTranslateNode("translate node 1");
-        GroupNode* child = this->m_scene.createGroupNode("groupnode child");
+        Node* node = this->m_scene.createNode("translate node 1");
+        Node* child = this->m_scene.createNode("groupnode child");
 
         node->setTranslation(1, 2, 3);
         node->addChild(*child);
 
         doWriteReadCycle();
 
-        TranslateNode* loadedTranslateNode = getObjectForTesting<TranslateNode>("translate node 1");
-        GroupNode* loadedChild = getObjectForTesting<GroupNode>("groupnode child");
+        Node* loadedTranslateNode = getObjectForTesting<Node>("translate node 1");
+        Node* loadedChild = getObjectForTesting<Node>("groupnode child");
 
         ASSERT_TRUE(0 != loadedTranslateNode);
         ASSERT_TRUE(0 != loadedChild);
@@ -769,17 +794,17 @@ namespace ramses
         EXPECT_FLOAT_EQ(3, z);
     }
 
-    TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteARotateNode)
+    TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteANodeWithRotation)
     {
-        RotateNode* node = this->m_scene.createRotateNode("rotate node 1");
-        GroupNode* child = this->m_scene.createGroupNode("groupnode child");
+        Node* node = this->m_scene.createNode("rotate node 1");
+        Node* child = this->m_scene.createNode("groupnode child");
 
         node->setRotation(1, 2, 3);
         child->setParent(*node);
         doWriteReadCycle();
 
-        RotateNode* loadedRotateNode = getObjectForTesting<RotateNode>("rotate node 1");
-        GroupNode* loadedChild = getObjectForTesting<GroupNode>("groupnode child");
+        Node* loadedRotateNode = getObjectForTesting<Node>("rotate node 1");
+        Node* loadedChild = getObjectForTesting<Node>("groupnode child");
 
         ASSERT_TRUE(0 != loadedRotateNode);
         ASSERT_TRUE(0 != loadedChild);
@@ -795,17 +820,17 @@ namespace ramses
         EXPECT_FLOAT_EQ(3, z);
     }
 
-    TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteAScaleNode)
+    TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteANodeWithScaling)
     {
-        ScaleNode* node = this->m_scene.createScaleNode("scale node");
-        GroupNode* child = this->m_scene.createGroupNode("groupnode child");
+        Node* node = this->m_scene.createNode("scale node");
+        Node* child = this->m_scene.createNode("groupnode child");
 
         node->setScaling(1, 2, 3);
         child->setParent(*node);
         doWriteReadCycle();
 
-        ScaleNode* loadedScaleNode = getObjectForTesting<ScaleNode>("scale node");
-        GroupNode* loadedChild = getObjectForTesting<GroupNode>("groupnode child");
+        Node* loadedScaleNode = getObjectForTesting<Node>("scale node");
+        Node* loadedChild = getObjectForTesting<Node>("groupnode child");
 
         ASSERT_TRUE(0 != loadedScaleNode);
         ASSERT_TRUE(0 != loadedChild);
@@ -1043,8 +1068,8 @@ namespace ramses
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteAnimatedProperty)
     {
-        TranslateNode* node = this->m_scene.createTranslateNode();
-        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(*node, EAnimatedPropertyComponent_X, "property");
+        Node* node = this->m_scene.createNode();
+        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Translation, EAnimatedPropertyComponent_X, "property");
 
         doWriteReadCycle();
 
@@ -1057,8 +1082,8 @@ namespace ramses
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteAnimation)
     {
         SplineStepFloat* spline = this->animationSystem.createSplineStepFloat("spline");
-        TranslateNode* node = this->m_scene.createTranslateNode();
-        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(*node, EAnimatedPropertyComponent_X);
+        Node* node = this->m_scene.createNode();
+        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Translation, EAnimatedPropertyComponent_X);
         Animation* anim = this->animationSystem.createAnimation(*prop, *spline, "animation");
 
         doWriteReadCycle();
@@ -1070,8 +1095,8 @@ namespace ramses
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteAnimatedSetter)
     {
-        TranslateNode* node = this->m_scene.createTranslateNode();
-        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(*node, EAnimatedPropertyComponent_X);
+        Node* node = this->m_scene.createNode();
+        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Translation, EAnimatedPropertyComponent_X);
         AnimatedSetter* anim = this->animationSystem.createAnimatedSetter(*prop, "animation");
 
         doWriteReadCycle();
@@ -1086,8 +1111,8 @@ namespace ramses
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteAnimationSequence)
     {
         SplineStepFloat* spline = this->animationSystem.createSplineStepFloat("spline");
-        TranslateNode* node = this->m_scene.createTranslateNode();
-        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(*node, EAnimatedPropertyComponent_X);
+        Node* node = this->m_scene.createNode();
+        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Translation, EAnimatedPropertyComponent_X);
         Animation* anim = this->animationSystem.createAnimation(*prop, *spline, "animation");
         AnimationSequence* seq = this->animationSystem.createAnimationSequence("seq");
         seq->addAnimation(*anim, 50u, 100u);
@@ -1172,7 +1197,7 @@ namespace ramses
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteTransformDataSlot)
     {
-        GroupNode* node = this->m_scene.createGroupNode("node");
+        Node* node = this->m_scene.createNode("node");
 
         EXPECT_EQ(StatusOK, this->m_scene.impl.createTransformationDataConsumer(*node, dataConsumerId_t(2u)));
         ASSERT_EQ(1u, this->m_scene.impl.getIScene().getDataSlotCount());
@@ -1182,7 +1207,7 @@ namespace ramses
 
         doWriteReadCycle();
 
-        const Node* nodeLoaded = this->getObjectForTesting<GroupNode>("node");
+        const Node* nodeLoaded = this->getObjectForTesting<Node>("node");
         ramses_internal::NodeHandle nodeHandle = nodeLoaded->impl.getNodeHandle();
         ASSERT_EQ(1u, this->m_sceneLoaded->impl.getIScene().getDataSlotCount());
 
@@ -1415,8 +1440,8 @@ namespace ramses
 
         node->setVisibility(false);
 
-        auto child = &this->template createObject<ramses::GroupNode>("child");
-        auto parent = &this->template createObject<ramses::GroupNode>("parent");
+        auto child = &this->template createObject<ramses::Node>("child");
+        auto parent = &this->template createObject<ramses::Node>("parent");
 
         node->setTranslation(1, 2, 3);
         node->setRotation(4, 5, 6);
@@ -1429,8 +1454,8 @@ namespace ramses
         this->doWriteReadCycle();
 
         const auto loadedSuperNode = this->template getObjectForTesting<TypeParam>("a node");
-        const auto loadedChild = this->template getObjectForTesting<ramses::GroupNode>("child");
-        const auto loadedParent = this->template getObjectForTesting<ramses::GroupNode>("parent");
+        const auto loadedChild = this->template getObjectForTesting<ramses::Node>("child");
+        const auto loadedParent = this->template getObjectForTesting<ramses::Node>("parent");
 
         ASSERT_TRUE(nullptr != loadedSuperNode);
         ASSERT_TRUE(nullptr != loadedChild);

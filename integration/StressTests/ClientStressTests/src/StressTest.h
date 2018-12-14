@@ -23,7 +23,7 @@ namespace ramses
     class RamsesClient;
     class RamsesFramework;
     class OrthographicCamera;
-    class TranslateNode;
+    class Node;
 }
 class MemoryLogger;
 
@@ -74,7 +74,7 @@ protected:
     ramses::Scene*                m_clientScene          = nullptr;
     ramses::RenderPass*           m_renderPass           = nullptr;
     ramses::RenderGroup*          m_renderGroup          = nullptr;
-    ramses::TranslateNode*        m_cameraTranslation    = nullptr;
+    ramses::Node*                 m_cameraTranslation    = nullptr;
     ramses::OrthographicCamera*   m_camera               = nullptr;
     ramses::displayId_t           m_displayId            = ramses::InvalidDisplayId;
     ramses_internal::Bool         m_firstRun             = true;

@@ -16,7 +16,6 @@
 namespace ramses
 {
     class DataObject;
-    class TranslateNode;
     class TextureSampler;
     class Appearance;
     class Texture2D;
@@ -44,7 +43,7 @@ namespace ramses_internal
 
     private:
         void animateProvidedContent(ramses::DataObject& dataObject);
-        void animateProvidedContent(ramses::TranslateNode& translateNode);
+        void animateProvidedContent(ramses::Node& translateNode);
 
         const ramses::TextureSampler& createSampler(const ramses::Texture2D& texture);
         void                          setSampler(ramses::Appearance& appearance, const ramses::TextureSampler& sampler);

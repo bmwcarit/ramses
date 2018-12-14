@@ -13,7 +13,6 @@
 #include "ramses-client-api/RenderPass.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/Camera.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-renderer-api/RendererConfig.h"
 #include "ramses-renderer-api/RamsesRenderer.h"
@@ -115,7 +114,7 @@ void StressTest::createAndShowScene()
     m_clientScene = m_client->createScene(sceneId);
 
     //camera
-    m_cameraTranslation = m_clientScene->createTranslateNode("camera translation");
+    m_cameraTranslation = m_clientScene->createNode("camera translation");
     m_cameraTranslation->setTranslation(0.0f, 0.0f, 0.5f);
     m_camera = m_clientScene->createOrthographicCamera("camera");
     m_camera->setFrustum(0.0f, static_cast<Float>(m_displayWidth), 0.0f, static_cast<Float>(m_displayHeight), 0.1f, 1.f);

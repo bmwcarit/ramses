@@ -14,7 +14,6 @@
 
 namespace ramses
 {
-    class GroupNode;
     class UInt16Array;
     class Effect;
     class Vector3fArray;
@@ -41,7 +40,7 @@ namespace ramses_internal
             ramses::ETextureAddressMode addressMethodU,
             ramses::ETextureAddressMode addressMethodV);
 
-        ramses::GroupNode* m_groupNode;
+        ramses::Node* m_groupNode;
         const ramses::UInt16Array* m_indices;
         ramses::Effect* m_effect;
         const ramses::Vector3fArray* m_vertexPositions;

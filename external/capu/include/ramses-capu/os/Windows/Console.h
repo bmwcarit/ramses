@@ -17,9 +17,10 @@
 #ifndef RAMSES_CAPU_WINDOWS_CONSOLE_H
 #define RAMSES_CAPU_WINDOWS_CONSOLE_H
 
-#include <conio.h>
+#include "ramses-capu/os/Windows/MinimalWindowsH.h"
 #include "ramses-capu/container/String.h"
-#include "ramses-capu/os/LightweightMutex.h"
+#include <conio.h>
+#include <mutex>
 
 namespace ramses_capu
 {
@@ -43,7 +44,7 @@ namespace ramses_capu
 
             static HANDLE m_event;
             static const uint8_t Colors[];
-            static LightweightMutex interruptMutex;
+            static std::mutex interruptMutex;
         };
 
         inline
@@ -94,9 +95,10 @@ namespace ramses_capu
         status_t Console::ReadChar(char& buffer)
         {
             const HANDLE fileHandle = GetStdHandle(STD_INPUT_HANDLE);
-            interruptMutex.lock();
-            InitializeInterruptEvent();
-            interruptMutex.unlock();
+            {
+                std::lock_guard<std::mutex> l(interruptMutex);
+                InitializeInterruptEvent();
+            }
 
             DWORD previousConsoleMode;
 
@@ -226,10 +228,9 @@ namespace ramses_capu
         inline
         void Console::InterruptReadChar()
         {
-            interruptMutex.lock();
+            std::lock_guard<std::mutex> l(interruptMutex);
             InitializeInterruptEvent();
             SetEvent(GetInterruptEventHandle());
-            interruptMutex.unlock();
         }
     }
 }

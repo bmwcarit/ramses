@@ -13,6 +13,7 @@
 
 using namespace ramses_internal;
 
+//NOTE: PLEASE UPDATE NUMBERS OF TESTS RUN IN SMOKE TESTS IF ANY OF THE VALUES IN THIS ENUM IS CHANGED
 enum ETest
 {
     //always begin with 0, do not break continuity
@@ -82,6 +83,8 @@ enum ETest
     //keep this at the end
     ETest_NUMBER_OF_TESTS
 };
+
+static_assert(62 == ETest_NUMBER_OF_TESTS, "Update test numbers in smoke tests as well");
 
 const char* StressTestNames[] =
 {

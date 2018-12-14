@@ -11,8 +11,6 @@
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
-#include "ramses-client-api/TranslateNode.h"
-#include "ramses-client-api/TransformationNode.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
@@ -128,7 +126,7 @@ namespace ramses_internal
         meshNode.setAppearance(triangle.GetAppearance());
         meshNode.setGeometryBinding(triangle.GetGeometry());
 
-        ramses::TranslateNode* translateNode = m_scene.createTranslateNode();
+        ramses::Node* translateNode = m_scene.createNode();
         translateNode->addChild(meshNode);
         translateNode->translate(x, y, z);
 
@@ -141,7 +139,7 @@ namespace ramses_internal
         camera.setFrustum(20.f, 1.f, 0.1f, 50.0f);
         camera.setViewport(0u, 0u, 200u, 200u);
 
-        ramses::TransformationNode& posNode = *m_scene.createTransformationNode();
+        ramses::Node& posNode = *m_scene.createNode();
         posNode.addChild(camera);
         posNode.translate(0.f, 0.f, 5.0f);
 
@@ -196,7 +194,7 @@ namespace ramses_internal
         meshNode->setAppearance(*appearance);
         meshNode->setGeometryBinding(*geometry);
 
-        ramses::TranslateNode* transNode = m_scene.createTranslateNode();
+        ramses::Node* transNode = m_scene.createNode();
         transNode->setTranslation(0.f, 0.f, -2.5f);
         meshNode->setParent(*transNode);
 

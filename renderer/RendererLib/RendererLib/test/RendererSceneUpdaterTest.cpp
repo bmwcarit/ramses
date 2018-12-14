@@ -3385,7 +3385,7 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfMaximumNumberOfPending
     update();
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
 
-    for (UInt i = 0u; i < RendererSceneUpdater::MaximumPendingFlushes + 1u; ++i)
+    for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
     {
         performFlush(sceneInterrupted, true);
         update();
@@ -3407,81 +3407,81 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfMaximumNumberOfPending
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, reportsExceededLatencyForSubscribedSceneButWithNoFurtherFlushes)
+TEST_F(ARendererSceneUpdater, reportsExpirationForSubscribedSceneButWithNoFurtherFlushes)
 {
     const UInt32 scene = createPublishAndSubscribeScene(false);
     // initial flush to init monitoring
-    performFlushWithTimeInfo(scene, 1000u, 1u);
+    performFlushWithExpiration(scene, 1000u + 1u);
     expectEvents({ ERendererEventType_SceneSubscribed });
 
-    // no further flush, no latency time info
+    // no further flush, no expiration updates
     for (UInt32 i = 0u; i < 10u; ++i)
     {
         update();
-        latencyMonitor.checkLatency(LatencyMonitor::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
 
-    expectEvent(ERendererEventType_SceneUpdateLatencyExceededLimit);
+    expectEvent(ERendererEventType_SceneExpired);
 }
 
-TEST_F(ARendererSceneUpdater, doesNotReportExceededLatencyForNotShownSceneBeingFlushedRegularly)
+TEST_F(ARendererSceneUpdater, doesNotReportExpirationForNotShownSceneBeingFlushedRegularly)
 {
     const UInt32 scene = createPublishAndSubscribeScene();
     update();
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
-        performFlushWithTimeInfo(scene, 1000u + i, 2u);
+        performFlushWithExpiration(scene, 1000u + i + 2u);
         update();
-        latencyMonitor.checkLatency(LatencyMonitor::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
         expectNoEvent();
     }
 }
 
-TEST_F(ARendererSceneUpdater, reportsExceededLatencyForNotShownSceneNotBeingFlushed)
+TEST_F(ARendererSceneUpdater, reportsExpirationForNotShownSceneNotBeingFlushed)
 {
     const UInt32 scene = createPublishAndSubscribeScene();
     update();
 
     // flush once only to set limit
-    performFlushWithTimeInfo(scene, 1000u, 2u);
+    performFlushWithExpiration(scene, 1000u + 2u);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
         update();
-        latencyMonitor.checkLatency(LatencyMonitor::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
 
-    expectEvent(ERendererEventType_SceneUpdateLatencyExceededLimit);
+    expectEvent(ERendererEventType_SceneExpired);
 }
 
-TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExceededLatencyForNotShownScene)
+TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiredForNotShownScene)
 {
     const UInt32 scene = createPublishAndSubscribeScene();
     update();
 
     // flush once only to set limit
-    performFlushWithTimeInfo(scene, 1000u, 2u);
+    performFlushWithExpiration(scene, 1000u + 2u);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
         update();
-        latencyMonitor.checkLatency(LatencyMonitor::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
     // expect exactly one event
-    expectEvent(ERendererEventType_SceneUpdateLatencyExceededLimit);
+    expectEvent(ERendererEventType_SceneExpired);
 
     for (UInt32 i = 10u; i < 20u; ++i)
     {
-        performFlushWithTimeInfo(scene, 1000u + i, 2u);
+        performFlushWithExpiration(scene, 1000u + i + 2u);
         update();
-        latencyMonitor.checkLatency(LatencyMonitor::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
     // expect exactly one event
-    expectEvent(ERendererEventType_SceneUpdateLatencyBackBelowLimit);
+    expectEvent(ERendererEventType_SceneRecoveredFromExpiration);
 }
 
-TEST_F(ARendererSceneUpdater, doesNotReportExceededLatencyForSceneBeingFlushedAndRenderedRegularly)
+TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedAndRenderedRegularly)
 {
     createDisplayAndExpectSuccess();
     const UInt32 scene = createPublishAndSubscribeScene();
@@ -3490,10 +3490,10 @@ TEST_F(ARendererSceneUpdater, doesNotReportExceededLatencyForSceneBeingFlushedAn
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
-        performFlushWithTimeInfo(scene, 1000u + i, 2u);
+        performFlushWithExpiration(scene, 1000u + i + 2u);
         update();
-        latencyMonitor.onRendered(getSceneId());
-        latencyMonitor.checkLatency(LatencyMonitor::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+        expirationMonitor.onRendered(getSceneId());
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
         expectNoEvent();
     }
 
@@ -3503,7 +3503,7 @@ TEST_F(ARendererSceneUpdater, doesNotReportExceededLatencyForSceneBeingFlushedAn
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, reportsExceededLatencyForSceneBeingFlushedButNotRenderedRegularly)
+TEST_F(ARendererSceneUpdater, reportsExpirationForSceneBeingFlushedButNotRenderedRegularly)
 {
     createDisplayAndExpectSuccess();
     const UInt32 scene = createPublishAndSubscribeScene();
@@ -3520,11 +3520,11 @@ TEST_F(ARendererSceneUpdater, reportsExceededLatencyForSceneBeingFlushedButNotRe
     for (UInt32 i = 0u; i < 10u; ++i)
     {
         iscene.setTranslation(transform, {}); // so that flush is not 'empty' - modifies scene
-        performFlushWithTimeInfo(scene, 1000u + i, 2u);
+        performFlushWithExpiration(scene, 1000u + i + 2u);
         update();
-        latencyMonitor.checkLatency(LatencyMonitor::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneUpdateLatencyExceededLimit);
+    expectEvent(ERendererEventType_SceneExpired);
 
     hideScene();
     expectContextEnable();
@@ -3532,25 +3532,25 @@ TEST_F(ARendererSceneUpdater, reportsExceededLatencyForSceneBeingFlushedButNotRe
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, reportsExceededLatencyForSceneNotBeingFlushedOnlyRendered)
+TEST_F(ARendererSceneUpdater, reportsExpirationForSceneNotBeingFlushedOnlyRendered)
 {
     const UInt32 scene = createPublishAndSubscribeScene();
     update();
 
     // flush once only to set limit
-    performFlushWithTimeInfo(scene, 1000u, 2u);
+    performFlushWithExpiration(scene, 1000u + 2u);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
         update();
-        latencyMonitor.onRendered(getSceneId());
-        latencyMonitor.checkLatency(LatencyMonitor::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+        expirationMonitor.onRendered(getSceneId());
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
 
-    expectEvent(ERendererEventType_SceneUpdateLatencyExceededLimit);
+    expectEvent(ERendererEventType_SceneExpired);
 }
 
-TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExceededLatencyForSceneNotBeingRenderedRegularly)
+TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRenderedRegularly)
 {
     createDisplayAndExpectSuccess();
     const UInt32 scene = createPublishAndSubscribeScene();
@@ -3564,23 +3564,23 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExceededLatencyForSceneNotBein
     sceneAllocator.allocateNode(0u, nodeHandle);
     sceneAllocator.allocateTransform(nodeHandle, transform);
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
     {
         iscene.setTranslation(transform, {}); // so that flush is not 'empty' - modifies scene
-        performFlushWithTimeInfo(scene, 1000u + i, 2u);
+        performFlushWithExpiration(scene, 1000u + i + 2u);
         update();
-        latencyMonitor.checkLatency(LatencyMonitor::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneUpdateLatencyExceededLimit);
+    expectEvent(ERendererEventType_SceneExpired);
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
     {
-        performFlushWithTimeInfo(scene, 1000u + i, 2u);
+        performFlushWithExpiration(scene, 1000u + i + 2u);
         update();
-        latencyMonitor.onRendered(getSceneId());
-        latencyMonitor.checkLatency(LatencyMonitor::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+        expirationMonitor.onRendered(getSceneId());
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneUpdateLatencyBackBelowLimit);
+    expectEvent(ERendererEventType_SceneRecoveredFromExpiration);
 
     hideScene();
     expectContextEnable();
@@ -3588,18 +3588,18 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExceededLatencyForSceneNotBein
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, doesNotReportExceededLatencyForSceneBeingFlushedRegularlyButSkippedRenderingDueToEmptyFlushes)
+TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedRegularlyButSkippedRenderingDueToEmptyFlushes)
 {
     createDisplayAndExpectSuccess();
     const UInt32 scene = createPublishAndSubscribeScene();
     mapScene();
     showScene();
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
     {
-        performFlushWithTimeInfo(scene, 1000u + i, 2u);
+        performFlushWithExpiration(scene, 1000u + i + 2u);
         update();
-        latencyMonitor.checkLatency(LatencyMonitor::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
         expectNoEvent();
     }
 
@@ -3609,14 +3609,15 @@ TEST_F(ARendererSceneUpdater, doesNotReportExceededLatencyForSceneBeingFlushedRe
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, reportsExceededLatencyForNotShownSceneBeingFlushedButBlockedByMissingResource)
+TEST_F(ARendererSceneUpdater, reportsExpirationForNotShownSceneBeingFlushedButBlockedByMissingResource)
 {
     createDisplayAndExpectSuccess();
     const UInt32 scene = createPublishAndSubscribeScene();
     mapScene();
 
-    // flush with latency info to initiate monitoring
-    performFlushWithTimeInfo(scene, 1000u, 2u);
+    // flush with expiration info to initiate monitoring
+    performFlushWithExpiration(scene, 1000u + 2u);
+    update();
 
     createRenderable(scene);
     setRenderableResources(scene, InvalidResource1, true);
@@ -3625,13 +3626,13 @@ TEST_F(ARendererSceneUpdater, reportsExceededLatencyForNotShownSceneBeingFlushed
     expectRenderableResourcesUploaded(DisplayHandle1, true, false);
     update();
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
     {
-        performFlushWithTimeInfo(scene, 1000u + i, 2u); // blocked due to missing resource
+        performFlushWithExpiration(scene, 1000u + i + 2u); // blocked due to missing resource
         update();
-        latencyMonitor.checkLatency(LatencyMonitor::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneUpdateLatencyExceededLimit);
+    expectEvent(ERendererEventType_SceneExpired);
 
     expectContextEnable();
     expectRenderableResourcesDeleted(DisplayHandle1, true, false);
@@ -3639,15 +3640,16 @@ TEST_F(ARendererSceneUpdater, reportsExceededLatencyForNotShownSceneBeingFlushed
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, reportsExceededLatencySceneBeingFlushedAndRenderedButBlockedByMissingResource)
+TEST_F(ARendererSceneUpdater, reportsExpirationSceneBeingFlushedAndRenderedButBlockedByMissingResource)
 {
     createDisplayAndExpectSuccess();
     const UInt32 scene = createPublishAndSubscribeScene();
     mapScene();
     showScene();
 
-    // flush with latency info to initiate monitoring
-    performFlushWithTimeInfo(scene, 1000u, 2u);
+    // flush with expiration info to initiate monitoring
+    performFlushWithExpiration(scene, 1000u + 2u);
+    update();
 
     createRenderable(scene);
     setRenderableResources(scene, InvalidResource1, true);
@@ -3656,14 +3658,14 @@ TEST_F(ARendererSceneUpdater, reportsExceededLatencySceneBeingFlushedAndRendered
     expectRenderableResourcesUploaded(DisplayHandle1, true, false);
     update();
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2; ++i)
     {
-        performFlushWithTimeInfo(scene, 1000u + i, 2u); // blocked due to missing resource
+        performFlushWithExpiration(scene, 1000u + i + 2u); // blocked due to missing resource
         update();
-        latencyMonitor.onRendered(getSceneId());
-        latencyMonitor.checkLatency(LatencyMonitor::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+        expirationMonitor.onRendered(getSceneId());
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneUpdateLatencyExceededLimit);
+    expectEvent(ERendererEventType_SceneExpired);
 
     hideScene();
     expectContextEnable();
@@ -3672,15 +3674,16 @@ TEST_F(ARendererSceneUpdater, reportsExceededLatencySceneBeingFlushedAndRendered
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExceededLatencyForSceneBeingFlushedAndRenderedButBlockedByMissingResource)
+TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneBeingFlushedAndRenderedButBlockedByMissingResource)
 {
     createDisplayAndExpectSuccess();
     const UInt32 scene = createPublishAndSubscribeScene();
     mapScene();
     showScene();
 
-    // flush with latency info to initiate monitoring
-    performFlushWithTimeInfo(scene, 1000u, 2u);
+    // flush with expiration info to initiate monitoring
+    performFlushWithExpiration(scene, 1000u + 2u);
+    update();
 
     createRenderable(scene);
     setRenderableResources(scene, InvalidResource1, true);
@@ -3689,14 +3692,14 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExceededLatencyForSceneBeingFl
     expectRenderableResourcesUploaded(DisplayHandle1, true, false);
     update();
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
     {
-        performFlushWithTimeInfo(scene, 1000u + i, 2u); // blocked due to missing resource
+        performFlushWithExpiration(scene, 1000u + i + 2u); // blocked due to missing resource
         update();
-        latencyMonitor.onRendered(getSceneId());
-        latencyMonitor.checkLatency(LatencyMonitor::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+        expirationMonitor.onRendered(getSceneId());
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneUpdateLatencyExceededLimit);
+    expectEvent(ERendererEventType_SceneExpired);
 
     setRenderableResources(); // simulate upload
     expectResourceRequest();
@@ -3705,14 +3708,14 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExceededLatencyForSceneBeingFl
     update();
     expectResourceRequestCancel(InvalidResource1);
 
-    for (UInt32 i = 10u; i < 20u; ++i)
+    for (UInt32 i = ForceApplyFlushesLimit / 2u; i < ForceApplyFlushesLimit; ++i)
     {
-        performFlushWithTimeInfo(scene, 1000u + i, 2u); // not blocked anymore
+        performFlushWithExpiration(scene, 1000u + i + 2u); // not blocked anymore
         update();
-        latencyMonitor.onRendered(getSceneId());
-        latencyMonitor.checkLatency(LatencyMonitor::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+        expirationMonitor.onRendered(getSceneId());
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneUpdateLatencyBackBelowLimit);
+    expectEvent(ERendererEventType_SceneRecoveredFromExpiration);
 
     hideScene();
     expectContextEnable();

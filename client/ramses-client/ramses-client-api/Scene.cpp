@@ -9,11 +9,7 @@
 // API
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/Camera.h"
-#include "ramses-client-api/GroupNode.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/TranslateNode.h"
-#include "ramses-client-api/RotateNode.h"
-#include "ramses-client-api/ScaleNode.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Node.h"
 #include "ramses-client-api/TextureSampler.h"
@@ -30,10 +26,8 @@
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/GeometryBinding.h"
-#include "ramses-client-api/VisibilityNode.h"
 #include "ramses-client-api/AnimationSystem.h"
 #include "ramses-client-api/AnimationSystemRealTime.h"
-#include "ramses-client-api/TransformationNode.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/BlitPass.h"
 #include "ramses-client-api/RenderTarget.h"
@@ -91,34 +85,6 @@ namespace ramses
         return orthographicCamera;
     }
 
-    GroupNode* Scene::createGroupNode(const char* name)
-    {
-        GroupNode* groupNode = impl.createGroupNode(name);
-        LOG_HL_CLIENT_API1(LOG_API_RAMSESOBJECT_PTR_STRING(groupNode), name);
-        return groupNode;
-    }
-
-    TranslateNode* Scene::createTranslateNode(const char* name)
-    {
-        TranslateNode* translateNode = impl.createTranslateNode(name);
-        LOG_HL_CLIENT_API1(LOG_API_RAMSESOBJECT_PTR_STRING(translateNode), name);
-        return translateNode;
-    }
-
-    RotateNode* Scene::createRotateNode(const char* name)
-    {
-        RotateNode* rotateNode = impl.createRotateNode(name);
-        LOG_HL_CLIENT_API1(LOG_API_RAMSESOBJECT_PTR_STRING(rotateNode), name);
-        return rotateNode;
-    }
-
-    ScaleNode* Scene::createScaleNode(const char* name)
-    {
-        ScaleNode* scaleNode = impl.createScaleNode(name);
-        LOG_HL_CLIENT_API1(LOG_API_RAMSESOBJECT_PTR_STRING(scaleNode), name);
-        return scaleNode;
-    }
-
     Appearance* Scene::createAppearance(const Effect& effect, const char* name)
     {
         Appearance* appearance = impl.createAppearance(effect, name);
@@ -140,18 +106,18 @@ namespace ramses
         return tex;
     }
 
+    Node* Scene::createNode(const char* name)
+    {
+        Node* node = impl.createNode(name);
+        LOG_HL_CLIENT_API1(LOG_API_RAMSESOBJECT_PTR_STRING(node), name);
+        return node;
+    }
+
     MeshNode* Scene::createMeshNode(const char* name)
     {
         MeshNode* meshNode = impl.createMeshNode(name);
         LOG_HL_CLIENT_API1(LOG_API_RAMSESOBJECT_PTR_STRING(meshNode), name);
         return meshNode;
-    }
-
-    VisibilityNode* Scene::createVisibilityNode(const char* name)
-    {
-        VisibilityNode* visibilityNode = impl.createVisibilityNode(name);
-        LOG_HL_CLIENT_API1(LOG_API_RAMSESOBJECT_PTR_STRING(visibilityNode), name);
-        return visibilityNode;
     }
 
     status_t Scene::publish(EScenePublicationMode publicationMode)
@@ -185,17 +151,17 @@ namespace ramses
         return status;
     }
 
+    status_t Scene::setExpirationTimestamp(uint64_t ptpExpirationTimestampInMilliseconds)
+    {
+        const status_t status = impl.setExpirationTimestamp(ptpExpirationTimestampInMilliseconds);
+        LOG_HL_CLIENT_API1(status, ptpExpirationTimestampInMilliseconds);
+        return status;
+    }
+
     status_t Scene::flush(ESceneFlushMode flushMode, sceneVersionTag_t sceneVersionTag)
     {
         const status_t status = impl.flush(flushMode, sceneVersionTag);
         LOG_HL_CLIENT_API3(status, flushMode, sceneVersionTag, impl.getSceneId());
-        return status;
-    }
-
-    status_t Scene::flushWithTimestamp(uint64_t ptpTimestampInMilliseconds, sceneVersionTag_t sceneVersionTag)
-    {
-        const status_t status = impl.flushWithTimestamp(ptpTimestampInMilliseconds, sceneVersionTag);
-        LOG_HL_CLIENT_API3(status, ptpTimestampInMilliseconds, sceneVersionTag, impl.getSceneId());
         return status;
     }
 
@@ -232,13 +198,6 @@ namespace ramses
         Texture2DBuffer* texture2DBuffer = impl.createTexture2DBuffer(mipLevelCount, width, height, textureFormat, name);
         LOG_HL_CLIENT_API5(LOG_API_RAMSESOBJECT_PTR_STRING(texture2DBuffer), mipLevelCount, width, height, textureFormat, name);
         return texture2DBuffer;
-    }
-
-    TransformationNode* Scene::createTransformationNode(const char* name)
-    {
-        TransformationNode* transformationNode = impl.createTransformationNode(name);
-        LOG_HL_CLIENT_API1(LOG_API_RAMSESOBJECT_PTR_STRING(transformationNode), name);
-        return transformationNode;
     }
 
     const RamsesObject* Scene::findObjectByName(const char* name) const
@@ -370,7 +329,7 @@ namespace ramses
         return status;
     }
 
-    status_t Scene::createTransformationDataConsumer(const GroupNode& node, dataConsumerId_t dataId)
+    status_t Scene::createTransformationDataConsumer(const Node& node, dataConsumerId_t dataId)
     {
         status_t status = impl.createTransformationDataConsumer(node, dataId);
         LOG_HL_CLIENT_API2(status, LOG_API_RAMSESOBJECT_STRING(node), dataId);

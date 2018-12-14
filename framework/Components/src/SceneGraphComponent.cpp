@@ -56,12 +56,22 @@ namespace ramses_internal
 
         if (m_sceneRendererHandler && m_publishedScenes.count() > 0)
         {
-            SceneInfoVector newScenes;
-            ramses_foreach(m_publishedScenes, it)
+            SceneInfoVector newLocalScenes;
+            SceneInfoVector newRemoteScenes;
+            for (const auto& sceneInfo : m_publishedScenes)
             {
-                newScenes.push_back(SceneInfo(it->key, it->value.name));
+                if (sceneInfo.value.publicationMode == EScenePublicationMode_LocalAndRemote)
+                    newRemoteScenes.push_back(SceneInfo(sceneInfo.key, sceneInfo.value.name));
+                else
+                    newLocalScenes.push_back(SceneInfo(sceneInfo.key, sceneInfo.value.name));
+
             }
-            m_sceneRendererHandler->handleNewScenesAvailable(newScenes, m_myID);
+
+            if(!newLocalScenes.empty())
+                m_sceneRendererHandler->handleNewScenesAvailable(newLocalScenes, m_myID, EScenePublicationMode_LocalOnly);
+
+            if (!newRemoteScenes.empty())
+                m_sceneRendererHandler->handleNewScenesAvailable(newRemoteScenes, m_myID, EScenePublicationMode_LocalAndRemote);
         }
     }
 
@@ -145,7 +155,7 @@ namespace ramses_internal
 
         if (m_sceneRendererHandler)
         {
-            m_sceneRendererHandler->handleNewScenesAvailable(newScenes, providerID);
+            m_sceneRendererHandler->handleNewScenesAvailable(newScenes, providerID, mode);
         }
         if (mode != EScenePublicationMode_LocalOnly)
         {
@@ -362,7 +372,7 @@ namespace ramses_internal
         m_subscriptions.remove(Subscription(subscriber, sceneId));
     }
 
-    void SceneGraphComponent::triggerLogMessageForPeriodicLog() const
+    void SceneGraphComponent::triggerLogMessageForPeriodicLog()
     {
         PlatformGuard guard(m_frameworkLock);
         LOG_INFO_F(CONTEXT_PERIODIC, ([&](StringOutputStream& sos) {

@@ -118,11 +118,11 @@ namespace ramses_internal
         {
         }
 
-        virtual void logConnectionInfo() const override
+        virtual void logConnectionInfo() override
         {
         }
 
-        virtual void triggerLogMessageForPeriodicLog() const override
+        virtual void triggerLogMessageForPeriodicLog() override
         {
         }
     };

@@ -11,10 +11,11 @@
 #include "TransportTCP/TCPConnectionSystem.h"
 #include "RamsesFrameworkConfigImpl.h"
 #include "TransportCommon/RamsesTransportProtocolVersion.h"
+#include "Ramsh/Ramsh.h"
 
 namespace ramses_internal
 {
-    TcpDiscoveryDaemon::TcpDiscoveryDaemon(const ramses::RamsesFrameworkConfigImpl& config, PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection)
+    TcpDiscoveryDaemon::TcpDiscoveryDaemon(const ramses::RamsesFrameworkConfigImpl& config, PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection, Ramsh* optionalRamsh)
         : m_started(false)
     {
         // own address
@@ -25,6 +26,12 @@ namespace ramses_internal
 
         const NetworkParticipantAddress daemonNetworkAddress;
         m_communicationSystem.reset(new TCPConnectionSystem(participantNetworkAddress, config.getProtocolVersion(), isDaemon, daemonNetworkAddress, frameworkLock, statisticCollection));
+
+        if (optionalRamsh)
+        {
+            m_commandLogConnectionInformation.reset(new LogConnectionInfo(*m_communicationSystem));
+            optionalRamsh->add(*m_commandLogConnectionInformation);
+        }
     }
 
     TcpDiscoveryDaemon::~TcpDiscoveryDaemon()

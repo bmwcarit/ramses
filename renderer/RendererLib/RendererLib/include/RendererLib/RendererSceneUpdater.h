@@ -18,6 +18,7 @@
 #include "RendererLib/StagingInfo.h"
 #include "RendererLib/OffscreenBufferLinks.h"
 #include <unordered_map>
+#include "Scene/EScenePublicationMode.h"
 
 namespace ramses_internal
 {
@@ -32,7 +33,7 @@ namespace ramses_internal
     class RendererScenes;
     class DisplayConfig;
     class FrameTimer;
-    class LatencyMonitor;
+    class SceneExpirationMonitor;
     class SceneActionCollection;
     class DataReferenceLinkManager;
     class TransformationLinkManager;
@@ -45,7 +46,7 @@ namespace ramses_internal
         friend class GpuMemorySample;
 
     public:
-        RendererSceneUpdater(Renderer& renderer, RendererScenes& rendererScenes, SceneStateExecutor& sceneStateExecutor, RendererEventCollector& eventCollector, FrameTimer& frameTimer, LatencyMonitor& latencyMonitor, IRendererResourceCache* rendererResourceCache = NULL);
+        RendererSceneUpdater(Renderer& renderer, RendererScenes& rendererScenes, SceneStateExecutor& sceneStateExecutor, RendererEventCollector& eventCollector, FrameTimer& frameTimer, SceneExpirationMonitor& expirationMonitor, IRendererResourceCache* rendererResourceCache = NULL);
         virtual ~RendererSceneUpdater();
 
         virtual void handleSceneActions(SceneId sceneId, SceneActionCollection& actionsForScene);
@@ -54,7 +55,7 @@ namespace ramses_internal
         void destroyDisplayContext(DisplayHandle handle);
         void updateScenes();
 
-        void handleScenePublished               (SceneId sceneId, const Guid& clientWhereSceneIsAvailable);
+        void handleScenePublished               (SceneId sceneId, const Guid& clientWhereSceneIsAvailable, EScenePublicationMode mode);
         void handleSceneUnpublished             (SceneId sceneId);
         void handleSceneSubscriptionRequest     (SceneId sceneId);
         void handleSceneUnsubscriptionRequest   (SceneId sceneId, bool indirect);
@@ -75,8 +76,8 @@ namespace ramses_internal
 
         const HashSet<SceneId>& getModifiedScenes() const;
 
-        static const UInt MaximumPendingFlushes = 20u;
-
+        void setLimitFlushesForceApply(UInt limitForPendingFlushesForceApply);
+        void setLimitFlushesForceUnsubscribe(UInt limitForPendingFlushesForceUnsubscribe);
     private:
         void destroyScene(SceneId sceneID);
         void unloadSceneResourcesAndUnrefSceneResources(SceneId sceneId);
@@ -119,7 +120,7 @@ namespace ramses_internal
         SceneStateExecutor&                               m_sceneStateExecutor;
         RendererEventCollector&                           m_rendererEventCollector;
         FrameTimer&                                       m_frameTimer;
-        LatencyMonitor&                                   m_latencyMonitor;
+        SceneExpirationMonitor&                           m_expirationMonitor;
         IRendererResourceCache*                           m_rendererResourceCache;
 
         AnimationSystemFactory                            m_animationSystemFactory;
@@ -144,6 +145,9 @@ namespace ramses_internal
         //used as caches for algorithms that mark scenes as modified
         Vector<SceneId> m_offscreeenBufferModifiedScenesVisitingCache;
         OffscreenBufferLinkVector m_offscreenBufferConsumerSceneLinksCache;
+
+        UInt m_maximumPendingFlushes = 60u;
+        UInt m_maximumPendingFlushesToKillScene = 5 * 60u;
     };
 }
 

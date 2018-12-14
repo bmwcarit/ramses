@@ -48,7 +48,6 @@ namespace ramses_internal
             ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesOnlySecondSurface,
             ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesBothSurfaces,
             ClientUsesShellSurface,
-            ClientGetsCorrectOutputValues,
             ShowFallbackTextureWhenIVISurfaceDestroyed,
             ClientCanNotCreateTwoIVISurfacesWithSameIdForSameSurface,
             ClientCanNotCreateTwoIVISurfacesWithDifferentIdsForSameSurface,

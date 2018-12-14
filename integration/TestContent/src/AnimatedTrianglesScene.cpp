@@ -18,7 +18,6 @@
 #include "ramses-client-api/SplineBezierFloat.h"
 #include "ramses-client-api/AnimationSequence.h"
 #include "ramses-client-api/Appearance.h"
-#include "ramses-client-api/GroupNode.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/DataVector4f.h"
 #include "ramses-client-api/Effect.h"
@@ -58,11 +57,11 @@ namespace ramses_internal
         meshNode4->setGeometryBinding(geometry);
 
         // create translation and scale node for mesh
-        ramses::GroupNode* rootNode = m_scene.createGroupNode("group of triangles");
-        ramses::GroupNode* translateNode = m_scene.createGroupNode();
-        ramses::GroupNode* scaleNode = m_scene.createGroupNode();
-        ramses::GroupNode* circleNode = m_scene.createGroupNode();
-        ramses::GroupNode* targetNode = m_scene.createGroupNode();
+        ramses::Node* rootNode = m_scene.createNode("group of triangles");
+        ramses::Node* translateNode = m_scene.createNode();
+        ramses::Node* scaleNode = m_scene.createNode();
+        ramses::Node* circleNode = m_scene.createNode();
+        ramses::Node* targetNode = m_scene.createNode();
 
         if (state == ANIMATION_POINT4)
         {
@@ -204,7 +203,7 @@ namespace ramses_internal
             addMeshNodeToDefaultRenderGroup(*meshNode);
             meshNode->setAppearance(appearance);
             meshNode->setGeometryBinding(geometry);
-            ramses::GroupNode* translateNode = scene.createGroupNode();
+            ramses::Node* translateNode = scene.createNode();
             translateNode->setTranslation(6.f + i, -3.f, -30.f);
             meshNode->setParent(*translateNode);
 

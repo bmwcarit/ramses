@@ -17,11 +17,12 @@ namespace ramses_internal
     {
     }
 
-    void RendererCommands::publishScene(SceneId sceneId, const Guid& clientID)
+    void RendererCommands::publishScene(SceneId sceneId, const Guid& clientID, EScenePublicationMode mode)
     {
         SceneInfoCommand cmd;
         cmd.sceneInformation.sceneID = sceneId;
         cmd.clientID = clientID;
+        cmd.sceneInformation.publicationMode = mode;
         m_commands.addCommand(ERendererCommand_PublishedScene, cmd);
     }
 
@@ -361,6 +362,20 @@ namespace ramses_internal
         cmd.limitForSceneActionsApplyMicrosec = limitForSceneActionsApplyMicrosec;
         cmd.limitForOffscreenBufferRenderMicrosec = limitForOffscreenBufferRenderMicrosec;
         m_commands.addCommand(ERendererCommand_SetFrameTimerLimits, cmd);
+    }
+
+    void RendererCommands::setForceApplyPendingFlushesLimit(UInt maximumPendingFlushes)
+    {
+        SetFrameTimerLimitsCommmand cmd;
+        cmd.limitForPendingFlushesForceApply = maximumPendingFlushes;
+        m_commands.addCommand(ERendererCommand_SetLimits_FlushesForceApply, cmd);
+    }
+
+    void RendererCommands::setForceUnsubscribeLimits(UInt maximumPendingFlushes)
+    {
+        SetFrameTimerLimitsCommmand cmd;
+        cmd.limitForPendingFlushesForceUnsubscribe = maximumPendingFlushes;
+        m_commands.addCommand(ERendererCommand_SetLimits_FlushesForceUnsubscribe, cmd);
     }
 
     void RendererCommands::setSkippingOfUnmodifiedBuffers(Bool enable)

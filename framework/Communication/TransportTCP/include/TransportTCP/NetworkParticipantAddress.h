@@ -40,6 +40,18 @@ namespace ramses_internal
             return m_port;
         }
 
+        bool operator==(const NetworkParticipantAddress& other) const
+        {
+            return ParticipantIdentifier::operator==(other) &&
+                m_ip == other.m_ip &&
+                m_port == other.m_port;
+        }
+
+        bool operator!=(const NetworkParticipantAddress& other) const
+        {
+            return !(*this == other);
+        }
+
     private:
         String m_ip;
         UInt16 m_port;

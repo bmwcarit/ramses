@@ -11,13 +11,15 @@
 #include "SceneAPI/Renderable.h"
 #include "SceneAPI/TextureSampler.h"
 #include "SceneAPI/StreamTexture.h"
+#include "SceneAPI/GeometryDataBuffer.h"
+#include "SceneAPI/TextureBuffer.h"
 #include "Scene/DataLayout.h"
 
 namespace ramses_internal
 {
     namespace SceneResourceUtils
     {
-        void GetAllSceneResourcesFromScene(SceneResourceActionVector& actions, const IScene& scene)
+        void GetAllSceneResourcesFromScene(SceneResourceActionVector& actions, const IScene& scene, size_t& usedDataByteSize)
         {
             assert(actions.empty());
 
@@ -31,6 +33,8 @@ namespace ramses_internal
             const UInt32 numSceneResources = numRenderTargets + numRenderBuffers + numStreamTextures + numBlitPasses + numDataBuffers * 2u + numTextureBuffers * 2u;
 
             actions.reserve(numSceneResources);
+            usedDataByteSize = 0u;
+
             for (RenderBufferHandle rbHandle(0u); rbHandle < numRenderBuffers; ++rbHandle)
             {
                 if (scene.isRenderBufferAllocated(rbHandle))
@@ -66,6 +70,7 @@ namespace ramses_internal
                 {
                     actions.push_back({ dbHandle.asMemoryHandle(), ESceneResourceAction_CreateDataBuffer });
                     actions.push_back({ dbHandle.asMemoryHandle(), ESceneResourceAction_UpdateDataBuffer });
+                    usedDataByteSize += scene.getDataBuffer(dbHandle).usedSize;
                 }
             }
 
@@ -75,6 +80,7 @@ namespace ramses_internal
                 {
                     actions.push_back({ tbHandle.asMemoryHandle(), ESceneResourceAction_CreateTextureBuffer });
                     actions.push_back({ tbHandle.asMemoryHandle(), ESceneResourceAction_UpdateTextureBuffer });
+                    usedDataByteSize += TextureBuffer::GetMipMapDataSizeInBytes(scene.getTextureBuffer(tbHandle));
                 }
             }
         }
@@ -142,13 +148,13 @@ namespace ramses_internal
             }
         }
 
-        void GetSceneResourceChangesFromScene(SceneResourceChanges& changes, const IScene& scene)
+        void GetSceneResourceChangesFromScene(SceneResourceChanges& changes, const IScene& scene, size_t& sceneResourcesUsedDataByteSize)
         {
             assert(changes.m_addedClientResourceRefs.empty());
             assert(changes.m_removedClientResourceRefs.empty());
             assert(changes.m_sceneResourceActions.empty());
 
-            GetAllSceneResourcesFromScene(changes.m_sceneResourceActions, scene);
+            GetAllSceneResourcesFromScene(changes.m_sceneResourceActions, scene, sceneResourcesUsedDataByteSize);
             GetAllClientResourcesFromScene(changes.m_addedClientResourceRefs, scene);
         }
     }

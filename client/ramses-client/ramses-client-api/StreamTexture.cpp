@@ -14,7 +14,7 @@ namespace ramses
     status_t StreamTexture::forceFallbackImage(bool forceFallbackImage)
     {
         const status_t status = impl.forceFallbackImage(forceFallbackImage);
-        LOG_HL_CLIENT_API1(status, forceFallbackImage)
+        LOG_HL_CLIENT_API1(status, forceFallbackImage);
         return status;
     }
 

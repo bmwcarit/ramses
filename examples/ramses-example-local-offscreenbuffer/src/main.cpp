@@ -169,13 +169,11 @@ ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t scen
     ramses::Scene* clientScene = client.createScene(sceneId, ramses::SceneConfig(), "local displays example scene");
 
     // every scene needs a render pass with camera
-    ramses::TranslateNode* cameraTrans = clientScene->createTranslateNode();
-    cameraTrans->setTranslation(0.0f, 0.0f, 5.0f);
     ramses::OrthographicCamera* camera = clientScene->createOrthographicCamera ( "MyCamera" );
+    camera->setTranslation(0.0f, 0.0f, 5.0f);
     camera->setFrustum ( -2.f, 2.f, -2.f, 2.f, 0.1f, 100.f );
     // use right side of the viewport
     camera->setViewport(0, 0u, 800u, 800u);
-    camera->setParent(*cameraTrans);
     ramses::RenderPass* renderPass = clientScene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -208,12 +206,10 @@ ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t scen
     effect->findAttributeInput("a_texcoord", texCoordsInput);
     geometry->setInputBuffer(texCoordsInput, *texCoords);
 
-    ramses::RotateNode* rotate = clientScene->createRotateNode("");
     // create a mesh node to define the triangle with chosen appearance
     ramses::MeshNode* meshNode = clientScene->createMeshNode("triangle mesh node");
     meshNode->setAppearance(*appearance);
     meshNode->setGeometryBinding(*geometry);
-    meshNode->setParent(*rotate);
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
 
@@ -225,7 +221,7 @@ ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t scen
     spline1->setKey(5000u, 360.f);
 
     // create animated property for each translation node with single component animation
-    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*rotate, ramses::EAnimatedPropertyComponent_Z);
+    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode, ramses::EAnimatedProperty_Rotation, ramses::EAnimatedPropertyComponent_Z);
 
     // create three animations
     ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
@@ -257,14 +253,12 @@ ramses::Scene* createScene2(ramses::RamsesClient& client, ramses::sceneId_t scen
     ramses::Scene* clientScene = client.createScene(sceneId, ramses::SceneConfig(), "local displays example scene");
 
     // every scene needs a render pass with camera
-    ramses::TranslateNode* cameraTrans = clientScene->createTranslateNode();
-    cameraTrans->setTranslation(0.0f, 0.0f, 5.0f);
     ramses::OrthographicCamera* camera = clientScene->createOrthographicCamera ("MyCamera");
+    camera->setTranslation(0.0f, 0.0f, 5.0f);
     camera->setFrustum ( -2.f, 2.f, -2.f, 2.f, 0.1f, 100.f );
     // use right side of the viewport
     camera->setViewport ( 0, 0u, 200u, 200u );
 
-    camera->setParent(*cameraTrans);
     ramses::RenderPass* renderPass = clientScene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -295,12 +289,10 @@ ramses::Scene* createScene2(ramses::RamsesClient& client, ramses::sceneId_t scen
     ramses::UniformInput colorInput;
     effect->findUniformInput("color", colorInput);
 
-    ramses::RotateNode* rotate = clientScene->createRotateNode("");
     // create a mesh node to define the triangle with chosen appearance
     ramses::MeshNode* meshNode = clientScene->createMeshNode("triangle mesh node");
     meshNode->setAppearance(*appearance);
     meshNode->setGeometryBinding(*geometry);
-    meshNode->setParent(*rotate);
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
 
@@ -312,7 +304,7 @@ ramses::Scene* createScene2(ramses::RamsesClient& client, ramses::sceneId_t scen
     spline1->setKey(2000u, -360.f);
 
     // create animated property for each translation node with single component animation
-    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*rotate, ramses::EAnimatedPropertyComponent_Z);
+    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode, ramses::EAnimatedProperty_Rotation, ramses::EAnimatedPropertyComponent_Z);
 
     // create three animations
     ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");

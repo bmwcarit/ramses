@@ -49,6 +49,7 @@ ACME_MODULE(
     # dependencies
     #==========================================================================
     DEPENDENCIES            SystemCompositorController_Wayland_IVI
+                            WaylandTestUtils
                             RendererTestUtils
-                            UnixUtilities
+                            WaylandUtilities
 )

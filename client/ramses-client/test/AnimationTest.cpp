@@ -9,7 +9,6 @@
 #include <gtest/gtest.h>
 
 #include "ClientTestUtils.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-client-api/Animation.h"
 #include "ramses-client-api/SplineLinearFloat.h"
 #include "ramses-client-api/AnimatedProperty.h"
@@ -28,10 +27,10 @@ namespace ramses
     public:
         virtual void SetUp()
         {
-            m_animatedNode = this->m_scene.createTranslateNode();
+            m_animatedNode = this->m_scene.createNode();
 
             m_spline = this->animationSystem.createSplineLinearFloat("spline");
-            m_animProperty = this->animationSystem.createAnimatedProperty(*m_animatedNode, EAnimatedPropertyComponent_X, "prop");
+            m_animProperty = this->animationSystem.createAnimatedProperty(*m_animatedNode, EAnimatedProperty_Translation, EAnimatedPropertyComponent_X, "prop");
             m_animation = this->animationSystem.createAnimation(*m_animProperty, *m_spline, "animation");
         }
 
@@ -42,7 +41,7 @@ namespace ramses
             m_spline->setKey(2000, 0.f);
         }
 
-        TranslateNode* m_animatedNode;
+        Node* m_animatedNode;
         SplineLinearFloat* m_spline;
         AnimatedProperty* m_animProperty;
         Animation* m_animation;

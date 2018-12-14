@@ -15,8 +15,8 @@ namespace ramses_internal
         assert(!isInterruptible || isOffscreenBuffer);
         assert(m_displayBuffers.find(displayBuffer) == m_displayBuffers.cend());
 
-        const DisplayBufferInfo bufferInfo{ isOffscreenBuffer, isInterruptible, viewport, clearColor, {}, true };
-        m_displayBuffers.insert({ displayBuffer, std::move(bufferInfo) });
+        DisplayBufferInfo bufferInfo{ isOffscreenBuffer, isInterruptible, viewport, clearColor, {}, true };
+        m_displayBuffers.emplace(displayBuffer, std::move(bufferInfo));
     }
 
     void DisplaySetup::unregisterDisplayBuffer(DeviceResourceHandle displayBuffer)

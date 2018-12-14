@@ -17,10 +17,16 @@ namespace ramses_internal
     {
     }
 
-    ramses::displayId_t StressTestRenderer::createDisplay(uint32_t offsetX, uint32_t width, uint32_t height, int32_t argc, const char* argv[])
+    ramses::displayId_t StressTestRenderer::createDisplay(uint32_t offsetX, uint32_t width, uint32_t height, uint32_t displayIndex, int32_t argc, const char* argv[])
     {
         ramses::DisplayConfig displayConfig(argc, argv);
         displayConfig.setWindowRectangle(offsetX + 50, 50, width, height);
+
+        const auto iviSurfaceId = displayConfig.getWaylandIviSurfaceID();
+        displayConfig.setWaylandIviSurfaceID((InvalidWaylandIviSurfaceId.getValue() != iviSurfaceId? iviSurfaceId : 10000)+ displayIndex);
+
+        if(InvalidWaylandIviLayerId.getValue() == displayConfig.getWaylandIviLayerID())
+            displayConfig.setWaylandIviLayerID(2);
 
         ramses::displayId_t displayId = m_renderer.createDisplay(displayConfig);
         m_renderer.flush();

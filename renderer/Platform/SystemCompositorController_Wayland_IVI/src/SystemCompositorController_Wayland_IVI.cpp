@@ -20,9 +20,10 @@
 
 namespace ramses_internal
 {
-    SystemCompositorController_Wayland_IVI::SystemCompositorController_Wayland_IVI()
+    SystemCompositorController_Wayland_IVI::SystemCompositorController_Wayland_IVI(const String& waylandDisplay)
+        : m_waylandDisplay(waylandDisplay)
     {
-        LOG_INFO(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::SystemCompositorController_Wayland_IVI");
+        LOG_INFO(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::SystemCompositorController_Wayland_IVI (" << waylandDisplay << ")");
     }
 
     SystemCompositorController_Wayland_IVI::~SystemCompositorController_Wayland_IVI()
@@ -64,7 +65,7 @@ namespace ramses_internal
 
     Bool SystemCompositorController_Wayland_IVI::init()
     {
-        LOG_INFO(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::init")
+        LOG_INFO(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::init");
 
         if (!WaylandUtilities::IsEnvironmentInProperState())
         {
@@ -73,7 +74,8 @@ namespace ramses_internal
             return false;
         }
 
-        m_display = wl_display_connect(nullptr);
+        m_display = wl_display_connect(m_waylandDisplay.empty()? nullptr : m_waylandDisplay.c_str());
+
         if (nullptr == m_display)
         {
             LOG_ERROR(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::init wl_display_connect() failed!");
@@ -361,7 +363,7 @@ namespace ramses_internal
         }
         else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::removeControllerSurface failed !")
+            LOG_ERROR(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::removeControllerSurface failed !");
             assert(false);
         }
     }
@@ -399,7 +401,7 @@ namespace ramses_internal
 
             if (nullptr == nativeControllerSurface)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::getOrCreateControllerSurface")
+                LOG_ERROR(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::getOrCreateControllerSurface");
             }
 
             controllerSurface = new IVIControllerSurface(nativeControllerSurface, iviId, *this);
@@ -407,7 +409,7 @@ namespace ramses_internal
             EStatus status = m_controllerSurfaces.put(controllerSurface);
             if (EStatus_RAMSES_OK != status)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::addControllerSurface failed !")
+                LOG_ERROR(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::addControllerSurface failed !");
                 assert(false);
             }
         }
@@ -446,9 +448,7 @@ namespace ramses_internal
                                                                            ivi_controller_screen* nativeControllerScreen)
     {
         UNUSED(controller);
-        LOG_INFO(
-            CONTEXT_RENDERER,
-            "SystemCompositorController_Wayland_IVI::iviControllerHandleScreen Detected ivi-screen: " << id_screen);
+        LOG_INFO(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::iviControllerHandleScreen Detected ivi-screen: " << id_screen);
 
         if (nullptr != getControllerScreen(id_screen))
         {
@@ -459,9 +459,7 @@ namespace ramses_internal
 
         if (nullptr == nativeControllerScreen)
         {
-            LOG_ERROR(
-                CONTEXT_RENDERER,
-                "SystemCompositorController_Wayland_IVI::iviControllerHandleScreen nativeControllerScreen is nullptr!")
+            LOG_ERROR(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::iviControllerHandleScreen nativeControllerScreen is nullptr!");
             assert(false);
             return;
         }
@@ -471,7 +469,7 @@ namespace ramses_internal
         EStatus status = m_controllerScreens.put(controllerScreen);
         if (EStatus_RAMSES_OK != status)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::iviControllerHandleScreen failed !")
+            LOG_ERROR(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::iviControllerHandleScreen failed !");
             assert(false);
         }
     }
@@ -480,15 +478,13 @@ namespace ramses_internal
     {
         UNUSED(controller);
         UNUSED(id_layer)
-        LOG_INFO(CONTEXT_RENDERER,
-                 "SystemCompositorController_Wayland_IVI::iviControllerHandleLayer Detected ivi-layer: " << id_layer);
+        LOG_INFO(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::iviControllerHandleLayer Detected ivi-layer: " << id_layer);
     }
 
     void SystemCompositorController_Wayland_IVI::iviControllerHandleSurface(ivi_controller* controller, uint32_t iviID)
     {
         UNUSED(controller)
-        LOG_INFO(CONTEXT_RENDERER,
-                 "SystemCompositorController_Wayland_IVI::iviControllerHandleSurface Detected ivi-surface: " << iviID);
+        LOG_INFO(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::iviControllerHandleSurface Detected ivi-surface: " << iviID);
 
         getOrCreateControllerSurface(WaylandIviSurfaceId(iviID));
     }

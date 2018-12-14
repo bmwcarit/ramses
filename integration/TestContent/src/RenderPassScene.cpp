@@ -8,7 +8,6 @@
 
 #include "TestScenes/RenderPassScene.h"
 #include "ramses-client-api/Scene.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
 #include "ramses-client-api/RemoteCamera.h"
@@ -29,7 +28,7 @@ namespace ramses_internal
         meshNode1->setGeometryBinding(m_blueTriangle.GetGeometry());
         meshNode2->setGeometryBinding(m_whiteTriangle.GetGeometry());
 
-        ramses::TranslateNode* translateNode = m_scene.createTranslateNode();
+        ramses::Node* translateNode = m_scene.createNode();
         translateNode->addChild(*meshNode1);
         translateNode->addChild(*meshNode2);
         translateNode->translate(0.0f, 0.0f, -12.0f);
@@ -37,7 +36,7 @@ namespace ramses_internal
         ramses::Camera* camera1 = m_scene.createRemoteCamera();
         ramses::Camera* camera2 = m_scene.createRemoteCamera();
 
-        ramses::TranslateNode* cameraTranslateNode = m_scene.createTranslateNode();
+        ramses::Node* cameraTranslateNode = m_scene.createNode();
         camera2->setParent(*cameraTranslateNode);
         cameraTranslateNode->translate(-1.5f, -1.5f, 5.0f);
 

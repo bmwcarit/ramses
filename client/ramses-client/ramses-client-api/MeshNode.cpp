@@ -31,35 +31,35 @@ namespace ramses
     status_t MeshNode::setAppearance(Appearance& appearance)
     {
         const status_t status = impl.setAppearance(appearance.impl);
-        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(appearance))
+        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(appearance));
         return status;
     }
 
     status_t MeshNode::setGeometryBinding(GeometryBinding& geometry)
     {
         const status_t status = impl.setGeometryBinding(geometry.impl);
-        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(geometry))
+        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(geometry));
         return status;
     }
 
     status_t MeshNode::removeAppearanceAndGeometry()
     {
         const status_t status = impl.removeAppearanceAndGeometry();
-        LOG_HL_CLIENT_API_NOARG(status)
+        LOG_HL_CLIENT_API_NOARG(status);
         return status;
     }
 
     status_t MeshNode::setStartIndex(uint32_t startIndex)
     {
         const status_t status = impl.setStartIndex(startIndex);
-        LOG_HL_CLIENT_API1(status, startIndex)
+        LOG_HL_CLIENT_API1(status, startIndex);
         return status;
     }
 
     status_t MeshNode::setIndexCount(uint32_t indexCount)
     {
         const status_t status = impl.setIndexCount(indexCount);
-        LOG_HL_CLIENT_API1(status, indexCount)
+        LOG_HL_CLIENT_API1(status, indexCount);
         return status;
     }
 

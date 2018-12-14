@@ -26,7 +26,7 @@ namespace ramses
     status_t SplineStepFloat::setKey(splineTimeStamp_t timeStamp, float value)
     {
         const status_t status = impl.setSplineKeyStepFloat(timeStamp, value);
-        LOG_HL_CLIENT_API2(status, timeStamp, value)
+        LOG_HL_CLIENT_API2(status, timeStamp, value);
         return status;
     }
 

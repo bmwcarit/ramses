@@ -10,8 +10,6 @@
 #include "ramses-utils.h"
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
-#include "ramses-client-api/GroupNode.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/Vector2fArray.h"
 #include "ramses-client-api/Vector3fArray.h"
@@ -252,7 +250,7 @@ namespace ramses_internal
         mesh->setAppearance(*appearance);
         mesh->setGeometryBinding(*geometry);
 
-        ramses::TranslateNode* translateNode = m_scene.createTranslateNode();
+        ramses::Node* translateNode = m_scene.createNode();
         translateNode->setTranslation(x, y, 0.0f);
 
         mesh->setParent(*translateNode);

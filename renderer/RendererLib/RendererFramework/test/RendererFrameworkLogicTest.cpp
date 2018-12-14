@@ -70,7 +70,7 @@ namespace ramses_internal
 
     TEST_F(ARendererFrameworkLogic, generatesPublishedRendererCommand)
     {
-        fixture.handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(sceneId, sceneName)), providerID);
+        fixture.handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(sceneId, sceneName)), providerID, EScenePublicationMode_LocalAndRemote);
         expectSceneCommand(ERendererCommand_PublishedScene);
     }
 
@@ -82,7 +82,7 @@ namespace ramses_internal
 
     TEST_F(ARendererFrameworkLogic, generatesUnpublishRendererCommand)
     {
-        fixture.handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(sceneId)), providerID);
+        fixture.handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(sceneId)), providerID, EScenePublicationMode_LocalAndRemote);
         expectSceneCommand(ERendererCommand_PublishedScene);
         fixture.handleScenesBecameUnavailable(SceneInfoVector(1, SceneInfo(sceneId)), providerID);
         expectSceneCommand(ERendererCommand_UnpublishedScene);
@@ -90,7 +90,7 @@ namespace ramses_internal
 
     TEST_F(ARendererFrameworkLogic, handlesSceneActionListWithFlush)
     {
-        fixture.handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(sceneId)), providerID);
+        fixture.handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(sceneId)), providerID, EScenePublicationMode_LocalAndRemote);
         expectSceneCommand(ERendererCommand_PublishedScene);
 
         SceneActionCollection actions(createFakeSceneActionCollectionFromTypes({ ESceneActionId_AddChildToNode , ESceneActionId_Flush }));
@@ -116,7 +116,7 @@ namespace ramses_internal
 
     TEST_F(ARendererFrameworkLogic, buffersSceneActionsUntilFlush)
     {
-        fixture.handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(sceneId)), providerID);
+        fixture.handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(sceneId)), providerID, EScenePublicationMode_LocalAndRemote);
         expectSceneCommand(ERendererCommand_PublishedScene);
 
         const RendererCommandContainer& commands = rendererCommandBuffer.getCommands();
@@ -142,9 +142,9 @@ namespace ramses_internal
         const SceneId sceneId1(1u);
         const SceneId sceneId2(2u);
 
-        fixture.handleNewScenesAvailable({ SceneInfo(sceneId1) }, providerID);
+        fixture.handleNewScenesAvailable({ SceneInfo(sceneId1) }, providerID, EScenePublicationMode_LocalAndRemote);
         expectSceneCommand(ERendererCommand_PublishedScene);
-        fixture.handleNewScenesAvailable({ SceneInfo(sceneId2) }, providerID);
+        fixture.handleNewScenesAvailable({ SceneInfo(sceneId2) }, providerID, EScenePublicationMode_LocalAndRemote);
         expectSceneCommand(ERendererCommand_PublishedScene);
 
         const RendererCommandContainer& commands = rendererCommandBuffer.getCommands();
@@ -189,7 +189,7 @@ namespace ramses_internal
         SceneInfoVector newScenes;
         newScenes.push_back(SceneInfo(sceneId1, sceneName));
         newScenes.push_back(SceneInfo(sceneId2, sceneName));
-        fixture.handleNewScenesAvailable(newScenes, providerID);
+        fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
         rendererCommandBuffer.clear();
 
         fixture.participantHasDisconnected(providerID);
@@ -214,8 +214,8 @@ namespace ramses_internal
         SceneInfoVector newScenes;
         newScenes.push_back(SceneInfo(sceneId1, sceneName));
         newScenes.push_back(SceneInfo(sceneId2, sceneName));
-        fixture.handleNewScenesAvailable(newScenes, providerID);
-        fixture.handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(sceneId, sceneName)), Guid(true));
+        fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
+        fixture.handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(sceneId, sceneName)), Guid(true), EScenePublicationMode_LocalAndRemote);
         rendererCommandBuffer.clear();
 
         fixture.participantHasDisconnected(providerID);
@@ -234,7 +234,7 @@ namespace ramses_internal
 
     TEST_F(ARendererFrameworkLogic, requestsResourcesViaResourceComponentWithCorrectProviderID)
     {
-        fixture.handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(sceneId, sceneName)), providerID);
+        fixture.handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(sceneId, sceneName)), providerID, EScenePublicationMode_LocalAndRemote);
 
         const ResourceContentHash resource(44u, 0);
         ResourceContentHashVector resources;
@@ -260,7 +260,7 @@ namespace ramses_internal
     {
         SceneInfoVector newScenes;
         newScenes.push_back(SceneInfo(sceneId, sceneName));
-        fixture.handleNewScenesAvailable(newScenes, providerID);
+        fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
         fixture.handleInitializeScene(SceneInfo(sceneId), providerID);
         rendererCommandBuffer.clear();
 
@@ -284,7 +284,7 @@ namespace ramses_internal
     {
         SceneInfoVector newScenes;
         newScenes.push_back(SceneInfo(sceneId, sceneName));
-        fixture.handleNewScenesAvailable(newScenes, providerID);
+        fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
         fixture.handleInitializeScene(SceneInfo(sceneId), providerID);
 
         rendererCommandBuffer.clear();
@@ -310,7 +310,7 @@ namespace ramses_internal
     {
         SceneInfoVector newScenes;
         newScenes.push_back(SceneInfo(sceneId, sceneName));
-        fixture.handleNewScenesAvailable(newScenes, providerID);
+        fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
         fixture.handleInitializeScene(SceneInfo(sceneId), providerID);
 
         rendererCommandBuffer.clear();
@@ -324,7 +324,7 @@ namespace ramses_internal
         EXPECT_EQ(ERendererCommand_SceneActions, commandsAfterFirstList.getCommandType(0u));
 
         fixture.handleScenesBecameUnavailable({ SceneInfo(sceneId) }, providerID);
-        fixture.handleNewScenesAvailable(newScenes, providerID);
+        fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
         fixture.handleInitializeScene(SceneInfo(sceneId), providerID);
 
         rendererCommandBuffer.clear();
@@ -340,7 +340,7 @@ namespace ramses_internal
     {
         SceneInfoVector newScenes;
         newScenes.push_back(SceneInfo(sceneId, sceneName));
-        fixture.handleNewScenesAvailable(newScenes, providerID);
+        fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
         fixture.handleInitializeScene(SceneInfo(sceneId), providerID);
         rendererCommandBuffer.clear();
 
@@ -369,7 +369,7 @@ namespace ramses_internal
 
         SceneInfoVector newScenes;
         newScenes.push_back(SceneInfo(sceneId, sceneName));
-        fixture.handleNewScenesAvailable(newScenes, providerID);
+        fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
         fixture.handleInitializeScene(SceneInfo(sceneId), providerID);
         rendererCommandBuffer.clear();
 
@@ -388,7 +388,7 @@ namespace ramses_internal
         EXPECT_EQ(ERendererCommand_UnpublishedScene, commandsAfterDisconnect.getCommandType(0u));
 
         fixture.newParticipantHasConnected(providerID);
-        fixture.handleNewScenesAvailable(newScenes, providerID);
+        fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
         fixture.handleInitializeScene(SceneInfo(sceneId), providerID);
         rendererCommandBuffer.clear();
 

@@ -1191,19 +1191,19 @@ namespace ramses_internal
         const FlushTimeInformation& flushTimeInfo,
         std::initializer_list<UInt64> additionalTimestamps)
     {
-        const bool hasFlushLatencyMonitoring = flushTimeInfo.latencyLimit.count() != 0;
+        const bool hasExpirationTimestamp = (flushTimeInfo.expirationTimestamp != FlushTime::InvalidTimestamp);
         const bool hasTimestamps = additionalTimestamps.size() > 0;
         const uint8_t flushFlags =
             (synchronous ? ESceneActionFlushBits_Synchronous : 0u) |
             (addSizeInfo ? ESceneActionFlushBits_HasSizeInfo : 0u) |
             (hasTimestamps ? ESceneActionFlushBits_HasTimestamps : 0u) |
-            (hasFlushLatencyMonitoring ? ESceneActionFlushBits_HasFlushLatencyMonitoring : 0u);
+            (hasExpirationTimestamp ? ESceneActionFlushBits_HasExpirationTimestamp : 0u);
 
         UInt estimatedDataSize = sizeof(flushIndex) + sizeof(flushFlags) +
             (addSizeInfo ? sizeof(SceneSizeInformation) : 0) +
             resourceChanges.getPutSizeEstimate() +
             (hasTimestamps ? sizeof(UInt64) * (additionalTimestamps.size() + 1) : 0) +
-            (hasFlushLatencyMonitoring ? 3*sizeof(UInt64) : sizeof(UInt64));
+            (hasExpirationTimestamp ? 3*sizeof(UInt64) : sizeof(UInt64));
         collection.reserveAdditionalCapacity(estimatedDataSize, 1u);
 
         collection.beginWriteSceneAction(ESceneActionId_Flush);
@@ -1215,10 +1215,10 @@ namespace ramses_internal
         }
         resourceChanges.putToSceneAction(collection);
 
-        if (hasFlushLatencyMonitoring)
+        if (hasExpirationTimestamp)
         {
-            collection.write(static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(flushTimeInfo.latencyLimit).count()));
-            collection.write(static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(flushTimeInfo.externalTimestamp).time_since_epoch().count()));
+            collection.write(uint64_t(1)); // TODO vaclav remove when not needed - this allows back compatibility with older version of renderer using timestamp and limit (now merged into expiration timestamp)
+            collection.write(static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(flushTimeInfo.expirationTimestamp).time_since_epoch().count()));
         }
         collection.write(static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(flushTimeInfo.internalTimestamp).time_since_epoch().count()));
 

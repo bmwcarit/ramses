@@ -11,15 +11,16 @@
 #include "RendererLib/RendererScenes.h"
 #include "RendererAPI/IDisplayController.h"
 #include "RendererAPI/ISystemCompositorController.h"
+#include "RendererLib/RendererStatistics.h"
 
 namespace ramses_internal {
 using namespace testing;
 
 template <template<typename> class MOCK_TYPE>
 RendererMockWithMockDisplay<MOCK_TYPE>::RendererMockWithMockDisplay(const IPlatformFactory& platformFactory, const RendererScenes& rendererScenes,
-    const RendererEventCollector& eventCollector, const LatencyMonitor& latencyMonitor)
+    const RendererEventCollector& eventCollector, const SceneExpirationMonitor& expirationMonitor, const RendererStatistics& statistics)
     : Renderer(const_cast<IPlatformFactory&>(platformFactory), const_cast<RendererScenes&>(rendererScenes),
-        const_cast<RendererEventCollector&>(eventCollector), FrameTimerInstance, const_cast<LatencyMonitor&>(latencyMonitor))
+        const_cast<RendererEventCollector&>(eventCollector), FrameTimerInstance, const_cast<SceneExpirationMonitor&>(expirationMonitor), const_cast<RendererStatistics&>(statistics))
 {
 }
 

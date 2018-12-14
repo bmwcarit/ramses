@@ -21,8 +21,6 @@
 #include "ramses-capu/util/Delegate.h"
 #include "ramses-capu/container/Pair.h"
 
-#include RAMSES_CAPU_PLATFORM_INCLUDE(NonBlockSocketChecker)
-
 namespace ramses_capu
 {
 
@@ -30,7 +28,7 @@ namespace ramses_capu
      * The NonBlockSocketChecker can check several sockets for incoming data with one call
      * using nonblocking IO
      */
-    class NonBlockSocketChecker : private ramses_capu::os::NonBlockSocketChecker
+    class NonBlockSocketChecker
     {
     public:
         /**
@@ -52,20 +50,70 @@ namespace ramses_capu
         * @param milliseconds to wait until the call returns if no data is available in all of the given sockets
         */
         static status_t CheckSocketsForIncomingData(const vector<ramses_capu::os::SocketInfoPair>& sockets, uint32_t milliseconds);
+
+    private:
+        static status_t CheckSocketsForIncomingDataInternal(const vector<ramses_capu::os::SocketInfoPair>& socketsToCheck, timeval* timeout);
     };
 
-    inline
-    status_t
-    NonBlockSocketChecker::CheckSocketsForIncomingData(const vector<ramses_capu::os::SocketInfoPair>& sockets, uint32_t milliseconds)
+    inline status_t NonBlockSocketChecker::CheckSocketsForIncomingData(const vector<ramses_capu::os::SocketInfoPair>& socketsToCheck)
     {
-        return ramses_capu::os::NonBlockSocketChecker::CheckSocketsForIncomingData(sockets, milliseconds);
+        return CheckSocketsForIncomingDataInternal(socketsToCheck, 0);
     }
 
-    inline
-    status_t
-    NonBlockSocketChecker::CheckSocketsForIncomingData(const vector<ramses_capu::os::SocketInfoPair>& sockets)
+    inline status_t NonBlockSocketChecker::CheckSocketsForIncomingData(const vector<ramses_capu::os::SocketInfoPair>& socketsToCheck, uint32_t timeoutMillis)
     {
-        return ramses_capu::os::NonBlockSocketChecker::CheckSocketsForIncomingData(sockets);
+        timeval timeout;
+
+        timeout.tv_sec = timeoutMillis / 1000;
+        timeout.tv_usec = (timeoutMillis % 1000) * 1000;
+
+        return CheckSocketsForIncomingDataInternal(socketsToCheck, &timeout);
+    }
+
+    inline status_t NonBlockSocketChecker::CheckSocketsForIncomingDataInternal(const vector<ramses_capu::os::SocketInfoPair>& socketsToCheck, timeval* timeout)
+    {
+        fd_set fdset;
+        FD_ZERO(&fdset);
+
+        vector<ramses_capu::os::SocketInfoPair>::ConstIterator current = socketsToCheck.begin();
+        const vector<ramses_capu::os::SocketInfoPair>::ConstIterator end = socketsToCheck.end();
+
+        int_t maxfd = -1;
+        for (; current != end; ++current)
+        {
+            ramses_capu::os::SocketInfoPair socketInfo = *current;
+            const ramses_capu::os::SocketDescription& sockedDescription = socketInfo.first;
+
+            if (static_cast<int_t>(sockedDescription) > maxfd)
+            {
+                maxfd = sockedDescription;
+            }
+            FD_SET(sockedDescription, &fdset);
+        }
+
+        if (maxfd != -1)
+        {
+            const int_t result = select(static_cast<int32_t>(maxfd + 1), &fdset, NULL, NULL, timeout);
+
+
+            if (result > 0)
+            {
+                current = socketsToCheck.begin();
+
+                for (; current != end; ++current)
+                {
+                    ramses_capu::os::SocketInfoPair socketInfo = *current;
+                    const ramses_capu::os::SocketDescription& sockedDescription = socketInfo.first;
+
+                    if (FD_ISSET(sockedDescription, &fdset))
+                    {
+                        socketInfo.second(sockedDescription);
+                    }
+                }
+            }
+        }
+
+        return CAPU_OK;
     }
 
 }

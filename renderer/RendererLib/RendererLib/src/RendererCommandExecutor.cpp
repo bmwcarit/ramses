@@ -61,7 +61,7 @@ namespace ramses_internal
             {
                 const SceneInfoCommand& command = m_executedCommands.getCommandData<SceneInfoCommand>(i);
                 LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneId " << command.sceneInformation.sceneID);
-                m_rendererSceneUpdater.handleScenePublished(command.sceneInformation.sceneID, command.clientID);
+                m_rendererSceneUpdater.handleScenePublished(command.sceneInformation.sceneID, command.clientID, command.sceneInformation.publicationMode);
                 break;
             }
             case ERendererCommand_UnpublishedScene:
@@ -441,6 +441,20 @@ namespace ramses_internal
                 m_frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ClientResourcesUpload, command.limitForClientResourcesUploadMicrosec);
                 m_frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, command.limitForSceneActionsApplyMicrosec);
                 m_frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::OffscreenBufferRender, command.limitForOffscreenBufferRenderMicrosec);
+                break;
+            }
+            case ERendererCommand_SetLimits_FlushesForceApply:
+            {
+                const SetFrameTimerLimitsCommmand& command = m_executedCommands.getCommandData<SetFrameTimerLimitsCommmand>(i);
+                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " max flushes before force apply: " << command.limitForPendingFlushesForceApply);
+                m_rendererSceneUpdater.setLimitFlushesForceApply(command.limitForPendingFlushesForceApply);
+                break;
+            }
+            case ERendererCommand_SetLimits_FlushesForceUnsubscribe:
+            {
+                const SetFrameTimerLimitsCommmand& command = m_executedCommands.getCommandData<SetFrameTimerLimitsCommmand>(i);
+                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " max flushes before force unsubscribe: " << command.limitForPendingFlushesForceUnsubscribe);
+                m_rendererSceneUpdater.setLimitFlushesForceUnsubscribe(command.limitForPendingFlushesForceUnsubscribe);
                 break;
             }
             case ERendererCommand_SetSkippingOfUnmodifiedBuffers:

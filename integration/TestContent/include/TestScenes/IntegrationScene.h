@@ -18,10 +18,10 @@ namespace ramses
     class Scene;
     class RenderGroup;
     class RenderPass;
+    class Node;
     class MeshNode;
     class Camera;
     class Effect;
-    class TranslateNode;
 }
 
 namespace ramses_internal
@@ -42,7 +42,7 @@ namespace ramses_internal
 
         void                   addMeshNodeToDefaultRenderGroup(const ramses::MeshNode& mesh, int32_t orderWithinGroup = 0);
         void                   setCameraToDefaultRenderPass(const ramses::Camera* camera);
-        ramses::TranslateNode& getDefaultCameraTranslationNode();
+        ramses::Node&          getDefaultCameraTranslationNode();
         ramses::Camera&        getDefaultCamera();
 
         ramses::RamsesClient&  m_client;
@@ -51,7 +51,7 @@ namespace ramses_internal
     private:
         ramses::RenderGroup&   m_defaultRenderGroup;
         ramses::RenderPass&    m_defaultRenderPass;
-        ramses::TranslateNode& m_defaultCameraTranslationNode;
+        ramses::Node&          m_defaultCameraTranslationNode;
         ramses::Camera*        m_defaultCamera;
     };
 }

@@ -10,6 +10,7 @@
 #define RAMSES_SCENESTATEEXECUTOR_H
 
 #include "RendererLib/SceneStateInfo.h"
+#include "Scene/EScenePublicationMode.h"
 
 namespace ramses_internal
 {
@@ -23,7 +24,7 @@ namespace ramses_internal
     public:
         SceneStateExecutor(const Renderer& renderer, ISceneGraphConsumerComponent& sceneGraphConsumerComponent, RendererEventCollector& rendererEventCollector);
 
-        void setPublished                     (SceneId sceneId, const Guid& clientWhereSceneIsAvailable);
+        void setPublished                     (SceneId sceneId, const Guid& clientWhereSceneIsAvailable, EScenePublicationMode mode);
         void setUnpublished                   (SceneId sceneId);
         void setSubscriptionRequested         (SceneId sceneId);
         void setSubscriptionPending           (SceneId sceneId);
@@ -50,6 +51,7 @@ namespace ramses_internal
         Bool checkIfCanBeHidden               (SceneId sceneId) const;
 
         ESceneState getSceneState(SceneId sceneId) const;
+        EScenePublicationMode getScenePublicationMode(SceneId sceneId) const;
 
     private:
         void rollBackToUnsubscribedAndTriggerIndirectEvents(ESceneState sceneState, SceneId sceneId);

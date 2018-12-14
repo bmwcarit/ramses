@@ -18,29 +18,20 @@
 #include "ramses-capu/os/TcpServerSocket.h"
 #include "ramses-capu/os/Thread.h"
 #include "ramses-capu/os/TcpSocket.h"
-#include "ramses-capu/os/Mutex.h"
-#include "ramses-capu/os/CondVar.h"
 #include "gmock/gmock-matchers.h"
 #include "gmock/gmock-generated-matchers.h"
+#include <mutex>
+#include <condition_variable>
 
 namespace ramses_capu_test
 {
-    ramses_capu::Mutex mutex;
-    ramses_capu::CondVar cv;
-    bool cond = false;
-    uint16_t chosenPort = 0;
-
-    class RandomPort
+    namespace
     {
-    public:
-        /**
-         * Gets a Random Port between 1024 and 10024
-         */
-        static uint16_t get()
-        {
-            return (rand() % 10000) + 40000; // 0-1023 = Well Known, 1024-49151 = User, 49152 - 65535 = Dynamic
-        }
-    };
+        std::mutex mutex;
+        std::condition_variable cv;
+        bool cond = false;
+        uint16_t chosenPort = 0;
+    }
 
     class ThreadClientTest : public ramses_capu::Runnable
     {
@@ -57,17 +48,15 @@ namespace ramses_capu_test
             ramses_capu::TcpSocket* cli_socket = new ramses_capu::TcpSocket();
 
             //wait for server to start up
-            mutex.lock();
-            while (!cond)
             {
-                cv.wait(mutex);
+                std::unique_lock<std::mutex> l(mutex);
+                cv.wait(l, [&](){ return cond; });
+                cond = false;
+                if (0 == m_port)
+                {
+                    m_port = chosenPort;
+                }
             }
-            cond = false;
-            if (0 == m_port)
-            {
-                m_port = chosenPort;
-            }
-            mutex.unlock();
             EXPECT_LT(0, m_port);
 
             //TRY TO CONNECT TO IPV6
@@ -96,10 +85,11 @@ namespace ramses_capu_test
             //CHECK VALUE
             EXPECT_EQ(6, communication_variable);
 
-            mutex.lock();
-            cond = true;
-            cv.signal();
-            mutex.unlock();
+            {
+                std::lock_guard<std::mutex> l(mutex);
+                cond = true;
+                cv.notify_one();
+            }
 
             //socket close
             EXPECT_EQ(ramses_capu::CAPU_OK, cli_socket->close());
@@ -126,17 +116,15 @@ namespace ramses_capu_test
             //connects to he given id
             ramses_capu::status_t result = ramses_capu::CAPU_ERROR;
             //wait for server to start up
-            mutex.lock();
-            while (!cond)
             {
-                cv.wait(mutex);
+                std::unique_lock<std::mutex> l(mutex);
+                cv.wait(l, [&](){ return cond; });
+                cond = false;
+                if (0 == m_port)
+                {
+                    m_port = chosenPort;
+                }
             }
-            if (0 == m_port)
-            {
-                m_port = chosenPort;
-            }
-            cond = false;
-            mutex.unlock();
             result = cli_socket.connect("localhost", m_port);
             ASSERT_TRUE(result == ramses_capu::CAPU_OK);
 
@@ -150,10 +138,11 @@ namespace ramses_capu_test
             EXPECT_EQ(ramses_capu::CAPU_ETIMEOUT, cli_socket.receive(reinterpret_cast<char*>(&communication_variable), sizeof(int32_t), numBytes));
 
             //client has received timeout, server can close socket
-            mutex.lock();
-            cond = true;
-            cv.signal();
-            mutex.unlock();
+            {
+                std::lock_guard<std::mutex> l(mutex);
+                cond = true;
+                cv.notify_one();
+            }
             //socket close
             EXPECT_EQ(ramses_capu::CAPU_OK, cli_socket.close());
         }
@@ -213,17 +202,15 @@ namespace ramses_capu_test
             cli_socket.setTimeout(200);
 
             //wait for server to start up
-            mutex.lock();
-            while (!cond)
             {
-                cv.wait(mutex);
+                std::unique_lock<std::mutex> l(mutex);
+                cv.wait(l, [&](){ return cond; });
+                cond = false;
+                if (0 == m_port)
+                {
+                    m_port = chosenPort;
+                }
             }
-            if (0 == m_port)
-            {
-                m_port = chosenPort;
-            }
-            cond = false;
-            mutex.unlock();
 
             ramses_capu::status_t connectStatus = ramses_capu::CAPU_ERROR;
             while (connectStatus != ramses_capu::CAPU_OK) {
@@ -257,10 +244,11 @@ namespace ramses_capu_test
 
             testSendOnASocketWherePreviousSendTimedOut(status);
 
-            mutex.lock();
-            cond = true;
-            cv.signal();
-            mutex.unlock();
+            {
+                std::lock_guard<std::mutex> l(mutex);
+                cond = true;
+                cv.notify_one();
+            }
 
             testCloseSocketOnASocketWherePreviousSendTimedOut(status);
 
@@ -296,10 +284,11 @@ namespace ramses_capu_test
             //accept connection
 
             //server is ready to accept clients
-            mutex.lock();
-            cond = true;
-            cv.signal();
-            mutex.unlock();
+            {
+                std::lock_guard<std::mutex> l(mutex);
+                cond = true;
+                cv.notify_one();
+            }
             ramses_capu::TcpSocket* new_socket = socket->accept();
 
             //receive data
@@ -318,13 +307,12 @@ namespace ramses_capu_test
             EXPECT_EQ(ramses_capu::CAPU_OK, new_socket->send(reinterpret_cast<char*>(&communication_variable), sizeof(int32_t), sentBytes));
 
             //wait with close until client has received data
-            mutex.lock();
-            while (!cond)
             {
-                cv.wait(mutex);
+                std::unique_lock<std::mutex> l(mutex);
+                cv.wait(l, [&](){ return cond; });
+                cond = false;
             }
-            cond = false;
-            mutex.unlock();
+
             //close session
             EXPECT_EQ(ramses_capu::CAPU_OK, new_socket->close());
             //deallocate session identifier
@@ -361,10 +349,11 @@ namespace ramses_capu_test
             EXPECT_EQ(ramses_capu::CAPU_OK, socket->listen(5));
 
             //server is ready to accept clients
-            mutex.lock();
-            cond = true;
-            cv.signal();
-            mutex.unlock();
+            {
+                std::lock_guard<std::mutex> l(mutex);
+                cond = true;
+                cv.notify_one();
+            }
             //accept connection
             ramses_capu::TcpSocket* new_socket = socket->accept();
             ramses_capu::status_t result = ramses_capu::CAPU_ERROR;
@@ -375,13 +364,11 @@ namespace ramses_capu_test
             EXPECT_EQ(5, communication_variable);
 
             //wait for timeout on client side
-            mutex.lock();
-            while (!cond)
             {
-                cv.wait(mutex);
+                std::unique_lock<std::mutex> l(mutex);
+                cv.wait(l, [&](){ return cond; });
+                cond = false;
             }
-            cond = false;
-            mutex.unlock();
 
             //close session
             EXPECT_EQ(ramses_capu::CAPU_OK, new_socket->close());
@@ -417,23 +404,22 @@ namespace ramses_capu_test
             EXPECT_EQ(ramses_capu::CAPU_OK, socket->listen(5));
 
             //server is ready to accept clients
-            mutex.lock();
-            cond = true;
-            cv.signal();
-            mutex.unlock();
+            {
+                std::lock_guard<std::mutex> l(mutex);
+                cond = true;
+                cv.notify_one();
+            }
             //accept connection
             ramses_capu::TcpSocket* new_socket = socket->accept();
 
             //do not call receive to cause a timeout on sender side
 
             //wait for timeout on client side
-            mutex.lock();
-            while (!cond)
             {
-                cv.wait(mutex);
+                std::unique_lock<std::mutex> l(mutex);
+                cv.wait(l, [&](){ return cond; });
+                cond = false;
             }
-            cond = false;
-            mutex.unlock();
 
             //close session
             EXPECT_EQ(ramses_capu::CAPU_OK, new_socket->close());
@@ -499,10 +485,8 @@ namespace ramses_capu_test
     {
         ramses_capu::TcpSocket* socket = new ramses_capu::TcpSocket();
         //pass null
-        uint16_t port = RandomPort::get();
-        EXPECT_EQ(ramses_capu::CAPU_EINVAL, socket->connect(NULL, port));
-
-        EXPECT_EQ(ramses_capu::CAPU_SOCKET_EADDR, socket->connect("www.test", port));
+        EXPECT_EQ(ramses_capu::CAPU_EINVAL, socket->connect(NULL, 22));
+        EXPECT_EQ(ramses_capu::CAPU_SOCKET_EADDR, socket->connect("www.test", 22));
 
         delete socket;
     }

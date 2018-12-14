@@ -6,7 +6,7 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "SceneViewer.hpp"
+#include "SceneViewer.h"
 
 #include "ramses-client.h"
 #include "ramses-utils.h"
@@ -131,17 +131,17 @@ namespace ramses_internal
         ramses::status_t validateStatus = scene.validate();
         if (validateStatus != ramses::StatusOK)
         {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene validate failed: " << client.getStatusMessage(validateStatus))
+            LOG_ERROR(CONTEXT_CLIENT, "Scene validate failed: " << client.getStatusMessage(validateStatus));
         }
 
-        LOG_INFO(CONTEXT_CLIENT, "Scene validation report: " << scene.getValidationReport(ramses::EValidationSeverity_Info))
+        LOG_INFO(CONTEXT_CLIENT, "Scene validation report: " << scene.getValidationReport(ramses::EValidationSeverity_Info));
 
         validateStatus = client.validate();
         if (validateStatus != ramses::StatusOK)
         {
-            LOG_ERROR(CONTEXT_CLIENT, "Client validate failed: " << client.getStatusMessage(validateStatus))
+            LOG_ERROR(CONTEXT_CLIENT, "Client validate failed: " << client.getStatusMessage(validateStatus));
         }
 
-        LOG_INFO(CONTEXT_CLIENT, "Client validation report: " << client.getValidationReport(ramses::EValidationSeverity_Info))
+        LOG_INFO(CONTEXT_CLIENT, "Client validation report: " << client.getValidationReport(ramses::EValidationSeverity_Info));
     }
 }

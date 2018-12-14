@@ -18,7 +18,6 @@
 namespace ramses
 {
     class OrthographicCamera;
-    class TranslateNode;
 }
 
 namespace ramses_internal

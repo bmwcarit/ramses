@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "EmbeddedCompositor_Wayland/WaylandCallbackResource.h"
-#include "UnixUtilities/UnixDomainSocketHelper.h"
+#include "WaylandUtilities/UnixDomainSocketHelper.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "WaylandUtilities/WaylandUtilities.h"
 #include "Utils/ThreadBarrier.h"
@@ -220,7 +220,7 @@ namespace ramses_internal
         m_client = wl_client_create(m_display, serverFD);
         ASSERT_TRUE(m_client != nullptr);
         wl_resource* resource = wl_resource_create(m_client, &wl_callback_interface, 1, 0);
-        WaylandCallbackResource waylandOutputResource(resource, true);
+        WaylandCallbackResource waylandCallbackResource(resource, true);
     }
 
     TEST_F(AWaylandCallbackResource, CanSendDone)

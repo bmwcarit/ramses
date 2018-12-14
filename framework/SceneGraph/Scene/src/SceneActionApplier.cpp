@@ -1923,7 +1923,7 @@ namespace ramses_internal
         isSync = (flushFlags & ESceneActionFlushBits_Synchronous) != 0;
         hasSizeInfo = (flushFlags & ESceneActionFlushBits_HasSizeInfo) != 0;
         const bool hasTimestamps = (flushFlags & ESceneActionFlushBits_HasTimestamps) != 0;
-        const bool hasFlushLatencyMonitoring = (flushFlags & ESceneActionFlushBits_HasFlushLatencyMonitoring) != 0;
+        const bool hasExpirationTimestamp = (flushFlags & ESceneActionFlushBits_HasExpirationTimestamp) != 0;
 
         if (hasSizeInfo)
         {
@@ -1931,21 +1931,17 @@ namespace ramses_internal
         }
         resourceChanges.getFromSceneAction(action);
 
-        flushTimeInfo.latencyLimit = std::chrono::milliseconds(0);
-        flushTimeInfo.externalTimestamp = FlushTimeClock::time_point(std::chrono::milliseconds(0));
-        if (hasFlushLatencyMonitoring)
+        flushTimeInfo.expirationTimestamp = FlushTime::InvalidTimestamp;
+        if (hasExpirationTimestamp)
         {
-            UInt64 latencyLimit = 0;
-            action.read(latencyLimit);
-            flushTimeInfo.latencyLimit = std::chrono::milliseconds(latencyLimit);
-
-            UInt64 externalTimestamp = 0;
-            action.read(externalTimestamp);
-            flushTimeInfo.externalTimestamp = FlushTimeClock::time_point(std::chrono::milliseconds(externalTimestamp));
+            UInt64 expirationTimestamp = 0;
+            action.read(expirationTimestamp); // TODO vaclav remove when not needed - dummy value, written on client side for back compatibility
+            action.read(expirationTimestamp);
+            flushTimeInfo.expirationTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(expirationTimestamp));
         }
         UInt64 internalTimestamp = 0;
         action.read(internalTimestamp);
-        flushTimeInfo.internalTimestamp = FlushTimeClock::time_point(std::chrono::milliseconds(internalTimestamp));
+        flushTimeInfo.internalTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(internalTimestamp));
 
         if (hasTimestamps)
         {

@@ -432,4 +432,74 @@ namespace ramses_internal
 
         state->disconnectAll();
     }
+
+    TEST_P(ACommunicationSystemWithDaemonMultiParticipant, canEstablishConnectionToNewParticipantWithSameGuid)
+    {
+        const Guid csw1Id("00000000-0000-0000-0000-000000000002");
+        const Guid csw2Id("00000000-0000-0000-0000-000000000001");   // csw2 id MUST be smaller => forces csw1 to initiate connections
+
+        std::unique_ptr<CommunicationSystemTestWrapper> csw1{CommunicationSystemTestFactory::ConstructTestWrapper(*state, "csw1", csw1Id)};
+        std::unique_ptr<CommunicationSystemTestWrapper> csw2{CommunicationSystemTestFactory::ConstructTestWrapper(*state, "csw2", csw2Id)};
+
+        EXPECT_TRUE(csw1->commSystem->connectServices());
+        {
+            PlatformGuard g(csw1->frameworkLock);
+            EXPECT_CALL(csw1->statusUpdateListener, newParticipantHasConnected(csw2->id));
+        }
+        csw1->registerForConnectionUpdates();
+
+        EXPECT_TRUE(csw2->commSystem->connectServices());
+        {
+            PlatformGuard g(csw2->frameworkLock);
+            EXPECT_CALL(csw2->statusUpdateListener, newParticipantHasConnected(csw1->id));
+        }
+        csw2->registerForConnectionUpdates();
+
+        state->startUpHook();
+
+        ASSERT_TRUE(state->event.waitForEvents(2));
+
+        {
+            PlatformGuard g(csw1->frameworkLock);
+            EXPECT_CALL(csw1->statusUpdateListener, participantHasDisconnected(csw2->id));
+        }
+        {
+            PlatformGuard g(csw2->frameworkLock);
+            EXPECT_CALL(csw2->statusUpdateListener, participantHasDisconnected(csw1->id));
+        }
+        csw2->commSystem->disconnectServices();
+        ASSERT_TRUE(state->event.waitForEvents(2));
+
+        Mock::VerifyAndClearExpectations(&csw1->statusUpdateListener);
+
+        // construct new csw2 with same guid but mot likely other port
+        csw2 = CommunicationSystemTestFactory::ConstructTestWrapper(*state, "csw2", csw2Id);
+
+        {
+            PlatformGuard g(csw1->frameworkLock);
+            EXPECT_CALL(csw1->statusUpdateListener, newParticipantHasConnected(csw2->id));
+        }
+        {
+            PlatformGuard g(csw2->frameworkLock);
+            EXPECT_CALL(csw2->statusUpdateListener, newParticipantHasConnected(csw1->id));
+        }
+        EXPECT_TRUE(csw2->commSystem->connectServices());
+        csw2->registerForConnectionUpdates();
+
+        ASSERT_TRUE(state->event.waitForEvents(2));
+
+        {
+            PlatformGuard g(csw1->frameworkLock);
+            EXPECT_CALL(csw1->statusUpdateListener, participantHasDisconnected(csw2->id));
+        }
+        {
+            PlatformGuard g(csw2->frameworkLock);
+            EXPECT_CALL(csw2->statusUpdateListener, participantHasDisconnected(csw1->id));
+        }
+        csw1->commSystem->disconnectServices();
+        csw2->commSystem->disconnectServices();
+        ASSERT_TRUE(state->event.waitForEvents(2));
+
+        state->shutdownHook();
+    }
 }

@@ -12,6 +12,7 @@
 #include "Collections/IOutputStream.h"
 #include "Resource/EResourceCompressionStatus.h"
 #include "Utils/VoidOutputStream.h"
+#include "Collections/IInputStream.h"
 
 namespace ramses_internal
 {

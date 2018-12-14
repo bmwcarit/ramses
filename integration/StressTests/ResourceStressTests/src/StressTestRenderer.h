@@ -27,7 +27,7 @@ namespace ramses_internal
     public:
         StressTestRenderer(ramses::RamsesFramework& framework, const ramses::RendererConfig& config);
 
-        ramses::displayId_t createDisplay(uint32_t offsetX, uint32_t width, uint32_t height, int32_t argc = 0, const char* argv[] = 0);
+        ramses::displayId_t createDisplay(uint32_t offsetX, uint32_t width, uint32_t height, uint32_t displayIndex, int32_t argc = 0, const char* argv[] = 0);
         ramses::offscreenBufferId_t createOffscreenBuffer(ramses::displayId_t displayId, uint32_t width, uint32_t height, bool interruptable);
         void startLooping();
         void setFPS(uint32_t fpsAsInteger);

@@ -150,7 +150,6 @@ namespace ramses_internal
                 File resourceFile(resourceFileName);
                 BinaryFileOutputStream resourceOutputStream(resourceFile);
                 ResourcePersistation::WriteNamedResourcesWithTOCToStream(resourceOutputStream, managedResourceVec, false);
-                resourceOutputStream.flush();
             }
 
             ramses_internal::ResourceTableOfContents resourceFileToc;
@@ -1215,7 +1214,6 @@ namespace ramses_internal
             resources.push_back(resource1);
 
             ResourcePersistation::WriteNamedResourcesWithTOCToStream(resourceOutputStream, resources, false);
-            resourceOutputStream.flush();
 
             delete resource;
         }

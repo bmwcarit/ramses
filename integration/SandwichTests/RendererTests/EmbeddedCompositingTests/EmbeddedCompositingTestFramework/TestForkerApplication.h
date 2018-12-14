@@ -10,6 +10,7 @@
 #define RAMSES_TESTFORKERAPPLICATION_H
 
 #include "Collections/String.h"
+#include "WaylandUtilities/UnixDomainSocketHelper.h"
 #include "NamedPipe.h"
 
 namespace ramses_internal
@@ -17,7 +18,7 @@ namespace ramses_internal
     class TestForkerApplication
     {
     public:
-        TestForkerApplication(const String& testToForkerPipeName, const String& testToWaylandClientPipeName, const String& waylandClientToTestPipeName);
+        TestForkerApplication(const String& embeddedCompositorDisplayName, const String& testToForkerPipeName, const String& testToWaylandClientPipeName, const String& waylandClientToTestPipeName);
         void run();
 
     private:
@@ -25,11 +26,16 @@ namespace ramses_internal
         void startTestApplication();
         void waitForTestApplicationExit();
         void killTestApplication();
+        void setEnvironmentVariableWaylandDisplay();
+        void setEnvironmentVariableWaylandSocket();
 
         NamedPipe m_testToForkerPipe;
         const String m_testToWaylandClientPipeName;
         const String m_waylandClientToTestPipeName;
         pid_t m_testApplicationProcessId;
+
+        const String m_embeddedCompositorDisplayName;
+        ramses_internal::UnixDomainSocketHelper m_socketHelper;
     };
 }
 

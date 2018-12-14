@@ -34,13 +34,14 @@ namespace ramses_internal
         RendererCommandBuffer& commandBuffer,
         ISceneGraphConsumerComponent& sceneGraphConsumerComponent,
         IPlatformFactory& platformFactory,
+        RendererStatistics& rendererStatistics,
         const String& monitorFilename)
         : m_rendererCommandBuffer(commandBuffer)
-        , m_latencyMonitor(m_rendererEventCollector)
         , m_rendererScenes(m_rendererEventCollector)
-        , m_renderer(platformFactory, m_rendererScenes, m_rendererEventCollector, m_frameTimer, m_latencyMonitor)
+        , m_expirationMonitor(m_rendererScenes, m_rendererEventCollector)
+        , m_renderer(platformFactory, m_rendererScenes, m_rendererEventCollector, m_frameTimer, m_expirationMonitor, rendererStatistics)
         , m_sceneStateExecutor(m_renderer, sceneGraphConsumerComponent, m_rendererEventCollector)
-        , m_rendererSceneUpdater(m_renderer, m_rendererScenes, m_sceneStateExecutor, m_rendererEventCollector, m_frameTimer, m_latencyMonitor)
+        , m_rendererSceneUpdater(m_renderer, m_rendererScenes, m_sceneStateExecutor, m_rendererEventCollector, m_frameTimer, m_expirationMonitor)
         , m_rendererCommandExecutor(m_renderer, m_rendererCommandBuffer, m_rendererSceneUpdater, m_rendererEventCollector, m_frameTimer)
         , m_cmdScreenshot                                  (m_rendererCommandBuffer)
         , m_cmdLogRendererInfo                             (m_rendererCommandBuffer)
@@ -198,7 +199,7 @@ namespace ramses_internal
         m_rendererSceneUpdater.updateScenes();
         m_renderer.updateSystemCompositorController();
 
-        m_latencyMonitor.checkLatency(LatencyMonitor::Clock::now());
+        m_expirationMonitor.checkExpiredScenes(FlushTime::Clock::now());
 
         LOG_TRACE(CONTEXT_PROFILING, "WindowedRenderer::update() end update section of frame");
     }

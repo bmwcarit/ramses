@@ -45,7 +45,6 @@ namespace ramses_internal
         testFramework.createTestCaseWithDefaultDisplay(ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesOnlySecondSurface, *this, "ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesOnlySecondSurface");
         testFramework.createTestCaseWithDefaultDisplay(ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesBothSurfaces, *this, "ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesBothSurfaces");
         testFramework.createTestCaseWithDefaultDisplay(ClientUsesShellSurface, *this, "ClientUsesShellSurface");
-        testFramework.createTestCaseWithDefaultDisplay(ClientGetsCorrectOutputValues, *this, "ClientGetsCorrectOutputValues");
         testFramework.createTestCaseWithDefaultDisplay(ShowFallbackTextureWhenIVISurfaceDestroyed, *this, "ShowFallbackTextureWhenIVISurfaceDestroyed");
         testFramework.createTestCaseWithDefaultDisplay(ClientCanNotCreateTwoIVISurfacesWithSameIdForSameSurface, *this, "ClientCanNotCreateTwoIVISurfacesWithSameIdForSameSurface");
         testFramework.createTestCaseWithDefaultDisplay(ClientCanNotCreateTwoIVISurfacesWithDifferentIdsForSameSurface, *this, "ClientCanNotCreateTwoIVISurfacesWithDifferentIdsForSameSurface");
@@ -98,7 +97,7 @@ namespace ramses_internal
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceToTestApplication(3840, 10, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
-            testFramework.sendSetTriangleColorToTestApplication(ETriangleColor_Blue);
+            testFramework.sendSetTriangleColorToTestApplication(ETriangleColor::Blue);
             testFramework.sendRenderOneFrameToTestApplication(surfaceId);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_BlueTriangleStreamTexture_SmallRes");
@@ -189,8 +188,9 @@ namespace ramses_internal
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
             testFramework.sendRenderOneFrameToTestApplication(surfaceId);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.hideScene(sceneId);
+            testFramework.unmapScene(sceneId);
             testFramework.getScenesRegistry().destroyScenes();
-            testFramework.waitForSceneUnmapped(sceneId);
             testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture");
 
@@ -218,10 +218,10 @@ namespace ramses_internal
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
 
             const ETriangleColor colors[] = {
-                ETriangleColor_Red,
-                ETriangleColor_Blue,
-                ETriangleColor_DarkGrey,
-                ETriangleColor_White
+                ETriangleColor::Red,
+                ETriangleColor::Blue,
+                ETriangleColor::DarkGrey,
+                ETriangleColor::White
             };
 
             const String screenshotFiles[] = {"EC_RedTriangleStreamTexture",
@@ -290,7 +290,7 @@ namespace ramses_internal
 
             TestApplicationSurfaceId surfaceIdNew = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceIdNew, streamTextureSourceId);
-            testFramework.sendSetTriangleColorToTestApplication(ETriangleColor_Blue);
+            testFramework.sendSetTriangleColorToTestApplication(ETriangleColor::Blue);
             testFramework.sendRenderOneFrameToTestApplication(surfaceIdNew);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
 
@@ -314,7 +314,7 @@ namespace ramses_internal
 
             TestApplicationSurfaceId surfaceIdNew = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceIdNew, streamTextureSourceId);
-            testFramework.sendSetTriangleColorToTestApplication(ETriangleColor_Blue);
+            testFramework.sendSetTriangleColorToTestApplication(ETriangleColor::Blue);
             testFramework.sendRenderOneFrameToTestApplication(surfaceIdNew);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
 
@@ -402,9 +402,9 @@ namespace ramses_internal
 
             for (uint32_t i = 0; i < cycles; i++)
             {
-                testResultValue &= renderAndCheckOneSharedMemoryFrame(testFramework, surfaceId, ETriangleColor_Red, streamTextureSourceId, frameCounter, "EC_ShMemRedTriangle");
-                testResultValue &= renderAndCheckOneSharedMemoryFrame(testFramework, surfaceId, ETriangleColor_Blue, streamTextureSourceId, frameCounter, "EC_ShMemBlueTriangle");
-                testResultValue &= renderAndCheckOneSharedMemoryFrame(testFramework, surfaceId, ETriangleColor_White, streamTextureSourceId, frameCounter, "EC_ShMemWhiteTriangle");
+                testResultValue &= renderAndCheckOneSharedMemoryFrame(testFramework, surfaceId, ETriangleColor::Red, streamTextureSourceId, frameCounter, "EC_ShMemRedTriangle");
+                testResultValue &= renderAndCheckOneSharedMemoryFrame(testFramework, surfaceId, ETriangleColor::Blue, streamTextureSourceId, frameCounter, "EC_ShMemBlueTriangle");
+                testResultValue &= renderAndCheckOneSharedMemoryFrame(testFramework, surfaceId, ETriangleColor::White, streamTextureSourceId, frameCounter, "EC_ShMemWhiteTriangle");
             }
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
@@ -544,51 +544,6 @@ namespace ramses_internal
             }
 
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture");
-
-            testFramework.stopTestApplicationAndWaitUntilDisconnected();
-            break;
-        }
-
-        case ClientGetsCorrectOutputValues:
-        {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
-            testFramework.startTestApplicationAndWaitUntilConnected();
-            TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
-            testFramework.waitForSurfaceAvailableForStreamTexture(streamTextureSourceId);
-
-            int32_t testApplicationOutputWidth;
-            int32_t testApplicationOutputHeight;
-            int32_t testApplicationOutputScale;
-            uint32_t testApplicationDoneCount;
-            testFramework.getOutputValuesFromTestApplication(testApplicationOutputWidth, testApplicationOutputHeight, testApplicationOutputScale, testApplicationDoneCount);
-
-            int32_t compositorOutputWidth;
-            int32_t compositorOutputHeight;
-            testFramework.getOutputResolutionFromEmbeddedCompositor(compositorOutputWidth, compositorOutputHeight);
-
-            if (testApplicationOutputWidth != compositorOutputWidth || testApplicationOutputHeight != compositorOutputHeight)
-            {
-                LOG_ERROR(CONTEXT_RENDERER,
-                          "SingleStreamTextureTests::runEmbeddedCompositingTestCase output resolution wrong - from test application: "
-                              << testApplicationOutputWidth << " / " << testApplicationOutputHeight << " from embedded compositor: " << compositorOutputWidth << " / "
-                              << compositorOutputHeight);
-                testResultValue = false;
-            }
-
-            if (testApplicationOutputScale != 1)
-            {
-                LOG_ERROR(CONTEXT_RENDERER,
-                          "SingleStreamTextureTests::runEmbeddedCompositingTestCase wrong output scale value: " << testApplicationOutputScale);
-                testResultValue = false;
-            }
-
-            if (testApplicationDoneCount != 1)
-            {
-                LOG_ERROR(CONTEXT_RENDERER,
-                          "SingleStreamTextureTests::runEmbeddedCompositingTestCase wrong output done count value: " << testApplicationDoneCount);
-                testResultValue = false;
-            }
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
             break;
@@ -791,7 +746,7 @@ namespace ramses_internal
             testFramework.waitForSurfaceAvailableForStreamTexture(streamTextureSourceId);
 
             RendererLogContext context(ERendererLogLevelFlag_Details);
-            testFramework.getEmbeddedCompositor().logInfos(context);
+            testFramework.logEmbeddedCompositor(context);
 
             String outputString = context.getStream().c_str();
 

@@ -47,21 +47,21 @@ namespace ramses
     status_t Node::addChild(Node& node)
     {
         const status_t status = impl.addChild(node.impl);
-        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(node))
+        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(node));
         return status;
     }
 
     status_t Node::removeChild(Node& node)
     {
         const status_t status = impl.removeChild(node.impl);
-        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(node))
+        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(node));
         return status;
     }
 
     status_t Node::removeAllChildren()
     {
         const status_t status =  impl.removeAllChildren();
-        LOG_HL_CLIENT_API_NOARG(status)
+        LOG_HL_CLIENT_API_NOARG(status);
         return status;
     }
 
@@ -83,7 +83,7 @@ namespace ramses
     status_t Node::setParent(Node& node)
     {
         const status_t status = impl.setParent(node.impl);
-        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(node))
+        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(node));
         return status;
     }
 

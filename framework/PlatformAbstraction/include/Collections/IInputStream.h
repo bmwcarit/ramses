@@ -11,36 +11,63 @@
 
 #include "PlatformAbstraction/PlatformError.h"
 #include "PlatformAbstraction/PlatformTypes.h"
+#include <type_traits>
 
 namespace ramses_internal
 {
-    class String;
-    class Guid;
-    class Matrix44f;
-    struct ResourceContentHash;
-
     class IInputStream
     {
     public:
-        virtual ~IInputStream();
-        virtual IInputStream& operator>>(Int32& value) = 0;
-        virtual IInputStream& operator>>(Int64& value) = 0;
-        virtual IInputStream& operator>>(UInt32& value) = 0;
-        virtual IInputStream& operator>>(UInt64& value) = 0;
-        virtual IInputStream& operator>>(String&  value) = 0;
-        virtual IInputStream& operator>>(Bool&  value) = 0;
-        virtual IInputStream& operator>>(Float& value) = 0;
-        virtual IInputStream& operator>>(UInt16& value) = 0;
-        virtual IInputStream& operator>>(Guid& value) = 0;
-        virtual IInputStream& operator>>(Matrix44f& value) = 0;
-        virtual IInputStream& operator>>(ResourceContentHash& value) = 0;
+        virtual ~IInputStream() = default;
+
         virtual IInputStream& read(Char* data, UInt32 size) = 0;
         virtual EStatus getState() const = 0;
     };
 
-    inline
-    IInputStream::~IInputStream()
+    inline IInputStream& operator>>(IInputStream& stream, int32_t& value)
     {
+        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+    }
+
+    inline IInputStream& operator>>(IInputStream& stream, Int64& value)
+    {
+        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+    }
+
+    inline IInputStream& operator>>(IInputStream& stream, UInt32& value)
+    {
+        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+    }
+
+    inline IInputStream& operator>>(IInputStream& stream, UInt64& value)
+    {
+        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+    }
+
+    inline IInputStream& operator>>(IInputStream& stream, Bool&  value)
+    {
+        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+    }
+
+    inline IInputStream& operator>>(IInputStream& stream, Float& value)
+    {
+        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+    }
+
+    inline IInputStream& operator>>(IInputStream& stream, UInt16& value)
+    {
+        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+    }
+
+    template<typename E,
+             typename = typename std::enable_if<std::is_enum<E>::value  && !std::is_convertible<E, int>::value>::type>
+    IInputStream& operator>>(IInputStream& stream, E& value)
+    {
+        typename std::underlying_type<E>::type valueInUnderlyingType;
+        stream >> valueInUnderlyingType;
+        value = static_cast<E>(valueInUnderlyingType);
+
+        return stream;
     }
 }
 

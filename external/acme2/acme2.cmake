@@ -164,16 +164,15 @@ MACRO(ACME_MODULE)
         ACME_INFO("- ${ACME_NAME} [${MSG}]")
         SET(${PROJECT_NAME}_WILL_NOT_FIND "${ACME_NAME};${${PROJECT_NAME}_WILL_NOT_FIND}" CACHE INTERNAL "")
     ELSE()
-        ACME_INFO("+ ${ACME_NAME} (${ACME_TYPE})")
-
-        # error message(s) created for this module created?
         IF(NOT "${MSG}" STREQUAL "")
             ACME_WARNING("build enabled, but")
             FOREACH(M ${MSG})
                 ACME_WARNING("- ${M}")
             ENDFOREACH()
-            ACME_WARNING("expect build issues.")
+            ACME_ERROR("aborting configuration")
         ENDIF()
+
+        ACME_INFO("+ ${ACME_NAME} (${ACME_TYPE})")
 
         # build module
         INCLUDE(${ACME2_BASE_DIR}/internal/module_template.cmake)

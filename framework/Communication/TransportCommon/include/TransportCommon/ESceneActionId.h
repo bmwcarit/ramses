@@ -203,7 +203,7 @@ namespace ramses_internal
         ESceneActionFlushBits_Synchronous               = BIT(0),
         ESceneActionFlushBits_HasSizeInfo               = BIT(1),
         ESceneActionFlushBits_HasTimestamps             = BIT(2),
-        ESceneActionFlushBits_HasFlushLatencyMonitoring = BIT(3)
+        ESceneActionFlushBits_HasExpirationTimestamp    = BIT(3)
     };
 
 #ifndef CreateNameForEnumID

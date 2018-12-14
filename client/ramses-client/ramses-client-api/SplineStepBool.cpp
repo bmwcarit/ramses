@@ -26,7 +26,7 @@ namespace ramses
     status_t SplineStepBool::setKey(splineTimeStamp_t timeStamp, bool value)
     {
         const status_t status = impl.setSplineKeyStepBool(timeStamp, value);
-        LOG_HL_CLIENT_API2(status, timeStamp, value)
+        LOG_HL_CLIENT_API2(status, timeStamp, value);
         return status;
     }
 

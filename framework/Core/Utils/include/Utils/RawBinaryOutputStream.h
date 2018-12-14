@@ -11,12 +11,7 @@
 
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "PlatformAbstraction/PlatformMemory.h"
-#include "PlatformAbstraction/PlatformStringUtils.h"
-#include "Collections/String.h"
-#include "Collections/Guid.h"
-#include "Math3d/Matrix44f.h"
 #include "Collections/IOutputStream.h"
-
 
 namespace ramses_internal
 {
@@ -25,21 +20,7 @@ namespace ramses_internal
     public:
         explicit RawBinaryOutputStream(UInt8* data, UInt32 size);
 
-        IOutputStream& operator<<(const Float value) override;
-        IOutputStream& operator<<(const Int32 value) override;
-        IOutputStream& operator<<(const UInt32 value) override;
-        IOutputStream& operator<<(const Int64 value) override;
-        IOutputStream& operator<<(const UInt64 value) override;
-        IOutputStream& operator<<(const String& value) override;
-        IOutputStream& operator<<(const Bool value) override;
-        IOutputStream& operator<<(const Char* value) override;
-        IOutputStream& operator<<(const Guid& value) override;
-        IOutputStream& operator<<(const UInt16 value) override;
-        IOutputStream& operator<<(const Matrix44f& value) override;
-        IOutputStream& operator<<(const ResourceContentHash& value) override;
         IOutputStream& write(const void* data, const UInt32 size) override;
-
-        EStatus flush() override;
 
         const UInt8* getData() const;
         UInt32 getSize() const;
@@ -71,82 +52,6 @@ namespace ramses_internal
         m_data += sizeof(T);
     }
 
-    inline IOutputStream& RawBinaryOutputStream::operator<<(const Float value)
-    {
-        writeBaseType(value);
-        return *this;
-    }
-
-    inline IOutputStream& RawBinaryOutputStream::operator<<(const Int32 value)
-    {
-        writeBaseType(value);
-        return *this;
-    }
-
-    inline IOutputStream& RawBinaryOutputStream::operator<<(const UInt32 value)
-    {
-        writeBaseType(value);
-        return *this;
-    }
-
-    inline IOutputStream& RawBinaryOutputStream::operator<<(const Int64 value)
-    {
-        writeBaseType(value);
-        return *this;
-    }
-
-    inline IOutputStream& RawBinaryOutputStream::operator<<(const UInt64 value)
-    {
-        writeBaseType(value);
-        return *this;
-    }
-
-    inline IOutputStream& RawBinaryOutputStream::operator<<(const String& value)
-    {
-        const UInt32 length = static_cast<UInt32>(value.getLength());
-        writeBaseType(length);
-        write(value.c_str(), length);
-        return *this;
-    }
-
-    inline IOutputStream& RawBinaryOutputStream::operator<<(const Bool value)
-    {
-        writeBaseType(value);
-        return *this;
-    }
-
-    inline IOutputStream& RawBinaryOutputStream::operator<<(const Char* value)
-    {
-        const UInt32 length = PlatformStringUtils::StrLen(value);
-        writeBaseType(length);
-        write(value, length);
-        return *this;
-    }
-
-    inline IOutputStream& RawBinaryOutputStream::operator<<(const Guid& value)
-    {
-        writeBaseType(value.getGuidData());
-        return *this;
-    }
-
-    inline IOutputStream& RawBinaryOutputStream::operator<<(const UInt16 value)
-    {
-        writeBaseType(value);
-        return *this;
-    }
-
-    inline IOutputStream& RawBinaryOutputStream::operator<<(const Matrix44f& value)
-    {
-        writeBaseType(value);
-        return *this;
-    }
-
-    inline IOutputStream& RawBinaryOutputStream::operator<<(const ResourceContentHash& value)
-    {
-        writeBaseType(value);
-        return *this;
-    }
-
     inline IOutputStream& RawBinaryOutputStream::write(const void* data, const UInt32 size)
     {
         assert(m_data + size <= m_dataBase + m_size);
@@ -168,11 +73,6 @@ namespace ramses_internal
     inline UInt32 RawBinaryOutputStream::getBytesWritten() const
     {
         return static_cast<UInt32>(m_data - m_dataBase);
-    }
-
-    inline EStatus RawBinaryOutputStream::flush()
-    {
-        return EStatus_RAMSES_OK;
     }
 }
 

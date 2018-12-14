@@ -9,7 +9,7 @@
 #include <gtest/gtest.h>
 
 #include "ClientTestUtils.h"
-#include "ramses-client-api/TranslateNode.h"
+#include "ramses-client-api/Node.h"
 #include "ramses-client-api/Animation.h"
 #include "ramses-client-api/AnimationSequence.h"
 #include "ramses-client-api/SplineLinearFloat.h"
@@ -31,8 +31,8 @@ namespace ramses
             m_spline = animationSystem.createSplineLinearFloat("spline");
             m_spline->setKey(0u, 1.f);
             m_spline->setKey(SplineDuration, 0.f);
-            TranslateNode* node = m_scene.createTranslateNode();
-            m_animProperty = animationSystem.createAnimatedProperty(*node, EAnimatedPropertyComponent_X, "prop");
+            Node* node = m_scene.createNode();
+            m_animProperty = animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Translation, EAnimatedPropertyComponent_X, "prop");
             m_animation = animationSystem.createAnimation(*m_animProperty, *m_spline, "animation");
             m_sequence = animationSystem.createAnimationSequence("sequence");
         }
@@ -42,11 +42,11 @@ namespace ramses
         void createSomeAnimationsAndPutToSequence(AnimationVector& animations)
         {
             animations.clear();
-            TranslateNode* node = m_scene.createTranslateNode();
-            AnimatedProperty* animProperty2 = animationSystem.createAnimatedProperty(*node, EAnimatedPropertyComponent_X, "prop2");
-            AnimatedProperty* animProperty3 = animationSystem.createAnimatedProperty(*node, EAnimatedPropertyComponent_X, "prop3");
-            AnimatedProperty* animProperty4 = animationSystem.createAnimatedProperty(*node, EAnimatedPropertyComponent_X, "prop4");
-            AnimatedProperty* animProperty5 = animationSystem.createAnimatedProperty(*node, EAnimatedPropertyComponent_X, "prop5");
+            Node* node = m_scene.createNode();
+            AnimatedProperty* animProperty2 = animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Translation, EAnimatedPropertyComponent_X, "prop2");
+            AnimatedProperty* animProperty3 = animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Translation, EAnimatedPropertyComponent_X, "prop3");
+            AnimatedProperty* animProperty4 = animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Translation, EAnimatedPropertyComponent_X, "prop4");
+            AnimatedProperty* animProperty5 = animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Translation, EAnimatedPropertyComponent_X, "prop5");
             Animation* animation2 = animationSystem.createAnimation(*animProperty2, *m_spline, "animation2");
             Animation* animation3 = animationSystem.createAnimation(*animProperty3, *m_spline, "animation3");
             Animation* animation4 = animationSystem.createAnimation(*animProperty4, *m_spline, "animation4");

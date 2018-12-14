@@ -13,25 +13,8 @@ file(GLOB
     RAMSES_FRAMEWORK_API_INCLUDE_BASE
     ramses-framework-api/include)
 
-ACME_MODULE(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
-    NAME                    ramses-framework-api
-    TYPE                    STATIC_LIBRARY
-    ENABLE_INSTALL          ${ramses-sdk_INSTALL_STATIC_LIBS}
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    INCLUDE_BASE            ramses-framework-api/include
-    FILES_PRIVATE_HEADER    ${RAMSES_FRAMEWORK_API_INCLUDE_BASE}
-
-    FILES_SOURCE            ramses-framework-api/src/dummy.cpp
-)
-
-INSTALL(DIRECTORY ramses-framework-api/include/ DESTINATION "${PROJECT_INSTALL_HEADER}" COMPONENT ramses-sdk-devel)
+add_library(ramses-framework-api INTERFACE)
+target_include_directories(ramses-framework-api INTERFACE ${RAMSES_FRAMEWORK_API_INCLUDE_BASE})
 
 IF (ramses-sdk_ENABLE_TCP_SUPPORT)
     SET(ramses-framework-TCP_MIXIN
@@ -84,6 +67,11 @@ ACME_MODULE(
     # files of this module
     #==========================================================================
 
+    # public api
+    FILES_PRIVATE_HEADER    ramses-framework-api/include/*.h
+                            ramses-framework-api/include/ramses-framework-api/*.h
+    DEPENDENCIES            ramses-framework-api
+
     # FrameworkAPI
     INCLUDE_BASE            Watchdog/include
     FILES_PRIVATE_HEADER    Watchdog/include/Watchdog/*.h
@@ -95,8 +83,7 @@ ACME_MODULE(
                             PlatformAbstraction/include/PlatformAbstraction/*.h
                             PlatformAbstraction/include/PlatformAbstraction/arch/*/*.h
     FILES_SOURCE            PlatformAbstraction/src/*.cpp
-    DEPENDENCIES            ramses-framework-api
-                            ramses-capu
+    DEPENDENCIES            ramses-capu
                             lz4
 
     INCLUDE_BASE            Core/Math3d/include
@@ -222,11 +209,13 @@ if (ramses-sdk_CONSOLE_LOGLEVEL)
     target_compile_definitions(ramses-framework PRIVATE "-DRAMSES_CONSOLE_LOGLEVEL_DEFAULT=${ramses-sdk_CONSOLE_LOGLEVEL}")
 endif()
 
+INSTALL(DIRECTORY ramses-framework-api/include/ DESTINATION "${PROJECT_INSTALL_HEADER}" COMPONENT ramses-sdk-devel)
+
 set(ramses-shared-lib-MIXIN
     ${ramses-shared-lib-MIXIN}
     INCLUDE_BASE ${RAMSES_FRAMEWORK_API_INCLUDE_BASE}
     FILES_SOURCE ${RAMSES_FRAMEWORK_FILES_SOURCE}
-    DEPENDENCIES  ramses-framework ramses-framework-api
+    DEPENDENCIES  ramses-framework
     CACHE INTERNAL "")
 
 IF (${ramses-sdk_BUILD_TESTS})

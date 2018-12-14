@@ -9,7 +9,7 @@
 #ifndef RAMSES_SCENECOMMANDTYPES_H
 #define RAMSES_SCENECOMMANDTYPES_H
 
-#include "Command.h"
+#include "CommandT.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "ramses-framework-api/EValidationSeverity.h"
 #include "Collections/String.h"

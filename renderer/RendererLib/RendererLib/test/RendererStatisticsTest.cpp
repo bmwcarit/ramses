@@ -291,6 +291,64 @@ TEST_F(ARendererStatistics, doesNotLogInterruptedFlushesIfThereAreNone)
     EXPECT_FALSE(logOutputContains("FApplyInterrupted"));
 }
 
+TEST_F(ARendererStatistics, tracksClientResourceUploads)
+{
+    stats.clientResourceUploaded(2u);
+    stats.frameFinished(0u);
+    EXPECT_TRUE(logOutputContains("clientResUploaded 1 (2 B)"));
+
+    stats.reset();
+    EXPECT_FALSE(logOutputContains("clientResUploaded"));
+
+    stats.clientResourceUploaded(2u);
+    stats.clientResourceUploaded(77u);
+    stats.clientResourceUploaded(100u);
+    stats.frameFinished(0u);
+    EXPECT_TRUE(logOutputContains("clientResUploaded 3 (179 B)"));
+
+    stats.reset();
+    EXPECT_FALSE(logOutputContains("clientResUploaded"));
+}
+
+TEST_F(ARendererStatistics, tracksSceneResourceUploads)
+{
+    stats.sceneResourceUploaded(sceneId1, 2u);
+    stats.frameFinished(0u);
+    EXPECT_TRUE(logOutputContains("RSUploaded 1 (2 B)"));
+
+    stats.reset();
+    EXPECT_FALSE(logOutputContains("RSUploaded"));
+
+    stats.sceneResourceUploaded(sceneId1, 2u);
+    stats.sceneResourceUploaded(sceneId1, 77u);
+    stats.sceneResourceUploaded(sceneId2, 100u);
+    stats.frameFinished(0u);
+    EXPECT_TRUE(logOutputContains("RSUploaded 2 (79 B)")); //scene1
+    EXPECT_TRUE(logOutputContains("RSUploaded 1 (100 B)")); //scene2
+
+    stats.reset();
+    EXPECT_FALSE(logOutputContains("RSUploaded"));
+}
+
+TEST_F(ARendererStatistics, tracksShaderCompilation)
+{
+    stats.shaderCompiled();
+    stats.frameFinished(0u);
+    EXPECT_TRUE(logOutputContains("shadersCompiled 1"));
+
+    stats.reset();
+    EXPECT_FALSE(logOutputContains("shadersCompiled"));
+
+    stats.shaderCompiled();
+    stats.shaderCompiled();
+    stats.shaderCompiled();
+    stats.frameFinished(0u);
+    EXPECT_TRUE(logOutputContains("shadersCompiled 3"));
+
+    stats.reset();
+    EXPECT_FALSE(logOutputContains("shadersCompiled"));
+}
+
 TEST_F(ARendererStatistics, confidenceTest_fullLogOutput)
 {
     for (size_t period = 0u; period < 2u; ++period)
@@ -301,6 +359,11 @@ TEST_F(ARendererStatistics, confidenceTest_fullLogOutput)
         stats.flushApplied(sceneId2);
         stats.framebufferSwapped(disp1);
         stats.frameFinished(0);
+
+        stats.clientResourceUploaded(2u);
+        stats.clientResourceUploaded(77u);
+        stats.shaderCompiled();
+        stats.shaderCompiled();
 
         stats.trackArrivedFlush(sceneId1, 123, 5, 3, 4);
         stats.flushBlocked(sceneId1);
@@ -319,6 +382,10 @@ TEST_F(ARendererStatistics, confidenceTest_fullLogOutput)
         stats.framebufferSwapped(disp2);
         stats.frameFinished(0);
 
+        stats.sceneResourceUploaded(sceneId1, 3u);
+        stats.sceneResourceUploaded(sceneId1, 77u);
+        stats.sceneResourceUploaded(sceneId2, 200u);
+
         stats.sceneRendered(sceneId1);
         stats.framebufferSwapped(disp1);
         stats.offscreenBufferSwapped(disp1, ob1, true);
@@ -328,10 +395,12 @@ TEST_F(ARendererStatistics, confidenceTest_fullLogOutput)
         EXPECT_TRUE(logOutputContains("FPS [minFrameTime "));
         EXPECT_TRUE(logOutputContains("us, maxFrameTime "));
         EXPECT_TRUE(logOutputContains("], drawcallsPerFrame 25, numFrames 4"));
+        EXPECT_TRUE(logOutputContains("clientResUploaded 2 (79 B)"));
+        EXPECT_TRUE(logOutputContains("shadersCompiled 2"));
         EXPECT_TRUE(logOutputContains("FB1: 3; OB11: 1 (intr: 1)"));
         EXPECT_TRUE(logOutputContains("FB2: 2"));
-        EXPECT_TRUE(logOutputContains("Scene 11: rendered 2, framesFArrived 3, framesFApplied 1, framesFBlocked 2, maxFramesWithNoFApplied 2, maxFramesFBlocked 2, FArrived 3, FApplied 1, actions/F (123/123/123.000000), RC+/F (5/5/5.000000), RC-/F (3/3/3.000000), RS/F (4/4/4.000000)"));
-        EXPECT_TRUE(logOutputContains("Scene 22: rendered 2, framesFArrived 2, framesFApplied 1, framesFBlocked 1, maxFramesWithNoFApplied 3, maxFramesFBlocked 1, FArrived 2, FApplied 1, actions/F (6/6/6.000000), RC+/F (7/7/7.000000), RC-/F (8/8/8.000000), RS/F (9/9/9.000000)"));
+        EXPECT_TRUE(logOutputContains("Scene 11: rendered 2, framesFArrived 3, framesFApplied 1, framesFBlocked 2, maxFramesWithNoFApplied 2, maxFramesFBlocked 2, FArrived 3, FApplied 1, actions/F (123/123/123.000000), RC+/F (5/5/5.000000), RC-/F (3/3/3.000000), RS/F (4/4/4.000000), RSUploaded 2 (80 B)"));
+        EXPECT_TRUE(logOutputContains("Scene 22: rendered 2, framesFArrived 2, framesFApplied 1, framesFBlocked 1, maxFramesWithNoFApplied 3, maxFramesFBlocked 1, FArrived 2, FApplied 1, actions/F (6/6/6.000000), RC+/F (7/7/7.000000), RC-/F (8/8/8.000000), RS/F (9/9/9.000000), RSUploaded 1 (200 B)"));
 
         stats.reset();
     }

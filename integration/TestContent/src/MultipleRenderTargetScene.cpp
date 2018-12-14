@@ -12,8 +12,6 @@
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
-#include "ramses-client-api/TranslateNode.h"
-#include "ramses-client-api/TransformationNode.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
@@ -139,7 +137,7 @@ namespace ramses_internal
         meshNode->setAppearance(*appearance);
         meshNode->setGeometryBinding(*geometry);
 
-        ramses::TranslateNode* transNode = m_scene.createTranslateNode();
+        ramses::Node* transNode = m_scene.createNode();
         transNode->setTranslation(translation.x, translation.y, translation.z);
         meshNode->setParent(*transNode);
 
@@ -167,7 +165,7 @@ namespace ramses_internal
     {
         ramses::MeshNode& meshNode = createMesh(getMRTEffect(state));
 
-        ramses::TransformationNode& transNode = *m_scene.createTransformationNode();
+        ramses::Node& transNode = *m_scene.createNode();
         transNode.addChild(meshNode);
         transNode.translate(0.0f, -0.5f, -5.0f);
         if (state == DEPTH_WRITTEN_AND_READ)

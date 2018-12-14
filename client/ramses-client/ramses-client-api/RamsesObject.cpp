@@ -33,7 +33,7 @@ namespace ramses
     status_t RamsesObject::setName(const char* name)
     {
         const status_t status =impl.setName(*this, name);
-        LOG_HL_CLIENT_API1(status, name)
+        LOG_HL_CLIENT_API1(status, name);
         return status;
     }
 

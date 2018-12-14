@@ -9,7 +9,6 @@
 #include "NodeVisibilityPerfTest.h"
 #include "PerformanceTestUtils.h"
 #include "ramses-client-api/Node.h"
-#include "ramses-client-api/VisibilityNode.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/RamsesObjectTypes.h"
 #include "ramses-client-api/Scene.h"
@@ -25,7 +24,7 @@ void NodeVisibilityPerfTest::initTest(ramses::RamsesClient& client, ramses::Scen
 
     if (m_testState == NodeVisibilityTest_WideGraph_RootNode)
     {
-        m_targetNode = m_scene->createVisibilityNode();
+        m_targetNode = m_scene->createNode();
         m_targetNode->addChild(PerformanceTestUtils::BuildGraphOfNodes(scene, 2u, 12, ramses::ERamsesObjectType_MeshNode)); // 2^12 => 4096 nodes
     }
     else
@@ -65,9 +64,9 @@ void NodeVisibilityPerfTest::initTest(ramses::RamsesClient& client, ramses::Scen
     m_scene->flush();
 }
 
-ramses::VisibilityNode* NodeVisibilityPerfTest::injectVisibilityNodeAsParent(ramses::Node* target)
+ramses::Node* NodeVisibilityPerfTest::injectVisibilityNodeAsParent(ramses::Node* target)
 {
-    ramses::VisibilityNode* newNode = m_scene->createVisibilityNode();
+    ramses::Node* newNode = m_scene->createNode();
 
     if (target->hasParent())
     {

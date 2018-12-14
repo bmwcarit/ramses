@@ -47,18 +47,19 @@ namespace ramses_internal
     void SceneResourceUploader::UploadTextureBuffer(const IScene& scene, TextureBufferHandle handle, IRendererResourceManager& resourceManager)
     {
         const TextureBuffer& texBuffer = scene.getTextureBuffer(handle);
-        const MipMapSize mipMap0Size = texBuffer.mipMapDimensions.front();
-        resourceManager.uploadTextureBuffer(handle, mipMap0Size.width, mipMap0Size.height, texBuffer.textureFormat, static_cast<UInt32>(texBuffer.mipMapDimensions.size()), scene.getSceneId());
+        const auto& mipMaps = texBuffer.mipMaps;
+        const auto& mip0 = mipMaps[0];
+        resourceManager.uploadTextureBuffer(handle, mip0.width, mip0.height, texBuffer.textureFormat, static_cast<UInt32>(mipMaps.size()), scene.getSceneId());
     }
 
     void SceneResourceUploader::UpdateTextureBuffer(const IScene& scene, TextureBufferHandle handle, IRendererResourceManager& resourceManager)
     {
         const TextureBuffer& texBuffer = scene.getTextureBuffer(handle);
-        const auto& mipSizes = texBuffer.mipMapDimensions;
-        for (UInt32 mipLevel = 0u; mipLevel < mipSizes.size(); ++mipLevel)
+        const auto& mipMaps = texBuffer.mipMaps;
+        for (UInt32 mipLevel = 0u; mipLevel < mipMaps.size(); ++mipLevel)
         {
-            const MipMapSize mipSize = mipSizes[mipLevel];
-            resourceManager.updateTextureBuffer(handle, mipLevel, 0u, 0u, mipSize.width, mipSize.height, texBuffer.mipMapData[mipLevel].data(), scene.getSceneId());
+            const auto& mip = mipMaps[mipLevel];
+            resourceManager.updateTextureBuffer(handle, mipLevel, 0u, 0u, mip.width, mip.height, texBuffer.mipMaps[mipLevel].data.data(), scene.getSceneId());
         }
     }
 }

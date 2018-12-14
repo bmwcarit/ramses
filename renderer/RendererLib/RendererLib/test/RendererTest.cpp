@@ -17,7 +17,7 @@
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/RendererLogContext.h"
 #include "RendererLib/DisplayEventHandlerManager.h"
-#include "RendererLib/LatencyMonitor.h"
+#include "RendererLib/SceneExpirationMonitor.h"
 #include "RendererEventCollector.h"
 #include "DisplayControllerMock.h"
 #include "Collections/Pair.h"
@@ -34,9 +34,9 @@ class ARenderer : public ::testing::TestWithParam<bool>
 public:
     ARenderer()
         : platformFactoryMock(GetParam())
-        , latencyMonitor(rendererEventCollector)
         , rendererScenes(rendererEventCollector)
-        , renderer(platformFactoryMock, rendererScenes, rendererEventCollector, latencyMonitor)
+        , expirationMonitor(rendererScenes, rendererEventCollector)
+        , renderer(platformFactoryMock, rendererScenes, rendererEventCollector, expirationMonitor, rendererStatistics)
     {
         sceneRenderInterrupted.incrementRenderableIdx();
         sceneRenderInterrupted2.incrementRenderableIdx();
@@ -45,10 +45,10 @@ public:
 
     ~ARenderer()
     {
-        ramses_foreach(createdDisplays, display)
-        {
-            renderer.destroyDisplayContext(display->first);
-        }
+        for (const auto& dispIt : createdDisplays)
+            renderer.destroyDisplayContext(dispIt.first);
+        for (const auto& sceneIt : rendererScenes)
+            expirationMonitor.stopMonitoringScene(sceneIt.key);
     }
 
     DisplayHandle addDisplayController()
@@ -193,33 +193,22 @@ public:
         return static_cast<SystemCompositorControllerMock*>(platformFactoryMock.getSystemCompositorController());
     }
 
-    void setLatencyCheckingForScenes(std::initializer_list<SceneId> scenes)
+    void initiateExpirationMonitoring(std::initializer_list<SceneId> scenes)
     {
         // A workaround to be able to check if scene was reported as rendered.
-        // Simulate flush with recent time stamp and then another one with timestamp long ago.
-        // If the scene IS NOT reported as rendered - the initial (recent) timestamp is used to check.
-        // If the scene IS reported as rendered - the second (long ago) timestamp is used to check.
+        // Expiration monitor holds TS for applied flushes and TS for rendered scene.
+        // On rendered the TS of rendered scene is simply TS of last applied flush.
+        // Rendered scene TS can either be invalid - never reported as rendered,
+        // or the value below if reported as rendered
         for (auto sceneId : scenes)
-        {
-            latencyMonitor.onFlushApplied(sceneId, LatencyMonitor::Clock::time_point(std::chrono::milliseconds(1000)), std::chrono::milliseconds(10));
-            latencyMonitor.onFlushApplied(sceneId, LatencyMonitor::Clock::time_point(std::chrono::milliseconds(100)), std::chrono::milliseconds(10));
-        }
+            expirationMonitor.onFlushApplied(sceneId, currentFakeTime);
     }
 
-    void expectScenesReportedToLatencyCheckerAsRendered(std::initializer_list<SceneId> expectedScenesToBeReported)
+    void expectScenesReportedToExpirationMonitorAsRendered(std::initializer_list<SceneId> expectedScenesToBeReported)
     {
-        latencyMonitor.checkLatency(LatencyMonitor::Clock::time_point(std::chrono::milliseconds(1000)));
-
-        RendererEventVector events;
-        rendererEventCollector.dispatchEvents(events);
-        EXPECT_EQ(expectedScenesToBeReported.size(), events.size());
         for (auto sceneId : expectedScenesToBeReported)
         {
-            auto matchesEvent = [sceneId](const RendererEvent& e) { return e.sceneId == sceneId; };
-            auto it = std::find_if(events.begin(), events.end(), matchesEvent);
-            ASSERT_TRUE(it != events.end());
-            EXPECT_EQ(ERendererEventType_SceneUpdateLatencyExceededLimit, it->eventType);
-            events.erase(it);
+            EXPECT_NE(FlushTime::InvalidTimestamp, expirationMonitor.getExpirationTimestampOfRenderedScene(sceneId));
         }
     }
 
@@ -227,8 +216,9 @@ protected:
     StrictMock<PlatformFactoryStrictMock>       platformFactoryMock;
     RendererCommandBuffer                       rendererCommandBuffer;
     RendererEventCollector                      rendererEventCollector;
-    LatencyMonitor                              latencyMonitor;
     RendererScenes                              rendererScenes;
+    SceneExpirationMonitor                      expirationMonitor;
+    RendererStatistics                          rendererStatistics;
     StrictMock<RendererMockWithStrictMockDisplay> renderer;
 
     const SceneRenderExecutionIterator sceneRenderBegin{};
@@ -242,6 +232,8 @@ protected:
     Sequence SeqRender;
     // sequence of ordered expectations at beginning of render (display events, can render frame, etc.)
     Sequence SeqPreRender;
+
+    const FlushTime::Clock::time_point currentFakeTime{ std::chrono::milliseconds(1000) };
 };
 
 INSTANTIATE_TEST_CASE_P(, ARenderer, ::testing::Values(false, true));
@@ -3143,7 +3135,7 @@ TEST_P(ARenderer, canMapSceneWhileThereIsInterruption)
     unmapScene(sceneId2);
 }
 
-TEST_P(ARenderer, doesNotReportSceneIfNotRenderedToLatencyMonitor)
+TEST_P(ARenderer, doesNotReportSceneIfNotRenderedToExpirationMonitor)
 {
     const DisplayHandle displayHandle = addDisplayController();
     const SceneId sceneIdFB(1u);
@@ -3153,7 +3145,7 @@ TEST_P(ARenderer, doesNotReportSceneIfNotRenderedToLatencyMonitor)
     createScene(sceneIdOB);
     createScene(sceneIdOBint);
 
-    setLatencyCheckingForScenes({ sceneIdOB, sceneIdFB, sceneIdOBint });
+    initiateExpirationMonitoring({ sceneIdOB, sceneIdFB, sceneIdOBint });
 
     DeviceResourceHandle ob(316u);
     DeviceResourceHandle obInt(317u);
@@ -3170,17 +3162,17 @@ TEST_P(ARenderer, doesNotReportSceneIfNotRenderedToLatencyMonitor)
     expectSwapBuffers();
     doOneRendererLoop();
 
-    expectScenesReportedToLatencyCheckerAsRendered({});
+    expectScenesReportedToExpirationMonitorAsRendered({});
 
     unmapScene(sceneIdFB);
     unmapScene(sceneIdOB);
     unmapScene(sceneIdOBint);
-    latencyMonitor.stopMonitoringScene(sceneIdFB);
-    latencyMonitor.stopMonitoringScene(sceneIdOB);
-    latencyMonitor.stopMonitoringScene(sceneIdOBint);
+    expirationMonitor.stopMonitoringScene(sceneIdFB);
+    expirationMonitor.stopMonitoringScene(sceneIdOB);
+    expirationMonitor.stopMonitoringScene(sceneIdOBint);
 }
 
-TEST_P(ARenderer, reportsSceneAsRenderedToLatencyMonitor)
+TEST_P(ARenderer, reportsSceneAsRenderedToExpirationMonitor)
 {
     const DisplayHandle displayHandle = addDisplayController();
     const SceneId sceneIdFB(1u);
@@ -3190,7 +3182,7 @@ TEST_P(ARenderer, reportsSceneAsRenderedToLatencyMonitor)
     createScene(sceneIdOB);
     createScene(sceneIdOBint);
 
-    setLatencyCheckingForScenes({ sceneIdOB, sceneIdFB, sceneIdOBint });
+    initiateExpirationMonitoring({ sceneIdOB, sceneIdFB, sceneIdOBint });
 
     DeviceResourceHandle ob(316u);
     DeviceResourceHandle obInt(317u);
@@ -3214,7 +3206,7 @@ TEST_P(ARenderer, reportsSceneAsRenderedToLatencyMonitor)
     expectSwapBuffers();
     doOneRendererLoop();
 
-    expectScenesReportedToLatencyCheckerAsRendered({ sceneIdOB, sceneIdFB, sceneIdOBint });
+    expectScenesReportedToExpirationMonitorAsRendered({ sceneIdOB, sceneIdFB, sceneIdOBint });
 
     hideScene(sceneIdFB);
     hideScene(sceneIdOB);
@@ -3222,12 +3214,12 @@ TEST_P(ARenderer, reportsSceneAsRenderedToLatencyMonitor)
     unmapScene(sceneIdFB);
     unmapScene(sceneIdOB);
     unmapScene(sceneIdOBint);
-    latencyMonitor.stopMonitoringScene(sceneIdFB);
-    latencyMonitor.stopMonitoringScene(sceneIdOB);
-    latencyMonitor.stopMonitoringScene(sceneIdOBint);
+    expirationMonitor.stopMonitoringScene(sceneIdFB);
+    expirationMonitor.stopMonitoringScene(sceneIdOB);
+    expirationMonitor.stopMonitoringScene(sceneIdOBint);
 }
 
-TEST_P(ARenderer, reportsSceneAsRenderedToLatencyMonitorOnlyAfterFullyRenderedAndNotDuringInterruption)
+TEST_P(ARenderer, reportsSceneAsRenderedToExpirationMonitorOnlyAfterFullyRenderedAndNotDuringInterruption)
 {
     const DisplayHandle displayHandle = addDisplayController();
     const SceneId sceneIdFB(1u);
@@ -3235,7 +3227,7 @@ TEST_P(ARenderer, reportsSceneAsRenderedToLatencyMonitorOnlyAfterFullyRenderedAn
     createScene(sceneIdFB);
     createScene(sceneIdOBint);
 
-    setLatencyCheckingForScenes({ sceneIdFB, sceneIdOBint });
+    initiateExpirationMonitoring({ sceneIdFB, sceneIdOBint });
 
     DeviceResourceHandle obInt(317u);
     renderer.registerOffscreenBuffer(displayHandle, obInt, 1u, 1u, true);
@@ -3254,7 +3246,7 @@ TEST_P(ARenderer, reportsSceneAsRenderedToLatencyMonitorOnlyAfterFullyRenderedAn
     doOneRendererLoop();
 
     // only FB scene reported as rendered, OB scene is interrupted
-    expectScenesReportedToLatencyCheckerAsRendered({ sceneIdFB });
+    expectScenesReportedToExpirationMonitorAsRendered({ sceneIdFB });
 
     expectFrameBufferRendered(displayHandle, false, false);
     expectInterruptibleOffscreenBufferRendered(displayHandle, { obInt }, { { false, true } }, true);
@@ -3262,12 +3254,12 @@ TEST_P(ARenderer, reportsSceneAsRenderedToLatencyMonitorOnlyAfterFullyRenderedAn
     doOneRendererLoop();
 
     // OB scene is reported now as it was fully rendered
-    expectScenesReportedToLatencyCheckerAsRendered({ sceneIdOBint });
+    expectScenesReportedToExpirationMonitorAsRendered({ sceneIdOBint });
 
     hideScene(sceneIdFB);
     hideScene(sceneIdOBint);
     unmapScene(sceneIdFB);
     unmapScene(sceneIdOBint);
-    latencyMonitor.stopMonitoringScene(sceneIdFB);
-    latencyMonitor.stopMonitoringScene(sceneIdOBint);
+    expirationMonitor.stopMonitoringScene(sceneIdFB);
+    expirationMonitor.stopMonitoringScene(sceneIdOBint);
 }

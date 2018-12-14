@@ -9,17 +9,27 @@
 #include "WaylandHandler.h"
 #include "TestWaylandApplication.h"
 #include "TestSignalHandler.h"
-#include "PlatformAbstraction/PlatformSignal.h"
 #include "SHMTriangleDrawer.h"
+#include "TestScenes/MultipleTrianglesScene.h"
+
+#include "RendererTestInstance.h"
+#include "ramses-renderer-api/DisplayConfig.h"
+#include "ramses-renderer-api/RamsesRenderer.h"
+#include "ramses-framework-api/RamsesFrameworkConfig.h"
+
+#include "DisplayConfigImpl.h"
+#include "PlatformAbstraction/PlatformSignal.h"
+#include "RendererLib/DisplayConfig.h"
+#include "Utils/BinaryInputStream.h"
 
 namespace ramses_internal
 {
     TestWaylandApplication::TestWaylandApplication(const String& testToWaylandClientPipeName, const String& waylandClientToTestPipeName)
         : m_testToWaylandClientPipe(testToWaylandClientPipeName, false)
         , m_waylandClientToTestPipe(waylandClientToTestPipeName, false)
-        , m_triangleColor(ETriangleColor_Red)
+        , m_triangleColor(ETriangleColor::Red)
     {
-        setTriangleColor(ETriangleColor_Red);
+        setTriangleColor(ETriangleColor::Red);
         TestSignalHandler::RegisterSignalHandlersForCurrentProcess("TestWaylandApplication");
 
         m_testToWaylandClientPipe.open();
@@ -69,26 +79,24 @@ namespace ramses_internal
         }
     }
 
+    //TODO Mohamed: remove!
+
     template <typename T>
     bool TestWaylandApplication::readFromTestFramework(T& value)
     {
         return readFromTestFramework(static_cast<void*>(&value), sizeof(value));
     }
 
-    bool TestWaylandApplication::readStringFromTestFramework(String& string)
+    bool TestWaylandApplication::readBufferFromTestFramework()
     {
-        UInt32 stringLength;
-        if (!readFromTestFramework(stringLength))
-        {
+        UInt32 bufferSize;
+        if (!readFromTestFramework(bufferSize))
             return false;
-        }
 
-        Vector<Char> characterVector(stringLength);
-        if (!readFromTestFramework(characterVector.data(), sizeof(Char) * stringLength))
-        {
+        m_readingBuffer.reserve(bufferSize);
+        if (!readFromTestFramework(m_readingBuffer.data(), bufferSize))
             return false;
-        }
-        string = String(characterVector.data(), 0, stringLength - 1);
+
         return true;
     }
 
@@ -96,36 +104,33 @@ namespace ramses_internal
     {
         LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): waiting for message...");
 
-        uint32_t messageAsUInt;
-        if (!readFromTestFramework(messageAsUInt))
-        {
+        if (!readBufferFromTestFramework())
             return false;
-        }
+        BinaryInputStream bis(m_readingBuffer.data());
 
-        switch(static_cast<ETestWaylandApplicationMessage>(messageAsUInt))
+        ETestWaylandApplicationMessage message = ETestWaylandApplicationMessage::AttachBuffer;
+        bis >> message;
+
+        switch(message)
         {
-        case ETestWaylandApplicationMessage_StopApplication:
+        case ETestWaylandApplicationMessage::StopApplication:
         {
             LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message stop application");
             return false;
         }
-        case ETestWaylandApplicationMessage_CreateSurface:
+        case ETestWaylandApplicationMessage::CreateSurface:
         {
-            struct
-            {
-                TestApplicationSurfaceId surfaceId;
-                UInt32 width;
-                UInt32 height;
-                UInt32 swapInterval;
-                Bool useEGL;
-            } params;
-            if (!readFromTestFramework(params))
-            {
-                return false;
-            }
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message create surface size " << params.width << "/" << params.height << " swap interval " << params.swapInterval);
+            TestApplicationSurfaceId surfaceId;
+            UInt32 width;
+            UInt32 height;
+            UInt32 swapInterval;
+            Bool useEGL;
 
-            bool bSuccess = m_waylandHandler.createWindow(params.surfaceId, params.width, params.height, params.swapInterval, params.useEGL);
+            bis >> surfaceId.getReference() >> width >> height >> swapInterval >> useEGL;
+
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message create surface size " << width << "/" << height << " swap interval " << swapInterval);
+
+            bool bSuccess = m_waylandHandler.createWindow(surfaceId, width, height, swapInterval, useEGL);
             if (!bSuccess)
             {
                 LOG_ERROR(CONTEXT_RENDERER, "TestWaylandApplication: Could not setup Wayland");
@@ -133,128 +138,101 @@ namespace ramses_internal
 
             return true;
         }
-        case ETestWaylandApplicationMessage_CreateShellSurface:
+        case ETestWaylandApplicationMessage::CreateShellSurface:
         {
-            struct
-            {
-                TestApplicationSurfaceId surfaceId;
-                TestApplicationShellSurfaceId shellSurfaceId;
-            } params;
-            if (!readFromTestFramework(params))
-            {
-                return false;
-            }
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message create shell surface for surface with id " << params.surfaceId.getValue());
-            m_waylandHandler.createShellSurface(params.surfaceId, params.shellSurfaceId);
+            TestApplicationSurfaceId surfaceId;
+            TestApplicationShellSurfaceId shellSurfaceId;
+
+            bis >> surfaceId.getReference() >> shellSurfaceId.getReference();
+
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message create shell surface for surface with id " << surfaceId.getValue());
+            m_waylandHandler.createShellSurface(surfaceId, shellSurfaceId);
             return true;
         }
-        case ETestWaylandApplicationMessage_DestroyShellSurface:
+        case ETestWaylandApplicationMessage::DestroyShellSurface:
         {
             TestApplicationShellSurfaceId shellSurfaceId;
-            if (!readFromTestFramework(shellSurfaceId))
-            {
-                return false;
-            }
+
+            bis >> shellSurfaceId.getReference();
+
             LOG_INFO(CONTEXT_RENDERER,
                      "TestWaylandApplication::handleIncomingMessages(): received message destroy shell surface with id "
                          << shellSurfaceId.getValue());
             m_waylandHandler.destroyShellSurface(shellSurfaceId);
             return true;
         }
-        case ETestWaylandApplicationMessage_SetShellSurfaceTitle:
+        case ETestWaylandApplicationMessage::SetShellSurfaceTitle:
         {
             TestApplicationShellSurfaceId shellSurfaceId;
-            if (!readFromTestFramework(shellSurfaceId))
-            {
-                return false;
-            }
             String title;
-            if (!readStringFromTestFramework(title))
-            {
-                return false;
-            }
+
+            bis >> shellSurfaceId.getReference() >> title;
+
             LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message set shell surface title for shell surface with id " << shellSurfaceId.getValue() << " title: " << title);
             m_waylandHandler.setShellSurfaceTitle(shellSurfaceId, title);
             return true;
         }
-        case ETestWaylandApplicationMessage_SetShellSurfaceDummyValues:
+        case ETestWaylandApplicationMessage::SetShellSurfaceDummyValues:
         {
-            struct
-            {
-                TestApplicationSurfaceId      surfaceId;
-                TestApplicationShellSurfaceId shellSurfaceId;
-            } params;
-            if (!readFromTestFramework(params))
-            {
-                return false;
-            }
+            TestApplicationSurfaceId      surfaceId;
+            TestApplicationShellSurfaceId shellSurfaceId;
+            bis >> surfaceId.getReference() >> shellSurfaceId.getReference();
+
             LOG_INFO(CONTEXT_RENDERER,
                      "TestWaylandApplication::handleIncomingMessages(): received message set shell surface dummy values "
                      "surface with id "
-                         << params.surfaceId.getValue());
-            m_waylandHandler.setShellSurfaceDummyValues(params.surfaceId, params.shellSurfaceId);
+                         << surfaceId.getValue());
+            m_waylandHandler.setShellSurfaceDummyValues(surfaceId, shellSurfaceId);
             return true;
         }
-        case ETestWaylandApplicationMessage_DestroySurface:
+        case ETestWaylandApplicationMessage::DestroySurface:
         {
             TestApplicationSurfaceId surfaceId;
-            if (!readFromTestFramework(surfaceId))
-            {
-                return false;
-            }
+
+            bis >> surfaceId.getReference();
+
             LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message destroy surface with id " << surfaceId.getValue());
             m_waylandHandler.destroyWindow(surfaceId);
             return true;
         }
-        case ETestWaylandApplicationMessage_DestroyIVISurface:
+        case ETestWaylandApplicationMessage::DestroyIVISurface:
         {
             TestApplicationSurfaceId surfaceId;
-            if (!readFromTestFramework(surfaceId))
-            {
-                return false;
-            }
+
+            bis >> surfaceId.getReference();
+
             LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message destroy ivi surface for surface with id " << surfaceId.getValue());
             m_waylandHandler.destroyIVISurface(surfaceId);
             return true;
         }
-        case ETestWaylandApplicationMessage_CreateIVISurface:
-        {
-            struct
-            {
-                TestApplicationSurfaceId surfaceId;
-                UInt32 surfaceIviId;
-            } params;
-            if (!readFromTestFramework(params))
-            {
-                return false;
-            }
-
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message create ivi surface for surface with id " << params.surfaceId.getValue() << " ivi-id: " << params.surfaceIviId);
-            m_waylandHandler.createIVISurface(params.surfaceId, params.surfaceIviId);
-            return true;
-        }
-        case ETestWaylandApplicationMessage_RenderOneFrame:
-        {
-            struct
-            {
-                TestApplicationSurfaceId surfaceId;
-                bool useCallback;
-            } params;
-            if (!readFromTestFramework(params))
-            {
-                return false;
-            }
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message render one frame to surface with id " << params.surfaceId.getValue());
-            renderFrame(params.surfaceId, params.useCallback);
-            return true;
-        }
-        case ETestWaylandApplicationMessage_AttachBuffer:
+        case ETestWaylandApplicationMessage::CreateIVISurface:
         {
             TestApplicationSurfaceId surfaceId;
-            if (!readFromTestFramework(surfaceId))
-            {
-                return false;
-            }
+            UInt32 surfaceIviId;
+
+            bis >> surfaceId.getReference() >> surfaceIviId;
+
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message create ivi surface for surface with id " << surfaceId.getValue() << " ivi-id: " << surfaceIviId);
+            m_waylandHandler.createIVISurface(surfaceId, surfaceIviId);
+            return true;
+        }
+        case ETestWaylandApplicationMessage::RenderOneFrame:
+        {
+            TestApplicationSurfaceId surfaceId;
+            bool useCallback;
+
+            bis >> surfaceId.getReference() >> useCallback;
+
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message render one frame to surface with id " << surfaceId.getValue());
+            renderFrame(surfaceId, useCallback);
+            return true;
+        }
+        case ETestWaylandApplicationMessage::AttachBuffer:
+        {
+            TestApplicationSurfaceId surfaceId;
+
+            bis >> surfaceId.getReference();
+
             LOG_INFO(CONTEXT_RENDERER,
                      "TestWaylandApplication::handleIncomingMessages(): received message attach buffer "
                      "with id "
@@ -262,114 +240,106 @@ namespace ramses_internal
             attachBuffer(surfaceId);
             return true;
         }
-        case ETestWaylandApplicationMessage_DestroyBuffers:
+        case ETestWaylandApplicationMessage::DestroyBuffers:
         {
             LOG_INFO(CONTEXT_RENDERER,
                      "TestWaylandApplication::handleIncomingMessages(): received message destroy buffers");
             m_waylandHandler.deleteSHMBuffers();
             return true;
         }
-        case ETestWaylandApplicationMessage_SetSurfaceSize:
+        case ETestWaylandApplicationMessage::SetSurfaceSize:
         {
-            struct
-            {
-                TestApplicationSurfaceId surfaceId;
-                UInt32 width;
-                UInt32 height;
-            } params;
-            if (!readFromTestFramework(params))
-            {
-                return false;
-            }
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message change size for surface with id  " << params.surfaceId.getValue() << " to " << params.width << "*" << params.height);
-            m_waylandHandler.resizeWindow(params.surfaceId, params.width, params.height);
-            return true;
-        }
-        case ETestWaylandApplicationMessage_SetTriangleColor:
-        {
-            ETriangleColor triangleColor;
-            if (!readFromTestFramework(triangleColor))
-            {
-                return false;
-            }
-            setTriangleColor(triangleColor);
+            TestApplicationSurfaceId surfaceId;
+            UInt32 width;
+            UInt32 height;
 
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message set triangle color " << triangleColor);
+            bis >> surfaceId.getReference() >> width >> height;
+
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message change size for surface with id  " << surfaceId.getValue() << " to " << width << "*" << height);
+            m_waylandHandler.resizeWindow(surfaceId, width, height);
             return true;
         }
-        case ETestWaylandApplicationMessage_AdditionalConnectToEmbeddedCompositor:
+        case ETestWaylandApplicationMessage::SetTriangleColor:
+        {
+            uint32_t triangleColor;
+
+            bis >> triangleColor;
+
+            setTriangleColor(static_cast<ETriangleColor>(triangleColor));
+
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message set triangle color " <<  static_cast<uint32_t>(triangleColor));
+            return true;
+        }
+        case ETestWaylandApplicationMessage::AdditionalConnectToEmbeddedCompositor:
         {
             LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message additional connect to embedded compositor");
             m_waylandHandler2.initWithSharedDisplayConnection(m_waylandHandler);
             return true;
         }
 
-        case ETestWaylandApplicationMessage_DetachBufferFromSurface:
+        case ETestWaylandApplicationMessage::DetachBufferFromSurface:
         {
             TestApplicationSurfaceId surfaceId;
-            if (!readFromTestFramework(surfaceId))
-            {
-                return false;
-            }
+
+            bis >> surfaceId.getReference();
+
             LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message detach buffer from surface with id " << surfaceId.getValue());
             detachBufferFromSurface(surfaceId);
             return true;
         }
 
-        case ETestWaylandApplicationMessage_GetNumberOfAllocatedSHMBuffer:
+        case ETestWaylandApplicationMessage::GetNumberOfAllocatedSHMBuffer:
         {
             LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message get number of allocated shm buffer");
             const UInt32 numberOfAllocatedSHMBuffer = m_waylandHandler.getNumberOfAllocatedSHMBuffer();
             sendAnswerToTestFramework(numberOfAllocatedSHMBuffer);
             return true;
         }
-        case ETestWaylandApplicationMessage_RenderOneFrameToTwoSurfaces:
+        case ETestWaylandApplicationMessage::RenderOneFrameToTwoSurfaces:
         {
-            struct
-            {
-                TestApplicationSurfaceId surfaceId1;
-                TestApplicationSurfaceId surfaceId2;
-                bool useCallback;
-            } params;
-            if (!readFromTestFramework(params))
-            {
-                return false;
-            }
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message render one frame to two surfaces with ivi id's " << params.surfaceId1.getValue() << ", " << params.surfaceId2.getValue());
-            renderFrameToTwoSurfaces(params.surfaceId1, params.surfaceId2, params.useCallback);
+            TestApplicationSurfaceId surfaceId1;
+            TestApplicationSurfaceId surfaceId2;
+            bool useCallback;
+
+            bis >> surfaceId1.getReference() >> surfaceId2.getReference() >> useCallback;
+
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message render one frame to two surfaces with ivi id's " << surfaceId1.getValue() << ", " << surfaceId2.getValue());
+            renderFrameToTwoSurfaces(surfaceId1, surfaceId2, useCallback);
             return true;
         }
-        case ETestWaylandApplicationMessage_GetIsBufferFree:
+        case ETestWaylandApplicationMessage::GetIsBufferFree:
         {
-            struct
-            {
-                UInt32 buffer;
-            } params;
-            if (!readFromTestFramework(params))
-            {
-                return false;
-            }
+            UInt32 buffer;
+
+            bis >> buffer;
+
             LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message get is buffer free");
 
-            const bool isBufferFree = m_waylandHandler.getIsSHMBufferFree(params.buffer);
+            const bool isBufferFree = m_waylandHandler.getIsSHMBufferFree(buffer);
             sendAnswerToTestFramework(isBufferFree);
-            if (params.buffer >= m_waylandHandler.getNumberOfAllocatedSHMBuffer())
+            if (buffer >= m_waylandHandler.getNumberOfAllocatedSHMBuffer())
             {
-                LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "WaylandHandler::getIsSHMBufferFree buffer: " << params.buffer << " does not exist !");
+                LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "WaylandHandler::getIsSHMBufferFree buffer: " << buffer << " does not exist !");
                 return false;
             }
 
             return true;
         }
-        case ETestWaylandApplicationMessage_GetOutputValues:
+
+        case ETestWaylandApplicationMessage::StartRamsesRendererAndRunRenderingTest:
         {
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message get output values");
-            sendAnswerToTestFramework(m_waylandHandler.getOutputWidth());
-            sendAnswerToTestFramework(m_waylandHandler.getOutputHeight());
-            sendAnswerToTestFramework(m_waylandHandler.getOutputScale());
-            sendAnswerToTestFramework(m_waylandHandler.getOutputDoneCount());
+            UInt32 waylandIviLayerId;
+            UInt32 iviSurfaceOffset;
+
+            bis >> waylandIviLayerId >> iviSurfaceOffset;
+
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message start RAMSES renderer and run rendering test");
+
+            const bool testResult = startRamsesRendererAndRunRenderingTest(WaylandIviLayerId{waylandIviLayerId}, iviSurfaceOffset);
+            sendAnswerToTestFramework(testResult);
             return true;
         }
+
         }
 
         return false;
@@ -487,6 +457,62 @@ namespace ramses_internal
     {
         m_waylandHandler.detachBuffer(surfaceId);
         LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::detachBufferFromSurface buffer detached");
+    }
+
+    bool TestWaylandApplication::startRamsesRendererAndRunRenderingTest(WaylandIviLayerId waylandIviLayerId, uint32_t iviSurfaceIdOffset)
+    {
+        const uint32_t windowWidth = 128u;
+        const uint32_t windowHeight = 64u;
+
+        const char* systemCompositorDisplay = "wayland-0";
+        //start renderer with two displays that show content on the system compositor (not the RAMSES renderer's EC)
+        ramses::RamsesFrameworkConfig config;
+        RendererTestInstance testRenderer(config);
+        RendererTestUtils::SetWaylandIviLayerID(waylandIviLayerId.getValue());
+        RendererTestUtils::SetWaylandDisplayForSystemCompositorController(systemCompositorDisplay);
+        testRenderer.initializeRenderer();
+
+        ramses::DisplayConfig displayConfig1 = RendererTestUtils::CreateTestDisplayConfig(iviSurfaceIdOffset);
+        displayConfig1.setWindowRectangle(0, 0, windowWidth, windowHeight);
+        displayConfig1.setPerspectiveProjection(19.f, static_cast<float>(windowWidth) / windowHeight, 0.1f, 1500.f);
+        displayConfig1.impl.setWaylandDisplay(systemCompositorDisplay);
+
+        ramses::DisplayConfig displayConfig2 = RendererTestUtils::CreateTestDisplayConfig(iviSurfaceIdOffset + 1);
+        displayConfig2.setWindowRectangle(windowWidth, 0, windowWidth, windowHeight);
+        displayConfig2.setPerspectiveProjection(19.f, static_cast<float>(windowWidth) / windowHeight, 0.1f, 1500.f);
+        displayConfig2.impl.setWaylandDisplay(systemCompositorDisplay);
+
+        const auto displayHandle1 = testRenderer.createDisplay(displayConfig1);
+        const auto displayHandle2 = testRenderer.createDisplay(displayConfig2);
+
+        //create two scenes and map a scene to each display
+        const ramses::sceneId_t sceneId1 = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
+
+        testRenderer.publish(sceneId1);
+        testRenderer.flush(sceneId1);
+        testRenderer.subscribeScene(sceneId1);
+        testRenderer.mapScene(displayHandle1, sceneId1);
+        testRenderer.showScene(sceneId1);
+
+        const ramses::sceneId_t sceneId2 = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED, ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
+        testRenderer.publish(sceneId2);
+        testRenderer.flush(sceneId2);
+        testRenderer.subscribeScene(sceneId2);
+        testRenderer.mapScene(displayHandle2, sceneId2);
+        testRenderer.showScene(sceneId2);
+
+        //take screenshots and perform check to make sure that the renderer created here does render the scenes on the system compositor's surfaces
+        bool testResult = testRenderer.performScreenshotCheck(displayHandle1, 0u, 0u, windowWidth, windowHeight, "ARendererInstance_Three_Triangles");
+        testResult &= testRenderer.performScreenshotCheck(displayHandle2, 0u, 0u, windowWidth, windowHeight, "ARendererInstance_Triangles_reordered");
+
+        //cleanup
+        testRenderer.unpublish(sceneId1);
+        testRenderer.unpublish(sceneId2);
+        testRenderer.destroyDisplay(displayHandle1);
+        testRenderer.destroyDisplay(displayHandle2);
+        testRenderer.destroyRenderer();
+
+        return testResult;
     }
 
     template <typename T>

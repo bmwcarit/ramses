@@ -471,24 +471,12 @@ namespace ramses
 
         writeLowLevelResourcesToStream(resources, resourceOutputStream, compress);
 
-        ramses_internal::EStatus stat = resourceOutputStream.flush();
-        if (ramses_internal::EStatus_RAMSES_OK != stat)
-        {
-            return addErrorEntry("Could not flush resource file");
-        }
         outputResources.seek(bytesForVersion, ramses_internal::EFileSeekOrigin_BeginningOfFile);
 
         resourceOutputStream << static_cast<uint64_t>(offsetHLResourcesStart);
         resourceOutputStream << static_cast<uint64_t>(offsetLLResourcesStart);
 
-        stat = resourceOutputStream.flush();
-        if (ramses_internal::EStatus_RAMSES_OK != stat)
-        {
-            return addErrorEntry("Could not flush resource file");
-        }
-
-
-        stat = outputResources.close();
+        ramses_internal::EStatus stat = outputResources.close();
         if (ramses_internal::EStatus_RAMSES_OK != stat)
         {
             return addErrorEntry("Could not close resource file");
@@ -586,10 +574,6 @@ namespace ramses
 
         const status_t status = writeSceneObjectsToStream(scene, outputStream);
 
-        if (outputStream.flush() != ramses_internal::EStatus_RAMSES_OK)
-        {
-            return addErrorEntry("RamsesClient::saveSceneToFile failed, output stream flush failed.");
-        }
         if (outputFile.close() != ramses_internal::EStatus_RAMSES_OK)
         {
             return addErrorEntry("RamsesClient::saveSceneToFile failed, close file failed.");

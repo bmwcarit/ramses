@@ -10,7 +10,6 @@
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/Appearance.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-utils.h"
 
@@ -66,11 +65,11 @@ namespace ramses_internal
         textArabic->getAppearance()->setInputValueVector4f(colorInput, 1.0f, 0.0f, 1.0f, 1.0f);
         textJapanese->getAppearance()->setInputValueVector4f(colorInput, 1.0f, 1.0f, 0.0f, 1.0f);
 
-        ramses::TranslateNode* translateChinese = m_scene.createTranslateNode();
-        ramses::TranslateNode* translateJapanese = m_scene.createTranslateNode();
-        ramses::TranslateNode* translateArabic = m_scene.createTranslateNode();
-        ramses::TranslateNode* translateHebrew = m_scene.createTranslateNode();
-        ramses::TranslateNode* translateCyrillic = m_scene.createTranslateNode();
+        ramses::Node* translateChinese = m_scene.createNode();
+        ramses::Node* translateJapanese = m_scene.createNode();
+        ramses::Node* translateArabic = m_scene.createNode();
+        ramses::Node* translateHebrew = m_scene.createNode();
+        ramses::Node* translateCyrillic = m_scene.createNode();
 
         translateJapanese->setTranslation(2, 160, -1);
         translateCyrillic->setTranslation(2, 150, -1);

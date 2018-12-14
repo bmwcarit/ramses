@@ -22,9 +22,9 @@ namespace ramses_internal
     public:
         PlatformEvent();
 
-        EStatus signal();
+        void signal();
         EStatus wait(UInt32 millisec = 0);
-        EStatus broadcast();
+        void broadcast();
 
     private:
         PlatformLightweightLock mMutex;
@@ -37,22 +37,20 @@ namespace ramses_internal
     {
     }
 
-    inline EStatus PlatformEvent::signal()
+    inline void PlatformEvent::signal()
     {
         mMutex.lock();
         mBool = true;
-        EStatus s = mCondVar.signal();
+        mCondVar.signal();
         mMutex.unlock();
-        return s;
     }
 
-    inline EStatus PlatformEvent::broadcast()
+    inline void PlatformEvent::broadcast()
     {
         mMutex.lock();
         mBool = true;
-        EStatus s = mCondVar.broadcast();
+        mCondVar.broadcast();
         mMutex.unlock();
-        return s;
     }
 
     inline EStatus PlatformEvent::wait(UInt32 millisec)

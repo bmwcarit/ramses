@@ -9,7 +9,6 @@
 #include "TestScenes/IndexArray32BitScene.h"
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
-#include "ramses-client-api/TransformationNode.h"
 #include "ramses-client-api/Vector3fArray.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/Appearance.h"
@@ -37,7 +36,7 @@ namespace ramses_internal
         m_meshNode = m_scene.createMeshNode("mesh");
         addMeshNodeToDefaultRenderGroup(*m_meshNode);
 
-        ramses::TransformationNode* trafoNode = m_scene.createTransformationNode("transformation node");
+        ramses::Node* trafoNode = m_scene.createNode("transformation node");
         trafoNode->setTranslation(translation[0], translation[1], translation[2]);
 
         m_meshNode->setParent(*trafoNode);

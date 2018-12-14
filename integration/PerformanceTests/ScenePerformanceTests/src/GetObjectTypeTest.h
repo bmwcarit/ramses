@@ -13,7 +13,7 @@
 
 namespace ramses
 {
-    class TransformationNode;
+    class Node;
 }
 
 class GetObjectTypeTest : public PerformanceTestBase
@@ -33,7 +33,7 @@ public:
     virtual void update() override;
 
 private:
-    ramses::TransformationNode* m_node;
+    ramses::Node* m_node;
 
 };
 #endif

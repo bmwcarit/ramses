@@ -950,9 +950,9 @@ namespace ramses_internal
                     sos << "\n";
                     updater.m_renderer.getStatistics().writeStatsToStream(sos);
                     sos << "\nTime budgets:"
-                        << " flushApply " << updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneActionsApply) << "us"
-                        << " resourceUpload " << updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::ClientResourcesUpload) << "us"
-                        << " obRender " << updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::OffscreenBufferRender) << "us";
+                        << " flushApply " << Int64(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneActionsApply).count()) << "us"
+                        << " resourceUpload " << Int64(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::ClientResourcesUpload).count()) << "us"
+                        << " obRender " << Int64(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::OffscreenBufferRender).count()) << "us";
                     sos << "\n";
                     updater.m_renderer.getProfilerStatistics().writeLongestFrameTimingsToStream(sos);
                     sos << "\n";

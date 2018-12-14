@@ -14,6 +14,7 @@
 #include "RendererAPI/Types.h"
 #include "Collections/Guid.h"
 #include "RendererLib/ESceneState.h"
+#include "Scene/EScenePublicationMode.h"
 
 namespace ramses_internal
 {
@@ -21,11 +22,12 @@ namespace ramses_internal
     class SceneStateInfo
     {
     public:
-        void addScene(SceneId sceneId, const Guid& clientWhereSceneIsAvailable);
+        void addScene(SceneId sceneId, const Guid& clientWhereSceneIsAvailable, EScenePublicationMode mode);
         Bool hasScene(SceneId sceneId) const;
         void removeScene(SceneId sceneId);
         void setSceneState(SceneId sceneId, ESceneState sceneState);
         ESceneState getSceneState(SceneId sceneId) const;
+        EScenePublicationMode getScenePublicationMode(SceneId sceneId) const;
         Guid getSceneClientGuid(SceneId sceneId) const;
         void getKnownSceneIds(SceneIdVector& knownIds) const;
 
@@ -34,6 +36,7 @@ namespace ramses_internal
         {
             Guid clientWhereSceneIsAvailable;
             ESceneState state;
+            EScenePublicationMode publicationMode;
         };
 
         HashMap<SceneId, SceneInfo> m_scenesInfo;

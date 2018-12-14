@@ -61,7 +61,7 @@ namespace ramses_internal
         case GL_DEBUG_TYPE_POP_GROUP:
         case GL_DEBUG_TYPE_OTHER:
         default:
-            LOG_TRACE(CONTEXT_RENDERER, "OpenGL info: " << message)
+            LOG_TRACE(CONTEXT_RENDERER, "OpenGL info: " << message);
         }
     }
 

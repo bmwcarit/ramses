@@ -42,15 +42,15 @@ namespace ramses_internal
         m_sceneGraphConsumerComponent.setSceneRendererServiceHandler(NULL);
     }
 
-    void RendererFrameworkLogic::handleNewScenesAvailable(const SceneInfoVector& newScenes, const Guid& providerID)
+    void RendererFrameworkLogic::handleNewScenesAvailable(const SceneInfoVector& newScenes, const Guid& providerID, EScenePublicationMode mode)
     {
         ramses_foreach(newScenes, it)
         {
             if (!m_sceneClients.contains(it->sceneID))
             {
-                LOG_INFO(CONTEXT_RENDERER, "RendererFrameworkLogic::handleNewScenesAvailable: scene published: " << it->sceneID.getValue() << " @ " << providerID << " name:" << it->friendlyName);
+                LOG_INFO(CONTEXT_RENDERER, "RendererFrameworkLogic::handleNewScenesAvailable: scene published: " << it->sceneID.getValue() << " @ " << providerID << " name:" << it->friendlyName << " publicationmode: " << EnumToString(it->publicationMode));
 
-                m_rendererCommands.publishScene(it->sceneID, providerID);
+                m_rendererCommands.publishScene(it->sceneID, providerID, mode);
                 m_sceneClients.put(it->sceneID, MakePair(providerID, it->friendlyName));
             }
             else
@@ -105,8 +105,7 @@ namespace ramses_internal
         PlatformGuard guard(m_frameworkLock);
 
         const Pair<Guid, String> *sceneIdToProviderID = m_sceneClients.get(sceneId);
-        assert(sceneIdToProviderID);
-        if (0 != sceneIdToProviderID)
+        if (nullptr != sceneIdToProviderID)
         {
             const Guid providerID = sceneIdToProviderID->first;
             m_resourceComponent.requestResourceAsynchronouslyFromFramework(ids, requesterID, providerID);
@@ -132,7 +131,7 @@ namespace ramses_internal
 
     void RendererFrameworkLogic::handleSceneActionList(const SceneId& sceneId, SceneActionCollection&& actions, const uint64_t& counter, const Guid& providerID)
     {
-        LOG_DEBUG(CONTEXT_RENDERER, "RendererFrameworkLogic::handleSceneActionList: for scene: " << sceneId << " counter: " << counter << " from provider:" << providerID);
+        LOG_TRACE(CONTEXT_RENDERER, "RendererFrameworkLogic::handleSceneActionList: for scene: " << sceneId << " counter: " << counter << " from provider:" << providerID);
 
         if (!m_sceneClients.contains(sceneId))
         {

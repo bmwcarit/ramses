@@ -35,12 +35,16 @@ SET(RAMSES_RELEASE_FLAGS)
 
 # gcc OR clang (they share a lot)
 IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    ADD_FLAGS(RAMSES_C_CXX_FLAGS "-fPIC -Wall -Wextra -Werror -Wcast-align -Wshadow -Wformat -Wformat-security -Werror=format-security -pthread -fvisibility=hidden")
+    ADD_FLAGS(RAMSES_C_CXX_FLAGS "-fPIC -Wall -Wextra -Werror -Wcast-align -Wshadow -Wformat -Wformat-security -Werror=format-security -Wvla -pthread -fvisibility=hidden")
     ADD_FLAGS(RAMSES_CXX_FLAGS "-std=c++11 -Wnon-virtual-dtor -Woverloaded-virtual -Wold-style-cast")
     ADD_FLAGS(RAMSES_C_FLAGS "-std=c11")
     ADD_FLAGS(RAMSES_DEBUG_FLAGS "-ggdb -D_DEBUG -fno-omit-frame-pointer")
-    ADD_FLAGS(RAMSES_RELEASE_FLAGS "-O3 -DNDEBUG -fstack-protector-strong -D_FORTIFY_SOURCE=2")
+    ADD_FLAGS(RAMSES_RELEASE_FLAGS "-O3 -DNDEBUG")
     ADD_FLAGS(RAMSES_DEBUG_INFO_FLAGS "-ggdb -fno-omit-frame-pointer")
+
+    IF(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows") # no fortify on mingw
+        ADD_FLAGS(RAMSES_RELEASE_FLAGS "-fstack-protector-strong -D_FORTIFY_SOURCE=2")
+    ENDIF()
 ENDIF()
 
 # gcc specific
@@ -53,7 +57,7 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     ENDIF()
 
     # disable too crazy optimizations causing problems
-    ADD_FLAGS(RAMSES_RELEASE_FLAGS "-fno-ipa-cp-clone")
+    ADD_FLAGS(RAMSES_RELEASE_FLAGS "-fno-ipa-cp-clone -mno-avx")
 
     # disable unfixed warnings from gcc 7
     IF(NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)
@@ -65,7 +69,7 @@ ENDIF()
 IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     IF(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 3.5)
         # suppress missing override keyword warning
-        ADD_FLAGS(RAMSES_CXX_FLAGS "-Wno-inconsistent-missing-override")
+        ADD_FLAGS(RAMSES_CXX_FLAGS "-Wno-inconsistent-missing-override -Wmove")
     ENDIF()
 ENDIF()
 

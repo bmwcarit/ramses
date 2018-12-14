@@ -31,10 +31,8 @@ public:
         : m_ramsesClient(ramsesClient)
     {
         m_scene = m_ramsesClient.createScene(sceneId);
-        m_cameraTranslate = m_scene->createTranslateNode();
-        m_cameraTranslate->setTranslation(0.0f, 0.0f, 5.0f);
         m_camera = m_scene->createRemoteCamera("my camera");
-        m_camera->setParent(*m_cameraTranslate);
+        m_camera->setTranslation(0.0f, 0.0f, 5.0f);
         m_renderPass = m_scene->createRenderPass("my render pass");
         m_renderPass->setClearFlags(ramses::EClearFlags_None);
         m_renderPass->setCamera(*m_camera);
@@ -179,7 +177,6 @@ private:
     ramses::RamsesClient& m_ramsesClient;
 
     ramses::Scene* m_scene                          = nullptr;
-    ramses::TranslateNode* m_cameraTranslate        = nullptr;
     ramses::Camera* m_camera                        = nullptr;
     ramses::RenderPass* m_renderPass                = nullptr;
     ramses::RenderGroup* m_renderGroup              = nullptr;

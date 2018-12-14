@@ -24,7 +24,7 @@ namespace ramses_internal
         m_periodicLogger.removePeriodicLogSupplier(this);
     }
 
-    void RendererPeriodicLogSupplier::triggerLogMessageForPeriodicLog() const
+    void RendererPeriodicLogSupplier::triggerLogMessageForPeriodicLog()
     {
         m_commandBuffer.logRendererInfo(ERendererLogTopic_PeriodicLog, false, ramses_internal::NodeHandle::Invalid());
     }

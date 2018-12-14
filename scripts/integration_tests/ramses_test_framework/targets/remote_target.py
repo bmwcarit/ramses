@@ -12,6 +12,7 @@ import socket
 import os
 import subprocess
 import posixpath
+import glob
 
 from paramiko.ssh_exception import SSHException, AuthenticationException, BadHostKeyException, PasswordRequiredException
 
@@ -197,12 +198,18 @@ class RemoteTarget(Target):
         packageBaseName = self.buildJobName+'-'+self.ramsesVersion+'-'+self.gitCommitCount\
                           +'-'+self.gitCommitHash # package name without extension
 
-        packagePathOnBuildServer = "{0}/{1}.tar.gz".format(self.basePath, packageBaseName)
-        packagePathOnTarget = "{0}/{1}.tar.gz".format(self.ramsesInstallDir, packageBaseName)
+        # glob to support any filters set by the user
+        resultList = glob.glob("{0}/{1}".format(self.basePath, packageBaseName))
+        if not resultList:
+            log.error("no package found for filter \"{}.tar.gz\"".format(packageBaseName))
+            return False
+
+        packagePathOnBuildServer = "{0}/{1}".format(self.basePath, os.path.basename(resultList[0]))
+        packagePathOnTarget = "{0}/{1}".format(self.ramsesInstallDir, os.path.basename(resultList[0]))
 
         #check that package is available
         if not os.path.exists(packagePathOnBuildServer):
-            log.error("package \"{}.tar.gz\" could not be found".format(packageBaseName))
+            log.error("package \"{}\" could not be found".format(packagePathOnBuildServer))
             return False
 
         # transfer package

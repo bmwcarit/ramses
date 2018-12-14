@@ -13,7 +13,7 @@
 #include "RendererAPI/Types.h"
 #include "RendererLib/WarpingMeshData.h"
 #include "RendererLib/DisplayConfig.h"
-#include "Command.h"
+#include "CommandT.h"
 #include "Scene/SceneActionCollection.h"
 #include "Math3d/Vector3.h"
 #include "RendererLogger.h"
@@ -92,6 +92,8 @@ namespace ramses_internal
         ERendererCommand_SystemCompositorControllerDestroyIviSurface,
         // Miscellaneous
         ERendererCommand_SetFrameTimerLimits,
+        ERendererCommand_SetLimits_FlushesForceApply,
+        ERendererCommand_SetLimits_FlushesForceUnsubscribe,
         ERendererCommand_SetSkippingOfUnmodifiedBuffers,
 
         // THINK THREE TIMES BEFORE ADDING SOMETHING HERE!
@@ -101,6 +103,7 @@ namespace ramses_internal
         ERendererCommand_FrameProfiler_TimingGraphHeight,
         ERendererCommand_FrameProfiler_CounterGraphHeight,
         ERendererCommand_FrameProfiler_RegionFilterFlags,
+
 
         ERendererCommand_COUNT
     };
@@ -274,9 +277,11 @@ namespace ramses_internal
     {
         DEFINE_COMMAND_TYPE(SetFrameTimerLimitsCommmand, ERendererCommandType_FrameTimerLimits);
 
-        UInt64 limitForClientResourcesUploadMicrosec;
-        UInt64 limitForSceneActionsApplyMicrosec;
-        UInt64 limitForOffscreenBufferRenderMicrosec;
+        UInt64 limitForClientResourcesUploadMicrosec = 0u;
+        UInt64 limitForSceneActionsApplyMicrosec = 0u;
+        UInt64 limitForOffscreenBufferRenderMicrosec = 0u;
+        UInt limitForPendingFlushesForceApply = 0u;
+        UInt limitForPendingFlushesForceUnsubscribe = 0u;
     };
 
     struct SetFeatureCommand : public RendererCommand
@@ -326,6 +331,8 @@ namespace ramses_internal
         "ERendererCommand_SystemCompositorControllerRemoveIviSurfaceFromIviLayer",
         "ERendererCommand_SystemCompositorControllerDestroyIviSurface",
         "ERendererCommand_SetFrameTimerLimits",
+        "ERendererCommand_SetLimits_FlushesForceApply",
+        "ERendererCommand_SetLimits_FlushesForceUnsubscribe",
         "ERendererCommand_SetSkippingOfUnmodifiedBuffers",
         "ERendererCommand_ConfirmationEcho",
         "ERendererCommand_FrameProfiler_Toggle",

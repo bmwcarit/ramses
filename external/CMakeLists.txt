@@ -25,10 +25,7 @@ IF(ramses-sdk_BUILD_TESTS AND NOT TARGET gmock)
         target_compile_options(gtest PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-field-initializers>)
         target_compile_options(gmock PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-field-initializers>)
 
-        SET_PROPERTY(TARGET gmock      PROPERTY FOLDER "external")
-        SET_PROPERTY(TARGET gmock_main PROPERTY FOLDER "external")
-        SET_PROPERTY(TARGET gtest      PROPERTY FOLDER "external")
-        SET_PROPERTY(TARGET gtest_main PROPERTY FOLDER "external")
+        ramses_move_targets_to_folder("external" gmock gmock_main gtest gtest_main)
         ACME_INFO("+ googletest (custom)")
     ENDIF()
 
@@ -77,8 +74,6 @@ IF("${TARGET_OS}" STREQUAL "Integrity")
     TARGET_COMPILE_DEFINITIONS(ramses-glslang PRIVATE "-D__inline=inline")
 ENDIF()
 
-set(ENV{FREETYPE_DIR} "../freetype")
-
 # find freetype with harfbuzz support
 IF (ramses-sdk_ALLOW_PLATFORM_FREETYPE)
     find_package(FreetypeAndHarfbuzz QUIET)
@@ -93,14 +88,27 @@ IF (ramses-sdk_ALLOW_CUSTOM_FREETYPE AND NOT freetype_FOUND)
     endif()
 
     # Set Harfbuzz cache variables to configure its freetype dependencies
-    set(FREETYPE_INCLUDE_DIR_ft2build "${CMAKE_CURRENT_SOURCE_DIR}/freetype/include")
-    set(FREETYPE_INCLUDE_DIR_freetype2 "${CMAKE_CURRENT_SOURCE_DIR}/freetype/include")
+    set(FREETYPE2_HEADER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/freetype/include")
     set(FREETYPE2_ROOT_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/freetype")
-    set(FREETYPE_LIBRARY freetype)
+    set(FREETYPE2_LIBRARIES freetype)
+
+    # newer harfbuzz versions use include (FindFreetype): provide an adhoc find script
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/FindFreetype.cmake"
+        "set(FREETYPE_INCLUDE_DIRS \"${CMAKE_CURRENT_SOURCE_DIR}/freetype\" \"${CMAKE_CURRENT_SOURCE_DIR}/freetype/include\")\n"
+        "set(FREETYPE_LIBRARIES freetype)\n"
+        "set(FREETYPE_FOUND TRUE)\n")
+
+    # enable freetype in harfbuzz
     set(HB_HAVE_FREETYPE ON CACHE BOOL "Enable freetype interop helpers" FORCE)
+
+    # save and restore module search path
+    set(OLD_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+    set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_MODULE_PATH})
 
     ADD_SUBDIRECTORY(harfbuzz)
     ACME_INFO("+ harfbuzz")
+
+    set(CMAKE_MODULE_PATH ${OLD_CMAKE_MODULE_PATH})
 
     # config and include freetype
     target_include_directories(harfbuzz INTERFACE "harfbuzz/src" "${CMAKE_CURRENT_BINARY_DIR}/harfbuzz")
@@ -108,17 +116,13 @@ IF (ramses-sdk_ALLOW_CUSTOM_FREETYPE AND NOT freetype_FOUND)
 
     target_include_directories(freetype INTERFACE "freetype/include" "${CMAKE_CURRENT_BINARY_DIR}/harfbuzz/src")
 
-    set_property(TARGET freetype PROPERTY FOLDER "external")
-    set_property(TARGET dist PROPERTY FOLDER "external")
-    set_property(TARGET harfbuzz PROPERTY FOLDER "external")
-    set_property(TARGET harfbuzz-subset PROPERTY FOLDER "external")
-    set_property(TARGET hb-ot-tag PROPERTY FOLDER "external")
-    set_property(TARGET main PROPERTY FOLDER "external")
-    set_property(TARGET test-buffer-serialize PROPERTY FOLDER "external")
-    set_property(TARGET test-size-params PROPERTY FOLDER "external")
-    set_property(TARGET test-test PROPERTY FOLDER "external")
-    set_property(TARGET test-unicode-ranges PROPERTY FOLDER "external")
-    set_property(TARGET test-would-substitute PROPERTY FOLDER "external")
+    ramses_move_targets_to_folder("external" freetype harfbuzz)
+    foreach (tgt dist harfbuzz-subset hb-ot-tag main test-buffer-serialize test-size-params test-size-params test-test test-unicode-ranges test-would-substitute)
+        if (TARGET ${tgt})
+            set_property(TARGET ${tgt} PROPERTY FOLDER "external")
+            set_target_properties(${tgt} PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
+        endif()
+    endforeach()
 
     ACME_INFO("+ freetype")
 ENDIF()

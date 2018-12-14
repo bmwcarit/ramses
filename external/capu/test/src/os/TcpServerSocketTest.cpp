@@ -17,7 +17,7 @@
 #include <gtest/gtest.h>
 #include "ramses-capu/os/TcpServerSocket.h"
 #include "ramses-capu/Error.h"
-#include "ramses-capu/os/Time.h"
+#include <chrono>
 
 TEST(TcpServerSocket, CloseTest)
 {
@@ -69,13 +69,13 @@ TEST(TcpServerSocket, AcceptTimeoutTest)
     ramses_capu::TcpServerSocket socket;
     EXPECT_EQ(ramses_capu::CAPU_OK, socket.bind(0, "0.0.0.0"));
     EXPECT_EQ(ramses_capu::CAPU_OK, socket.listen(3));
-    uint32_t timeout = 1500;
-    uint64_t start = ramses_capu::Time::GetMillisecondsMonotonic();
-    socket.accept(timeout);
-    uint64_t dur = ramses_capu::Time::GetMillisecondsMonotonic() - start;
+    std::chrono::milliseconds timeout{1500};
+    const auto start = std::chrono::steady_clock::now();
+    socket.accept(std::chrono::duration<uint32_t, std::milli>(timeout).count());
+    const auto dur = std::chrono::steady_clock::now() - start;
 
-    EXPECT_TRUE(dur >= timeout - 200);
-    EXPECT_TRUE(dur <= timeout + 1000);
+    EXPECT_TRUE(dur >= timeout - std::chrono::milliseconds{200});
+    EXPECT_TRUE(dur <= timeout + std::chrono::milliseconds{1000});
 }
 
 TEST(TcpServerSocket, FreePortTest)

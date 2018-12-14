@@ -8,12 +8,6 @@
 
 #include <gtest/gtest.h>
 
-#include "ramses-client-api/GroupNode.h"
-#include "ramses-client-api/TranslateNode.h"
-#include "ramses-client-api/ScaleNode.h"
-#include "ramses-client-api/RotateNode.h"
-#include "ramses-client-api/TransformationNode.h"
-#include "ramses-client-api/VisibilityNode.h"
 #include "ramses-client-api/AnimationSystem.h"
 #include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/RemoteCamera.h"
@@ -54,7 +48,6 @@
 #include "ramses-client-api/SplineBezierVector2i.h"
 #include "ramses-client-api/SplineBezierVector3i.h"
 #include "ramses-client-api/SplineBezierVector4i.h"
-#include "ramses-client-api/TransformationNode.h"
 #include "ramses-client-api/TextureSampler.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderTarget.h"

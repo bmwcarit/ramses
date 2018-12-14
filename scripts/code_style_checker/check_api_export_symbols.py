@@ -18,7 +18,7 @@ def check_api_export_symbols(filename, clean_file_contents):
     - A class has RAMSES_API prefix before the name, structs and enums don't have it
     """
 
-    is_api = ("ramses-client-api" in filename) or ("ramses-text-api" in filename) or ("ramses-text-bmw-api" in filename) or ("ramses-renderer-api" in filename) or ("ramses-framework-api" in filename)
+    is_api = ("ramses-client-api" in filename) or ("ramses-text-api" in filename) or ("ramses-renderer-api" in filename) or ("ramses-framework-api" in filename)
     is_header =  (filename[-2:] == ".h") or (filename[-4:] == ".hpp")
     is_api_header = is_api and is_header
 

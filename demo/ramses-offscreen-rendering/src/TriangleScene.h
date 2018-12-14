@@ -21,7 +21,7 @@ struct TriangleColor
 struct TriangleScene
 {
     ramses::Scene* scene;
-    ramses::RotateNode* rotateNode;
+    ramses::Node* rotateNode;
 };
 
 TriangleScene CreateTriangleScene(ramses::RamsesClient& client, ramses::sceneId_t sceneId, TriangleColor color, ramses::EScenePublicationMode publicationMode)
@@ -86,9 +86,9 @@ TriangleScene CreateTriangleScene(ramses::RamsesClient& client, ramses::sceneId_
     geometry->setInputBuffer(positionsInput, *vertexPositions);
 
     // Put a mesh node behind the camera
-    ramses::TranslateNode* rootTranslation = scene->createTranslateNode("rootNode");
+    ramses::Node* rootTranslation = scene->createNode("rootNode");
     rootTranslation->setTranslation(0.0f, 0.0f, -1.0f);
-    ramses::RotateNode* rotationNode = scene->createRotateNode("rotationNode");
+    ramses::Node* rotationNode = scene->createNode("rotationNode");
     rotationNode->setParent(*rootTranslation);
 
     ramses::MeshNode* meshNode = scene->createMeshNode("triangle mesh node");

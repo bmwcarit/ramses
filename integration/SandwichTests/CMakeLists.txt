@@ -7,4 +7,3 @@
 #  -------------------------------------------------------------------------
 
 ADD_SUBDIRECTORY(RendererTests)
-ADD_SUBDIRECTORY(ShaderTests)

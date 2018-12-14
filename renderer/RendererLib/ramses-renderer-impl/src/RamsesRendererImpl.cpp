@@ -37,8 +37,8 @@ namespace ramses
         , m_pendingRendererCommands()
         , m_rendererFrameworkLogic(framework.impl.getConnectionStatusUpdateNotifier(), framework.impl.getResourceComponent(), framework.impl.getScenegraphComponent(), m_rendererCommandBuffer, framework.impl.getFrameworkLock())
         , m_platformFactory(platformFactory != NULL ? platformFactory : ramses_internal::PlatformFactory_Base::CreatePlatformFactory(m_internalConfig))
-        , m_resourceUploader(m_binaryShaderCache.get())
-        , m_renderer(new ramses_internal::WindowedRenderer(m_rendererCommandBuffer, framework.impl.getScenegraphComponent(), *m_platformFactory, m_internalConfig.getKPIFileName()))
+        , m_resourceUploader(m_rendererStatistics, m_binaryShaderCache.get())
+        , m_renderer(new ramses_internal::WindowedRenderer(m_rendererCommandBuffer, framework.impl.getScenegraphComponent(), *m_platformFactory, m_rendererStatistics, m_internalConfig.getKPIFileName()))
         , m_nextDisplayId(0u)
         , m_nextOffscreenBufferId(0u)
         , m_systemCompositorEnabled(m_internalConfig.getSystemCompositorControlEnabled())
@@ -75,7 +75,7 @@ namespace ramses
 
     status_t RamsesRendererImpl::doOneLoop()
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
 
         if (ERendererLoopThreadType_InRendererOwnThread == m_rendererLoopThreadType)
         {
@@ -89,7 +89,7 @@ namespace ramses
 
     ramses::status_t RamsesRendererImpl::flush()
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
 
         m_renderer->getRendererCommandBuffer().addCommands(m_pendingRendererCommands);
         m_pendingRendererCommands.clear();
@@ -99,7 +99,7 @@ namespace ramses
 
     displayId_t RamsesRendererImpl::createDisplay(const DisplayConfig& config)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
 
         if (config.validate() != StatusOK)
         {
@@ -122,7 +122,7 @@ namespace ramses
 
     status_t RamsesRendererImpl::destroyDisplay(displayId_t displayId)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
 
         const ramses_internal::DisplayHandle displayHandle(displayId);
         m_pendingRendererCommands.destroyDisplay(displayHandle);
@@ -132,7 +132,7 @@ namespace ramses
 
     status_t RamsesRendererImpl::linkData(sceneId_t providerSceneId, dataProviderId_t providerDataSlotId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
 
         if (providerSceneId == consumerSceneId)
         {
@@ -148,7 +148,7 @@ namespace ramses
 
     status_t RamsesRendererImpl::linkOffscreenBufferToSceneData(offscreenBufferId_t offscreenBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
 
         const ramses_internal::OffscreenBufferHandle providerBuffer(offscreenBufferId);
         const ramses_internal::SceneId internalConsumerSceneId(consumerSceneId);
@@ -159,7 +159,7 @@ namespace ramses
 
     status_t RamsesRendererImpl::unlinkData(sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
 
         const ramses_internal::SceneId internalConsumerSceneId(consumerSceneId);
         m_pendingRendererCommands.unlinkSceneData(internalConsumerSceneId, ramses_internal::DataSlotId(consumerDataSlotId));
@@ -179,7 +179,7 @@ namespace ramses
 
     status_t RamsesRendererImpl::subscribeScene(sceneId_t sceneId)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
         m_pendingRendererCommands.subscribeScene(ramses_internal::SceneId(sceneId));
 
         return StatusOK;
@@ -187,7 +187,7 @@ namespace ramses
 
     status_t RamsesRendererImpl::unsubscribeScene(sceneId_t sceneId)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
         m_pendingRendererCommands.unsubscribeScene(ramses_internal::SceneId(sceneId), false);
 
         return StatusOK;
@@ -195,7 +195,7 @@ namespace ramses
 
     void RamsesRendererImpl::logConfirmationEcho(const ramses_internal::String& text)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
         m_pendingRendererCommands.confirmationEcho(text);
     }
 
@@ -206,7 +206,7 @@ namespace ramses
 
     status_t RamsesRendererImpl::updateWarpingMeshData(displayId_t displayId, const WarpingMeshData& newWarpingMeshData)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
 
         if (newWarpingMeshData.impl.getWarpingMeshData().getIndices().size() % 3 != 0)
         {
@@ -227,7 +227,7 @@ namespace ramses
 
     status_t RamsesRendererImpl::mapScene(displayId_t displayId, sceneId_t sceneId, int32_t sceneRenderOrder)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
 
         const ramses_internal::DisplayHandle displayHandle(displayId);
         const ramses_internal::SceneId internalSceneId(sceneId);
@@ -238,7 +238,7 @@ namespace ramses
 
     status_t RamsesRendererImpl::showScene(sceneId_t sceneId)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
         m_pendingRendererCommands.showScene(ramses_internal::SceneId(sceneId));
 
         return StatusOK;
@@ -246,7 +246,7 @@ namespace ramses
 
     status_t RamsesRendererImpl::hideScene(sceneId_t sceneId)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
         m_pendingRendererCommands.hideScene(ramses_internal::SceneId(sceneId));
 
         return StatusOK;
@@ -254,7 +254,7 @@ namespace ramses
 
     offscreenBufferId_t RamsesRendererImpl::createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, bool interruptible)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
 
         if (width < 1u || width > 4096u ||
             height < 1u || height > 4096u)
@@ -280,7 +280,7 @@ namespace ramses
 
     status_t RamsesRendererImpl::destroyOffscreenBuffer(displayId_t display, offscreenBufferId_t offscreenBuffer)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
 
         const ramses_internal::DisplayHandle displayHandle(display);
         const ramses_internal::OffscreenBufferHandle bufferHandle(offscreenBuffer);
@@ -291,7 +291,7 @@ namespace ramses
 
     status_t RamsesRendererImpl::assignSceneToOffscreenBuffer(sceneId_t sceneId, offscreenBufferId_t offscreenBuffer)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
 
         const ramses_internal::SceneId internalSceneId(sceneId);
         const ramses_internal::OffscreenBufferHandle internalBuffer(offscreenBuffer);
@@ -302,7 +302,7 @@ namespace ramses
 
     status_t RamsesRendererImpl::assignSceneToFramebuffer(sceneId_t sceneId)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
 
         const ramses_internal::SceneId internalSceneId(sceneId);
         m_pendingRendererCommands.assignSceneToFramebuffer(internalSceneId);
@@ -312,7 +312,7 @@ namespace ramses
 
     status_t RamsesRendererImpl::unmapScene(sceneId_t sceneId)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
         const ramses_internal::SceneId internalSceneId(sceneId);
         m_pendingRendererCommands.unmapScene(internalSceneId);
 
@@ -321,7 +321,7 @@ namespace ramses
 
     status_t RamsesRendererImpl::readPixels(displayId_t displayId, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
 
         const ramses_internal::DisplayHandle displayHandle(displayId);
         m_pendingRendererCommands.readPixels(displayHandle, "", false, x, y, width, height);
@@ -331,7 +331,7 @@ namespace ramses
 
     status_t RamsesRendererImpl::systemCompositorSetIviSurfaceVisibility(uint32_t surfaceId, bool visibility)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
 
         if (m_systemCompositorEnabled)
         {
@@ -347,7 +347,7 @@ namespace ramses
 
     status_t RamsesRendererImpl::systemCompositorSetIviSurfaceOpacity(uint32_t surfaceId, float opacity)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
 
         if (m_systemCompositorEnabled)
         {
@@ -363,7 +363,7 @@ namespace ramses
 
     status_t RamsesRendererImpl::systemCompositorSetIviSurfaceRectangle(uint32_t surfaceId, int32_t x, int32_t y, int32_t width, int32_t height)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
 
         if (m_systemCompositorEnabled)
         {
@@ -379,7 +379,7 @@ namespace ramses
 
     status_t RamsesRendererImpl::systemCompositorTakeScreenshot(const char* fileName)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
 
         if (m_systemCompositorEnabled)
         {
@@ -394,7 +394,7 @@ namespace ramses
 
     status_t RamsesRendererImpl::systemCompositorAddIviSurfaceToIviLayer(uint32_t surfaceId, uint32_t layerId)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
 
         if (m_systemCompositorEnabled)
         {
@@ -485,10 +485,10 @@ namespace ramses
             case ramses_internal::ERendererEventType_SceneHideFailed:
                 rendererEventHandler.sceneHidden(rendererEvent->sceneId.getValue(), ramses::ERendererEventResult_FAIL);
                 break;
-            case ramses_internal::ERendererEventType_SceneUpdateLatencyExceededLimit:
+            case ramses_internal::ERendererEventType_SceneExpired:
                 rendererEventHandler.sceneUpdateLatencyExceeded(rendererEvent->sceneId.getValue());
                 break;
-            case ramses_internal::ERendererEventType_SceneUpdateLatencyBackBelowLimit:
+            case ramses_internal::ERendererEventType_SceneRecoveredFromExpiration:
                 rendererEventHandler.sceneUpdateLatencyBackBelowLimit(rendererEvent->sceneId.getValue());
                 break;
             case ramses_internal::ERendererEventType_SceneDataLinked:
@@ -594,14 +594,14 @@ namespace ramses
 
     status_t RamsesRendererImpl::logRendererInfo()
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
         m_pendingRendererCommands.logRendererInfo(ramses_internal::ERendererLogTopic_All, true, ramses_internal::NodeHandle::Invalid());
         return StatusOK;
     }
 
     ramses::status_t RamsesRendererImpl::startThread()
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
         if (ERendererLoopThreadType_UsingDoOneLoop == m_rendererLoopThreadType)
         {
             return addErrorEntry("RamsesRenderer::startThread Can not call startThread if doOneLoop is called before!");
@@ -618,7 +618,7 @@ namespace ramses
 
     ramses::status_t RamsesRendererImpl::stopThread()
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
         if (ERendererLoopThreadType_InRendererOwnThread != m_rendererLoopThreadType)
         {
             return addErrorEntry("RamsesRenderer::stopThread Can not call stopThread if startThread was not called before!");
@@ -634,7 +634,7 @@ namespace ramses
 
     bool RamsesRendererImpl::isThreadRunning() const
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
         return m_rendererLoopThreadController.isRendering();
     }
 
@@ -650,7 +650,7 @@ namespace ramses
             return addErrorEntry("RamsesRenderer::setMaximumFramerate must specify a positive maximumFramerate!");
         }
 
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
         if (ERendererLoopThreadType_UsingDoOneLoop == m_rendererLoopThreadType)
         {
             return addErrorEntry("RamsesRenderer::setMaximumFramerate Can not call setMaximumFramerate if doOneLoop is called before because it can only control framerate for rendering thread!");
@@ -662,13 +662,13 @@ namespace ramses
 
     float RamsesRendererImpl::getMaximumFramerate() const
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
         return m_rendererLoopThreadController.getMaximumFramerate();
     }
 
     ramses::status_t RamsesRendererImpl::setLoopMode(ELoopMode loopMode)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
 
         switch (loopMode)
         {
@@ -690,20 +690,28 @@ namespace ramses
 
     ELoopMode RamsesRendererImpl::getLoopMode() const
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
         return m_loopMode == ramses_internal::ELoopMode_UpdateAndRender? ramses::ELoopMode_UpdateAndRender : ramses::ELoopMode_UpdateOnly;
     }
 
     ramses::status_t RamsesRendererImpl::setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForSceneActionsApply, uint64_t limitForOffscreenBufferRender)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
         m_pendingRendererCommands.setFrameTimerLimits(limitForClientResourcesUpload, limitForSceneActionsApply, limitForOffscreenBufferRender);
+        return StatusOK;
+    }
+
+    ramses::status_t RamsesRendererImpl::setPendingFlushLimits(uint32_t forceApplyFlushLimit, uint32_t forceUnsubscribeSceneLimit)
+    {
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
+        m_pendingRendererCommands.setForceApplyPendingFlushesLimit(forceApplyFlushLimit);
+        m_pendingRendererCommands.setForceUnsubscribeLimits(forceUnsubscribeSceneLimit);
         return StatusOK;
     }
 
     ramses::status_t RamsesRendererImpl::setSkippingOfUnmodifiedBuffers(bool enable)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
         m_pendingRendererCommands.setSkippingOfUnmodifiedBuffers(enable);
         return StatusOK;
     }

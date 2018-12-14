@@ -235,6 +235,17 @@ namespace ramses
         return m_internalConfig.getWindowsWindowHandle().getValue();
     }
 
+    status_t DisplayConfigImpl::setWaylandDisplay(const char* waylandDisplay)
+    {
+        m_internalConfig.setWaylandDisplay(waylandDisplay);
+        return StatusOK;
+    }
+
+    const char* DisplayConfigImpl::getWaylandDisplay() const
+    {
+        return m_internalConfig.getWaylandDisplay().c_str();
+    }
+
     status_t DisplayConfigImpl::validate(uint32_t indent) const
     {
         status_t status = StatusObjectImpl::validate(indent);

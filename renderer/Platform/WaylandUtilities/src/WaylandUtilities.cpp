@@ -55,7 +55,7 @@ namespace ramses_internal
             }
             else
             {
-                LOG_ERROR(CONTEXT_RENDERER, "WaylandUtilities::IsEnvironmentInProperState Environment variable WAYLAND_SOCKET does not contain a valid socket file descriptor.");
+                LOG_ERROR(CONTEXT_RENDERER, "WaylandUtilities::IsEnvironmentInProperState Environment variable WAYLAND_SOCKET does not contain a valid socket file descriptor :" << waylandSocket);
                 return false;
             }
         }

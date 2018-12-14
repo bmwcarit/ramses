@@ -21,7 +21,7 @@
 #include "RendererLib/StereoDisplayController.h"
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/DisplayEventHandler.h"
-#include "RendererLib/LatencyMonitor.h"
+#include "RendererLib/SceneExpirationMonitor.h"
 #include "Platform_Base/PlatformFactory_Base.h"
 #include "Utils/LogMacros.h"
 #include "Common/Cpp11Macros.h"
@@ -30,13 +30,14 @@ namespace ramses_internal
 {
     const Vector4 Renderer::DefaultClearColor = { 0.f, 0.f, 0.f, 1.f };
 
-    Renderer::Renderer(IPlatformFactory& platformFactory, const RendererScenes& rendererScenes, RendererEventCollector& eventCollector, const FrameTimer& frameTimer, LatencyMonitor& latencyMonitor)
+    Renderer::Renderer(IPlatformFactory& platformFactory, const RendererScenes& rendererScenes, RendererEventCollector& eventCollector, const FrameTimer& frameTimer, SceneExpirationMonitor& expirationMonitor, RendererStatistics& rendererStatistics)
         : m_platformFactory(platformFactory)
         , m_systemCompositorController(nullptr)
         , m_rendererScenes(rendererScenes)
         , m_displayHandlerManager(eventCollector)
+        , m_statistics(rendererStatistics)
         , m_frameTimer(frameTimer)
-        , m_latencyMonitor(latencyMonitor)
+        , m_expirationMonitor(expirationMonitor)
     {
         m_platformFactory.createPerRendererComponents();
         m_systemCompositorController = platformFactory.getSystemCompositorController();
@@ -542,7 +543,7 @@ namespace ramses_internal
     void Renderer::onSceneWasRendered(const RendererCachedScene& scene)
     {
         scene.markAllRenderOncePassesAsRendered();
-        m_latencyMonitor.onRendered(scene.getSceneId());
+        m_expirationMonitor.onRendered(scene.getSceneId());
         m_statistics.sceneRendered(scene.getSceneId());
     }
 

@@ -14,7 +14,6 @@
 namespace ramses
 {
     class Effect;
-    class GroupNode;
     class Vector3fArray;
     class UInt16Array;
     class Texture3D;
@@ -36,7 +35,7 @@ namespace ramses_internal
         void createQuad(Float x, Float y, Float depth, Float texCoordMagnifier = 1.f);
 
         ramses::Effect* m_effect;
-        ramses::GroupNode* m_groupNode;
+        ramses::Node* m_groupNode;
         const ramses::Vector3fArray* m_vertexPositions;
         const ramses::UInt16Array* m_indices;
         ramses::Texture3D* m_texture;

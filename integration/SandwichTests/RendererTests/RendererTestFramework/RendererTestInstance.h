@@ -11,6 +11,7 @@
 
 #include "LocalTestRenderer.h"
 #include "TestScenes.h"
+#include <chrono>
 
 class RendererTestInstance : public LocalTestRenderer
 {
@@ -22,8 +23,8 @@ public:
 
     void             publish(ramses::sceneId_t sceneId);
     void             flush(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersionTag = ramses::InvalidSceneVersionTag);
-    void             flushWithTimestamp(ramses::sceneId_t sceneId, uint64_t timeStamp, ramses::sceneVersionTag_t sceneVersionTag = ramses::InvalidSceneVersionTag);
     void             unpublish(ramses::sceneId_t sceneId);
+    void             setExpirationTimestamp(ramses::sceneId_t sceneId, std::chrono::system_clock::time_point expirationTS);
 
     ramses::status_t validateScene(ramses::sceneId_t sceneId);
     const char*      getValidationReport(ramses::sceneId_t sceneId);

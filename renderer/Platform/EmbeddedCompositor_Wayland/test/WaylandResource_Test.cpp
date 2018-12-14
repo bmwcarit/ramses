@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "EmbeddedCompositor_Wayland/WaylandResource.h"
-#include "UnixUtilities/UnixDomainSocketHelper.h"
+#include "WaylandUtilities/UnixDomainSocketHelper.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "gtest/gtest.h"
 #include "wayland-client.h"

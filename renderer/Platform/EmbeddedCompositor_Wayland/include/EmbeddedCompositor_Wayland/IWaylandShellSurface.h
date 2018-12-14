@@ -25,9 +25,9 @@ namespace ramses_internal
         virtual void shellSurfaceResize(IWaylandClient& client, IWaylandResource& seatResource, uint32_t serial, uint32_t edges) = 0;
         virtual void shellSurfaceSetToplevel(IWaylandClient& client) = 0;
         virtual void shellSurfaceSetTransient(IWaylandClient& client, IWaylandResource& parentSurfaceResource, int32_t x, int32_t y, uint32_t flags) = 0;
-        virtual void shellSurfaceSetFullscreen(IWaylandClient& client, uint32_t method, uint32_t framerate, IWaylandResource* outputResource) = 0;
+        virtual void shellSurfaceSetFullscreen(IWaylandClient& client, uint32_t method, uint32_t framerate) = 0;
         virtual void shellSurfaceSetPopup(IWaylandClient& client, IWaylandResource& seatResource, uint32_t serial, IWaylandResource& parentSurfaceResource, int32_t x, int32_t y, uint32_t flags) = 0;
-        virtual void shellSurfaceSetMaximized(IWaylandClient& client, IWaylandResource* outputResource) = 0;
+        virtual void shellSurfaceSetMaximized(IWaylandClient& client) = 0;
         virtual void shellSurfaceSetTitle(IWaylandClient& client, const char* title) = 0;
         virtual void shellSurfaceSetClass(IWaylandClient& client, const char* className) = 0;
         virtual void surfaceWasDeleted() = 0;

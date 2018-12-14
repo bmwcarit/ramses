@@ -86,10 +86,6 @@ namespace ramses_internal
 
         static Float  Exp(Float val);
         static Double Exp(Double val);
-
-        static UInt Random(const UInt min, const UInt max);
-
-        static void InitRandom(const UInt32 seed);
     private:
 
     };

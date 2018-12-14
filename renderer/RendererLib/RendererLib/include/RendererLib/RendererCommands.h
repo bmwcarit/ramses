@@ -12,6 +12,7 @@
 #include "RendererLib/RendererCommandContainer.h"
 #include "RendererLogger.h"
 #include "SceneAPI/Handles.h"
+#include "Scene/EScenePublicationMode.h"
 
 namespace ramses_internal
 {
@@ -25,7 +26,7 @@ namespace ramses_internal
     public:
         RendererCommands();
 
-        void publishScene(SceneId sceneId, const Guid& clientID);
+        void publishScene(SceneId sceneId, const Guid& clientID, EScenePublicationMode mode);
         void unpublishScene(SceneId sceneId);
         void receiveScene(const SceneInfo& sceneInfo);
         void subscribeScene(SceneId sceneId);
@@ -82,6 +83,8 @@ namespace ramses_internal
 
         void setSkippingOfUnmodifiedBuffers(Bool enable);
         void setFrameTimerLimits(UInt64 limitForClientResourcesUploadMicrosec, UInt64 limitForSceneActionsApplyMicrosec, UInt64 limitForOffscreenBufferRenderMicrosec);
+        void setForceApplyPendingFlushesLimit(UInt maximumPendingFlushes);
+        void setForceUnsubscribeLimits(UInt maximumPendingFlushes);
 
         const RendererCommandContainer& getCommands() const;
         void swapCommandContainer(RendererCommandContainer& commandContainer);

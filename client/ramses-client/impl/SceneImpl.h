@@ -19,6 +19,7 @@
 #include "RamsesObjectRegistry.h"
 #include "ClientCommands/SceneCommandBuffer.h"
 #include "AppearanceImpl.h"
+#include "Components/FlushTimeInformation.h"
 
 // ramses framework
 #include "SceneAPI/Handles.h"
@@ -47,15 +48,9 @@ namespace ramses
     class Appearance;
     class Node;
     class Effect;
-    class GroupNode;
-    class TranslateNode;
-    class RotateNode;
-    class ScaleNode;
-    class TransformationNode;
     class MeshNode;
     class AnimationSystem;
     class AnimationSystemRealTime;
-    class VisibilityNode;
     class GeometryBinding;
     class AnimationSystemImpl;
     class AttributeInput;
@@ -118,14 +113,8 @@ namespace ramses
         StreamTexture*      createStreamTexture(const Texture2D& fallbackTexture, streamSource_t source, const char* name);
         GeometryBinding*    createGeometryBinding(const Effect& effect, const char* name);
 
-        GroupNode*          createGroupNode(const char* name);
-        TranslateNode*      createTranslateNode(const char* name);
-        RotateNode*         createRotateNode(const char* name);
-        ScaleNode*          createScaleNode(const char* name);
-        TransformationNode* createTransformationNode(const char* name);
-
+        Node*               createNode(const char* name);
         MeshNode*           createMeshNode(const char* name);
-        VisibilityNode*     createVisibilityNode(const char* name);
 
         ramses::RenderGroup*  createRenderGroup(const char* name);
         ramses::RenderPass*   createRenderPass(const char* name);
@@ -226,8 +215,9 @@ namespace ramses
 
         status_t destroy(SceneObject& object);
 
+        status_t setExpirationTimestamp(uint64_t ptpExpirationTimestampInMilliseconds);
+
         status_t flush(ESceneFlushMode flushMode, sceneVersionTag_t sceneVersion);
-        status_t flushWithTimestamp(uint64_t ptpTimestampInMilliseconds, sceneVersionTag_t sceneVersionTag);
 
         const ramses_internal::ClientScene& getIScene() const;
         ramses_internal::ClientScene& getIScene();
@@ -283,8 +273,6 @@ namespace ramses
         bool hasDataSlotIdForTextureSampler(ramses_internal::TextureSamplerHandle sampler) const;
         bool hasDataSlotIdForTexture(const ramses_internal::ResourceContentHash& texture) const;
 
-        status_t flushCommon(uint64_t externalTimestampInMilliseconds, ESceneFlushMode flushMode, sceneVersionTag_t sceneVersionTag);
-
         ramses_internal::ClientScene&           m_scene;
         ramses_internal::SceneCommandBuffer     m_commandBuffer;
         sceneVersionTag_t                       m_nextSceneVersion;
@@ -296,7 +284,7 @@ namespace ramses
         NodeVisibilityInfoVector m_dataStackForSubTreeVisibilityApplying;
         EScenePublicationMode m_futurePublicationMode;
 
-        std::chrono::milliseconds m_maximumLatency;
+        ramses_internal::FlushTime::Clock::time_point m_expirationTimestamp;
     };
 }
 

@@ -27,9 +27,9 @@ namespace ramses
         virtual ~Freetype2FontInstance();
 
         virtual bool      supportsCharacter(char32_t character) const override final;
-        virtual float     getHeight() const override;
-        virtual float     getAscender() const override;
-        virtual float     getDescender() const override;
+        virtual int       getHeight() const override;
+        virtual int       getAscender() const override;
+        virtual int       getDescender() const override;
 
         virtual void      loadAndAppendGlyphMetrics(std::u32string::const_iterator charsBegin, std::u32string::const_iterator charsEnd, GlyphMetricsVector& positionedGlyphs) override;
         virtual GlyphData loadGlyphBitmapData(GlyphId glyphId, uint32_t& sizeX, uint32_t& sizeY) override final;
@@ -37,21 +37,35 @@ namespace ramses
         GlyphId getGlyphId(char32_t character) const;
 
     protected:
-        void activateSize() const;
+        struct GlyphBitmapData;
 
-        int32_t getKerningAdvance(GlyphId glyphIdentifier1, GlyphId glyphIdentifier2) const;
-        GlyphMetrics loadGlyphMetrics(GlyphId glyphId);
+        const GlyphMetrics*    getGlyphMetricsData(GlyphId glyphId);
+        const GlyphBitmapData* getGlyphBitmapData(GlyphId glyphId);
+        bool                   loadGlyph(GlyphId glyphId);
+        void                   activateSize() const;
+        int32_t                getKerningAdvance(GlyphId glyphIdentifier1, GlyphId glyphIdentifier2) const;
 
         FontInstanceId          m_id;
         const FontData&         m_font;
         FT_Face                 m_face = nullptr;
         FT_Size                 m_size = nullptr;
         bool                    m_forceAutohinting = false;
-        float                   m_height = 0.f;
-        float                   m_ascender = 0.f;
-        float                   m_descender = 0.f;
+        int                     m_height = 0;
+        int                     m_ascender = 0;
+        int                     m_descender = 0;
 
-        std::unordered_map<GlyphId, FT_Glyph_Metrics> m_glyphMetricsCache;
+        struct GlyphBitmapData
+        {
+            GlyphData data;
+            uint32_t  width;
+            uint32_t  height;
+        };
+
+        // The reason for separation of the metrics and bitmap data cache
+        // is that bitmap loading is relatively heavy and not needed for determining text layout
+        // which needs metrics only.
+        std::unordered_map<GlyphId, GlyphMetrics> m_glyphMetricsCache;
+        std::unordered_map<GlyphId, GlyphBitmapData> m_glyphBitmapCache;
     };
 }
 

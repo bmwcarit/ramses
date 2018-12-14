@@ -175,10 +175,10 @@ namespace ramses_internal
         }
     }
 
-    void RendererSceneResourceRegistry::addTextureBuffer(TextureBufferHandle handle, DeviceResourceHandle deviceHandle, UInt32 size)
+    void RendererSceneResourceRegistry::addTextureBuffer(TextureBufferHandle handle, DeviceResourceHandle deviceHandle, ETextureFormat format, UInt32 size)
     {
         assert(!m_textureBuffers.contains(handle));
-        m_textureBuffers.put(handle, { deviceHandle, size });
+        m_textureBuffers.put(handle, { deviceHandle, size, format });
     }
 
     void RendererSceneResourceRegistry::removeTextureBuffer(TextureBufferHandle handle)
@@ -191,6 +191,12 @@ namespace ramses_internal
     {
         assert(m_textureBuffers.contains(handle));
         return m_textureBuffers.get(handle)->deviceHandle;
+    }
+
+    ETextureFormat RendererSceneResourceRegistry::getTextureBufferFormat(TextureBufferHandle handle) const
+    {
+        assert(m_textureBuffers.contains(handle));
+        return m_textureBuffers.get(handle)->format;
     }
 
     void RendererSceneResourceRegistry::getAllTextureBuffers(TextureBufferHandleVector& textureBuffers) const

@@ -29,10 +29,8 @@ int main(int argc, char* argv[])
     ramses::Scene* scene = ramses.createScene(123u, ramses::SceneConfig(), "red triangles scene");
 
     // every scene needs a render pass with camera
-    ramses::TranslateNode* cameraTranslate = scene->createTranslateNode();
-    cameraTranslate->setTranslation(0.0f, 0.0f, 5.0f);
     ramses::Camera* camera = scene->createRemoteCamera("my camera");
-    camera->setParent(*cameraTranslate);
+    camera->setTranslation(0.0f, 0.0f, 5.0f);
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -79,26 +77,6 @@ int main(int argc, char* argv[])
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode3);
 
-    // create a translation node for each mesh node
-    ramses::TranslateNode* transNode1 = scene->createTranslateNode();
-    if (0 == transNode1)
-    {
-        std::exit(-1);
-    }
-    ramses::TranslateNode* transNode2 = scene->createTranslateNode();
-    if (0 == transNode2)
-    {
-        std::exit(-1);
-    }
-    ramses::TranslateNode* transNode3 = scene->createTranslateNode();
-    if (0 == transNode3)
-    {
-        std::exit(-1);
-    }
-    meshNode1->setParent(*transNode1);
-    meshNode2->setParent(*transNode2);
-    meshNode3->setParent(*transNode3);
-
     /// [Basic Realtime Animation Example]
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
     //                 This should not be the case for real applications.
@@ -118,9 +96,9 @@ int main(int argc, char* argv[])
     spline2->setKey(10000u, 0.f);
 
     // create animated property for each translation node with single component animation
-    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*transNode1, ramses::EAnimatedPropertyComponent_X);
-    ramses::AnimatedProperty* animProperty2 = animationSystem->createAnimatedProperty(*transNode2, ramses::EAnimatedPropertyComponent_X);
-    ramses::AnimatedProperty* animProperty3 = animationSystem->createAnimatedProperty(*transNode3, ramses::EAnimatedPropertyComponent_Y);
+    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode1, ramses::EAnimatedProperty_Translation, ramses::EAnimatedPropertyComponent_X);
+    ramses::AnimatedProperty* animProperty2 = animationSystem->createAnimatedProperty(*meshNode2, ramses::EAnimatedProperty_Translation, ramses::EAnimatedPropertyComponent_X);
+    ramses::AnimatedProperty* animProperty3 = animationSystem->createAnimatedProperty(*meshNode3, ramses::EAnimatedProperty_Translation, ramses::EAnimatedPropertyComponent_Y);
 
     // create three animations
     ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
@@ -169,8 +147,7 @@ int main(int argc, char* argv[])
         animationSystem->updateLocalTime();
 
         // print current value of animated property
-        transNode1->getTranslation(x, y, z);
-        printf("%f %f %f\n", x, y, z);
+        meshNode1->getTranslation(x, y, z);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -186,8 +163,7 @@ int main(int argc, char* argv[])
         animationSystem->updateLocalTime();
 
         // print current value of animated property
-        transNode1->getTranslation(x, y, z);
-        printf("%f %f %f\n", x, y, z);
+        meshNode1->getTranslation(x, y, z);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }

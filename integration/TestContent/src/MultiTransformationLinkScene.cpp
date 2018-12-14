@@ -9,7 +9,6 @@
 #include "TestScenes/MultiTransformationLinkScene.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/GroupNode.h"
 
 namespace ramses_internal
 {
@@ -39,7 +38,7 @@ namespace ramses_internal
 
     void MultiTransformationLinkScene::createSceneProvider()
     {
-        ramses::GroupNode* rootNode = m_scene.createGroupNode();
+        ramses::Node* rootNode = m_scene.createNode();
         rootNode->setTranslation(-0.5f * m_scaleFactor * NumRows, -5.f, -32.f);
 
         UInt32 meshIndex = 0;
@@ -47,7 +46,7 @@ namespace ramses_internal
         ramses::Node* lastRowNode = NULL;
         for (UInt32 row = 0; row < NumRows; ++row)
         {
-            ramses::GroupNode* rowNode = m_scene.createGroupNode();
+            ramses::Node* rowNode = m_scene.createNode();
             if (lastRowNode)
             {
                 rowNode->setTranslation(0.f, m_scaleFactor, 0.f);
@@ -70,7 +69,7 @@ namespace ramses_internal
                 meshNode->setGeometryBinding(m_redTriangle.GetGeometry());
 
                 // scale and translate each triangle to fit in the square
-                ramses::GroupNode* transNode = m_scene.createGroupNode();
+                ramses::Node* transNode = m_scene.createNode();
                 if (lastTransNode)
                 {
                     transNode->setTranslation(m_scaleFactor, 0.f, 0.f);
@@ -82,7 +81,7 @@ namespace ramses_internal
                 }
                 lastTransNode = transNode;
 
-                ramses::GroupNode* scaleNode = m_scene.createGroupNode();
+                ramses::Node* scaleNode = m_scene.createNode();
                 scaleNode->setScaling(m_scaleFactor * 0.3f, m_scaleFactor * 0.3f, m_scaleFactor);
 
                 meshNode->setParent(*scaleNode);
@@ -96,8 +95,8 @@ namespace ramses_internal
         UInt32 meshIndex = 0;
         for (UInt32 row = 0; row < NumRows; ++row)
         {
-            ramses::GroupNode* rowNode = m_scene.createGroupNode();
-            ramses::GroupNode* rowGroupNode = m_scene.createGroupNode();
+            ramses::Node* rowNode = m_scene.createNode();
+            ramses::Node* rowGroupNode = m_scene.createNode();
             rowNode->setParent(*rowGroupNode);
 
             m_scene.createTransformationDataConsumer(*rowGroupNode, DataIdRowStart + row);
@@ -113,7 +112,7 @@ namespace ramses_internal
                 meshNode->setGeometryBinding(m_greenTriangle.GetGeometry());
 
                 // scale and translate each triangle to fit in the square
-                ramses::GroupNode* transNode = m_scene.createGroupNode();
+                ramses::Node* transNode = m_scene.createNode();
                 if (lastTransNode)
                 {
                     transNode->setTranslation(m_scaleFactor, 0.f, 0.f);
@@ -125,7 +124,7 @@ namespace ramses_internal
                 }
                 lastTransNode = transNode;
 
-                ramses::GroupNode* scaleNode = m_scene.createGroupNode();
+                ramses::Node* scaleNode = m_scene.createNode();
                 scaleNode->setScaling(m_scaleFactor * 0.3f, m_scaleFactor * 0.3f, m_scaleFactor);
 
                 meshNode->setParent(*scaleNode);
@@ -140,10 +139,10 @@ namespace ramses_internal
     {
         for (UInt32 meshIndex = 0; meshIndex < NumMeshes; ++meshIndex)
         {
-            ramses::GroupNode* meshGroupNode = m_scene.createGroupNode();
+            ramses::Node* meshGroupNode = m_scene.createNode();
             m_scene.createTransformationDataConsumer(*meshGroupNode, DataIdMeshStart + meshIndex);
 
-            ramses::GroupNode* transNode = m_scene.createGroupNode();
+            ramses::Node* transNode = m_scene.createNode();
             transNode->setTranslation(m_scaleFactor * 0.3f, m_scaleFactor * 0.3f, m_scaleFactor * 0.3f);
 
             ramses::MeshNode* meshNode = m_scene.createMeshNode();

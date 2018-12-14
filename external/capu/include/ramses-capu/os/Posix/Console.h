@@ -17,9 +17,10 @@
 #ifndef RAMSES_CAPU_POSIX_CONSOLE_H
 #define RAMSES_CAPU_POSIX_CONSOLE_H
 
-#include <stdio.h>
 #include <ramses-capu/os/Memory.h>
-#include <ramses-capu/os/Mutex.h>
+#include <ramses-capu/Error.h>
+#include <stdio.h>
+#include <mutex>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -49,7 +50,7 @@ namespace ramses_capu
             static int32_t initializePipe();
 
             static int32_t pipeDescriptorsForInterruption[2];
-            static Mutex interruptMutex;
+            static std::mutex interruptMutex;
         };
 
         inline
@@ -218,7 +219,7 @@ namespace ramses_capu
         void
         Console::InterruptReadChar()
         {
-            interruptMutex.lock();
+            std::lock_guard<std::mutex> l(interruptMutex);
             const int32_t ret = initializePipe();
             if (0 == ret)
             {
@@ -226,7 +227,6 @@ namespace ramses_capu
                 ssize_t result = ::write(writeEndOfPipe,"#",1u);
                 UNUSED(result);
             }
-            interruptMutex.unlock();
         }
 
         inline

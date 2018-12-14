@@ -22,31 +22,21 @@
 #include "gmock/gmock-generated-matchers.h"
 #include "ramses-capu/container/HashTable.h"
 #include "ramses-capu/os/NonBlockSocketChecker.h"
-#include "ramses-capu/os/Time.h"
-
-
-class RandomPort
-{
-public:
-    /**
-    * Gets a Random Port between 1024 and 10024
-    */
-    static uint16_t get()
-    {
-        return (rand() % 10000) + 40000; // 0-1023 = Well Known, 1024-49151 = User, 49152 - 65535 = Dynamic
-    }
-};
+#include <mutex>
+#include <chrono>
 
 class AsyncSocketHandler
 {
 public:
 
-    AsyncSocketHandler(uint16_t port)
+    AsyncSocketHandler()
         : m_socketInfos()
         , m_receiveCount(0)
+        , m_port(0)
     {
-        m_serverSocket.bind(port, "0.0.0.0");
+        m_serverSocket.bind(0, "0.0.0.0");
         m_serverSocket.listen(10);
+        m_port = m_serverSocket.port();
 
         m_socketInfos.push_back(ramses_capu::os::SocketInfoPair(m_serverSocket.getSocketDescription(), ramses_capu::os::SocketDelegate::Create<AsyncSocketHandler, &AsyncSocketHandler::acceptConnectionCallback>(*this)));
     }
@@ -65,18 +55,17 @@ public:
 
     void acceptConnectionCallback(const ramses_capu::os::SocketDescription& socketDescription)
     {
-        m_socketLock.lock();
+        std::lock_guard<std::mutex> l(m_socketLock);
         UNUSED(socketDescription);
         ramses_capu::TcpSocket* clientSocket = m_serverSocket.accept();
         EXPECT_TRUE(0 != clientSocket);
         m_clientSockets.put(clientSocket->getSocketDescription(), clientSocket);
         m_socketInfos.push_back(ramses_capu::os::SocketInfoPair(clientSocket->getSocketDescription(), ramses_capu::os::SocketDelegate::Create<AsyncSocketHandler, &AsyncSocketHandler::receiveDataCallback>(*this)));
-        m_socketLock.unlock();
     }
 
     void sendSomeData()
     {
-        m_socketLock.lock();
+        std::lock_guard<std::mutex> l(m_socketLock);
         ramses_capu::HashTable<ramses_capu::os::SocketDescription, ramses_capu::TcpSocket*>::Iterator current = m_clientSockets.begin();
         ramses_capu::HashTable<ramses_capu::os::SocketDescription, ramses_capu::TcpSocket*>::Iterator end = m_clientSockets.end();
 
@@ -86,12 +75,11 @@ public:
             int32_t sendBytes;
             current->value->send(reinterpret_cast<char*>(&sendValue), sizeof(sendValue), sendBytes);
         }
-        m_socketLock.unlock();
     }
 
     void receiveDataCallback(const ramses_capu::os::SocketDescription& socketDescription)
     {
-        m_socketLock.lock();
+        std::lock_guard<std::mutex> g(m_socketLock);
         int32_t data;
         int32_t numbytes = 0;
 
@@ -105,30 +93,26 @@ public:
                 ++m_receiveCount;
             }
         }
-        m_socketLock.unlock();
     }
 
     ramses_capu::uint_t getNumberOfClientSockets()
     {
-        m_socketLock.lock();
-        const ramses_capu::uint_t num = m_clientSockets.count();
-        m_socketLock.unlock();
-        return num;
+        std::lock_guard<std::mutex> l(m_socketLock);
+        return m_clientSockets.count();
     }
 
     ramses_capu::vector<ramses_capu::os::SocketInfoPair> getSocketInfoCopy()
     {
-        m_socketLock.lock();
-        const ramses_capu::vector<ramses_capu::os::SocketInfoPair> copy = m_socketInfos;
-        m_socketLock.unlock();
-        return copy;
+        std::lock_guard<std::mutex> l(m_socketLock);
+        return m_socketInfos;
     }
 
     ramses_capu::vector<ramses_capu::os::SocketInfoPair> m_socketInfos;
     ramses_capu::HashTable<ramses_capu::os::SocketDescription, ramses_capu::TcpSocket*> m_clientSockets;
-    ramses_capu::Mutex m_socketLock;
+    std::mutex m_socketLock;
     ramses_capu::TcpServerSocket m_serverSocket;
     uint32_t m_receiveCount;
+    uint16_t m_port;
 };
 
 
@@ -204,27 +188,25 @@ public:
 
 TEST(NonBlockSocketCheckerTest, DISABLED_AcceptALotOfClients)
 {
-    static const uint32_t clientcount = 10;
-    static const uint64_t testtimeout = 5000;
+    const uint32_t clientcount = 10;
+    const std::chrono::milliseconds testtimeout{5000};
 
-    uint16_t port = RandomPort::get();
-
-    AsyncSocketHandler asyncSocketHandler(port);
+    AsyncSocketHandler asyncSocketHandler;
 
     AsyncClient asyncClient[clientcount];
 
     for (uint32_t i = 0; i < clientcount; ++i)
     {
-        asyncClient[i].start(port, false);
+        asyncClient[i].start(asyncSocketHandler.m_port, false);
     }
 
-    uint64_t startTime = ramses_capu::Time::GetMillisecondsMonotonic();
+    const auto startTime = std::chrono::steady_clock::now();
     bool timeout = false;
     while (asyncSocketHandler.getNumberOfClientSockets() < clientcount && !timeout)
     {
         ramses_capu::vector<ramses_capu::os::SocketInfoPair> sockets = asyncSocketHandler.getSocketInfoCopy();
         ramses_capu::NonBlockSocketChecker::CheckSocketsForIncomingData(sockets, 10);
-        timeout = ((ramses_capu::Time::GetMillisecondsMonotonic() - startTime) > testtimeout);
+        timeout = ((std::chrono::steady_clock::now() - startTime) > testtimeout);
     }
 
     for (uint32_t i = 0; i < clientcount; ++i)
@@ -239,16 +221,13 @@ TEST(NonBlockSocketCheckerTest, DISABLED_ReceiveDataFromALotOfClients)
 {
     static const uint32_t clientcount = 50;
 
-    uint16_t port = RandomPort::get();
-
-    AsyncSocketHandler asyncSocketHandler(port);
-
+    AsyncSocketHandler asyncSocketHandler;
 
     AsyncClient asyncClient[clientcount];
 
     for (uint32_t i = 0; i < clientcount; ++i)
     {
-        asyncClient[i].start(port, true);
+        asyncClient[i].start(asyncSocketHandler.m_port, true);
     }
 
     while (asyncSocketHandler.m_receiveCount < clientcount)
@@ -264,12 +243,10 @@ TEST(NonBlockSocketCheckerTest, DISABLED_ReceiveDataFromALotOfClients)
 
 TEST(NonBlockSocketCheckerTest, DISABLED_ReceiveDataOnClientSide)
 {
-    uint16_t port = RandomPort::get();
-
-    AsyncSocketHandler asyncSocketHandler(port);
+    AsyncSocketHandler asyncSocketHandler;
 
     AsyncClient asyncClient;
-    asyncClient.start(port, false);
+    asyncClient.start(asyncSocketHandler.m_port, false);
 
     while (asyncSocketHandler.m_clientSockets.count() < 1)
     {

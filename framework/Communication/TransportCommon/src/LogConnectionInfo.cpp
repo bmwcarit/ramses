@@ -12,7 +12,7 @@
 
 namespace ramses_internal
 {
-    LogConnectionInfo::LogConnectionInfo(const ICommunicationSystem& communicationSystem)
+    LogConnectionInfo::LogConnectionInfo(ICommunicationSystem& communicationSystem)
         : m_communicationSystem(communicationSystem)
     {
         description = "print connection information";

@@ -11,7 +11,8 @@
 #include "Collections/Vector.h"
 #include "PlatformAbstraction/PlatformMemory.h"
 #include "Utils/RawBinaryOutputStream.h"
-
+#include "Math3d/Matrix44f.h"
+#include "SceneAPI/ResourceContentHash.h"
 
 namespace ramses_internal
 {
@@ -101,8 +102,6 @@ namespace ramses_internal
 
         outstr << TestFixture::m_value;
 
-        EXPECT_EQ(outstr.flush(), EStatus_RAMSES_OK);
-
         EXPECT_LT(outstr.getBytesWritten(), outstr.getSize());
         EXPECT_EQ(outstr.getBytesWritten(), sizeof(TypeParam));
         EXPECT_EQ(PlatformMemory::Compare(&data[0], &TestFixture::m_value, sizeof(TypeParam)), 0);
@@ -124,8 +123,6 @@ namespace ramses_internal
             outstr << TestFixture::m_value;
         }
 
-        EXPECT_EQ(outstr.flush(), EStatus_RAMSES_OK);
-
         EXPECT_LT(outstr.getBytesWritten(), outstr.getSize());
         EXPECT_EQ(outstr.getBytesWritten(), sizeof(TypeParam) * iterations);
 
@@ -145,23 +142,6 @@ namespace ramses_internal
 
         RawBinaryOutputStream outstr(&data[0], dataSize);
         outstr << m_str;
-
-        // bytes written equals UInt32 for string length + amount string characters
-        EXPECT_EQ(outstr.getBytesWritten(), m_str.getLength() + sizeof(UInt32));
-        // string length written correctly?
-        EXPECT_EQ(*reinterpret_cast<UInt32*>(&data[0]), m_str.getLength());
-        // string written correctly to stream?
-        EXPECT_EQ(PlatformMemory::Compare(&data[0] + sizeof(UInt32), m_str.c_str(), m_str.getLength()), 0);
-    }
-
-    TEST_F(RawBinaryOutputStreamComplexTypesTest, WriteAndCheckCharacterArray)
-    {
-        const UInt32 dataSize = 64 * 1024; // 64K
-        Vector<UInt8> data;
-        data.resize(dataSize);
-
-        RawBinaryOutputStream outstr(&data[0], dataSize);
-        outstr << m_str.c_str();
 
         // bytes written equals UInt32 for string length + amount string characters
         EXPECT_EQ(outstr.getBytesWritten(), m_str.getLength() + sizeof(UInt32));

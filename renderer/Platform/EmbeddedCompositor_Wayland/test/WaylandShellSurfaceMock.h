@@ -24,9 +24,9 @@ namespace ramses_internal
         MOCK_METHOD4(shellSurfaceResize, void(IWaylandClient& client, IWaylandResource& seatResource, uint32_t serial, uint32_t edges));
         MOCK_METHOD1(shellSurfaceSetToplevel, void(IWaylandClient& client));
         MOCK_METHOD5(shellSurfaceSetTransient, void(IWaylandClient& client, IWaylandResource& parentSurfaceResource, int32_t x, int32_t y, uint32_t flags));
-        MOCK_METHOD4(shellSurfaceSetFullscreen, void(IWaylandClient& client, uint32_t method, uint32_t framerate, IWaylandResource* outputResource));
+        MOCK_METHOD3(shellSurfaceSetFullscreen, void(IWaylandClient& client, uint32_t method, uint32_t framerate));
         MOCK_METHOD7(shellSurfaceSetPopup, void(IWaylandClient& client, IWaylandResource& seatResource, uint32_t serial, IWaylandResource& parentSurfaceResource, int32_t x, int32_t y, uint32_t flags));
-        MOCK_METHOD2(shellSurfaceSetMaximized, void(IWaylandClient& client, IWaylandResource* outputResource));
+        MOCK_METHOD1(shellSurfaceSetMaximized, void(IWaylandClient& client));
         MOCK_METHOD2(shellSurfaceSetTitle, void(IWaylandClient& client, const char* title));
         MOCK_METHOD2(shellSurfaceSetClass, void(IWaylandClient& client, const char* className));
         MOCK_METHOD0(surfaceWasDeleted, void());

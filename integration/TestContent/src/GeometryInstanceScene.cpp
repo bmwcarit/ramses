@@ -9,7 +9,6 @@
 #include "TestScenes/GeometryInstanceScene.h"
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
-#include "ramses-client-api/TransformationNode.h"
 #include "ramses-client-api/Vector3fArray.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/Appearance.h"
@@ -17,7 +16,6 @@
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/TranslateNode.h"
 
 namespace ramses_internal
 {
@@ -69,7 +67,7 @@ namespace ramses_internal
             addMeshNodeToDefaultRenderGroup(*notInstancedMeshNode, 1);
             notInstancedMeshNode->setAppearance(*appearance);
 
-            ramses::TranslateNode* translateNode = m_scene.createTranslateNode();
+            ramses::Node* translateNode = m_scene.createNode();
             translateNode->setTranslation(0.f, -1.5f, 0.f);
             notInstancedMeshNode->setParent(*translateNode);
 

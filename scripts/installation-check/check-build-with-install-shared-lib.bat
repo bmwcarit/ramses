@@ -20,7 +20,7 @@ IF NOT "%~6"=="" (
 
 SET BUILD_CONFIG=%1
 SET TEST_DIR=%2
-SET INSTALL_DIR=%3
+SET INSTALL_DIR=%~3
 SET CMAKE_GENERATOR=%4
 SET GL_VERSION=%5
 SET RENDERER_PLATFORM="WINDOWS"
@@ -44,13 +44,30 @@ cd  test-cmake.config
 cmake -G%CMAKE_GENERATOR% -DCMAKE_PREFIX_PATH="%INSTALL_DIR%/lib" -DRAMSES_RENDERER_PLATFORM=%RENDERER_PLATFORM% -DGL_VERSION=%GL_VERSION% --build test-cmake.config %SCRIPT_DIR%/shared-lib-check/
 cmake --build . --config %BUILD_CONFIG%
 
-SET EXECUTABLE_PATH=%cd%\%BUILD_CONFIG%
-start /d %EXECUTABLE_PATH% ramses-shared-lib-check
-
 ::check for errors
 IF /I "%ERRORLEVEL%" NEQ "0" (
     cd %CURRENT_WORKING_DIRECTORY%
     ECHO %~n0: build failed
+    EXIT /B 1
+)
+
+IF /I NOT %CMAKE_GENERATOR%=="Ninja" (
+SET EXECUTABLE_PATH=%cd%\%BUILD_CONFIG%
+) ELSE (
+SET EXECUTABLE_PATH=%cd%
+)
+SET PATH=%INSTALL_DIR%/lib;%PATH%
+
+cd %EXECUTABLE_PATH%
+call ramses-shared-lib-check
+
+::check for errors
+IF /I "%ERRORLEVEL%" NEQ "0" (
+    cd %CURRENT_WORKING_DIRECTORY%
+    ECHO %~n0: execution failed
+    ECHO %EXECUTABLE_PATH%
+    ECHO "PATH: %PATH%"
+    dir %EXECUTABLE_PATH%
     EXIT /B 1
 )
 

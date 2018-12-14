@@ -8,8 +8,6 @@
 
 #include "TestScenes/MultipleTrianglesScene.h"
 #include "ramses-client-api/Scene.h"
-#include "ramses-client-api/TranslateNode.h"
-#include "ramses-client-api/RotateNode.h"
 #include "ramses-client-api/Camera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
@@ -61,11 +59,11 @@ namespace ramses_internal
         m_meshNode4->setGeometryBinding(m_whiteQuad.GetGeometry());
         m_meshNode5->setGeometryBinding(m_yellowLine.GetGeometry());
 
-        ramses::TranslateNode* transNode1 = m_scene.createTranslateNode();
-        ramses::TranslateNode* transNode2 = m_scene.createTranslateNode();
-        ramses::TranslateNode* transNode3 = m_scene.createTranslateNode();
-        ramses::TranslateNode* transNode4 = m_scene.createTranslateNode();
-        ramses::TranslateNode* transNode5 = m_scene.createTranslateNode();
+        ramses::Node* transNode1 = m_scene.createNode();
+        ramses::Node* transNode2 = m_scene.createNode();
+        ramses::Node* transNode3 = m_scene.createNode();
+        ramses::Node* transNode4 = m_scene.createNode();
+        ramses::Node* transNode5 = m_scene.createNode();
 
         transNode1->setTranslation(0.f, -0.2f, -12.f);
         transNode2->setTranslation(-0.2f, 0.f, -11.f);
@@ -84,8 +82,8 @@ namespace ramses_internal
 
     void MultipleTrianglesScene::setState(UInt32 state)
     {
-        ramses::RotateNode* rotate = 0;
-        ramses::TranslateNode* translate = 0;
+        ramses::Node* rotate = 0;
+        ramses::Node* translate = 0;
 
         switch (state)
         {
@@ -169,8 +167,8 @@ namespace ramses_internal
             m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
             m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
 
-            rotate = m_scene.createRotateNode();
-            translate = m_scene.createTranslateNode();
+            rotate = m_scene.createNode();
+            translate = m_scene.createNode();
 
             getDefaultCamera().setParent(*rotate);
             rotate->setParent(*translate);

@@ -17,6 +17,8 @@
 
 namespace ramses_internal
 {
+    class BinaryOutputStream;
+
     class TestForkingController
     {
     public:
@@ -24,12 +26,11 @@ namespace ramses_internal
         TestForkingController(const TestForkingController&) = delete;
         TestForkingController& operator=(const TestForkingController&) = delete;
 
+        void setEnvironmentVariableWaylandDisplay();
+        void setEnvironmentVariableWaylandSocket();
         void startTestApplication();
         void waitForTestApplicationExit();
-        void sendMessageToTestApplication(ETestWaylandApplicationMessage message);
-        void sendStringToTestApplication(const String& string);
-        template <typename T>
-        void sendMessageToTestApplication(ETestWaylandApplicationMessage message, const T& params);
+        void sendMessageToTestApplication(const BinaryOutputStream& os);
         template <typename T>
         bool getAnswerFromTestApplication(T& value, IEmbeddedCompositingManager& embeddedCompositingManager);
         void deinitialize();
@@ -41,30 +42,17 @@ namespace ramses_internal
         void sendForkRequest();
         void sendWaitForExitRequest();
 
-        NamedPipe       m_testToForkerPipe;
-        NamedPipe       m_testToWaylandClientPipe;
-        NamedPipe       m_waylandClientToTestPipe;
-        pid_t           m_testForkerApplicationProcessId;
+        NamedPipe       m_testToForkerPipe{"/tmp/ramses-ec-tests-testToForkerPipe", true};
+        NamedPipe       m_testToWaylandClientPipe{"/tmp/ramses-ec-tests-testToWaylandClientPipe", true};
+        NamedPipe       m_waylandClientToTestPipe{"/tmp/ramses-ec-tests-waylandClientToTestPipe", true};
+        pid_t           m_testForkerApplicationProcessId = -1;
     };
-
-    template <typename T>
-    void TestForkingController::sendMessageToTestApplication(ETestWaylandApplicationMessage message, const T& params)
-    {
-        LOG_INFO(CONTEXT_RENDERER, "TestForkingController::sendMessageToTestApplication message: " << message);
-        UInt32 messageAsUInt = static_cast<UInt32>(message);
-        if (!m_testToWaylandClientPipe.write(&messageAsUInt, sizeof(messageAsUInt)) ||
-            !m_testToWaylandClientPipe.write(&params, sizeof(params)))
-        {
-            LOG_ERROR(CONTEXT_RENDERER, "TestForkingControllerController::sendMessageToTestApplication(" << messageAsUInt << "): failed to write message to pipe!");
-        }
-    }
 
     template <typename T>
     bool TestForkingController::getAnswerFromTestApplication(T& value, IEmbeddedCompositingManager& embeddedCompositingManager)
     {
         LOG_INFO(CONTEXT_RENDERER, "TestForkingController::getAnswerFromTestApplication");
 
-        UNUSED(embeddedCompositingManager)
         const uint32_t timeOutInMS = 20;
         while (!m_waylandClientToTestPipe.waitOnData(timeOutInMS))
         {

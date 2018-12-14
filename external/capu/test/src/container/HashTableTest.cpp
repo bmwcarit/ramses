@@ -20,7 +20,6 @@
 #include "ramses-capu/container/vector.h"
 #include "ramses-capu/container/Pair.h"
 #include "ramses-capu/Error.h"
-#include "ramses-capu/os/Time.h"
 #include "util/ComplexTestType.h"
 
 #include <container/HashTableTest.h>

@@ -64,6 +64,7 @@ int main(int argc, const char *argv[])
 
     ramses::RamsesFrameworkConfig config(argc, argv);
 
+    forkingController.setEnvironmentVariableWaylandDisplay();
     ramses_internal::EmbeddedCompositingTests embeddedCompositingTests(forkingController, filterInTestStrings, filterOutTestStrings, generateBitmaps, config);
 
     int returnValue = 0;

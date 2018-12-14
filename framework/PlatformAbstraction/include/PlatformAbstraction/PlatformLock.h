@@ -9,16 +9,13 @@
 #ifndef RAMSES_PLATFORMLOCK_H
 #define RAMSES_PLATFORMLOCK_H
 
-#include <ramses-capu/os/Mutex.h>
-#include <ramses-capu/os/LightweightMutex.h>
-#include "PlatformTypes.h"
+#include <mutex>
 
 namespace ramses_internal
 {
     template<class Mutex>
     class PlatformLockTemplate
     {
-        friend class PlatformEvent;
         friend class PlatformConditionVariable;
 
     public:
@@ -32,7 +29,7 @@ namespace ramses_internal
             m_mutex.unlock();
         }
 
-        Bool trylock()
+        bool trylock()
         {
             return m_mutex.trylock();
         }
@@ -41,10 +38,10 @@ namespace ramses_internal
         Mutex m_mutex;
     };
 
-    class PlatformLock : public PlatformLockTemplate<ramses_capu::Mutex>
+    class PlatformLock : public PlatformLockTemplate<std::recursive_mutex>
     {};
 
-    class PlatformLightweightLock : public PlatformLockTemplate<ramses_capu::LightweightMutex>
+    class PlatformLightweightLock : public PlatformLockTemplate<std::mutex>
     {};
 }
 

@@ -22,7 +22,6 @@ ENDIF()
 # set vars for defines and Config.h.in
 # infer from cmake vars (vars also used in Config.h.in)
 STRING(TOUPPER "OS_${TARGET_OS}" CAPU_OS_COMPILE_DEFINITION)
-SET(CAPU_ARCH_COMPILE_DEFINITION "ARCH_${TARGET_ARCH}")
 SET(CAPU_ARCH_BITNESS_COMPILE_DEFINITION "CAPU_ARCH_${TARGET_BITNESS}")
 
 # all POSIX system must include this source file,
@@ -35,6 +34,9 @@ ENDIF()
 
 CONFIGURE_FILE(include/ramses-capu/Config.h.in ${PROJECT_BINARY_DIR}/ramses-capu/Config.h)
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 
 ACME_MODULE(
 
@@ -66,7 +68,7 @@ ACME_MODULE(
     INCLUDE_BASE            include
                             ${PROJECT_BINARY_DIR}
 
-    DEPENDENCIES            Thread
+    DEPENDENCIES            Threads::Threads
 )
 
 # conditionally link libs
@@ -91,7 +93,6 @@ endif()
 TARGET_COMPILE_DEFINITIONS(ramses-capu PUBLIC
     TARGET_OS=${TARGET_OS}
     ${CAPU_OS_COMPILE_DEFINITION}
-    ${CAPU_ARCH_COMPILE_DEFINITION}
     ${CAPU_ARCH_BITNESS_COMPILE_DEFINITION})
 
 

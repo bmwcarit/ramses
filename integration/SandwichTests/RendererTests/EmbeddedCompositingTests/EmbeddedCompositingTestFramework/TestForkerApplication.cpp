@@ -8,17 +8,20 @@
 
 #include "TestForkerApplication.h"
 #include "Utils/LogMacros.h"
+#include "PlatformAbstraction/PlatformEnvironmentVariables.h"
 #include "TestWaylandApplication.h"
 #include "TestSignalHandler.h"
 #include <sys/wait.h>
 
 namespace ramses_internal
 {
-    TestForkerApplication::TestForkerApplication(const String& testToForkerPipeName, const String& testToWaylandClientPipeName, const String& waylandClientToTestPipeName)
+    TestForkerApplication::TestForkerApplication(const String& embeddedCompositorDisplayName, const String& testToForkerPipeName, const String& testToWaylandClientPipeName, const String& waylandClientToTestPipeName)
         : m_testToForkerPipe(testToForkerPipeName, false)
         , m_testToWaylandClientPipeName(testToWaylandClientPipeName)
         , m_waylandClientToTestPipeName(waylandClientToTestPipeName)
         , m_testApplicationProcessId(0)
+        , m_embeddedCompositorDisplayName(embeddedCompositorDisplayName)
+        , m_socketHelper(embeddedCompositorDisplayName)
     {
         TestSignalHandler::RegisterSignalHandlersForCurrentProcess("TestForkerApplication");
         m_testToForkerPipe.open();
@@ -35,8 +38,8 @@ namespace ramses_internal
 
     bool TestForkerApplication::handleIncomingMessage()
     {
-        UInt32 messgageAsUInt = 0u;
-        const EReadFromPipeStatus readingStatus = m_testToForkerPipe.read(&messgageAsUInt, sizeof(UInt32));
+        ETestForkerApplicationMessage messgage;
+        const EReadFromPipeStatus readingStatus = m_testToForkerPipe.read(&messgage, sizeof(ETestForkerApplicationMessage));
         switch(readingStatus)
         {
         case EReadFromPipeStatus_Success:
@@ -54,24 +57,36 @@ namespace ramses_internal
             break;
         }
 
-        switch(static_cast<ETestForkerApplicationMessage>(messgageAsUInt))
+        switch(messgage)
         {
-        case ETestForkerApplicationMessage_StopForkerApplication:
+        case ETestForkerApplicationMessage::SetEnvironementVariable_WaylandDisplay:
+        {
+            LOG_INFO(CONTEXT_RENDERER, "TestForkerApplication::handleIncomingMessage received set environment variable WAYLAND_DISPLAY");
+            setEnvironmentVariableWaylandDisplay();
+            break;
+        }
+        case ETestForkerApplicationMessage::SetEnvironementVariable_WaylandSocket:
+        {
+            LOG_INFO(CONTEXT_RENDERER, "TestForkerApplication::handleIncomingMessage received set environment variable WAYLAND_SOCKET");
+            setEnvironmentVariableWaylandSocket();
+            break;
+        }
+        case ETestForkerApplicationMessage::StopForkerApplication:
             LOG_INFO(CONTEXT_RENDERER, "TestForkerApplication::handleIncomingMessage received stop forker application message");
             return false;
-        case ETestForkerApplicationMessage_ForkTestApplication:
+        case ETestForkerApplicationMessage::ForkTestApplication:
         {
             LOG_INFO(CONTEXT_RENDERER, "TestForkerApplication::handleIncomingMessage received fork test application message");
             startTestApplication();
             break;
         }
-        case ETestForkerApplicationMessage_KillTestApplication:
+        case ETestForkerApplicationMessage::KillTestApplication:
         {
             LOG_INFO(CONTEXT_RENDERER, "TestForkerApplication::handleIncomingMessage received kill test application message");
             killTestApplication();
             break;
         }
-        case ETestForkerApplicationMessage_WaitForTestApplicationExit:
+        case ETestForkerApplicationMessage::WaitForTestApplicationExit:
         {
             LOG_INFO(CONTEXT_RENDERER, "TestForkerApplication::handleIncomingMessage received wait for test application exit message");
             waitForTestApplicationExit();
@@ -99,7 +114,18 @@ namespace ramses_internal
             {
                 TestWaylandApplication testApplication(m_testToWaylandClientPipeName, m_waylandClientToTestPipeName);
                 const Bool testApplicationExitStatus = testApplication.run();
+
+                //Close FD in test application process if it used
+                //P.S: has no effect if FD was not used
+                m_socketHelper.cleanup();
+
                 exit(testApplicationExitStatus);
+            }
+            else
+            {
+                //Close FD in forker process if it used
+                //P.S: has no effect if FD was not used
+                m_socketHelper.cleanup();
             }
         }
     }
@@ -115,5 +141,25 @@ namespace ramses_internal
     {
         kill(m_testApplicationProcessId, SIGKILL);
         waitForTestApplicationExit();
+    }
+
+    void TestForkerApplication::setEnvironmentVariableWaylandDisplay()
+    {
+        PlatformEnvironmentVariables::SetEnvVar("WAYLAND_DISPLAY", m_embeddedCompositorDisplayName);
+    }
+
+
+    void TestForkerApplication::setEnvironmentVariableWaylandSocket()
+    {
+        //open wayland display socket to create socket fd
+        const int socketFD = m_socketHelper.createConnectedFileDescriptor(false);
+
+        //set socket fd as environemnt variable
+        StringOutputStream ss;
+        ss << socketFD;
+
+        printf("\n\n\n%s %i %s\n\n\n", m_embeddedCompositorDisplayName.c_str(), socketFD, ss.c_str());
+
+        PlatformEnvironmentVariables::SetEnvVar("WAYLAND_SOCKET", ss.c_str());
     }
 }

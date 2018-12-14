@@ -27,7 +27,7 @@ namespace ramses_internal
         , m_compositorGlobal(*this)
         , m_iviApplicationGlobal(*this)
     {
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::EmbeddedCompositor_Wayland(): Created EmbeddedCompositor_Wayland...(not initialized yet)")
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::EmbeddedCompositor_Wayland(): Created EmbeddedCompositor_Wayland...(not initialized yet)");
     }
 
     EmbeddedCompositor_Wayland::~EmbeddedCompositor_Wayland()
@@ -35,7 +35,6 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::~EmbeddedCompositor_Wayland(): Destroying EmbeddedCompositor_Wayland");
 
         m_compositorGlobal.destroy();
-        m_waylandOutputGlobal.destroy();
         m_shellGlobal.destroy();
         m_iviApplicationGlobal.destroy();
     }
@@ -50,11 +49,6 @@ namespace ramses_internal
         }
 
         if (!m_compositorGlobal.init(m_serverDisplay))
-        {
-            return false;
-        }
-
-        if (!m_waylandOutputGlobal.init(m_serverDisplay))
         {
             return false;
         }
@@ -282,11 +276,6 @@ namespace ramses_internal
         {
             return String();
         }
-    }
-
-    void EmbeddedCompositor_Wayland::getOutputResolution(Int32& width, Int32& height) const
-    {
-        m_waylandOutputGlobal.getResolution(width, height);
     }
 
     IWaylandBuffer* EmbeddedCompositor_Wayland::findWaylandBuffer(WaylandBufferResource& bufferResource)

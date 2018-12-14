@@ -66,13 +66,15 @@ namespace ramses
             return addErrorEntry("Texture2DBuffer::setData failed, width and height can not be zero.");
         }
 
-        const ramses_internal::MipMapDimensions& mipMapDimensions = getIScene().getTextureBuffer(m_textureBufferHandle).mipMapDimensions;
-        if (mipLevel >= mipMapDimensions.size())
+        const auto& mipMaps = getIScene().getTextureBuffer(m_textureBufferHandle).mipMaps;
+        if (mipLevel >= mipMaps.size())
         {
             return addErrorEntry("Texture2DBuffer::setData failed, mipLevel exceeds the number of allocated mips.");
         }
 
-        if (offsetX + width > mipMapDimensions[mipLevel].width || offsetY + height > mipMapDimensions[mipLevel].height)
+        const auto& mip = mipMaps[mipLevel];
+
+        if (offsetX + width > mip.width || offsetY + height > mip.height)
         {
             return addErrorEntry("Texture2DBuffer::setData failed, updated subregion exceeds the size of the target mipLevel.");
         }
@@ -84,7 +86,7 @@ namespace ramses
 
     uint32_t Texture2DBufferImpl::getMipLevelCount() const
     {
-        return static_cast<uint32_t>(getIScene().getTextureBuffer(m_textureBufferHandle).mipMapDimensions.size());
+        return static_cast<uint32_t>(getIScene().getTextureBuffer(m_textureBufferHandle).mipMaps.size());
     }
 
     ETextureFormat Texture2DBufferImpl::getTexelFormat() const
@@ -95,12 +97,12 @@ namespace ramses
     status_t Texture2DBufferImpl::getMipLevelData(uint32_t mipLevel, char* buffer, uint32_t bufferSize) const
     {
         const auto& texBuffer = getIScene().getTextureBuffer(m_textureBufferHandle);
-        if (mipLevel >= texBuffer.mipMapDimensions.size())
+        if (mipLevel >= texBuffer.mipMaps.size())
         {
             return addErrorEntry("Texture2DBuffer::getMipLevelData failed, requested mipLevel does not exist in Texture2DBuffer.");
         }
 
-        const auto& mipData = texBuffer.mipMapData[mipLevel];
+        const auto& mipData = texBuffer.mipMaps[mipLevel].data;
         const uint32_t dataSizeToCopy = std::min<uint32_t>(bufferSize, static_cast<uint32_t>(mipData.size()));
         ramses_internal::PlatformMemory::Copy(buffer, mipData.data(), dataSizeToCopy);
 
@@ -109,25 +111,25 @@ namespace ramses
 
     status_t Texture2DBufferImpl::getMipLevelSize(uint32_t mipLevel, uint32_t& widthOut, uint32_t& heightOut) const
     {
-        const auto& mipDimensions = getIScene().getTextureBuffer(m_textureBufferHandle).mipMapDimensions;
-        if (mipLevel >= mipDimensions.size())
+        const auto& mipMaps = getIScene().getTextureBuffer(m_textureBufferHandle).mipMaps;
+        if (mipLevel >= mipMaps.size())
         {
             return addErrorEntry("Texture2DBuffer::getMipLevelSize failed, requested mipLevel does not exist in Texture2DBuffer.");
         }
 
-        widthOut = mipDimensions[mipLevel].width;
-        heightOut = mipDimensions[mipLevel].height;
+        widthOut = mipMaps[mipLevel].width;
+        heightOut = mipMaps[mipLevel].height;
 
         return StatusOK;
     }
 
     uint32_t Texture2DBufferImpl::getMipLevelDataSizeInBytes(uint32_t mipLevel) const
     {
-        const auto& mipDimensions = getIScene().getTextureBuffer(m_textureBufferHandle).mipMapDimensions;
-        if (mipLevel >= mipDimensions.size())
+        const auto& mipMaps = getIScene().getTextureBuffer(m_textureBufferHandle).mipMaps;
+        if (mipLevel >= mipMaps.size())
             return 0u;
 
-        const auto& mipDimension = mipDimensions[mipLevel];
-        return mipDimension.width * mipDimension.height * GetTexelSizeFromFormat(getIScene().getTextureBuffer(m_textureBufferHandle).textureFormat);
+        const auto& mip = mipMaps[mipLevel];
+        return mip.width * mip.height * GetTexelSizeFromFormat(getIScene().getTextureBuffer(m_textureBufferHandle).textureFormat);
     }
 }

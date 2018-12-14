@@ -28,10 +28,8 @@ ACME_MODULE(
     #==========================================================================
     # dependencies
     #==========================================================================
-    DEPENDENCIES            ramses-client-api
-                            ramses-client
+    DEPENDENCIES            ramses-client
                             ramses-framework
                             ramses-renderer-lib
-                            ramses-text-api
                             ramses-text
 )

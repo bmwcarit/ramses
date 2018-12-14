@@ -17,25 +17,16 @@
 #include <gtest/gtest.h>
 #include "ramses-capu/os/UdpSocket.h"
 #include "ramses-capu/os/Thread.h"
-#include "ramses-capu/os/Mutex.h"
-#include "ramses-capu/os/CondVar.h"
+#include <mutex>
+#include <condition_variable>
 #include <cmath>
 
-ramses_capu::Mutex mutex2;
-ramses_capu::CondVar cv2;
-bool cond2;
-
-class RandomPort
+namespace
 {
-public:
-    /**
-     * Gets a Random Port between 1024 and 10024
-     */
-    static uint16_t get()
-    {
-        return (rand() % 10000) + 30000; // 0-1023 = Well Known, 1024-49151 = User, 49152 - 65535 = Dynamic
-    }
-};
+    std::mutex mutex;
+    std::condition_variable cv;
+    bool cond;
+}
 
 class ThreadClientUdpTest : public ramses_capu::Runnable
 {
@@ -54,13 +45,11 @@ public:
         //EXPECT_EQ(ramses_capu::CAPU_SOCKET_EADDR, clientSocket->send((char*) &i, sizeof(int32_t), "::1", port) );
 
         //wait for other side to start up
-        mutex2.lock();
-        while (!cond2)
         {
-            cv2.wait(mutex2);
+            std::unique_lock<std::mutex> l(mutex);
+            cv.wait(l, [&](){ return cond; });
+            cond = false;
         }
-        cond2 = false;
-        mutex2.unlock();
         //send data
         EXPECT_EQ(ramses_capu::CAPU_OK, clientSocket->send(reinterpret_cast<char*>(&i), sizeof(int32_t), "127.0.0.1", m_port));
 
@@ -73,10 +62,11 @@ public:
         //check value
         EXPECT_EQ(6, communication_variable);
 
-        mutex2.lock();
-        cond2 = true;
-        cv2.signal();
-        mutex2.unlock();
+        {
+            std::lock_guard<std::mutex> l(mutex);
+            cond = true;
+            cv.notify_one();
+        }
 
         //socket close
         EXPECT_EQ(ramses_capu::CAPU_OK, clientSocket->close());
@@ -103,13 +93,11 @@ public:
         int32_t i = 5;
 
         //wait for other side to start up
-        mutex2.lock();
-        while (!cond2)
         {
-            cv2.wait(mutex2);
+            std::unique_lock<std::mutex> l(mutex);
+            cv.wait(l, [&](){ return cond; });
+            cond = false;
         }
-        cond2 = false;
-        mutex2.unlock();
 
         //send data
         EXPECT_EQ(ramses_capu::CAPU_OK, cli_socket->send(reinterpret_cast<char*>(&i), sizeof(int32_t), "127.0.0.1", m_port));
@@ -117,10 +105,11 @@ public:
         //receive
         EXPECT_EQ(ramses_capu::CAPU_ETIMEOUT, cli_socket->receive(reinterpret_cast<char*>(&communication_variable), sizeof(int32_t), numBytes, 0));
 
-        mutex2.lock();
-        cond2 = true;
-        cv2.signal();
-        mutex2.unlock();
+        {
+            std::lock_guard<std::mutex> l(mutex);
+            cond = true;
+            cv.notify_one();
+        }
 
         //socket close
         EXPECT_EQ(ramses_capu::CAPU_OK, cli_socket->close());
@@ -131,19 +120,24 @@ public:
 
 class ThreadServerUdpTest : public ramses_capu::Runnable
 {
-    uint16_t m_port;
+    uint16_t mPort;
+    std::unique_ptr<ramses_capu::UdpSocket> mServerSocket;
 public:
     //SERVER thread to test data exchange between client and server
-    ThreadServerUdpTest(uint16_t port) : m_port(port) {}
+    ThreadServerUdpTest()
+        : mPort(0)
+        , mServerSocket(new ramses_capu::UdpSocket())
+    {
+        //bind to given address
+        EXPECT_EQ(ramses_capu::CAPU_OK, mServerSocket->bind(mPort, "127.0.0.1"));
+        mPort = mServerSocket->getSocketAddrInfo().port;
+    }
+
     void run()
     {
         int32_t communication_variable;
         int32_t numBytes = 0;
         //server socket allocation
-        ramses_capu::UdpSocket* serverSocket = new ramses_capu::UdpSocket();
-
-        //bind to given address
-        EXPECT_EQ(ramses_capu::CAPU_OK, serverSocket->bind(m_port, "127.0.0.1"));
 
         //receive data
         ramses_capu::SocketAddrInfo remoteSocket;
@@ -151,11 +145,12 @@ public:
         ramses_capu::status_t result = ramses_capu::CAPU_ERROR;
 
         //send signal that server is ready to receive
-        mutex2.lock();
-        cond2 = true;
-        cv2.signal();
-        mutex2.unlock();
-        result = serverSocket->receive(reinterpret_cast<char*>(&communication_variable), sizeof(int32_t), numBytes, &remoteSocket);
+        {
+            std::lock_guard<std::mutex> l(mutex);
+            cond = true;
+            cv.notify_one();
+        }
+        result = mServerSocket->receive(reinterpret_cast<char*>(&communication_variable), sizeof(int32_t), numBytes, &remoteSocket);
         EXPECT_EQ(ramses_capu::CAPU_OK, result);
 
         EXPECT_STREQ("127.0.0.1", remoteSocket.addr.c_str());
@@ -167,76 +162,83 @@ public:
         communication_variable++;
 
         //send it back
-        EXPECT_EQ(ramses_capu::CAPU_OK, serverSocket->send(reinterpret_cast<char*>(&communication_variable), sizeof(int32_t), remoteSocket));
+        EXPECT_EQ(ramses_capu::CAPU_OK, mServerSocket->send(reinterpret_cast<char*>(&communication_variable), sizeof(int32_t), remoteSocket));
 
-        mutex2.lock();
-        while (!cond2)
         {
-            cv2.wait(mutex2);
+            std::unique_lock<std::mutex> l(mutex);
+            cv.wait(l, [&](){ return cond; });
+            cond = false;
         }
-        cond2 = false;
-        mutex2.unlock();
 
         //close session
-        EXPECT_EQ(ramses_capu::CAPU_OK, serverSocket->close());
-        delete serverSocket;
+        EXPECT_EQ(ramses_capu::CAPU_OK, mServerSocket->close());
+    }
+
+    uint16_t port() const
+    {
+        return mPort;
     }
 };
 
 class ThreadTimeoutServerUdpTest : public ramses_capu::Runnable
 {
-    uint16_t m_port;
+    uint16_t mPort;
+    std::unique_ptr<ramses_capu::UdpSocket> mServerSocket;
 public:
     //timeout test
-    ThreadTimeoutServerUdpTest(uint16_t port) : m_port(port) {}
+    ThreadTimeoutServerUdpTest()
+        : mPort(0)
+        , mServerSocket(new ramses_capu::UdpSocket())
+    {
+        //bind to given address
+        EXPECT_EQ(ramses_capu::CAPU_OK, mServerSocket->bind(mPort));
+        mPort = mServerSocket->getSocketAddrInfo().port;
+    }
+
     void run()
     {
         int32_t communication_variable;
         int32_t numBytes = 0;
-        //server socket allocation
-        ramses_capu::UdpSocket* serverSocket = new ramses_capu::UdpSocket();
-
-        //bind to given address
-        EXPECT_EQ(ramses_capu::CAPU_OK, serverSocket->bind(m_port));
 
         //receive data
         ramses_capu::status_t result = ramses_capu::CAPU_ERROR;
 
         //send signal that server is ready to receive
-        mutex2.lock();
-        cond2 = true;
-        cv2.signal();
-        mutex2.unlock();
-        result = serverSocket->receive(reinterpret_cast<char*>(&communication_variable), sizeof(int32_t), numBytes, NULL);
+        {
+            std::lock_guard<std::mutex> l(mutex);
+            cond = true;
+            cv.notify_one();
+        }
+        result = mServerSocket->receive(reinterpret_cast<char*>(&communication_variable), sizeof(int32_t), numBytes, NULL);
         EXPECT_EQ(ramses_capu::CAPU_OK, result);
 
         //check value
         EXPECT_EQ(5, communication_variable);
 
-        mutex2.lock();
-        while (!cond2)
         {
-            cv2.wait(mutex2);
+            std::unique_lock<std::mutex> l(mutex);
+            cv.wait(l, [&](){ return cond; });
+            cond = false;
         }
-        cond2 = false;
-        mutex2.unlock();
 
         //close session
-        EXPECT_EQ(ramses_capu::CAPU_OK, serverSocket->close());
+        EXPECT_EQ(ramses_capu::CAPU_OK, mServerSocket->close());
+    }
 
-        delete serverSocket;
+    uint16_t port() const
+    {
+        return mPort;
     }
 };
 
 TEST(UdpSocket, CloseReceiveAndSendTest)
 {
-    uint16_t port = RandomPort::get();
     ramses_capu::UdpSocket* socket = new ramses_capu::UdpSocket();
     int32_t i = 0;
     int32_t numBytes = 0;
     EXPECT_EQ(ramses_capu::CAPU_OK, socket->close());
     //try to send data via closed socket
-    EXPECT_EQ(ramses_capu::CAPU_SOCKET_ESOCKET, socket->send(static_cast<const char*>("asda"), 4, "127.0.0.1", port));
+    EXPECT_EQ(ramses_capu::CAPU_SOCKET_ESOCKET, socket->send(static_cast<const char*>("asda"), 4, "127.0.0.1", 22));
     //try to receive data from closed socket
     EXPECT_EQ(ramses_capu::CAPU_SOCKET_ESOCKET, socket->receive(reinterpret_cast<char*>(&i), 4, numBytes, NULL));
     //Deallocation of socket
@@ -276,12 +278,11 @@ TEST(UdpSocket, SetAndGetPropertiesTest)
 
 TEST(UdpSocketAndUdpServerSocket, CommunicationTest)
 {
-    mutex2.lock();
-    cond2 = false;
-    mutex2.unlock();
-    uint16_t port = RandomPort::get();
-    ThreadServerUdpTest server(port);
-    ThreadClientUdpTest client(port);
+    mutex.lock();
+    cond = false;
+    mutex.unlock();
+    ThreadServerUdpTest server;
+    ThreadClientUdpTest client(server.port());
     ramses_capu::Thread* server_thread = new ramses_capu::Thread();
     server_thread->start(server);
     ramses_capu::Thread* client_thread = new ramses_capu::Thread();
@@ -296,12 +297,11 @@ TEST(UdpSocketAndUdpServerSocket, CommunicationTest)
 
 TEST(UdpSocketAndUdpServerSocket, TimeoutTest)
 {
-    mutex2.lock();
-    cond2 = false;
-    mutex2.unlock();
-    uint16_t port = RandomPort::get();
-    ThreadTimeoutServerUdpTest server(port);
-    ThreadTimeoutClientUdpTest client(port);
+    mutex.lock();
+    cond = false;
+    mutex.unlock();
+    ThreadTimeoutServerUdpTest server;
+    ThreadTimeoutClientUdpTest client(server.port());
     ramses_capu::Thread* server_thread = new ramses_capu::Thread();
     server_thread->start(server);
     ramses_capu::Thread* client_thread = new ramses_capu::Thread();
