@@ -21,6 +21,7 @@ TEST(AInternalRendererConfig, hasDefaultValues)
     EXPECT_FALSE(config.getSystemCompositorControlEnabled());
     EXPECT_STREQ("", config.getKPIFileName().c_str());
     EXPECT_EQ(std::chrono::microseconds{10000u}, config.getFrameCallbackMaxPollTime());
+    EXPECT_STREQ("", config.getWaylandDisplayForSystemCompositorController().c_str());
 }
 
 TEST(AInternalRendererConfig, canEnableSystemCompositorControl)
@@ -68,6 +69,14 @@ TEST(AInternalRendererConfig, canSetGetMaxFramecallbackPollTime)
 
     config.setFrameCallbackMaxPollTime(std::chrono::microseconds{123u});
     EXPECT_EQ(std::chrono::microseconds{123u}, config.getFrameCallbackMaxPollTime());
+}
+
+TEST(AInternalRendererConfig, canSetGetWaylandDisplayForSystemCompositorController)
+{
+    ramses_internal::RendererConfig config;
+
+    config.setWaylandDisplayForSystemCompositorController("ramses wd");
+    EXPECT_STREQ("ramses wd", config.getWaylandDisplayForSystemCompositorController().c_str());
 }
 
 TEST(AInternalRendererConfig, getsValuesAssignedFromCommandLine)

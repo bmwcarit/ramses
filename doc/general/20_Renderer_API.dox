@@ -56,7 +56,7 @@ Data links are dynamic so any change to provider data (including animations) wil
 
 ### Transformation Linking
 
-For transformation data linking the provided scene content is the transformation matrix of a scenegraph node (any Node typed object in scene), which can be consumed by GroupNode(s) of consumer scene(s).
+For transformation data linking the provided scene content is the transformation matrix of a scenegraph node (any Node typed object in scene), which can be consumed by Node(s) of consumer scene(s).
 The consumer node (and all its children in scenegraph topology) will transform using the provider node's transformation.
 
 ### DataObject Linking

@@ -54,8 +54,8 @@ namespace ramses_internal
         void setSceneProviderServiceHandler(ISceneProviderServiceHandler* handler) override;
         void setSceneRendererServiceHandler(ISceneRendererServiceHandler* handler) override;
 
-        virtual void logConnectionInfo() const override;
-        virtual void triggerLogMessageForPeriodicLog() const override;
+        virtual void logConnectionInfo() override;
+        virtual void triggerLogMessageForPeriodicLog() override;
 
     private:
         Guid m_id;

@@ -10,9 +10,6 @@
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/RotateNode.h"
-#include "ramses-client-api/GroupNode.h"
-#include "ramses-client-api/TranslateNode.h"
 
 #include "SceneImpl.h"
 #include "Scene/ClientScene.h"
@@ -23,14 +20,14 @@ namespace ramses_internal
         : IntegrationScene(ramsesClient, scene, cameraPosition)
     {
 
-        ramses::GroupNode* centerProviderNode = m_scene.createGroupNode("transform provider");
+        ramses::Node* centerProviderNode = m_scene.createNode("transform provider");
         scene.createTransformationDataProvider(*centerProviderNode, transformProviderDataId);
 
-        ramses::TranslateNode* leftProviderNode = m_scene.createTranslateNode();
+        ramses::Node* leftProviderNode = m_scene.createNode();
         leftProviderNode->setTranslation(-2.0f, 0.0f, 0.0f);
         scene.createTransformationDataProvider(*leftProviderNode, transformProviderDataId_Left);
 
-        ramses::TranslateNode* rightProviderNode = m_scene.createTranslateNode();
+        ramses::Node* rightProviderNode = m_scene.createNode();
         rightProviderNode->setTranslation(2.0f, 0.0f, 0.0f);
         scene.createTransformationDataProvider(*rightProviderNode, transformProviderDataId_Right);
 
@@ -41,16 +38,16 @@ namespace ramses_internal
         case TRANSFORMATION_CONSUMER:
         case TRANSFORMATION_CONSUMER_OVERRIDEN:
         {
-            ramses::RotateNode* rotateNode = m_scene.createRotateNode();
+            ramses::Node* rotateNode = m_scene.createNode();
             rotateNode->setRotation(0.0f, 0.0f, 30.0f);
-            ramses::GroupNode* consumerGroupNode = m_scene.createGroupNode("transform consumer");
+            ramses::Node* consumerGroupNode = m_scene.createNode("transform consumer");
             rotateNode->setParent(*consumerGroupNode);
             scene.createTransformationDataConsumer(*consumerGroupNode, transformConsumerDataId);
 
             if (TRANSFORMATION_CONSUMER_OVERRIDEN == state)
             {
                 color = ramses::TriangleAppearance::EColor_Blue;
-                ramses::TranslateNode* parentTransformWhichWillBeOverridden = m_scene.createTranslateNode();
+                ramses::Node* parentTransformWhichWillBeOverridden = m_scene.createNode();
                 parentTransformWhichWillBeOverridden->setTranslation(1.2f, 1.2f, 0.0f);
                 consumerGroupNode->setParent(*parentTransformWhichWillBeOverridden);
             }
@@ -64,14 +61,14 @@ namespace ramses_internal
         {
             color = ramses::TriangleAppearance::EColor_White;
 
-            ramses::GroupNode* consumerGroupNode = m_scene.createGroupNode("transform consumer");
+            ramses::Node* consumerGroupNode = m_scene.createNode("transform consumer");
             scene.createTransformationDataConsumer(*consumerGroupNode, transformConsumerDataId);
 
-            ramses::TranslateNode* translate = m_scene.createTranslateNode();
+            ramses::Node* translate = m_scene.createNode();
             translate->setTranslation(1.0f, 0.0f, 0.0f);
             translate->setParent(*consumerGroupNode);
 
-            ramses::RotateNode* rotateNode = m_scene.createRotateNode();
+            ramses::Node* rotateNode = m_scene.createNode();
             rotateNode->setRotation(0.0f, 0.0f, 15.0f);
             rotateNode->setParent(*translate);
 
@@ -84,7 +81,7 @@ namespace ramses_internal
         case TRANSFORMATION_PROVIDER:
         {
             color = ramses::TriangleAppearance::EColor_Green;
-            ramses::RotateNode* rotateNode = m_scene.createRotateNode();
+            ramses::Node* rotateNode = m_scene.createNode();
             rotateNode->setRotation(0.0f, 0.0f, 60.0f);
 
             mesh = createTriangleMesh(color);

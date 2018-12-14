@@ -23,7 +23,7 @@ namespace ramses_internal
     WaylandSurface::WaylandSurface(IEmbeddedCompositor_Wayland& compositor, IWaylandClient& client, uint32_t version, uint32_t id)
     : m_compositor(compositor)
     {
-        LOG_DEBUG(CONTEXT_RENDERER, "WaylandSurface::WaylandSurface")
+        LOG_DEBUG(CONTEXT_RENDERER, "WaylandSurface::WaylandSurface");
 
         m_surfaceResource = client.resourceCreate(&wl_surface_interface, version, id);
         if (m_surfaceResource != nullptr)

@@ -34,12 +34,14 @@ namespace ramses_internal
 
 // LOG_* macros for log message in macro
 #define LOG_COMMON(context, logLevel, message)                             \
-        if((logLevel) <= (context).getLogLevel() && (context).isEnabled())  \
+    do {                                                                   \
+        if((logLevel) <= (context).getLogLevel())                          \
         {                                                                  \
             ::ramses_internal::StringOutputStream ramses_log_stream(80);   \
             ramses_log_stream << message;                                  \
             ::ramses_internal::GetRamsesLogger().log(::ramses_internal::LogMessage((context), (logLevel), ramses_log_stream)); \
-        }
+        }                                                                  \
+    } while (0)
 
 #define LOG_TRACE(context, message) \
     LOG_COMMON((context), ::ramses_internal::ELogLevel::Trace, message)
@@ -61,12 +63,14 @@ namespace ramses_internal
 
 // LOG_* macros for leg message via callable
 #define LOG_COMMON_F(context, logLevel, callable)                          \
-        if((logLevel) <= (context).getLogLevel() && (context).isEnabled())  \
+    do {                                                                   \
+        if((logLevel) <= (context).getLogLevel())                          \
         {                                                                  \
             ::ramses_internal::StringOutputStream ramses_log_stream(160);  \
             callable(ramses_log_stream);                                   \
             ::ramses_internal::GetRamsesLogger().log(::ramses_internal::LogMessage((context), (logLevel), ramses_log_stream)); \
-        }
+        }                                                                  \
+    } while (0)
 
 #define LOG_TRACE_F(context, callable) \
     LOG_COMMON_F((context), ::ramses_internal::ELogLevel::Trace, callable)

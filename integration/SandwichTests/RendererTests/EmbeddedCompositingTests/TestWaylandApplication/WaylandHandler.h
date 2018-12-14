@@ -47,7 +47,6 @@ public:
     wl_pointer*      pointer         = nullptr;
     ivi_application* ivi_app         = nullptr;
     wl_shm*          shm             = nullptr;
-    wl_output*       output          = nullptr;
     int              fd              = 0;
 };
 
@@ -98,10 +97,6 @@ public:
     SHMBuffer* getFreeSHMBuffer(uint32_t width, uint32_t height);
     uint32_t getNumberOfAllocatedSHMBuffer() const;
     bool getIsSHMBufferFree(uint32_t buffer) const;
-    int32_t getOutputWidth() const;
-    int32_t getOutputHeight() const;
-    uint32_t getOutputDoneCount() const;
-    int32_t getOutputScale() const;
 
 private:
     bool checkAndHandleEvents();
@@ -116,11 +111,6 @@ private:
     static void registry_handle_global_remove(void* data, wl_registry* wl_registry, uint32_t name);
     void frameCallback(wl_callback* callback);
     static void FrameCallback(void* userData, wl_callback* callback, uint32_t);
-    static void OutputHandleGeometry(void* data, wl_output* output, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel,
-                                     const char* make, const char* model, int32_t transform);
-    static void OutputHandleMode(void* data, wl_output* output, uint32_t flags, int32_t width, int32_t height, int32_t refresh);
-    static void OutputHandleDone(void *data, wl_output* output);
-    static void OutputHandleScale(void *data, wl_output* output, int32_t factor);
 
     bool setupEGL();
     bool setupWayland();
@@ -128,9 +118,6 @@ private:
     bool createSurface(WaylandWindow& window);
     bool createEGLWindow(WaylandWindow& window);
     void terminateEGL();
-    void outputHandleMode(wl_output* output, uint32_t flags, int32_t width, int32_t height, int32_t refresh);
-    void outputHandleDone(wl_output* output);
-    void outputHandleScale(wl_output* output, int32_t factor);
 
     WaylandWindow& getWindow(ramses_internal::TestApplicationSurfaceId surfaceId) const;
     wl_shell_surface& getShellSurface(ramses_internal::TestApplicationShellSurfaceId shellSurfaceId) const;
@@ -165,22 +152,6 @@ private:
             done = FrameCallback;
         }
     } m_frameRenderingDoneCallbackListener;
-
-    const struct Output_Listener : public wl_output_listener
-    {
-        Output_Listener()
-        {
-            geometry = OutputHandleGeometry;
-            mode     = OutputHandleMode;
-            done     = OutputHandleDone;
-            scale    = OutputHandleScale;
-        }
-    } m_outputListener;
-
-    int32_t m_outputWidth = 0;
-    int32_t m_outputHeight = 0;
-    uint32_t m_outputDoneCount = 0;
-    int32_t m_outputScale = 0;
 };
 
 #endif

@@ -12,13 +12,13 @@
 #include "ramses-renderer-api/RendererConfig.h"
 #include "ramses-client.h"
 #include "ramses-text.h"
-#include "ramses-text-bmw.h"
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-framework-api/RamsesFramework.h"
 #include "ramses-utils.h"
 
 int main(int argc, char* argv[])
 {
+    printf("Start ramses-shared-lib-check\n");
     ramses::RamsesFramework framework(argc, argv);
     framework.isConnected();
 
@@ -28,13 +28,12 @@ int main(int argc, char* argv[])
 
     ramses::RamsesClient ramses("ramses-shared-lib-check", framework);
     ramses::Scene* scene = ramses.createScene(1u);
-    ramses::Node* node = scene->createGroupNode();
+    ramses::Node* node = scene->createNode();
     scene->isPublished();
-
-    ramses::BmwFontRegistry bmwFontRegistry;
 
     ramses::nodeId_t nid = ramses::RamsesUtils::GetNodeId(*node);
     nid.getValue();
 
+    printf("End ramses-shared-lib-check\n");
     return 0;
 }

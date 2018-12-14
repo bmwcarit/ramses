@@ -26,7 +26,7 @@ namespace ramses
     status_t AnimationSystemRealTime::updateLocalTime(globalTimeStamp_t systemTime)
     {
         const status_t status = impl.updateLocalTime(systemTime);
-        LOG_HL_CLIENT_API1(status, systemTime)
+        LOG_HL_CLIENT_API1(status, systemTime);
         return status;
     }
 }

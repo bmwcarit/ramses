@@ -20,15 +20,4 @@ namespace ramses
     {
         return m_publicationMode;
     }
-
-    status_t SceneConfigImpl::setMaximumLatency(uint32_t maxLatencyInMilliseconds)
-    {
-        m_maximumLatency = std::chrono::milliseconds(maxLatencyInMilliseconds);
-        return StatusOK;
-    }
-
-    std::chrono::milliseconds SceneConfigImpl::getMaximumLatency() const
-    {
-        return m_maximumLatency;
-    }
 }

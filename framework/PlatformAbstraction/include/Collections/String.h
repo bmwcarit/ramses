@@ -11,6 +11,8 @@
 
 #include <ramses-capu/container/String.h>
 #include <PlatformAbstraction/PlatformTypes.h>
+#include "Collections/IOutputStream.h"
+#include "Collections/IInputStream.h"
 
 namespace ramses_internal
 {
@@ -64,6 +66,27 @@ namespace ramses_internal
          */
         String& swap(String& other);
     };
+
+    inline IOutputStream& operator<<(IOutputStream& stream, const String& value)
+    {
+        const uint32_t len = static_cast<uint32_t>(value.getLength());
+        stream << len;
+        return stream.write(value.c_str(), len);
+    }
+
+    inline IInputStream& operator>>(IInputStream& stream, String& value)
+    {
+        uint32_t length = 0;
+        stream >> length; // first read the length of the string
+        String retValue;
+        if (length > 0)
+        {
+            retValue.resize(length);
+            stream.read(retValue.data(), length);
+        }
+        value.swap(retValue);
+        return stream;
+    }
 
     static_assert(std::is_nothrow_move_constructible<String>::value &&
                   std::is_nothrow_move_assignable<String>::value, "String must be movable");

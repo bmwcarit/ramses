@@ -9,6 +9,7 @@
 #include "Window_Wayland/Window_Wayland.h"
 #include "Utils/LogMacros.h"
 #include "WaylandUtilities/WaylandUtilities.h"
+#include "RendererLib/DisplayConfig.h"
 
 namespace ramses_internal
 {
@@ -16,6 +17,7 @@ namespace ramses_internal
                                    IWindowEventHandler& windowEventHandler,
                                    UInt32               id)
         : Window_Base(displayConfig, windowEventHandler, id)
+        , m_waylandDisplay(displayConfig.getWaylandDisplay())
         , m_inputHandling(windowEventHandler)
     {
     }
@@ -30,7 +32,7 @@ namespace ramses_internal
             return false;
         }
 
-        m_wlContext.display = wl_display_connect(nullptr);
+        m_wlContext.display = wl_display_connect(m_waylandDisplay.empty()? nullptr : m_waylandDisplay.c_str());
         if (NULL == m_wlContext.display)
         {
             LOG_ERROR(CONTEXT_RENDERER, "Window_Wayland::init Could not connect to system compositor (compositor running and or correct socket set?)");

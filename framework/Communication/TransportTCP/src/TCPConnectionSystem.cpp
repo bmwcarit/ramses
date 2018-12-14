@@ -27,6 +27,9 @@
 
 namespace ramses_internal
 {
+    static const constexpr std::chrono::milliseconds AliveInterval{100};
+    static const constexpr std::chrono::milliseconds AliveIntervalTimeout{6 * AliveInterval};
+
     TCPConnectionSystem::TCPConnectionSystem(const NetworkParticipantAddress& participantAddress, UInt32 protocolVersion, Bool isDaemon,
         const NetworkParticipantAddress& daemonAddress, PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection)
         : m_socketManager()
@@ -305,7 +308,7 @@ namespace ramses_internal
             }
 
             PlatformGuard guard(m_frameworkLock);
-            m_sceneRendererHandler->handleNewScenesAvailable(newScenes, providerID);
+            m_sceneRendererHandler->handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
         }
     }
 
@@ -586,7 +589,6 @@ namespace ramses_internal
             m_mainLoop.join();
             m_isRunning = false;
             Runnable::resetCancel();
-            cleanupListener();
         }
         return true;
     }
@@ -640,30 +642,45 @@ namespace ramses_internal
     {
         assert(m_serverSocket.get() != 0);
 
-        if (!m_isDaemon)
-        {
-            m_knownParticipantAddresses.put(m_participantAddress.getParticipantId(), m_participantAddress);
-            connectToDaemon();
-        }
-
-        trackServerSocket();
-
-        setReadyToSendMessages(true);
-        clearMessageQueue();
+        // outer loop to retry connection to daemon when got disconnected
         while (!isCancelRequested())
         {
-            // try connect
-            tryConnectToOthers();
+            if (!m_isDaemon)
+            {
+                m_knownParticipantAddresses.put(m_participantAddress.getParticipantId(), m_participantAddress);
+                connectToDaemon();
+            }
 
-            sendAllMessagesInQueue();
+            trackServerSocket();
 
-            // read from socket
-            const UInt32 socketCheckTimeout_ms = 100;
-            const Bool canBlock = (m_unfinishedConnections.count() == 0);
-            m_socketManager.checkAllSockets(canBlock, socketCheckTimeout_ms);
+            setReadyToSendMessages(true);
+            clearMessageQueue();
+
+            // inner loop for normal sending and receiving messages
+            while (!isCancelRequested())
+            {
+                // try connect
+                tryConnectToOthers();
+
+                sendAllMessagesInQueue();
+                if (!sendAliveMessages())
+                    break;
+
+                handleLogRequests();
+
+                // read from socket
+                const uint32_t socketCheckTimeout_ms = std::chrono::duration_cast<std::chrono::duration<uint32_t, std::milli>>(AliveInterval).count();
+                const bool canBlock = false;
+                m_socketManager.checkAllSockets(canBlock, socketCheckTimeout_ms);
+
+                if (!checkConnectionsAlive())
+                    break;
+            }
+
+            setReadyToSendMessages(false);
         }
 
-        setReadyToSendMessages(false);
+        cleanupListener();
 
         closeAndCleanupAllConnections();
         clearMessageQueue();
@@ -674,7 +691,7 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::connectToDaemon: trying to connect to daemon at "
             << m_daemonAddress.getIp() << ":" << m_daemonAddress.getPort());
 
-        assert(m_daemonSocket.get() == 0);
+        assert(m_daemonSocket.socket == nullptr);
         PlatformSocket* socket = new PlatformSocket();
         while (!isCancelRequested())
         {
@@ -682,21 +699,24 @@ namespace ramses_internal
             if (status == EStatus_RAMSES_OK)
             {
                 LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::connectToDaemon: connection to daemon established");
-                m_daemonSocket.reset(socket);
+                delete m_daemonSocket.socket;
+                m_daemonSocket.socket = socket;
 
-                if (sendConnectionDescriptionMessage(*m_daemonSocket, m_daemonAddress, EConnectionType_OrderedControlMessages))
+                if (sendConnectionDescriptionMessage(m_daemonSocket, m_daemonAddress, EConnectionType_OrderedControlMessages))
                 {
-                    trackSocket(*m_daemonSocket);
+                    trackSocket(*m_daemonSocket.socket);
                     return;
                 }
                 else
                 {
                     // try again with new socket
                     LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::connectToDaemon: send connection description failed");
-                    m_daemonSocket.reset();
+                    delete m_daemonSocket.socket;
+                    m_daemonSocket.socket = nullptr;
                     socket = new PlatformSocket();
                 }
             }
+            handleLogRequests();
             PlatformThread::Sleep(100);
         }
         delete socket;
@@ -714,7 +734,7 @@ namespace ramses_internal
         ramses_foreach(m_unfinishedConnections, guidIt)
         {
             const Guid& id = *guidIt;
-            LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::tryConnectToOthers: " << id << " " << shouldTryConnectTo(id));
+            LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::tryConnectToOthers: " << id << " " << shouldTryConnectTo(id));
 
             if (shouldTryConnectTo(id))
             {
@@ -759,10 +779,11 @@ namespace ramses_internal
         EStatus status = socket->connect(address.getIp().c_str(), address.getPort());
         if (status == EStatus_RAMSES_OK)
         {
-            Bool writeSuccessful = sendConnectionDescriptionMessage(*socket, address, type);
+            SocketInfo socketInfo = {participantId, socket};
+            Bool writeSuccessful = sendConnectionDescriptionMessage(socketInfo, address, type);
             trackSocket(*socket);
             socketMap.put(participantId, socket);
-            m_platformSocketMap.put(socket, GuidSocketPair(participantId, socket));
+            m_platformSocketMap.put(socket, socketInfo);
 
             if (writeSuccessful)
             {
@@ -771,7 +792,7 @@ namespace ramses_internal
             }
             else
             {
-                removeKnownParticipant(address.getParticipantId());
+                removeKnownParticipant(address.getParticipantId(), true);
                 return false;
             }
         }
@@ -802,7 +823,7 @@ namespace ramses_internal
             // remove participants we cannot write to anymore
             ramses_foreach(brokenConnections, it)
             {
-                removeKnownParticipant(*it);
+                removeKnownParticipant(*it, true);
             }
         }
     }
@@ -818,11 +839,13 @@ namespace ramses_internal
             Bool writeSuccessful = true;
             if (message.connectionType == EConnectionType_OrderedControlMessages)
             {
-                writeSuccessful = sendMessageToSocket(*controlSocket, message);
+                assert(m_platformSocketMap.contains(controlSocket));
+                writeSuccessful = sendMessageToSocket(*m_platformSocketMap.get(controlSocket), message);
             }
             else
             {
-                writeSuccessful = sendMessageToSocket(*dataSocket, message);
+                assert(m_platformSocketMap.contains(dataSocket));
+                writeSuccessful = sendMessageToSocket(*m_platformSocketMap.get(dataSocket), message);
             }
 
             if (!writeSuccessful)
@@ -845,7 +868,8 @@ namespace ramses_internal
             if (m_dataSockets.contains(controlSocketIt->key))
             {
                 PlatformSocket* controlSocket = controlSocketIt->value;
-                if (!sendMessageToSocket(*controlSocket, message))
+                assert(m_platformSocketMap.contains(controlSocket));
+                if (!sendMessageToSocket(*m_platformSocketMap.get(controlSocket), message))
                 {
                     const Guid& to = controlSocketIt->key;
                     LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendBroadcastMessageToSockets: write to " << to << " failed");
@@ -855,7 +879,7 @@ namespace ramses_internal
         }
     }
 
-    Bool TCPConnectionSystem::sendMessageToSocket(PlatformSocket& socket, const OutMessage& message) const
+    Bool TCPConnectionSystem::sendMessageToSocket(SocketInfo& si, const OutMessage& message) const
     {
         const char* data = message.stream->getData();
         const UInt32 size = message.stream->getSize();
@@ -869,13 +893,15 @@ namespace ramses_internal
         do
         {
             int32_t numBytes = 0;
-            if (socket.send(data + sentBytes, size - sentBytes, numBytes) != EStatus_RAMSES_OK)
+            if (si.socket->send(data + sentBytes, size - sentBytes, numBytes) != EStatus_RAMSES_OK)
             {
                 return false;
             }
             sentBytes += numBytes;
         }
         while (sentBytes != size);
+
+        si.lastSent = std::chrono::steady_clock::now();
 
         return true;
     }
@@ -900,7 +926,7 @@ namespace ramses_internal
             LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::acceptIncomingConnection:");
 
             m_newlyAcceptedSockets.push_back(clientSocket);
-            m_platformSocketMap.put(clientSocket, GuidSocketPair(Guid(false), clientSocket));
+            m_platformSocketMap.put(clientSocket, {Guid(false), clientSocket});
             trackSocket(*clientSocket);
         }
         else
@@ -909,7 +935,7 @@ namespace ramses_internal
         }
     }
 
-    Bool TCPConnectionSystem::sendConnectionDescriptionMessage(PlatformSocket& socket, const NetworkParticipantAddress& to, const EConnectionType& type)
+    Bool TCPConnectionSystem::sendConnectionDescriptionMessage(SocketInfo& si, const NetworkParticipantAddress& to, const EConnectionType& type)
     {
         LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendConnectionDescriptionMessage: to " << to.getParticipantName() << ":" << to.getParticipantId());
 
@@ -923,10 +949,10 @@ namespace ramses_internal
         stream << m_serverSocket->getPort();
         stream << static_cast<UInt32>(type);
 
-        return sendMessageToSocket(socket, msg);
+        return sendMessageToSocket(si, msg);
     }
 
-    Bool TCPConnectionSystem::sendAddressExchangeMessage(PlatformSocket& socket, const NetworkParticipantAddress& address, const Guid& to) const
+    Bool TCPConnectionSystem::sendAddressExchangeMessage(SocketInfo& si, const NetworkParticipantAddress& address, const Guid& to) const
     {
         LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendAddressExchange: send " << address.getParticipantName() << ":" << address.getParticipantId() << " to " << to);
 
@@ -938,22 +964,22 @@ namespace ramses_internal
         stream << address.getIp();
         stream << address.getPort();
 
-        return sendMessageToSocket(socket, msg);
+        return sendMessageToSocket(si, msg);
     }
 
     void TCPConnectionSystem::socketHasData(PlatformSocket& socket)
     {
-        GuidSocketPair guidSocketPair = GuidSocketPair(Guid(false), nullptr);
+        SocketInfo* socketInfo = nullptr;
 
         // check if from daemon
-        if (m_daemonSocket.get() && &socket == m_daemonSocket.get())
+        if (m_daemonSocket.socket && &socket == m_daemonSocket.socket)
         {
-            guidSocketPair.second = m_daemonSocket.get();
+            socketInfo = &m_daemonSocket;
         }
         // check if has socket (newly or known participant)
-        else if (EStatus_RAMSES_OK == m_platformSocketMap.get(&socket, guidSocketPair))
+        else if ((socketInfo = m_platformSocketMap.get(&socket)) != nullptr)
         {
-            assert(guidSocketPair.second != nullptr);
+            assert(socketInfo->socket != nullptr);
         }
         // completely unknown socket, should never happen
         else
@@ -962,14 +988,18 @@ namespace ramses_internal
             assert(false);
             return;
         }
+        assert(socketInfo != nullptr);
 
-        const Guid participantId = guidSocketPair.first;
+        const Guid participantId = socketInfo->participant;
         std::unique_ptr<InMessage> message(receiveMessageFromSocket(socket));
         Bool handledSuccessfully = false;
         if (nullptr != message.get())
         {
             message->sender = participantId;
             handledSuccessfully = handleMessage(participantId, socket, *message);
+
+            // update lastReceived timestamp
+            socketInfo->lastReceived = std::chrono::steady_clock::now();
         }
         else
         {
@@ -989,7 +1019,7 @@ namespace ramses_internal
             }
             else
             {
-                removeKnownParticipant(participantId);
+                removeKnownParticipant(participantId, true);
             }
         }
     }
@@ -1054,12 +1084,18 @@ namespace ramses_internal
             handleConnectorAddressExchangeMessage(message);
             handledSuccessfully = true;
         }
+        else if (message.type == EMessageId_Alive)
+        {
+            // valid but handled outside
+            handledSuccessfully = true;
+        }
         else
         {
             if (participantId.isInvalid())
             {
                 // now allowed from unknown
-                LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleMessage: unexpected message " << GetNameForMessageId(message.type) << " from unknown participant");
+                LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleMessage: unexpected message "
+                         << GetNameForMessageId(message.type) << " (" << message.type << ") from unknown participant");
             }
             else
             {
@@ -1128,7 +1164,7 @@ namespace ramses_internal
         const NetworkParticipantAddress newAddress(id, name, ip, port);
         LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleConnectorAddressExchange: received new address " << name << ":" << id << " on " << ip << ":" << port);
 
-        addNewParticipantIfUnknown(newAddress);
+        addNewParticipantIfUnknown(newAddress, "ConnectorAddressExchange message");
     }
 
     Bool TCPConnectionSystem::handleConnectionDescriptionMessage(PlatformSocket& socket, InMessage& message)
@@ -1168,7 +1204,7 @@ namespace ramses_internal
         message.stream >> connectionType;
 
         const NetworkParticipantAddress newAddress(id, name, ip, port);
-        addNewParticipantIfUnknown(newAddress);
+        addNewParticipantIfUnknown(newAddress, "ConnectionDescription message");
 
         // remove from newly accepted connections
         const auto newlyAcceptedIt = m_newlyAcceptedSockets.find(&socket);
@@ -1188,13 +1224,14 @@ namespace ramses_internal
             }
             else
             {
-                Bool writeSuccessful = sendAddressExchangeForNewParticipant(socket, newAddress);
+                SocketInfo socketInfo = {id, &socket};
+                Bool writeSuccessful = sendAddressExchangeForNewParticipant(socketInfo, newAddress);
                 m_controlSockets.put(id, &socket);
-                m_platformSocketMap.put(&socket, GuidSocketPair(id, &socket));
+                m_platformSocketMap.put(&socket, socketInfo);
 
                 if (!writeSuccessful)
                 {
-                    removeKnownParticipant(newAddress.getParticipantId());
+                    removeKnownParticipant(newAddress.getParticipantId(), true);
                     return false;
                 }
             }
@@ -1209,7 +1246,7 @@ namespace ramses_internal
             else
             {
                 m_dataSockets.put(id, &socket);
-                m_platformSocketMap.put(&socket, GuidSocketPair(id, &socket));
+                m_platformSocketMap.put(&socket, {id, &socket});
             }
         }
 
@@ -1223,23 +1260,27 @@ namespace ramses_internal
         return true;
     }
 
-    Bool TCPConnectionSystem::sendAddressExchangeForNewParticipant(PlatformSocket& newSocket, const NetworkParticipantAddress& newAddress)
+    Bool TCPConnectionSystem::sendAddressExchangeForNewParticipant(SocketInfo& si, const NetworkParticipantAddress& newAddress)
     {
         // send all known addresses to new connection
-        ramses_foreach(m_knownParticipantAddresses, addressIt)
+        for (const auto& p : m_knownParticipantAddresses)
         {
-            if (!sendAddressExchangeMessage(newSocket, addressIt->value, newAddress.getParticipantId()))
+            if (p.key != m_participantAddress.getParticipantId())
             {
-                LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendAddressExchangeForNewParticipant: send to new participant failed");
-                return false;
+                if (!sendAddressExchangeMessage(si, p.value, newAddress.getParticipantId()))
+                {
+                    LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendAddressExchangeForNewParticipant: send to new participant failed");
+                    return false;
+                }
             }
         }
 
         // send new address to already known connections
-        ramses_foreach(m_controlSockets, controlSocketIt)
+        for (const auto& p : m_controlSockets)
         {
             // only log send error here for now
-            if (!sendAddressExchangeMessage(*controlSocketIt->value, newAddress, controlSocketIt->key))
+            assert(m_platformSocketMap.contains(p.value));
+            if (!sendAddressExchangeMessage(*m_platformSocketMap.get(p.value), newAddress, p.key))
             {
                 LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendAddressExchangeForNewParticipant: send to existing participant failed");
             }
@@ -1247,28 +1288,53 @@ namespace ramses_internal
         return true;
     }
 
-    void TCPConnectionSystem::addNewParticipantIfUnknown(const NetworkParticipantAddress& address)
+    void TCPConnectionSystem::addNewParticipantIfUnknown(const NetworkParticipantAddress& address, const char* reason)
     {
-        const Guid& participantId = address.getParticipantId();
+        const Guid participantId = address.getParticipantId();
 
-        // not self and not known
-        if (participantId != m_participantAddress.getParticipantId() &&
-            !m_knownParticipantAddresses.contains(participantId))
+        // not self
+        if (participantId != m_participantAddress.getParticipantId())
         {
-            LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleConnectorAddressExchange: add new participant " << address.getParticipantName() << ":" << participantId);
-            m_knownParticipantAddresses.put(participantId, address);
-            // remember to connect to new participant
-            m_unfinishedConnections.put(participantId);
+            // already known?
+            NetworkParticipantAddress* oldAddress = m_knownParticipantAddresses.get(participantId);
+            if (oldAddress && *oldAddress != address)
+            {
+                // address changed: update participant info
+                const bool wasConnected =  m_controlSockets.contains(participantId) || m_dataSockets.contains(participantId);
+
+                LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::addNewParticipantIfUnknown: update existing participant " <<
+                         address.getParticipantName() << ":" << participantId << "; reason " << reason << " (" << address.getIp() << ":" << address.getPort() << "); wasConnected " << wasConnected);
+
+                if (wasConnected)
+                {
+                    // disconnect first (no retry to avoid recursion)
+                    removeKnownParticipant(participantId, false);
+                }
+
+                // update information
+                m_knownParticipantAddresses.put(participantId, address);
+                m_unfinishedConnections.put(participantId);
+            }
+            else if (!oldAddress)
+            {
+                // add new / not yet known participant
+                LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::addNewParticipantIfUnknown: add participant " <<
+                         address.getParticipantName() << ":" << participantId << "; reason " << reason);
+
+                m_knownParticipantAddresses.put(participantId, address);
+                m_unfinishedConnections.put(participantId);
+            }
         }
     }
 
-    void TCPConnectionSystem::removeKnownParticipant(const Guid& idRef)
+    void TCPConnectionSystem::removeKnownParticipant(const Guid& idRef, bool addForNewAttempt)
     {
         assert(m_knownParticipantAddresses.contains(idRef));
-        LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::removeKnownParticipant: remove participant " << idRef);
+        LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::removeKnownParticipant: remove participant " << idRef << ", addForRetry: " << addForNewAttempt);
 
         // prevent holding reference to entry that max be removed here
         const Guid id = idRef;
+        NetworkParticipantAddress address = *m_knownParticipantAddresses.get(idRef);
 
         m_unfinishedConnections.remove(id);
         m_knownParticipantAddresses.remove(id);
@@ -1301,6 +1367,10 @@ namespace ramses_internal
             // was fully connected, send disconnect notification
             m_connectionStatusUpdateNotifier.triggerNotification(id, EConnectionStatus_NotConnected);
         }
+
+        // TODO(tobias) ignore request for new attempt until non-blocking connect on windows works
+        // if (addForNewAttempt)
+        //     addNewParticipantIfUnknown(address, "retry after connection error");
     }
 
     void TCPConnectionSystem::dropConnectionToNewlyAcceptedSocket(PlatformSocket& socket)
@@ -1308,6 +1378,8 @@ namespace ramses_internal
         const auto it = m_newlyAcceptedSockets.find(&socket);
         if (it != m_newlyAcceptedSockets.end())
         {
+            assert(m_platformSocketMap.contains(&socket));
+            m_platformSocketMap.remove(&socket);
             m_newlyAcceptedSockets.erase(it);
             m_socketManager.untrackSocket(&socket);
             delete &socket;
@@ -1319,10 +1391,11 @@ namespace ramses_internal
         // closed and deleted outside thread because also created there
         m_socketManager.untrackSocket(m_serverSocket.get());
 
-        if (m_daemonSocket.get())
+        if (m_daemonSocket.socket)
         {
-            m_socketManager.untrackSocket(m_daemonSocket.get());
-            m_daemonSocket.reset();
+            m_socketManager.untrackSocket(m_daemonSocket.socket);
+            delete m_daemonSocket.socket;
+            m_daemonSocket.socket = nullptr;
         }
 
         while (!m_newlyAcceptedSockets.empty())
@@ -1334,7 +1407,7 @@ namespace ramses_internal
         while (m_knownParticipantAddresses.count() > 0)
         {
             auto it = m_knownParticipantAddresses.begin();
-            removeKnownParticipant(it->key);
+            removeKnownParticipant(it->key, false);
         }
         assert(m_controlSockets.count() == 0 && m_dataSockets.count() == 0);
 
@@ -1363,50 +1436,168 @@ namespace ramses_internal
         localOutMessagesToSend.clear();
     }
 
+    bool TCPConnectionSystem::sendAliveMessages()
+    {
+        const auto now = std::chrono::steady_clock::now();
+        OutMessage aliveMsg(EConnectionType_OrderedControlMessages, EMessageId_Alive);
+        Vector<SocketInfo> brokenConnections;
+
+        auto checkSendAlive = [&](SocketInfo& si) {
+                                  if (si.lastSent + AliveInterval < now)
+                                  {
+                                      if (!sendMessageToSocket(si, aliveMsg))
+                                      {
+                                          LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendAliveMessages: failed to send alive message to " << si.participant);
+                                          brokenConnections.push_back(si);
+                                      }
+                                  }
+                              };
+
+        for (auto& p : m_platformSocketMap)
+            checkSendAlive(p.value);
+        if (!m_isDaemon)
+            checkSendAlive(m_daemonSocket);
+
+        return removeConnectionsBySocket(brokenConnections);
+    }
+
+    bool TCPConnectionSystem::checkConnectionsAlive()
+    {
+        const auto now = std::chrono::steady_clock::now();
+        Vector<SocketInfo> brokenConnections;
+
+        auto checkAlive = [&](SocketInfo& si) {
+                                if (si.lastReceived + AliveIntervalTimeout < now)
+                                {
+                                    LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::checkConnectionsAlive: alive message from " <<
+                                             si.participant.toString() << " too old. lastReceived " <<
+                                             (std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(now - si.lastReceived).count()) << "ms ago, expected alive " <<
+                                             (std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(now - si.lastReceived - AliveInterval).count()) << "ms ago");
+                                    brokenConnections.push_back(si);
+                                }
+                            };
+
+        for (auto& p : m_platformSocketMap)
+            checkAlive(p.value);
+        if (!m_isDaemon)
+            checkAlive(m_daemonSocket);
+
+        return removeConnectionsBySocket(brokenConnections);
+    }
+
+    bool TCPConnectionSystem::removeConnectionsBySocket(const Vector<SocketInfo>& infos)
+    {
+        // close all if connection to daemon gone
+        if (std::any_of(infos.begin(), infos.end(), [&](const SocketInfo& si) { return si.socket == m_daemonSocket.socket; }))
+        {
+            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::removeConnectionsBySocket: connection to daemon lost; disconnect all");
+            closeAndCleanupAllConnections();
+            return false;
+        }
+
+        for (const auto& si : infos)
+        {
+            if (si.participant.isInvalid())
+            {
+                // must be new connection before first hello
+                assert(m_newlyAcceptedSockets.contains(si.socket));
+                dropConnectionToNewlyAcceptedSocket(*si.socket);
+            }
+            else
+            {
+                assert(m_knownParticipantAddresses.contains(si.participant));
+                removeKnownParticipant(si.participant, true);
+            }
+        }
+
+        return true;
+    }
+
     void TCPConnectionSystem::setReadyToSendMessages(bool state)
     {
         PlatformGuard g(m_mainLock);
         m_readyToSend = state;
     }
 
-    void TCPConnectionSystem::logConnectionInfo() const
+    void TCPConnectionSystem::handleLogRequests()
     {
-        LOG_INFO_F(CONTEXT_COMMUNICATION, ([&](StringOutputStream& sos) {
-                    sos << "TCPConnectionSystem:\n";
-                    sos << "Connected to Daemon: " << (m_daemonSocket.get() != nullptr) << "\n";
-                    sos << "Open connection to other participants:\n";
-                    ramses_foreach(m_controlSockets, it)
-                    {
-                        if (m_dataSockets.contains(it->key))
-                        {
-                            sos << "Guid: " << it->key << "\n";
-                        }
-                    }
-                }));
-    }
-
-    void TCPConnectionSystem::triggerLogMessageForPeriodicLog() const
-    {
-        PlatformGuard guard(m_frameworkLock);
-        LOG_INFO_F(CONTEXT_PERIODIC, ([&](StringOutputStream& sos) {
-                    sos << "Connected Participant(s):";
-
-                    Bool first = true;
-                    for (const auto& socketMapIt : m_controlSockets)
-                    {
-                        if (m_dataSockets.contains(socketMapIt.key))
-                        {
-                            if (first)
+        if (m_requestLogConnectionInfo)
+        {
+            m_requestLogConnectionInfo = false;
+            LOG_INFO_F(CONTEXT_COMMUNICATION,
+                       ([&](StringOutputStream& sos) {
+                            sos << "TCPConnectionSystem:\n";
+                            sos << "  Self: " << m_participantAddress.getParticipantName() << " / " << m_participantAddress.getParticipantId() << "\n";
+                            sos << "  Protocol version: " << m_protocolVersion << "\n";
+                            if (m_isDaemon)
                             {
-                                first = false;
+                                sos << "Participants known to daemon:\n";
+                                for (const auto& p : m_knownParticipantAddresses)
+                                {
+                                    sos << "  " << p.key << " / " << p.value.getParticipantName() << " at " << p.value.getIp() << ":" << p.value.getPort() << " : ";
+                                    if (m_controlSockets.contains(p.key))
+                                        sos << "connected";
+                                    else
+                                        sos << "not connected";
+                                    sos << "\n";
+                                }
                             }
                             else
                             {
-                                sos << ",";
+                                sos << "  Connected to Daemon: " << (m_daemonSocket.socket != nullptr) << "\n";
+                                sos << "Known participants:\n";
+                                for (const auto& p : m_knownParticipantAddresses)
+                                {
+                                    if (p.key != m_participantAddress.getParticipantId())
+                                    {
+                                        sos << "  " << p.key << " / " << p.value.getParticipantName() << " at " << p.value.getIp() << ":" << p.value.getPort() << " : ";
+                                        if (m_controlSockets.contains(p.key) && m_dataSockets.contains(p.key))
+                                            sos << "connected";
+                                        else
+                                            sos << "not connected";
+                                        sos << "\n";
+                                    }
+                                }
                             }
-                            sos << " " << socketMapIt.key;
-                        }
-                    }
-                }));
+                        }));
+        }
+
+        if (m_requestLogMessageForPeriodicLog)
+        {
+            m_requestLogMessageForPeriodicLog = false;
+            LOG_INFO_F(CONTEXT_PERIODIC,
+                       ([&](StringOutputStream& sos) {
+                            sos << "Connected Participant(s):";
+
+                            bool first = true;
+                            for (const auto& socketMapIt : m_controlSockets)
+                            {
+                                if (m_dataSockets.contains(socketMapIt.key))
+                                {
+                                    if (first)
+                                    {
+                                        first = false;
+                                    }
+                                    else
+                                    {
+                                        sos << ",";
+                                    }
+                                    sos << " " << socketMapIt.key;
+                                }
+                            }
+                        }));
+        }
+    }
+
+    void TCPConnectionSystem::logConnectionInfo()
+    {
+        m_requestLogConnectionInfo = true;
+        m_socketManager.interruptWaitCall();
+    }
+
+    void TCPConnectionSystem::triggerLogMessageForPeriodicLog()
+    {
+        m_requestLogMessageForPeriodicLog = true;
+        m_socketManager.interruptWaitCall();
     }
 }

@@ -19,8 +19,6 @@ namespace ramses_internal
         PlatformFactory_Wayland_IVI_EGL(const RendererConfig& rendererConfig);
 
         ISystemCompositorController* createSystemCompositorController() override final;
-        IEmbeddedCompositor*         createEmbeddedCompositor() override final;
-        ITextureUploadingAdapter*    createTextureUploadingAdapter(IDevice& device, IEmbeddedCompositor& embeddedCompositor, IWindow& window) override final;
         IWindow*                     createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override final;
         Bool                         destroyWindow(IWindow& window) override final;
     };

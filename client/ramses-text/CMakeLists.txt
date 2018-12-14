@@ -13,7 +13,10 @@ file(GLOB
 
 file(GLOB
     RAMSES_TEXT_API_INCLUDE_BASE
-    ../ramses-text-api/include)
+    ramses-text-api/include)
+
+add_library(ramses-text-api INTERFACE)
+target_include_directories(ramses-text-api INTERFACE ${RAMSES_TEXT_API_INCLUDE_BASE})
 
 ACME_MODULE(
     NAME                    ramses-text
@@ -23,6 +26,8 @@ ACME_MODULE(
     INCLUDE_BASE            impl/include
 
     FILES_PRIVATE_HEADER    impl/include/ramses-text/*.h
+                            ramses-text-api/include/*.h
+                            ramses-text-api/include/ramses-text-api/*.h
 
     FILES_SOURCE            ${RAMSES_TEXT_FILES_SOURCE}
 
@@ -31,6 +36,9 @@ ACME_MODULE(
                             freetype
                             harfbuzz
 )
+
+INSTALL(DIRECTORY ramses-text-api/include/ DESTINATION "${PROJECT_INSTALL_HEADER}" COMPONENT ramses-sdk-devel)
+
 
 ACME_MODULE(
     NAME                    ramses-text-test
@@ -53,5 +61,5 @@ set(ramses-shared-lib-MIXIN
     ${ramses-shared-lib-MIXIN}
     INCLUDE_BASE ${RAMSES_TEXT_API_INCLUDE_BASE}
     FILES_SOURCE ${RAMSES_TEXT_FILES_SOURCE}
-    DEPENDENCIES  ramses-text ramses-text-api
+    DEPENDENCIES  ramses-text
     CACHE INTERNAL "")

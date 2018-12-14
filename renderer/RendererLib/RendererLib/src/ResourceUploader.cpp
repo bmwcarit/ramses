@@ -7,6 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererLib/ResourceUploader.h"
+#include "RendererLib/RendererStatistics.h"
 #include "Resource/IResource.h"
 #include "Resource/ArrayResource.h"
 #include "Resource/TextureResource.h"
@@ -20,8 +21,9 @@
 
 namespace ramses_internal
 {
-    ResourceUploader::ResourceUploader(IBinaryShaderCache* binaryShaderCache)
+    ResourceUploader::ResourceUploader(RendererStatistics& stats, IBinaryShaderCache* binaryShaderCache)
         : m_binaryShaderCache(binaryShaderCache)
+        , m_stats(stats)
     {
     }
 
@@ -159,6 +161,7 @@ namespace ramses_internal
         if (!m_binaryShaderCache)
         {
             LOG_TRACE(CONTEXT_RENDERER, "ResourceUploader::queryBinaryShaderCacheAndUploadEffect: no binary shader cache present");
+            m_stats.shaderCompiled();
             return device.uploadShader(effect);
         }
 
@@ -188,6 +191,7 @@ namespace ramses_internal
 
         // If this point is reached, we either have no cache or the cache was broken.
         const DeviceResourceHandle sourceShaderHandle = device.uploadShader(effect);
+        m_stats.shaderCompiled();
 
         if (sourceShaderHandle.isValid() && m_binaryShaderCache->shouldBinaryShaderBeCached(hash))
         {

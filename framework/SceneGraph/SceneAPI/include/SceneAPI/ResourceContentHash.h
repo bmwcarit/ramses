@@ -10,6 +10,8 @@
 #define RAMSES_RESOURCECONTENTHASH_H
 
 #include "PlatformAbstraction/PlatformTypes.h"
+#include "Collections/IOutputStream.h"
+#include "Collections/IInputStream.h"
 #include "ramses-capu/container/Hash.h"
 #include <functional>
 
@@ -56,6 +58,16 @@ namespace ramses_internal
     inline Bool operator<(ResourceContentHash const& lhs, ResourceContentHash const& rhs)
     {
         return lhs.highPart == rhs.highPart ? lhs.lowPart < rhs.lowPart : lhs.highPart < rhs.highPart;
+    }
+
+    inline IOutputStream& operator<<(IOutputStream& stream, const ResourceContentHash& value)
+    {
+        return stream << value.lowPart << value.highPart;
+    }
+
+    inline IInputStream& operator>>(IInputStream& stream, ResourceContentHash& value)
+    {
+        return stream >> value.lowPart >> value.highPart;
     }
 }
 

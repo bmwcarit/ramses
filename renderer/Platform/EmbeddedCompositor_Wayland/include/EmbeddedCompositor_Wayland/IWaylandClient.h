@@ -11,7 +11,6 @@
 namespace ramses_internal
 {
     class IWaylandResource;
-    class WaylandOutputResource;
     class WaylandCallbackResource;
 
     class IWaylandClient
@@ -21,7 +20,6 @@ namespace ramses_internal
         virtual void getCredentials(pid_t& processId, uid_t& userId, gid_t& groupId) = 0;
         virtual void postNoMemory()                                                  = 0;
         virtual IWaylandResource* resourceCreate(const wl_interface* interface, int version, uint32_t id)       = 0;
-        virtual WaylandOutputResource* outputResourceCreate(const wl_interface* interface, int version, uint32_t id) = 0;
         virtual WaylandCallbackResource* callbackResourceCreate(const wl_interface* interface, int version, uint32_t id) = 0;
     };
 }

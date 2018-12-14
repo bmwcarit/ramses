@@ -130,11 +130,11 @@ namespace ramses_internal
             m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(sceneActions), ramses_internal::SceneId(newSceneId), EScenePublicationMode_LocalOnly);
         }
 
-        void flushWithTimeInfo(ramses::sceneId_t newSceneId, FlushTimeClock::time_point timeStamp, std::chrono::milliseconds limit)
+        void flushWithTimeInfo(ramses::sceneId_t newSceneId, FlushTime::Clock::time_point timeStamp, std::chrono::milliseconds limit)
         {
             SceneActionCollection sceneActions;
             SceneActionCollectionCreator creator(sceneActions);
-            const FlushTimeInformation timeInfo{ limit, timeStamp, {} };
+            const FlushTimeInformation timeInfo{ limit.count() > 0u ? timeStamp + limit : FlushTime::InvalidTimestamp, {} };
             creator.flush(1u, false, false, {}, {}, timeInfo);
             m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(sceneActions), ramses_internal::SceneId(newSceneId), EScenePublicationMode_LocalOnly);
         }
@@ -312,26 +312,26 @@ namespace ramses_internal
         m_handler.expectSceneFlushed(m_sceneId, m_sceneVersionTag, ramses::ESceneResourceStatus_Pending);
     }
 
-    TEST_F(ARamsesRendererDispatch, generatesEventForSceneUpdateExceededLatency)
+    TEST_F(ARamsesRendererDispatch, generatesEventForSceneExpired)
     {
         createPublishedAndSubscribedScene(m_sceneId, m_scene);
 
-        flushWithTimeInfo(m_sceneId, FlushTimeClock::time_point(std::chrono::milliseconds(1u)), std::chrono::milliseconds(1u));
+        flushWithTimeInfo(m_sceneId, FlushTime::Clock::time_point(std::chrono::milliseconds(1u)), std::chrono::milliseconds(1u));
         updateAndDispatch(m_handler);
-        m_handler.expectSceneUpdateLatencyExceeded(m_sceneId);
+        m_handler.expectSceneExpired(m_sceneId);
     }
 
-    TEST_F(ARamsesRendererDispatch, generatesEventForSceneUpdateLatencyBackToNormal)
+    TEST_F(ARamsesRendererDispatch, generatesEventForSceneRecoveredFromExpired)
     {
         createPublishedAndSubscribedScene(m_sceneId, m_scene);
 
-        flushWithTimeInfo(m_sceneId, FlushTimeClock::time_point(std::chrono::milliseconds(1u)), std::chrono::milliseconds(1u));
+        flushWithTimeInfo(m_sceneId, FlushTime::Clock::time_point(std::chrono::milliseconds(1u)), std::chrono::milliseconds(1u));
         updateAndDispatch(m_handler);
-        m_handler.expectSceneUpdateLatencyExceeded(m_sceneId);
+        m_handler.expectSceneExpired(m_sceneId);
 
-        flushWithTimeInfo(m_sceneId, FlushTimeClock::now(), std::chrono::hours(1));
+        flushWithTimeInfo(m_sceneId, FlushTime::Clock::now(), std::chrono::hours(1));
         updateAndDispatch(m_handler);
-        m_handler.expectSceneUpdateLatencyBackBelowLimit(m_sceneId);
+        m_handler.expectSceneRecoveredFromExpiration(m_sceneId);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesOKEventForSceneSubscribe)

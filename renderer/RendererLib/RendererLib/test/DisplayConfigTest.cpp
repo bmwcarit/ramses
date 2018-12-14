@@ -42,6 +42,7 @@ TEST_F(AInternalDisplayConfig, hasDefaultValues)
     EXPECT_EQ(0u, m_config.getGPUMemoryCacheSize());
     EXPECT_EQ(ramses_internal::Vector4(0.f,0.f,0.f,1.f), m_config.getClearColor());
     EXPECT_FALSE(m_config.getOffscreen());
+    EXPECT_STREQ("", m_config.getWaylandDisplay().c_str());
 
     // this value is used in HL API, so test that value does not change unnoticed
     EXPECT_TRUE(ramses_internal::InvalidIntegrityEglDisplayId.getValue() == 0xFFFFFFFF);
@@ -118,6 +119,9 @@ TEST_F(AInternalDisplayConfig, setAndGetValues)
 
     m_config.setOffscreen(true);
     EXPECT_TRUE(m_config.getOffscreen());
+
+    m_config.setWaylandDisplay("ramses display");
+    EXPECT_STREQ("ramses display", m_config.getWaylandDisplay().c_str());
 }
 
 TEST_F(AInternalDisplayConfig, getsValuesAssignedFromCommandLine)

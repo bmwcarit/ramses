@@ -24,7 +24,7 @@
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/DataLinkUtils.h"
 #include "RendererLib/FrameTimer.h"
-#include "RendererLib/LatencyMonitor.h"
+#include "RendererLib/SceneExpirationMonitor.h"
 #include "RendererLib/EmbeddedCompositingManager.h"
 #include "RendererLib/PendingClientResourcesUtils.h"
 #include "RendererLib/PendingSceneResourcesUtils.h"
@@ -37,13 +37,13 @@
 
 namespace ramses_internal
 {
-    RendererSceneUpdater::RendererSceneUpdater(Renderer& renderer, RendererScenes& rendererScenes, SceneStateExecutor& sceneStateExecutor, RendererEventCollector& eventCollector, FrameTimer& frameTimer, LatencyMonitor& latencyMonitor, IRendererResourceCache* rendererResourceCache)
+    RendererSceneUpdater::RendererSceneUpdater(Renderer& renderer, RendererScenes& rendererScenes, SceneStateExecutor& sceneStateExecutor, RendererEventCollector& eventCollector, FrameTimer& frameTimer, SceneExpirationMonitor& expirationMonitor, IRendererResourceCache* rendererResourceCache)
         : m_renderer(renderer)
         , m_rendererScenes(rendererScenes)
         , m_sceneStateExecutor(sceneStateExecutor)
         , m_rendererEventCollector(eventCollector)
         , m_frameTimer(frameTimer)
-        , m_latencyMonitor(latencyMonitor)
+        , m_expirationMonitor(expirationMonitor)
         , m_rendererResourceCache(rendererResourceCache)
         , m_animationSystemFactory(EAnimationSystemOwner_Renderer)
     {
@@ -117,7 +117,7 @@ namespace ramses_internal
             IEmbeddedCompositingManager& embeddedCompositingManager = displayController.getEmbeddedCompositingManager();
 
             // ownership of uploadStrategy is transferred into RendererResourceManager
-            RendererResourceManager* resourceManager = new RendererResourceManager(resourceProvider, resourceUploader, renderBackend, embeddedCompositingManager, RequesterID(handle.asMemoryHandle()), displayConfig.isEffectDeletionDisabled(), m_frameTimer, displayConfig.getGPUMemoryCacheSize());
+            RendererResourceManager* resourceManager = new RendererResourceManager(resourceProvider, resourceUploader, renderBackend, embeddedCompositingManager, RequesterID(handle.asMemoryHandle()), displayConfig.isEffectDeletionDisabled(), m_frameTimer, m_renderer.getStatistics(), displayConfig.getGPUMemoryCacheSize());
             m_displayResourceManagers.put(handle, resourceManager);
             m_rendererEventCollector.addEvent(ERendererEventType_DisplayCreated, handle);
 
@@ -266,13 +266,46 @@ namespace ramses_internal
 
     void RendererSceneUpdater::consolidatePendingSceneActions()
     {
+        SceneIdVector scenesWithTooManyFlushes;
         for (auto& pendingActionCollectionsForScene : m_pendingSceneActions)
         {
-            for (auto& actionCollection : pendingActionCollectionsForScene.second)
+            if (!pendingActionCollectionsForScene.second.empty())
             {
-                consolidatePendingSceneActions(pendingActionCollectionsForScene.first, actionCollection);
+                const SceneId sceneId = pendingActionCollectionsForScene.first;
+                for (auto& actionCollection : pendingActionCollectionsForScene.second)
+                {
+                    consolidatePendingSceneActions(sceneId, actionCollection);
+                }
+                pendingActionCollectionsForScene.second.clear();
+
+                if (m_rendererScenes.getStagingInfo(sceneId).pendingFlushes.size() > m_maximumPendingFlushesToKillScene)
+                    scenesWithTooManyFlushes.push_back(sceneId);
             }
-            pendingActionCollectionsForScene.second.clear();
+        }
+
+        for (const auto sceneId : scenesWithTooManyFlushes)
+        {
+            const auto numPendingFlushes = m_rendererScenes.getStagingInfo(sceneId).pendingFlushes.size();
+
+            LOG_ERROR(CONTEXT_RENDERER, "Scene " << sceneId.getValue() << " has " << numPendingFlushes << " pending flushes,"
+                << " force applying pending flushes seems to have been interrupted too often and the renderer has no way to catch up without potentially blocking other scenes."
+                << " Possible causes: too many flushes queued and couldn't be applied (even force-applied); or renderer thread was stopped or stalled,"
+                << " e.g. because of taking screenshots, and couldn't process the flushes.");
+
+            if (m_sceneStateExecutor.getScenePublicationMode(sceneId) != EScenePublicationMode_LocalOnly)
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "Force unsubscribing scene " << sceneId.getValue() << " to avoid risk of running out of memory!"
+                    << " Any incoming data for the scene will be ignored till the scene is re-subscribed.");
+                // Unsubscribe scene as 'indirect' because it is not triggered by user
+                handleSceneUnsubscriptionRequest(sceneId, true);
+            }
+            else
+            {
+                // Don't force-ubsubscribe local scenes
+                // Local client is responsible for his own scene - should not spam the renderer with flushes, or if he does
+                // and renderer goes out of memory -> it is possible to fix on client side in the local case
+                LOG_ERROR(CONTEXT_RENDERER, "Because scene " << sceneId.getValue() << " is a local scene, it will not be forcefully ubsubscribed. Beware of possible out-of-memory errors!");
+            }
         }
     }
 
@@ -337,12 +370,6 @@ namespace ramses_internal
         // for caller anyway
         flushInfo.sceneActions.swap(actionsForScene);
         flushInfo.sceneActionsIt = 0u;
-
-        // If there is request to monitor this scene for latency and the scene is not yet monitored
-        // treat the first flush as if applied so that the timestamp and limit is initialized.
-        // This way the monitor is able to catch cases when there is no further flush arriving or cannot be applied.
-        if (flushInfo.timeInfo.latencyLimit.count() > 0u && !m_latencyMonitor.isMonitoringScene(sceneID))
-            m_latencyMonitor.onFlushApplied(sceneID, flushInfo.timeInfo.externalTimestamp, flushInfo.timeInfo.latencyLimit);
     }
 
     void RendererSceneUpdater::consolidateResourceChanges(PendingFlush& flushInfo, const PendingFlushes& pendingFlushes, const SceneResourceChanges& resourceChanges, ResourceContentHashVector& newlyNeededClientResources) const
@@ -457,7 +484,7 @@ namespace ramses_internal
         if (sceneIsRendered && m_renderer.hasAnyBufferWithInterruptedRendering())
             canApplyFlushes &= !m_renderer.isSceneMappedToInterruptibleOffscreenBuffer(sceneID);
 
-        if (!canApplyFlushes && sceneIsMapped && pendingFlushes.size() > MaximumPendingFlushes)
+        if (!canApplyFlushes && sceneIsMapped && pendingFlushes.size() > m_maximumPendingFlushes)
         {
             LOG_ERROR(CONTEXT_RENDERER, "Force applying pending flushes! Scene " << sceneID.getValue() << " has " << pendingFlushes.size() << " pending flushes, renderer cannot catch up with resource updates.");
             logMissingResources(pendingFlushes.back().clientResourcesNeeded, sceneID);
@@ -517,7 +544,7 @@ namespace ramses_internal
                 m_rendererEventCollector.addEvent(ERendererEventType_SceneFlushed, sceneID, rendererScene.getSceneVersionTag(), resourcesStatus);
             }
 
-            m_latencyMonitor.onFlushApplied(sceneID, pendingFlush.timeInfo.externalTimestamp, pendingFlush.timeInfo.latencyLimit);
+            m_expirationMonitor.onFlushApplied(sceneID, pendingFlush.timeInfo.expirationTimestamp);
             m_renderer.getStatistics().flushApplied(sceneID);
 
             // mark scene as modified only if it received scene actions other than those below
@@ -527,15 +554,10 @@ namespace ramses_internal
             if (it != pendingFlush.sceneActions.end())
                 m_modifiedScenesToRerender.put(sceneID);
             else
-                m_latencyMonitor.onRendered(sceneID); // mark as rendered for latency monitor because this scene was updated but might not be rendered due to skip frame optimization
+                m_expirationMonitor.onRendered(sceneID); // mark as rendered for expiration monitor because this scene was updated but might not be rendered due to skip frame optimization
 
             ++numFlushesApplied;
         }
-
-        // if scene is not shown, flush apply is equal to 'scene rendered' from the latency monitor point of view
-        // this is to allow monitoring of latency of flushes only even if scene not rendered
-        if (m_sceneStateExecutor.getSceneState(sceneID) != ESceneState_Rendered)
-            m_latencyMonitor.onRendered(sceneID);
 
         LOG_TRACE_F(CONTEXT_RENDERER, ([&](StringOutputStream& sos) {
             // log basic information for applied flushes
@@ -728,7 +750,7 @@ namespace ramses_internal
                     }
                 }
 
-                if (!canBeMapped && stagingInfo.pendingFlushes.size() > MaximumPendingFlushes)
+                if (!canBeMapped && stagingInfo.pendingFlushes.size() > m_maximumPendingFlushes)
                 {
                     LOG_ERROR(CONTEXT_RENDERER, "Force mapping scene " << sceneId.getValue() << " due to " << stagingInfo.pendingFlushes.size() << " pending flushes, renderer cannot catch up with resource updates.");
                     logMissingResources(stagingInfo.clientResourcesInUse, sceneId);
@@ -760,7 +782,7 @@ namespace ramses_internal
             if (!pendingFlushes.empty())
             {
                 LOG_ERROR(CONTEXT_RENDERER, "Scene " << sceneId.getValue() << " - expected no pending flushes at this point");
-                assert(pendingFlushes.size() > MaximumPendingFlushes);
+                assert(pendingFlushes.size() > m_maximumPendingFlushes);
             }
         }
 
@@ -789,7 +811,7 @@ namespace ramses_internal
         LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::applySceneActions start applying scene actions [count:" << numActions << "] for scene with id " << scene.getSceneId().getValue());
 
         SceneActionApplier::ResourceVector possiblePushResources;
-        SceneActionApplier::ApplyActionsOnScene(scene, actionsForScene, &m_animationSystemFactory, &possiblePushResources);
+        SceneActionApplier::ApplyActionRangeOnScene(scene, actionsForScene, flushInfo.sceneActionsIt, numActions, &m_animationSystemFactory, &possiblePushResources);
         flushInfo.sceneActionsIt = numActions;
 
         LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::applySceneActions finished applying scene actions for scene with id " << scene.getSceneId().getValue());
@@ -858,7 +880,7 @@ namespace ramses_internal
         }
 
         m_pendingSceneActions.erase(sceneID);
-        m_latencyMonitor.stopMonitoringScene(sceneID);
+        m_expirationMonitor.stopMonitoringScene(sceneID);
     }
 
     void RendererSceneUpdater::unloadSceneResourcesAndUnrefSceneResources(SceneId sceneId)
@@ -892,11 +914,14 @@ namespace ramses_internal
         // collect all scene resources in scene and upload them
         const IScene& scene = m_rendererScenes.getScene(sceneId);
         SceneResourceActionVector sceneResourceActions;
-        SceneResourceUtils::GetAllSceneResourcesFromScene(sceneResourceActions, scene);
+        size_t sceneResourcesByteSize = 0u;
+        SceneResourceUtils::GetAllSceneResourcesFromScene(sceneResourceActions, scene, sceneResourcesByteSize);
         if (!sceneResourceActions.empty())
         {
             DisplayHandle activeDisplay;
             activateDisplayContext(activeDisplay, displayHandle);
+            if (sceneResourcesByteSize > 0u)
+                LOG_INFO(CONTEXT_RENDERER, "Applying scene resources gathered from scene " << sceneId << ", " << sceneResourceActions.size() << " actions, " << sceneResourcesByteSize << " bytes");
             PendingSceneResourcesUtils::ApplySceneResourceActions(sceneResourceActions, scene, resourceManager);
         }
 
@@ -904,12 +929,12 @@ namespace ramses_internal
         resourceManager.referenceClientResourcesForScene(sceneId, m_rendererScenes.getStagingInfo(sceneId).clientResourcesInUse);
     }
 
-    void RendererSceneUpdater::handleScenePublished(SceneId sceneId, const Guid& clientWhereSceneIsAvailable)
+    void RendererSceneUpdater::handleScenePublished(SceneId sceneId, const Guid& clientWhereSceneIsAvailable, EScenePublicationMode mode)
     {
         if (m_sceneStateExecutor.checkIfCanBePublished(sceneId))
         {
             assert(!m_rendererScenes.hasScene(sceneId));
-            m_sceneStateExecutor.setPublished(sceneId, clientWhereSceneIsAvailable);
+            m_sceneStateExecutor.setPublished(sceneId, clientWhereSceneIsAvailable, mode);
         }
     }
 
@@ -1211,6 +1236,16 @@ namespace ramses_internal
         return m_modifiedScenesToRerender;
     }
 
+    void RendererSceneUpdater::setLimitFlushesForceApply(UInt limitForPendingFlushesForceApply)
+    {
+        m_maximumPendingFlushes = limitForPendingFlushesForceApply;
+    }
+
+    void RendererSceneUpdater::setLimitFlushesForceUnsubscribe(UInt limitForPendingFlushesForceUnsubscribe)
+    {
+        m_maximumPendingFlushesToKillScene = limitForPendingFlushesForceUnsubscribe;
+    }
+
     Bool RendererSceneUpdater::willApplyingChangesMakeAllResourcesAvailable(SceneId sceneId) const
     {
         const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsMappedTo(sceneId);
@@ -1378,21 +1413,37 @@ namespace ramses_internal
     void RendererSceneUpdater::logMissingResources(const ResourceContentHashVector& resourceVector, SceneId sceneId) const
     {
         const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsMappedTo(sceneId);
+        assert(displayHandle.isValid());
         const IRendererResourceManager& resourceManager = **m_displayResourceManagers.get(displayHandle);
 
-        LOG_ERROR_F(CONTEXT_RENDERER, ([&](StringOutputStream& sos) {
-            sos << "Missing resources for scene " << sceneId << ":\n" ;
+        constexpr UInt MaxMissingResourcesToLog = 10u;
+
+        LOG_ERROR_F(CONTEXT_RENDERER, ([&](StringOutputStream& sos)
+        {
+            ResourceContentHashVector missingResourcesToLog;
+            missingResourcesToLog.reserve(MaxMissingResourcesToLog);
+            UInt numMissingResources = 0u;
 
             for (const auto& res : resourceVector)
             {
                 if (resourceManager.getClientResourceStatus(res) != EResourceStatus_Uploaded)
                 {
-                    sos << " [hash: " << res
-                        << "; " << EnumToString(resourceManager.getClientResourceStatus(res))
-                        << "; " << EnumToString(resourceManager.getClientResourceType(res))
-                        << "]\n";
+                    if (missingResourcesToLog.size() < MaxMissingResourcesToLog)
+                        missingResourcesToLog.push_back(res);
+                    numMissingResources++;
                 }
             }
+
+            sos << "Missing resources for scene " << sceneId << ": " << numMissingResources << "\n";
+            for (const auto& res : missingResourcesToLog)
+            {
+                sos << " [hash: " << res
+                    << "; " << EnumToString(resourceManager.getClientResourceStatus(res))
+                    << "; " << EnumToString(resourceManager.getClientResourceType(res))
+                    << "]\n";
+            }
+            if (numMissingResources > missingResourcesToLog.size())
+                sos << " ...\n";
         }));
     }
 

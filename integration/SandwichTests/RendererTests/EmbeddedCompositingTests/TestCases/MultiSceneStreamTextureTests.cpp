@@ -86,7 +86,7 @@ namespace ramses_internal
 
             TestApplicationSurfaceId surfaceId2 = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId2, secondStreamTextureSourceId);
-            testFramework.sendSetTriangleColorToTestApplication(ETriangleColor_Blue);
+            testFramework.sendSetTriangleColorToTestApplication(ETriangleColor::Blue);
             testFramework.sendRenderOneFrameToTestApplication(surfaceId2);
             testFramework.waitForContentOnStreamTexture(secondStreamTextureSourceId);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangle_Left_BlueTriangle_Right");

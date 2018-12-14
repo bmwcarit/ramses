@@ -39,7 +39,6 @@ namespace ramses_internal
         virtual UInt32 getNumberOfCompositorConnections() const = 0;
         virtual Bool hasSurfaceForStreamTexture(StreamTextureSourceId streamTextureSourceId) const = 0;
         virtual String getTitleOfWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const = 0;
-        virtual void getOutputResolution(Int32& width, Int32& height) const = 0;
         virtual void logInfos(RendererLogContext& context) const = 0;
 
         virtual Bool isRealCompositor() const = 0; //TODO Mohamed: remove this when dummy EC is removed

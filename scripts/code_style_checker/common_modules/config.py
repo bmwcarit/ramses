@@ -14,12 +14,9 @@ Contains configurations constants
 G_WARNING_COUNT = 0
 
 G_PROP_FILES = [
-    'CHANGELOG.txt',
-    'README.txt',
     'proprietary',
     'scripts/integration_tests/proprietary',
     'scripts/integration_tests/run_smoke_tests_as_bat_tests.py',
-    '.gitignore',
     'zuul.d'
 ]
 

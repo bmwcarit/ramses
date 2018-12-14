@@ -154,17 +154,17 @@ namespace ramses_internal
     TEST(BinaryOutputStreamTest, InsertMultipleData)
     {
         BinaryOutputStream outStream;
-        const char* testString = "abcdefgh";
+        const String testString = "abcdefgh";
         outStream << 5 << testString << 7.0f;
 
         const char* data = outStream.getData();
         EXPECT_EQ(5, *reinterpret_cast<const int32_t*>(data));
         data += sizeof(int32_t);
         const uint32_t len = *reinterpret_cast<const uint32_t*>(data);
-        EXPECT_EQ(len, strlen(testString));
+        EXPECT_EQ(len, static_cast<uint32_t>(testString.getLength()));
         data += sizeof(int32_t);
-        EXPECT_STREQ(testString, data);
-        data += strlen(testString) * sizeof(char);
+        EXPECT_STREQ(testString.c_str(), data);
+        data += testString.getLength() * sizeof(char);
         EXPECT_EQ(7.0f, *reinterpret_cast<const float*>(data));
     }
 
@@ -172,7 +172,7 @@ namespace ramses_internal
     {
         BinaryOutputStream outStream;
 
-        outStream << "Hello World with a lot of characters";
+        outStream << String("Hello World with a lot of characters");
 
         const uint32_t strlen = *reinterpret_cast<const uint32_t*>(outStream.getData());
 
@@ -205,5 +205,28 @@ namespace ramses_internal
         {
             EXPECT_EQ(Float(i + 1), streamedData[i]);
         }
+    }
+
+    TEST(BinaryOutputStreamTest, InserStronglyTypedEnum)
+    {
+        enum class TestEnum16 : uint16_t
+        {
+            TestEnumValue = 123
+        };
+
+        enum class TestEnum32 : uint32_t
+        {
+            TestEnumValue = 567
+        };
+
+        BinaryOutputStream outStream;
+
+        outStream << TestEnum16::TestEnumValue << TestEnum32::TestEnumValue;
+
+        ASSERT_EQ(sizeof(uint16_t) + sizeof(uint32_t), outStream.getSize());
+        const char* data = outStream.getData();
+        EXPECT_EQ(TestEnum16::TestEnumValue, *reinterpret_cast<const TestEnum16*>(data));
+        data += sizeof(uint16_t);
+        EXPECT_EQ(TestEnum32::TestEnumValue, *reinterpret_cast<const TestEnum32*>(data));
     }
 }

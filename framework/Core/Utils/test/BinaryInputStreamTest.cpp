@@ -184,4 +184,38 @@ namespace ramses_internal
             EXPECT_EQ(Float(i + 1), m.getRawData()[i]);
         }
     }
+
+    TEST(BinaryInputStreamTest, ReadStronglyTypedEnum)
+    {
+        enum class TestEnum16 : uint16_t
+        {
+            TestEnumValue = 123,
+            OtherTestEnumValue
+        };
+
+        enum class TestEnum32 : uint32_t
+        {
+            TestEnumValue = 567,
+            OtherTestEnumValue
+        };
+
+
+        char buffer[sizeof(uint16_t) + sizeof(uint32_t)];
+        TestEnum16 value16 = TestEnum16::TestEnumValue;
+        TestEnum32 value32 = TestEnum32::TestEnumValue;
+
+        PlatformMemory::Copy(buffer, &value16, sizeof(value16));
+        PlatformMemory::Copy(buffer + sizeof(value16), &value32, sizeof(value32));
+
+        BinaryInputStream inStream(buffer);
+
+
+        TestEnum16 readValue16 = TestEnum16::OtherTestEnumValue;
+        TestEnum32 readValue32 = TestEnum32::OtherTestEnumValue;
+
+        inStream >> readValue16 >> readValue32;
+
+        EXPECT_EQ(TestEnum16::TestEnumValue, readValue16);
+        EXPECT_EQ(TestEnum32::TestEnumValue, readValue32);
+    }
 }

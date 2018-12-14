@@ -13,7 +13,7 @@ class WindowsCygwinTarget(RemoteTarget):
 
     def setup(self, transfer_binaries=True):
         self.defaultPlatform = "windows-wgl-es-3-0"
-        self.defaultEnvironment = {"PATH" : "${PATH}:${HOME}/" + self.ramsesInstallDir + "/lib", "TMP" : "/tmp"}
+        self.defaultEnvironment = {"PATH" : "${HOME}/" + self.ramsesInstallDir + "/lib:${PATH}"}
 
         # base implementation that includes setup of connection and transfer of binaries
         baseSetupSuccessful = RemoteTarget.setup(self, transfer_binaries)
@@ -26,7 +26,10 @@ class WindowsCygwinTarget(RemoteTarget):
         # return code 127 (file not found) on cygwin. error code 0xc000022 in gui mode
         self.execute_on_target("cd '" + self.ramsesInstallDir + "/lib/'; chmod +x *.dll")
 
-        stdout, stderr, returncode = self.execute_on_target("cygpath -am {}".format(self.defaultEnvironment["TMP"]))
+        # Path conversion to windows-style (/c/folder -> C:/folder)
+        # Conversion is needed because screenshopts in RAMSES are using Capu files, which use Windows APIs directly
+        # and require windows-style paths
+        stdout, stderr, returncode = self.execute_on_target("cygpath -am ${HOME}")
         if returncode == 0:
             self.tmpDir = stdout[0].strip()
         else:
@@ -35,13 +38,13 @@ class WindowsCygwinTarget(RemoteTarget):
         return True
 
     def get_install_dir(self):
-        return "$(cygpath -am ~)/{}".format(self.ramsesInstallDir)
+        return "${HOME}/{}".format(self.ramsesInstallDir)
 
     def _shutdown(self):
-        self.execute_on_target("shutdown /t 3 /s", False)
+        self.execute_on_target("shutdown -t 3 -s", False)
 
     def kill_application(self, application):
-        self.execute_on_target("taskkill /F /T /IM {0}.exe ".format(application.name))
+        self.execute_on_target("taskkill -F -T -IM {0}.exe ".format(application.name))
         application.started = False
         application.stop_readers()
 

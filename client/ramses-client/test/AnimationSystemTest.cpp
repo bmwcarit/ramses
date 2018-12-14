@@ -11,15 +11,11 @@
 #include "ClientTestUtils.h"
 #include "TestEffectCreator.h"
 #include "AnimationSystemImpl.h"
+#include "ramses-client-api/Animation.h"
 #include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/AnimationSequence.h"
 #include "ramses-client-api/SplineLinearFloat.h"
 #include "ramses-client-api/SplineLinearVector3f.h"
-#include "ramses-client-api/TranslateNode.h"
-#include "ramses-client-api/Animation.h"
-#include "ramses-client-api/SplineLinearVector3f.h"
-#include "ramses-client-api/RotateNode.h"
-#include "ramses-client-api/ScaleNode.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/DataVector3f.h"
 #include "ramses-utils.h"
@@ -29,7 +25,6 @@ using namespace testing;
 namespace ramses
 {
     class AnimatedProperty;
-    class TranslateNode;
     class Animation;
 
     class AnimationSystemTest : public LocalTestClientWithSceneAndAnimationSystem, public testing::Test
@@ -41,7 +36,7 @@ namespace ramses
         }
 
     protected:
-        AnimationSequence* createAnimationSequence(Animation** animation = NULL, TranslateNode** animatedNode = NULL)
+        AnimationSequence* createAnimationSequence(Animation** animation = NULL, Node** animatedNode = NULL)
         {
             SplineLinearVector3f* spline = animationSystem.createSplineLinearVector3f("spline");
             EXPECT_FALSE(spline == NULL);
@@ -49,11 +44,11 @@ namespace ramses
             spline->setKey(0u, 0.0f, 0.0f, 0.0f);
             spline->setKey(5000u, 1.0f, 1.0f, 1.0f);
 
-            TranslateNode* node = m_scene.createTranslateNode("node");
+            Node* node = m_scene.createNode("node");
             EXPECT_FALSE(node == NULL);
             node->setTranslation(1.0f, 1.0f, 1.0f);
 
-            AnimatedProperty* prop = animationSystem.createAnimatedProperty(*node, EAnimatedPropertyComponent_All);
+            AnimatedProperty* prop = animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Translation, EAnimatedPropertyComponent_All);
             EXPECT_FALSE(prop == NULL);
 
             Animation* anim = animationSystem.createAnimation(*prop, *spline, "anim");
@@ -111,9 +106,9 @@ namespace ramses
         AnimationSystem* otherAnimationSystem = this->getScene().createAnimationSystem();
         SplineLinearVector3f* spline = otherAnimationSystem->createSplineLinearVector3f("spline");
         EXPECT_FALSE(spline == NULL);
-        TranslateNode* node = this->m_scene.createTranslateNode("node");
+        Node* node = this->m_scene.createNode("node");
         EXPECT_FALSE(node == NULL);
-        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(*node);
+        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Translation);
         EXPECT_FALSE(prop == NULL);
 
         Animation* anim = this->animationSystem.createAnimation(*prop, *spline, "anim");
@@ -125,9 +120,9 @@ namespace ramses
         AnimationSystem* otherAnimationSystem = this->getScene().createAnimationSystem();
         SplineLinearVector3f* spline = this->animationSystem.createSplineLinearVector3f("spline");
         EXPECT_FALSE(spline == NULL);
-        TranslateNode* node = this->m_scene.createTranslateNode("node");
+        Node* node = this->m_scene.createNode("node");
         EXPECT_FALSE(node == NULL);
-        AnimatedProperty* prop = otherAnimationSystem->createAnimatedProperty(*node);
+        AnimatedProperty* prop = otherAnimationSystem->createAnimatedProperty(*node, EAnimatedProperty_Translation);
         EXPECT_FALSE(prop == NULL);
 
         Animation* anim = this->animationSystem.createAnimation(*prop, *spline, "anim");
@@ -137,9 +132,9 @@ namespace ramses
     TEST_F(AnimationSystemTest, createAnimatedSetterWithAnimatedPropertyFromDifferentAnimationSystemFails)
     {
         AnimationSystem* otherAnimationSystem = this->getScene().createAnimationSystem();
-        TranslateNode* node = this->m_scene.createTranslateNode("node");
+        Node* node = this->m_scene.createNode("node");
         EXPECT_FALSE(node == NULL);
-        AnimatedProperty* prop = otherAnimationSystem->createAnimatedProperty(*node);
+        AnimatedProperty* prop = otherAnimationSystem->createAnimatedProperty(*node, EAnimatedProperty_Translation);
         EXPECT_FALSE(prop == NULL);
 
         AnimatedSetter* anim = this->animationSystem.createAnimatedSetter(*prop, "anim");
@@ -150,9 +145,9 @@ namespace ramses
     {
         SplineLinearFloat* spline = this->animationSystem.createSplineLinearFloat("spline");
         EXPECT_FALSE(spline == NULL);
-        TranslateNode* node = this->m_scene.createTranslateNode("node");
+        Node* node = this->m_scene.createNode("node");
         EXPECT_FALSE(node == NULL);
-        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(*node);
+        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Translation);
         EXPECT_FALSE(prop == NULL);
 
         Animation* anim = this->animationSystem.createAnimation(*prop, *spline, "anim");
@@ -163,9 +158,9 @@ namespace ramses
     {
         SplineLinearVector3f* spline = this->animationSystem.createSplineLinearVector3f("spline");
         EXPECT_FALSE(spline == NULL);
-        TranslateNode* node = this->m_scene.createTranslateNode("node");
+        Node* node = this->m_scene.createNode("node");
         EXPECT_FALSE(node == NULL);
-        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(*node, EAnimatedPropertyComponent_Y);
+        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Translation, EAnimatedPropertyComponent_Y);
         EXPECT_FALSE(prop == NULL);
 
         Animation* anim = this->animationSystem.createAnimation(*prop, *spline, "anim");
@@ -229,10 +224,10 @@ namespace ramses
         spline4->setKey(0u, 0.0f, 0.0f, 0.0f);
 
         // 3 animated properties in total
-        TranslateNode* node2 = m_scene.createTranslateNode("node2");
-        TranslateNode* node3 = m_scene.createTranslateNode("node3");
-        AnimatedProperty* prop2 = animationSystem.createAnimatedProperty(*node2, EAnimatedPropertyComponent_All);
-        animationSystem.createAnimatedProperty(*node3, EAnimatedPropertyComponent_All);
+        Node* node2 = m_scene.createNode("node2");
+        Node* node3 = m_scene.createNode("node3");
+        AnimatedProperty* prop2 = animationSystem.createAnimatedProperty(*node2, EAnimatedProperty_Translation, EAnimatedPropertyComponent_All);
+        animationSystem.createAnimatedProperty(*node3, EAnimatedProperty_Translation, EAnimatedPropertyComponent_All);
 
         // 2 animations in total
         animationSystem.createAnimation(*prop2, *spline2, "anim");
@@ -249,7 +244,7 @@ namespace ramses
     TEST_F(AnimationSystemTest, failsToValidateIfOneOfItsObjectsNotValidated)
     {
         Animation* animation = NULL;
-        TranslateNode* node = NULL;
+        Node* node = NULL;
         createAnimationSequence(&animation, &node);
         this->animationSystem.destroy(*animation);
         this->getScene().destroy(*node);
@@ -266,7 +261,7 @@ namespace ramses
 
     TEST_F(AnimationSystemTestClientSideProcessing, createAnimationSystemWithClientSideProcessingAndCheckInterpolationResults)
     {
-        TranslateNode* node = NULL;
+        Node* node = NULL;
         AnimationSequence* sequence = createAnimationSequence(NULL, &node);
         sequence->startAt(0u);
 
@@ -285,8 +280,8 @@ namespace ramses
 
     TEST_F(AnimationSystemTestClientSideProcessing, canAnimatePropertyTranslateNode)
     {
-        TranslateNode& animatable = this->createObject<TranslateNode>("animatable");
-        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(animatable, EAnimatedPropertyComponent_All);
+        Node& animatable = this->createObject<Node>("animatable");
+        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(animatable, EAnimatedProperty_Translation, EAnimatedPropertyComponent_All);
         ASSERT_TRUE(prop != NULL);
 
         SplineLinearVector3f* spline = this->animationSystem.createSplineLinearVector3f();
@@ -318,8 +313,8 @@ namespace ramses
 
     TEST_F(AnimationSystemTestClientSideProcessing, canAnimatePropertyRotateNode)
     {
-        RotateNode& animatable = this->createObject<RotateNode>("animatable");
-        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(animatable, EAnimatedPropertyComponent_All);
+        Node& animatable = this->createObject<Node>("animatable");
+        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(animatable, EAnimatedProperty_Rotation, EAnimatedPropertyComponent_All);
         ASSERT_TRUE(prop != NULL);
 
         SplineLinearVector3f* spline = this->animationSystem.createSplineLinearVector3f();
@@ -351,8 +346,8 @@ namespace ramses
 
     TEST_F(AnimationSystemTestClientSideProcessing, canAnimatePropertyScaleNode)
     {
-        ScaleNode& animatable = this->createObject<ScaleNode>("animatable");
-        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(animatable, EAnimatedPropertyComponent_All);
+        Node& animatable = this->createObject<Node>("animatable");
+        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(animatable, EAnimatedProperty_Scaling, EAnimatedPropertyComponent_All);
         ASSERT_TRUE(prop != NULL);
 
         SplineLinearVector3f* spline = this->animationSystem.createSplineLinearVector3f();

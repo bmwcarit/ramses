@@ -88,9 +88,14 @@ def get_installed_includes(installIncludeDir):
     return filteredFiles
 
 def get_source_api_headers(srcDir):
-    baseDirs = glob.glob(srcDir + '/client/*-api/include/')
-    baseDirs += glob.glob(srcDir + '/framework/ramses-framework-api/include/')
-    baseDirs += glob.glob(srcDir + '/renderer/ramses-renderer-api/include/')
+    baseDirs = []
+    pattern = re.compile('.*/ramses-[^/]+-api/include$')
+    for dirpath, dirs, _ in os.walk(srcDir):
+        for d in dirs:
+            c = os.path.join(dirpath, d)
+            if pattern.match(c):
+                baseDirs.append(c)
+
     res = []
     for dir in baseDirs:
         headers = get_files_in_directory_recursive(dir, '.h')

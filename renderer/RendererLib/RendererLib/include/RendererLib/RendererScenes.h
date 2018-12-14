@@ -41,8 +41,8 @@ namespace ramses_internal
         const StagingInfo&         getStagingInfo(SceneId sceneID) const;
         StagingInfo&               getStagingInfo(SceneId sceneID);
 
-        const SceneLinksManager&     getSceneLinksManager() const;
-        SceneLinksManager&           getSceneLinksManager();
+        const SceneLinksManager&   getSceneLinksManager() const;
+        SceneLinksManager&         getSceneLinksManager();
 
         using RendererSceneInfoMap::begin;
         using RendererSceneInfoMap::end;

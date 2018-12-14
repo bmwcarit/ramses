@@ -9,41 +9,69 @@
 #ifndef RAMSES_UTILS_IOUTPUTSTREAM_H
 #define RAMSES_UTILS_IOUTPUTSTREAM_H
 
-#include <PlatformAbstraction/PlatformTypes.h>
-#include <PlatformAbstraction/PlatformError.h>
+#include <cstdint>
+#include <type_traits>
 
 namespace ramses_internal
 {
-    class String;
-    class Guid;
-    class IOutputStreamMonitor;
-    class Matrix44f;
-    struct ResourceContentHash;
-
     class IOutputStream
     {
     public:
-        virtual ~IOutputStream();
+        virtual ~IOutputStream() = default;
+        virtual IOutputStream& write(const void* data, const uint32_t size) = 0;
 
-        virtual IOutputStream& operator<<(const Int32 value) = 0;
-        virtual IOutputStream& operator<<(const Int64 value) = 0;
-        virtual IOutputStream& operator<<(const UInt64 value) = 0;
-        virtual IOutputStream& operator<<(const UInt32 value) = 0;
-        virtual IOutputStream& operator<<(const String&  value) = 0;
-        virtual IOutputStream& operator<<(const Char*  value) = 0;
-        virtual IOutputStream& operator<<(const Bool  value) = 0;
-        virtual IOutputStream& operator<<(const Float value) = 0;
-        virtual IOutputStream& operator<<(const UInt16 value) = 0;
-        virtual IOutputStream& operator<<(const Guid& value) = 0;
-        virtual IOutputStream& operator<<(const Matrix44f& value) = 0;
-        virtual IOutputStream& operator<<(const ResourceContentHash& value) = 0;
-        virtual IOutputStream& write(const void* data, const UInt32 size) = 0;
-        virtual EStatus flush() = 0;
+        IOutputStream& operator<<(const void*) = delete;
     };
 
-    inline
-    IOutputStream::~IOutputStream()
+    inline IOutputStream& operator<<(IOutputStream& stream, int32_t value)
     {
+        return stream.write(&value, sizeof(value));
+    }
+
+    inline IOutputStream& operator<<(IOutputStream& stream, uint32_t value)
+    {
+        return stream.write(&value, sizeof(value));
+    }
+
+    inline IOutputStream& operator<<(IOutputStream& stream, int64_t value)
+    {
+        return stream.write(&value, sizeof(value));
+    }
+
+    inline IOutputStream& operator<<(IOutputStream& stream, uint64_t value)
+    {
+        return stream.write(&value, sizeof(value));
+    }
+
+    inline IOutputStream& operator<<(IOutputStream& stream, int16_t value)
+    {
+        return stream.write(&value, sizeof(value));
+    }
+
+    inline IOutputStream& operator<<(IOutputStream& stream, uint16_t value)
+    {
+        return stream.write(&value, sizeof(value));
+    }
+
+    inline IOutputStream& operator<<(IOutputStream& stream, bool  value)
+    {
+        return stream.write(&value, sizeof(value));
+    }
+
+    inline IOutputStream& operator<<(IOutputStream& stream, float value)
+    {
+        return stream.write(&value, sizeof(value));
+    }
+
+    template<typename E,
+             typename = typename std::enable_if<std::is_enum<E>::value>::type>
+    IOutputStream& operator<<(IOutputStream& stream, E value)
+    {
+        //Only strongly typed enums are allowed. Non-strongly typed enums do not have a defined size
+        static_assert(!std::is_convertible<E, int>::value, "Not allowed to write non-strongly typed enum values to output stream!");
+
+        stream << static_cast<typename std::underlying_type<E>::type>(value);
+        return stream;
     }
 }
 

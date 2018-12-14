@@ -9,7 +9,6 @@
 #include "TestScenes/RenderBufferScene.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/PerspectiveCamera.h"
-#include "ramses-client-api/TransformationNode.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
@@ -76,7 +75,7 @@ namespace ramses_internal
         meshNode.getAppearance()->setStencilFunction(ramses::EStencilFunc_Always, 1, 0xff);
         meshNode.getAppearance()->setStencilOperation(ramses::EStencilOperation_Replace, ramses::EStencilOperation_Replace, ramses::EStencilOperation_Replace);
 
-        ramses::TransformationNode& transNode = *m_scene.createTransformationNode();
+        ramses::Node& transNode = *m_scene.createNode();
         transNode.addChild(meshNode);
         transNode.translate(0.0f, -0.5f, -5.0f);
 
@@ -95,7 +94,7 @@ namespace ramses_internal
         renderPass.setClearFlags(ramses::EClearFlags_None);
 
 
-        ramses::TransformationNode& farTriangleTransNode = *m_scene.createTransformationNode();
+        ramses::Node& farTriangleTransNode = *m_scene.createNode();
 
         if (state == ONE_COLOR_BUFFER_WITH_WRITE_ONLY_DEPTH_STENCIL_BUFFER)
         {

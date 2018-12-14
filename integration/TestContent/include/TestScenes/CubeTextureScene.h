@@ -11,14 +11,13 @@
 
 #include "IntegrationScene.h"
 #include "SceneAPI/Handles.h"
-#include "ramses-client-api/GroupNode.h"
 #include "Math3d/Vector3.h"
 #include "Collections/Vector.h"
 
 namespace ramses
 {
     class TextureCube;
-    class TransformationNode;
+    class Node;
 }
 
 namespace ramses_internal
@@ -42,7 +41,7 @@ namespace ramses_internal
 
         ramses::Effect* m_effect;
         ramses::MeshNode* m_sphereMesh;
-        ramses::TransformationNode* m_transformNode;
+        ramses::Node* m_transformNode;
 
         Vector<Vector3> m_spherePositions;
         Vector<Vector3> m_sphereNormals;

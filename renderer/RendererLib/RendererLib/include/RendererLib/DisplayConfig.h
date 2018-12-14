@@ -59,6 +59,9 @@ namespace ramses_internal
         WaylandIviSurfaceId getWaylandIviSurfaceID() const;
         void setWaylandIviSurfaceID(WaylandIviSurfaceId waylandIviSurfaceID);
 
+        void setWaylandDisplay(const String& waylandDisplay);
+        const String& getWaylandDisplay() const;
+
         IntegrityEglDisplayId getIntegrityEGLDisplayID() const;
         void setIntegrityEGLDisplayID(IntegrityEglDisplayId eglDisplayID);
 
@@ -112,6 +115,7 @@ namespace ramses_internal
         IntegrityEglDisplayId m_integrityEglDisplayID = InvalidIntegrityEglDisplayId;
         WindowsWindowHandle m_windowsWindowHandle = InvalidWindowsWindowHandle;
         Bool m_startVisibleIvi = false;
+        String m_waylandDisplay;
 
         EAntiAliasingMethod m_antiAliasingMethod = EAntiAliasingMethod_PlainFramebuffer;
         UInt32 m_antiAliasingSamples = 1;

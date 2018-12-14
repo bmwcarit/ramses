@@ -20,7 +20,7 @@ namespace ramses_internal
                                  uint32_t                     id)
         : m_compositor(compositor)
     {
-        LOG_TRACE(CONTEXT_RENDERER, "WaylandRegion::WaylandRegion")
+        LOG_TRACE(CONTEXT_RENDERER, "WaylandRegion::WaylandRegion");
 
         m_resource = client.resourceCreate(&wl_region_interface, version, id);
         if (nullptr != m_resource)

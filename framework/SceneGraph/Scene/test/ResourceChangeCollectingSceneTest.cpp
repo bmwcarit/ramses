@@ -59,10 +59,11 @@ namespace ramses_internal
             return geometryData;
         }
 
-        void expectSameSceneResourceChangesWhenExtractedFromScene()
+        void expectSameSceneResourceChangesWhenExtractedFromScene(size_t expectedSceneResourcesByteSize = 0u)
         {
             SceneResourceChanges fromScene;
-            SceneResourceUtils::GetSceneResourceChangesFromScene(fromScene, scene);
+            size_t fromSceneSceneResourcesByteSize = 0u;
+            SceneResourceUtils::GetSceneResourceChangesFromScene(fromScene, scene, fromSceneSceneResourcesByteSize);
 
             SceneResourceChanges fromResourceChanges = resourceChanges;
 
@@ -74,6 +75,8 @@ namespace ramses_internal
 
             EXPECT_EQ(fromResourceChanges.m_sceneResourceActions.size(), fromScene.m_sceneResourceActions.size());
             EXPECT_EQ(fromResourceChanges.m_sceneResourceActions, fromScene.m_sceneResourceActions);
+
+            EXPECT_EQ(expectedSceneResourcesByteSize, fromSceneSceneResourcesByteSize);
         }
 
         ResourceChangeCollectingScene scene;
@@ -599,7 +602,7 @@ namespace ramses_internal
         EXPECT_EQ(ESceneResourceAction_CreateTextureBuffer, resourceChanges.m_sceneResourceActions[0].action);
         EXPECT_EQ(handle, resourceChanges.m_sceneResourceActions[1].handle);
         EXPECT_EQ(ESceneResourceAction_UpdateTextureBuffer, resourceChanges.m_sceneResourceActions[1].action);
-        expectSameSceneResourceChangesWhenExtractedFromScene();
+        expectSameSceneResourceChangesWhenExtractedFromScene(2u);
 
         scene.clearResourceChanges();
         EXPECT_EQ(0u, resourceChanges.m_sceneResourceActions.size());

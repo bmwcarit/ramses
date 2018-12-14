@@ -51,14 +51,14 @@ namespace ramses_internal
         ELifecycleTest_PollingFrameCallbacks_UnreadyDisplayDoesNotBlockReadyDisplay_DisplaysInOtherOrder,
         ELifecycleTest_PollingFrameCallbacks_ReadyDisplayDoesNotStarveOtherDisplay,
         ELifecycleTest_PollingFrameCallbacks_ReadyDisplayDoesNotStarveOtherDisplay_DisplaysInOtherOrder,
-        ELifecycleTest_SceneLatencyNotExceededWhileSubscribed,
-        ELifecycleTest_SceneLatencyExceededWhileSubscribed,
-        ELifecycleTest_SceneLatencyExceededAndRecoveredWhileSubscribed,
-        ELifecycleTest_SceneLatencyNotExceededWhileRendered,
-        ELifecycleTest_SceneLatencyExceededWhileRendered,
-        ELifecycleTest_SceneLatencyNotExceededWhileRenderedButUpdatedWithEmptyFlushes,
-        ELifecycleTest_SceneLatencyExceededAndRecoveredWhileRendered,
-        ELifecycleTest_SceneLatencyTwoScenesExceededOneAfterAnother,
+        ELifecycleTest_SceneNotExpiredWhenUpdatedAndSubscribed,
+        ELifecycleTest_SceneExpiredWhenSubscribed,
+        ELifecycleTest_SceneExpiredAndRecoveredWhenSubscribed,
+        ELifecycleTest_SceneNotExpiredWhenUpdatedAndRendered,
+        ELifecycleTest_SceneExpiredWhenRendered,
+        ELifecycleTest_SceneNotExpiredWhenUpdatedWithEmptyFlushesAndRendered,
+        ELifecycleTest_SceneExpiredAndRecoveredWhenRendered,
+        ELifecycleTest_ScenesExpireOneAfterAnother,
 
         ELifecycleTest_NUMBER_OF_ELEMENTS
     };
@@ -95,14 +95,14 @@ namespace ramses_internal
         "PollingFrameCallbacks_UnreadyDisplayDoesNotBlockReadyDisplay_DisplaysInOtherOrder",
         "PollingFrameCallbacks_ReadyDisplayDoesNotStarveOtherDisplay",
         "PollingFrameCallbacks_ReadyDisplayDoesNotStarveOtherDisplay_DisplaysInOtherOrder",
-        "SceneLatencyNotExceededWhileSubscribed",
-        "SceneLatencyExceededWhileSubscribed",
-        "SceneLatencyExceededAndRecoveredWhileSubscribed",
-        "SceneLatencyNotExceededWhileRendered",
-        "SceneLatencyExceededWhileRendered",
-        "SceneLatencyNotExceededWhileRenderedButUpdatedWithEmptyFlushes",
-        "SceneLatencyExceededAndRecoveredWhileRendered",
-        "SceneLatencyTwoScenesExceededOneAfterAnother"
+        "SceneNotExpiredWhenUpdatedAndSubscribed",
+        "SceneExpiredWhenSubscribed",
+        "SceneExpiredAndRecoveredWhenSubscribed",
+        "SceneNotExpiredWhenUpdatedAndRendered",
+        "SceneExpiredWhenRendered",
+        "SceneNotExpiredWhenUpdatedWithEmptyFlushesAndRendered",
+        "SceneExpiredAndRecoveredWhenRendered",
+        "ScenesExpireOneAfterAnother"
     };
 
     ENUM_TO_STRING(ELifecycleTest, LifecycleTestNames, ELifecycleTest_NUMBER_OF_ELEMENTS);

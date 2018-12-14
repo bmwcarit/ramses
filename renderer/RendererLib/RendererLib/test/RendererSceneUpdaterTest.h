@@ -22,7 +22,7 @@
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/DisplayEventHandlerManager.h"
 #include "RendererLib/FrameTimer.h"
-#include "RendererLib/LatencyMonitor.h"
+#include "RendererLib/SceneExpirationMonitor.h"
 #include "Animation/AnimationSystem.h"
 #include "Animation/ActionCollectingAnimationSystem.h"
 #include "Scene/SceneDataBinding.h"
@@ -47,14 +47,17 @@ public:
         , streamTextureHandle(0u)
         , platformFactoryMock()
         , rendererEventCollector()
-        , latencyMonitor(rendererEventCollector)
         , rendererScenes(rendererEventCollector)
-        , renderer(platformFactoryMock, rendererScenes, rendererEventCollector, latencyMonitor)
+        , expirationMonitor(rendererScenes, rendererEventCollector)
+        , renderer(platformFactoryMock, rendererScenes, rendererEventCollector, expirationMonitor, rendererStatistics)
         , sceneGraphConsumerComponent()
+        , resourceUploader(renderer.getStatistics())
         , sceneStateExecutor(renderer, sceneGraphConsumerComponent, rendererEventCollector)
-        , rendererSceneUpdater(new RendererSceneUpdater(renderer, rendererScenes, sceneStateExecutor, rendererEventCollector, frameTimer, latencyMonitor, &rendererResourceCacheMock))
+        , rendererSceneUpdater(new RendererSceneUpdater(renderer, rendererScenes, sceneStateExecutor, rendererEventCollector, frameTimer, expirationMonitor, &rendererResourceCacheMock))
     {
         frameTimer.startFrame();
+        rendererSceneUpdater->setLimitFlushesForceApply(ForceApplyFlushesLimit);
+        rendererSceneUpdater->setLimitFlushesForceUnsubscribe(ForceUnsubscribeFlushLimit);
     }
 
     ~ARendererSceneUpdater()
@@ -86,7 +89,7 @@ protected:
     void publishScene(UInt32 sceneIndex = 0u)
     {
         const SceneId sceneId = getSceneId(sceneIndex);
-        rendererSceneUpdater->handleScenePublished(sceneId, Guid(true));
+        rendererSceneUpdater->handleScenePublished(sceneId, Guid(true), EScenePublicationMode_LocalAndRemote);
         EXPECT_TRUE(sceneStateExecutor.getSceneState(sceneId) == ESceneState_Published);
         expectEvent(ERendererEventType_ScenePublished);
     }
@@ -289,9 +292,9 @@ protected:
         rendererSceneUpdater->handleSceneActions(stagingScene[sceneIndex]->getSceneId(), sceneActions);
     }
 
-    void performFlushWithTimeInfo(UInt32 sceneIndex, UInt32 timeStamp, UInt32 limit)
+    void performFlushWithExpiration(UInt32 sceneIndex, UInt32 expirationTS)
     {
-        const FlushTimeInformation timeInfo{ std::chrono::milliseconds(limit), LatencyMonitor::Clock::time_point(std::chrono::milliseconds(timeStamp)), {} };
+        const FlushTimeInformation timeInfo{ FlushTime::Clock::time_point(std::chrono::milliseconds(expirationTS)), {} };
         performFlush(sceneIndex, true, {}, nullptr, timeInfo);
     }
 
@@ -880,11 +883,15 @@ protected:
     std::vector<std::unique_ptr<ActionCollectingScene>> stagingScene;
     DataSlotId dataSlotIdForDataLinking{9911u};
 
+    static constexpr UInt ForceApplyFlushesLimit = 10u;
+    static constexpr UInt ForceUnsubscribeFlushLimit = 20u;
+
     NiceMock<RendererResourceCacheMock> rendererResourceCacheMock;
     StrictMock<PlatformFactoryStrictMock> platformFactoryMock;
     RendererEventCollector rendererEventCollector;
-    LatencyMonitor latencyMonitor;
     RendererScenes rendererScenes;
+    SceneExpirationMonitor expirationMonitor;
+    RendererStatistics rendererStatistics;
     StrictMock<RendererMockWithStrictMockDisplay> renderer;
     StrictMock<SceneGraphConsumerComponentMock> sceneGraphConsumerComponent;
     StrictMock<ResourceProviderMock> resourceProvider1;

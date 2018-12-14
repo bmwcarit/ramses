@@ -10,6 +10,7 @@
 #include "Utils/LogMacros.h"
 #include "PlatformAbstraction/PlatformGuard.h"
 #include "RendererLib/EMouseEventType.h"
+#include "Scene/EScenePublicationMode.h"
 
 namespace ramses_internal
 {
@@ -17,10 +18,10 @@ namespace ramses_internal
     {
     }
 
-    void RendererCommandBuffer::publishScene(SceneId sceneId, const Guid& clientID)
+    void RendererCommandBuffer::publishScene(SceneId sceneId, const Guid& clientID, EScenePublicationMode mode)
     {
         PlatformGuard guard(m_lock);
-        RendererCommands::publishScene(sceneId, clientID);
+        RendererCommands::publishScene(sceneId, clientID, mode);
     }
 
     void RendererCommandBuffer::unpublishScene(SceneId sceneId)
@@ -233,6 +234,18 @@ namespace ramses_internal
         RendererCommands::setFrameTimerLimits(limitForClientResourcesUploadMicrosec, limitForSceneActionsApplyMicrosec, limitForOffscreenBufferRenderMicrosec);
     }
 
+    void RendererCommandBuffer::setLimitsFlushesForceApply(UInt limitFlushesForceApply)
+    {
+        PlatformGuard guard(m_lock);
+        RendererCommands::setForceApplyPendingFlushesLimit(limitFlushesForceApply);
+    }
+
+    void RendererCommandBuffer::setLimitsFlushesForceUnsubscribe(UInt limitFlushesForceUnsubscribe)
+    {
+        PlatformGuard guard(m_lock);
+        RendererCommands::setForceUnsubscribeLimits(limitFlushesForceUnsubscribe);
+    }
+
     void RendererCommandBuffer::setSkippingOfUnmodifiedBuffers(Bool enable)
     {
         PlatformGuard guard(m_lock);
@@ -261,7 +274,7 @@ namespace ramses_internal
             case ERendererCommand_PublishedScene:
             {
                 const SceneInfoCommand& cmd = commands.getCommandData<SceneInfoCommand>(i);
-                publishScene(cmd.sceneInformation.sceneID, cmd.clientID);
+                publishScene(cmd.sceneInformation.sceneID, cmd.clientID, cmd.sceneInformation.publicationMode);
             }
             break;
             case ERendererCommand_UnpublishedScene:
@@ -507,6 +520,18 @@ namespace ramses_internal
                 setFrameTimerLimits(cmd.limitForClientResourcesUploadMicrosec, cmd.limitForSceneActionsApplyMicrosec, cmd.limitForOffscreenBufferRenderMicrosec);
             }
             break;
+            case ERendererCommand_SetLimits_FlushesForceApply:
+            {
+                const auto& cmd = commands.getCommandData<SetFrameTimerLimitsCommmand>(i);
+                setLimitsFlushesForceApply(cmd.limitForPendingFlushesForceApply);
+            }
+            break;
+            case ERendererCommand_SetLimits_FlushesForceUnsubscribe:
+            {
+                const auto& cmd = commands.getCommandData<SetFrameTimerLimitsCommmand>(i);
+                setLimitsFlushesForceUnsubscribe(cmd.limitForPendingFlushesForceUnsubscribe);
+            }
+            break;
             case ERendererCommand_SetSkippingOfUnmodifiedBuffers:
             {
                 const auto& cmd = commands.getCommandData<SetFeatureCommand>(i);
@@ -521,4 +546,5 @@ namespace ramses_internal
             }
         }
     }
+
 }

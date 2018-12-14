@@ -30,6 +30,6 @@ namespace ramses_capu
         };
 
         int32_t Console::pipeDescriptorsForInterruption[2] = {-1,-1};
-        Mutex Console::interruptMutex;
+        std::mutex Console::interruptMutex;
     }
 }

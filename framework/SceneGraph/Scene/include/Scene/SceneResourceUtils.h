@@ -17,10 +17,10 @@ namespace ramses_internal
 
     namespace SceneResourceUtils
     {
-        void GetAllSceneResourcesFromScene(SceneResourceActionVector& actions, const IScene& scene);
+        void GetAllSceneResourcesFromScene(SceneResourceActionVector& actions, const IScene& scene, size_t& usedDataByteSize);
         void GetAllClientResourcesFromScene(ResourceContentHashVector& resources, const IScene& scene);
 
-        void GetSceneResourceChangesFromScene(SceneResourceChanges& changes, const IScene& scene);
+        void GetSceneResourceChangesFromScene(SceneResourceChanges& changes, const IScene& scene, size_t& sceneResourcesUsedDataByteSize);
     }
 }
 

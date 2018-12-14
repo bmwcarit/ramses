@@ -14,14 +14,23 @@
 
 namespace ramses_internal
 {
-    class PlatformTime
+    namespace PlatformTime
     {
-    public:
-        static UInt64 GetMillisecondsAbsolute();
-        static UInt64 GetMicrosecondsAbsolute();
+        UInt64 GetMillisecondsAbsolute();
+        UInt64 GetMicrosecondsAbsolute();
 
-        static UInt64 GetMillisecondsMonotonic();
-        static UInt64 GetMicrosecondsMonotonic();
+        UInt64 GetMillisecondsMonotonic();
+        UInt64 GetMicrosecondsMonotonic();
+
+        // Due to std::chrono not having overflow protection it is very prone to issues
+        // whenever using min/max from chrono because these are likely to overflow when
+        // cast to higher precision duration types. And type safe casting is typically why chrono is used
+        // in first place.
+        // Use this constant instead of using chrono max unless you know what you are doing.
+        const constexpr std::chrono::hours InfiniteDuration{ 10u * 365u * 24u }; // 10 years duration
+
+        static_assert(InfiniteDuration.count() == std::chrono::duration_cast<std::chrono::hours>(std::chrono::duration_cast<std::chrono::nanoseconds>(InfiniteDuration)).count(),
+            "InfiniteDuration constant overflows if represented in std::chrono::nanoseconds");
     };
 
     inline UInt64 PlatformTime::GetMillisecondsAbsolute()

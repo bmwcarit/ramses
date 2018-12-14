@@ -43,7 +43,7 @@ class RemoteCoreImpl(CoreImpl):
     def _add_arguments(self, parser, transferGroup, targetsGroup):
         parser.add_argument("basePath", help =  "Path where .tar.gz package files can be found and where test results "
                                                 "should be stored")
-        transferGroup.add_argument("--package", nargs=3, metavar=('ramsesVersion', 'gitCommitCount', 'gitCommitHash'), help="for package download")
+        transferGroup.add_argument("--package", nargs=3, metavar=('ramsesVersion', 'gitCommitCount', 'gitCommitHash'), help="for package download. wildcards can be used, first found result will be taken")
         transferGroup.add_argument("--noTransfer", action="store_true", default=False, help="do not transfer binaries (for debugging)")
         parser.add_argument("--filter", help="test filter")
         targetsGroup.add_argument("--targets", default=None, help="target filter")
@@ -101,7 +101,9 @@ class RemoteCoreImpl(CoreImpl):
         log.info("turning on all power outlets...")
         for target in itertools.chain(self.bridgeTargets.itervalues(), self.targets.itervalues()):
             if target.powerDevice is not None:
-                target.powerDevice.switch(target.powerOutletNr, True)
+                if not target.powerDevice.switch(target.powerOutletNr, True):
+                    log.info("Could not turn on power outlet for target {0} because the power outlet is not available".format(target.name))
+                    return False
 
         if self.downloadFromCICache:
             for target in self.targets.itervalues():

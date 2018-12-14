@@ -164,6 +164,7 @@ namespace ramses
         {
             // try from user first, fall back to random if still invalid
             myGuid = config.impl.getUserProvidedGuid();
+
             // make sure generated ids do not start with all zeros to avoid collisions with explicit guids
             while (myGuid.isInvalid() || myGuid.getGuidData().Data1 == 0)
             {

@@ -23,28 +23,3 @@ class Linux_X11(RemoteTarget):
 
     def _shutdown(self):
         self.execute_on_target("sudo shutdown -h 0", False)
-
-
-class Linux_X11_SeparateXServer(Linux_X11):
-
-    def setup(self, transfer_binaries=True):
-        # base implementation that includes setup of connection and transfer of binaries
-        baseSetupSuccessful = Linux_X11.setup(self, transfer_binaries)
-        if not baseSetupSuccessful:
-            return False
-
-        #check if second X-Server is already running (first X-Server might be blocked by login screen)
-        _, _, returnCode =  self.execute_on_target("test -e /tmp/.X1-lock")
-        #start is if not already running
-        if returnCode != 0:
-            print("starting x server")
-            time.sleep(5)
-            self.execute_on_target("startx", block=False)
-            time.sleep(5)
-
-        self.defaultEnvironment["DISPLAY"] = ":1"
-
-        return True
-
-    def _shutdown(self):
-        self.execute_on_target("sudo shutdown -h 0", False)

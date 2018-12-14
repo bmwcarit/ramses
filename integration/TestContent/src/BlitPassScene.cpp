@@ -9,7 +9,6 @@
 #include "TestScenes/BlitPassScene.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/PerspectiveCamera.h"
-#include "ramses-client-api/TransformationNode.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
@@ -105,7 +104,7 @@ namespace ramses_internal
     {
         ramses::MeshNode& meshNode = createMesh(getEffectRenderOneBuffer());
 
-        ramses::TransformationNode& transNode = *m_scene.createTransformationNode();
+        ramses::Node& transNode = *m_scene.createNode();
         transNode.addChild(meshNode);
         transNode.translate(0.0f, -0.5f, -5.0f);
 
@@ -176,7 +175,7 @@ namespace ramses_internal
 
         ramses::MeshNode& meshNode = createMesh(getEffectRenderOneBuffer());
 
-        ramses::TransformationNode& transNode = *m_scene.createTransformationNode();
+        ramses::Node& transNode = *m_scene.createNode();
         transNode.addChild(meshNode);
         if (BLITS_DEPTH_BUFFER == state ||
             BLITS_DEPTH_STENCIL_BUFFER == state)
@@ -197,7 +196,7 @@ namespace ramses_internal
             ramses::MeshNode& meshNode2 = createMesh(getEffectRenderOneBuffer(), ramses::TriangleAppearance::EColor_Green);
             meshNode2.getAppearance()->setStencilFunction(ramses::EStencilFunc_NotEqual, 0u, 0xff);
 
-            ramses::TransformationNode& transNode2 = *m_scene.createTransformationNode();
+            ramses::Node& transNode2 = *m_scene.createNode();
             transNode2.addChild(meshNode2);
             transNode2.translate(0.0f, -0.8f, -4.9f);
 

@@ -23,7 +23,7 @@ class AWindowedRenderer : public ::testing::Test
 {
 public:
     AWindowedRenderer()
-        : m_renderer(m_commandBuffer, m_sceneGraphConsumerComponent, m_platformFactoryMock)
+        : m_renderer(m_commandBuffer, m_sceneGraphConsumerComponent, m_platformFactoryMock, m_rendererStatistics)
     {
         ON_CALL(m_platformFactoryMock.renderBackendMock.surfaceMock, canRenderNewFrame()).WillByDefault(Return(true));
     }
@@ -75,6 +75,7 @@ protected:
     NiceMock<ResourceProviderMock> m_resourceProvider;
     NiceMock<ResourceUploaderMock> m_resourceUploader;
     RendererCommandBuffer m_commandBuffer;
+    RendererStatistics m_rendererStatistics;
     WindowedRenderer m_renderer;
 };
 

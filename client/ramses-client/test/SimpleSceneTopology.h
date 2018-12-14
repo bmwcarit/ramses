@@ -15,8 +15,6 @@
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/Node.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/GroupNode.h"
-#include "ramses-client-api/VisibilityNode.h"
 
 #include "MeshNodeImpl.h"
 
@@ -36,9 +34,9 @@ namespace ramses
         */
 
         SimpleSceneTopology()
-            : m_root(*m_scene.createGroupNode("root"))
-            , m_vis1(*m_scene.createVisibilityNode("vis1"))
-            , m_vis2(*m_scene.createVisibilityNode("vis2"))
+            : m_root(*m_scene.createNode("root"))
+            , m_vis1(*m_scene.createNode("vis1"))
+            , m_vis2(*m_scene.createNode("vis2"))
             , m_mesh1a(*m_scene.createMeshNode("mesh1a"))
             , m_mesh1b(*m_scene.createMeshNode("mesh1b"))
             , m_mesh2a(*m_scene.createMeshNode("mesh2a"))
@@ -59,9 +57,9 @@ namespace ramses
 
         }
 
-        GroupNode& m_root;
-        VisibilityNode& m_vis1;
-        VisibilityNode& m_vis2;
+        Node& m_root;
+        Node& m_vis1;
+        Node& m_vis2;
         MeshNode& m_mesh1a;
         MeshNode& m_mesh1b;
         MeshNode& m_mesh2a;

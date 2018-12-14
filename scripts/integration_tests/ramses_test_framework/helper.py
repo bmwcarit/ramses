@@ -11,6 +11,7 @@ import os
 from PIL import Image
 from urllib2 import urlopen, HTTPError
 import re
+import codecs
 
 from ramses_test_framework import image_utils
 from ramses_test_framework import log
@@ -61,7 +62,7 @@ def save_text_file(filePath, content):
         fileDirectory = os.path.dirname(filePath)
         if not os.path.exists(fileDirectory):
             os.makedirs(fileDirectory)
-        file = open(filePath, 'w')
+        file = codecs.open(filePath, 'w', encoding="utf-8", errors='ignore')
         file.write(content)
         file.close()
 

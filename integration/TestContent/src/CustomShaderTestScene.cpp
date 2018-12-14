@@ -13,7 +13,6 @@
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/AttributeInput.h"
@@ -30,7 +29,7 @@ namespace ramses_internal
         addMeshNodeToDefaultRenderGroup(*meshNode);
         meshNode->setAppearance(m_appearance);
 
-        ramses::TranslateNode* transNode = m_scene.createTranslateNode();
+        ramses::Node* transNode = m_scene.createNode();
         transNode->setTranslation(0.f, 0.f, -6.f);
         meshNode->setParent(*transNode);
 

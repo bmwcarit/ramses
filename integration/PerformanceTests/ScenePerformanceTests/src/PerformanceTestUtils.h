@@ -18,7 +18,6 @@ namespace ramses
     class Node;
     class Scene;
     class SceneObject;
-    class TransformationNode;
 }
 
 class PerformanceTestUtils

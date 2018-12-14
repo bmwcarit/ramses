@@ -10,23 +10,6 @@ ADD_DEFINITIONS(-DRAMSES_LINK_SHARED_EXPORT)
 
 IF (NOT ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB)
 
-    #do not generate shared lib for integrity
-    # TODO Violin Try to remove platform list from thic list, is duplicate
-    SET(RENDERER_CONFIG_LIST
-        #    Platform
-
-        "x11-egl-es-3-0"
-
-        "wayland-ivi-egl-es-3-0"
-        "wayland-shell-egl-es-3-0"
-
-        "windows-wgl-es-3-0"
-        "windows-wgl-4-2-core"
-        "windows-wgl-4-5"
-
-        "android-egl-es-3-0"
-        )
-
     RENDERER_MODULE_PER_CONFIG_STATIC(ramses-shared-lib
         TYPE                    SHARED_LIBRARY
         ENABLE_INSTALL          ON

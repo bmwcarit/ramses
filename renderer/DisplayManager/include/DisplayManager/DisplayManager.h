@@ -110,7 +110,7 @@ namespace ramses_display_manager
         void goToTargetState(ramses::sceneId_t sceneId);
 
 
-        void handleShowCommand(ramses::sceneId_t sceneId, const MappingInfo& mappingInfo);
+        void handleShowCommand(ramses::sceneId_t sceneId, MappingInfo mappingInfo);
         void handleHideCommand(ramses::sceneId_t sceneId);
         void handleUnmapCommand(ramses::sceneId_t sceneId);
         void handleSubscribeCommand(ramses::sceneId_t sceneId);

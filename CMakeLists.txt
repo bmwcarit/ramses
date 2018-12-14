@@ -13,13 +13,13 @@ SET(ramses-sdk_ROOT_CMAKE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 include(cmake/ramses/setCmakePolicies.cmake NO_POLICY_SCOPE)  # we want to propagate policy settings out!
 include(cmake/ramses/platformDetection.cmake)
 include(cmake/ramses/platformConfig.cmake)
+include(cmake/ramses/tools.cmake)
 
 SET(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules
 )
 
-SET (ACME2_PROJECT_PLUGIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake/acme2_plugins)
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 
 INCLUDE(external/acme2/acme2.cmake)
@@ -72,7 +72,6 @@ SET(RAMSES_VERSION_MAJOR 0)
 SET(RAMSES_VERSION_MINOR 0)
 SET(RAMSES_VERSION_PATCH 0)
 SET(RAMSES_VERSION_POSTFIX "-devMaster")
-
 SET(RAMSES_VERSION "${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAMSES_VERSION_PATCH}${RAMSES_VERSION_POSTFIX}")
 IF (BUILD_ENV_VERSION_INFO_FULL)
     string(REPLACE "\\" "\\\\" BUILD_ENV_VERSION_INFO_FULL_ESCAPED ${BUILD_ENV_VERSION_INFO_FULL})
@@ -96,6 +95,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 set(CMAKE_DEBUG_POSTFIX "") # no debug suffix in this project
 
+set(ramses-sdk_CMAKE_CONFIG_INCLUDES_FOR_SHARED CACHE INTERNAL "")
+set(ramses-sdk_CMAKE_CONFIG_INCLUDES_FOR_STATIC CACHE INTERNAL "")
 set(ramses-shared-lib-MIXIN CACHE INTERNAL "")
 
 ACME2_PROJECT(
@@ -141,18 +142,14 @@ ACME2_PROJECT(
     CONTENT                     ON   external
                                 ON   framework
 
-                                ON   client/ramses-client-api
                                 ON   client/ramses-client
-                                ON   client/ramses-text-api
                                 ON   client/ramses-text
 
                                 ON   ramses-daemon
 
-                                ON   renderer/ramses-renderer-api
                                 ON   renderer/RendererLib
 
                                 # Auxilary platform components
-                                AUTO renderer/Platform/UnixUtilities
                                 AUTO renderer/Platform/WaylandUtilities
                                 AUTO renderer/Platform/SystemCompositorController_Wayland_IVI
 
@@ -240,44 +237,57 @@ ELSE()
     LIST(APPEND configmodules ramses-shared-lib)
 ENDIF()
 
-
 IF (ramses-sdk_INSTALL_STATIC_LIBS)
     LIST(APPEND configmodules ramses-static-lib)
 ENDIF()
 
+# optionally add config script for vtune
+if (ramses-sdk_BUILD_PERFORMANCE_PROFILER_SUPPORT MATCHES VTUNE)
+    list(APPEND ramses-sdk_CMAKE_CONFIG_INCLUDES_FOR_STATIC
+        "cmake/templates/vtune-static.cmake.in")
+endif()
 
 FOREACH(configmodule ${configmodules})
-
-    SET(configmodule-VERSION_DIR "${configmodule}-${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}")
-
     # install paths for find/config script must differ on windows and linux because of different search
     # rules used by find_package. See https://cmake.org/cmake/help/git-master/command/find_package.html
     # for details
+    SET(configmodule-VERSION_DIR "${configmodule}-${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}")
     IF (CMAKE_SYSTEM_NAME MATCHES "Windows")
         SET(ramses-sdk_FIND_SCRIPT_INSTALL_DIR "lib/${configmodule-VERSION_DIR}/cmake")
     ELSE()
         SET(ramses-sdk_FIND_SCRIPT_INSTALL_DIR "lib/cmake/${configmodule-VERSION_DIR}")
     ENDIF()
 
-    # preapare vtune profiler options to forward to config script
-    SET(ramses-sdk_VTUNE_LIBRARY_NAME "")
-    IF(configmodule MATCHES "static" AND ramses-sdk_BUILD_PERFORMANCE_PROFILER_SUPPORT MATCHES VTUNE)
-        FIND_PACKAGE(VTune QUIET)
-        IF (VTune_FOUND)
-            IF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-                SET(ramses-sdk_VTUNE_LIBRARY_NAME "libittnotify.a")
-            ELSEIF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-                SET(ramses-sdk_VTUNE_LIBRARY_NAME "libittnotify")
-            ENDIF()
-        ENDIF()
-    ENDIF()
+    # generate and install helper files
+    if (configmodule MATCHES "ramses-shared")
+        set(ramses-sdk_CMAKE_CONFIG_INCLUDES_CURRENT ${ramses-sdk_CMAKE_CONFIG_INCLUDES_FOR_SHARED})
+    else()
+        set(ramses-sdk_CMAKE_CONFIG_INCLUDES_CURRENT ${ramses-sdk_CMAKE_CONFIG_INCLUDES_FOR_STATIC})
+    endif()
+
+    foreach(optionalmodule IN LISTS ramses-sdk_CMAKE_CONFIG_INCLUDES_CURRENT)
+        get_filename_component(fname "${optionalmodule}" NAME_WE)
+        set(fname "${fname}.cmake")
+        CONFIGURE_PACKAGE_CONFIG_FILE(
+            "${optionalmodule}"
+            "${CMAKE_CURRENT_BINARY_DIR}/cmake-config-${configmodule}/ramses-optional-${fname}"
+            INSTALL_DESTINATION "${ramses-sdk_FIND_SCRIPT_INSTALL_DIR}"
+            PATH_VARS PROJECT_INSTALL_HEADER PROJECT_INSTALL_STATIC_LIB PROJECT_INSTALL_SHARED_LIB
+            NO_SET_AND_CHECK_MACRO
+            NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+        INSTALL(
+            FILES       ${CMAKE_CURRENT_BINARY_DIR}/cmake-config-${configmodule}/ramses-optional-${fname}
+            DESTINATION ${ramses-sdk_FIND_SCRIPT_INSTALL_DIR}
+            )
+        ACME_INFO("G ${fname} (${configmodule})")
+    endforeach()
 
     # generate CMake config file (use ${configmodule}Template.cmake.in as base)
     CONFIGURE_PACKAGE_CONFIG_FILE(
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/templates/${configmodule}Template.cmake.in"
         "${CMAKE_CURRENT_BINARY_DIR}/${configmodule}Config.cmake"
         INSTALL_DESTINATION "${ramses-sdk_FIND_SCRIPT_INSTALL_DIR}"
-        PATH_VARS PROJECT_INSTALL_HEADER PROJECT_INSTALL_STATIC_LIB PROJECT_INSTALL_SHARED_LIB ramses-sdk_VTUNE_LIBRARY_NAME
+        PATH_VARS PROJECT_INSTALL_HEADER PROJECT_INSTALL_STATIC_LIB PROJECT_INSTALL_SHARED_LIB
         NO_SET_AND_CHECK_MACRO
         NO_CHECK_REQUIRED_COMPONENTS_MACRO
     )

@@ -26,7 +26,7 @@ namespace ramses
     status_t SplineBezierInt32::setKey(splineTimeStamp_t timeStamp, int32_t value, float tangentIn_x, float tangentIn_y, float tangentOut_x, float tangentOut_y)
     {
         const status_t status = impl.setSplineKeyBezierInt32(timeStamp, value, tangentIn_x, tangentIn_y, tangentOut_x, tangentOut_y);
-        LOG_HL_CLIENT_API6(status, timeStamp, value, tangentIn_x, tangentIn_y, tangentOut_x, tangentOut_y)
+        LOG_HL_CLIENT_API6(status, timeStamp, value, tangentIn_x, tangentIn_y, tangentOut_x, tangentOut_y);
         return status;
     }
 

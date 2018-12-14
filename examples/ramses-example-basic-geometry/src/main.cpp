@@ -26,10 +26,8 @@ int main(int argc, char* argv[])
     ramses::Scene* scene = ramses.createScene(123u, ramses::SceneConfig(), "basic geometry scene");
 
     // every scene needs a render pass with camera
-    ramses::TranslateNode* cameraTranslate = scene->createTranslateNode();
-    cameraTranslate->setTranslation(0.0f, 0.0f, 5.0f);
     ramses::Camera* camera = scene->createRemoteCamera("my camera");
-    camera->setParent(*cameraTranslate);
+    camera->setTranslation(0.0f, 0.0f, 5.0f);
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);

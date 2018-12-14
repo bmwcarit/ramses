@@ -7,6 +7,10 @@
 //  -------------------------------------------------------------------------
 
 #include "Utils/VoidOutputStream.h"
+#include "SceneAPI/ResourceContentHash.h"
+#include "Math3d/Matrix44f.h"
+#include "Collections/String.h"
+#include "Collections/Guid.h"
 #include "gmock/gmock.h"
 
 namespace ramses_internal
@@ -88,14 +92,6 @@ namespace ramses_internal
         EXPECT_EQ( expectedSize,  stream.getSize());
     }
 
-    TEST_F(VoidOutputStreamTest, InsertCString)
-    {
-        const String value("Hello World with a lot of characters");
-        const UInt32 expectedSize = sizeof(UInt32) + static_cast<UInt32>(value.getLength()); // length info + string
-        stream << value.c_str();
-        EXPECT_EQ( expectedSize,  stream.getSize());
-    }
-
     TEST_F(VoidOutputStreamTest, InsertMatrix44f)
     {
         const Matrix44f value;
@@ -121,7 +117,7 @@ namespace ramses_internal
     TEST_F(VoidOutputStreamTest, InsertMultipleData)
     {
         const UInt64 intValue   = 42u;
-        const char*  testString = "abcdefgh";
+        const String testString = "abcdefgh";
         const Float  floatValue = 22.22f;
         const UInt32 expectedSize = sizeof(UInt64) + sizeof(UInt32) + 8 + sizeof(Float);
         stream << intValue << testString << floatValue;

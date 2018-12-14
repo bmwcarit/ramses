@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 
     // every render pass needs a camera to define rendering parameters
     // usage of a custom perspective camera for the render pass assigned to the render target
-    ramses::TranslateNode* cameraTranslate = scene->createTranslateNode();
+    ramses::Node* cameraTranslate = scene->createNode();
     cameraTranslate->setTranslation(0.0f, 0.0f, 5.0f);
     ramses::PerspectiveCamera* cameraA = scene->createPerspectiveCamera("camera of renderpass A");
     cameraA->setParent(*cameraTranslate);

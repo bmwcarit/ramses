@@ -31,8 +31,6 @@ namespace ramses_internal
         m_testString = "Dies ist ein Text";
 
         outputStream << 10 << 20.0f << m_testString;
-        outputStream.flush();
-        m_file.close();
     }
 
     BinaryFileOutputStreamTest::~BinaryFileOutputStreamTest()

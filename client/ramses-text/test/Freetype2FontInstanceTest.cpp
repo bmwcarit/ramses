@@ -55,11 +55,8 @@ namespace ramses
         static FontRegistry*  FRegistry;
         static FontInstanceId FontInstanceId4;
         static FontInstanceId FontInstanceId10;
-        static FontInstanceId FontInstanceArabicId;
-        // intentionally use base pointer
         static Freetype2FontInstance* FontInstance4;
         static Freetype2FontInstance* FontInstance10;
-        static IFontInstance*         FontInstanceArabic;
     };
 
     FontRegistry*          AFreetype2FontInstance::FRegistry(nullptr);
@@ -167,6 +164,33 @@ namespace ramses
         ASSERT_EQ(16u, bitmapData.size());
         for (size_t i = 0; i < bitmapData.size(); ++i)
             EXPECT_EQ(expect[i], bitmapData[i]);
+    }
+
+    TEST_F(AFreetype2FontInstance, ReportsSupportedCharCodes)
+    {
+        const std::u32string str1 = U" 123 ._! ";
+        for (auto c : str1)
+            EXPECT_TRUE(FontInstance4->supportsCharacter(c));
+
+        const std::u32string str2 = U" abc ";
+        for (auto c : str2)
+            EXPECT_TRUE(FontInstance10->supportsCharacter(c));
+    }
+
+    TEST_F(AFreetype2FontInstance, ReportsSupportedCharCodesAfterAlreadyLoadedTheirMetrics)
+    {
+        const std::u32string str1 = U" 123 ._! ";
+        const std::u32string str2 = U" abc ";
+        const GlyphMetricsVector positionedGlyphs1 = getPositionedGlyphs(str1, *FontInstance4);
+        const GlyphMetricsVector positionedGlyphs2 = getPositionedGlyphs(str2, *FontInstance10);
+        EXPECT_FALSE(positionedGlyphs1.empty());
+        EXPECT_FALSE(positionedGlyphs2.empty());
+
+        for (auto c : str1)
+            EXPECT_TRUE(FontInstance4->supportsCharacter(c));
+
+        for (auto c : str2)
+            EXPECT_TRUE(FontInstance10->supportsCharacter(c));
     }
 
     TEST_F(AFreetype2FontInstance, ReportsUnsupportedCharCode)

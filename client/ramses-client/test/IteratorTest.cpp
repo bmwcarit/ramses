@@ -10,7 +10,6 @@
 #include <gtest/gtest.h>
 #include "ClientTestUtils.h"
 
-#include "ramses-client-api/GroupNode.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/MeshNode.h"
 
@@ -24,10 +23,10 @@ namespace ramses
     public:
         IteratorTest() : LocalTestClientWithScene()
         {
-            obj1 = &this->createObject<GroupNode>("object1");
+            obj1 = &this->createObject<Node>("object1");
             obj2 = &this->createObject<Appearance>("object2");
             obj3 = &this->createObject<MeshNode>("object3");
-            obj4 = &this->createObject<GroupNode>("object4");
+            obj4 = &this->createObject<Node>("object4");
             obj5 = &this->createObject<Appearance>("object5");
             obj6 = &this->createObject<MeshNode>("object6");
 

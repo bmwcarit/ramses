@@ -53,8 +53,8 @@ public:
     void waitForUnmapped    (ramses::sceneId_t sceneId);
     void waitForNamedFlush  (ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersionTag);
     bool waitForStreamSurfaceAvailabilityChange(ramses::streamSource_t streamSource, bool available);
-    bool consumeEventsAndCheckScenesLatencyExceeded(std::initializer_list<ramses::sceneId_t> sceneIds);
-    bool consumeEventsAndCheckScenesLatencyRecovered(std::initializer_list<ramses::sceneId_t> sceneIds);
+    bool consumeEventsAndCheckExpiredScenes(std::initializer_list<ramses::sceneId_t> sceneIds);
+    bool consumeEventsAndCheckRecoveredScenes(std::initializer_list<ramses::sceneId_t> sceneIds);
     void dispatchRendererEvents(ramses::IRendererEventHandler& eventHandler);
 
     void setLoopMode(ramses::ELoopMode loopMode);

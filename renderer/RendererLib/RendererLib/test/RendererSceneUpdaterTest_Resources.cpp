@@ -1991,7 +1991,7 @@ TEST_F(ARendererSceneUpdater, willMapSceneAfterMaximumNumberOfPendingFlushesReac
     expectResourceRequestCancel(InvalidResource1);
 
     EXPECT_CALL(resourceProvider1, requestResourceAsyncronouslyFromFramework(_, _, getSceneId())).Times(AnyNumber());
-    for (UInt i = 0u; i < RendererSceneUpdater::MaximumPendingFlushes + 1u; ++i)
+    for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
     {
         performFlush(0u, true);
         update();
@@ -2017,7 +2017,7 @@ TEST_F(ARendererSceneUpdater, willMapSceneAfterMaximumNumberOfPendingFlushesReac
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, willApplyPendingFlushesAfterMaximumNumberOfPendingFlushesReachedWhenMappedOrRendered)
+TEST_F(ARendererSceneUpdater, forceAppliesPendingFlushesAfterMaximumNumberReachedWhenSceneMappedOrRendered)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
@@ -2054,7 +2054,7 @@ TEST_F(ARendererSceneUpdater, willApplyPendingFlushesAfterMaximumNumberOfPending
         expectContextEnable();
         expectRenderTargetUploaded();
         EXPECT_CALL(resourceProvider1, requestResourceAsyncronouslyFromFramework(_, _, getSceneId())).Times(AnyNumber());
-        for (UInt i = 0u; i < RendererSceneUpdater::MaximumPendingFlushes + 1u; ++i)
+        for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
         {
             performFlush(0u, true);
             update();
@@ -2078,7 +2078,7 @@ TEST_F(ARendererSceneUpdater, willApplyPendingFlushesAfterMaximumNumberOfPending
         update();
         expectNoEvent();
 
-        for (UInt i = 0u; i < RendererSceneUpdater::MaximumPendingFlushes + 1u; ++i)
+        for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
         {
             performFlush(0u, true);
             update();
@@ -2086,6 +2086,101 @@ TEST_F(ARendererSceneUpdater, willApplyPendingFlushesAfterMaximumNumberOfPending
 
         // after maximum of pending flushes was reached the flushes were applied regardless of missing resource
         expectEvent(ERendererEventType_SceneFlushed);
+    }
+
+    hideScene();
+    expectContextEnable();
+    expectRenderableResourcesDeleted();
+    expectRenderTargetDeleted();
+    unmapScene();
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, reactsOnDynamicChangesOfFlushForceApplyLimit)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+
+    createRenderable();
+    setRenderableResources();
+
+    requestMapScene();
+    EXPECT_EQ(ESceneState_MapRequested, sceneStateExecutor.getSceneState(getSceneId()));
+    update();
+    EXPECT_EQ(ESceneState_MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
+
+    expectResourceRequest();
+    expectContextEnable();
+    expectRenderableResourcesUploaded();
+    update();
+    EXPECT_EQ(ESceneState_Mapped, sceneStateExecutor.getSceneState(getSceneId()));
+    expectEvent(ERendererEventType_SceneMapped);
+
+    // add blocking sync flush so that upcoming flushes are queuing up
+    setRenderableResources(0u, InvalidResource1, true);
+    createRenderTargetWithBuffers();
+    expectResourceRequest();
+    update();
+
+    // Reduce flush limit -> expect force flush earlier
+    constexpr UInt newShorterFlushLimit = ForceApplyFlushesLimit / 2u;
+    rendererSceneUpdater->setLimitFlushesForceApply(newShorterFlushLimit);
+
+    // mapped state
+    {
+        // flushes are blocked due to unresolved resource
+        const SceneVersionTag pendingFlushTag(123u);
+        performFlush(0u, true, pendingFlushTag);
+        update();
+        expectNoEvent();
+
+        expectContextEnable();
+        expectRenderTargetUploaded();
+
+        EXPECT_CALL(resourceProvider1, requestResourceAsyncronouslyFromFramework(_, _, getSceneId())).Times(AnyNumber());
+        for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
+        {
+            performFlush(0u, true);
+            update();
+            if (i == newShorterFlushLimit - 1)
+            {
+                // after newly set maximum of pending flushes was reached the flushes were applied regardless of missing resource
+                expectEvent(ERendererEventType_SceneFlushed);
+            }
+        }
+
+        // Remaining flushes still blocked, because resource still missing
+        expectNoEvent();
+    }
+
+    showScene();
+
+    // rendered state
+    {
+        // add blocking sync flush so that upcoming flushes are queuing up
+        setRenderableResources(0u, InvalidResource2, true);
+        expectResourceRequestCancel(InvalidResource1);
+
+        // flushes are blocked due to unresolved resource
+        const SceneVersionTag pendingFlushTag(124u);
+        performFlush(0u, true, pendingFlushTag);
+        update();
+        expectNoEvent();
+
+        for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
+        {
+            performFlush(0u, true);
+            update();
+            if (i == newShorterFlushLimit - 1)
+            {
+                // after newly set maximum of pending flushes was reached the flushes were applied regardless of missing resource
+                expectEvent(ERendererEventType_SceneFlushed);
+            }
+        }
+
+        // Remaining flushes still blocked, because resource still missing
+        expectNoEvent();
     }
 
     hideScene();
@@ -2131,7 +2226,7 @@ TEST_F(ARendererSceneUpdater, applyingPendingFlushesAfterMaximumNumberOfPendingF
         update();
         expectNoEvent();
 
-        for (UInt i = 0u; i < RendererSceneUpdater::MaximumPendingFlushes + 1u; ++i)
+        for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
         {
             performFlush(1u, true);
             update();
@@ -2147,7 +2242,7 @@ TEST_F(ARendererSceneUpdater, applyingPendingFlushesAfterMaximumNumberOfPendingF
         EXPECT_EQ(pendingFlushTag1, events.front().sceneVersionTag);
 
         // repeat for scene 0
-        for (UInt i = 0u; i < RendererSceneUpdater::MaximumPendingFlushes + 1u; ++i)
+        for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
         {
             performFlush(0u, true);
             update();
@@ -2169,6 +2264,181 @@ TEST_F(ARendererSceneUpdater, applyingPendingFlushesAfterMaximumNumberOfPendingF
     expectRenderableResourcesDeleted();
     unmapScene(0u);
     unmapScene(1u);
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, forceUnsubscribesSceneIfItHasTooManyPendingFlushesDueToNoTimeToApplyThem_Subscribed)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    createPublishAndSubscribeScene(); // create second scene to enable partial scene actions applying
+
+    // give no time budget to apply flushes
+    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
+
+    // first flush is named
+    const SceneVersionTag pendingFlushTag(123u);
+    performFlush(0u, true, pendingFlushTag);
+
+    ASSERT_TRUE(ForceApplyFlushesLimit < ForceUnsubscribeFlushLimit); // adjust test logic!
+    for (UInt i = 0u; i < ForceUnsubscribeFlushLimit - 2u; ++i)
+    {
+        performFlush(0u, true);
+        update();
+    }
+
+    // even though flushes were 'force applied' at least once, no flush was actually applied due to no time left for scene actions applying
+    expectNoEvent();
+
+    // expect scene unsubscribe, explained below
+    EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(_, _));
+
+    // 1 more flush to trigger limit
+    performFlush(0u, true);
+    update();
+    // at this point maximum number of pending flushes reached to 'kill' the scene,
+    // we give up on trying to apply flushes, scene is unsubscribed to prevent more harm
+    expectEvent(ERendererEventType_SceneUnsubscribedIndirect);
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, forceUnsubscribesSceneIfItHasTooManyPendingFlushesDueToNoTimeToApplyThem_Mapped)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    createPublishAndSubscribeScene(); // create second scene to enable partial scene actions applying
+
+    createRenderable();
+    setRenderableResources();
+
+    requestMapScene();
+    EXPECT_EQ(ESceneState_MapRequested, sceneStateExecutor.getSceneState(getSceneId()));
+    update();
+    EXPECT_EQ(ESceneState_MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
+
+    expectResourceRequest();
+    expectContextEnable();
+    expectRenderableResourcesUploaded();
+    update();
+    EXPECT_EQ(ESceneState_Mapped, sceneStateExecutor.getSceneState(getSceneId()));
+    expectEvent(ERendererEventType_SceneMapped);
+
+    // add blocking sync flush so that upcoming flushes are queuing up
+    setRenderableResources(0u, InvalidResource1, true);
+    createRenderTargetWithBuffers();
+    expectResourceRequest();
+    update();
+
+    // flushes are blocked due to unresolved resource
+    const SceneVersionTag pendingFlushTag(123u);
+    performFlush(0u, true, pendingFlushTag);
+    update();
+    expectNoEvent();
+
+    EXPECT_CALL(resourceProvider1, requestResourceAsyncronouslyFromFramework(_, _, getSceneId())).Times(AnyNumber());
+
+    // give no time budget to apply flushes
+    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
+
+    ASSERT_TRUE(ForceApplyFlushesLimit < ForceUnsubscribeFlushLimit); // Fix test logic
+
+    // -3 because there are some hidden flushes in the test methods above
+    for (UInt i = 0u; i < ForceUnsubscribeFlushLimit - 3u; ++i)
+    {
+        performFlush(0u, true);
+        update();
+    }
+
+    // even though flushes were 'force applied' at least once, no flush was actually applied due to no time left for scene actions applying
+    expectNoEvent();
+
+    // expect scene unsubscribe, explained below
+    expectContextEnable();
+    expectResourceRequestCancel(InvalidResource1);
+    expectRenderableResourcesDeleted();
+    EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(_, _));
+
+    // 1 more flush to trigger limit
+    performFlush(0u, true);
+    update();
+    // at this point maximum number of pending flushes reached to 'kill' the scene,
+    // we give up on trying to apply flushes, scene is unsubscribed to prevent more harm
+    expectEvents({ ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect });
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, reactsToChangesToForceUnsubscribeFlushLimit)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    createPublishAndSubscribeScene(); // create second scene to enable partial scene actions applying
+
+    createRenderable();
+    setRenderableResources();
+
+    requestMapScene();
+    EXPECT_EQ(ESceneState_MapRequested, sceneStateExecutor.getSceneState(getSceneId()));
+    update();
+    EXPECT_EQ(ESceneState_MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
+
+    expectResourceRequest();
+    expectContextEnable();
+    expectRenderableResourcesUploaded();
+    update();
+    EXPECT_EQ(ESceneState_Mapped, sceneStateExecutor.getSceneState(getSceneId()));
+    expectEvent(ERendererEventType_SceneMapped);
+
+    // add blocking sync flush so that upcoming flushes are queuing up
+    setRenderableResources(0u, InvalidResource1, true);
+    createRenderTargetWithBuffers();
+    expectResourceRequest();
+    update();
+
+    // flushes are blocked due to unresolved resource
+    const SceneVersionTag pendingFlushTag(123u);
+    performFlush(0u, true, pendingFlushTag);
+    update();
+    expectNoEvent();
+
+    EXPECT_CALL(resourceProvider1, requestResourceAsyncronouslyFromFramework(_, _, getSceneId())).Times(AnyNumber());
+
+    // give no time budget to apply flushes
+    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
+
+    // Reduce flush limit -> scene will be thrown out earlier
+    constexpr UInt newShorterForceUnsubscribeLimit = ForceUnsubscribeFlushLimit / 2u;
+
+    ASSERT_TRUE(ForceApplyFlushesLimit < ForceUnsubscribeFlushLimit); // Fix test logic
+    // -3 because there are some hidden flushes in the test methods above
+    for (UInt i = 0u; i < newShorterForceUnsubscribeLimit - 3u; ++i)
+    {
+        performFlush(0u, true);
+        update();
+    }
+
+    // even though flushes were 'force applied' at least once, no flush was actually applied due to no time left for scene actions applying
+    expectNoEvent();
+
+    rendererSceneUpdater->setLimitFlushesForceUnsubscribe(newShorterForceUnsubscribeLimit);
+
+    // still no event, need one more flush to trigger unsubscribe
+    expectNoEvent();
+
+    // expect scene unsubscribe, explained below
+    expectContextEnable();
+    expectResourceRequestCancel(InvalidResource1);
+    expectRenderableResourcesDeleted();
+    EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(_, _));
+
+    // 1 more flush to trigger limit
+    performFlush(0u, true);
+    update();
+    // at this point maximum number of pending flushes reached to 'kill' the scene,
+    // we give up on trying to apply flushes, scene is unsubscribed to prevent more harm
+    expectEvents({ ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect });
 
     destroyDisplay();
 }

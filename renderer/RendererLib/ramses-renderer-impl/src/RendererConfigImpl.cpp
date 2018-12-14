@@ -71,6 +71,17 @@ namespace ramses
         return m_internalConfig.getWaylandSocketEmbeddedFD();
     }
 
+    status_t RendererConfigImpl::setSystemCompositorWaylandDisplay(const char* waylandDisplay)
+    {
+        m_internalConfig.setWaylandDisplayForSystemCompositorController(waylandDisplay);
+        return StatusOK;
+    }
+
+    const char* RendererConfigImpl::getSystemCompositorWaylandDisplay() const
+    {
+        return m_internalConfig.getWaylandDisplayForSystemCompositorController().c_str();
+    }
+
     IBinaryShaderCache* RendererConfigImpl::getBinaryShaderCache() const
     {
         return m_binaryShaderCache;

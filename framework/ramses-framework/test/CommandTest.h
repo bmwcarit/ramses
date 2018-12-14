@@ -9,7 +9,7 @@
 #ifndef RAMSES_COMMANDTEST_H
 #define RAMSES_COMMANDTEST_H
 
-#include "Command.h"
+#include "CommandT.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 
 namespace ramses_internal

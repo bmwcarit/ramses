@@ -12,7 +12,6 @@
 #include "RendererAPI/IEmbeddedCompositor.h"
 #include "EmbeddedCompositor_Wayland/WaylandCompositorGlobal.h"
 #include "EmbeddedCompositor_Wayland/WaylandShellGlobal.h"
-#include "EmbeddedCompositor_Wayland/WaylandOutputGlobal.h"
 #include "EmbeddedCompositor_Wayland/WaylandDisplay.h"
 #include "EmbeddedCompositor_Wayland/WaylandIVIApplicationGlobal.h"
 #include "EmbeddedCompositor_Wayland/IEmbeddedCompositor_Wayland.h"
@@ -52,7 +51,6 @@ namespace ramses_internal
         virtual UInt32 getNumberOfCompositorConnections() const override;
         virtual Bool hasSurfaceForStreamTexture(StreamTextureSourceId streamTextureSourceId) const override;
         virtual String getTitleOfWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const override;
-        virtual void getOutputResolution(Int32& width, Int32& height) const override;
         virtual void logInfos(RendererLogContext& context) const override;
 
         virtual void addWaylandSurface(IWaylandSurface& waylandSurface) override;
@@ -92,7 +90,6 @@ namespace ramses_internal
         WaylandCompositorGlobal     m_compositorGlobal;
         WaylandShellGlobal          m_shellGlobal;
         WaylandIVIApplicationGlobal m_iviApplicationGlobal;
-        WaylandOutputGlobal         m_waylandOutputGlobal;
 
         typedef Vector<IWaylandSurface*> WaylandSurfaces;
         WaylandSurfaces m_surfaces;

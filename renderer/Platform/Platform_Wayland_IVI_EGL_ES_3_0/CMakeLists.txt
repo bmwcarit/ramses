@@ -53,11 +53,9 @@ ACME_MODULE(
     # TODO: Michael fix dependencies for these tests, e.g. WaylandEGLExtensionProcs.h
     DEPENDENCIES            EmbeddedCompositor_Wayland
                             RendererTestUtils
-                            # wayland-egl
-                            # EGL
-                            # Window_Wayland_IVI
+                            WaylandTestUtils
                             platform-wayland-ivi-egl-es-3-0
-                            UnixUtilities
+                            WaylandUtilities
 )
 
 IF (TARGET EmbeddedCompositor_Wayland_Test)
@@ -67,7 +65,7 @@ IF (TARGET EmbeddedCompositor_Wayland_Test)
 
     IF (${wayland-server_VERSION} VERSION_LESS "1.13.0")
         # This tests need wl_display_add_socket_fd(), which is available since version 1.13.0
-        SET(TEST_FILTER "${TEST_FILTER}:-AEmbeddedCompositor_Wayland.InitializeWorksWithSocketFDSet_ClientConnectionTest:AEmbeddedCompositor_Wayland.InitializeWorksWithSocketFDSetEvenWithoutXDGRuntimeDirNotSet_ClientConnectionTest:AWaylandBufferResource.CanGetSharedMemoryWidthHeightAndData:AWaylandCallbackResource.CanSendDone:AWaylandClient.CanPostNoMemory:AWaylandOutputResource.CanSendGeometry:AWaylandOutputResource.CanSendMode:AWaylandOutputResource.CanSendScale:AWaylandOutputResource.CanSendDone")
+        SET(TEST_FILTER "${TEST_FILTER}:-AEmbeddedCompositor_Wayland.InitializeWorksWithSocketFDSet_ClientConnectionTest:AEmbeddedCompositor_Wayland.InitializeWorksWithSocketFDSetEvenWithoutXDGRuntimeDirNotSet_ClientConnectionTest:AWaylandBufferResource.CanGetSharedMemoryWidthHeightAndData:AWaylandCallbackResource.CanSendDone:AWaylandClient.CanPostNoMemory")
     ENDIF()
 
     ACME_ADD_TEST(EmbeddedCompositor_Wayland_Test

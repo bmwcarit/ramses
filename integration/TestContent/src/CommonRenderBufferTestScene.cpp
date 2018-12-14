@@ -13,7 +13,6 @@
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
@@ -96,7 +95,7 @@ namespace ramses_internal
         meshNode->setAppearance(*appearance);
         meshNode->setGeometryBinding(*geometry);
 
-        ramses::TranslateNode* transNode = m_scene.createTranslateNode();
+        ramses::Node* transNode = m_scene.createNode();
         transNode->setTranslation(translation.x, translation.y, translation.z);
         meshNode->setParent(*transNode);
 

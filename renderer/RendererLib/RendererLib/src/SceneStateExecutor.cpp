@@ -22,10 +22,10 @@ namespace ramses_internal
     {
     }
 
-    void SceneStateExecutor::setPublished(SceneId sceneId, const Guid& clientWhereSceneIsAvailable)
+    void SceneStateExecutor::setPublished(SceneId sceneId, const Guid& clientWhereSceneIsAvailable, EScenePublicationMode mode)
     {
         assert(checkIfCanBePublished(sceneId));
-        m_scenesStateInfo.addScene(sceneId, clientWhereSceneIsAvailable);
+        m_scenesStateInfo.addScene(sceneId, clientWhereSceneIsAvailable, mode);
         m_rendererEventCollector.addEvent(ERendererEventType_ScenePublished, sceneId);
         LOG_INFO(CONTEXT_RENDERER, "Scene "<< sceneId.getValue() << " is in state PUBLISHED");
     }
@@ -184,6 +184,16 @@ namespace ramses_internal
         }
 
         return ESceneState_Unknown;
+    }
+
+    EScenePublicationMode SceneStateExecutor::getScenePublicationMode(SceneId sceneId) const
+    {
+        if (m_scenesStateInfo.hasScene(sceneId))
+        {
+            return m_scenesStateInfo.getScenePublicationMode(sceneId);
+        }
+
+        return EScenePublicationMode_Unpublished;
     }
 
     Bool SceneStateExecutor::checkIfCanBePublished(SceneId sceneId) const

@@ -10,7 +10,6 @@
 
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
-#include "ramses-client-api/TransformationNode.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/GeometryBinding.h"
@@ -19,8 +18,6 @@
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/OrthographicCamera.h"
-#include "ramses-client-api/TranslateNode.h"
-#include "ramses-client-api/ScaleNode.h"
 
 namespace ramses_internal
 {
@@ -90,7 +87,7 @@ namespace ramses_internal
 
     void TextureBufferScene::setOrthoCamera(const Vector3& cameraPosition)
     {
-        ramses::TranslateNode* cameraTranslate = m_scene.createTranslateNode();
+        ramses::Node* cameraTranslate = m_scene.createNode();
         cameraTranslate->setTranslation(cameraPosition.x, cameraPosition.y, cameraPosition.z);
         ramses::OrthographicCamera* orthoCamera(m_scene.createOrthographicCamera());
         orthoCamera->setFrustum(0.0f, 1.0f, 0.0f, 1.0f, 0.1f, 100.f);
@@ -229,7 +226,7 @@ namespace ramses_internal
 
         if (EState_RGBA8_OneMip_ScaledDown == state)
         {
-            ramses::ScaleNode* scale = m_scene.createScaleNode();
+            ramses::Node* scale = m_scene.createNode();
             scale->setScaling(0.2f, 0.2f, 0.2f);
             m_quadMesh.setParent(*scale);
         }

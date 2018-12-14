@@ -9,12 +9,13 @@
 #include "renderer_common_gmock_header.h"
 #include "RendererLib/ClientResourceUploadingManager.h"
 #include "RendererLib/RendererClientResourceRegistry.h"
+#include "RendererLib/FrameTimer.h"
+#include "RendererLib/RendererStatistics.h"
 #include "Resource/ArrayResource.h"
 #include "Resource/EffectResource.h"
 #include "ResourceProviderMock.h"
 #include "ResourceUploaderMock.h"
 #include "RenderBackendMock.h"
-#include "RendererLib/FrameTimer.h"
 #include "PlatformAbstraction/PlatformThread.h"
 
 namespace ramses_internal{
@@ -28,7 +29,7 @@ public:
         , dummyManagedResourceCallback(managedResourceDeleter)
         , sceneId(66u)
         , frameTimer()
-        , rendererResourceUploader(resourceRegistry, uploader, rendererBackend, keepEffects, frameTimer, clientResourceCacheSize)
+        , rendererResourceUploader(resourceRegistry, uploader, rendererBackend, keepEffects, frameTimer, stats, clientResourceCacheSize)
     {
     }
 
@@ -114,6 +115,7 @@ protected:
     const SceneId sceneId;
 
     FrameTimer frameTimer;
+    RendererStatistics stats;
     ClientResourceUploadingManager rendererResourceUploader;
 };
 

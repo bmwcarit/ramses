@@ -21,7 +21,7 @@
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/DisplayEventHandlerManager.h"
 #include "RendererLib/FrameTimer.h"
-#include "RendererLib/LatencyMonitor.h"
+#include "RendererLib/SceneExpirationMonitor.h"
 #include "RendererEventCollector.h"
 #include "ComponentMocks.h"
 #include "RendererSceneUpdaterMock.h"
@@ -37,12 +37,13 @@ class ARendererCommandExecutor : public ::testing::TestWithParam<bool>
 public:
     ARendererCommandExecutor()
         : m_platformFactoryMock(GetParam())
-        , m_latencyMonitor(m_rendererEventCollector)
         , m_rendererScenes(m_rendererEventCollector)
-        , m_renderer(m_platformFactoryMock, m_rendererScenes, m_rendererEventCollector, m_latencyMonitor)
+        , m_expirationMonitor(m_rendererScenes, m_rendererEventCollector)
+        , m_renderer(m_platformFactoryMock, m_rendererScenes, m_rendererEventCollector, m_expirationMonitor, m_rendererStatistics)
         , m_sceneStateExecutor(m_renderer, m_sceneGraphConsumerComponent, m_rendererEventCollector)
-        , m_sceneUpdater(m_renderer, m_rendererScenes, m_sceneStateExecutor, m_rendererEventCollector, m_frameTimer, m_latencyMonitor)
+        , m_sceneUpdater(m_renderer, m_rendererScenes, m_sceneStateExecutor, m_rendererEventCollector, m_frameTimer, m_expirationMonitor)
         , m_commandExecutor(m_renderer, m_commandBuffer, m_sceneUpdater, m_rendererEventCollector, m_frameTimer)
+        , m_resourceUploader(m_renderer.getStatistics())
         , m_renderable(1u)
         , m_filename1("somefilename1")
         , m_filename2("somefilename2")
@@ -121,7 +122,7 @@ public:
     void createScene(SceneId sceneId)
     {
         const Guid clientID(true);
-        m_commandBuffer.publishScene(sceneId, clientID);
+        m_commandBuffer.publishScene(sceneId, clientID, EScenePublicationMode_LocalAndRemote);
         m_commandBuffer.subscribeScene(sceneId);
         m_commandBuffer.receiveScene(SceneInfo(sceneId));
 
@@ -261,8 +262,9 @@ public:
 protected:
     StrictMock<PlatformFactoryStrictMock>         m_platformFactoryMock;
     RendererEventCollector                        m_rendererEventCollector;
-    LatencyMonitor                                m_latencyMonitor;
     RendererScenes                                m_rendererScenes;
+    SceneExpirationMonitor                        m_expirationMonitor;
+    RendererStatistics                            m_rendererStatistics;
     StrictMock<RendererMockWithStrictMockDisplay> m_renderer;
     StrictMock<SceneGraphConsumerComponentMock>   m_sceneGraphConsumerComponent;
     RendererCommandBuffer                         m_commandBuffer;
@@ -848,7 +850,7 @@ TEST_P(ARendererCommandExecutor, executionClearsSceneActionsRegardlessOfStateOfT
     const SceneId sceneNotSubscribedId(8u);
 
     createScene(sceneSubscribedId);
-    m_commandBuffer.publishScene(sceneNotSubscribedId, Guid(true));
+    m_commandBuffer.publishScene(sceneNotSubscribedId, Guid(true), EScenePublicationMode_LocalAndRemote);
     doCommandExecutorLoop();
 
     // add actions for both scenes
@@ -993,15 +995,15 @@ TEST_P(ARendererCommandExecutor, setClearColor)
 TEST_P(ARendererCommandExecutor, setFrameTimerLimits)
 {
     //default values
-    ASSERT_EQ(std::numeric_limits<UInt64>::max(), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::ClientResourcesUpload));
-    ASSERT_EQ(std::numeric_limits<UInt64>::max(), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneActionsApply));
-    ASSERT_EQ(std::numeric_limits<UInt64>::max(), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::OffscreenBufferRender));
+    ASSERT_EQ(PlatformTime::InfiniteDuration, m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::ClientResourcesUpload));
+    ASSERT_EQ(PlatformTime::InfiniteDuration, m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneActionsApply));
+    ASSERT_EQ(PlatformTime::InfiniteDuration, m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::OffscreenBufferRender));
 
     m_commandBuffer.setFrameTimerLimits(1u, 2u, 3u);
     doCommandExecutorLoop();
 
-    EXPECT_EQ(1u, m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::ClientResourcesUpload));
-    EXPECT_EQ(2u, m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneActionsApply));
-    EXPECT_EQ(3u, m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::OffscreenBufferRender));
+    EXPECT_EQ(std::chrono::microseconds(1u), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::ClientResourcesUpload));
+    EXPECT_EQ(std::chrono::microseconds(2u), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneActionsApply));
+    EXPECT_EQ(std::chrono::microseconds(3u), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::OffscreenBufferRender));
 }
 }

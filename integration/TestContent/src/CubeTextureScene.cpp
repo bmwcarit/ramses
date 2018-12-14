@@ -11,7 +11,6 @@
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/TransformationNode.h"
 #include "ramses-client-api/Vector3fArray.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/Appearance.h"
@@ -84,7 +83,7 @@ namespace ramses_internal
 
     void CubeTextureScene::init(EState state)
     {
-        m_transformNode = m_scene.createTransformationNode("cubeTransform");
+        m_transformNode = m_scene.createNode("cubeTransform");
         m_transformNode->setTranslation(0.0f, 0.0f, -8.0f);
         m_sphereMesh = m_scene.createMeshNode("Sphere");
         addMeshNodeToDefaultRenderGroup(*m_sphereMesh);

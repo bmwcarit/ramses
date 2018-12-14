@@ -26,7 +26,7 @@ namespace ramses
     status_t SplineLinearVector2f::setKey(splineTimeStamp_t timeStamp, float x, float y)
     {
         const status_t status = impl.setSplineKeyLinearVector2f(timeStamp, x, y);
-        LOG_HL_CLIENT_API3(status, timeStamp, x, y)
+        LOG_HL_CLIENT_API3(status, timeStamp, x, y);
         return status;
     }
 

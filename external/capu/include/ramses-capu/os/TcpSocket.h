@@ -19,7 +19,6 @@
 
 #include "ramses-capu/Error.h"
 #include <ramses-capu/os/PlatformInclude.h>
-#include "ramses-capu/os/Mutex.h"
 #include RAMSES_CAPU_PLATFORM_INCLUDE(TcpSocket)
 
 namespace ramses_capu
@@ -93,7 +92,7 @@ namespace ramses_capu
 
         /**
          * Sets the maximum socket buffer in bytes. The kernel doubles this value (to allow space for bookkeeping overhead)
-         * Set the receive buffer size
+         * Set the send and receive buffer size
          * Sets buffer size information.
          * @return CAPU_OK if the buffer is successfully set for both receive and send operations
          *         CAPU_SOCKET_ESOCKET if the socket is not created

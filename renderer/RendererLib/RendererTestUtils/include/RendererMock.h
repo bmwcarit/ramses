@@ -21,7 +21,7 @@ namespace ramses_internal
 {
     class DisplayConfig;
     class RendererScenes;
-    class LatencyMonitor;
+    class SceneExpirationMonitor;
 
 template <template<typename> class MOCK_TYPE>
 struct DisplayMockInfo
@@ -36,7 +36,7 @@ class RendererMockWithMockDisplay : public ramses_internal::Renderer
 {
 public:
     RendererMockWithMockDisplay(const ramses_internal::IPlatformFactory& platformFactory, const RendererScenes& rendererScenes,
-        const RendererEventCollector& eventCollector, const LatencyMonitor& latencyMonitor);
+        const RendererEventCollector& eventCollector, const SceneExpirationMonitor& expirationMonitor, const RendererStatistics& statistics);
 
     virtual void createDisplayContext(const ramses_internal::DisplayConfig& displayConfig, ramses_internal::DisplayHandle displayHandle) override;
     virtual void destroyDisplayContext(ramses_internal::DisplayHandle handle) override;

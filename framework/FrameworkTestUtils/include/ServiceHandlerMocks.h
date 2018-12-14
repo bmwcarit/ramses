@@ -50,7 +50,7 @@ namespace ramses_internal
         SceneRendererServiceHandlerMock();
         ~SceneRendererServiceHandlerMock() override;
 
-        MOCK_METHOD2(handleNewScenesAvailable, void(const SceneInfoVector& newScenes, const Guid& providerID));
+        MOCK_METHOD3(handleNewScenesAvailable, void(const SceneInfoVector& newScenes, const Guid& providerID, EScenePublicationMode publicationMode));
         MOCK_METHOD2(handleScenesBecameUnavailable, void(const SceneInfoVector& unavailableScenes, const Guid& providerID));
 
         MOCK_METHOD2(handleSceneNotAvailable, void(const SceneId& sceneId, const Guid& providerID));

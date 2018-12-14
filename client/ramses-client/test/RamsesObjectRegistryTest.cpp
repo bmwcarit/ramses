@@ -22,7 +22,7 @@ namespace ramses
     {
     public:
         DummyObject(SceneImpl& scene)
-            : Node(*new DummyObjectImpl(scene, ERamsesObjectType_GroupNode, ""))
+            : Node(*new DummyObjectImpl(scene, ERamsesObjectType_Node, ""))
         {
         }
     };
@@ -56,7 +56,7 @@ namespace ramses
         RamsesObjectVector objects;
         m_registry.getObjectsOfType(objects, ERamsesObjectType_RamsesObject);
         EXPECT_TRUE(objects.empty());
-        EXPECT_EQ(0u, m_registry.getNumberOfObjects(ERamsesObjectType_GroupNode));
+        EXPECT_EQ(0u, m_registry.getNumberOfObjects(ERamsesObjectType_Node));
     }
 
     TEST_F(ARamsesObjectRegistry, canAddObject)
@@ -65,7 +65,7 @@ namespace ramses
         m_registry.addObject(m_dummyObject);
         EXPECT_EQ(&m_dummyObject, m_registry.findObjectByName("name"));
         EXPECT_EQ(&m_dummyObject, &m_dummyObject.impl.getRamsesObject());
-        EXPECT_EQ(1u, m_registry.getNumberOfObjects(ERamsesObjectType_GroupNode));
+        EXPECT_EQ(1u, m_registry.getNumberOfObjects(ERamsesObjectType_Node));
         EXPECT_EQ(0u, m_registry.getNumberOfObjects(ERamsesObjectType_RenderBuffer));
         RamsesObjectVector objects;
         m_registry.getObjectsOfType(objects, ERamsesObjectType_RamsesObject);
@@ -79,7 +79,7 @@ namespace ramses
         m_registry.addObject(m_dummyObject);
         m_registry.removeObject(m_dummyObject);
         EXPECT_TRUE(NULL == m_registry.findObjectByName("name"));
-        EXPECT_EQ(0u, m_registry.getNumberOfObjects(ERamsesObjectType_GroupNode));
+        EXPECT_EQ(0u, m_registry.getNumberOfObjects(ERamsesObjectType_Node));
         EXPECT_EQ(0u, m_registry.getNumberOfObjects(ERamsesObjectType_RenderBuffer));
         RamsesObjectVector objects;
         m_registry.getObjectsOfType(objects, ERamsesObjectType_RamsesObject);

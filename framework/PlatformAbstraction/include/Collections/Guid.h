@@ -12,6 +12,8 @@
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "PlatformAbstraction/PlatformMemory.h"
 #include "Collections/String.h"
+#include "Collections/IOutputStream.h"
+#include "Collections/IInputStream.h"
 #include "ramses-capu/container/Hash.h"
 #include "ramses-capu/os/StringUtils.h"
 
@@ -54,6 +56,8 @@ namespace ramses_internal
         void createFromString(const char* guid, size_t len);
 
         generic_uuid_t m_data;
+
+        friend IInputStream& operator>>(IInputStream& stream, Guid& value);
     };
 
     inline Guid::Guid(bool valid)
@@ -117,6 +121,16 @@ namespace ramses_internal
     inline bool Guid::operator!=(const Guid& other) const
     {
         return !operator==(other);
+    }
+
+    inline IOutputStream& operator<<(IOutputStream& stream, const Guid& value)
+    {
+        return stream.write(&value.getGuidData(), sizeof(generic_uuid_t));
+    }
+
+    inline IInputStream& operator>>(IInputStream& stream, Guid& value)
+    {
+        return stream.read(reinterpret_cast<char*>(&value.m_data), sizeof(generic_uuid_t));
     }
 }
 

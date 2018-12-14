@@ -43,17 +43,16 @@ void RendererTestInstance::flush(ramses::sceneId_t sceneId, ramses::sceneVersion
     clientScene.flush(ramses::ESceneFlushMode_SynchronizedWithResources, sceneVersionTag);
 }
 
-void RendererTestInstance::flushWithTimestamp(ramses::sceneId_t sceneId, uint64_t timeStamp, ramses::sceneVersionTag_t sceneVersionTag /*= ramses::InvalidSceneVersionTag*/)
-{
-    ramses::Scene& clientScene = m_scenes.getScene(sceneId);
-    clientScene.flushWithTimestamp(timeStamp, sceneVersionTag);
-}
-
 void RendererTestInstance::unpublish(ramses::sceneId_t sceneId)
 {
     ramses::Scene& clientScene = m_scenes.getScene(sceneId);
     clientScene.unpublish();
     waitForUnpublished(sceneId);
+}
+
+void RendererTestInstance::setExpirationTimestamp(ramses::sceneId_t sceneId, std::chrono::system_clock::time_point expirationTS)
+{
+    m_scenes.getScene(sceneId).setExpirationTimestamp(std::chrono::duration_cast<std::chrono::milliseconds>(expirationTS.time_since_epoch()).count());
 }
 
 ramses::status_t RendererTestInstance::validateScene(ramses::sceneId_t sceneId)

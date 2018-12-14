@@ -10,7 +10,6 @@
 #include "framework_common_gmock_header.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "TaskFramework/EnqueueOnlyOneAtATimeQueue.h"
-#include "PlatformAbstraction/PlatformTestUtils.h"
 #include "ThreadWatchdogConfig.h"
 #include "PlatformWatchDogMock.h"
 #include "PlatformAbstraction/PlatformEvent.h"
@@ -50,13 +49,13 @@ namespace ramses_internal
         MOCK_METHOD0(execute, void());
         virtual void doSomethingLong()
         {
-            executeStarted.release();
+            executeStarted.broadcast();
             PlatformThread::Sleep(time);
-            executeFinished.release();
+            executeFinished.broadcast();
         }
 
-        ramses_capu::ThreadSynchronizer executeStarted;
-        ramses_capu::ThreadSynchronizer executeFinished;
+        PlatformEvent executeStarted;
+        PlatformEvent executeFinished;
         UInt32 time;
     };
 

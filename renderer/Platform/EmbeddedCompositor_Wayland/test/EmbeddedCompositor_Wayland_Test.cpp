@@ -7,13 +7,14 @@
 //  -------------------------------------------------------------------------
 
 #include "gmock/gmock.h"
+#include "TestWithWaylandEnvironment.h"
 #include "RendererLib/RendererConfig.h"
 #include "EmbeddedCompositor_Wayland/EmbeddedCompositor_Wayland.h"
 #include "PlatformFactoryMock.h"
 #include "Platform_Base/PlatformFactory_Base.h"
 #include "Platform_Wayland_IVI_EGL_ES_3_0/Platform_Wayland_IVI_EGL_ES_3_0.h"
-#include "UnixUtilities/UnixDomainSocketHelper.h"
-#include "UnixUtilities/EnvironmentVariableHelper.h"
+#include "WaylandUtilities/UnixDomainSocketHelper.h"
+#include "WaylandUtilities/WaylandEnvironmentUtils.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "Collections/StringOutputStream.h"
 #include "WaylandSurfaceMock.h"
@@ -145,7 +146,7 @@ namespace ramses_internal
         return new ::testing::NiceMock<PlatformFactoryNiceMock>();
     }
 
-    class AEmbeddedCompositor_Wayland : public ::testing::Test
+    class AEmbeddedCompositor_Wayland : public TestWithWaylandEnvironment
     {
     public:
         AEmbeddedCompositor_Wayland()
@@ -155,6 +156,7 @@ namespace ramses_internal
 
         void init()
         {
+            WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, m_initialValueOfXdgRuntimeDir);
             const String socketName("wayland-10");
             rendererConfig.setWaylandSocketEmbedded(socketName);
             EXPECT_TRUE(embeddedCompositor->init());
@@ -185,8 +187,7 @@ namespace ramses_internal
 
         RendererConfig              rendererConfig     = RendererConfig();
         EmbeddedCompositor_Wayland* embeddedCompositor = nullptr;
-        UnixDomainSocketHelper      socket             = UnixDomainSocketHelper("testingSocket");
-        EnvironmentVariableHelper   environment;
+        UnixDomainSocketHelper      socket             = UnixDomainSocketHelper("testingSocket", m_initialValueOfXdgRuntimeDir);
 
     private:
 
@@ -227,11 +228,14 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, InitializeWorksWithSocketNameAndGroupSet_ClientConnectionTest)
     {
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, m_initialValueOfXdgRuntimeDir);
+
         const String socketName("wayland-10");
         const String groupName = getUserGroupName();
-        LOG_ERROR(CONTEXT_RENDERER, "InitializeWorksWithSocketNameAndGroupSet groupName: " << groupName);
+        LOG_INFO(CONTEXT_RENDERER, "InitializeWorksWithSocketNameAndGroupSet groupName: " << groupName);
         rendererConfig.setWaylandSocketEmbedded(socketName);
         rendererConfig.setWaylandSocketEmbeddedGroup(groupName);
+
         EXPECT_TRUE(embeddedCompositor->init());
 
         EXPECT_TRUE(clientCanConnectViaSocket(socketName));
@@ -283,7 +287,7 @@ namespace ramses_internal
         const String socketName("wayland-10");
         rendererConfig.setWaylandSocketEmbedded(socketName);
 
-        environment.unsetVariable(EnvironmentVariableName::XDGRuntimeDir);
+        WaylandEnvironmentUtils::UnsetVariable(WaylandEnvironmentVariable::XDGRuntimeDir);
 
         EXPECT_FALSE(embeddedCompositor->init());
         EXPECT_FALSE(clientCanConnectViaSocket(socketName));
@@ -306,26 +310,11 @@ namespace ramses_internal
 
         // The EC needs to connect to the system compositor (it is no real server just acting as proxy)
         // So we need to configure the socket information to Wayland
-        environment.setVariable(EnvironmentVariableName::WaylandSocket, systemCompositorSocketFD.c_str());
-        environment.unsetVariable(EnvironmentVariableName::XDGRuntimeDir);
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, systemCompositorSocketFD.c_str());
+        WaylandEnvironmentUtils::UnsetVariable(WaylandEnvironmentVariable::XDGRuntimeDir);
         EXPECT_TRUE(embeddedCompositor->init());
 
         EXPECT_TRUE(clientCanConnectViaSocket(clientFD));
-    }
-
-    TEST_F(AEmbeddedCompositor_Wayland, GetsOutputResolution)
-    {
-        init();
-
-        Int32 width = -1;
-        Int32 height = -1;
-        embeddedCompositor->getOutputResolution(width, height);
-
-        // targets/platforms are delivering different wayland output resolutions,
-        // so check just for any of these resolutions.
-        EXPECT_TRUE((width == 1920 && height == 720) ||
-                    (width == 1024 && height == 640) ||
-                    (width == 1440 && height == 540));
     }
 
     TEST_F(AEmbeddedCompositor_Wayland, CanAddWaylandSurfaceWithCheckHasSurfaceForStreamTexture)

@@ -16,21 +16,7 @@
 
 #include <gtest/gtest.h>
 
-#if defined(ARCH_X86_64)
-#   undef ARCH_X86_64
-#   include "ramses-capu/Config.h"
-#   ifndef ARCH_X86_64
-#       error "ARCH_X86_64 is missing!"
-#   endif
-#elif defined(ARCH_ARM64) // ARCH_X86_64
-#   undef ARCH_ARM64
-#   include "ramses-capu/Config.h"
-#   ifndef ARCH_ARM64
-#       error "ARCH_ARM64 is missing!"
-#   endif
-#else
-#   include "ramses-capu/Config.h"
-#endif // ARCH_ARM64
+#include "ramses-capu/Config.h"
 
 namespace ramses_capu
 {
@@ -55,9 +41,9 @@ namespace ramses_capu
         EXPECT_EQ(8u, sizeof(time_t));
 #elif defined (OS_INTEGRITY)
         EXPECT_EQ(8u, sizeof(time_t));
-#elif defined (ARCH_X86_32)
+#elif defined (CAPU_ARCH_32)
         EXPECT_EQ(4u, sizeof(time_t));
-#elif defined (ARCH_X86_64)
+#elif defined (CAPU_ARCH_64)
         EXPECT_EQ(8u, sizeof(time_t));
 #elif defined (ARCH_ARMV7L)
         EXPECT_EQ(4u, sizeof(time_t));
@@ -65,10 +51,10 @@ namespace ramses_capu
         EXPECT_EQ(8u, sizeof(time_t));
 #endif
 
-#if defined (ARCH_X86_32)
+#if defined (CAPU_ARCH_32)
         EXPECT_EQ(4u, sizeof(int_t));
         EXPECT_EQ(4u, sizeof(uint_t));
-#elif defined (ARCH_X86_64)
+#elif defined (CAPU_ARCH_64)
         EXPECT_EQ(8u, sizeof(int_t));
         EXPECT_EQ(8u, sizeof(uint_t));
 #elif defined (ARCH_ARMV7L)

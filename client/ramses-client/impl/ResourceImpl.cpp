@@ -50,7 +50,7 @@ namespace ramses
         ramses_internal::BinaryOutputStream metaDataStream(1024);
         metaDataStream << getLowlevelResourceHash();
         metaDataStream << getName();
-        metaDataStream << getType();
+        metaDataStream << static_cast<uint32_t>(getType());
         const uint128 cityHashMetadataAndBlob = CityHash128(metaDataStream.getData(), metaDataStream.getSize());
         m_resourceId.highPart = Uint128High64(cityHashMetadataAndBlob);
         m_resourceId.lowPart = Uint128Low64(cityHashMetadataAndBlob);

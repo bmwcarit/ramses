@@ -26,6 +26,8 @@ namespace ramses_internal
 
         IContext*   createContext(IWindow& window) override final;
         ISurface*   createSurface(IWindow& window, IContext& context) override final;
+        IEmbeddedCompositor*         createEmbeddedCompositor() override final;
+        ITextureUploadingAdapter*    createTextureUploadingAdapter(IDevice& device, IEmbeddedCompositor& embeddedCompositor, IWindow& window) override final;
 
         virtual void getContextAttributes(Vector<EGLint>& attributes) const = 0;
         virtual void getSurfaceAttributes(UInt32 msaaSampleCount, Vector<EGLint>& attributes) const = 0;

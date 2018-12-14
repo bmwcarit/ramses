@@ -115,7 +115,11 @@ namespace ramses
             const HBGlyphInfo& hbGlyphInfo = hbGlyphInfos[i];
             const GlyphId glyphId(hbGlyphInfo.glyphIndex);
 
-            GlyphMetrics glyphMetrics = loadGlyphMetrics(glyphId);
+            const GlyphMetrics* glyphMetricsEntry = getGlyphMetricsData(glyphId);
+            if (glyphMetricsEntry == nullptr)
+                continue;
+
+            GlyphMetrics glyphMetrics = *glyphMetricsEntry;
             glyphMetrics.posX += hbGlyphInfo.offsetX;
             glyphMetrics.posY += hbGlyphInfo.offsetY;
             glyphMetrics.advance = hbGlyphInfo.advance; // advance is fully overridden by HB

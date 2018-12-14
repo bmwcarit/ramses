@@ -22,7 +22,7 @@ namespace ramses_internal
         RendererPeriodicLogSupplier(PeriodicLogger& periodicLogger, RendererCommandBuffer& commandBuffer);
         virtual ~RendererPeriodicLogSupplier();
 
-        virtual void triggerLogMessageForPeriodicLog() const;
+        virtual void triggerLogMessageForPeriodicLog();
 
     private:
         PeriodicLogger& m_periodicLogger;

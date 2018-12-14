@@ -6,58 +6,78 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
+#include "WaylandUtilities/WaylandUtilities.h"
+#include "TestWithWaylandEnvironment.h"
+#include "WaylandUtilities/UnixDomainSocketHelper.h"
 #include "gmock/gmock.h"
 #include "WaylandUtilities/WaylandUtilities.h"
 #include "PlatformAbstraction/PlatformEnvironmentVariables.h"
-#include "UnixUtilities/EnvironmentVariableHelper.h"
-#include "UnixUtilities/UnixDomainSocketHelper.h"
+#include "WaylandUtilities/WaylandEnvironmentUtils.h"
 #include "Collections/StringOutputStream.h"
 
 namespace ramses_internal
 {
     using namespace testing;
 
-    class WaylandUtilitiesTest : public ::testing::Test
+    class WaylandUtilitiesTest : public TestWithWaylandEnvironment
     {
     protected:
-        UnixDomainSocketHelper    m_socketHelper = UnixDomainSocketHelper("wayland-0");
-        EnvironmentVariableHelper m_environment;
+        UnixDomainSocketHelper    m_socketHelper = UnixDomainSocketHelper("wayland-0", m_initialValueOfXdgRuntimeDir);
     };
 
 
     TEST_F(WaylandUtilitiesTest, IsEnvironmentInProperStateFailsIfNoXdgRuntimeDirIsSet)
     {
-        m_environment.unsetVariable(EnvironmentVariableName::XDGRuntimeDir);
+        //neither WAYLAND_DISPLAY is set nor WAYLAND_SOCKET is set
+        EXPECT_FALSE(WaylandUtilities::IsEnvironmentInProperState());
+
+        //WAYLAND_DISPLAY is set
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandDisplay, m_initialValueOfWaylandDisplay);
+        EXPECT_FALSE(WaylandUtilities::IsEnvironmentInProperState());
+
+        //WAYLAND_SOCKET is set
+        WaylandEnvironmentUtils::UnsetVariable(WaylandEnvironmentVariable::WaylandDisplay);
+
+        StringOutputStream fileDescriptor;
+        fileDescriptor << m_socketHelper.createBoundFileDescriptor();
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, fileDescriptor.c_str());
         EXPECT_FALSE(WaylandUtilities::IsEnvironmentInProperState());
     }
 
-    TEST_F(WaylandUtilitiesTest, IsEnvironmentInProperStateFailsIfNoXdgRuntimeDirPathIsNotExistant)
+    TEST_F(WaylandUtilitiesTest, IsEnvironmentInProperStateFailsIfXdgRuntimeDirPathIsNotExisting)
     {
-        m_environment.setVariable(EnvironmentVariableName::XDGRuntimeDir, "/this/should/lead/nowhere");
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, "/this/should/lead/nowhere");
         EXPECT_FALSE(WaylandUtilities::IsEnvironmentInProperState());
     }
 
     TEST_F(WaylandUtilitiesTest, IsEnvironmentInProperStateSucceedsIfXdgRuntimeDirIsAProperPath)
     {
-        m_environment.setVariable(EnvironmentVariableName::XDGRuntimeDir, "/tmp");
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, m_initialValueOfXdgRuntimeDir);
         EXPECT_TRUE(WaylandUtilities::IsEnvironmentInProperState());
     }
 
-    TEST_F(WaylandUtilitiesTest, IsEnvironmentInProperStateFailsIfXdgRuntimeDirIsAProperPathAndWaylandDisplayIsSetToNonExistantFile)
+    TEST_F(WaylandUtilitiesTest, IsEnvironmentInProperStateFailsIfXdgRuntimeDirIsAProperPathAndWaylandDisplayIsSetToNonExistingFile)
     {
-        m_environment.setVariable(EnvironmentVariableName::WaylandDisplay, "someSocketFileName");
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, m_initialValueOfXdgRuntimeDir);
+        ASSERT_TRUE(WaylandUtilities::IsEnvironmentInProperState());
+
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandDisplay, "someSocketFileName");
         EXPECT_FALSE(WaylandUtilities::IsEnvironmentInProperState());
     }
 
     TEST_F(WaylandUtilitiesTest, IsEnvironmentInProperStateSucceedsIfXdgRuntimeDirIsAProperPathAndWaylandDisplayIsSetToProperFile)
     {
-        m_environment.setVariable(EnvironmentVariableName::WaylandDisplay, "wayland-0");
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, m_initialValueOfXdgRuntimeDir);
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandDisplay, m_initialValueOfWaylandDisplay);
         EXPECT_TRUE(WaylandUtilities::IsEnvironmentInProperState());
     }
 
-    TEST_F(WaylandUtilitiesTest,  IsEnvironmentInProperStateFailsIfWaylandSocketIsSetToNonExistantFileDescriptor)
+    TEST_F(WaylandUtilitiesTest,  IsEnvironmentInProperStateFailsIfWaylandSocketIsSetToNonExistingFileDescriptor)
     {
-        m_environment.setVariable(EnvironmentVariableName::WaylandSocket, "734");
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, m_initialValueOfXdgRuntimeDir);
+        ASSERT_TRUE(WaylandUtilities::IsEnvironmentInProperState());
+
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, "734");
         EXPECT_FALSE(WaylandUtilities::IsEnvironmentInProperState());
     }
 
@@ -65,14 +85,18 @@ namespace ramses_internal
     {
         StringOutputStream fileDescriptor;
         fileDescriptor << m_socketHelper.createConnectedFileDescriptor(true);
-        m_environment.setVariable(EnvironmentVariableName::WaylandSocket, fileDescriptor.c_str());
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, m_initialValueOfXdgRuntimeDir);
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, fileDescriptor.c_str());
         EXPECT_TRUE(WaylandUtilities::IsEnvironmentInProperState());
     }
 
     TEST_F(WaylandUtilitiesTest,  IsEnvironmentInProperStateFailsIfWaylandSocketAndWaylandDisplayIsSet)
     {
-        m_environment.setVariable(EnvironmentVariableName::WaylandSocket, "734");
-        m_environment.setVariable(EnvironmentVariableName::WaylandDisplay, "wayland-0");
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, m_initialValueOfXdgRuntimeDir);
+        ASSERT_TRUE(WaylandUtilities::IsEnvironmentInProperState());
+
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, "734");
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandDisplay, m_initialValueOfWaylandDisplay);
         EXPECT_FALSE(WaylandUtilities::IsEnvironmentInProperState());
     }
 }

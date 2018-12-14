@@ -13,7 +13,7 @@
 
 namespace ramses
 {
-    class VisibilityNode;
+    class Node;
     class Scene;
 }
 
@@ -37,10 +37,10 @@ public:
 
 private:
 
-    ramses::VisibilityNode* injectVisibilityNodeAsParent(ramses::Node* target);
+    ramses::Node* injectVisibilityNodeAsParent(ramses::Node* target);
 
     ramses::Scene* m_scene;
-    ramses::VisibilityNode* m_targetNode;
+    ramses::Node* m_targetNode;
     bool m_isVisible;
 };
 #endif

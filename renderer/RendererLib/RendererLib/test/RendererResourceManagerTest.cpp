@@ -10,6 +10,7 @@
 #include "RendererLib/RendererResourceManager.h"
 #include "RendererLib/ResourceUploader.h"
 #include "RendererLib/FrameTimer.h"
+#include "RendererLib/RendererStatistics.h"
 #include "SceneAPI/RenderBuffer.h"
 #include "SceneAPI/EDataBufferType.h"
 #include "ResourceProviderMock.h"
@@ -26,9 +27,9 @@ class ARendererResourceManager : public ::testing::Test
 public:
     ARendererResourceManager(bool disableEffectDeletion = false)
         : fakeSceneId(66u)
-        , resUploader()
+        , resUploader(stats)
         , frameTimer()
-        , resourceManager(resourceProvider, resUploader, renderer, embeddedCompositingManager, RequesterID(1), disableEffectDeletion, frameTimer)
+        , resourceManager(resourceProvider, resUploader, renderer, embeddedCompositingManager, RequesterID(1), disableEffectDeletion, frameTimer, stats)
     {
     }
 
@@ -74,6 +75,7 @@ protected:
     StrictMock<RenderBackendStrictMock> additionalRenderer;
     StrictMock<EmbeddedCompositingManagerMock> embeddedCompositingManager;
     SceneId fakeSceneId;
+    RendererStatistics stats;
     ResourceUploader resUploader;
     FrameTimer frameTimer;
     RendererResourceManager resourceManager;

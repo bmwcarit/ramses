@@ -29,6 +29,33 @@ ACME_MODULE(
                             wayland-server
 )
 
+
+
+IF (${ramses-sdk_BUILD_TESTS})
+    ACME_MODULE(
+
+        #==========================================================================
+        # general module information
+        #==========================================================================
+        NAME                    WaylandTestUtils
+        TYPE                    STATIC_LIBRARY
+
+        #==========================================================================
+        # files of this module
+        #==========================================================================
+
+        INCLUDE_BASE            WaylandTestUtils
+        FILES_PRIVATE_HEADER    WaylandTestUtils/*.h
+        FILES_SOURCE            WaylandTestUtils/*.cpp
+
+        #==========================================================================
+        # dependencies
+        #==========================================================================
+        DEPENDENCIES            WaylandUtilities
+                                gmock
+    )
+ENDIF()
+
 ACME_MODULE(
 
     #==========================================================================
@@ -47,8 +74,7 @@ ACME_MODULE(
     #==========================================================================
     # dependencies
     #==========================================================================
-    DEPENDENCIES            WaylandUtilities
+    DEPENDENCIES            WaylandTestUtils
                             RendererTestUtils
-                            UnixUtilities
                             gmock_main
 )

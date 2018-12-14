@@ -10,8 +10,6 @@
 #include "ramses-utils.h"
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
-#include "ramses-client-api/GroupNode.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/Vector2fArray.h"
 #include "ramses-client-api/Vector3fArray.h"
@@ -20,7 +18,6 @@
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/OrthographicCamera.h"
-#include "ramses-client-api/TransformationNode.h"
 
 // Uses mip-map generation to generate LOD level-1 from level-0 data. Draws two quads, for the left one, 2x2 texels
 // map to one pixel, thus LOD level-1 is used, which is the average of the four level-0 texels (red, green, blue, white).
@@ -92,7 +89,7 @@ namespace ramses_internal
         mesh->setAppearance(*appearance);
         mesh->setGeometryBinding(*geometry);
 
-        ramses::TransformationNode* transform = m_scene.createTransformationNode();
+        ramses::Node* transform = m_scene.createNode();
         transform->translate(translateXY, translateXY, 0.0f);
         transform->scale(scale, scale, scale);
         transform->addChild(*mesh);

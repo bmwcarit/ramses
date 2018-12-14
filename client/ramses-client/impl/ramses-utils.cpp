@@ -294,14 +294,11 @@ namespace ramses
 #include "ramses-client-api/Camera.h"
 #include "ramses-client-api/FloatArray.h"
 #include "ramses-client-api/GeometryBinding.h"
-#include "ramses-client-api/GroupNode.h"
 #include "ramses-client-api/LocalCamera.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/RemoteCamera.h"
-#include "ramses-client-api/RotateNode.h"
-#include "ramses-client-api/ScaleNode.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/BlitPass.h"
 #include "ramses-client-api/DataFloat.h"
@@ -354,9 +351,6 @@ namespace ramses
 #include "ramses-client-api/Vector2fArray.h"
 #include "ramses-client-api/Vector3fArray.h"
 #include "ramses-client-api/Vector4fArray.h"
-#include "ramses-client-api/TranslateNode.h"
-#include "ramses-client-api/TransformationNode.h"
-#include "ramses-client-api/VisibilityNode.h"
 #include "ramses-client-api/VertexDataBuffer.h"
 #include "ramses-client-api/IndexDataBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
@@ -374,11 +368,6 @@ INSTANTIATE_CONVERT_TEMPLATE(Scene)
 INSTANTIATE_CONVERT_TEMPLATE(AnimationSystem)
 INSTANTIATE_CONVERT_TEMPLATE(AnimationSystemRealTime)
 INSTANTIATE_CONVERT_TEMPLATE(Node)
-INSTANTIATE_CONVERT_TEMPLATE(GroupNode)
-INSTANTIATE_CONVERT_TEMPLATE(TranslateNode)
-INSTANTIATE_CONVERT_TEMPLATE(RotateNode)
-INSTANTIATE_CONVERT_TEMPLATE(ScaleNode)
-INSTANTIATE_CONVERT_TEMPLATE(TransformationNode)
 INSTANTIATE_CONVERT_TEMPLATE(MeshNode)
 INSTANTIATE_CONVERT_TEMPLATE(Camera)
 INSTANTIATE_CONVERT_TEMPLATE(RemoteCamera)
@@ -434,7 +423,6 @@ INSTANTIATE_CONVERT_TEMPLATE(BlitPass)
 INSTANTIATE_CONVERT_TEMPLATE(TextureSampler)
 INSTANTIATE_CONVERT_TEMPLATE(RenderBuffer)
 INSTANTIATE_CONVERT_TEMPLATE(RenderTarget)
-INSTANTIATE_CONVERT_TEMPLATE(VisibilityNode)
 INSTANTIATE_CONVERT_TEMPLATE(DataObject)
 INSTANTIATE_CONVERT_TEMPLATE(DataFloat)
 INSTANTIATE_CONVERT_TEMPLATE(DataVector2f)

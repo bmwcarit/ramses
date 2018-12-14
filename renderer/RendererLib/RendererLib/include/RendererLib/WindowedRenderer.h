@@ -16,7 +16,7 @@
 #include "RendererLib/RendererSceneUpdater.h"
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/FrameTimer.h"
-#include "RendererLib/LatencyMonitor.h"
+#include "RendererLib/SceneExpirationMonitor.h"
 #include "RendererCommands/Screenshot.h"
 #include "RendererCommands/LogRendererInfo.h"
 #include "RendererCommands/PrintStatistics.h"
@@ -44,6 +44,7 @@ namespace ramses_internal
     class Monitor;
     class Ramsh;
     class ISceneGraphConsumerComponent;
+    class RendererStatistics;
 
     class WindowedRenderer
     {
@@ -52,6 +53,7 @@ namespace ramses_internal
             RendererCommandBuffer& commandBuffer,
             ISceneGraphConsumerComponent& sceneGraphConsumerComponent,
             IPlatformFactory& platformFactory,
+            RendererStatistics& m_rendererStatistics,
             const String& monitorFilename = String());
         ~WindowedRenderer();
 
@@ -75,8 +77,8 @@ namespace ramses_internal
         RendererCommandBuffer&                      m_rendererCommandBuffer;
         FrameTimer                                  m_frameTimer;
         RendererEventCollector                      m_rendererEventCollector;
-        LatencyMonitor                              m_latencyMonitor;
         RendererScenes                              m_rendererScenes;
+        SceneExpirationMonitor                      m_expirationMonitor;
         Renderer                                    m_renderer;
         SceneStateExecutor                          m_sceneStateExecutor;
         RendererSceneUpdater                        m_rendererSceneUpdater;

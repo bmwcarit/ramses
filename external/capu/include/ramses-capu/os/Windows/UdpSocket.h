@@ -312,6 +312,11 @@ namespace ramses_capu
                 return CAPU_ERROR;
             }
 
+            if (setsockopt(mSocket, SOL_SOCKET, SO_SNDBUF, reinterpret_cast<const char*>(&bufferSize), sizeof(bufferSize)) == SOCKET_ERROR)
+            {
+                return CAPU_ERROR;
+            }
+
             return CAPU_OK;
         }
 

@@ -11,8 +11,6 @@
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/RotateNode.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-client-api/Vector2fArray.h"
 #include "ramses-client-api/Vector3fArray.h"
 #include "ramses-client-api/GeometryBinding.h"
@@ -30,7 +28,7 @@ namespace ramses_internal
         , m_effect(0)
     {
         m_effect = getTestEffect("ramses-test-client-textured");
-        m_root = m_scene.createRotateNode();
+        m_root = m_scene.createNode();
 
         using Vec3 = std::array<float, 3>;
         const Vec3 A{{ -0.5f,  0.5f, -0.5f }};
@@ -76,11 +74,11 @@ namespace ramses_internal
             {
                 //Create two separate half cubes which are visible from the camera position
                 //Each half cube is formed from 3 surfaces that uses vertex arrays 2, 4 and 6
-                ramses::TranslateNode* translateLeftNode = m_scene.createTranslateNode("translate left node");
+                ramses::Node* translateLeftNode = m_scene.createNode("translate left node");
                 translateLeftNode->translate(-1.0f, 0.0f, 0.0f);
                 m_root->addChild(*translateLeftNode);
 
-                ramses::TranslateNode* translateRightNode = m_scene.createTranslateNode("translate right node");
+                ramses::Node* translateRightNode = m_scene.createNode("translate right node");
                 translateRightNode->translate(1.0f, 0.0f, 0.0f);
                 m_root->addChild(*translateRightNode);
 

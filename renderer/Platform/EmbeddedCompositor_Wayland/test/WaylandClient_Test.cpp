@@ -8,9 +8,8 @@
 
 #include "EmbeddedCompositor_Wayland/WaylandClient.h"
 #include "EmbeddedCompositor_Wayland/IWaylandResource.h"
-#include "EmbeddedCompositor_Wayland/WaylandOutputResource.h"
 #include "EmbeddedCompositor_Wayland/WaylandCallbackResource.h"
-#include "UnixUtilities/UnixDomainSocketHelper.h"
+#include "WaylandUtilities/UnixDomainSocketHelper.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "WaylandUtilities/WaylandUtilities.h"
 #include "Utils/ThreadBarrier.h"
@@ -237,27 +236,6 @@ namespace ramses_internal
         // This checks, that ownership flag of wl_resource was set to true in WaylandClient::resourceCreate.
         EXPECT_EQ(m_resourceDestroyedListenerCalled, 1u);
 
-        wl_client_destroy(client);
-    }
-
-    TEST_F(AWaylandClient, CanCreateOutputResource)
-    {
-        const int serverFD = m_socket.createBoundFileDescriptor();
-
-        wl_client*    client = wl_client_create(m_display, serverFD);
-        WaylandClient waylandClient(client);
-
-        const int32_t             version  = 1;
-        const uint32_t            id       = 0;
-        WaylandOutputResource*    resource = waylandClient.outputResourceCreate(&wl_output_interface, version, id);
-        wl_resource*              waylandResource = static_cast<wl_resource*>(resource->getWaylandNativeResource());
-
-        EXPECT_NE(nullptr, waylandResource);
-        EXPECT_EQ(client, wl_resource_get_client(waylandResource));
-        EXPECT_EQ(1, wl_resource_instance_of(waylandResource, &wl_output_interface, nullptr));
-        EXPECT_EQ(version, resource->getVersion());
-
-        delete resource;
         wl_client_destroy(client);
     }
 

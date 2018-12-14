@@ -27,10 +27,8 @@ int main(int argc, char* argv[])
     ramses::Scene* scene = ramses.createScene(123u, ramses::SceneConfig(), "triangles scene");
 
     // every scene needs a render pass with camera
-    ramses::TranslateNode* cameraTranslate = scene->createTranslateNode();
-    cameraTranslate->setTranslation(0.0f, 0.0f, 5.0f);
     ramses::Camera* camera = scene->createRemoteCamera("my camera");
-    camera->setParent(*cameraTranslate);
+    camera->setTranslation(0.0f, 0.0f, 5.0f);
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -70,28 +68,10 @@ int main(int argc, char* argv[])
     ramses::MeshNode* meshNodeBlue = scene->createMeshNode("blue triangle mesh node");
 
     // offset triangles so that they are not fully overlapping
-    ramses::TranslateNode* transNode1 = scene->createTranslateNode();
-    if (0 == transNode1)
-    {
-        std::exit(-1);
-    }
-    ramses::TranslateNode* transNode2 = scene->createTranslateNode();
-    if (0 == transNode2)
-    {
-        std::exit(-1);
-    }
-    ramses::TranslateNode* transNode3 = scene->createTranslateNode();
-    if (0 == transNode3)
-    {
-        std::exit(-1);
-    }
-    transNode1->setTranslation(0.f, -0.2f, -12.f);
-    transNode2->setTranslation(-0.2f, 0.f, -11.f);
-    transNode3->setTranslation(0.2f, 0.2f, -10.f);
 
-    meshNodeRed->setParent(*transNode1);
-    meshNodeGreen->setParent(*transNode2);
-    meshNodeBlue->setParent(*transNode3);
+    meshNodeRed->setTranslation(0.f, -0.2f, -12.f);
+    meshNodeGreen->setTranslation(-0.2f, 0.f, -11.f);
+    meshNodeBlue->setTranslation(0.2f, 0.2f, -10.f);
 
     // get handle to appearances' input and set color with alpha smaller than 1
     ramses::UniformInput colorInput;

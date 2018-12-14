@@ -27,8 +27,9 @@ namespace ramses_internal
     class SystemCompositorController_Wayland_IVI : public ISystemCompositorController
     {
     public:
-        SystemCompositorController_Wayland_IVI();
+        explicit SystemCompositorController_Wayland_IVI(const String& waylandDisplay = "");
         virtual ~SystemCompositorController_Wayland_IVI();
+
         virtual Bool init();
         virtual void update() override;
         virtual void listIVISurfaces() const override;
@@ -69,6 +70,7 @@ namespace ramses_internal
                                                      int32_t         errorCode,
                                                      const char*     errorText);
 
+        const String    m_waylandDisplay;
         wl_display*     m_display    = nullptr;
         wl_registry*    m_registry   = nullptr;
         ivi_controller* m_controller = nullptr;

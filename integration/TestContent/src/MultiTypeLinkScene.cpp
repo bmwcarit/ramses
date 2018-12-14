@@ -11,8 +11,6 @@
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/DataVector4f.h"
-#include "ramses-client-api/GroupNode.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-client-api/AnimationSystem.h"
 #include "ramses-client-api/SplineLinearFloat.h"
 #include "ramses-client-api/AnimationSequence.h"
@@ -51,8 +49,8 @@ namespace ramses_internal
         mesh1->setGeometryBinding(triangle1.GetGeometry());
         mesh2->setGeometryBinding(triangle2.GetGeometry());
 
-        ramses::TranslateNode* translate1 = scene.createTranslateNode();
-        ramses::TranslateNode* translate2 = scene.createTranslateNode();
+        ramses::Node* translate1 = scene.createNode();
+        ramses::Node* translate2 = scene.createNode();
 
         mesh1->setParent(*translate1);
         mesh2->setParent(*translate2);
@@ -60,7 +58,7 @@ namespace ramses_internal
         addMeshNodeToDefaultRenderGroup(*mesh1);
         addMeshNodeToDefaultRenderGroup(*mesh2);
 
-        ramses::GroupNode* groupNode = scene.createGroupNode();
+        ramses::Node* groupNode = scene.createNode();
         translate1->setParent(*groupNode);
         translate2->setParent(*groupNode);
 
@@ -98,7 +96,7 @@ namespace ramses_internal
             scene.createDataConsumer(*colorData, DataConsumerId);
             colorData->setValue(0.f, 1.f, 0.f, 1.f);
 
-            ramses::TranslateNode* providerNode = scene.createTranslateNode();
+            ramses::Node* providerNode = scene.createNode();
             providerNode->setTranslation(1.5f, -2.f, 0.f);
             scene.createTransformationDataProvider(*providerNode, TransformationProviderId);
             animateProvidedContent(*providerNode);
@@ -134,10 +132,10 @@ namespace ramses_internal
         animSystem->setTime(1500u);
     }
 
-    void MultiTypeLinkScene::animateProvidedContent(ramses::TranslateNode& translateNode)
+    void MultiTypeLinkScene::animateProvidedContent(ramses::Node& translateNode)
     {
         ramses::AnimationSystem* animSystem = m_scene.createAnimationSystem();
-        ramses::AnimatedProperty* animProperty = animSystem->createAnimatedProperty(translateNode, ramses::EAnimatedPropertyComponent_Z);
+        ramses::AnimatedProperty* animProperty = animSystem->createAnimatedProperty(translateNode, ramses::EAnimatedProperty_Translation, ramses::EAnimatedPropertyComponent_Z);
         ramses::SplineLinearFloat* spline = animSystem->createSplineLinearFloat();
         spline->setKey(0u, 0.f);
         spline->setKey(1000u, 10.f);

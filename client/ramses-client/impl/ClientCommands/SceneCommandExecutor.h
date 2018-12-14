@@ -12,16 +12,19 @@
 namespace ramses
 {
     class SceneImpl;
+    class ResourceFileDescriptionSet;
 }
 
 namespace ramses_internal
 {
     class SceneCommandBuffer;
+    class String;
 
     class SceneCommandExecutor
     {
     public:
-        static void execute(ramses::SceneImpl& scene, SceneCommandBuffer& commandBuffer);
+        static void Execute(ramses::SceneImpl& scene, SceneCommandBuffer& commandBuffer);
+        static void SendSceneAndResourceFilesViaDLT(const String& sceneDumpFileName, const ramses::ResourceFileDescriptionSet& resourceFileDescriptionSet);
     };
 }
 

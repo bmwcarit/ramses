@@ -500,7 +500,7 @@
             vector.push_back(TypeParam(i));
         }
 
-        vector = vector;
+        vector = *&vector;
 
         ASSERT_EQ(32u, vector.size());
         for (uint32_t i = 0; i < 32; ++i)

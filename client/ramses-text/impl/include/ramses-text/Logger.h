@@ -16,4 +16,9 @@
         std::cerr << msg << std::endl; \
     }
 
+#define LOG_TEXT_INFO(msg) \
+    { \
+        std::cout << msg << std::endl; \
+    }
+
 #endif

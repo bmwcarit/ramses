@@ -8,9 +8,7 @@
 
 #include "../../ramses-client/test/SimpleSceneTopology.h"
 
-#include "ramses-client-api/ScaleNode.h"
-#include "ramses-client-api/TranslateNode.h"
-#include "ramses-client-api/TransformationNode.h"
+#include "ramses-client-api/Node.h"
 #include "ramses-client-api/Vector3fArray.h"
 #include "ramses-client-api/ResourceFileDescription.h"
 #include "ramses-hmi-utils.h"
@@ -68,12 +66,12 @@ namespace ramses
 
     public:
         ASceneWithSingleNode()
-            : m_root(*m_scene.createGroupNode("root"))
+            : m_root(*m_scene.createNode("root"))
         {
         }
 
     protected:
-        GroupNode& m_root;
+        Node& m_root;
     };
 
     TEST_F(ASceneWithSingleNode, WhenStoringABoundingSphereItShouldBeReturnedUnchanged)
@@ -198,7 +196,7 @@ namespace ramses
         BoundingSphereCollection collection(this->getScene());
         collection.setBoundingSphere(m_mesh1b, CreateSphere(0.f, 0.f, 0.f, 10.f));
 
-        ScaleNode& newNode = *getScene().createScaleNode();
+        Node& newNode = *getScene().createNode();
         newNode.setScaling(2.f, 2.f, 2.f);
 
         // Inject the new node
@@ -217,7 +215,7 @@ namespace ramses
         BoundingSphereCollection collection(this->getScene());
         collection.setBoundingSphere(m_mesh1b, CreateSphere(0.f, 0.f, 0.f, 10.f));
 
-        TranslateNode& newNode = *getScene().createTranslateNode();
+        Node& newNode = *getScene().createNode();
         newNode.setTranslation(1.f, 2.f, 3.f);
 
         // Inject the new node
@@ -236,7 +234,7 @@ namespace ramses
         BoundingSphereCollection collection(this->getScene());
         collection.setBoundingSphere(m_mesh1b, CreateSphere(0.f, 0.f, 0.f, 10.f));
 
-        TransformationNode& newNode = *getScene().createTransformationNode();
+        Node& newNode = *getScene().createNode();
         newNode.setTranslation(1.f, 2.f, 3.f);
         newNode.setScaling(2.f, 2.f, 2.f);
 

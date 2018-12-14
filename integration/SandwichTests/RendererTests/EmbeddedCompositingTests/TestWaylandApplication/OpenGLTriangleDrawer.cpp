@@ -35,22 +35,22 @@ namespace ramses_internal
         const GLint colorUniformLocation = glGetUniformLocation(m_shaderProgramReference, "u_color");
         switch (triangleColor)
         {
-        case ETriangleColor_Red:
+        case ETriangleColor::Red:
             glUniform4f(colorUniformLocation, 1.0f, 0.0f, 0.0f, 1.0f);
             break;
-        case ETriangleColor_Blue:
+        case ETriangleColor::Blue:
             glUniform4f(colorUniformLocation, 0.0f, 0.0f, 1.0f, 1.0f);
             break;
-        case ETriangleColor_DarkGrey:
+        case ETriangleColor::DarkGrey:
             glUniform4f(colorUniformLocation, 0.25f, 0.25f, 0.25f, 1.0f);
             break;
-        case ETriangleColor_Grey:
+        case ETriangleColor::Grey:
             glUniform4f(colorUniformLocation, 0.5f, 0.5f, 0.5f, 1.0f);
             break;
-        case ETriangleColor_LightGrey:
+        case ETriangleColor::LightGrey:
             glUniform4f(colorUniformLocation, 0.75f, 0.75f, 0.75f, 1.0f);
             break;
-        case ETriangleColor_White:
+        case ETriangleColor::White:
             glUniform4f(colorUniformLocation, 1.0f, 1.0f, 1.0f, 1.0f);
             break;
 

@@ -85,7 +85,7 @@ GaussFilter::GaussFilter(ramses::RenderBuffer& inputBuffer,
     meshNode.setAppearance(*m_appearance);
     meshNode.setGeometryBinding(geometry);
 
-    ramses::TranslateNode& translateNode = *scene.createTranslateNode();
+    ramses::Node& translateNode = *scene.createNode();
     translateNode.setTranslation(0.0f, 0.0f, -0.5f);
     translateNode.addChild(meshNode);
 

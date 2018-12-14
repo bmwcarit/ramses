@@ -15,7 +15,7 @@ namespace ramses_internal
 {
     WaylandShellSurface::WaylandShellSurface(IWaylandClient& client, IWaylandResource& shellConnectionResource, uint32_t id, IWaylandSurface& surface)
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::WaylandShellSurface")
+        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::WaylandShellSurface");
 
         m_resource = client.resourceCreate(&wl_shell_surface_interface, shellConnectionResource.getVersion(), id);
         if (nullptr != m_resource)
@@ -49,7 +49,7 @@ namespace ramses_internal
 
     WaylandShellSurface::~WaylandShellSurface()
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::~WaylandShellSurface")
+        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::~WaylandShellSurface");
 
         if (nullptr != m_surface)
         {
@@ -86,19 +86,19 @@ namespace ramses_internal
 
     void WaylandShellSurface::shellSurfacePong(IWaylandClient& client, uint32_t serial)
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfacePong")
+        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfacePong");
         UNUSED(client)
         UNUSED(serial)
 
         if (m_surface == nullptr)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfacePong Surface has already been deleted!")
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfacePong Surface has already been deleted!");
         }
     }
 
     void WaylandShellSurface::shellSurfaceMove(IWaylandClient& client, IWaylandResource& seatResource, uint32_t serial)
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceMove")
+        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceMove");
 
         UNUSED(client)
         UNUSED(serial)
@@ -106,13 +106,13 @@ namespace ramses_internal
 
         if (m_surface == nullptr)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfacePong Surface has already been deleted!")
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfacePong Surface has already been deleted!");
         }
     }
 
     void WaylandShellSurface::shellSurfaceResize(IWaylandClient& client, IWaylandResource& seatResource, uint32_t serial, uint32_t edges)
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceResize")
+        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceResize");
 
         UNUSED(client)
         UNUSED(serial)
@@ -121,25 +121,25 @@ namespace ramses_internal
 
         if (m_surface == nullptr)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceResize Surface has already been deleted!")
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceResize Surface has already been deleted!");
         }
     }
 
     void WaylandShellSurface::shellSurfaceSetToplevel(IWaylandClient& client)
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetToplevel")
+        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetToplevel");
 
         UNUSED(client)
 
         if (m_surface == nullptr)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetToplevel Surface has already been deleted!")
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetToplevel Surface has already been deleted!");
         }
     }
 
     void WaylandShellSurface::shellSurfaceSetTransient(IWaylandClient& client, IWaylandResource& parentSurfaceResource, int32_t x, int32_t y, uint32_t flags)
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetTransient")
+        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetTransient");
 
         UNUSED(client)
         UNUSED(parentSurfaceResource)
@@ -149,29 +149,28 @@ namespace ramses_internal
 
         if (m_surface == nullptr)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetTransient Surface has already been deleted!")
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetTransient Surface has already been deleted!");
         }
     }
 
-    void WaylandShellSurface::shellSurfaceSetFullscreen(IWaylandClient& client, uint32_t method, uint32_t framerate, IWaylandResource* outputResource)
+    void WaylandShellSurface::shellSurfaceSetFullscreen(IWaylandClient& client, uint32_t method, uint32_t framerate)
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetFullscreen")
+        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetFullscreen");
 
         UNUSED(client)
         UNUSED(method)
         UNUSED(framerate)
-        UNUSED(outputResource)
 
         if (m_surface == nullptr)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetFullscreen Surface has already been deleted!")
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetFullscreen Surface has already been deleted!");
         }
     }
 
     void WaylandShellSurface::shellSurfaceSetPopup(IWaylandClient& client, IWaylandResource& seatResource, uint32_t serial, IWaylandResource& parentSurfaceResource, int32_t x,
                                                    int32_t y, uint32_t flags)
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetPopup")
+        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetPopup");
 
         UNUSED(client)
         UNUSED(seatResource)
@@ -183,31 +182,30 @@ namespace ramses_internal
 
         if (m_surface == nullptr)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetPopup Surface has already been deleted!")
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetPopup Surface has already been deleted!");
         }
     }
 
-    void WaylandShellSurface::shellSurfaceSetMaximized(IWaylandClient& client, IWaylandResource* outputResource)
+    void WaylandShellSurface::shellSurfaceSetMaximized(IWaylandClient& client)
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetMaximized")
+        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetMaximized");
 
         UNUSED(client)
-        UNUSED(outputResource)
 
         if (m_surface == nullptr)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetMaximized Surface has already been deleted!")
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetMaximized Surface has already been deleted!");
         }
     }
 
     void WaylandShellSurface::shellSurfaceSetTitle(IWaylandClient& client, const char* title)
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetTitle title: " << title)
+        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetTitle title: " << title);
         UNUSED(client)
 
         if (m_surface == nullptr)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfacePong Surface has already been deleted!")
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfacePong Surface has already been deleted!");
         }
         else
         {
@@ -217,14 +215,14 @@ namespace ramses_internal
 
     void WaylandShellSurface::shellSurfaceSetClass(IWaylandClient& client, const char* className)
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetClass")
+        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetClass");
 
         UNUSED(client)
         UNUSED(className)
 
         if (m_surface == nullptr)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetClass Surface has already been deleted!")
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetClass Surface has already been deleted!");
         }
     }
 
@@ -276,20 +274,12 @@ namespace ramses_internal
     }
 
     void WaylandShellSurface::ShellSurfaceSetFullscreenCallback(wl_client* client, wl_resource* surfaceResource, uint32_t method, uint32_t framerate,
-                                                                wl_resource* outputResource)
+                                                                wl_resource* /*outputResource*/)
     {
         WaylandShellSurface* shellSurface = reinterpret_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
         WaylandClient waylandClient(client);
 
-        if (nullptr != outputResource)
-        {
-            WaylandResource waylandOutputResource(outputResource, false);
-            shellSurface->shellSurfaceSetFullscreen(waylandClient, method, framerate, &waylandOutputResource);
-        }
-        else
-        {
-            shellSurface->shellSurfaceSetFullscreen(waylandClient, method, framerate, nullptr);
-        }
+        shellSurface->shellSurfaceSetFullscreen(waylandClient, method, framerate);
     }
 
     void WaylandShellSurface::ShellSurfaceSetPopupCallback(wl_client* client, wl_resource* surfaceResource, wl_resource* seatResource, uint32_t serial,
@@ -302,20 +292,12 @@ namespace ramses_internal
         shellSurface->shellSurfaceSetPopup(waylandClient, waylandSeatResource, serial, waylandParentSurfaceResource, x, y, flags);
     }
 
-    void WaylandShellSurface::ShellSurfaceSetMaximizedCallback(wl_client* client, wl_resource* surfaceResource, wl_resource* outputResource)
+    void WaylandShellSurface::ShellSurfaceSetMaximizedCallback(wl_client* client, wl_resource* surfaceResource, wl_resource* /*outputResource*/)
     {
         WaylandShellSurface* shellSurface = reinterpret_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
         WaylandClient waylandClient(client);
 
-        if (nullptr != outputResource)
-        {
-            WaylandResource waylandOutputResource(outputResource, false);
-            shellSurface->shellSurfaceSetMaximized(waylandClient, &waylandOutputResource);
-        }
-        else
-        {
-            shellSurface->shellSurfaceSetMaximized(waylandClient, nullptr);
-        }
+        shellSurface->shellSurfaceSetMaximized(waylandClient);
     }
 
     void WaylandShellSurface::ShellSurfaceSetTitleCallback(wl_client* client, wl_resource* surfaceResource, const char* title)

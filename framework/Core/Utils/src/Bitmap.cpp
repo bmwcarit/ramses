@@ -209,9 +209,6 @@ namespace ramses_internal
             }
             stream.write("\0\0\0",paddingBytes);
         }
-
-        stream.flush();
-        targetFile.close();
     }
 
     void Bitmap::loadFromFilePNG(const String& filename)

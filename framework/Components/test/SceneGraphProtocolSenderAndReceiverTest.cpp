@@ -46,7 +46,7 @@ namespace ramses_internal
 
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleNewScenesAvailable(newScenes, senderId)).WillOnce(SendHandlerCalledEvent(this));
+            EXPECT_CALL(consumerHandler, handleNewScenesAvailable(newScenes, senderId, EScenePublicationMode_LocalAndRemote)).WillOnce(SendHandlerCalledEvent(this));
         }
         EXPECT_TRUE(sender.broadcastNewScenesAvailable(newScenes));
         ASSERT_TRUE(waitForEvent());
@@ -77,8 +77,6 @@ namespace ramses_internal
 
     TEST_P(ASceneGraphProtocolSenderAndReceiverTest, broadcastScenesBecameUnavailable)
     {
-        PlatformThread::Sleep(1000);
-
         uint32_t numberMessagesSent = m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue();
         uint32_t numberMessagesReceived = m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue();
 
@@ -88,10 +86,24 @@ namespace ramses_internal
 
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleScenesBecameUnavailable(unavailableScenes, senderId)).WillOnce(SendHandlerCalledEvent(this));
+            EXPECT_CALL(consumerHandler, handleScenesBecameUnavailable(unavailableScenes, senderId)).WillRepeatedly(SendHandlerCalledEvent(this));
         }
-        EXPECT_TRUE(sender.broadcastScenesBecameUnavailable(unavailableScenes));
-        ASSERT_TRUE(waitForEvent());
+
+        // TODO(tobias) work around gtest versions that don't allow copying of AssertionResult
+        int i = 15;
+        do {
+            EXPECT_TRUE(sender.broadcastScenesBecameUnavailable(unavailableScenes));
+            testing::AssertionResult result{waitForEvent(1, 200)};
+            if (result)
+            {
+                break;
+            }
+            --i;
+            if (i == 0)
+            {
+                ASSERT_TRUE(result);
+            }
+        } while (i > 0);
 
         EXPECT_LE(numberMessagesSent + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
         EXPECT_LE(numberMessagesReceived + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
@@ -135,7 +147,7 @@ namespace ramses_internal
 
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleNewScenesAvailable(newScenes, senderId)).WillOnce(SendHandlerCalledEvent(this));
+            EXPECT_CALL(consumerHandler, handleNewScenesAvailable(newScenes, senderId, EScenePublicationMode_LocalAndRemote)).WillOnce(SendHandlerCalledEvent(this));
         }
         EXPECT_TRUE(sender.sendScenesAvailable(receiverId, newScenes));
         ASSERT_TRUE(waitForEvent());

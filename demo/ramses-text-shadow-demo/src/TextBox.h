@@ -42,7 +42,7 @@ private:
                          ramses::Node&              node,
                          ramses::LayoutUtils::StringBoundingBox& boundingBox);
 
-    ramses::TranslateNode& m_translateNode;
+    ramses::Node& m_translateNode;
 
     int32_t m_offsetX = 0;
     int32_t m_offsetY = 0;

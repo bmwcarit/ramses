@@ -44,10 +44,8 @@ int main(int argc, char* argv[])
 
     // every render pass needs a camera to define rendering parameters
     // create camera with perspective projection
-    ramses::TranslateNode* cameraTranslate = scene->createTranslateNode();
-    cameraTranslate->setTranslation(0.0f, 0.0f, 5.0f);
     ramses::PerspectiveCamera* camera = scene->createPerspectiveCamera("perspective camera of renderpass");
-    camera->setParent(*cameraTranslate);
+    camera->setTranslation(0.0f, 0.0f, 5.0f);
     camera->setFrustum(45.f, 640.f / 480.f, 1.f, 100.f);
     // use left side of the viewport
     camera->setViewport(0u, 0u, 640u, 480u);
@@ -92,16 +90,12 @@ int main(int argc, char* argv[])
     ramses::MeshNode* meshNodeB = scene->createMeshNode("green triangle mesh node");
     meshNodeB->setAppearance(*appearanceB);
     meshNodeB->setGeometryBinding(*geometry);
-    ramses::TranslateNode* translateNodeB = scene->createTranslateNode();
-    translateNodeB->setTranslation(0.5f, 0.5f, 0.0f);
-    translateNodeB->addChild(*meshNodeB);
+    meshNodeB->setTranslation(0.5f, 0.5f, 0.0f);
 
     ramses::MeshNode* meshNodeC = scene->createMeshNode("blue triangle mesh node");
     meshNodeC->setAppearance(*appearanceC);
     meshNodeC->setGeometryBinding(*geometry);
-    ramses::TranslateNode* translateNodeC = scene->createTranslateNode();
-    translateNodeC->setTranslation(0.75f, -0.25f, 0.0f);
-    translateNodeC->addChild(*meshNodeC);
+    meshNodeC->setTranslation(0.75f, -0.25f, 0.0f);
 
     // Add meshA with render order '1' to the render group where already the nested render group with render order '3' was added.
     // So meshA is rendered before every other element of the nested render group.

@@ -6,12 +6,7 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client-api/GroupNode.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/TranslateNode.h"
-#include "ramses-client-api/RotateNode.h"
-#include "ramses-client-api/ScaleNode.h"
-#include "ramses-client-api/VisibilityNode.h"
 #include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
@@ -46,7 +41,6 @@
 #include "ramses-client-api/SplineBezierVector2i.h"
 #include "ramses-client-api/SplineBezierVector3i.h"
 #include "ramses-client-api/SplineBezierVector4i.h"
-#include "ramses-client-api/TransformationNode.h"
 #include "ramses-client-api/TextureSampler.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderTarget.h"

@@ -26,6 +26,7 @@ namespace ramses_internal
     class IResourceUploader;
     class IRendererResourceCache;
     class FrameTimer;
+    class RendererStatistics;
 
     class RendererResourceManager : public IRendererResourceManager
     {
@@ -38,6 +39,7 @@ namespace ramses_internal
             RequesterID requesterId,
             Bool keepEffects,
             const FrameTimer& frameTimer,
+            RendererStatistics& stats,
             UInt64 clientResourceCacheSize = 0u);
         virtual ~RendererResourceManager();
 
@@ -127,6 +129,7 @@ namespace ramses_internal
         RendererClientResourceRegistry m_clientResourceRegistry;
         SceneResourceRegistryMap       m_sceneResourceRegistryMap;
         ClientResourceUploadingManager m_resourceUploadingManager;
+        RendererStatistics&            m_stats;
 
         const UInt64 m_numberOfFramesToRerequestResource = 60u;
         UInt64 m_frameCounter = 0u;

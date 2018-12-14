@@ -67,8 +67,8 @@ namespace ramses_internal
         void setSceneProviderServiceHandler(ISceneProviderServiceHandler* handler) override;
         void setSceneRendererServiceHandler(ISceneRendererServiceHandler* handler) override;
 
-        virtual void logConnectionInfo() const override;
-        virtual void triggerLogMessageForPeriodicLog() const override;
+        virtual void logConnectionInfo() override;
+        virtual void triggerLogMessageForPeriodicLog() override;
 
     private:
         struct OutMessage
@@ -103,10 +103,23 @@ namespace ramses_internal
             BinaryInputStream stream;
         };
 
-        typedef Pair<Guid, PlatformSocket*> GuidSocketPair;
+        struct SocketInfo
+        {
+            SocketInfo() {}
+            SocketInfo(const Guid& participant_, PlatformSocket* socket_)
+                : participant(participant_)
+                , socket(socket_)
+                , lastReceived(std::chrono::steady_clock::now())
+            {}
 
-        static const UInt32 resourceDataSizeSimilarToOtherStacks = 1300000;
-        static constexpr int32_t socketConnectTimeoutMs = 1500;
+            Guid participant{false};
+            PlatformSocket* socket = nullptr;
+            std::chrono::steady_clock::time_point lastSent;
+            std::chrono::steady_clock::time_point lastReceived;
+        };
+
+        static const constexpr UInt32 resourceDataSizeSimilarToOtherStacks = 1300000;
+        static const constexpr int32_t socketConnectTimeoutMs = 1500;
 
         bool sendMessage(OutMessage&& message);
 
@@ -119,8 +132,8 @@ namespace ramses_internal
         void connectToDaemon();
 
         void acceptIncomingConnection(PlatformServerSocket& serverSocket);
-        Bool sendConnectionDescriptionMessage(PlatformSocket& socket, const NetworkParticipantAddress& to, const EConnectionType& type);
-        Bool sendAddressExchangeMessage(PlatformSocket& socket, const NetworkParticipantAddress& address, const Guid& to) const;
+        Bool sendConnectionDescriptionMessage(SocketInfo& si, const NetworkParticipantAddress& to, const EConnectionType& type);
+        Bool sendAddressExchangeMessage(SocketInfo& si, const NetworkParticipantAddress& address, const Guid& to) const;
         void trackSocket(PlatformSocket& streamSocket);
         void socketHasData(PlatformSocket& socket);
         Bool connectWithType(const NetworkParticipantAddress& address, EConnectionType type, HashMap<Guid, PlatformSocket*>& socketMap);
@@ -130,23 +143,28 @@ namespace ramses_internal
         Bool shouldTryConnectTo(const Guid& otherId) const;
         bool dispatchReceivedMessage(InMessage& message);
         void tryConnectToOthers();
+        void handleLogRequests();
 
         void sendAllOutMessages(const Vector<OutMessage>& messagesToSend);
         void sendUnicastMessageToSocket(const OutMessage& message, Vector<Guid>& brokenConnections);
         void sendBroadcastMessageToSockets(const OutMessage& message, Vector<Guid>& brokenConnections);
-        Bool sendMessageToSocket(PlatformSocket& socket, const OutMessage& message) const;
+        Bool sendMessageToSocket(SocketInfo& si, const OutMessage& message) const;
 
         std::unique_ptr<InMessage> receiveMessageFromSocket(PlatformSocket& socket);
         bool readDataFromSocket(PlatformSocket& socket, char* buffer, UInt32 size);
 
-        void removeKnownParticipant(const Guid& idRef);
+        void removeKnownParticipant(const Guid& idRef, bool addForNewAttempt);
         void dropConnectionToNewlyAcceptedSocket(PlatformSocket& socket);
-        void addNewParticipantIfUnknown(const NetworkParticipantAddress& address);
-        Bool sendAddressExchangeForNewParticipant(PlatformSocket& newSocket, const NetworkParticipantAddress& newAddress);
+        void addNewParticipantIfUnknown(const NetworkParticipantAddress& address, const char* reason);
+        Bool sendAddressExchangeForNewParticipant(SocketInfo& si, const NetworkParticipantAddress& newAddress);
         void closeAndCleanupAllConnections();
 
         void clearMessageQueue();
         void sendAllMessagesInQueue();
+
+        bool sendAliveMessages();
+        bool checkConnectionsAlive();
+        bool removeConnectionsBySocket(const Vector<SocketInfo>& infos);
 
         void setReadyToSendMessages(bool state);
 
@@ -183,7 +201,7 @@ namespace ramses_internal
 
         PlatformLock m_mainLock;
         ScopedPointer<PlatformServerSocket> m_serverSocket;
-        ScopedPointer<PlatformSocket> m_daemonSocket;
+        SocketInfo m_daemonSocket;
         Vector<OutMessage> m_outMessagesToSend;
         Vector<PlatformSocket*> m_newlyAcceptedSockets;
 
@@ -191,10 +209,12 @@ namespace ramses_internal
         HashMap<Guid, NetworkParticipantAddress> m_knownParticipantAddresses;
         HashMap<Guid, PlatformSocket*> m_controlSockets;
         HashMap<Guid, PlatformSocket*> m_dataSockets;
-        HashMap<PlatformSocket*, GuidSocketPair> m_platformSocketMap;
+        HashMap<PlatformSocket*, SocketInfo> m_platformSocketMap;
         bool m_readyToSend;
 
         StatisticCollectionFramework& m_statisticCollection;
+        std::atomic<bool> m_requestLogConnectionInfo{false};
+        std::atomic<bool> m_requestLogMessageForPeriodicLog{false};
     };
 }
 

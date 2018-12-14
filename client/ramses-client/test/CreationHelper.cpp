@@ -11,7 +11,6 @@
 #include "TestEffects.h"
 #include "ramses-client-api/Node.h"
 #include "ramses-client-api/Scene.h"
-#include "ramses-client-api/TransformationNode.h"
 #include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/Animation.h"
 #include "ramses-client-api/AnimatedSetter.h"
@@ -50,9 +49,7 @@
 #include "ramses-client-api/UInt32Array.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderTarget.h"
-#include "ramses-client-api/VisibilityNode.h"
 #include "ramses-client-api/EffectInputSemantic.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/DataFloat.h"
@@ -149,29 +146,13 @@ namespace ramses
     {
         return m_scene->createRealTimeAnimationSystem(ramses::EAnimationSystemFlags_Default, name);
     }
-    template <> GroupNode* CreationHelper::createObjectOfType<GroupNode>(const char* name)
+    template <> Node* CreationHelper::createObjectOfType<Node>(const char* name)
     {
-        return m_scene->createGroupNode(name);
-    }
-    template <> TranslateNode* CreationHelper::createObjectOfType<TranslateNode>(const char* name)
-    {
-        return m_scene->createTranslateNode(name);
-    }
-    template <> RotateNode* CreationHelper::createObjectOfType<RotateNode>(const char* name)
-    {
-        return m_scene->createRotateNode(name);
-    }
-    template <> ScaleNode* CreationHelper::createObjectOfType<ScaleNode>(const char* name)
-    {
-        return m_scene->createScaleNode(name);
+        return m_scene->createNode(name);
     }
     template <> MeshNode* CreationHelper::createObjectOfType<MeshNode>(const char* name)
     {
         return m_scene->createMeshNode(name);
-    }
-    template <> TransformationNode* CreationHelper::createObjectOfType<TransformationNode>(const char* name)
-    {
-        return m_scene->createTransformationNode(name);
     }
     template <> RemoteCamera* CreationHelper::createObjectOfType<RemoteCamera>(const char* name)
     {
@@ -194,15 +175,15 @@ namespace ramses
     }
     template <> AnimatedProperty* CreationHelper::createObjectOfType<AnimatedProperty>(const char* name)
     {
-        TranslateNode& node = *m_scene->createTranslateNode("node");
+        Node& node = *m_scene->createNode("node");
         m_additionalAllocatedSceneObjects.push_back(&node);
-        return m_animationSystem->createAnimatedProperty(node, EAnimatedPropertyComponent_All, name);
+        return m_animationSystem->createAnimatedProperty(node, EAnimatedProperty_Translation, EAnimatedPropertyComponent_All, name);
     }
     template <> Animation* CreationHelper::createObjectOfType<Animation>(const char* name)
     {
-        TranslateNode& node = *m_scene->createTranslateNode("node");
+        Node& node = *m_scene->createNode("node");
         m_additionalAllocatedSceneObjects.push_back(&node);
-        AnimatedProperty& prop = *m_animationSystem->createAnimatedProperty(node);
+        AnimatedProperty& prop = *m_animationSystem->createAnimatedProperty(node, EAnimatedProperty_Translation);
         SplineLinearVector3f& spline = *m_animationSystem->createSplineLinearVector3f("spline");
         m_additionalAllocatedAnimationSystemObjects.push_back(&prop);
         m_additionalAllocatedAnimationSystemObjects.push_back(&spline);
@@ -214,9 +195,9 @@ namespace ramses
     }
     template <> AnimatedSetter* CreationHelper::createObjectOfType<AnimatedSetter>(const char* name)
     {
-        TranslateNode& node = *m_scene->createTranslateNode("node");
+        Node& node = *m_scene->createNode("node");
         m_additionalAllocatedSceneObjects.push_back(&node);
-        AnimatedProperty& prop = *m_animationSystem->createAnimatedProperty(node);
+        AnimatedProperty& prop = *m_animationSystem->createAnimatedProperty(node, EAnimatedProperty_Translation);
         m_additionalAllocatedAnimationSystemObjects.push_back(&prop);
         return m_animationSystem->createAnimatedSetter(prop, name);
     }
@@ -405,11 +386,6 @@ namespace ramses
         RenderTargetDescription rtDesc;
         rtDesc.addRenderBuffer(*createObjectOfType<RenderBuffer>("rb"));
         return m_scene->createRenderTarget(rtDesc, name);
-    }
-
-    template <> VisibilityNode* CreationHelper::createObjectOfType<VisibilityNode>(const char* name)
-    {
-        return m_scene->createVisibilityNode(name);
     }
 
     Effect* createFakeEffectWithPositions(RamsesClient& client)

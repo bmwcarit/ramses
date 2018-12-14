@@ -9,7 +9,6 @@
 #include "TestScenes/TextScene.h"
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Effect.h"
@@ -33,6 +32,7 @@ namespace ramses_internal
         m_chineseFont = m_fontRegistry.createFreetype2FontInstance(chineseFont, 32u);
         m_lightFont = m_fontRegistry.createFreetype2FontInstance(lightFont, 26u);
         m_lightAutoHintFont = m_fontRegistry.createFreetype2FontInstance(lightFont, 26u, true);
+        m_lightAutoHintAndReshapeFont = m_fontRegistry.createFreetype2FontInstanceWithHarfBuzz(lightFont, 26u, true);
         m_shapingArabicFont = m_fontRegistry.createFreetype2FontInstanceWithHarfBuzz(arabicFont, 26u);
         m_shapingArabicAutoHintFont = m_fontRegistry.createFreetype2FontInstanceWithHarfBuzz(arabicFont, 26u, true);
 
@@ -77,7 +77,7 @@ namespace ramses_internal
 
         //str = U"الصحة (autohint)";
         str = { 0x627, 0x644, 0x635, 0x62d, 0x629, 0x20, 0x028, 0x061, 0x075, 0x074, 0x06f, 0x068, 0x069, 0x06e, 0x074, 0x029 };
-        const ramses::FontInstanceOffsets fontOffsets{ { m_shapingArabicAutoHintFont, 0u },{ m_lightAutoHintFont, 5u } };
+        const ramses::FontInstanceOffsets fontOffsets{ { m_shapingArabicAutoHintFont, 0u },{ m_lightAutoHintAndReshapeFont, 5u } };
         glyphMetrics = m_textCache.getPositionedGlyphs(str, fontOffsets);
         m_textShapingAutoHint = m_textCache.createTextLine(glyphMetrics, *textEffect);
         m_meshShapingAutoHint = m_textCache.getTextLine(m_textShapingAutoHint)->meshNode;
@@ -109,15 +109,15 @@ namespace ramses_internal
         for (auto textMesh : { m_meshChinese, m_meshFontCascade, m_meshFontCascadeWithVerticalOffset })
             textMesh->getAppearance()->setInputValueVector4f(colorInput, 0.0f, 0.0f, 1.0f, 1.0f);
 
-        ramses::TranslateNode* translateUTF = m_scene.createTranslateNode();
-        ramses::TranslateNode* translateASCII = m_scene.createTranslateNode();
-        ramses::TranslateNode* translateDigits = m_scene.createTranslateNode();
-        ramses::TranslateNode* translateChinese = m_scene.createTranslateNode();
-        ramses::TranslateNode* translateLight = m_scene.createTranslateNode();
-        ramses::TranslateNode* translateLightAutoHinting = m_scene.createTranslateNode();
-        ramses::TranslateNode* translateFontCascade = m_scene.createTranslateNode();
-        ramses::TranslateNode* translateShaping = m_scene.createTranslateNode();
-        ramses::TranslateNode* translateShapingAutoHint = m_scene.createTranslateNode();
+        ramses::Node* translateUTF = m_scene.createNode();
+        ramses::Node* translateASCII = m_scene.createNode();
+        ramses::Node* translateDigits = m_scene.createNode();
+        ramses::Node* translateChinese = m_scene.createNode();
+        ramses::Node* translateLight = m_scene.createNode();
+        ramses::Node* translateLightAutoHinting = m_scene.createNode();
+        ramses::Node* translateFontCascade = m_scene.createNode();
+        ramses::Node* translateShaping = m_scene.createNode();
+        ramses::Node* translateShapingAutoHint = m_scene.createNode();
 
         translateUTF->setTranslation(2, 10, -1);
         translateASCII->setTranslation(2, 80, -1);

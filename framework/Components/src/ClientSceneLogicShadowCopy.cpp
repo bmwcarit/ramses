@@ -54,7 +54,7 @@ namespace ramses_internal
                         for (const auto& sub : m_subscribersWaitingForScene)
                             sos << sub << " ";
                         sos << "]";
-                    }))
+                    }));
         }
 
         ++m_flushCounter;

@@ -41,13 +41,14 @@ TEST_F(ARendererCommands, createsCommandForScenePublication)
 {
     const SceneId sceneId(12u);
     const Guid clientID(true);
-    queue.publishScene(sceneId, clientID);
+    queue.publishScene(sceneId, clientID, EScenePublicationMode_LocalAndRemote);
 
     EXPECT_EQ(1u, queue.getCommands().getTotalCommandCount());
     EXPECT_EQ(ERendererCommand_PublishedScene, queue.getCommands().getCommandType(0));
 
     const SceneInfoCommand& command = queue.getCommands().getCommandData<SceneInfoCommand>(0);
     EXPECT_EQ(sceneId, command.sceneInformation.sceneID);
+    EXPECT_EQ(EScenePublicationMode_LocalAndRemote, command.sceneInformation.publicationMode);
     EXPECT_EQ(clientID, command.clientID);
 }
 
@@ -616,6 +617,30 @@ TEST_F(ARendererCommands, createsCommandForSettingFrameTimerLimits)
         EXPECT_EQ(10u, command.limitForClientResourcesUploadMicrosec);
         EXPECT_EQ(20u, command.limitForSceneActionsApplyMicrosec);
         EXPECT_EQ(30u, command.limitForOffscreenBufferRenderMicrosec);
+    }
+}
+
+TEST_F(ARendererCommands, createsCommandForSettingLimitFlushesBeforeForceApply)
+{
+    queue.setForceApplyPendingFlushesLimit(99u);
+
+    EXPECT_EQ(1u, queue.getCommands().getTotalCommandCount());
+    {
+        const auto& command = queue.getCommands().getCommandData<SetFrameTimerLimitsCommmand>(0);
+        EXPECT_EQ(ERendererCommand_SetLimits_FlushesForceApply, queue.getCommands().getCommandType(0));
+        EXPECT_EQ(99u, command.limitForPendingFlushesForceApply);
+    }
+}
+
+TEST_F(ARendererCommands, createsCommandForSettingLimitFlushesBeforeSceneForceUnsubscribed)
+{
+    queue.setForceUnsubscribeLimits(55u);
+
+    EXPECT_EQ(1u, queue.getCommands().getTotalCommandCount());
+    {
+        const auto& command = queue.getCommands().getCommandData<SetFrameTimerLimitsCommmand>(0);
+        EXPECT_EQ(ERendererCommand_SetLimits_FlushesForceUnsubscribe, queue.getCommands().getCommandType(0));
+        EXPECT_EQ(55u, command.limitForPendingFlushesForceUnsubscribe);
     }
 }
 

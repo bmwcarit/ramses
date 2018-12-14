@@ -9,7 +9,6 @@
 #include "TestScenes/MsaaRenderBufferScene.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/PerspectiveCamera.h"
-#include "ramses-client-api/TransformationNode.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
@@ -75,7 +74,7 @@ namespace ramses_internal
     {
         ramses::MeshNode& meshNode = createMesh();
 
-        ramses::TransformationNode& transNode = *m_scene.createTransformationNode();
+        ramses::Node& transNode = *m_scene.createNode();
         transNode.addChild(meshNode);
         transNode.translate(0.0f, -0.5f, -5.0f);
 

@@ -8,7 +8,7 @@
 
 #define WL_HIDE_DEPRECATED
 #include "EmbeddedCompositor_Wayland/WaylandBufferResource.h"
-#include "UnixUtilities/UnixDomainSocketHelper.h"
+#include "WaylandUtilities/UnixDomainSocketHelper.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "WaylandUtilities/WaylandUtilities.h"
 #include "Utils/ThreadBarrier.h"
@@ -288,7 +288,7 @@ namespace ramses_internal
         ASSERT_TRUE(m_client != nullptr);
 
         wl_resource*          resource = wl_resource_create(m_client, &wl_buffer_interface, 1, 0);
-        WaylandBufferResource waylandOutputResource(resource, true);
+        WaylandBufferResource waylandBufferResource(resource, true);
     }
 
     TEST_F(AWaylandBufferResource, CanGetSharedMemoryWidthHeightAndData)

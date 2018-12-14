@@ -26,7 +26,7 @@ namespace ramses
     status_t SplineBezierVector3f::setKey(splineTimeStamp_t timeStamp, float x, float y, float z, float tangentIn_x, float tangentIn_y, float tangentOut_x, float tangentOut_y)
     {
         const status_t status = impl.setSplineKeyBezierVector3f(timeStamp, x, y, z, tangentIn_x, tangentIn_y, tangentOut_x, tangentOut_y);
-        LOG_HL_CLIENT_API8(status, timeStamp, x, y, z, tangentIn_x, tangentIn_y, tangentOut_x, tangentOut_y)
+        LOG_HL_CLIENT_API8(status, timeStamp, x, y, z, tangentIn_x, tangentIn_y, tangentOut_x, tangentOut_y);
         return status;
     }
 

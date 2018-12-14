@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
 
     // create font registry to hold font memory and text cache to cache text meshes
     ramses::FontRegistry fontRegistry;
-    ramses::TextCache textCache(*scene, fontRegistry, 2048u, 2048u);
+    ramses::TextCache textCache(*scene, fontRegistry, 1024u, 1024u);
 
     framework.connect();
 

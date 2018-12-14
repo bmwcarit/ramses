@@ -116,7 +116,8 @@ namespace ramses_internal
         SceneDescriber::describeScene<IScene>(scene, creator);
 
         SceneResourceChanges resourceChanges;
-        SceneResourceUtils::GetSceneResourceChangesFromScene(resourceChanges, scene);
+        size_t sceneResourcesSize = 0u;
+        SceneResourceUtils::GetSceneResourceChangesFromScene(resourceChanges, scene, sceneResourcesSize);
 
         // flush asynchronously & check if there already was a named flush
         creator.flush(
@@ -126,6 +127,11 @@ namespace ramses_internal
             scene.getSceneSizeInformation(),
             resourceChanges,
             flushTimeInfo);
+
+        LOG_INFO(CONTEXT_CLIENT, "Sending scene " << scene.getSceneId() << " to " << m_subscribersWaitingForScene.size() << " subscribers, " <<
+            collection.numberOfActions() << " scene actions (" << collection.collectionData().size() << " bytes)" <<
+            resourceChanges.m_addedClientResourceRefs.size() << " client resources, " <<
+            resourceChanges.m_sceneResourceActions.size() << " scene resource actions (" << sceneResourcesSize << " bytes in total used by scene resources)");
 
         ramses_foreach(m_subscribersWaitingForScene, subscriber)
         {

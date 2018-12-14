@@ -8,10 +8,6 @@
 
 // API
 #include "ramses-client-api/AnimationSystem.h"
-#include "ramses-client-api/TranslateNode.h"
-#include "ramses-client-api/RotateNode.h"
-#include "ramses-client-api/ScaleNode.h"
-#include "ramses-client-api/TransformationNode.h"
 #include "ramses-client-api/Node.h"
 #include "ramses-client-api/Spline.h"
 #include "ramses-client-api/DataObject.h"
@@ -62,7 +58,7 @@ namespace ramses
     status_t AnimationSystem::setTime(globalTimeStamp_t timeStamp)
     {
         const status_t status = impl.setTime(timeStamp);
-        LOG_HL_CLIENT_API1(status, timeStamp)
+        LOG_HL_CLIENT_API1(status, timeStamp);
         return status;
     }
 
@@ -279,27 +275,6 @@ namespace ramses
         const status_t status = impl.destroy(animationObject);
         LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(animationObject));
         return status;
-    }
-
-    AnimatedProperty* AnimationSystem::createAnimatedProperty(const TranslateNode& propertyOwner, EAnimatedPropertyComponent propertyComponent, const char* name)
-    {
-        AnimatedProperty* animatedProperty = impl.createAnimatedProperty(propertyOwner.impl, EAnimatedProperty_Translation, propertyComponent, name);
-        LOG_HL_CLIENT_API3(LOG_API_RAMSESOBJECT_PTR_STRING(animatedProperty), LOG_API_RAMSESOBJECT_STRING(propertyOwner), propertyComponent, name);
-        return animatedProperty;
-    }
-
-    AnimatedProperty* AnimationSystem::createAnimatedProperty(const RotateNode& propertyOwner, EAnimatedPropertyComponent propertyComponent, const char* name)
-    {
-        AnimatedProperty* animatedProperty = impl.createAnimatedProperty(propertyOwner.impl, EAnimatedProperty_Rotation, propertyComponent, name);
-        LOG_HL_CLIENT_API3(LOG_API_RAMSESOBJECT_PTR_STRING(animatedProperty), LOG_API_RAMSESOBJECT_STRING(propertyOwner), propertyComponent, name);
-        return animatedProperty;
-    }
-
-    AnimatedProperty* AnimationSystem::createAnimatedProperty(const ScaleNode& propertyOwner, EAnimatedPropertyComponent propertyComponent, const char* name)
-    {
-        AnimatedProperty* animatedProperty = impl.createAnimatedProperty(propertyOwner.impl, EAnimatedProperty_Scaling, propertyComponent, name);
-        LOG_HL_CLIENT_API3(LOG_API_RAMSESOBJECT_PTR_STRING(animatedProperty), LOG_API_RAMSESOBJECT_STRING(propertyOwner), propertyComponent, name);
-        return animatedProperty;
     }
 
     AnimatedProperty* AnimationSystem::createAnimatedProperty(const Node& propertyOwner, EAnimatedProperty property, EAnimatedPropertyComponent propertyComponent, const char* name)

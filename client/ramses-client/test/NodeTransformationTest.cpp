@@ -8,11 +8,6 @@
 
 #include <gtest/gtest.h>
 
-#include "ramses-client-api/TranslateNode.h"
-#include "ramses-client-api/RotateNode.h"
-#include "ramses-client-api/ScaleNode.h"
-#include "ramses-client-api/TransformationNode.h"
-#include "ramses-client-api/GroupNode.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
@@ -151,7 +146,7 @@ namespace ramses
         {
             const ramses_internal::IScene& iscene = this->m_scene.impl.getIScene();
             ramses_internal::SceneInfo info(iscene.getSceneId(), iscene.getName());
-            EXPECT_CALL(this->sceneActionsCollector, handleNewScenesAvailable(ramses_internal::SceneInfoVector(1, info), _));
+            EXPECT_CALL(this->sceneActionsCollector, handleNewScenesAvailable(ramses_internal::SceneInfoVector(1, info), _, _));
             EXPECT_CALL(this->sceneActionsCollector, handleInitializeScene(info, _));
             EXPECT_EQ(StatusOK, m_scene.publish(EScenePublicationMode_LocalOnly));
 

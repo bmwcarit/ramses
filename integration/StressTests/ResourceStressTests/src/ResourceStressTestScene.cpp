@@ -21,7 +21,6 @@
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/UniformInput.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/UInt16Array.h"

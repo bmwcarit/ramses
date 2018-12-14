@@ -10,6 +10,7 @@
 #include "SHMBuffer.h"
 #include "Utils/LogMacros.h"
 #include "Common/Cpp11Macros.h"
+#include "WaylandUtilities/WaylandUtilities.h"
 #include <GLES3/gl3.h>
 
 bool WaylandHandler::init()
@@ -199,6 +200,7 @@ bool WaylandHandler::setupEGL()
         EGL_NONE
     };
 
+    assert(nullptr != wayland.display);
     egldisplay = eglGetDisplay(static_cast<EGLNativeDisplayType>(wayland.display));
     LOG_INFO(ramses_internal::CONTEXT_RENDERER, "WaylandHandler::setupEGL(): Display: " << egldisplay);
 
@@ -208,13 +210,13 @@ bool WaylandHandler::setupEGL()
         EGLint minor;
         if (eglInitialize(egldisplay, &major, &minor) != EGL_TRUE)
         {
-            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "WaylandHandler::setupEGL(): eglInitialize failed !");
+            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "WaylandHandler::setupEGL(): eglInitialize failed with code :" << eglGetError());
             return false;
         }
         LOG_INFO(ramses_internal::CONTEXT_RENDERER, "WaylandHandler::setupEGL(): EGL version: " << major << "." << minor);
         if (eglBindAPI(EGL_OPENGL_ES_API) != EGL_TRUE)
         {
-            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "WaylandHandler::setupEGL(): eglBindAPI failed !");
+            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "WaylandHandler::setupEGL(): eglBindAPI with code :" << eglGetError());
             return false;
         }
     }
@@ -261,14 +263,6 @@ void WaylandHandler::registry_handle_global(void *data, struct wl_registry *regi
     {
         waylandHandler->wayland.shm = static_cast<wl_shm*>(wl_registry_bind(registry, name, &wl_shm_interface, version));
     }
-    else if (strcmp(interface, "wl_output") == 0)
-    {
-        waylandHandler->wayland.output = static_cast<wl_output*>(wl_registry_bind(registry, name, &wl_output_interface, version));
-        if (waylandHandler->wayland.output)
-        {
-            wl_output_add_listener(waylandHandler->wayland.output, &waylandHandler->m_outputListener, waylandHandler);
-        }
-    }
 }
 
 void WaylandHandler::registry_handle_global_remove(void* data, wl_registry* wl_registry, uint32_t name)
@@ -281,6 +275,8 @@ void WaylandHandler::registry_handle_global_remove(void* data, wl_registry* wl_r
 bool WaylandHandler::setupWayland()
 {
     LOG_INFO(ramses_internal::CONTEXT_RENDERER, "WaylandHandler::setupWayland(): will connect to display");
+
+    assert(ramses_internal::WaylandUtilities::IsEnvironmentInProperState());
     wayland.display = wl_display_connect(NULL);
     if (wayland.display == nullptr)
     {
@@ -332,11 +328,6 @@ void WaylandHandler::closeWayland()
     {
         wl_registry_destroy(wayland.registry);
         wayland.registry = nullptr;
-    }
-    if (wayland.output != nullptr)
-    {
-        wl_output_destroy(wayland.output);
-        wayland.output = nullptr;
     }
     if (wayland.display != nullptr)
     {
@@ -652,99 +643,6 @@ WaylandWindow& WaylandHandler::getWindow(ramses_internal::TestApplicationSurface
     }
 }
 
-void WaylandHandler::OutputHandleGeometry(void* data, wl_output* output, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height,
-                                          int32_t subpixel, const char* make, const char* model, int32_t transform)
-{
-    UNUSED(data)
-    UNUSED(output)
-    UNUSED(x)
-    UNUSED(y)
-    UNUSED(physical_width)
-    UNUSED(physical_height)
-    UNUSED(subpixel)
-    UNUSED(make)
-    UNUSED(model)
-    UNUSED(transform)
-}
-
-void WaylandHandler::outputHandleMode(wl_output* output, uint32_t flags, int32_t width, int32_t height, int32_t refresh)
-{
-    UNUSED(output)
-    UNUSED(refresh)
-
-    LOG_INFO(ramses_internal::CONTEXT_RENDERER, "WaylandHandler::outputHandleMode width: " << width << " height: " << height << " refresh: " << refresh);
-
-    assert(wayland.output == output);
-
-    if (flags & WL_OUTPUT_MODE_CURRENT)
-    {
-        m_outputWidth   = width;
-        m_outputHeight  = height;
-    }
-}
-
-void WaylandHandler::outputHandleDone(wl_output* output)
-{
-    LOG_INFO(ramses_internal::CONTEXT_RENDERER, "WaylandHandler::outputHandleDone")
-
-    assert(wayland.output == output);
-
-#ifdef WL_OUTPUT_RELEASE_SINCE_VERSION
-    wl_output_release(output);
-#else
-    UNUSED(output)
-#endif
-    wayland.output = nullptr;
-    m_outputDoneCount++;
-}
-
-void WaylandHandler::outputHandleScale(wl_output* output, int32_t factor)
-{
-    UNUSED(output)
-    LOG_INFO(ramses_internal::CONTEXT_RENDERER, "WaylandHandler::outputHandleScale factor: " << factor)
-
-    assert(wayland.output == output);
-
-    m_outputScale = factor;
-}
-
-void WaylandHandler::OutputHandleMode(void* data, wl_output* output, uint32_t flags, int32_t width, int32_t height, int32_t refresh)
-{
-    WaylandHandler* waylandHandler = static_cast<WaylandHandler*>(data);
-    waylandHandler->outputHandleMode(output, flags, width, height, refresh);
-}
-
-void WaylandHandler::OutputHandleDone(void *data, wl_output* output)
-{
-    WaylandHandler* waylandHandler = static_cast<WaylandHandler*>(data);
-    waylandHandler->outputHandleDone(output);
-}
-
-void WaylandHandler::OutputHandleScale(void *data, wl_output* output, int32_t factor)
-{
-    WaylandHandler* waylandHandler = static_cast<WaylandHandler*>(data);
-    waylandHandler->outputHandleScale(output, factor);
-}
-
-int32_t WaylandHandler::getOutputWidth() const
-{
-    return m_outputWidth;
-}
-
-int32_t WaylandHandler::getOutputHeight() const
-{
-    return m_outputHeight;
-}
-
-uint32_t WaylandHandler::getOutputDoneCount() const
-{
-    return m_outputDoneCount;
-}
-int32_t WaylandHandler::getOutputScale() const
-{
-    return m_outputScale;
-}
-
 wl_shell_surface& WaylandHandler::getShellSurface(ramses_internal::TestApplicationShellSurfaceId shellSurfaceId) const
 {
     auto i = m_shellSurfaces.find(shellSurfaceId);
@@ -778,8 +676,6 @@ void WaylandHandler::setShellSurfaceDummyValues(ramses_internal::TestApplication
     wl_shell_surface_set_toplevel(&shellSurface);
     wl_shell_surface_pong(&shellSurface, 0);
     wl_shell_surface_set_transient(&shellSurface, window.surface, 0, 0, 0);
-    wl_shell_surface_set_fullscreen(&shellSurface, 0, 0, wayland.output);
-    wl_shell_surface_set_maximized(&shellSurface, wayland.output);
     wl_shell_surface_set_class(&shellSurface, "ClassName");
 }
 

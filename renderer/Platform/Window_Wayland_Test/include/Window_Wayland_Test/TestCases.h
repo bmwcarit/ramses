@@ -145,13 +145,13 @@ namespace ramses_internal
 
     TYPED_TEST_P(AWindowWayland, IfXdgRuntimeDirIsNotSetInitWillFail)
     {
-        this->m_environment.unsetVariable(EnvironmentVariableName::XDGRuntimeDir);
+        WaylandEnvironmentUtils::UnsetVariable(WaylandEnvironmentVariable::XDGRuntimeDir);
         EXPECT_FALSE(this->m_window->init());
     }
 
     TYPED_TEST_P(AWindowWayland, IfXdgRuntimeDirIsNotCorrectInitWillFail)
     {
-        this->m_environment.setVariable(EnvironmentVariableName::XDGRuntimeDir, "/this/should/lead/nowhere");
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, "/this/should/lead/nowhere");
         EXPECT_FALSE(this->m_window->init());
     }
 
@@ -159,17 +159,17 @@ namespace ramses_internal
     {
         UnixDomainSocketHelper socketHelper = UnixDomainSocketHelper("wayland-0");
 
-        this->m_environment.unsetVariable(EnvironmentVariableName::XDGRuntimeDir);
+        WaylandEnvironmentUtils::UnsetVariable(WaylandEnvironmentVariable::XDGRuntimeDir);
 
         String fileDescriptor = StringUtils::IToA(socketHelper.createConnectedFileDescriptor(true));
-        this->m_environment.setVariable(EnvironmentVariableName::WaylandSocket, fileDescriptor.c_str());
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, fileDescriptor.c_str());
 
         EXPECT_TRUE(this->m_window->init());
     }
 
     TYPED_TEST_P(AWindowWayland, IfWaylandDisplayIsNotCorrectInitWillFail)
     {
-        this->m_environment.setVariable(EnvironmentVariableName::WaylandDisplay, "SomeFilenameThatDoesNotExist");
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandDisplay, "SomeFilenameThatDoesNotExist");
         EXPECT_FALSE(this->m_window->init());
     }
 
@@ -178,7 +178,7 @@ namespace ramses_internal
         UnixDomainSocketHelper socketHelper = UnixDomainSocketHelper("wayland-0");
 
         String fileDescriptor = StringUtils::IToA(socketHelper.createConnectedFileDescriptor(true));
-        this->m_environment.setVariable(EnvironmentVariableName::WaylandSocket, fileDescriptor.c_str());
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, fileDescriptor.c_str());
 
         EXPECT_TRUE(this->m_window->init());
     }
@@ -190,8 +190,8 @@ namespace ramses_internal
 
         // just set the environment variable to some value, without ever creating the
         // socket
-        this->m_environment.setVariable(EnvironmentVariableName::WaylandSocket, "33");
-        this->m_environment.unsetVariable(EnvironmentVariableName::XDGRuntimeDir);
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, "33");
+        WaylandEnvironmentUtils::UnsetVariable(WaylandEnvironmentVariable::XDGRuntimeDir);
 
         EXPECT_FALSE(this->m_window->init());
     }
@@ -201,8 +201,8 @@ namespace ramses_internal
         UnixDomainSocketHelper socketHelper = UnixDomainSocketHelper("wayland-0");
 
         String fileDescriptor = StringUtils::IToA(socketHelper.createConnectedFileDescriptor(false));
-        this->m_environment.setVariable(EnvironmentVariableName::WaylandSocket, fileDescriptor.c_str());
-        this->m_environment.setVariable(EnvironmentVariableName::WaylandDisplay, "wayland-0");
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, fileDescriptor.c_str());
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandDisplay, "wayland-0");
 
         EXPECT_FALSE(this->m_window->init());
     }

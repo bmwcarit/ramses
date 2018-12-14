@@ -28,7 +28,7 @@ namespace ramses_capu
     };
 
     HANDLE os::Console::m_event = INVALID_HANDLE_VALUE;
-    os::LightweightMutex os::Console::interruptMutex;
+    std::mutex os::Console::interruptMutex;
 
     ramses_capu::status_t os::Console::ReadOneCharacter(HANDLE fileHandle, char& buffer)
     {

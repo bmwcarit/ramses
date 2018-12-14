@@ -27,7 +27,7 @@ namespace ramses_internal
         RendererCommandBuffer();
 
         // overwrite methods from RendererCommands
-        void publishScene(SceneId sceneId, const Guid& clientID);
+        void publishScene(SceneId sceneId, const Guid& clientID, EScenePublicationMode mode);
         void unpublishScene(SceneId sceneId);
         void receiveScene(const SceneInfo& sceneInfo);
         void subscribeScene(SceneId sceneId);
@@ -73,6 +73,8 @@ namespace ramses_internal
         void setFrameProfilerFilteredRegionFlags(UInt32 flags);
 
         void setFrameTimerLimits(UInt64 limitForClientResourcesUploadMicrosec, UInt64 limitForSceneActionsApplyMicrosec, UInt64 limitForOffscreenBufferRenderMicrosec);
+        void setLimitsFlushesForceApply(UInt limitFlushesForceApply);
+        void setLimitsFlushesForceUnsubscribe(UInt limitFlushesForceUnsubscribe);
         void setSkippingOfUnmodifiedBuffers(Bool enable);
 
         // own functions

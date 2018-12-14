@@ -10,7 +10,6 @@
 #include "EmbeddedCompositor_Wayland/WaylandShellSurface.h"
 #include "EmbeddedCompositor_Wayland/IWaylandShellConnection.h"
 #include "EmbeddedCompositor_Wayland/WaylandResource.h"
-#include "EmbeddedCompositor_Wayland/WaylandOutputResource.h"
 #include "Utils/LogMacros.h"
 
 namespace ramses_internal

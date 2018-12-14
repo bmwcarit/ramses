@@ -12,10 +12,10 @@
 #include "ramses-client.h"
 #include "ramses-framework-api/RamsesFramework.h"
 #include "ramses-text.h"
-#include "ramses-text-bmw.h"
 
 int main(int argc, char* argv[])
 {
+    printf("Start ramses-shared-lib-check client only\n");
     ramses::RamsesFramework framework(argc, argv);
     framework.isConnected();
 
@@ -23,7 +23,6 @@ int main(int argc, char* argv[])
     ramses::Scene* scene = ramses.createScene(1u);
     scene->isPublished();
 
-    ramses::BmwFontRegistry bmwFontRegistry;
-
+    printf("End ramses-shared-lib-check client only\n");
     return 0;
 }

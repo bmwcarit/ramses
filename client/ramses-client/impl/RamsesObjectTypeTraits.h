@@ -78,11 +78,6 @@ namespace ramses
     DEFINE_RAMSES_OBJECT_TRAITS(Scene, ERamsesObjectType_Scene, ERamsesObjectType_ClientObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(AnimationSystem, ERamsesObjectType_AnimationSystem, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(AnimationSystemRealTime, ERamsesObjectType_AnimationSystemRealTime, ERamsesObjectType_AnimationSystem, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(GroupNode, ERamsesObjectType_GroupNode, ERamsesObjectType_Node, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(TranslateNode, ERamsesObjectType_TranslateNode, ERamsesObjectType_Node, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(RotateNode, ERamsesObjectType_RotateNode, ERamsesObjectType_Node, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(ScaleNode, ERamsesObjectType_ScaleNode, ERamsesObjectType_Node, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(TransformationNode, ERamsesObjectType_TransformationNode, ERamsesObjectType_Node, true);
     DEFINE_RAMSES_OBJECT_TRAITS(MeshNode, ERamsesObjectType_MeshNode, ERamsesObjectType_Node, true);
     DEFINE_RAMSES_OBJECT_TRAITS(RemoteCamera, ERamsesObjectType_RemoteCamera, ERamsesObjectType_Camera, true);
     DEFINE_RAMSES_OBJECT_TRAITS(PerspectiveCamera, ERamsesObjectType_PerspectiveCamera, ERamsesObjectType_LocalCamera, true);
@@ -138,7 +133,6 @@ namespace ramses
     DEFINE_RAMSES_OBJECT_TRAITS(TextureSampler, ERamsesObjectType_TextureSampler, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(RenderBuffer, ERamsesObjectType_RenderBuffer, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(RenderTarget, ERamsesObjectType_RenderTarget, ERamsesObjectType_SceneObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(VisibilityNode, ERamsesObjectType_VisibilityNode, ERamsesObjectType_Node, true);
     DEFINE_RAMSES_OBJECT_TRAITS(DataFloat, ERamsesObjectType_DataFloat, ERamsesObjectType_DataObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(DataVector2f, ERamsesObjectType_DataVector2f, ERamsesObjectType_DataObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(DataVector3f, ERamsesObjectType_DataVector3f, ERamsesObjectType_DataObject, true);
@@ -155,7 +149,7 @@ namespace ramses
     DEFINE_RAMSES_OBJECT_TRAITS(ClientObject, ERamsesObjectType_ClientObject, ERamsesObjectType_RamsesObject, false);
     DEFINE_RAMSES_OBJECT_TRAITS(SceneObject, ERamsesObjectType_SceneObject, ERamsesObjectType_ClientObject, false);
     DEFINE_RAMSES_OBJECT_TRAITS(AnimationObject, ERamsesObjectType_AnimationObject, ERamsesObjectType_SceneObject, false);
-    DEFINE_RAMSES_OBJECT_TRAITS(Node, ERamsesObjectType_Node, ERamsesObjectType_SceneObject, false);
+    DEFINE_RAMSES_OBJECT_TRAITS(Node, ERamsesObjectType_Node, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(Camera, ERamsesObjectType_Camera, ERamsesObjectType_Node, false);
     DEFINE_RAMSES_OBJECT_TRAITS(Spline, ERamsesObjectType_Spline, ERamsesObjectType_AnimationObject, false);
     DEFINE_RAMSES_OBJECT_TRAITS(Resource, ERamsesObjectType_Resource, ERamsesObjectType_ClientObject, false);
@@ -194,11 +188,6 @@ namespace ramses
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_AnimationSystem)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_AnimationSystemRealTime)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Node)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_GroupNode)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_TranslateNode)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_RotateNode)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_ScaleNode)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_TransformationNode)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_MeshNode)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Camera)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_RemoteCamera)
@@ -257,7 +246,6 @@ namespace ramses
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_TextureSampler)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_RenderBuffer)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_RenderTarget)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_VisibilityNode)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_IndexDataBuffer)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_VertexDataBuffer)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Texture2DBuffer)

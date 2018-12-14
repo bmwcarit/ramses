@@ -40,9 +40,9 @@ namespace ramses_internal
         {
         }
 
-        ::testing::AssertionResult waitForEvent(int numberEvents = 1)
+        ::testing::AssertionResult waitForEvent(int numberEvents = 1, uint32_t waitTimeMsOverride = 0)
         {
-            return m_state->event.waitForEvents(numberEvents);
+            return m_state->event.waitForEvents(numberEvents, waitTimeMsOverride);
         }
 
         void sendEvent()

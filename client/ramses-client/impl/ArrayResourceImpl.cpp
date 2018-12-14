@@ -32,7 +32,7 @@ namespace ramses
         CHECK_RETURN_ERR(ResourceImpl::serialize(outStream, serializationContext));
 
         outStream << m_elementCount;
-        outStream << m_elementType;
+        outStream << static_cast<uint32_t>(m_elementType);
 
         return StatusOK;
     }

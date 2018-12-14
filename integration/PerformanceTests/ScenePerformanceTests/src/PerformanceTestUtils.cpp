@@ -7,16 +7,11 @@
 //  -------------------------------------------------------------------------
 
 #include "PerformanceTestUtils.h"
-#include "ramses-client-api/TransformationNode.h"
-#include "ramses-client-api/GroupNode.h"
 #include "ramses-client-api/DataMatrix44f.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/RamsesObject.h"
 #include "ramses-client-api/RenderPass.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/RotateNode.h"
-#include "ramses-client-api/TranslateNode.h"
-#include "ramses-client-api/VisibilityNode.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/SceneObject.h"
 #include "Collections/String.h"
@@ -55,12 +50,9 @@ ramses::SceneObject* PerformanceTestUtils::CreateObjectOfType(ramses::Scene& sce
     const uint32_t type = i % 25;
 
     // Try to come up with a somewhat realistic distribution of object types
-    if (type < 14) return CreateNode(scene, ramses::ERamsesObjectType_TransformationNode, i);
-    else if (type < 16) return CreateNode(scene, ramses::ERamsesObjectType_GroupNode, i);
-    else if (type < 18) return CreateNode(scene, ramses::ERamsesObjectType_MeshNode, i);
-    else if (type < 20) return CreateNode(scene, ramses::ERamsesObjectType_RotateNode, i);
-    else if (type < 22) return CreateNode(scene, ramses::ERamsesObjectType_TranslateNode, i);
-    else return CreateNode(scene, ramses::ERamsesObjectType_VisibilityNode, i);
+    if (type < 20)
+        return CreateNode(scene, ramses::ERamsesObjectType_Node, i);
+    return CreateNode(scene, ramses::ERamsesObjectType_MeshNode, i);
 }
 
 void PerformanceTestUtils::BuildBranchOfNodes(ramses::Scene& scene, uint32_t nodeCount, ramses::Node*& createdRoot, ramses::Node*& createdMiddle, ramses::Node*& createdLeaf, ramses::ERamsesObjectType nodeType)
@@ -120,18 +112,10 @@ ramses::Node* PerformanceTestUtils::CreateNode(ramses::Scene& scene, ramses::ERa
 
     switch (type)
     {
-    case ramses::ERamsesObjectType_TransformationNode:
-        return scene.createTransformationNode(nodeName.c_str());
+    case ramses::ERamsesObjectType_Node:
+        return scene.createNode(nodeName.c_str());
     case ramses::ERamsesObjectType_MeshNode:
         return scene.createMeshNode(nodeName.c_str());
-    case ramses::ERamsesObjectType_GroupNode:
-        return scene.createGroupNode(nodeName.c_str());
-    case ramses::ERamsesObjectType_RotateNode:
-        return scene.createRotateNode(nodeName.c_str());
-    case ramses::ERamsesObjectType_TranslateNode:
-        return scene.createTranslateNode(nodeName.c_str());
-    case ramses::ERamsesObjectType_VisibilityNode:
-        return scene.createVisibilityNode(nodeName.c_str());
     default:
         assert(false && "Unsupported type");
         return 0;

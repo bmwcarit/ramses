@@ -28,8 +28,6 @@
 #include "ramses-client-api/Vector3fArray.h"
 #include "ramses-client-api/Vector2fArray.h"
 #include "ramses-client-api/UInt16Array.h"
-#include "ramses-client-api/TranslateNode.h"
-#include "ramses-client-api/ScaleNode.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/UniformInput.h"
 #include "RamsesObjectTypeUtils.h"
@@ -67,7 +65,7 @@ namespace ramses_internal
     {
         ramses::Scene* scene = client.createScene(sceneId, sceneConfig);
 
-        ramses::TranslateNode* cameraTranslation = scene->createTranslateNode("cameraPosition");
+        ramses::Node* cameraTranslation = scene->createNode("cameraPosition");
         cameraTranslation->setTranslation(cameraPosition.x, cameraPosition.y, cameraPosition.z);
         ramses::Camera* camera = scene->createRemoteCamera("my camera");
         camera->setParent(*cameraTranslation);
@@ -126,7 +124,7 @@ namespace ramses_internal
         effectTex->findUniformInput("textureSampler", textureInput);
         appearance->setInputTexture(textureInput, *sampler);
 
-        ramses::ScaleNode* scaleNode = scene->createScaleNode("scale node");
+        ramses::Node* scaleNode = scene->createNode("scale node");
 
         ramses::MeshNode* meshNode = scene->createMeshNode("textured triangle mesh node");
         meshNode->setAppearance(*appearance);
@@ -199,9 +197,9 @@ namespace ramses_internal
         renderGroup.addMeshNode(*meshNode3);
 
         // create a translation node for each mesh node
-        ramses::TranslateNode* transNode1 = scene.createTranslateNode();
-        ramses::TranslateNode* transNode2 = scene.createTranslateNode();
-        ramses::TranslateNode* transNode3 = scene.createTranslateNode();
+        ramses::Node* transNode1 = scene.createNode();
+        ramses::Node* transNode2 = scene.createNode();
+        ramses::Node* transNode3 = scene.createNode();
         meshNode1->setParent(*transNode1);
         meshNode2->setParent(*transNode2);
         meshNode3->setParent(*transNode3);
@@ -220,9 +218,9 @@ namespace ramses_internal
         spline2->setKey(10000u, 0.f);
 
         // create animated property for each translation node with single component animation
-        ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*transNode1, ramses::EAnimatedPropertyComponent_X);
-        ramses::AnimatedProperty* animProperty2 = animationSystem->createAnimatedProperty(*transNode2, ramses::EAnimatedPropertyComponent_X);
-        ramses::AnimatedProperty* animProperty3 = animationSystem->createAnimatedProperty(*transNode3, ramses::EAnimatedPropertyComponent_Y);
+        ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*transNode1, ramses::EAnimatedProperty_Translation, ramses::EAnimatedPropertyComponent_X);
+        ramses::AnimatedProperty* animProperty2 = animationSystem->createAnimatedProperty(*transNode2, ramses::EAnimatedProperty_Translation, ramses::EAnimatedPropertyComponent_X);
+        ramses::AnimatedProperty* animProperty3 = animationSystem->createAnimatedProperty(*transNode3, ramses::EAnimatedProperty_Translation, ramses::EAnimatedPropertyComponent_Y);
 
         // create three animations
         ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
@@ -260,7 +258,7 @@ namespace ramses_internal
         ramses::Scene* loadedScene = ramses.loadSceneFromFile((folder + String("/tempfile.ramses")).c_str(), resourceFileInformation);
 
         // make changes to loaded scene
-        ramses::ScaleNode& loadedScaleNode = ramses::RamsesObjectTypeUtils::ConvertTo<ramses::ScaleNode>(*loadedScene->findObjectByName("scale node"));
+        ramses::Node& loadedScaleNode = ramses::RamsesObjectTypeUtils::ConvertTo<ramses::Node>(*loadedScene->findObjectByName("scale node"));
         loadedScaleNode.setScaling(2, 2, 2);
         loadedScene->flush();
 

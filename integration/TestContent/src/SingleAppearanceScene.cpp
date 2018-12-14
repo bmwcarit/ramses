@@ -11,7 +11,6 @@
 #include "ramses-utils.h"
 
 #include "ramses-client-api/Scene.h"
-#include "ramses-client-api/TransformationNode.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/Effect.h"
@@ -37,7 +36,7 @@ namespace ramses_internal
             ramses::MeshNode* meshNode = m_scene.createMeshNode("triangle mesh node");
             addMeshNodeToDefaultRenderGroup(*meshNode);
 
-            ramses::TransformationNode* trafoNode = m_scene.createTransformationNode("transformation node");
+            ramses::Node* trafoNode = m_scene.createNode("transformation node");
             trafoNode->setTranslation(translation[i * 3 + 0], translation[i * 3 + 1], translation[i * 3 + 2]);
 
             meshNode->setParent(*trafoNode);

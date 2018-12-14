@@ -215,7 +215,7 @@ namespace ramses
     {
         ramses::Scene* scene = client.createScene(1u);
         EXPECT_TRUE(scene != NULL);
-        ramses::GroupNode* node = scene->createGroupNode("node");
+        ramses::Node* node = scene->createNode("node");
         EXPECT_TRUE(node != NULL);
     }
 
@@ -377,7 +377,7 @@ namespace ramses
         using ramses_internal::SceneInfo;
         ramses_internal::SceneId internalSceneId(sceneId);
 
-        EXPECT_CALL(sceneActionsCollector, handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(internalSceneId, ramses_internal::String(scene->getName()))), testing::_));
+        EXPECT_CALL(sceneActionsCollector, handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(internalSceneId, ramses_internal::String(scene->getName()))), testing::_, testing::_));
         EXPECT_CALL(sceneActionsCollector, handleInitializeScene(testing::_, testing::_));
         EXPECT_CALL(sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(sceneId), testing::_, testing::_, testing::_));
         EXPECT_CALL(sceneActionsCollector, handleScenesBecameUnavailable(SceneInfoVector(1, SceneInfo(internalSceneId)), testing::_));

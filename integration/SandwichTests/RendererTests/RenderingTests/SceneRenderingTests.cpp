@@ -90,8 +90,7 @@ void SceneRenderingTests::setUpTestCases(RendererTestsFramework& testFramework)
     testFramework.createTestCaseWithDefaultDisplay(TextTest_ForceAutoHinting, *this, "TextTest_ForceAutoHinting");
     testFramework.createTestCaseWithDefaultDisplay(TextTest_FontCascade, *this, "TextTest_FontCascade");
     testFramework.createTestCaseWithDefaultDisplay(TextTest_FontCascadeWithVerticalOffset, *this, "TextTest_FontCascadeWithVerticalOffset");
-    // TODO vaclav investigate why is this causing some pixel offset from expected!
-    //testFramework.createTestCaseWithDefaultDisplay(TextTest_Shaping, *this, "TextTest_Shaping");
+    testFramework.createTestCaseWithDefaultDisplay(TextTest_Shaping, *this, "TextTest_Shaping");
 
     testFramework.createTestCaseWithDefaultDisplay(RenderPassClear_None, *this, "RenderPassClear_None");
     testFramework.createTestCaseWithDefaultDisplay(RenderPassClear_Color, *this, "RenderPassClear_Color");

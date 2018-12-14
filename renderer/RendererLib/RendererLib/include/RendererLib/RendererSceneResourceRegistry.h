@@ -12,6 +12,7 @@
 #include "RendererAPI/Types.h"
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/SceneTypes.h"
+#include "SceneAPI/TextureEnums.h"
 #include "Collections/HashMap.h"
 
 namespace ramses_internal
@@ -60,9 +61,10 @@ namespace ramses_internal
         EDataBufferType                 getDataBufferType           (DataBufferHandle handle) const;
         void                            getAllDataBuffers           (DataBufferHandleVector& dataBuffers) const;
 
-        void                            addTextureBuffer(TextureBufferHandle handle, DeviceResourceHandle deviceHandle, UInt32 size);
+        void                            addTextureBuffer(TextureBufferHandle handle, DeviceResourceHandle deviceHandle, ETextureFormat format, UInt32 size);
         void                            removeTextureBuffer(TextureBufferHandle handle);
         DeviceResourceHandle            getTextureBufferDeviceHandle(TextureBufferHandle handle) const;
+        ETextureFormat                  getTextureBufferFormat(TextureBufferHandle handle) const;
         void                            getAllTextureBuffers(TextureBufferHandleVector& textureBuffers) const;
 
         void                            addTextureSampler            (TextureSamplerHandle handle, DeviceResourceHandle deviceHandle);
@@ -78,18 +80,17 @@ namespace ramses_internal
             StreamTextureSourceId id;
         };
 
-        struct SizedResource
+        struct RenderTargetEntry
+        {
+            DeviceResourceHandle deviceHandle;
+        };
+
+        struct TextureBufferEntry
         {
             DeviceResourceHandle deviceHandle;
             UInt32 size;
+            ETextureFormat format;
         };
-
-        struct  RenderTargetEntry
-        {
-            DeviceResourceHandle deviceHandle;
-        };
-
-        using TextureBufferEntry = SizedResource;
 
         struct TextureSamplerEntry
         {

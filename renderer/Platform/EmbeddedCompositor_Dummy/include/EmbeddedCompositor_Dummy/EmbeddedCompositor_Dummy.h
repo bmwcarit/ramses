@@ -35,7 +35,6 @@ namespace ramses_internal
         virtual UInt32 getNumberOfCompositorConnections() const override;
         virtual Bool hasSurfaceForStreamTexture(StreamTextureSourceId streamTextureSourceId) const override;
         virtual String getTitleOfWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const override;
-        virtual void getOutputResolution(Int32& width, Int32& height) const override;
         virtual void logInfos(RendererLogContext& context) const override;
 
         virtual Bool isRealCompositor() const override;

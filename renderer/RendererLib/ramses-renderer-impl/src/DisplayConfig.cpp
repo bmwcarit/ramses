@@ -39,7 +39,7 @@ namespace ramses
     status_t DisplayConfig::setViewPosition(float x, float y, float z)
     {
         const status_t status = impl.setViewPosition(x, y, z);
-        LOG_HL_RENDERER_API3(status, x, y, z)
+        LOG_HL_RENDERER_API3(status, x, y, z);
         return status;
     }
 
@@ -51,7 +51,7 @@ namespace ramses
     status_t DisplayConfig::setViewRotation(float x, float y, float z)
     {
         const status_t status = impl.setViewRotation(x, y, z);
-        LOG_HL_RENDERER_API3(status, x, y, z)
+        LOG_HL_RENDERER_API3(status, x, y, z);
         return status;
     }
 
@@ -63,49 +63,49 @@ namespace ramses
     status_t DisplayConfig::setWindowRectangle(int32_t x, int32_t y, uint32_t width, uint32_t height)
     {
         const status_t status = impl.setWindowRectangle(x, y, width, height);
-        LOG_HL_RENDERER_API4(status, x, y, width, height)
+        LOG_HL_RENDERER_API4(status, x, y, width, height);
         return status;
     }
 
     status_t DisplayConfig::setWindowFullscreen(bool fullscreen)
     {
         const status_t status = impl.setFullscreen(fullscreen);
-        LOG_HL_RENDERER_API1(status, fullscreen)
+        LOG_HL_RENDERER_API1(status, fullscreen);
         return status;
     }
 
     status_t DisplayConfig::setWindowBorderless(bool borderless)
     {
         const status_t status = impl.setBorderless(borderless);
-        LOG_HL_RENDERER_API1(status, borderless)
+        LOG_HL_RENDERER_API1(status, borderless);
         return status;
     }
 
     status_t DisplayConfig::setPerspectiveProjection(float fieldOfViewY, float aspectRatio, float nearPlane, float farPlane)
     {
         const status_t status = impl.setPerspectiveProjection(fieldOfViewY, aspectRatio, nearPlane, farPlane);
-        LOG_HL_RENDERER_API4(status, fieldOfViewY, aspectRatio, nearPlane, farPlane)
+        LOG_HL_RENDERER_API4(status, fieldOfViewY, aspectRatio, nearPlane, farPlane);
         return status;
     }
 
     status_t DisplayConfig::setPerspectiveProjection(float leftPlane, float rightPlane, float bottomPlane, float topPlane, float nearPlane, float farPlane)
     {
         const status_t status = impl.setProjection(leftPlane, rightPlane, bottomPlane, topPlane, nearPlane, farPlane, false);
-        LOG_HL_RENDERER_API6(status, leftPlane, rightPlane, bottomPlane, topPlane, nearPlane, farPlane)
+        LOG_HL_RENDERER_API6(status, leftPlane, rightPlane, bottomPlane, topPlane, nearPlane, farPlane);
         return status;
     }
 
     status_t DisplayConfig::setOrthographicProjection(float leftPlane, float rightPlane, float bottomPlane, float topPlane, float nearPlane, float farPlane)
     {
         const status_t status = impl.setProjection(leftPlane, rightPlane, bottomPlane, topPlane, nearPlane, farPlane, true);
-        LOG_HL_RENDERER_API6(status, leftPlane, rightPlane, bottomPlane, topPlane, nearPlane, farPlane)
+        LOG_HL_RENDERER_API6(status, leftPlane, rightPlane, bottomPlane, topPlane, nearPlane, farPlane);
         return status;
     }
 
     status_t DisplayConfig::setMultiSampling(uint32_t numSamples)
     {
         const status_t status = impl.setMultiSampling(numSamples);
-        LOG_HL_RENDERER_API1(status, numSamples)
+        LOG_HL_RENDERER_API1(status, numSamples);
         return status;
     }
 
@@ -117,21 +117,21 @@ namespace ramses
     status_t DisplayConfig::enableWarpingPostEffect()
     {
         const status_t status = impl.enableWarpingPostEffect();
-        LOG_HL_RENDERER_API_NOARG(status)
+        LOG_HL_RENDERER_API_NOARG(status);
         return status;
     }
 
     status_t DisplayConfig::enableStereoDisplay()
     {
         const status_t status = impl.enableStereoDisplay();
-        LOG_HL_RENDERER_API_NOARG(status)
+        LOG_HL_RENDERER_API_NOARG(status);
         return status;
     }
 
     status_t DisplayConfig::setWaylandIviLayerID(uint32_t waylandIviLayerID)
     {
         const status_t status = impl.setWaylandIviLayerID(waylandIviLayerID);
-        LOG_HL_RENDERER_API1(status, waylandIviLayerID)
+        LOG_HL_RENDERER_API1(status, waylandIviLayerID);
         return status;
     }
 
@@ -143,7 +143,7 @@ namespace ramses
     status_t DisplayConfig::setWaylandIviSurfaceID(uint32_t waylandIviSurfaceID)
     {
         const status_t status = impl.setWaylandIviSurfaceID(waylandIviSurfaceID);
-        LOG_HL_RENDERER_API1(status, waylandIviSurfaceID)
+        LOG_HL_RENDERER_API1(status, waylandIviSurfaceID);
         return status;
     }
 
@@ -152,10 +152,20 @@ namespace ramses
         return impl.getWaylandIviSurfaceID();
     }
 
+    status_t DisplayConfig::setWaylandDisplay(const char* waylandDisplay)
+    {
+        return impl.setWaylandDisplay(waylandDisplay);
+    }
+
+    const char* DisplayConfig::getWaylandDisplay() const
+    {
+        return impl.getWaylandDisplay();
+    }
+
     status_t DisplayConfig::setIntegrityEGLDisplayID(uint32_t eglDisplayID)
     {
         const status_t status = impl.setIntegrityEGLDisplayID(eglDisplayID);
-        LOG_HL_RENDERER_API1(status, eglDisplayID)
+        LOG_HL_RENDERER_API1(status, eglDisplayID);
         return status;
     }
 
@@ -167,14 +177,14 @@ namespace ramses
     status_t DisplayConfig::setWindowIviVisible()
     {
         const status_t status = impl.setWindowIviVisible();
-        LOG_HL_RENDERER_API_NOARG(status)
+        LOG_HL_RENDERER_API_NOARG(status);
         return status;
     }
 
     status_t DisplayConfig::disableEffectDeletion()
     {
         const status_t status = impl.disableEffectDeletion();
-        LOG_HL_RENDERER_API_NOARG(status)
+        LOG_HL_RENDERER_API_NOARG(status);
         return status;
     }
 
@@ -188,21 +198,21 @@ namespace ramses
     status_t DisplayConfig::setResizable(bool resizable)
     {
         const status_t status = impl.setResizable(resizable);
-        LOG_HL_RENDERER_API_NOARG(status)
+        LOG_HL_RENDERER_API_NOARG(status);
         return status;
     }
 
     status_t DisplayConfig::setClearColor(float red, float green, float blue, float alpha)
     {
         const status_t status = impl.setClearColor(red, green, blue, alpha);
-        LOG_HL_RENDERER_API4(status, red, green, blue, alpha)
+        LOG_HL_RENDERER_API4(status, red, green, blue, alpha);
         return status;
     }
 
     status_t DisplayConfig::setOffscreen(bool offscreenFlag)
     {
         const status_t status = impl.setOffscreen(offscreenFlag);
-        LOG_HL_RENDERER_API1(status, offscreenFlag)
+        LOG_HL_RENDERER_API1(status, offscreenFlag);
         return status;
     }
 

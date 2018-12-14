@@ -24,7 +24,7 @@
 
 namespace ramses_internal
 {
-    static void sendSceneAndResourceFilesViaDLT(const String& sceneDumpFileName, const ramses::ResourceFileDescriptionSet& resourceFileDescriptionSet)
+    void SceneCommandExecutor::SendSceneAndResourceFilesViaDLT(const String& sceneDumpFileName, const ramses::ResourceFileDescriptionSet& resourceFileDescriptionSet)
     {
         if (GetRamsesLogger().transmitFile(sceneDumpFileName, false))
         {
@@ -48,7 +48,7 @@ namespace ramses_internal
         }
     }
 
-    void SceneCommandExecutor::execute(ramses::SceneImpl& scene, SceneCommandBuffer& commandBuffer)
+    void SceneCommandExecutor::Execute(ramses::SceneImpl& scene, SceneCommandBuffer& commandBuffer)
     {
         SceneCommandContainer commands;
         commandBuffer.exchangeContainerData(commands);
@@ -152,7 +152,7 @@ namespace ramses_internal
                 {
                     if (dumpSceneToFileCommand.sendViaDLT)
                     {
-                        sendSceneAndResourceFilesViaDLT(sceneDumpFileWithExtension, resourceFileDescriptionSet);
+                        SceneCommandExecutor::SendSceneAndResourceFilesViaDLT(sceneDumpFileWithExtension, resourceFileDescriptionSet);
                     }
                 }
                 else

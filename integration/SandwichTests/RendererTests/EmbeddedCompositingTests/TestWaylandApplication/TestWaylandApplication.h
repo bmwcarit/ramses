@@ -16,6 +16,7 @@
 #include "WaylandHandler.h"
 #include "OpenGLTriangleDrawer.h"
 #include "Utils/LogMacros.h"
+#include <vector>
 
 namespace ramses_internal
 {
@@ -30,7 +31,7 @@ namespace ramses_internal
         bool readFromTestFramework(void* data, UInt32 numberOfBytes);
         template <typename T>
         bool readFromTestFramework(T& value);
-        bool readStringFromTestFramework(String& string);
+        bool readBufferFromTestFramework();
         Bool dispatchIncomingMessage();
 
         bool initializeWayland();
@@ -40,6 +41,7 @@ namespace ramses_internal
         void renderFrameToTwoSurfaces(TestApplicationSurfaceId surfaceId1, TestApplicationSurfaceId surfaceId2, bool useCallback);
         void setTriangleColor(ETriangleColor color);
         void detachBufferFromSurface(TestApplicationSurfaceId surfaceId);
+        bool startRamsesRendererAndRunRenderingTest(WaylandIviLayerId waylandIviLayerId, uint32_t iviSurfaceIdOffset);
         template <typename T>
         void sendAnswerToTestFramework(const T& value);
 
@@ -48,6 +50,8 @@ namespace ramses_internal
         WaylandHandler                          m_waylandHandler;
         WaylandHandler                          m_waylandHandler2;
         ETriangleColor                          m_triangleColor;
+
+        std::vector<Char>                       m_readingBuffer;
     };
 }
 #endif

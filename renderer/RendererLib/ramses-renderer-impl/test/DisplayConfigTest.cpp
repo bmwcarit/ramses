@@ -79,6 +79,8 @@ TEST_F(ADisplayConfig, hasDefaultValuesUponConstruction)
 
     EXPECT_EQ(defaultDisplayConfig.getGPUMemoryCacheSize(), displayConfig.getGPUMemoryCacheSize());
     EXPECT_EQ(defaultDisplayConfig.getClearColor(), displayConfig.getClearColor());
+
+    EXPECT_TRUE(defaultDisplayConfig.getWaylandDisplay().empty());
 }
 
 TEST_F(ADisplayConfig, setsFullscreenState)
@@ -200,6 +202,13 @@ TEST_F(ADisplayConfig, setsWindowIVIVisible)
 {
     EXPECT_EQ(ramses::StatusOK, config.setWindowIviVisible());
     EXPECT_TRUE(config.impl.getInternalDisplayConfig().getStartVisibleIvi());
+}
+
+TEST_F(ADisplayConfig, setsAndGetsWaylandDisplay)
+{
+    EXPECT_EQ(ramses::StatusOK, config.setWaylandDisplay("xxx"));
+    EXPECT_STREQ("xxx", config.getWaylandDisplay());
+    EXPECT_STREQ("xxx", config.impl.getInternalDisplayConfig().getWaylandDisplay().c_str());
 }
 
 TEST_F(ADisplayConfig, setsPerspectiveProjection)

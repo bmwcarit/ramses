@@ -12,12 +12,12 @@
 #include "ramses-renderer-api/RendererConfig.h"
 #include "ramses-client.h"
 #include "ramses-text.h"
-#include "ramses-text-bmw.h"
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-framework-api/RamsesFramework.h"
 
 int main(int argc, char* argv[])
 {
+    printf("Start ramses-static-lib-check\n");
     ramses::RamsesFramework framework(argc, argv);
     framework.isConnected();
 
@@ -29,7 +29,6 @@ int main(int argc, char* argv[])
     ramses::Scene* scene = ramses.createScene(1u);
     scene->isPublished();
 
-    ramses::BmwFontRegistry bmwFontRegistry;
-
+    printf("End ramses-static-lib-check\n");
     return 0;
 }

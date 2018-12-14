@@ -9,7 +9,6 @@
 #include <gtest/gtest.h>
 
 #include "ClientTestUtils.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-client-api/AnimatedSetter.h"
 #include "ramses-client-api/AnimatedProperty.h"
 #include "AnimationSystemImpl.h"
@@ -31,11 +30,11 @@ namespace ramses
     public:
         virtual void SetUp()
         {
-            m_animatedNode = this->m_scene.createTranslateNode();
+            m_animatedNode = this->m_scene.createNode();
             m_animatedNode->setTranslation(10.f, 50.f, -100.f);
-            m_animPropertyFloat = this->animationSystem.createAnimatedProperty(*m_animatedNode, EAnimatedPropertyComponent_X, "prop");
+            m_animPropertyFloat = this->animationSystem.createAnimatedProperty(*m_animatedNode, EAnimatedProperty_Translation, EAnimatedPropertyComponent_X, "prop");
             m_animatedSetterFloat = this->animationSystem.createAnimatedSetter(*m_animPropertyFloat, "animatedSetter");
-            m_animPropertyVec3f = this->animationSystem.createAnimatedProperty(*m_animatedNode, EAnimatedPropertyComponent_All, "prop");
+            m_animPropertyVec3f = this->animationSystem.createAnimatedProperty(*m_animatedNode, EAnimatedProperty_Translation, EAnimatedPropertyComponent_All, "prop");
             m_animatedSetterVec3f = this->animationSystem.createAnimatedSetter(*m_animPropertyVec3f, "animatedSetter");
 
             setterDelay = this->animationSystem.impl.getDelayForAnimatedSetters();
@@ -93,7 +92,7 @@ namespace ramses
             EXPECT_FLOAT_EQ(value.z, translation.z);
         }
 
-        TranslateNode* m_animatedNode;
+        Node* m_animatedNode;
         AnimatedProperty* m_animPropertyFloat;
         AnimatedSetter* m_animatedSetterFloat;
         AnimatedProperty* m_animPropertyVec3f;

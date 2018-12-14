@@ -47,7 +47,7 @@ private:
                         ramses::Appearance&     appearance,
                         int32_t                 renderOrder);
 
-    ramses::TranslateNode& m_translateNode;
+    ramses::Node& m_translateNode;
 };
 
 #endif

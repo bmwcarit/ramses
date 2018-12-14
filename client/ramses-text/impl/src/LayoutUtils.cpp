@@ -27,10 +27,14 @@ namespace ramses
             int32_t totalAdvance = 0;
             for (; first != last; ++first)
             {
-                xmin = std::min<int32_t>(xmin, totalAdvance + first->posX);
-                xmax = std::max<int32_t>(xmax, totalAdvance + first->posX + first->width);
-                ymin = std::min<int32_t>(ymin, first->posY);
-                ymax = std::max<int32_t>(ymax, first->posY + first->height);
+                // glyphs with no bitmap data do not contribute to bounding box, take only their advance
+                if (first->width > 0u && first->height > 0u)
+                {
+                    xmin = std::min<int32_t>(xmin, totalAdvance + first->posX);
+                    xmax = std::max<int32_t>(xmax, totalAdvance + first->posX + first->width);
+                    ymin = std::min<int32_t>(ymin, first->posY);
+                    ymax = std::max<int32_t>(ymax, first->posY + first->height);
+                }
 
                 totalAdvance += first->advance;
             }
@@ -61,17 +65,18 @@ namespace ramses
             if (first >= last)
                 return last;
 
-            int32_t xmin = std::numeric_limits<int32_t>::max();
             int32_t xmax = std::numeric_limits<int32_t>::min();
-
             int32_t totalAdvance = 0;
+
             for (; first != last; ++first)
             {
-                xmin = std::min<int32_t>(xmin, totalAdvance + first->posX);
-                xmax = std::max<int32_t>(xmax, totalAdvance + first->posX + first->width);
-                const uint32_t totalWidth = xmax - xmin;
-                if (totalWidth > maxWidth)
-                    break;
+                // glyphs with no bitmap data always fit, take only their advance
+                if (first->width > 0u && first->height > 0u)
+                {
+                    xmax = std::max<int32_t>(xmax, totalAdvance + first->posX + first->width);
+                    if (xmax > int(maxWidth))
+                        break;
+                }
 
                 totalAdvance += first->advance;
             }

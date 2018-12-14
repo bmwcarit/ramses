@@ -11,52 +11,54 @@
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "EmbeddedCompositingTestMessages.h"
 #include "Utils/RamsesLogger.h"
+#include "Utils/BinaryOutputStream.h"
 #include <sys/wait.h>
 
 namespace ramses_internal
 {
     TestForkingController::TestForkingController(const String& waylandSocket)
-        : m_testToForkerPipe("/tmp/rames-ec-tests-testToForkerPipe", true)
-        , m_testToWaylandClientPipe("/tmp/rames-ec-tests-testToWaylandClientPipe", true)
-        , m_waylandClientToTestPipe("/tmp/rames-ec-tests-waylandClientToTestPipe", true)
-        , m_testForkerApplicationProcessId(-1)
     {
         startForkerApplication(waylandSocket);
     }
 
+    void TestForkingController::setEnvironmentVariableWaylandDisplay()
+    {
+        LOG_INFO(CONTEXT_RENDERER, "TestForkingController::setEmbeddedCompositorWaylandSocket(): sending message to forker");
+        const ETestForkerApplicationMessage message = ETestForkerApplicationMessage::SetEnvironementVariable_WaylandDisplay;
+        m_testToForkerPipe.write(&message, sizeof(ETestForkerApplicationMessage));
+    }
+
+    void TestForkingController::setEnvironmentVariableWaylandSocket()
+    {
+        LOG_INFO(CONTEXT_RENDERER, "TestForkingController::setEnvironmentVariableWaylandSocket(): sending message to forker");
+        const ETestForkerApplicationMessage message = ETestForkerApplicationMessage::SetEnvironementVariable_WaylandSocket;
+        m_testToForkerPipe.write(&message, sizeof(ETestForkerApplicationMessage));
+    }
+
     void TestForkingController::startTestApplication()
     {
-        LOG_INFO(CONTEXT_RENDERER, "TestForkingControllerController::startApplication starting test application ");
+        LOG_INFO(CONTEXT_RENDERER, "TestForkingController::startApplication starting test application ");
         sendForkRequest();
     }
 
     void TestForkingController::waitForTestApplicationExit()
     {
-        LOG_INFO(CONTEXT_RENDERER, "TestForkingControllerController::waitForTestApplicationExit waiting for test application to exit");
+        LOG_INFO(CONTEXT_RENDERER, "TestForkingController::waitForTestApplicationExit waiting for test application to exit");
         sendWaitForExitRequest();
     }
 
-    void TestForkingController::sendMessageToTestApplication(ETestWaylandApplicationMessage message)
+    void TestForkingController::sendMessageToTestApplication(const BinaryOutputStream& os)
     {
         LOG_INFO(CONTEXT_RENDERER, "TestForkingController::sendMessageToTestApplication");
-        UInt32 messageAsUInt = static_cast<UInt32>(message);
-        if (!m_testToWaylandClientPipe.write(&messageAsUInt, sizeof(messageAsUInt)))
-        {
-            LOG_ERROR(CONTEXT_RENDERER, "TestForkingControllerController::sendMessageToTestApplication(" << messageAsUInt << "): failed to write message to pipe!");
-        }
-    }
 
-    void TestForkingController::sendStringToTestApplication(const String& string)
-    {
-        UInt32 stringLength = static_cast<UInt32>(string.getLength());
-        if (!m_testToWaylandClientPipe.write(&stringLength, sizeof(stringLength)))
+        const UInt32 dataSize = static_cast<UInt32>(os.getSize());
+        if (!m_testToWaylandClientPipe.write(&dataSize, sizeof(dataSize)))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "TestForkingControllerController::sendStringToTestApplciation failed to write string length to pipe!");
+            LOG_ERROR(CONTEXT_RENDERER, "TestForkingController::sendMessageToTestApplication failed to write data size to pipe!");
         }
-        if (!m_testToWaylandClientPipe.write(string.c_str(), sizeof(Char) * stringLength))
+        if (!m_testToWaylandClientPipe.write(os.getData(), dataSize))
         {
-            LOG_ERROR(CONTEXT_RENDERER,
-                      "TestForkingControllerController::sendStringToTestApplciation failed to write string to pipe!");
+            LOG_ERROR(CONTEXT_RENDERER, "TestForkingController::sendMessageToTestApplication failed to write data to pipe!");
         }
     }
 
@@ -70,24 +72,22 @@ namespace ramses_internal
 
     void TestForkingController::startForkerApplication(const String& waylandSocket)
     {
-        LOG_INFO(CONTEXT_RENDERER, "TestForkingControllerController::startForkerApplication starting forker");
+        LOG_INFO(CONTEXT_RENDERER, "TestForkingController::startForkerApplication starting forker");
 
         if(GetRamsesLogger().isAppenderTypeActive(ELogAppenderType::Dlt))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "TestForkingControllerController::startForkerApplication DLT logging enabled, can not fork test application, will halt and catch fire");
+            LOG_ERROR(CONTEXT_RENDERER, "TestForkingController::startForkerApplication DLT logging enabled, can not fork test application, will halt and catch fire");
             exit(1);
         }
 
         m_testForkerApplicationProcessId = fork();
         if (m_testForkerApplicationProcessId == -1)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "TestForkingControllerController::startForkerApplication forking forker process failed");
+            LOG_ERROR(CONTEXT_RENDERER, "TestForkingController::startForkerApplication forking forker process failed");
         }
         else if (m_testForkerApplicationProcessId == 0)
         {
-            setenv("WAYLAND_DISPLAY", waylandSocket.c_str(), 1);
-
-            TestForkerApplication forkerApplication(m_testToForkerPipe.getName(), m_testToWaylandClientPipe.getName(), m_waylandClientToTestPipe.getName());
+            TestForkerApplication forkerApplication(waylandSocket, m_testToForkerPipe.getName(), m_testToWaylandClientPipe.getName(), m_waylandClientToTestPipe.getName());
             forkerApplication.run();
             exit(0);
         }
@@ -100,37 +100,39 @@ namespace ramses_internal
 
     void TestForkingController::stopForkerApplication()
     {
-        LOG_INFO(CONTEXT_RENDERER, "TestForkingControllerController::stopForkerApplication(): sending message stop forker");
-
-        const UInt32 messageAsUInt = static_cast<UInt32>(ETestForkerApplicationMessage_StopForkerApplication);
-        m_testToForkerPipe.write(&messageAsUInt, sizeof(UInt32));
+        LOG_INFO(CONTEXT_RENDERER, "TestForkingController::stopForkerApplication(): sending message stop forker");
+        const ETestForkerApplicationMessage message = ETestForkerApplicationMessage::StopForkerApplication;
+        m_testToForkerPipe.write(&message, sizeof(ETestForkerApplicationMessage));
     }
 
     void TestForkingController::sendForkRequest()
     {
-        UInt32 messageAsUInt= static_cast<UInt32>(ETestForkerApplicationMessage_ForkTestApplication);
-        if (!m_testToForkerPipe.write(&messageAsUInt, sizeof(messageAsUInt)))
+        const ETestForkerApplicationMessage message = ETestForkerApplicationMessage::ForkTestApplication;
+
+        if (!m_testToForkerPipe.write(&message, sizeof(ETestForkerApplicationMessage)))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "TestForkingControllerController::sendForkRequest error " << NamedPipe::getSystemErrorStatus() << " when wrinting fork request pipe");
+            LOG_ERROR(CONTEXT_RENDERER, "TestForkingController::sendForkRequest error " << NamedPipe::getSystemErrorStatus() << " when wrinting fork request pipe");
         }
     }
 
     void TestForkingController::sendWaitForExitRequest()
     {
-        UInt32 messageAsUInt= static_cast<UInt32>(ETestForkerApplicationMessage_WaitForTestApplicationExit);
-        if (!m_testToForkerPipe.write(&messageAsUInt, sizeof(messageAsUInt)))
+        const ETestForkerApplicationMessage message = ETestForkerApplicationMessage::WaitForTestApplicationExit;
+
+        if (!m_testToForkerPipe.write(&message, sizeof(ETestForkerApplicationMessage)))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "TestForkingControllerController::sendWaitForExitRequest error " << NamedPipe::getSystemErrorStatus() << " when writing wait for test application exit pipe");
+            LOG_ERROR(CONTEXT_RENDERER, "TestForkingController::sendWaitForExitRequest error " << NamedPipe::getSystemErrorStatus() << " when writing wait for test application exit pipe");
         }
     }
 
     void TestForkingController::killTestApplication()
     {
-        LOG_INFO(CONTEXT_RENDERER, "TestForkingControllerController::killTestApplication(): sending message kill test application");
-        UInt32 messageAsUInt = static_cast<UInt32>(ETestForkerApplicationMessage_KillTestApplication);
-        if (!m_testToForkerPipe.write(&messageAsUInt, sizeof(messageAsUInt)))
+        LOG_INFO(CONTEXT_RENDERER, "TestForkingController::killTestApplication(): sending message kill test application");
+        const ETestForkerApplicationMessage message = ETestForkerApplicationMessage::KillTestApplication;
+
+        if (!m_testToForkerPipe.write(&message, sizeof(ETestForkerApplicationMessage)))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "TestForkingControllerController::killTestApplication error " << NamedPipe::getSystemErrorStatus());
+            LOG_ERROR(CONTEXT_RENDERER, "TestForkingController::killTestApplication error " << NamedPipe::getSystemErrorStatus());
         }
     }
 }

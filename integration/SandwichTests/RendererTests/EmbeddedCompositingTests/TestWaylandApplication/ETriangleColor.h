@@ -11,14 +11,14 @@
 
 namespace ramses_internal
 {
-    enum ETriangleColor
+    enum class ETriangleColor
     {
-        ETriangleColor_Red = 0,
-        ETriangleColor_Blue,
-        ETriangleColor_DarkGrey,
-        ETriangleColor_Grey,
-        ETriangleColor_LightGrey,
-        ETriangleColor_White
+        Red,
+        Blue,
+        DarkGrey,
+        Grey,
+        LightGrey,
+        White,
     };
 }
 

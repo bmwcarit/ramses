@@ -13,26 +13,30 @@
 
 namespace ramses_internal
 {
-    using FlushTimeClock = std::chrono::system_clock;
+    namespace FlushTime
+    {
+        using Clock = std::chrono::system_clock;
+
+        const Clock::time_point InvalidTimestamp{ std::chrono::milliseconds(0) };
+    }
 
     struct FlushTimeInformation
     {
-        FlushTimeInformation(FlushTimeClock::duration limit = std::chrono::milliseconds(0), FlushTimeClock::time_point externalTS = FlushTimeClock::time_point(std::chrono::milliseconds(0)), FlushTimeClock::time_point internalTS = FlushTimeClock::time_point(std::chrono::milliseconds(0)))
-            : latencyLimit(limit)
-            , externalTimestamp(externalTS)
+        FlushTimeInformation() = default;
+        FlushTimeInformation(FlushTime::Clock::time_point expirationTS, FlushTime::Clock::time_point internalTS)
+            : expirationTimestamp(expirationTS)
             , internalTimestamp(internalTS)
         {
         }
 
-        FlushTimeClock::duration latencyLimit;
-        FlushTimeClock::time_point externalTimestamp;
-        FlushTimeClock::time_point internalTimestamp;
+        FlushTime::Clock::time_point expirationTimestamp = FlushTime::InvalidTimestamp;
+        FlushTime::Clock::time_point internalTimestamp = FlushTime::InvalidTimestamp;
     };
 
     inline bool operator==(const FlushTimeInformation& a, const FlushTimeInformation& b)
     {
-        return a.latencyLimit == b.latencyLimit &&
-            a.externalTimestamp == b.externalTimestamp &&
+        return
+            a.expirationTimestamp == b.expirationTimestamp &&
             a.internalTimestamp == b.internalTimestamp;
     }
 

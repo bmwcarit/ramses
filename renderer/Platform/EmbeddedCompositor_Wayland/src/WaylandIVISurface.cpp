@@ -26,7 +26,7 @@ namespace ramses_internal
         : m_iviSurfaceId(iviSurfaceId)
         , m_compositor(compositor)
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface")
+        LOG_INFO(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface");
 
         if (surface->hasIviSurface())
         {
@@ -72,7 +72,7 @@ namespace ramses_internal
 
     WaylandIVISurface::~WaylandIVISurface()
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandIVISurface::~WaylandIVISurface")
+        LOG_INFO(CONTEXT_RENDERER, "WaylandIVISurface::~WaylandIVISurface");
 
         if (m_surface != nullptr)
         {

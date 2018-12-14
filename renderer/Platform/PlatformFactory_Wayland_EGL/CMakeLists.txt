@@ -29,6 +29,8 @@ ACME_MODULE(
                             Context_EGL
                             Window_Wayland
                             EmbeddedCompositor_Dummy
+                            EmbeddedCompositor_Wayland
+                            TextureUploadingAdapter_Wayland
                             WindowEventsPollingManager_Wayland
                             Logger_Wayland
 )

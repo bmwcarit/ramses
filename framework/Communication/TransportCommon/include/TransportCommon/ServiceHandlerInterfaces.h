@@ -50,7 +50,7 @@ namespace ramses_internal
     public:
         virtual ~ISceneRendererServiceHandler() {}
 
-        virtual void handleNewScenesAvailable(const SceneInfoVector& newScenes, const Guid& providerID) = 0;
+        virtual void handleNewScenesAvailable(const SceneInfoVector& newScenes, const Guid& providerID, EScenePublicationMode mode) = 0;
         virtual void handleScenesBecameUnavailable(const SceneInfoVector& unavailableScenes, const Guid& providerID) = 0;
 
         virtual void handleSceneNotAvailable(const SceneId& sceneId, const Guid& providerID) = 0;

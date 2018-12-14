@@ -37,7 +37,6 @@ namespace ramses_internal
         MOCK_CONST_METHOD0(getNumberOfCompositorConnections, UInt32());
         MOCK_CONST_METHOD1(hasSurfaceForStreamTexture, Bool (StreamTextureSourceId));
         MOCK_CONST_METHOD1(getTitleOfWaylandIviSurface, String (WaylandIviSurfaceId));
-        MOCK_CONST_METHOD2(getOutputResolution, void (Int32&, Int32&));
         MOCK_CONST_METHOD1(logInfos, void(RendererLogContext&));
         MOCK_CONST_METHOD0(isRealCompositor, bool()); //TODO Mohamed: remove this when dummy EC is removed
     };

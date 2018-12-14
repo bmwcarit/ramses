@@ -83,7 +83,7 @@ namespace ramses_internal
         if (x + width > getDisplayWidth() ||
             y + height > getDisplayHeight())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "DisplayController::readPixels failed: requested area is out of display size boundaries!")
+            LOG_ERROR(CONTEXT_RENDERER, "DisplayController::readPixels failed: requested area is out of display size boundaries!");
             return false;
         }
 

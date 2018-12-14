@@ -10,4 +10,9 @@
 
 echo "building ramses-basic container"
 
-docker build -t ramses-basic ./ramses-basic
+# allow building behind explicit proxy
+if [ -n "${HTTP_PROXY}" ] || [ -n "${HTTPS_PROXY}" ]; then
+    EXTRA_BUILD_ARGS=( --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTPS_PROXY --network host )
+fi
+
+docker build -t ramses-basic ${EXTRA_BUILD_ARGS[@]} ./ramses-basic

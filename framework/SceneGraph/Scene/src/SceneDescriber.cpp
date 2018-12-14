@@ -430,21 +430,71 @@ namespace ramses_internal
 
     void SceneDescriber::RecreateTextureBuffers(const IScene& source, SceneActionCollectionCreator& collector)
     {
+        std::vector<Byte> tempForCopyingUsedTextureDataBuffer;
+
         const UInt32 textureBufferTotalCount = source.getTextureBufferCount();
         for (TextureBufferHandle textureBufferHandle(0u); textureBufferHandle < textureBufferTotalCount; ++textureBufferHandle)
         {
             if (source.isTextureBufferAllocated(textureBufferHandle))
             {
                 const TextureBuffer& textureBuffer = source.getTextureBuffer(textureBufferHandle);
-                const MipMapDimensions& mipMapDimensions = textureBuffer.mipMapDimensions;
+
+                const auto texelSize = GetTexelSizeFromFormat(textureBuffer.textureFormat);
+
+                const MipMapDimensions mipMapDimensions([&textureBuffer]()
+                {
+                    MipMapDimensions result;
+                    result.reserve(textureBuffer.mipMaps.size());
+                    std::transform(textureBuffer.mipMaps.cbegin(), textureBuffer.mipMaps.cend(), std::back_inserter(result), [](const MipMap& mip) {return MipMapSize{ mip.width, mip.height }; });
+
+                    return result;
+                }());
+
                 collector.allocateTextureBuffer(textureBuffer.textureFormat, mipMapDimensions, textureBufferHandle);
 
                 for (UInt32 mipMapLevel = 0u; mipMapLevel < mipMapDimensions.size(); ++mipMapLevel)
                 {
-                    const MipMapSize mipMapSize = mipMapDimensions[mipMapLevel];
-                    const Byte* mipMapData = textureBuffer.mipMapData[mipMapLevel].data();
-                    const UInt32 mipLevelDataSize = mipMapSize.width * mipMapSize.height * GetTexelSizeFromFormat(textureBuffer.textureFormat);
-                    collector.updateTextureBuffer(textureBufferHandle, mipMapLevel, 0u, 0u, mipMapSize.width, mipMapSize.height, mipMapData, mipLevelDataSize);
+                    const auto& mip = textureBuffer.mipMaps[mipMapLevel];
+                    const auto& usedRegion = mip.usedRegion;
+                    //If no data is set for mip (area of used region is zero), then no need to send scene action for setting empty data
+                    if (0 == usedRegion.getArea())
+                        continue;
+
+                    const auto& mipMapSize = mipMapDimensions[mipMapLevel];
+                    const UInt32 usedDataSize = usedRegion.width * usedRegion.height * texelSize;
+                    const Byte* mipMapData = mip.data.data();
+
+                    const Byte* updatedData = mipMapData;
+
+                    //Iff the width of used region is different from (smaller than) the width of the mip map level
+                    //then the data of the used region must be copied from the mip map data into an intermediate (temp)
+                    //memory because the data has non-zero stride ,i.e., the data for each row in the
+                    //used region is not continuous in memory.
+                    //P.S: Mip map (or used region) height is not a factor in this situation.
+                    if (usedRegion.width < static_cast<Int32>(mipMapSize.width))
+                    {
+                        //increase size iff needed
+                        tempForCopyingUsedTextureDataBuffer.resize(usedDataSize);
+
+                        updatedData = tempForCopyingUsedTextureDataBuffer.data();
+
+                        //copy the used texture buffer data since rows have non-zero stride
+                        //i.e, not all data for every used row must be copied
+
+                        const UInt32 dataRowSize = usedRegion.width * texelSize;
+                        const UInt32 mipLevelRowSize = mipMapSize.width * texelSize;
+
+                        const Byte* sourcePtr = mipMapData + usedRegion.x * texelSize + usedRegion.y * mipLevelRowSize;
+                        Byte* destinationPtr = tempForCopyingUsedTextureDataBuffer.data();
+                        for (Int32 i = 0; i < usedRegion.height; ++i)
+                        {
+                            PlatformMemory::Copy(destinationPtr, sourcePtr, dataRowSize);
+                            sourcePtr += mipLevelRowSize;
+                            destinationPtr += dataRowSize;
+                        }
+                    }
+
+                    collector.updateTextureBuffer(textureBufferHandle, mipMapLevel, usedRegion.x, usedRegion.y, usedRegion.width, usedRegion.height, updatedData, usedDataSize);
                 }
             }
         }

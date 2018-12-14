@@ -155,7 +155,7 @@ namespace ramses_internal
 
         if (m_state == EState::Fail)
         {
-            LOG_DEBUG(CONTEXT_FRAMEWORK, "ResourceStreamDeserializer::processData: Remaining in EState::Fail by previous error")
+            LOG_DEBUG(CONTEXT_FRAMEWORK, "ResourceStreamDeserializer::processData: Remaining in EState::Fail by previous error");
             return {};
         }
         else if (packetNum == 0)

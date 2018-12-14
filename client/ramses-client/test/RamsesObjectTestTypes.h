@@ -23,15 +23,9 @@ namespace ramses
     class Appearance;
     class Node;
     class Effect;
-    class GroupNode;
-    class TranslateNode;
-    class RotateNode;
-    class ScaleNode;
-    class TransformationNode;
     class MeshNode;
     class AnimationSystem;
     class AnimationSystemRealTime;
-    class VisibilityNode;
     class IndexDataBuffer;
     class VertexDataBuffer;
     class Texture2DBuffer;
@@ -91,12 +85,8 @@ namespace ramses
     // Objects derived from Node class
     typedef ::testing::Types
         <
-        GroupNode,
-        TranslateNode,
-        RotateNode,
-        ScaleNode,
+        Node,
         MeshNode,
-        TransformationNode,
         RemoteCamera,
         PerspectiveCamera,
         OrthographicCamera
@@ -122,16 +112,11 @@ namespace ramses
         <
         AnimationSystem,
         AnimationSystemRealTime,
-        GroupNode,
-        TranslateNode,
-        RotateNode,
-        ScaleNode,
-        TransformationNode,
+        Node,
         MeshNode,
         RemoteCamera,
         PerspectiveCamera,
         OrthographicCamera,
-        VisibilityNode,
         Appearance,
         GeometryBinding,
         RenderGroup,
@@ -212,11 +197,7 @@ namespace ramses
         Scene,
         AnimationSystem,
         AnimationSystemRealTime,
-        GroupNode,
-        TranslateNode,
-        RotateNode,
-        ScaleNode,
-        TransformationNode,
+        Node,
         MeshNode,
         RemoteCamera,
         PerspectiveCamera,
@@ -272,7 +253,6 @@ namespace ramses
         TextureSampler,
         RenderBuffer,
         RenderTarget,
-        VisibilityNode,
         IndexDataBuffer,
         VertexDataBuffer,
         Texture2DBuffer,

@@ -118,10 +118,8 @@ ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t scen
 
     //fill scene with content, i.e. use high level api
     // every scene needs a render pass with camera
-    ramses::TranslateNode* cameraTrans = clientScene->createTranslateNode();
-    cameraTrans->setTranslation(0.0f, 0.0f, 5.0f);
     ramses::Camera* camera = clientScene->createRemoteCamera("my camera");
-    camera->setParent(*cameraTrans);
+    camera->setTranslation(0.0f, 0.0f, 5.0f);
     ramses::RenderPass* renderPass = clientScene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -152,12 +150,10 @@ ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t scen
     ramses::UniformInput colorInput;
     effect->findUniformInput("color", colorInput);
 
-    ramses::RotateNode* rotate = clientScene->createRotateNode("");
     // create a mesh node to define the triangle with chosen appearance
     ramses::MeshNode* meshNode = clientScene->createMeshNode("triangle mesh node");
     meshNode->setAppearance(*appearance);
     meshNode->setGeometryBinding(*geometry);
-    meshNode->setParent(*rotate);
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
 
@@ -170,7 +166,7 @@ ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t scen
     spline1->setKey(10000u, 1000.f);
 
     // create animated property for each translation node with single component animation
-    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*rotate, ramses::EAnimatedPropertyComponent_Z);
+    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode, ramses::EAnimatedProperty_Rotation, ramses::EAnimatedPropertyComponent_Z);
 
     // create three animations
     ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
@@ -200,10 +196,8 @@ ramses::Scene* createScene2(ramses::RamsesClient& client, ramses::sceneId_t scen
 
     //fill scene with content, i.e. use high level api
     // every scene needs a render pass with camera
-    ramses::TranslateNode* cameraTrans = clientScene->createTranslateNode();
-    cameraTrans->setTranslation(0.0f, 0.0f, 5.0f);
     ramses::Camera* camera = clientScene->createRemoteCamera("my camera");
-    camera->setParent(*cameraTrans);
+    camera->setTranslation(0.0f, 0.0f, 5.0f);
     ramses::RenderPass* renderPass = clientScene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -234,12 +228,10 @@ ramses::Scene* createScene2(ramses::RamsesClient& client, ramses::sceneId_t scen
     ramses::UniformInput colorInput;
     effect->findUniformInput("color", colorInput);
 
-    ramses::RotateNode* rotate = clientScene->createRotateNode("");
     // create a mesh node to define the triangle with chosen appearance
     ramses::MeshNode* meshNode = clientScene->createMeshNode("triangle mesh node");
     meshNode->setAppearance(*appearance);
     meshNode->setGeometryBinding(*geometry);
-    meshNode->setParent(*rotate);
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
 
@@ -252,7 +244,7 @@ ramses::Scene* createScene2(ramses::RamsesClient& client, ramses::sceneId_t scen
     spline1->setKey(10000u, -1000.f);
 
     // create animated property for each translation node with single component animation
-    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*rotate, ramses::EAnimatedPropertyComponent_Z);
+    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode, ramses::EAnimatedProperty_Rotation, ramses::EAnimatedPropertyComponent_Z);
 
     // create three animations
     ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");

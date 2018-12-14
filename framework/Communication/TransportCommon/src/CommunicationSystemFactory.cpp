@@ -55,11 +55,12 @@ namespace ramses_internal
 
     }
 
-    IDiscoveryDaemon* CommunicationSystemFactory::ConstructDiscoveryDaemon(const ramses::RamsesFrameworkConfigImpl& config, PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection)
+    IDiscoveryDaemon* CommunicationSystemFactory::ConstructDiscoveryDaemon(const ramses::RamsesFrameworkConfigImpl& config, PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection, Ramsh* optionalRamsh)
     {
         UNUSED(config);
         UNUSED(frameworkLock);
         UNUSED(statisticCollection);
+        UNUSED(optionalRamsh);
 
         IDiscoveryDaemon* constructedDaemon = 0;
         switch(config.getUsedProtocol())
@@ -67,7 +68,7 @@ namespace ramses_internal
             case EConnectionProtocol_TCP:
             {
 #if defined(HAS_TCP_COMM)
-                constructedDaemon = new TcpDiscoveryDaemon(config, frameworkLock, statisticCollection);
+                constructedDaemon = new TcpDiscoveryDaemon(config, frameworkLock, statisticCollection, optionalRamsh);
                 break;
 #endif
             }

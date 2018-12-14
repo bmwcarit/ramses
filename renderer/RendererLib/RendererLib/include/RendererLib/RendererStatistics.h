@@ -35,7 +35,10 @@ namespace ramses_internal
         void offscreenBufferInterrupted(DisplayHandle displayHandle, DeviceResourceHandle offscreenBuffer);
         void framebufferSwapped(DisplayHandle display);
 
+        void clientResourceUploaded(UInt byteSize);
+        void sceneResourceUploaded(SceneId sceneId, UInt byteSize);
         void streamTextureUpdated(StreamTextureSourceId sourceId, UInt numUpdates);
+        void shaderCompiled();
 
         void untrackScene(SceneId sceneId);
         void untrackOffscreenBuffer(DisplayHandle displayHandle, DeviceResourceHandle offscreenBuffer);
@@ -53,6 +56,9 @@ namespace ramses_internal
         UInt64 m_lastFrameTick = 0u;
         UInt32 m_frameDurationMin = std::numeric_limits<UInt32>::max();
         UInt32 m_frameDurationMax = 0u;
+        UInt m_clientResourcesUploaded = 0u;
+        UInt m_clientResourcesBytesUploaded = 0u;
+        UInt m_shadersCompiled = 0u;
 
         struct SceneStatistics
         {
@@ -73,6 +79,9 @@ namespace ramses_internal
             SummaryEntry<UInt> numClientResourcesAddedPerFlush;
             SummaryEntry<UInt> numClientResourcesRemovedPerFlush;
             SummaryEntry<UInt> numSceneResourceActionsPerFlush;
+
+            UInt sceneResourcesUploaded = 0u;
+            UInt sceneResourcesBytesUploaded = 0u;
 
             UInt numRendered = 0u;
         };

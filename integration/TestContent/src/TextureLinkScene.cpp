@@ -10,8 +10,6 @@
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/TranslateNode.h"
-#include "ramses-client-api/ScaleNode.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/TextureSampler.h"
@@ -45,13 +43,13 @@ namespace ramses_internal
         mesh1->setGeometryBinding(triangle1.GetGeometry());
         mesh2->setGeometryBinding(triangle2.GetGeometry());
 
-        ramses::TranslateNode* translate1 = scene.createTranslateNode();
-        ramses::TranslateNode* translate2 = scene.createTranslateNode();
+        ramses::Node* translate1 = scene.createNode();
+        ramses::Node* translate2 = scene.createNode();
 
         if (DATA_PROVIDER_LARGE == state || DATA_CONSUMER_AND_PROVIDER_LARGE == state)
         {
-            ramses::ScaleNode* scale1 = scene.createScaleNode();
-            ramses::ScaleNode* scale2 = scene.createScaleNode();
+            ramses::Node* scale1 = scene.createNode();
+            ramses::Node* scale2 = scene.createNode();
 
             scale1->setScaling(5.0f, 5.0f, 5.0f);
             scale2->setScaling(5.0f, 5.0f, 5.0f);

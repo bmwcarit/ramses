@@ -31,13 +31,13 @@ elif [ $# -eq 5 ]; then
     GL_VERSION=$4
     RAMSES_VERSION=$5
 else
-    echo -e "Usage: $0 <build-dir> <install-dir> [<renderer-platform: LINUX>] [<gl-version> (optional)] [<ramses-version (default none)>]\n"
+    echo -e "Usage: $0 <build-dir> <install-dir> [<renderer-platform: LINUX-X11|LINUX-WAYLAND>] [<gl-version> (optional)] [<ramses-version (default none)>]\n"
     exit 0
 fi
 
 echo "gl-version: $GL_VERSION"
 
-if [[ "$RENDERER_PLATFORM" != "LINUX" ]]; then
+if [[ "$RENDERER_PLATFORM" != "LINUX-X11" && "$RENDERER_PLATFORM" != "LINUX-WAYLAND" ]]; then
     echo "ERROR: unknown renderer-platform $RENDERER_PLATFORM"
     exit 1
 fi

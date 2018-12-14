@@ -53,11 +53,11 @@ namespace ramses
         const ramses_internal::TextureBuffer& internalTexBuffer = this->m_scene.impl.getIScene().getTextureBuffer(textureBufferHandle);
 
         EXPECT_EQ(ramses_internal::ETextureFormat_RGBA8, internalTexBuffer.textureFormat);
-        EXPECT_EQ(2u, internalTexBuffer.mipMapDimensions.size());
-        EXPECT_EQ(3u, internalTexBuffer.mipMapDimensions[0].width);
-        EXPECT_EQ(4u, internalTexBuffer.mipMapDimensions[0].height);
-        EXPECT_EQ(1u, internalTexBuffer.mipMapDimensions[1].width);
-        EXPECT_EQ(2u, internalTexBuffer.mipMapDimensions[1].height);
+        ASSERT_EQ(2u, internalTexBuffer.mipMaps.size());
+        EXPECT_EQ(3u, internalTexBuffer.mipMaps[0].width);
+        EXPECT_EQ(4u, internalTexBuffer.mipMaps[0].height);
+        EXPECT_EQ(1u, internalTexBuffer.mipMaps[1].width);
+        EXPECT_EQ(2u, internalTexBuffer.mipMaps[1].height);
     }
 
     TEST_F(ATexture2DBuffer, CanBeCreatedSoThatTheLastMipLevelHasSize1x1)
@@ -93,7 +93,7 @@ namespace ramses
 
         // update mipLevel = 0
         EXPECT_EQ(StatusOK, textureBuffer.setData(reinterpret_cast<const char*>(std::array<uint32_t, 4>{ {12, 23, 34, 56} }.data()), 0, 0, 0, 2, 2));
-        const uint32_t* textureBufferDataMip0 = reinterpret_cast<const uint32_t*>(this->m_scene.impl.getIScene().getTextureBuffer(textureBufferHandle).mipMapData[0].data());
+        const uint32_t* textureBufferDataMip0 = reinterpret_cast<const uint32_t*>(this->m_scene.impl.getIScene().getTextureBuffer(textureBufferHandle).mipMaps[0].data.data());
 
         EXPECT_EQ(12u, textureBufferDataMip0[0]);
         EXPECT_EQ(23u, textureBufferDataMip0[1]);
@@ -102,7 +102,7 @@ namespace ramses
 
         // update mipLevel = 1
         EXPECT_EQ(StatusOK, textureBuffer.setData(reinterpret_cast<const char*>(std::array<uint32_t, 1>{ {78} }.data()), 1, 0, 0, 1, 1));
-        const uint32_t* textureBufferDataMip1 = reinterpret_cast<const uint32_t*>(this->m_scene.impl.getIScene().getTextureBuffer(textureBufferHandle).mipMapData[1].data());
+        const uint32_t* textureBufferDataMip1 = reinterpret_cast<const uint32_t*>(this->m_scene.impl.getIScene().getTextureBuffer(textureBufferHandle).mipMaps[1].data.data());
 
         EXPECT_EQ(78u, textureBufferDataMip1[0]);
     }

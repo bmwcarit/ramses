@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 BMW Car IT GmbH
+ * Copyright (C) 2018 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -344,7 +344,7 @@ namespace ramses_capu
         inline
         status_t File::getCurrentPosition(uint_t& position) const
         {
-            __int64 pos = _ftelli64(mHandle);
+            __int64 pos = ftell(mHandle);
             if (pos >= 0)
             {
                 position = static_cast<uint_t>(pos);
@@ -374,4 +374,4 @@ namespace ramses_capu
     }
 }
 
-#endif //RAMSES_CAPU_WINDOWS_FILE_H
+#endif

@@ -20,7 +20,7 @@ IF NOT "%~6"=="" (
 
 SET BUILD_CONFIG=%1
 SET TEST_DIR=%2
-SET INSTALL_DIR=%3
+SET INSTALL_DIR=%~3
 SET CMAKE_GENERATOR=%4
 SET GL_VERSION=%5
 SET RENDERER_PLATFORM="WINDOWS"
@@ -50,8 +50,15 @@ IF /I "%ERRORLEVEL%" NEQ "0" (
     EXIT /B 1
 )
 
+IF /I NOT %CMAKE_GENERATOR%=="Ninja" (
 SET EXECUTABLE_PATH=%cd%\%BUILD_CONFIG%
-start /d %EXECUTABLE_PATH% ramses-static-lib-check
+) ELSE (
+SET EXECUTABLE_PATH=%cd%
+)
+SET PATH=%INSTALL_DIR%/lib;%PATH%
+
+cd %EXECUTABLE_PATH%
+call ramses-static-lib-check
 
 ::check for errors
 IF /I "%ERRORLEVEL%" NEQ "0" (

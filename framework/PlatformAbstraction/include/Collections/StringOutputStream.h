@@ -37,7 +37,7 @@ namespace ramses_internal
             EHexadecimalType_HexLeadingZeros
         };
 
-        StringOutputStream(UInt initialCapacity = 16);
+        explicit StringOutputStream(UInt initialCapacity = 16);
 
         StringOutputStream& operator<<(const Int32 value);
         StringOutputStream& operator<<(const UInt32 value);

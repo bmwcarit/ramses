@@ -10,8 +10,6 @@
 #include "ramses-utils.h"
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
-#include "ramses-client-api/GroupNode.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/Vector3fArray.h"
 #include "ramses-client-api/GeometryBinding.h"
@@ -30,7 +28,7 @@ namespace ramses_internal
         uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
         m_indices = m_client.createConstUInt16Array(6, indicesArray);
 
-        m_groupNode = m_scene.createGroupNode();
+        m_groupNode = m_scene.createNode();
 
         float vertexPositionsArray[] = {
             -1.0f, -1.f, 0.0f,
@@ -123,7 +121,7 @@ namespace ramses_internal
         mesh->setAppearance(*appearance);
         mesh->setGeometryBinding(*geometry);
 
-        ramses::TranslateNode* transNode = m_scene.createTranslateNode();
+        ramses::Node* transNode = m_scene.createNode();
         transNode->setTranslation(x, y, -12.5f);
 
         mesh->setParent(*transNode);

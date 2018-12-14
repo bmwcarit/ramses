@@ -15,8 +15,6 @@
 
 namespace ramses_internal
 {
-    class IWaylandOutputResource;
-
     class WaylandShellConnection : public IWaylandShellConnection
     {
     public:

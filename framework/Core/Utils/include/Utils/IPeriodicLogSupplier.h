@@ -15,7 +15,7 @@ namespace ramses_internal
     {
     public:
         virtual ~IPeriodicLogSupplier() {};
-        virtual void triggerLogMessageForPeriodicLog() const = 0;
+        virtual void triggerLogMessageForPeriodicLog() = 0;
     };
 }
 

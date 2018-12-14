@@ -9,8 +9,7 @@
 #include "gtest/gtest.h"
 #include "ClientTestUtils.h"
 #include "ramses-client-api/SplineLinearVector3f.h"
-#include "ramses-client-api/TranslateNode.h"
-#include "ramses-client-api/GroupNode.h"
+#include "ramses-client-api/Node.h"
 #include "SceneAPI/IScene.h"
 #include "Scene/SceneActionCollection.h"
 
@@ -34,7 +33,7 @@ namespace ramses
         {
             const ramses_internal::IScene& iscene = m_scene.impl.getIScene();
             ramses_internal::SceneInfo info(iscene.getSceneId(), iscene.getName());
-            EXPECT_CALL(sceneActionsCollector, handleNewScenesAvailable(ramses_internal::SceneInfoVector(1, info), _));
+            EXPECT_CALL(sceneActionsCollector, handleNewScenesAvailable(ramses_internal::SceneInfoVector(1, info), _, _));
             EXPECT_CALL(sceneActionsCollector, handleInitializeScene(info, _));
             EXPECT_EQ(StatusOK, m_scene.publish());
         }
@@ -49,13 +48,13 @@ namespace ramses
         void doSceneOperations()
         {
             // do random m_scene stuff
-            GroupNode* node = m_scene.createGroupNode("node");
-            TranslateNode* nodeTrans = m_scene.createTranslateNode("nodetrans");
+            Node* node = m_scene.createNode("node");
+            Node* nodeTrans = m_scene.createNode("nodetrans");
             nodeTrans->setParent(*node);
 
             // do random animation stuff
             SplineLinearVector3f* spline = animationSystem.createSplineLinearVector3f("spline");
-            AnimatedProperty* prop = animationSystem.createAnimatedProperty(*nodeTrans);
+            AnimatedProperty* prop = animationSystem.createAnimatedProperty(*nodeTrans, EAnimatedProperty_Translation);
             animationSystem.createAnimation(*prop, *spline, "anim");
         }
 
@@ -146,7 +145,7 @@ namespace ramses
         const ramses_internal::IScene& otherIScene = otherScene->impl.getIScene();
 
         ramses_internal::SceneInfo sceneInfo(sceneId, otherIScene.getName());
-        EXPECT_CALL(sceneActionsCollector, handleNewScenesAvailable(ramses_internal::SceneInfoVector(1, sceneInfo), _));
+        EXPECT_CALL(sceneActionsCollector, handleNewScenesAvailable(ramses_internal::SceneInfoVector(1, sceneInfo), _, _));
         EXPECT_EQ(StatusOK, otherScene->publish());
 
         EXPECT_CALL(sceneActionsCollector, handleScenesBecameUnavailable(ramses_internal::SceneInfoVector(1, ramses_internal::SceneInfo(sceneId)), _));

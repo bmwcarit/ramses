@@ -14,8 +14,6 @@
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/GroupNode.h"
-#include "ramses-client-api/TranslateNode.h"
 #include "ramses-client-api/EffectDescription.h"
 #include "ramses-client-api/UInt16Array.h"
 #include "ramses-client-api/Vector2fArray.h"
@@ -46,10 +44,8 @@ int main(int argc, char* argv[])
     ramses::Scene* scene = ramses.createScene(123u, ramses::SceneConfig(), "basic scenegraph scene");
 
     // every scene needs a render pass with camera
-    ramses::TranslateNode* cameraTranslate = scene->createTranslateNode();
-    cameraTranslate->setTranslation(0.0f, 0.0f, 5.0f);
     ramses::Camera* camera = scene->createRemoteCamera("my camera");
-    camera->setParent(*cameraTranslate);
+    camera->setTranslation(0.0f, 0.0f, 5.0f);
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -86,24 +82,20 @@ int main(int argc, char* argv[])
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
     //                 This should not be the case for real applications.
 
-    // create group node as root
-    ramses::GroupNode* group = scene->createGroupNode("group of triangles");
+    // create node as root
+    ramses::Node* group = scene->createNode("group of triangles");
 
     // create grid of triangles
     for (int row = 0; row < 2; ++row)
     {
         for (int column = 0; column < 3; ++column)
         {
-            // translate each mesh node
-            ramses::TranslateNode* translation = scene->createTranslateNode("translate node");
-            translation->setTranslation(column * 0.2f, row * 0.2f, 0.0f);
-            translation->setParent(*group);
-
             // create a mesh node to define the triangle with chosen appearance
             ramses::MeshNode* meshNode = scene->createMeshNode("triangle mesh node");
             meshNode->setAppearance(*appearance);
             meshNode->setGeometryBinding(*geometry);
-            meshNode->setParent(*translation);
+            meshNode->setTranslation(column * 0.2f, row * 0.2f, 0.0f);
+            meshNode->setParent(*group);
             // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
             renderGroup->addMeshNode(*meshNode);
         }

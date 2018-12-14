@@ -493,7 +493,7 @@ namespace ramses_internal
             testRenderer.subscribeScene(sceneId, false);
 
             // change scene while subscription is ongoing
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 80; i++)
             {
                 data->setValue(i);
                 testRenderer.flush(sceneId);
@@ -1030,274 +1030,224 @@ namespace ramses_internal
             return true;
         }
 
-        case ELifecycleTest_SceneLatencyNotExceededWhileSubscribed:
+        case ELifecycleTest_SceneNotExpiredWhenUpdatedAndSubscribed:
         {
             testRenderer.initializeRenderer();
 
-            ramses::SceneConfig sceneConfig;
-            sceneConfig.setMaximumLatency(3600 * 1000); // 1 hour limit
-            const ramses::sceneId_t sceneId = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f), sceneConfig);
+            const ramses::sceneId_t sceneId = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f));
             testRenderer.publish(sceneId);
-
-            const auto timeStamp = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::system_clock::now()).time_since_epoch()).count();
-
-            testRenderer.flushWithTimestamp(sceneId, timeStamp);
+            testRenderer.flush(sceneId);
             testRenderer.subscribeScene(sceneId);
 
             for (int i = 0; i < 5; ++i)
             {
-                testRenderer.flushWithTimestamp(sceneId, timeStamp);
+                testRenderer.setExpirationTimestamp(sceneId, std::chrono::system_clock::now() + std::chrono::hours(1));
+                testRenderer.flush(sceneId);
                 testRenderer.doOneLoop();
             }
 
-            ASSERT_FALSE(testRenderer.consumeEventsAndCheckScenesLatencyExceeded({ sceneId }));
+            ASSERT_FALSE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId }));
 
-            testRenderer.unpublish(sceneId);
             testRenderer.destroyRenderer();
 
             return true;
         }
-        case ELifecycleTest_SceneLatencyExceededWhileSubscribed:
+        case ELifecycleTest_SceneExpiredWhenSubscribed:
         {
             testRenderer.initializeRenderer();
 
-            ramses::SceneConfig sceneConfig;
-            sceneConfig.setMaximumLatency(3600 * 1000); // 1 hour limit
-            const ramses::sceneId_t sceneId = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f), sceneConfig);
+            const ramses::sceneId_t sceneId = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f));
             testRenderer.publish(sceneId);
-
-            // there has to be an initial flush before subscribing and we have to use flush with timestamp
-            // use timestamp in future so that it is guaranteed we don't get latency exceed already at subscription time
-            const auto timeStampInFuture = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::system_clock::now() + std::chrono::hours(1)).time_since_epoch()).count();
-            testRenderer.flushWithTimestamp(sceneId, timeStampInFuture);
+            testRenderer.flush(sceneId);
             testRenderer.subscribeScene(sceneId);
             testRenderer.doOneLoop();
 
-            // next flush will be in past to trigger the exceeded event
-            const uint64_t timeStampInPast = 1u;
-            testRenderer.flushWithTimestamp(sceneId, timeStampInPast);
+            // next flush expired already in past to trigger the exceeded event
+            testRenderer.setExpirationTimestamp(sceneId, std::chrono::system_clock::now() - std::chrono::hours(1));
+            testRenderer.flush(sceneId);
             testRenderer.doOneLoop();
 
-            ASSERT_TRUE(testRenderer.consumeEventsAndCheckScenesLatencyExceeded({ sceneId }));
+            ASSERT_TRUE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId }));
 
-            testRenderer.unpublish(sceneId);
             testRenderer.destroyRenderer();
 
             return true;
         }
-        case ELifecycleTest_SceneLatencyExceededAndRecoveredWhileSubscribed:
+        case ELifecycleTest_SceneExpiredAndRecoveredWhenSubscribed:
         {
             testRenderer.initializeRenderer();
 
-            ramses::SceneConfig sceneConfig;
-            sceneConfig.setMaximumLatency(3600 * 1000); // 1 hour limit
-            const ramses::sceneId_t sceneId = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f), sceneConfig);
+            const ramses::sceneId_t sceneId = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f));
             testRenderer.publish(sceneId);
 
-            // there has to be an initial flush before subscribing and we have to use flush with timestamp
-            // use timestamp in future so that it is guaranteed we don't get latency exceed already at subscription time
-            const auto timeStampInFuture = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::system_clock::now() + std::chrono::hours(1)).time_since_epoch()).count();
-            testRenderer.flushWithTimestamp(sceneId, timeStampInFuture);
+            testRenderer.setExpirationTimestamp(sceneId, std::chrono::system_clock::now() + std::chrono::hours(1));
+            testRenderer.flush(sceneId);
             testRenderer.subscribeScene(sceneId);
             testRenderer.doOneLoop();
 
             // next flush will be in past to trigger the exceeded event
-            const uint64_t timeStampInPast = 1u;
-            testRenderer.flushWithTimestamp(sceneId, timeStampInPast);
+            testRenderer.setExpirationTimestamp(sceneId, std::chrono::system_clock::now() - std::chrono::hours(1));
+            testRenderer.flush(sceneId);
             testRenderer.doOneLoop();
-            ASSERT_TRUE(testRenderer.consumeEventsAndCheckScenesLatencyExceeded({ sceneId }));
+            ASSERT_TRUE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId }));
 
             // next flush will be in future again to trigger the recovery event
-            testRenderer.flushWithTimestamp(sceneId, timeStampInFuture);
+            testRenderer.setExpirationTimestamp(sceneId, std::chrono::system_clock::now() + std::chrono::hours(1));
+            testRenderer.flush(sceneId);
             testRenderer.doOneLoop();
 
-            ASSERT_TRUE(testRenderer.consumeEventsAndCheckScenesLatencyRecovered({ sceneId }));
+            ASSERT_TRUE(testRenderer.consumeEventsAndCheckRecoveredScenes({ sceneId }));
 
-            testRenderer.unpublish(sceneId);
             testRenderer.destroyRenderer();
 
             return true;
         }
-        case ELifecycleTest_SceneLatencyNotExceededWhileRendered:
+        case ELifecycleTest_SceneNotExpiredWhenUpdatedAndRendered:
         {
             testRenderer.initializeRenderer();
             const ramses::displayId_t display = createDisplayForWindow(testRenderer);
             ASSERT_TRUE(ramses::InvalidDisplayId != display);
 
-            ramses::SceneConfig sceneConfig;
-            sceneConfig.setMaximumLatency(3600 * 1000); // 1 hour limit
-            const ramses::sceneId_t sceneId = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f), sceneConfig);
+            const ramses::sceneId_t sceneId = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f));
             testRenderer.publish(sceneId);
-
-            // there has to be an initial flush before subscribing and we have to use flush with timestamp
-            // use timestamp in future so that it is guaranteed we don't get latency exceed already at subscription time
-            const auto timeStampInFuture = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::system_clock::now() + std::chrono::milliseconds(100)).time_since_epoch()).count();
-            testRenderer.flushWithTimestamp(sceneId, timeStampInFuture);
+            testRenderer.flush(sceneId);
             testRenderer.subscribeScene(sceneId);
             testRenderer.mapScene(display, sceneId);
             testRenderer.showScene(sceneId);
             testRenderer.doOneLoop();
 
-            // send flushes and render within latency limit
+            // send flushes and render within limit
             for (int i = 0; i < 5; ++i)
             {
                 // make modifications to scene
                 testRenderer.getScenesRegistry().setSceneState<ramses_internal::MultipleTrianglesScene>(sceneId, ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED);
-                const auto timeStamp = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::system_clock::now()).time_since_epoch()).count();
-                testRenderer.flushWithTimestamp(sceneId, timeStamp);
+                testRenderer.setExpirationTimestamp(sceneId, std::chrono::system_clock::now() + std::chrono::hours(1));
+                testRenderer.flush(sceneId);
                 testRenderer.doOneLoop();
             }
 
-            ASSERT_FALSE(testRenderer.consumeEventsAndCheckScenesLatencyExceeded({ sceneId }));
+            ASSERT_FALSE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId }));
 
-            testRenderer.unpublish(sceneId);
             testRenderer.destroyRenderer();
 
             return true;
         }
-        case ELifecycleTest_SceneLatencyNotExceededWhileRenderedButUpdatedWithEmptyFlushes:
+        case ELifecycleTest_SceneNotExpiredWhenUpdatedWithEmptyFlushesAndRendered:
         {
             testRenderer.initializeRenderer();
             const ramses::displayId_t display = createDisplayForWindow(testRenderer);
             ASSERT_TRUE(ramses::InvalidDisplayId != display);
 
-            ramses::SceneConfig sceneConfig;
-            sceneConfig.setMaximumLatency(3600 * 1000); // 1 hour limit
-            const ramses::sceneId_t sceneId = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f), sceneConfig);
+            const ramses::sceneId_t sceneId = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f));
             testRenderer.publish(sceneId);
-
-            // there has to be an initial flush before subscribing and we have to use flush with timestamp
-            // use timestamp in future so that it is guaranteed we don't get latency exceed already at subscription time
-            const auto timeStampInFuture = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::system_clock::now() + std::chrono::milliseconds(100)).time_since_epoch()).count();
-            testRenderer.flushWithTimestamp(sceneId, timeStampInFuture);
+            testRenderer.flush(sceneId);
             testRenderer.subscribeScene(sceneId);
             testRenderer.mapScene(display, sceneId);
             testRenderer.showScene(sceneId);
             testRenderer.doOneLoop();
 
-            // send flushes and render within latency limit
+            // send flushes and render within limit
             for (int i = 0; i < 5; ++i)
             {
                 // no modifications to scene
-                const auto timeStamp = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::system_clock::now()).time_since_epoch()).count();
-                testRenderer.flushWithTimestamp(sceneId, timeStamp);
+                testRenderer.setExpirationTimestamp(sceneId, std::chrono::system_clock::now() + std::chrono::hours(1));
+                testRenderer.flush(sceneId);
                 testRenderer.doOneLoop();
             }
 
-            ASSERT_FALSE(testRenderer.consumeEventsAndCheckScenesLatencyExceeded({ sceneId }));
+            ASSERT_FALSE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId }));
 
-            testRenderer.unpublish(sceneId);
             testRenderer.destroyRenderer();
 
             return true;
         }
-        case ELifecycleTest_SceneLatencyExceededWhileRendered:
+        case ELifecycleTest_SceneExpiredWhenRendered:
         {
             testRenderer.initializeRenderer();
             const ramses::displayId_t display = createDisplayForWindow(testRenderer);
             ASSERT_TRUE(ramses::InvalidDisplayId != display);
 
-            ramses::SceneConfig sceneConfig;
-            sceneConfig.setMaximumLatency(100);
-            const ramses::sceneId_t sceneId = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f), sceneConfig);
+            const ramses::sceneId_t sceneId = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f));
             testRenderer.publish(sceneId);
-
-            // there has to be an initial flush before subscribing and we have to use flush with timestamp
-            // use timestamp in future so that it is guaranteed we don't get latency exceed already at subscription time
-            const auto timeStampInFuture = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::system_clock::now() + std::chrono::milliseconds(1000)).time_since_epoch()).count();
-            testRenderer.flushWithTimestamp(sceneId, timeStampInFuture);
+            testRenderer.flush(sceneId);
             testRenderer.subscribeScene(sceneId);
             testRenderer.mapScene(display, sceneId);
             testRenderer.showScene(sceneId);
             testRenderer.doOneLoop();
 
-            // send flushes within latency limit but do not render
+            // send flushes within limit but do not render
             testRenderer.setLoopMode(ramses::ELoopMode_UpdateOnly);
             for (int i = 0; i < 5; ++i)
             {
-                const auto timeStamp = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::system_clock::now()).time_since_epoch()).count();
                 // make modifications to scene
                 testRenderer.getScenesRegistry().setSceneState<ramses_internal::MultipleTrianglesScene>(sceneId, ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED);
-                testRenderer.flushWithTimestamp(sceneId, timeStamp);
+                testRenderer.setExpirationTimestamp(sceneId, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
+                testRenderer.flush(sceneId);
                 testRenderer.doOneLoop();
                 std::this_thread::sleep_for(std::chrono::milliseconds(300));
             }
 
-            ASSERT_TRUE(testRenderer.consumeEventsAndCheckScenesLatencyExceeded({ sceneId }));
+            ASSERT_TRUE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId }));
 
-            testRenderer.unpublish(sceneId);
             testRenderer.destroyRenderer();
 
             return true;
         }
-        case ELifecycleTest_SceneLatencyExceededAndRecoveredWhileRendered:
+        case ELifecycleTest_SceneExpiredAndRecoveredWhenRendered:
         {
             testRenderer.initializeRenderer();
             const ramses::displayId_t display = createDisplayForWindow(testRenderer);
             ASSERT_TRUE(ramses::InvalidDisplayId != display);
 
-            ramses::SceneConfig sceneConfig;
-            sceneConfig.setMaximumLatency(100);
-            const ramses::sceneId_t sceneId = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f), sceneConfig);
+            const ramses::sceneId_t sceneId = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f));
             testRenderer.publish(sceneId);
-
-            // there has to be an initial flush before subscribing and we have to use flush with timestamp
-            // use timestamp in future so that it is guaranteed we don't get latency exceed already at subscription time
-            const auto timeStampInFuture = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::system_clock::now() + std::chrono::milliseconds(1000)).time_since_epoch()).count();
-            testRenderer.flushWithTimestamp(sceneId, timeStampInFuture);
+            testRenderer.flush(sceneId);
             testRenderer.subscribeScene(sceneId);
             testRenderer.mapScene(display, sceneId);
             testRenderer.showScene(sceneId);
             testRenderer.doOneLoop();
 
-            // send flushes within latency limit but do not render
+            // send flushes within limit but do not render
             testRenderer.setLoopMode(ramses::ELoopMode_UpdateOnly);
             for (int i = 0; i < 5; ++i)
             {
-                const auto timeStamp = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::system_clock::now()).time_since_epoch()).count();
                 // make modifications to scene
                 testRenderer.getScenesRegistry().setSceneState<ramses_internal::MultipleTrianglesScene>(sceneId, ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED);
-                testRenderer.flushWithTimestamp(sceneId, timeStamp);
+                testRenderer.setExpirationTimestamp(sceneId, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
+                testRenderer.flush(sceneId);
                 testRenderer.doOneLoop();
                 std::this_thread::sleep_for(std::chrono::milliseconds(300));
             }
-            ASSERT_TRUE(testRenderer.consumeEventsAndCheckScenesLatencyExceeded({ sceneId }));
+            ASSERT_TRUE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId }));
 
-            // now also render within latency limit to recover
+            // now also render within limit to recover
             testRenderer.setLoopMode(ramses::ELoopMode_UpdateAndRender);
             for (int i = 0; i < 5; ++i)
             {
-                const auto timeStamp = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::system_clock::now()).time_since_epoch()).count();
                 // make modifications to scene
                 testRenderer.getScenesRegistry().setSceneState<ramses_internal::MultipleTrianglesScene>(sceneId, ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED);
-                testRenderer.flushWithTimestamp(sceneId, timeStamp);
+                testRenderer.setExpirationTimestamp(sceneId, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
+                testRenderer.flush(sceneId);
                 testRenderer.doOneLoop();
             }
-            ASSERT_TRUE(testRenderer.consumeEventsAndCheckScenesLatencyRecovered({ sceneId }));
+            ASSERT_TRUE(testRenderer.consumeEventsAndCheckRecoveredScenes({ sceneId }));
 
-            testRenderer.unpublish(sceneId);
             testRenderer.destroyRenderer();
 
             return true;
         }
-        case ELifecycleTest_SceneLatencyTwoScenesExceededOneAfterAnother:
+        case ELifecycleTest_ScenesExpireOneAfterAnother:
         {
             testRenderer.initializeRenderer();
             const ramses::displayId_t display = createDisplayForWindow(testRenderer);
             ASSERT_TRUE(ramses::InvalidDisplayId != display);
 
-            ramses::SceneConfig sceneConfig;
-            sceneConfig.setMaximumLatency(100);
-            const ramses::sceneId_t sceneId1 = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f), sceneConfig);
-            const ramses::sceneId_t sceneId2 = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f), sceneConfig);
+            const ramses::sceneId_t sceneId1 = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f));
+            const ramses::sceneId_t sceneId2 = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f));
             testRenderer.publish(sceneId1);
             testRenderer.publish(sceneId2);
-
-            // there has to be an initial flush before subscribing and we have to use flush with timestamp
-            // use timestamp in future so that it is guaranteed we don't get latency exceed already at subscription time
-            const auto timeStampInFuture = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::system_clock::now() + std::chrono::milliseconds(1000)).time_since_epoch()).count();
-            testRenderer.flushWithTimestamp(sceneId1, timeStampInFuture);
-            testRenderer.flushWithTimestamp(sceneId2, timeStampInFuture);
+            testRenderer.flush(sceneId1);
+            testRenderer.flush(sceneId2);
             testRenderer.subscribeScene(sceneId1);
             testRenderer.subscribeScene(sceneId2);
             testRenderer.mapScene(display, sceneId1);
@@ -1306,45 +1256,53 @@ namespace ramses_internal
             testRenderer.showScene(sceneId2);
             testRenderer.doOneLoop();
 
+            // initial state expires in 100ms
+            testRenderer.setExpirationTimestamp(sceneId1, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
+            testRenderer.setExpirationTimestamp(sceneId2, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
+            testRenderer.flush(sceneId1);
+            testRenderer.flush(sceneId2);
+
             // S1 exceeds, S2 is ok
             for (int i = 0; i < 5; ++i)
             {
-                const auto timeStamp = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::system_clock::now()).time_since_epoch()).count();
-                testRenderer.flushWithTimestamp(sceneId2, timeStamp);
+                testRenderer.setExpirationTimestamp(sceneId2, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
+                testRenderer.flush(sceneId2);
                 testRenderer.doOneLoop();
                 std::this_thread::sleep_for(std::chrono::milliseconds(300));
             }
-            ASSERT_TRUE(testRenderer.consumeEventsAndCheckScenesLatencyExceeded({ sceneId1 }));
+            ASSERT_TRUE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId1 }));
 
             // S1 recovers, S2 is ok
             for (int i = 0; i < 5; ++i)
             {
-                const auto timeStamp = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::system_clock::now()).time_since_epoch()).count();
-                testRenderer.flushWithTimestamp(sceneId1, timeStamp);
-                testRenderer.flushWithTimestamp(sceneId2, timeStamp);
+                testRenderer.setExpirationTimestamp(sceneId1, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
+                testRenderer.setExpirationTimestamp(sceneId2, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
+                testRenderer.flush(sceneId1);
+                testRenderer.flush(sceneId2);
                 testRenderer.doOneLoop();
             }
-            ASSERT_TRUE(testRenderer.consumeEventsAndCheckScenesLatencyRecovered({ sceneId1 }));
+            ASSERT_TRUE(testRenderer.consumeEventsAndCheckRecoveredScenes({ sceneId1 }));
 
             // S1 ok, S2 exceeds
             for (int i = 0; i < 5; ++i)
             {
-                const auto timeStamp = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::system_clock::now()).time_since_epoch()).count();
-                testRenderer.flushWithTimestamp(sceneId1, timeStamp);
+                testRenderer.setExpirationTimestamp(sceneId1, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
+                testRenderer.flush(sceneId1);
                 testRenderer.doOneLoop();
                 std::this_thread::sleep_for(std::chrono::milliseconds(50));
             }
-            ASSERT_TRUE(testRenderer.consumeEventsAndCheckScenesLatencyExceeded({ sceneId2 }));
+            ASSERT_TRUE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId2 }));
 
             // S1 ok, S2 is recovers
             for (int i = 0; i < 5; ++i)
             {
-                const auto timeStamp = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::system_clock::now()).time_since_epoch()).count();
-                testRenderer.flushWithTimestamp(sceneId1, timeStamp);
-                testRenderer.flushWithTimestamp(sceneId2, timeStamp);
+                testRenderer.setExpirationTimestamp(sceneId1, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
+                testRenderer.setExpirationTimestamp(sceneId2, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
+                testRenderer.flush(sceneId1);
+                testRenderer.flush(sceneId2);
                 testRenderer.doOneLoop();
             }
-            ASSERT_TRUE(testRenderer.consumeEventsAndCheckScenesLatencyRecovered({ sceneId2 }));
+            ASSERT_TRUE(testRenderer.consumeEventsAndCheckRecoveredScenes({ sceneId2 }));
 
             // both S1 and S2 exceed
             for (int i = 0; i < 5; ++i)
@@ -1352,10 +1310,8 @@ namespace ramses_internal
                 testRenderer.doOneLoop();
                 std::this_thread::sleep_for(std::chrono::milliseconds(50));
             }
-            ASSERT_TRUE(testRenderer.consumeEventsAndCheckScenesLatencyExceeded({ sceneId1, sceneId2 }));
+            ASSERT_TRUE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId1, sceneId2 }));
 
-            testRenderer.unpublish(sceneId1);
-            testRenderer.unpublish(sceneId2);
             testRenderer.destroyRenderer();
 
             return true;

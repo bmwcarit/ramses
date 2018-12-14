@@ -11,36 +11,38 @@
 
 namespace ramses_internal
 {
-    enum ETestForkerApplicationMessage
+    enum class ETestForkerApplicationMessage
     {
-        ETestForkerApplicationMessage_StopForkerApplication = 0,
-        ETestForkerApplicationMessage_ForkTestApplication,
-        ETestForkerApplicationMessage_WaitForTestApplicationExit,
-        ETestForkerApplicationMessage_KillTestApplication
+        SetEnvironementVariable_WaylandDisplay,
+        SetEnvironementVariable_WaylandSocket,
+        StopForkerApplication,
+        ForkTestApplication,
+        WaitForTestApplicationExit,
+        KillTestApplication,
     };
 
-    enum ETestWaylandApplicationMessage
+    enum class ETestWaylandApplicationMessage
     {
-        ETestWaylandApplicationMessage_StopApplication = 0,
-        ETestWaylandApplicationMessage_CreateSurface,
-        ETestWaylandApplicationMessage_CreateShellSurface,
-        ETestWaylandApplicationMessage_DestroyShellSurface,
-        ETestWaylandApplicationMessage_SetShellSurfaceTitle,
-        ETestWaylandApplicationMessage_SetShellSurfaceDummyValues,
-        ETestWaylandApplicationMessage_DestroySurface,
-        ETestWaylandApplicationMessage_DestroyIVISurface,
-        ETestWaylandApplicationMessage_CreateIVISurface,
-        ETestWaylandApplicationMessage_RenderOneFrame,
-        ETestWaylandApplicationMessage_AttachBuffer,
-        ETestWaylandApplicationMessage_DestroyBuffers,
-        ETestWaylandApplicationMessage_SetSurfaceSize,
-        ETestWaylandApplicationMessage_SetTriangleColor,
-        ETestWaylandApplicationMessage_AdditionalConnectToEmbeddedCompositor,
-        ETestWaylandApplicationMessage_DetachBufferFromSurface,
-        ETestWaylandApplicationMessage_GetNumberOfAllocatedSHMBuffer,
-        ETestWaylandApplicationMessage_RenderOneFrameToTwoSurfaces,
-        ETestWaylandApplicationMessage_GetIsBufferFree,
-        ETestWaylandApplicationMessage_GetOutputValues
+        StopApplication,
+        CreateSurface,
+        CreateShellSurface,
+        DestroyShellSurface,
+        SetShellSurfaceTitle,
+        SetShellSurfaceDummyValues,
+        DestroySurface,
+        DestroyIVISurface,
+        CreateIVISurface,
+        RenderOneFrame,
+        AttachBuffer,
+        DestroyBuffers,
+        SetSurfaceSize,
+        SetTriangleColor,
+        AdditionalConnectToEmbeddedCompositor,
+        DetachBufferFromSurface,
+        GetNumberOfAllocatedSHMBuffer,
+        RenderOneFrameToTwoSurfaces,
+        GetIsBufferFree,
+        StartRamsesRendererAndRunRenderingTest,
     };
 }
 

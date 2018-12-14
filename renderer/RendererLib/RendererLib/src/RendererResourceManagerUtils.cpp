@@ -50,7 +50,6 @@ namespace ramses_internal
         {
             BinaryOutputStream serializerStream(serializedSize);
             SingleResourceSerialization::SerializeResource(serializerStream, *resource);
-            serializerStream.flush();
             assert(serializerStream.getSize() == serializedSize);
 
             cache->storeResource(resHash, reinterpret_cast<const uint8_t*>(serializerStream.getData()), serializedSize, cacheFlag, sceneId);

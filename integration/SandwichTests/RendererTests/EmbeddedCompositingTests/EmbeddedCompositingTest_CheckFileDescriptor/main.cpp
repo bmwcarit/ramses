@@ -14,7 +14,7 @@
 #include "Utils/RamsesLogger.h"
 #include "EmbeddedCompositingTestFramework/TestForkingController.h"
 #include "ramses-framework-api/RamsesFrameworkConfig.h"
-#include "UnixUtilities/UnixDomainSocketHelper.h"
+#include "WaylandUtilities/UnixDomainSocketHelper.h"
 
 int main(int argc, const char *argv[])
 {
@@ -43,6 +43,7 @@ int main(int argc, const char *argv[])
     const ramses_internal::Vector<ramses_internal::String>  filterInTestStrings = { "ShowStreamTexture" };
     const ramses_internal::Vector<ramses_internal::String>  filterOutTestStrings = {"ShowStreamTextureAfter", "ShowStreamTextureOn", "ShowStreamTextureWhen"};
 
+    forkingController.setEnvironmentVariableWaylandSocket();
     ramses_internal::EmbeddedCompositingTests embeddedCompositingTests(forkingController, filterInTestStrings, filterOutTestStrings, generateBitmaps, config);
 
     const int returnValue = embeddedCompositingTests.runTests() ? 0 : 1;

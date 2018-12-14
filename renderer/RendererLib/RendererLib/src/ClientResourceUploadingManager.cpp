@@ -9,13 +9,14 @@
 #include "RendererLib/ClientResourceUploadingManager.h"
 #include "RendererLib/RendererClientResourceRegistry.h"
 #include "RendererLib/IResourceUploader.h"
+#include "RendererLib/FrameTimer.h"
+#include "RendererLib/RendererStatistics.h"
 #include "RendererAPI/IRenderBackend.h"
 #include "RendererAPI/IEmbeddedCompositingManager.h"
 #include "RendererAPI/IDevice.h"
 #include "Utils/LogMacros.h"
 #include "Common/Cpp11Macros.h"
 #include "PlatformAbstraction/PlatformTime.h"
-#include "RendererLib/FrameTimer.h"
 
 namespace ramses_internal
 {
@@ -25,6 +26,7 @@ namespace ramses_internal
         IRenderBackend& renderBackend,
         Bool keepEffects,
         const FrameTimer& frameTimer,
+        RendererStatistics& stats,
         UInt64 clientResourceCacheSize)
         : m_clientResources(resources)
         , m_uploader(uploader)
@@ -32,6 +34,7 @@ namespace ramses_internal
         , m_keepEffects(keepEffects)
         , m_frameTimer(frameTimer)
         , m_clientResourceCacheSize(clientResourceCacheSize)
+        , m_stats(stats)
     {
     }
 
@@ -85,6 +88,7 @@ namespace ramses_internal
             const ResourceDescriptor& rd = m_clientResources.getResourceDescriptor(resourcesToUpload[i]);
             const UInt32 resourceSize = rd.resource.getResourceObject()->getDecompressedDataSize();
             uploadClientResource(rd);
+            m_stats.clientResourceUploaded(resourceSize);
 
             const Bool checkTimeLimit = (i % NumResourcesToUploadInBetweenTimeBudgetChecks == 0) || rd.type == EResourceType_Effect || resourceSize > LargeResourceByteSizeThreshold;
             if (checkTimeLimit && m_frameTimer.isTimeBudgetExceededForSection(EFrameTimerSectionBudget::ClientResourcesUpload))

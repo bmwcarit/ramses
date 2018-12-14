@@ -89,7 +89,7 @@ namespace ramses_internal
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId2, secondStreamTextureSourceId);
 
             testFramework.sendRenderOneFrameToTestApplication(surfaceId1);
-            testFramework.sendSetTriangleColorToTestApplication(ETriangleColor_Blue);
+            testFramework.sendSetTriangleColorToTestApplication(ETriangleColor::Blue);
             testFramework.sendRenderOneFrameToTestApplication(surfaceId2);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
             testFramework.waitForContentOnStreamTexture(secondStreamTextureSourceId);
@@ -135,7 +135,7 @@ namespace ramses_internal
             testResultValue &= checkFreeBufferState(testFramework, "0"); // Buffer 0 not free
 
             // Render frame to first surface:
-            testFramework.sendSetTriangleColorToTestApplication(ETriangleColor_Blue);
+            testFramework.sendSetTriangleColorToTestApplication(ETriangleColor::Blue);
             testFramework.sendRenderOneFrameAndWaitOnFrameCallbackToTestApplication(surfaceId1);
             testFramework.waitUntilNumberOfCommitedFramesForIviSurface(streamTextureSourceId, 2);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_ShMem_BlueTriangle_Left_RedTriangle_Right");
@@ -143,7 +143,7 @@ namespace ramses_internal
             testResultValue &= checkFreeBufferState(testFramework, "00"); // Buffer 0 and 1 not free
 
             // Render frame to second surface:
-            testFramework.sendSetTriangleColorToTestApplication(ETriangleColor_White);
+            testFramework.sendSetTriangleColorToTestApplication(ETriangleColor::White);
             testFramework.sendRenderOneFrameAndWaitOnFrameCallbackToTestApplication(surfaceId2);
             testFramework.waitUntilNumberOfCommitedFramesForIviSurface(secondStreamTextureSourceId, 2);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_ShMem_BlueTriangle_Left_WhiteTriangle_Right");
@@ -151,7 +151,7 @@ namespace ramses_internal
             testResultValue &= checkFreeBufferState(testFramework, "100"); // Buffer 0 free, buffer 1 and 2 not free
 
             // Render frame to first surface:
-            testFramework.sendSetTriangleColorToTestApplication(ETriangleColor_Grey);
+            testFramework.sendSetTriangleColorToTestApplication(ETriangleColor::Grey);
             testFramework.sendRenderOneFrameAndWaitOnFrameCallbackToTestApplication(surfaceId1);
             testFramework.waitUntilNumberOfCommitedFramesForIviSurface(streamTextureSourceId, 3);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_ShMem_GreyTriangle_Left_WhiteTriangle_Right");

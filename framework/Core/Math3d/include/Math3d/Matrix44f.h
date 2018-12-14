@@ -14,6 +14,8 @@
 #include "Math3d/Matrix33f.h"
 #include "Math3d/Vector4.h"
 #include "Math3d/Vector3.h"
+#include "Collections/IOutputStream.h"
+#include "Collections/IInputStream.h"
 
 namespace ramses_internal
 {
@@ -222,6 +224,16 @@ namespace ramses_internal
     protected:
     private:
     };
+
+    inline IOutputStream& operator<<(IOutputStream& stream, const Matrix44f& value)
+    {
+        return stream.write(value.getRawData(), sizeof(Float) * 16);
+    }
+
+    inline IInputStream& operator>>(IInputStream& stream, Matrix44f& value)
+    {
+        return stream.read(reinterpret_cast<Char*>(value.getRawData()), sizeof(Float) * 16);
+    }
 
     inline
     Matrix44f::Matrix44f()

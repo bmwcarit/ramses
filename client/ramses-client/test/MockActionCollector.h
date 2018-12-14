@@ -71,9 +71,9 @@ namespace ramses
             ++m_numReceivedActionLists;
         }
 
-        virtual void handleNewScenesAvailable(const ramses_internal::SceneInfoVector& newScenes, const ramses_internal::Guid& providerID) override
+        virtual void handleNewScenesAvailable(const ramses_internal::SceneInfoVector& newScenes, const ramses_internal::Guid& providerID, ramses_internal::EScenePublicationMode publicationMode) override
         {
-            ramses_internal::SceneRendererServiceHandlerMock::handleNewScenesAvailable(newScenes, providerID);
+            ramses_internal::SceneRendererServiceHandlerMock::handleNewScenesAvailable(newScenes, providerID, publicationMode);
             if (m_sceneGraphConsumer != NULL)
             {
                 ramses_foreach(newScenes, it)

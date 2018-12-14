@@ -62,6 +62,7 @@ public:
     static void SetWaylandSocketEmbeddedFileDescriptor(int fileDescriptor);
     static void SetWaylandSocketEmbeddedGroup(const ramses_internal::String& wsegn);
     static void SetMaxFrameCallbackPollingTime(std::chrono::microseconds time);
+    static void SetWaylandDisplayForSystemCompositorController(const ramses_internal::String& wd);
     static const ramses::WarpingMeshData& CreateTestWarpingMesh();
 
     static const float DefaultMaxAveragePercentPerPixel;
@@ -84,6 +85,7 @@ private:
     static int WaylandSocketEmbeddedFileDescriptor;
     static ramses_internal::String WaylandSocketEmbeddedGroup;
     static std::chrono::microseconds MaxFrameCallbackPollingTime;
+    static ramses_internal::String WaylandDisplayForSystemCompositorController;
 };
 
 #endif

@@ -15,6 +15,8 @@
 #include "ramses-utils.h"
 #include <unordered_set>
 #include <cmath>
+#include <chrono>
+#include <thread>
 
 /** \cond HIDDEN_SYMBOLS */
 class SceneStateEventHandler : public ramses::RendererEventHandlerEmpty
@@ -107,7 +109,7 @@ struct TriangleSceneInfo
 {
 public:
     // Node that will be used as transformation provider
-    ramses::TranslateNode* translateNode;
+    ramses::Node* translateNode;
     // Textures that will be used as texture provider
     ramses::Texture2D* textures[2];
     // Data object that will be used as data consumer
@@ -120,11 +122,11 @@ public:
 struct QuadSceneInfo
 {
     // Consumer node that will use transformation from provider node
-    ramses::GroupNode* consumerNode;
+    ramses::Node* consumerNode;
     // Consumer texture sampler, that will use texture from provider
     ramses::TextureSampler* textureSampler;
     // Additional rotation chained after consumed transformation
-    ramses::RotateNode* rotateNode;
+    ramses::Node* rotateNode;
     // Data object that will be used as data provider
     ramses::DataVector4f* colorData;
     // Consumer scene
@@ -177,10 +179,10 @@ TriangleSceneInfo* createTriangleSceneContent(ramses::RamsesClient& client, rams
     sceneInfo->colorData->setValue(1.0f, 0.0f, 0.3f, 1.0f);
     appearance->bindInput(colorInput, *sceneInfo->colorData);
 
-    ramses::TranslateNode* rootTranslation = sceneInfo->scene->createTranslateNode("root scene translation node");
+    ramses::Node* rootTranslation = sceneInfo->scene->createNode("root scene translation node");
     rootTranslation->setTranslation(0.0f, 0.0f, -1.0f);
 
-    sceneInfo->translateNode = sceneInfo->scene->createTranslateNode("triangle translation node");
+    sceneInfo->translateNode = sceneInfo->scene->createNode("triangle translation node");
     sceneInfo->translateNode->setParent(*rootTranslation);
 
     // create a mesh node to define the triangle with chosen appearance
@@ -259,8 +261,8 @@ QuadSceneInfo* createQuadSceneContent(ramses::RamsesClient& client, ramses::scen
         ramses::ETextureSamplingMethod_Bilinear, *fallbackTexture);
     appearance->setInputTexture(textureInput, *sceneInfo->textureSampler);
 
-    sceneInfo->consumerNode = sceneInfo->scene->createGroupNode("quad root node");
-    sceneInfo->rotateNode = sceneInfo->scene->createRotateNode("");
+    sceneInfo->consumerNode = sceneInfo->scene->createNode("quad root node");
+    sceneInfo->rotateNode = sceneInfo->scene->createNode("");
 
     // create a mesh node to define the triangle with chosen appearance
     ramses::MeshNode* meshNode = sceneInfo->scene->createMeshNode("quad mesh node");
@@ -308,8 +310,8 @@ int main(int argc, char* argv[])
     ramses::Scene* quadScene = quadInfo->scene;
     ramses::Scene* quadScene2 = quadInfo2->scene;
     ramses::Node* providerNode = triangleInfo->translateNode;
-    ramses::GroupNode* consumerNode = quadInfo->consumerNode;
-    ramses::GroupNode* consumerNode2 = quadInfo2->consumerNode;
+    ramses::Node* consumerNode = quadInfo->consumerNode;
+    ramses::Node* consumerNode2 = quadInfo2->consumerNode;
 
     /// [Data Linking Example Client]
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
@@ -409,5 +411,6 @@ int main(int argc, char* argv[])
 
         renderer.doOneLoop();
         timeStamp++;
+        std::this_thread::sleep_for(std::chrono::milliseconds{ 15u });
     }
 }

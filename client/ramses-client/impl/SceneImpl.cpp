@@ -17,22 +17,16 @@
 #include "ramses-client-api/Texture3D.h"
 #include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/TextureCube.h"
-#include "ramses-client-api/VisibilityNode.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
 #include "ramses-client-api/BlitPass.h"
 #include "ramses-client-api/AnimationSystemEnums.h"
-#include "ramses-client-api/TranslateNode.h"
-#include "ramses-client-api/RotateNode.h"
-#include "ramses-client-api/ScaleNode.h"
 #include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/GeometryBinding.h"
-#include "ramses-client-api/GroupNode.h"
-#include "ramses-client-api/TransformationNode.h"
 #include "ramses-client-api/AnimationSystem.h"
 #include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/Effect.h"
@@ -108,8 +102,9 @@ namespace ramses
         , m_scene(scene)
         , m_nextSceneVersion(InvalidSceneVersionTag)
         , m_futurePublicationMode(sceneConfig.getPublicationMode())
-        , m_maximumLatency(sceneConfig.getMaximumLatency())
     {
+        LOG_INFO(ramses_internal::CONTEXT_CLIENT, "Scene::Scene: sceneId " << scene.getSceneId()  <<
+                 ", publicationMode " << (sceneConfig.getPublicationMode() == EScenePublicationMode_LocalAndRemote ? "LocalAndRemote" : "LocalOnly"));
         getClientImpl().getFramework().getPeriodicLogger().registerStatisticCollectionScene(m_scene.getSceneId(), m_scene.getStatisticCollection());
         const bool enableLocalOnlyOptimization = sceneConfig.getPublicationMode() == EScenePublicationMode_LocalOnly;
         getClientImpl().getClientApplication().createScene(scene, enableLocalOnlyOptimization);
@@ -139,7 +134,7 @@ namespace ramses
     {
         CHECK_RETURN_ERR(ClientObjectImpl::serialize(outStream, serializationContext));
 
-        outStream << static_cast<uint64_t>(m_maximumLatency.count());
+        outStream << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(m_expirationTimestamp.time_since_epoch()).count());
 
         CHECK_RETURN_ERR(SerializationHelper::SerializeObjectsInRegistry<SceneObject>(outStream, serializationContext, m_objectRegistry));
 
@@ -206,9 +201,9 @@ namespace ramses
     {
         CHECK_RETURN_ERR(ClientObjectImpl::deserialize(inStream, serializationContext));
 
-        uint64_t maxLatency = 0u;
-        inStream >> maxLatency;
-        m_maximumLatency = std::chrono::milliseconds(maxLatency);
+        uint64_t expirationTS = 0u;
+        inStream >> expirationTS;
+        m_expirationTimestamp = ramses_internal::FlushTime::Clock::time_point(std::chrono::milliseconds(expirationTS));
 
         uint32_t totalCount = 0u;
         uint32_t typesCount = 0u;
@@ -229,20 +224,8 @@ namespace ramses
             status_t status = StatusOK;
             switch (type)
             {
-            case ERamsesObjectType_GroupNode:
-                status = createAndDeserializeObjectImpls<GroupNode, NodeImpl>(inStream, serializationContext, count);
-                break;
-            case ERamsesObjectType_TranslateNode:
-                status = createAndDeserializeObjectImpls<TranslateNode, NodeImpl>(inStream, serializationContext, count);
-                break;
-            case ERamsesObjectType_RotateNode:
-                status = createAndDeserializeObjectImpls<RotateNode, NodeImpl>(inStream, serializationContext, count);
-                break;
-            case ERamsesObjectType_ScaleNode:
-                status = createAndDeserializeObjectImpls<ScaleNode, NodeImpl>(inStream, serializationContext, count);
-                break;
-            case ERamsesObjectType_TransformationNode:
-                status = createAndDeserializeObjectImpls<TransformationNode, NodeImpl>(inStream, serializationContext, count);
+            case ERamsesObjectType_Node:
+                status = createAndDeserializeObjectImpls<Node, NodeImpl>(inStream, serializationContext, count);
                 break;
             case ERamsesObjectType_MeshNode:
                 status = createAndDeserializeObjectImpls<MeshNode, MeshNodeImpl>(inStream, serializationContext, count);
@@ -288,9 +271,6 @@ namespace ramses
                 break;
             case ERamsesObjectType_TextureSampler:
                 status = createAndDeserializeObjectImpls<TextureSampler, TextureSamplerImpl>(inStream, serializationContext, count);
-                break;
-            case ERamsesObjectType_VisibilityNode:
-                status = createAndDeserializeObjectImpls<VisibilityNode, NodeImpl>(inStream, serializationContext, count);
                 break;
             case ERamsesObjectType_DataFloat:
                 status = createAndDeserializeObjectImpls<DataFloat, DataObjectImpl>(inStream, serializationContext, count);
@@ -503,20 +483,15 @@ namespace ramses
         case ERamsesObjectType_RenderGroup:
             returnStatus = destroyRenderGroup(RamsesObjectTypeUtils::ConvertTo<RenderGroup>(object));
             break;
+        case ERamsesObjectType_Node:
+            returnStatus = destroyNode(RamsesObjectTypeUtils::ConvertTo<Node>(object));
+            break;
         case ERamsesObjectType_MeshNode:
             returnStatus = destroyMeshNode(RamsesObjectTypeUtils::ConvertTo<MeshNode>(object));
             break;
         case ERamsesObjectType_AnimationSystem:
         case ERamsesObjectType_AnimationSystemRealTime:
             returnStatus = destroyAnimationSystem(RamsesObjectTypeUtils::ConvertTo<AnimationSystem>(object));
-            break;
-        case ERamsesObjectType_GroupNode:
-        case ERamsesObjectType_TranslateNode:
-        case ERamsesObjectType_RotateNode:
-        case ERamsesObjectType_ScaleNode:
-        case ERamsesObjectType_TransformationNode:
-        case ERamsesObjectType_VisibilityNode:
-            returnStatus = destroyNode(RamsesObjectTypeUtils::ConvertTo<Node>(object));
             break;
         case ERamsesObjectType_DataFloat:
         case ERamsesObjectType_DataVector2f:
@@ -704,60 +679,11 @@ namespace ramses
         return m_futurePublicationMode;
     }
 
-    GroupNode* SceneImpl::createGroupNode(const char* name)
+    Node* SceneImpl::createNode(const char* name)
     {
-        NodeImpl& pimpl = *new NodeImpl(*this, ERamsesObjectType_GroupNode, name);
-        pimpl.initializeFrameworkData();
-        GroupNode* newNode = new GroupNode(pimpl);
-        registerCreatedObject(*newNode);
-        return newNode;
-    }
-
-    TranslateNode* SceneImpl::createTranslateNode(const char* name)
-    {
-        auto& pimpl = *new NodeImpl(*this, ERamsesObjectType_TranslateNode, name);
-        pimpl.initializeFrameworkData();
-        TranslateNode* newNode = new TranslateNode(pimpl);
-        registerCreatedObject(*newNode);
-
-        return newNode;
-    }
-
-    RotateNode* SceneImpl::createRotateNode(const char* name)
-    {
-        auto& pimpl = *new NodeImpl(*this, ERamsesObjectType_RotateNode, name);
-        pimpl.initializeFrameworkData();
-        RotateNode* newNode = new RotateNode(pimpl);
-        registerCreatedObject(*newNode);
-
-        return newNode;
-    }
-
-    ScaleNode* SceneImpl::createScaleNode(const char* name)
-    {
-        auto& pimpl = *new NodeImpl(*this, ERamsesObjectType_ScaleNode, name);
-        pimpl.initializeFrameworkData();
-        ScaleNode* newNode = new ScaleNode(pimpl);
-        registerCreatedObject(*newNode);
-
-        return newNode;
-    }
-
-    TransformationNode* SceneImpl::createTransformationNode(const char* name)
-    {
-        auto* pimpl = new NodeImpl(*this, ERamsesObjectType_TransformationNode, name);
+        NodeImpl* pimpl = new NodeImpl(*this, ERamsesObjectType_Node, name);
         pimpl->initializeFrameworkData();
-        TransformationNode* newNode = new TransformationNode(*pimpl);
-        registerCreatedObject(*newNode);
-
-        return newNode;
-    }
-
-    VisibilityNode* SceneImpl::createVisibilityNode(const char* name)
-    {
-        NodeImpl* pimpl = new NodeImpl(*this, ERamsesObjectType_VisibilityNode, name);
-        pimpl->initializeFrameworkData();
-        VisibilityNode* newNode = new VisibilityNode(*pimpl);
+        Node* newNode = new Node(*pimpl);
         registerCreatedObject(*newNode);
 
         return newNode;
@@ -1367,32 +1293,26 @@ namespace ramses
         return StatusOK;
     }
 
+    status_t SceneImpl::setExpirationTimestamp(uint64_t ptpExpirationTimestampInMilliseconds)
+    {
+        if (ptpExpirationTimestampInMilliseconds == 0 && m_expirationTimestamp != ramses_internal::FlushTime::InvalidTimestamp)
+        {
+            LOG_INFO(ramses_internal::CONTEXT_CLIENT, "Scene::setExpirationTimestamp: sceneId " << m_scene.getSceneId() << " disabled expiration checking (ts " << ptpExpirationTimestampInMilliseconds << ")");
+        }
+        else if (ptpExpirationTimestampInMilliseconds != 0 && m_expirationTimestamp == ramses_internal::FlushTime::InvalidTimestamp)
+        {
+            LOG_INFO(ramses_internal::CONTEXT_CLIENT, "Scene::setExpirationTimestamp: sceneId " << m_scene.getSceneId() << " enabled expiration checking (ts " << ptpExpirationTimestampInMilliseconds << ")");
+        }
+        m_expirationTimestamp = ramses_internal::FlushTime::Clock::time_point(std::chrono::milliseconds{ ptpExpirationTimestampInMilliseconds });
+        return StatusOK;
+    }
+
     status_t SceneImpl::flush(ESceneFlushMode flushMode, sceneVersionTag_t sceneVersion)
-    {
-        if (m_maximumLatency.count() > 0)
-        {
-            return addErrorEntry("Scene::flush failed, scene was configured for latency monitoring, flush with time stamp must be used!");
-        }
-        return flushCommon(0u, flushMode, sceneVersion);
-    }
-
-    status_t SceneImpl::flushWithTimestamp(uint64_t ptpTimestampInMilliseconds, sceneVersionTag_t sceneVersion)
-    {
-        if (ptpTimestampInMilliseconds == 0)
-        {
-            return addErrorEntry("Scene::flushWithTimestamp failed, must be called with timestamp value > 0");
-        }
-        return flushCommon(ptpTimestampInMilliseconds, ESceneFlushMode_SynchronizedWithResources, sceneVersion);
-    }
-
-    status_t SceneImpl::flushCommon(uint64_t externalTimestampInMilliseconds, ESceneFlushMode flushMode, sceneVersionTag_t sceneVersion)
     {
         if (flushMode != ESceneFlushMode_SynchronizedWithResources)
         {
             return addErrorEntry("Scene::flush: Unknown flushMode");
         }
-
-        const uint64_t timestampOfFlushCall = ramses_internal::PlatformTime::GetMillisecondsAbsolute();  // TODO(tobias) use ptp time
 
         if (m_nextSceneVersion != InvalidSceneVersionTag && sceneVersion == InvalidSceneVersionTag)
         {
@@ -1406,15 +1326,13 @@ namespace ramses
             m_scene.setSceneVersionTag(internalSceneVersionTag);
         }
 
-        ramses_internal::SceneCommandExecutor::execute(*this, m_commandBuffer);
+        ramses_internal::SceneCommandExecutor::Execute(*this, m_commandBuffer);
         applyHierarchicalVisibility();
         const ramses_internal::ESceneFlushMode internalMode = SceneUtils::GetSceneFlushModeInternal(flushMode);
-        const ramses_internal::FlushTimeInformation flushTimeInfo
-        {
-            m_maximumLatency,
-            ramses_internal::FlushTimeClock::time_point(std::chrono::milliseconds(externalTimestampInMilliseconds)),
-            ramses_internal::FlushTimeClock::time_point(std::chrono::milliseconds(timestampOfFlushCall))
-        };
+
+        const auto timestampOfFlushCall = ramses_internal::FlushTime::Clock::time_point(std::chrono::milliseconds(ramses_internal::PlatformTime::GetMillisecondsAbsolute()));
+        const ramses_internal::FlushTimeInformation flushTimeInfo { m_expirationTimestamp, timestampOfFlushCall };
+
         getClientImpl().getClientApplication().flush(m_scene.getSceneId(), internalMode, flushTimeInfo);
 
         getClientImpl().updateClientResourceCache();

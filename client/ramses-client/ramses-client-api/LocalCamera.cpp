@@ -33,7 +33,7 @@ namespace ramses
     status_t LocalCamera::setViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
     {
         const status_t status = impl.setViewport(x, y, width, height);
-        LOG_HL_CLIENT_API4(status, x, y, width, height)
+        LOG_HL_CLIENT_API4(status, x, y, width, height);
         return status;
     }
 
