@@ -110,6 +110,13 @@ IF (ramses-sdk_ALLOW_CUSTOM_FREETYPE AND NOT freetype_FOUND)
     set(OLD_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
     set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_MODULE_PATH})
 
+    # Checking the availability of the functions below by harfbuzz does not work, because
+    # check_function_exists() checks against an existing platform freetype library.
+    # The freetype version from external does not support those functions, so set them to off manually:
+    set(HAVE_FT_GET_VAR_BLEND_COORDINATES OFF CACHE BOOL "" FORCE)
+    set(HAVE_FT_SET_VAR_BLEND_COORDINATES OFF CACHE BOOL "" FORCE)
+    set(HAVE_FT_DONE_MM_VAR OFF CACHE BOOL "" FORCE)
+
     ADD_SUBDIRECTORY(harfbuzz)
     ACME_INFO("+ harfbuzz")
 
