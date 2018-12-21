@@ -34,7 +34,7 @@ namespace ramses
 
 namespace ramses_display_manager
 {
-    class DisplayManager final : public IDisplayManager, public ramses::RendererEventHandlerEmpty
+    class DisplayManager: public IDisplayManager, public ramses::RendererEventHandlerEmpty
     {
     public:
         DisplayManager(ramses::RamsesRenderer& renderer, ramses::RamsesFramework& framework, bool autoShow);
