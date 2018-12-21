@@ -202,3 +202,24 @@ ELSE()
     FILES_SOURCE            ${LZ4_DIR}/lib/*.c
     )
 ENDIF()
+
+SET(OpenCTM_DIR OpenCTM-1.0.3)
+ACME_MODULE(
+    #==========================================================================
+    # general module information
+    #==========================================================================
+    NAME                    OpenCTM
+    TYPE                    STATIC_LIBRARY
+    ENABLE_INSTALL          ${ramses-sdk_INSTALL_STATIC_LIBS}
+    
+    #==========================================================================
+    # files of this module
+    #==========================================================================
+    INCLUDE_BASE            ${OpenCTM_DIR}/lib
+                            ${OpenCTM_DIR}/lib/liblzma
+    FILES_PRIVATE_HEADER    ${OpenCTM_DIR}/lib/*.h
+    FILES_SOURCE            ${OpenCTM_DIR}/lib/*.c
+                            ${OpenCTM_DIR}/lib/liblzma/*.c
+)
+
+target_compile_options(OpenCTM PUBLIC "-DOPENCTM_STATIC")
