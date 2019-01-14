@@ -127,6 +127,8 @@ ACME_MODULE(
                             ShaderLanguage_Base/test/*.h
                             RendererCommands/test/*.cpp
                             RendererCommands/test/*.h
+                            ramses-renderer-impl/test/*.cpp
+                            ramses-renderer-impl/test/*.h
 
     #==========================================================================
     # dependencies
