@@ -52,7 +52,8 @@ enum ERendererEventTestType
     ERendererEventTestType_SceneRecoveredAfterExpiration,
     ERendererEventTestType_WindowClosed,
     ERendererEventTestType_KeyEvent,
-    ERendererEventTestType_MouseEvent
+    ERendererEventTestType_MouseEvent,
+    ERendererEventTestType_TouchEvent
 };
 
 struct RendererTestEvent
@@ -80,7 +81,11 @@ struct RendererTestEvent
             && keyCode == other.keyCode
             && mouseEvent == other.mouseEvent
             && mousePosX == other.mousePosX
-            && mousePosY == other.mousePosY;
+            && mousePosY == other.mousePosY
+            && touchEvent == other.touchEvent
+            && touchId == other.touchId
+            && touchPosX == other.touchPosX
+            && touchPosY == other.touchPosY;
     }
 
     ERendererEventTestType eventType;
@@ -105,6 +110,11 @@ struct RendererTestEvent
     ramses::EMouseEvent mouseEvent;
     int32_t mousePosX;
     int32_t mousePosY;
+
+    ramses::ETouchEvent touchEvent;
+    int32_t touchId;
+    int32_t touchPosX;
+    int32_t touchPosY;
 };
 
 class RendererEventTestHandler : public ramses::IRendererEventHandler
@@ -394,6 +404,18 @@ public:
         m_events.push_back(event);
     }
 
+    virtual void touchEvent(ramses::displayId_t displayId, ramses::ETouchEvent touchEvent, int32_t touchId, int32_t touchPosX, int32_t touchPosY)
+    {
+        RendererTestEvent event;
+        event.eventType  = ERendererEventTestType_TouchEvent;
+        event.touchEvent = touchEvent;
+        event.displayId  = displayId;
+        event.touchId = touchId;
+        event.touchPosX  = touchPosX;
+        event.touchPosY  = touchPosY;
+        m_events.push_back(event);
+    }
+
     void expectScenePublished(ramses::sceneId_t sceneId)
     {
         RendererTestEvent event;
@@ -661,6 +683,18 @@ public:
         event.mouseEvent = mouseEvent;
         event.mousePosX = mousePosX;
         event.mousePosY = mousePosY;
+        expectEvent(event);
+    }
+
+    void expectTouchEvent(ramses::displayId_t displayId, ramses::ETouchEvent touchEvent, int32_t touchId, int32_t touchPosX, int32_t touchPosY)
+    {
+        RendererTestEvent event;
+        event.eventType  = ERendererEventTestType_TouchEvent;
+        event.displayId  = displayId;
+        event.touchEvent = touchEvent;
+        event.touchId    = touchId;
+        event.touchPosX  = touchPosX;
+        event.touchPosY  = touchPosY;
         expectEvent(event);
     }
 

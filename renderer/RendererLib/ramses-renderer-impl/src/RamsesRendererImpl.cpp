@@ -577,6 +577,13 @@ namespace ramses
                     RamsesRendererUtils::GetMouseEvent(rendererEvent->mouseEvent.type),
                     rendererEvent->mouseEvent.pos.x, rendererEvent->mouseEvent.pos.y);
                 break;
+            case ramses_internal::ERendererEventType_WindowTouchEvent:
+                rendererEventHandler.touchEvent(rendererEvent->displayHandle.asMemoryHandle(),
+                                                RamsesRendererUtils::GetTouchEvent(rendererEvent->touchEvent.type),
+                                                rendererEvent->touchEvent.id,
+                                                rendererEvent->touchEvent.pos.x,
+                                                rendererEvent->touchEvent.pos.y);
+                break;
             case ramses_internal::ERendererEventType_StreamSurfaceAvailable:
                 rendererEventHandler.streamAvailabilityChanged(ramses::streamSource_t(rendererEvent->streamSourceId.getValue()), true);
                 break;

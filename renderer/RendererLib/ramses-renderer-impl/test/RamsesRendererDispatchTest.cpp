@@ -734,6 +734,19 @@ namespace ramses_internal
         m_handler.expectMouseEvent(m_displayId, ramses::EMouseEvent_WindowLeave, 30, 40);
     }
 
+    TEST_F(ARamsesRendererDispatch, generatesEventsForTouchActionsOnDisplay)
+    {
+        const ramses::displayId_t m_displayId = createDisplayAndExpectResult();
+        const ramses_internal::DisplayHandle displayHandle(m_displayId);
+        m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onTouchEvent(ramses_internal::ETouchEventType_Down, 1, 20, 30);
+        m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onTouchEvent(ramses_internal::ETouchEventType_Up, 2, 21, 31);
+        m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onTouchEvent(ramses_internal::ETouchEventType_Move, 3, 22, 32);
+        updateAndDispatch(m_handler);
+        m_handler.expectTouchEvent(m_displayId, ramses::ETouchEvent_Down, 1, 20, 30);
+        m_handler.expectTouchEvent(m_displayId, ramses::ETouchEvent_Up, 2, 21, 31);
+        m_handler.expectTouchEvent(m_displayId, ramses::ETouchEvent_Move, 3, 22, 32);
+    }
+
     TEST_F(ARamsesRendererDispatchWithProviderConsumerScenes, generatesEventForTransformationProviderCreation)
     {
         createTransformationDataSlotProvider(m_sceneProviderId);

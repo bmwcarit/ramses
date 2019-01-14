@@ -28,6 +28,7 @@ namespace ramses_internal
         MOCK_METHOD1(onFocusChange, void(Bool bFocused));
         MOCK_METHOD3(onKeyEvent, void(EKeyEventType event, UInt32 modifiers, EKeyCode keyCode));
         MOCK_METHOD3(onMouseEvent, void(EMouseEventType event, Int32 posX, Int32 posY));
+        MOCK_METHOD4(onTouchEvent, void(ETouchEventType event, Int32 id, Int32 posX, Int32 posY));
         MOCK_METHOD0(onClose, void());
     };
 }

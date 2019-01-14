@@ -118,6 +118,20 @@ namespace ramses
     };
 
     /**
+    * @brief Specifies events for touch input
+    *
+    */
+    enum ETouchEvent
+    {
+        ETouchEvent_Invalid = 0,
+
+        ETouchEvent_Down,
+        ETouchEvent_Up,
+
+        ETouchEvent_Move
+    };
+
+    /**
     * @brief Specifies keypress events for keyboard input.
     *
     */

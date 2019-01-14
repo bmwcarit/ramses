@@ -262,6 +262,61 @@ namespace ramses_internal
         UNUSED(group)
     }
 
+    void InputHandling_Wayland::TouchHandleDown(void*       data,
+                                                wl_touch*   touch,
+                                                uint32_t    serial,
+                                                uint32_t    time,
+                                                wl_surface* surface,
+                                                int32_t     id,
+                                                wl_fixed_t  x,
+                                                wl_fixed_t  y)
+    {
+        UNUSED(touch)
+        UNUSED(serial)
+        UNUSED(time)
+        UNUSED(surface)
+
+        InputHandling_Wayland& inputHandling = *reinterpret_cast<InputHandling_Wayland*>(data);
+        const Vector2i         touchPos(wl_fixed_to_int(x), wl_fixed_to_int(y));
+        inputHandling.m_touchPos[id] = touchPos;
+        inputHandling.m_windowEventHandler.onTouchEvent(ETouchEventType_Down, id, touchPos.x, touchPos.y);
+    }
+
+    void InputHandling_Wayland::TouchHandleUp(void* data, struct wl_touch* touch, uint32_t serial, uint32_t time, int32_t id)
+    {
+        UNUSED(touch)
+        UNUSED(serial)
+        UNUSED(time)
+
+        InputHandling_Wayland& inputHandling = *reinterpret_cast<InputHandling_Wayland*>(data);
+        const Vector2i         touchPos      = inputHandling.m_touchPos[id];
+        inputHandling.m_touchPos.erase(id);
+        inputHandling.m_windowEventHandler.onTouchEvent(ETouchEventType_Up, id, touchPos.x, touchPos.y);
+    }
+
+    void InputHandling_Wayland::TouchHandleMotion(void* data, struct wl_touch* touch, uint32_t time, int32_t id, wl_fixed_t x, wl_fixed_t y)
+    {
+        UNUSED(touch)
+        UNUSED(time)
+
+        InputHandling_Wayland& inputHandling = *reinterpret_cast<InputHandling_Wayland*>(data);
+        const Vector2i         touchPos(wl_fixed_to_int(x), wl_fixed_to_int(y));
+        inputHandling.m_touchPos[id] = touchPos;
+        inputHandling.m_windowEventHandler.onTouchEvent(ETouchEventType_Move, id, touchPos.x, touchPos.y);
+    }
+
+    void InputHandling_Wayland::TouchHandleFrame(void* data, struct wl_touch* touch)
+    {
+        UNUSED(data)
+        UNUSED(touch)
+    }
+
+    void InputHandling_Wayland::TouchHandleCancel(void* data, struct wl_touch* touch)
+    {
+        UNUSED(data)
+        UNUSED(touch)
+    }
+
     void InputHandling_Wayland::SeatHandleCapabilities(void *data, wl_seat *seat, unsigned int caps)
     {
         InputHandling_Wayland& inputHandling = *reinterpret_cast<InputHandling_Wayland*>(data);
@@ -305,6 +360,28 @@ namespace ramses_internal
                 LOG_INFO(CONTEXT_RENDERER, "InputHandling_Wayland::SeatHandleCapabilities Keyboard not available anymore");
                 wl_keyboard_destroy(inputHandling.m_keyboard);
                 inputHandling.m_keyboard = nullptr;
+            }
+        }
+
+        const Bool hasTouchCapability = (caps & WL_SEAT_CAPABILITY_TOUCH) != 0;
+
+        if (hasTouchCapability)
+        {
+            if (inputHandling.m_touch == nullptr)
+            {
+                LOG_INFO(CONTEXT_RENDERER, "InputHandling_Wayland::SeatHandleCapabilities Touch available");
+                inputHandling.m_touch = wl_seat_get_touch(seat);
+                wl_touch_add_listener(inputHandling.m_touch, &inputHandling.m_touchListener, data);
+            }
+        }
+        else
+        {
+            if (inputHandling.m_touch != nullptr)
+            {
+                LOG_INFO(CONTEXT_RENDERER,
+                         "InputHandling_Wayland::SeatHandleCapabilities Touch not available anymore");
+                wl_touch_destroy(inputHandling.m_touch);
+                inputHandling.m_touch = nullptr;
             }
         }
     }

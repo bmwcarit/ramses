@@ -15,6 +15,8 @@
 #include "RendererLib/EKeyModifier.h"
 
 #include "wayland-client-protocol.h"
+#include "map"
+#include "Math3d/Vector2i.h"
 
 namespace ramses_internal
 {
@@ -42,14 +44,42 @@ namespace ramses_internal
         static void KeyboardHandleKey       (void *data, wl_keyboard *keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state_w);
         static void KeyboardHandleModifiers (void *data, wl_keyboard *keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group);
 
+        static void TouchHandleDown(void*       data,
+                                    wl_touch*   touch,
+                                    uint32_t    serial,
+                                    uint32_t    time,
+                                    wl_surface* surface,
+                                    int32_t     id,
+                                    wl_fixed_t  x,
+                                    wl_fixed_t  y);
+
+        static void TouchHandleUp(void *data,
+                struct wl_touch *wl_touch,
+                uint32_t serial,
+                uint32_t time,
+                int32_t id);
+
+        static void TouchHandleMotion(void *data,
+               struct wl_touch *wl_touch,
+               uint32_t time,
+               int32_t id,
+               wl_fixed_t x,
+               wl_fixed_t y);
+
+        static void TouchHandleFrame(void* data, struct wl_touch* wl_touch);
+
+        static void TouchHandleCancel(void* data, struct wl_touch* wl_touch);
+
         IWindowEventHandler& m_windowEventHandler;
         wl_seat*             m_seat     = nullptr;
         wl_keyboard*         m_keyboard = nullptr;
         wl_pointer*          m_pointer  = nullptr;
+        wl_touch*            m_touch    = nullptr;
 
         uint32_t m_keyModifiers          = EKeyModifier_NoModifier;
         double   m_cursorPosX            = 0.0;
         double   m_cursorPosY            = 0.0;
+        std::map<int32_t, Vector2i> m_touchPos;
         Bool     m_leftMouseButtonDown   = false;
         Bool     m_rightMouseButtonDown  = false;
         Bool     m_middleMouseButtonDown = false;
@@ -85,6 +115,18 @@ namespace ramses_internal
                 modifiers   = KeyboardHandleModifiers;
             }
         } m_keyboardListener;
+
+        const struct Touch_Listener : public wl_touch_listener
+        {
+            Touch_Listener()
+            {
+                down        = TouchHandleDown;
+                up          = TouchHandleUp;
+                motion      = TouchHandleMotion;
+                frame       = TouchHandleFrame;
+                cancel      = TouchHandleCancel;
+            }
+        } m_touchListener;
     };
 }
 

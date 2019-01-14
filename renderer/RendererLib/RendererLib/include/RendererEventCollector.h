@@ -17,6 +17,7 @@
 #include "RendererLib/EResourceStatus.h"
 #include "RendererLib/EMouseEventType.h"
 #include "RendererLib/EKeyEventType.h"
+#include "RendererLib/ETouchEventType.h"
 #include "RendererLib/EKeyModifier.h"
 #include "RendererLib/EKeyCode.h"
 #include "Math3d/Vector2i.h"
@@ -81,6 +82,7 @@ namespace ramses_internal
         ERendererEventType_WindowClosed,
         ERendererEventType_WindowKeyEvent,
         ERendererEventType_WindowMouseEvent,
+        ERendererEventType_WindowTouchEvent,
         ERendererEventType_StreamSurfaceAvailable,
         ERendererEventType_StreamSurfaceUnavailable,
 
@@ -140,6 +142,7 @@ namespace ramses_internal
         "ERendererEventType_WindowClosed",
         "ERendererEventType_WindowKeyEvent",
         "ERendererEventType_WindowMouseEvent",
+        "ERendererEventType_WindowTouchEvent",
         "ERendererEventType_StreamSurfaceAvailable",
         "ERendererEventType_StreamSurfaceUnavailable"
     };
@@ -150,6 +153,13 @@ namespace ramses_internal
     {
         EMouseEventType type = EMouseEventType_Invalid;
         Vector2i        pos;
+    };
+
+    struct TouchEvent
+    {
+        ETouchEventType type = ETouchEventType_Invalid;
+        Int32         id = 0;
+        Vector2i      pos;
     };
 
     struct KeyEvent
@@ -180,6 +190,7 @@ namespace ramses_internal
         EResourceStatus             resourceStatus = EResourceStatus_Unknown;
         MouseEvent                  mouseEvent;
         KeyEvent                    keyEvent;
+        TouchEvent                  touchEvent;
         StreamTextureSourceId       streamSourceId;
     };
 
@@ -314,6 +325,14 @@ namespace ramses_internal
             RendererEvent event(eventType);
             event.displayHandle = display;
             event.keyEvent = keyEvent;
+            pushEventToQueue(event);
+        }
+
+        void addEvent(ERendererEventType eventType, DisplayHandle display, TouchEvent touchEvent)
+        {
+            RendererEvent event(eventType);
+            event.displayHandle = display;
+            event.touchEvent    = touchEvent;
             pushEventToQueue(event);
         }
 

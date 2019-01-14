@@ -27,6 +27,7 @@ namespace ramses_internal
         /* Inherited from IWindowEventHandler */
         virtual void onKeyEvent(EKeyEventType event, UInt32 modifiers, EKeyCode keyCode) override;
         virtual void onMouseEvent(EMouseEventType event, Int32 posX, Int32 posY) override;
+        virtual void onTouchEvent(ETouchEventType event, Int32 id, Int32 posX, Int32 posY) override;
         virtual void onClose() override;
 
     private:

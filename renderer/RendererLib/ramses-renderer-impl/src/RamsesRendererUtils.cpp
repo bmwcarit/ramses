@@ -59,6 +59,22 @@ namespace ramses
         }
     }
 
+    ramses::ETouchEvent RamsesRendererUtils::GetTouchEvent(ramses_internal::ETouchEventType type)
+    {
+        switch (type)
+        {
+        case ramses_internal::ETouchEventType_Down:
+            return ramses::ETouchEvent_Down;
+        case ramses_internal::ETouchEventType_Up:
+            return ramses::ETouchEvent_Up;
+        case ramses_internal::ETouchEventType_Move:
+            return ramses::ETouchEvent_Move;
+        default:
+            assert(!"Not a touch event type");
+            return ramses::ETouchEvent_Invalid;
+        }
+    }
+
     ramses::EKeyEvent RamsesRendererUtils::GetKeyEvent(ramses_internal::EKeyEventType type)
     {
         switch (type)

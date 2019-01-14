@@ -282,6 +282,16 @@ namespace ramses
         virtual void mouseEvent(displayId_t displayId, EMouseEvent eventType, int32_t mousePosX, int32_t mousePosY) = 0;
 
         /**
+         * @brief This method will be called when a touch event action has occured while a display's window was focused
+         * @param displayId The display on which the event occurred
+         * @param eventType Specifies which kind of touch action has occurred
+         * @param touchId Id of the touch (for distinguishing multi-touch events)
+         * @param touchPosX Horizontal touch position related to window (left = 0)
+         * @param touchPosY Vertical touch position related to window (top = 0)
+         */
+        virtual void touchEvent(displayId_t displayId, ETouchEvent eventType, int32_t touchId, int32_t touchPosX, int32_t touchPosY) = 0;
+
+        /**
         * @brief This method will be called when a display's window has been closed
         * @param displayId The display on which the event occurred
         */
@@ -574,6 +584,18 @@ namespace ramses
             (void)eventType;
             (void)mousePosX;
             (void)mousePosY;
+        }
+
+        /**
+         * @copydoc ramses::IRendererEventHandler::touchEvent
+         */
+        virtual void touchEvent(displayId_t displayId, ETouchEvent eventType, int32_t id, int32_t touchPosX, int32_t touchPosY)
+        {
+            (void)displayId;
+            (void)eventType;
+            (void)id;
+            (void)touchPosX;
+            (void)touchPosY;
         }
 
         /**

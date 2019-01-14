@@ -11,6 +11,7 @@
 
 #include "RendererLib/EMouseEventType.h"
 #include "RendererLib/EKeyEventType.h"
+#include "RendererLib/ETouchEventType.h"
 #include "RendererLib/EKeyCode.h"
 
 namespace ramses_internal
@@ -24,6 +25,7 @@ namespace ramses_internal
 
         virtual void onKeyEvent(EKeyEventType event, UInt32 modifiers, EKeyCode keyCode) = 0;
         virtual void onMouseEvent(EMouseEventType event, Int32 posX, Int32 posY) = 0;
+        virtual void onTouchEvent(ETouchEventType event, Int32 id, Int32 posX, Int32 posY) = 0;
         virtual void onClose() = 0;
     };
 }

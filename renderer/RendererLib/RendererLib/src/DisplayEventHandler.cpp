@@ -53,6 +53,23 @@ namespace ramses_internal
         m_eventCollector.addEvent(ERendererEventType_WindowMouseEvent, m_displayHandle, mouseEvent);
     }
 
+    void DisplayEventHandler::onTouchEvent(ETouchEventType event, Int32 id, Int32 posX, Int32 posY)
+    {
+        LOG_TRACE(CONTEXT_RENDERER,
+                  "DisplayController::onTouchEvent: [display: " << m_displayHandle.asMemoryHandle()
+                                                                << "; eventType: " << EnumToString(event)
+                                                                << "; id: " << id << "; posX: " << posX
+                                                                << "; posY: " << posY << "]");
+
+        // collect renderer event
+        TouchEvent touchEvent;
+        touchEvent.type  = event;
+        touchEvent.id = id;
+        touchEvent.pos.x = posX;
+        touchEvent.pos.y = posY;
+        m_eventCollector.addEvent(ERendererEventType_WindowTouchEvent, m_displayHandle, touchEvent);
+    }
+
     void DisplayEventHandler::onClose()
     {
         LOG_TRACE(CONTEXT_RENDERER, "DisplayController::onClose: [displayId: " << m_displayHandle.asMemoryHandle() << "]");
