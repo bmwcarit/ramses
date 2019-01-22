@@ -1,0 +1,8 @@
+This demo utilizes converted/compressed data of the reality mesh model of the city Helsinki. The original data is licensed under CC BY 4.0:
+https://creativecommons.org/licenses/by/4.0/
+
+The original data can be downloaded here:
+http://3d.hel.ninja/data/mesh/Helsinki3D-MESH_OBJ_2km-250m_ZIP/
+
+© City of Helsinki, Pohjoisesplanadi 11-13, P.O. Box 1, 00099 CITY OF HELSINKI
+
