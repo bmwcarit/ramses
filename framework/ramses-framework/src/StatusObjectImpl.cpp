@@ -9,7 +9,6 @@
 #include "StatusObjectImpl.h"
 #include "Utils/LogMacros.h"
 #include "Collections/StringOutputStream.h"
-#include "Common/Cpp11Macros.h"
 #include "PlatformAbstraction/PlatformGuard.h"
 
 namespace ramses_internal
@@ -79,16 +78,16 @@ namespace ramses
     const char* StatusObjectImpl::getValidationReport(EValidationSeverity severityFilter) const
     {
         ramses_internal::StringOutputStream stringStream;
-        ramses_foreach(m_validationMessages, message)
+        for(const auto& message : m_validationMessages)
         {
-            if (message->severity >= ramses_internal::convertToInternalEnum(severityFilter))
+            if (message.severity >= ramses_internal::convertToInternalEnum(severityFilter))
             {
-                for (uint32_t i = 0u; i < message->indentation; ++i)
+                for (uint32_t i = 0u; i < message.indentation; ++i)
                 {
                     stringStream << " ";
                 }
 
-                switch (message->severity)
+                switch (message.severity)
                 {
                 default:
                 case ramses_internal::EValidationSeverityInternal_Info:
@@ -101,7 +100,7 @@ namespace ramses
                     break;
                 }
 
-                stringStream << message->message;
+                stringStream << message.message;
                 stringStream << "\n";
             }
         }
@@ -136,9 +135,9 @@ namespace ramses
 
         if (status != StatusOK)
         {
-            ramses_foreach(dependentObject.m_validationMessages, message)
+            for(const auto& message : dependentObject.m_validationMessages)
             {
-                m_validationMessages.push_back(*message);
+                m_validationMessages.push_back(message);
             }
         }
 

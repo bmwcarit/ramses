@@ -520,7 +520,7 @@ protected:
             EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, activateRenderTarget(_)).Times(expectationTimes);
             EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, colorMask(true, true, true, true)).Times(expectationTimes);
             EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f })).Times(expectationTimes);
-            EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, depthWrite(EDepthWrite_Enabled)).Times(expectationTimes);
+            EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, depthWrite(EDepthWrite::Enabled)).Times(expectationTimes);
             EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, clear(_)).Times(expectationTimes);
         }
     }
@@ -547,11 +547,8 @@ protected:
         EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteRenderBuffer(_)).Times(2u);
     }
 
-    void createRenderTargetWithBuffers(UInt32 sceneIndex = 0u, bool synchronous = false)
+    void createRenderTargetWithBuffers(UInt32 sceneIndex = 0u, bool synchronous = false, RenderTargetHandle renderTargetHandle = RenderTargetHandle{ 0u }, RenderBufferHandle bufferHandle = RenderBufferHandle{ 0u }, RenderBufferHandle depthHandle = RenderBufferHandle{ 1u })
     {
-        const RenderTargetHandle renderTargetHandle(0u);
-        const RenderBufferHandle bufferHandle(0u);
-        const RenderBufferHandle depthHandle(1u);
         IScene& scene = *stagingScene[sceneIndex];
         scene.allocateRenderBuffer({ 16u, 16u, ERenderBufferType_ColorBuffer, ETextureFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 0u }, bufferHandle);
         scene.allocateRenderBuffer({ 16u, 16u, ERenderBufferType_DepthBuffer, ETextureFormat_Depth24, ERenderBufferAccessMode_ReadWrite, 0u }, depthHandle);

@@ -215,13 +215,13 @@ namespace ramses_internal
             pushEventToQueue(event);
         }
 
-        void addEvent(ERendererEventType eventType, DisplayHandle displayHandle, UInt8Vector& pixelData /* passed as non-const to fast swap data */)
+        void addEvent(ERendererEventType eventType, DisplayHandle displayHandle, UInt8Vector&& pixelData)
         {
             LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " display=" << displayHandle.asMemoryHandle());
 
             RendererEvent event(eventType);
             event.displayHandle = displayHandle;
-            event.pixelData.swap(pixelData);
+            event.pixelData = std::move(pixelData);
 
             pushEventToQueue(event);
         }

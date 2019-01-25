@@ -253,6 +253,13 @@ namespace ramses
         return status;
     }
 
+    status_t RamsesRenderer::SetSceneResourcesTimerLimit(RamsesRenderer& renderer, uint64_t limitForSceneResourcesUpload)
+    {
+        const status_t status = renderer.impl.setSceneResourcesTimerLimit(limitForSceneResourcesUpload);
+        LOG_HL_RENDERER_STATIC_API1(status, limitForSceneResourcesUpload);
+        return status;
+    }
+
     status_t RamsesRenderer::SetPendingFlushLimits(RamsesRenderer& renderer, uint32_t forceApplyFlushLimit, uint32_t forceUnsubscribeSceneLimit)
     {
         const status_t status = renderer.impl.setPendingFlushLimits(forceApplyFlushLimit, forceUnsubscribeSceneLimit);

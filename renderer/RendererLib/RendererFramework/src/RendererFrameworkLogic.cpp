@@ -12,7 +12,6 @@
 #include "RendererLib/RendererCommandBuffer.h"
 #include "Math3d/CameraMatrixHelper.h"
 #include "PlatformAbstraction/PlatformGuard.h"
-#include "Common/Cpp11Macros.h"
 #include "Utils/LogMacros.h"
 #include "TransportCommon/IConnectionStatusUpdateNotifier.h"
 #include "Components/ManagedResource.h"
@@ -44,38 +43,38 @@ namespace ramses_internal
 
     void RendererFrameworkLogic::handleNewScenesAvailable(const SceneInfoVector& newScenes, const Guid& providerID, EScenePublicationMode mode)
     {
-        ramses_foreach(newScenes, it)
+        for(const auto& newScene : newScenes)
         {
-            if (!m_sceneClients.contains(it->sceneID))
+            if (!m_sceneClients.contains(newScene.sceneID))
             {
-                LOG_INFO(CONTEXT_RENDERER, "RendererFrameworkLogic::handleNewScenesAvailable: scene published: " << it->sceneID.getValue() << " @ " << providerID << " name:" << it->friendlyName << " publicationmode: " << EnumToString(it->publicationMode));
+                LOG_INFO(CONTEXT_RENDERER, "RendererFrameworkLogic::handleNewScenesAvailable: scene published: " << newScene.sceneID.getValue() << " @ " << providerID << " name:" << newScene.friendlyName << " publicationmode: " << EnumToString(newScene.publicationMode));
 
-                m_rendererCommands.publishScene(it->sceneID, providerID, mode);
-                m_sceneClients.put(it->sceneID, MakePair(providerID, it->friendlyName));
+                m_rendererCommands.publishScene(newScene.sceneID, providerID, mode);
+                m_sceneClients.put(newScene.sceneID, MakePair(providerID, newScene.friendlyName));
             }
             else
             {
-                LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::handleNewScenesAvailable: ignore publish for duplicate scene: " << it->sceneID.getValue() << " @ " << providerID << " name:" << it->friendlyName);
+                LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::handleNewScenesAvailable: ignore publish for duplicate scene: " << newScene.sceneID.getValue() << " @ " << providerID << " name:" << newScene.friendlyName);
             }
         }
     }
 
     void RendererFrameworkLogic::handleScenesBecameUnavailable(const SceneInfoVector& unavailableScenes, const Guid& providerID)
     {
-        ramses_foreach(unavailableScenes, it)
+        for(const auto& scene : unavailableScenes)
         {
-            if (m_sceneClients.contains(it->sceneID))
+            if (m_sceneClients.contains(scene.sceneID))
             {
-                LOG_INFO(CONTEXT_RENDERER, "RendererFrameworkLogic::handleScenesBecameUnavailable: scene unpublished: " << it->sceneID.getValue() << " by " << providerID);
+                LOG_INFO(CONTEXT_RENDERER, "RendererFrameworkLogic::handleScenesBecameUnavailable: scene unpublished: " << scene.sceneID.getValue() << " by " << providerID);
 
-                m_rendererCommands.unpublishScene(it->sceneID);
-                m_bufferedSceneActionsPerScene.erase(it->sceneID);
-                m_sceneClients.remove(it->sceneID);
-                m_lastReceivedListCounter.erase(it->sceneID);
+                m_rendererCommands.unpublishScene(scene.sceneID);
+                m_bufferedSceneActionsPerScene.erase(scene.sceneID);
+                m_sceneClients.remove(scene.sceneID);
+                m_lastReceivedListCounter.erase(scene.sceneID);
             }
             else
             {
-                LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::handleScenesBecameUnavailable: ignore unpublish for unknown scene: " << it->sceneID.getValue() << " by " << providerID);
+                LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::handleScenesBecameUnavailable: ignore unpublish for unknown scene: " << scene.sceneID.getValue() << " by " << providerID);
             }
         }
     }
@@ -187,12 +186,12 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, "RendererFrameworkLogic::participantHasDisconnected:  client disconnected: " << clientID);
 
         SceneInfoVector unavailableScenes;
-        ramses_foreach(m_sceneClients, sceneClientIt)
+        for(const auto& sceneClient : m_sceneClients)
         {
-            const Pair<Guid, String>& clientInfo = sceneClientIt->value;
+            const Pair<Guid, String>& clientInfo = sceneClient.value;
             if (clientInfo.first == clientID)
             {
-                unavailableScenes.push_back(SceneInfo(sceneClientIt->key, clientInfo.second));
+                unavailableScenes.push_back(SceneInfo(sceneClient.key, clientInfo.second));
             }
         }
 

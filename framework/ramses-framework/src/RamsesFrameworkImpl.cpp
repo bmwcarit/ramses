@@ -16,7 +16,6 @@
 #include "Utils/RamsesLogger.h"
 #include "RamsesFrameworkConfigImpl.h"
 #include "ramses-framework-api/RamsesFrameworkConfig.h"
-#include "Common/Cpp11Macros.h"
 #include "Ramsh/RamshFactory.h"
 #include "PlatformAbstraction/synchronized_clock.h"
 

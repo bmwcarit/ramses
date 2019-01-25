@@ -12,15 +12,7 @@
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Collections/Pair.h"
 #include "Utils/Warnings.h"
-
-WARNINGS_PUSH
-// MSVC std headers are not supposed to cleanly compile with W4/Wall
-WARNING_DISABLE_VC(4265)
-WARNING_DISABLE_VC(4100)
-WARNING_DISABLE_VC(4355)
-WARNING_DISABLE_VC(4062)
 #include <functional>
-WARNINGS_POP
 
 namespace ramses_internal
 {

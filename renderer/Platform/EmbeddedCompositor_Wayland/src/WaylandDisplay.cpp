@@ -10,7 +10,6 @@
 #include "EmbeddedCompositor_Wayland/WaylandCompositorConnection.h"
 #include "EmbeddedCompositor_Wayland/WaylandGlobal.h"
 #include "PlatformAbstraction/PlatformEnvironmentVariables.h"
-#include "WaylandUtilities/WaylandUtilities.h"
 #include "Utils/LogMacros.h"
 #include <grp.h>
 #include <errno.h>
@@ -85,7 +84,11 @@ namespace ramses_internal
 
     bool WaylandDisplay::addSocketToDisplayWithFD(int socketFD)
     {
-        if (WaylandUtilities::DisplayAddSocketFD(m_display, socketFD) >= 0)
+#if (WAYLAND_VERSION_MAJOR >= 1 && WAYLAND_VERSION_MINOR >= 13)
+        const int result = wl_display_add_socket_fd(m_display, socketFD);
+
+        constexpr int failureCode = -1;
+        if(failureCode != result)
         {
             LOG_DEBUG(CONTEXT_RENDERER,
                       "WaylandDisplay::addSocketToDisplayWithFD(): Added wayland display on embedded compositor socket "
@@ -100,7 +103,15 @@ namespace ramses_internal
                       "provided by RendererConfig::setWaylandSocketEmbeddedFD()");
             return false;
         }
+#else
+        UNUSED(display)
+        UNUSED(sock_fd)
+        LOG_ERROR(CONTEXT_RENDERER,
+                  "WaylandDisplay::addSocketToDisplayWithFD(): Wayland version is less than 1.13, "
+                  "wl_display_add_socket_fd not supported!")
 
+        return false;
+#endif
     }
 
     bool WaylandDisplay::addSocketToDisplayWithName(const String& socketName, const String& socketGroupName)

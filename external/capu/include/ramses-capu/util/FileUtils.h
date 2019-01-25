@@ -19,8 +19,8 @@
 
 #include "ramses-capu/os/File.h"
 #include "ramses-capu/util/FileTraverser.h"
-#include "ramses-capu/container/vector.h"
-
+#include "ramses-capu/os/Memory.h"
+#include <vector>
 #include RAMSES_CAPU_PLATFORM_INCLUDE(FileUtils)
 
 namespace ramses_capu
@@ -31,7 +31,7 @@ namespace ramses_capu
     class RecursiveFileDeleter: public IFileVisitor
     {
     public:
-        status_t visit(File& file, bool& stepIntoDirectory)
+        status_t visit(File& file, bool& stepIntoDirectory) override
         {
             stepIntoDirectory = false; // not stepping into, because we do our own recursion!
             if (file.isDirectory())
@@ -80,7 +80,7 @@ namespace ramses_capu
         * @param result A vector which the resulting bytes will be appended to.
         * @return CAPU_OK if the file was read successfully.
         */
-        static status_t readAllBytes(File& file, vector<Byte>& result);
+        static status_t readAllBytes(File& file, std::vector<Byte>& result);
 
         /**
         * Writes all given text in a file. Existing content will get overwritten.
@@ -131,7 +131,7 @@ namespace ramses_capu
         }
 
         // non recursive traversing up until we find an existing directory.
-        vector<String> fileStack;
+        std::vector<String> fileStack;
         bool success;
         File parent = directory.getParentFile(success);
         while (success && !parent.exists())
@@ -161,7 +161,7 @@ namespace ramses_capu
         return directory.createDirectory();
     }
 
-    inline status_t FileUtils::readAllBytes(File& file, vector<Byte>& result)
+    inline status_t FileUtils::readAllBytes(File& file, std::vector<Byte>& result)
     {
         ramses_capu::uint_t fileSize;
         if (file.getSizeInBytes(fileSize) != ramses_capu::CAPU_OK)

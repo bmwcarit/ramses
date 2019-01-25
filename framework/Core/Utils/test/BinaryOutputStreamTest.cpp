@@ -229,4 +229,16 @@ namespace ramses_internal
         data += sizeof(uint16_t);
         EXPECT_EQ(TestEnum32::TestEnumValue, *reinterpret_cast<const TestEnum32*>(data));
     }
+
+    TEST(BinaryOutputStreamTest, Release)
+    {
+        BinaryOutputStream stream;
+        stream << static_cast<uint32_t>(1);
+        EXPECT_EQ(sizeof(uint32_t), stream.getSize());
+
+        Vector<char> vec = stream.release();
+        EXPECT_EQ(sizeof(uint32_t), vec.size());
+        EXPECT_EQ(0u, stream.getSize());
+        EXPECT_TRUE(nullptr == stream.getData());
+    }
 }

@@ -47,6 +47,8 @@ namespace ramses_internal
         Bool testResultValue = true;
         const StreamTextureSourceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
 
+        testFramework.setEnvironmentVariableWaylandDisplay();
+
         switch(testCase.m_id)
         {
         case SurfaceAvailableEventGeneratedWhenBufferAttached:

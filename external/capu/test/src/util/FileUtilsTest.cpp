@@ -17,6 +17,7 @@
 #include "gmock/gmock.h"
 #include "ramses-capu/util/FileUtils.h"
 #include "ramses-capu/Config.h"
+#include <vector>
 
 TEST(FileUtilsTest, TestRemoveDirectory)
 {
@@ -137,7 +138,7 @@ TEST(FileUtilsTest, ReadWriteAllBytes)
     ramses_capu::FileUtils::writeAllBytes(temp, largeContent, sizeof(largeContent));
     EXPECT_TRUE(temp.exists());
 
-    ramses_capu::vector<ramses_capu::Byte> readBuffer;
+    std::vector<ramses_capu::Byte> readBuffer;
     EXPECT_EQ(ramses_capu::CAPU_OK, ramses_capu::FileUtils::readAllBytes(temp, readBuffer));
     EXPECT_EQ(readBuffer.size(), sizeof(largeContent));
     EXPECT_EQ(0, ramses_capu::Memory::Compare(largeContent, readBuffer.data(), readBuffer.size()));

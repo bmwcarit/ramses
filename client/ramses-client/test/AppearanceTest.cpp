@@ -145,7 +145,7 @@ namespace ramses
         status_t stat = appearance->setStencilFunction(EStencilFunc_Equal, 2u, 0xef);
         EXPECT_EQ(StatusOK, stat);
         EStencilFunc func = EStencilFunc_Disabled;
-        uint32_t ref = 0;
+        uint8_t ref = 0;
         uint8_t mask = 0;
         stat = appearance->getStencilFunction(func, ref, mask);
         EXPECT_EQ(StatusOK, stat);
@@ -250,9 +250,9 @@ namespace ramses
         const MipLevelData mipData(3u, texData);
 
         Texture2D* texture = sharedTestState->getClient().createTexture2D(1u, 1u, ETextureFormat_RGB8, 1u, &mipData, false);
-        EXPECT_TRUE(texture != NULL);
+        ASSERT_TRUE(texture != NULL);
         TextureSampler* textureSampler = sharedTestState->getScene().createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Bilinear, *texture);
-        EXPECT_TRUE(textureSampler != NULL);
+        ASSERT_TRUE(textureSampler != NULL);
 
         EXPECT_NE(StatusOK, appearance->setInputTexture(inputObject, *textureSampler));
 
@@ -269,11 +269,11 @@ namespace ramses
         const MipLevelData mipData(3u, texData);
 
         Texture2D* texture = sharedTestState->getClient().createTexture2D(1u, 1u, ETextureFormat_RGB8, 1u, &mipData, false);
-        EXPECT_TRUE(texture != NULL);
+        ASSERT_TRUE(texture != NULL);
 
         ramses::Scene& anotherScene = *sharedTestState->getClient().createScene(1u);
         TextureSampler* textureSampler = anotherScene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Bilinear, *texture);
-        EXPECT_TRUE(textureSampler != NULL);
+        ASSERT_TRUE(textureSampler != NULL);
 
         EXPECT_NE(StatusOK, appearance->setInputTexture(inputObject, *textureSampler));
 
@@ -289,9 +289,9 @@ namespace ramses
         const uint8_t texData[] = { 1, 2, 3 };
         const MipLevelData mipData(3u, texData);
         Texture2D* texture = sharedTestState->getClient().createTexture2D(1u, 1u, ETextureFormat_RGB8, 1u, &mipData, false);
-        EXPECT_TRUE(texture != NULL);
+        ASSERT_TRUE(texture != NULL);
         TextureSampler* textureSampler = sharedTestState->getScene().createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Bilinear, *texture);
-        EXPECT_TRUE(textureSampler != NULL);
+        ASSERT_TRUE(textureSampler != NULL);
 
         EXPECT_EQ(StatusOK, appearance->setInputTexture(inputObject, *textureSampler));
 
@@ -746,9 +746,9 @@ namespace ramses
         const MipLevelData mipData(3u, texData);
 
         Texture2D* texture = sharedTestState->getClient().createTexture2D(1u, 1u, ETextureFormat_RGB8, 1u, &mipData, false);
-        EXPECT_TRUE(texture != NULL);
+        ASSERT_TRUE(texture != NULL);
         TextureSampler* textureSampler = sharedTestState->getScene().createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Bilinear, *texture);
-        EXPECT_TRUE(textureSampler != NULL);
+        ASSERT_TRUE(textureSampler != NULL);
 
         EXPECT_EQ(StatusOK, appearance->setInputTexture(inputObject, *textureSampler));
 
@@ -770,9 +770,9 @@ namespace ramses
         const CubeMipLevelData mipData(3u, texData, texData, texData, texData, texData, texData);
 
         TextureCube* texture = sharedTestState->getClient().createTextureCube(1u, ETextureFormat_RGB8, 1u, &mipData, false);
-        EXPECT_TRUE(texture != NULL);
+        ASSERT_TRUE(texture != NULL);
         TextureSampler* textureSampler = sharedTestState->getScene().createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Bilinear, *texture);
-        EXPECT_TRUE(textureSampler != NULL);
+        ASSERT_TRUE(textureSampler != NULL);
 
         EXPECT_EQ(StatusOK, appearance->setInputTexture(inputObject, *textureSampler));
 

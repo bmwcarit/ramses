@@ -21,7 +21,6 @@
 #include "RamsesClientImpl.h"
 #include "RamsesObjectTypeUtils.h"
 #include "Scene/ClientScene.h"
-#include "Common/Cpp11Macros.h"
 #include "VertexDataBufferImpl.h"
 #include "IndexDataBufferImpl.h"
 #include "SceneObjectImpl.h"

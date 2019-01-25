@@ -18,7 +18,7 @@ class AScreenshot : public ::testing::Test
 {
 public:
     AScreenshot()
-        : m_defaultFilename("unnamed.bmp")
+        : m_defaultFilename("unnamed.png")
         , m_cmd(m_rendererCommandBuffer)
     {
         m_rendererCommandBuffer.clear();
@@ -51,7 +51,7 @@ TEST_F(AScreenshot, executesScreenshotNoArgsDefined)
 
 TEST_F(AScreenshot, executesScreenshotWithFilename)
 {
-    const String filename("someFilename.bmp");
+    const String filename("someFilename.png");
     RamshInput args;
     args.append("-filename");
     args.append(filename);
@@ -79,8 +79,8 @@ TEST_F(AScreenshot, brokenArgumentsAreNotExecuted)
 
     RamshInput argsWithMultipleFilenames;
     argsWithMultipleFilenames.append("-filename");
-    argsWithMultipleFilenames.append("firstfile.bmp");
-    argsWithMultipleFilenames.append("secondfile.bmp");
+    argsWithMultipleFilenames.append("firstfile.png");
+    argsWithMultipleFilenames.append("secondfile.png");
 
     RamshInput argsWithMultipleDisplayIDs;
     argsWithMultipleDisplayIDs.append("-displayId");

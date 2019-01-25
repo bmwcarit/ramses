@@ -16,7 +16,6 @@
 #include "RamsesObjectRegistryIterator.h"
 #include "Animation/Animation.h"
 #include "SerializationContext.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses
 {
@@ -94,9 +93,9 @@ namespace ramses
             status = getValidationErrorStatus();
         }
 
-        ramses_foreach(m_animations, animationIt)
+        for(const auto& animation : m_animations)
         {
-            const AnimationImpl* anim = findAnimation(animationIt->key);
+            const AnimationImpl* anim = findAnimation(animation.key);
             if (anim == NULL)
             {
                 addValidationMessage(EValidationSeverity_Error, indent, "animation contained in sequence does not exist anymore, was probably destroyed but still used by it");
@@ -114,9 +113,9 @@ namespace ramses
             const AnimationSequenceImpl& sequenceImpl = sequence->impl;
             if (&sequenceImpl != this)
             {
-                ramses_foreach(m_animations, animationIt)
+                for(const auto& animation : m_animations)
                 {
-                    if (sequenceImpl.m_animations.contains(animationIt->key))
+                    if (sequenceImpl.m_animations.contains(animation.key))
                     {
                         addValidationMessage(EValidationSeverity_Warning, indent, "animation seems to be contained in more than one sequence, this is fine only if usage of those sequences does not overlap");
                         status = getValidationErrorStatus();

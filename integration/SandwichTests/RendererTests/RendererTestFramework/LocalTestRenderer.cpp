@@ -20,11 +20,15 @@ ramses::displayId_t LocalTestRenderer::createDisplay(const ramses::DisplayConfig
     return RendererTestUtils::CreateDisplayImmediate(*m_renderer, displayConfig);
 }
 
-void LocalTestRenderer::initializeRendererWithFramework(ramses::RamsesFramework& ramsesFramework)
+void LocalTestRenderer::initializeRendererWithFramework(ramses::RamsesFramework& ramsesFramework, const ramses::RendererConfig& rendererConfig)
 {
     assert(nullptr == m_renderer);
-    const ramses::RendererConfig rendererConfig = RendererTestUtils::CreateTestRendererConfig();
     m_renderer.reset(new ramses::RamsesRenderer(ramsesFramework, rendererConfig));
+}
+
+bool LocalTestRenderer::isRendererInitialized() const
+{
+    return nullptr != m_renderer;
 }
 
 void LocalTestRenderer::destroyRenderer()

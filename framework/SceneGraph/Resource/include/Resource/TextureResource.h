@@ -11,7 +11,6 @@
 
 #include "Resource/TextureMetaInfo.h"
 #include "Resource/BufferResource.h"
-#include "Common/Cpp11Macros.h"
 #include <numeric>
 
 namespace ramses_internal
@@ -34,7 +33,7 @@ namespace ramses_internal
             assert((texDesc.m_dataSizes.size() == 1) || !texDesc.m_generateMipChain);
         };
 
-        virtual ~TextureResource()
+        virtual ~TextureResource() override
         {
         };
 
@@ -68,7 +67,7 @@ namespace ramses_internal
             return m_generateMipChain;
         }
 
-        virtual void serializeResourceMetadataToStream(IOutputStream& output) const final
+        virtual void serializeResourceMetadataToStream(IOutputStream& output) const override final
         {
             switch (getTypeID())
             {

@@ -39,89 +39,89 @@ namespace ramses_internal
         const RenderStateHandle state = this->m_scene.allocateRenderState();
 
         const RenderState& rs = this->m_scene.getRenderState(state);
-        EXPECT_EQ(EBlendFactor_SrcAlpha     , rs.blendFactorSrcColor);
-        EXPECT_EQ(EBlendFactor_OneMinusSrcAlpha, rs.blendFactorDstColor);
-        EXPECT_EQ(EBlendFactor_One          , rs.blendFactorSrcAlpha);
-        EXPECT_EQ(EBlendFactor_One          , rs.blendFactorDstAlpha);
-        EXPECT_EQ(EBlendOperation_Disabled  , rs.blendOperationColor);
-        EXPECT_EQ(EBlendOperation_Disabled  , rs.blendOperationAlpha);
-        EXPECT_EQ(ECullMode_BackFacing      , rs.cullMode);
-        EXPECT_EQ(EDrawMode_Triangles       , rs.drawMode);
-        EXPECT_EQ(EDepthFunc_SmallerEqual   , rs.depthFunc);
-        EXPECT_EQ(EDepthWrite_Enabled       , rs.depthWrite);
-        EXPECT_EQ(EStencilFunc_Disabled     , rs.stencilFunc);
+        EXPECT_EQ(EBlendFactor::SrcAlpha     , rs.blendFactorSrcColor);
+        EXPECT_EQ(EBlendFactor::OneMinusSrcAlpha, rs.blendFactorDstColor);
+        EXPECT_EQ(EBlendFactor::One          , rs.blendFactorSrcAlpha);
+        EXPECT_EQ(EBlendFactor::One          , rs.blendFactorDstAlpha);
+        EXPECT_EQ(EBlendOperation::Disabled  , rs.blendOperationColor);
+        EXPECT_EQ(EBlendOperation::Disabled  , rs.blendOperationAlpha);
+        EXPECT_EQ(ECullMode::BackFacing      , rs.cullMode);
+        EXPECT_EQ(EDrawMode::Triangles       , rs.drawMode);
+        EXPECT_EQ(EDepthFunc::SmallerEqual   , rs.depthFunc);
+        EXPECT_EQ(EDepthWrite::Enabled       , rs.depthWrite);
+        EXPECT_EQ(EStencilFunc::Disabled     , rs.stencilFunc);
         EXPECT_EQ(0u                        , rs.stencilRefValue);
         EXPECT_EQ(0xFF                      , rs.stencilMask);
-        EXPECT_EQ(EStencilOp_Keep           , rs.stencilOpFail);
-        EXPECT_EQ(EStencilOp_Keep           , rs.stencilOpDepthFail);
-        EXPECT_EQ(EStencilOp_Keep           , rs.stencilOpDepthPass);
+        EXPECT_EQ(EStencilOp::Keep           , rs.stencilOpFail);
+        EXPECT_EQ(EStencilOp::Keep           , rs.stencilOpDepthFail);
+        EXPECT_EQ(EStencilOp::Keep           , rs.stencilOpDepthPass);
     }
 
     TYPED_TEST(AScene, SetsStateBlendFactors)
     {
         const RenderStateHandle state = this->m_scene.allocateRenderState();
-        this->m_scene.setRenderStateBlendFactors(state, EBlendFactor_One, EBlendFactor_SrcAlpha, EBlendFactor_OneMinusSrcAlpha, EBlendFactor_DstAlpha);
+        this->m_scene.setRenderStateBlendFactors(state, EBlendFactor::One, EBlendFactor::SrcAlpha, EBlendFactor::OneMinusSrcAlpha, EBlendFactor::DstAlpha);
 
         const RenderState& rs = this->m_scene.getRenderState(state);
-        EXPECT_EQ(EBlendFactor_One, rs.blendFactorSrcColor);
-        EXPECT_EQ(EBlendFactor_SrcAlpha, rs.blendFactorDstColor);
-        EXPECT_EQ(EBlendFactor_OneMinusSrcAlpha, rs.blendFactorSrcAlpha);
-        EXPECT_EQ(EBlendFactor_DstAlpha, rs.blendFactorDstAlpha);
+        EXPECT_EQ(EBlendFactor::One, rs.blendFactorSrcColor);
+        EXPECT_EQ(EBlendFactor::SrcAlpha, rs.blendFactorDstColor);
+        EXPECT_EQ(EBlendFactor::OneMinusSrcAlpha, rs.blendFactorSrcAlpha);
+        EXPECT_EQ(EBlendFactor::DstAlpha, rs.blendFactorDstAlpha);
     }
 
     TYPED_TEST(AScene, SetsStateBlendOperations)
     {
         const RenderStateHandle state = this->m_scene.allocateRenderState();
-        this->m_scene.setRenderStateBlendOperations(state, EBlendOperation_Add, EBlendOperation_Subtract);
+        this->m_scene.setRenderStateBlendOperations(state, EBlendOperation::Add, EBlendOperation::Subtract);
 
         const RenderState& rs = this->m_scene.getRenderState(state);
-        EXPECT_EQ(EBlendOperation_Add, rs.blendOperationColor);
-        EXPECT_EQ(EBlendOperation_Subtract, rs.blendOperationAlpha);
+        EXPECT_EQ(EBlendOperation::Add, rs.blendOperationColor);
+        EXPECT_EQ(EBlendOperation::Subtract, rs.blendOperationAlpha);
     }
 
     TYPED_TEST(AScene, SetsStateCullMode)
     {
         const RenderStateHandle state = this->m_scene.allocateRenderState();
-        this->m_scene.setRenderStateCullMode(state, ECullMode_FrontFacing);
+        this->m_scene.setRenderStateCullMode(state, ECullMode::FrontFacing);
 
         const RenderState& rs = this->m_scene.getRenderState(state);
-        EXPECT_EQ(ECullMode_FrontFacing, rs.cullMode);
+        EXPECT_EQ(ECullMode::FrontFacing, rs.cullMode);
     }
 
     TYPED_TEST(AScene, SetsStateDrawMode)
     {
         const RenderStateHandle state = this->m_scene.allocateRenderState();
-        this->m_scene.setRenderStateDrawMode(state, EDrawMode_Triangles);
+        this->m_scene.setRenderStateDrawMode(state, EDrawMode::Triangles);
 
         const RenderState& rs = this->m_scene.getRenderState(state);
-        EXPECT_EQ(EDrawMode_Triangles, rs.drawMode);
+        EXPECT_EQ(EDrawMode::Triangles, rs.drawMode);
     }
 
     TYPED_TEST(AScene, SetsStateDepthWrite)
     {
         const RenderStateHandle state = this->m_scene.allocateRenderState();
-        this->m_scene.setRenderStateDepthWrite(state, EDepthWrite_Disabled);
+        this->m_scene.setRenderStateDepthWrite(state, EDepthWrite::Disabled);
 
         const RenderState& rs = this->m_scene.getRenderState(state);
-        EXPECT_EQ(EDepthWrite_Disabled, rs.depthWrite);
+        EXPECT_EQ(EDepthWrite::Disabled, rs.depthWrite);
     }
 
     TYPED_TEST(AScene, SetsStateDepthFunc)
     {
         const RenderStateHandle state = this->m_scene.allocateRenderState();
-        this->m_scene.setRenderStateDepthFunc(state, EDepthFunc_GreaterEqual);
+        this->m_scene.setRenderStateDepthFunc(state, EDepthFunc::GreaterEqual);
 
         const RenderState& rs = this->m_scene.getRenderState(state);
-        EXPECT_EQ(EDepthFunc_GreaterEqual, rs.depthFunc);
+        EXPECT_EQ(EDepthFunc::GreaterEqual, rs.depthFunc);
     }
 
     TYPED_TEST(AScene, SetsStateStencilFunc)
     {
         const RenderStateHandle state = this->m_scene.allocateRenderState();
-        this->m_scene.setRenderStateStencilFunc(state, EStencilFunc_NotEqual, 12u, 0xAA);
+        this->m_scene.setRenderStateStencilFunc(state, EStencilFunc::NotEqual, 12u, 0xAA);
 
         const RenderState& rs = this->m_scene.getRenderState(state);
-        EXPECT_EQ(EStencilFunc_NotEqual     , rs.stencilFunc);
+        EXPECT_EQ(EStencilFunc::NotEqual     , rs.stencilFunc);
         EXPECT_EQ(12u                       , rs.stencilRefValue);
         EXPECT_EQ(0xAA                      , rs.stencilMask);
     }
@@ -129,12 +129,12 @@ namespace ramses_internal
     TYPED_TEST(AScene, SetsStateStencilOps)
     {
         const RenderStateHandle state = this->m_scene.allocateRenderState();
-        this->m_scene.setRenderStateStencilOps(state, EStencilOp_Increment, EStencilOp_IncrementWrap, EStencilOp_Decrement);
+        this->m_scene.setRenderStateStencilOps(state, EStencilOp::Increment, EStencilOp::IncrementWrap, EStencilOp::Decrement);
 
         const RenderState& rs = this->m_scene.getRenderState(state);
-        EXPECT_EQ(EStencilOp_Increment           , rs.stencilOpFail);
-        EXPECT_EQ(EStencilOp_IncrementWrap      , rs.stencilOpDepthFail);
-        EXPECT_EQ(EStencilOp_Decrement           , rs.stencilOpDepthPass);
+        EXPECT_EQ(EStencilOp::Increment           , rs.stencilOpFail);
+        EXPECT_EQ(EStencilOp::IncrementWrap      , rs.stencilOpDepthFail);
+        EXPECT_EQ(EStencilOp::Decrement           , rs.stencilOpDepthPass);
     }
 
     TYPED_TEST(AScene, SetsStateColorWriteMask)

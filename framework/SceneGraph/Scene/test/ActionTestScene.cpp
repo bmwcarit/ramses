@@ -167,7 +167,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setRenderStateStencilFunc(RenderStateHandle stateHandle, EStencilFunc func, UInt32 ref, UInt8 mask)
+    void ActionTestScene::setRenderStateStencilFunc(RenderStateHandle stateHandle, EStencilFunc func, UInt8 ref, UInt8 mask)
     {
         m_actionCollector.setRenderStateStencilFunc(stateHandle, func, ref, mask);
         flushPendingSceneActions();

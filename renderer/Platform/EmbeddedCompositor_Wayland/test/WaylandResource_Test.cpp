@@ -7,7 +7,8 @@
 //  -------------------------------------------------------------------------
 
 #include "EmbeddedCompositor_Wayland/WaylandResource.h"
-#include "WaylandUtilities/UnixDomainSocketHelper.h"
+#include "WaylandUtilities/UnixDomainSocket.h"
+#include "WaylandUtilities/WaylandEnvironmentUtils.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "gtest/gtest.h"
 #include "wayland-client.h"
@@ -68,7 +69,7 @@ namespace ramses_internal
         }
 
         wl_display* m_display = nullptr;
-        UnixDomainSocketHelper m_socket = UnixDomainSocketHelper("testingSocket");
+        UnixDomainSocket m_socket = UnixDomainSocket("testingSocket", WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir));
         wl_client* m_client = nullptr;
         wl_listener m_destroyListener;
         uint32_t m_resourceDestroyedListenerCalled = 0;

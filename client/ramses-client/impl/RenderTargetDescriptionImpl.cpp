@@ -11,7 +11,6 @@
 #include "SceneImpl.h"
 #include "RenderBufferImpl.h"
 #include "Scene/ClientScene.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses
 {
@@ -37,9 +36,9 @@ namespace ramses
         else
         {
             assert(m_scene != NULL);
-            ramses_foreach(m_renderBuffers, rb)
+            for(const auto& rb : m_renderBuffers)
             {
-                if (!m_scene->getIScene().isRenderBufferAllocated(*rb))
+                if (!m_scene->getIScene().isRenderBufferAllocated(rb))
                 {
                     addValidationMessage(EValidationSeverity_Error, indent, "referencing one or more RenderBuffers that do not exist in scene anymore");
                     status = getValidationErrorStatus();
@@ -78,9 +77,9 @@ namespace ramses
 
             if (renderBufferData.type == ramses_internal::ERenderBufferType_DepthBuffer || renderBufferData.type == ramses_internal::ERenderBufferType_DepthStencilBuffer)
             {
-                ramses_foreach(m_renderBuffers, rb)
+                for(const auto& rb : m_renderBuffers)
                 {
-                    const ramses_internal::ERenderBufferType rbType = iscene.getRenderBuffer(*rb).type;
+                    const ramses_internal::ERenderBufferType rbType = iscene.getRenderBuffer(rb).type;
                     if (rbType == ramses_internal::ERenderBufferType_DepthBuffer || rbType == ramses_internal::ERenderBufferType_DepthStencilBuffer)
                     {
                         return addErrorEntry("RenderTargetDescription::addRenderBuffer failed: cannot add more than one depth/stencil buffer!");

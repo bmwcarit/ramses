@@ -10,7 +10,6 @@
 #include "gtest/gtest.h"
 #include "RendererLib/RendererScenes.h"
 #include "RendererEventCollector.h"
-#include "Common/Cpp11Macros.h"
 
 using namespace testing;
 using namespace ramses_internal;
@@ -91,11 +90,11 @@ TEST_F(ARendererScenes, canIterateOverScenes)
     EXPECT_TRUE(rendererScenes.hasScene(sceneID3));
 
     UInt32 count = 0u;
-    ramses_foreach(rendererScenes, rendSceneIter)
+    for(auto rendScene : rendererScenes)
     {
-        EXPECT_TRUE(sceneID1 == rendSceneIter->key || sceneID2 == rendSceneIter->key || sceneID3 == rendSceneIter->key);
-        EXPECT_TRUE(NULL != rendSceneIter->value.scene);
-        EXPECT_TRUE(NULL != rendSceneIter->value.stagingInfo);
+        EXPECT_TRUE(sceneID1 == rendScene.key || sceneID2 == rendScene.key || sceneID3 == rendScene.key);
+        EXPECT_TRUE(NULL != rendScene.value.scene);
+        EXPECT_TRUE(NULL != rendScene.value.stagingInfo);
         ++count;
     }
     EXPECT_EQ(3u, count);

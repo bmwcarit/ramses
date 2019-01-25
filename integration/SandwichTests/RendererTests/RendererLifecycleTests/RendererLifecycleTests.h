@@ -58,6 +58,7 @@ namespace ramses_internal
         ELifecycleTest_SceneExpiredWhenRendered,
         ELifecycleTest_SceneNotExpiredWhenUpdatedWithEmptyFlushesAndRendered,
         ELifecycleTest_SceneExpiredAndRecoveredWhenRendered,
+        ELifecycleTest_SceneExpiredWhenRenderedAndRecoveredAfterHidden,
         ELifecycleTest_ScenesExpireOneAfterAnother,
 
         ELifecycleTest_NUMBER_OF_ELEMENTS
@@ -102,6 +103,7 @@ namespace ramses_internal
         "SceneExpiredWhenRendered",
         "SceneNotExpiredWhenUpdatedWithEmptyFlushesAndRendered",
         "SceneExpiredAndRecoveredWhenRendered",
+        "SceneExpiredWhenRenderedAndRecoveredAfterHidden",
         "ScenesExpireOneAfterAnother"
     };
 

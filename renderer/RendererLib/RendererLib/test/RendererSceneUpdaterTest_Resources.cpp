@@ -2630,4 +2630,97 @@ TEST_F(ARendererSceneUpdater, canUnmapSceneWithPendingFlushAndRequestMapAndAddAn
 
     destroyDisplay();
 }
+
+TEST_F(ARendererSceneUpdater, forceUnsubscribesSceneIfSceneResourcesUploadExceedsBudgetWhileMapping)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+
+    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneResourcesUpload, 0u);
+
+    // create many scene resources (if not enough scene resources the budget is not even checked)
+    for (UInt32 i = 0; i < 40; ++i)
+    {
+        createRenderTargetWithBuffers(0u, false, RenderTargetHandle{ i }, RenderBufferHandle{ i * 2 }, RenderBufferHandle{ i * 2 + 1 });
+        update();
+        expectNoEvent();
+    }
+
+    // expect scene unsubscribe
+    requestMapScene();
+
+    // context is enabled twice, first before uploading, second when unloading due to forced unsubscribe/destroy
+    expectContextEnable(DisplayHandle1, 2u);
+    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, uploadRenderBuffer(_)).Times(AtLeast(2));
+    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, uploadRenderTarget(_)).Times(AnyNumber());
+    // render buffers are collected first therefore render targets might or might not be uploaded before interruption, depending on checking frequency (internal logic of scene resources uploader)
+
+    EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(_, _));
+    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteRenderBuffer(_)).Times(AtLeast(2));
+    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteRenderTarget(_)).Times(AnyNumber());
+
+    update();
+    expectEvents({ ERendererEventType_SceneMapFailed, ERendererEventType_SceneUnsubscribedIndirect });
+
+    update();
+    expectNoEvent();
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, forceUnsubscribesSceneIfSceneResourcesUploadExceedsBudgetWhileMapping_doesNotAffectOtherAlreadyRenderedScene)
+{
+    createDisplayAndExpectSuccess();
+    const auto sceneIdx1 = createPublishAndSubscribeScene();
+
+    // create scene with some resources and render it
+    mapScene(sceneIdx1);
+    createRenderable(sceneIdx1);
+    setRenderableResources(sceneIdx1);
+    expectResourceRequest();
+    expectContextEnable();
+    expectRenderableResourcesUploaded();
+    update();
+    showScene(sceneIdx1);
+
+    // next one is malicious scene with too many scene resources
+    const auto sceneIdx2 = createPublishAndSubscribeScene();
+    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneResourcesUpload, 0u);
+
+    // create many scene resources (if not enough scene resources the budget is not even checked)
+    for (UInt32 i = 0; i < 40; ++i)
+    {
+        createRenderTargetWithBuffers(sceneIdx2, false, RenderTargetHandle{ i }, RenderBufferHandle{ i * 2 }, RenderBufferHandle{ i * 2 + 1 });
+        update();
+        expectNoEvent();
+    }
+
+    // expect scene unsubscribe
+    requestMapScene(sceneIdx2);
+
+    // context is enabled twice, first before uploading, second when unloading due to forced unsubscribe/destroy
+    expectContextEnable(DisplayHandle1, 2u);
+    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, uploadRenderBuffer(_)).Times(AtLeast(2));
+    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, uploadRenderTarget(_)).Times(AnyNumber());
+    // render buffers are collected first therefore render targets might or might not be uploaded before interruption, depending on checking frequency (internal logic of scene resources uploader)
+
+    EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(_, _));
+    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteRenderBuffer(_)).Times(AtLeast(2));
+    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteRenderTarget(_)).Times(AnyNumber());
+
+    update();
+    expectEvents({ ERendererEventType_SceneMapFailed, ERendererEventType_SceneUnsubscribedIndirect });
+
+    update();
+    expectNoEvent();
+
+    // hide and unmap first scene
+    hideScene(sceneIdx1);
+    expectContextEnable();
+    expectRenderableResourcesDeleted();
+    unmapScene(sceneIdx1);
+
+    destroyDisplay();
+}
+
 }

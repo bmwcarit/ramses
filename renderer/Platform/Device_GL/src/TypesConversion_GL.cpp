@@ -244,15 +244,15 @@ namespace ramses_internal
     {
         switch (mode)
         {
-        case EDrawMode_Points:
+        case EDrawMode::Points:
             return GL_POINTS;
-        case EDrawMode_Lines:
+        case EDrawMode::Lines:
             return GL_LINES;
-        case EDrawMode_LineLoop:
+        case EDrawMode::LineLoop:
             return GL_LINE_LOOP;
-        case EDrawMode_Triangles:
+        case EDrawMode::Triangles:
             return GL_TRIANGLES;
-        case EDrawMode_TriangleStrip:
+        case EDrawMode::TriangleStrip:
             return GL_TRIANGLE_STRIP;
         default:
             assert(false && "Invalid draw mode");
@@ -269,23 +269,23 @@ namespace ramses_internal
     {
         switch (func)
         {
-        case EDepthFunc_Greater:
+        case EDepthFunc::Greater:
             return GL_GREATER;
-        case EDepthFunc_GreaterEqual:
+        case EDepthFunc::GreaterEqual:
             return GL_GEQUAL;
-        case EDepthFunc_Smaller:
+        case EDepthFunc::Smaller:
             return GL_LESS;
-        case EDepthFunc_SmallerEqual:
+        case EDepthFunc::SmallerEqual:
             return GL_LEQUAL;
-        case EDepthFunc_Equal:
+        case EDepthFunc::Equal:
             return GL_EQUAL;
-        case EDepthFunc_NotEqual:
+        case EDepthFunc::NotEqual:
             return GL_NOTEQUAL;
-        case EDepthFunc_Always:
+        case EDepthFunc::AlwaysPass:
             return GL_ALWAYS;
-        case EDepthFunc_Never:
+        case EDepthFunc::NeverPass:
             return GL_NEVER;
-        case EDepthFunc_Disabled:
+        case EDepthFunc::Disabled:
         default:
             assert(false && "Invalid depth function");
             return GL_NEVER;
@@ -296,17 +296,17 @@ namespace ramses_internal
     {
         switch (factor)
         {
-        case EBlendFactor_One:
+        case EBlendFactor::One:
             return GL_ONE;
-        case EBlendFactor_Zero:
+        case EBlendFactor::Zero:
             return GL_ZERO;
-        case EBlendFactor_OneMinusSrcAlpha:
+        case EBlendFactor::OneMinusSrcAlpha:
             return GL_ONE_MINUS_SRC_ALPHA;
-        case EBlendFactor_SrcAlpha:
+        case EBlendFactor::SrcAlpha:
             return GL_SRC_ALPHA;
-        case EBlendFactor_DstAlpha:
+        case EBlendFactor::DstAlpha:
             return GL_DST_ALPHA;
-        case EBlendFactor_OneMinusDstAlpha:
+        case EBlendFactor::OneMinusDstAlpha:
             return GL_ONE_MINUS_DST_ALPHA;
         default:
             assert(false && "Invalid blend factor");
@@ -318,17 +318,17 @@ namespace ramses_internal
     {
         switch (operation)
         {
-        case EBlendOperation_Add:
+        case EBlendOperation::Add:
             return GL_FUNC_ADD;
-        case EBlendOperation_Subtract:
+        case EBlendOperation::Subtract:
             return GL_FUNC_SUBTRACT;
-        case EBlendOperation_ReverseSubtract:
+        case EBlendOperation::ReverseSubtract:
             return GL_FUNC_REVERSE_SUBTRACT;
-        case EBlendOperation_Min:
+        case EBlendOperation::Min:
             return GL_MIN;
-        case EBlendOperation_Max:
+        case EBlendOperation::Max:
             return GL_MAX;
-        case EBlendOperation_Disabled:
+        case EBlendOperation::Disabled:
         default:
             assert(false && "Invalid blend operation");
             return GL_ZERO;
@@ -355,23 +355,23 @@ namespace ramses_internal
     {
         switch (func)
         {
-        case EStencilFunc_Never:
+        case EStencilFunc::NeverPass:
             return GL_NEVER;
-        case EStencilFunc_Equal:
+        case EStencilFunc::Equal:
             return GL_EQUAL;
-        case EStencilFunc_NotEqual:
+        case EStencilFunc::NotEqual:
             return GL_NOTEQUAL;
-        case EStencilFunc_Less:
+        case EStencilFunc::Less:
             return GL_LESS;
-        case EStencilFunc_LessEqual:
+        case EStencilFunc::LessEqual:
             return GL_LEQUAL;
-        case EStencilFunc_GreaterEqual:
+        case EStencilFunc::GreaterEqual:
             return GL_GEQUAL;
-        case EStencilFunc_Greater:
+        case EStencilFunc::Greater:
             return GL_GREATER;
-        case EStencilFunc_Always:
+        case EStencilFunc::AlwaysPass:
             return GL_ALWAYS;
-        case EStencilFunc_Disabled:
+        case EStencilFunc::Disabled:
         default:
             assert(false && "Invalid stencil function");
             return GL_NEVER;
@@ -382,21 +382,21 @@ namespace ramses_internal
     {
         switch (op)
         {
-        case EStencilOp_Zero:
+        case EStencilOp::Zero:
             return GL_ZERO;
-        case EStencilOp_Replace:
+        case EStencilOp::Replace:
             return GL_REPLACE;
-        case EStencilOp_Increment:
+        case EStencilOp::Increment:
             return GL_INCR;
-        case EStencilOp_IncrementWrap:
+        case EStencilOp::IncrementWrap:
             return GL_INCR_WRAP;
-        case EStencilOp_Decrement:
+        case EStencilOp::Decrement:
             return GL_DECR;
-        case EStencilOp_DecrementWrap:
+        case EStencilOp::DecrementWrap:
             return GL_DECR_WRAP;
-        case EStencilOp_Invert:
+        case EStencilOp::Invert:
             return GL_INVERT;
-        case EStencilOp_Keep:
+        case EStencilOp::Keep:
             return GL_KEEP;
         default:
             assert(false && "Invalid stencil operation");
@@ -408,13 +408,13 @@ namespace ramses_internal
     {
         switch (mode)
         {
-        case ECullMode_FrontFacing:
+        case ECullMode::FrontFacing:
             return GL_FRONT;
-        case ECullMode_BackFacing:
+        case ECullMode::BackFacing:
             return GL_BACK;
-        case ECullMode_FrontAndBackFacing:
+        case ECullMode::FrontAndBackFacing:
             return GL_FRONT_AND_BACK;
-        case ECullMode_Disabled:
+        case ECullMode::Disabled:
         default:
             assert(false && "Invalid cull mode");
             return GL_ZERO;

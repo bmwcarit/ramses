@@ -46,7 +46,7 @@ namespace ramses_internal
         virtual void blendFactors          (EBlendFactor sourceColor, EBlendFactor destinationColor, EBlendFactor sourceAlpha, EBlendFactor destinationAlpha) override;
         virtual void blendOperations       (EBlendOperation operationColor, EBlendOperation operationAlpha) override;
         virtual void cullMode              (ECullMode mode) override;
-        virtual void stencilFunc           (EStencilFunc func, UInt32 ref, UInt8 mask) override;
+        virtual void stencilFunc           (EStencilFunc func, UInt8 ref, UInt8 mask) override;
         virtual void stencilOp             (EStencilOp sfail, EStencilOp dpfail, EStencilOp dppass) override;
         virtual void drawMode              (EDrawMode mode) override;
         virtual void setViewport           (UInt32 start, UInt32 end, UInt32 width, UInt32 height) override;

@@ -12,7 +12,7 @@
 #include "stdint.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "RamsesFrameworkConfig.h"
-#include "APIExport.h"
+#include "ramses-framework-api/APIExport.h"
 
 namespace ramses
 {

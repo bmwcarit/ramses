@@ -156,8 +156,15 @@ namespace ramses_internal
         }
 
         str << "Longest frame(us)[avg]:" << lastLongestFrameTime;
-        for (UInt reg = 0u; reg < NumberOfRegions; ++reg)
+        if (numFramesTracked > 0)
+        {
+            for (UInt reg = 0u; reg < NumberOfRegions; ++reg)
             str << " " << EnumToString(ERegion(reg)) << ":" << m_frameTimings[NumberOfRegions * longestFrameID + reg] << " [" << totalRegionTime[reg] / numFramesTracked << "]";
+        }
+        else
+        {
+            str << " no frames tracked";
+        }
     }
 
     void FrameProfilerStatistics::resetFrameTimings()

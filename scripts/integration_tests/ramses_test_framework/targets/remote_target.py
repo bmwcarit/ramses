@@ -39,7 +39,10 @@ class RemoteTarget(Target):
         self.sshConnectionNrAttempts = sshConnectionNrAttempts
         self.sshConnectionTimeoutPerAttempt = sshConnectionTimeoutPerAttempt
         self.sshConnectionSleepPerAttempt = sshConnectionSleepPerAttempt
-        self.powerNrAttempts = powerNrAttempts
+        if self.powerDevice:
+            self.powerNrAttempts = powerNrAttempts
+        else:
+            self.powerNrAttempts = 1
 
     def _start_ramses_application(self, applicationName, args, workingDirectory, nameExtension, env, dltAppID):
         extendedArgs = args+" -myip "+self.tcpTestsInterfaceIp
@@ -238,7 +241,7 @@ class RemoteTarget(Target):
     def _shutdown(self):
         self.execute_on_target("shutdown -h 0", False)
 
-    def execute_on_target(self, commandToExecute, block=True, env={}, cwd=None):
+    def execute_on_target(self, commandToExecute, block=True, env={}, cwd=None, timeout=None):
         prefix = helper.get_env_var_setting_string(env)
         command = "{} ".format(prefix) + commandToExecute
         if cwd:
@@ -251,8 +254,17 @@ class RemoteTarget(Target):
         stderrBuffer = Buffer()
         stderrReader = AsynchronousPipeReader(stderr, stderrBuffer)
 
-        if (block):
-            returnCode = stdout.channel.recv_exit_status() #block till call is finished
+        if block:
+            if timeout:
+                # poll on application exit with timeout to prevent infinite blocking
+                endTime = time.time() + timeout
+                while time.time() < endTime and not stdout.channel.exit_status_ready():
+                    time.sleep(0.1)
+                if not stdout.channel.exit_status_ready():
+                    return [], ["<timeout>"], 1
+
+            # get application exit status blocking. will immediately succeed when timeout was given
+            returnCode = stdout.channel.recv_exit_status()
             stdoutReader.stop(withTimeout=True)
             stderrReader.stop(withTimeout=True)
             return stdoutBuffer.get_all_data(), stderrBuffer.get_all_data(), returnCode

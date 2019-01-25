@@ -24,6 +24,7 @@
 #include "ramses-capu/os/NonBlockSocketChecker.h"
 #include <mutex>
 #include <chrono>
+#include <vector>
 
 class AsyncSocketHandler
 {
@@ -101,13 +102,13 @@ public:
         return m_clientSockets.count();
     }
 
-    ramses_capu::vector<ramses_capu::os::SocketInfoPair> getSocketInfoCopy()
+    std::vector<ramses_capu::os::SocketInfoPair> getSocketInfoCopy()
     {
         std::lock_guard<std::mutex> l(m_socketLock);
         return m_socketInfos;
     }
 
-    ramses_capu::vector<ramses_capu::os::SocketInfoPair> m_socketInfos;
+    std::vector<ramses_capu::os::SocketInfoPair> m_socketInfos;
     ramses_capu::HashTable<ramses_capu::os::SocketDescription, ramses_capu::TcpSocket*> m_clientSockets;
     std::mutex m_socketLock;
     ramses_capu::TcpServerSocket m_serverSocket;
@@ -182,7 +183,7 @@ public:
     bool m_send;
     ramses_capu::TcpSocket m_clientSocket;
     ramses_capu::Thread m_thread;
-    ramses_capu::vector<ramses_capu::os::SocketInfoPair> m_socketInfos;
+    std::vector<ramses_capu::os::SocketInfoPair> m_socketInfos;
     uint32_t m_receiveCount;
 };
 
@@ -204,7 +205,7 @@ TEST(NonBlockSocketCheckerTest, DISABLED_AcceptALotOfClients)
     bool timeout = false;
     while (asyncSocketHandler.getNumberOfClientSockets() < clientcount && !timeout)
     {
-        ramses_capu::vector<ramses_capu::os::SocketInfoPair> sockets = asyncSocketHandler.getSocketInfoCopy();
+        std::vector<ramses_capu::os::SocketInfoPair> sockets = asyncSocketHandler.getSocketInfoCopy();
         ramses_capu::NonBlockSocketChecker::CheckSocketsForIncomingData(sockets, 10);
         timeout = ((std::chrono::steady_clock::now() - startTime) > testtimeout);
     }

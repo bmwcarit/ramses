@@ -15,7 +15,6 @@
 */
 
 #include "ramses-capu/util/AlgorithmRaw.h"
-#include "ramses-capu/container/vector.h"
 #include "ramses-capu/Config.h"
 #include "BidirectionalTestContainer.h"
 #include "gmock/gmock.h"

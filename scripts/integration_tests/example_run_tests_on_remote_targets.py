@@ -24,5 +24,5 @@ if _core.setup():
     if not result and _core.coreImpl.config.useExitcodeOnTestFailure:
         exit(1)
 else:
-    log.info("Aborting tests")
-    exit(-1)
+    log.info("Setup failed: Aborting tests")
+    exit(2)

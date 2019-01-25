@@ -234,6 +234,12 @@ namespace ramses_internal
         RendererCommands::setFrameTimerLimits(limitForClientResourcesUploadMicrosec, limitForSceneActionsApplyMicrosec, limitForOffscreenBufferRenderMicrosec);
     }
 
+    void RendererCommandBuffer::setSceneResourceTimerLimit(UInt64 limitForSceneResourcesUploadMicrosec)
+    {
+        PlatformGuard guard(m_lock);
+        RendererCommands::setSceneResourcesTimerLimit(limitForSceneResourcesUploadMicrosec);
+    }
+
     void RendererCommandBuffer::setLimitsFlushesForceApply(UInt limitFlushesForceApply)
     {
         PlatformGuard guard(m_lock);
@@ -518,6 +524,12 @@ namespace ramses_internal
             {
                 const auto& cmd = commands.getCommandData<SetFrameTimerLimitsCommmand>(i);
                 setFrameTimerLimits(cmd.limitForClientResourcesUploadMicrosec, cmd.limitForSceneActionsApplyMicrosec, cmd.limitForOffscreenBufferRenderMicrosec);
+            }
+            break;
+            case ERendererCommand_SetResourceActionTimer:
+            {
+                const auto& cmd = commands.getCommandData<SetFrameTimerLimitsCommmand>(i);
+                setSceneResourcesTimerLimit(cmd.limitForSceneResourcesUploadMicrosec);
             }
             break;
             case ERendererCommand_SetLimits_FlushesForceApply:

@@ -28,6 +28,8 @@ namespace ramses_internal
 
         const StreamTextureSourceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
 
+        testFramework.setEnvironmentVariableWaylandDisplay();
+
         switch(testCase.m_id)
         {
         case CanUseStreamTextureInASceneMappedToOffscreenBuffer:

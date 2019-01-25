@@ -11,14 +11,13 @@
 
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "ramses-capu/os/NonBlockSocketChecker.h"
-#include "ramses-capu/container/vector.h"
 #include "Collections/Vector.h"
 
 namespace ramses_internal
 {
 
     typedef ramses_capu::os::SocketDescription SocketDescription;
-    typedef ramses_capu::vector<ramses_capu::os::SocketInfoPair> SocketInfoVector;
+    typedef Vector<ramses_capu::os::SocketInfoPair> SocketInfoVector;
     typedef ramses_capu::os::SocketDelegate SocketDelegate;
 
     typedef ramses_capu::os::SocketInfoPair SocketInfoPair;
@@ -32,12 +31,12 @@ namespace ramses_internal
 
     inline void NonBlockingSocketChecker::CheckSocketsForIncomingData(const SocketInfoVector& socketsToCheck)
     {
-        ramses_capu::NonBlockSocketChecker::CheckSocketsForIncomingData(socketsToCheck);
+        ramses_capu::NonBlockSocketChecker::CheckSocketsForIncomingData(socketsToCheck.stdRef());
     }
 
     inline void NonBlockingSocketChecker::CheckSocketsForIncomingData(const SocketInfoVector& socketsToCheck, UInt32 timeout)
     {
-        ramses_capu::NonBlockSocketChecker::CheckSocketsForIncomingData(socketsToCheck, timeout);
+        ramses_capu::NonBlockSocketChecker::CheckSocketsForIncomingData(socketsToCheck.stdRef(), timeout);
     }
 
 }

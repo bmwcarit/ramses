@@ -8,7 +8,6 @@
 
 #include "RendererLib/PendingClientResourcesUtils.h"
 #include "SceneUtils/ResourceChangeUtils.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {

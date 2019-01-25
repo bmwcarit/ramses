@@ -40,7 +40,7 @@ namespace ramses_internal
         virtual WaylandIviSurfaceId getIviSurfaceId() const override;
         virtual uint64_t getNumberOfCommitedFrames() const override;
         virtual void resetNumberOfCommitedFrames() override;
-        virtual uint64_t getNumberOfCommitedFramesSinceBeginningOfTime() const;
+        virtual uint64_t getNumberOfCommitedFramesSinceBeginningOfTime() const override;
         virtual void sendFrameCallbacks(UInt32 time) override;
         virtual void logInfos(RendererLogContext& context) const override;
         virtual void bufferDestroyed(IWaylandBuffer& buffer) override;

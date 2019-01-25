@@ -214,8 +214,8 @@ namespace ramses_internal
 
     TEST(CommandLineParserTest, UInt16Arguments)
     {
-        const Char* params[] = { "myExe", "-x", "-1", "-y", "4", "-z", "-w", "69" };
-        CommandLineParser parser(8, params);
+        const Char* params[] = { "myExe", "-x", "-1", "-y", "4", "-z", "-w", "69", "-a", "65535" };
+        CommandLineParser parser(10, params);
 
         const UInt16 valX = ArgumentUInt16(parser, "x", "", 0);
         EXPECT_EQ(0u, valX);
@@ -229,13 +229,16 @@ namespace ramses_internal
         const UInt16 valW = ArgumentUInt16(parser, "w", "", 0);
         EXPECT_EQ(69u, valW);
 
+        const UInt16 valA = ArgumentUInt16(parser, "a", "", 0);
+        EXPECT_EQ(65535u, valA);
+
         EXPECT_TRUE(parser.getNonOptions().empty());
     }
 
     TEST(CommandLineParserTest, UInt32Arguments)
     {
-        const Char* params[] = { "myExe", "-x", "-1", "-y", "4", "-z", "-w", "69" };
-        CommandLineParser parser(8, params);
+        const Char* params[] = { "myExe", "-x", "-1", "-y", "4", "-z", "-w", "69", "-a", "4294967295" };
+        CommandLineParser parser(10, params);
 
         const UInt32 valX = ArgumentUInt32(parser, "x", "", 0);
         EXPECT_EQ(0u, valX);
@@ -248,6 +251,9 @@ namespace ramses_internal
 
         const UInt32 valW = ArgumentUInt32(parser, "w", "", 0);
         EXPECT_EQ(69u, valW);
+
+        const UInt32 valA = ArgumentUInt32(parser, "a", "", 0);
+        EXPECT_EQ(4294967295u, valA);
 
         EXPECT_TRUE(parser.getNonOptions().empty());
     }

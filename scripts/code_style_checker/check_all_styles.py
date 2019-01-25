@@ -68,6 +68,8 @@ Takes a path as input and runs style/license header checks with filters where ne
         r'\.gitignore',
         r'gitconfig$',
         r'\.clang-format$',
+        r'\.clang-tidy$',
+        r'^integration/TestContent/res/binary_shader.*',
         r'(^|/)build[^/]*/',
     }
 
@@ -86,7 +88,8 @@ Takes a path as input and runs style/license header checks with filters where ne
     # Check all styles for source files
     for f in src_files:
 
-        file_contents, clean_file_contents, file_lines, clean_file_lines = read_file(f)
+        file_contents, file_lines = read_file(f)
+        clean_file_contents, clean_file_lines = clean_file_content(file_contents)
 
         check_header_guards                 (f, file_contents)
         check_license_for_file              (f, file_contents, path)
@@ -105,6 +108,7 @@ Takes a path as input and runs style/license header checks with filters where ne
         r'\.spdx$',
         r'^CHANGELOG\.txt$', # Doesn't need a license
         r'^LICENSE\.txt$',   # Contains license info, not related to code/content
+        r'^proprietary/oss/LICENSE\.txt$',  # Contains oss license info, not related to code/content
         r'^.lfsconfig$',     # Doesn't need a license
     }
 
@@ -118,7 +122,7 @@ Takes a path as input and runs style/license header checks with filters where ne
     # Check subset of the rules for non-source files
     for f in files_formatting:
 
-        file_contents, clean_file_contents, file_lines, clean_file_lines = read_file(f)
+        file_contents, file_lines = read_file(f)
 
         check_tabs_no_spaces                (f, file_lines)
         check_no_spacing_line_end           (f, file_lines)
@@ -138,7 +142,8 @@ Takes a path as input and runs style/license header checks with filters where ne
         # Excluded on purpose - add new lines reasonibly here!
         r'\.patch$',        # License headers can't be added to patch files
         r'\.tmpl$',         # File content hash-dependent, can't modify
-        r'^README\.txt$',    # Doesn't need a license
+        r'^README\.txt$',                   # Doesn't need a license
+        r'^proprietary/oss/README\.md$',    # Doesn't need a license
         r'^integration/TestContent/res/BigString\.txt$', # Test file with random content - doesn't need license
         r'^cmake/templates/ramses-version\.in$', # Just a template, doesn't need license
     }
@@ -147,7 +152,7 @@ Takes a path as input and runs style/license header checks with filters where ne
     # Check subset of the rules for non-source files
     for f in files_license_header:
 
-        file_contents, clean_file_contents, file_lines, clean_file_lines = read_file(f)
+        file_contents, file_lines = read_file(f)
 
         check_license_for_file               (f, file_contents, path)
 

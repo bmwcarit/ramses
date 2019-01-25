@@ -26,12 +26,14 @@ namespace ramses_internal
     {
     public:
         EmbeddedCompositingTestsFramework(bool generateScreenshots, TestForkingController& testForkingController, const ramses::RamsesFrameworkConfig& config);
-        ~EmbeddedCompositingTestsFramework();
 
         //control test app lifecycle
+        void                            startTestApplication();
         void                            startTestApplicationAndWaitUntilConnected();
         void                            stopTestApplicationAndWaitUntilDisconnected();
         void                            killTestApplication();
+        void                            setEnvironmentVariableWaylandSocket();
+        void                            setEnvironmentVariableWaylandDisplay();
 
         //wait for events
         void                            waitForContentOnStreamTexture(StreamTextureSourceId sourceId);

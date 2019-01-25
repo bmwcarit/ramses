@@ -57,7 +57,6 @@ namespace ramses_internal
                 displayConfig.setAntialiasingMethod(EAntiAliasingMethod_MultiSampling);
             }
 
-            displayConfig.setIntegrityEGLDisplayID(IntegrityEglDisplayId(0u));
             displayConfig.setWaylandIviSurfaceID(useDifferentIviId ? differentIviSurfaceId : iviSurfaceId);
             displayConfig.setWaylandIviLayerID(WaylandIviLayerId(3u));
             // Needed because of compositor - if surface is not turned visible, some of the EGL calls block

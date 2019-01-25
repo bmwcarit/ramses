@@ -27,6 +27,8 @@ namespace ramses_internal
 
         virtual EStatus getState() const  override;
 
+        const char* readPosition() const;
+
     private:
         const char* m_current;
     };
@@ -56,6 +58,11 @@ namespace ramses_internal
     inline EStatus BinaryInputStream::getState() const
     {
         return EStatus_RAMSES_OK;
+    }
+
+    inline const char* BinaryInputStream::readPosition() const
+    {
+        return m_current;
     }
 }
 

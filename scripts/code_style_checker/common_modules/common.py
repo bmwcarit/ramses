@@ -77,28 +77,33 @@ def get_clean_file_contents(file_contents):
 
 def read_file(filename):
     """
-    Reads contents of the file, returns a 4-tuple containing:
+    Reads contents of the file, returns a 2-tuple containing:
         1- raw file contents
-        2- file contents without comments, strings and macros
-        3- raw file contents as lines
-        4- file contents without comments, strings and macros as lines
-
+        2- raw file contents as lines
     """
     file_contents = open(filename).read()
-    clean_file_contents = get_clean_file_contents(file_contents)
-
     file_lines = file_contents.split("\n")
-    clean_file_lines = clean_file_contents.split("\n")
+    return file_contents, file_lines
 
-    return (file_contents, clean_file_contents, file_lines, clean_file_lines)
+
+def clean_file_content(file_contents):
+    """
+    Reads contents of the file, returns a 2-tuple containing:
+        1- file contents without comments, strings and macros
+        2- file contents without comments, strings and macros as lines
+    """
+    clean_file_contents = get_clean_file_contents(file_contents)
+    clean_file_lines = clean_file_contents.split("\n")
+    return clean_file_contents, clean_file_lines
+
 
 def get_all_files_with_filter(root, positive, negative):
     """
     Iterates over targets and gets names of all files that do not match positive and negative filter
-
     """
-    positive = [re.compile(p) for p in positive]
-    negative = [re.compile(n) for n in negative]
+
+    positive_re = re.compile("|".join(["({})".format(p) for p in positive]))
+    negative_re = re.compile("|".join(["({})".format(n) for n in negative]))
 
     filenames = []
     for f in subprocess.check_output(['git', 'ls-files', root], cwd=root, shell=False).split('\n'):
@@ -106,14 +111,11 @@ def get_all_files_with_filter(root, positive, negative):
             pos_match = False
             neg_match = False
             relative_path = f.replace('\\', '/')
-            for pos in positive:
-                if re.search (pos, relative_path):
-                    pos_match = True
-            for neg in negative:
-                if re.search(neg, relative_path):
-                    neg_match = True
+            pos_match = positive_re.search(relative_path)
+            neg_match = negative_re.search(relative_path)
             if pos_match and not neg_match:
                 filenames.append(os.path.join(root,relative_path))
+
     return filenames
 
 def get_all_files(targets):

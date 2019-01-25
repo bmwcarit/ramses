@@ -29,7 +29,6 @@
 #include "Utils/File.h"
 #include "Utils/BinaryFileInputStream.h"
 #include "ramses-sdk-build-config.h"
-#include "Common/Cpp11Macros.h"
 #include "PlatformAbstraction/PlatformMath.h"
 #include "AnimationSystemImpl.h"
 
@@ -202,10 +201,9 @@ namespace ramses
         // write out the loaded resource immediately
         ramses::ResourceFileDescription outputFile("someOtherTempFile.ram");
         const ramses::RamsesObjectVector resourceObjects = anotherClient.impl.getListOfResourceObjects();
-        ramses_foreach(resourceObjects, iter)
+        for(const auto& resObj : resourceObjects)
         {
-            const ramses::RamsesObject* ramsesObject = *iter;
-            const ramses::Resource* res = RamsesUtils::TryConvert<ramses::Resource>(*ramsesObject);
+            const ramses::Resource* res = RamsesUtils::TryConvert<ramses::Resource>(*resObj);
             ASSERT_TRUE(NULL != res);
             outputFile.impl->m_resources.push_back(res);
         }

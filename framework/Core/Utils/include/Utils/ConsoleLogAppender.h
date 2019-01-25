@@ -26,6 +26,7 @@ namespace ramses_internal
 
     private:
         std::function<void()> m_callback;
+        const bool m_colorsEnabled;
     };
 }
 

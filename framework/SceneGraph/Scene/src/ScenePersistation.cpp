@@ -16,7 +16,6 @@
 #include "Utils/BinaryFileInputStream.h"
 #include "Utils/LogMacros.h"
 #include "Collections/String.h"
-#include "Common/Cpp11Macros.h"
 #include <array>
 #include "Scene/ClientScene.h"
 
@@ -143,7 +142,7 @@ namespace ramses_internal
         {
             UInt32 actionType = 0;
             inStream >> actionType;
-            UInt32 offsetInCollection;
+            UInt32 offsetInCollection = 0;
             inStream >> offsetInCollection;
             actions.addRawSceneActionInformation(static_cast<ESceneActionId>(actionType), offsetInCollection);
             ++objectCounts[actionType];

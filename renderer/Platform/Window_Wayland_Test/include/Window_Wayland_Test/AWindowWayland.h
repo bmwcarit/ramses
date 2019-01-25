@@ -14,7 +14,7 @@
 #include "RendererLib/DisplayConfig.h"
 #include "RendererTestUtils.h"
 #include "DisplayConfigImpl.h"
-#include "WaylandUtilities/UnixDomainSocketHelper.h"
+#include "WaylandUtilities/UnixDomainSocket.h"
 #include "Utils/StringUtils.h"
 
 namespace ramses_internal

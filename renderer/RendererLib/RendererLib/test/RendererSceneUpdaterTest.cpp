@@ -3510,6 +3510,10 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForSceneBeingFlushedButNotRendere
     mapScene();
     showScene();
 
+    // scene must be rendered at least once with valid expiration, only then it can expire
+    performFlushWithExpiration(scene, 1000u + 2u);
+    update();
+
     const NodeHandle nodeHandle(3u);
     const TransformHandle transform(2u);
     IScene& iscene = *stagingScene[scene];
@@ -3527,6 +3531,40 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForSceneBeingFlushedButNotRendere
     expectEvent(ERendererEventType_SceneExpired);
 
     hideScene();
+    expectContextEnable();
+    unmapScene();
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedButNotRenderedBecauseItIsHidden)
+{
+    createDisplayAndExpectSuccess();
+    const UInt32 scene = createPublishAndSubscribeScene();
+    mapScene();
+    showScene();
+
+    // scene must be rendered at least once with valid expiration, only then it can expire
+    performFlushWithExpiration(scene, 1000u + 2u);
+    update();
+
+    hideScene();
+
+    const NodeHandle nodeHandle(3u);
+    const TransformHandle transform(2u);
+    IScene& iscene = *stagingScene[scene];
+    SceneAllocateHelper sceneAllocator(iscene);
+    sceneAllocator.allocateNode(0u, nodeHandle);
+    sceneAllocator.allocateTransform(nodeHandle, transform);
+
+    for (UInt32 i = 0u; i < 10u; ++i)
+    {
+        iscene.setTranslation(transform, {}); // so that flush is not 'empty' - modifies scene
+        performFlushWithExpiration(scene, 1000u + i + 2u);
+        update();
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+    }
+    expectNoEvent();
+
     expectContextEnable();
     unmapScene();
     destroyDisplay();
@@ -3550,12 +3588,16 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForSceneNotBeingFlushedOnlyRender
     expectEvent(ERendererEventType_SceneExpired);
 }
 
-TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRenderedRegularly)
+TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRenderedRegularly_byRenderingRegularlyAgain)
 {
     createDisplayAndExpectSuccess();
     const UInt32 scene = createPublishAndSubscribeScene();
     mapScene();
     showScene();
+
+    // scene must be rendered at least once with valid expiration, only then it can expire
+    performFlushWithExpiration(scene, 1000u + 2u);
+    update();
 
     const NodeHandle nodeHandle(3u);
     const TransformHandle transform(2u);
@@ -3583,6 +3625,49 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRend
     expectEvent(ERendererEventType_SceneRecoveredFromExpiration);
 
     hideScene();
+    expectContextEnable();
+    unmapScene();
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRenderedRegularly_byHidingSceneAndKeepingRegularFlushes)
+{
+    createDisplayAndExpectSuccess();
+    const UInt32 scene = createPublishAndSubscribeScene();
+    mapScene();
+    showScene();
+
+    // scene must be rendered at least once with valid expiration, only then it can expire
+    performFlushWithExpiration(scene, 1000u + 2u);
+    update();
+
+    const NodeHandle nodeHandle(3u);
+    const TransformHandle transform(2u);
+    IScene& iscene = *stagingScene[scene];
+    SceneAllocateHelper sceneAllocator(iscene);
+    sceneAllocator.allocateNode(0u, nodeHandle);
+    sceneAllocator.allocateTransform(nodeHandle, transform);
+
+    for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
+    {
+        iscene.setTranslation(transform, {}); // so that flush is not 'empty' - modifies scene
+        performFlushWithExpiration(scene, 1000u + i + 2u);
+        update();
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+    }
+    expectEvent(ERendererEventType_SceneExpired);
+
+    hideScene();
+
+    for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
+    {
+        iscene.setTranslation(transform, {}); // so that flush is not 'empty' - modifies scene
+        performFlushWithExpiration(scene, 1000u + i + 2u);
+        update();
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+    }
+    expectEvent(ERendererEventType_SceneRecoveredFromExpiration);
+
     expectContextEnable();
     unmapScene();
     destroyDisplay();

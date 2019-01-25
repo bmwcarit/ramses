@@ -16,10 +16,10 @@
 
 #include <gtest/gtest.h>
 #include "ramses-capu/container/HashSet.h"
-#include "ramses-capu/container/vector.h"
 #include "ramses-capu/Error.h"
 #include "ramses-capu/Config.h"
 #include "util/ComplexTestType.h"
+#include <vector>
 
 TEST(HashSet, Constructor_Default)
 {
@@ -337,7 +337,7 @@ TEST(HashSet, HashSetWithComplexType)
     ComplexTestType::Reset();
     {
         ramses_capu::HashSet<ComplexTestType> s;
-        ramses_capu::vector<ComplexTestType> v;
+        std::vector<ComplexTestType> v;
         for (ramses_capu::uint_t i = 0; i < 20; ++i)
         {
             ComplexTestType ctt(i*10);

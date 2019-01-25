@@ -9,6 +9,7 @@
 #include "TestForkerApplication.h"
 #include "Utils/LogMacros.h"
 #include "PlatformAbstraction/PlatformEnvironmentVariables.h"
+#include "WaylandUtilities/WaylandEnvironmentUtils.h"
 #include "TestWaylandApplication.h"
 #include "TestSignalHandler.h"
 #include <sys/wait.h>
@@ -21,7 +22,7 @@ namespace ramses_internal
         , m_waylandClientToTestPipeName(waylandClientToTestPipeName)
         , m_testApplicationProcessId(0)
         , m_embeddedCompositorDisplayName(embeddedCompositorDisplayName)
-        , m_socketHelper(embeddedCompositorDisplayName)
+        , m_socket(embeddedCompositorDisplayName, WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir))
     {
         TestSignalHandler::RegisterSignalHandlersForCurrentProcess("TestForkerApplication");
         m_testToForkerPipe.open();
@@ -117,7 +118,7 @@ namespace ramses_internal
 
                 //Close FD in test application process if it used
                 //P.S: has no effect if FD was not used
-                m_socketHelper.cleanup();
+                m_socket.cleanup();
 
                 exit(testApplicationExitStatus);
             }
@@ -125,7 +126,7 @@ namespace ramses_internal
             {
                 //Close FD in forker process if it used
                 //P.S: has no effect if FD was not used
-                m_socketHelper.cleanup();
+                m_socket.cleanup();
             }
         }
     }
@@ -146,20 +147,22 @@ namespace ramses_internal
     void TestForkerApplication::setEnvironmentVariableWaylandDisplay()
     {
         PlatformEnvironmentVariables::SetEnvVar("WAYLAND_DISPLAY", m_embeddedCompositorDisplayName);
+        //only 1 must b set at a time
+        PlatformEnvironmentVariables::UnsetEnvVar("WAYLAND_SOCKET");
     }
 
 
     void TestForkerApplication::setEnvironmentVariableWaylandSocket()
     {
         //open wayland display socket to create socket fd
-        const int socketFD = m_socketHelper.createConnectedFileDescriptor(false);
+        const int socketFD = m_socket.createConnectedFileDescriptor(false);
 
         //set socket fd as environemnt variable
         StringOutputStream ss;
         ss << socketFD;
 
-        printf("\n\n\n%s %i %s\n\n\n", m_embeddedCompositorDisplayName.c_str(), socketFD, ss.c_str());
-
         PlatformEnvironmentVariables::SetEnvVar("WAYLAND_SOCKET", ss.c_str());
+        //only 1 must b set at a time
+        PlatformEnvironmentVariables::UnsetEnvVar("WAYLAND_DISPLAY");
     }
 }

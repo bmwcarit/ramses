@@ -17,6 +17,7 @@
 #include "ramses-capu/container/String.h"
 #include "ramses-capu/Error.h"
 #include "ramses-capu/Config.h"
+#include "ramses-capu/os/Memory.h"
 
 TEST(String, TestCTor)
 {

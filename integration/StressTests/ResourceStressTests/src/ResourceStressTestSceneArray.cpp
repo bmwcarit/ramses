@@ -71,7 +71,7 @@ namespace ramses_internal
         for (const auto& scene : m_scenes)
         {
             scene->recreateResources();
-            scene->flush(ramses::ESceneFlushMode_SynchronizedWithResources, flushName);
+            scene->flush(flushName);
         }
     }
 

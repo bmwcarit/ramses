@@ -10,7 +10,7 @@
 #define RAMSES_SCENEGRAPHITERATOR_H
 
 #include "ramses-client-api/RamsesObjectTypes.h"
-#include "APIExport.h"
+#include "ramses-framework-api/APIExport.h"
 
 namespace ramses
 {

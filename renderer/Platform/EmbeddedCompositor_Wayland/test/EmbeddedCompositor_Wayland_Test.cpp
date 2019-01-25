@@ -13,7 +13,7 @@
 #include "PlatformFactoryMock.h"
 #include "Platform_Base/PlatformFactory_Base.h"
 #include "Platform_Wayland_IVI_EGL_ES_3_0/Platform_Wayland_IVI_EGL_ES_3_0.h"
-#include "WaylandUtilities/UnixDomainSocketHelper.h"
+#include "WaylandUtilities/UnixDomainSocket.h"
 #include "WaylandUtilities/WaylandEnvironmentUtils.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "Collections/StringOutputStream.h"
@@ -187,7 +187,7 @@ namespace ramses_internal
 
         RendererConfig              rendererConfig     = RendererConfig();
         EmbeddedCompositor_Wayland* embeddedCompositor = nullptr;
-        UnixDomainSocketHelper      socket             = UnixDomainSocketHelper("testingSocket", m_initialValueOfXdgRuntimeDir);
+        UnixDomainSocket            socket             = UnixDomainSocket("testingSocket", m_initialValueOfXdgRuntimeDir);
 
     private:
 
@@ -304,7 +304,7 @@ namespace ramses_internal
         // connections from different clients
         rendererConfig.setWaylandSocketEmbeddedFD(socketFD);
 
-        UnixDomainSocketHelper systemCompositorSocket("wayland-0");
+        UnixDomainSocket systemCompositorSocket("wayland-0", m_initialValueOfXdgRuntimeDir);
         StringOutputStream systemCompositorSocketFD;
         systemCompositorSocketFD << systemCompositorSocket.createConnectedFileDescriptor(false);
 

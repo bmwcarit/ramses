@@ -10,7 +10,7 @@
 #define RAMSES_IRENDEREREVENTHANDLER_H
 
 #include "Types.h"
-#include "APIExport.h"
+#include "ramses-framework-api/APIExport.h"
 
 namespace ramses
 {
@@ -232,18 +232,18 @@ namespace ramses
         * @brief This method will be called if a scene which has an expiration timestamp set (see \c Scene::setExpirationTimestamp)
         *        is on renderer (rendered or just subscribed) at a state that expired, i.e. current time is after the expiration timestamp.
         *        This callback is called only once when the scene expires even if scene stays expired in subsequent frames.
-        *        When the scene is updated again with a new valid expiration timestamp, \c sceneUpdateLatencyBackBelowLimit is called.
+        *        When the scene is updated again with a new valid expiration timestamp, \c sceneRecoveredFromExpiration is called.
         * @param sceneId The scene id of the scene on which the event occurred
         */
-        virtual void sceneUpdateLatencyExceeded(sceneId_t sceneId) = 0;
+        virtual void sceneExpired(sceneId_t sceneId) = 0;
 
         /**
-        * @brief This method will be called if a scene which previously expired (see \c Scene::setExpirationTimestamp and \c sceneUpdateLatencyExceeded)
+        * @brief This method will be called if a scene which previously expired (see \c Scene::setExpirationTimestamp and \c sceneExpired)
         *        was updated with a new expiration timestamp that is not expired anymore.
         *        This callback is called only once when the scene switches state from expired to not expired.
         * @param sceneId The scene id of the scene on which the event occurred
         */
-        virtual void sceneUpdateLatencyBackBelowLimit(sceneId_t sceneId) = 0;
+        virtual void sceneRecoveredFromExpiration(sceneId_t sceneId) = 0;
 
         /**
         * @brief This method will be called when a new IVI video stream becomes available, or when an existing stream disappears
@@ -305,7 +305,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::scenePublished
         */
-        virtual void scenePublished(sceneId_t sceneId)
+        virtual void scenePublished(sceneId_t sceneId) override
         {
             (void)sceneId;
         }
@@ -313,7 +313,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::sceneSubscribed
         */
-        virtual void sceneSubscribed(sceneId_t sceneId, ERendererEventResult result)
+        virtual void sceneSubscribed(sceneId_t sceneId, ERendererEventResult result) override
         {
             (void)sceneId;
             (void)result;
@@ -322,7 +322,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::sceneMapped
         */
-        virtual void sceneMapped(sceneId_t sceneId, ERendererEventResult result)
+        virtual void sceneMapped(sceneId_t sceneId, ERendererEventResult result) override
         {
             (void)sceneId;
             (void)result;
@@ -331,7 +331,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::sceneShown
         */
-        virtual void sceneShown(sceneId_t sceneId, ERendererEventResult result)
+        virtual void sceneShown(sceneId_t sceneId, ERendererEventResult result) override
         {
             (void)sceneId;
             (void)result;
@@ -340,7 +340,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::sceneUnpublished
         */
-        virtual void sceneUnpublished(sceneId_t sceneId)
+        virtual void sceneUnpublished(sceneId_t sceneId) override
         {
             (void)sceneId;
         }
@@ -348,7 +348,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::sceneUnsubscribed
         */
-        virtual void sceneUnsubscribed(sceneId_t sceneId, ERendererEventResult result)
+        virtual void sceneUnsubscribed(sceneId_t sceneId, ERendererEventResult result) override
         {
             (void)sceneId;
             (void)result;
@@ -357,7 +357,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::sceneUnmapped
         */
-        virtual void sceneUnmapped(sceneId_t sceneId, ERendererEventResult result)
+        virtual void sceneUnmapped(sceneId_t sceneId, ERendererEventResult result) override
         {
             (void)sceneId;
             (void)result;
@@ -366,7 +366,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::sceneHidden
         */
-        virtual void sceneHidden(sceneId_t sceneId, ERendererEventResult result)
+        virtual void sceneHidden(sceneId_t sceneId, ERendererEventResult result) override
         {
             (void)sceneId;
             (void)result;
@@ -375,7 +375,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::dataLinked
         */
-        virtual void dataLinked(sceneId_t providerScene, dataProviderId_t providerId, sceneId_t consumerScene, dataConsumerId_t consumerId, ERendererEventResult result)
+        virtual void dataLinked(sceneId_t providerScene, dataProviderId_t providerId, sceneId_t consumerScene, dataConsumerId_t consumerId, ERendererEventResult result) override
         {
             (void)providerScene;
             (void)providerId;
@@ -387,7 +387,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::offscreenBufferLinkedToSceneData
         */
-        virtual void offscreenBufferLinkedToSceneData(offscreenBufferId_t providerOffscreenBuffer, sceneId_t consumerScene, dataConsumerId_t consumerId, ERendererEventResult result)
+        virtual void offscreenBufferLinkedToSceneData(offscreenBufferId_t providerOffscreenBuffer, sceneId_t consumerScene, dataConsumerId_t consumerId, ERendererEventResult result) override
         {
             (void)providerOffscreenBuffer;
             (void)consumerScene;
@@ -398,7 +398,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::dataUnlinked
         */
-        virtual void dataUnlinked(sceneId_t consumerScene, dataConsumerId_t consumerId, ERendererEventResult result)
+        virtual void dataUnlinked(sceneId_t consumerScene, dataConsumerId_t consumerId, ERendererEventResult result) override
         {
             (void)consumerScene;
             (void)consumerId;
@@ -408,7 +408,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::offscreenBufferCreated
         */
-        virtual void offscreenBufferCreated(displayId_t displayId, offscreenBufferId_t offscreenBufferId, ERendererEventResult result)
+        virtual void offscreenBufferCreated(displayId_t displayId, offscreenBufferId_t offscreenBufferId, ERendererEventResult result) override
         {
             (void)displayId;
             (void)offscreenBufferId;
@@ -418,7 +418,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::offscreenBufferDestroyed
         */
-        virtual void offscreenBufferDestroyed(displayId_t displayId, offscreenBufferId_t offscreenBufferId, ERendererEventResult result)
+        virtual void offscreenBufferDestroyed(displayId_t displayId, offscreenBufferId_t offscreenBufferId, ERendererEventResult result) override
         {
             (void)displayId;
             (void)offscreenBufferId;
@@ -428,7 +428,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::sceneAssignedToOffscreenBuffer
         */
-        virtual void sceneAssignedToOffscreenBuffer(sceneId_t sceneId, offscreenBufferId_t offscreenBufferId, ERendererEventResult result)
+        virtual void sceneAssignedToOffscreenBuffer(sceneId_t sceneId, offscreenBufferId_t offscreenBufferId, ERendererEventResult result) override
         {
             (void)sceneId;
             (void)offscreenBufferId;
@@ -438,7 +438,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::sceneAssignedToFramebuffer
         */
-        virtual void sceneAssignedToFramebuffer(sceneId_t sceneId, ERendererEventResult result)
+        virtual void sceneAssignedToFramebuffer(sceneId_t sceneId, ERendererEventResult result) override
         {
             (void)sceneId;
             (void)result;
@@ -447,7 +447,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::framebufferPixelsRead
         */
-        virtual void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, displayId_t displayId, ERendererEventResult result)
+        virtual void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, displayId_t displayId, ERendererEventResult result) override
         {
             (void)pixelData;
             (void)pixelDataSize;
@@ -458,7 +458,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::warpingMeshDataUpdated
         */
-        virtual void warpingMeshDataUpdated(displayId_t displayId, ERendererEventResult result)
+        virtual void warpingMeshDataUpdated(displayId_t displayId, ERendererEventResult result) override
         {
             (void)displayId;
             (void)result;
@@ -467,7 +467,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::displayCreated
         */
-        virtual void displayCreated(displayId_t displayId, ERendererEventResult result)
+        virtual void displayCreated(displayId_t displayId, ERendererEventResult result) override
         {
             (void)displayId;
             (void)result;
@@ -476,7 +476,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::displayDestroyed
         */
-        virtual void displayDestroyed(displayId_t displayId, ERendererEventResult result)
+        virtual void displayDestroyed(displayId_t displayId, ERendererEventResult result) override
         {
             (void)displayId;
             (void)result;
@@ -485,7 +485,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::dataProviderCreated
         */
-        virtual void dataProviderCreated(sceneId_t sceneId, dataProviderId_t dataProviderId)
+        virtual void dataProviderCreated(sceneId_t sceneId, dataProviderId_t dataProviderId) override
         {
             (void)sceneId;
             (void)dataProviderId;
@@ -494,7 +494,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::dataProviderDestroyed
         */
-        virtual void dataProviderDestroyed(sceneId_t sceneId, dataProviderId_t dataProviderId)
+        virtual void dataProviderDestroyed(sceneId_t sceneId, dataProviderId_t dataProviderId) override
         {
             (void)sceneId;
             (void)dataProviderId;
@@ -503,7 +503,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::dataConsumerCreated
         */
-        virtual void dataConsumerCreated(sceneId_t sceneId, dataConsumerId_t dataConsumerId)
+        virtual void dataConsumerCreated(sceneId_t sceneId, dataConsumerId_t dataConsumerId) override
         {
             (void)sceneId;
             (void)dataConsumerId;
@@ -512,7 +512,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::dataConsumerDestroyed
         */
-        virtual void dataConsumerDestroyed(sceneId_t sceneId, dataConsumerId_t dataConsumerId)
+        virtual void dataConsumerDestroyed(sceneId_t sceneId, dataConsumerId_t dataConsumerId) override
         {
             (void)sceneId;
             (void)dataConsumerId;
@@ -521,7 +521,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::sceneFlushed
         */
-        virtual void sceneFlushed(sceneId_t sceneId, sceneVersionTag_t sceneVersionTag, ESceneResourceStatus resourceStatus)
+        virtual void sceneFlushed(sceneId_t sceneId, sceneVersionTag_t sceneVersionTag, ESceneResourceStatus resourceStatus) override
         {
             (void)sceneId;
             (void)sceneVersionTag;
@@ -529,17 +529,17 @@ namespace ramses
         }
 
         /**
-        * @copydoc ramses::IRendererEventHandler::sceneUpdateLatencyExceeded
+        * @copydoc ramses::IRendererEventHandler::sceneExpired
         */
-        virtual void sceneUpdateLatencyExceeded(sceneId_t sceneId)
+        virtual void sceneExpired(sceneId_t sceneId) override
         {
             (void)sceneId;
         }
 
         /**
-        * @copydoc ramses::IRendererEventHandler::sceneUpdateLatencyBackBelowLimit
+        * @copydoc ramses::IRendererEventHandler::sceneRecoveredFromExpiration
         */
-        virtual void sceneUpdateLatencyBackBelowLimit(sceneId_t sceneId)
+        virtual void sceneRecoveredFromExpiration(sceneId_t sceneId) override
         {
             (void)sceneId;
         }
@@ -547,7 +547,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::streamAvailabilityChanged
         */
-        virtual void streamAvailabilityChanged(streamSource_t streamId, bool available)
+        virtual void streamAvailabilityChanged(streamSource_t streamId, bool available) override
         {
             (void)streamId;
             (void)available;
@@ -556,7 +556,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::keyEvent
         */
-        virtual void keyEvent(displayId_t displayId, EKeyEvent eventType, uint32_t keyModifiers, EKeyCode keyCode)
+        virtual void keyEvent(displayId_t displayId, EKeyEvent eventType, uint32_t keyModifiers, EKeyCode keyCode) override
         {
             (void)displayId;
             (void)eventType;
@@ -568,7 +568,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::mouseEvent
         */
-        virtual void mouseEvent(displayId_t displayId, EMouseEvent eventType, int32_t mousePosX, int32_t mousePosY)
+        virtual void mouseEvent(displayId_t displayId, EMouseEvent eventType, int32_t mousePosX, int32_t mousePosY) override
         {
             (void)displayId;
             (void)eventType;
@@ -579,7 +579,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::windowClosed
         */
-        virtual void windowClosed(displayId_t displayId)
+        virtual void windowClosed(displayId_t displayId) override
         {
             (void)displayId;
         }

@@ -38,7 +38,7 @@ namespace ramses_internal
 
         Bool isOffscreen() const override final;
 
-        virtual IntegrityEglDisplayId getIntegrityEGLDisplayID() const final;
+        virtual IntegrityRGLDeviceUnit getIntegrityRGLDeviceUnit() const final;
         virtual WaylandIviSurfaceId getWaylandIviSurfaceID() const override final;
 
     protected:
@@ -54,7 +54,7 @@ namespace ramses_internal
         Int32 m_posX;
         Int32 m_posY;
 
-        const IntegrityEglDisplayId m_integrityEglDisplayID;
+        const IntegrityRGLDeviceUnit m_integrityRGLDeviceUnit;
         const WaylandIviSurfaceId m_waylandIviSurfaceID;
         const Bool m_resizable;
     };

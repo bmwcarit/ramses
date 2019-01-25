@@ -90,9 +90,6 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#ifndef NOMSG
-#define NOMSG
-#endif
 #ifndef NOOPENFILE
 #define NOOPENFILE
 #endif

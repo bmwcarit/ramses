@@ -45,5 +45,6 @@ if __name__ == "__main__":
 
     for t in targets:
         if t[-2:] == ".h" or t[-4:] == ".cpp" or t[-2] == ".c":
-            file_contents, clean_file_contents, file_lines, clean_file_lines = read_file(t)
+            file_contents, file_lines = read_file(t)
+            clean_file_contents, clean_file_lines = clean_file_content(file_contents)
             check_single_statement_on_line(t, file_contents, clean_file_contents, file_lines, clean_file_lines)

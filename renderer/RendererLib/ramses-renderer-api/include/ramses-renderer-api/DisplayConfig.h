@@ -250,24 +250,21 @@ namespace ramses
         uint32_t getWaylandIviSurfaceID() const;
 
         /**
-        * @brief [Mandatory on Integrity] Set EGL display ID to use when creating the display window on Integrity.
+        * @brief [Mandatory on Integrity] Set device unit number to use when creating the display window on Integrity using RGL Window Manager API.
         *
-        * - This is the EGL_DISPLAY variable (very platform dependent, but typical values are 0, 1, 2...)
-        * - On other systems except for Wayland, the value has no meaning, but can be used for
-        *   logging/debugging purposes
         *
-        * @param[in] eglDisplayID EGL display ID to use for the display window
+        * @param[in] rglDeviceUnit Device unit number to use for the display window
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setIntegrityEGLDisplayID(uint32_t eglDisplayID);
+        status_t setIntegrityRGLDeviceUnit(uint32_t rglDeviceUnit);
 
         /**
-        * @brief Get the current setting of EGL display ID
+        * @brief Get the current setting of RGL device unit number
         *
-        * @return the current setting of EGL display ID, returns 0xFFFFFFFF if no value has been set yet
+        * @return the current setting of RGL device unit, returns 0xFFFFFFFF if no value has been set yet
         */
-        uint32_t getIntegrityEGLDisplayID() const;
+        uint32_t getIntegrityRGLDeviceUnit() const;
 
         /**
         * @brief Set IVI window to be visible right after window creation

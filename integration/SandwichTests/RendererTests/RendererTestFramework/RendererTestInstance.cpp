@@ -24,9 +24,9 @@ RendererTestInstance::~RendererTestInstance()
     destroyRenderer(); // must be destructed before m_ramsesFramework, because it has reference to it
 }
 
-void RendererTestInstance::initializeRenderer()
+void RendererTestInstance::initializeRenderer(const ramses::RendererConfig& rendererConfig)
 {
-    initializeRendererWithFramework(m_ramsesFramework);
+    initializeRendererWithFramework(m_ramsesFramework, rendererConfig);
 }
 
 void RendererTestInstance::publish(ramses::sceneId_t sceneId)
@@ -40,7 +40,7 @@ void RendererTestInstance::publish(ramses::sceneId_t sceneId)
 void RendererTestInstance::flush(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersionTag)
 {
     ramses::Scene& clientScene = m_scenes.getScene(sceneId);
-    clientScene.flush(ramses::ESceneFlushMode_SynchronizedWithResources, sceneVersionTag);
+    clientScene.flush(sceneVersionTag);
 }
 
 void RendererTestInstance::unpublish(ramses::sceneId_t sceneId)
@@ -50,7 +50,7 @@ void RendererTestInstance::unpublish(ramses::sceneId_t sceneId)
     waitForUnpublished(sceneId);
 }
 
-void RendererTestInstance::setExpirationTimestamp(ramses::sceneId_t sceneId, std::chrono::system_clock::time_point expirationTS)
+void RendererTestInstance::setExpirationTimestamp(ramses::sceneId_t sceneId, ramses_internal::FlushTime::Clock::time_point expirationTS)
 {
     m_scenes.getScene(sceneId).setExpirationTimestamp(std::chrono::duration_cast<std::chrono::milliseconds>(expirationTS.time_since_epoch()).count());
 }

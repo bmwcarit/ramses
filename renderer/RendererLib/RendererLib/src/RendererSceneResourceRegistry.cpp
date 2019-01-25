@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererLib/RendererSceneResourceRegistry.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {
@@ -47,9 +46,9 @@ namespace ramses_internal
     {
         assert(renderBuffers.empty());
         renderBuffers.reserve(m_renderBuffers.count());
-        ramses_foreach(m_renderBuffers, rb)
+        for(const auto& renderBuffer : m_renderBuffers)
         {
-            renderBuffers.push_back(rb->key);
+            renderBuffers.push_back(renderBuffer.key);
         }
     }
 
@@ -74,9 +73,9 @@ namespace ramses_internal
     {
         assert(renderTargets.empty());
         renderTargets.reserve(m_renderTargets.count());
-        ramses_foreach(m_renderTargets, rt)
+        for(const auto& renderTarget : m_renderTargets)
         {
-            renderTargets.push_back(rt->key);
+            renderTargets.push_back(renderTarget.key);
         }
     }
 
@@ -107,9 +106,9 @@ namespace ramses_internal
     {
         assert(blitPasses.empty());
         blitPasses.reserve(m_streamTextures.count());
-        ramses_foreach(m_blitPasses, bp)
+        for(const auto& blitPass : m_blitPasses)
         {
-            blitPasses.push_back(bp->key);
+            blitPasses.push_back(blitPass.key);
         }
     }
 
@@ -135,9 +134,9 @@ namespace ramses_internal
     {
         assert(streamTextures.empty());
         streamTextures.reserve(m_streamTextures.count());
-        ramses_foreach(m_streamTextures, rt)
+        for(const auto& streamTexture : m_streamTextures)
         {
-            streamTextures.push_back(rt->key);
+            streamTextures.push_back(streamTexture.key);
         }
     }
 

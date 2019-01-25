@@ -10,7 +10,6 @@
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/DataLinkUtils.h"
 #include "Utils/LogMacros.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {
@@ -23,18 +22,18 @@ namespace ramses_internal
     {
         SceneLinkVector links;
         m_sceneLinks.getLinkedConsumers(sceneId, links);
-        ramses_foreach(links, linkIt)
+        for(const auto& link : links)
         {
-            assert(linkIt->providerSceneId == sceneId);
-            m_sceneLinks.removeLink(linkIt->consumerSceneId, linkIt->consumerSlot);
+            assert(link.providerSceneId == sceneId);
+            m_sceneLinks.removeLink(link.consumerSceneId, link.consumerSlot);
         }
 
         links.clear();
         m_sceneLinks.getLinkedProviders(sceneId, links);
-        ramses_foreach(links, linkIt)
+        for (const auto& link : links)
         {
-            assert(linkIt->consumerSceneId == sceneId);
-            m_sceneLinks.removeLink(linkIt->consumerSceneId, linkIt->consumerSlot);
+            assert(link.consumerSceneId == sceneId);
+            m_sceneLinks.removeLink(link.consumerSceneId, link.consumerSlot);
         }
 
         m_dependencyChecker.removeScene(sceneId);

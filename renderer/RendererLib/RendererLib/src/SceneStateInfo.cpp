@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererLib/SceneStateInfo.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {
@@ -63,9 +62,9 @@ namespace ramses_internal
     {
         assert(knownIds.empty());
         knownIds.reserve(m_scenesInfo.count());
-        ramses_foreach(m_scenesInfo, sceneInfoIt)
+        for(const auto& sceneInfo : m_scenesInfo)
         {
-            knownIds.push_back(sceneInfoIt->key);
+            knownIds.push_back(sceneInfo.key);
         }
     }
 }

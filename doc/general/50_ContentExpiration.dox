@@ -1,0 +1,68 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2019 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+/**
+
+@page ContentExpiration RAMSES Content Expiration and Time Limited Validity of Content
+
+# Latency
+Typically, a rendering application has a loop which directly renders on a screen.
+The latency in this case between the time where content is prepared until the time
+the screen shows it is in the range of 1 or 2 frames. However, when showing content
+with RAMSES, where multiple clients are commiting content possibly over slow network
+and with performance constraints, the latency can be much larger. Other factors influencing
+latency can be resource fetching and uploading, blocking due to system compositor.
+
+# Time limited validity of content
+Especially in automotive, there are many cases where validity of content shown on screen
+is strictly time limited (e.g. obstacles in parking assistant shown too late or too long
+not corresponding to reality). Latency can be one of the causes of displaying outdated
+(expired) content but there can be more reasons, for example client not providing
+up-to-date content frequently enough due to low performance, faulty logic or general failure.
+
+# Expiration time stamps
+RAMSES provides an API allowing the client as content provider to mark every modified state
+of a scene with a 'expiration date' to inform the renderer that past this point in time that
+content is not valid anymore. Remember that renderer might be remote and thus not controlled
+by the client, therefore in the context of RAMSES framework this is one way communication
+from client to renderer.
+
+# Renderer events
+Renderer receives, processes and displays the content provided by client, therefore only
+renderer can check the expiration time stamps. It is impossible to define a general rule
+for reacting on expiration and therefore it is the responsibility of the application logic
+running the renderer to decide what to do with an expired scene content. RAMSES provides
+corresponding renderer events for that. An expiration event is generated once for every scene that
+has an expired content, another event will be generated when the scene content recovers
+from expiration and is up-to-date again.
+
+## Time stamps
+When talking about time and delays, one has to be careful to how the time is measured
+and how reliable the clock is. In a distributed system, there is also the factor of
+synchronization of clocks. In order for the check mechanism to work, all system clocks
+for all participants in the network have to be synchronized
+
+## API
+As mentioned above there is API both on client side and renderer side.
+Client sets an 'expiration time' (see documentation of \ref ramses::Scene::setExpirationTimestamp() for more details)
+of a scene, this expiration time is commited with the next scene flush together with other changes made to it.
+What it means is that the flushed state of scene will expire at the set point in time.
+
+The renderer has an asynchroneous event callback which reports whenever
+the scene's expiration time is passed (see IRendererEventHandler::sceneExpired)
+and also when it catches up and recovers from expiration (see \ref ramses::IRendererEventHandler::sceneRecoveredFromExpiration()).
+
+## Example
+A simple example how to use the latency/expiration API of RAMSES is to define
+a fixed threshold (e.g. 0.5 second), and add this threshold to the expiration
+timestamp assigned to each scene. Then, whenever a renderer reports that a
+scene expired, the renderer control logic can temporarily hide the scene and
+show a fallback scene, e.g. a loading wheel or just a black image. As soon as
+the original scene recovered, it can be shown again.
+
+*/

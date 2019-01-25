@@ -9,10 +9,10 @@
 #include "RendererLib/PendingSceneResourcesUtils.h"
 #include "RendererLib/IRendererResourceManager.h"
 #include "RendererLib/SceneResourceUploader.h"
+#include "RendererLib/FrameTimer.h"
 #include "SceneAPI/IScene.h"
 #include "SceneAPI/GeometryDataBuffer.h"
 #include "SceneAPI/StreamTexture.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {
@@ -80,12 +80,16 @@ namespace ramses_internal
         return consolidatedActions;
     }
 
-    void PendingSceneResourcesUtils::ApplySceneResourceActions(const SceneResourceActionVector& actions, const IScene& scene, IRendererResourceManager& resourceManager)
+    bool PendingSceneResourcesUtils::ApplySceneResourceActions(const SceneResourceActionVector& actions, const IScene& scene, IRendererResourceManager& resourceManager, const FrameTimer* frameTimer)
     {
-        for (const auto& sceneResourceAction : actions)
+        constexpr size_t TimeCheckPeriod = 20u;
+        constexpr size_t ThresholdForTimeChecking = 100u;
+        const bool checkTimeSpent = (frameTimer != nullptr) && (actions.size() > ThresholdForTimeChecking);
+
+        for (size_t i = 0u; i < actions.size(); ++i)
         {
-            const MemoryHandle handle = sceneResourceAction.handle;
-            switch (sceneResourceAction.action)
+            const MemoryHandle handle = actions[i].handle;
+            switch (actions[i].action)
             {
             case ESceneResourceAction_CreateRenderTarget:
                 SceneResourceUploader::UploadRenderTarget(scene, RenderTargetHandle(handle), resourceManager);
@@ -139,17 +143,25 @@ namespace ramses_internal
                 assert(false && "unknown scene resource action");
                 break;
             }
+
+            if (checkTimeSpent && ((i + 1) % TimeCheckPeriod == 0))
+            {
+                if (frameTimer->isTimeBudgetExceededForSection(EFrameTimerSectionBudget::SceneResourcesUpload))
+                    return false;
+            }
         }
+
+        return true;
     }
 
     Bool PendingSceneResourcesUtils::RemoveSceneResourceActionIfContained(SceneResourceActionVector& actions, MemoryHandle handle, ESceneResourceAction action)
     {
-        ramses_foreach(actions, it)
+        for (auto actionIter = actions.begin(); actionIter != actions.end(); ++actionIter)
         {
-            if (it->handle == handle &&
-                it->action == action)
+            if (actionIter->handle == handle &&
+                actionIter->action == action)
             {
-                actions.erase(it);
+                actions.erase(actionIter);
                 return true;
             }
         }

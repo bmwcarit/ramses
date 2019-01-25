@@ -10,7 +10,6 @@
 #include "RendererLib/RendererCachedScene.h"
 #include "RendererAPI/IDevice.h"
 #include "SceneAPI/BlitPass.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {
@@ -72,7 +71,7 @@ namespace ramses_internal
                 }
                 if (clearFlags & EClearFlags_Depth)
                 {
-                    m_state.getDevice().depthWrite(EDepthWrite_Enabled);
+                    m_state.getDevice().depthWrite(EDepthWrite::Enabled);
                 }
 
                 m_state.getDevice().clear(clearFlags);

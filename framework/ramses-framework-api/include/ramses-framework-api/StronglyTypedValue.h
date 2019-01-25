@@ -9,7 +9,7 @@
 #ifndef RAMSES_STRONGLYTYPEDVALUE_H
 #define RAMSES_STRONGLYTYPEDVALUE_H
 
-#include "APIExport.h"
+#include "ramses-framework-api/APIExport.h"
 
 namespace ramses
 {

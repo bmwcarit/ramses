@@ -9,7 +9,6 @@
 #include "RendererLib/ResourceCachedScene.h"
 #include "RendererLib/IResourceDeviceHandleAccessor.h"
 #include "RendererAPI/IEmbeddedCompositingManager.h"
-#include "Common/Cpp11Macros.h"
 #include "Utils/LogMacros.h"
 
 namespace ramses_internal
@@ -663,32 +662,14 @@ namespace ramses_internal
             }
         }
 
-        ramses_foreach(m_effectDeviceHandleCache, it)
-        {
-            *it = DeviceResourceHandle::Invalid();
-        }
+        std::fill(m_effectDeviceHandleCache.begin(), m_effectDeviceHandleCache.end(), DeviceResourceHandle::Invalid());
+        std::fill(m_deviceHandleCacheForTextures.begin(), m_deviceHandleCacheForTextures.end(), DeviceResourceHandle::Invalid());
+        std::fill(m_renderTargetCache.begin(), m_renderTargetCache.end(), DeviceResourceHandle::Invalid());
+        std::fill(m_blitPassCache.begin(), m_blitPassCache.end(), DeviceResourceHandle::Invalid());
 
-        ramses_foreach(m_deviceHandleCacheForVertexAttributes, it)
+        for(auto& it : m_deviceHandleCacheForVertexAttributes)
         {
-            ramses_foreach(*it, it2)
-            {
-                *it2 = DeviceResourceHandle::Invalid();
-            }
-        }
-
-        ramses_foreach(m_deviceHandleCacheForTextures, it)
-        {
-            *it = DeviceResourceHandle::Invalid();
-        }
-
-        ramses_foreach(m_renderTargetCache, it)
-        {
-            *it = DeviceResourceHandle::Invalid();
-        }
-
-        ramses_foreach(m_blitPassCache, it)
-        {
-            *it = DeviceResourceHandle::Invalid();
+            std::fill(it.begin(), it.end(), DeviceResourceHandle::Invalid());
         }
 
         m_renderTargetsDirty = !m_renderTargetCache.empty();

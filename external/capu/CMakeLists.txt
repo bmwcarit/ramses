@@ -35,9 +35,6 @@ ENDIF()
 CONFIGURE_FILE(include/ramses-capu/Config.h.in ${PROJECT_BINARY_DIR}/ramses-capu/Config.h)
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
-
 ACME_MODULE(
 
     #==========================================================================
@@ -67,9 +64,14 @@ ACME_MODULE(
 
     INCLUDE_BASE            include
                             ${PROJECT_BINARY_DIR}
-
-    DEPENDENCIES            Threads::Threads
 )
+
+if (NOT "${TARGET_OS}" STREQUAL "Integrity")
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+    find_package(Threads REQUIRED)
+
+    TARGET_LINK_LIBRARIES(ramses-capu PUBLIC Threads::Threads)
+endif()
 
 # conditionally link libs
 if ("${TARGET_OS}" STREQUAL "Windows")
@@ -80,13 +82,6 @@ if ("${TARGET_OS}" STREQUAL "Windows")
     endif()
 elseif ("${TARGET_OS}" STREQUAL "Linux")
     TARGET_LINK_LIBRARIES(ramses-capu PUBLIC rt)
-elseif ("${TARGET_OS}" STREQUAL "Integrity")
-    TARGET_LINK_LIBRARIES(ramses-capu PUBLIC
-                        ${INTEGRITY_OS_DIR}/libs/arm64/libnet.a
-                        ${INTEGRITY_OS_DIR}/libs/arm64/libsocket.a
-                        ${INTEGRITY_OS_DIR}/libs/arm64/libposix.a
-                        ${INTEGRITY_OS_DIR}/libs/arm64/libivfs.a
-    )
 endif()
 
 # set defines public to target
@@ -119,7 +114,7 @@ ACME_MODULE(
    # dependencies
    #==========================================================================
    DEPENDENCIES            ramses-capu
-                           gmock_main
+                           ramses-gmock-main
    )
 
 IF(TARGET ramses-capu-test AND "${TARGET_OS}" STREQUAL "Integrity")

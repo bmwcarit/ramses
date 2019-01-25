@@ -24,7 +24,6 @@
 #include "Utils/StringUtils.h"
 #include "SceneAPI/SceneSizeInformation.h"
 #include "SceneAPI/RenderGroupUtils.h"
-#include "Common/Cpp11Macros.h"
 #include "PlatformAbstraction/PlatformMath.h"
 
 namespace ramses_internal
@@ -554,7 +553,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setRenderStateStencilFunc(RenderStateHandle stateHandle, EStencilFunc func, UInt32 ref, UInt8 mask)
+    void SceneT<MEMORYPOOL>::setRenderStateStencilFunc(RenderStateHandle stateHandle, EStencilFunc func, UInt8 ref, UInt8 mask)
     {
         RenderState& state = *m_states.getMemory(stateHandle);
         state.stencilFunc = func;

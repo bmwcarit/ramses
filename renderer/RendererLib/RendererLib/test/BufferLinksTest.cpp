@@ -9,7 +9,6 @@
 #include "renderer_common_gmock_header.h"
 #include "gtest/gtest.h"
 #include "RendererLib/OffscreenBufferLinks.h"
-#include "Common/Cpp11Macros.h"
 
 using namespace testing;
 using namespace ramses_internal;
@@ -37,9 +36,9 @@ protected:
 
     static bool ContainsLink(const OffscreenBufferLinkVector& links, const OffscreenBufferLink& link)
     {
-        ramses_foreach(links, linkIt)
+        for(const auto& linkIter : links)
         {
-            if (LinksEqual(*linkIt, link))
+            if (LinksEqual(linkIter, link))
             {
                 return true;
             }

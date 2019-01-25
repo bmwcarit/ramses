@@ -74,7 +74,7 @@ have to be mapped to the same display as they are going to share a GPU resource.
 Renderer API calls are handled asynchronously. This means that the result or information about success of the requested renderer operation is not available
 immediately after the API call.
 The result of the API call will be delivered via renderer events. The RAMSES renderer offers an event dispatching mechanism, such that an object implementing
-the \ref ramses::IRendererEventHandler interface can handle and process renderer events.
+the ramses::IRendererEventHandler interface can handle and process renderer events.
 
 There are callbacks for the following events:
 - display created/destroyed
@@ -86,7 +86,7 @@ There are callbacks for the following events:
 - data provider/consumer created/destroyed
 - framebuffer-pixel read
 
-Check \ref ramses::IRendererEventHandler for the full list of events and corresponding callbacks.
+Check ramses::IRendererEventHandler for the full list of events and corresponding callbacks.
 
 Events generated as a result of a Renderer API call will have a result parameter stating whether:
 - [OK] the Renderer API call was successful
@@ -95,7 +95,7 @@ Events generated as a result of a Renderer API call will have a result parameter
 
 ## Renderer API transactions
 
-The RAMSES Renderer only executes committed Renderer API calls. To commit a transaction of Renderer API calls, call \ref ramses::RamsesRenderer::flush().<br>
-All Renderer API calls since the last flush will then be executed on the next \ref ramses::RamsesRenderer::doOneLoop() function call or when there is new frame processed if using render thread.
+The RAMSES Renderer only executes committed Renderer API calls. To commit a transaction of Renderer API calls, call ramses::RamsesRenderer::flush().<br>
+All Renderer API calls since the last flush will then be executed on the next ramses::RamsesRenderer::doOneLoop() function call or when there is new frame processed if using render thread.
 
 */

@@ -43,11 +43,11 @@ namespace ramses_internal
     {
         EXPECT_EQ(EStatus_RAMSES_OK, m_file.open(EFileMode_ReadOnlyBinary));
 
-        char buffer[64];
+        char buffer[64] = {};
         UInt numBytes = 0;
 
         EXPECT_EQ(EStatus_RAMSES_OK, m_file.read(buffer, sizeof(int32_t), numBytes));
-        EXPECT_EQ(sizeof(int32_t), numBytes);
+        ASSERT_EQ(sizeof(int32_t), numBytes);
 
         union
         {

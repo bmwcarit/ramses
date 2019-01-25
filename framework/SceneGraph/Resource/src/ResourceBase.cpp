@@ -25,18 +25,18 @@ namespace ramses_internal
         {
             // hash blob
             const char* blobToHash = reinterpret_cast<const char*>(m_data->getRawData());
-            const uint128 cityHashBlob = CityHash128(blobToHash, m_data->size());
+            const cityhash::uint128 cityHashBlob = cityhash::CityHash128(blobToHash, m_data->size());
 
             // hash metadata
             BinaryOutputStream metaDataStream(1024);
             metaDataStream << static_cast<UInt32>(m_typeID);
             serializeResourceMetadataToStream(metaDataStream);
-            metaDataStream << Uint128Low64(cityHashBlob);
-            metaDataStream << Uint128High64(cityHashBlob);
-            const uint128 cityHashMetadataAndBlob = CityHash128(metaDataStream.getData(), metaDataStream.getSize());
+            metaDataStream << cityhash::Uint128Low64(cityHashBlob);
+            metaDataStream << cityhash::Uint128High64(cityHashBlob);
+            const cityhash::uint128 cityHashMetadataAndBlob = cityhash::CityHash128(metaDataStream.getData(), metaDataStream.getSize());
 
-            m_hash.lowPart = Uint128Low64(cityHashMetadataAndBlob);
-            m_hash.highPart = Uint128High64(cityHashMetadataAndBlob);
+            m_hash.lowPart = cityhash::Uint128Low64(cityHashMetadataAndBlob);
+            m_hash.highPart = cityhash::Uint128High64(cityHashMetadataAndBlob);
         }
     }
 }

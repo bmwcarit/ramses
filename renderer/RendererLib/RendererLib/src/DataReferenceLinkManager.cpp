@@ -11,7 +11,6 @@
 #include "RendererLib/DataLinkUtils.h"
 #include "SceneUtils/DataInstanceHelper.h"
 #include "Utils/LogMacros.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {
@@ -24,10 +23,10 @@ namespace ramses_internal
     {
         SceneLinkVector links;
         getSceneLinks().getLinkedConsumers(sceneId, links);
-        ramses_foreach(links, linkIt)
+        for(const auto& link : links)
         {
-            assert(linkIt->providerSceneId == sceneId);
-            removeDataLink(linkIt->consumerSceneId, linkIt->consumerSlot);
+            assert(link.providerSceneId == sceneId);
+            removeDataLink(link.consumerSceneId, link.consumerSlot);
         }
 
         LinkManagerBase::removeSceneLinks(sceneId);
@@ -71,13 +70,13 @@ namespace ramses_internal
         SceneLinkVector links;
         getSceneLinks().getLinkedProviders(consumerSceneId, links);
 
-        ramses_foreach(links, linkIt)
+        for(const auto& link : links)
         {
-            assert(linkIt->consumerSceneId == consumerSceneId);
-            const DataInstanceHandle consumerDataRef = consumerScene.getDataSlot(linkIt->consumerSlot).attachedDataReference;
+            assert(link.consumerSceneId == consumerSceneId);
+            const DataInstanceHandle consumerDataRef = consumerScene.getDataSlot(link.consumerSlot).attachedDataReference;
 
-            const IScene& providerScene = m_scenes.getScene(linkIt->providerSceneId);
-            const DataInstanceHandle providerDataRef = providerScene.getDataSlot(linkIt->providerSlot).attachedDataReference;
+            const IScene& providerScene = m_scenes.getScene(link.providerSceneId);
+            const DataInstanceHandle providerDataRef = providerScene.getDataSlot(link.providerSlot).attachedDataReference;
 
             Variant value;
             DataInstanceHelper::GetInstanceFieldData(providerScene, providerDataRef, DataFieldHandle(0u), value);

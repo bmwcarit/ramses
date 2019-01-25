@@ -14,9 +14,8 @@
 #include "PlatformAbstraction/PlatformGuard.h"
 #include "TransportCommon/IDiscoveryDaemon.h"
 #include "TransportCommon/IConnectionStatusUpdateNotifier.h"
-#include "Common/Cpp11Macros.h"
 #include "PlatformAbstraction/PlatformEnvironmentVariables.h"
-
+#include <array>
 
 namespace ramses_internal
 {
@@ -74,6 +73,13 @@ namespace ramses_internal
     CommunicationSystemTestState::CommunicationSystemTestState(ECommunicationSystemType type)
         : communicationSystemType(type)
     {
+        static bool initializedLogger = false;
+        if (!initializedLogger)
+        {
+            initializedLogger = true;
+            std::array<const char *const, 3> args{"", "-l", "warn"};
+            GetRamsesLogger().initialize(CommandLineParser{static_cast<Int>(args.size()), args.data()}, "TEST", "TEST", true);
+        }
     }
 
     void CommunicationSystemTestState::sendEvent()
@@ -88,11 +94,10 @@ namespace ramses_internal
 
     void CommunicationSystemTestState::connectAll()
     {
-        ramses_foreach(knownCommunicationSystems, it)
+        for(const auto& comSystem : knownCommunicationSystems)
         {
-            CommunicationSystemTestWrapper* csw = *it;
-            assert(csw != 0);
-            EXPECT_TRUE(csw->commSystem->connectServices());
+            assert(comSystem != 0);
+            EXPECT_TRUE(comSystem->commSystem->connectServices());
         }
 
         startUpHook();
@@ -100,11 +105,10 @@ namespace ramses_internal
 
     void CommunicationSystemTestState::disconnectAll()
     {
-        ramses_foreach(knownCommunicationSystems, it)
+        for (const auto& comSystem : knownCommunicationSystems)
         {
-            CommunicationSystemTestWrapper* csw = *it;
-            assert(csw != 0);
-            csw->commSystem->disconnectServices();
+            assert(comSystem != 0);
+            comSystem->commSystem->disconnectServices();
         }
 
         shutdownHook();
@@ -113,30 +117,29 @@ namespace ramses_internal
     testing::AssertionResult CommunicationSystemTestState::blockOnAllConnected(UInt32 waitTimeMsOverride)
     {
         uint32_t expectedEvents = 0;
-        ramses_foreach(knownCommunicationSystems, it_outer)
+        for (const auto& comSystemOuter : knownCommunicationSystems)
         {
-            ramses_foreach(knownCommunicationSystems, it_inner)
+            for (const auto& comSystemInner : knownCommunicationSystems)
             {
-                if (*it_outer != *it_inner)
+                if (comSystemOuter != comSystemInner)
                 {
-                    EXPECT_CALL((*it_outer)->statusUpdateListener, newParticipantHasConnected((*it_inner)->id));
+                    EXPECT_CALL(comSystemOuter->statusUpdateListener, newParticipantHasConnected(comSystemInner->id));
                     ++expectedEvents;
                 }
             }
         }
 
-        ramses_foreach(knownCommunicationSystems, it)
+        for (const auto& comSystem : knownCommunicationSystems)
         {
-            CommunicationSystemTestWrapper* csw = *it;
-            assert(csw != 0);
-            csw->registerForConnectionUpdates();
+            assert(comSystem != 0);
+            comSystem->registerForConnectionUpdates();
         }
 
         testing::AssertionResult result = event.waitForEvents(expectedEvents, waitTimeMsOverride);
 
-        ramses_foreach(knownCommunicationSystems, it)
+        for (const auto& comSystem : knownCommunicationSystems)
         {
-            (*it)->unregisterForConnectionUpdates();
+            comSystem->unregisterForConnectionUpdates();
         }
 
         return result;

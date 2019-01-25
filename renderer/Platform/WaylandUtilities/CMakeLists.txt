@@ -52,7 +52,7 @@ IF (${ramses-sdk_BUILD_TESTS})
         # dependencies
         #==========================================================================
         DEPENDENCIES            WaylandUtilities
-                                gmock
+                                ramses-gmock
     )
 ENDIF()
 
@@ -76,5 +76,5 @@ ACME_MODULE(
     #==========================================================================
     DEPENDENCIES            WaylandTestUtils
                             RendererTestUtils
-                            gmock_main
+                            ramses-gmock-main
 )

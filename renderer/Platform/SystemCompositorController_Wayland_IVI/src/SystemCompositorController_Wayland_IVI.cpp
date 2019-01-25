@@ -10,7 +10,7 @@
 #include "SystemCompositorController_Wayland_IVI/IVIControllerSurface.h"
 #include "SystemCompositorController_Wayland_IVI/IVIControllerScreen.h"
 #include "SystemCompositorController_Wayland_IVI/WaylandOutput.h"
-#include "WaylandUtilities/WaylandUtilities.h"
+#include "WaylandUtilities/WaylandEnvironmentUtils.h"
 #include "PlatformAbstraction/PlatformMath.h"
 #include "Collections/StringOutputStream.h"
 #include "Utils/StringUtils.h"
@@ -67,7 +67,7 @@ namespace ramses_internal
     {
         LOG_INFO(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::init");
 
-        if (!WaylandUtilities::IsEnvironmentInProperState())
+        if (!WaylandEnvironmentUtils::IsEnvironmentInProperState())
         {
             LOG_ERROR(CONTEXT_RENDERER,
                       "SystemCompositorController_Wayland_IVI::init Environment is not properly configured!");

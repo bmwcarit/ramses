@@ -92,12 +92,12 @@ public:
         m_sceneFlushes.get(sceneId)->put(sceneVersion, ramses::ESceneResourceStatus_Ready == resourceStatus);
     }
 
-    virtual void sceneUpdateLatencyExceeded(ramses::sceneId_t sceneId) override
+    virtual void sceneExpired(ramses::sceneId_t sceneId) override
     {
         m_expiredScenes.put(sceneId);
     }
 
-    virtual void sceneUpdateLatencyBackBelowLimit(ramses::sceneId_t sceneId) override
+    virtual void sceneRecoveredFromExpiration(ramses::sceneId_t sceneId) override
     {
         m_recoveredScenes.put(sceneId);
     }

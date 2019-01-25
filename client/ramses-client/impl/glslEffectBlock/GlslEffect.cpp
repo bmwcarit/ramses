@@ -11,7 +11,6 @@
 #include "glslEffectBlock/GlslToEffectConverter.h"
 #include "Utils/ScopedPointer.h"
 #include "GlslLimits.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {
@@ -123,9 +122,9 @@ namespace ramses_internal
     String GlslEffect::createDefineString() const
     {
         StringOutputStream result;
-        ramses_foreach(m_compilerDefines, defineString)
+        for(const auto& defineString : m_compilerDefines)
         {
-            result << "#define " << *defineString << "\n";
+            result << "#define " << defineString << "\n";
         }
         return result.release();
     }

@@ -47,8 +47,12 @@ RENDERER_MODULE_PER_CONFIG_STATIC(RendererLifecycleTests
     DEPENDENCIES            TestContent FrameworkTestUtils RendererTestUtils
 )
 
-# TODO Mohamed: merge/consolidate modules for emb comp tests with and without FD
-set(EmbeddedCompositingTestsCommonModuleVars
+# TODO Violin/Alex add support for embedded compositing on a renderer with x11-backend
+ACME_MODULE(
+    NAME                    EmbeddedCompositingTests-wayland-ivi-egl-es-3-0
+    TYPE                    TEST
+    TEST_SUFFIX             RNDSANDWICHTEST_SWRAST
+
     INCLUDE_BASE            RendererTestFramework
                             EmbeddedCompositingTests
                             EmbeddedCompositingTests/EmbeddedCompositingTestFramework
@@ -67,38 +71,12 @@ set(EmbeddedCompositingTestsCommonModuleVars
     ${RendererTests-resources_MIXIN}
 
     DEPENDENCIES            ramses-renderer-lib
+                            platform-wayland-ivi-egl-es-3-0
                             TestContent
                             FrameworkTestUtils
                             RendererTestUtils
                             WaylandUtilities
 )
-# TODO Violin/Alex add support for embedded compositing on a renderer with x11-backend
-ACME_MODULE(
-    NAME                    EmbeddedCompositingTests-wayland-ivi-egl-es-3-0
-    TYPE                    TEST
-    TEST_SUFFIX             RNDSANDWICHTEST_SWRAST
-
-    ${EmbeddedCompositingTestsCommonModuleVars}
-
-    FILES_SOURCE            EmbeddedCompositingTests/EmbeddedCompositingTest_RunAllTests/*.cpp
-
-    DEPENDENCIES            platform-wayland-ivi-egl-es-3-0
-)
-
-IF (NOT ${wayland-server_VERSION} VERSION_LESS "1.13.0")
-    # TODO Violin/Alex add support for embedded compositing on a renderer with x11-backend
-    ACME_MODULE(
-        NAME                    EmbeddedCompositingTests-WithFD-wayland-ivi-egl-es-3-0
-        TYPE                    TEST
-        TEST_SUFFIX             RNDSANDWICHTEST_SWRAST
-
-        ${EmbeddedCompositingTestsCommonModuleVars}
-
-        FILES_SOURCE            EmbeddedCompositingTests/EmbeddedCompositingTest_CheckFileDescriptor/*.cpp
-
-        DEPENDENCIES            platform-wayland-ivi-egl-es-3-0
-    )
-ENDIF()
 
 # Tests which are supposed to be run with valgrind
 SET(VALGRIND_PLATFORMS

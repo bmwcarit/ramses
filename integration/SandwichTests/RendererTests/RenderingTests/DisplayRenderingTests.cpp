@@ -22,17 +22,14 @@ void DisplayRenderingTests::setUpTestCases(RendererTestsFramework& testFramework
     ramses::DisplayConfig displayConfig1 = RendererTestUtils::CreateTestDisplayConfig(0);
     displayConfig1.setWindowRectangle(0, 0, 128u, 64u);
     displayConfig1.setPerspectiveProjection(19.f, 128.f / 64.f, 0.1f, 1500.f);
-    displayConfig1.setIntegrityEGLDisplayID(15);
 
     ramses::DisplayConfig displayConfig2 = RendererTestUtils::CreateTestDisplayConfig(1);
     displayConfig2.setWindowRectangle(0, 0, 128u, 64u);
     displayConfig2.setPerspectiveProjection(19.f, 128.f / 64.f, 0.1f, 1500.f);
-    displayConfig2.setIntegrityEGLDisplayID(16);
 
     ramses::DisplayConfig displayConfig3 = RendererTestUtils::CreateTestDisplayConfig(2);
     displayConfig3.setWindowRectangle(0, 0, 128u, 64u);
     displayConfig3.setPerspectiveProjection(19.f, 128.f / 64.f, 0.1f, 1500.f);
-    displayConfig3.setIntegrityEGLDisplayID(17);
     displayConfig3.enableWarpingPostEffect();
 
     testFramework.createTestCase(DisplayTest_TwoScenes, *this, "DisplayRendererTest_TwoScenes").m_displayConfigs.push_back(displayConfig1);

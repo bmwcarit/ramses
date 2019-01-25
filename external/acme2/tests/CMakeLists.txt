@@ -157,6 +157,9 @@ ENDFUNCTION()
 #test7 exe_sharedLibrary_dependingOnChainOfObjectLibraries
 #test8 executable_static_static
 
+set(GIT_COMMIT_HASH "abcdef")
+set(GIT_COMMIT_COUNT "123")
+
 ACME2_PROJECT(
     #==========================================================================
     # project metadata

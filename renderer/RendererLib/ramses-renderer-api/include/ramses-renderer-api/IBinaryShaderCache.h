@@ -10,7 +10,7 @@
 #define RAMSES_RENDERERAPI_IBINARYSHADERCACHE_H
 
 #include "Types.h"
-#include "APIExport.h"
+#include "ramses-framework-api/APIExport.h"
 
 namespace ramses
 {

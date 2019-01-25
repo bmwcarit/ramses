@@ -162,7 +162,7 @@ namespace ramses_internal
             {
                 SCOPED_TRACE(i);
                 ASSERT_TRUE(before[i].getResourceObject() != nullptr);
-                ASSERT_TRUE(after[i].get() != nullptr);
+                ASSERT_TRUE(after[i] != nullptr);
                 const IResource& beforeRes = *before[i].getResourceObject();
                 const IResource& afterRes = *after[i];
                 CompareResourceValues(*beforeRes.convertTo<TestResource>(), *afterRes.convertTo<TestResource>());

@@ -59,9 +59,6 @@ namespace ramses_internal
         HeapArray<Byte> a(4, data);
         HeapArray<Byte> b(std::move(a));
 
-        EXPECT_TRUE(a.data() == nullptr);
-        EXPECT_EQ(0u, a.size());
-
         EXPECT_TRUE(b.data() != nullptr);
         ASSERT_EQ(4u, b.size());
         EXPECT_EQ(0, PlatformMemory::Compare(b.data(), data, 4));
@@ -73,9 +70,6 @@ namespace ramses_internal
         HeapArray<Byte> a(4, data);
         HeapArray<Byte> b;
         b = std::move(a);
-
-        EXPECT_TRUE(a.data() == nullptr);
-        EXPECT_EQ(0u, a.size());
 
         EXPECT_TRUE(b.data() != nullptr);
         ASSERT_EQ(4u, b.size());

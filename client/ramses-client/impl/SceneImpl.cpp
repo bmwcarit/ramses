@@ -92,7 +92,6 @@
 #include "PlatformAbstraction/PlatformMath.h"
 #include "Utils/TextureMathUtils.h"
 
-#include "Common/Cpp11Macros.h"
 #include <array>
 
 namespace ramses
@@ -1307,13 +1306,8 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t SceneImpl::flush(ESceneFlushMode flushMode, sceneVersionTag_t sceneVersion)
+    status_t SceneImpl::flush(sceneVersionTag_t sceneVersion)
     {
-        if (flushMode != ESceneFlushMode_SynchronizedWithResources)
-        {
-            return addErrorEntry("Scene::flush: Unknown flushMode");
-        }
-
         if (m_nextSceneVersion != InvalidSceneVersionTag && sceneVersion == InvalidSceneVersionTag)
         {
             sceneVersion = m_nextSceneVersion;
@@ -1328,9 +1322,9 @@ namespace ramses
 
         ramses_internal::SceneCommandExecutor::Execute(*this, m_commandBuffer);
         applyHierarchicalVisibility();
-        const ramses_internal::ESceneFlushMode internalMode = SceneUtils::GetSceneFlushModeInternal(flushMode);
+        const ramses_internal::ESceneFlushMode internalMode = ramses_internal::ESceneFlushMode_Synchronous;
 
-        const auto timestampOfFlushCall = ramses_internal::FlushTime::Clock::time_point(std::chrono::milliseconds(ramses_internal::PlatformTime::GetMillisecondsAbsolute()));
+        const auto timestampOfFlushCall = ramses_internal::FlushTime::Clock::now();
         const ramses_internal::FlushTimeInformation flushTimeInfo { m_expirationTimestamp, timestampOfFlushCall };
 
         getClientImpl().getClientApplication().flush(m_scene.getSceneId(), internalMode, flushTimeInfo);

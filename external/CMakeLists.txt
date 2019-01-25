@@ -25,13 +25,17 @@ IF(ramses-sdk_BUILD_TESTS AND NOT TARGET gmock)
         target_compile_options(gtest PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-field-initializers>)
         target_compile_options(gmock PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-field-initializers>)
 
-        ramses_move_targets_to_folder("external" gmock gmock_main gtest gtest_main)
+        ACME_FOLDERIZE_TARGETS(gmock gmock_main gtest gtest_main)
         ACME_INFO("+ googletest (custom)")
     ENDIF()
-
 ELSE()
-    ACME_INFO("- googletest")
+    ACME_INFO("+ googletest (external)")
 ENDIF()
+
+add_library(ramses-gmock INTERFACE)
+add_library(ramses-gmock-main INTERFACE)
+target_link_libraries(ramses-gmock INTERFACE gmock gtest)
+target_link_libraries(ramses-gmock-main INTERFACE gmock_main gtest)
 
 ADD_SUBDIRECTORY(capu)
 
@@ -79,18 +83,13 @@ IF (ramses-sdk_ALLOW_PLATFORM_FREETYPE)
     find_package(FreetypeAndHarfbuzz QUIET)
 ENDIF()
 IF (ramses-sdk_ALLOW_CUSTOM_FREETYPE AND NOT freetype_FOUND)
-    # config and include harfbuzz
-    set(SKIP_INSTALL_HEADERS TRUE)
-    if (ramses-sdk_INSTALL_STATIC_LIBS)
-        set(SKIP_INSTALL_ALL OFF)
-    else()
-        set(SKIP_INSTALL_ALL ON)
-    endif()
 
-    # Set Harfbuzz cache variables to configure its freetype dependencies
-    set(FREETYPE2_HEADER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/freetype/include")
-    set(FREETYPE2_ROOT_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/freetype")
-    set(FREETYPE2_LIBRARIES freetype)
+    # Don't install anything from Freetype and Harfbuzz, manual install later
+    # Reason: the libraries are not meant to be build as submodule together
+    set(SKIP_INSTALL_ALL ON)
+
+    # no 'd' suffix on debug libs
+    set(DISABLE_FORCE_DEBUG_POSTFIX TRUE)
 
     # newer harfbuzz versions use include (FindFreetype): provide an adhoc find script
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/FindFreetype.cmake"
@@ -101,6 +100,12 @@ IF (ramses-sdk_ALLOW_CUSTOM_FREETYPE AND NOT freetype_FOUND)
     # enable freetype in harfbuzz
     set(HB_HAVE_FREETYPE ON CACHE BOOL "Enable freetype interop helpers" FORCE)
 
+    # save c/cxx flags and remove -flto (freetype/harfbuzz should not be built with LTO)
+    set(OLD_CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    set(OLD_CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+    REMOVE_FROM_FLAGS("${CMAKE_CXX_FLAGS}" "-flto" CMAKE_CXX_FLAGS)
+    REMOVE_FROM_FLAGS("${CMAKE_C_FLAGS}" "-flto" CMAKE_C_FLAGS)
+
     # save and restore module search path
     set(OLD_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
     set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_MODULE_PATH})
@@ -108,6 +113,13 @@ IF (ramses-sdk_ALLOW_CUSTOM_FREETYPE AND NOT freetype_FOUND)
     ADD_SUBDIRECTORY(harfbuzz)
     ACME_INFO("+ harfbuzz")
 
+    IF("${TARGET_OS}" STREQUAL "Integrity")
+        # define __restrict to nothing because not known to integrity compiler
+        TARGET_COMPILE_DEFINITIONS(harfbuzz PRIVATE "-D__restrict=")
+    ENDIF()
+
+    # remove find script again
+    file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/FindFreetype.cmake")
     set(CMAKE_MODULE_PATH ${OLD_CMAKE_MODULE_PATH})
 
     # config and include freetype
@@ -116,10 +128,31 @@ IF (ramses-sdk_ALLOW_CUSTOM_FREETYPE AND NOT freetype_FOUND)
 
     target_include_directories(freetype INTERFACE "freetype/include" "${CMAKE_CURRENT_BINARY_DIR}/harfbuzz/src")
 
-    ramses_move_targets_to_folder("external" freetype harfbuzz)
+    # Manually install only static libs for static RAMSES builds
+    # Not possible to use CMake targets because of complicated CMake scripts of each lib
+    # TODO(tobias/violin): try with newer versions of FT/HB to use CMake install targets
+    if(${ramses-sdk_INSTALL_STATIC_LIBS})
+        if (${CMAKE_VERSION} VERSION_LESS "2.9")  # aka not 2.8.x
+            install(FILES
+                ${CMAKE_CURRENT_BINARY_DIR}/freetype/libfreetype.a
+                ${CMAKE_CURRENT_BINARY_DIR}/harfbuzz/libharfbuzz.a
+                DESTINATION ${PROJECT_INSTALL_STATIC_LIB})
+        else()
+            install(FILES
+                $<TARGET_FILE:freetype>
+                $<TARGET_FILE:harfbuzz>
+                DESTINATION ${PROJECT_INSTALL_STATIC_LIB})
+         endif()
+    endif()
+
+    # restore c/cxx flags
+    set(CMAKE_CXX_FLAGS "${OLD_CMAKE_CXX_FLAGS}")
+    set(CMAKE_C_FLAGS "${OLD_CMAKE_C_FLAGS}")
+
+    ACME_FOLDERIZE_TARGETS(freetype harfbuzz)
     foreach (tgt dist harfbuzz-subset hb-ot-tag main test-buffer-serialize test-size-params test-size-params test-test test-unicode-ranges test-would-substitute)
         if (TARGET ${tgt})
-            set_property(TARGET ${tgt} PROPERTY FOLDER "external")
+            ACME_FOLDERIZE_TARGETS(${tgt})
             set_target_properties(${tgt} PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
         endif()
     endforeach()
@@ -177,7 +210,7 @@ ENDIF()
 IF (lz4_FOUND)
     ACME_INFO("+ lz4 (system)")
 ELSE()
-  SET(LZ4_DIR lz4-r131)
+  SET(LZ4_DIR lz4)
   ACME_MODULE(
 
     #==========================================================================

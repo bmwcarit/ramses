@@ -16,6 +16,7 @@
 #include "StreamTextureRendererEventTests.h"
 #include "OffscreenBuffersWithStreamTexturesTests.h"
 #include "WaylandApplicationWithRamsesRendererTests.h"
+#include "EmbeddedCompositingTestsWithFD.h"
 
 namespace ramses_internal
 {
@@ -24,8 +25,9 @@ namespace ramses_internal
     class EmbeddedCompositingTests
     {
     public:
-        EmbeddedCompositingTests(TestForkingController& testForkingController, const StringVector& filterIn, const StringVector& filterOut, bool generateScreenshots, const ramses::RamsesFrameworkConfig& config)
+        EmbeddedCompositingTests(TestForkingController& testForkingController, const String& waylandSocket, const StringVector& filterIn, const StringVector& filterOut, bool generateScreenshots, const ramses::RamsesFrameworkConfig& config)
             : m_testFramework(generateScreenshots, testForkingController, config)
+            , m_embeddedCompositingTestsWithFD(waylandSocket)
         {
             m_singleStreamTextureTests.setUpEmbeddedCompositingTestCases(m_testFramework);
             m_multiStreamTextureTests.setUpEmbeddedCompositingTestCases(m_testFramework);
@@ -33,6 +35,7 @@ namespace ramses_internal
             m_streamTextureRendererEventTests.setUpEmbeddedCompositingTestCases(m_testFramework);
             m_offscreenBuffersWithStreamTexturesTests.setUpEmbeddedCompositingTestCases(m_testFramework);
             m_waylandApplicationWithRamsesRendererTests.setUpEmbeddedCompositingTestCases(m_testFramework);
+            m_embeddedCompositingTestsWithFD.setUpEmbeddedCompositingTestCases(m_testFramework);
 
             m_testFramework.filterTestCases(filterIn, filterOut);
         }
@@ -57,6 +60,7 @@ namespace ramses_internal
         StreamTextureRendererEventTests             m_streamTextureRendererEventTests;
         OffscreenBuffersWithStreamTexturesTests     m_offscreenBuffersWithStreamTexturesTests;
         WaylandApplicationWithRamsesRendererTests   m_waylandApplicationWithRamsesRendererTests;
+        EmbeddedCompositingTestsWithFD              m_embeddedCompositingTestsWithFD;
     };
 }
 

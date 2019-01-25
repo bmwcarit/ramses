@@ -76,7 +76,7 @@ namespace ramses_internal
         virtual void cullMode            (ECullMode mode) = 0;
         virtual void depthFunc           (EDepthFunc func) = 0;
         virtual void depthWrite          (EDepthWrite flag) = 0;
-        virtual void stencilFunc         (EStencilFunc func, UInt32 ref, UInt8 mask) = 0;
+        virtual void stencilFunc         (EStencilFunc func, UInt8 ref, UInt8 mask) = 0;
         virtual void stencilOp           (EStencilOp sfail, EStencilOp dpfail, EStencilOp dppass) = 0;
         virtual void drawMode            (EDrawMode mode) = 0;
         virtual void setViewport         (UInt32 x, UInt32 y, UInt32 width, UInt32 height) = 0;

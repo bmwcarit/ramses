@@ -20,7 +20,7 @@
 #include "ramses-capu/Config.h"
 #include "ramses-capu/os/StringUtils.h"
 #include "ramses-capu/container/Hash.h"
-#include "ramses-capu/container/vector.h"
+#include <vector>
 #include <algorithm>
 #include <cctype>
 
@@ -296,7 +296,7 @@ namespace ramses_capu
         void initFromGivenData(const char* data, const uint_t end, const uint_t start, uint_t size);
         String& appendWithKnownLength(const char* other, uint_t length);
 
-        vector<char> m_data;
+        std::vector<char> m_data;
         uint_t m_size;
     };
 

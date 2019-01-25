@@ -16,7 +16,6 @@
 #include "EmbeddedCompositor_Wayland/WaylandCallbackResource.h"
 #include "EmbeddedCompositor_Wayland/WaylandBufferResource.h"
 #include "Utils/LogMacros.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {
@@ -252,10 +251,9 @@ namespace ramses_internal
                       << getIviSurfaceId().getValue());
 
         // Transfers pending callbacks to list of frame_callbacks.
-        ramses_foreach(m_pendingCallbacks, it)
-        {
-            m_frameCallbacks.push_back(*it);
-        }
+        for(const auto& callback : m_pendingCallbacks)
+            m_frameCallbacks.push_back(callback);
+
         m_pendingCallbacks.clear();
 
         // If an attach is pending, current buffer is updated with pending one.

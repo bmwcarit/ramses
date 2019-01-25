@@ -18,7 +18,6 @@
 #include "RamsesObjectTypeUtils.h"
 
 #include "Scene/ClientScene.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses
 {
@@ -128,10 +127,9 @@ namespace ramses
         }
         else
         {
-            ramses_foreach(m_renderGroups, renderGroupIt)
+            for(const auto& renderGroup : m_renderGroups)
             {
-                const RenderGroupImpl* renderGroupImpl = *renderGroupIt;
-                if (addValidationOfDependentObject(indent, *renderGroupImpl) != StatusOK)
+                if (addValidationOfDependentObject(indent, *renderGroup) != StatusOK)
                 {
                     status = getValidationErrorStatus();
                 }

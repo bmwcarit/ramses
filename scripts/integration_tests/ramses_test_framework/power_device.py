@@ -8,9 +8,25 @@
 
 import telnetlib
 import time
+from abc import ABCMeta, abstractmethod
+
 from ramses_test_framework import log
 
+
 class PowerDevice:
+    __metaclass__ = ABCMeta
+
+    def __init__(self, url, username, password):
+        self.url = url
+        self.username = username
+        self.password = password
+
+    @abstractmethod
+    def switch(self, outletNr, on):
+        pass
+
+
+class NETIOPowerDevice(PowerDevice):
     def __init__(self, url, username, password):
         self.url = url
         self.username = username
@@ -45,5 +61,4 @@ class PowerDevice:
         time.sleep(1)
         log.info(telnet_conn.read_eager())
 
-        telnet_conn.close()
         return True

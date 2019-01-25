@@ -62,8 +62,8 @@ namespace ramses_internal
         void setWaylandDisplay(const String& waylandDisplay);
         const String& getWaylandDisplay() const;
 
-        IntegrityEglDisplayId getIntegrityEGLDisplayID() const;
-        void setIntegrityEGLDisplayID(IntegrityEglDisplayId eglDisplayID);
+        IntegrityRGLDeviceUnit getIntegrityRGLDeviceUnit() const;
+        void setIntegrityRGLDeviceUnit(IntegrityRGLDeviceUnit rglDeviceUnit);
 
         void setWindowsWindowHandle(WindowsWindowHandle hwnd);
         WindowsWindowHandle getWindowsWindowHandle() const;
@@ -112,7 +112,7 @@ namespace ramses_internal
 
         WaylandIviLayerId m_waylandIviLayerID = InvalidWaylandIviLayerId;
         WaylandIviSurfaceId m_waylandIviSurfaceID = InvalidWaylandIviSurfaceId;
-        IntegrityEglDisplayId m_integrityEglDisplayID = InvalidIntegrityEglDisplayId;
+        IntegrityRGLDeviceUnit m_integrityRGLDeviceUnit = InvalidIntegrityRGLDeviceUnit;
         WindowsWindowHandle m_windowsWindowHandle = InvalidWindowsWindowHandle;
         Bool m_startVisibleIvi = false;
         String m_waylandDisplay;

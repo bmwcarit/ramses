@@ -28,11 +28,9 @@ namespace ramses_internal
         TestSignalHandler::RegisterSignalHandlersForCurrentProcess("EmbeddedCompositingTestsFramework");
     }
 
-    EmbeddedCompositingTestsFramework::~EmbeddedCompositingTestsFramework()
+    void EmbeddedCompositingTestsFramework::startTestApplication()
     {
-        m_testForkingController.deinitialize();
-
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::~EmbeddedCompositingTestsFramework forking controller terminated");
+        m_testForkingController.startTestApplication();
     }
 
     void EmbeddedCompositingTestsFramework::startTestApplicationAndWaitUntilConnected()
@@ -403,6 +401,16 @@ namespace ramses_internal
     void EmbeddedCompositingTestsFramework::killTestApplication()
     {
         m_testForkingController.killTestApplication();
+    }
+
+    void EmbeddedCompositingTestsFramework::setEnvironmentVariableWaylandSocket()
+    {
+        m_testForkingController.setEnvironmentVariableWaylandSocket();
+    }
+
+    void EmbeddedCompositingTestsFramework::setEnvironmentVariableWaylandDisplay()
+    {
+        m_testForkingController.setEnvironmentVariableWaylandDisplay();
     }
 
     UInt32 EmbeddedCompositingTestsFramework::getNumberOfAllocatedSHMBufferFromTestApplication()

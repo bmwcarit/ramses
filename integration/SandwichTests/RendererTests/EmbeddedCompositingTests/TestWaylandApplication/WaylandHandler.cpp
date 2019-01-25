@@ -9,8 +9,7 @@
 #include "WaylandHandler.h"
 #include "SHMBuffer.h"
 #include "Utils/LogMacros.h"
-#include "Common/Cpp11Macros.h"
-#include "WaylandUtilities/WaylandUtilities.h"
+#include "WaylandUtilities/WaylandEnvironmentUtils.h"
 #include <GLES3/gl3.h>
 
 bool WaylandHandler::init()
@@ -276,7 +275,7 @@ bool WaylandHandler::setupWayland()
 {
     LOG_INFO(ramses_internal::CONTEXT_RENDERER, "WaylandHandler::setupWayland(): will connect to display");
 
-    assert(ramses_internal::WaylandUtilities::IsEnvironmentInProperState());
+    assert(ramses_internal::WaylandEnvironmentUtils::IsEnvironmentInProperState());
     wayland.display = wl_display_connect(NULL);
     if (wayland.display == nullptr)
     {
@@ -575,19 +574,18 @@ bool WaylandHandler::getUseEGL(ramses_internal::TestApplicationSurfaceId surface
 
 void WaylandHandler::getWindowSize(ramses_internal::TestApplicationSurfaceId surfaceId, uint32_t& width, uint32_t& height) const
 {
-    WaylandWindow& window = getWindow(surfaceId);
+    WaylandWindow window = getWindow(surfaceId);
     width = window.width;
     height = window.height;
 }
 
 SHMBuffer* WaylandHandler::getFreeSHMBuffer(uint32_t width, uint32_t height)
 {
-    ramses_foreach(m_shmBuffer, it)
+    for(const auto shBuffer : m_shmBuffer)
     {
-        SHMBuffer* buffer = *it;
-        if (buffer->isFree() && buffer->getWidth() == width && buffer->getHeight() == height)
+        if (shBuffer->isFree() && shBuffer->getWidth() == width && shBuffer->getHeight() == height)
         {
-            return buffer;
+            return shBuffer;
         }
     }
 
@@ -598,10 +596,9 @@ SHMBuffer* WaylandHandler::getFreeSHMBuffer(uint32_t width, uint32_t height)
 
 void WaylandHandler::deleteSHMBuffers()
 {
-    ramses_foreach(m_shmBuffer, it)
+    for(const auto shBuffer : m_shmBuffer)
     {
-        SHMBuffer* buffer = *it;
-        delete buffer;
+        delete shBuffer;
     }
     m_shmBuffer.clear();
     if (wayland.display)

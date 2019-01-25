@@ -9,6 +9,7 @@
 #ifndef RAMSES_TESTUTILS_TESTRANDOM_H
 #define RAMSES_TESTUTILS_TESTRANDOM_H
 
+#include "PlatformAbstraction/PlatformTypes.h"
 #include <random>
 
 namespace ramses_internal

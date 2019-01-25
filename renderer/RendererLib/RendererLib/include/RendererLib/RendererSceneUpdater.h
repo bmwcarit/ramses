@@ -81,7 +81,7 @@ namespace ramses_internal
     private:
         void destroyScene(SceneId sceneID);
         void unloadSceneResourcesAndUnrefSceneResources(SceneId sceneId);
-        void markClientAndSceneResourcesForReupload(SceneId sceneId);
+        bool markClientAndSceneResourcesForReupload(SceneId sceneId);
         void appendPendingSceneActions(SceneId sceneId, SceneActionCollection& actionsForScene);
 
         UInt32 updateScenePendingFlushes(SceneId sceneID, StagingInfo& stagingInfo);

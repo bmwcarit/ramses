@@ -24,7 +24,6 @@
 #include "RendererLib/SceneExpirationMonitor.h"
 #include "Platform_Base/PlatformFactory_Base.h"
 #include "Utils/LogMacros.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {
@@ -771,9 +770,9 @@ namespace ramses_internal
         if (!displayScreenshots.empty())
             ActivateDisplayContext(display, activeDisplay, controller);
 
-        ramses_foreach(displayScreenshots, shotIt)
+        for(const auto& screenshot : displayScreenshots)
         {
-            m_processedScreenshots.push_back(*shotIt);
+            m_processedScreenshots.push_back(screenshot);
             ScreenshotInfo& result = m_processedScreenshots.back();
             result.success = controller.readPixels(result.rectangle.x, result.rectangle.y, result.rectangle.width, result.rectangle.height, result.pixelData);
         }

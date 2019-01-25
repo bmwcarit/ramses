@@ -10,6 +10,7 @@
 #define RAMSES_SCENEEXPIRATIONMONITOR_H
 
 #include "SceneAPI/SceneId.h"
+#include "SceneAPI/SceneVersionTag.h"
 #include "Components/FlushTimeInformation.h"
 #include "Collections/HashMap.h"
 #include <chrono>
@@ -27,6 +28,7 @@ namespace ramses_internal
 
         void onFlushApplied(SceneId sceneId, FlushTime::Clock::time_point expirationTimestamp);
         void onRendered(SceneId sceneId);
+        void onHidden(SceneId sceneId);
         void checkExpiredScenes(FlushTime::Clock::time_point currentTime);
 
         void stopMonitoringScene(SceneId sceneId);
@@ -34,10 +36,16 @@ namespace ramses_internal
         FlushTime::Clock::time_point getExpirationTimestampOfRenderedScene(SceneId sceneId) const;
 
     private:
+        struct TimeStampTag
+        {
+            FlushTime::Clock::time_point ts = FlushTime::InvalidTimestamp;
+            SceneVersionTag tag;
+        };
+
         struct SceneTimestamps
         {
-            Vector<FlushTime::Clock::time_point> expirationTSOfAppliedFlushesSinceRender;
-            FlushTime::Clock::time_point expirationTSOfRenderedScene = FlushTime::InvalidTimestamp;
+            TimeStampTag expirationTSOfLastAppliedFlush;
+            TimeStampTag expirationTSOfRenderedScene;
             bool inExpiredState = false;
         };
         HashMap<SceneId, SceneTimestamps> m_sceneTimestamps;

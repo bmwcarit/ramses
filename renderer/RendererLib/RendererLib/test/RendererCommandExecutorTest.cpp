@@ -188,7 +188,7 @@ public:
         EXPECT_CALL(getRenderBackendMock(displayHandle).deviceMock, activateRenderTarget(_)).Times(callCountExpectation);
         EXPECT_CALL(getRenderBackendMock(displayHandle).deviceMock, colorMask(true, true, true, true)).Times(callCountExpectation);
         EXPECT_CALL(getRenderBackendMock(displayHandle).deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f })).Times(callCountExpectation);
-        EXPECT_CALL(getRenderBackendMock(displayHandle).deviceMock, depthWrite(EDepthWrite_Enabled)).Times(callCountExpectation);
+        EXPECT_CALL(getRenderBackendMock(displayHandle).deviceMock, depthWrite(EDepthWrite::Enabled)).Times(callCountExpectation);
         EXPECT_CALL(getRenderBackendMock(displayHandle).deviceMock, clear(_)).Times(callCountExpectation);
         if (interruptible)
             EXPECT_CALL(getRenderBackendMock(displayHandle).deviceMock, pairRenderTargetsForDoubleBuffering(_, _));
@@ -858,7 +858,7 @@ TEST_P(ARendererCommandExecutor, executionClearsSceneActionsRegardlessOfStateOfT
     SceneActionCollectionCreator creator(actions);
     creator.allocateNode(0u, NodeHandle(1u));
     creator.flush(1u, false, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
-    m_commandBuffer.enqueueActionsForScene(sceneSubscribedId, std::move(actions));
+    m_commandBuffer.enqueueActionsForScene(sceneSubscribedId, actions.copy());
     m_commandBuffer.enqueueActionsForScene(sceneNotSubscribedId, std::move(actions));
 
     EXPECT_CALL(m_sceneUpdater, handleSceneActions(sceneSubscribedId, _));
@@ -960,7 +960,7 @@ TEST_P(ARendererCommandExecutor, callsSystemCompositorDestroySurface)
 
 TEST_P(ARendererCommandExecutor, callsSystemCompositorScreenshot)
 {
-    const ramses_internal::String firstName("somefilename.bmp");
+    const ramses_internal::String firstName("somefilename.png");
     const ramses_internal::String otherName("somethingelse.png");
 
     m_commandBuffer.systemCompositorControllerScreenshot(firstName);
@@ -1005,5 +1005,16 @@ TEST_P(ARendererCommandExecutor, setFrameTimerLimits)
     EXPECT_EQ(std::chrono::microseconds(1u), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::ClientResourcesUpload));
     EXPECT_EQ(std::chrono::microseconds(2u), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneActionsApply));
     EXPECT_EQ(std::chrono::microseconds(3u), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::OffscreenBufferRender));
+}
+
+TEST_P(ARendererCommandExecutor, setSceneResourceUploadTimer)
+{
+    //default values
+    ASSERT_EQ(PlatformTime::InfiniteDuration, m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneResourcesUpload));
+
+    m_commandBuffer.setSceneResourceTimerLimit(1u);
+    doCommandExecutorLoop();
+
+    EXPECT_EQ(std::chrono::microseconds(1u), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneResourcesUpload));
 }
 }

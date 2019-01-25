@@ -27,6 +27,7 @@ namespace ramses_internal
         void    SetVariable(WaylandEnvironmentVariable variableName, const String& value);
         void    UnsetVariable(WaylandEnvironmentVariable variableName);
         String  GetVariable(WaylandEnvironmentVariable variableName);
+        bool    IsEnvironmentInProperState();
     };
 }
 

@@ -97,7 +97,7 @@ namespace ramses_internal
         "DestroyBlitPass",
         "CreateDataBuffer",
         "UpdateDataBuffer",
-        "DestroyDataBuffer"
+        "DestroyDataBuffer",
         "CreateTextureBuffer",
         "UpdateTextureBuffer",
         "DestroyTextureBuffer"

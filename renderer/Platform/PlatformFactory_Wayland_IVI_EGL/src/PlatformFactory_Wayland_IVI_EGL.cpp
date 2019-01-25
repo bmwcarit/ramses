@@ -45,9 +45,11 @@ namespace ramses_internal
 
         Window_Wayland_IVI* platformWindow = new Window_Wayland_IVI(displayConfig, windowEventHandler, m_windows.size());
         if(nullptr != addPlatformWindow(platformWindow))
+        {
             m_windowEventsPollingManager.addWindow(platformWindow);
-
-        return platformWindow;
+            return platformWindow;
+        }
+        return nullptr;
     }
 
     Bool PlatformFactory_Wayland_IVI_EGL::destroyWindow(IWindow &window)

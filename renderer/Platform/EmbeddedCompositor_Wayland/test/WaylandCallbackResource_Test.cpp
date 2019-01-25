@@ -7,9 +7,10 @@
 //  -------------------------------------------------------------------------
 
 #include "EmbeddedCompositor_Wayland/WaylandCallbackResource.h"
-#include "WaylandUtilities/UnixDomainSocketHelper.h"
+#include "EmbeddedCompositor_Wayland/WaylandDisplay.h"
+#include "WaylandUtilities/UnixDomainSocket.h"
+#include "WaylandUtilities/WaylandEnvironmentUtils.h"
 #include "PlatformAbstraction/PlatformThread.h"
-#include "WaylandUtilities/WaylandUtilities.h"
 #include "Utils/ThreadBarrier.h"
 #include "gtest/gtest.h"
 #include "wayland-client.h"
@@ -127,7 +128,9 @@ namespace ramses_internal
     public:
         virtual void SetUp() override
         {
-            m_display = wl_display_create();
+            const int serverFD = m_socket.createBoundFileDescriptor();
+            m_waylandDisplay.init("", "", serverFD);
+            m_display = m_waylandDisplay.get();
             ASSERT_TRUE(m_display != nullptr);
         }
 
@@ -135,15 +138,10 @@ namespace ramses_internal
         {
             if (m_client != nullptr)
                 wl_client_destroy(m_client);
-            wl_display_destroy(m_display);
         }
 
         void startClientAndDispatchEventsUntilClientHasFinished()
         {
-            const int serverFD = m_socket.createBoundFileDescriptor();
-
-            WaylandUtilities::DisplayAddSocketFD(m_display, serverFD);
-
             wl_global* outputGlobal = wl_global_create(m_display, &wl_display_interface, 1, this, DisplayBindCallback);
 
             const int clientFD = m_socket.createConnectedFileDescriptor(false);
@@ -198,8 +196,9 @@ namespace ramses_internal
             }
         } m_displayInterface;
 
+        WaylandDisplay         m_waylandDisplay;
         wl_display*            m_display = nullptr;
-        UnixDomainSocketHelper m_socket  = UnixDomainSocketHelper("testingSocket");
+        UnixDomainSocket       m_socket  = UnixDomainSocket("testingSocket", WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir));
         wl_client*             m_client  = nullptr;
         ClientRunnable         m_clientRunnable;
 
@@ -216,7 +215,7 @@ namespace ramses_internal
 
     TEST_F(AWaylandCallbackResource, CanBeCreatedAndDestroyed)
     {
-        const int serverFD = m_socket.createBoundFileDescriptor();
+        const int serverFD = m_socket.getBoundFileDescriptor();
         m_client = wl_client_create(m_display, serverFD);
         ASSERT_TRUE(m_client != nullptr);
         wl_resource* resource = wl_resource_create(m_client, &wl_callback_interface, 1, 0);

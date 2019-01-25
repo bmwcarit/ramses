@@ -47,7 +47,7 @@ namespace ramses_internal
         {
             DeviceResourceHandle vertexBufferHandle = DeviceResourceHandle::Invalid();
             DeviceResourceHandle indexBufferHandle = DeviceResourceHandle::Invalid();
-            EDrawMode drawMode = EDrawMode::EDrawMode_Triangles;
+            EDrawMode drawMode = EDrawMode::Triangles;
             UInt32 indexCount = 0;
         };
 

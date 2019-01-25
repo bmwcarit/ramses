@@ -136,7 +136,7 @@ namespace ramses_internal
         }
     }
 
-    void LoggingDevice::stencilFunc(EStencilFunc func, UInt32 ref, UInt8 mask)
+    void LoggingDevice::stencilFunc(EStencilFunc func, UInt8 ref, UInt8 mask)
     {
         if (m_logContext.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
         {

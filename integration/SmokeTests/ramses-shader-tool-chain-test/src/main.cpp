@@ -183,7 +183,7 @@ public:
         bool finishedParsing = false;
         while (!finishedParsing)
         {
-            ramses_internal::Char character;
+            ramses_internal::Char character = 0;
             inputStream.read(&character, 1);
 
             if (character == '\n')

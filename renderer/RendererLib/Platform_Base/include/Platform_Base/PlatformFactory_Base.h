@@ -183,7 +183,7 @@ namespace ramses_internal
         else
         {
             delete window;
-            return 0;
+            return nullptr;
         }
     }
 

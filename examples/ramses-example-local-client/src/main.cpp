@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
     renderer.startThread();
 
     ramses::DisplayConfig displayConfig;
-    displayConfig.setIntegrityEGLDisplayID(0);
+    displayConfig.setIntegrityRGLDeviceUnit(0);
     displayConfig.setWaylandIviSurfaceID(0);
     displayConfig.setWindowIviVisible();
     displayConfig.setWaylandIviLayerID(3);

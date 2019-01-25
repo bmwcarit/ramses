@@ -11,7 +11,7 @@
 
 #include "ramses-framework-api/StatusObject.h"
 #include "ramses-framework-api/IThreadWatchdogNotification.h"
-#include "APIExport.h"
+#include "ramses-framework-api/APIExport.h"
 
 namespace ramses
 {

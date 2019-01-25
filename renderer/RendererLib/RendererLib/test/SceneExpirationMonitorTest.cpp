@@ -142,6 +142,55 @@ TEST_F(ASceneExpirationMonitor, lastTSFromFlushAppliedBecomesRenderedTSWhenScene
     EXPECT_EQ(currentFakeTime + std::chrono::hours(2), expirationMonitor.getExpirationTimestampOfRenderedScene(scene2));
 }
 
+TEST_F(ASceneExpirationMonitor, renderedTSIsResetIfSceneHidden)
+{
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime);
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::hours(1));
+    expirationMonitor.onFlushApplied(scene2, currentFakeTime);
+    expirationMonitor.onFlushApplied(scene2, currentFakeTime + std::chrono::hours(2));
+    EXPECT_EQ(FlushTime::InvalidTimestamp, expirationMonitor.getExpirationTimestampOfRenderedScene(scene1));
+    EXPECT_EQ(FlushTime::InvalidTimestamp, expirationMonitor.getExpirationTimestampOfRenderedScene(scene2));
+
+    expirationMonitor.onRendered(scene1);
+    expirationMonitor.onRendered(scene2);
+    EXPECT_EQ(currentFakeTime + std::chrono::hours(1), expirationMonitor.getExpirationTimestampOfRenderedScene(scene1));
+    EXPECT_EQ(currentFakeTime + std::chrono::hours(2), expirationMonitor.getExpirationTimestampOfRenderedScene(scene2));
+
+    expirationMonitor.onHidden(scene1);
+    EXPECT_EQ(FlushTime::InvalidTimestamp, expirationMonitor.getExpirationTimestampOfRenderedScene(scene1));
+    EXPECT_EQ(currentFakeTime + std::chrono::hours(2), expirationMonitor.getExpirationTimestampOfRenderedScene(scene2));
+
+    expirationMonitor.onHidden(scene2);
+    EXPECT_EQ(FlushTime::InvalidTimestamp, expirationMonitor.getExpirationTimestampOfRenderedScene(scene1));
+    EXPECT_EQ(FlushTime::InvalidTimestamp, expirationMonitor.getExpirationTimestampOfRenderedScene(scene2));
+}
+
+TEST_F(ASceneExpirationMonitor, renderedTSIsTakenFromLastAppliedFlushIfSceneRenderedAgainAfterHidden)
+{
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime);
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::hours(1));
+    expirationMonitor.onFlushApplied(scene2, currentFakeTime);
+    expirationMonitor.onFlushApplied(scene2, currentFakeTime + std::chrono::hours(2));
+    EXPECT_EQ(FlushTime::InvalidTimestamp, expirationMonitor.getExpirationTimestampOfRenderedScene(scene1));
+    EXPECT_EQ(FlushTime::InvalidTimestamp, expirationMonitor.getExpirationTimestampOfRenderedScene(scene2));
+
+    expirationMonitor.onRendered(scene1);
+    expirationMonitor.onRendered(scene2);
+    EXPECT_EQ(currentFakeTime + std::chrono::hours(1), expirationMonitor.getExpirationTimestampOfRenderedScene(scene1));
+    EXPECT_EQ(currentFakeTime + std::chrono::hours(2), expirationMonitor.getExpirationTimestampOfRenderedScene(scene2));
+
+    expirationMonitor.onHidden(scene1);
+    expirationMonitor.onHidden(scene2);
+    EXPECT_EQ(FlushTime::InvalidTimestamp, expirationMonitor.getExpirationTimestampOfRenderedScene(scene1));
+    EXPECT_EQ(FlushTime::InvalidTimestamp, expirationMonitor.getExpirationTimestampOfRenderedScene(scene2));
+
+    // if rendered again, TS becomes valid - taken from last applied flush
+    expirationMonitor.onRendered(scene1);
+    expirationMonitor.onRendered(scene2);
+    EXPECT_EQ(currentFakeTime + std::chrono::hours(1), expirationMonitor.getExpirationTimestampOfRenderedScene(scene1));
+    EXPECT_EQ(currentFakeTime + std::chrono::hours(2), expirationMonitor.getExpirationTimestampOfRenderedScene(scene2));
+}
+
 TEST_F(ASceneExpirationMonitor, doesNotGenerateEventIfLimitNotExceeded)
 {
     expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::milliseconds(1));
@@ -165,12 +214,15 @@ TEST_F(ASceneExpirationMonitor, generatesEventIfAppliedFlushTSExpired)
     expectEvents({ { scene1, ERendererEventType_SceneExpired } });
 }
 
-TEST_F(ASceneExpirationMonitor, generatesEventIfAnyOfAppliedFlushTSExpired)
+TEST_F(ASceneExpirationMonitor, generatesEventIfLastAppliedFlushTSExpired)
 {
     expirationMonitor.onFlushApplied(scene1, FlushTime::InvalidTimestamp);
     expirationMonitor.onFlushApplied(scene1, currentFakeTime);
     expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::hours(1));
+    expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(1));
+    expectNoEvent();
 
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime);
     expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(1));
     expectEvents({ { scene1, ERendererEventType_SceneExpired } });
 }
@@ -183,20 +235,17 @@ TEST_F(ASceneExpirationMonitor, generatesEventIfRenderedTSExpired)
     expectEvents({ {scene1, ERendererEventType_SceneExpired} });
 }
 
-TEST_F(ASceneExpirationMonitor, generatesEventIfAnyOfAppliedFlushTSExpiredEvenIfRenderedTSNotExpired)
+TEST_F(ASceneExpirationMonitor, generatesEventIfLastAppliedFlushTSExpiredEvenIfRenderedTSNotExpired)
 {
     expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::hours(1));
     expirationMonitor.onRendered(scene1);
 
-    expirationMonitor.onFlushApplied(scene1, FlushTime::InvalidTimestamp);
     expirationMonitor.onFlushApplied(scene1, currentFakeTime);
-    expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::hours(1));
-
     expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(1));
     expectEvents({ { scene1, ERendererEventType_SceneExpired } });
 }
 
-TEST_F(ASceneExpirationMonitor, generatesEventIfAnyOfPendingFlushesExpired)
+TEST_F(ASceneExpirationMonitor, generatesEventIfLastPendingFlushExpired)
 {
     // create some pending flushes
     auto& pendingFlushes = rendererScenes.getStagingInfo(scene1).pendingFlushes;
@@ -204,7 +253,11 @@ TEST_F(ASceneExpirationMonitor, generatesEventIfAnyOfPendingFlushesExpired)
     pendingFlushes[0].timeInfo.expirationTimestamp = FlushTime::InvalidTimestamp;
     pendingFlushes[1].timeInfo.expirationTimestamp = currentFakeTime;
     pendingFlushes[2].timeInfo.expirationTimestamp = currentFakeTime + std::chrono::hours(1);
+    expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(1));
+    expectNoEvent();
 
+    pendingFlushes.push_back({});
+    pendingFlushes[3].timeInfo.expirationTimestamp = currentFakeTime;
     expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(1));
     expectEvents({ { scene1, ERendererEventType_SceneExpired } });
 }
@@ -220,7 +273,10 @@ TEST_F(ASceneExpirationMonitor, generatesEventIfAnyOfPendingFlushesExpiredEvenIf
     pendingFlushes[0].timeInfo.expirationTimestamp = FlushTime::InvalidTimestamp;
     pendingFlushes[1].timeInfo.expirationTimestamp = currentFakeTime;
     pendingFlushes[2].timeInfo.expirationTimestamp = currentFakeTime + std::chrono::hours(1);
+    expectNoEvent();
 
+    pendingFlushes.push_back({});
+    pendingFlushes[3].timeInfo.expirationTimestamp = currentFakeTime;
     expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(1));
     expectEvents({ { scene1, ERendererEventType_SceneExpired } });
 }
@@ -324,6 +380,10 @@ TEST_F(ASceneExpirationMonitor, generatesRecoveryEventOnlyOnceWhenExceedingStops
 
 TEST_F(ASceneExpirationMonitor, willReportSceneThatKeepsBeingFlushedButNotRendered)
 {
+    // scene must be rendered at least once with valid expiration, only then it can expire
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::milliseconds(1));
+    expirationMonitor.onRendered(scene1);
+
     RendererEventVector events;
     for (size_t i = 0; i < 5; ++i)
     {
@@ -331,6 +391,22 @@ TEST_F(ASceneExpirationMonitor, willReportSceneThatKeepsBeingFlushedButNotRender
         expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(i + 1));
     }
     expectEvents({ { scene1, ERendererEventType_SceneExpired } });
+}
+
+TEST_F(ASceneExpirationMonitor, willNotReportSceneThatKeepsBeingFlushedButHidden)
+{
+    // scene must be rendered at least once with valid expiration, only then it can expire
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::milliseconds(1));
+    expirationMonitor.onRendered(scene1);
+    expirationMonitor.onHidden(scene1);
+
+    RendererEventVector events;
+    for (size_t i = 0; i < 5; ++i)
+    {
+        expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::milliseconds(i) + std::chrono::milliseconds(2));
+        expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(i + 1));
+    }
+    expectNoEvent();
 }
 
 TEST_F(ASceneExpirationMonitor, willReportSceneThatKeepsBeingRenderedButNotFlushed)
@@ -344,6 +420,43 @@ TEST_F(ASceneExpirationMonitor, willReportSceneThatKeepsBeingRenderedButNotFlush
         expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(i));
     }
     expectEvents({ { scene1, ERendererEventType_SceneExpired } });
+}
+
+TEST_F(ASceneExpirationMonitor, doesNotGenerateEventIfLastRenderedTSExpiredButSceneHidden)
+{
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::milliseconds(1));
+    expirationMonitor.onRendered(scene1);
+    expirationMonitor.checkExpiredScenes(currentFakeTime);
+    expectNoEvent();
+
+    expirationMonitor.onHidden(scene1);
+
+    // keep flushing up-to-date, no rendering
+    for (int i = 0; i < 5; ++i)
+    {
+        expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::milliseconds(1 + i));
+        expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(i));
+    }
+    // if renderedTS would be checked there would be expiration event
+    expectNoEvent();
+}
+
+TEST_F(ASceneExpirationMonitor, generatesRecoveryEventIfRenderedTSExpiredButSceneGetsHiddenAndNewFlushesArrive)
+{
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::milliseconds(1));
+    expirationMonitor.onRendered(scene1);
+    expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(2));
+    expectEvents({ { scene1, ERendererEventType_SceneExpired } });
+
+    // hiding alone will not cause recovery - last applied flush still expired
+    expirationMonitor.onHidden(scene1);
+    expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(2));
+    expectNoEvent();
+
+    // keep scene hidden and apply new up-to-date flush
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::milliseconds(5));
+    expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(3));
+    expectEvents({ { scene1, ERendererEventType_SceneRecoveredFromExpiration } });
 }
 
 TEST_F(ASceneExpirationMonitor, confidenceTest_checkingOfOneSceneDoesNotAffectCheckingOfOtherScene)

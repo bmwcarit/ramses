@@ -98,25 +98,10 @@ ENDIF()
 #==============================================================================================
 # set common ACME2 project properties
 #==============================================================================================
-IF(TARGET ${ACME_NAME})
-    SET_PROPERTY(TARGET ${ACME_NAME} PROPERTY LINKER_LANGUAGE     CXX)
-    SET_PROPERTY(TARGET ${ACME_NAME} PROPERTY VERSION             ${ACME_VERSION})
+SET_PROPERTY(TARGET ${ACME_NAME} PROPERTY LINKER_LANGUAGE     CXX)
+SET_PROPERTY(TARGET ${ACME_NAME} PROPERTY VERSION             ${ACME_VERSION})
 
-    # extract and set folder name from path
-    STRING(REGEX REPLACE "${CMAKE_SOURCE_DIR}/" "" ACME_relative_path "${CMAKE_CURRENT_SOURCE_DIR}")
-    STRING(REGEX REPLACE "/[^/]*$" "" ACME_folder_path "${ACME_relative_path}")
-    SET_PROPERTY(TARGET ${ACME_NAME} PROPERTY FOLDER "${ACME_folder_path}")
-ENDIF()
-
-#==============================================================================================
-# set folders for files
-#==============================================================================================
-FOREACH(file_iter ${TARGET_CONTENT})
-    STRING(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" tmp1 "${file_iter}")
-    STRING(REGEX REPLACE "/[^/]*$" "" tmp2 "${tmp1}")
-    STRING(REPLACE "/" "\\" module_internal_path "${tmp2}")
-    SOURCE_GROUP(${module_internal_path} FILES ${file_iter})
-ENDFOREACH()
+ACME_FOLDERIZE_TARGET(${ACME_NAME})
 
 #==============================================================================================
 IF(DEFINED ACME_FILES_RESOURCE)
@@ -194,12 +179,9 @@ FOREACH(DEPENDENCY ${ACME_DEPENDENCIES})
         ENDIF()
 
     ELSE()
-        # search via find script if not _FOUND
+        # ensure it was already found by outside dependency checker
         if (NOT ${DEPENDENCY}_FOUND)
-            FIND_PACKAGE(${DEPENDENCY} QUIET)
-            if (NOT ${DEPENDENCY}_FOUND)
-                ACME_ERROR("required dependency '${DEPENDENCY}' not found!")
-            endif()
+            ACME_ERROR("${ACME_NAME}: Missing dependency ${DEPENDENCY}")
         endif()
 
         # link includes and libs from vars

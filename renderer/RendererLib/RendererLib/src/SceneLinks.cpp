@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererLib/SceneLinks.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {
@@ -26,11 +25,11 @@ namespace ramses_internal
 
     void SceneLinks::removeLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle)
     {
-        ramses_foreach(m_links, linkIt)
+        for (auto link = m_links.begin(); link != m_links.end(); ++link)
         {
-            if (linkIt->consumerSceneId == consumerSceneId && linkIt->consumerSlot == consumerSlotHandle)
+            if (link->consumerSceneId == consumerSceneId && link->consumerSlot == consumerSlotHandle)
             {
-                m_links.erase(linkIt);
+                m_links.erase(link);
                 return;
             }
         }
@@ -40,9 +39,9 @@ namespace ramses_internal
 
     Bool SceneLinks::hasAnyLinksToProvider(SceneId consumerSceneId) const
     {
-        ramses_foreach(m_links, linkIt)
+        for(const auto& link : m_links)
         {
-            if (linkIt->consumerSceneId == consumerSceneId)
+            if (link.consumerSceneId == consumerSceneId)
             {
                 return true;
             }
@@ -53,9 +52,9 @@ namespace ramses_internal
 
     Bool SceneLinks::hasAnyLinksToConsumer(SceneId providerSceneId) const
     {
-        ramses_foreach(m_links, linkIt)
+        for(const auto& link : m_links)
         {
-            if (linkIt->providerSceneId == providerSceneId)
+            if (link.providerSceneId == providerSceneId)
             {
                 return true;
             }
@@ -66,9 +65,9 @@ namespace ramses_internal
 
     Bool SceneLinks::hasLinkedProvider(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle) const
     {
-        ramses_foreach(m_links, linkIt)
+        for(const auto& link : m_links)
         {
-            if (linkIt->consumerSceneId == consumerSceneId && linkIt->consumerSlot == consumerSlotHandle)
+            if (link.consumerSceneId == consumerSceneId && link.consumerSlot == consumerSlotHandle)
             {
                 return true;
             }
@@ -80,22 +79,22 @@ namespace ramses_internal
     void SceneLinks::getLinkedProviders(SceneId consumerSceneId, SceneLinkVector& links) const
     {
         assert(links.empty());
-        ramses_foreach(m_links, linkIt)
+        for(const auto& link : m_links)
         {
-            if (linkIt->consumerSceneId == consumerSceneId)
+            if (link.consumerSceneId == consumerSceneId)
             {
-                links.push_back(*linkIt);
+                links.push_back(link);
             }
         }
     }
 
     const SceneLink& SceneLinks::getLinkedProvider(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle) const
     {
-        ramses_foreach(m_links, linkIt)
+        for(const auto& link : m_links)
         {
-            if (linkIt->consumerSceneId == consumerSceneId && linkIt->consumerSlot == consumerSlotHandle)
+            if (link.consumerSceneId == consumerSceneId && link.consumerSlot == consumerSlotHandle)
             {
-                return *linkIt;
+                return link;
             }
         }
 
@@ -105,9 +104,9 @@ namespace ramses_internal
 
     Bool SceneLinks::hasLinkedConsumers(SceneId providerSceneId, DataSlotHandle providerSlotHandle) const
     {
-        ramses_foreach(m_links, linkIt)
+        for(const auto& link : m_links)
         {
-            if (linkIt->providerSceneId == providerSceneId && linkIt->providerSlot == providerSlotHandle)
+            if (link.providerSceneId == providerSceneId && link.providerSlot == providerSlotHandle)
             {
                 return true;
             }
@@ -119,11 +118,11 @@ namespace ramses_internal
     void SceneLinks::getLinkedConsumers(SceneId providerSceneId, SceneLinkVector& links) const
     {
         assert(links.empty());
-        ramses_foreach(m_links, linkIt)
+        for(const auto& link : m_links)
         {
-            if (linkIt->providerSceneId == providerSceneId)
+            if (link.providerSceneId == providerSceneId)
             {
-                links.push_back(*linkIt);
+                links.push_back(link);
             }
         }
     }
@@ -131,11 +130,11 @@ namespace ramses_internal
     void SceneLinks::getLinkedConsumers(SceneId providerSceneId, DataSlotHandle providerSlotHandle, SceneLinkVector& links) const
     {
         assert(links.empty());
-        ramses_foreach(m_links, linkIt)
+        for(const auto& link : m_links)
         {
-            if (linkIt->providerSceneId == providerSceneId && linkIt->providerSlot == providerSlotHandle)
+            if (link.providerSceneId == providerSceneId && link.providerSlot == providerSlotHandle)
             {
-                links.push_back(*linkIt);
+                links.push_back(link);
             }
         }
     }

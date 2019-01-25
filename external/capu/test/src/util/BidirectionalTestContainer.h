@@ -17,8 +17,9 @@
 #ifndef RAMSES_CAPU_BIDIRECTIONALTESTCONTAINER_H
 #define RAMSES_CAPU_BIDIRECTIONALTESTCONTAINER_H
 
-#include "ramses-capu/container/vector.h"
 #include "ramses-capu/Config.h"
+#include <vector>
+#include <cassert>
 
 namespace ramses_capu
 {
@@ -30,7 +31,7 @@ namespace ramses_capu
             T value;
             char padding[32];
         };
-        vector<TWithPadding> vec;
+        std::vector<TWithPadding> vec;
 
     public:
         BidirectionalTestContainer(uint_t initial_size)
@@ -46,7 +47,7 @@ namespace ramses_capu
         class Iterator : public std::iterator<std::bidirectional_iterator_tag, T>
         {
         public:
-            Iterator(vector<TWithPadding>& v_, uint_t idx_)
+            Iterator(std::vector<TWithPadding>& v_, uint_t idx_)
                 : v(v_), idx(idx_)
             {
             }
@@ -79,7 +80,7 @@ namespace ramses_capu
             }
 
         private:
-            vector<TWithPadding>& v;
+            std::vector<TWithPadding>& v;
             uint_t idx;
         };
 

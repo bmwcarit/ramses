@@ -9,8 +9,8 @@
 #ifndef RAMSES_COMMANDCONTAINER_H
 #define RAMSES_COMMANDCONTAINER_H
 
-#include "Common/Cpp11Macros.h"
 #include "Collections/Vector.h"
+#include <cstdint>
 
 namespace ramses_internal
 {
@@ -75,9 +75,9 @@ namespace ramses_internal
 
         void clear()
         {
-            ramses_foreach(m_commands, cmdIt)
+            for(const auto& cmd : m_commands)
             {
-                delete cmdIt->m_commandData;
+                delete cmd.m_commandData;
             }
             m_commands.clear();
         }

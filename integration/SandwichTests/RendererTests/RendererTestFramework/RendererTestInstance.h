@@ -12,6 +12,7 @@
 #include "LocalTestRenderer.h"
 #include "TestScenes.h"
 #include <chrono>
+#include "Components/FlushTimeInformation.h"
 
 class RendererTestInstance : public LocalTestRenderer
 {
@@ -19,12 +20,12 @@ public:
     explicit RendererTestInstance(const ramses::RamsesFrameworkConfig& config);
     virtual ~RendererTestInstance() override;
 
-    void initializeRenderer();
+    void initializeRenderer(const ramses::RendererConfig& rendererConfig = RendererTestUtils::CreateTestRendererConfig());
 
     void             publish(ramses::sceneId_t sceneId);
     void             flush(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersionTag = ramses::InvalidSceneVersionTag);
     void             unpublish(ramses::sceneId_t sceneId);
-    void             setExpirationTimestamp(ramses::sceneId_t sceneId, std::chrono::system_clock::time_point expirationTS);
+    void             setExpirationTimestamp(ramses::sceneId_t sceneId, ramses_internal::FlushTime::Clock::time_point expirationTS);
 
     ramses::status_t validateScene(ramses::sceneId_t sceneId);
     const char*      getValidationReport(ramses::sceneId_t sceneId);

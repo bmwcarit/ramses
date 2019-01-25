@@ -9,7 +9,6 @@
 #include "RenderTargetImpl.h"
 #include "RenderTargetDescriptionImpl.h"
 #include "Scene/ClientScene.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses
 {
@@ -32,9 +31,9 @@ namespace ramses
         assert(m_renderTargetHandle.isValid());
 
         const ramses_internal::RenderBufferHandleVector& rtBuffers = rtDesc.getRenderBuffers();
-        ramses_foreach(rtBuffers, rb)
+        for(const auto& rb : rtBuffers)
         {
-            getIScene().addRenderTargetRenderBuffer(m_renderTargetHandle, *rb);
+            getIScene().addRenderTargetRenderBuffer(m_renderTargetHandle, rb);
         }
     }
 

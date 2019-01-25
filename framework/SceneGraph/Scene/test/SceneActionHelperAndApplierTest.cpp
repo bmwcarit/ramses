@@ -41,7 +41,7 @@ namespace ramses_internal
         MOCK_METHOD2(setRenderStateDrawMode,        void (RenderStateHandle, EDrawMode));
         MOCK_METHOD2(setRenderStateDepthWrite,      void (RenderStateHandle, EDepthWrite));
         MOCK_METHOD2(setRenderStateDepthFunc,       void (RenderStateHandle, EDepthFunc));
-        MOCK_METHOD4(setRenderStateStencilFunc,     void (RenderStateHandle, EStencilFunc, UInt32, UInt8));
+        MOCK_METHOD4(setRenderStateStencilFunc,     void (RenderStateHandle, EStencilFunc, UInt8, UInt8));
         MOCK_METHOD4(setRenderStateStencilOps,      void (RenderStateHandle, EStencilOp, EStencilOp, EStencilOp));
         MOCK_METHOD2(setRenderStateColorWriteMask,  void (RenderStateHandle, ColorWriteMask));
 
@@ -176,25 +176,25 @@ namespace ramses_internal
     {
         const RenderStateHandle state(77u);
         RenderState rs;
-        rs.blendFactorSrcColor = EBlendFactor_DstAlpha;
-        rs.blendFactorDstColor = EBlendFactor_One;
-        rs.blendFactorSrcAlpha = EBlendFactor_OneMinusSrcAlpha;
-        rs.blendFactorDstAlpha = EBlendFactor_SrcAlpha;
-        rs.blendOperationColor = EBlendOperation_Subtract;
-        rs.blendOperationAlpha = EBlendOperation_Max;
-        rs.cullMode = ECullMode_BackFacing;
-        rs.drawMode = EDrawMode_Lines;
-        rs.depthWrite = EDepthWrite_Enabled;
-        rs.depthFunc = EDepthFunc_SmallerEqual;
-        rs.stencilFunc = EStencilFunc_NotEqual;
+        rs.blendFactorSrcColor = EBlendFactor::DstAlpha;
+        rs.blendFactorDstColor = EBlendFactor::One;
+        rs.blendFactorSrcAlpha = EBlendFactor::OneMinusSrcAlpha;
+        rs.blendFactorDstAlpha = EBlendFactor::SrcAlpha;
+        rs.blendOperationColor = EBlendOperation::Subtract;
+        rs.blendOperationAlpha = EBlendOperation::Max;
+        rs.cullMode = ECullMode::BackFacing;
+        rs.drawMode = EDrawMode::Lines;
+        rs.depthWrite = EDepthWrite::Enabled;
+        rs.depthFunc = EDepthFunc::SmallerEqual;
+        rs.stencilFunc = EStencilFunc::NotEqual;
         rs.stencilRefValue = 99u;
         rs.stencilMask = 3u;
-        rs.stencilOpFail = EStencilOp_Replace;
-        rs.stencilOpDepthFail = EStencilOp_Decrement;
-        rs.stencilOpDepthPass = EStencilOp_Zero;
-        rs.colorWriteMask = 0xFF80;
+        rs.stencilOpFail = EStencilOp::Replace;
+        rs.stencilOpDepthFail = EStencilOp::Decrement;
+        rs.stencilOpDepthPass = EStencilOp::Zero;
+        rs.colorWriteMask = 0x80;
 
-        const UInt32 sizeOfActionData(sizeof(UInt32) * 18);
+        const UInt32 sizeOfActionData(sizeof(RenderState) + sizeof(RenderStateHandle));
 
         creator.compoundState(state, rs);
 

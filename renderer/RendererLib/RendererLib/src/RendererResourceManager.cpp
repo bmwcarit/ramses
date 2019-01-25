@@ -23,7 +23,6 @@
 #include "Utils/LogMacros.h"
 #include "Utils/TextureMathUtils.h"
 #include "Math3d/Vector4.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {
@@ -57,9 +56,10 @@ namespace ramses_internal
                 unloadOffscreenBuffer(handle);
         }
 
-        ramses_foreach(m_clientResourceRegistry.getAllResourceDescriptors(), res)
+        for(const auto& resDesc : m_clientResourceRegistry.getAllResourceDescriptors())
         {
-            assert(res->value.sceneUsage.empty());
+            UNUSED(resDesc);
+            assert(resDesc.value.sceneUsage.empty());
         }
     }
 
@@ -90,17 +90,16 @@ namespace ramses_internal
 
     void RendererResourceManager::groupResourcesBySceneId(const ResourceContentHashVector& resources, ResourcesPerSceneMap& resourcesPerScene) const
     {
-        ramses_foreach(resources, resHashIter)
+        for(const auto& resHash : resources)
         {
-            const ResourceDescriptor& resDesc = m_clientResourceRegistry.getResourceDescriptor(*resHashIter);
-            ramses_foreach(resDesc.sceneUsage, sceneIdIter)
+            const ResourceDescriptor& resDesc = m_clientResourceRegistry.getResourceDescriptor(resHash);
+            for(const auto& sceneUsage : resDesc.sceneUsage)
             {
-                const SceneId& sceneId = *sceneIdIter;
-                if (!resourcesPerScene.contains(sceneId))
+                if (!resourcesPerScene.contains(sceneUsage))
                 {
-                    resourcesPerScene.put(sceneId, ResourceContentHashVector());
+                    resourcesPerScene.put(sceneUsage, ResourceContentHashVector());
                 }
-                resourcesPerScene.get(sceneId)->push_back(*resHashIter);
+                resourcesPerScene.get(sceneUsage)->push_back(resHash);
             }
         }
     }
@@ -114,11 +113,9 @@ namespace ramses_internal
             ResourcesPerSceneMap resourcesPerScene;
             groupResourcesBySceneId(resources, resourcesPerScene);
 
-            ramses_foreach(resourcesPerScene, iter)
+            for(const auto& res : resourcesPerScene)
             {
-                const SceneId& sceneId = iter->key;
-                const ResourceContentHashVector& resourcesRequestedForScene = iter->value;
-                m_resourceProvider.requestResourceAsyncronouslyFromFramework(resourcesRequestedForScene, m_id, sceneId);
+                m_resourceProvider.requestResourceAsyncronouslyFromFramework(res.value, m_id, res.key);
             }
         }
     }
@@ -225,30 +222,30 @@ namespace ramses_internal
 
             RenderBufferHandleVector renderBuffers;
             sceneResources.getAllRenderBuffers(renderBuffers);
-            ramses_foreach(renderBuffers, rb)
+            for(const auto& rb : renderBuffers)
             {
-                unloadRenderTargetBuffer(*rb, sceneId);
+                unloadRenderTargetBuffer(rb, sceneId);
             }
 
             RenderTargetHandleVector renderTargets;
             sceneResources.getAllRenderTargets(renderTargets);
-            ramses_foreach(renderTargets, rt)
+            for (const auto& rt : renderTargets)
             {
-                unloadRenderTarget(*rt, sceneId);
+                unloadRenderTarget(rt, sceneId);
             }
 
             BlitPassHandleVector blitPasses;
             sceneResources.getAllBlitPasses(blitPasses);
-            ramses_foreach(blitPasses, bp)
+            for (const auto& bp : blitPasses)
             {
-                unloadBlitPassRenderTargets(*bp, sceneId);
+                unloadBlitPassRenderTargets(bp, sceneId);
             }
 
             StreamTextureHandleVector streamTextures;
             sceneResources.getAllStreamTextures(streamTextures);
-            ramses_foreach(streamTextures, st)
+            for (const auto& st : streamTextures)
             {
-                unloadStreamTexture(*st, sceneId);
+                unloadStreamTexture(st, sceneId);
             }
 
             DataBufferHandleVector dataBuffers;
@@ -445,9 +442,9 @@ namespace ramses_internal
 
         DeviceHandleVector rtBufferDeviceHandles;
         rtBufferDeviceHandles.reserve(rtBufferHandles.size());
-        ramses_foreach(rtBufferHandles, rtBufferHandle)
+        for(const auto& rb : rtBufferHandles)
         {
-            const DeviceResourceHandle rbDeviceHandle = sceneResources.getRenderBufferDeviceHandle(*rtBufferHandle);
+            const DeviceResourceHandle rbDeviceHandle = sceneResources.getRenderBufferDeviceHandle(rb);
             assert(rbDeviceHandle.isValid());
             rtBufferDeviceHandles.push_back(rbDeviceHandle);
         }
@@ -500,7 +497,7 @@ namespace ramses_internal
         device.activateRenderTarget(offscreenBufferDesc.m_renderTargetHandle[0]);
         device.colorMask(true, true, true, true);
         device.clearColor({ 0.f, 0.f, 0.f, 1.f });
-        device.depthWrite(EDepthWrite_Enabled);
+        device.depthWrite(EDepthWrite::Enabled);
         device.clear(EClearFlags_All);
 
         if (isDoubleBuffered)
@@ -508,7 +505,7 @@ namespace ramses_internal
             device.activateRenderTarget(offscreenBufferDesc.m_renderTargetHandle[1]);
             device.colorMask(true, true, true, true);
             device.clearColor({ 0.f, 0.f, 0.f, 1.f });
-            device.depthWrite(EDepthWrite_Enabled);
+            device.depthWrite(EDepthWrite::Enabled);
             device.clear(EClearFlags_All);
             device.pairRenderTargetsForDoubleBuffering(offscreenBufferDesc.m_renderTargetHandle, offscreenBufferDesc.m_colorBufferHandle);
         }

@@ -8,7 +8,7 @@
 
 #include "Window_Wayland/Window_Wayland.h"
 #include "Utils/LogMacros.h"
-#include "WaylandUtilities/WaylandUtilities.h"
+#include "WaylandUtilities/WaylandEnvironmentUtils.h"
 #include "RendererLib/DisplayConfig.h"
 
 namespace ramses_internal
@@ -26,7 +26,7 @@ namespace ramses_internal
     {
         LOG_DEBUG(CONTEXT_RENDERER, "Window_Wayland::init Opening Wayland window");
 
-        if (!WaylandUtilities::IsEnvironmentInProperState())
+        if (!WaylandEnvironmentUtils::IsEnvironmentInProperState())
         {
             LOG_ERROR(CONTEXT_RENDERER, "Window_Wayland::init failed. Environment is not properly configured");
             return false;

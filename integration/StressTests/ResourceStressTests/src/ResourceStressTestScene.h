@@ -10,7 +10,6 @@
 #define RAMSES_RESOURCESTRESSTESTSCENE_H
 
 #include "ramses-client-api/RamsesClient.h"
-#include "ramses-client-api/ESceneFlushMode.h"
 #include "ramses-client-api/EScenePublicationMode.h"
 #include "DynamicQuad_ClientResources.h"
 #include "DynamicQuad_OffscreenRenderTarget.h"
@@ -45,7 +44,7 @@ namespace ramses_internal
         ~ResourceStressTestScene();
 
         void recreateResources(bool recreateClientResources = true, bool recreateSceneResources = true, bool recreateSceneRenderTargets = true);
-        void flush(ramses::ESceneFlushMode flushMode, ramses::sceneVersionTag_t flushName);
+        void flush(ramses::sceneVersionTag_t flushName);
 
     private:
         static ramses::RenderPass& CreateRenderPass(ramses::Scene& scene, ramses::OrthographicCamera& camera);

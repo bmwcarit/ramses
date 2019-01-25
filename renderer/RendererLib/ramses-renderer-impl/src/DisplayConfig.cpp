@@ -162,16 +162,16 @@ namespace ramses
         return impl.getWaylandDisplay();
     }
 
-    status_t DisplayConfig::setIntegrityEGLDisplayID(uint32_t eglDisplayID)
+    status_t DisplayConfig::setIntegrityRGLDeviceUnit(uint32_t rglDeviceUnit)
     {
-        const status_t status = impl.setIntegrityEGLDisplayID(eglDisplayID);
-        LOG_HL_RENDERER_API1(status, eglDisplayID);
+        const status_t status = impl.setIntegrityRGLDeviceUnit(rglDeviceUnit);
+        LOG_HL_RENDERER_API1(status, rglDeviceUnit);
         return status;
     }
 
-    uint32_t DisplayConfig::getIntegrityEGLDisplayID() const
+    uint32_t DisplayConfig::getIntegrityRGLDeviceUnit() const
     {
-        return impl.getIntegrityEGLDisplayID();
+        return impl.getIntegrityRGLDeviceUnit();
     }
 
     status_t DisplayConfig::setWindowIviVisible()

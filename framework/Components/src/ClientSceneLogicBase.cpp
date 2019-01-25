@@ -14,7 +14,6 @@
 #include "Scene/SceneActionCollectionCreator.h"
 #include "Scene/SceneResourceUtils.h"
 #include "PlatformAbstraction/PlatformGuard.h"
-#include "Common/Cpp11Macros.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "Utils/LogMacros.h"
 #include "Utils/StatisticCollection.h"
@@ -133,9 +132,9 @@ namespace ramses_internal
             resourceChanges.m_addedClientResourceRefs.size() << " client resources, " <<
             resourceChanges.m_sceneResourceActions.size() << " scene resource actions (" << sceneResourcesSize << " bytes in total used by scene resources)");
 
-        ramses_foreach(m_subscribersWaitingForScene, subscriber)
+        for(const auto& subscriber : m_subscribersWaitingForScene)
         {
-            m_scenegraphSender.sendCreateScene(*subscriber, SceneInfo(m_sceneId, scene.getName()), m_scenePublicationMode);
+            m_scenegraphSender.sendCreateScene(subscriber, SceneInfo(m_sceneId, scene.getName()), m_scenePublicationMode);
         }
         m_scene.getStatisticCollection().statSceneActionsSent.incCounter(collection.numberOfActions()*static_cast<UInt32>(m_subscribersWaitingForScene.size()));
         m_scenegraphSender.sendSceneActionList(m_subscribersWaitingForScene, std::move(collection), m_sceneId, m_scenePublicationMode);

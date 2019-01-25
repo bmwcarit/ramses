@@ -97,7 +97,7 @@ namespace ramses
 
         EXPECT_EQ(0u, positionedGlyphs[0].width);
         EXPECT_EQ(4u, positionedGlyphs[1].width);
-        EXPECT_EQ(6u, positionedGlyphs[2].width);
+        EXPECT_EQ(7u, positionedGlyphs[2].width);
         EXPECT_EQ(6u, positionedGlyphs[3].width);
         EXPECT_EQ(4u, positionedGlyphs[4].width);
         EXPECT_EQ(0u, positionedGlyphs[5].width);
@@ -165,12 +165,12 @@ namespace ramses
 
         EXPECT_EQ(0u, positionedGlyphs[0].width);
         EXPECT_EQ(4u, positionedGlyphs[1].width);
-        EXPECT_EQ(6u, positionedGlyphs[2].width);
+        EXPECT_EQ(7u, positionedGlyphs[2].width);
         EXPECT_EQ(6u, positionedGlyphs[3].width);
         EXPECT_EQ(4u, positionedGlyphs[4].width);
         EXPECT_EQ(0u, positionedGlyphs[5].width);
         EXPECT_EQ(11u, positionedGlyphs[6].width);
-        EXPECT_EQ(11u, positionedGlyphs[7].width);
+        EXPECT_EQ(10u, positionedGlyphs[7].width);
         EXPECT_EQ(10u, positionedGlyphs[8].width);
         EXPECT_EQ(11u, positionedGlyphs[9].width);
         EXPECT_EQ(0u, positionedGlyphs[10].width);
@@ -194,7 +194,7 @@ namespace ramses
         EXPECT_EQ(0, positionedGlyphs[4].posX);
         EXPECT_EQ(0, positionedGlyphs[5].posX);
         EXPECT_EQ(0, positionedGlyphs[6].posX);
-        EXPECT_EQ(0, positionedGlyphs[7].posX);
+        EXPECT_EQ(1, positionedGlyphs[7].posX);
         EXPECT_EQ(0, positionedGlyphs[8].posX);
         EXPECT_EQ(0, positionedGlyphs[9].posX);
         EXPECT_EQ(0, positionedGlyphs[10].posX);
@@ -258,12 +258,12 @@ namespace ramses
 
         EXPECT_EQ(0u, positionedGlyphs[0].width);
         EXPECT_EQ(4u, positionedGlyphs[1].width);
-        EXPECT_EQ(6u, positionedGlyphs[2].width);
+        EXPECT_EQ(7u, positionedGlyphs[2].width);
         EXPECT_EQ(6u, positionedGlyphs[3].width);
         EXPECT_EQ(4u, positionedGlyphs[4].width);
         EXPECT_EQ(0u, positionedGlyphs[5].width);
         EXPECT_EQ(11u, positionedGlyphs[6].width);
-        EXPECT_EQ(11u, positionedGlyphs[7].width);
+        EXPECT_EQ(10u, positionedGlyphs[7].width);
         EXPECT_EQ(10u, positionedGlyphs[8].width);
         EXPECT_EQ(11u, positionedGlyphs[9].width);
         EXPECT_EQ(0u, positionedGlyphs[10].width);
@@ -287,7 +287,7 @@ namespace ramses
         EXPECT_EQ(0, positionedGlyphs[4].posX);
         EXPECT_EQ(0, positionedGlyphs[5].posX);
         EXPECT_EQ(0, positionedGlyphs[6].posX);
-        EXPECT_EQ(0, positionedGlyphs[7].posX);
+        EXPECT_EQ(1, positionedGlyphs[7].posX);
         EXPECT_EQ(0, positionedGlyphs[8].posX);
         EXPECT_EQ(0, positionedGlyphs[9].posX);
         EXPECT_EQ(0, positionedGlyphs[10].posX);

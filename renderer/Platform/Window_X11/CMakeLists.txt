@@ -48,7 +48,7 @@ ACME_MODULE(
     # dependencies
     #==========================================================================
     DEPENDENCIES            Window_X11
-                            gmock_main
+                            ramses-gmock-main
                             RendererTestUtils
 )
 

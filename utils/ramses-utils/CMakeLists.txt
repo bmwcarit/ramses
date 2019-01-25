@@ -47,5 +47,5 @@ ACME_MODULE(
     # dependencies
     #==========================================================================
     DEPENDENCIES            ramses-utils-lib
-                            gmock_main
+                            ramses-gmock-main
 )

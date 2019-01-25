@@ -364,6 +364,13 @@ namespace ramses_internal
         m_commands.addCommand(ERendererCommand_SetFrameTimerLimits, cmd);
     }
 
+    void RendererCommands::setSceneResourcesTimerLimit(UInt64 limitForSceneResourcesUpload)
+    {
+        SetFrameTimerLimitsCommmand cmd;
+        cmd.limitForSceneResourcesUploadMicrosec = limitForSceneResourcesUpload;
+        m_commands.addCommand(ERendererCommand_SetResourceActionTimer, cmd);
+    }
+
     void RendererCommands::setForceApplyPendingFlushesLimit(UInt maximumPendingFlushes)
     {
         SetFrameTimerLimitsCommmand cmd;

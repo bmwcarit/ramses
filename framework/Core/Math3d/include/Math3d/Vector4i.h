@@ -40,7 +40,6 @@ namespace ramses_internal
             * vec.z = 3;
             * vec.w = 4;
             */
-            IGNORE_UNNAMED_MEMBER_WARNING_START
             struct
             {
                 Int32 x;
@@ -48,7 +47,6 @@ namespace ramses_internal
                 Int32 z;
                 Int32 w;
             };
-            IGNORE_UNNAMED_MEMBER_WARNING_END
 
             /**
             * Vector4i vec;

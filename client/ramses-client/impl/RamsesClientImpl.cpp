@@ -75,7 +75,6 @@
 #include "Utils/LogMacros.h"
 #include "Utils/RamsesLogger.h"
 
-#include "Common/Cpp11Macros.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 #include <array>
 
@@ -1107,11 +1106,11 @@ namespace ramses
         if (object)
             return object;
 
-        ramses_foreach(m_scenes, obj)
+        for(const auto& scene : m_scenes)
         {
-            if (ramses_internal::PlatformStringUtils::StrEqual(name, ((*obj)->getName())))
+            if (ramses_internal::PlatformStringUtils::StrEqual(name, (scene->getName())))
             {
-                return *obj;
+                return scene;
             }
         }
 
@@ -1236,9 +1235,8 @@ namespace ramses
         ramses_internal::PlatformGuard g(m_clientLock);
 
         status_t status = StatusOK;
-        ramses_foreach(m_scenes, iter)
+        for(const auto& scene : m_scenes)
         {
-            Scene* scene = *iter;
             const status_t sceneStatus = addValidationOfDependentObject(indent, scene->impl);
             if (StatusOK != sceneStatus)
             {
@@ -1315,12 +1313,11 @@ namespace ramses
     {
         ramses_internal::PlatformGuard guard(m_clientLock);
 
-        ramses_foreach(m_scenes, iter)
+        for (const auto& scene : m_scenes)
         {
-            ramses::SceneImpl& scene = (*iter)->impl;
-            if ( scene.getSceneId() == sceneId )
+            if ( scene->impl.getSceneId() == sceneId )
             {
-                scene.enqueueSceneCommand(command);
+                scene->impl.enqueueSceneCommand(command);
             }
         }
     }

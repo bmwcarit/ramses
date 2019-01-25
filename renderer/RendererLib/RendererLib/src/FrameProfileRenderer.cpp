@@ -278,7 +278,7 @@ namespace ramses_internal
         const UInt16 indicesLines[] = { 0,1,3,2 };
 
         Geometry geometry;
-        geometry.drawMode = filled ? EDrawMode_TriangleStrip : EDrawMode_LineLoop;
+        geometry.drawMode = filled ? EDrawMode::TriangleStrip : EDrawMode::LineLoop;
         geometry.indexCount = 4;
 
         const ArrayResource res(EResourceType_VertexArray, 4, EDataType::EDataType_Vector2F, reinterpret_cast<const Byte*>(vertices), ResourceCacheFlag_DoNotCache, String());
@@ -303,7 +303,7 @@ namespace ramses_internal
 
         Geometry geometry;
         geometry.indexCount = 2;
-        geometry.drawMode = EDrawMode_Lines;
+        geometry.drawMode = EDrawMode::Lines;
 
         const ArrayResource res(EResourceType_VertexArray, 2, EDataType::EDataType_Vector2F, reinterpret_cast<const Byte*>(vertices), ResourceCacheFlag_DoNotCache, String());
         geometry.vertexBufferHandle = m_device->allocateVertexBuffer(res.getElementType(), res.getDecompressedDataSize());
@@ -327,7 +327,7 @@ namespace ramses_internal
 
         Geometry geometry;
         geometry.indexCount = 2;
-        geometry.drawMode = EDrawMode_Lines;
+        geometry.drawMode = EDrawMode::Lines;
 
         const ArrayResource res(EResourceType_VertexArray, 2, EDataType::EDataType_Vector2F, reinterpret_cast<const Byte*>(vertices), ResourceCacheFlag_DoNotCache, String());
         geometry.vertexBufferHandle = m_device->allocateVertexBuffer(res.getElementType(), res.getDecompressedDataSize());
@@ -373,7 +373,7 @@ namespace ramses_internal
     FrameProfileRenderer::Geometry FrameProfileRenderer::createGraphGeometry()
     {
         Geometry geometry;
-        geometry.drawMode = EDrawMode_Lines;
+        geometry.drawMode = EDrawMode::Lines;
         geometry.indexBufferHandle = m_timingLinesIndexBuffer;
         geometry.indexCount = 2 * (FrameProfilerStatistics::NumberOfFrames - 1);
         return geometry;
@@ -382,7 +382,7 @@ namespace ramses_internal
     FrameProfileRenderer::Geometry FrameProfileRenderer::createStackedGraphGeometry()
     {
         Geometry geometry;
-        geometry.drawMode = EDrawMode_Lines;
+        geometry.drawMode = EDrawMode::Lines;
         geometry.indexBufferHandle = m_stackedTimingLineIndexBuffer;
         geometry.indexCount = 2 * FrameProfilerStatistics::NumberOfRegions * FrameProfilerStatistics::NumberOfFrames;
         return geometry;
@@ -523,10 +523,10 @@ namespace ramses_internal
                 createResources();
             }
 
-            m_device->depthFunc(EDepthFunc_Disabled);
-            m_device->blendOperations(EBlendOperation_Add, EBlendOperation_Add);
-            m_device->blendFactors(EBlendFactor_SrcAlpha, EBlendFactor_OneMinusSrcAlpha, EBlendFactor_SrcAlpha, EBlendFactor_OneMinusSrcAlpha);
-            m_device->cullMode(ECullMode_Disabled);
+            m_device->depthFunc(EDepthFunc::Disabled);
+            m_device->blendOperations(EBlendOperation::Add, EBlendOperation::Add);
+            m_device->blendFactors(EBlendFactor::SrcAlpha, EBlendFactor::OneMinusSrcAlpha, EBlendFactor::SrcAlpha, EBlendFactor::OneMinusSrcAlpha);
+            m_device->cullMode(ECullMode::Disabled);
 
             for(const auto& renderable : m_renderables)
             {

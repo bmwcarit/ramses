@@ -40,7 +40,6 @@ namespace ramses_internal
             * vec.z = 3;
             * vec.w = 4;
             */
-            IGNORE_UNNAMED_MEMBER_WARNING_START
             struct
             {
                 Float x;
@@ -63,7 +62,6 @@ namespace ramses_internal
                 Float b;
                 Float a;
             };
-            IGNORE_UNNAMED_MEMBER_WARNING_END
 
             /**
             * Vector4 vec;

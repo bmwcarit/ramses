@@ -14,7 +14,6 @@
 #include "ramses-client-api/ResourceFileDescription.h"
 #include "ramses-client-api/ResourceFileDescriptionSet.h"
 #include "ramses-framework-api/RamsesFramework.h"
-#include "Common/Cpp11Macros.h"
 #include "RamsesClientImpl.h"
 #include "ResourceFileDescriptionImpl.h"
 #include "RamsesObjectTypeUtils.h"
@@ -30,22 +29,21 @@ bool ResourcePacker::Pack(const RamsesResourcePackerArguments& arguments)
     ramses::RamsesFramework framework;
     ramses::RamsesClient ramsesClient("ramses client", framework);
 
-    ramses_foreach(inputFiles, iter)
+    for(const auto& file : inputFiles)
     {
-        ramses::ResourceFileDescription fileDescription(iter->c_str());
+        ramses::ResourceFileDescription fileDescription(file.c_str());
         if (ramses::StatusOK != ramsesClient.loadResources(fileDescription))
         {
-            PRINT_ERROR("ramses fail to load input resource file:\"%s\".\n", iter->c_str());
+            PRINT_ERROR("ramses fail to load input resource file:\"%s\".\n", file.c_str());
             return false;
         }
     }
 
     ramses::ResourceFileDescription outputFile(arguments.getOutputResourceFile().c_str());
     const ramses::RamsesObjectVector resourceObjects = ramsesClient.impl.getListOfResourceObjects();
-    ramses_foreach(resourceObjects, iter)
+    for(const auto& resObj : resourceObjects)
     {
-        const ramses::RamsesObject& ramsesObject = **iter;
-        const ramses::Resource& resource = ramses::RamsesObjectTypeUtils::ConvertTo<ramses::Resource>(ramsesObject);
+        const ramses::Resource& resource = ramses::RamsesObjectTypeUtils::ConvertTo<ramses::Resource>(*resObj);
         outputFile.impl->m_resources.push_back(&resource);
     }
 

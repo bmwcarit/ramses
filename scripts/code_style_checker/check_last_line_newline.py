@@ -34,5 +34,5 @@ if __name__ == "__main__":
         exit(0)
 
     for t in targets:
-        _, _, file_lines, _ = read_file(t)
+        _, file_lines = read_file(t)
         check_last_line_newline(t, file_lines)

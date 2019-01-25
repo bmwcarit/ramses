@@ -16,7 +16,7 @@ namespace ramses_internal
     TEST(PlatformTime, getMillisecondsTest_Monotonic)
     {
         const uint64_t milliSeconds = PlatformTime::GetMillisecondsMonotonic();
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(60));
         const uint64_t milliSeconds2 = PlatformTime::GetMillisecondsMonotonic();
         EXPECT_TRUE((milliSeconds2 - milliSeconds) > 40);
     }
@@ -24,7 +24,7 @@ namespace ramses_internal
     TEST(PlatformTime, getMillisecondsTest_Absolute)
     {
         const uint64_t milliSeconds = PlatformTime::GetMillisecondsAbsolute();
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(60));
         const uint64_t milliSeconds2 = PlatformTime::GetMillisecondsAbsolute();
         EXPECT_TRUE((milliSeconds2 - milliSeconds) > 40);
     }
@@ -38,7 +38,7 @@ namespace ramses_internal
     TEST(PlatformTime, getMicrosecondsTest_Monotonic)
     {
         const uint64_t milliSeconds = PlatformTime::GetMicrosecondsMonotonic();
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(60));
         const uint64_t milliSeconds2 = PlatformTime::GetMicrosecondsMonotonic();
         EXPECT_TRUE((milliSeconds2 - milliSeconds) > 40000);
     }
@@ -46,7 +46,7 @@ namespace ramses_internal
     TEST(PlatformTime, getMicrosecondsTest_Absolute)
     {
         const uint64_t milliSeconds = PlatformTime::GetMicrosecondsAbsolute();
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(60));
         const uint64_t milliSeconds2 = PlatformTime::GetMicrosecondsAbsolute();
         EXPECT_TRUE((milliSeconds2 - milliSeconds) > 40000);
     }
@@ -79,7 +79,7 @@ namespace ramses_internal
     TEST(ASynchronizedClock, timeDiffTest)
     {
         const auto first = synchronized_clock::now();
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(60));
         const auto second = synchronized_clock::now();
         EXPECT_TRUE((second - first) > std::chrono::milliseconds(40));
     }

@@ -24,7 +24,6 @@
 #include "Animation/AnimationDataBind.h"
 #include "Animation/AnimationInstance.h"
 
-#include "Common/Cpp11Macros.h"
 
 namespace ramses
 {
@@ -79,10 +78,9 @@ namespace ramses
 
         // validate assigned databinding / AnimatedProperty
         const ramses_internal::DataBindHandleVector& dataBinds = animInstance.getDataBindings();
-        ramses_foreach(dataBinds, dataBindIt)
+        for(const auto& dataBind : dataBinds)
         {
-            const ramses_internal::DataBindHandle dataBindHandle = *dataBindIt;
-            const AnimatedPropertyImpl* animProperty = findAnimatedProperty(dataBindHandle);
+            const AnimatedPropertyImpl* animProperty = findAnimatedProperty(dataBind);
             if (animProperty == NULL)
             {
                 addValidationMessage(EValidationSeverity_Error, indent, "assigned AnimatedProperty does not exist anymore, was probably destroyed but still used by Animation");

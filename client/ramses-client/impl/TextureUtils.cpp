@@ -9,7 +9,7 @@
 #include "TextureUtils.h"
 #include "Utils/TextureMathUtils.h"
 #include "Utils/LogMacros.h"
-#include "Utils/Bitmap.h"
+#include "Utils/Image.h"
 #include "PlatformAbstraction/PlatformMemory.h"
 
 namespace ramses
@@ -186,7 +186,7 @@ namespace ramses
 
     Texture2D* TextureUtils::CreateTextureResourceFromPng(const char* filePath, RamsesClient& client, const char* name)
     {
-        ramses_internal::Bitmap image;
+        ramses_internal::Image image;
         image.loadFromFilePNG(filePath);
 
         if (image.getNumberOfPixels() == 0u)

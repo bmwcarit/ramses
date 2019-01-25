@@ -48,34 +48,7 @@ SET(EXPORTED_INT_VARIABLES
     PROJECT_VERSION_PATCH)
 
 IF (NOT DEFINED GIT_COMMIT_COUNT OR NOT DEFINED GIT_COMMIT_HASH)
-    # try to fill variables from git
-    IF(NOT GIT_FOUND)
-        FIND_PACKAGE(Git)
-    ENDIF()
-
-    IF(GIT_FOUND)
-        EXEC_PROGRAM(${GIT_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}
-            ARGS rev-list HEAD --count
-            OUTPUT_VARIABLE GIT_TEST
-            RETURN_VALUE GIT_RETURN_VALUE
-        )
-
-        IF("${GIT_RETURN_VALUE}" STREQUAL "0")
-
-            # yes, we have a git repository
-            EXEC_PROGRAM(${GIT_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}
-                ARGS rev-list HEAD --count
-                OUTPUT_VARIABLE GIT_COMMIT_COUNT
-                RETURN_VALUE GIT_RETURN_VALUE
-            )
-            EXEC_PROGRAM(${GIT_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}
-                ARGS rev-parse --short HEAD
-                OUTPUT_VARIABLE GIT_COMMIT_HASH
-            )
-            MESSAGE("Used git to fill variable: GIT_COMMIT_HASH=${GIT_COMMIT_HASH}")
-            MESSAGE("Used git to fill variable: GIT_COMMIT_COUNT=${GIT_COMMIT_COUNT}")
-        ENDIF()
-    ENDIF()
+    message(FATAL_ERROR "GIT_COMMIT_COUNT and GIT_COMMIT_HASH must be set")
 ENDIF()
 
 STRING(REPLACE "-" "_" PROJECT_NAME_NO_DASH ${PROJECT_NAME})

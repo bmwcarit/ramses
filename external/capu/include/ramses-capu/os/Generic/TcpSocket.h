@@ -20,6 +20,7 @@
 #include "ramses-capu/Config.h"
 #include "ramses-capu/Error.h"
 #include "ramses-capu/os/Socket.h"
+#include "ramses-capu/os/Memory.h"
 
 namespace ramses_capu
 {

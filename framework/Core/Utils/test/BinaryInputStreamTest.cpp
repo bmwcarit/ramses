@@ -218,4 +218,17 @@ namespace ramses_internal
         EXPECT_EQ(TestEnum16::TestEnumValue, readValue16);
         EXPECT_EQ(TestEnum32::TestEnumValue, readValue32);
     }
+
+    TEST(BinaryInputStreamTest, GetReadPosition)
+    {
+        const char buffer[10] = {0};
+        BinaryInputStream inStream(buffer);
+
+        char readBuffer[10] = {0};
+        EXPECT_EQ(buffer, inStream.readPosition());
+        inStream.read(readBuffer, 1);
+        EXPECT_EQ(buffer+1, inStream.readPosition());
+        inStream.read(readBuffer, 7);
+        EXPECT_EQ(buffer+8, inStream.readPosition());
+    }
 }

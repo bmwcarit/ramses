@@ -135,3 +135,35 @@ MACRO(ACME_ADD_TEST test_target test_suffix)
         WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         )
 ENDMACRO()
+
+#==============================================================================
+# postprocessing of target
+#==============================================================================
+
+function(ACME_FOLDERIZE_TARGET tgt)
+    # extract and set folder name from path
+    # first get path relative to ramses root dir
+    string(REGEX REPLACE "${ramses-sdk_ROOT_CMAKE_PATH}/" "" ACME_relative_path "${CMAKE_CURRENT_SOURCE_DIR}")
+    string(REGEX REPLACE "/[^/]*$" "" ACME_folder_path "${ACME_relative_path}")
+    if (NOT CMAKE_SOURCE_DIR STREQUAL ramses-sdk_ROOT_CMAKE_PATH)
+        # optionally adjust path for ramses used as subdirectory
+        string(REGEX REPLACE "${CMAKE_SOURCE_DIR}/" "" ACME_folder_prefix_path "${ramses-sdk_ROOT_CMAKE_PATH}")
+        set(ACME_folder_path "${ACME_folder_prefix_path}/${ACME_folder_path}")
+    endif()
+    set_property(TARGET ${tgt} PROPERTY FOLDER "${ACME_folder_path}")
+
+    # sort sources in goups
+    get_target_property(tgt_content ${tgt} SOURCES)
+    foreach(file_iter ${tgt_content})
+        string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" tmp1 "${file_iter}")
+        string(REGEX REPLACE "/[^/]*$" "" tmp2 "${tmp1}")
+        string(REPLACE "/" "\\" module_internal_path "${tmp2}")
+        source_group(${module_internal_path} FILES ${file_iter})
+    endforeach()
+endfunction()
+
+function(ACME_FOLDERIZE_TARGETS)
+    foreach (tgt ${ARGV})
+        ACME_FOLDERIZE_TARGET(${tgt})
+    endforeach()
+endfunction()

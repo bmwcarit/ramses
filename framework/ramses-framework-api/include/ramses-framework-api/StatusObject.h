@@ -10,7 +10,7 @@
 #define RAMSES_STATUSOBJECT_H
 
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
-#include "APIExport.h"
+#include "ramses-framework-api/APIExport.h"
 #include "EValidationSeverity.h"
 
 namespace ramses

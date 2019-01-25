@@ -9,7 +9,6 @@
 #include "MemoryLogger.h"
 #include "Utils/File.h"
 #include "Collections/StringOutputStream.h"
-#include "Common/Cpp11Macros.h"
 #include "Utils/FileUtils.h"
 
 using namespace ramses_internal;
@@ -29,9 +28,9 @@ void MemoryLogger::writeLogToFile(const String& filePath)
 {
     File resultFile(filePath);
     StringOutputStream ss;
-    ramses_foreach(m_memUsageValues, valueIt)
+    for(const auto& memUsage : m_memUsageValues)
     {
-        ss << *valueIt << "\n";
+        ss << memUsage << "\n";
     }
     FileUtils::CreateDirectories(resultFile);
     FileUtils::WriteAllText(resultFile, ss.release());

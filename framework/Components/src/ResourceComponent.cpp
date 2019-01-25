@@ -18,7 +18,6 @@
 #include "Utils/BinaryInputStream.h"
 #include "TransportCommon/IConnectionStatusUpdateNotifier.h"
 #include "TransportCommon/ICommunicationSystem.h"
-#include "Common/Cpp11Macros.h"
 #include "Components/ResourceStreamSerialization.h"
 #include <algorithm>
 #include "PlatformAbstraction/PlatformTime.h"
@@ -96,9 +95,8 @@ namespace ramses_internal
         ResourceContentHashVector unavailableResources;
         ResourceContentHashVector resourcesToBeLoaded;
 
-        ramses_foreach(ids, iter)
+        for(const auto& id : ids)
         {
-            ResourceContentHash id = *iter;
             LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceComponent::handleResourceRequest: " << StringUtils::HexFromResourceContentHash(id) << " from " << requesterId);
             const ManagedResource& resource = m_resourceStorage.getResource(id);
             if (resource.getResourceObject())
@@ -433,33 +431,33 @@ namespace ramses_internal
             uint64_t accumulatedFileSize;
         };
         HashMap<Guid, NetworkResourceInfo> resourceToSendViaNetwork(m_resourcesToLoad.size());
-        ramses_foreach(m_resourcesToLoad, iter)
+        for(const auto& resInfo : m_resourcesToLoad)
         {
-            IResource* res = ResourcePersistation::RetrieveResourceFromStream(*iter->resourceStream, iter->fileEntry);
+            IResource* res = ResourcePersistation::RetrieveResourceFromStream(*resInfo.resourceStream, resInfo.fileEntry);
             if (!res)
             {
-                LOG_ERROR(CONTEXT_FRAMEWORK, "Unable to load resource of type " << EnumToString(iter->fileEntry.resourceInfo.type)
-                    << " at offset " << iter->fileEntry.offsetInBytes);
+                LOG_ERROR(CONTEXT_FRAMEWORK, "Unable to load resource of type " << EnumToString(resInfo.fileEntry.resourceInfo.type)
+                    << " at offset " << resInfo.fileEntry.offsetInBytes);
                 return;
             }
 
-            const Guid& requesterId = iter->requesterId;
+            const Guid& requesterId = resInfo.requesterId;
 
-            LOG_DEBUG(CONTEXT_FRAMEWORK, "ResourceComponent::LoadResourcesFromFileTask::execute: loaded " << EnumToString(iter->fileEntry.resourceInfo.type) << " Name: "
-                << res->getName() << " Hash: " << iter->fileEntry.resourceInfo.hash << " Size " << iter->fileEntry.sizeInBytes << " Requester " << requesterId);
+            LOG_DEBUG(CONTEXT_FRAMEWORK, "ResourceComponent::LoadResourcesFromFileTask::execute: loaded " << EnumToString(resInfo.fileEntry.resourceInfo.type) << " Name: "
+                << res->getName() << " Hash: " << resInfo.fileEntry.resourceInfo.hash << " Size " << resInfo.fileEntry.sizeInBytes << " Requester " << requesterId);
 
             m_resourceComponent.m_statistics.statResourcesLoadedFromFileNumber.incCounter(1);
-            m_resourceComponent.m_statistics.statResourcesLoadedFromFileSize.incCounter(iter->fileEntry.sizeInBytes);
+            m_resourceComponent.m_statistics.statResourcesLoadedFromFileSize.incCounter(resInfo.fileEntry.sizeInBytes);
 
             if (requesterId.isInvalid())
             {
-                m_resourceComponent.resourceHasBeenLoadedFromFile(res, iter->fileEntry.sizeInBytes);
+                m_resourceComponent.resourceHasBeenLoadedFromFile(res, resInfo.fileEntry.sizeInBytes);
             }
             else
             {
                 NetworkResourceInfo& nri = resourceToSendViaNetwork[requesterId];
                 nri.resources.push_back(res);
-                nri.accumulatedFileSize += iter->fileEntry.sizeInBytes;
+                nri.accumulatedFileSize += resInfo.fileEntry.sizeInBytes;
             }
         }
         const auto endTime = PlatformTime::GetMillisecondsMonotonic();

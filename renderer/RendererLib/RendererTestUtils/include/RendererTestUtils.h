@@ -12,7 +12,7 @@
 #include "ramses-renderer-api/RendererConfig.h"
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "RendererAPI/EDeviceTypeId.h"
-#include "Utils/Bitmap.h"
+#include "Utils/Image.h"
 #include <chrono>
 
 namespace ramses
@@ -68,7 +68,7 @@ public:
     static const float DefaultMaxAveragePercentPerPixel;
 
 private:
-    static ramses_internal::Bitmap ReadPixelData(
+    static ramses_internal::Image ReadPixelData(
         ramses::RamsesRenderer& renderer,
         ramses::displayId_t displayId,
         ramses_internal::UInt32 x,
@@ -76,7 +76,7 @@ private:
         ramses_internal::UInt32 width,
         ramses_internal::UInt32 height);
 
-    static bool CompareBitmapToImageInFile(const ramses_internal::Bitmap& actualBitmap,
+    static bool CompareBitmapToImageInFile(const ramses_internal::Image& actualBitmap,
                                             const ramses_internal::String& expectedScreenshotFileName,
                                             float maxAveragePercentErrorPerPixel);
 

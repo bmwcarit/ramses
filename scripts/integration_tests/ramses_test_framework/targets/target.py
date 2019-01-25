@@ -257,7 +257,7 @@ class Target:
         if useSystemCompositorForScreenshot:
             self._take_system_compositor_screenshot(extendedImageNameBase + ".png", renderer)
         else:
-            self._take_renderer_screenshot(extendedImageNameBase + ".bmp", renderer, displayNumber)
+            self._take_renderer_screenshot(extendedImageNameBase + ".png", renderer, displayNumber)
 
         resultDirForTest = helper.get_result_dir_subdirectory(self.resultDir, testClassName+"/"+testRunName)
 

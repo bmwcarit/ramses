@@ -10,7 +10,6 @@
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/DataLinkUtils.h"
 #include "Utils/LogMacros.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {

@@ -31,12 +31,18 @@ public:
     explicit RendererTestsFramework(bool generateScreenshots, const ramses::RamsesFrameworkConfig& config);
     ~RendererTestsFramework();
 
-    LocalTestRenderer& getTestRenderer();
+    void initializeRenderer();
+    void initializeRenderer(const ramses::RendererConfig& rendererConfig);
+    void destroyRenderer();
+    ramses::displayId_t createDisplay(ramses::DisplayConfig displayConfig);
+    void destroyDisplays();
+    RendererTestInstance& getTestRenderer();
     TestScenes& getScenesRegistry();
     ramses::RamsesClient& getClient();
 
     RenderingTestCase& createTestCase(ramses_internal::UInt32 id, IRendererTest& rendererTest, const ramses_internal::String& name);
     RenderingTestCase& createTestCaseWithDefaultDisplay(ramses_internal::UInt32 id, IRendererTest& rendererTest, const ramses_internal::String& name, bool iviWindowStartVisible = true);
+    RenderingTestCase& createTestCaseWithoutRenderer(ramses_internal::UInt32 id, IRendererTest& rendererTest, const ramses_internal::String& name);
 
     void subscribeScene(ramses::sceneId_t sceneId);
     void unsubscribeScene(ramses::sceneId_t sceneId);
@@ -101,8 +107,7 @@ private:
 
     void sortTestCases();
     bool currentDisplaySetupMatchesTestCase(const RenderingTestCase& testCase) const;
-    bool initializeDisplays(const RenderingTestCase& testCase);
-    void destroyDisplays();
+    bool applyRendererAndDisplaysConfigurationForTest(const RenderingTestCase& testCase);
     void destroyScenes();
     void destroyOffscreenBuffers();
     bool runTestCase(RenderingTestCase& testCase);

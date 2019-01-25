@@ -13,7 +13,6 @@
 #include "ramses-client-api/TextureEnums.h"
 #include "ramses-client-api/AnimationSystemEnums.h"
 #include "ramses-client-api/EScenePublicationMode.h"
-#include "ramses-client-api/ESceneFlushMode.h"
 #include "ramses-client-api/EDataType.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 
@@ -221,7 +220,7 @@ namespace ramses
         /**
          * @brief Expiration timestamp is a point in time till which the scene is considered to be up-to-date.
          *        Logic on renderer side will check the time every frame and in case it detects the scene
-         *        to be rendered after its expiration timestamp it will generate an event (invoke \c IRendererEventHandler::sceneUpdateLatencyExceeded).
+         *        to be rendered after its expiration timestamp it will generate an event (invoke \c IRendererEventHandler::sceneExpired).
          *
          *        IMPORTANT: Expiration timestamp value is bound to current state of scene (once it is flushed) and for all subsequent flushes until changed again or disabled.
          *                   Once expiration timestamp is set to non-zero all subscribed renderers will periodically check it from that point on.
@@ -239,13 +238,9 @@ namespace ramses
         status_t setExpirationTimestamp(uint64_t ptpExpirationTimestampInMilliseconds);
 
         /**
-        * @brief Flushes all changes done to the scene so far. Same as commits, works as if
-        *        the scene has always a commit internally, flushes it on flush() and creates a new one
+        * @brief Commits all changes done to the scene since the last flush or since scene creation. This makes a new
+        *        valid scene state available to all local and remote renderers.
         *
-        * @param[in] flushMode indicates whether the pending scene updates should be applied only
-        *                      when all resources are available at the renderer (synchronous).
-        *                      This option is only kept for compatibility, there is no other
-        *                      choice than ESceneFlushMode_SynchronizedWithResources.
         * @param[in] sceneVersionTag updates the version tag of the scene along with the flushed scene updates.
         *            If set to a valid value, a subscribed renderer will generate a sceneFlushed() event when the
         *            scene update has been applied. Invalid scene version ids are ignored.
@@ -254,7 +249,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t flush(ESceneFlushMode flushMode = ESceneFlushMode_SynchronizedWithResources, sceneVersionTag_t sceneVersionTag = InvalidSceneVersionTag);
+        status_t flush(sceneVersionTag_t sceneVersionTag = InvalidSceneVersionTag);
 
         /**
         * @brief Get an object from the scene by name

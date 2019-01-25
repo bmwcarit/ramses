@@ -90,7 +90,7 @@ public:
         file.getSizeInBytes(fileSize);
         const Int offset = sizeof(ramses::BinaryShaderCacheImpl::FileHeader);
         file.seek(offset, EFileSeekOrigin_BeginningOfFile);
-        ramses_internal::Char data;
+        ramses_internal::Char data = 0;
         UInt numBytesRead;
         file.read(&data, sizeof(data), numBytesRead);
         file.seek(offset, EFileSeekOrigin_BeginningOfFile);
@@ -106,7 +106,7 @@ public:
         file.getSizeInBytes(fileSize);
         const Int transportVersionOffset = offsetof(ramses::BinaryShaderCacheImpl::FileHeader, transportVersion);
         file.seek(transportVersionOffset, EFileSeekOrigin_BeginningOfFile);
-        ramses_internal::Char data;
+        ramses_internal::Char data = 0;
         UInt                  numBytesRead;
         file.read(&data, sizeof(data), numBytesRead);
         file.seek(transportVersionOffset, EFileSeekOrigin_BeginningOfFile);

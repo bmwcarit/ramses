@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererLib/OffscreenBufferLinks.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {
@@ -25,11 +24,11 @@ namespace ramses_internal
 
     void OffscreenBufferLinks::removeLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle)
     {
-        ramses_foreach(m_links, linkIt)
+        for (auto link = m_links.begin(); link != m_links.end(); ++link)
         {
-            if (linkIt->consumerSceneId == consumerSceneId && linkIt->consumerSlot == consumerSlotHandle)
+            if (link->consumerSceneId == consumerSceneId && link->consumerSlot == consumerSlotHandle)
             {
-                m_links.erase(linkIt);
+                m_links.erase(link);
                 return;
             }
         }
@@ -39,9 +38,9 @@ namespace ramses_internal
 
     Bool OffscreenBufferLinks::hasAnyLinksToProvider(SceneId consumerSceneId) const
     {
-        ramses_foreach(m_links, linkIt)
+        for(const auto& link : m_links)
         {
-            if (linkIt->consumerSceneId == consumerSceneId)
+            if (link.consumerSceneId == consumerSceneId)
             {
                 return true;
             }
@@ -52,9 +51,9 @@ namespace ramses_internal
 
     Bool OffscreenBufferLinks::hasAnyLinksToConsumer(OffscreenBufferHandle providerBuffer) const
     {
-        ramses_foreach(m_links, linkIt)
+        for(const auto& link : m_links)
         {
-            if (linkIt->providerBuffer == providerBuffer)
+            if (link.providerBuffer == providerBuffer)
             {
                 return true;
             }
@@ -65,9 +64,9 @@ namespace ramses_internal
 
     Bool OffscreenBufferLinks::hasLinkedProvider(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle) const
     {
-        ramses_foreach(m_links, linkIt)
+        for(const auto& link : m_links)
         {
-            if (linkIt->consumerSceneId == consumerSceneId && linkIt->consumerSlot == consumerSlotHandle)
+            if (link.consumerSceneId == consumerSceneId && link.consumerSlot == consumerSlotHandle)
             {
                 return true;
             }
@@ -79,22 +78,22 @@ namespace ramses_internal
     void OffscreenBufferLinks::getLinkedProviders(SceneId consumerSceneId, OffscreenBufferLinkVector& links) const
     {
         assert(links.empty());
-        ramses_foreach(m_links, linkIt)
+        for(const auto& link : m_links)
         {
-            if (linkIt->consumerSceneId == consumerSceneId)
+            if (link.consumerSceneId == consumerSceneId)
             {
-                links.push_back(*linkIt);
+                links.push_back(link);
             }
         }
     }
 
     const OffscreenBufferLink& OffscreenBufferLinks::getLinkedProvider(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle) const
     {
-        ramses_foreach(m_links, linkIt)
+        for(const auto& link : m_links)
         {
-            if (linkIt->consumerSceneId == consumerSceneId && linkIt->consumerSlot == consumerSlotHandle)
+            if (link.consumerSceneId == consumerSceneId && link.consumerSlot == consumerSlotHandle)
             {
-                return *linkIt;
+                return link;
             }
         }
 
@@ -105,11 +104,11 @@ namespace ramses_internal
     void OffscreenBufferLinks::getLinkedConsumers(OffscreenBufferHandle providerBuffer, OffscreenBufferLinkVector& links) const
     {
         assert(links.empty());
-        ramses_foreach(m_links, linkIt)
+        for(const auto& link : m_links)
         {
-            if (linkIt->providerBuffer == providerBuffer)
+            if (link.providerBuffer == providerBuffer)
             {
-                links.push_back(*linkIt);
+                links.push_back(link);
             }
         }
     }

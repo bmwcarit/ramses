@@ -11,7 +11,7 @@
 
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "ramses-client-api/TextureEnums.h"
-#include "APIExport.h"
+#include "ramses-framework-api/APIExport.h"
 
 namespace ramses
 {

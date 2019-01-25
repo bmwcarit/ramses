@@ -12,7 +12,6 @@
 #include "PlatformAbstraction/PlatformLock.h"
 #include "PlatformAbstraction/PlatformGuard.h"
 #include "PlatformAbstraction/PlatformTime.h"
-#include "PlatformAbstraction/synchronized_clock.h"
 
 namespace ramses_internal
 {
@@ -27,6 +26,8 @@ namespace ramses_internal
         , m_frameworkLock(frameworkLock)
         , m_statisticCollection(statisticCollection)
         , m_triggerCounter(0)
+        , m_previousSteadyTime(std::chrono::steady_clock::now())
+        , m_previousSyncTime(synchronized_clock::now())
         , m_ramsesInstanceStartupTime(PlatformTime::GetMillisecondsMonotonic())
     {
         ++m_numberOfRamsesInstancesStartedInProcess;
@@ -118,13 +119,24 @@ namespace ramses_internal
 
     void PeriodicLogger::printVersion()
     {
-        const UInt64 now = PlatformTime::GetMillisecondsMonotonic();
+        auto steadyNow = std::chrono::steady_clock::now();
+        auto syncNow = synchronized_clock::now();
+
+        uint64_t pUp = asMilliseconds(steadyNow) - m_processStartupTime;
+        uint64_t rUp = asMilliseconds(steadyNow) - m_ramsesInstanceStartupTime;
+
+        int64_t steadyDiff = std::chrono::duration_cast<std::chrono::milliseconds>(steadyNow - m_previousSteadyTime).count();
+        int64_t syncDiff = std::chrono::duration_cast<std::chrono::milliseconds>(syncNow - m_previousSyncTime).count();
+
         LOG_INFO(CONTEXT_PERIODIC, "Version: " << ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING << " Hash:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH
             << " Commit:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_COUNT << " Type:" << ::ramses_sdk::RAMSES_SDK_CMAKE_BUILD_TYPE
             << " Env:" << ::ramses_sdk::RAMSES_SDK_BUILD_ENV_VERSION_INFO_FULL_ESCAPED
-            << " SyncT:" << asMilliseconds(synchronized_clock::now()) << "ms"
-            << " PUp:" << (now - m_processStartupTime) <<  " RUp:" << (now - m_ramsesInstanceStartupTime)
+            << " SyncT:" << asMilliseconds(syncNow) << "ms (dtSteady:" << steadyDiff << " - dtSync:" << syncDiff << " -> " << (steadyDiff - syncDiff) << ")"
+            << " PUp:" << pUp <<  " RUp:" << rUp
             << " RInit:" << m_numberOfRamsesInstancesStartedInProcess << " RParallel:" << m_numberOfRamsesInstancesCurrentlyActive);
+
+        m_previousSyncTime = syncNow;
+        m_previousSteadyTime = steadyNow;
     }
 
     void PeriodicLogger::printStatistic()

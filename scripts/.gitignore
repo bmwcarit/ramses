@@ -1,6 +1,0 @@
-*.pyc
-.idea
-integration_tests/test-results/*
-integration_tests/benchmark-results/*
-integration_tests/configuration/ramses_bin_dir_path
-integration_tests/configuration/ramses_binary_version_dir

@@ -37,6 +37,10 @@ ACME_MODULE(
                             harfbuzz
 )
 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    target_compile_options(ramses-text PRIVATE "-Wsuggest-override")
+endif()
+
 INSTALL(DIRECTORY ramses-text-api/include/ DESTINATION "${PROJECT_INSTALL_HEADER}" COMPONENT ramses-sdk-devel)
 
 
@@ -54,7 +58,7 @@ ACME_MODULE(
     FILES_RESOURCE          res/*
 
     DEPENDENCIES            ramses-text
-                            gmock_main
+                            ramses-gmock-main
 )
 
 set(ramses-shared-lib-MIXIN

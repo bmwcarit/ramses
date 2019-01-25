@@ -51,14 +51,13 @@ namespace ramses_internal
              * vec.y = 2;
              * vec.z = 3;
              */
-            IGNORE_UNNAMED_MEMBER_WARNING_START
             struct
             {
                 Float x;
                 Float y;
                 Float z;
             };
-            IGNORE_UNNAMED_MEMBER_WARNING_END
+
             /**
             * Vector3 vec;
             * vec.data[0] = 1;

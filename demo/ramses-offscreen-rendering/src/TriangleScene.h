@@ -98,7 +98,7 @@ TriangleScene CreateTriangleScene(ramses::RamsesClient& client, ramses::sceneId_
     renderGroup->addMeshNode(*meshNode);
 
     // Finalize scene state and publish
-    scene->flush(ramses::ESceneFlushMode_SynchronizedWithResources);
+    scene->flush();
     scene->publish(publicationMode);
 
     return {scene, rotationNode};

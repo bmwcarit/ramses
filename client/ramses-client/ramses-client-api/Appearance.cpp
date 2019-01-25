@@ -81,14 +81,14 @@ namespace ramses
         return impl.getDepthFunction(func);
     }
 
-    status_t Appearance::setStencilFunction(EStencilFunc func, uint32_t ref, uint8_t mask)
+    status_t Appearance::setStencilFunction(EStencilFunc func, uint8_t ref, uint8_t mask)
     {
         const status_t status = impl.setStencilFunc(func, ref, mask);
         LOG_HL_CLIENT_API3(status, func, ref, mask);
         return status;
     }
 
-    status_t Appearance::getStencilFunction(EStencilFunc& func, uint32_t& ref, uint8_t& mask) const
+    status_t Appearance::getStencilFunction(EStencilFunc& func, uint8_t& ref, uint8_t& mask) const
     {
         return impl.getStencilFunc(func, ref, mask);
     }

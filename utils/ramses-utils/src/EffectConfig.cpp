@@ -11,7 +11,6 @@
 #include "ConsoleUtils.h"
 #include "StringUtils.h"
 
-#include "Common/Cpp11Macros.h"
 #include "PlatformAbstraction/PlatformStringUtils.h"
 #include "Utils/File.h"
 
@@ -45,9 +44,9 @@ bool EffectConfig::loadFromFile(const char* filePath)
 
     bool succeed = true;
     int lineNumber = 1;
-    ramses_foreach(lines, iter)
+    for(const auto& line : lines)
     {
-        if (!parseConfigLine(lineNumber++, *iter))
+        if (!parseConfigLine(lineNumber++, line))
         {
             succeed = false;
         }
@@ -182,19 +181,19 @@ bool EffectConfig::parseDefines(int lineNumber, const ramses_internal::String& l
 
 void EffectConfig::fillEffectDescription(ramses::EffectDescription& description) const
 {
-    ramses_foreach(m_compilerDefines, iter)
+    for(const auto& compilerDefine : m_compilerDefines)
     {
-        description.addCompilerDefine(iter->c_str());
+        description.addCompilerDefine(compilerDefine.c_str());
     }
 
-    ramses_foreach(m_uniformSemantics, iterUniformSemantic)
+    for (const auto& uniformSemantic : m_uniformSemantics)
     {
-        description.setUniformSemantic(iterUniformSemantic->key.c_str(), iterUniformSemantic->value);
+        description.setUniformSemantic(uniformSemantic.key.c_str(), uniformSemantic.value);
     }
 
-    ramses_foreach(m_attributeSemaintics, iterAttributeSemantic)
+    for(const auto& attribSemantic : m_attributeSemaintics)
     {
-        description.setAttributeSemantic(iterAttributeSemantic->key.c_str(), iterAttributeSemantic->value);
+        description.setAttributeSemantic(attribSemantic.key.c_str(), attribSemantic.value);
     }
 }
 
@@ -263,9 +262,9 @@ void EffectConfig::printErrorInLine(int lineNumber, const ramses_internal::Strin
 void EffectConfig::printAttributeSemanticList() const
 {
     PRINT_HINT("valid Attribute Semantics are as Following:\n");
-    ramses_foreach(m_attributeSemanticNameTable, iter)
+    for(const auto& attribSemantic : m_attributeSemanticNameTable)
     {
-        PRINT_HINT("%s\n", iter->key.c_str());
+        PRINT_HINT("%s\n", attribSemantic.key.c_str());
     }
     PRINT("\n");
 }
@@ -273,9 +272,9 @@ void EffectConfig::printAttributeSemanticList() const
 void EffectConfig::printUniformSemanticList() const
 {
     PRINT_HINT("valid Uniform Semantics are as Following:\n");
-    ramses_foreach(m_uniformSemanticNameTable, iter)
+    for(const auto& uniformSemantic : m_uniformSemanticNameTable)
     {
-        PRINT_HINT("%s\n", iter->key.c_str());
+        PRINT_HINT("%s\n", uniformSemantic.key.c_str());
     }
     PRINT("\n");
 }

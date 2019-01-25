@@ -27,4 +27,4 @@ ENDIF()
 SET(current_debug_flags "${current_debug_flags} -fprofile-arcs -ftest-coverage" )
 SET_TARGET_PROPERTIES(${ACME_NAME} PROPERTIES COMPILE_FLAGS "${current_debug_flags}")
 
-TARGET_LINK_LIBRARIES(${ACME_NAME} gcov)
+TARGET_LINK_LIBRARIES(${ACME_NAME} PUBLIC gcov)

@@ -48,5 +48,5 @@ ACME_MODULE(
     #==========================================================================
     DEPENDENCIES            DisplayManager
                             RendererTestUtils
-                            gmock_main
+                            ramses-gmock-main
 )

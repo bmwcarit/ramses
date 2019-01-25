@@ -6,10 +6,8 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-
 #include "RendererCommands/Screenshot.h"
 #include "RendererLib/RendererCommandBuffer.h"
-
 
 namespace ramses_internal
 {
@@ -32,7 +30,7 @@ namespace ramses_internal
 
         EOption lastOption = EOption_None;
 
-        String              filename = "unnamed.bmp";
+        String              filename = "unnamed.png";
         DisplayHandle       display = DisplayHandle(0);
         Bool                sendViaDLT = false;
 

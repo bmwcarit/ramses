@@ -75,7 +75,7 @@ namespace ramses_internal
             , antialiasingSampleCount("as", "aa-samples", config.getAntialiasingSampleCount(), "set antialiasing sample count")
             , waylandIviLayerId("lid", "waylandIviLayerId", config.getWaylandIviLayerID().getValue(), "set id of IVI layer the display surface will be added to")
             , waylandIviSurfaceID("sid", "waylandIviSurfaceID", config.getWaylandIviSurfaceID().getValue(), "set id of IVI surface the display will be composited on")
-            , integrityEglDisplayID("eglDisplayID", "integrityEglDisplayID", config.getIntegrityEGLDisplayID().getValue(), "set id of the EGL display on Integrity")
+            , integrityRGLDeviceUnit("rglDeviceUnit", "integrityRGLDeviceUnit", config.getIntegrityRGLDeviceUnit().getValue(), "set id of the device unit to use on Integrity")
             , startVisible("startVisible", "startVisible", config.getStartVisibleIvi(), "set IVI surface visible when created")
             , resizable("resizableWindow", "resizable window", config.isResizable(), "enables resizable renderer window")
             , offscreen("off", "offscreen", config.getOffscreen(), "renders offscreen, no window gets created, no output visible, screenshots possible though")
@@ -113,7 +113,7 @@ namespace ramses_internal
         ArgumentUInt32 antialiasingSampleCount;
         ArgumentUInt32 waylandIviLayerId;
         ArgumentUInt32 waylandIviSurfaceID;
-        ArgumentUInt32 integrityEglDisplayID;
+        ArgumentUInt32 integrityRGLDeviceUnit;
         ArgumentBool startVisible;
         ArgumentBool resizable;
         ArgumentBool offscreen;
@@ -149,7 +149,7 @@ namespace ramses_internal
                         sos << borderless.getHelpString();
                         sos << waylandIviLayerId.getHelpString();
                         sos << waylandIviSurfaceID.getHelpString();
-                        sos << integrityEglDisplayID.getHelpString();
+                        sos << integrityRGLDeviceUnit.getHelpString();
                         sos << startVisible.getHelpString();
                         sos << offscreen.getHelpString();
                         sos << clearColorR.getHelpString();
@@ -254,7 +254,7 @@ namespace ramses_internal
 
         config.setWaylandIviLayerID(WaylandIviLayerId(rendererArgs.waylandIviLayerId.parseValueFromCmdLine(parser)));
         config.setWaylandIviSurfaceID(WaylandIviSurfaceId(rendererArgs.waylandIviSurfaceID.parseValueFromCmdLine(parser)));
-        config.setIntegrityEGLDisplayID(IntegrityEglDisplayId(rendererArgs.integrityEglDisplayID.parseValueFromCmdLine(parser)));
+        config.setIntegrityRGLDeviceUnit(IntegrityRGLDeviceUnit(rendererArgs.integrityRGLDeviceUnit.parseValueFromCmdLine(parser)));
         config.setStartVisibleIvi(rendererArgs.startVisible.parseValueFromCmdLine(parser));
         config.setResizable(rendererArgs.resizable.parseValueFromCmdLine(parser));
         config.setOffscreen(rendererArgs.offscreen.parseValueFromCmdLine(parser));

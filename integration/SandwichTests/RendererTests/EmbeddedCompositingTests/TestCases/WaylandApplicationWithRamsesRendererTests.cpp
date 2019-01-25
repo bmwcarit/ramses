@@ -26,6 +26,8 @@ namespace ramses_internal
     {
         Bool testResultValue = true;
 
+        testFramework.setEnvironmentVariableWaylandDisplay();
+
         switch(testCase.m_id)
         {
         case CanRunRamsesRendererWithinExistingWaylandApplication:

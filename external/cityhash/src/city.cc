@@ -41,14 +41,14 @@ WARNING_DISABLE_LINUX(-Wshadow)
 
 using namespace std;
 
-static uint64 UNALIGNED_LOAD64(const char *p) {
-  uint64 result;
+static cityhash::uint64 UNALIGNED_LOAD64(const char *p) {
+  cityhash::uint64 result;
   memcpy(&result, p, sizeof(result));
   return result;
 }
 
-static uint32 UNALIGNED_LOAD32(const char *p) {
-  uint32 result;
+static cityhash::uint32 UNALIGNED_LOAD32(const char *p) {
+  cityhash::uint32 result;
   memcpy(&result, p, sizeof(result));
   return result;
 }
@@ -125,6 +125,9 @@ static uint32 UNALIGNED_LOAD32(const char *p) {
 #define LIKELY(x) (x)
 #endif
 #endif
+
+namespace cityhash
+{
 
 static uint64 Fetch64(const char *p) {
   return uint64_in_expected_order(UNALIGNED_LOAD64(p));
@@ -527,4 +530,6 @@ uint128 CityHash128(const char *s, size_t len) {
       CityHash128WithSeed(s + 16, len - 16,
                           uint128(Fetch64(s), Fetch64(s + 8) + k0)) :
       CityHash128WithSeed(s, len, uint128(k0, k1));
+}
+
 }

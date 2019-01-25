@@ -19,8 +19,8 @@ namespace ramses_internal
     public:
         RamshDLT(String prompt = "noname");
 
-        virtual bool start();
-        virtual bool stop();
+        virtual bool start() override;
+        virtual bool stop() override;
 
         ~RamshDLT();
 

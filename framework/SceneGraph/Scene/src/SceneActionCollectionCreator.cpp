@@ -331,64 +331,64 @@ namespace ramses_internal
     {
         collection.beginWriteSceneAction(ESceneActionId_SetStateStencilOps);
         collection.write(stateHandle);
-        collection.write(static_cast<UInt32>(sfail));
-        collection.write(static_cast<UInt32>(dpfail));
-        collection.write(static_cast<UInt32>(dppass));
+        collection.write(static_cast<uint8_t>(sfail));
+        collection.write(static_cast<uint8_t>(dpfail));
+        collection.write(static_cast<uint8_t>(dppass));
     }
 
-    void SceneActionCollectionCreator::setRenderStateStencilFunc(RenderStateHandle stateHandle, EStencilFunc func, UInt32 ref, UInt8 mask)
+    void SceneActionCollectionCreator::setRenderStateStencilFunc(RenderStateHandle stateHandle, EStencilFunc func, UInt8 ref, UInt8 mask)
     {
         collection.beginWriteSceneAction(ESceneActionId_SetStateStencilFunc);
         collection.write(stateHandle);
-        collection.write(static_cast<UInt32>(func));
+        collection.write(static_cast<uint8_t>(func));
         collection.write(ref);
-        collection.write(static_cast<UInt32>(mask));
+        collection.write(mask);
     }
 
     void SceneActionCollectionCreator::setRenderStateDepthWrite(RenderStateHandle stateHandle, EDepthWrite flag)
     {
         collection.beginWriteSceneAction(ESceneActionId_SetStateDepthWrite);
         collection.write(stateHandle);
-        collection.write(static_cast<UInt32>(flag));
+        collection.write(static_cast<uint8_t>(flag));
     }
 
     void SceneActionCollectionCreator::setRenderStateDepthFunc(RenderStateHandle stateHandle, EDepthFunc func)
     {
         collection.beginWriteSceneAction(ESceneActionId_SetStateDepthFunc);
         collection.write(stateHandle);
-        collection.write(static_cast<UInt32>(func));
+        collection.write(static_cast<uint8_t>(func));
     }
 
     void SceneActionCollectionCreator::setRenderStateCullMode(RenderStateHandle stateHandle, ECullMode cullMode)
     {
         collection.beginWriteSceneAction(ESceneActionId_SetStateCullMode);
         collection.write(stateHandle);
-        collection.write(static_cast<UInt32>(cullMode));
+        collection.write(static_cast<uint8_t>(cullMode));
     }
 
     void SceneActionCollectionCreator::setRenderStateDrawMode(RenderStateHandle stateHandle, EDrawMode drawMode)
     {
         collection.beginWriteSceneAction(ESceneActionId_SetStateDrawMode);
         collection.write(stateHandle);
-        collection.write(static_cast<UInt32>(drawMode));
+        collection.write(static_cast<uint8_t>(drawMode));
     }
 
     void SceneActionCollectionCreator::setRenderStateBlendOperations(RenderStateHandle stateHandle, EBlendOperation operationColor, EBlendOperation operationAlpha)
     {
         collection.beginWriteSceneAction(ESceneActionId_SetStateBlendOperations);
         collection.write(stateHandle);
-        collection.write(static_cast<UInt32>(operationColor));
-        collection.write(static_cast<UInt32>(operationAlpha));
+        collection.write(static_cast<uint8_t>(operationColor));
+        collection.write(static_cast<uint8_t>(operationAlpha));
     }
 
     void SceneActionCollectionCreator::setRenderStateBlendFactors(RenderStateHandle stateHandle, EBlendFactor srcColor, EBlendFactor destColor, EBlendFactor srcAlpha, EBlendFactor destAlpha)
     {
         collection.beginWriteSceneAction(ESceneActionId_SetStateBlendFactors);
         collection.write(stateHandle);
-        collection.write(static_cast<UInt32>(srcColor));
-        collection.write(static_cast<UInt32>(destColor));
-        collection.write(static_cast<UInt32>(srcAlpha));
-        collection.write(static_cast<UInt32>(destAlpha));
+        collection.write(static_cast<uint8_t>(srcColor));
+        collection.write(static_cast<uint8_t>(destColor));
+        collection.write(static_cast<uint8_t>(srcAlpha));
+        collection.write(static_cast<uint8_t>(destAlpha));
     }
 
     void SceneActionCollectionCreator::setRenderStateColorWriteMask(RenderStateHandle stateHandle, ColorWriteMask colorMask)
@@ -1141,22 +1141,22 @@ namespace ramses_internal
     {
         collection.beginWriteSceneAction(ESceneActionId_CompoundState);
         collection.write(handle);
-        collection.write(static_cast<UInt32>(rs.blendFactorSrcColor));
-        collection.write(static_cast<UInt32>(rs.blendFactorDstColor));
-        collection.write(static_cast<UInt32>(rs.blendFactorSrcAlpha));
-        collection.write(static_cast<UInt32>(rs.blendFactorDstAlpha));
-        collection.write(static_cast<UInt32>(rs.blendOperationColor));
-        collection.write(static_cast<UInt32>(rs.blendOperationAlpha));
-        collection.write(static_cast<UInt32>(rs.cullMode));
-        collection.write(static_cast<UInt32>(rs.drawMode));
-        collection.write(static_cast<UInt32>(rs.depthWrite));
-        collection.write(static_cast<UInt32>(rs.depthFunc));
-        collection.write(static_cast<UInt32>(rs.stencilFunc));
+        collection.write(static_cast<uint8_t>(rs.blendFactorSrcColor));
+        collection.write(static_cast<uint8_t>(rs.blendFactorDstColor));
+        collection.write(static_cast<uint8_t>(rs.blendFactorSrcAlpha));
+        collection.write(static_cast<uint8_t>(rs.blendFactorDstAlpha));
+        collection.write(static_cast<uint8_t>(rs.blendOperationColor));
+        collection.write(static_cast<uint8_t>(rs.blendOperationAlpha));
+        collection.write(static_cast<uint8_t>(rs.cullMode));
+        collection.write(static_cast<uint8_t>(rs.drawMode));
+        collection.write(static_cast<uint8_t>(rs.depthWrite));
+        collection.write(static_cast<uint8_t>(rs.depthFunc));
+        collection.write(static_cast<uint8_t>(rs.stencilFunc));
         collection.write(rs.stencilRefValue);
-        collection.write(static_cast<UInt32>(rs.stencilMask));
-        collection.write(static_cast<UInt32>(rs.stencilOpFail));
-        collection.write(static_cast<UInt32>(rs.stencilOpDepthFail));
-        collection.write(static_cast<UInt32>(rs.stencilOpDepthPass));
+        collection.write(rs.stencilMask);
+        collection.write(static_cast<uint8_t>(rs.stencilOpFail));
+        collection.write(static_cast<uint8_t>(rs.stencilOpDepthFail));
+        collection.write(static_cast<uint8_t>(rs.stencilOpDepthPass));
         collection.write(rs.colorWriteMask);
     }
 
@@ -1191,19 +1191,17 @@ namespace ramses_internal
         const FlushTimeInformation& flushTimeInfo,
         std::initializer_list<UInt64> additionalTimestamps)
     {
-        const bool hasExpirationTimestamp = (flushTimeInfo.expirationTimestamp != FlushTime::InvalidTimestamp);
         const bool hasTimestamps = additionalTimestamps.size() > 0;
         const uint8_t flushFlags =
             (synchronous ? ESceneActionFlushBits_Synchronous : 0u) |
             (addSizeInfo ? ESceneActionFlushBits_HasSizeInfo : 0u) |
-            (hasTimestamps ? ESceneActionFlushBits_HasTimestamps : 0u) |
-            (hasExpirationTimestamp ? ESceneActionFlushBits_HasExpirationTimestamp : 0u);
+            (hasTimestamps ? ESceneActionFlushBits_HasTimestamps : 0u);
 
-        UInt estimatedDataSize = sizeof(flushIndex) + sizeof(flushFlags) +
+        const UInt estimatedDataSize = sizeof(flushIndex) + sizeof(flushFlags) +
             (addSizeInfo ? sizeof(SceneSizeInformation) : 0) +
             resourceChanges.getPutSizeEstimate() +
             (hasTimestamps ? sizeof(UInt64) * (additionalTimestamps.size() + 1) : 0) +
-            (hasExpirationTimestamp ? 3*sizeof(UInt64) : sizeof(UInt64));
+            2 * sizeof(UInt64);
         collection.reserveAdditionalCapacity(estimatedDataSize, 1u);
 
         collection.beginWriteSceneAction(ESceneActionId_Flush);
@@ -1215,11 +1213,7 @@ namespace ramses_internal
         }
         resourceChanges.putToSceneAction(collection);
 
-        if (hasExpirationTimestamp)
-        {
-            collection.write(uint64_t(1)); // TODO vaclav remove when not needed - this allows back compatibility with older version of renderer using timestamp and limit (now merged into expiration timestamp)
-            collection.write(static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(flushTimeInfo.expirationTimestamp).time_since_epoch().count()));
-        }
+        collection.write(static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(flushTimeInfo.expirationTimestamp).time_since_epoch().count()));
         collection.write(static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(flushTimeInfo.internalTimestamp).time_since_epoch().count()));
 
         if (hasTimestamps)

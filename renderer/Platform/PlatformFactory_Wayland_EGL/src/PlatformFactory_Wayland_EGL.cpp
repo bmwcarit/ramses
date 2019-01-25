@@ -61,7 +61,7 @@ namespace ramses_internal
 
         Context_EGL* platformContext = new Context_EGL(
                     reinterpret_cast<EGLNativeDisplayType>(platformWindow->getNativeDisplayHandle()),
-                    reinterpret_cast<EGLNativeWindowType>(platformWindow->getNativeWindowHandle()),
+                    reinterpret_cast<Context_EGL::Generic_EGLNativeWindowType>(platformWindow->getNativeWindowHandle()),
                     &contextAttributes[0],
                     &surfaceAttributes[0],
                     &windowSurfaceAttributes[0],

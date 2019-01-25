@@ -9,7 +9,7 @@
 #ifndef RAMSES_APPEARANCEENUMS_H
 #define RAMSES_APPEARANCEENUMS_H
 
-#include "APIExport.h"
+#include "ramses-framework-api/APIExport.h"
 
 namespace ramses
 {

@@ -11,7 +11,7 @@
 
 namespace ramses_internal
 {
-    Context_EGL::Context_EGL(EGLNativeDisplayType eglDisplay, EGLNativeWindowType eglWindow, const EGLint* contextAttributes, const EGLint* surfaceAttributes, const EGLint* windowSurfaceAttributes, EGLint swapInterval, Context_EGL* sharedContext /*= 0*/)
+    Context_EGL::Context_EGL(EGLNativeDisplayType eglDisplay, Generic_EGLNativeWindowType eglWindow, const EGLint* contextAttributes, const EGLint* surfaceAttributes, const EGLint* windowSurfaceAttributes, EGLint swapInterval, Context_EGL* sharedContext /*= 0*/)
         : m_nativeDisplay(eglDisplay)
         , m_nativeWindow(eglWindow)
         , m_contextAttributes(contextAttributes)
@@ -88,7 +88,7 @@ namespace ramses_internal
 
         m_eglSurfaceData.eglSurface = eglCreateWindowSurface(
             m_eglSurfaceData.eglDisplay, m_eglSurfaceData.eglConfig,
-            m_nativeWindow, m_windowSurfaceAttributes);
+            reinterpret_cast<EGLNativeWindowType>(m_nativeWindow), m_windowSurfaceAttributes);
 
         if (!m_eglSurfaceData.eglSurface)
         {

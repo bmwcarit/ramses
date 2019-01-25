@@ -32,7 +32,8 @@ class LocalTestRenderer
 public:
     virtual ~LocalTestRenderer() {};
 
-    void initializeRendererWithFramework(ramses::RamsesFramework& ramsesFramework);
+    void initializeRendererWithFramework(ramses::RamsesFramework& ramsesFramework, const ramses::RendererConfig& rendererConfig);
+    bool isRendererInitialized() const;
     void destroyRenderer();
     void flushRenderer();
 

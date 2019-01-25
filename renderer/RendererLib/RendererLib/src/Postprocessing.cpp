@@ -67,10 +67,10 @@ namespace ramses_internal
         if (0 != m_warpingPass)
         {
             m_device.activateRenderTarget(m_framebuffer);
-            m_device.cullMode(ECullMode_Disabled);
+            m_device.cullMode(ECullMode::Disabled);
             m_device.enableScissorTest(false);
-            m_device.depthFunc(EDepthFunc_Disabled);
-            m_device.depthWrite(EDepthWrite_Disabled);
+            m_device.depthFunc(EDepthFunc::Disabled);
+            m_device.depthWrite(EDepthWrite::Disabled);
             m_device.colorMask(true, true, true, true);
             m_device.clearColor({ 0.f, 0.f, 0.f, 0.f });
             m_device.clear(EClearFlags_Color);

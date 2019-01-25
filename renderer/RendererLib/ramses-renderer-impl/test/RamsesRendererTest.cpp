@@ -85,9 +85,7 @@ protected:
     ramses::displayId_t addDisplay(bool warpingEnabled = false)
     {
         //Create a display
-        static uint32_t nativeDisplayId = 0u;
         ramses::DisplayConfig displayConfig;
-        displayConfig.setIntegrityEGLDisplayID(nativeDisplayId++);
         if (warpingEnabled)
         {
             displayConfig.enableWarpingPostEffect();

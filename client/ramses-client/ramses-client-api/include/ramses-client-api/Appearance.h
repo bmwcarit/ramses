@@ -116,23 +116,23 @@ namespace ramses
         * Stencil is disabled by default.
         *
         * @param[in] func Stencil function to be used
-        * @param[in] ref Stencil reference value  to be used
+        * @param[in] ref Stencil reference value to be used
         * @param[in] mask Stencil mask value to be used
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setStencilFunction(EStencilFunc func, uint32_t ref, uint8_t mask);
+        status_t setStencilFunction(EStencilFunc func, uint8_t ref, uint8_t mask);
 
         /**
         * @brief Gets stencil function, reference and mask value
         *
-        * @param[out] func Stencil function is used
-        * @param[out] ref Stencil reference value is used
-        * @param[out] mask Stencil mask value is used
+        * @param[out] func Stencil function currently set
+        * @param[out] ref Stencil reference value currently set
+        * @param[out] mask Stencil mask value currently set
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getStencilFunction(EStencilFunc& func, uint32_t& ref, uint8_t& mask) const;
+        status_t getStencilFunction(EStencilFunc& func, uint8_t& ref, uint8_t& mask) const;
 
         /**
         * @brief Sets stencil operations for stencil testing.

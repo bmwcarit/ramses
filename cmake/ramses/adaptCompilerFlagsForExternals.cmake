@@ -33,14 +33,6 @@ SET(DISABLED_COMPILER_FLAGS
 # disabled blacklisted compiler flags for this directory
 # and subdirectories
 
-
-FUNCTION(REMOVE_FROM_FLAGS flags toRemoveList outVar)
-    string(REGEX REPLACE " +" ";" flags_LIST "${flags}")   # to list
-    list(REMOVE_ITEM flags_LIST ${toRemoveList})           # filter list
-    string(REPLACE ";" " " flags_filtered "${flags_LIST}") # to string
-    set(${outVar} "${flags_filtered}" PARENT_SCOPE)
-ENDFUNCTION()
-
 REMOVE_FROM_FLAGS("${CMAKE_C_FLAGS}"                "${DISABLED_COMPILER_FLAGS}" CMAKE_C_FLAGS)
 REMOVE_FROM_FLAGS("${CMAKE_C_FLAGS_DEBUG}"          "${DISABLED_COMPILER_FLAGS}" CMAKE_C_FLAGS_DEBUG)
 REMOVE_FROM_FLAGS("${CMAKE_C_FLAGS_RELEASE}"        "${DISABLED_COMPILER_FLAGS}" CMAKE_C_FLAGS_RELEASE)
@@ -78,7 +70,7 @@ ELSEIF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 
 ELSEIF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 
-    # no special flags for msvc required
+    SET(ADDITIONAL_COMPILER_FLAGS "${ADDITIONAL_COMPILER_FLAGS} /wd4312")
 
 ELSE() # Integrity is last since CMAKE_CXX_COMPILER_ID is not set
 

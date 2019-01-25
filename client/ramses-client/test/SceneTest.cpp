@@ -806,7 +806,7 @@ namespace ramses
         EXPECT_EQ(ramses_internal::InvalidSceneVersionTag, m_scene.impl.getIScene().getSceneVersionTag());
 
         ramses::sceneVersionTag_t newVersion(1u);
-        m_scene.flush(ESceneFlushMode_SynchronizedWithResources, newVersion);
+        m_scene.flush(newVersion);
 
         EXPECT_EQ(ramses_internal::SceneVersionTag(newVersion), m_scene.impl.getIScene().getSceneVersionTag());
     }

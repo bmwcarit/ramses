@@ -18,7 +18,7 @@
 #define RAMSES_CAPU_GENERIC_FILESYSTEMITERATOR_H
 
 #include <ramses-capu/os/File.h>
-#include <ramses-capu/container/vector.h>
+#include <vector>
 
 namespace ramses_capu
 {
@@ -39,7 +39,7 @@ namespace ramses_capu
 
             bool mRecurseSubDirectories;
 
-            vector<STACKTYPE> mDirectoryStack;
+            std::vector<STACKTYPE> mDirectoryStack;
         };
 
 

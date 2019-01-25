@@ -363,7 +363,7 @@ int main(int argc, char* argv[])
     eventHandler.waitForSubscription(sceneId2);
 
     ramses::DisplayConfig displayConfig(argc, argv);
-    displayConfig.setIntegrityEGLDisplayID(0);
+    displayConfig.setIntegrityRGLDeviceUnit(0);
     displayConfig.setWaylandIviSurfaceID(0);
     displayConfig.setWaylandIviLayerID(3);
     displayConfig.setWindowIviVisible();

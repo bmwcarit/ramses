@@ -21,6 +21,9 @@ def compare_images(screenshotPath, desiredImagePath, percentageOfWrongPixelsAllo
     try:
         image = Image.open(screenshotPath)
         desiredImage = Image.open(desiredImagePath)
+        image = image.convert("RGB")  # on the fly convert to RGB image, needed to guarantee 3-value tuple access
+        desiredImage = desiredImage.convert("RGB")  # on the fly convert to RGB image, needed to guarantee 3-value tuple access
+
     except IOError as e:
         log.errorAndAssert("Image file for comparison could not be opened ({} {})".format(e.strerror, e.filename))
 
@@ -30,11 +33,13 @@ def compare_images(screenshotPath, desiredImagePath, percentageOfWrongPixelsAllo
         log.info("Image is bigger than desired image, using cropped image")
         splittedImagePath = os.path.splitext(screenshotPath)
         croppedImagePath = splittedImagePath[0]+"_cropped"+splittedImagePath[1]
-        image.crop((0, 0, desiredImage.size[0], desiredImage.size[1])).save(croppedImagePath)
-        image = Image.open(croppedImagePath) #reopen image, otherwise it does not have a filename
+        image = image.crop((0, 0, desiredImage.size[0], desiredImage.size[1]))
+        image.save(croppedImagePath)
     if compareForEquality:
+        log.info("compareEqual: Bitmap compare of {0} with {1}".format(screenshotPath, desiredImagePath))
         result = image_utils.compareEqual(image, desiredImage, percentageOfWrongPixelsAllowed, percentageOfRGBDifferenceAllowedPerPixel)
     else:
+        log.info("compareUnequal: Bitmap compare of {0} with {1}".format(screenshotPath, desiredImagePath))
         result = image_utils.compareUnequal(image, desiredImage, numberOfRequiredUnequalPixels, percentageOfRGBDifferenceAllowedPerPixel)
     if not result:
         image_utils.create_diff_images(image, desiredImage, screenshotPath, imageDiffScaleFactor)

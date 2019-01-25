@@ -15,7 +15,6 @@
 #include "Components/ResourceHashUsage.h"
 #include "Resource/EffectResource.h"
 #include "Collections/StringOutputStream.h"
-#include "Common/Cpp11Macros.h"
 #include "EffectInputSemanticUtils.h"
 
 namespace ramses
@@ -40,21 +39,21 @@ namespace ramses
         CHECK_RETURN_ERR(ResourceImpl::serialize(outStream, serializationContext));
 
         outStream << static_cast<uint32_t>(m_effectUniformInputs.size());
-        ramses_foreach(m_effectUniformInputs, prop)
+        for(const auto& input : m_effectUniformInputs)
         {
-            outStream << prop->inputName;
-            outStream << static_cast<uint32_t>(prop->dataType);
-            outStream << prop->elementCount;
-            outStream << static_cast<uint32_t>(prop->semantics);
-            outStream << static_cast<uint32_t>(prop->textureType);
+            outStream << input.inputName;
+            outStream << static_cast<uint32_t>(input.dataType);
+            outStream << input.elementCount;
+            outStream << static_cast<uint32_t>(input.semantics);
+            outStream << static_cast<uint32_t>(input.textureType);
         }
 
         outStream << static_cast<uint32_t>(m_effectAttributeInputs.size());
-        ramses_foreach(m_effectAttributeInputs, prop)
+        for (const auto& input : m_effectAttributeInputs)
         {
-            outStream << prop->inputName;
-            outStream << static_cast<uint32_t>(prop->dataType);
-            outStream << static_cast<uint32_t>(prop->semantics);
+            outStream << input.inputName;
+            outStream << static_cast<uint32_t>(input.dataType);
+            outStream << static_cast<uint32_t>(input.semantics);
         }
 
         return StatusOK;

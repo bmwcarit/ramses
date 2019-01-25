@@ -10,7 +10,6 @@
 #include "RendererLib/RenderableComparator.h"
 #include "FrameBufferInfo.h"
 #include "RenderingPassOrderComparator.h"
-#include "Common/Cpp11Macros.h"
 #include <algorithm>
 
 namespace ramses_internal
@@ -226,9 +225,9 @@ namespace ramses_internal
 
         std::sort(orderedRenderGroups.begin(), orderedRenderGroups.end());
 
-        ramses_foreach(orderedRenderGroups, renderGroupIt)
+        for(const auto& renderGroup : orderedRenderGroups)
         {
-            addRenderablesFromRenderGroup(orderedRenderables, renderGroupIt->renderGroup);
+            addRenderablesFromRenderGroup(orderedRenderables, renderGroup.renderGroup);
         }
     }
 

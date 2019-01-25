@@ -429,7 +429,6 @@ namespace ramses
         EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data0nz, resData, sizeof(data0nz)));
         resData += sizeof(data0nz);
         EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data1nz, resData, sizeof(data1nz)));
-        resData += sizeof(data1nz);
     }
 
     TEST_F(AResourceTestClient, createTextureCubeWithProvidedMipsButNotFullChain)
@@ -1098,6 +1097,7 @@ namespace ramses
 
         ResourceFileDescription fileDescription2("testfile.ramres");
         status = client.loadResources(fileDescription2);
+        EXPECT_EQ(StatusOK, status);
         EXPECT_EQ(1u, this->getFramework().impl.getStatisticCollection().statResourcesCreated.getCounterValue());
         EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
 

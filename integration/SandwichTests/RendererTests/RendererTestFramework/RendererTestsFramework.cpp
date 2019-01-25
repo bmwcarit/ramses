@@ -18,7 +18,6 @@
 #include "PlatformAbstraction/PlatformTime.h"
 #include "RendererTestUtils.h"
 #include "RendererTestEventHandler.h"
-#include "Common/Cpp11Macros.h"
 
 RendererTestsFramework::RendererTestsFramework(bool generateScreenshots, const ramses::RamsesFrameworkConfig& config)
     : m_generateScreenshots(generateScreenshots)
@@ -26,29 +25,54 @@ RendererTestsFramework::RendererTestsFramework(bool generateScreenshots, const r
     , m_activeTestCase(NULL)
     , m_elapsedTime(0u)
 {
-    m_testRenderer.initializeRenderer();
 }
 
 RendererTestsFramework::~RendererTestsFramework()
 {
     assert(m_activeTestCase == NULL);
-    ramses_foreach(m_testCases, testCase)
+    for(const auto& testCase : m_testCases)
     {
-        delete *testCase;
+        delete testCase;
     }
 
     destroyDisplays();
     m_testRenderer.destroyRenderer();
 }
 
-LocalTestRenderer& RendererTestsFramework::getTestRenderer()
+void RendererTestsFramework::initializeRenderer()
+{
+    m_testRenderer.initializeRenderer();
+}
+
+void RendererTestsFramework::initializeRenderer(const ramses::RendererConfig& rendererConfig)
+{
+    m_testRenderer.initializeRenderer(rendererConfig);
+}
+
+void RendererTestsFramework::destroyRenderer()
+{
+    m_testRenderer.destroyRenderer();
+}
+
+ramses::displayId_t RendererTestsFramework::createDisplay(ramses::DisplayConfig displayConfig)
+{
+    const ramses::displayId_t displayId = m_testRenderer.createDisplay(displayConfig);
+    if (displayId != ramses::InvalidDisplayId)
+    {
+        m_displays.push_back({displayId, displayConfig, OffscreenBufferVector()});
+    }
+
+    return displayId;
+}
+
+RendererTestInstance& RendererTestsFramework::getTestRenderer()
 {
     return m_testRenderer;
 }
 
 RenderingTestCase& RendererTestsFramework::createTestCase(ramses_internal::UInt32 id, IRendererTest& rendererTest, const ramses_internal::String& name)
 {
-    RenderingTestCase* testCase = new RenderingTestCase(id, rendererTest, name);
+    RenderingTestCase* testCase = new RenderingTestCase(id, rendererTest, name, true);
     m_testCases.push_back(testCase);
 
     return *testCase;
@@ -65,6 +89,14 @@ RenderingTestCase& RendererTestsFramework::createTestCaseWithDefaultDisplay(rams
     testCase.m_displayConfigs.push_back(displayConfig);
 
     return testCase;
+}
+
+RenderingTestCase& RendererTestsFramework::createTestCaseWithoutRenderer(ramses_internal::UInt32 id, IRendererTest &rendererTest, const ramses_internal::String &name)
+{
+    RenderingTestCase* testCase = new RenderingTestCase(id, rendererTest, name, false);
+    m_testCases.push_back(testCase);
+
+    return *testCase;
 }
 
 TestScenes& RendererTestsFramework::getScenesRegistry()
@@ -246,16 +278,16 @@ bool RendererTestsFramework::compareScreenshotInternal(
     return comparisonResult;
 }
 
-bool RendererTestsFramework::NameMatchesFilter(const ramses_internal::String& name, const ramses_internal::StringVector& filter)
+bool RendererTestsFramework::NameMatchesFilter(const ramses_internal::String& name, const ramses_internal::StringVector& filters)
 {
-    if (filter.contains("*"))
+    if (filters.contains("*"))
     {
         return true;
     }
 
-    ramses_foreach(filter, filterStr)
+    for(const auto& filter : filters)
     {
-        if (name.find(*filterStr) >= 0)
+        if (name.find(filter) >= 0)
         {
             return true;
         }
@@ -277,19 +309,19 @@ void RendererTestsFramework::filterTestCases(const ramses_internal::StringVector
     RenderingTestCases testCases;
     testCases.swap(m_testCases);
 
-    ramses_foreach(testCases, testCase)
+    for(const auto& testCase : testCases)
     {
-        const ramses_internal::String testCaseName = (*testCase)->m_name;
+        const ramses_internal::String testCaseName = testCase->m_name;
         const bool excludedByFilterIn = processFilterIn && !NameMatchesFilter(testCaseName, filterIn);
         const bool excludedByFilterOut = processFilterOut && NameMatchesFilter(testCaseName, filterOut);
 
         if (excludedByFilterIn || excludedByFilterOut)
         {
-            delete *testCase;
+            delete testCase;
         }
         else
         {
-            m_testCases.push_back(*testCase);
+            m_testCases.push_back(testCase);
         }
     }
 }
@@ -378,8 +410,24 @@ bool RendererTestsFramework::currentDisplaySetupMatchesTestCase(const RenderingT
     return true;
 }
 
-bool RendererTestsFramework::initializeDisplays(const RenderingTestCase& testCase)
+bool RendererTestsFramework::applyRendererAndDisplaysConfigurationForTest(const RenderingTestCase& testCase)
 {
+    if(!testCase.m_defaultRendererRequired)
+    {
+        //destroy renderer and displays if needed
+        if(m_testRenderer.isRendererInitialized())
+        {
+            destroyDisplays();
+            destroyRenderer();
+        }
+
+        return true;
+    }
+
+    //create renderer and displays if needed
+    if(!m_testRenderer.isRendererInitialized())
+        initializeRenderer();
+
     if (currentDisplaySetupMatchesTestCase(testCase))
     {
         return true;
@@ -387,22 +435,20 @@ bool RendererTestsFramework::initializeDisplays(const RenderingTestCase& testCas
 
     destroyDisplays();
 
-    ramses_foreach(testCase.m_displayConfigs, displayConfig)
+    for(const auto& displayConfig : testCase.m_displayConfigs)
     {
-        ramses::displayId_t displayId = m_testRenderer.createDisplay(*displayConfig);
+        const ramses::displayId_t displayId = createDisplay(displayConfig);
+
         if (displayId == ramses::InvalidDisplayId)
         {
             return false;
         }
 
-        if (displayConfig->impl.getInternalDisplayConfig().isWarpingEnabled())
+        if (displayConfig.impl.getInternalDisplayConfig().isWarpingEnabled())
         {
             // Use default test warping mesh for render tests using warped display
             m_testRenderer.updateWarpingMeshData(displayId, RendererTestUtils::CreateTestWarpingMesh());
         }
-
-        TestDisplayInfo displayInfo = { displayId, *displayConfig, OffscreenBufferVector() };
-        m_displays.push_back(displayInfo);
     }
 
     return true;
@@ -410,9 +456,9 @@ bool RendererTestsFramework::initializeDisplays(const RenderingTestCase& testCas
 
 void RendererTestsFramework::destroyDisplays()
 {
-    ramses_foreach(m_displays, display)
+    for(const auto& display : m_displays)
     {
-        m_testRenderer.destroyDisplay(display->displayId);
+        m_testRenderer.destroyDisplay(display.displayId);
     }
     m_displays.clear();
 }
@@ -424,13 +470,13 @@ void RendererTestsFramework::destroyScenes()
 
 void RendererTestsFramework::destroyOffscreenBuffers()
 {
-    ramses_foreach(m_displays, displayIter)
+    for (auto& display : m_displays)
     {
-        OffscreenBufferVector& buffers = displayIter->offscreenBuffers;
+        OffscreenBufferVector& buffers = display.offscreenBuffers;
 
-        ramses_foreach(buffers, bufferIter)
+        for(const auto& buffer : buffers)
         {
-            m_testRenderer.destroyOffscreenBuffer(displayIter->displayId, *bufferIter);
+            m_testRenderer.destroyOffscreenBuffer(display.displayId, buffer);
         }
         buffers.clear();
     }
@@ -448,21 +494,19 @@ bool RendererTestsFramework::runAllTests()
 
     sortTestCases();
 
-    ramses_foreach(m_testCases, testCaseIt)
+    for(const auto& testCase : m_testCases)
     {
-        RenderingTestCase& testCase = **testCaseIt;
-
-        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "Running rendering test case: " << testCase.m_name);
-        printf("Running rendering test case: %s\n", testCase.m_name.c_str());
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "Running rendering test case: " << testCase->m_name);
+        printf("Running rendering test case: %s\n", testCase->m_name.c_str());
         fflush(stdout);
 
-        if (initializeDisplays(testCase))
+        if (applyRendererAndDisplaysConfigurationForTest(*testCase))
         {
-            testResult &= runTestCase(testCase);
+            testResult &= runTestCase(*testCase);
         }
         else
         {
-            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "Renderer/display initialization failed for rendering test case: " << testCase.m_name);
+            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "Renderer/display initialization failed for rendering test case: " << testCase->m_name);
             testResult = false;
         }
 
@@ -502,15 +546,15 @@ ramses_internal::String RendererTestsFramework::generateReport() const
     str << "\n\n--- Rendering test report begin ---\n";
     {
         str << "\n  Passed rendering test cases: " << m_passedTestCases.size();
-        ramses_foreach(m_passedTestCases, testCase)
+        for(const auto& testCase : m_passedTestCases)
         {
-            str << "\n    " << (*testCase)->m_name;
+            str << "\n    " << testCase->m_name;
         }
 
         str << "\n\n  Failed rendering test cases: " << m_failedTestCases.size();
-        ramses_foreach(m_failedTestCases, testCase)
+        for (const auto& testCase : m_failedTestCases)
         {
-            str << "\n    " << (*testCase)->m_name;
+            str << "\n    " << testCase->m_name;
         }
 
         if (m_failedTestCases.empty())

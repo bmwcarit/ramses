@@ -13,7 +13,6 @@
 #include "Components/ManagedResource.h"
 #include "Utils/BinaryInputStream.h"
 #include "ServiceHandlerMocks.h"
-#include "Common/Cpp11Macros.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "Utils/BinaryOutputStream.h"
 #include "Components/ResourceStreamSerialization.h"
@@ -289,10 +288,10 @@ namespace ramses_internal
         ASSERT_TRUE(waitForEvent(expectedNumberOfMessages));
 
         ResourceContentHashVector receivedResourceRequestsConcatenated;
-        ramses_foreach(receivedResourceRequests, requestIter)
+        for(const auto& resRequest : receivedResourceRequests)
         {
-            receivedResourceRequestsConcatenated.insert(receivedResourceRequestsConcatenated.end(),requestIter->begin(),requestIter->end());
-            EXPECT_LE(static_cast<UInt32>(requestIter->size()), maxNumberOfResourceRequests);
+            receivedResourceRequestsConcatenated.insert(receivedResourceRequestsConcatenated.end(), resRequest.begin(), resRequest.end());
+            EXPECT_LE(static_cast<UInt32>(resRequest.size()), maxNumberOfResourceRequests);
         }
 
         EXPECT_EQ(resourceRequestVector, receivedResourceRequestsConcatenated);

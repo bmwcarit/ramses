@@ -19,8 +19,8 @@
 
 #include "gmock/gmock.h"
 #include "ramses-capu/os/File.h"
-#include "ramses-capu/container/vector.h"
 #include <memory>
+#include <vector>
 
 namespace ramses_capu
 {
@@ -77,8 +77,8 @@ namespace ramses_capu
         File mFile;
         bool mCreated;
 
-        vector<TestFilePtr> mContainingFiles;
-        vector<TestDirectoryPtr> mContainingDirectories;
+        std::vector<TestFilePtr> mContainingFiles;
+        std::vector<TestDirectoryPtr> mContainingDirectories;
     };
 
     inline TestFile::TestFile(File file)

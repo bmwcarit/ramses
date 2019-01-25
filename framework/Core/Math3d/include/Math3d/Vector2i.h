@@ -48,13 +48,11 @@ namespace ramses_internal
              * vec.x = 1;
              * vec.y = 2;
              */
-            IGNORE_UNNAMED_MEMBER_WARNING_START
             struct
             {
                 Int32 x;
                 Int32 y;
             };
-            IGNORE_UNNAMED_MEMBER_WARNING_END
 
             /**
             * Vector2i vec;

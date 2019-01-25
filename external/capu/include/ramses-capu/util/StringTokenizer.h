@@ -19,7 +19,7 @@
 
 #include "ramses-capu/Config.h"
 #include "ramses-capu/container/String.h"
-#include "ramses-capu/container/vector.h"
+#include <vector>
 
 namespace ramses_capu
 {
@@ -62,7 +62,7 @@ namespace ramses_capu
         /**
          * Iterator type forward definiton onto List<String>
          */
-        typedef vector<String>::iterator iterator;
+        typedef std::vector<String>::iterator iterator;
 
         /**
          * Begin-Iterator.
@@ -77,7 +77,7 @@ namespace ramses_capu
         iterator end();
 
     private:
-        vector<String> m_tokens;
+        std::vector<String> m_tokens;
 
     };
 

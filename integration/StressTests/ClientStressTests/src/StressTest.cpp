@@ -40,11 +40,6 @@ StressTest::StressTest(int32_t argc, const char* argv[], const ramses_internal::
     ramses::DisplayConfig displayConfig(argc, argv);
     displayConfig.setWindowRectangle(50, 50, m_displayWidth, m_displayHeight);
 
-    if (0xFFFFFFFF == displayConfig.getIntegrityEGLDisplayID())
-    {
-        displayConfig.setIntegrityEGLDisplayID(100);
-    }
-
     if(0xFFFFFFFF == displayConfig.getWaylandIviSurfaceID())
     {
         displayConfig.setWaylandIviSurfaceID(0);

@@ -158,10 +158,10 @@ namespace ramses
         return status;
     }
 
-    status_t Scene::flush(ESceneFlushMode flushMode, sceneVersionTag_t sceneVersionTag)
+    status_t Scene::flush(sceneVersionTag_t sceneVersionTag)
     {
-        const status_t status = impl.flush(flushMode, sceneVersionTag);
-        LOG_HL_CLIENT_API3(status, flushMode, sceneVersionTag, impl.getSceneId());
+        const status_t status = impl.flush(sceneVersionTag);
+        LOG_HL_CLIENT_API2(status, sceneVersionTag, impl.getSceneId());
         return status;
     }
 

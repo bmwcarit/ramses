@@ -20,7 +20,6 @@
 #include "ramses-framework-api/RamsesFramework.h"
 #include "DisplayManager/DisplayManager.h"
 
-#include "Common/Cpp11Macros.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "RendererLib/RendererConfigUtils.h"
 #include "ramses-hmi-utils.h"

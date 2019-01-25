@@ -10,6 +10,8 @@
 #include "PlatformAbstraction/PlatformThread.h"
 #include "ramses-capu/container/Pair.h"
 #include <gtest/gtest.h>
+#include <random>
+#include <vector>
 
 namespace ramses_internal
 {
@@ -77,11 +79,13 @@ namespace ramses_internal
                 {
                     uint32_t val = i + mId * 100 + 100;
                     mQueue.push(val);
-                    uint32_t sleepTime = rand() % 100;
+                    uint32_t sleepTime = std::uniform_int_distribution<uint32_t>(0, 100)(randGenerator);
                     PlatformThread::Sleep(sleepTime);
                     mSum += val;
                 }
             }
+
+            std::mt19937 randGenerator{std::random_device{}()};
         };
 
         std::atomic<uint32_t> Producer::mSum(0);
@@ -127,7 +131,7 @@ namespace ramses_internal
         // this ensures correct test configuration
         ASSERT_EQ(0, countProducer * countPerProducer % countConsumer);
 
-        ramses_capu::vector<ramses_capu::Pair<ramses_capu::Thread*, ramses_capu::Runnable*>> consumer(countConsumer);
+        std::vector<ramses_capu::Pair<ramses_capu::Thread*, ramses_capu::Runnable*>> consumer(countConsumer);
         for (int32_t i = 0; i < countConsumer; ++i)
         {
             consumer[i].second = new Consumer(queue, countPerConsumer, i + 20);
@@ -135,7 +139,7 @@ namespace ramses_internal
             consumer[i].first->start(*consumer[i].second);
         }
 
-        ramses_capu::vector<ramses_capu::Pair<ramses_capu::Thread*, ramses_capu::Runnable*>> producer(countProducer);
+        std::vector<ramses_capu::Pair<ramses_capu::Thread*, ramses_capu::Runnable*>> producer(countProducer);
         for (int32_t i = 0; i < countProducer; ++i)
         {
             producer[i].second = new Producer(queue, countPerProducer, i + 10);

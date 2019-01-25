@@ -8,7 +8,6 @@
 
 #include "TestScenes.h"
 #include "ramses-client-api/ResourceIterator.h"
-#include "Common/Cpp11Macros.h"
 #include "TestScenes/FileLoadingScene.h"
 
 TestScenes::TestScenes(ramses::RamsesClient& client)
@@ -60,9 +59,9 @@ void TestScenes::destroyScenes()
         resourcesToDestroy.push_back(resource);
     }
 
-    ramses_foreach(resourcesToDestroy, res)
+    for(const auto& res : resourcesToDestroy)
     {
-        m_client.destroy(**res);
+        m_client.destroy(*res);
     }
 }
 

@@ -33,6 +33,26 @@ namespace ramses_internal
             "InfiniteDuration constant overflows if represented in std::chrono::nanoseconds");
     };
 
+    inline uint64_t asMilliseconds(std::chrono::steady_clock::time_point tp)
+    {
+        return std::chrono::time_point_cast<std::chrono::milliseconds>(tp).time_since_epoch().count();
+    }
+
+    inline uint64_t asMicroseconds(std::chrono::steady_clock::time_point tp)
+    {
+        return std::chrono::time_point_cast<std::chrono::microseconds>(tp).time_since_epoch().count();
+    }
+
+    inline uint64_t asMilliseconds(std::chrono::system_clock::time_point tp)
+    {
+        return std::chrono::time_point_cast<std::chrono::milliseconds>(tp).time_since_epoch().count();
+    }
+
+    inline uint64_t asMicroseconds(std::chrono::system_clock::time_point tp)
+    {
+        return std::chrono::time_point_cast<std::chrono::microseconds>(tp).time_since_epoch().count();
+    }
+
     inline UInt64 PlatformTime::GetMillisecondsAbsolute()
     {
         auto now = std::chrono::system_clock::now();

@@ -10,7 +10,6 @@
 #include "ServiceHandlerMocks.h"
 #include "SenderAndReceiverTestUtils.h"
 #include "Scene/SceneActionCollectionCreator.h"
-#include "Common/Cpp11Macros.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "SceneActionCollectionTestHelpers.h"
 
@@ -232,10 +231,10 @@ namespace ramses_internal
         ASSERT_TRUE(waitForEvent(expectedNumberOfMessages));
 
         SceneActionCollection receivedActions;
-        ramses_foreach(receivedActionVectors, actionIter)
+        for(const auto& recvSceneActions : receivedActionVectors)
         {
-            EXPECT_LE(actionIter->numberOfActions(), sendDataSizes.sceneActionNumber);
-            receivedActions.append(*actionIter);
+            EXPECT_LE(recvSceneActions.numberOfActions(), sendDataSizes.sceneActionNumber);
+            receivedActions.append(recvSceneActions);
         }
         ASSERT_EQ(numberOfSceneActions, receivedActions.numberOfActions());
         EXPECT_EQ(actions, receivedActions);
@@ -279,11 +278,11 @@ namespace ramses_internal
         ASSERT_TRUE(waitForEvent(expectedNumberOfMessages));
 
         SceneActionCollection receivedActions;
-        ramses_foreach(receivedActionVectors, actionVectorIter)
+        for (const auto& recvSceneActions : receivedActionVectors)
         {
-            EXPECT_LE(actionVectorIter->collectionData().size(), sendDataSizes.sceneActionDataArray);
-            EXPECT_LE(actionVectorIter->numberOfActions(), sendDataSizes.sceneActionNumber);
-            receivedActions.append(*actionVectorIter);
+            EXPECT_LE(recvSceneActions.collectionData().size(), sendDataSizes.sceneActionDataArray);
+            EXPECT_LE(recvSceneActions.numberOfActions(), sendDataSizes.sceneActionNumber);
+            receivedActions.append(recvSceneActions);
         }
         ASSERT_EQ(numberOfSceneActions, receivedActions.numberOfActions());
         EXPECT_EQ(actions, receivedActions);

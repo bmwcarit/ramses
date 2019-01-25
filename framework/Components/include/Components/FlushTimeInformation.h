@@ -9,13 +9,13 @@
 #ifndef RAMSES_FLUSHTIMEINFORMATION_H
 #define RAMSES_FLUSHTIMEINFORMATION_H
 
-#include <chrono>
+#include "PlatformAbstraction/synchronized_clock.h"
 
 namespace ramses_internal
 {
     namespace FlushTime
     {
-        using Clock = std::chrono::system_clock;
+        using Clock = synchronized_clock;
 
         const Clock::time_point InvalidTimestamp{ std::chrono::milliseconds(0) };
     }

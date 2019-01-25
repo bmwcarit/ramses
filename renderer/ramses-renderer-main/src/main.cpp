@@ -15,7 +15,6 @@
 #include "Utils/LogMacros.h"
 #include "Utils/StringUtils.h"
 #include "DisplayManager/DisplayManager.h"
-#include "Common/Cpp11Macros.h"
 #include "PlatformAbstraction/PlatformThread.h"
 
 struct MappingCommand
@@ -81,9 +80,9 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
     }
 
     // apply mapping commands
-    ramses_foreach(mappingCommands, command)
+    for(const auto& command : mappingCommands)
     {
-        displayManager.showSceneOnDisplay(command->sceneId, command->display, 0);
+        displayManager.showSceneOnDisplay(command.sceneId, command.display, 0);
     }
 
     renderer.setMaximumFramerate(60);

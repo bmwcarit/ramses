@@ -230,7 +230,7 @@ namespace ramses_internal
         m_creator.setRenderStateStencilOps(stateHandle, sfail, dpfail, dppass);
     }
 
-    void ActionCollectingScene::setRenderStateStencilFunc(RenderStateHandle stateHandle, EStencilFunc func, UInt32 ref, UInt8 mask)
+    void ActionCollectingScene::setRenderStateStencilFunc(RenderStateHandle stateHandle, EStencilFunc func, UInt8 ref, UInt8 mask)
     {
         ResourceChangeCollectingScene::setRenderStateStencilFunc(stateHandle, func, ref, mask);
         m_creator.setRenderStateStencilFunc(stateHandle, func, ref, mask);

@@ -11,7 +11,6 @@
 #include "PlatformAbstraction/PlatformGuard.h"
 #include "TransportCommon/IConnectionStatusListener.h"
 #include "Utils/LogMacros.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {
@@ -28,9 +27,9 @@ namespace ramses_internal
     {
         PlatformGuard g(m_lock);
         m_listeners.push_back(listener);
-        ramses_foreach(m_currentState, it)
+        for(const auto& participant : m_currentState)
         {
-            listener->newParticipantHasConnected(*it);
+            listener->newParticipantHasConnected(participant);
         }
     }
 
@@ -52,9 +51,8 @@ namespace ramses_internal
         {
             LOG_INFO(CONTEXT_COMMUNICATION, "ConnectionStatusUpdateNotifier::doStatusUpdate: newParticipantHasConnected " << participant);
             m_currentState.put(participant);
-            ramses_foreach(m_listeners, it)
+            for(auto listener : m_listeners)
             {
-                IConnectionStatusListener* listener = *it;
                 listener->newParticipantHasConnected(participant);
             }
         }
@@ -62,9 +60,8 @@ namespace ramses_internal
         {
             LOG_INFO(CONTEXT_COMMUNICATION, "ConnectionStatusUpdateNotifier::doStatusUpdate: participantHasDisconnected " << participant);
             m_currentState.remove(participant);
-            ramses_foreach(m_listeners, it)
+            for (auto listener : m_listeners)
             {
-                IConnectionStatusListener* listener = *it;
                 listener->participantHasDisconnected(participant);
             }
         }

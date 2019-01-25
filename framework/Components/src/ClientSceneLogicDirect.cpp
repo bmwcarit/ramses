@@ -14,7 +14,6 @@
 #include "Scene/SceneActionCollectionCreator.h"
 #include "Scene/SceneResourceUtils.h"
 #include "PlatformAbstraction/PlatformGuard.h"
-#include "Common/Cpp11Macros.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "Utils/LogMacros.h"
 #include "Utils/StatisticCollection.h"

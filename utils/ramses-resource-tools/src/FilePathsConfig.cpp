@@ -8,7 +8,6 @@
 
 #include "FilePathsConfig.h"
 #include "FileUtils.h"
-#include "Common/Cpp11Macros.h"
 #include "StringUtils.h"
 #include "ConsoleUtils.h"
 
@@ -29,9 +28,9 @@ bool FilePathsConfig::loadFromFile(const char* filePath)
 
     bool succeed = true;
     int lineNumber = 1;
-    ramses_foreach(lines, iter)
+    for(const auto& line : lines)
     {
-        if (!parseConfigLine(lineNumber++, *iter))
+        if (!parseConfigLine(lineNumber++, line))
         {
             succeed = false;
         }

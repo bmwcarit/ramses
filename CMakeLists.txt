@@ -10,10 +10,14 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.3)
 
 SET(ramses-sdk_ROOT_CMAKE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
+# TODO(tobias) must be here because used inside platformConfig, rework order of all options to solve properly
+OPTION(ramses-sdk_WARNINGS_AS_ERRORS "Enable warnings as errors during build" ON)
+
 include(cmake/ramses/setCmakePolicies.cmake NO_POLICY_SCOPE)  # we want to propagate policy settings out!
+include(cmake/ramses/removeFromFlags.cmake)
 include(cmake/ramses/platformDetection.cmake)
 include(cmake/ramses/platformConfig.cmake)
-include(cmake/ramses/tools.cmake)
+include(cmake/ramses/getGitInformation.cmake)
 
 SET(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -51,9 +55,10 @@ OPTION(ramses-sdk_ENABLE_WAYLAND_SHELL "Build a version of ramses renderer which
 OPTION(ramses-sdk_ENABLE_TCP_SUPPORT "Enable use of TCP communication" ON)
 OPTION(ramses-sdk_ENABLE_DLT "Enable dlt support" ON)
 OPTION(ramses-sdk_USE_LINUX_DEV_PTP "Enable support for synchronized ptp time on linux" OFF)
+OPTION(ramses-sdk_BUILD_WITH_LTO "Build all targets with link time optimization enabled (not supported on all platforms)" OFF)
 
-SET(ramses-sdk_CONSOLE_LOG_LEVEL "" CACHE STRING "Console log level.")
-SET_PROPERTY(CACHE ramses-sdk_CONSOLE_LOG_LEVEL PROPERTY STRINGS "off" "fatal" "error" "warn" "info" "debug" "trace" "")
+SET(ramses-sdk_CONSOLE_LOGLEVEL "" CACHE STRING "Console log level.")
+SET_PROPERTY(CACHE ramses-sdk_CONSOLE_LOGLEVEL PROPERTY STRINGS "off" "fatal" "error" "warn" "info" "debug" "trace" "")
 
 # performance profiler options
 SET(ramses-sdk_BUILD_PERFORMANCE_PROFILER_SUPPORT "OFF" CACHE STRING "Include performance profiler support")
@@ -66,8 +71,6 @@ OPTION(ramses-sdk_INSTALL_STATIC_LIBS "Install static libraries: ON, OFF" ON)
 # enable default ACME2 plugins
 OPTION(ACME_ENABLE_PLUGIN_PROJECT_CONFIG_HEADER "ACME2 plugin for build config header generation" ON)
 
-include(cmake/ramses/checkForOverrideGitCommitInfo.cmake)
-
 SET(RAMSES_VERSION_MAJOR 0)
 SET(RAMSES_VERSION_MINOR 0)
 SET(RAMSES_VERSION_PATCH 0)
@@ -78,7 +81,7 @@ IF (BUILD_ENV_VERSION_INFO_FULL)
     string(REPLACE "\"" "\\\"" BUILD_ENV_VERSION_INFO_FULL_ESCAPED ${BUILD_ENV_VERSION_INFO_FULL_ESCAPED})
 endif (BUILD_ENV_VERSION_INFO_FULL)
 
-MESSAGE("RAMSES_VERSION=${RAMSES_VERSION}")
+MESSAGE(STATUS "RAMSES_VERSION=${RAMSES_VERSION}")
 
 SET(ramses-sdk_VERSION_DIR "ramses-${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}")
 IF (ramses-sdk_USE_VERSIONED_BINARIES)
@@ -128,13 +131,6 @@ ACME2_PROJECT(
     INSTALL_BINARY              "${ramses-sdk_BINARY_DIR_BASE}"
     INSTALL_RESOURCE            "${ramses-sdk_BINARY_DIR_BASE}/res"
     INSTALL_STATIC_LIB          "lib/${ramses-sdk_VERSION_DIR}"
-
-    #==========================================================================
-    # documentation files, will be installed and packaged
-    #==========================================================================
-    FILES_DOCUMENTATION         README.md
-                                LICENSE.txt
-    ENABLE_INSTALL_DOCUMENTATION ON
 
     #==========================================================================
     # content
@@ -220,9 +216,14 @@ ACME2_PROJECT(
 include(cmake/ramses/addCheckerTargets.cmake)
 
 #==========================================================================
-# build documentation
+# build and install documentation
 #==========================================================================
 ADD_SUBDIRECTORY(doc)
+
+INSTALL(FILES       README.md LICENSE.txt
+        DESTINATION share/doc/${PROJECT_NAME}-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}
+        COMPONENT   ${PROJECT_NAME}-${PROJECT_VERSION}
+    )
 
 #==========================================================================
 # generate CMake config files
@@ -248,6 +249,7 @@ if (ramses-sdk_BUILD_PERFORMANCE_PROFILER_SUPPORT MATCHES VTUNE)
 endif()
 
 FOREACH(configmodule ${configmodules})
+
     # install paths for find/config script must differ on windows and linux because of different search
     # rules used by find_package. See https://cmake.org/cmake/help/git-master/command/find_package.html
     # for details
@@ -317,9 +319,6 @@ IF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ramses-version")
             DESTINATION ${PROJECT_INSTALL_HEADER}
         )
 ELSE()
-    SET(RAMSES_COMMIT_COUNT "${GIT_COMMIT_COUNT}")
-    SET(RAMSES_GIT_HASH "${GIT_COMMIT_HASH}")
-    SET(RAMSES_BRANCH "${GIT_COMMIT_BRANCH}")
     STRING(TIMESTAMP RAMSES_BUILD_TIME UTC)
     CONFIGURE_FILE(
             "${CMAKE_CURRENT_SOURCE_DIR}/cmake/templates/ramses-version.in"

@@ -145,6 +145,24 @@ namespace ramses
         status_t setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForSceneActionsApply, uint64_t limitForOffscreenBufferRender);
 
         /**
+        * @brief Sets time limits for time-out of applying scene resource actions.
+        * @details This call extends setFrameTimerLimits() and will be merged into it in future versions of RAMSES. It allows to also set a limit
+        * for how long (time in microseconds into the frame) resource scene actions can be applied.
+        * !! IMPORTANT !! Scene resource actions can not be interrupted like other resources. Therefore, if this timer is exceeded, a scene will be
+        * force-unsubscribed. Use this timer with caution and merely as a sanity check, NOT as a performance measure! Scenes should not be over-using
+        * scene resources, precisely because they can not be interrupted.
+        *
+        * ATTENTION: This API is static in order to maintain API compatibility. Will be fixed in future versions.
+        *
+        * @param[in] renderer The renderer instance to apply the changes to
+        * @param[in] limitForSceneResourcesUpload  Time limit in microseconds (since beginning of frame) for uploading scene resources to GPU
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        *         StatusOK does not guarantee successful read back, the result event has its own status.
+        */
+        static status_t SetSceneResourcesTimerLimit(RamsesRenderer& renderer, uint64_t limitForSceneResourcesUpload);
+
+        /**
         * @brief Sets the number of pending flushes accepted before force-applying them to their scene, or forcefully insubscribing the scene.
         *
         * @details RAMSES guarantees that a scene flush is only going to be rendered if all resources (textures,

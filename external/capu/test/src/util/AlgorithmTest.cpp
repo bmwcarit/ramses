@@ -15,12 +15,12 @@
 */
 
 #include "ramses-capu/util/Algorithm.h"
-#include "ramses-capu/container/vector.h"
 #include "ramses-capu/container/String.h"
 #include "ramses-capu/Config.h"
 #include "gmock/gmock.h"
 #include "BidirectionalTestContainer.h"
 #include "ComplexTestType.h"
+#include <vector>
 
 namespace ramses_capu
 {
@@ -39,13 +39,13 @@ namespace ramses_capu
 
     TEST(AlgorithmTest, CopyVector)
     {
-        vector<uint_t> src(3, 0);
+        std::vector<uint_t> src(3, 0);
         src[0] = 2;
         src[1] = 3;
         src[2] = 4;
-        vector<uint_t> dst(4, 0);
+        std::vector<uint_t> dst(4, 0);
 
-        const vector<uint_t>::Iterator result = ramses_capu::copy(src.begin(), src.end(), dst.begin());
+        const std::vector<uint_t>::iterator result = ramses_capu::copy(src.begin(), src.end(), dst.begin());
         EXPECT_EQ(dst.begin() + 3u, result);
         EXPECT_EQ(2u, dst[0]);
         EXPECT_EQ(3u, dst[1]);
@@ -56,13 +56,13 @@ namespace ramses_capu
     TEST(AlgorithmTest, CopyVectorWithSmallElementSizeAndOverlap)
     {
         // Try to trigger problems with optimized overlapped copying with random access iterators
-        vector<uint8_t> vec(80);
+        std::vector<uint8_t> vec(80);
         for (uint_t i = 0; i < vec.size(); ++i)
         {
             vec[i] = static_cast<uint8_t>(i + 1);
         }
 
-        vector<uint8_t>::Iterator result = ramses_capu::copy(vec.begin() + 1, vec.end(), vec.begin());
+        std::vector<uint8_t>::iterator result = ramses_capu::copy(vec.begin() + 1, vec.end(), vec.begin());
         EXPECT_EQ(vec.end() - 1, result);
         for (uint_t i = 0; i < vec.size() - 1; ++i)
         {
@@ -78,9 +78,9 @@ namespace ramses_capu
         src[0] = 2;
         src[1] = 3;
         src[2] = 4;
-        vector<uint_t> dst(4, 0);
+        std::vector<uint_t> dst(4, 0);
 
-        const vector<uint_t>::Iterator result = ramses_capu::copy(src.begin(), src.end(), dst.begin());
+        const std::vector<uint_t>::iterator result = ramses_capu::copy(src.begin(), src.end(), dst.begin());
         EXPECT_EQ(dst.begin() + 3u, result);
         EXPECT_EQ(2u, dst[0]);
         EXPECT_EQ(3u, dst[1]);
@@ -94,9 +94,9 @@ namespace ramses_capu
         src[0] = 2;
         src[1] = 3;
         src[2] = 4;
-        vector<ComplexTestType> dst(4, 0);
+        std::vector<ComplexTestType> dst(4, 0);
 
-        const vector<ComplexTestType>::Iterator result = ramses_capu::copy(src.begin(), src.end(), dst.begin());
+        const std::vector<ComplexTestType>::iterator result = ramses_capu::copy(src.begin(), src.end(), dst.begin());
         EXPECT_EQ(dst.begin() + 3u, result);
         EXPECT_EQ(ComplexTestType(2u), dst[0]);
         EXPECT_EQ(ComplexTestType(3u), dst[1]);
@@ -116,10 +116,10 @@ namespace ramses_capu
 
     TEST(AlgorithmTest, CopyEmptyVector)
     {
-        vector<uint_t> src;
-        vector<uint_t> dst(2, 0);
+        std::vector<uint_t> src;
+        std::vector<uint_t> dst(2, 0);
 
-        vector<uint_t>::Iterator result = ramses_capu::copy(src.begin(), src.end(), dst.begin());
+        std::vector<uint_t>::iterator result = ramses_capu::copy(src.begin(), src.end(), dst.begin());
         EXPECT_EQ(dst.begin(), result);
         EXPECT_EQ(0u, dst[0]);
     }
@@ -142,9 +142,9 @@ namespace ramses_capu
         src[0] = 2;
         src[1] = 3;
         src[2] = 4;
-        vector<uint_t> dst(4, 0);
+        std::vector<uint_t> dst(4, 0);
 
-        vector<uint_t>::Iterator result = ramses_capu::copy_backward(src.begin(), src.end(), dst.end()-1u);
+        std::vector<uint_t>::iterator result = ramses_capu::copy_backward(src.begin(), src.end(), dst.end()-1u);
         EXPECT_EQ(dst.begin(), result);
         EXPECT_EQ(2u, dst[0]);
         EXPECT_EQ(3u, dst[1]);
@@ -158,9 +158,9 @@ namespace ramses_capu
         src[0] = 2;
         src[1] = 3;
         src[2] = 4;
-        vector<ComplexTestType> dst(4, 0);
+        std::vector<ComplexTestType> dst(4, 0);
 
-        vector<ComplexTestType>::Iterator result = ramses_capu::copy_backward(src.begin(), src.end(), dst.end() - 1u);
+        std::vector<ComplexTestType>::iterator result = ramses_capu::copy_backward(src.begin(), src.end(), dst.end() - 1u);
         EXPECT_EQ(dst.begin(), result);
         EXPECT_EQ(ComplexTestType(2u), dst[0]);
         EXPECT_EQ(ComplexTestType(3u), dst[1]);
@@ -190,8 +190,8 @@ namespace ramses_capu
 
     TEST(AlgorithmTest, FillVector)
     {
-        vector<uint_t> v(3, 0);
-        vector<uint_t>::Iterator result = ramses_capu::fill_n(v.begin(), 2, 1u);
+        std::vector<uint_t> v(3, 0);
+        std::vector<uint_t>::iterator result = ramses_capu::fill_n(v.begin(), 2, 1u);
         EXPECT_EQ(v.begin() + 2u, result);
         EXPECT_EQ(1u, v[0]);
         EXPECT_EQ(1u, v[1]);
@@ -215,7 +215,7 @@ namespace ramses_capu
 
     TEST(AlgorithmTest, FindInVector)
     {
-        vector<uint_t> v(5);
+        std::vector<uint_t> v(5);
         v[0] = 6;
         v[1] = 5;
         v[2] = 1;
@@ -239,8 +239,8 @@ namespace ramses_capu
 
     TEST(AlgorithmTest, FillVectorWithZeroElements)
     {
-        vector<uint_t> v(3, 99);
-        vector<uint_t>::Iterator result = ramses_capu::fill_n(v.begin(), 0, 1u);
+        std::vector<uint_t> v(3, 99);
+        std::vector<uint_t>::iterator result = ramses_capu::fill_n(v.begin(), 0, 1u);
         EXPECT_EQ(v.begin(), result);
         EXPECT_EQ(99u, v[0]);
         EXPECT_EQ(99u, v[1]);

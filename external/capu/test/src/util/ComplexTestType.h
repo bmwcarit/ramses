@@ -17,7 +17,6 @@
 #ifndef RAMSES_CAPU_COMPLEXTESTTYPE_H
 #define RAMSES_CAPU_COMPLEXTESTTYPE_H
 
-#include "ramses-capu/container/vector.h"
 #include "ramses-capu/container/Hash.h"
 #include "ramses-capu/Config.h"
 #include <gtest/gtest.h>

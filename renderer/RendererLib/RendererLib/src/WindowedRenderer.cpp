@@ -22,10 +22,9 @@
 #include "Monitoring/Monitor.h"
 #include "RendererLib/RendererCachedScene.h"
 #include "Ramsh/Ramsh.h"
-#include "Utils/Bitmap.h"
+#include "Utils/Image.h"
 #include "Utils/RamsesLogger.h"
 
-#include "Common/Cpp11Macros.h"
 
 
 namespace ramses_internal
@@ -227,15 +226,16 @@ namespace ramses_internal
         ScreenshotInfoVector screenshots;
         m_renderer.dispatchProcessedScreenshots(screenshots);
 
-        ramses_foreach(screenshots, shotIt)
+        for(auto& screenshot : screenshots)
         {
-            ScreenshotInfo& screenshot = *shotIt;
             if (screenshot.filename.getLength() > 0u)
             {
                 if (screenshot.success)
                 {
-                    const Bitmap bitmap((screenshot.rectangle.width - screenshot.rectangle.x), (screenshot.rectangle.height - screenshot.rectangle.y), &screenshot.pixelData[0]);
-                    bitmap.saveToFileBMP(screenshot.filename);
+                    // flip image vertically so that the layout read from frame buffer (bottom-up)
+                    // is converted to layout normally used in image files (top-down)
+                    const Image bitmap((screenshot.rectangle.width - screenshot.rectangle.x), (screenshot.rectangle.height - screenshot.rectangle.y), screenshot.pixelData.cbegin(), screenshot.pixelData.cend(), true);
+                    bitmap.saveToFilePNG(screenshot.filename);
                     LOG_INFO(CONTEXT_RENDERER, "RamsesRenderer::processScreenshots: screenshot successfully saved to file: " << screenshot.filename);
                     if (screenshot.sendViaDLT)
                     {
@@ -258,7 +258,7 @@ namespace ramses_internal
             {
                 if (screenshot.success)
                 {
-                    m_rendererEventCollector.addEvent(ERendererEventType_ReadPixelsFromFramebuffer, screenshot.display, screenshot.pixelData);
+                    m_rendererEventCollector.addEvent(ERendererEventType_ReadPixelsFromFramebuffer, screenshot.display, std::move(screenshot.pixelData));
                 }
                 else
                 {

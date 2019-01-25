@@ -15,7 +15,7 @@
 #include "RendererLib/RendererCommandBuffer.h"
 #include "ComponentMocks.h"
 #include "WindowMock.h"
-#include "Utils/Bitmap.h"
+#include "Utils/Image.h"
 
 namespace ramses_internal {
 
@@ -162,7 +162,7 @@ TEST_F(AWindowedRendererWithDisplay, takeScreenshotGeneratesFailEvent)
 
 TEST_F(AWindowedRendererWithDisplay, saveScreenshotToFileWithFullscreenDoesNotGenerateEvent)
 {
-    const String filename = "testScreenshot.bmp";
+    const String filename = "testScreenshot.png";
 
     m_commandBuffer.readPixels(displayHandle, filename, true, 0u, 0u, 1u, 1u);
     updateAndRender();
@@ -173,8 +173,8 @@ TEST_F(AWindowedRendererWithDisplay, saveScreenshotToFileWithFullscreenDoesNotGe
 
     // expect correct fullScreen size
     {
-        Bitmap bitmap;
-        bitmap.loadFromFileBMP(filename);
+        Image bitmap;
+        bitmap.loadFromFilePNG(filename);
         const UInt32 displayWidth = WindowMock::FakeWidth;
         const UInt32 displayHeight = WindowMock::FakeHeight;
         EXPECT_EQ(displayWidth, bitmap.getWidth());
@@ -190,7 +190,7 @@ TEST_F(AWindowedRendererWithDisplay, saveScreenshotToFileWithFullscreenDoesNotGe
 
 TEST_F(AWindowedRendererWithDisplay, saveScreenshotToFileOnNotExistentDisplayDoesNotGenerateEvent)
 {
-    const String filename = "failedTestScreenshot.bmp";
+    const String filename = "failedTestScreenshot.png";
 
     const DisplayHandle wrongDisplayHandle(23u);
 
@@ -208,7 +208,7 @@ TEST_F(AWindowedRendererWithDisplay, saveScreenshotToFileOnNotExistentDisplayDoe
 
 TEST_F(AWindowedRendererWithDisplay, saveScreenshotToFileFailsAndDoesNotGenerateEvent)
 {
-    const String filename = "failedTestScreenshot.bmp";
+    const String filename = "failedTestScreenshot.png";
 
     m_commandBuffer.readPixels(displayHandle, filename, false, 0u, 0u, WindowMock::FakeWidth, WindowMock::FakeHeight + 1u);
     updateAndRender();

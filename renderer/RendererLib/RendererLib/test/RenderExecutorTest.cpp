@@ -416,7 +416,7 @@ protected:
         }
         if (clearFlags & EClearFlags_Depth)
         {
-            EXPECT_CALL(device, depthWrite(EDepthWrite_Enabled));
+            EXPECT_CALL(device, depthWrite(EDepthWrite::Enabled));
         }
 
         EXPECT_CALL(device, clear(clearFlags));
@@ -803,12 +803,12 @@ TEST_F(ARenderExecutor, RenderStatesAppliedForEachRenderableIfDifferent)
     const RenderStateHandle state1 = scene.getRenderable(renderable1).renderState;
     const RenderStateHandle state2 = scene.getRenderable(renderable2).renderState;
 
-    scene.setRenderStateDepthWrite(state1, EDepthWrite_Enabled);
-    scene.setRenderStateDepthWrite(state2, EDepthWrite_Disabled);
+    scene.setRenderStateDepthWrite(state1, EDepthWrite::Enabled);
+    scene.setRenderStateDepthWrite(state2, EDepthWrite::Disabled);
     scene.setRenderStateColorWriteMask(state1, EColorWriteFlag_Red);
     scene.setRenderStateColorWriteMask(state2, EColorWriteFlag_Blue);
-    scene.setRenderStateCullMode(state1, ECullMode_BackFacing);
-    scene.setRenderStateCullMode(state2, ECullMode_Disabled);
+    scene.setRenderStateCullMode(state1, ECullMode::BackFacing);
+    scene.setRenderStateCullMode(state2, ECullMode::Disabled);
 
     updateScenes();
 

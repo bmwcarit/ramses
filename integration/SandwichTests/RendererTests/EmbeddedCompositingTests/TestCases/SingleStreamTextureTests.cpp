@@ -63,6 +63,8 @@ namespace ramses_internal
         const StreamTextureSourceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
         const StreamTextureSourceId secondStreamTextureSourceId(EmbeddedCompositorScene::GetSecondStreamTextureSourceId());
 
+        testFramework.setEnvironmentVariableWaylandDisplay();
+
         switch(testCase.m_id)
         {
         case ShowFallbackTexture:

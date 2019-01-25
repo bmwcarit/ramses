@@ -20,7 +20,7 @@ G_PROP_FILES = [
     'zuul.d'
 ]
 
-G_LICENSE_TEMPLATES_OPEN = ["""
+G_LICENSE_TEMPLATE_OPEN = """
   -------------------------------------------------------------------------
   Copyright (C) [YYYY] BMW Car IT GmbH
   -------------------------------------------------------------------------
@@ -29,8 +29,8 @@ G_LICENSE_TEMPLATES_OPEN = ["""
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
   -------------------------------------------------------------------------
 """
-]
-G_LICENSE_TEMPLATES_PROP = ["""
+
+G_LICENSE_TEMPLATE_PROP = """
   -------------------------------------------------------------------------
   Copyright (C) [YYYY] BMW Car IT GmbH
   All rights reserved.
@@ -40,4 +40,3 @@ G_LICENSE_TEMPLATES_PROP = ["""
   contents is not permitted without prior written authorization.
   -------------------------------------------------------------------------
 """
-]

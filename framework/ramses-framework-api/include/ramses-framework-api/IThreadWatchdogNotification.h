@@ -9,7 +9,7 @@
 #ifndef RAMSES_ITHREADWATCHDOGNOTIFICATION_H
 #define RAMSES_ITHREADWATCHDOGNOTIFICATION_H
 
-#include "APIExport.h"
+#include "ramses-framework-api/APIExport.h"
 
 namespace ramses
 {

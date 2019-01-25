@@ -72,7 +72,7 @@ namespace ramses_internal
         , m_context(context)
         , m_resourceMapper(context.getResources())
         , m_activeShader(0)
-        , m_activePrimitiveDrawMode(EDrawMode_Triangles)
+        , m_activePrimitiveDrawMode(EDrawMode::Triangles)
         , m_activeIndexArrayElementSizeBytes(2u)
         , m_majorApiVersion(majorApiVersion)
         , m_minorApiVersion(minorApiVersion)
@@ -250,7 +250,7 @@ namespace ramses_internal
 
     void Device_GL::depthFunc(EDepthFunc func)
     {
-        if (func == EDepthFunc_Disabled)
+        if (func == EDepthFunc::Disabled)
         {
             glDisable(GL_DEPTH_TEST);
         }
@@ -264,7 +264,7 @@ namespace ramses_internal
 
     void Device_GL::depthWrite(EDepthWrite flag)
     {
-        glDepthMask(flag == EDepthWrite_Enabled);
+        glDepthMask(flag == EDepthWrite::Enabled);
     }
 
     void Device_GL::blendFactors(EBlendFactor sourceColor, EBlendFactor destinationColor, EBlendFactor sourceAlpha, EBlendFactor destinationAlpha)
@@ -279,7 +279,7 @@ namespace ramses_internal
 
     void Device_GL::blendOperations(EBlendOperation operationColor, EBlendOperation operationAlpha)
     {
-        if (operationColor == EBlendOperation_Disabled || operationAlpha == EBlendOperation_Disabled)
+        if (operationColor == EBlendOperation::Disabled || operationAlpha == EBlendOperation::Disabled)
         {
             glDisable(GL_BLEND);
         }
@@ -295,7 +295,7 @@ namespace ramses_internal
 
     void Device_GL::cullMode(ECullMode mode)
     {
-        if (mode == ECullMode_Disabled)
+        if (mode == ECullMode::Disabled)
         {
             glDisable(GL_CULL_FACE);
         }
@@ -307,9 +307,9 @@ namespace ramses_internal
         }
     }
 
-    void Device_GL::stencilFunc(EStencilFunc func, UInt32 ref, UInt8 mask)
+    void Device_GL::stencilFunc(EStencilFunc func, UInt8 ref, UInt8 mask)
     {
-        if (func == EStencilFunc_Disabled)
+        if (func == EStencilFunc::Disabled)
         {
             glDisable(GL_STENCIL_TEST);
         }

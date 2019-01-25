@@ -25,7 +25,7 @@ namespace ramses_internal
         , m_height(displayConfig.getDesiredWindowHeight())
         , m_posX(displayConfig.getWindowPositionX())
         , m_posY(displayConfig.getWindowPositionY())
-        , m_integrityEglDisplayID(displayConfig.getIntegrityEGLDisplayID())
+        , m_integrityRGLDeviceUnit(displayConfig.getIntegrityRGLDeviceUnit())
         , m_waylandIviSurfaceID(displayConfig.getWaylandIviSurfaceID())
         , m_resizable(displayConfig.isResizable())
     {
@@ -61,9 +61,9 @@ namespace ramses_internal
         return m_msaaSampleCount;
     }
 
-    IntegrityEglDisplayId Window_Base::getIntegrityEGLDisplayID() const
+    IntegrityRGLDeviceUnit Window_Base::getIntegrityRGLDeviceUnit() const
     {
-        return m_integrityEglDisplayID;
+        return m_integrityRGLDeviceUnit;
     }
 
     WaylandIviSurfaceId Window_Base::getWaylandIviSurfaceID() const

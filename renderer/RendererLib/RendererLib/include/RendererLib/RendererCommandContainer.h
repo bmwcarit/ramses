@@ -11,7 +11,6 @@
 
 #include "CommandContainer.h"
 #include "RendererLib/RendererCommandTypes.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {

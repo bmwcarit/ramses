@@ -13,7 +13,7 @@
 #include "RamsesRendererImpl.h"
 #include "DisplayConfigImpl.h"
 #include "RendererConfigImpl.h"
-#include "Utils/Bitmap.h"
+#include "Utils/Image.h"
 #include "Utils/File.h"
 #include "Collections/String.h"
 #include "RendererTestEventHandler.h"
@@ -41,19 +41,19 @@ namespace
 
 void RendererTestUtils::SaveScreenshotForDisplay(ramses::RamsesRenderer& renderer, ramses::displayId_t displayId, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const String& screenshotFileName)
 {
-    const Bitmap screenshotBitmap = ReadPixelData(renderer, displayId, x, y, width, height);
+    const Image screenshotBitmap = ReadPixelData(renderer, displayId, x, y, width, height);
     screenshotBitmap.saveToFilePNG("./res/" + screenshotFileName + ".PNG");
 }
 
 bool RendererTestUtils::PerformScreenshotTestForDisplay(ramses::RamsesRenderer& renderer, ramses::displayId_t displayId, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const String& screenshotFileName, float maxAveragePercentErrorPerPixel)
 {
-    const Bitmap screenshotBitmap = ReadPixelData(renderer, displayId, x, y, width, height);
+    const Image screenshotBitmap = ReadPixelData(renderer, displayId, x, y, width, height);
     return CompareBitmapToImageInFile(screenshotBitmap, screenshotFileName, maxAveragePercentErrorPerPixel);
 }
 
-bool RendererTestUtils::CompareBitmapToImageInFile(const Bitmap& actualBitmap, const String& expectedScreenshotFileName, float maxAveragePercentErrorPerPixel)
+bool RendererTestUtils::CompareBitmapToImageInFile(const Image& actualBitmap, const String& expectedScreenshotFileName, float maxAveragePercentErrorPerPixel)
 {
-    Bitmap expectedBitmap;
+    Image expectedBitmap;
     expectedBitmap.loadFromFilePNG("./res/" + expectedScreenshotFileName + ".PNG");
     if (expectedBitmap.getWidth() != actualBitmap.getWidth() ||
         expectedBitmap.getHeight() != actualBitmap.getHeight())
@@ -62,7 +62,7 @@ bool RendererTestUtils::CompareBitmapToImageInFile(const Bitmap& actualBitmap, c
             expectedBitmap.getWidth(), expectedBitmap.getHeight(), actualBitmap.getWidth(), actualBitmap.getHeight());
         return false;
     }
-    const Bitmap diff = expectedBitmap.createDiffTo(actualBitmap, false);
+    const Image diff = expectedBitmap.createDiffTo(actualBitmap);
     assert(diff.getNumberOfPixels() == actualBitmap.getNumberOfPixels());
 
     const UInt64 sumOfPixelDiff = diff.getSumOfPixelValues();
@@ -189,7 +189,6 @@ void RendererTestUtils::SetMaxFrameCallbackPollingTime(std::chrono::microseconds
 ramses::DisplayConfig RendererTestUtils::CreateTestDisplayConfig(uint32_t iviSurfaceIdOffset, bool iviWindowStartVisible)
 {
     ramses::DisplayConfig displayConfig;
-    displayConfig.setIntegrityEGLDisplayID(0);
     displayConfig.setWaylandIviSurfaceID(firstIviSurfaceId + iviSurfaceIdOffset);
 
     if(iviWindowStartVisible)
@@ -228,7 +227,7 @@ const ramses::WarpingMeshData& RendererTestUtils::CreateTestWarpingMesh()
     return testWarpingMesh;
 }
 
-Bitmap RendererTestUtils::ReadPixelData(
+Image RendererTestUtils::ReadPixelData(
     ramses::RamsesRenderer& renderer,
     ramses::displayId_t displayId,
     ramses_internal::UInt32 x,
@@ -255,5 +254,5 @@ Bitmap RendererTestUtils::ReadPixelData(
 
     // flip image vertically so that the layout read from frame buffer (bottom-up)
     // is converted to layout normally used in image files (top-down)
-    return Bitmap(width, height, &callbackHandler.m_pixelData[0], true);
+    return Image(width, height, callbackHandler.m_pixelData.cbegin(), callbackHandler.m_pixelData.cend(), true);
 }

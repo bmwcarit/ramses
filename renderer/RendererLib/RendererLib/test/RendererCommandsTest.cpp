@@ -620,6 +620,18 @@ TEST_F(ARendererCommands, createsCommandForSettingFrameTimerLimits)
     }
 }
 
+TEST_F(ARendererCommands, createsCommandForSettingSceneResourceTimerLimit)
+{
+    queue.setSceneResourcesTimerLimit(40u);
+
+    EXPECT_EQ(1u, queue.getCommands().getTotalCommandCount());
+    {
+        const auto& command = queue.getCommands().getCommandData<SetFrameTimerLimitsCommmand>(0);
+        EXPECT_EQ(ERendererCommand_SetResourceActionTimer, queue.getCommands().getCommandType(0));
+        EXPECT_EQ(40u, command.limitForSceneResourcesUploadMicrosec);
+    }
+}
+
 TEST_F(ARendererCommands, createsCommandForSettingLimitFlushesBeforeForceApply)
 {
     queue.setForceApplyPendingFlushesLimit(99u);

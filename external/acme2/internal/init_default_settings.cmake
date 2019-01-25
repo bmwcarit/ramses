@@ -37,7 +37,6 @@ SET(ACME2_DEFAULT_VALUES
     INCLUDE_BASE            include
     FILES_PRIVATE_HEADER    #src/*.h
     FILES_SOURCE            #src/*.h
-    FILES_DOCUMENTATION     #doc/*
     FILES_RESOURCE          #res/*
 
     # dependencies
@@ -45,8 +44,6 @@ SET(ACME2_DEFAULT_VALUES
 
     # install module: boolean
     ENABLE_INSTALL          ON
-    ENABLE_INSTALL_DOCUMENTATION  ${ENABLE_INSTALL}
-    ENABLE_INSTALL_HEADER         ON
 
     # install paths
     INSTALL_HEADER          include
@@ -54,7 +51,6 @@ SET(ACME2_DEFAULT_VALUES
     INSTALL_STATIC_LIB      lib
     INSTALL_SHARED_LIB      lib
     INSTALL_RESOURCE        bin/res
-    INSTALL_DOCUMENTATION   share/doc/${PROJECT_NAME}-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}
 
     # content
     CONTENT

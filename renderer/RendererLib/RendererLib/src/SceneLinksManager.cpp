@@ -11,7 +11,6 @@
 #include "RendererLib/DataLinkUtils.h"
 #include "RendererEventCollector.h"
 #include "Utils/LogMacros.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {
@@ -255,10 +254,10 @@ namespace ramses_internal
     {
         OffscreenBufferLinkVector links;
         m_textureLinkManager.getOffscreenBufferLinks().getLinkedConsumers(providerBuffer, links);
-        ramses_foreach(links, linkIt)
+        for (const auto& link : links)
         {
-            assert(linkIt->providerBuffer == providerBuffer);
-            m_textureLinkManager.removeDataLink(linkIt->consumerSceneId, linkIt->consumerSlot);
+            assert(link.providerBuffer == providerBuffer);
+            m_textureLinkManager.removeDataLink(link.consumerSceneId, link.consumerSlot);
         }
     }
 
@@ -269,15 +268,15 @@ namespace ramses_internal
         SceneLinkVector links;
         sceneLinks.getLinkedConsumers(sceneId, providerSlotHandle, links);
 
-        ramses_foreach(links, linkIt)
+        for (const auto& link : links)
         {
-            assert(linkIt->providerSceneId == sceneId);
-            assert(linkIt->providerSlot == providerSlotHandle);
-            if (manager.removeDataLink(linkIt->consumerSceneId, linkIt->consumerSlot))
+            assert(link.providerSceneId == sceneId);
+            assert(link.providerSlot == providerSlotHandle);
+            if (manager.removeDataLink(link.consumerSceneId, link.consumerSlot))
             {
-                const IScene& consumerScene = m_rendererScenes.getScene(linkIt->consumerSceneId);
-                const DataSlotId consumerId = consumerScene.getDataSlot(linkIt->consumerSlot).id;
-                m_rendererEventCollector.addEvent(ERendererEventType_SceneDataUnlinkedAsResultOfClientSceneChange, SceneId(0u), linkIt->consumerSceneId, DataSlotId(0u), consumerId);
+                const IScene& consumerScene = m_rendererScenes.getScene(link.consumerSceneId);
+                const DataSlotId consumerId = consumerScene.getDataSlot(link.consumerSlot).id;
+                m_rendererEventCollector.addEvent(ERendererEventType_SceneDataUnlinkedAsResultOfClientSceneChange, SceneId(0u), link.consumerSceneId, DataSlotId(0u), consumerId);
             }
         }
     }

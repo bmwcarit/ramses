@@ -18,7 +18,6 @@
 #include "Utils/BinaryOutputStream.h"
 #include "Utils/StringUtils.h"
 #include "TransportCommon/IConnectionStatusListener.h"
-#include "Common/Cpp11Macros.h"
 #include "Scene/SceneActionCollection.h"
 #include "Collections/StringOutputStream.h"
 #include "Components/ResourceStreamSerialization.h"
@@ -76,11 +75,11 @@ namespace ramses_internal
 
         stream << providerID;
         stream << static_cast<UInt32>(newScenes.size());
-        ramses_foreach(newScenes, it)
+        for(const auto& newScene : newScenes)
         {
-            LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem::broadcastNewScenesAvailable: providerID " << providerID << ", sceneId " << it->sceneID.getValue());
-            stream << it->sceneID.getValue();
-            stream << it->friendlyName;
+            LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem::broadcastNewScenesAvailable: providerID " << providerID << ", sceneId " << newScene.sceneID.getValue());
+            stream << newScene.sceneID.getValue();
+            stream << newScene.friendlyName;
         }
 
         return sendMessage(std::move(msg));
@@ -95,11 +94,11 @@ namespace ramses_internal
         stream << providerID;
         stream << static_cast<UInt32>(availableScenes.size());
 
-        ramses_foreach(availableScenes, it)
+        for(const auto& availableScene : availableScenes)
         {
-            LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem::sendScenesAvailable: to " << to << ", providerID " << providerID << ", sceneId " << it->sceneID.getValue());
-            stream << it->sceneID.getValue();
-            stream << it->friendlyName;
+            LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem::sendScenesAvailable: to " << to << ", providerID " << providerID << ", sceneId " << availableScene.sceneID.getValue());
+            stream << availableScene.sceneID.getValue();
+            stream << availableScene.friendlyName;
         }
 
         return sendMessage(std::move(msg));
@@ -114,11 +113,11 @@ namespace ramses_internal
         stream << providerID;
         stream << static_cast<UInt32>(unavailableScenes.size());
 
-        ramses_foreach(unavailableScenes, it)
+        for(const auto& unavailableScene : unavailableScenes)
         {
-            LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem::broadcastScenesBecameUnavailable: sceneId " << it->sceneID.getValue());
-            stream << it->sceneID.getValue();
-            stream << it->friendlyName;
+            LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem::broadcastScenesBecameUnavailable: sceneId " << unavailableScene.sceneID.getValue());
+            stream << unavailableScene.sceneID.getValue();
+            stream << unavailableScene.friendlyName;
         }
 
         return sendMessage(std::move(msg));
@@ -731,29 +730,28 @@ namespace ramses_internal
         }
 
         Vector<Guid> nowFinishedConnections;
-        ramses_foreach(m_unfinishedConnections, guidIt)
+        for(const auto& connecton : m_unfinishedConnections)
         {
-            const Guid& id = *guidIt;
-            LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::tryConnectToOthers: " << id << " " << shouldTryConnectTo(id));
+            LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::tryConnectToOthers: " << connecton << " " << shouldTryConnectTo(connecton));
 
-            if (shouldTryConnectTo(id))
+            if (shouldTryConnectTo(connecton))
             {
-                assert(m_knownParticipantAddresses.contains(id));
-                const NetworkParticipantAddress& address = *m_knownParticipantAddresses.get(id);
+                assert(m_knownParticipantAddresses.contains(connecton));
+                const NetworkParticipantAddress& address = *m_knownParticipantAddresses.get(connecton);
 
                 if (connectWithType(address, EConnectionType_OrderedControlMessages, m_controlSockets) &&
                     connectWithType(address, EConnectionType_LargeDataTransfer, m_dataSockets))
                 {
-                    nowFinishedConnections.push_back(id);
-                    m_connectionStatusUpdateNotifier.triggerNotification(id, EConnectionStatus_Connected);
+                    nowFinishedConnections.push_back(connecton);
+                    m_connectionStatusUpdateNotifier.triggerNotification(connecton, EConnectionStatus_Connected);
                 }
             }
         }
 
         // delayed cleanup, prevent modify container while iterating
-        ramses_foreach(nowFinishedConnections, it)
+        for(const auto& connecton : nowFinishedConnections)
         {
-            m_unfinishedConnections.remove(*it);
+            m_unfinishedConnections.remove(connecton);
         }
     }
 
@@ -821,9 +819,9 @@ namespace ramses_internal
             }
 
             // remove participants we cannot write to anymore
-            ramses_foreach(brokenConnections, it)
+            for(const auto& connecton : brokenConnections)
             {
-                removeKnownParticipant(*it, true);
+                removeKnownParticipant(connecton, true);
             }
         }
     }
@@ -863,17 +861,15 @@ namespace ramses_internal
     void TCPConnectionSystem::sendBroadcastMessageToSockets(const OutMessage& message, Vector<Guid>& brokenConnections)
     {
         // send to all valid connections
-        ramses_foreach(m_controlSockets, controlSocketIt)
+        for(const auto& controlSocket : m_controlSockets)
         {
-            if (m_dataSockets.contains(controlSocketIt->key))
+            if (m_dataSockets.contains(controlSocket.key))
             {
-                PlatformSocket* controlSocket = controlSocketIt->value;
-                assert(m_platformSocketMap.contains(controlSocket));
-                if (!sendMessageToSocket(*m_platformSocketMap.get(controlSocket), message))
+                assert(m_platformSocketMap.contains(controlSocket.value));
+                if (!sendMessageToSocket(*m_platformSocketMap.get(controlSocket.value), message))
                 {
-                    const Guid& to = controlSocketIt->key;
-                    LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendBroadcastMessageToSockets: write to " << to << " failed");
-                    brokenConnections.push_back(to);
+                    LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendBroadcastMessageToSockets: write to " << controlSocket.key << " failed");
+                    brokenConnections.push_back(controlSocket.key);
                 }
             }
         }
@@ -993,7 +989,7 @@ namespace ramses_internal
         const Guid participantId = socketInfo->participant;
         std::unique_ptr<InMessage> message(receiveMessageFromSocket(socket));
         Bool handledSuccessfully = false;
-        if (nullptr != message.get())
+        if (nullptr != message)
         {
             message->sender = participantId;
             handledSuccessfully = handleMessage(participantId, socket, *message);

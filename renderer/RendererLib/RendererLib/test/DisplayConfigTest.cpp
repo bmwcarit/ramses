@@ -35,7 +35,7 @@ TEST_F(AInternalDisplayConfig, hasDefaultValues)
     EXPECT_FALSE(m_config.isEffectDeletionDisabled());
     EXPECT_FALSE(m_config.isStereoDisplay());
     EXPECT_TRUE(ramses_internal::InvalidWaylandIviLayerId == m_config.getWaylandIviLayerID());
-    EXPECT_TRUE(ramses_internal::InvalidIntegrityEglDisplayId == m_config.getIntegrityEGLDisplayID());
+    EXPECT_TRUE(ramses_internal::InvalidIntegrityRGLDeviceUnit == m_config.getIntegrityRGLDeviceUnit());
     EXPECT_FALSE(m_config.getStartVisibleIvi());
     EXPECT_FALSE(m_config.isResizable());
     EXPECT_EQ(ramses_internal::ProjectionParams::Perspective(19.0f, 1280.f / 480.f, 0.1f, 1500.f), m_config.getProjectionParams());
@@ -45,7 +45,7 @@ TEST_F(AInternalDisplayConfig, hasDefaultValues)
     EXPECT_STREQ("", m_config.getWaylandDisplay().c_str());
 
     // this value is used in HL API, so test that value does not change unnoticed
-    EXPECT_TRUE(ramses_internal::InvalidIntegrityEglDisplayId.getValue() == 0xFFFFFFFF);
+    EXPECT_TRUE(ramses_internal::InvalidIntegrityRGLDeviceUnit.getValue() == 0xFFFFFFFF);
 }
 
 TEST_F(AInternalDisplayConfig, setAndGetValues)
@@ -83,8 +83,8 @@ TEST_F(AInternalDisplayConfig, setAndGetValues)
     m_config.setWaylandIviLayerID(ramses_internal::WaylandIviLayerId(102u));
     EXPECT_EQ(102u, m_config.getWaylandIviLayerID().getValue());
 
-    m_config.setIntegrityEGLDisplayID(ramses_internal::IntegrityEglDisplayId(33u));
-    EXPECT_EQ(33u, m_config.getIntegrityEGLDisplayID().getValue());
+    m_config.setIntegrityRGLDeviceUnit(ramses_internal::IntegrityRGLDeviceUnit(33u));
+    EXPECT_EQ(33u, m_config.getIntegrityRGLDeviceUnit().getValue());
 
     m_config.setStartVisibleIvi(true);
     EXPECT_TRUE(m_config.getStartVisibleIvi());
@@ -150,7 +150,7 @@ TEST_F(AInternalDisplayConfig, getsValuesAssignedFromCommandLine)
         "-as", "4",
         "-lid", "101",
         "-sid", "1001",
-        "-eglDisplayID", "42",
+        "-rglDeviceUnit", "42",
         "-startVisible",
         "-resizableWindow",
         "-off"
@@ -191,7 +191,7 @@ TEST_F(AInternalDisplayConfig, getsValuesAssignedFromCommandLine)
     EXPECT_EQ(4u, config.getAntialiasingSampleCount());
     EXPECT_EQ(101u, config.getWaylandIviLayerID().getValue());
     EXPECT_EQ(1001u, config.getWaylandIviSurfaceID().getValue());
-    EXPECT_EQ(42u, config.getIntegrityEGLDisplayID().getValue());
+    EXPECT_EQ(42u, config.getIntegrityRGLDeviceUnit().getValue());
     EXPECT_TRUE(config.getStartVisibleIvi());
     EXPECT_TRUE(config.isWarpingEnabled());
     EXPECT_TRUE(config.isEffectDeletionDisabled());

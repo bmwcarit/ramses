@@ -8,9 +8,10 @@
 
 #define WL_HIDE_DEPRECATED
 #include "EmbeddedCompositor_Wayland/WaylandBufferResource.h"
-#include "WaylandUtilities/UnixDomainSocketHelper.h"
+#include "WaylandUtilities/UnixDomainSocket.h"
+#include "WaylandUtilities/WaylandEnvironmentUtils.h"
 #include "PlatformAbstraction/PlatformThread.h"
-#include "WaylandUtilities/WaylandUtilities.h"
+#include "EmbeddedCompositor_Wayland/WaylandDisplay.h"
 #include "Utils/ThreadBarrier.h"
 #include "Utils/LogMacros.h"
 #include "gtest/gtest.h"
@@ -161,24 +162,22 @@ namespace ramses_internal
     public:
         virtual void SetUp() override
         {
-            m_display = wl_display_create();
+            const int serverFD = m_socket.createBoundFileDescriptor();
+            m_waylandDisplay.init("", "", serverFD);
+            m_display = m_waylandDisplay.get();
             ASSERT_TRUE(m_display != nullptr);
+
+            wl_display_init_shm(m_display);
         }
 
         virtual void TearDown() override
         {
             if (m_client != nullptr)
                 wl_client_destroy(m_client);
-            wl_display_destroy(m_display);
         }
 
         void startClientAndDispatchEventsUntilClientHasFinished()
         {
-            wl_display_init_shm(m_display);
-            const int serverFD = m_socket.createBoundFileDescriptor();
-
-            WaylandUtilities::DisplayAddSocketFD(m_display, serverFD);
-
             wl_global* compositorGlobal =
                 wl_global_create(m_display, &wl_compositor_interface, 1, this, CompositorBindCallback);
 
@@ -272,8 +271,9 @@ namespace ramses_internal
             WARNINGS_POP
         }
 
+        WaylandDisplay         m_waylandDisplay;
         wl_display*            m_display = nullptr;
-        UnixDomainSocketHelper m_socket  = UnixDomainSocketHelper("testingSocket");
+        UnixDomainSocket       m_socket  = UnixDomainSocket("testingSocket", WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir));
         wl_client*             m_client  = nullptr;
         ClientRunnable         m_clientRunnable;
         bool                   m_surfaceAttachCalled = false;
@@ -283,7 +283,7 @@ namespace ramses_internal
 
     TEST_F(AWaylandBufferResource, CanBeCreatedAndDestroyed)
     {
-        const int serverFD             = m_socket.createBoundFileDescriptor();
+        const int serverFD             = m_socket.getBoundFileDescriptor();
         m_client                       = wl_client_create(m_display, serverFD);
         ASSERT_TRUE(m_client != nullptr);
 
@@ -299,7 +299,7 @@ namespace ramses_internal
 
     TEST_F(AWaylandBufferResource, CantGetSHMBufferDataWhenNoSHMBuffer)
     {
-        const int serverFD = m_socket.createBoundFileDescriptor();
+        const int serverFD = m_socket.getBoundFileDescriptor();
         m_client           = wl_client_create(m_display, serverFD);
         ASSERT_TRUE(m_client != nullptr);
 
@@ -311,7 +311,7 @@ namespace ramses_internal
 
     TEST_F(AWaylandBufferResource, ReturnsZeroWidthWhenNoSHMBuffer)
     {
-        const int serverFD = m_socket.createBoundFileDescriptor();
+        const int serverFD = m_socket.getBoundFileDescriptor();
         m_client           = wl_client_create(m_display, serverFD);
         ASSERT_TRUE(m_client != nullptr);
 
@@ -323,7 +323,7 @@ namespace ramses_internal
 
     TEST_F(AWaylandBufferResource, ReturnsZeroHeightWhenNoSHMBuffer)
     {
-        const int serverFD = m_socket.createBoundFileDescriptor();
+        const int serverFD = m_socket.getBoundFileDescriptor();
         m_client           = wl_client_create(m_display, serverFD);
         ASSERT_TRUE(m_client != nullptr);
 
@@ -335,7 +335,7 @@ namespace ramses_internal
 
     TEST_F(AWaylandBufferResource, CanBeCloned)
     {
-        const int serverFD = m_socket.createBoundFileDescriptor();
+        const int serverFD = m_socket.getBoundFileDescriptor();
         m_client           = wl_client_create(m_display, serverFD);
         ASSERT_TRUE(m_client != nullptr);
 

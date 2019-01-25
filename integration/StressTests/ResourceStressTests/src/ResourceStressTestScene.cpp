@@ -105,9 +105,9 @@ namespace ramses_internal
             m_quadWithRenderTarget.recreate();
     }
 
-    void ResourceStressTestScene::flush(ramses::ESceneFlushMode flushMode, ramses::sceneVersionTag_t flushName)
+    void ResourceStressTestScene::flush(ramses::sceneVersionTag_t flushName)
     {
-        m_scene.flush(flushMode, flushName);
+        m_scene.flush(flushName);
     }
 
     ramses::RenderPass& ResourceStressTestScene::CreateRenderPass(ramses::Scene& scene, ramses::OrthographicCamera& camera)

@@ -20,6 +20,7 @@
 #include "ramses-capu/os/Socket.h"
 #include "ramses-capu/util/Delegate.h"
 #include "ramses-capu/container/Pair.h"
+#include <vector>
 
 namespace ramses_capu
 {
@@ -39,7 +40,7 @@ namespace ramses_capu
         *
         *@param vector with SocketInfoPairs to track
         */
-        static status_t CheckSocketsForIncomingData(const vector<ramses_capu::os::SocketInfoPair>& sockets);
+        static status_t CheckSocketsForIncomingData(const std::vector<ramses_capu::os::SocketInfoPair>& sockets);
 
         /**
         * Checks if data is available for read in a vector of sockets. If data is available the
@@ -49,18 +50,18 @@ namespace ramses_capu
         * @param vector with SocketInfoPairs to track
         * @param milliseconds to wait until the call returns if no data is available in all of the given sockets
         */
-        static status_t CheckSocketsForIncomingData(const vector<ramses_capu::os::SocketInfoPair>& sockets, uint32_t milliseconds);
+        static status_t CheckSocketsForIncomingData(const std::vector<ramses_capu::os::SocketInfoPair>& sockets, uint32_t milliseconds);
 
     private:
-        static status_t CheckSocketsForIncomingDataInternal(const vector<ramses_capu::os::SocketInfoPair>& socketsToCheck, timeval* timeout);
+        static status_t CheckSocketsForIncomingDataInternal(const std::vector<ramses_capu::os::SocketInfoPair>& socketsToCheck, timeval* timeout);
     };
 
-    inline status_t NonBlockSocketChecker::CheckSocketsForIncomingData(const vector<ramses_capu::os::SocketInfoPair>& socketsToCheck)
+    inline status_t NonBlockSocketChecker::CheckSocketsForIncomingData(const std::vector<ramses_capu::os::SocketInfoPair>& socketsToCheck)
     {
         return CheckSocketsForIncomingDataInternal(socketsToCheck, 0);
     }
 
-    inline status_t NonBlockSocketChecker::CheckSocketsForIncomingData(const vector<ramses_capu::os::SocketInfoPair>& socketsToCheck, uint32_t timeoutMillis)
+    inline status_t NonBlockSocketChecker::CheckSocketsForIncomingData(const std::vector<ramses_capu::os::SocketInfoPair>& socketsToCheck, uint32_t timeoutMillis)
     {
         timeval timeout;
 
@@ -70,13 +71,13 @@ namespace ramses_capu
         return CheckSocketsForIncomingDataInternal(socketsToCheck, &timeout);
     }
 
-    inline status_t NonBlockSocketChecker::CheckSocketsForIncomingDataInternal(const vector<ramses_capu::os::SocketInfoPair>& socketsToCheck, timeval* timeout)
+    inline status_t NonBlockSocketChecker::CheckSocketsForIncomingDataInternal(const std::vector<ramses_capu::os::SocketInfoPair>& socketsToCheck, timeval* timeout)
     {
         fd_set fdset;
         FD_ZERO(&fdset);
 
-        vector<ramses_capu::os::SocketInfoPair>::ConstIterator current = socketsToCheck.begin();
-        const vector<ramses_capu::os::SocketInfoPair>::ConstIterator end = socketsToCheck.end();
+        auto current = socketsToCheck.begin();
+        const auto end = socketsToCheck.end();
 
         int_t maxfd = -1;
         for (; current != end; ++current)

@@ -194,10 +194,10 @@ namespace ramses_internal
     {
         if (hasValue())
         {
-            const Int16 intValue = static_cast<Int16>(atoi(getUnconvertedString().c_str()));
-            if (intValue >= 0)
+            const int value = atoi(getUnconvertedString().c_str());
+            if (value >= 0 && static_cast<unsigned int>(value) <= std::numeric_limits<uint16_t>::max())
             {
-                m_value = intValue;
+                m_value = static_cast<uint16_t>(value);
             }
         }
     }
@@ -207,10 +207,10 @@ namespace ramses_internal
     {
         if (hasValue())
         {
-            const Int32 intValue = atoi(getUnconvertedString().c_str());
-            if (intValue >= 0)
+            const long long value = atoll(getUnconvertedString().c_str());
+            if (value >= 0 && static_cast<unsigned long long>(value) <= std::numeric_limits<uint32_t>::max())
             {
-                m_value = intValue;
+                m_value = static_cast<uint32_t>(value);
             }
         }
     }

@@ -107,7 +107,7 @@ namespace ramses_internal
         virtual void                        setRenderStateDrawMode          (RenderStateHandle stateHandle, EDrawMode drawMode) = 0;
         virtual void                        setRenderStateDepthFunc         (RenderStateHandle stateHandle, EDepthFunc func) = 0;
         virtual void                        setRenderStateDepthWrite        (RenderStateHandle stateHandle, EDepthWrite flag) = 0;
-        virtual void                        setRenderStateStencilFunc       (RenderStateHandle stateHandle, EStencilFunc func, UInt32 ref, UInt8 mask) = 0;
+        virtual void                        setRenderStateStencilFunc       (RenderStateHandle stateHandle, EStencilFunc func, UInt8 ref, UInt8 mask) = 0;
         virtual void                        setRenderStateStencilOps        (RenderStateHandle stateHandle, EStencilOp sfail, EStencilOp dpfail, EStencilOp dppass) = 0;
         virtual void                        setRenderStateColorWriteMask    (RenderStateHandle stateHandle, ColorWriteMask colorMask) = 0;
         virtual const RenderState&          getRenderState                  (RenderStateHandle stateHandle) const = 0;

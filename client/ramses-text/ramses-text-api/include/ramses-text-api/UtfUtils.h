@@ -9,7 +9,7 @@
 #ifndef RAMSES_UTFUTILS_H
 #define RAMSES_UTFUTILS_H
 
-#include "APIExport.h"
+#include "ramses-framework-api/APIExport.h"
 #include <stdint.h>
 #include <string>
 

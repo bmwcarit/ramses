@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "StringUtils.h"
-#include "Common/Cpp11Macros.h"
 #include "Utils/StringUtils.h"
 
 void StringUtils::GetLineTokens(const ramses_internal::String& line, char split, ramses_internal::Vector<ramses_internal::String>& tokens)
@@ -17,9 +16,8 @@ void StringUtils::GetLineTokens(const ramses_internal::String& line, char split,
 
     // due to the wired behavior of tokenize provided by capu, we have to filter out those empty tokens.
     tokens.clear();
-    ramses_foreach(allTokens, iter)
+    for(const auto& token : allTokens)
     {
-        const ramses_internal::String& token = *iter;
         ramses_internal::String trimmedToken = ramses_internal::StringUtils::Trim(token.c_str());
         if (trimmedToken.getLength() > 0)
         {

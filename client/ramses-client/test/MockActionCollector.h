@@ -13,7 +13,6 @@
 #include "Components/ISceneGraphConsumerComponent.h"
 #include "SceneAPI/SceneId.h"
 #include "ServiceHandlerMocks.h"
-#include "Common/Cpp11Macros.h"
 #include "Scene/SceneActionCollection.h"
 
 namespace ramses
@@ -76,9 +75,9 @@ namespace ramses
             ramses_internal::SceneRendererServiceHandlerMock::handleNewScenesAvailable(newScenes, providerID, publicationMode);
             if (m_sceneGraphConsumer != NULL)
             {
-                ramses_foreach(newScenes, it)
+                for(const auto& newScene : newScenes)
                 {
-                    m_sceneGraphConsumer->subscribeScene(providerID, it->sceneID);
+                    m_sceneGraphConsumer->subscribeScene(providerID, newScene.sceneID);
                 }
             }
         }

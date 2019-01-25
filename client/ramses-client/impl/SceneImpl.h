@@ -10,7 +10,6 @@
 #define RAMSES_SCENEIMPL_H
 
 #include "ramses-client-api/EScenePublicationMode.h"
-#include "ramses-client-api/ESceneFlushMode.h"
 #include "ramses-client-api/EDataType.h"
 #include "ramses-client-api/TextureEnums.h"
 
@@ -217,7 +216,7 @@ namespace ramses
 
         status_t setExpirationTimestamp(uint64_t ptpExpirationTimestampInMilliseconds);
 
-        status_t flush(ESceneFlushMode flushMode, sceneVersionTag_t sceneVersion);
+        status_t flush(sceneVersionTag_t sceneVersion);
 
         const ramses_internal::ClientScene& getIScene() const;
         ramses_internal::ClientScene& getIScene();

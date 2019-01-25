@@ -17,7 +17,7 @@
 #
 ############################################################################
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.3)
 
 OPTION(ACME_DEBUG_ENABLED            "enable debug output of acme"                        OFF)
 OPTION(ACME_WARNING_AS_ERROR         "treat warnings as errors"                           OFF)
@@ -33,13 +33,8 @@ INCLUDE(${ACME2_BASE_DIR}/internal/api.cmake)
 
 ENABLE_TESTING()    # use CTest
 
-IF (POLICY CMP0054)
-    CMAKE_POLICY(SET CMP0054 NEW)
-ENDIF()
-
-IF (POLICY CMP0022)
-    CMAKE_POLICY(SET CMP0022 NEW)
-ENDIF()
+CMAKE_POLICY(SET CMP0054 NEW)
+CMAKE_POLICY(SET CMP0022 NEW)
 
 ACME_DEBUG("Using ${ACME2_BASE_DIR}/acme2.cmake")
 ACME_DEBUG("CMAKE_TOOLCHAIN_FILE='${CMAKE_TOOLCHAIN_FILE}'")
@@ -57,13 +52,9 @@ MACRO(ACME2_PROJECT)
     INCLUDE(${ACME2_BASE_DIR}/internal/init_project_settings.cmake)
 
     # setup project
-    IF (POLICY CMP0048)
-        CMAKE_POLICY(SET CMP0048 NEW)
-        SET(version_string ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH})
-        PROJECT(${PROJECT_NAME} VERSION ${version_string})
-    ELSE()
-        PROJECT(${PROJECT_NAME})
-    ENDIF()
+    CMAKE_POLICY(SET CMP0048 NEW)
+    SET(version_string ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH})
+    PROJECT(${PROJECT_NAME} VERSION ${version_string})
 
     ACME_CALL_PLUGIN_HOOK(init)
 
@@ -98,16 +89,6 @@ MACRO(ACME2_PROJECT)
         ENDIF()
     ENDFOREACH()
 
-    # install project documentation
-    IF(PROJECT_ENABLE_INSTALL_DOCUMENTATION)
-        FOREACH(DOC ${PROJECT_FILES_DOCUMENTATION})
-            INSTALL(FILES       ${DOC}
-                    DESTINATION ${PROJECT_INSTALL_DOCUMENTATION}
-                    COMPONENT   ${PROJECT_NAME}-${PROJECT_VERSION}
-            )
-        ENDFOREACH()
-    ENDIF()
-
     IF(ACME_CREATE_PACKAGE)
         INCLUDE(${ACME2_BASE_DIR}/internal/create_package.cmake)
     ENDIF()
@@ -120,19 +101,17 @@ MACRO(ACME_MODULE)
 
     SET(MODULE_SETTINGS "${ARGV}")
     SET(BUILD_ENABLED TRUE)
-    SET(STATUS "ON      ")
 
     INCLUDE(${ACME2_BASE_DIR}/internal/init_module_settings.cmake)
     INCLUDE(${ACME2_BASE_DIR}/internal/init_acme_settings.cmake)
 
-    SET(MSG "")
     # check, if module contains files
     IF ("${ACME_FILES_SOURCE}${ACME_FILES_PRIVATE_HEADER}${ACME_FILES_RESOURCE}" STREQUAL "")
-        LIST(APPEND MSG "does not contain files")
-        SET(BUILD_ENABLED FALSE)
+        message(FATAL_ERROR "${ACME_NAME} does not have any files")
     ENDIF()
 
     # check, if all dependencies can be resolved
+    SET(MSG "")
     FOREACH(ACME_DEPENDENCY ${ACME_DEPENDENCIES})
         IF(NOT TARGET ${ACME_DEPENDENCY})
             list(FIND ${PROJECT_NAME}_WILL_NOT_FIND ${ACME_DEPENDENCY} SKIP_FIND)
@@ -151,9 +130,8 @@ MACRO(ACME_MODULE)
         ENDIF()
     ENDFOREACH()
 
-    IF (POLICY CMP0054)
-        CMAKE_POLICY(SET CMP0054 NEW)
-    ENDIF()
+    CMAKE_POLICY(SET CMP0054 NEW)
+
     # check if module is test and disable, if tests are disabled
     IF("${ACME_TYPE}" STREQUAL "TEST" AND NOT ${PROJECT_NAME}_BUILD_TESTS)
         SET(MSG "tests disabled") # overwrite missing dependencies
@@ -177,11 +155,7 @@ MACRO(ACME_MODULE)
         # build module
         INCLUDE(${ACME2_BASE_DIR}/internal/module_template.cmake)
 
-        IF (TARGET ${ACME_NAME})
-            ACME_CALL_PLUGIN_HOOK(on_target_created)
-            ACME_CALL_PLUGIN_HOOK(on_${ACME_TYPE}_created)
-        ENDIF()
-
+        ACME_CALL_PLUGIN_HOOK(on_target_created)
     ENDIF()
 
 ENDMACRO(ACME_MODULE)

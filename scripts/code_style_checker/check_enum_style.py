@@ -62,5 +62,5 @@ if __name__ == "__main__":
         exit(0)
 
     for t in targets:
-        _, clean_file_contents, _, _ = read_file(t)
+        clean_file_contents, _ = clean_file_content(read_file(t)[0])
         check_enum_style(t, clean_file_contents)

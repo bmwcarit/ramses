@@ -12,11 +12,13 @@
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "PlatformAbstraction/PlatformEvent.h"
+#include "PlatformAbstraction/synchronized_clock.h"
 #include "Collections/Vector.h"
 #include "Utils/IPeriodicLogSupplier.h"
 #include "Utils/StatisticCollection.h"
 #include "Collections/HashMap.h"
 #include "SceneAPI/SceneId.h"
+#include <atomic>
 
 namespace ramses_internal
 {
@@ -51,6 +53,9 @@ namespace ramses_internal
         StatisticCollectionFramework& m_statisticCollection;
         UInt32 m_triggerCounter;
         HashMap<SceneId, StatisticCollectionScene*> m_statisticCollectionScenes;
+
+        std::chrono::steady_clock::time_point m_previousSteadyTime;
+        synchronized_clock::time_point m_previousSyncTime;
 
         const UInt64 m_ramsesInstanceStartupTime;
         static const UInt64 m_processStartupTime;

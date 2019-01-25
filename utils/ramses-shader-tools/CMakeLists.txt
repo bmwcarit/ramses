@@ -88,5 +88,5 @@ ACME_MODULE(
     # dependencies
     #==========================================================================
     DEPENDENCIES            ramses-shader-tools-lib
-                            gmock_main
+                            ramses-gmock-main
 )

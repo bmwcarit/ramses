@@ -15,7 +15,6 @@
 #include "RendererAPI/IEmbeddedCompositingManager.h"
 #include "RendererAPI/IDevice.h"
 #include "Utils/LogMacros.h"
-#include "Common/Cpp11Macros.h"
 #include "PlatformAbstraction/PlatformTime.h"
 
 namespace ramses_internal
@@ -47,9 +46,10 @@ namespace ramses_internal
         getClientResourcesToUnloadNext(resourcesToUnload, false, std::numeric_limits<UInt64>::max());
         unloadClientResources(resourcesToUnload);
 
-        ramses_foreach(m_clientResources.getAllResourceDescriptors(), res)
+        for(const auto& resource : m_clientResources.getAllResourceDescriptors())
         {
-            assert(res->value.status != EResourceStatus_Uploaded);
+            UNUSED(resource);
+            assert(resource.value.status != EResourceStatus_Uploaded);
         }
     }
 
@@ -74,9 +74,9 @@ namespace ramses_internal
 
     void ClientResourceUploadingManager::unloadClientResources(const ResourceContentHashVector& resourcesToUnload)
     {
-        ramses_foreach(resourcesToUnload, res)
+        for(const auto& resource : resourcesToUnload)
         {
-            const ResourceDescriptor& rd = m_clientResources.getResourceDescriptor(*res);
+            const ResourceDescriptor& rd = m_clientResources.getResourceDescriptor(resource);
             unloadClientResource(rd);
         }
     }
@@ -179,17 +179,16 @@ namespace ramses_internal
 
         totalSize = 0u;
         const ResourceContentHashVector& providedResources = m_clientResources.getAllProvidedResources();
-        ramses_foreach(providedResources, res)
+        for(const auto& resource : providedResources)
         {
-            const ResourceContentHash hash = *res;
-            const ResourceDescriptor& rd = m_clientResources.getResourceDescriptor(hash);
+            const ResourceDescriptor& rd = m_clientResources.getResourceDescriptor(resource);
             assert(rd.status == EResourceStatus_Provided);
             assert(rd.resource.getResourceObject() != NULL);
-            const IResource* resource = rd.resource.getResourceObject();
-            resource->decompress();
-            totalSize += resource->getDecompressedDataSize();
+            const IResource* resourceObj = rd.resource.getResourceObject();
+            resourceObj->decompress();
+            totalSize += resourceObj->getDecompressedDataSize();
 
-            resourcesToUpload.push_back(hash);
+            resourcesToUpload.push_back(resource);
         }
     }
 

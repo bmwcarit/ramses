@@ -87,13 +87,13 @@ namespace ramses
     TEST_F(AHarfbuzzFontInstance, ComputesAscenderFromFontData)
     {
         EXPECT_EQ(4, FontInstance4->getAscender());
-        EXPECT_EQ(9, FontInstance10->getAscender());
+        EXPECT_EQ(10, FontInstance10->getAscender());
     }
 
     TEST_F(AHarfbuzzFontInstance, ComputesDescenderFromFontData)
     {
         EXPECT_EQ(-1, FontInstance4->getDescender());
-        EXPECT_EQ(-2, FontInstance10->getDescender());
+        EXPECT_EQ(-3, FontInstance10->getDescender());
     }
 
     TEST_F(AHarfbuzzFontInstance, ObtainsGlyphMetrics)
@@ -167,10 +167,18 @@ namespace ramses
         EXPECT_EQ(4u, glyphBitmapSize.x);
         EXPECT_EQ(4u, glyphBitmapSize.y);
 
+// (Violin) glyph loading produces minimally different results on Mingw
+#if defined(__MINGW32__) || defined(__MINGW64__)
         EXPECT_THAT(bitmapData, testing::ContainerEq(std::vector<uint8_t>{ 0x1e, 0x57, 0x54, 0x7,
                                                                            0x66, 0x6f, 0x65, 0x51,
                                                                            0x5e, 0x8b, 0x96, 0x37,
                                                                            0x41, 0x58, 0x28, 0x0 }));
+#else
+        EXPECT_THAT(bitmapData, testing::ContainerEq(std::vector<uint8_t>{ 0x1e, 0x57, 0x54, 0x7,
+                                                                           0x66, 0x6f, 0x65, 0x51,
+                                                                           0x5e, 0x8b, 0x96, 0x36,
+                                                                           0x41, 0x58, 0x28, 0x0 }));
+#endif
     }
 
     TEST_F(AHarfbuzzFontInstance, ReportsUnsupportedCharCode)
@@ -191,7 +199,7 @@ namespace ramses
         expectGlyphMetricsEq({ { GlyphId(  3u), FontInstanceArabicId }, 0u, 0u,  0,  0, 3 }, *it++);
         expectGlyphMetricsEq({ { GlyphId(154u), FontInstanceArabicId }, 7u, 8u,  0,  0, 6 }, *it++);
         expectGlyphMetricsEq({ { GlyphId(  8u), FontInstanceArabicId }, 7u, 5u, -1,  0, 6 }, *it++);
-        expectGlyphMetricsEq({ { GlyphId( 47u), FontInstanceArabicId }, 7u, 7u,  0, -2, 6 }, *it++);
+        expectGlyphMetricsEq({ { GlyphId( 47u), FontInstanceArabicId }, 6u, 7u,  0, -2, 6 }, *it++);
         expectGlyphMetricsEq({ { GlyphId( 35u), FontInstanceArabicId }, 4u, 8u, -1,  0, 3 }, *it++);
         expectGlyphMetricsEq({ { GlyphId(  3u), FontInstanceArabicId }, 0u, 0u,  0,  0, 3 }, *it++);
         EXPECT_EQ(it, positionedGlyphs.cend());
@@ -208,7 +216,7 @@ namespace ramses
         expectGlyphMetricsEq({ { GlyphId(  3u), FontInstanceArabicId }, 0u, 0u,  0,  0, 3 }, *it++);
         expectGlyphMetricsEq({ { GlyphId( 51u), FontInstanceArabicId }, 8u, 8u,  0,  0, 7 }, *it++);
         expectGlyphMetricsEq({ { GlyphId( 27u), FontInstanceArabicId }, 6u, 5u, -1,  0, 5 }, *it++);
-        expectGlyphMetricsEq({ { GlyphId( 13u), FontInstanceArabicId }, 6u, 7u, -1, -2, 4 }, *it++);
+        expectGlyphMetricsEq({ { GlyphId( 13u), FontInstanceArabicId }, 5u, 7u, -1, -2, 4 }, *it++);
         expectGlyphMetricsEq({ { GlyphId(135u), FontInstanceArabicId }, 5u, 7u, -1, -2, 3 }, *it++);
         expectGlyphMetricsEq({ { GlyphId(216u), FontInstanceArabicId }, 4u, 7u, -1, -2, 4 }, *it++);
         expectGlyphMetricsEq({ { GlyphId(153u), FontInstanceArabicId }, 6u, 7u,  0,  0, 6 }, *it++);

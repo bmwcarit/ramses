@@ -10,7 +10,7 @@
 #define RAMSES_TEXTUREENUMS_H
 
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
-#include "APIExport.h"
+#include "ramses-framework-api/APIExport.h"
 
 namespace ramses
 {

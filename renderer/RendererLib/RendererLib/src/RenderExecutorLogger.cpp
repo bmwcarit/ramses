@@ -11,7 +11,6 @@
 #include "RendererLib/RendererCachedScene.h"
 #include "SceneAPI/RenderBuffer.h"
 #include "SceneAPI/BlitPass.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {

@@ -9,7 +9,6 @@
 #include "renderer_common_gmock_header.h"
 #include "gtest/gtest.h"
 #include "RendererLib/SceneLinks.h"
-#include "Common/Cpp11Macros.h"
 
 using namespace testing;
 using namespace ramses_internal;
@@ -40,9 +39,9 @@ protected:
 
     static bool ContainsLink(const SceneLinkVector& links, const SceneLink& link)
     {
-        ramses_foreach(links, linkIt)
+        for(auto linkIt : links)
         {
-            if (LinksEqual(*linkIt, link))
+            if (LinksEqual(linkIt, link))
             {
                 return true;
             }

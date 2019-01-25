@@ -6,6 +6,8 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 #include <gtest/gtest.h>
+#include "gmock/gmock-matchers.h"
+
 #include "ramses-text-api/FontRegistry.h"
 #include "ramses-text/Freetype2FontInstance.h"
 #include "ramses-text/Quad.h"
@@ -74,13 +76,13 @@ namespace ramses
     TEST_F(AFreetype2FontInstance, ComputesAscenderFromFontData)
     {
         EXPECT_EQ(4, FontInstance4->getAscender());
-        EXPECT_EQ(9, FontInstance10->getAscender());
+        EXPECT_EQ(10, FontInstance10->getAscender());
     }
 
     TEST_F(AFreetype2FontInstance, ComputesDescenderFromFontData)
     {
         EXPECT_EQ(-1, FontInstance4->getDescender());
-        EXPECT_EQ(-2, FontInstance10->getDescender());
+        EXPECT_EQ(-3, FontInstance10->getDescender());
     }
 
     TEST_F(AFreetype2FontInstance, ObtainsGlyphMetrics)
@@ -154,16 +156,22 @@ namespace ramses
         EXPECT_EQ(4u, glyphBitmapSize.x);
         EXPECT_EQ(4u, glyphBitmapSize.y);
 
-        const uint8_t expect[] =
-        {
+// (Violin) glyph loading produces minimally different results on Mingw
+#if defined(__MINGW32__) || defined(__MINGW64__)
+        EXPECT_THAT(bitmapData, testing::ContainerEq(std::vector<uint8_t>{
             0x1e, 0x57, 0x54, 0x7,
             0x66, 0x6f, 0x65, 0x51,
             0x5e, 0x8b, 0x96, 0x37,
             0x41, 0x58, 0x28, 0x0
-        };
-        ASSERT_EQ(16u, bitmapData.size());
-        for (size_t i = 0; i < bitmapData.size(); ++i)
-            EXPECT_EQ(expect[i], bitmapData[i]);
+        }));
+#else
+        EXPECT_THAT(bitmapData, testing::ContainerEq(std::vector<uint8_t>{
+            0x1e, 0x57, 0x54, 0x7,
+            0x66, 0x6f, 0x65, 0x51,
+            0x5e, 0x8b, 0x96, 0x36,
+            0x41, 0x58, 0x28, 0x0
+        }));
+#endif
     }
 
     TEST_F(AFreetype2FontInstance, ReportsSupportedCharCodes)

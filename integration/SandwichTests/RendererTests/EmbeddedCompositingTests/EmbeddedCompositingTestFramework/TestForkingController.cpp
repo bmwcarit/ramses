@@ -21,6 +21,14 @@ namespace ramses_internal
         startForkerApplication(waylandSocket);
     }
 
+    TestForkingController::~TestForkingController()
+    {
+        stopForkerApplication();
+        pid_t processEndStatus = ::waitpid(m_testForkerApplicationProcessId, NULL, 0);
+        UNUSED(processEndStatus)
+        assert(m_testForkerApplicationProcessId == processEndStatus);
+    }
+
     void TestForkingController::setEnvironmentVariableWaylandDisplay()
     {
         LOG_INFO(CONTEXT_RENDERER, "TestForkingController::setEmbeddedCompositorWaylandSocket(): sending message to forker");
@@ -60,14 +68,6 @@ namespace ramses_internal
         {
             LOG_ERROR(CONTEXT_RENDERER, "TestForkingController::sendMessageToTestApplication failed to write data to pipe!");
         }
-    }
-
-    void TestForkingController::deinitialize()
-    {
-        stopForkerApplication();
-        pid_t processEndStatus = ::waitpid(m_testForkerApplicationProcessId, NULL, 0);
-        UNUSED(processEndStatus)
-        assert(m_testForkerApplicationProcessId == processEndStatus);
     }
 
     void TestForkingController::startForkerApplication(const String& waylandSocket)

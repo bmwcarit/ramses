@@ -127,5 +127,5 @@ if __name__ == "__main__":
 
     for t in targets:
         if t[-2:] == ".h":
-            file_contents, _, _, _ = read_file(t)
+            file_contents, _ = read_file(t)
             check_header_guards(t, file_contents)

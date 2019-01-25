@@ -85,6 +85,7 @@ TEST_F(AnEffectResourceCreator, canCreateEffectResourceFromGlslShaders)
 
     ramses::Effect* effectRead = NULL;
     loadEffectFromFile(OUTPUT_RESOURCE_FILE, effectRead);
+    ASSERT_TRUE(effectRead != nullptr);
     EXPECT_STREQ(effectRead->getName(), OUTPUT_EFFECT_NAME);
 
     ramses::EffectInputImpl matrix44fInput;
@@ -112,6 +113,7 @@ TEST_F(AnEffectResourceCreator, canCreateEffectWithCorrectNameWhenEffectNameIsNo
 
     ramses::Effect* effectRead = NULL;
     loadEffectFromFile(OUTPUT_RESOURCE_FILE, effectRead);
+    ASSERT_TRUE(effectRead != nullptr);
     EXPECT_STREQ(effectRead->getName(), "ramses-shader-tools-test.vertexshader_ramses-shader-tools-test.fragmentshader");
 }
 

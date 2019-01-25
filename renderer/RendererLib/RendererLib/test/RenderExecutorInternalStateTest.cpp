@@ -217,7 +217,7 @@ namespace ramses_internal
 
         const Matrix44f modelMat = m_scene.updateMatrixCache(ETransformationMatrixType_World, renderableNode);
         const Matrix44f expectedViewMat = mat * camViewMat;
-        const Matrix44f expectedProjectionMat = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(FakeFoV, static_cast<Float>(FakeVpWidth / FakeVpHeight), FakeNearPlane, FakeFarPlane));
+        const Matrix44f expectedProjectionMat = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(FakeFoV, static_cast<Float>(FakeVpWidth) / FakeVpHeight, FakeNearPlane, FakeFarPlane));
 
         EXPECT_TRUE(matrixFloatEquals(modelMat, m_executorState.getModelMatrix()));
         EXPECT_TRUE(matrixFloatEquals(expectedViewMat * modelMat, m_executorState.getModelViewMatrix()));
@@ -227,7 +227,7 @@ namespace ramses_internal
     TEST_F(ARenderExecutorInternalState, initialSetToDepthRenderStateTriggersChange)
     {
         DepthStencilState depthState;
-        depthState.m_depthFunc = EDepthFunc_Disabled;
+        depthState.m_depthFunc = EDepthFunc::Disabled;
         m_executorState.depthStencilState.setState(depthState);
         EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
         EXPECT_FALSE(depthState != m_executorState.depthStencilState.getState());
@@ -236,7 +236,7 @@ namespace ramses_internal
     TEST_F(ARenderExecutorInternalState, initialSetToBlendRenderStateTriggersChange)
     {
         BlendState blendState;
-        blendState.m_blendFactorSrcColor = EBlendFactor_OneMinusDstAlpha;
+        blendState.m_blendFactorSrcColor = EBlendFactor::OneMinusDstAlpha;
         m_executorState.blendState.setState(blendState);
         EXPECT_TRUE(m_executorState.blendState.hasChanged());
         EXPECT_FALSE(blendState != m_executorState.blendState.getState());
@@ -245,7 +245,7 @@ namespace ramses_internal
     TEST_F(ARenderExecutorInternalState, initialSetToRasterizerRenderStateTriggersChange)
     {
         RasterizerState rasterState;
-        rasterState.m_cullMode = ECullMode_Disabled;
+        rasterState.m_cullMode = ECullMode::Disabled;
         m_executorState.rasterizerState.setState(rasterState);
         EXPECT_TRUE(m_executorState.rasterizerState.hasChanged());
         EXPECT_FALSE(rasterState != m_executorState.rasterizerState.getState());

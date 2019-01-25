@@ -16,7 +16,6 @@
 #include "PlatformAbstraction/PlatformGuard.h"
 #include "Utils/LogMacros.h"
 #include "Scene/SceneActionCollection.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {
@@ -262,12 +261,12 @@ namespace ramses_internal
         if (m_publishedScenes.count() > 0)
         {
             SceneInfoVector availableScenes;
-            ramses_foreach(m_publishedScenes, it)
+            for(const auto& publishedScene : m_publishedScenes)
             {
-                if (it->value.publicationMode != EScenePublicationMode_LocalOnly)
+                if (publishedScene.value.publicationMode != EScenePublicationMode_LocalOnly)
                 {
-                    LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::newParticipantHasConnected: publishing scene to new particpant: " << to << " scene is: " << it->key.getValue() << " mode: " << EnumToString(it->value.publicationMode) << " from: " << m_myID);
-                    availableScenes.push_back(SceneInfo(it->key, it->value.name));
+                    LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::newParticipantHasConnected: publishing scene to new particpant: " << to << " scene is: " << publishedScene.key.getValue() << " mode: " << EnumToString(publishedScene.value.publicationMode) << " from: " << m_myID);
+                    availableScenes.push_back(SceneInfo(publishedScene.key, publishedScene.value.name));
                 }
             }
             if (availableScenes.size() > 0)
@@ -282,9 +281,9 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::participantHasDisconnected: unsubscribing all scenes for particpant: " << disconnnectedParticipant);
 
         PlatformGuard guard(m_frameworkLock);
-        ramses_foreach(m_publishedScenes, it)
+        for(const auto& publishedScene : m_publishedScenes)
         {
-            handleSceneUnsubscription(it->key, disconnnectedParticipant);
+            handleSceneUnsubscription(publishedScene.key, disconnnectedParticipant);
         }
     }
 

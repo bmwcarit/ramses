@@ -9,7 +9,6 @@
 #include "Utils/StringUtils.h"
 #include "PlatformAbstraction/PlatformStringUtils.h"
 #include "Collections/StringOutputStream.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {
@@ -73,9 +72,9 @@ namespace ramses_internal
     {
         StringVector vectorOfTokens;
         Tokenize(string, vectorOfTokens, split);
-        ramses_foreach(vectorOfTokens, token)
+        for(const auto& token : vectorOfTokens)
         {
-            tokens.put(*token);
+            tokens.put(token);
         }
     }
 
@@ -152,14 +151,14 @@ namespace ramses_internal
         sStream.setHexadecimalOutputFormat(ramses_internal::StringOutputStream::EHexadecimalType_HexLeadingZeros);
         sStream << "utf32-str [ ";
 
-        ramses_foreach(data, charCode)
+        for(auto charCode : data)
         {
-            if(*charCode != 0)
+            if(charCode != 0)
             {
                 sStream << " ; ";
             }
 
-            sStream << *charCode;
+            sStream << charCode;
         }
         sStream << " ]";
 

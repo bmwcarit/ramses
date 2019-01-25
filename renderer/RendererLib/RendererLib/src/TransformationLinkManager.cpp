@@ -11,7 +11,6 @@
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/DataLinkUtils.h"
 #include "Utils/LogMacros.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {
@@ -24,10 +23,10 @@ namespace ramses_internal
     {
         SceneLinkVector links;
         getSceneLinks().getLinkedConsumers(sceneId, links);
-        ramses_foreach(links, linkIt)
+        for(const auto& link : links)
         {
-            assert(linkIt->providerSceneId == sceneId);
-            removeDataLink(linkIt->consumerSceneId, linkIt->consumerSlot);
+            assert(link.providerSceneId == sceneId);
+            removeDataLink(link.consumerSceneId, link.consumerSlot);
         }
 
         m_nodesToDataSlots.remove(sceneId);
@@ -115,12 +114,12 @@ namespace ramses_internal
         SceneLinkVector links;
         getSceneLinks().getLinkedConsumers(providerSceneId, providerSlotHandle, links);
 
-        ramses_foreach(links, linkIt)
+        for(const auto& link : links)
         {
-            assert(linkIt->providerSceneId == providerSceneId);
-            assert(linkIt->providerSlot == providerSlotHandle);
-            const TransformationLinkCachedScene& consumerScene = m_scenes.getScene(linkIt->consumerSceneId);
-            const NodeHandle consumerNodeHandle = consumerScene.getDataSlot(linkIt->consumerSlot).attachedNode;
+            assert(link.providerSceneId == providerSceneId);
+            assert(link.providerSlot == providerSlotHandle);
+            const TransformationLinkCachedScene& consumerScene = m_scenes.getScene(link.consumerSceneId);
+            const NodeHandle consumerNodeHandle = consumerScene.getDataSlot(link.consumerSlot).attachedNode;
 
             consumerScene.propagateDirtyToConsumers(consumerNodeHandle);
         }

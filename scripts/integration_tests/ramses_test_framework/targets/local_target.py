@@ -79,7 +79,7 @@ class LocalTarget(Target):
     def _transfer_screenshots(self, namePattern, originalDirectory, resultDirectory):
         screenShotFiles = glob.glob(os.path.normcase(originalDirectory + '/' + namePattern))
         for file in screenShotFiles:
-            os.rename(file, os.path.join(resultDirectory, os.path.basename(file)))
+            shutil.move(file, os.path.join(resultDirectory, os.path.basename(file)))
 
     def execute_on_target(self, commandToExecute, block=True, env=None, cwd=None):
         command = commandToExecute.split(' ')

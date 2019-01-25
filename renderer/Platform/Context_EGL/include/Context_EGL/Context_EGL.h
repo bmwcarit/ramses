@@ -40,7 +40,14 @@ namespace ramses_internal
     class Context_EGL : public Context_Base
     {
     public:
-        Context_EGL(EGLNativeDisplayType eglDisplay, EGLNativeWindowType eglWindow, const EGLint* contextAttributes, const EGLint* surfaceAttributes, const EGLint* windowSurfaceAttributes, EGLint swapInterval, Context_EGL* sharedContext = 0);
+        // TODO(violin/tobias) Define a special type here for use as EGLNativeWindowType instead of using it directly. This prevents that different
+        //    includes of this file have different typedefs for EGLNativeWindowType, depending on other (e.g. wayland) headers included first. It
+        //    should be safe to cast between EGLNativeWindowType and void* because the source and final destination of this value should use the same
+        //    format and we only treat it as an opque value.
+        //    Try to remove this workaround in the future by e.g. refactoring Context usage or making Context templated.
+        using Generic_EGLNativeWindowType = void*;
+
+        Context_EGL(EGLNativeDisplayType eglDisplay, Generic_EGLNativeWindowType eglWindow, const EGLint* contextAttributes, const EGLint* surfaceAttributes, const EGLint* windowSurfaceAttributes, EGLint swapInterval, Context_EGL* sharedContext = 0);
         ~Context_EGL() override;
 
         Bool init();
@@ -54,7 +61,7 @@ namespace ramses_internal
     private:
         EglSurfaceData m_eglSurfaceData;
         EGLNativeDisplayType m_nativeDisplay;
-        EGLNativeWindowType m_nativeWindow;
+        Generic_EGLNativeWindowType m_nativeWindow;
         const EGLint* m_contextAttributes;
         const EGLint* m_surfaceAttributes;
         const EGLint* m_windowSurfaceAttributes;

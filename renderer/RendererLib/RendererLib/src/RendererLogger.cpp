@@ -34,7 +34,6 @@
 #include "RenderExecutorLogger.h"
 #include "RendererEventCollector.h"
 #include "Utils/LogMacros.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {

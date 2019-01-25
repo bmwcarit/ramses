@@ -166,7 +166,6 @@ namespace ramses
         /**
         * @brief Get the current setting of Wayland display name
         *
-        * @param[in] config Renderer config to read from
         * @return Wayland display name to use for connection, empty means default
         */
         const char* getSystemCompositorWaylandDisplay() const;

@@ -573,9 +573,9 @@ namespace ramses_internal
         case ESceneActionId_SetStateStencilOps:
         {
             RenderStateHandle stateHandle;
-            UInt32 sfail = 0;
-            UInt32 dpfail = 0;
-            UInt32 dppass = 0;
+            uint8_t sfail = 0;
+            uint8_t dpfail = 0;
+            uint8_t dppass = 0;
             action.read(stateHandle);
             action.read(sfail);
             action.read(dpfail);
@@ -586,20 +586,20 @@ namespace ramses_internal
         case ESceneActionId_SetStateStencilFunc:
         {
             RenderStateHandle stateHandle;
-            UInt32 func = 0;
-            UInt32 ref = 0;
-            UInt32 mask = 0;
+            uint8_t func = 0;
+            uint8_t ref = 0;
+            uint8_t mask = 0;
             action.read(stateHandle);
             action.read(func);
             action.read(ref);
             action.read(mask);
-            scene.setRenderStateStencilFunc(stateHandle, static_cast<EStencilFunc>(func), ref, static_cast<UInt8>(mask));
+            scene.setRenderStateStencilFunc(stateHandle, static_cast<EStencilFunc>(func), ref, mask);
             break;
         }
         case ESceneActionId_SetStateDepthWrite:
         {
             RenderStateHandle stateHandle;
-            UInt32 flag = 0;
+            uint8_t flag = 0;
             action.read(stateHandle);
             action.read(flag);
             scene.setRenderStateDepthWrite(stateHandle, static_cast<EDepthWrite>(flag));
@@ -608,7 +608,7 @@ namespace ramses_internal
         case ESceneActionId_SetStateDepthFunc:
         {
             RenderStateHandle stateHandle;
-            UInt32 func = 0;
+            uint8_t func = 0;
             action.read(stateHandle);
             action.read(func);
             scene.setRenderStateDepthFunc(stateHandle, static_cast<EDepthFunc>(func));
@@ -617,7 +617,7 @@ namespace ramses_internal
         case ESceneActionId_SetStateCullMode:
         {
             RenderStateHandle stateHandle;
-            UInt32 mode = 0;
+            uint8_t mode = 0;
             action.read(stateHandle);
             action.read(mode);
             scene.setRenderStateCullMode(stateHandle, static_cast<ECullMode>(mode));
@@ -626,7 +626,7 @@ namespace ramses_internal
         case ESceneActionId_SetStateDrawMode:
         {
             RenderStateHandle stateHandle;
-            UInt32 mode = 0;
+            uint8_t mode = 0;
             action.read(stateHandle);
             action.read(mode);
             scene.setRenderStateDrawMode(stateHandle, static_cast<EDrawMode>(mode));
@@ -635,8 +635,8 @@ namespace ramses_internal
         case ESceneActionId_SetStateBlendOperations:
         {
             RenderStateHandle stateHandle;
-            UInt32 opColor = 0;
-            UInt32 opAlpha = 0;
+            uint8_t opColor = 0;
+            uint8_t opAlpha = 0;
             action.read(stateHandle);
             action.read(opColor);
             action.read(opAlpha);
@@ -646,10 +646,10 @@ namespace ramses_internal
         case ESceneActionId_SetStateBlendFactors:
         {
             RenderStateHandle stateHandle;
-            UInt32 srcColor = 0;
-            UInt32 destColor = 0;
-            UInt32 srcAlpha = 0;
-            UInt32 destAlpha = 0;
+            uint8_t srcColor = 0;
+            uint8_t destColor = 0;
+            uint8_t srcAlpha = 0;
+            uint8_t destAlpha = 0;
             action.read(stateHandle);
             action.read(srcColor);
             action.read(destColor);
@@ -1797,22 +1797,22 @@ namespace ramses_internal
         case ESceneActionId_CompoundState:
         {
             RenderStateHandle     state;
-            UInt32          bfSrcColor;
-            UInt32          bfDstColor;
-            UInt32          bfSrcAlpha;
-            UInt32          bfDstAlpha;
-            UInt32          boColor;
-            UInt32          boAlpha;
-            UInt32          cullMode;
-            UInt32          drawMode;
-            UInt32          depthWrite;
-            UInt32          depthFunc;
-            UInt32          stencilFunc;
-            UInt32          stencilRefValue;
-            UInt32          stencilMask;
-            UInt32          stencilOpFail;
-            UInt32          stencilOpDepthFail;
-            UInt32          stencilOpDepthPass;
+            uint8_t bfSrcColor;
+            uint8_t bfDstColor;
+            uint8_t bfSrcAlpha;
+            uint8_t bfDstAlpha;
+            uint8_t boColor;
+            uint8_t boAlpha;
+            uint8_t cullMode;
+            uint8_t drawMode;
+            uint8_t depthWrite;
+            uint8_t depthFunc;
+            uint8_t stencilFunc;
+            uint8_t stencilRefValue;
+            uint8_t stencilMask;
+            uint8_t stencilOpFail;
+            uint8_t stencilOpDepthFail;
+            uint8_t stencilOpDepthPass;
             ColorWriteMask  colorWriteMask;
 
             action.read(state);
@@ -1844,7 +1844,7 @@ namespace ramses_internal
             scene.setRenderStateDrawMode(       state, static_cast<EDrawMode>(drawMode));
             scene.setRenderStateDepthWrite(     state, static_cast<EDepthWrite>(depthWrite));
             scene.setRenderStateDepthFunc(      state, static_cast<EDepthFunc>(depthFunc));
-            scene.setRenderStateStencilFunc(    state, static_cast<EStencilFunc>(stencilFunc), stencilRefValue, static_cast<UInt8>(stencilMask));
+            scene.setRenderStateStencilFunc(    state, static_cast<EStencilFunc>(stencilFunc), stencilRefValue, stencilMask);
             scene.setRenderStateStencilOps(     state, static_cast<EStencilOp>(stencilOpFail), static_cast<EStencilOp>(stencilOpDepthFail), static_cast<EStencilOp>(stencilOpDepthPass));
             scene.setRenderStateColorWriteMask( state, colorWriteMask);
 
@@ -1923,7 +1923,6 @@ namespace ramses_internal
         isSync = (flushFlags & ESceneActionFlushBits_Synchronous) != 0;
         hasSizeInfo = (flushFlags & ESceneActionFlushBits_HasSizeInfo) != 0;
         const bool hasTimestamps = (flushFlags & ESceneActionFlushBits_HasTimestamps) != 0;
-        const bool hasExpirationTimestamp = (flushFlags & ESceneActionFlushBits_HasExpirationTimestamp) != 0;
 
         if (hasSizeInfo)
         {
@@ -1931,17 +1930,11 @@ namespace ramses_internal
         }
         resourceChanges.getFromSceneAction(action);
 
-        flushTimeInfo.expirationTimestamp = FlushTime::InvalidTimestamp;
-        if (hasExpirationTimestamp)
-        {
-            UInt64 expirationTimestamp = 0;
-            action.read(expirationTimestamp); // TODO vaclav remove when not needed - dummy value, written on client side for back compatibility
-            action.read(expirationTimestamp);
-            flushTimeInfo.expirationTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(expirationTimestamp));
-        }
-        UInt64 internalTimestamp = 0;
-        action.read(internalTimestamp);
-        flushTimeInfo.internalTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(internalTimestamp));
+        UInt64 tsVal = 0;
+        action.read(tsVal);
+        flushTimeInfo.expirationTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(tsVal));
+        action.read(tsVal);
+        flushTimeInfo.internalTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(tsVal));
 
         if (hasTimestamps)
         {

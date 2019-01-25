@@ -33,7 +33,6 @@
 #include "Components/FlushTimeInformation.h"
 #include "Utils/LogMacros.h"
 #include "PlatformAbstraction/PlatformTime.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {
@@ -706,6 +705,7 @@ namespace ramses_internal
     void RendererSceneUpdater::updateScenesStates()
     {
         SceneIdVector scenesMapped;
+        SceneIdVector scenesToForceUnsubscribe;
         for (const auto& it : m_scenesToBeMapped)
         {
             const SceneId sceneId = it.key;
@@ -724,7 +724,12 @@ namespace ramses_internal
                     m_renderer.mapSceneToDisplayBuffer(sceneId, mapRequest.display, displayController.getDisplayBuffer(), mapRequest.sceneRenderOrder);
                     m_sceneStateExecutor.setMappingAndUploading(sceneId);
                     // mapping a scene needs re-request of all its resources at the new resource manager
-                    markClientAndSceneResourcesForReupload(sceneId);
+                    if (!markClientAndSceneResourcesForReupload(sceneId))
+                    {
+                        LOG_ERROR(CONTEXT_RENDERER, "Failed to upload all scene resources within time budget (" << static_cast<uint64_t>(m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneResourcesUpload).count()) << " us)."
+                            << " Reduce amount of scene resources or use client resources instead! Scene " << sceneId << " will be force unsubscribed!");
+                        scenesToForceUnsubscribe.push_back(sceneId);
+                    }
                 }
             }
                 break;
@@ -773,6 +778,9 @@ namespace ramses_internal
                 break;
             }
         }
+
+        for (const auto sceneId : scenesToForceUnsubscribe)
+            handleSceneUnsubscriptionRequest(sceneId, true);
 
         for (const auto sceneId : scenesMapped)
         {
@@ -902,7 +910,7 @@ namespace ramses_internal
         rendererScene.resetResourceCache();
     }
 
-    void RendererSceneUpdater::markClientAndSceneResourcesForReupload(SceneId sceneId)
+    bool RendererSceneUpdater::markClientAndSceneResourcesForReupload(SceneId sceneId)
     {
         assert(m_rendererScenes.hasScene(sceneId));
         assert(ESceneState_MappingAndUploading == m_sceneStateExecutor.getSceneState(sceneId));
@@ -922,11 +930,16 @@ namespace ramses_internal
             activateDisplayContext(activeDisplay, displayHandle);
             if (sceneResourcesByteSize > 0u)
                 LOG_INFO(CONTEXT_RENDERER, "Applying scene resources gathered from scene " << sceneId << ", " << sceneResourceActions.size() << " actions, " << sceneResourcesByteSize << " bytes");
-            PendingSceneResourcesUtils::ApplySceneResourceActions(sceneResourceActions, scene, resourceManager);
+
+            // enable time measuring and interrupting of upload only if scene is remote
+            const bool sceneIsRemote = (m_sceneStateExecutor.getScenePublicationMode(sceneId) != EScenePublicationMode_LocalOnly);
+            if (!PendingSceneResourcesUtils::ApplySceneResourceActions(sceneResourceActions, scene, resourceManager, sceneIsRemote ? &m_frameTimer : nullptr))
+                return false;
         }
 
         // reference all the resources in use by the scene to be mapped
         resourceManager.referenceClientResourcesForScene(sceneId, m_rendererScenes.getStagingInfo(sceneId).clientResourcesInUse);
+        return true;
     }
 
     void RendererSceneUpdater::handleScenePublished(SceneId sceneId, const Guid& clientWhereSceneIsAvailable, EScenePublicationMode mode)
@@ -1037,6 +1050,7 @@ namespace ramses_internal
             m_renderer.resetRenderInterruptState();
             m_renderer.setSceneShown(sceneId, false);
             m_sceneStateExecutor.setHidden(sceneId);
+            m_expirationMonitor.onHidden(sceneId);
         }
     }
 

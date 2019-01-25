@@ -247,7 +247,6 @@ namespace ramses_internal
 
         SceneActionCollection d(std::move(c));
         EXPECT_EQ(oldC, d);
-        EXPECT_EQ(0u, c.numberOfActions());
     }
 
     TEST_F(ASceneActionCollection, canBeMoveAssigned)
@@ -261,7 +260,6 @@ namespace ramses_internal
         SceneActionCollection d;
         d = std::move(c);
         EXPECT_EQ(oldC, d);
-        EXPECT_EQ(0u, c.numberOfActions());
     }
 
     TEST_F(ASceneActionCollection, canAppendToAnotherCollection)

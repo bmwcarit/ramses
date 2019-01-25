@@ -308,7 +308,7 @@ int main(int argc, char* argv[])
     //                 This should not be the case for real applications.
     // Create displays and map scenes to them
     ramses::DisplayConfig displayConfig1(argc, argv);
-    displayConfig1.setIntegrityEGLDisplayID(0);
+    displayConfig1.setIntegrityRGLDeviceUnit(0);
     displayConfig1.setWaylandIviSurfaceID(0);
     displayConfig1.setWaylandIviLayerID(3);
     displayConfig1.setWindowIviVisible();
@@ -319,7 +319,7 @@ int main(int argc, char* argv[])
     renderer.showScene(sceneId1);
 
     ramses::DisplayConfig displayConfig2(argc, argv);
-    displayConfig2.setIntegrityEGLDisplayID(1);
+    displayConfig2.setIntegrityRGLDeviceUnit(1);
     displayConfig2.setWaylandIviSurfaceID(1);
     displayConfig2.setWaylandIviLayerID(3);
     displayConfig2.setWindowIviVisible();

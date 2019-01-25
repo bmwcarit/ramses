@@ -10,7 +10,7 @@
 #include "TestWithWaylandEnvironment.h"
 #include "SystemCompositorController_Wayland_IVI/SystemCompositorController_Wayland_IVI.h"
 #include "WaylandUtilities/WaylandEnvironmentUtils.h"
-#include "WaylandUtilities/UnixDomainSocketHelper.h"
+#include "WaylandUtilities/UnixDomainSocket.h"
 #include "Collections/StringOutputStream.h"
 
 namespace ramses_internal
@@ -47,9 +47,9 @@ namespace ramses_internal
     {
         ASSERT_STREQ("", WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir).c_str());
 
-        UnixDomainSocketHelper socketHelper = UnixDomainSocketHelper("wayland-0", m_initialValueOfXdgRuntimeDir);
+        UnixDomainSocket socket = UnixDomainSocket("wayland-0", m_initialValueOfXdgRuntimeDir);
         StringOutputStream fileDescriptor;
-        fileDescriptor << socketHelper.createConnectedFileDescriptor(true);
+        fileDescriptor << socket.createConnectedFileDescriptor(true);
         WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, fileDescriptor.c_str());
 
         EXPECT_TRUE(m_scc.init());

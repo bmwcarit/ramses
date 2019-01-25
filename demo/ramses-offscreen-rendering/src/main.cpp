@@ -40,14 +40,14 @@ int main(int argc, char* argv[])
 
         // Continuously animate the remote scene
         remoteScene.rotateNode->setRotation(currentTime / 10.0f, 0.0f, 0.0f);
-        remoteScene.scene->flush(ramses::ESceneFlushMode_SynchronizedWithResources);
+        remoteScene.scene->flush();
 
         // Update state and take a screenshot of the local scene every second
         if (currentTime - lastScreenshotTime > 1000u)
         {
             ++localSceneVersion;
             localScene.rotateNode->setRotation(0.0f, 0.0f, currentTime / 10.0f);
-            localScene.scene->flush(ramses::ESceneFlushMode_SynchronizedWithResources, localSceneVersion);
+            localScene.scene->flush(localSceneVersion);
             renderer.takeScreenshotOfScene(localSceneId, localSceneVersion);
             lastScreenshotTime = currentTime;
         }

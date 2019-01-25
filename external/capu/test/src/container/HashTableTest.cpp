@@ -17,11 +17,10 @@
 #include <gtest/gtest.h>
 #include "ramses-capu/container/HashTable.h"
 #include "ramses-capu/container/HashSet.h"
-#include "ramses-capu/container/vector.h"
 #include "ramses-capu/container/Pair.h"
 #include "ramses-capu/Error.h"
 #include "util/ComplexTestType.h"
-
+#include <vector>
 #include <container/HashTableTest.h>
 
 namespace {
@@ -903,7 +902,7 @@ TEST_F(HashTableTest, HashTableWithComplexKey)
     ComplexTestType::Reset();
     {
         ramses_capu::HashTable<ComplexTestType, ramses_capu::uint_t> ht;
-        ramses_capu::vector<ComplexTestType> vec;
+        std::vector<ComplexTestType> vec;
         for (ramses_capu::uint_t i = 0; i < 20; ++i)
         {
             ComplexTestType ctt(i*20);

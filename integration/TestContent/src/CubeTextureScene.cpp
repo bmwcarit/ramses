@@ -17,7 +17,7 @@
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/Effect.h"
-#include "Utils/Bitmap.h"
+#include "Utils/Image.h"
 
 #define EDGE_LENGTH 10u
 #define FACE_SIZE EDGE_LENGTH * EDGE_LENGTH * 4u
@@ -130,17 +130,17 @@ namespace ramses_internal
         {
         case EState_RGBA8:
         {
-            ramses_internal::Bitmap imagePX;
+            ramses_internal::Image imagePX;
             imagePX.loadFromFilePNG("res/ramses-test-client-cube-px.png");
-            ramses_internal::Bitmap imageNX;
+            ramses_internal::Image imageNX;
             imageNX.loadFromFilePNG("res/ramses-test-client-cube-nx.png");
-            ramses_internal::Bitmap imagePY;
+            ramses_internal::Image imagePY;
             imagePY.loadFromFilePNG("res/ramses-test-client-cube-py.png");
-            ramses_internal::Bitmap imageNY;
+            ramses_internal::Image imageNY;
             imageNY.loadFromFilePNG("res/ramses-test-client-cube-ny.png");
-            ramses_internal::Bitmap imagePZ;
+            ramses_internal::Image imagePZ;
             imagePZ.loadFromFilePNG("res/ramses-test-client-cube-pz.png");
-            ramses_internal::Bitmap imageNZ;
+            ramses_internal::Image imageNZ;
             imageNZ.loadFromFilePNG("res/ramses-test-client-cube-nz.png");
 
             ramses::CubeMipLevelData mipLevelData(

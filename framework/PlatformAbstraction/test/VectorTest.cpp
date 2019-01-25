@@ -74,9 +74,6 @@ namespace ramses_internal
         Vector<int> v = {1, 2, 3};
         Vector<int> w(std::move(v));
 
-        EXPECT_EQ(0u, v.size());
-        EXPECT_TRUE(v.data() == nullptr);
-
         ASSERT_EQ(3u, w.size());
         EXPECT_EQ(1, w[0]);
         EXPECT_EQ(2, w[1]);
@@ -90,9 +87,6 @@ namespace ramses_internal
         Vector<int> v = {1, 2, 3};
         Vector<int> w;
         w = std::move(v);
-
-        EXPECT_EQ(0u, v.size());
-        EXPECT_TRUE(v.data() == nullptr);
 
         ASSERT_EQ(3u, w.size());
         EXPECT_EQ(1, w[0]);

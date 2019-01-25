@@ -9,7 +9,6 @@
 #include "RendererLib/DisplayEventHandlerManager.h"
 #include "RendererLib/DisplayEventHandler.h"
 #include "RendererLib/Renderer.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {
@@ -21,10 +20,9 @@ namespace ramses_internal
     DisplayEventHandlerManager::~DisplayEventHandlerManager()
     {
         // destroy all handlers
-        const HashMap<DisplayHandle, DisplayEventHandler*> handlers = m_displayHandlers;
-        ramses_foreach(handlers, handlerIt)
+        for(const auto& displayHandler : m_displayHandlers)
         {
-            destroyHandler(handlerIt->key);
+            delete displayHandler.value;
         }
     }
 

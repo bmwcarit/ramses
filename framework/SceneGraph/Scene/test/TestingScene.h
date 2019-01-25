@@ -55,14 +55,14 @@ namespace ramses_internal
             scene.setScaling    (t2, t2Scaling    );
 
             scene.allocateRenderState(renderState);
-            scene.setRenderStateBlendFactors(renderState, EBlendFactor_One, EBlendFactor_SrcAlpha, EBlendFactor_OneMinusSrcAlpha, EBlendFactor_DstAlpha);
-            scene.setRenderStateBlendOperations(renderState, EBlendOperation_Add, EBlendOperation_Subtract);
-            scene.setRenderStateCullMode(renderState, ECullMode_FrontFacing);
-            scene.setRenderStateDrawMode(renderState, EDrawMode_Triangles);
-            scene.setRenderStateDepthWrite(renderState, EDepthWrite_Disabled);
-            scene.setRenderStateDepthFunc(renderState, EDepthFunc_GreaterEqual);
-            scene.setRenderStateStencilFunc(renderState, EStencilFunc_NotEqual, 12u, 0xAA);
-            scene.setRenderStateStencilOps(renderState, EStencilOp_Increment, EStencilOp_IncrementWrap, EStencilOp_Decrement);
+            scene.setRenderStateBlendFactors(renderState, EBlendFactor::One, EBlendFactor::SrcAlpha, EBlendFactor::OneMinusSrcAlpha, EBlendFactor::DstAlpha);
+            scene.setRenderStateBlendOperations(renderState, EBlendOperation::Add, EBlendOperation::Subtract);
+            scene.setRenderStateCullMode(renderState, ECullMode::FrontFacing);
+            scene.setRenderStateDrawMode(renderState, EDrawMode::Triangles);
+            scene.setRenderStateDepthWrite(renderState, EDepthWrite::Disabled);
+            scene.setRenderStateDepthFunc(renderState, EDepthFunc::GreaterEqual);
+            scene.setRenderStateStencilFunc(renderState, EStencilFunc::NotEqual, 12u, 0xAA);
+            scene.setRenderStateStencilOps(renderState, EStencilOp::Increment, EStencilOp::IncrementWrap, EStencilOp::Decrement);
             const ColorWriteMask colorMask = EColorWriteFlag_Red | EColorWriteFlag_Blue;
             scene.setRenderStateColorWriteMask(renderState, colorMask);
 
@@ -266,22 +266,22 @@ namespace ramses_internal
             ASSERT_TRUE(otherScene.isRenderStateAllocated(renderState));
             const RenderState& rs = otherScene.getRenderState(renderState);
 
-            EXPECT_EQ(EBlendFactor_One                  , rs.blendFactorSrcColor);
-            EXPECT_EQ(EBlendFactor_SrcAlpha             , rs.blendFactorDstColor);
-            EXPECT_EQ(EBlendFactor_OneMinusSrcAlpha     , rs.blendFactorSrcAlpha);
-            EXPECT_EQ(EBlendFactor_DstAlpha             , rs.blendFactorDstAlpha);
-            EXPECT_EQ(EBlendOperation_Add               , rs.blendOperationColor);
-            EXPECT_EQ(EBlendOperation_Subtract          , rs.blendOperationAlpha);
-            EXPECT_EQ(ECullMode_FrontFacing             , rs.cullMode);
-            EXPECT_EQ(EDrawMode_Triangles               , rs.drawMode);
-            EXPECT_EQ(EDepthFunc_GreaterEqual           , rs.depthFunc);
-            EXPECT_EQ(EDepthWrite_Disabled              , rs.depthWrite);
-            EXPECT_EQ(EStencilFunc_NotEqual             , rs.stencilFunc);
-            EXPECT_EQ(12u                               , rs.stencilRefValue);
-            EXPECT_EQ(0xAA                              , rs.stencilMask);
-            EXPECT_EQ(EStencilOp_Increment              , rs.stencilOpFail);
-            EXPECT_EQ(EStencilOp_IncrementWrap          , rs.stencilOpDepthFail);
-            EXPECT_EQ(EStencilOp_Decrement              , rs.stencilOpDepthPass);
+            EXPECT_EQ(EBlendFactor::One                  , rs.blendFactorSrcColor);
+            EXPECT_EQ(EBlendFactor::SrcAlpha             , rs.blendFactorDstColor);
+            EXPECT_EQ(EBlendFactor::OneMinusSrcAlpha     , rs.blendFactorSrcAlpha);
+            EXPECT_EQ(EBlendFactor::DstAlpha             , rs.blendFactorDstAlpha);
+            EXPECT_EQ(EBlendOperation::Add               , rs.blendOperationColor);
+            EXPECT_EQ(EBlendOperation::Subtract          , rs.blendOperationAlpha);
+            EXPECT_EQ(ECullMode::FrontFacing             , rs.cullMode);
+            EXPECT_EQ(EDrawMode::Triangles               , rs.drawMode);
+            EXPECT_EQ(EDepthFunc::GreaterEqual           , rs.depthFunc);
+            EXPECT_EQ(EDepthWrite::Disabled              , rs.depthWrite);
+            EXPECT_EQ(EStencilFunc::NotEqual             , rs.stencilFunc);
+            EXPECT_EQ(12u                                , rs.stencilRefValue);
+            EXPECT_EQ(0xAA                               , rs.stencilMask);
+            EXPECT_EQ(EStencilOp::Increment              , rs.stencilOpFail);
+            EXPECT_EQ(EStencilOp::IncrementWrap          , rs.stencilOpDepthFail);
+            EXPECT_EQ(EStencilOp::Decrement              , rs.stencilOpDepthPass);
         }
 
         template <typename OTHERSCENE>

@@ -20,9 +20,7 @@
 # translate all MODULE_* provided by ACME2 module
 # to checked and preprocessed ACME_* variables
 
-IF (POLICY CMP0054)
-    CMAKE_POLICY(SET CMP0054 NEW)
-ENDIF()
+CMAKE_POLICY(SET CMP0054 NEW)
 
 # reset MODULE_<value>
 FOREACH(PROPERTY ${ACME2_API})

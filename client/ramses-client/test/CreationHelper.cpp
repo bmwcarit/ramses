@@ -67,7 +67,6 @@
 #include "ramses-client-api/BlitPass.h"
 #include "ramses-client-api/IndexDataBuffer.h"
 #include "ramses-client-api/VertexDataBuffer.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses
 {
@@ -80,10 +79,10 @@ namespace ramses
 
     CreationHelper::~CreationHelper()
     {
-        ramses_foreach(m_allocatedClientAndFrameworkComponents, item)
+        for(const auto& component : m_allocatedClientAndFrameworkComponents)
         {
-            delete item->first;
-            delete item->second;
+            delete component.first;
+            delete component.second;
         }
 
         if (m_animationSystem != NULL)
@@ -110,9 +109,9 @@ namespace ramses
     void CreationHelper::destroyAdditionalAllocatedSceneObjects()
     {
         assert(m_scene != NULL);
-        ramses_foreach(m_additionalAllocatedSceneObjects, item)
+        for(const auto& obj : m_additionalAllocatedSceneObjects)
         {
-            ASSERT_TRUE(m_scene->destroy(**item) == StatusOK);
+            ASSERT_TRUE(m_scene->destroy(*obj) == StatusOK);
         }
         m_additionalAllocatedSceneObjects.clear();
     }
@@ -120,9 +119,9 @@ namespace ramses
     void CreationHelper::destroyAdditionalAllocatedAnimationSystemObjects()
     {
         assert(m_animationSystem != NULL);
-        ramses_foreach(m_additionalAllocatedAnimationSystemObjects, item)
+        for (const auto& obj : m_additionalAllocatedAnimationSystemObjects)
         {
-            ASSERT_TRUE(m_animationSystem->destroy(**item) == StatusOK);
+            ASSERT_TRUE(m_animationSystem->destroy(*obj) == StatusOK);
         }
         m_additionalAllocatedAnimationSystemObjects.clear();
     }

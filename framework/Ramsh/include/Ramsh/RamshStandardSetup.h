@@ -20,8 +20,8 @@ namespace ramses_internal
     public:
         RamshStandardSetup(String prompt = "noname");
 
-        virtual bool start();
-        virtual bool stop();
+        virtual bool start() override;
+        virtual bool stop() override;
 
         ~RamshStandardSetup();
 

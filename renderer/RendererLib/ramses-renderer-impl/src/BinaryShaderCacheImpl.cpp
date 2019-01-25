@@ -14,7 +14,6 @@
 #include "Utils/BinaryInputStream.h"
 #include "Utils/BinaryOutputStream.h"
 #include "PlatformAbstraction/PlatformMemory.h"
-#include "Common/Cpp11Macros.h"
 #include "city.h"
 #include "TransportCommon/RamsesTransportProtocolVersion.h"
 
@@ -116,10 +115,10 @@ namespace ramses
 
     void BinaryShaderCacheImpl::clear()
     {
-        ramses_foreach(m_binaryShaders, iter)
+        for(const auto& binaryShader : m_binaryShaders)
         {
-            const BinaryShader* binaryShader = iter->value;
-            delete binaryShader;
+            const BinaryShader* shader = binaryShader.value;
+            delete shader;
         }
 
         m_binaryShaders.clear();
@@ -178,7 +177,7 @@ namespace ramses
 
         fileInputStream.read(contentData, contentSize);
 
-        const uint64_t checksum = CityHash64(contentData, contentSize);
+        const uint64_t checksum = cityhash::CityHash64(contentData, contentSize);
 
         if (checksum != fileHeader.checksum)
         {
@@ -215,15 +214,15 @@ namespace ramses
 
         outputStream << static_cast<uint32_t>(m_binaryShaders.count());
 
-        ramses_foreach (m_binaryShaders, iter)
+        for (const auto& binaryShader : m_binaryShaders)
         {
-            const ramses_internal::ResourceContentHash& effectId     = iter->key;
-            const BinaryShader*                         binaryShader = iter->value;
-            serializeBinaryShader(outputStream, effectId, binaryShader->data, binaryShader->format);
+            const ramses_internal::ResourceContentHash& effectId    = binaryShader.key;
+            const BinaryShader*                         shader      = binaryShader.value;
+            serializeBinaryShader(outputStream, effectId, shader->data, shader->format);
         }
 
         const uint32_t contentSize = outputStream.getSize();
-        const uint64_t checksum = CityHash64(outputStream.getData(), contentSize);
+        const uint64_t checksum = cityhash::CityHash64(outputStream.getData(), contentSize);
 
         FileHeader fileHeader = {};
         fileHeader.fileSize         = static_cast<uint32_t>(sizeof(FileHeader)) + contentSize;

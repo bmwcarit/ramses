@@ -157,11 +157,11 @@ namespace ramses_internal
 
     TYPED_TEST_P(AWindowWayland, IfXdgRuntimeDirIsNotSetButWaylandSocketInitWillSucceed)
     {
-        UnixDomainSocketHelper socketHelper = UnixDomainSocketHelper("wayland-0");
+        UnixDomainSocket socket = UnixDomainSocket("wayland-0", WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir));
 
         WaylandEnvironmentUtils::UnsetVariable(WaylandEnvironmentVariable::XDGRuntimeDir);
 
-        String fileDescriptor = StringUtils::IToA(socketHelper.createConnectedFileDescriptor(true));
+        String fileDescriptor = StringUtils::IToA(socket.createConnectedFileDescriptor(true));
         WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, fileDescriptor.c_str());
 
         EXPECT_TRUE(this->m_window->init());
@@ -175,9 +175,9 @@ namespace ramses_internal
 
     TYPED_TEST_P(AWindowWayland, IfXdgRuntimeDirIsSetAndWaylandSocketIsSetInitWillSucceed)
     {
-        UnixDomainSocketHelper socketHelper = UnixDomainSocketHelper("wayland-0");
+        UnixDomainSocket socket = UnixDomainSocket("wayland-0", WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir));
 
-        String fileDescriptor = StringUtils::IToA(socketHelper.createConnectedFileDescriptor(true));
+        String fileDescriptor = StringUtils::IToA(socket.createConnectedFileDescriptor(true));
         WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, fileDescriptor.c_str());
 
         EXPECT_TRUE(this->m_window->init());
@@ -185,7 +185,7 @@ namespace ramses_internal
 
     TYPED_TEST_P(AWindowWayland, IfWaylandSocketIsWrongInitWillFail)
     {
-        UnixDomainSocketHelper socketHelper = UnixDomainSocketHelper("wayland-0");
+        UnixDomainSocket socket = UnixDomainSocket("wayland-0", WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir));
 
 
         // just set the environment variable to some value, without ever creating the
@@ -198,9 +198,9 @@ namespace ramses_internal
 
     TYPED_TEST_P(AWindowWayland, IfWaylandSocketIsSetAndWaylandDisplayIsSetInitWillFail)
     {
-        UnixDomainSocketHelper socketHelper = UnixDomainSocketHelper("wayland-0");
+        UnixDomainSocket socket = UnixDomainSocket("wayland-0", WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir));
 
-        String fileDescriptor = StringUtils::IToA(socketHelper.createConnectedFileDescriptor(false));
+        String fileDescriptor = StringUtils::IToA(socket.createConnectedFileDescriptor(false));
         WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, fileDescriptor.c_str());
         WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandDisplay, "wayland-0");
 

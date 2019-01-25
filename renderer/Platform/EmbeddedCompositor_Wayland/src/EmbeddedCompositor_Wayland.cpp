@@ -17,7 +17,6 @@
 #include "Utils/Warnings.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include <unistd.h>
-#include "Common/Cpp11Macros.h"
 #include "TextureUploadingAdapter_Wayland/TextureUploadingAdapter_Wayland.h"
 
 namespace ramses_internal
@@ -128,15 +127,14 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_SMOKETEST, "embedded-compositing client surface destroyed");
         LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::removeWaylandSurface() Client destroyed surface, showing fallback texture for ivi surface " << waylandSurface.getIviSurfaceId().getValue());
 
-        /* Remove surface from compositor
-         * It's safe to call remove even if surface has not been mapped and
-         * therefore not been added into any list, since link got initialized at
-         * construction in compositor_create_surface(). */
-        ramses_foreach(m_surfaces, it)
+        // It's safe to call remove even if surface has not been mapped and
+        // therefore not been added into any list, since link got initialized at
+        // construction in compositor_create_surface().
+        for(auto surface = m_surfaces.begin(); surface != m_surfaces.end(); ++surface)
         {
-            if((*it) == &waylandSurface)
+            if(*surface == &waylandSurface)
             {
-                m_surfaces.erase(it);
+                m_surfaces.erase(surface);
                 break;
             }
         }

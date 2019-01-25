@@ -24,7 +24,6 @@
 #include "RendererMock.h"
 #include "ComponentMocks.h"
 #include "TestSceneHelper.h"
-#include "Common/Cpp11Macros.h"
 #include <map>
 
 using namespace ramses_internal;

@@ -20,9 +20,9 @@ namespace ramses_internal
     {
     public:
         RendererPeriodicLogSupplier(PeriodicLogger& periodicLogger, RendererCommandBuffer& commandBuffer);
-        virtual ~RendererPeriodicLogSupplier();
+        virtual ~RendererPeriodicLogSupplier() override;
 
-        virtual void triggerLogMessageForPeriodicLog();
+        virtual void triggerLogMessageForPeriodicLog() override;
 
     private:
         PeriodicLogger& m_periodicLogger;

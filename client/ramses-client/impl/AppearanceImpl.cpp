@@ -27,7 +27,6 @@
 #include "SceneUtils/DataLayoutCreationHelper.h"
 #include "SceneUtils/ISceneDataArrayAccessor.h"
 #include "SceneUtils/DataInstanceHelper.h"
-#include "Common/Cpp11Macros.h"
 #include "Math3d/Matrix22f.h"
 
 namespace ramses
@@ -108,13 +107,13 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t AppearanceImpl::setStencilFunc(EStencilFunc func, uint32_t ref, uint8_t mask)
+    status_t AppearanceImpl::setStencilFunc(EStencilFunc func, uint8_t ref, uint8_t mask)
     {
         getIScene().setRenderStateStencilFunc(m_renderStateHandle, AppearanceUtils::GetStencilFuncInternal(func), ref, mask);
         return StatusOK;
     }
 
-    status_t AppearanceImpl::getStencilFunc(EStencilFunc& func, uint32_t& ref, uint8_t& mask) const
+    status_t AppearanceImpl::getStencilFunc(EStencilFunc& func, uint8_t& ref, uint8_t& mask) const
     {
         const ramses_internal::RenderState& rs = getIScene().getRenderState(m_renderStateHandle);
         func = AppearanceUtils::GetStencilFuncFromInternal(rs.stencilFunc);
@@ -217,11 +216,11 @@ namespace ramses
         outStream << m_uniformInstance;
 
         outStream << static_cast<uint32_t>(m_bindableInputs.count());
-        ramses_foreach(m_bindableInputs, bindableInput)
+        for(const auto& bindableInput : m_bindableInputs)
         {
-            outStream << bindableInput->key;
-            outStream << bindableInput->value.externallyBound;
-            outStream << bindableInput->value.dataReference;
+            outStream << bindableInput.key;
+            outStream << bindableInput.value.externallyBound;
+            outStream << bindableInput.value.dataReference;
         }
 
         return StatusOK;
@@ -346,11 +345,11 @@ namespace ramses
             }
         }
 
-        ramses_foreach(m_bindableInputs, bindableInput)
+        for (const auto& bindableInput : m_bindableInputs)
         {
-            if (bindableInput->value.externallyBound)
+            if (bindableInput.value.externallyBound)
             {
-                const ramses_internal::DataInstanceHandle boundInstance = getIScene().getDataReference(m_uniformInstance, ramses_internal::DataFieldHandle(bindableInput->key));
+                const ramses_internal::DataInstanceHandle boundInstance = getIScene().getDataReference(m_uniformInstance, ramses_internal::DataFieldHandle(bindableInput.key));
                 if (!getIScene().isDataInstanceAllocated(boundInstance))
                 {
                     addValidationMessage(EValidationSeverity_Error, indent, "Appearance's input is bound to a DataObject that does not exist");
@@ -382,19 +381,19 @@ namespace ramses
     {
         const ramses_internal::DataFieldHandle dataReferenceField(0u);
         dstAppearance.m_bindableInputs.reserve(srcAppearance.m_bindableInputs.count());
-        ramses_foreach(srcAppearance.m_bindableInputs, srcBindableInput)
+        for (const auto& srcBindableInput : srcAppearance.m_bindableInputs)
         {
-            const ramses_internal::DataFieldHandle dataField(srcBindableInput->key);
-            const ramses_internal::DataInstanceHandle srcDataRef = srcBindableInput->value.dataReference;
+            const ramses_internal::DataFieldHandle dataField(srcBindableInput.key);
+            const ramses_internal::DataInstanceHandle srcDataRef = srcBindableInput.value.dataReference;
             const ramses_internal::DataLayoutHandle dataLayoutHandle = scene.getLayoutOfDataInstance(srcDataRef);
             const ramses_internal::EDataType dataType = scene.getDataLayout(dataLayoutHandle).getField(dataReferenceField).dataType;
-            const bool isBound = srcBindableInput->value.externallyBound;
+            const bool isBound = srcBindableInput.value.externallyBound;
 
             // create internal data reference
             BindableInput bindableInput;
             bindableInput.externallyBound = isBound;
             bindableInput.dataReference = ramses_internal::DataLayoutCreationHelper::CreateAndBindDataReference(scene, dstAppearance.m_uniformInstance, dataField, dataType);
-            dstAppearance.m_bindableInputs.put(srcBindableInput->key, bindableInput);
+            dstAppearance.m_bindableInputs.put(srcBindableInput.key, bindableInput);
 
             if (isBound)
             {
@@ -422,9 +421,9 @@ namespace ramses
         getIScene().releaseDataInstance(m_uniformInstance);
         m_uniformInstance = ramses_internal::DataInstanceHandle::Invalid();
 
-        ramses_foreach(m_bindableInputs, bindableInput)
+        for(const auto& bindableInput : m_bindableInputs)
         {
-            const ramses_internal::DataInstanceHandle dataRef = bindableInput->value.dataReference;
+            const ramses_internal::DataInstanceHandle dataRef = bindableInput.value.dataReference;
             const ramses_internal::DataLayoutHandle dataRefLayout = getIScene().getLayoutOfDataInstance(dataRef);
             getIScene().releaseDataInstance(dataRef);
             getIScene().releaseDataLayout(dataRefLayout);
@@ -466,15 +465,14 @@ namespace ramses
         m_uniformInstance = getIScene().allocateDataInstance(m_uniformLayout);
 
         m_bindableInputs.reserve(m_bindableInputs.count() + referencedInputs.size());
-        ramses_foreach(referencedInputs, refInput)
+        for (const auto& refInput : referencedInputs)
         {
-            const uint32_t inputIndex = *refInput;
-            const ramses_internal::DataFieldHandle dataField(inputIndex);
+            const ramses_internal::DataFieldHandle dataField(refInput);
 
             BindableInput bindableInput;
             bindableInput.externallyBound = false;
-            bindableInput.dataReference = ramses_internal::DataLayoutCreationHelper::CreateAndBindDataReference(getIScene(), m_uniformInstance, dataField, uniformsInputInfo[inputIndex].dataType);
-            m_bindableInputs.put(inputIndex, bindableInput);
+            bindableInput.dataReference = ramses_internal::DataLayoutCreationHelper::CreateAndBindDataReference(getIScene(), m_uniformInstance, dataField, uniformsInputInfo[refInput].dataType);
+            m_bindableInputs.put(refInput, bindableInput);
         }
     }
 

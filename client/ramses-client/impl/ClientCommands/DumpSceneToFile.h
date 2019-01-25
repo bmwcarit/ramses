@@ -12,7 +12,6 @@
 #include "Ramsh/RamshCommandArguments.h"
 #include "Collections/String.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses
 {

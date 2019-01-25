@@ -39,8 +39,8 @@ namespace ramses
         uint32_t getWaylandIviLayerID() const;
         status_t setWaylandDisplay(const char* waylandDisplay);
         const char* getWaylandDisplay() const;
-        status_t setIntegrityEGLDisplayID(uint32_t eglDisplayID);
-        uint32_t getIntegrityEGLDisplayID() const;
+        status_t setIntegrityRGLDeviceUnit(uint32_t rglDeviceUnit);
+        uint32_t getIntegrityRGLDeviceUnit() const;
         status_t setWindowIviVisible();
         status_t disableEffectDeletion();
         status_t setResizable(bool resizable);

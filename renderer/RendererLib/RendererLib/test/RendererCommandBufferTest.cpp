@@ -123,7 +123,7 @@ TEST_F(ARendererCommandBuffer, canFetchAllTypesOfRendererCommands)
     queueToFetch.systemCompositorControllerSetIviSurfaceVisibility(WaylandIviSurfaceId(6), true);
     queueToFetch.systemCompositorControllerSetIviSurfaceOpacity(WaylandIviSurfaceId(7), 0.5f);
     queueToFetch.systemCompositorControllerSetIviSurfaceDestRectangle(WaylandIviSurfaceId(8), 0, 0, 64, 128);
-    queueToFetch.systemCompositorControllerScreenshot("testScreenshot.BMP");
+    queueToFetch.systemCompositorControllerScreenshot("testScreenshot.png");
     queueToFetch.systemCompositorControllerAddIviSurfaceToIviLayer(WaylandIviSurfaceId(9u), WaylandIviLayerId(831u));
     queueToFetch.systemCompositorControllerRemoveIviSurfaceFromIviLayer(WaylandIviSurfaceId(25u), WaylandIviLayerId(921u));
     queueToFetch.systemCompositorControllerDestroyIviSurface(WaylandIviSurfaceId(51u));
@@ -131,14 +131,15 @@ TEST_F(ARendererCommandBuffer, canFetchAllTypesOfRendererCommands)
     queueToFetch.logRendererInfo(ERendererLogTopic_All, true, NodeHandle::Invalid());
     queueToFetch.setClearColor(displayHandle, clearColor);
     queueToFetch.setFrameTimerLimits(1u, 2u, 3u);
+    queueToFetch.setSceneResourcesTimerLimit(4);
 
-    EXPECT_EQ(33u, queueToFetch.getCommands().getTotalCommandCount());
+    EXPECT_EQ(34u, queueToFetch.getCommands().getTotalCommandCount());
 
     queue.addCommands(queueToFetch); //fetchRendererCommands
     queueToFetch.clear(); //clear fetched command queue
 
     EXPECT_EQ(0u, queueToFetch.getCommands().getTotalCommandCount());
-    EXPECT_EQ(33u, queue.getCommands().getTotalCommandCount());
+    EXPECT_EQ(34u, queue.getCommands().getTotalCommandCount());
 
     //check some details of the fetched commands
     EXPECT_EQ(ERendererCommand_PublishedScene, queue.getCommands().getCommandType(0));

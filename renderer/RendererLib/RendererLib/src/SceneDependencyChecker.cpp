@@ -8,7 +8,6 @@
 
 #include "SceneDependencyChecker.h"
 #include "RendererAPI/Types.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {

@@ -100,23 +100,23 @@ namespace ramses_internal
         struct StateCreationData
         {
             StateCreationData()
-            : bfSrcColor(EBlendFactor_DstAlpha)
-            , bfDstColor(EBlendFactor_One)
-            , bfSrcAlpha(EBlendFactor_OneMinusSrcAlpha)
-            , bfDstAlpha(EBlendFactor_SrcAlpha)
-            , boColor(EBlendOperation_Subtract)
-            , boAlpha(EBlendOperation_Max)
-            , cullMode(ECullMode_BackFacing)
-            , drawMode(EDrawMode_Lines)
-            , depthWrite(EDepthWrite_Enabled)
-            , depthFunc(EDepthFunc_SmallerEqual)
-            , stencilFunc(EStencilFunc_NotEqual)
+            : bfSrcColor(EBlendFactor::DstAlpha)
+            , bfDstColor(EBlendFactor::One)
+            , bfSrcAlpha(EBlendFactor::OneMinusSrcAlpha)
+            , bfDstAlpha(EBlendFactor::SrcAlpha)
+            , boColor(EBlendOperation::Subtract)
+            , boAlpha(EBlendOperation::Max)
+            , cullMode(ECullMode::BackFacing)
+            , drawMode(EDrawMode::Lines)
+            , depthWrite(EDepthWrite::Enabled)
+            , depthFunc(EDepthFunc::SmallerEqual)
+            , stencilFunc(EStencilFunc::NotEqual)
             , stencilRefValue(99u)
             , stencilMask(3u)
-            , stencilOpFail(EStencilOp_Replace)
-            , stencilOpDepthFail(EStencilOp_Decrement)
-            , stencilOpDepthPass(EStencilOp_Zero)
-            , colorWriteMask(0xFF80)
+            , stencilOpFail(EStencilOp::Replace)
+            , stencilOpDepthFail(EStencilOp::Decrement)
+            , stencilOpDepthPass(EStencilOp::Zero)
+            , colorWriteMask(0x80)
             {}
 
             EBlendFactor    bfSrcColor;
@@ -130,7 +130,7 @@ namespace ramses_internal
             EDepthWrite     depthWrite;
             EDepthFunc      depthFunc;
             EStencilFunc    stencilFunc;
-            UInt32          stencilRefValue;
+            UInt8           stencilRefValue;
             UInt8           stencilMask;
             EStencilOp      stencilOpFail;
             EStencilOp      stencilOpDepthFail;

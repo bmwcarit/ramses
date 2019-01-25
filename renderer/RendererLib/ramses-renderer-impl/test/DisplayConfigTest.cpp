@@ -15,8 +15,6 @@ class ADisplayConfig : public ::testing::Test
 protected:
     ADisplayConfig()
     {
-        // to avoid setting it in all tests
-        config.setIntegrityEGLDisplayID(15);
     }
 
     ramses::DisplayConfig config;
@@ -194,8 +192,8 @@ TEST_F(ADisplayConfig, enablesStereoDisplay)
 
 TEST_F(ADisplayConfig, setsNativeDisplayID)
 {
-    EXPECT_EQ(ramses::StatusOK, config.setIntegrityEGLDisplayID(2u));
-    EXPECT_EQ(2u, config.impl.getInternalDisplayConfig().getIntegrityEGLDisplayID().getValue());
+    EXPECT_EQ(ramses::StatusOK, config.setIntegrityRGLDeviceUnit(2u));
+    EXPECT_EQ(2u, config.impl.getInternalDisplayConfig().getIntegrityRGLDeviceUnit().getValue());
 }
 
 TEST_F(ADisplayConfig, setsWindowIVIVisible)

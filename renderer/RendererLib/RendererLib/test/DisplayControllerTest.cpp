@@ -63,7 +63,7 @@ namespace ramses_internal
         EXPECT_CALL(m_renderBackend.deviceMock, activateRenderTarget(DeviceMock::FakeFrameBufferRenderTargetDeviceHandle));
         EXPECT_CALL(m_renderBackend.deviceMock, colorMask(true, true, true, true));
         EXPECT_CALL(m_renderBackend.deviceMock, clearColor(clearColor));
-        EXPECT_CALL(m_renderBackend.deviceMock, depthWrite(EDepthWrite_Enabled));
+        EXPECT_CALL(m_renderBackend.deviceMock, depthWrite(EDepthWrite::Enabled));
         EXPECT_CALL(m_renderBackend.deviceMock, clear(_));
 
         displayController.clearBuffer(DeviceMock::FakeFrameBufferRenderTargetDeviceHandle, clearColor);

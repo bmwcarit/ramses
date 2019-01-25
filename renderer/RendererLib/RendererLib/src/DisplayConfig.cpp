@@ -36,14 +36,14 @@ namespace ramses_internal
         m_waylandIviSurfaceID = waylandIviSurfaceID;
     }
 
-    IntegrityEglDisplayId DisplayConfig::getIntegrityEGLDisplayID() const
+    IntegrityRGLDeviceUnit DisplayConfig::getIntegrityRGLDeviceUnit() const
     {
-        return m_integrityEglDisplayID;
+        return m_integrityRGLDeviceUnit;
     }
 
-    void DisplayConfig::setIntegrityEGLDisplayID(IntegrityEglDisplayId eglDisplayID)
+    void DisplayConfig::setIntegrityRGLDeviceUnit(IntegrityRGLDeviceUnit rglDeviceUnit)
     {
-        m_integrityEglDisplayID = eglDisplayID;
+        m_integrityRGLDeviceUnit = rglDeviceUnit;
     }
 
     Bool DisplayConfig::getStartVisibleIvi() const
@@ -272,7 +272,7 @@ namespace ramses_internal
             m_projectionParams           == other.m_projectionParams &&
             m_waylandIviLayerID          == other.m_waylandIviLayerID &&
             m_waylandIviSurfaceID        == other.m_waylandIviSurfaceID &&
-            m_integrityEglDisplayID      == other.m_integrityEglDisplayID &&
+            m_integrityRGLDeviceUnit     == other.m_integrityRGLDeviceUnit &&
             m_startVisibleIvi            == other.m_startVisibleIvi &&
             m_resizable                  == other.m_resizable &&
             m_gpuMemoryCacheSize         == other.m_gpuMemoryCacheSize &&

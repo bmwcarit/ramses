@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "glslEffectBlock/GlslToEffectConverter.h"
-#include "Common/Cpp11Macros.h"
 
 #define CHECK_RETURN_ERR(expr) if (!(expr)) return false
 
@@ -59,9 +58,9 @@ namespace ramses_internal
             return false;
         }
 
-        ramses_foreach(*linkerObjects, it)
+        for(const auto& linkerObjet : *linkerObjects)
         {
-            const glslang::TIntermSymbol* symbol = (*it)->getAsSymbolNode();
+            const glslang::TIntermSymbol* symbol = linkerObjet->getAsSymbolNode();
             if (symbol)
             {
                 CHECK_RETURN_ERR(handleSymbol(symbol, stage));
@@ -162,9 +161,9 @@ namespace ramses_internal
 
             for (uint32_t i = 0; i < elementCount; i++)
             {
-                ramses_foreach(*structFields, it)
+                for(const auto& structField : *structFields)
                 {
-                    const glslang::TType& fieldType = *it->type;
+                    const glslang::TType& fieldType = *structField.type;
                     const String fieldName = String(fieldType.getFieldName().c_str());
                     const String subName = getStructFieldIdentifier(inputName, fieldName, type.isArray() ? static_cast<int32_t>(i) : -1);
 
@@ -221,27 +220,27 @@ namespace ramses_internal
 
     bool GlslToEffectConverter::replaceVertexAttributeWithBufferVariant()
     {
-        ramses_foreach(m_attributeInputs, input)
+        for(auto& input : m_attributeInputs)
         {
-            switch (input->dataType)
+            switch (input.dataType)
             {
             case EDataType_UInt16:
-                input->dataType = EDataType_UInt16Buffer;
+                input.dataType = EDataType_UInt16Buffer;
                 continue;
             case EDataType_Float:
-                input->dataType = EDataType_FloatBuffer;
+                input.dataType = EDataType_FloatBuffer;
                 continue;
             case EDataType_Vector2F:
-                input->dataType = EDataType_Vector2Buffer;
+                input.dataType = EDataType_Vector2Buffer;
                 continue;
             case EDataType_Vector3F:
-                input->dataType = EDataType_Vector3Buffer;
+                input.dataType = EDataType_Vector3Buffer;
                 continue;
             case EDataType_Vector4F:
-                input->dataType = EDataType_Vector4Buffer;
+                input.dataType = EDataType_Vector4Buffer;
                 continue;
             default:
-                m_message << input->inputName << ": unknown base type for attribute buffer type " << EnumToString(input->dataType);
+                m_message << input.inputName << ": unknown base type for attribute buffer type " << EnumToString(input.dataType);
                 return false;
             }
         }

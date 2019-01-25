@@ -50,6 +50,9 @@ ACME_MODULE(
 
 INSTALL(DIRECTORY ramses-client-api/include/ DESTINATION "${PROJECT_INSTALL_HEADER}" COMPONENT ramses-sdk-devel)
 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    target_compile_options(ramses-client PRIVATE "-Wsuggest-override")
+endif()
 
 ACME_MODULE(
 
@@ -74,7 +77,7 @@ ACME_MODULE(
     #==========================================================================
     DEPENDENCIES            ramses-client
                             FrameworkTestUtils
-                            gmock_main
+                            ramses-gmock-main
 )
 
 set(ramses-shared-lib-MIXIN

@@ -83,6 +83,7 @@ namespace ramses_internal
 
         void setSkippingOfUnmodifiedBuffers(Bool enable);
         void setFrameTimerLimits(UInt64 limitForClientResourcesUploadMicrosec, UInt64 limitForSceneActionsApplyMicrosec, UInt64 limitForOffscreenBufferRenderMicrosec);
+        void setSceneResourcesTimerLimit(UInt64 limitForSceneResourcesUpload);
         void setForceApplyPendingFlushesLimit(UInt maximumPendingFlushes);
         void setForceUnsubscribeLimits(UInt maximumPendingFlushes);
 

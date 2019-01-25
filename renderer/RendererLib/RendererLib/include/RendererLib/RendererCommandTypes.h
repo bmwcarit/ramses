@@ -92,6 +92,8 @@ namespace ramses_internal
         ERendererCommand_SystemCompositorControllerDestroyIviSurface,
         // Miscellaneous
         ERendererCommand_SetFrameTimerLimits,
+        // TODO Violin merge this into ERendererCommand_SetFrameTimerLimits in ramses 20+
+        ERendererCommand_SetResourceActionTimer,
         ERendererCommand_SetLimits_FlushesForceApply,
         ERendererCommand_SetLimits_FlushesForceUnsubscribe,
         ERendererCommand_SetSkippingOfUnmodifiedBuffers,
@@ -278,6 +280,7 @@ namespace ramses_internal
         DEFINE_COMMAND_TYPE(SetFrameTimerLimitsCommmand, ERendererCommandType_FrameTimerLimits);
 
         UInt64 limitForClientResourcesUploadMicrosec = 0u;
+        UInt64 limitForSceneResourcesUploadMicrosec = 0u;
         UInt64 limitForSceneActionsApplyMicrosec = 0u;
         UInt64 limitForOffscreenBufferRenderMicrosec = 0u;
         UInt limitForPendingFlushesForceApply = 0u;
@@ -331,6 +334,7 @@ namespace ramses_internal
         "ERendererCommand_SystemCompositorControllerRemoveIviSurfaceFromIviLayer",
         "ERendererCommand_SystemCompositorControllerDestroyIviSurface",
         "ERendererCommand_SetFrameTimerLimits",
+        "ERendererCommand_SetResourceActionTimer",
         "ERendererCommand_SetLimits_FlushesForceApply",
         "ERendererCommand_SetLimits_FlushesForceUnsubscribe",
         "ERendererCommand_SetSkippingOfUnmodifiedBuffers",

@@ -23,6 +23,7 @@ namespace ramses_internal
     {
     public:
         TestForkingController(const String& waylandSocket);
+        ~TestForkingController();
         TestForkingController(const TestForkingController&) = delete;
         TestForkingController& operator=(const TestForkingController&) = delete;
 
@@ -33,7 +34,6 @@ namespace ramses_internal
         void sendMessageToTestApplication(const BinaryOutputStream& os);
         template <typename T>
         bool getAnswerFromTestApplication(T& value, IEmbeddedCompositingManager& embeddedCompositingManager);
-        void deinitialize();
         void killTestApplication();
 
     private:

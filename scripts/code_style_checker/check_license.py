@@ -31,7 +31,12 @@ def make_license_re(license_text):
 
     return license_lines_re
 
-def check_specific_license_in_file(filename, clean_file_contents, license_text):
+# generate license regexes only once
+G_RE_LICENSE_TEMPLATE_OPEN = make_license_re(G_LICENSE_TEMPLATE_OPEN)
+G_RE_LICENSE_TEMPLATE_PROP = make_license_re(G_LICENSE_TEMPLATE_PROP)
+
+
+def check_specific_license_in_file(filename, clean_file_contents, license_text, license_re):
     """
     Checks if the file contains a valid license according to the license template provided
     """
@@ -41,7 +46,6 @@ def check_specific_license_in_file(filename, clean_file_contents, license_text):
 
     license_lines = license_text.split("\n")
     content = clean_file_contents.split("\n")
-    license_re = make_license_re(license_text)
 
     for content_idx in range(0, len(content)):
         # search for first line matching license
@@ -51,38 +55,23 @@ def check_specific_license_in_file(filename, clean_file_contents, license_text):
                     return (content_idx+re_idx), license_lines[content_idx]
 
             return None
-    return (0, license_lines[0])
-
-def check_license_in_file(filename, file_contents, license_template):
-    """
-    Checks if the file contains a valid license.
-    It tries to find a match inside the file with any of the licenses configured
-
-    """
-
-    #try to match with every license
-    for license in license_template:
-        if None == check_specific_license_in_file(filename, file_contents, license):
-            #if match is found just return
-            return None
-
-    #(this else clause is executed if the for loop exists naturally)
-    #if loop ended without return, this means no license matched
-    else:
-        #if no license matched at all
-        log_warning("check_license_in_file", filename, 1, "no valid license found")
+    log_warning("check_license_in_file", filename, 1, "no valid license found")
 
 
 def check_license_for_file(file_name, file_contents, solution_path):
-    license_template = G_LICENSE_TEMPLATES_OPEN
+    """
+    Check license for given file name. Default ot open except it is in
+    G_PROP_FILES list.
+    """
+    license_template, license_re = G_LICENSE_TEMPLATE_OPEN, G_RE_LICENSE_TEMPLATE_OPEN
 
     for pattern in G_PROP_FILES:
-        full_pattern = os.path.realpath(os.path.join(solution_path, pattern))
-        if os.path.realpath(file_name).find(full_pattern) != -1:
-            license_template = G_LICENSE_TEMPLATES_PROP
+        full_pattern = os.path.join(solution_path, pattern)
+        if file_name.startswith(full_pattern):
+            license_template, license_re = G_LICENSE_TEMPLATE_PROP, G_RE_LICENSE_TEMPLATE_PROP
             break
 
-    check_license_in_file(file_name, file_contents, license_template)
+    check_specific_license_in_file(file_name, file_contents, license_template, license_re)
 
 
 def main():
@@ -99,5 +88,5 @@ def main():
         exit(0)
 
     for t in targets:
-        file_contents, _, _, _ = read_file(t)
+        file_contents, _ = read_file(t)
         check_license_for_file(t, file_contents, os.path.dirname(os.path.join(os.path.getrealpath(__file__), '..', '..')))

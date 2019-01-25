@@ -34,7 +34,6 @@
 #include "RendererAPI/IRenderBackend.h"
 #include "RendererAPI/ISurface.h"
 
-#include "Common/Cpp11Macros.h"
 #include <thread>
 #include <iostream>
 
@@ -114,21 +113,21 @@ namespace ramses_internal
         m_testReport << "\n\n--- Renderer lifecycle test report begin ---\n";
         {
             m_testReport << "\n  Passed renderer lifecycle test cases: " << passedTests.size();
-            ramses_foreach(passedTests, testCase)
+            for(const auto& test : passedTests)
             {
-                m_testReport << "\n    " << *testCase;
+                m_testReport << "\n    " << test;
             }
 
             m_testReport << "\n\n  Failed renderer lifecycle test cases: " << failedTests.size();
-            ramses_foreach(failedTests, testCase)
+            for (const auto& test : failedTests)
             {
-                m_testReport << "\n    " << *testCase;
+                m_testReport << "\n    " << test;
             }
 
             m_testReport << "\n\n  Renderer lifecycle test cases filtered out: " << filteredTests.size();
-            ramses_foreach(filteredTests, testCase)
+            for (const auto& test : filteredTests)
             {
-                m_testReport << "\n    " << *testCase;
+                m_testReport << "\n    " << test;
             }
 
             if (failedTests.empty())
@@ -1041,7 +1040,7 @@ namespace ramses_internal
 
             for (int i = 0; i < 5; ++i)
             {
-                testRenderer.setExpirationTimestamp(sceneId, std::chrono::system_clock::now() + std::chrono::hours(1));
+                testRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() + std::chrono::hours(1));
                 testRenderer.flush(sceneId);
                 testRenderer.doOneLoop();
             }
@@ -1063,7 +1062,7 @@ namespace ramses_internal
             testRenderer.doOneLoop();
 
             // next flush expired already in past to trigger the exceeded event
-            testRenderer.setExpirationTimestamp(sceneId, std::chrono::system_clock::now() - std::chrono::hours(1));
+            testRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() - std::chrono::hours(1));
             testRenderer.flush(sceneId);
             testRenderer.doOneLoop();
 
@@ -1080,19 +1079,19 @@ namespace ramses_internal
             const ramses::sceneId_t sceneId = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f));
             testRenderer.publish(sceneId);
 
-            testRenderer.setExpirationTimestamp(sceneId, std::chrono::system_clock::now() + std::chrono::hours(1));
+            testRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() + std::chrono::hours(1));
             testRenderer.flush(sceneId);
             testRenderer.subscribeScene(sceneId);
             testRenderer.doOneLoop();
 
             // next flush will be in past to trigger the exceeded event
-            testRenderer.setExpirationTimestamp(sceneId, std::chrono::system_clock::now() - std::chrono::hours(1));
+            testRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() - std::chrono::hours(1));
             testRenderer.flush(sceneId);
             testRenderer.doOneLoop();
             ASSERT_TRUE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId }));
 
             // next flush will be in future again to trigger the recovery event
-            testRenderer.setExpirationTimestamp(sceneId, std::chrono::system_clock::now() + std::chrono::hours(1));
+            testRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() + std::chrono::hours(1));
             testRenderer.flush(sceneId);
             testRenderer.doOneLoop();
 
@@ -1121,7 +1120,7 @@ namespace ramses_internal
             {
                 // make modifications to scene
                 testRenderer.getScenesRegistry().setSceneState<ramses_internal::MultipleTrianglesScene>(sceneId, ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED);
-                testRenderer.setExpirationTimestamp(sceneId, std::chrono::system_clock::now() + std::chrono::hours(1));
+                testRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() + std::chrono::hours(1));
                 testRenderer.flush(sceneId);
                 testRenderer.doOneLoop();
             }
@@ -1150,7 +1149,7 @@ namespace ramses_internal
             for (int i = 0; i < 5; ++i)
             {
                 // no modifications to scene
-                testRenderer.setExpirationTimestamp(sceneId, std::chrono::system_clock::now() + std::chrono::hours(1));
+                testRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() + std::chrono::hours(1));
                 testRenderer.flush(sceneId);
                 testRenderer.doOneLoop();
             }
@@ -1169,6 +1168,7 @@ namespace ramses_internal
 
             const ramses::sceneId_t sceneId = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f));
             testRenderer.publish(sceneId);
+            testRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() + std::chrono::milliseconds(100));
             testRenderer.flush(sceneId);
             testRenderer.subscribeScene(sceneId);
             testRenderer.mapScene(display, sceneId);
@@ -1181,7 +1181,7 @@ namespace ramses_internal
             {
                 // make modifications to scene
                 testRenderer.getScenesRegistry().setSceneState<ramses_internal::MultipleTrianglesScene>(sceneId, ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED);
-                testRenderer.setExpirationTimestamp(sceneId, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
+                testRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() + std::chrono::milliseconds(100));
                 testRenderer.flush(sceneId);
                 testRenderer.doOneLoop();
                 std::this_thread::sleep_for(std::chrono::milliseconds(300));
@@ -1201,6 +1201,7 @@ namespace ramses_internal
 
             const ramses::sceneId_t sceneId = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f));
             testRenderer.publish(sceneId);
+            testRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() + std::chrono::milliseconds(100));
             testRenderer.flush(sceneId);
             testRenderer.subscribeScene(sceneId);
             testRenderer.mapScene(display, sceneId);
@@ -1213,7 +1214,51 @@ namespace ramses_internal
             {
                 // make modifications to scene
                 testRenderer.getScenesRegistry().setSceneState<ramses_internal::MultipleTrianglesScene>(sceneId, ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED);
-                testRenderer.setExpirationTimestamp(sceneId, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
+                testRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() + std::chrono::milliseconds(100));
+                testRenderer.flush(sceneId);
+                testRenderer.doOneLoop();
+                std::this_thread::sleep_for(std::chrono::milliseconds(300));
+            }
+            ASSERT_TRUE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId }));
+
+            // now hide scene so regular flushes are enough to recover
+            testRenderer.hideScene(sceneId);
+            for (int i = 0; i < 5; ++i)
+            {
+                // make modifications to scene
+                testRenderer.getScenesRegistry().setSceneState<ramses_internal::MultipleTrianglesScene>(sceneId, ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED);
+                testRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() + std::chrono::milliseconds(100));
+                testRenderer.flush(sceneId);
+                testRenderer.doOneLoop();
+            }
+            ASSERT_TRUE(testRenderer.consumeEventsAndCheckRecoveredScenes({ sceneId }));
+
+            testRenderer.destroyRenderer();
+
+            return true;
+        }
+        case ELifecycleTest_SceneExpiredWhenRenderedAndRecoveredAfterHidden:
+        {
+            testRenderer.initializeRenderer();
+            const ramses::displayId_t display = createDisplayForWindow(testRenderer);
+            ASSERT_TRUE(ramses::InvalidDisplayId != display);
+
+            const ramses::sceneId_t sceneId = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f));
+            testRenderer.publish(sceneId);
+            testRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() + std::chrono::milliseconds(100));
+            testRenderer.flush(sceneId);
+            testRenderer.subscribeScene(sceneId);
+            testRenderer.mapScene(display, sceneId);
+            testRenderer.showScene(sceneId);
+            testRenderer.doOneLoop();
+
+            // send flushes within limit but do not render
+            testRenderer.setLoopMode(ramses::ELoopMode_UpdateOnly);
+            for (int i = 0; i < 5; ++i)
+            {
+                // make modifications to scene
+                testRenderer.getScenesRegistry().setSceneState<ramses_internal::MultipleTrianglesScene>(sceneId, ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED);
+                testRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() + std::chrono::milliseconds(100));
                 testRenderer.flush(sceneId);
                 testRenderer.doOneLoop();
                 std::this_thread::sleep_for(std::chrono::milliseconds(300));
@@ -1226,7 +1271,7 @@ namespace ramses_internal
             {
                 // make modifications to scene
                 testRenderer.getScenesRegistry().setSceneState<ramses_internal::MultipleTrianglesScene>(sceneId, ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED);
-                testRenderer.setExpirationTimestamp(sceneId, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
+                testRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() + std::chrono::milliseconds(100));
                 testRenderer.flush(sceneId);
                 testRenderer.doOneLoop();
             }
@@ -1257,15 +1302,15 @@ namespace ramses_internal
             testRenderer.doOneLoop();
 
             // initial state expires in 100ms
-            testRenderer.setExpirationTimestamp(sceneId1, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
-            testRenderer.setExpirationTimestamp(sceneId2, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
+            testRenderer.setExpirationTimestamp(sceneId1, FlushTime::Clock::now() + std::chrono::milliseconds(100));
+            testRenderer.setExpirationTimestamp(sceneId2, FlushTime::Clock::now() + std::chrono::milliseconds(100));
             testRenderer.flush(sceneId1);
             testRenderer.flush(sceneId2);
 
             // S1 exceeds, S2 is ok
             for (int i = 0; i < 5; ++i)
             {
-                testRenderer.setExpirationTimestamp(sceneId2, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
+                testRenderer.setExpirationTimestamp(sceneId2, FlushTime::Clock::now() + std::chrono::milliseconds(100));
                 testRenderer.flush(sceneId2);
                 testRenderer.doOneLoop();
                 std::this_thread::sleep_for(std::chrono::milliseconds(300));
@@ -1275,8 +1320,8 @@ namespace ramses_internal
             // S1 recovers, S2 is ok
             for (int i = 0; i < 5; ++i)
             {
-                testRenderer.setExpirationTimestamp(sceneId1, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
-                testRenderer.setExpirationTimestamp(sceneId2, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
+                testRenderer.setExpirationTimestamp(sceneId1, FlushTime::Clock::now() + std::chrono::milliseconds(100));
+                testRenderer.setExpirationTimestamp(sceneId2, FlushTime::Clock::now() + std::chrono::milliseconds(100));
                 testRenderer.flush(sceneId1);
                 testRenderer.flush(sceneId2);
                 testRenderer.doOneLoop();
@@ -1286,7 +1331,7 @@ namespace ramses_internal
             // S1 ok, S2 exceeds
             for (int i = 0; i < 5; ++i)
             {
-                testRenderer.setExpirationTimestamp(sceneId1, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
+                testRenderer.setExpirationTimestamp(sceneId1, FlushTime::Clock::now() + std::chrono::milliseconds(100));
                 testRenderer.flush(sceneId1);
                 testRenderer.doOneLoop();
                 std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -1296,8 +1341,8 @@ namespace ramses_internal
             // S1 ok, S2 is recovers
             for (int i = 0; i < 5; ++i)
             {
-                testRenderer.setExpirationTimestamp(sceneId1, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
-                testRenderer.setExpirationTimestamp(sceneId2, std::chrono::system_clock::now() + std::chrono::milliseconds(100));
+                testRenderer.setExpirationTimestamp(sceneId1, FlushTime::Clock::now() + std::chrono::milliseconds(100));
+                testRenderer.setExpirationTimestamp(sceneId2, FlushTime::Clock::now() + std::chrono::milliseconds(100));
                 testRenderer.flush(sceneId1);
                 testRenderer.flush(sceneId2);
                 testRenderer.doOneLoop();

@@ -343,7 +343,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void sceneUpdateLatencyExceeded(ramses::sceneId_t sceneId)
+    virtual void sceneExpired(ramses::sceneId_t sceneId)
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_SceneExpired;
@@ -351,7 +351,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void sceneUpdateLatencyBackBelowLimit(ramses::sceneId_t sceneId)
+    virtual void sceneRecoveredFromExpiration(ramses::sceneId_t sceneId)
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_SceneRecoveredAfterExpiration;

@@ -58,8 +58,8 @@ namespace ramses
         status_t getDepthFunction(EDepthFunc& func) const;
         status_t setDepthWrite(EDepthWrite flag);
         status_t getDepthWriteMode(EDepthWrite& mode) const;
-        status_t setStencilFunc(EStencilFunc func, uint32_t ref, uint8_t mask);
-        status_t getStencilFunc(EStencilFunc& func, uint32_t& ref, uint8_t& mask) const;
+        status_t setStencilFunc(EStencilFunc func, uint8_t ref, uint8_t mask);
+        status_t getStencilFunc(EStencilFunc& func, uint8_t& ref, uint8_t& mask) const;
         status_t setStencilOperation(EStencilOperation sfail, EStencilOperation dpfail, EStencilOperation dppass);
         status_t getStencilOperation(EStencilOperation& sfail, EStencilOperation& dpfail, EStencilOperation& dppass) const;
         status_t setCullingMode(ECullMode mode);

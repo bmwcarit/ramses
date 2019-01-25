@@ -6,7 +6,7 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "WaylandUtilities/UnixDomainSocketHelper.h"
+#include "WaylandUtilities/UnixDomainSocket.h"
 #include "PlatformAbstraction/PlatformStringUtils.h"
 #include <sys/stat.h>
 #include <sys/file.h>
@@ -17,13 +17,7 @@
 
 namespace ramses_internal
 {
-    UnixDomainSocketHelper::UnixDomainSocketHelper(const String& _socketFilename)
-    : m_socketFilename(m_xdgRuntimeDir + "/" + _socketFilename)
-    , m_socketFileLock(m_socketFilename + ".lock")
-    {
-    }
-
-    UnixDomainSocketHelper::UnixDomainSocketHelper(const String& _socketFilename, const String& xdgRuntimeDir)
+    UnixDomainSocket::UnixDomainSocket(const String& _socketFilename, const String& xdgRuntimeDir)
     : m_xdgRuntimeDir(xdgRuntimeDir)
     , m_socketFilename(m_xdgRuntimeDir + "/" + _socketFilename)
     , m_socketFileLock(m_socketFilename + ".lock")
@@ -31,34 +25,34 @@ namespace ramses_internal
     }
 
 
-    UnixDomainSocketHelper::~UnixDomainSocketHelper()
+    UnixDomainSocket::~UnixDomainSocket()
     {
         cleanup();
     }
 
-    int UnixDomainSocketHelper::createBoundFileDescriptor()
+    int UnixDomainSocket::createBoundFileDescriptor()
     {
         assert(m_socketFileDescriptor < 0);
 
-        if(!SocketHelperFunction::checkSocketFilePath(m_socketFilename))
+        if(!checkSocketFilePath())
         {
             return -1;
         }
 
-        m_lockFileDescriptor = SocketHelperFunction::createSocketLockFile(m_socketFileLock);
+        m_lockFileDescriptor = createSocketLockFile();
         if(m_lockFileDescriptor < 0)
         {
             return -1;
         }
 
-        m_socketFileDescriptor = SocketHelperFunction::createAndOpenSocket();
+        m_socketFileDescriptor = createAndOpenSocket();
         if( m_socketFileDescriptor < 0 )
         {
             cleanup();
             return -1;
         }
 
-        if(!SocketHelperFunction::bindSocketToFile(m_socketFileDescriptor, m_socketFilename))
+        if(!bindSocketToFile())
         {
             cleanup();
             return -1;
@@ -67,20 +61,20 @@ namespace ramses_internal
         return m_socketFileDescriptor;
     }
 
-    int UnixDomainSocketHelper::getBoundFileDescriptor() const
+    int UnixDomainSocket::getBoundFileDescriptor() const
     {
         return m_socketFileDescriptor;
     }
 
-    int UnixDomainSocketHelper::createConnectedFileDescriptor(Bool transferOwnership)
+    int UnixDomainSocket::createConnectedFileDescriptor(bool transferOwnership)
     {
-        int fileDescriptor = SocketHelperFunction::createAndOpenSocket();
+        int fileDescriptor = createAndOpenSocket();
         if(fileDescriptor < 0)
         {
             return -1;
         }
 
-        if(!SocketHelperFunction::connectSocketToFile(fileDescriptor,m_socketFilename))
+        if(!connectSocketToFile(fileDescriptor))
         {
             close(fileDescriptor);
             return -1;
@@ -93,7 +87,7 @@ namespace ramses_internal
         return fileDescriptor;
     }
 
-    void UnixDomainSocketHelper::cleanup()
+    void UnixDomainSocket::cleanup()
     {
         if(m_socketFileDescriptor >= 0)
         {
@@ -117,10 +111,26 @@ namespace ramses_internal
 
     }
 
-    Bool SocketHelperFunction::checkSocketFilePath(const String& socketFilename)
+    bool UnixDomainSocket::IsFileDescriptorForValidSocket(int fileDescriptor)
+    {
+        if (fileDescriptor < 0)
+        {
+            return false;
+        }
+
+        struct stat buf;
+        if (fstat(fileDescriptor, &buf) < 0)
+        {
+            return false;
+        }
+
+        return S_ISSOCK(buf.st_mode);
+    }
+
+    bool UnixDomainSocket::checkSocketFilePath() const
     {
         struct stat socket_stat;
-        if (stat(socketFilename.c_str(), &socket_stat) < 0 )
+        if (stat(m_socketFilename.c_str(), &socket_stat) < 0 )
         {
             if (errno != ENOENT)
             {
@@ -130,10 +140,10 @@ namespace ramses_internal
         return true;
     }
 
-    int SocketHelperFunction::createSocketLockFile(const String& socketLockFile)
+    int UnixDomainSocket::createSocketLockFile() const
     {
         // create lock file, with close-on-exec and usr and grp RW rights
-        int lockFileFileDescriptor = open(socketLockFile.c_str(), O_CREAT | O_CLOEXEC, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
+        int lockFileFileDescriptor = open(m_socketFileLock.c_str(), O_CREAT | O_CLOEXEC, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
 
         if (lockFileFileDescriptor < 0)
         {
@@ -150,7 +160,7 @@ namespace ramses_internal
         return lockFileFileDescriptor;
     }
 
-    int SocketHelperFunction::createAndOpenSocket()
+    int UnixDomainSocket::createAndOpenSocket()
     {
         // create socket with close-on-exec flag
         int socketFileDescriptor = socket(PF_LOCAL, SOCK_STREAM | SOCK_CLOEXEC, 0);
@@ -188,7 +198,7 @@ namespace ramses_internal
         return socketFileDescriptor;
     }
 
-    int SocketHelperFunction::setCloExecFlagInFD(int socketFileDescriptor)
+    int UnixDomainSocket::setCloExecFlagInFD(int socketFileDescriptor)
     {
         assert(socketFileDescriptor >= 0);
 
@@ -207,24 +217,24 @@ namespace ramses_internal
         return socketFileDescriptor;
     }
 
-    Bool SocketHelperFunction::bindSocketToFile(int socketFileDescriptor, const String& socketName)
+    bool UnixDomainSocket::bindSocketToFile() const
     {
         sockaddr_un addr;
 
-        const size_t sizeOfSockAddr = SocketHelperFunction::fillSockaddrForUnixDomain(addr, socketName);
+        const size_t sizeOfSockAddr = fillSockaddrForUnixDomain(addr);
         if (sizeOfSockAddr == 0)
         {
             return false;
         }
 
         // bind and listen to the socket file
-        if (bind(socketFileDescriptor, reinterpret_cast<sockaddr*>(&addr), sizeOfSockAddr) < 0)
+        if (bind(m_socketFileDescriptor, reinterpret_cast<sockaddr*>(&addr), sizeOfSockAddr) < 0)
         {
             return false;
         }
 
         const int NumberOfListenedConnections = 128;
-        if (listen(socketFileDescriptor, NumberOfListenedConnections) < 0)
+        if (listen(m_socketFileDescriptor, NumberOfListenedConnections) < 0)
         {
             return false;
         }
@@ -232,14 +242,14 @@ namespace ramses_internal
         return true;
     }
 
-    socklen_t SocketHelperFunction::fillSockaddrForUnixDomain(sockaddr_un& addrToFill, const String& socketName)
+    socklen_t UnixDomainSocket::fillSockaddrForUnixDomain(sockaddr_un& addrToFill) const
     {
         // set to AF_LOCAL because we want to
         // use a Unix domain socket
         addrToFill.sun_family = AF_LOCAL;
 
         // write the socket file path to addr and check whether we have no overflow
-        PlatformStringUtils::Copy(addrToFill.sun_path, sizeof(addrToFill.sun_path), socketName.c_str());
+        PlatformStringUtils::Copy(addrToFill.sun_path, sizeof(addrToFill.sun_path), m_socketFilename.c_str());
         const size_t sizeOfSocketFilePath = PlatformStringUtils::StrLen(addrToFill.sun_path) + 1;
         assert(sizeOfSocketFilePath > 1);
         if (sizeOfSocketFilePath > sizeof(addrToFill.sun_path))
@@ -251,11 +261,11 @@ namespace ramses_internal
         return offsetof(sockaddr_un, sun_path) + sizeOfSocketFilePath;
     }
 
-    Bool SocketHelperFunction::connectSocketToFile(int socketFileDescriptor, const String& socketName)
+    bool UnixDomainSocket::connectSocketToFile(int socketFileDescriptor) const
     {
         sockaddr_un addr;
 
-        const size_t sizeOfSockAddr = SocketHelperFunction::fillSockaddrForUnixDomain(addr, socketName);
+        const size_t sizeOfSockAddr = fillSockaddrForUnixDomain(addr);
         if (sizeOfSockAddr == 0)
         {
             return false;

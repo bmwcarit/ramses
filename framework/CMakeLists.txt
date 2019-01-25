@@ -209,6 +209,10 @@ if (ramses-sdk_CONSOLE_LOGLEVEL)
     target_compile_definitions(ramses-framework PRIVATE "-DRAMSES_CONSOLE_LOGLEVEL_DEFAULT=${ramses-sdk_CONSOLE_LOGLEVEL}")
 endif()
 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    target_compile_options(ramses-framework PRIVATE "-Wsuggest-override")
+endif()
+
 INSTALL(DIRECTORY ramses-framework-api/include/ DESTINATION "${PROJECT_INSTALL_HEADER}" COMPONENT ramses-sdk-devel)
 
 set(ramses-shared-lib-MIXIN
@@ -239,7 +243,7 @@ IF (${ramses-sdk_BUILD_TESTS})
         # dependencies
         #==========================================================================
         DEPENDENCIES            ramses-framework
-                                gmock
+                                ramses-gmock
     )
 ENDIF()
 
@@ -328,5 +332,5 @@ ACME_MODULE(
 
     DEPENDENCIES            ramses-framework
                             FrameworkTestUtils
-                            gmock_main
+                            ramses-gmock-main
 )

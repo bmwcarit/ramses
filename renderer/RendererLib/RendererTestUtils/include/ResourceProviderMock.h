@@ -45,42 +45,42 @@ public:
     {
         ResourceContentHashVector arrivedResourceHashes;
         ManagedResourceVector arrivedResources;
-        ramses_foreach(requestedResources, resource)
+        for(auto resource : requestedResources)
         {
-            if (*resource == FakeVertArrayHash)
+            if (resource == FakeVertArrayHash)
             {
                 arrivedResources.push_back(ManagedResource(vertArrayResource, deleterMock));
-                arrivedResourceHashes.push_back(*resource);
+                arrivedResourceHashes.push_back(resource);
             }
-            if (*resource == FakeVertArrayHash2)
+            if (resource == FakeVertArrayHash2)
             {
                 arrivedResources.push_back(ManagedResource(vertArrayResource2, deleterMock));
-                arrivedResourceHashes.push_back(*resource);
+                arrivedResourceHashes.push_back(resource);
             }
-            if (*resource == FakeEffectHash)
+            if (resource == FakeEffectHash)
             {
                 arrivedResources.push_back(ManagedResource(dummyEffectResource, deleterMock));
-                arrivedResourceHashes.push_back(*resource);
+                arrivedResourceHashes.push_back(resource);
             }
-            if (*resource == FakeTextureHash)
+            if (resource == FakeTextureHash)
             {
                 arrivedResources.push_back(ManagedResource(textureResource, deleterMock));
-                arrivedResourceHashes.push_back(*resource);
+                arrivedResourceHashes.push_back(resource);
             }
-            if (*resource == FakeTextureHash2)
+            if (resource == FakeTextureHash2)
             {
                 arrivedResources.push_back(ManagedResource(textureResource2, deleterMock));
-                arrivedResourceHashes.push_back(*resource);
+                arrivedResourceHashes.push_back(resource);
             }
-            if (*resource == FakeIndexArrayHash && indexArrayIsAvailable)
+            if (resource == FakeIndexArrayHash && indexArrayIsAvailable)
             {
                 arrivedResources.push_back(ManagedResource(indexArrayResource, deleterMock));
-                arrivedResourceHashes.push_back(*resource);
+                arrivedResourceHashes.push_back(resource);
             }
-            if (*resource == FakeIndexArrayHash2 && indexArrayIsAvailable)
+            if (resource == FakeIndexArrayHash2 && indexArrayIsAvailable)
             {
                 arrivedResources.push_back(ManagedResource(indexArrayResource2, deleterMock));
-                arrivedResourceHashes.push_back(*resource);
+                arrivedResourceHashes.push_back(resource);
             }
         }
 

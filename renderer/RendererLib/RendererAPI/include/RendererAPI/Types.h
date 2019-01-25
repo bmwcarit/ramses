@@ -68,8 +68,8 @@ namespace ramses_internal
     static const WaylandIviLayerId InvalidWaylandIviLayerId(0xFFFFFFFF);
 
     struct IntegrityEglDisplayIdTag {};
-    typedef StronglyTypedValue<UInt32, 0xFFFFFFFF, IntegrityEglDisplayIdTag> IntegrityEglDisplayId;
-    static const IntegrityEglDisplayId InvalidIntegrityEglDisplayId(0xFFFFFFFF);
+    typedef StronglyTypedValue<UInt32, 0xFFFFFFFF, IntegrityEglDisplayIdTag> IntegrityRGLDeviceUnit;
+    static const IntegrityRGLDeviceUnit InvalidIntegrityRGLDeviceUnit(0xFFFFFFFF);
 
     struct WindowsWindowHandleTag {};
     typedef StronglyTypedValue<void*, nullptr, WindowsWindowHandleTag> WindowsWindowHandle;

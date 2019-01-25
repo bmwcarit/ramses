@@ -49,7 +49,7 @@ namespace ramses
         //impl methods
         const ramses_internal::RendererConfig& getInternalRendererConfig() const;
 
-        status_t validate(uint32_t indent) const;
+        virtual status_t validate(uint32_t indent) const override;
 
     private:
         ramses_internal::RendererConfig    m_internalConfig;

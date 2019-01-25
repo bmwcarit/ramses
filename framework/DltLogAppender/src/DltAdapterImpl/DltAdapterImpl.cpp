@@ -84,11 +84,7 @@ namespace ramses_internal
         //DLT_LOG_OFF indicates that message is not logged
         //DLT_LOG_DEFAULT is unused here
 
-#ifdef DLT_EMBEDDED
-    int ll = DLT_LOG_OFF;
-#else
-    DltLogLevelType ll = DLT_LOG_OFF;
-#endif
+        DltLogLevelType ll = DLT_LOG_OFF;
 
         switch(msg.getLogLevel())
         {

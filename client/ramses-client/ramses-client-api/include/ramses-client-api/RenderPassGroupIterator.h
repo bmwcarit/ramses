@@ -9,7 +9,7 @@
 #ifndef RAMSES_RENDERPASSGROUPITERATOR_H
 #define RAMSES_RENDERPASSGROUPITERATOR_H
 
-#include "APIExport.h"
+#include "ramses-framework-api/APIExport.h"
 
 namespace ramses
 {

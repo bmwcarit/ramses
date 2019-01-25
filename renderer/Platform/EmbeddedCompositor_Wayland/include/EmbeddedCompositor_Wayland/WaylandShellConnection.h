@@ -23,7 +23,7 @@ namespace ramses_internal
         bool wasSuccessfullyInitialized() const;
 
         virtual void resourceDestroyed() override;
-        virtual void shellGetShellSurface(IWaylandClient& client, uint32_t id, IWaylandResource& surfaceResource);
+        virtual void shellGetShellSurface(IWaylandClient& client, uint32_t id, IWaylandResource& surfaceResource) override;
 
     private:
         static void ResourceDestroyedCallback(wl_resource* shellConnectionResource);

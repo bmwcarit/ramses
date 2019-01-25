@@ -51,9 +51,9 @@ namespace ramses
         metaDataStream << getLowlevelResourceHash();
         metaDataStream << getName();
         metaDataStream << static_cast<uint32_t>(getType());
-        const uint128 cityHashMetadataAndBlob = CityHash128(metaDataStream.getData(), metaDataStream.getSize());
-        m_resourceId.highPart = Uint128High64(cityHashMetadataAndBlob);
-        m_resourceId.lowPart = Uint128Low64(cityHashMetadataAndBlob);
+        const cityhash::uint128 cityHashMetadataAndBlob = cityhash::CityHash128(metaDataStream.getData(), metaDataStream.getSize());
+        m_resourceId.highPart = cityhash::Uint128High64(cityHashMetadataAndBlob);
+        m_resourceId.lowPart = cityhash::Uint128Low64(cityHashMetadataAndBlob);
     }
 
     void ResourceImpl::deinitializeFrameworkData()

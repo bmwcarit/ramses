@@ -10,7 +10,6 @@
 #include "Ramsh/RamshCommandPrintLogLevels.h"
 #include "Ramsh/Ramsh.h"
 #include "Utils/LogMacros.h"
-#include "Common/Cpp11Macros.h"
 #include "Utils/RamsesLogger.h"
 
 namespace ramses_internal

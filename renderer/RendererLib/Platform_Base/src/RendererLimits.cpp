@@ -8,7 +8,6 @@
 
 #include "Platform_Base/RendererLimits.h"
 #include "Utils/LogMacros.h"
-#include "Common/Cpp11Macros.h"
 
 namespace ramses_internal
 {
@@ -55,9 +54,9 @@ namespace ramses_internal
         LOG_DEBUG(CONTEXT_RENDERER, "  - maximum number of anisotropy samples:       " << m_maximumAnisotropy);
 
         LOG_DEBUG(CONTEXT_RENDERER, "  - supported texture formats:");
-        ramses_foreach(m_availableTextureFormats, texIt)
+        for(const auto& texture : m_availableTextureFormats)
         {
-            LOG_DEBUG(CONTEXT_RENDERER, "      " << EnumToString(*texIt));
+            LOG_DEBUG(CONTEXT_RENDERER, "      " << EnumToString(texture));
         }
     }
 }

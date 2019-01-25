@@ -20,10 +20,11 @@ typedef ramses_internal::Vector<ramses::DisplayConfig> DisplayConfigVector;
 
 struct RenderingTestCase
 {
-    RenderingTestCase(ramses_internal::UInt32 id, IRendererTest& rendererTest, const ramses_internal::String& name)
+    RenderingTestCase(ramses_internal::UInt32 id, IRendererTest& rendererTest, const ramses_internal::String& name, bool defaultRendererRequired)
         : m_id(id)
         , m_name(name)
         , m_rendererTest(rendererTest)
+        , m_defaultRendererRequired(defaultRendererRequired)
     {
     }
 
@@ -31,6 +32,7 @@ struct RenderingTestCase
     const ramses_internal::String   m_name;
     DisplayConfigVector             m_displayConfigs;
     IRendererTest&                  m_rendererTest;
+    bool                            m_defaultRendererRequired;
 };
 
 #endif

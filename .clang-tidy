@@ -1,0 +1,48 @@
+#  -------------------------------------------------------------------------
+#  Copyright (C) 2018 BMW Car IT GmbH
+#  -------------------------------------------------------------------------
+#  This Source Code Form is subject to the terms of the Mozilla Public
+#  License, v. 2.0. If a copy of the MPL was not distributed with this
+#  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#  -------------------------------------------------------------------------
+
+---
+Checks: >
+        bugprone-*,
+        misc-suspicious-*,
+        misc-redundant-expression,
+        misc-sizeof-*,
+        misc-string-*,
+        misc-swapped-arguments,
+        misc-unused-*,
+        misc-macro-*,
+        readability-redundant-*,
+        cert-*,
+        -clang-analyzer-optin.cplusplus.VirtualCall,
+        -clang-analyzer-security.FloatLoopCounter,
+        -clang-analyzer-cplusplus.NewDelete,
+        -clang-analyzer-cplusplus*,
+        -misc-macro-parentheses,
+        -readability-redundant-string-init,
+        -readability-redundant-member-init,
+        -cert-err58-cpp,
+        -cert-dcl50-cpp,
+        -cert-msc50-cpp,
+        -cert-dcl03-c,
+        -cert-err34-c,
+        -cert-flp30-c,
+        -cert-msc30-c
+
+# everything that is enabled is also an error
+WarningsAsErrors: '*'
+
+# ignore headers in external because we cannot fix them
+HeaderFilterRegex: '^external/.*|^proprietary/external/.*'
+
+AnalyzeTemporaryDtors: false
+FormatStyle:     none
+
+CheckOptions:
+  - key:             modernize-use-nullptr.NullMacros
+    value:           'NULL'
+...

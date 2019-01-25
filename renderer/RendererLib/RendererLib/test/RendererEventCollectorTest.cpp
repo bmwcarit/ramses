@@ -41,7 +41,7 @@ namespace ramses_internal
         UInt8Vector pixelData;
         pixelData.push_back(8);
 
-        m_rendererEventCollector.addEvent(ERendererEventType_ReadPixelsFromFramebuffer, m_displayHandle, pixelData);
+        m_rendererEventCollector.addEvent(ERendererEventType_ReadPixelsFromFramebuffer, m_displayHandle, std::move(pixelData));
         RendererEventVector resultEvents;
         m_rendererEventCollector.dispatchEvents(resultEvents);
         ASSERT_EQ(1u, resultEvents.size());

@@ -61,7 +61,7 @@ namespace ramses_internal
             device.activateRenderTarget(m_viewInfo[eyeIndex].m_fbInfo.deviceHandle);
             device.colorMask(true, true, true, true);
             device.clearColor({ 0.f, 0.f, 0.f, 1.f });
-            device.depthWrite(EDepthWrite_Enabled);
+            device.depthWrite(EDepthWrite::Enabled);
             device.clear(EClearFlags_All);
         }
     }

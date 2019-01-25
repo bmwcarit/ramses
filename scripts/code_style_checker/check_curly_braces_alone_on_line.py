@@ -69,21 +69,9 @@ def check_curly_braces_alone_on_line(filename, file_contents, clean_file_content
     inside_expression_close_re = re.compile(r'\}\s*(,|\)|;|\()')
     part_of_lambda_expression_open_re = re.compile(r'\[.*\].*\(.*\)\s*\{')  # this might match too much, rework to whitelist instead of blacklist where {} is allowed
 
-    for i in range(len(file_lines)):
+    former_line = ""
+    for i in range(len(clean_file_lines)):
         line = clean_file_lines[i]
-
-        def get_former_line():
-            """
-            Gets the last non-empty line
-
-            """
-            if i > 0:
-                for j in range(i - 1, 0 , -1):
-                    if len(clean_file_lines[j].strip(" \t\n\f\r")):
-                        return clean_file_lines[j]
-            return ""
-
-        former_line = get_former_line()
 
         if line.count("{"):
             #check if the line contains a type declaration
@@ -119,6 +107,9 @@ def check_curly_braces_alone_on_line(filename, file_contents, clean_file_content
                 if re.match(r"(\s*)\}(\s*)((while((?!;).)*)?)(;?)(\s*)(\\?)(\s*)$", line) == None and re.search(inside_expression_close_re, line) == None:
                     log_warning("check_curly_braces_alone_on_line", filename, i + 1, "other code on same line with closing curly brace", file_lines[i].strip(" "))
 
+        if line.strip(" \t\n\f\r"):
+            former_line = line
+
 if __name__ == "__main__":
     targets = sys.argv[1:]
     targets = get_all_files(targets)
@@ -134,5 +125,6 @@ if __name__ == "__main__":
 
     for t in targets:
         if t[-2:] == ".h" or t[-4:] == ".cpp" or t[-2] == ".c":
-            file_contents, clean_file_contents, file_lines, clean_file_lines = read_file(t)
+            file_contents, file_lines = read_file(t)
+            clean_file_contents, clean_file_lines = clean_file_content(file_contents)
             check_curly_braces_alone_on_line(t, file_contents, clean_file_contents, file_lines, clean_file_lines)

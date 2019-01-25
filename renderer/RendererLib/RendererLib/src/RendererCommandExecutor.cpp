@@ -13,7 +13,7 @@
 #include "RendererLib/SceneLinksManager.h"
 #include "RendererAPI/IDisplayController.h"
 #include "RendererEventCollector.h"
-#include "Utils/Bitmap.h"
+#include "Utils/Image.h"
 #include "Utils/LogMacros.h"
 #include "RendererLib/FrameTimer.h"
 
@@ -437,10 +437,17 @@ namespace ramses_internal
             case ERendererCommand_SetFrameTimerLimits:
             {
                 const SetFrameTimerLimitsCommmand& command = m_executedCommands.getCommandData<SetFrameTimerLimitsCommmand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " resUpload " << command.limitForClientResourcesUploadMicrosec << " actionApply " << command.limitForSceneActionsApplyMicrosec << " render " << command.limitForOffscreenBufferRenderMicrosec);
+                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " clientResUpload " << command.limitForClientResourcesUploadMicrosec << " actionApply " << command.limitForSceneActionsApplyMicrosec << " render " << command.limitForOffscreenBufferRenderMicrosec);
                 m_frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ClientResourcesUpload, command.limitForClientResourcesUploadMicrosec);
                 m_frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, command.limitForSceneActionsApplyMicrosec);
                 m_frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::OffscreenBufferRender, command.limitForOffscreenBufferRenderMicrosec);
+                break;
+            }
+            case ERendererCommand_SetResourceActionTimer:
+            {
+                const SetFrameTimerLimitsCommmand& command = m_executedCommands.getCommandData<SetFrameTimerLimitsCommmand>(i);
+                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneResUpload " << command.limitForSceneResourcesUploadMicrosec);
+                m_frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneResourcesUpload, command.limitForSceneResourcesUploadMicrosec);
                 break;
             }
             case ERendererCommand_SetLimits_FlushesForceApply:

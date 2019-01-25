@@ -37,11 +37,9 @@ public:
         , sceneId(33u)
     {
         ramses::DisplayConfig displayConfig;
-        displayConfig.setIntegrityEGLDisplayID(1u);
         displayConfig.setWaylandIviSurfaceID(0u);
         displayId = displayManager.createDisplay(displayConfig);
 
-        displayConfig.setIntegrityEGLDisplayID(2u);
         displayConfig.setWaylandIviSurfaceID(1u);
         otherDisplayId = displayManager.createDisplay(displayConfig);
         renderer.doOneLoop();

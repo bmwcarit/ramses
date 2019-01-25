@@ -41,8 +41,8 @@ class RemoteCoreImpl(CoreImpl):
         self._interpret_arguments(args)
 
     def _add_arguments(self, parser, transferGroup, targetsGroup):
-        parser.add_argument("basePath", help =  "Path where .tar.gz package files can be found and where test results "
-                                                "should be stored")
+        parser.add_argument("basePath", help="Path where .tar.gz package files can be found and where test results "
+                                             "should be stored")
         transferGroup.add_argument("--package", nargs=3, metavar=('ramsesVersion', 'gitCommitCount', 'gitCommitHash'), help="for package download. wildcards can be used, first found result will be taken")
         transferGroup.add_argument("--noTransfer", action="store_true", default=False, help="do not transfer binaries (for debugging)")
         parser.add_argument("--filter", help="test filter")

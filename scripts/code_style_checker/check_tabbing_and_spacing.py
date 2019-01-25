@@ -27,6 +27,7 @@ def check_correct_space_count(filename, file_lines):
     """
     previous_indent = 0
     in_multiline_comment = False
+    valid_indents_stack = []
     for i in range(len(file_lines)):
         if in_multiline_comment:
             #if end of muli-line comment
@@ -40,24 +41,43 @@ def check_correct_space_count(filename, file_lines):
             found_match = re.search("(?! )", file_lines[i])
             if found_match:
                 space_count = found_match.start()
-                # check divisible by 4 OR same indent as previous line
-                if (space_count % 4 != 0) and (previous_indent != space_count) and (previous_indent + 4 != space_count) and (previous_indent - 4 != space_count):
+
+                while space_count > 0 and valid_indents_stack and valid_indents_stack[-1] > space_count:
+                    valid_indents_stack.pop()
+
+                # check by indent stack
+                if space_count in valid_indents_stack and space_count == valid_indents_stack[-1]:
+                    ok_by_stack = True
+                else:
+                    ok_by_stack = False
+
+                # check divisible by 4 OR same indent as previous line or at least properly +-4*x from previous line
+                warned = False
+                if not ok_by_stack and (space_count % 4 != 0) and (previous_indent != space_count) and (abs(previous_indent - space_count) % 4 != 0):
 
                     # allow indent to parenthesis in previous line
                     is_smart_indent = False
                     if (i > 0) and (space_count > 0) and (len(file_lines[i-1]) > space_count-1):
                         prev_line = file_lines[i-1]
                         cur_line_without_spaces = file_lines[i][space_count:]
-                        c = prev_line[space_count-1]
-                        if c == '(' or c == '[':
+                        if prev_line[space_count-1] in ['(', '['] or prev_line[space_count-4] in ['(', '[']:
                             is_smart_indent = True
                         elif prev_line.endswith(",") or prev_line.endswith("<<") or prev_line.endswith("||") or prev_line.endswith("&&") or \
-                             cur_line_without_spaces.startswith("<<"):
+                             cur_line_without_spaces.startswith("<<") or cur_line_without_spaces.startswith(">>"):
                             is_smart_indent = True
 
                     if not is_smart_indent:
                         log_warning("check_correct_space_count", filename, i + 1, "number of spaces at beginning of line must be divisible by 4 (or conform to smart indent)")
-                previous_indent = space_count
+                        warned = True
+                # only previous spaces when not zero
+                if space_count != 0:
+                    # add to stack when valid and not already in
+                    if not warned:
+                        if not valid_indents_stack:
+                            valid_indents_stack.append(space_count)
+                        elif valid_indents_stack[-1] != space_count:
+                            valid_indents_stack.append(space_count)
+                    previous_indent = space_count
             else:
                 previous_indent = 0
 
@@ -97,5 +117,5 @@ if __name__ == "__main__":
 
     for t in targets:
         if t[-2:] == ".h" or t[-4:] == ".cpp" or t[-2] == ".c":
-            _, _, file_lines, _ = read_file(t)
+            _, file_lines = read_file(t)
             check_tabbing_and_spacing(t, file_lines)

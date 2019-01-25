@@ -177,15 +177,15 @@ namespace ramses
         return m_internalConfig.getWaylandIviSurfaceID().getValue();
     }
 
-    status_t DisplayConfigImpl::setIntegrityEGLDisplayID(uint32_t eglDisplayID)
+    status_t DisplayConfigImpl::setIntegrityRGLDeviceUnit(uint32_t rglDeviceUnit)
     {
-        m_internalConfig.setIntegrityEGLDisplayID(ramses_internal::IntegrityEglDisplayId(eglDisplayID));
+        m_internalConfig.setIntegrityRGLDeviceUnit(ramses_internal::IntegrityRGLDeviceUnit(rglDeviceUnit));
         return StatusOK;
     }
 
-    uint32_t DisplayConfigImpl::getIntegrityEGLDisplayID() const
+    uint32_t DisplayConfigImpl::getIntegrityRGLDeviceUnit() const
     {
-        return m_internalConfig.getIntegrityEGLDisplayID().getValue();
+        return m_internalConfig.getIntegrityRGLDeviceUnit().getValue();
     }
 
     status_t DisplayConfigImpl::setWindowIviVisible()

@@ -91,6 +91,8 @@ namespace ramses
             float verts[9] = { 0.f };
             const Vector3fArray* vertices = sharedTestState->getClient().createConstVector3fArray(3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec3Vertices");
             EXPECT_TRUE(vertices != NULL);
+            if (!vertices)
+                return nullptr;
 
             AttributeInput input;
             EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("vec3fArrayInput", input));
@@ -104,6 +106,8 @@ namespace ramses
             float verts[8] = { 0.2f };
             const Vector2fArray* vertices = sharedTestState->getClient().createConstVector2fArray(4u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec2Vertices");
             EXPECT_TRUE(vertices != NULL);
+            if (!vertices)
+                return nullptr;
 
             AttributeInput input;
             EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("vec2fArrayInput", input));
@@ -117,6 +121,8 @@ namespace ramses
             float verts[8] = { 0.4f };
             const Vector4fArray* vertices = sharedTestState->getClient().createConstVector4fArray(2u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec4Vertices");
             EXPECT_TRUE(vertices != NULL);
+            if (!vertices)
+                return nullptr;
 
             AttributeInput input;
             EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("vec4fArrayInput", input));
@@ -130,6 +136,8 @@ namespace ramses
             float verts[8] = { 0.1f };
             const FloatArray* vertices = sharedTestState->getClient().createConstFloatArray(8u, verts, ResourceCacheFlag_DoNotCache, "floatVertices");
             EXPECT_TRUE(vertices != NULL);
+            if (!vertices)
+                return nullptr;
 
             AttributeInput input;
             EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("floatArrayInput", input));
@@ -143,6 +151,8 @@ namespace ramses
             uint32_t inds[3] = { 0u };
             const UInt32Array* indices = sharedTestState->getClient().createConstUInt32Array(3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
             EXPECT_TRUE(indices != NULL);
+            if (!indices)
+                return nullptr;
 
             EXPECT_EQ(0u, geometry.impl.getIndicesCount());
             EXPECT_EQ(StatusOK, geometry.setIndices(*indices));

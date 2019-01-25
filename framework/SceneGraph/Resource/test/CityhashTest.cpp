@@ -16,7 +16,7 @@ namespace ramses_internal
     static const UInt32 numTests = 20;
     static const UInt32 dataSize = 1 << numTests;
     static char testData[dataSize];
-    static const uint128 expectedHashs[numTests] = {
+    static const cityhash::uint128 expectedHashs[numTests] = {
         {0x132a6150371ba800, 0xf37a02a3a52349fb},
         {0x01b87602e96ed410, 0xa23d361672c9df70},
         {0xa368efbdc937a498, 0x61d6b5a232f6f739},
@@ -67,10 +67,10 @@ namespace ramses_internal
             const UInt32 length = 1 << l;
             SCOPED_TRACE(testing::Message("hash error with data size of ") << length << " byte");
             {
-                EXPECT_EQ(expectedHashs[l], CityHash128(testData + offset, length));
+                EXPECT_EQ(expectedHashs[l], cityhash::CityHash128(testData + offset, length));
             }
             offset += length;
         }
-        EXPECT_EQ(expectedHashs[l], CityHash128(testData + 0, dataSize));
+        EXPECT_EQ(expectedHashs[l], cityhash::CityHash128(testData + 0, dataSize));
     }
 }

@@ -9,8 +9,7 @@
 #ifndef RAMSES_CONTAINER_VECTOR_H
 #define RAMSES_CONTAINER_VECTOR_H
 
-#include "ramses-capu/container/vector.h"
-#include "PlatformAbstraction/PlatformTypes.h"
+#include <vector>
 #include <assert.h>
 #include <type_traits>
 
@@ -21,21 +20,21 @@ namespace ramses_internal
     {
     public:
         typedef T value_type;
-        typedef typename ramses_capu::vector<T>::Iterator Iterator;
-        typedef typename ramses_capu::vector<T>::Iterator iterator;
-        typedef typename ramses_capu::vector<T>::ConstIterator ConstIterator;
-        typedef typename ramses_capu::vector<T>::ConstIterator const_iterator;
+        typedef typename std::vector<T>::iterator Iterator;
+        typedef typename std::vector<T>::iterator iterator;
+        typedef typename std::vector<T>::const_iterator ConstIterator;
+        typedef typename std::vector<T>::const_iterator const_iterator;
 
         Vector()
         {
         }
 
-        explicit Vector(const UInt initialSize)
+        explicit Vector(const std::size_t initialSize)
             : m_vector(initialSize)
         {
         }
 
-        Vector(const UInt initialSize, const T& value)
+        Vector(const std::size_t initialSize, const T& value)
             : m_vector(initialSize, value)
         {
         }
@@ -104,15 +103,15 @@ namespace ramses_internal
 
         void erase(const iterator& iter)
         {
-            m_vector.erase(iter, nullptr);
+            m_vector.erase(iter);
         }
 
-        UInt size() const
+        std::size_t size() const
         {
             return m_vector.size();
         }
 
-        UInt capacity() const
+        std::size_t capacity() const
         {
             return m_vector.capacity();
         }
@@ -122,17 +121,17 @@ namespace ramses_internal
             m_vector.shrink_to_fit();
         }
 
-        Bool empty() const
+        bool empty() const
         {
             return m_vector.empty();
         }
 
-        void resize(const UInt size)
+        void resize(const std::size_t size)
         {
             m_vector.resize(size);
         }
 
-        void reserve(const UInt size)
+        void reserve(const std::size_t size)
         {
             m_vector.reserve(size);
         }
@@ -142,12 +141,12 @@ namespace ramses_internal
             m_vector.clear();
         }
 
-        const T& operator[](const UInt index) const
+        typename std::vector<T>::const_reference operator[](const std::size_t index) const
         {
             return m_vector[index];
         }
 
-        T& operator[](const UInt index)
+        typename std::vector<T>::reference operator[](const std::size_t index)
         {
             return m_vector[index];
         }
@@ -219,17 +218,17 @@ namespace ramses_internal
             return it;
         }
 
-        Bool contains(const T& value) const
+        bool contains(const T& value) const
         {
             return find(value) != m_vector.end();
         }
 
-        Bool operator==(const Vector& other) const
+        bool operator==(const Vector& other) const
         {
             return m_vector == other.m_vector;
         }
 
-        Bool operator!=(const Vector& other) const
+        bool operator!=(const Vector& other) const
         {
             return !(m_vector == other.m_vector);
         }
@@ -239,8 +238,18 @@ namespace ramses_internal
             m_vector.swap(other.m_vector);
         }
 
+        const std::vector<T>& stdRef() const
+        {
+            return m_vector;
+        }
+
+        std::vector<T>& stdRef()
+        {
+            return m_vector;
+        }
+
     private:
-        ramses_capu::vector<T> m_vector;
+        std::vector<T> m_vector;
     };
 
     // allow generic swap on ramses_internal::Vector

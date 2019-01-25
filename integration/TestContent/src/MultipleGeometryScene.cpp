@@ -129,6 +129,8 @@ namespace ramses_internal
             verticesPoly = m_client.createConstVector3fArray(5, verticesData);
             break;
         }
+        default:
+            assert(false && "Invalid state");
         }
 
         ramses::AttributeInput positionsInput;

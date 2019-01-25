@@ -89,10 +89,10 @@ GENERATE_DOCUMENT(
 file(GLOB_RECURSE
     RAMSES_API_ALL_HEADERS
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    ../framework/ramses-framework-api/include/*.h
-    ../client/ramses-client-api/include/*.h
-    ../client/ramses-text-api/include/*.h
-    ../renderer/ramses-renderer-api/include/*.h)
+    ../framework/ramses-framework-api/include/ramses-framework-api/*.h
+    ../client/ramses-client/ramses-client-api/include/ramses-client-api/*.h
+    ../client/ramses-text/ramses-text-api/include/ramses-text-api/*.h
+    ../renderer/RendererLib/ramses-renderer-api/include/ramses-renderer-api/*.h)
 
 FILE(GLOB RAMSES_API_DOCUMENTS_ALL
     general/*.dox
@@ -123,10 +123,8 @@ GENERATE_DOCUMENT(
 
 SET(EMBEDDED_COMPOSITING_DOCUMENTS
     ${CMAKE_CURRENT_SOURCE_DIR}/embedded-compositing/*.dox
-    ../client/ramses-client-api/include/ramses-client-api/StreamTexture.h
-    ../client/ramses-client/ramses-client-api/StreamTexture.cpp
-    ../examples/ramses-example-embedded-compositing/*/*.h
-    ../examples/ramses-example-embedded-compositing/*/*.cpp
+    ${RAMSES_API_ALL_HEADERS}
+    ../examples/ramses-example-basic-compositing/*/*.cpp
 )
 
 GENERATE_DOCUMENT(

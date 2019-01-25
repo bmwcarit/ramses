@@ -19,7 +19,6 @@
 #include "SceneAPI/RenderGroup.h"
 #include "SceneAPI/RenderGroupUtils.h"
 
-#include "Common/Cpp11Macros.h"
 
 namespace ramses
 {
@@ -36,9 +35,8 @@ namespace ramses
     void serializeObjects(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext, const ramses_internal::Vector<const OBJECT*>& objects)
     {
         outStream << static_cast<uint32_t>(objects.size());
-        ramses_foreach(objects, iter)
+        for(const auto& object : objects)
         {
-            const OBJECT* object = *iter;
             assert(0 != object);
             outStream << serializationContext.getIDForObject(object);
         }
@@ -320,9 +318,8 @@ namespace ramses
     template <typename ELEMENT>
     void RenderGroupImpl::validateElements(uint32_t& indent, status_t& status, const ramses_internal::Vector<const ELEMENT*>& elements) const
     {
-        ramses_foreach(elements, iter)
+        for(const auto& element : elements)
         {
-            const ELEMENT* element = *iter;
             if (addValidationOfDependentObject(indent, *element) != StatusOK)
             {
                 status = getValidationErrorStatus();

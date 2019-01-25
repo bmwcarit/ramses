@@ -10,7 +10,7 @@
 #define RAMSES_TESTFORKERAPPLICATION_H
 
 #include "Collections/String.h"
-#include "WaylandUtilities/UnixDomainSocketHelper.h"
+#include "WaylandUtilities/UnixDomainSocket.h"
 #include "NamedPipe.h"
 
 namespace ramses_internal
@@ -35,7 +35,7 @@ namespace ramses_internal
         pid_t m_testApplicationProcessId;
 
         const String m_embeddedCompositorDisplayName;
-        ramses_internal::UnixDomainSocketHelper m_socketHelper;
+        ramses_internal::UnixDomainSocket m_socket;
     };
 }
 

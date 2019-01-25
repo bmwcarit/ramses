@@ -8,7 +8,6 @@
 
 #include "PlatformAbstraction/PlatformSignal.h"
 #include "Collections/HashMap.h"
-#include "Common/Cpp11Macros.h"
 #include <signal.h>
 
 namespace ramses_internal
@@ -69,10 +68,10 @@ namespace ramses_internal
 
     void Signal::RestoreSignalHandlers()
     {
-        ramses_foreach(gSignalMap, it)
+        for(auto signalHandler : gSignalMap)
         {
-            HandlerInfo& info = it->value;
-            SignalHandlerFunction previousHandler = signal(it->key, SignalHandlerDispatcher);
+            HandlerInfo& info = signalHandler.value;
+            SignalHandlerFunction previousHandler = signal(signalHandler.key, SignalHandlerDispatcher);
             if (previousHandler != SignalHandlerDispatcher)
             {
                 info.previousHandler = previousHandler;

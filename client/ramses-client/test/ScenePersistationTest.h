@@ -169,6 +169,8 @@ namespace ramses
         {
             RamsesObject* objectPerName = this->m_sceneLoaded->findObjectByName(name);
             EXPECT_TRUE(objectPerName != NULL);
+            if (!objectPerName)
+                return nullptr;
             EXPECT_STREQ(name, objectPerName->getName());
 
             T* specificObject = RamsesUtils::TryConvert<T>(*objectPerName);
@@ -181,6 +183,8 @@ namespace ramses
         {
             RamsesObject* objectPerName = this->m_animationSystemLoaded->findObjectByName(name);
             EXPECT_TRUE(objectPerName != NULL);
+            if (!objectPerName)
+                return nullptr;
             EXPECT_STREQ(name, objectPerName->getName());
 
             T* specificObject = RamsesUtils::TryConvert<T>(*objectPerName);

@@ -10,7 +10,6 @@
 #include "RendererAPI/IDevice.h"
 #include "RendererAPI/IEmbeddedCompositor.h"
 #include "RendererAPI/ITextureUploadingAdapter.h"
-#include "Common/Cpp11Macros.h"
 #include "Utils/LogMacros.h"
 
 namespace ramses_internal
@@ -46,11 +45,11 @@ namespace ramses_internal
 
         //remove scene usage instance
         auto& sceneUsage = streamTextureSourceInfo->sceneUsage;
-        ramses_foreach(sceneUsage, it)
+        for(auto scene = sceneUsage.begin(); scene != sceneUsage.end(); ++scene)
         {
-            if (it->sceneId == sceneId && it->streamTextureHandle == handle)
+            if (scene->sceneId == sceneId && scene->streamTextureHandle == handle)
             {
-                sceneUsage.erase(it);
+                sceneUsage.erase(scene);
                 break;
             }
         }
@@ -78,10 +77,10 @@ namespace ramses_internal
         for(auto s : obsoleteStreamsSet)
             obsoleteStreams.push_back(s);
 
-        ramses_foreach(m_streamTextureSourceInfoMap, it)
+        for(auto& streamTexture : m_streamTextureSourceInfoMap)
         {
-            const Bool contentAvailable = m_embeddedCompositor.isContentAvailableForStreamTexture(it->key);
-            StreamTextureSourceInfo& streamSourceInfo = it->value;
+            const Bool contentAvailable = m_embeddedCompositor.isContentAvailableForStreamTexture(streamTexture.key);
+            StreamTextureSourceInfo& streamSourceInfo = streamTexture.value;
             if (contentAvailable != streamSourceInfo.contentAvailable)
             {
                 AddStreamTexturesWithStateChange(streamTexturesWithStateChange, streamSourceInfo.sceneUsage);
@@ -110,15 +109,15 @@ namespace ramses_internal
 
     void EmbeddedCompositingManager::AddStreamTexturesWithStateChange(SceneStreamTextures& result, const StreamSourceSceneUsageEntryVector& streamTexturesWithStateChange)
     {
-        ramses_foreach(streamTexturesWithStateChange, it)
+        for(const auto& streamTexture : streamTexturesWithStateChange)
         {
-            if (!result.contains(it->sceneId))
+            if (!result.contains(streamTexture.sceneId))
             {
-                result.put(it->sceneId, StreamTextureHandleVector());
+                result.put(streamTexture.sceneId, StreamTextureHandleVector());
             }
 
-            StreamTextureHandleVector* sceneStreamTextures = result.get(it->sceneId);
-            sceneStreamTextures->push_back(it->streamTextureHandle);
+            StreamTextureHandleVector* sceneStreamTextures = result.get(streamTexture.sceneId);
+            sceneStreamTextures->push_back(streamTexture.streamTextureHandle);
         }
     }
 

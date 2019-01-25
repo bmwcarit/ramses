@@ -9,9 +9,10 @@
 #include "EmbeddedCompositor_Wayland/WaylandClient.h"
 #include "EmbeddedCompositor_Wayland/IWaylandResource.h"
 #include "EmbeddedCompositor_Wayland/WaylandCallbackResource.h"
-#include "WaylandUtilities/UnixDomainSocketHelper.h"
+#include "EmbeddedCompositor_Wayland/WaylandDisplay.h"
+#include "WaylandUtilities/UnixDomainSocket.h"
+#include "WaylandUtilities/WaylandEnvironmentUtils.h"
 #include "PlatformAbstraction/PlatformThread.h"
-#include "WaylandUtilities/WaylandUtilities.h"
 #include "Utils/ThreadBarrier.h"
 #include "gtest/gtest.h"
 #include "wayland-client.h"
@@ -26,15 +27,14 @@ namespace ramses_internal
     public:
         AWaylandClient()
         {
-            m_display = wl_display_create();
+            const int serverFD = m_socket.createBoundFileDescriptor();
+            m_waylandDisplay.init("", "", serverFD);
+            m_display = m_waylandDisplay.get();
+            assert(m_display != nullptr);
         }
 
         ~AWaylandClient()
         {
-            if (m_display != nullptr)
-            {
-                wl_display_destroy(m_display);
-            }
         }
 
     protected:
@@ -68,7 +68,8 @@ namespace ramses_internal
             waylandClient->resourceDestroyedListener();
         }
 
-        UnixDomainSocketHelper m_socket = UnixDomainSocketHelper("testingSocket");
+        UnixDomainSocket m_socket = UnixDomainSocket("testingSocket", WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir));
+        WaylandDisplay m_waylandDisplay;
         wl_display* m_display = nullptr;
         uint32_t m_resourceDestroyedListenerCalled = 0;
         wl_listener m_destroyListener;
@@ -155,7 +156,7 @@ namespace ramses_internal
 
     TEST_F(AWaylandClient, CanGetCredentials)
     {
-        const int serverFD = m_socket.createBoundFileDescriptor();
+        const int serverFD = m_socket.getBoundFileDescriptor();
 
         wl_client* client = wl_client_create(m_display, serverFD);
         WaylandClient waylandClient(client);
@@ -182,10 +183,6 @@ namespace ramses_internal
         // as answer to the client. ClientRunnable stores the current protocol error code (WL_DISPLAY_ERROR_NO_MEMORY)
         // in a member variable, which is checked at the end of the test.
 
-        const int serverFD = m_socket.createBoundFileDescriptor();
-
-        WaylandUtilities::DisplayAddSocketFD(m_display, serverFD);
-
         wl_global* compositorGlobal = wl_global_create(m_display, &wl_compositor_interface, 1, this, CompositorBindCallback);
 
         const int clientFD = m_socket.createConnectedFileDescriptor(false);
@@ -211,7 +208,7 @@ namespace ramses_internal
 
     TEST_F(AWaylandClient, CanCreateResourceAndSetsOwnership)
     {
-        const int serverFD = m_socket.createBoundFileDescriptor();
+        const int serverFD = m_socket.getBoundFileDescriptor();
 
         wl_client*    client = wl_client_create(m_display, serverFD);
         WaylandClient waylandClient(client);
@@ -241,7 +238,7 @@ namespace ramses_internal
 
     TEST_F(AWaylandClient, CanCreateCallbackResource)
     {
-        const int serverFD = m_socket.createBoundFileDescriptor();
+        const int serverFD = m_socket.getBoundFileDescriptor();
 
         wl_client*    client = wl_client_create(m_display, serverFD);
         WaylandClient waylandClient(client);

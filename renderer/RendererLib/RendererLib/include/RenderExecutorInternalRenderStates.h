@@ -14,22 +14,20 @@
 
 namespace ramses_internal
 {
+    // Initial values of these states must be invalid in the sense that whatever values come
+    // from scene's render states set by user must compare NOT equal
+    // in order to initiate the device states.
+
     struct DepthStencilState
     {
-        EDepthFunc      m_depthFunc;
-        EDepthWrite     m_depthWrite;
-        EStencilFunc    m_stencilFunc;
-        EStencilOp      m_stencilOpFail;
-        EStencilOp      m_stencilOpDepthFail;
-        EStencilOp      m_stencilOpDepthPass;
-        UInt32          m_stencilRefValue;
-        UInt8           m_stencilMask;
-
-        DepthStencilState()
-        {
-            PlatformMemory::Set(this, 0, sizeof(DepthStencilState));
-            m_depthFunc = EDepthFunc_Invalid; // to invalidate initial state
-        }
+        EDepthFunc      m_depthFunc = EDepthFunc::NUMBER_OF_ELEMENTS;
+        EDepthWrite     m_depthWrite = EDepthWrite::NUMBER_OF_ELEMENTS;
+        EStencilFunc    m_stencilFunc = EStencilFunc::NUMBER_OF_ELEMENTS;
+        EStencilOp      m_stencilOpFail = EStencilOp::NUMBER_OF_ELEMENTS;
+        EStencilOp      m_stencilOpDepthFail = EStencilOp::NUMBER_OF_ELEMENTS;
+        EStencilOp      m_stencilOpDepthPass = EStencilOp::NUMBER_OF_ELEMENTS;
+        UInt8           m_stencilMask = 0;
+        UInt8           m_stencilRefValue = 0;
 
         Bool operator!=(const DepthStencilState& other) const
         {
@@ -46,19 +44,13 @@ namespace ramses_internal
 
     struct BlendState
     {
-        EBlendFactor    m_blendFactorSrcColor;
-        EBlendFactor    m_blendFactorDstColor;
-        EBlendFactor    m_blendFactorSrcAlpha;
-        EBlendFactor    m_blendFactorDstAlpha;
-        EBlendOperation m_blendOperationColor;
-        EBlendOperation m_blendOperationAlpha;
-        ColorWriteMask  m_colorWriteMask;
-
-        BlendState()
-        {
-            PlatformMemory::Set(this, 0, sizeof(BlendState));
-            m_blendFactorSrcColor = EBlendFactor_Invalid; // to invalidate initial state
-        }
+        EBlendFactor    m_blendFactorSrcColor = EBlendFactor::NUMBER_OF_ELEMENTS;
+        EBlendFactor    m_blendFactorDstColor = EBlendFactor::NUMBER_OF_ELEMENTS;
+        EBlendFactor    m_blendFactorSrcAlpha = EBlendFactor::NUMBER_OF_ELEMENTS;
+        EBlendFactor    m_blendFactorDstAlpha = EBlendFactor::NUMBER_OF_ELEMENTS;
+        EBlendOperation m_blendOperationColor = EBlendOperation::NUMBER_OF_ELEMENTS;
+        EBlendOperation m_blendOperationAlpha = EBlendOperation::NUMBER_OF_ELEMENTS;
+        ColorWriteMask  m_colorWriteMask = 0;
 
         Bool operator!=(const BlendState& other) const
         {
@@ -74,14 +66,8 @@ namespace ramses_internal
 
     struct RasterizerState
     {
-        ECullMode       m_cullMode;
-        EDrawMode       m_drawMode;
-
-        RasterizerState()
-            : m_cullMode(ECullMode_Invalid) // to invalidate initial state
-            , m_drawMode(EDrawMode_Triangles)
-        {
-        }
+        ECullMode       m_cullMode = ECullMode::NUMBER_OF_ELEMENTS;
+        EDrawMode       m_drawMode = EDrawMode::NUMBER_OF_ELEMENTS;
 
         Bool operator!=(const RasterizerState& other) const
         {

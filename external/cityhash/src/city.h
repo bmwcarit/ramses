@@ -66,6 +66,9 @@
 #include <stdint.h>
 #include <utility>
 
+namespace cityhash
+{
+
 typedef uint8_t uint8;
 typedef uint32_t uint32;
 typedef uint64_t uint64;
@@ -107,6 +110,8 @@ inline uint64 Hash128to64(const uint128& x) {
   b ^= (b >> 47);
   b *= kMul;
   return b;
+}
+
 }
 
 #endif  // CITY_HASH_H_

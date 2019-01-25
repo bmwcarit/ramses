@@ -10,7 +10,7 @@
 #define RAMSES_RAMSES_HMI_UTILS_H
 
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
-#include "APIExport.h"
+#include "ramses-framework-api/APIExport.h"
 #include "ramses-client-api/Scene.h"
 
 namespace ramses

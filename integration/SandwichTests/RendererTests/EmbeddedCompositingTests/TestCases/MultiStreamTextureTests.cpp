@@ -44,6 +44,8 @@ namespace ramses_internal
         const StreamTextureSourceId secondStreamTextureSourceId(EmbeddedCompositorScene::GetSecondStreamTextureSourceId());
         const StreamTextureSourceId thirdStreamTextureSourceId(EmbeddedCompositorScene::GetThirdStreamTextureSourceId());
 
+        testFramework.setEnvironmentVariableWaylandDisplay();
+
         switch(testCase.m_id)
         {
         case ShowDifferentFallbackTexturesOnStreamTexturesWithSameSourceId:

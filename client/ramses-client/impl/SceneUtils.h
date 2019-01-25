@@ -14,7 +14,6 @@
 #include "Scene/EScenePublicationMode.h"
 #include "ramses-client-api/EScenePublicationMode.h"
 #include "Scene/ESceneFlushMode.h"
-#include "ramses-client-api/ESceneFlushMode.h"
 
 namespace ramses
 {
@@ -32,18 +31,6 @@ namespace ramses
             default:
                 assert(false);
                 return ramses_internal::EScenePublicationMode_LocalAndRemote;
-            }
-        }
-
-        static ramses_internal::ESceneFlushMode GetSceneFlushModeInternal(ramses::ESceneFlushMode flushMode)
-        {
-            switch (flushMode)
-            {
-            case ramses::ESceneFlushMode_SynchronizedWithResources:
-                return ramses_internal::ESceneFlushMode_Synchronous;
-            default:
-                assert(false);
-                return ramses_internal::ESceneFlushMode_Synchronous;
             }
         }
     };
