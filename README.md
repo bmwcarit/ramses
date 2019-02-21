@@ -57,8 +57,7 @@ are for Ubuntu 18.04 LTS:
 apt install docker.io
 groupadd docker             #can fail if already exists
 usermod –aG docker $USER
-
-#re-login or restart for the group changes to take effect
+newgrp docker               #logs you into the new group in the current terminal session
 
 docker run hello-world      #check that docker works
 
