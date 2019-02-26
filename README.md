@@ -1,23 +1,19 @@
-RAMSES
+<!-- RAMSES -->
 
-TOC
--------------------------------------------------
-1. What is RAMSES
-2. Obtaining the source code
-3. Building and testing
-4. License / Open source / Third Party
+## Table of Contents
+* [What is RAMSES](#what-is-ramses)
+* [Obtaining the source code](#obtaining-the-source-code)
+* [Building and testing](#building-and-testing)
+* [License](#license)
 
-1 What is RAMSES
---------------
+## What is RAMSES
 RAMSES is an abbreviation for "Rendering Architecture for Multi-Screen
 EnvironmentS". It implements a distributed system for rendering 3D content
 with focus on bandwidth and resource efficiency.
 
 For more details, see the Wiki pages.
 
-2 Obtaining the source code
---------------
-
+## Obtaining the source code
 RAMSES can be cloned from its Genivi repository using git:
 
 ```
@@ -30,8 +26,7 @@ If you use the https variant, you will not get the required depenencies
 and have to download them yourself! Therefore we strongly advice to use the
 'git' protocol for download as shown above.
 
-3 Building and testing
------------------------------------
+## Building and testing
 General building tips: RAMSES's build system is based on CMake. It has
 mandatory components and optional components which are built only if
 required dependencies and/or CMake flags are present. The CMake log will
@@ -94,14 +89,13 @@ You can also check the docker container setup scripts for a reference how to bui
 <ramses-sdk>/scripts/docker/runtime-files/build-ramses.sh   -> contains CMake command for building
 ```
 
-4 Copyright / License / Open Source / Third Party
------------------------------------
+## License
 RAMSES original code is copyright BMW Car IT
 
 ```Copyright (C) 2018 BMW Car IT GmbH```
 
 The source code is licensed under the Mozilla Public License 2.0, please find a
-copy of that license in the LICENSE.txt file.
+copy of that license in the [LICENSE.txt](https://github.com/GENIVI/ramses/blob/master/LICENSE.txt) file.
 
 RAMSES makes use of several open source libraries which can be found in the folder 'external'.
 Some of these are shipped directly with the sourcecode, others are included as git submodule references.
