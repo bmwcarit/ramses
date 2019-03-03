@@ -104,11 +104,10 @@ namespace ramses_internal
             return false;
         }
 #else
-        UNUSED(display)
-        UNUSED(sock_fd)
+        UNUSED(socketFD)
         LOG_ERROR(CONTEXT_RENDERER,
                   "WaylandDisplay::addSocketToDisplayWithFD(): Wayland version is less than 1.13, "
-                  "wl_display_add_socket_fd not supported!")
+                  "wl_display_add_socket_fd not supported!");
 
         return false;
 #endif
