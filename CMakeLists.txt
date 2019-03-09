@@ -187,8 +187,11 @@ ACME2_PROJECT(
                                 AUTO renderer/Platform/Platform_Windows_WGL_4_2_core
                                 AUTO renderer/Platform/Platform_Windows_WGL_4_5
                                 AUTO renderer/Platform/Platform_Windows_WGL_ES_3_0
+                                AUTO renderer/Platform/Platform_Wayland_IVI_EGL_ES_2_0
                                 AUTO renderer/Platform/Platform_Wayland_IVI_EGL_ES_3_0
+                                AUTO renderer/Platform/Platform_Wayland_Shell_EGL_ES_2_0
                                 AUTO renderer/Platform/Platform_Wayland_Shell_EGL_ES_3_0
+                                AUTO renderer/Platform/Platform_X11_EGL_ES_2_0
                                 AUTO renderer/Platform/Platform_X11_EGL_ES_3_0
                                 AUTO renderer/Platform/Platform_Android_EGL_ES_3_0
 

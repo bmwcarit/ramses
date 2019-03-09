@@ -7,9 +7,12 @@
 #  -------------------------------------------------------------------------
 
 SET(RENDERER_CONFIG_LIST
+    "x11-egl-es-2-0"
     "x11-egl-es-3-0"
 
+    "wayland-ivi-egl-es-2-0"
     "wayland-ivi-egl-es-3-0"
+    "wayland-shell-egl-es-2-0"
     "wayland-shell-egl-es-3-0"
 
     "windows-wgl-es-3-0"
