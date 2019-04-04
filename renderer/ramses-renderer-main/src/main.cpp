@@ -82,7 +82,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
     // apply mapping commands
     for(const auto& command : mappingCommands)
     {
-        displayManager.showSceneOnDisplay(command.sceneId, command.display, 0);
+        displayManager.showSceneOnDisplay(command.sceneId, command.display, command.sceneRenderOrder);
     }
 
     renderer.setMaximumFramerate(60);
