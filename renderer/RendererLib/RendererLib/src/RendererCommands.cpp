@@ -290,10 +290,11 @@ namespace ramses_internal
         m_commands.addCommand(ERendererCommand_SystemCompositorControllerSetIviSurfaceDestRectangle, cmd);
     }
 
-    void RendererCommands::systemCompositorControllerScreenshot(const String& fileName)
+    void RendererCommands::systemCompositorControllerScreenshot(const String& fileName, int32_t screenIviId)
     {
         CompositorCommand cmd;
         cmd.fileName = fileName;
+        cmd.screenIviId = screenIviId;
         m_commands.addCommand(ERendererCommand_SystemCompositorControllerScreenshot, cmd);
     }
 
@@ -355,20 +356,14 @@ namespace ramses_internal
         m_commands.addCommand(ERendererCommand_FrameProfiler_RegionFilterFlags, cmd);
     }
 
-    void RendererCommands::setFrameTimerLimits(UInt64 limitForClientResourcesUploadMicrosec, UInt64 limitForSceneActionsApplyMicrosec, UInt64 limitForOffscreenBufferRenderMicrosec)
+    void RendererCommands::setFrameTimerLimits(UInt64 limitForSceneResourcesUpload, UInt64 limitForClientResourcesUploadMicrosec, UInt64 limitForSceneActionsApplyMicrosec, UInt64 limitForOffscreenBufferRenderMicrosec)
     {
         SetFrameTimerLimitsCommmand cmd;
+        cmd.limitForSceneResourcesUploadMicrosec = limitForSceneResourcesUpload;
         cmd.limitForClientResourcesUploadMicrosec = limitForClientResourcesUploadMicrosec;
         cmd.limitForSceneActionsApplyMicrosec = limitForSceneActionsApplyMicrosec;
         cmd.limitForOffscreenBufferRenderMicrosec = limitForOffscreenBufferRenderMicrosec;
         m_commands.addCommand(ERendererCommand_SetFrameTimerLimits, cmd);
-    }
-
-    void RendererCommands::setSceneResourcesTimerLimit(UInt64 limitForSceneResourcesUpload)
-    {
-        SetFrameTimerLimitsCommmand cmd;
-        cmd.limitForSceneResourcesUploadMicrosec = limitForSceneResourcesUpload;
-        m_commands.addCommand(ERendererCommand_SetResourceActionTimer, cmd);
     }
 
     void RendererCommands::setForceApplyPendingFlushesLimit(UInt maximumPendingFlushes)

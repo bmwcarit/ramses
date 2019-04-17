@@ -37,7 +37,7 @@ namespace ramses_capu
          *
          * Depending on OS, the name might appear in debuggers, task lists etc
          */
-        Thread(const String& name = "");
+        Thread(const std::string& name = "");
 
         Thread(const Thread&) = delete;
         Thread& operator=(const Thread&) = delete;
@@ -98,7 +98,7 @@ namespace ramses_capu
     };
 
     inline
-    Thread::Thread(const String& name)
+    Thread::Thread(const std::string& name)
         : ramses_capu::os::Thread(name)
     {
     }

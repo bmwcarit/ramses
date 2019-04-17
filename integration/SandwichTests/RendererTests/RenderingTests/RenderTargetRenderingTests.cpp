@@ -59,7 +59,7 @@ bool RenderTargetRenderingTests::run(RendererTestsFramework& testFramework, cons
     case RenderTarget_Format_RG8:
         return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_RG8, "RenderTargetScene_RedGreen");
     case RenderTarget_Format_RGB8:
-        return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_RGB8, "RenderTargetScene_RedGreenBlue");
+        return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_RGB8, "RenderTargetScene_RedGreenBlue_NoAlpha");
     case RenderTarget_Format_R16F:
         return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_R16F, "RenderTargetScene_Red");
     case RenderTarget_Format_R32F:
@@ -69,13 +69,13 @@ bool RenderTargetRenderingTests::run(RendererTestsFramework& testFramework, cons
     case RenderTarget_Format_RG32F:
         return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_RG32F, "RenderTargetScene_RedGreen");
     case RenderTarget_Format_RGB16F:
-        return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_RGB16F, "RenderTargetScene_RedGreenBlue");
+        return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_RGB16F, "RenderTargetScene_RedGreenBlue_NoAlpha");
     case RenderTarget_Format_RGB32F:
         return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_RGB32F, "RenderTargetScene_RedGreenBlue");
     case RenderTarget_Format_RGBA16F:
-        return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_RGBA16F, "RenderTargetScene_RedGreenBlue");
+        return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_RGBA16F, "RenderTargetScene_RedGreenBlue", 0.35f); // higher threshold needed due to floating formats get sampled differently on different platforms
     case RenderTarget_Format_RGBA32F:
-        return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_RGBA32F, "RenderTargetScene_RedGreenBlue");
+        return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_RGBA32F, "RenderTargetScene_RedGreenBlue", 0.35f); // higher threshold needed due to floating formats get sampled differently on different platforms
     case MultipleRenderTarget_TwoColorBuffersCleared:
         return runBasicTest<MultipleRenderTargetScene>(testFramework, MultipleRenderTargetScene::CLEAR_MRT, "MultiRenderTarget_ClearTwoColorBuffers");
     case MultipleRenderTarget_TwoColorBuffersWritten:

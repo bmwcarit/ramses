@@ -25,7 +25,7 @@ TEST(File, ConstructorTest)
     f1.open(ramses_capu::READ_ONLY);
     EXPECT_FALSE(f1.isOpen());
 
-    ramses_capu::File f2(ramses_capu::String("test.txt"));
+    ramses_capu::File f2(std::string("test.txt"));
     f2.open(ramses_capu::READ_WRITE_OVERWRITE_OLD);
     EXPECT_TRUE(f2.isOpen());
 }
@@ -322,14 +322,14 @@ TEST(File, TestRenameSuccess)
     EXPECT_EQ(ramses_capu::CAPU_OK, file.createFile());
     ramses_capu::status_t status = file.renameTo("temp2");
     EXPECT_EQ(ramses_capu::CAPU_OK, status);
-    EXPECT_EQ(ramses_capu::String("temp2"), file.getFileName());
+    EXPECT_EQ(std::string("temp2"), file.getFileName());
 
     ramses_capu::File file2("temp2");
     EXPECT_TRUE(file2.exists());
 
     status = file2.renameTo("temp");
     EXPECT_EQ(ramses_capu::CAPU_OK, status);
-    EXPECT_EQ(ramses_capu::String("temp"), file2.getFileName());
+    EXPECT_EQ(std::string("temp"), file2.getFileName());
 
     EXPECT_EQ(ramses_capu::CAPU_OK, file2.remove());
 }
@@ -339,7 +339,7 @@ TEST(File, TestRenameFileDoesNotExist)
     ramses_capu::File file("something");
     ramses_capu::status_t status = file.renameTo("somethingElse");
     EXPECT_EQ(ramses_capu::CAPU_ERROR, status);
-    EXPECT_EQ(ramses_capu::String("something"), file.getFileName());
+    EXPECT_EQ(std::string("something"), file.getFileName());
 }
 
 TEST(File, TestCopy)

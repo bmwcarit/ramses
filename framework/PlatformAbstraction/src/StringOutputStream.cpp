@@ -7,18 +7,20 @@
 //  -------------------------------------------------------------------------
 
 #include "Collections/StringOutputStream.h"
-#include "Math3d/Matrix44f.h"
+#include "Math3d/Matrix22f.h"
 #include "Math3d/Matrix33f.h"
+#include "Math3d/Matrix44f.h"
 
 namespace ramses_internal
 {
-    template <typename MatrixType, UInt32 numberOfElements>
+    template <typename MatrixType>
     StringOutputStream& StringOutputStream::outputMatrix(const MatrixType& matrix)
     {
-        for (UInt32 i = 0; i < numberOfElements; i++)
+        const UInt32 numElements = sizeof(decltype(matrix.data)) / sizeof(matrix.data[0]);
+        for (UInt32 i = 0; i < numElements; i++)
         {
-            *this << matrix.getRawData()[i];
-            if (i < (numberOfElements - 1))
+            *this << matrix.data[i];
+            if (i < (numElements - 1))
             {
                 *this << " ";
             }
@@ -26,13 +28,18 @@ namespace ramses_internal
         return *this;
     }
 
-    StringOutputStream& StringOutputStream::operator<<(const Matrix44f& value)
+    StringOutputStream& StringOutputStream::operator<<(const Matrix22f& value)
     {
-        return outputMatrix<Matrix44f, 16>(value);
+        return outputMatrix(value);
     }
 
     StringOutputStream& StringOutputStream::operator<<(const Matrix33f& value)
     {
-        return outputMatrix<Matrix33f, 9>(value);
+        return outputMatrix(value);
+    }
+
+    StringOutputStream& StringOutputStream::operator<<(const Matrix44f& value)
+    {
+        return outputMatrix(value);
     }
 }

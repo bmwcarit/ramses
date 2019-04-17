@@ -8,16 +8,8 @@
 
 #include "Scene/SceneActionCollection.h"
 #include "gtest/gtest.h"
-#include "Math3d/Vector4.h"
-#include "Math3d/Vector3.h"
-#include "Math3d/Vector2.h"
-#include "Math3d/Vector4i.h"
-#include "Math3d/Vector3i.h"
-#include "Math3d/Vector2i.h"
-#include "Math3d/Matrix22f.h"
-#include "Math3d/Matrix33f.h"
-#include "Math3d/Matrix44f.h"
 #include "SceneAPI/Handles.h"
+#include "SceneAPI/SceneVersionTag.h"
 #include "Animation/AnimationCommon.h"
 
 namespace ramses_internal
@@ -41,21 +33,6 @@ namespace ramses_internal
     template<> const UInt64                    ASceneActionCollectionBasicTypes<UInt64>::m_value = 4u;
     template<> const Float                     ASceneActionCollectionBasicTypes<Float>::m_value = 5.0f;
     template<> const Double                    ASceneActionCollectionBasicTypes<Double>::m_value = 6.0f;
-    template<> const Vector2                   ASceneActionCollectionBasicTypes<Vector2>::m_value = Vector2(1.0f, 2.0f);
-    template<> const Vector2i                  ASceneActionCollectionBasicTypes<Vector2i>::m_value = Vector2i(1, 2);
-    template<> const Vector3                   ASceneActionCollectionBasicTypes<Vector3>::m_value = Vector3(1.0f, 2.0f, 3.0f);
-    template<> const Vector3i                  ASceneActionCollectionBasicTypes<Vector3i>::m_value = Vector3i(1, 2, 3);
-    template<> const Vector4                   ASceneActionCollectionBasicTypes<Vector4>::m_value = Vector4(1.0f, 2.0f, 3.0f, 4.0f);
-    template<> const Vector4i                  ASceneActionCollectionBasicTypes<Vector4i>::m_value = Vector4i(1, 2, 3, 4);
-    template<> const Matrix33f                 ASceneActionCollectionBasicTypes<Matrix33f>::m_value = Matrix33f(
-        1.0f, 2.0f, 3.0f,
-        4.0f, 5.0f, 6.0f,
-        7.0f, 8.0f, 9.0f);
-    template<> const Matrix44f                 ASceneActionCollectionBasicTypes<Matrix44f>::m_value = Matrix44f(
-        1.0f, 2.0f, 3.0f, 4.0f,
-        5.0f, 6.0f, 7.0f, 8.0f,
-        9.0f, 10.0f, 11.0f, 12.0f,
-        13.0f, 14.0f, 15.0f, 16.0f);
     template<> const NodeHandle                ASceneActionCollectionBasicTypes<NodeHandle>::m_value = NodeHandle();
     template<> const RenderableHandle          ASceneActionCollectionBasicTypes<RenderableHandle>::m_value = RenderableHandle();
     template<> const TransformHandle           ASceneActionCollectionBasicTypes<TransformHandle>::m_value = TransformHandle();
@@ -72,6 +49,7 @@ namespace ramses_internal
     template<> const RenderTargetHandle        ASceneActionCollectionBasicTypes<RenderTargetHandle>::m_value = RenderTargetHandle();
     template<> const QueueHandle               ASceneActionCollectionBasicTypes<QueueHandle>::m_value = QueueHandle();
     template<> const DataFieldHandle           ASceneActionCollectionBasicTypes<DataFieldHandle>::m_value = DataFieldHandle();
+    template<> const SceneVersionTag           ASceneActionCollectionBasicTypes<SceneVersionTag>::m_value = SceneVersionTag();
 
     // types to test
     typedef ::testing::Types <
@@ -85,14 +63,6 @@ namespace ramses_internal
         UInt64,
         Float,
         Double,
-        Vector2,
-        Vector2i,
-        Vector3,
-        Vector3i,
-        Vector4,
-        Vector4i,
-        Matrix33f,
-        Matrix44f,
         NodeHandle,
         RenderableHandle,
         TransformHandle,
@@ -108,7 +78,9 @@ namespace ramses_internal
         TextureSamplerHandle,
         RenderTargetHandle,
         QueueHandle,
-        DataFieldHandle > SceneActionCollectionBasicTypes;
+        DataFieldHandle,
+        SceneVersionTag
+    > SceneActionCollectionBasicTypes;
 
 
     TYPED_TEST_CASE(ASceneActionCollectionBasicTypes, SceneActionCollectionBasicTypes);

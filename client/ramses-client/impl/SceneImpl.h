@@ -25,8 +25,10 @@
 #include "SceneAPI/SceneId.h"
 #include "SceneAPI/DataSlot.h"
 #include "SceneAPI/EDataSlotType.h"
-#include "Collections/Pair.h"
+#include "SceneAPI/TextureSampler.h"
 #include "AnimationAPI/IAnimationSystem.h"
+
+#include "Collections/Pair.h"
 #include "Utils/StatisticCollection.h"
 #include <chrono>
 
@@ -176,6 +178,7 @@ namespace ramses
             ETextureSamplingMethod samplingMethod,
             uint32_t anisotropyLevel,
             ERamsesObjectType samplerType,
+            ramses_internal::TextureSampler::ContentType contentType,
             ramses_internal::ResourceContentHash textureResourceHash,    // The sampler stores either a texture, or...
             ramses_internal::MemoryHandle contentHandle,                 // a render target's color buffer, or a texture buffer, or a stream texture
             const char* name /*= 0*/);
@@ -265,12 +268,6 @@ namespace ramses
         void applyVisibilityToSubtree(NodeImpl& node, bool visibilityToApply);
         void prepareListOfDirtyNodesForHierarchicalVisibility(NodeVisibilityInfoVector& nodesToProcess);
         void applyHierarchicalVisibility();
-
-        bool hasDataSlotId(ramses_internal::DataSlotId id) const;
-        bool hasDataSlotIdForNode(ramses_internal::NodeHandle handle) const;
-        bool hasDataSlotIdForDataObject(ramses_internal::DataInstanceHandle dataRef) const;
-        bool hasDataSlotIdForTextureSampler(ramses_internal::TextureSamplerHandle sampler) const;
-        bool hasDataSlotIdForTexture(const ramses_internal::ResourceContentHash& texture) const;
 
         ramses_internal::ClientScene&           m_scene;
         ramses_internal::SceneCommandBuffer     m_commandBuffer;

@@ -12,8 +12,11 @@
 Contains utility functions used by other modules
 """
 
-import sys, re, string, os, subprocess
-import config
+import re
+import sys
+import os
+import subprocess
+import common_modules.config
 
 def clean_string_from_regex(s, regex, marker):
     """
@@ -81,7 +84,7 @@ def read_file(filename):
         1- raw file contents
         2- raw file contents as lines
     """
-    file_contents = open(filename).read()
+    file_contents = open(filename, encoding='utf-8-sig').read()
     file_lines = file_contents.split("\n")
     return file_contents, file_lines
 
@@ -106,7 +109,7 @@ def get_all_files_with_filter(root, positive, negative):
     negative_re = re.compile("|".join(["({})".format(n) for n in negative]))
 
     filenames = []
-    for f in subprocess.check_output(['git', 'ls-files', root], cwd=root, shell=False).split('\n'):
+    for f in subprocess.check_output(['git', 'ls-files', root], cwd=root, shell=False).decode('utf-8').split('\n'):
         if os.path.isfile(os.path.join(root, f)):
             pos_match = False
             neg_match = False
@@ -147,22 +150,22 @@ def log_warning(testname, filename, line_number, description, line_content = Non
     """
     if line_content == None:
         # visual studio / msbuild format
-        print >> sys.stderr, "{0}({1}): warning PRJ9999: {2} [{3}]".format(filename, line_number, description, testname)
+        print("{0}({1}): warning PRJ9999: {2} [{3}]".format(filename, line_number, description, testname), file=sys.stderr)
         # gcc format
-        print >> sys.stderr, "{0}:{1}: warning: {2} [{3}]".format(filename, line_number, description, testname)
+        print("{0}:{1}: warning: {2} [{3}]".format(filename, line_number, description, testname), file=sys.stderr)
     else:
         # visual studio / msbuild format
-        print >> sys.stderr, "{0}({1}): warning PRJ9999: {2}: {3} [{4}]".format(filename, line_number, description, line_content, testname)
+        print("{0}({1}): warning PRJ9999: {2}: {3} [{4}]".format(filename, line_number, description, line_content, testname), file=sys.stderr)
         # gcc format
-        print >> sys.stderr, "{0}:{1}: warning: {2}: {3} [{4}]".format(filename, line_number, description, line_content, testname)
+        print("{0}:{1}: warning: {2}: {3} [{4}]".format(filename, line_number, description, line_content, testname), file=sys.stderr)
 
-    print >> sys.stderr, ""
+    print("", file=sys.stderr)
 
-    config.G_WARNING_COUNT += 1
+    common_modules.config.G_WARNING_COUNT += 1
 
 def get_warning_count():
     """
     Returns the number of reported warnings
 
     """
-    return config.G_WARNING_COUNT
+    return common_modules.config.G_WARNING_COUNT

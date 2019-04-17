@@ -11,6 +11,7 @@
 
 #include "Transfer/ResourceTypes.h"
 #include "SceneActionCollection.h"
+#include "SceneAPI/SceneVersionTag.h"
 #include "Collections/Vector.h"
 #include <memory>
 
@@ -39,6 +40,7 @@ namespace ramses_internal
             SceneResourceChanges& resourceChanges,
             FlushTimeInformation& flushTimeInfo,
             TimeStampVector* timestamps);
+        static SceneVersionTag ReadSceneVersionTag(SceneActionCollection::SceneActionReader& action);
 
     private:
         static void GetSceneSizeInformation(SceneActionCollection::SceneActionReader& action, SceneSizeInformation& sizeInfo);

@@ -71,13 +71,13 @@ namespace ramses_internal
 
     inline
     File::File(const String& filepath)
-        : ramses_capu::File(filepath)
+        : ramses_capu::File(filepath.stdRef())
     {
     }
 
     inline
     File::File(const File& parent, const String& path)
-        : ramses_capu::File(parent, path)
+        : ramses_capu::File(parent, path.stdRef())
     {
     }
 
@@ -125,14 +125,14 @@ namespace ramses_internal
     EStatus
     File::renameTo(const String& newPath)
     {
-        return static_cast<EStatus>(ramses_capu::File::renameTo(newPath));
+        return static_cast<EStatus>(ramses_capu::File::renameTo(newPath.stdRef()));
     }
 
     inline
     EStatus
     File::copyTo(const String& newPath)
     {
-        return static_cast<EStatus>(ramses_capu::File::copyTo(newPath));
+        return static_cast<EStatus>(ramses_capu::File::copyTo(newPath.stdRef()));
     }
 
     inline
@@ -195,21 +195,21 @@ namespace ramses_internal
     const String
     File::getFileName() const
     {
-        return ramses_capu::File::getFileName();
+        return String(ramses_capu::File::getFileName());
     }
 
     inline
     const String
     File::getPath() const
     {
-        return ramses_capu::File::getPath();
+        return String(ramses_capu::File::getPath());
     }
 
     inline
     const String
     File::getExtension() const
     {
-        return ramses_capu::File::getExtension();
+        return String(ramses_capu::File::getExtension());
     }
 
     inline

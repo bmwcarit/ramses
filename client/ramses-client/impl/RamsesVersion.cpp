@@ -8,7 +8,6 @@
 
 #include "RamsesVersion.h"
 #include "Collections/String.h"
-#include "Collections/ConstString.h"
 #include "Collections/IOutputStream.h"
 #include "Collections/IInputStream.h"
 #include "Collections/StringOutputStream.h"
@@ -47,9 +46,9 @@ namespace ramses_internal
             return false;
         }
 
-        static bool ExpectString(const String& inputString, UInt& matchIndexInOut, ConstString expectedString)
+        static bool ExpectString(const String& inputString, UInt& matchIndexInOut, const char* expectedString)
         {
-            const UInt expectedLength = expectedString.length();
+            const UInt expectedLength = PlatformStringUtils::StrLen(expectedString);
             if (expectedLength + matchIndexInOut > inputString.getLength())
                 return false;
 
@@ -91,11 +90,14 @@ namespace ramses_internal
             if (!ExpectAndGetNumber(versionString, idx, outVersion.major) ||
                 !ExpectString(versionString, idx, ".") ||
                 !ExpectAndGetNumber(versionString, idx, outVersion.minor) ||
-                !ExpectString(versionString, idx, ".") ||
-                !ExpectAndGetNumber(versionString, idx, outVersion.patch))
+                !ExpectString(versionString, idx, "."))
                 return false;
 
-            ExpectString(versionString, idx, "-devMaster");
+            const UInt trailingVersionStart = idx;
+            while (idx < versionString.getLength() && versionString[idx] != ']')
+                ++idx;
+            if (idx == trailingVersionStart)  // may not be empty
+                return false;
             outVersion.versionString = versionString.substr(versionStart, idx - versionStart);
 
             if (!ExpectString(versionString, idx, "]") ||

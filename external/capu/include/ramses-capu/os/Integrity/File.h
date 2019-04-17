@@ -31,8 +31,8 @@ namespace ramses_capu
         class File: private ramses_capu::posix::File
         {
         public:
-            File(const String& path);
-            File(const File& parent, const ramses_capu::String& path);
+            File(const std::string& path);
+            File(const File& parent, const std::string& path);
 
             status_t open(const FileMode& mode);
             status_t close();
@@ -60,13 +60,13 @@ namespace ramses_capu
         };
 
         inline
-        File::File(const String& path)
+        File::File(const std::string& path)
             : ramses_capu::posix::File(path)
         {
         }
 
         inline
-        File::File(const File& parent, const ramses_capu::String& path)
+        File::File(const File& parent, const std::string& path)
             : ramses_capu::posix::File(parent, path)
         {
         }

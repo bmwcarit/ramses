@@ -62,6 +62,8 @@ namespace ramses_internal
 
         String      m_classname;
 
+        Bool        m_userProvidedWindowHandle;
+
         void generateUniqueClassname();
         static LRESULT WINAPI WindowProcedure(HWND hWnd, ::UINT uMsg, WPARAM wParam, LPARAM lParam);
 

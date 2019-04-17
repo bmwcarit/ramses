@@ -43,7 +43,7 @@ namespace ramses_internal
                 // the already known resource with the same content.
                 // In that case, glGlenerateMipMaps would be called only once!
                 // Here, transparency parameter is used to generate different texture content.
-                ramses::TextureSampler* sampler = createTexture2DSampler(256u, 2048u, i);
+                ramses::TextureSampler* sampler = createTexture2DSampler(256u, 2048u, i * 20);
                 createMesh(*sampler, i * DefaultDisplayWidth * 0.1f, 0.5f);
             }
             break;

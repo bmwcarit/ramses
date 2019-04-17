@@ -232,10 +232,10 @@ namespace ramses
         return status;
     }
 
-    status_t RamsesRenderer::takeSystemCompositorScreenshot(const char* fileName)
+    status_t RamsesRenderer::takeSystemCompositorScreenshot(const char* fileName, int32_t screenIviId)
     {
-        const status_t status = impl.systemCompositorTakeScreenshot(fileName);
-        LOG_HL_RENDERER_API1(status, fileName);
+        const status_t status = impl.systemCompositorTakeScreenshot(fileName, screenIviId);
+        LOG_HL_RENDERER_API2(status, fileName, screenIviId);
         return status;
     }
 
@@ -246,24 +246,17 @@ namespace ramses
         return status;
     }
 
-    status_t RamsesRenderer::setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForSceneActionsApply, uint64_t limitForOffscreenBufferRender)
+    status_t RamsesRenderer::setFrameTimerLimits(uint64_t limitForSceneResourcesUpload, uint64_t limitForClientResourcesUpload, uint64_t limitForSceneActionsApply, uint64_t limitForOffscreenBufferRender)
     {
-        const status_t status = impl.setFrameTimerLimits(limitForClientResourcesUpload, limitForSceneActionsApply, limitForOffscreenBufferRender);
-        LOG_HL_RENDERER_API3(status, limitForClientResourcesUpload, limitForSceneActionsApply, limitForOffscreenBufferRender);
+        const status_t status = impl.setFrameTimerLimits(limitForSceneResourcesUpload, limitForClientResourcesUpload, limitForSceneActionsApply, limitForOffscreenBufferRender);
+        LOG_HL_RENDERER_API4(status, limitForSceneResourcesUpload, limitForClientResourcesUpload, limitForSceneActionsApply, limitForOffscreenBufferRender);
         return status;
     }
 
-    status_t RamsesRenderer::SetSceneResourcesTimerLimit(RamsesRenderer& renderer, uint64_t limitForSceneResourcesUpload)
+    status_t RamsesRenderer::setPendingFlushLimits(uint32_t forceApplyFlushLimit, uint32_t forceUnsubscribeSceneLimit)
     {
-        const status_t status = renderer.impl.setSceneResourcesTimerLimit(limitForSceneResourcesUpload);
-        LOG_HL_RENDERER_STATIC_API1(status, limitForSceneResourcesUpload);
-        return status;
-    }
-
-    status_t RamsesRenderer::SetPendingFlushLimits(RamsesRenderer& renderer, uint32_t forceApplyFlushLimit, uint32_t forceUnsubscribeSceneLimit)
-    {
-        const status_t status = renderer.impl.setPendingFlushLimits(forceApplyFlushLimit, forceUnsubscribeSceneLimit);
-        LOG_HL_RENDERER_STATIC_API2(status, forceApplyFlushLimit, forceUnsubscribeSceneLimit);
+        const status_t status = impl.setPendingFlushLimits(forceApplyFlushLimit, forceUnsubscribeSceneLimit);
+        LOG_HL_RENDERER_API2(status, forceApplyFlushLimit, forceUnsubscribeSceneLimit);
         return status;
     }
 

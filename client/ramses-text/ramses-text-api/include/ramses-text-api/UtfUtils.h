@@ -41,11 +41,18 @@ namespace ramses
         RAMSES_API std::u32string ConvertUtf8ToUtf32(const std::string& utf8String);
 
         /**
-        * @brief Converts a UTF32 character to an UTF16 character
-        * @param[in] ch The source UTF32 code point
-        * @return The resulting UTF16 code point (lower surrogate)
+        * @brief Converts a UTF32-encoded character to UTF8-encoded string
+        * @param[in] convertChar The character in UTF32 encoding
+        * @return The string in UTF8 encoding
         */
-        RAMSES_API uint32_t Utf32_to_Utf16(uint32_t ch);
+        RAMSES_API std::string ConvertCharUtf32ToUtf8(char32_t convertChar);
+
+        /**
+        * @brief Converts a UTF32-encoded string to UTF8-encoded string
+        * @param[in] utf32String The string in UTF32 encoding
+        * @return The string in UTF8 encoding
+        */
+        RAMSES_API std::string ConvertStrUtf32ToUtf8(const std::u32string& utf32String);
 
         /**
         * @brief Extracts a UTF32 character from a UTF8 string
@@ -54,6 +61,13 @@ namespace ramses
         * @return The extracted unicode point
         */
         RAMSES_API ExtractedUnicodePoint ExtractUnicodePointFromUTF8(std::string::const_iterator strBegin, std::string::const_iterator strEnd);
+
+        /**
+        * @brief Converts a UTF32-encoded string to UTF8-encoded string
+        * @param[in] utf32String The string in UTF32 encoding
+        * @return The string in UTF8 encoding
+        */
+        RAMSES_API std::string ConvertUtf32ToUtf8String(const std::u32string &s);
 
         /**
         * @brief Extracts a UTF32 character from a UTF16 string

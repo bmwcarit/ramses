@@ -80,7 +80,7 @@ namespace ramses
         status_t systemCompositorSetIviSurfaceVisibility(uint32_t surfaceId, bool visibility);
         status_t systemCompositorSetIviSurfaceOpacity(uint32_t surfaceId, float opacity);
         status_t systemCompositorSetIviSurfaceRectangle(uint32_t surfaceId, int32_t x, int32_t y, int32_t width, int32_t height);
-        status_t systemCompositorTakeScreenshot(const char* fileName);
+        status_t systemCompositorTakeScreenshot(const char* fileName, int32_t screenIviId);
         status_t systemCompositorAddIviSurfaceToIviLayer(uint32_t surfaceId, uint32_t layerId);
 
         status_t dispatchEvents(IRendererEventHandler& rendererEventHandler);
@@ -98,8 +98,7 @@ namespace ramses
         float getMaximumFramerate() const;
         status_t setLoopMode(ELoopMode loopMode);
         ELoopMode getLoopMode() const;
-        status_t setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForSceneActionsApply, uint64_t limitForOffscreenBufferRender);
-        status_t setSceneResourcesTimerLimit(uint64_t limitForSceneResourcesUpload);
+        status_t setFrameTimerLimits(uint64_t limitForSceneResourcesUpload, uint64_t limitForClientResourcesUpload, uint64_t limitForSceneActionsApply, uint64_t limitForOffscreenBufferRender);
 
         status_t setPendingFlushLimits(uint32_t forceApplyFlushLimit, uint32_t forceUnsubscribeSceneLimit);
         status_t setSkippingOfUnmodifiedBuffers(bool enable);

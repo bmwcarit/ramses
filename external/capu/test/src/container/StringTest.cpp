@@ -49,12 +49,11 @@ TEST(String, InitialSizeConstructor)
     EXPECT_STREQ("aaaaa", str.c_str());
 }
 
-TEST(String, ConstructWithEmptyStringDoesNotAllocateMemory)
+TEST(String, ConstructWithEmptyStringIsEmpty)
 {
     ramses_capu::String str("");
     EXPECT_EQ(0u, str.getLength());
     EXPECT_STREQ("", str.c_str());
-    EXPECT_TRUE(str.data() == nullptr);
 }
 
 TEST(String, TestAssignOperator1)
@@ -741,11 +740,12 @@ TEST(String, ReplaceOccurenceWithOffset)
 
 TEST(String, TestDataGetterOnEmptyString)
 {
+    // expect SSO
     ramses_capu::String s;
-    EXPECT_TRUE(s.data() == NULL);
+    EXPECT_TRUE(s.data() != nullptr);
 
     const ramses_capu::String sConst;
-    EXPECT_TRUE(sConst.data() == NULL);
+    EXPECT_TRUE(sConst.data() != nullptr);
 }
 
 TEST(String, TestDataGetterOnNonEmptyString)
@@ -825,7 +825,6 @@ TEST(String, ReservePreventReallocAndCapacityChange)
 TEST(String, reserveOnEmptyStringSetCapacityOnAtLeastThisValue)
 {
     ramses_capu::String s;
-    EXPECT_EQ(0u, s.capacity());
     s.reserve(10);
     EXPECT_GE(s.capacity(), 10u);
 }

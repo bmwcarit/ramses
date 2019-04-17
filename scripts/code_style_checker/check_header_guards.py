@@ -8,7 +8,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-import sys, re, string
+import re
 from common_modules.common import *
 
 def check_header_guards(filename, file_contents):
@@ -116,13 +116,13 @@ if __name__ == "__main__":
     targets = get_all_files(targets)
 
     if len(targets) == 0:
-        print """
+        print("""
 \t**** No input provided ****
 \tTakes a list of files/directories as input and performs specific style checking on all files/directories
 
 \tGives warnings if header guards does not exist in header files. Header files must have a #ifndef and #define guards directly after the license.
 \tThe names of the header guards must match together and match with the name of the file in uppercase letters.
-"""
+""")
         exit(0)
 
     for t in targets:

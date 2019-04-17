@@ -181,7 +181,7 @@ namespace ramses
             return addErrorEntry("RenderPass::setCamera failed - can't render into render target with a remote camera. Use perspective or orthographic camera instead.");
         }
 
-        status_t cameraValidity = cameraImpl.validate(0u);
+        const status_t cameraValidity = cameraImpl.validate(0u);
         if (StatusOK == cameraValidity)
         {
             m_cameraImpl = &cameraImpl;
@@ -189,7 +189,9 @@ namespace ramses
         }
         else
         {
-            return addErrorEntry("RenderPass::setCamera failed - camera is not valid, maybe camera was not initialized");
+            ramses_internal::String str = "RenderPass::setCamera failed - camera is not valid, maybe camera was not initialized:\n";
+            str += cameraImpl.getValidationReport(EValidationSeverity_Warning);
+            return addErrorEntry(str.c_str());
         }
 
         return cameraValidity;

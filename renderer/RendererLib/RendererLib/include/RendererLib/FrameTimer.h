@@ -28,6 +28,8 @@ namespace ramses_internal
     class FrameTimer
     {
     public:
+        using Clock = std::chrono::steady_clock;
+
         FrameTimer()
         {
             std::fill(m_sectionBudgets.begin(), m_sectionBudgets.end(), PlatformTime::InfiniteDuration);
@@ -57,8 +59,12 @@ namespace ramses_internal
             return m_sectionBudgets[static_cast<size_t>(section)];
         }
 
+        Clock::time_point getFrameStartTime() const
+        {
+            return m_frameStartTimeStamp;
+        }
+
     private:
-        using Clock = std::chrono::steady_clock;
         using Duration = std::chrono::microseconds;
 
         Clock::time_point m_frameStartTimeStamp;

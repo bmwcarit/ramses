@@ -35,8 +35,9 @@ SET(RAMSES_RELEASE_FLAGS)
 
 # gcc OR clang (they share a lot)
 IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    ADD_FLAGS(RAMSES_C_CXX_FLAGS "-fPIC -Wall -Wextra -Wcast-align -Wshadow -Wformat -Wformat-security -Wvla -pthread -fvisibility=hidden")
-    ADD_FLAGS(RAMSES_CXX_FLAGS "-std=c++11 -Wnon-virtual-dtor -Woverloaded-virtual -Wold-style-cast")
+    ADD_FLAGS(RAMSES_C_CXX_FLAGS "-fPIC -pthread -fvisibility=hidden")
+    ADD_FLAGS(RAMSES_C_CXX_FLAGS "-Wall -Wextra -Wcast-align -Wshadow -Wformat -Wformat-security -Wvla -Wmissing-include-dirs")
+    ADD_FLAGS(RAMSES_CXX_FLAGS "-std=c++14 -Wnon-virtual-dtor -Woverloaded-virtual -Wold-style-cast")
     ADD_FLAGS(RAMSES_C_FLAGS "-std=c11")
     ADD_FLAGS(RAMSES_DEBUG_FLAGS "-ggdb -D_DEBUG -fno-omit-frame-pointer")
     ADD_FLAGS(RAMSES_RELEASE_FLAGS "-O3 -DNDEBUG")
@@ -64,6 +65,8 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         ADD_FLAGS(RAMSES_C_CXX_FLAGS "-flto -Wodr -Wlto-type-mismatch")
     endif()
 
+    # gcc specific warnings
+    ADD_FLAGS(RAMSES_C_CXX_FLAGS "-Wformat-signedness")
     # disable too crazy optimizations causing problems
     ADD_FLAGS(RAMSES_RELEASE_FLAGS "-fno-ipa-cp-clone")
 
@@ -92,7 +95,7 @@ ENDIF()
 # flags for integrity
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Integrity")
     ADD_FLAGS(RAMSES_C_CXX_FLAGS "--diag_suppress=381,111,2008,620,82,1974")
-    ADD_FLAGS(CMAKE_EXE_LINKER_FLAGS "--c++11")
+    ADD_FLAGS(CMAKE_EXE_LINKER_FLAGS "--c++14")
 
     # integrity is an unknown system to the eglplatform.h header
     # so we manually define the correct choice for integrity here
@@ -105,7 +108,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         REMOVE_FROM_FLAGS("${CMAKE_CXX_FLAGS}" "/W1;/W2;/W3;/W4" CMAKE_CXX_FLAGS)
 
         ADD_FLAGS(RAMSES_C_CXX_FLAGS "/MP /DNOMINMAX")
-        ADD_FLAGS(RAMSES_CXX_FLAGS "/W4 /wd4503 /wd4265 /wd4201 /wd4127 /wd4996 /bigobj")
+        ADD_FLAGS(RAMSES_CXX_FLAGS "/std:c++14 /W4 /wd4503 /wd4265 /wd4201 /wd4127 /wd4996 /bigobj")
         ADD_FLAGS(RAMSES_RELEASE_FLAGS "/MD /O2 /Ob2 /DNDEBUG")
         ADD_FLAGS(RAMSES_DEBUG_FLAGS "/MDd /Zi /Od /RTC1 /D_DEBUG")
         ADD_FLAGS(RAMSES_DEBUG_INFO_FLAGS "/Zi")

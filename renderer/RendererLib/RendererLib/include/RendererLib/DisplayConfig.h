@@ -74,8 +74,8 @@ namespace ramses_internal
         Bool isWarpingEnabled() const;
         void setWarpingEnabled(Bool enabled);
 
-        Bool isEffectDeletionDisabled() const;
-        void setEffectDeletionDisabled(Bool disabled);
+        Bool getKeepEffectsUploaded() const;
+        void setKeepEffectsUploaded(Bool enable);
 
         Bool isStereoDisplay() const;
         void setStereoDisplay(Bool enabled);
@@ -120,7 +120,7 @@ namespace ramses_internal
         EAntiAliasingMethod m_antiAliasingMethod = EAntiAliasingMethod_PlainFramebuffer;
         UInt32 m_antiAliasingSamples = 1;
 
-        Bool m_effectDeletionDisabled = false;
+        Bool m_keepEffectsUploaded = true;
         UInt64 m_gpuMemoryCacheSize = 0u;
         Vector4 m_clearColor{ 0.f, 0.f, 0.f, 1.0f };
 

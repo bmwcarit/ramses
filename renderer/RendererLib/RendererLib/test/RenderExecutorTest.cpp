@@ -49,8 +49,8 @@ MATCHER_P(PermissiveMatrixEq, other, "")
     const UInt32 numElements = sizeof(arg_type) / sizeof(arg.m11);
     for (UInt32 index = 0; index < numElements; index++)
     {
-        const Float a = arg.getRawData()[index];
-        const Float b = other.getRawData()[index];
+        const Float a = arg.data[index];
+        const Float b = other.data[index];
 
         const Float fDelta = PlatformMath::Abs(a - b);
         if (fDelta > 1e-5f)
@@ -219,7 +219,7 @@ protected:
     DataInstances createTestDataInstance(bool setTextureSampler = true, bool setIndexArray = true)
     {
         //create sampler
-        sampler = sceneAllocator.allocateTextureSampler({ { EWrapMethod_Clamp, EWrapMethod_Repeat, EWrapMethod_RepeatMirrored, ESamplingMethod_NearestWithMipmaps, 2u }, ResourceProviderMock::FakeTextureHash });
+        sampler = sceneAllocator.allocateTextureSampler({ { EWrapMethod::Clamp, EWrapMethod::Repeat, EWrapMethod::RepeatMirrored, ESamplingMethod::NearestWithMipmaps, 2u }, ResourceProviderMock::FakeTextureHash });
 
         // create data instance
         DataInstances dataInstances;
@@ -374,7 +374,7 @@ protected:
         EXPECT_CALL(device, setConstant(fieldCameraViewMatrix, 1, Matcher<const Matrix44f*>(Pointee(PermissiveMatrixEq(expectedCameraViewMatrix)))))        .RetiresOnSaturation();
         EXPECT_CALL(device, setConstant(fieldProjMatrix, 1, Matcher<const Matrix44f*>(Pointee(PermissiveMatrixEq(expectedProjMatrix)))))                    .RetiresOnSaturation();
         EXPECT_CALL(device, activateTexture(FakeTextureDeviceHandle, textureField))                                                                         .RetiresOnSaturation();
-        EXPECT_CALL(device, setTextureSampling(textureField, EWrapMethod_Clamp, EWrapMethod_Repeat, EWrapMethod_RepeatMirrored, ESamplingMethod_NearestWithMipmaps, 2u)).RetiresOnSaturation();
+        EXPECT_CALL(device, setTextureSampling(textureField, EWrapMethod::Clamp, EWrapMethod::Repeat, EWrapMethod::RepeatMirrored, ESamplingMethod::NearestWithMipmaps, 2u)).RetiresOnSaturation();
         EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefField2, 1, Matcher<const Float*>(Pointee(Eq(-666.f)))))                                           .RetiresOnSaturation();
         EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefFieldMatrix22f, 1, Matcher<const Matrix22f*>(Pointee(Eq(Matrix22f(1,2,3,4))))))                   .RetiresOnSaturation();
         if (expectIndexBufferActivation)

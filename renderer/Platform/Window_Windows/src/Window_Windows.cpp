@@ -157,6 +157,7 @@ namespace ramses_internal
         , m_mousePosY(-1)
         , m_isMouseTracked(false)
         , m_classname("")
+        , m_userProvidedWindowHandle(WindowsWindowHandleToHWND(InvalidWindowsWindowHandle) != m_windowHandle)
     {
     }
 
@@ -226,23 +227,21 @@ namespace ramses_internal
             return false;
         }
 
-        if (WindowsWindowHandleToHWND(InvalidWindowsWindowHandle) == m_windowHandle)
+        if (!m_userProvidedWindowHandle)
         {
-            m_windowHandle = CreateWindowExA(
-                m_windowEXStyle,
-                m_windowClass.lpszClassName,
-                m_classname.c_str(),
-                m_windowStyle,
-                windowRect.left,
-                windowRect.top,
-                windowRect.right - windowRect.left,
-                windowRect.bottom - windowRect.top,
-                NULL,
-                NULL,
-                m_windowClass.hInstance,
-                NULL);
+            m_windowHandle = CreateWindowExA(m_windowEXStyle,
+                                             m_windowClass.lpszClassName,
+                                             m_classname.c_str(),
+                                             m_windowStyle,
+                                             windowRect.left,
+                                             windowRect.top,
+                                             windowRect.right - windowRect.left,
+                                             windowRect.bottom - windowRect.top,
+                                             NULL,
+                                             NULL,
+                                             m_windowClass.hInstance,
+                                             NULL);
         }
-
 
         if (m_windowHandle != 0)
         {
@@ -273,7 +272,7 @@ namespace ramses_internal
 
     Window_Windows::~Window_Windows()
     {
-        if (0 != m_windowHandle)
+        if (0 != m_windowHandle && !m_userProvidedWindowHandle)
         {
             DestroyWindow(m_windowHandle);
             UnregisterClassA(m_windowClass.lpszClassName, m_windowClass.hInstance);

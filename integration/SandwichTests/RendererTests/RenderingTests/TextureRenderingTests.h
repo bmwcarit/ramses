@@ -78,7 +78,13 @@ private:
         TextureBufferTest_SwitchClientTextureToSceneTexture,
         TextureBufferTest_SwitchClientTextureToSceneTextureAndBack,
         TextureBufferTest_SwitchClientTextureToSceneTextureAndUpdate,
-        TextureBufferTest_ReMapScene
+        TextureBufferTest_ReMapScene,
+
+        SamplerTest_ChangeData_ClientTexture,
+        SamplerTest_ChangeData_TextureBufferToClientTexture,
+        SamplerTest_ChangeData_ClientTextureToTextureBuffer,
+        SamplerTest_ChangeData_ClientTextureToRenderBuffer,
+        SamplerTest_ChangeData_ClientTextureToStreamTexture
     };
 };
 

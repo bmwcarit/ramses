@@ -25,25 +25,31 @@ namespace ramses_internal
     class Matrix44f
     {
     public:
-
-        // Matrix is stored column-wise (to fit GLSL convention), but elements are named row-wise
-        // E.g. m1x is the first row, and m23 is the 3rd element on the 2nd row
-        Float m11;
-        Float m21;
-        Float m31;
-        Float m41;
-        Float m12;
-        Float m22;
-        Float m32;
-        Float m42;
-        Float m13;
-        Float m23;
-        Float m33;
-        Float m43;
-        Float m14;
-        Float m24;
-        Float m34;
-        Float m44;
+        union
+        {
+            struct
+            {
+                // Matrix is stored column-wise (to fit GLSL convention), but elements are named row-wise
+                // E.g. m1x is the first row, and m23 is the 3rd element on the 2nd row
+                Float m11;
+                Float m21;
+                Float m31;
+                Float m41;
+                Float m12;
+                Float m22;
+                Float m32;
+                Float m42;
+                Float m13;
+                Float m23;
+                Float m33;
+                Float m43;
+                Float m14;
+                Float m24;
+                Float m34;
+                Float m44;
+            };
+            Float data[16];
+        };
 
         /**
         * Special Identity matrix
@@ -100,13 +106,9 @@ namespace ramses_internal
          */
         Matrix44f(const Vector4& v1, const Vector4& v2, const Vector4& v3, const Vector4& v4);
 
-        /**
-         * Copy constructor to create Matrix from other matrix
-         * @param other Matrix44 to copy data from
-         */
-        Matrix44f(const Matrix44f& other);
-
+        Matrix44f(const Matrix44f& other) = default;
         Matrix44f(Matrix44f&& other) = default;
+        Matrix44f& operator=(const Matrix44f& other);
         Matrix44f& operator=(Matrix44f&& other) = default;
 
         /**
@@ -128,23 +130,6 @@ namespace ramses_internal
          *  Sets all matrix elements to the given value
          */
         void set(const Float val);
-
-        /**
-         *  Returns the raw data pointer
-         */
-        Float* getRawData();
-
-        /**
-         *  Returns the raw data pointer
-         */
-        const Float* getRawData() const;
-
-        /**
-         * Operator to copa data from an other Matrix44
-         * @param other Matrix44 to copy data from
-         * @return Reference to local data
-         */
-        Matrix44f& operator=(const Matrix44f& other);
 
         /**
          * Multiplies the matrix with the given Vector
@@ -227,12 +212,12 @@ namespace ramses_internal
 
     inline IOutputStream& operator<<(IOutputStream& stream, const Matrix44f& value)
     {
-        return stream.write(value.getRawData(), sizeof(Float) * 16);
+        return stream.write(value.data, sizeof(value.data));
     }
 
     inline IInputStream& operator>>(IInputStream& stream, Matrix44f& value)
     {
-        return stream.read(reinterpret_cast<Char*>(value.getRawData()), sizeof(Float) * 16);
+        return stream.read(reinterpret_cast<Char*>(value.data), sizeof(value.data));
     }
 
     inline
@@ -242,12 +227,6 @@ namespace ramses_internal
     , m13(0.f), m23(0.f), m33(1.f), m43(0.f)
     , m14(0.f), m24(0.f), m34(0.f), m44(1.f)
     {
-    }
-
-    inline
-    Matrix44f::Matrix44f(const Matrix44f& other)
-    {
-        PlatformMemory::Copy(&m11, &other.m11, 16 * sizeof(Float));
     }
 
     inline
@@ -330,20 +309,6 @@ namespace ramses_internal
         = m31 = m32 = m33 = m34
         = m41 = m42 = m43 = m44
         = val;
-    }
-
-    inline
-    Float*
-    Matrix44f::getRawData()
-    {
-        return &m11;
-    }
-
-    inline
-    const Float*
-    Matrix44f::getRawData() const
-    {
-        return &m11;
     }
 
     inline

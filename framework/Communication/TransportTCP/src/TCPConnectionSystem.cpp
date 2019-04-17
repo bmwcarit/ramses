@@ -1501,8 +1501,11 @@ namespace ramses_internal
             }
             else
             {
-                assert(m_knownParticipantAddresses.contains(si.participant));
-                removeKnownParticipant(si.participant, true);
+                // check if still known, otherwise might try to remove it twice when alive timeout on control and data socket at the same time
+                if (m_knownParticipantAddresses.contains(si.participant))
+                {
+                    removeKnownParticipant(si.participant, true);
+                }
             }
         }
 

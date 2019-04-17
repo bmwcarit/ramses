@@ -133,7 +133,7 @@ static int checkEGLError(const char *function)
       EGL_ERROR_CASE(EGL_BAD_NATIVE_WINDOW, function);
       EGL_ERROR_CASE(EGL_CONTEXT_LOST, function);
    default:
-      fprintf(stderr, "unknown error 0x%X at %s\n", err, function);
+      fprintf(stderr, "unknown error 0x%X at %s\n", (unsigned)(err), function);
    }
    return err == EGL_SUCCESS ? 0 : err;
 }
@@ -281,21 +281,21 @@ static void ivi_controller_handle_screen(void*                         data,
     UNUSED(data)
     UNUSED(controller)
     UNUSED(screen)
-    printf("ivi_controller_handle_layer id_layer: %d\n", id_screen);
+    printf("ivi_controller_handle_layer id_layer: %u\n", id_screen);
 }
 
 static void ivi_controller_handle_layer(void* data, struct ivi_controller* controller, uint32_t id_layer)
 {
     UNUSED(data)
     UNUSED(controller)
-    printf("ivi_controller_handle_layer id_layer: %d\n", id_layer);
+    printf("ivi_controller_handle_layer id_layer: %u\n", id_layer);
 }
 
 static void ivi_controller_handle_surface(void* data, struct ivi_controller* controller, uint32_t id_surface)
 {
     UNUSED(data)
     UNUSED(controller)
-    printf("ivi_controller_handle_surface id_surface: %d\n", id_surface);
+    printf("ivi_controller_handle_surface id_surface: %u\n", id_surface);
 }
 
 static void ivi_controller_handler_error(void*                  data,
@@ -407,7 +407,7 @@ static void create_ivi_surface(void)
 {
     if (ivi_surface_id > 0)
     {
-        printf("create_ivi_surface with id: %i\n", ivi_surface_id);
+        printf("create_ivi_surface with id: %u\n", ivi_surface_id);
         if (wayland.ivi_app)
         {
             printf("wayland.ivi_app is valid, registering\n");
@@ -1781,13 +1781,13 @@ int main(int argc, char *argv[])
          };
          break;
       case 'I':
-         if (sscanf(optarg, "%d", &ivi_surface_id) != 1)
+         if (sscanf(optarg, "%u", &ivi_surface_id) != 1)
          {
             fprintf(stderr, "invalid ivi-id: %s\n", optarg);
          };
          break;
       case 'L':
-          if (sscanf(optarg, "%d", &ivi_layer_id) != 1)
+          if (sscanf(optarg, "%u", &ivi_layer_id) != 1)
           {
              fprintf(stderr, "invalid layer-id: %s\n", optarg);
           };
@@ -1812,7 +1812,7 @@ int main(int argc, char *argv[])
           };
           break;
       case 't':
-          if (sscanf(optarg, "%d", &sleepTimeInMillis) != 1)
+          if (sscanf(optarg, "%u", &sleepTimeInMillis) != 1)
           {
              fprintf(stderr, "invalid sleep time: %s\n", optarg);
           };

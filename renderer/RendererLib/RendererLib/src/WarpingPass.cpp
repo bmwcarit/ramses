@@ -126,9 +126,7 @@ namespace ramses_internal
         m_device.activateTexture(sourceColorBuffer, m_inputRenderBufferField);
         const UInt32 isotropicFilteringLevel = 1u;
         m_device.setTextureSampling(m_inputRenderBufferField,
-            EWrapMethod_Clamp,
-            EWrapMethod_Clamp,
-            EWrapMethod_Clamp, ESamplingMethod_Bilinear, isotropicFilteringLevel);
+            EWrapMethod::Clamp, EWrapMethod::Clamp, EWrapMethod::Clamp, ESamplingMethod::Bilinear, isotropicFilteringLevel);
 
         m_device.activateIndexBuffer(m_indexBufferResource);
         m_device.activateVertexBuffer(m_vertexBufferResource, m_vertexPositionField, 0u);

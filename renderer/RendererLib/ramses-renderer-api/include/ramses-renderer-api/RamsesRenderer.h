@@ -135,6 +135,11 @@ namespace ramses
         *
         *          By default sections have infinite time limit, so renderer would not try to interrupt their execution.
         *
+        * !! IMPORTANT !! Scene resource actions can not be interrupted like other resources. Therefore, if this timer is exceeded, a scene will be
+        * force-unsubscribed. Use this timer with caution and merely as a sanity check, NOT as a performance measure! Scenes should not be over-using
+        * scene resources, precisely because they can not be interrupted.
+        *
+        * @param[in] limitForSceneResourcesUpload  Time limit in microseconds (since beginning of frame) for uploading scene resources to GPU
         * @param[in] limitForClientResourcesUpload Time limit in microseconds (since beginning of frame) for uploading client resources to GPU
         * @param[in] limitForSceneActionsApply     Time limit in microseconds (since beginning of frame) for applying scene changes coming from Ramses client side
         * @param[in] limitForOffscreenBufferRender Time limit in microseconds (since beginning of frame) for rendering scenes that are mapped to interruptible offscreen buffers
@@ -142,25 +147,7 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         *         StatusOK does not guarantee successful read back, the result event has its own status.
         */
-        status_t setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForSceneActionsApply, uint64_t limitForOffscreenBufferRender);
-
-        /**
-        * @brief Sets time limits for time-out of applying scene resource actions.
-        * @details This call extends setFrameTimerLimits() and will be merged into it in future versions of RAMSES. It allows to also set a limit
-        * for how long (time in microseconds into the frame) resource scene actions can be applied.
-        * !! IMPORTANT !! Scene resource actions can not be interrupted like other resources. Therefore, if this timer is exceeded, a scene will be
-        * force-unsubscribed. Use this timer with caution and merely as a sanity check, NOT as a performance measure! Scenes should not be over-using
-        * scene resources, precisely because they can not be interrupted.
-        *
-        * ATTENTION: This API is static in order to maintain API compatibility. Will be fixed in future versions.
-        *
-        * @param[in] renderer The renderer instance to apply the changes to
-        * @param[in] limitForSceneResourcesUpload  Time limit in microseconds (since beginning of frame) for uploading scene resources to GPU
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        *         StatusOK does not guarantee successful read back, the result event has its own status.
-        */
-        static status_t SetSceneResourcesTimerLimit(RamsesRenderer& renderer, uint64_t limitForSceneResourcesUpload);
+        status_t setFrameTimerLimits(uint64_t limitForSceneResourcesUpload, uint64_t limitForClientResourcesUpload, uint64_t limitForSceneActionsApply, uint64_t limitForOffscreenBufferRender);
 
         /**
         * @brief Sets the number of pending flushes accepted before force-applying them to their scene, or forcefully insubscribing the scene.
@@ -178,15 +165,12 @@ namespace ramses
         * because re-subscribing a scene is causing a lot of network traffic and unnecessary memory operations, not to mention the
         * scene is then also not visible until re-subscribed, mapped and shown.
         *
-        * ATTENTION: This API is static in order to maintain API compatibility. Will be fixed in future versions.
-        *
-        * @param[in] renderer The renderer instance to apply the changes to
         * @param[in] forceApplyFlushLimit Number of flushes that can be pending before force applying occurs.
         * @param[in] forceUnsubscribeSceneLimit Number of flushes that can be pending before force un-subscribe occurs.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        static status_t SetPendingFlushLimits(RamsesRenderer& renderer, uint32_t forceApplyFlushLimit, uint32_t forceUnsubscribeSceneLimit);
+        status_t setPendingFlushLimits(uint32_t forceApplyFlushLimit, uint32_t forceUnsubscribeSceneLimit);
 
         /**
         * @brief     Enable or disable skipping of rendering of unmodified buffers.
@@ -505,10 +489,12 @@ namespace ramses
         /**
         * @brief Trigger the System Compositor to take a screenshot and store it in a file.
         * @param fileName File name including path, for storing the screenshot.
+        * @screenIviId >= 0 to trigger a screenshot on the given IVI screen id, -1 to trigger screenshot
+        *             on a single exisitng screen (fails asynchonously if more than one screen exists)
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t takeSystemCompositorScreenshot(const char* fileName);
+        status_t takeSystemCompositorScreenshot(const char* fileName, int32_t screenIviId);
 
         /////////////////////////////////////////////////
         //      End of System Compositor API

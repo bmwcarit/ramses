@@ -36,6 +36,8 @@ namespace ramses
         status_t setSystemCompositorWaylandDisplay(const char* waylandDisplay);
         const char* getSystemCompositorWaylandDisplay() const;
 
+        status_t setFrameCallbackMaxPollTime(uint64_t waitTimeInUsec);
+
         status_t setBinaryShaderCache(IBinaryShaderCache& cache);
         IBinaryShaderCache* getBinaryShaderCache() const;
 

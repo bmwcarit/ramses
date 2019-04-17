@@ -32,7 +32,7 @@ TEST_F(AInternalDisplayConfig, hasDefaultValues)
     EXPECT_EQ(ramses_internal::Vector3(0.0f), m_config.getCameraRotation());
     EXPECT_EQ(ramses_internal::Vector3(0.0f), m_config.getCameraPosition());
     EXPECT_FALSE(m_config.isWarpingEnabled());
-    EXPECT_FALSE(m_config.isEffectDeletionDisabled());
+    EXPECT_TRUE(m_config.getKeepEffectsUploaded());
     EXPECT_FALSE(m_config.isStereoDisplay());
     EXPECT_TRUE(ramses_internal::InvalidWaylandIviLayerId == m_config.getWaylandIviLayerID());
     EXPECT_TRUE(ramses_internal::InvalidIntegrityRGLDeviceUnit == m_config.getIntegrityRGLDeviceUnit());
@@ -92,8 +92,8 @@ TEST_F(AInternalDisplayConfig, setAndGetValues)
     m_config.setWarpingEnabled(true);
     EXPECT_TRUE(m_config.isWarpingEnabled());
 
-    m_config.setEffectDeletionDisabled(true);
-    EXPECT_TRUE(m_config.isEffectDeletionDisabled());
+    m_config.setKeepEffectsUploaded(false);
+    EXPECT_FALSE(m_config.getKeepEffectsUploaded());
 
     m_config.setStereoDisplay(true);
     EXPECT_TRUE(m_config.isStereoDisplay());
@@ -145,7 +145,7 @@ TEST_F(AInternalDisplayConfig, getsValuesAssignedFromCommandLine)
         "-f",
         "-bl",
         "-warp",
-        "-ded",
+        "-de",
         "-aa", "MSAA",
         "-as", "4",
         "-lid", "101",
@@ -194,7 +194,7 @@ TEST_F(AInternalDisplayConfig, getsValuesAssignedFromCommandLine)
     EXPECT_EQ(42u, config.getIntegrityRGLDeviceUnit().getValue());
     EXPECT_TRUE(config.getStartVisibleIvi());
     EXPECT_TRUE(config.isWarpingEnabled());
-    EXPECT_TRUE(config.isEffectDeletionDisabled());
+    EXPECT_FALSE(config.getKeepEffectsUploaded());
     EXPECT_TRUE(config.isResizable());
     EXPECT_TRUE(config.getOffscreen());
 }

@@ -97,6 +97,7 @@ public:
 
     StrictMock<ManagedResourceDeleterCallbackMock> managedResourceDeleter;
     ResourceDeleterCallingCallback dummyManagedResourceCallback;
+    UInt32 vramSize = 0;
 };
 
 TEST_F(AResourceUploader, uploadsVertexArrayResource)
@@ -107,7 +108,8 @@ TEST_F(AResourceUploader, uploadsVertexArrayResource)
 
     EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(res.getElementType(), res.getDecompressedDataSize())).WillOnce(Return(DeviceResourceHandle(123)));
     EXPECT_CALL(renderer.deviceMock, uploadVertexBufferData(DeviceResourceHandle(123), res.getResourceData()->getRawData(), res.getDecompressedDataSize()));
-    EXPECT_EQ(123u, uploader.uploadResource(renderer, managedRes));
+    EXPECT_EQ(123u, uploader.uploadResource(renderer, managedRes, vramSize));
+    EXPECT_EQ(res.getDecompressedDataSize(), vramSize);
 }
 
 TEST_F(AResourceUploader, uploadsIndexArrayResource16)
@@ -118,7 +120,8 @@ TEST_F(AResourceUploader, uploadsIndexArrayResource16)
 
     EXPECT_CALL(renderer.deviceMock, allocateIndexBuffer(res.getElementType(), res.getDecompressedDataSize())).WillOnce(Return(DeviceResourceHandle(123)));
     EXPECT_CALL(renderer.deviceMock, uploadIndexBufferData(DeviceResourceHandle(123), res.getResourceData()->getRawData(), res.getDecompressedDataSize()));
-    EXPECT_EQ(123u, uploader.uploadResource(renderer, managedRes));
+    EXPECT_EQ(123u, uploader.uploadResource(renderer, managedRes, vramSize));
+    EXPECT_EQ(res.getDecompressedDataSize(), vramSize);
 }
 
 TEST_F(AResourceUploader, uploadsTexture2DResource)
@@ -132,7 +135,8 @@ TEST_F(AResourceUploader, uploadsTexture2DResource)
     EXPECT_CALL(renderer.deviceMock, allocateTexture2D(2u, 2u, _, mipCount, 5u)).WillOnce(Return(DeviceResourceHandle(123)));
     EXPECT_CALL(renderer.deviceMock, uploadTextureData(DeviceResourceHandle(123), 0u, 0u, 0u, 0u, 2u, 2u, 1u, _, _));
     EXPECT_CALL(renderer.deviceMock, uploadTextureData(DeviceResourceHandle(123), 1u, 0u, 0u, 0u, 1u, 1u, 1u, _, _));
-    EXPECT_EQ(123u, uploader.uploadResource(renderer, managedRes));
+    EXPECT_EQ(123u, uploader.uploadResource(renderer, managedRes, vramSize));
+    EXPECT_EQ(2u * 2 + 1, vramSize);
 }
 
 TEST_F(AResourceUploader, uploadsTexture2DResourceWithMipGen)
@@ -145,7 +149,8 @@ TEST_F(AResourceUploader, uploadsTexture2DResourceWithMipGen)
     EXPECT_CALL(renderer.deviceMock, allocateTexture2D(4u, 1u, _, 3u, 7u)).WillOnce(Return(DeviceResourceHandle(123)));
     EXPECT_CALL(renderer.deviceMock, uploadTextureData(DeviceResourceHandle(123), 0u, 0u, 0u, 0u, 4u, 1u, 1u, _, _));
     EXPECT_CALL(renderer.deviceMock, generateMipmaps(DeviceResourceHandle(123)));
-    EXPECT_EQ(123u, uploader.uploadResource(renderer, managedRes));
+    EXPECT_EQ(123u, uploader.uploadResource(renderer, managedRes, vramSize));
+    EXPECT_EQ(4u + 2 + 1, vramSize);
 }
 
 TEST_F(AResourceUploader, uploadsTexture3DResource)
@@ -159,7 +164,8 @@ TEST_F(AResourceUploader, uploadsTexture3DResource)
     EXPECT_CALL(renderer.deviceMock, allocateTexture3D(2u, 2u, 2u, _, mipCount, _)).WillOnce(Return(DeviceResourceHandle(123)));
     EXPECT_CALL(renderer.deviceMock, uploadTextureData(DeviceResourceHandle(123), 0u, 0u, 0u, 0u, 2u, 2u, 2u, _, _));
     EXPECT_CALL(renderer.deviceMock, uploadTextureData(DeviceResourceHandle(123), 1u, 0u, 0u, 0u, 1u, 1u, 1u, _, _));
-    EXPECT_EQ(123u, uploader.uploadResource(renderer, managedRes));
+    EXPECT_EQ(123u, uploader.uploadResource(renderer, managedRes, vramSize));
+    EXPECT_EQ(2u * 2 * 2 + 1, vramSize);
 }
 
 TEST_F(AResourceUploader, uploadsTexture3DResourceWithMipGen)
@@ -172,7 +178,8 @@ TEST_F(AResourceUploader, uploadsTexture3DResourceWithMipGen)
     EXPECT_CALL(renderer.deviceMock, allocateTexture3D(4u, 1u, 2u, _, 3u, _)).WillOnce(Return(DeviceResourceHandle(123)));
     EXPECT_CALL(renderer.deviceMock, uploadTextureData(DeviceResourceHandle(123), 0u, 0u, 0u, 0u, 4u, 1u, 2u, _, _));
     EXPECT_CALL(renderer.deviceMock, generateMipmaps(DeviceResourceHandle(123)));
-    EXPECT_EQ(123u, uploader.uploadResource(renderer, managedRes));
+    EXPECT_EQ(123u, uploader.uploadResource(renderer, managedRes, vramSize));
+    EXPECT_EQ(4u * 1 * 2 + 2 * 1 * 1 + 1, vramSize);
 }
 
 TEST_F(AResourceUploader, uploadsTextureCubeResource)
@@ -190,7 +197,8 @@ TEST_F(AResourceUploader, uploadsTextureCubeResource)
         EXPECT_CALL(renderer.deviceMock, uploadTextureData(DeviceResourceHandle(123), 0u, 0u, 0u, i, 2u, 2u, 1u, _, _));
         EXPECT_CALL(renderer.deviceMock, uploadTextureData(DeviceResourceHandle(123), 1u, 0u, 0u, i, 1u, 1u, 1u, _, _));
     }
-    EXPECT_EQ(123u, uploader.uploadResource(renderer, managedRes));
+    EXPECT_EQ(123u, uploader.uploadResource(renderer, managedRes, vramSize));
+    EXPECT_EQ(6u * (2 * 2 + 1), vramSize);
 }
 
 TEST_F(AResourceUploader, uploadsTextureCubeResourceWithMipGen)
@@ -207,7 +215,8 @@ TEST_F(AResourceUploader, uploadsTextureCubeResourceWithMipGen)
         EXPECT_CALL(renderer.deviceMock, uploadTextureData(DeviceResourceHandle(123), 0u, 0u, 0u, i, 4u, 4u, 1u, _, _));
     }
     EXPECT_CALL(renderer.deviceMock, generateMipmaps(DeviceResourceHandle(123)));
-    EXPECT_EQ(123u, uploader.uploadResource(renderer, managedRes));
+    EXPECT_EQ(123u, uploader.uploadResource(renderer, managedRes, vramSize));
+    EXPECT_EQ(6u * (4 * 4 + 2 * 2 + 1), vramSize);
 }
 
 TEST_F(AResourceUploader, uploadsEffectResourceWithoutBinaryShaderCache)
@@ -217,7 +226,8 @@ TEST_F(AResourceUploader, uploadsEffectResourceWithoutBinaryShaderCache)
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(1);
 
     EXPECT_CALL(renderer.deviceMock, uploadShader(_)).WillOnce(Return(DeviceResourceHandle(123)));
-    EXPECT_EQ(123u, uploader.uploadResource(renderer, managedRes));
+    EXPECT_EQ(123u, uploader.uploadResource(renderer, managedRes, vramSize));
+    EXPECT_EQ(res.getDecompressedDataSize(), vramSize);
 }
 
 TEST_F(AResourceUploader, ifShaderShouldNotBeCachedNoDownloadWillHappen)
@@ -236,7 +246,7 @@ TEST_F(AResourceUploader, ifShaderShouldNotBeCachedNoDownloadWillHappen)
     EXPECT_CALL(binaryShaderProvider, binaryShaderUploaded(_, _)).Times(0); // This should only be called when attempting to upload from cache
 
     ManagedResource managedRes(res, dummyManagedResourceCallback);
-    EXPECT_EQ(123u, uploaderWithBinaryProvider.uploadResource(renderer, managedRes));
+    EXPECT_EQ(123u, uploaderWithBinaryProvider.uploadResource(renderer, managedRes, vramSize));
 }
 
 TEST_F(AResourceUploader, uploadsEffectResourceWithBinaryShaderCacheWhenCacheMissingAndCachingSupported)
@@ -256,7 +266,7 @@ TEST_F(AResourceUploader, uploadsEffectResourceWithBinaryShaderCacheWhenCacheMis
     EXPECT_CALL(binaryShaderProvider, binaryShaderUploaded(_, _)).Times(0); // This should only be called when attempting to upload from cache
 
     ManagedResource managedRes(res, dummyManagedResourceCallback);
-    EXPECT_EQ(123u, uploaderWithBinaryProvider.uploadResource(renderer, managedRes));
+    EXPECT_EQ(123u, uploaderWithBinaryProvider.uploadResource(renderer, managedRes, vramSize));
 }
 
 TEST_F(AResourceUploader, uploadsEffectResourceWithBinaryShaderCacheWhenCacheHit)
@@ -283,7 +293,7 @@ TEST_F(AResourceUploader, uploadsEffectResourceWithBinaryShaderCacheWhenCacheHit
     EXPECT_CALL(renderer.deviceMock, uploadBinaryShader(_, _, _, _)).WillOnce(Return(DeviceResourceHandle(123)));
 
     ResourceUploader uploaderWithBinaryProvider(stats, &binaryShaderProvider);
-    EXPECT_EQ(123u, uploaderWithBinaryProvider.uploadResource(renderer, managedRes));
+    EXPECT_EQ(123u, uploaderWithBinaryProvider.uploadResource(renderer, managedRes, vramSize));
 }
 
 TEST_F(AResourceUploader, uploadsEffectResourceWithBrokenBinaryShaderCache)
@@ -318,7 +328,7 @@ TEST_F(AResourceUploader, uploadsEffectResourceWithBrokenBinaryShaderCache)
     EXPECT_CALL(binaryShaderProvider, storeBinaryShader(_, _, _, _)).Times(1);
 
     ResourceUploader uploaderWithBinaryProvider(stats, &binaryShaderProvider);
-    EXPECT_EQ(123u, uploaderWithBinaryProvider.uploadResource(renderer, managedRes));
+    EXPECT_EQ(123u, uploaderWithBinaryProvider.uploadResource(renderer, managedRes, vramSize));
 }
 
 TEST_F(AResourceUploader, doesNotTryToGetBinaryShaderFromDeviceIfEffectDidNotCompile)
@@ -337,7 +347,7 @@ TEST_F(AResourceUploader, doesNotTryToGetBinaryShaderFromDeviceIfEffectDidNotCom
     ON_CALL(renderer.deviceMock, uploadShader(_)).WillByDefault(Return(DeviceResourceHandle::Invalid()));
 
     ResourceUploader uploaderWithBinaryProvider(stats, &binaryShaderProvider);
-    EXPECT_FALSE(uploaderWithBinaryProvider.uploadResource(renderer, managedRes).isValid());
+    EXPECT_FALSE(uploaderWithBinaryProvider.uploadResource(renderer, managedRes, vramSize).isValid());
 }
 
 TEST_F(AResourceUploader, unloadsVertexArrayResource)
@@ -392,9 +402,9 @@ TEST_F(AResourceUploader, uploadsWithMultipleRenderBackends)
 
     EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(res.getElementType(), res.getDecompressedDataSize())).WillOnce(Return(DeviceResourceHandle(123)));
     EXPECT_CALL(renderer.deviceMock, uploadVertexBufferData(DeviceResourceHandle(123), res.getResourceData()->getRawData(), res.getDecompressedDataSize()));
-    EXPECT_EQ(123u, uploader.uploadResource(renderer, managedRes));
+    EXPECT_EQ(123u, uploader.uploadResource(renderer, managedRes, vramSize));
 
     EXPECT_CALL(additionalRenderer.deviceMock, allocateVertexBuffer(res.getElementType(), res.getDecompressedDataSize())).WillOnce(Return(DeviceResourceHandle(123)));
     EXPECT_CALL(additionalRenderer.deviceMock, uploadVertexBufferData(DeviceResourceHandle(123), res.getResourceData()->getRawData(), res.getDecompressedDataSize()));
-    EXPECT_EQ(123u, uploader.uploadResource(additionalRenderer, managedRes));
+    EXPECT_EQ(123u, uploader.uploadResource(additionalRenderer, managedRes, vramSize));
 }

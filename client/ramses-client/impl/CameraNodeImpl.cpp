@@ -249,7 +249,7 @@ namespace ramses
         }
 
         const ramses_internal::Matrix44f projMatrix = ramses_internal::CameraMatrixHelper::ProjectionMatrix(getProjectionParams());
-        ramses_internal::PlatformMemory::Copy(projectionMatrix, projMatrix.getRawData(), sizeof(projectionMatrix));
+        ramses_internal::PlatformMemory::Copy(projectionMatrix, projMatrix.data, sizeof(projectionMatrix));
 
         return StatusOK;
     }

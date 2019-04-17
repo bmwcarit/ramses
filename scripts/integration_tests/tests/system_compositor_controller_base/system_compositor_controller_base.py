@@ -5,11 +5,11 @@
 #  License, v. 2.0. If a copy of the MPL was not distributed with this
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
-import time
 
 from ramses_test_framework import test_classes
 from ramses_test_framework import log
 from ramses_test_framework import helper
+from ramses_test_framework import application
 from ramses_test_framework.ramses_test_extensions import with_ramses_process_check, IVI_Control
 from ramses_test_framework.targets.target import DEFAULT_TEST_LAYER
 from ramses_test_framework.targets.target import DEFAULT_TEST_SURFACE
@@ -97,7 +97,12 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         self.checkThatApplicationWasStarted(self.testClient)
         self.addCleanup(self.target.kill_application, self.testClient)
 
+        # make sure renderer added its surface to layer before applying renderorder
+        self.renderer.wait_for_msg_in_stdout_from_beginning("IVIControllerSurface::HandleLayerCallback: surface {} added to layer".format(self.testSurfaceIVIIds["renderer"]), timeout=application.Application.DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT)
+
         # Put renderer, and ivi-gears No. 1 & 2 on the test layer
+        # TODO(tobias/mohamed/bernhard) sleep for a second to let renderer fully start and add its surface to layer. otherwise renderorder will not work properly
+
         self.target.ivi_control.setLayerRenderorder(self.testLayer, "{0} {1} {2}".format(self.testSurfaceIVIIds["renderer"], self.testSurfaceIVIIds["wlClient1"], self.testSurfaceIVIIds["wlClient2"]))
         self.target.ivi_control.flush()
 

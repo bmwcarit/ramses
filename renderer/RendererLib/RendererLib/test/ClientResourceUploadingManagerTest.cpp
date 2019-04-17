@@ -172,7 +172,7 @@ TEST_F(AClientResourceUploadingManager, uploadsProvidedResource)
     const ResourceContentHash res(1234u, 0u);
     registerAndProvideResource(res);
 
-    EXPECT_CALL(uploader, uploadResource(_, _));
+    EXPECT_CALL(uploader, uploadResource(_, _, _));
     rendererResourceUploader.uploadAndUnloadPendingResources();
     expectResourceUploaded(res);
 
@@ -184,7 +184,7 @@ TEST_F(AClientResourceUploadingManager, unloadsUnusedResource)
     const ResourceContentHash res(1234u, 0u);
     registerAndProvideResource(res);
 
-    EXPECT_CALL(uploader, uploadResource(_, _));
+    EXPECT_CALL(uploader, uploadResource(_, _, _));
     rendererResourceUploader.uploadAndUnloadPendingResources();
     expectResourceUploaded(res);
 
@@ -199,7 +199,7 @@ TEST_F(AClientResourceUploadingManager, setsBrokenStatusForResourceFailedToUploa
     const ResourceContentHash res(1234u, 0u);
     registerAndProvideResource(res);
 
-    EXPECT_CALL(uploader, uploadResource(_, _)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+    EXPECT_CALL(uploader, uploadResource(_, _, _)).WillOnce(Return(DeviceResourceHandle::Invalid()));
     rendererResourceUploader.uploadAndUnloadPendingResources();
     expectResourceUploadFailed(res);
 
@@ -220,7 +220,7 @@ TEST_F(AClientResourceUploadingManager, uploadsAllProvidedResourcesInOneUpdate_d
     registerAndProvideResource(res4);
     registerAndProvideResource(res5);
 
-    EXPECT_CALL(uploader, uploadResource(_, _)).Times(5u);
+    EXPECT_CALL(uploader, uploadResource(_, _, _)).Times(5u);
     rendererResourceUploader.uploadAndUnloadPendingResources();
 
     expectResourceUploaded(res1);
@@ -246,7 +246,7 @@ TEST_F(AClientResourceUploadingManager, willUnloadAnyRemainingResourcesWhenDestr
     registerAndProvideResource(res2, true);
     registerAndProvideResource(res3);
 
-    EXPECT_CALL(uploader, uploadResource(_, _)).Times(3u);
+    EXPECT_CALL(uploader, uploadResource(_, _, _)).Times(3u);
     rendererResourceUploader.uploadAndUnloadPendingResources();
     Mock::VerifyAndClearExpectations(&uploader);
 
@@ -262,7 +262,7 @@ TEST_F(AClientResourceUploadingManager_KeepingEffects, willNotUnloadEffectResour
     const ResourceContentHash res(1234u, 0u);
     registerAndProvideResource(res, true);
 
-    EXPECT_CALL(uploader, uploadResource(_, _));
+    EXPECT_CALL(uploader, uploadResource(_, _, _));
     rendererResourceUploader.uploadAndUnloadPendingResources();
     expectResourceUploaded(res);
 
@@ -288,14 +288,14 @@ TEST_F(AClientResourceUploadingManager, uploadsAtLeastOneResourcePerUpdateIfOutO
 
     frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ClientResourcesUpload, 0u);
 
-    EXPECT_CALL(uploader, uploadResource(_, _));
+    EXPECT_CALL(uploader, uploadResource(_, _, _));
     frameTimer.startFrame();
     rendererResourceUploader.uploadAndUnloadPendingResources();
     expectResourceUploaded(res1);
     expectResourceStatus(res2, EResourceStatus_Provided);
     expectResourceStatus(res3, EResourceStatus_Provided);
 
-    EXPECT_CALL(uploader, uploadResource(_, _));
+    EXPECT_CALL(uploader, uploadResource(_, _, _));
     frameTimer.startFrame();
     rendererResourceUploader.uploadAndUnloadPendingResources();
     expectResourceUploaded(res1);
@@ -324,7 +324,7 @@ TEST_F(AClientResourceUploadingManager, uploadsBatchOfResourceBeforeCheckingIfOu
 
     // set budget to infinite to make sure the batch gets to be processed
     // then right after set budget to 0 and expect rest of batch to be uploaded till next budget check
-    EXPECT_CALL(uploader, uploadResource(_, _)).Times(numResourcesInBatch)
+    EXPECT_CALL(uploader, uploadResource(_, _, _)).Times(numResourcesInBatch)
         .WillOnce(InvokeWithoutArgs([this]() { frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ClientResourcesUpload, std::numeric_limits<UInt64>::max()); return ResourceUploaderMock::FakeResourceDeviceHandle; }))
         .WillOnce(InvokeWithoutArgs([this]() { frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ClientResourcesUpload, 0u); return ResourceUploaderMock::FakeResourceDeviceHandle; }))
         .WillRepeatedly(Return(ResourceUploaderMock::FakeResourceDeviceHandle));
@@ -359,7 +359,7 @@ TEST_F(AClientResourceUploadingManager, checksTimeBudgetForEachLargeResourceWhen
 
     // set budget to infinite to make sure more than just first resource is processed
     // then right after set budget to 0 and test if the other resources were uploaded
-    EXPECT_CALL(uploader, uploadResource(_, _)).Times(2)
+    EXPECT_CALL(uploader, uploadResource(_, _, _)).Times(2)
         .WillOnce(InvokeWithoutArgs([this]() { frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ClientResourcesUpload, std::numeric_limits<UInt64>::max()); return ResourceUploaderMock::FakeResourceDeviceHandle; }))
         .WillOnce(InvokeWithoutArgs([this]() { frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ClientResourcesUpload, 0u); return ResourceUploaderMock::FakeResourceDeviceHandle; }));
 
@@ -389,7 +389,7 @@ TEST_F(AClientResourceUploadingManager, checksTimeBudgetForEachEffectWhenUploadi
 
     // set budget to infinite to make sure more than just first resource is processed
     // then right after set budget to 0 and test if the other resources were uploaded
-    EXPECT_CALL(uploader, uploadResource(_, _)).Times(2)
+    EXPECT_CALL(uploader, uploadResource(_, _, _)).Times(2)
         .WillOnce(InvokeWithoutArgs([this]() { frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ClientResourcesUpload, std::numeric_limits<UInt64>::max()); return ResourceUploaderMock::FakeResourceDeviceHandle; }))
         .WillOnce(InvokeWithoutArgs([this]() { frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ClientResourcesUpload, 0u); return ResourceUploaderMock::FakeResourceDeviceHandle; }));
 
@@ -425,7 +425,7 @@ TEST_F(AClientResourceUploadingManager, uploadsOnlyResourcesFittingIntoTimeBudge
     frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ClientResourcesUpload, sectionTimeBudgetMiillis * 1000u);
 
     //make sure that not all resources will be uploaded
-    EXPECT_CALL(uploader, uploadResource(_, _)).Times(AtMost(3)).WillRepeatedly(InvokeWithoutArgs([&]() {PlatformThread::Sleep(4); return ResourceUploaderMock::FakeResourceDeviceHandle; }));
+    EXPECT_CALL(uploader, uploadResource(_, _, _)).Times(AtMost(3)).WillRepeatedly(InvokeWithoutArgs([&]() {PlatformThread::Sleep(4); return ResourceUploaderMock::FakeResourceDeviceHandle; }));
     frameTimer.startFrame();
     rendererResourceUploader.uploadAndUnloadPendingResources();
     // expect first res uploaded
@@ -435,7 +435,7 @@ TEST_F(AClientResourceUploadingManager, uploadsOnlyResourcesFittingIntoTimeBudge
 
     // upload rest
     frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ClientResourcesUpload, std::numeric_limits<UInt64>::max());
-    EXPECT_CALL(uploader, uploadResource(_, _)).Times(AtLeast(1)).WillRepeatedly(Return(ResourceUploaderMock::FakeResourceDeviceHandle));
+    EXPECT_CALL(uploader, uploadResource(_, _, _)).Times(AtLeast(1)).WillRepeatedly(Return(ResourceUploaderMock::FakeResourceDeviceHandle));
     frameTimer.startFrame();
     rendererResourceUploader.uploadAndUnloadPendingResources();
     expectResourceUploaded(res2);
@@ -455,7 +455,7 @@ TEST_F(AClientResourceUploadingManager_KeepingEffects, doesNotReportKeptEffectAs
     const ResourceContentHash res(1234u, 0u);
     registerAndProvideResource(res, true);
 
-    EXPECT_CALL(uploader, uploadResource(_, _));
+    EXPECT_CALL(uploader, uploadResource(_, _, _));
     rendererResourceUploader.uploadAndUnloadPendingResources();
     expectResourceUploaded(res);
 
@@ -485,7 +485,7 @@ TEST_F(AClientResourceUploadingManager_WithVRAMCache, willUploadResourcesEvenIfE
     registerAndProvideResource(res5);
 
     // all uploaded even though cache is actually smaller
-    EXPECT_CALL(uploader, uploadResource(_, _)).Times(5u);
+    EXPECT_CALL(uploader, uploadResource(_, _, _)).Times(5u);
     rendererResourceUploader.uploadAndUnloadPendingResources();
 
     expectResourceUploaded(res1);
@@ -518,7 +518,7 @@ TEST_F(AClientResourceUploadingManager_WithVRAMCache, willUnloadUnusedCachedReso
     registerAndProvideResource(res4);
     registerAndProvideResource(res5);
 
-    EXPECT_CALL(uploader, uploadResource(_, _)).Times(5u);
+    EXPECT_CALL(uploader, uploadResource(_, _, _)).Times(5u);
     rendererResourceUploader.uploadAndUnloadPendingResources();
 
     makeResourceUnused(res1);
@@ -554,7 +554,7 @@ TEST_F(AClientResourceUploadingManager_WithVRAMCache, willOnlyUnloadResourcesWhe
     registerAndProvideResource(res2);
 
     // cache is 20/30 filled
-    EXPECT_CALL(uploader, uploadResource(_, _)).Times(2u);
+    EXPECT_CALL(uploader, uploadResource(_, _, _)).Times(2u);
     rendererResourceUploader.uploadAndUnloadPendingResources();
 
     makeResourceUnused(res2);
@@ -568,7 +568,7 @@ TEST_F(AClientResourceUploadingManager_WithVRAMCache, willOnlyUnloadResourcesWhe
 
     // 20 bytes is needed, 10/30 is available right away, 10/30 needs to be freed
     EXPECT_CALL(uploader, unloadResource(_, _, _, _)).Times(1u);
-    EXPECT_CALL(uploader, uploadResource(_, _)).Times(2u);
+    EXPECT_CALL(uploader, uploadResource(_, _, _)).Times(2u);
     rendererResourceUploader.uploadAndUnloadPendingResources();
 
     expectResourceUploaded(res1);
@@ -597,7 +597,7 @@ TEST_F(AClientResourceUploadingManager_WithVRAMCache, willNotUnloadAnyCachedUnus
     registerAndProvideResource(res2);
 
     // cache is 20/30 filled
-    EXPECT_CALL(uploader, uploadResource(_, _)).Times(2u);
+    EXPECT_CALL(uploader, uploadResource(_, _, _)).Times(2u);
     rendererResourceUploader.uploadAndUnloadPendingResources();
 
     makeResourceUnused(res2);
@@ -610,7 +610,7 @@ TEST_F(AClientResourceUploadingManager_WithVRAMCache, willNotUnloadAnyCachedUnus
 
     // 10 bytes is needed, 10/30 is available right away, nothing needs to be freed
     EXPECT_CALL(uploader, unloadResource(_, _, _, _)).Times(0u);
-    EXPECT_CALL(uploader, uploadResource(_, _)).Times(1u);
+    EXPECT_CALL(uploader, uploadResource(_, _, _)).Times(1u);
     rendererResourceUploader.uploadAndUnloadPendingResources();
 
     expectResourceUploaded(res1);
@@ -642,7 +642,7 @@ TEST_F(AClientResourceUploadingManager_WithVRAMCache, willUnloadResourcesOfSameO
     registerAndProvideResource(res4);
 
     // more than cache size is used
-    EXPECT_CALL(uploader, uploadResource(_, _)).Times(4u);
+    EXPECT_CALL(uploader, uploadResource(_, _, _)).Times(4u);
     rendererResourceUploader.uploadAndUnloadPendingResources();
 
     makeResourceUnused(res1);
@@ -657,7 +657,7 @@ TEST_F(AClientResourceUploadingManager_WithVRAMCache, willUnloadResourcesOfSameO
 
     // cache is full and exactly 1 unused cached resource will be freed for 1 new resource to be uploaded
     EXPECT_CALL(uploader, unloadResource(_, _, _, _)).Times(1u);
-    EXPECT_CALL(uploader, uploadResource(_, _)).Times(1u);
+    EXPECT_CALL(uploader, uploadResource(_, _, _)).Times(1u);
     rendererResourceUploader.uploadAndUnloadPendingResources();
 
     expectResourceUploaded(res3);

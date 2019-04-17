@@ -42,6 +42,12 @@ namespace ramses_internal
         return m_renderBuffers.get(handle)->deviceHandle;
     }
 
+    UInt32 RendererSceneResourceRegistry::getRenderBufferByteSize(RenderBufferHandle handle) const
+    {
+        assert(m_renderBuffers.contains(handle));
+        return m_renderBuffers.get(handle)->size;
+    }
+
     void RendererSceneResourceRegistry::getAllRenderBuffers(RenderBufferHandleVector& renderBuffers) const
     {
         assert(renderBuffers.empty());
@@ -196,6 +202,12 @@ namespace ramses_internal
     {
         assert(m_textureBuffers.contains(handle));
         return m_textureBuffers.get(handle)->format;
+    }
+
+    UInt32 RendererSceneResourceRegistry::getTextureBufferByteSize(TextureBufferHandle handle) const
+    {
+        assert(m_textureBuffers.contains(handle));
+        return m_textureBuffers.get(handle)->size;
     }
 
     void RendererSceneResourceRegistry::getAllTextureBuffers(TextureBufferHandleVector& textureBuffers) const

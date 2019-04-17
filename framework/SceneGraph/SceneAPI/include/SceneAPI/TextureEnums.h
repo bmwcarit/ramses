@@ -15,40 +15,36 @@
 
 namespace ramses_internal
 {
-    enum ESamplingMethod
+    enum class ESamplingMethod : uint8_t
     {
-        ESamplingMethod_Nearest = 0,
-        ESamplingMethod_NearestWithMipmaps,
-        ESamplingMethod_Bilinear,
-        ESamplingMethod_BilinearWithMipMaps,
-        ESamplingMethod_Trilinear,
-        ESamplingMethod_MinLinearMagNearest,
-        ESamplingMethod_MinNearestMagLinear
+        Nearest = 0,
+        NearestWithMipmaps,
+        Bilinear,
+        BilinearWithMipMaps,
+        Trilinear,
+        MinLinearMagNearest,
+        MinNearestMagLinear,
+        NUMBER_OF_ELEMENTS
     };
 
-    static inline const char* EnumToString(ESamplingMethod method)
+    static const char* SamplingMethodNames[] =
     {
-        switch (method)
-        {
-        case ESamplingMethod_Nearest: return "ESamplingMethod_Nearest";
-        case ESamplingMethod_NearestWithMipmaps: return "ESamplingMethod_NearestWithMipmaps";
-        case ESamplingMethod_Bilinear: return "ESamplingMethod_Bilinear";
-        case ESamplingMethod_BilinearWithMipMaps: return "ESamplingMethod_BilinearWithMipMaps";
-        case ESamplingMethod_Trilinear: return "ESamplingMethod_Trilinear";
-        case ESamplingMethod_MinLinearMagNearest: return "ESamplingMethod_MinLinearMagNearest";
-        case ESamplingMethod_MinNearestMagLinear: return "ESamplingMethod_MinNearestMagLinear";
-        default:
-            assert(false);
-            return "unknown sampling method";
-        }
-    }
+        "ESamplingMethod_Nearest",
+        "ESamplingMethod_NearestWithMipmaps",
+        "ESamplingMethod_Bilinear",
+        "ESamplingMethod_BilinearWithMipMaps",
+        "ESamplingMethod_Trilinear",
+        "ESamplingMethod_MinLinearMagNearest",
+        "ESamplingMethod_MinNearestMagLinear"
+    };
+    ENUM_TO_STRING(ESamplingMethod, SamplingMethodNames, ESamplingMethod::NUMBER_OF_ELEMENTS);
 
-    enum EWrapMethod
+    enum class EWrapMethod : uint8_t
     {
-        EWrapMethod_Clamp = 0,
-        EWrapMethod_Repeat,
-        EWrapMethod_RepeatMirrored,
-        EWrapMethod_NUMBER_OF_ELEMENTS
+        Clamp = 0,
+        Repeat,
+        RepeatMirrored,
+        NUMBER_OF_ELEMENTS
     };
 
     static const char* WrapMethodNames[] =
@@ -57,7 +53,7 @@ namespace ramses_internal
         "EWrapMethod_Repeat",
         "EWrapMethod_RepeatMirrored"
     };
-    ENUM_TO_STRING(EWrapMethod, WrapMethodNames, EWrapMethod_NUMBER_OF_ELEMENTS);
+    ENUM_TO_STRING(EWrapMethod, WrapMethodNames, EWrapMethod::NUMBER_OF_ELEMENTS);
 
     enum ERenderBufferType
     {

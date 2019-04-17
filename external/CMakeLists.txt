@@ -126,7 +126,7 @@ IF (ramses-sdk_ALLOW_CUSTOM_FREETYPE AND NOT freetype_FOUND)
     target_include_directories(harfbuzz INTERFACE "harfbuzz/src" "${CMAKE_CURRENT_BINARY_DIR}/harfbuzz")
     ADD_SUBDIRECTORY(freetype)
 
-    target_include_directories(freetype INTERFACE "freetype/include" "${CMAKE_CURRENT_BINARY_DIR}/harfbuzz/src")
+    target_include_directories(freetype INTERFACE "freetype/include")
 
     # Manually install only static libs for static RAMSES builds
     # Not possible to use CMake targets because of complicated CMake scripts of each lib
@@ -173,11 +173,6 @@ ELSEIF()
 ENDIF()
 
 
-# Must be delayed, so that target can find dependent target like EGL etc.
-# For Open Source compliance, source code must remain under external/
-# Therefore subdirectory 'wayland-ivi-example-client' is included in toplevel cmake at the end
-#ADD_SUBDIRECTORY(wayland-ivi-example-client)
-
 # wayland ivi extension library
 IF (NOT ramses-sdk_DISABLE_WAYLAND_IVI_EXTENSION)
     FIND_PACKAGE(wayland-ivi-extension QUIET)
@@ -199,6 +194,31 @@ IF (NOT ramses-sdk_DISABLE_WAYLAND_IVI_EXTENSION)
         ENDIF()
     ENDIF()
 ENDIF()
+
+
+# wayland ivi example/test application
+ACME_MODULE(
+    #==========================================================================
+    # general module information
+    #==========================================================================
+    NAME                    ivi-gears
+    TYPE                    BINARY
+    ENABLE_INSTALL          ON
+
+    #==========================================================================
+    # files of this module
+    #==========================================================================
+    FILES_SOURCE            wayland-ivi-example-client/gears.c
+
+    #==========================================================================
+    # dependencies
+    #==========================================================================
+    DEPENDENCIES            EGL
+                            OpenGL
+                            wayland-client
+                            wayland-egl
+                            wayland-ivi-extension
+)
 
 # LZ4 de-/compression library
 OPTION(ramses-sdk_ALLOW_PLATFORM_LZ4 "Enable to search for platform provided lz4" ON)

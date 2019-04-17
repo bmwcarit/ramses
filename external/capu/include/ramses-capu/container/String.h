@@ -18,9 +18,9 @@
 #define RAMSES_CAPU_STRING_H
 
 #include "ramses-capu/Config.h"
-#include "ramses-capu/os/StringUtils.h"
 #include "ramses-capu/container/Hash.h"
-#include <vector>
+#include "ramses-capu/os/StringUtils.h"
+#include <string>
 #include <algorithm>
 #include <cctype>
 
@@ -78,6 +78,9 @@ namespace ramses_capu
          * Move constructor
          */
         String(String&& other) noexcept;
+
+        String(const std::string& other);
+        String(std::string&& other);
 
         /**
          * Destructor.
@@ -176,7 +179,7 @@ namespace ramses_capu
          * @{
          */
         char& operator[](uint_t index);
-        const char& operator[](uint_t index) const;
+        char operator[](uint_t index) const;
         /**
          * @}
          */
@@ -291,13 +294,10 @@ namespace ramses_capu
         void reserve(uint_t capacity);
         uint_t capacity() const;
 
-    private:
-        void initData(const char* data);
-        void initFromGivenData(const char* data, const uint_t end, const uint_t start, uint_t size);
-        String& appendWithKnownLength(const char* other, uint_t length);
+    protected:
+        inline void initFromGivenData(const char* data, const uint_t start, const uint_t end, uint_t size);
 
-        std::vector<char> m_data;
-        uint_t m_size;
+        std::string m_string;
     };
 
     static_assert(std::is_nothrow_move_constructible<String>::value &&
@@ -312,6 +312,15 @@ namespace ramses_capu
         uint_t operator()(const String& key)
         {
             return HashMemoryRange(key.data(), key.getLength());
+        }
+    };
+
+    template<>
+    struct Hash<std::string>
+    {
+        uint_t operator()(const std::string& key)
+        {
+            return HashMemoryRange(key.data(), key.size());
         }
     };
 
@@ -338,50 +347,49 @@ namespace ramses_capu
      * Implementation String
      */
     inline String::String()
-        : m_data(), m_size(0)
     {
     }
 
     inline String::String(uint_t initialSize, char character)
-        : m_data(initialSize + 1, character)
-        , m_size(initialSize)
+        : m_string(initialSize, character)
     {
-        m_data[initialSize] = '\0';
     }
 
     inline String::String(const char* other)
-        : m_data(), m_size(0)
     {
-        initData(other);
+        if (other && *other)
+            m_string = other;
     }
 
     inline String::String(const char* data, uint_t start)
-        : m_data(), m_size(0)
     {
         if (data)
-        {
-            const char* startdata = &data[start];
-            initData(startdata);
-        }
+            m_string = data + start;
     }
 
     inline String::String(const String& other, const uint_t start, const uint_t end)
-        : m_data(), m_size(0)
     {
-        initFromGivenData(other.c_str(), start, end, other.m_size);
+        initFromGivenData(other.c_str(), start, end, other.m_string.size());
     }
 
     inline String::String(const char* data, const uint_t start, const uint_t end)
-        : m_data(), m_size(0)
     {
         initFromGivenData(data, start, end, StringUtils::Strnlen(data, end + 1));
     }
 
     inline String::String(String&& other) noexcept
-        : m_data(std::move(other.m_data))
-        , m_size(other.m_size)
+        : m_string(std::move(other.m_string))
     {
-        other.m_size = 0;
+    }
+
+    inline String::String(const std::string& other)
+        : m_string(other)
+    {
+    }
+
+    inline String::String(std::string&& other)
+        : m_string(std::move(other))
+    {
     }
 
     inline void String::initFromGivenData(const char* data, const uint_t start, const uint_t end, uint_t size)
@@ -413,12 +421,8 @@ namespace ramses_capu
 
         // do the work
         const char* startdata = data + start;
-        m_size = theend - start + 1;
-
-        m_data.reserve(m_size + 1);
-        m_data.clear();
-        m_data.insert(m_data.end(), startdata, startdata + m_size);
-        m_data.push_back('\0');
+        const size_t endPos = theend - start + 1;
+        m_string.assign(startdata, startdata + endPos);
     }
 
     inline String::~String()
@@ -427,29 +431,21 @@ namespace ramses_capu
 
     inline void String::resize(uint_t newSize)
     {
-        if (newSize>0)
-        {
-            m_data.resize(newSize + 1); // additional byte for null termination
-            m_data[newSize] = 0;
-        }
-        else
-        {
-            m_data.resize(0);
-        }
-        m_size = newSize;
+        m_string.resize(newSize);
     }
 
     inline String& String::operator=(const char* other)
     {
-        initData(other);
+        if (other)
+            m_string = other;
+        else
+            m_string.clear();
         return *this;
     }
 
     inline String& String::operator=(String&& other) noexcept
     {
-        m_data = std::move(other.m_data);
-        m_size = other.m_size;
-        other.m_size = 0;
+        m_string = std::move(other.m_string);
         return *this;
     }
 
@@ -473,65 +469,22 @@ namespace ramses_capu
 
     inline bool String::operator==(const String& other) const
     {
-        const char null(0);
-        const char* str1 = m_data.data();
-        if (!str1)
-        {
-            str1 = &null;
-        }
-        const char* str2 = other.m_data.data();
-        if (!str2)
-        {
-            str2 = &null;
-        }
-        return StringUtils::Strcmp(str1, str2) == 0;
+        return m_string == other.m_string;
     }
 
     inline bool String::operator==(const char* other) const
     {
-        const char null(0);
-        const char* str1 = m_data.data();
-        if (!str1)
-        {
-            str1 = &null;
-        }
-        if (!other)
-        {
-            other = &null;
-        }
-        return StringUtils::Strcmp(str1, other) == 0;
+        return m_string == other;
     }
 
     inline bool String::operator<(const String& other) const
     {
-        const char null(0);
-        const char* str1 = m_data.data();
-        if (!str1)
-        {
-            str1 = &null;
-        }
-        const char* str2 = other.m_data.data();
-        if (!str2)
-        {
-            str2 = &null;
-        }
-        return StringUtils::Strcmp(str1, str2) < 0;
+        return m_string < other.m_string;
     }
 
     inline bool String::operator>(const String& other) const
     {
-        const char null(0);
-        const char* str1 = m_data.data();
-        if (!str1)
-        {
-            str1 = &null;
-        }
-        const char* str2 = other.m_data.data();
-        if (!str2)
-        {
-            str2 = &null;
-        }
-        return StringUtils::Strcmp(str1, str2) > 0;
+        return m_string > other.m_string;
     }
 
     inline void String::operator+=(const char* other)
@@ -563,95 +516,57 @@ namespace ramses_capu
 
     inline char& String::operator[](uint_t index)
     {
-        return m_data[index];
+        return m_string[index];
     }
 
-    inline const char& String::operator[](uint_t index) const
+    inline char String::operator[](uint_t index) const
     {
-        return m_data[index];
+        return m_string[index];
     }
 
     inline String& String::append(const String& other)
     {
-        return appendWithKnownLength(other.data(), other.getLength());
+        m_string += other.m_string;
+        return *this;
     }
 
     inline void String::toUpperCase()
     {
-        const uint_t length = getLength();
-        for (uint_t i = 0; i < length; ++i)
-        {
-            m_data[i] = static_cast<char>(std::toupper(static_cast<unsigned char>(m_data[i])));
-        }
+        for (auto& c : m_string)
+            c = static_cast<char>(std::toupper(c));
     }
 
     inline void String::toLowerCase()
     {
-        const uint_t length = getLength();
-        for (uint_t i = 0; i < length; ++i)
-        {
-            m_data[i] = static_cast<char>(std::tolower(static_cast<unsigned char>(m_data[i])));
-        }
+        for (auto& c : m_string)
+            c = static_cast<char>(std::tolower(c));
     }
 
     inline String& String::append(const char* other)
     {
-        if (other && *other)
-        {
-            const uint_t otherlen = StringUtils::Strlen(other);
-            return appendWithKnownLength(other, otherlen);
-        }
-        return *this;
-    }
-
-    inline String& String::appendWithKnownLength(const char* other, uint_t otherLength)
-    {
-        if (m_data.data() || other)
-        {
-            m_data.reserve(m_size + otherLength + 1);
-            m_data.resize(m_size);
-            m_data.insert(m_data.end(), other, other + otherLength);
-            m_data.push_back('\0');
-            m_size += otherLength;
-        }
+        if (other)
+            m_string += other;
         return *this;
     }
 
     inline const char* String::c_str() const
     {
-        return m_data.size() > 0 ? m_data.data() : "";
+        return m_string.c_str();
     }
 
     inline const char* String::data() const
     {
-        return m_data.data();
+        return m_string.data();
     }
 
     inline char* String::data()
     {
-        return m_data.data();
-    }
-
-    inline void String::initData(const char* data)
-    {
-        if (data && *data)
-        {
-            m_size = StringUtils::Strlen(data);
-            m_data.clear();
-            m_data.reserve(m_size + 1);
-            m_data.insert(m_data.end(), data, data + m_size);
-            m_data.push_back('\0');
-        }
-        else
-        {
-            m_data.clear();
-            m_size = 0;
-        }
+        return m_string.data() ? &m_string[0] : nullptr;
     }
 
     inline uint_t String::getLength() const
     {
-        return m_size;
+        return m_string.size();
     }
 
     inline int_t String::find(const char ch, const uint_t offset) const
@@ -671,9 +586,7 @@ namespace ramses_capu
 
     inline String& String::swap(String& other)
     {
-        m_data.swap(other.m_data);
-        using std::swap;
-        swap(m_size, other.m_size);
+        m_string.swap(other.m_string);
         return *this;
     }
 
@@ -685,29 +598,15 @@ namespace ramses_capu
             return *this;
         }
 
-        // set new size and append null char after end of string
-        m_size = length;
-        m_data.resize(length + 1);
-        m_data[length] = 0;
+        m_string.resize(length);
         return *this;
     }
 
     inline String String::substr(uint_t start, int_t length) const
     {
-        if (length < 0 || static_cast<uint_t>(length) > m_size)
-        {
-            // take the complete substring starting with start
-            return String(*this, start, m_size);
-        }
-        else
-        {
-            if (length == 0)
-            {
-                return String("");
-            }
-            // calculate end position and cut out substring
-            return String(*this, start, start + length - 1);
-        }
+        if (start >= m_string.size())
+            return {};
+        return String(m_string.substr(start, std::min<size_t>(m_string.size() - start, length)));
     }
 
     inline
@@ -752,13 +651,13 @@ namespace ramses_capu
     inline
     void String::reserve(uint_t capacity)
     {
-        m_data.reserve(capacity + 1);
+        m_string.reserve(capacity);
     }
 
     inline
     uint_t String::capacity() const
     {
-        return m_data.capacity() == 0 ? 0u : m_data.capacity() - 1;
+        return m_string.capacity();
     }
 }
 

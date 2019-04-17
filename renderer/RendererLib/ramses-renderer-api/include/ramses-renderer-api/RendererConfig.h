@@ -78,6 +78,22 @@ namespace ramses
         status_t enableSystemCompositorControl();
 
         /**
+         * @brief      Set the maximum time to wait for the system compositor frame callback
+         *             before aborting and skipping rendering of current frame. This is an
+         *             advanced function to be used by experts only. Be warned that the
+         *             synchronization of frame callbacks with the system compositor and
+         *             the display controller vsync is a sensitive topic and can majorly
+         *             influence system performance.
+         *
+         * @param[in]  waitTimeInUsec  The maximum time wait for a frame callback, in microseconds
+         *
+         * @return     StatusOK for success, otherwise the returned status can
+         *             be used to resolve error message using
+         *             getStatusMessage().
+         */
+        status_t setFrameCallbackMaxPollTime(uint64_t waitTimeInUsec);
+
+        /**
          * @brief      Set the name to be used for the embedded compositing
          *             socket.
          *

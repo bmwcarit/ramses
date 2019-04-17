@@ -116,7 +116,7 @@ namespace ramses_internal
             IEmbeddedCompositingManager& embeddedCompositingManager = displayController.getEmbeddedCompositingManager();
 
             // ownership of uploadStrategy is transferred into RendererResourceManager
-            RendererResourceManager* resourceManager = new RendererResourceManager(resourceProvider, resourceUploader, renderBackend, embeddedCompositingManager, RequesterID(handle.asMemoryHandle()), displayConfig.isEffectDeletionDisabled(), m_frameTimer, m_renderer.getStatistics(), displayConfig.getGPUMemoryCacheSize());
+            RendererResourceManager* resourceManager = new RendererResourceManager(resourceProvider, resourceUploader, renderBackend, embeddedCompositingManager, RequesterID(handle.asMemoryHandle()), displayConfig.getKeepEffectsUploaded(), m_frameTimer, m_renderer.getStatistics(), displayConfig.getGPUMemoryCacheSize());
             m_displayResourceManagers.put(handle, resourceManager);
             m_rendererEventCollector.addEvent(ERendererEventType_DisplayCreated, handle);
 
@@ -543,17 +543,20 @@ namespace ramses_internal
                 m_rendererEventCollector.addEvent(ERendererEventType_SceneFlushed, sceneID, rendererScene.getSceneVersionTag(), resourcesStatus);
             }
 
-            m_expirationMonitor.onFlushApplied(sceneID, pendingFlush.timeInfo.expirationTimestamp);
+            m_expirationMonitor.onFlushApplied(sceneID, pendingFlush.timeInfo.expirationTimestamp, pendingFlush.flushIndex);
             m_renderer.getStatistics().flushApplied(sceneID);
 
             // mark scene as modified only if it received scene actions other than those below
             static const Vector<ESceneActionId> SceneActionsIgnoredForMarkingAsModified = { ESceneActionId_Flush, ESceneActionId_SetSceneVersionTag, ESceneActionId_SetAckFlushState };
-            const auto it = std::find_if(pendingFlush.sceneActions.begin(), pendingFlush.sceneActions.end(),
-                [](const SceneActionCollection::SceneActionReader& a)->bool { return !SceneActionsIgnoredForMarkingAsModified.contains(a.type()); });
-            if (it != pendingFlush.sceneActions.end())
+            const bool isFlushWithChanges = std::any_of(pendingFlush.sceneActions.begin(), pendingFlush.sceneActions.end(),
+                [](const SceneActionCollection::SceneActionReader& a) { return !SceneActionsIgnoredForMarkingAsModified.contains(a.type()); });
+            if (isFlushWithChanges)
+                // there are changes to scene -> mark it as modified to be re-rendered
                 m_modifiedScenesToRerender.put(sceneID);
-            else
-                m_expirationMonitor.onRendered(sceneID); // mark as rendered for expiration monitor because this scene was updated but might not be rendered due to skip frame optimization
+            else if (m_sceneStateExecutor.getSceneState(sceneID) == ESceneState_Rendered)
+                // there are no changes to scene and it might not be rendered due to skipping of frames optimization,
+                // mark it as if rendered for expiration monitor so that it does not expire
+                m_expirationMonitor.onRendered(sceneID);
 
             ++numFlushesApplied;
         }
@@ -737,8 +740,8 @@ namespace ramses_internal
             {
                 assert(m_renderer.getDisplaySceneIsMappedTo(sceneId) == mapRequest.display);
 
-                IRendererResourceManager& resourceManager = **m_displayResourceManagers.get(mapRequest.display);
-                StagingInfo& stagingInfo = m_rendererScenes.getStagingInfo(sceneId);
+                const IRendererResourceManager& resourceManager = **m_displayResourceManagers.get(mapRequest.display);
+                const StagingInfo& stagingInfo = m_rendererScenes.getStagingInfo(sceneId);
 
                 bool canBeMapped = false;
                 // allow map only if there are no pending flushes
@@ -808,6 +811,45 @@ namespace ramses_internal
                 }
                 else
                     m_scenesToBeShown.put(sceneId);
+            }
+        }
+
+        // check scenes that take too long to be mapped
+        for (auto& sceneMapReq : m_scenesToBeMapped)
+        {
+            constexpr std::chrono::seconds MappingLogPeriod{ 1u };
+            constexpr size_t MaxNumResourcesToLog = 10u;
+
+            auto& mapRequest = sceneMapReq.value;
+            const auto currentFrameTime = m_frameTimer.getFrameStartTime();
+            if (currentFrameTime - mapRequest.lastLogTimeStamp > MappingLogPeriod)
+            {
+                LOG_WARN_F(CONTEXT_RENDERER, [&](ramses_internal::StringOutputStream& logger)
+                {
+                    const auto totalWaitingTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentFrameTime - mapRequest.requestTimeStamp);
+                    const IRendererResourceManager& resourceManager = **m_displayResourceManagers.get(mapRequest.display);
+                    const StagingInfo& stagingInfo = m_rendererScenes.getStagingInfo(sceneMapReq.key);
+
+                    logger << "Scene " << sceneMapReq.key << " waiting " << static_cast<int64_t>(totalWaitingTime.count()) << " ms for resources in order to be mapped: ";
+                    size_t numResourcesLogged = 0u;
+                    for (const auto& res : stagingInfo.clientResourcesInUse)
+                    {
+                        const auto resStatus = resourceManager.getClientResourceStatus(res);
+                        if (resStatus != EResourceStatus_Uploaded)
+                        {
+                            if (++numResourcesLogged <= MaxNumResourcesToLog)
+                                logger << res << " <" << EnumToString(resStatus) << ">; ";
+                            else
+                                logger << ".";
+                        }
+                    }
+                    logger << " " << numResourcesLogged << " unresolved resources in total";
+                });
+
+                mapRequest.lastLogTimeStamp = currentFrameTime;
+
+                // log at most 1 scene in one frame
+                break;
             }
         }
     }
@@ -938,6 +980,9 @@ namespace ramses_internal
         }
 
         // reference all the resources in use by the scene to be mapped
+        const auto& clientResources = m_rendererScenes.getStagingInfo(sceneId).clientResourcesInUse;
+        if (!clientResources.empty())
+            LOG_INFO(CONTEXT_RENDERER, "Marking " << clientResources.size() << " client resources as used by scene " << sceneId << ", resources which are not yet available will be requested/loaded and uploaded to GPU.");
         resourceManager.referenceClientResourcesForScene(sceneId, m_rendererScenes.getStagingInfo(sceneId).clientResourcesInUse);
         return true;
     }
@@ -987,7 +1032,7 @@ namespace ramses_internal
         {
             m_sceneStateExecutor.setMapRequested(sceneId, handle);
             assert(!m_scenesToBeMapped.contains(sceneId));
-            m_scenesToBeMapped.put(sceneId, { handle, sceneRenderOrder });
+            m_scenesToBeMapped.put(sceneId, { handle, sceneRenderOrder, m_frameTimer.getFrameStartTime(), m_frameTimer.getFrameStartTime() });
         }
     }
 

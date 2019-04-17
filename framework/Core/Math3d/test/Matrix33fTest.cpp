@@ -219,7 +219,7 @@ namespace ramses_internal
         Matrix33f mat2 = Matrix33f::RotationEulerXYZ(resRotation);
         for (uint32_t i = 0u; i < 9u; i++)
         {
-            EXPECT_NEAR(mat1.getRawData()[i], mat2.getRawData()[i], 1.0e-6f);
+            EXPECT_NEAR(mat1.data[i], mat2.data[i], 1.0e-6f);
         }
     }
 
@@ -233,7 +233,7 @@ namespace ramses_internal
         Matrix33f mat2 = Matrix33f::RotationEulerZYX(resRotation);
         for (uint32_t i = 0u; i < 9u; i++)
         {
-            EXPECT_NEAR(mat1.getRawData()[i], mat2.getRawData()[i], 1.0e-6f);
+            EXPECT_NEAR(mat1.data[i], mat2.data[i], 1.0e-6f);
         }
     }
 

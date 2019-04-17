@@ -31,8 +31,8 @@ namespace ramses_capu
         class File : private generic::File
         {
         public:
-            File(const String& path);
-            File(const File& parent, const ramses_capu::String& path);
+            File(const std::string& path);
+            File(const File& parent, const std::string& path);
             status_t open(const FileMode& mode);
             bool isOpen();
             bool isEof();
@@ -42,37 +42,37 @@ namespace ramses_capu
             status_t getCurrentPosition(uint_t& position) const;
             status_t flush();
             status_t close();
-            status_t renameTo(const ramses_capu::String& newName);
+            status_t renameTo(const std::string& newName);
             status_t createFile();
             status_t createDirectory();
             status_t remove();
             using generic::File::getFileName;
             using generic::File::getExtension;
             using generic::File::getPath;
-            String getParentPath(bool& success) const;
+            std::string getParentPath(bool& success) const;
             status_t getSizeInBytes(uint_t& size) const;
             bool isDirectory() const;
             bool exists() const;
-            status_t copyTo(const ramses_capu::String& newPath);
+            status_t copyTo(const std::string& newPath);
             ~File();
         protected:
             using generic::File::mPath;
             using generic::File::mHandle;
         private:
-            static String GetParentPathPrivate(String path, bool& success);
-            static String StripLastPathComponent(const String& path);
+            static std::string GetParentPathPrivate(std::string path, bool& success);
+            static std::string StripLastPathComponent(const std::string& path);
             bool  mIsOpen;
         };
 
         inline
-        File::File(const String& path)
+        File::File(const std::string& path)
             : generic::File(path)
             , mIsOpen(false)
         {
         }
 
         inline
-        File::File(const File& parent, const ramses_capu::String& path)
+        File::File(const File& parent, const std::string& path)
             : generic::File(parent, path)
             , mIsOpen(false)
         {
@@ -164,7 +164,7 @@ namespace ramses_capu
         }
 
         inline
-        status_t File::renameTo(const ramses_capu::String& newName)
+        status_t File::renameTo(const std::string& newName)
         {
             int_t status = rename(mPath.c_str(), newName.c_str());
             if (status != 0)
@@ -277,10 +277,13 @@ namespace ramses_capu
             {
                 return CAPU_ERROR;
             }
+            if (length == 0)
+            {
+                return CAPU_OK;
+            }
 
-            size_t result = fwrite(buffer, 1, length, mHandle);
-
-            if (result != length)
+            size_t result = fwrite(buffer, length, 1, mHandle);
+            if (result != 1u)
             {
                 return CAPU_ERROR;
             }
@@ -317,31 +320,31 @@ namespace ramses_capu
         }
 
         inline
-        String
-        File::GetParentPathPrivate(String path, bool& success)
+        std::string
+        File::GetParentPathPrivate(std::string path, bool& success)
         {
             // trim tailing slashes
-            while (path.getLength() >= 2 &&
-                    path.rfind('/') == static_cast<int_t>(path.getLength() - 1))
+            while (path.size() >= 2 &&
+                    path.rfind('/') == static_cast<uint_t>(path.size() - 1))
             {
-                String newPath(path.c_str(), 0, path.getLength() - 1);
+                std::string newPath(path, 0, path.size() - 1);
                 swap(path, newPath);
             }
 
             // treat empty path as working directory
-            if (path.getLength() == 0)
+            if (path.size() == 0)
             {
                 path = ".";
             }
 
             // check for some special cases
-            if (path == String("/"))
+            if (path == std::string("/"))
             {
                 // path is root -> parent doesn't exist
                 success = false;
                 return "";
             }
-            else if (path == String("."))
+            else if (path == std::string("."))
             {
                 // path is .
                 // -> replace with current working directory for dirname to work correctly
@@ -353,7 +356,7 @@ namespace ramses_capu
                 }
                 path = buffer;
             }
-            else if (path == String(".."))
+            else if (path == std::string(".."))
             {
                 // path is ..
                 // -> replace with parent of current working directory
@@ -369,13 +372,13 @@ namespace ramses_capu
         }
 
         inline
-        String
+        std::string
         File::getParentPath(bool& success) const
         {
             return GetParentPathPrivate(getPath(), success);
         }
 
-        inline status_t File::copyTo(const ramses_capu::String& newPath)
+        inline status_t File::copyTo(const std::string& newPath)
         {
             FILE* handleFrom = fopen(mPath.c_str(), "r");
             if (!handleFrom)
@@ -409,20 +412,20 @@ namespace ramses_capu
             return (bytesRead == 0) ? CAPU_OK : CAPU_ERROR;
         }
 
-        inline String File::StripLastPathComponent(const String& path)
+        inline std::string File::StripLastPathComponent(const std::string& path)
         {
-            ramses_capu::String tmp = path;
-            ramses_capu::int_t lastSlashIndex = path.rfind('/');
+            std::string tmp = path;
+            int_t lastSlashIndex = path.rfind('/');
             if (lastSlashIndex == -1)
             {
-                return ramses_capu::String(".");
+                return std::string(".");
             }
 
             if (lastSlashIndex == 0)
             {
                 lastSlashIndex = 1; // found the root folder
             }
-            tmp.truncate(lastSlashIndex);
+            tmp.resize(lastSlashIndex);
             return tmp;
         }
 

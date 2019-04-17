@@ -25,11 +25,11 @@ namespace ramses_internal
     public:
         ResourceUploader(RendererStatistics& stats, IBinaryShaderCache* binaryShaderCache = NULL);
 
-        virtual DeviceResourceHandle uploadResource(IRenderBackend& renderBackend, ManagedResource resourceObject) override;
+        virtual DeviceResourceHandle uploadResource(IRenderBackend& renderBackend, ManagedResource resourceObject, UInt32& outVRAMSize) override;
         virtual void                 unloadResource(IRenderBackend& renderBackend, EResourceType type, ResourceContentHash hash, DeviceResourceHandle handle) override;
 
     private:
-        DeviceResourceHandle uploadTexture(IDevice& device, const TextureResource& texture);
+        DeviceResourceHandle uploadTexture(IDevice& device, const TextureResource& texture, UInt32& vramSize);
         DeviceResourceHandle queryBinaryShaderCacheAndUploadEffect(IRenderBackend& renderBackend, const EffectResource& effect, ResourceContentHash hash);
 
         static UInt32 EstimateGPUAllocatedSizeOfTexture(const TextureResource& texture, UInt32 numMipLevelsToAllocate);

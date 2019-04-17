@@ -17,7 +17,9 @@
 #ifndef RAMSES_CAPU_GENERIC_FILE_H
 #define RAMSES_CAPU_GENERIC_FILE_H
 
-#include "ramses-capu/container/String.h"
+#include "ramses-capu/Config.h"
+#include "ramses-capu/os/StringUtils.h"
+#include <string>
 
 namespace ramses_capu
 {
@@ -26,28 +28,28 @@ namespace ramses_capu
         class File
         {
         public:
-            File(const String& path);
-            File(const File& parent, const ramses_capu::String& path);
-            const ramses_capu::String getFileName() const;
-            const ramses_capu::String getExtension() const;
-            const ramses_capu::String& getPath() const;
+            File(const std::string& path);
+            File(const File& parent, const std::string& path);
+            const std::string getFileName() const;
+            const std::string getExtension() const;
+            const std::string& getPath() const;
             status_t seek(int_t offset, FileSeekOrigin origin);
             ~File();
 
         protected:
-            String mPath;
+            std::string mPath;
             FILE* mHandle;
         };
 
         inline
-        File::File(const String& path)
+        File::File(const std::string& path)
             : mPath(path)
             , mHandle(NULL)
         {
         }
 
         inline
-        File::File(const File& parent, const ramses_capu::String& path)
+        File::File(const File& parent, const std::string& path)
             : mPath(parent.getPath())
             , mHandle(NULL)
         {
@@ -60,34 +62,34 @@ namespace ramses_capu
         }
 
         inline
-        const ramses_capu::String& File::getPath() const
+        const std::string& File::getPath() const
         {
             return mPath;
         }
 
         inline
-        const ramses_capu::String File::getExtension() const
+        const std::string File::getExtension() const
         {
-            ramses_capu::int_t position = ramses_capu::StringUtils::LastIndexOf(mPath.c_str(), '.');
+            int_t position = StringUtils::LastIndexOf(mPath.c_str(), '.');
             if (position < 0)
             {
                 // index not found
-                return ramses_capu::String("");
+                return std::string();
             }
-            return ramses_capu::String(mPath.c_str(), position + 1);
+            return std::string(mPath, position + 1);
         }
 
         inline
-        const ramses_capu::String File::getFileName() const
+        const std::string File::getFileName() const
         {
-            ramses_capu::int_t lastSeparator = ramses_capu::StringUtils::LastIndexOf(mPath.c_str(), '/');
+            int_t lastSeparator = StringUtils::LastIndexOf(mPath.c_str(), '/');
             if (lastSeparator == -1)
             {
-                lastSeparator = ramses_capu::StringUtils::LastIndexOf(mPath.c_str(), '\\');
+                lastSeparator = StringUtils::LastIndexOf(mPath.c_str(), '\\');
             }
             if (lastSeparator != -1)
             {
-                return ramses_capu::String(mPath.c_str(), lastSeparator + 1);
+                return std::string(mPath, lastSeparator + 1);
             }
             else
             {

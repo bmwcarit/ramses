@@ -64,7 +64,7 @@ namespace ramses_internal
 
     void StressTestRenderer::setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForSceneActionsApply, uint64_t limitForOffscreenBufferRender)
     {
-        m_renderer.setFrameTimerLimits(limitForClientResourcesUpload, limitForSceneActionsApply, limitForOffscreenBufferRender);
+        m_renderer.setFrameTimerLimits(0u, limitForClientResourcesUpload, limitForSceneActionsApply, limitForOffscreenBufferRender);
     }
 
     void StressTestRenderer::setSkippingOfUnmodifiedBuffers(bool enabled)

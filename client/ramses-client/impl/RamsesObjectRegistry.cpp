@@ -13,7 +13,6 @@
 #include "ObjectIteratorImpl.h"
 #include "NodeImpl.h"
 #include "RamsesObjectTypeUtils.h"
-#include "Collections/ConstString.h"
 #include "PlatformAbstraction/PlatformStringUtils.h"
 
 namespace ramses

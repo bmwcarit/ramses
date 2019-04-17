@@ -97,7 +97,7 @@ namespace ramses_internal
         void removeChildFromNode(NodeHandle parent, NodeHandle child);
 
         // Transformation
-        void setTransformComponent(ETransformPropertyType propertyChanged, TransformHandle node, Vector3 newValue);
+        void setTransformComponent(ETransformPropertyType propertyChanged, TransformHandle node, const Vector3& newValue);
 
         void allocateDataLayout(const DataFieldInfoVector& dataFields, DataLayoutHandle handle);
         void releaseDataLayout(DataLayoutHandle layoutHandle);

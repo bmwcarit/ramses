@@ -49,7 +49,7 @@ namespace ramses_internal
         {
             const Byte* rawData = NULL;
             UInt32 size = 0u;
-            action.read(rawData, size);
+            action.readWithoutCopy(rawData, size);
 
             dataArray.resize(numElements);
             PlatformMemory::Copy(&dataArray.front(), rawData, size);

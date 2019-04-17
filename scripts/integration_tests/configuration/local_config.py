@@ -25,5 +25,3 @@ class LocalConfig(Config):
         self.localTarget = TargetInfo(LocalTarget, "local-target", "", "", "")
         self.allTargetsList = [self.localTarget]
         self.defaultTestTargetsList = self.allTargetsList
-
-        self.useExitcodeOnTestFailure = True

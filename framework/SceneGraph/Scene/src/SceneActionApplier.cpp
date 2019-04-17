@@ -50,10 +50,7 @@ namespace ramses_internal
         {
         case ESceneActionId_SetSceneVersionTag:
         {
-            SceneVersionTag sceneVersionTag;
-            action.read(sceneVersionTag);
-            assert(sceneVersionTag != InvalidSceneVersionTag);
-            scene.setSceneVersionTag(sceneVersionTag);
+            scene.setSceneVersionTag(ReadSceneVersionTag(action));
             break;
         }
         case ESceneActionId_AllocateNode:
@@ -90,7 +87,7 @@ namespace ramses_internal
             Vector3 vec;
             action.read(component);
             action.read(transform);
-            action.read(vec);
+            action.read(vec.data);
             switch (component)
             {
             case ETransformPropertyType_Rotation:
@@ -127,12 +124,8 @@ namespace ramses_internal
             UInt32 elementCount = 0;
             action.read(handle);
             action.read(field);
-            action.read(elementCount);
-            Float* array = const_cast<Float*>(scene.getDataFloatArray(handle, field));
-            for (UInt32 i = 0; i < elementCount; ++i)
-            {
-                action.read(array[i]);
-            }
+            Float* const array = const_cast<Float*>(scene.getDataFloatArray(handle, field));
+            action.read(array, elementCount);
             scene.setDataFloatArray(handle, field, elementCount, array);
             break;
         }
@@ -146,9 +139,7 @@ namespace ramses_internal
             action.read(elementCount);
             Vector2* array = const_cast<Vector2*>(scene.getDataVector2fArray(handle, field));
             for (UInt32 i = 0; i < elementCount; ++i)
-            {
-                action.read(array[i]);
-            }
+                action.read(array[i].data);
             scene.setDataVector2fArray(handle, field, elementCount, array);
             break;
         }
@@ -162,9 +153,7 @@ namespace ramses_internal
             action.read(elementCount);
             Vector3* array = const_cast<Vector3*>(scene.getDataVector3fArray(handle, field));
             for (UInt32 i = 0; i < elementCount; ++i)
-            {
-                action.read(array[i]);
-            }
+                action.read(array[i].data);
             scene.setDataVector3fArray(handle, field, elementCount, array);
             break;
         }
@@ -178,9 +167,7 @@ namespace ramses_internal
             action.read(elementCount);
             Vector4* array = const_cast<Vector4*>(scene.getDataVector4fArray(handle, field));
             for (UInt32 i = 0; i < elementCount; ++i)
-            {
-                action.read(array[i]);
-            }
+                action.read(array[i].data);
             scene.setDataVector4fArray(handle, field, elementCount, array);
             break;
         }
@@ -194,9 +181,7 @@ namespace ramses_internal
             action.read(elementCount);
             Matrix22f* array = const_cast<Matrix22f*>(scene.getDataMatrix22fArray(handle, field));
             for (UInt32 i = 0; i < elementCount; ++i)
-            {
-                action.read(array[i]);
-            }
+                action.read(array[i].data);
             scene.setDataMatrix22fArray(handle, field, elementCount, array);
             break;
         }
@@ -210,9 +195,7 @@ namespace ramses_internal
             action.read(elementCount);
             Matrix33f* array = const_cast<Matrix33f*>(scene.getDataMatrix33fArray(handle, field));
             for (UInt32 i = 0; i < elementCount; ++i)
-            {
-                action.read(array[i]);
-            }
+                action.read(array[i].data);
             scene.setDataMatrix33fArray(handle, field, elementCount, array);
             break;
         }
@@ -226,9 +209,7 @@ namespace ramses_internal
             action.read(elementCount);
             Matrix44f* array = const_cast<Matrix44f*>(scene.getDataMatrix44fArray(handle, field));
             for (UInt32 i = 0; i < elementCount; ++i)
-            {
-                action.read(array[i]);
-            }
+                action.read(array[i].data);
             scene.setDataMatrix44fArray(handle, field, elementCount, array);
             break;
         }
@@ -239,12 +220,8 @@ namespace ramses_internal
             UInt32 elementCount = 0;
             action.read(handle);
             action.read(field);
-            action.read(elementCount);
-            Int32* array = const_cast<Int32*>(scene.getDataIntegerArray(handle, field));
-            for (UInt32 i = 0; i < elementCount; ++i)
-            {
-                action.read(array[i]);
-            }
+            Int32* const array = const_cast<Int32*>(scene.getDataIntegerArray(handle, field));
+            action.read(array, elementCount);
             scene.setDataIntegerArray(handle, field, elementCount, array);
             break;
         }
@@ -258,9 +235,7 @@ namespace ramses_internal
             action.read(elementCount);
             Vector2i* array = const_cast<Vector2i*>(scene.getDataVector2iArray(handle, field));
             for (UInt32 i = 0; i < elementCount; ++i)
-            {
-                action.read(array[i]);
-            }
+                action.read(array[i].data);
             scene.setDataVector2iArray(handle, field, elementCount, array);
             break;
         }
@@ -274,9 +249,7 @@ namespace ramses_internal
             action.read(elementCount);
             Vector3i* array = const_cast<Vector3i*>(scene.getDataVector3iArray(handle, field));
             for (UInt32 i = 0; i < elementCount; ++i)
-            {
-                action.read(array[i]);
-            }
+                action.read(array[i].data);
             scene.setDataVector3iArray(handle, field, elementCount, array);
             break;
         }
@@ -290,9 +263,7 @@ namespace ramses_internal
             action.read(elementCount);
             Vector4i* array = const_cast<Vector4i*>(scene.getDataVector4iArray(handle, field));
             for (UInt32 i = 0; i < elementCount; ++i)
-            {
-                action.read(array[i]);
-            }
+                action.read(array[i].data);
             scene.setDataVector4iArray(handle, field, elementCount, array);
             break;
         }
@@ -573,89 +544,89 @@ namespace ramses_internal
         case ESceneActionId_SetStateStencilOps:
         {
             RenderStateHandle stateHandle;
-            uint8_t sfail = 0;
-            uint8_t dpfail = 0;
-            uint8_t dppass = 0;
+            EStencilOp sfail = EStencilOp::NUMBER_OF_ELEMENTS;
+            EStencilOp dpfail = EStencilOp::NUMBER_OF_ELEMENTS;
+            EStencilOp dppass = EStencilOp::NUMBER_OF_ELEMENTS;
             action.read(stateHandle);
             action.read(sfail);
             action.read(dpfail);
             action.read(dppass);
-            scene.setRenderStateStencilOps(stateHandle, static_cast<EStencilOp>(sfail), static_cast<EStencilOp>(dpfail), static_cast<EStencilOp>(dppass));
+            scene.setRenderStateStencilOps(stateHandle, sfail, dpfail, dppass);
             break;
         }
         case ESceneActionId_SetStateStencilFunc:
         {
             RenderStateHandle stateHandle;
-            uint8_t func = 0;
+            EStencilFunc func = EStencilFunc::NUMBER_OF_ELEMENTS;
             uint8_t ref = 0;
             uint8_t mask = 0;
             action.read(stateHandle);
             action.read(func);
             action.read(ref);
             action.read(mask);
-            scene.setRenderStateStencilFunc(stateHandle, static_cast<EStencilFunc>(func), ref, mask);
+            scene.setRenderStateStencilFunc(stateHandle, func, ref, mask);
             break;
         }
         case ESceneActionId_SetStateDepthWrite:
         {
             RenderStateHandle stateHandle;
-            uint8_t flag = 0;
+            EDepthWrite flag = EDepthWrite::NUMBER_OF_ELEMENTS;
             action.read(stateHandle);
             action.read(flag);
-            scene.setRenderStateDepthWrite(stateHandle, static_cast<EDepthWrite>(flag));
+            scene.setRenderStateDepthWrite(stateHandle, flag);
             break;
         }
         case ESceneActionId_SetStateDepthFunc:
         {
             RenderStateHandle stateHandle;
-            uint8_t func = 0;
+            EDepthFunc func = EDepthFunc::NUMBER_OF_ELEMENTS;
             action.read(stateHandle);
             action.read(func);
-            scene.setRenderStateDepthFunc(stateHandle, static_cast<EDepthFunc>(func));
+            scene.setRenderStateDepthFunc(stateHandle, func);
             break;
         }
         case ESceneActionId_SetStateCullMode:
         {
             RenderStateHandle stateHandle;
-            uint8_t mode = 0;
+            ECullMode mode = ECullMode::NUMBER_OF_ELEMENTS;
             action.read(stateHandle);
             action.read(mode);
-            scene.setRenderStateCullMode(stateHandle, static_cast<ECullMode>(mode));
+            scene.setRenderStateCullMode(stateHandle, mode);
             break;
         }
         case ESceneActionId_SetStateDrawMode:
         {
             RenderStateHandle stateHandle;
-            uint8_t mode = 0;
+            EDrawMode mode = EDrawMode::NUMBER_OF_ELEMENTS;
             action.read(stateHandle);
             action.read(mode);
-            scene.setRenderStateDrawMode(stateHandle, static_cast<EDrawMode>(mode));
+            scene.setRenderStateDrawMode(stateHandle, mode);
             break;
         }
         case ESceneActionId_SetStateBlendOperations:
         {
             RenderStateHandle stateHandle;
-            uint8_t opColor = 0;
-            uint8_t opAlpha = 0;
+            EBlendOperation opColor = EBlendOperation::NUMBER_OF_ELEMENTS;
+            EBlendOperation opAlpha = EBlendOperation::NUMBER_OF_ELEMENTS;
             action.read(stateHandle);
             action.read(opColor);
             action.read(opAlpha);
-            scene.setRenderStateBlendOperations(stateHandle, static_cast<EBlendOperation>(opColor), static_cast<EBlendOperation>(opAlpha));
+            scene.setRenderStateBlendOperations(stateHandle, opColor, opAlpha);
             break;
         }
         case ESceneActionId_SetStateBlendFactors:
         {
             RenderStateHandle stateHandle;
-            uint8_t srcColor = 0;
-            uint8_t destColor = 0;
-            uint8_t srcAlpha = 0;
-            uint8_t destAlpha = 0;
+            EBlendFactor srcColor = EBlendFactor::NUMBER_OF_ELEMENTS;
+            EBlendFactor destColor = EBlendFactor::NUMBER_OF_ELEMENTS;
+            EBlendFactor srcAlpha = EBlendFactor::NUMBER_OF_ELEMENTS;
+            EBlendFactor destAlpha = EBlendFactor::NUMBER_OF_ELEMENTS;
             action.read(stateHandle);
             action.read(srcColor);
             action.read(destColor);
             action.read(srcAlpha);
             action.read(destAlpha);
-            scene.setRenderStateBlendFactors(stateHandle, static_cast<EBlendFactor>(srcColor), static_cast<EBlendFactor>(destColor), static_cast<EBlendFactor>(srcAlpha), static_cast<EBlendFactor>(destAlpha));
+            scene.setRenderStateBlendFactors(stateHandle, srcColor, destColor, srcAlpha, destAlpha);
             break;
         }
         case ESceneActionId_SetStateColorWriteMask:
@@ -856,25 +827,16 @@ namespace ramses_internal
         case ESceneActionId_AllocateTextureSampler:
         {
             TextureSamplerHandle samplerHandle;
-            UInt32 value;
             TextureSampler sampler;
 
             action.read(samplerHandle);
-            action.read(value);
-            sampler.states.m_addressModeU = static_cast<EWrapMethod>(value);
-            action.read(value);
-            sampler.states.m_addressModeV = static_cast<EWrapMethod>(value);
-            action.read(value);
-            sampler.states.m_addressModeR = static_cast<EWrapMethod>(value);
-
-            action.read(value);
-            sampler.states.m_samplingMode = static_cast<ESamplingMethod>(value);
-
+            action.read(sampler.states.m_addressModeU);
+            action.read(sampler.states.m_addressModeV);
+            action.read(sampler.states.m_addressModeR);
+            action.read(sampler.states.m_samplingMode);
             action.read(sampler.states.m_anisotropyLevel);
 
-            UInt8 contentType;
-            action.read(contentType);
-            sampler.contentType = static_cast<TextureSampler::ContentType>(contentType);
+            action.read(sampler.contentType);
             if (sampler.contentType == TextureSampler::ContentType::ClientTexture)
                 action.read(sampler.textureResource);
             else
@@ -978,7 +940,7 @@ namespace ramses_internal
             Vector4 clearColor;
             RenderPassHandle renderPassHandle;
             action.read(renderPassHandle);
-            action.read(clearColor);
+            action.read(clearColor.data);
             scene.setRenderPassClearColor(renderPassHandle, clearColor);
             break;
         }
@@ -1020,7 +982,7 @@ namespace ramses_internal
 
             action.read(handle.asMemoryHandleReference());
             action.read(offsetInBytes);
-            action.read(data, dataSizeInBytes);
+            action.readWithoutCopy(data, dataSizeInBytes);
             scene.updateDataBuffer(handle, offsetInBytes, dataSizeInBytes, data);
             break;
         }
@@ -1072,7 +1034,7 @@ namespace ramses_internal
             action.read(y);
             action.read(width);
             action.read(height);
-            action.read(data, dataSizeInBytes);
+            action.readWithoutCopy(data, dataSizeInBytes);
 
             scene.updateTextureBuffer(handle, mipLevel, x, y, width, height, data);
             break;
@@ -1277,7 +1239,7 @@ namespace ramses_internal
             SplineTimeStamp timeStamp;
             action.read(timeStamp);
             Vector2 value;
-            action.read(value);
+            action.read(value.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
             if (animSystem != NULL)
@@ -1295,7 +1257,7 @@ namespace ramses_internal
             SplineTimeStamp timeStamp;
             action.read(timeStamp);
             Vector3 value;
-            action.read(value);
+            action.read(value.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
             if (animSystem != NULL)
@@ -1313,7 +1275,7 @@ namespace ramses_internal
             SplineTimeStamp timeStamp;
             action.read(timeStamp);
             Vector4 value;
-            action.read(value);
+            action.read(value.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
             if (animSystem != NULL)
@@ -1331,7 +1293,7 @@ namespace ramses_internal
             SplineTimeStamp timeStamp;
             action.read(timeStamp);
             Vector2i value;
-            action.read(value);
+            action.read(value.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
             if (animSystem != NULL)
@@ -1349,7 +1311,7 @@ namespace ramses_internal
             SplineTimeStamp timeStamp;
             action.read(timeStamp);
             Vector3i value;
-            action.read(value);
+            action.read(value.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
             if (animSystem != NULL)
@@ -1367,7 +1329,7 @@ namespace ramses_internal
             SplineTimeStamp timeStamp;
             action.read(timeStamp);
             Vector4i value;
-            action.read(value);
+            action.read(value.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
             if (animSystem != NULL)
@@ -1387,9 +1349,9 @@ namespace ramses_internal
             Int32 value;
             action.read(value);
             Vector2 tanIn;
-            action.read(tanIn);
+            action.read(tanIn.data);
             Vector2 tanOut;
-            action.read(tanOut);
+            action.read(tanOut.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
             if (animSystem != NULL)
@@ -1409,9 +1371,9 @@ namespace ramses_internal
             Float value;
             action.read(value);
             Vector2 tanIn;
-            action.read(tanIn);
+            action.read(tanIn.data);
             Vector2 tanOut;
-            action.read(tanOut);
+            action.read(tanOut.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
             if (animSystem != NULL)
@@ -1429,11 +1391,11 @@ namespace ramses_internal
             SplineTimeStamp timeStamp;
             action.read(timeStamp);
             Vector2 value;
-            action.read(value);
+            action.read(value.data);
             Vector2 tanIn;
-            action.read(tanIn);
+            action.read(tanIn.data);
             Vector2 tanOut;
-            action.read(tanOut);
+            action.read(tanOut.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
             if (animSystem != NULL)
@@ -1451,11 +1413,11 @@ namespace ramses_internal
             SplineTimeStamp timeStamp;
             action.read(timeStamp);
             Vector3 value;
-            action.read(value);
+            action.read(value.data);
             Vector2 tanIn;
-            action.read(tanIn);
+            action.read(tanIn.data);
             Vector2 tanOut;
-            action.read(tanOut);
+            action.read(tanOut.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
             if (animSystem != NULL)
@@ -1473,11 +1435,11 @@ namespace ramses_internal
             SplineTimeStamp timeStamp;
             action.read(timeStamp);
             Vector4 value;
-            action.read(value);
+            action.read(value.data);
             Vector2 tanIn;
-            action.read(tanIn);
+            action.read(tanIn.data);
             Vector2 tanOut;
-            action.read(tanOut);
+            action.read(tanOut.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
             if (animSystem != NULL)
@@ -1495,11 +1457,11 @@ namespace ramses_internal
             SplineTimeStamp timeStamp;
             action.read(timeStamp);
             Vector2i value;
-            action.read(value);
+            action.read(value.data);
             Vector2 tanIn;
-            action.read(tanIn);
+            action.read(tanIn.data);
             Vector2 tanOut;
-            action.read(tanOut);
+            action.read(tanOut.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
             if (animSystem != NULL)
@@ -1517,11 +1479,11 @@ namespace ramses_internal
             SplineTimeStamp timeStamp;
             action.read(timeStamp);
             Vector3i value;
-            action.read(value);
+            action.read(value.data);
             Vector2 tanIn;
-            action.read(tanIn);
+            action.read(tanIn.data);
             Vector2 tanOut;
-            action.read(tanOut);
+            action.read(tanOut.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
             if (animSystem != NULL)
@@ -1539,11 +1501,11 @@ namespace ramses_internal
             SplineTimeStamp timeStamp;
             action.read(timeStamp);
             Vector4i value;
-            action.read(value);
+            action.read(value.data);
             Vector2 tanIn;
-            action.read(tanIn);
+            action.read(tanIn.data);
             Vector2 tanOut;
-            action.read(tanOut);
+            action.read(tanOut.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
             if (animSystem != NULL)
@@ -1796,23 +1758,23 @@ namespace ramses_internal
         }
         case ESceneActionId_CompoundState:
         {
-            RenderStateHandle     state;
-            uint8_t bfSrcColor;
-            uint8_t bfDstColor;
-            uint8_t bfSrcAlpha;
-            uint8_t bfDstAlpha;
-            uint8_t boColor;
-            uint8_t boAlpha;
-            uint8_t cullMode;
-            uint8_t drawMode;
-            uint8_t depthWrite;
-            uint8_t depthFunc;
-            uint8_t stencilFunc;
+            RenderStateHandle state;
+            EBlendFactor bfSrcColor;
+            EBlendFactor bfDstColor;
+            EBlendFactor bfSrcAlpha;
+            EBlendFactor bfDstAlpha;
+            EBlendOperation boColor;
+            EBlendOperation boAlpha;
+            ECullMode cullMode;
+            EDrawMode drawMode;
+            EDepthWrite depthWrite;
+            EDepthFunc depthFunc;
+            EStencilFunc stencilFunc;
             uint8_t stencilRefValue;
             uint8_t stencilMask;
-            uint8_t stencilOpFail;
-            uint8_t stencilOpDepthFail;
-            uint8_t stencilOpDepthPass;
+            EStencilOp stencilOpFail;
+            EStencilOp stencilOpDepthFail;
+            EStencilOp stencilOpDepthPass;
             ColorWriteMask  colorWriteMask;
 
             action.read(state);
@@ -1838,14 +1800,14 @@ namespace ramses_internal
             assert(state == stateHandleNew);
             UNUSED(stateHandleNew);
 
-            scene.setRenderStateBlendFactors(   state, static_cast<EBlendFactor>(bfSrcColor), static_cast<EBlendFactor>(bfDstColor), static_cast<EBlendFactor>(bfSrcAlpha), static_cast<EBlendFactor>(bfDstAlpha));
-            scene.setRenderStateBlendOperations(state, static_cast<EBlendOperation>(boColor), static_cast<EBlendOperation>(boAlpha));
-            scene.setRenderStateCullMode(       state, static_cast<ECullMode>(cullMode));
-            scene.setRenderStateDrawMode(       state, static_cast<EDrawMode>(drawMode));
-            scene.setRenderStateDepthWrite(     state, static_cast<EDepthWrite>(depthWrite));
-            scene.setRenderStateDepthFunc(      state, static_cast<EDepthFunc>(depthFunc));
-            scene.setRenderStateStencilFunc(    state, static_cast<EStencilFunc>(stencilFunc), stencilRefValue, stencilMask);
-            scene.setRenderStateStencilOps(     state, static_cast<EStencilOp>(stencilOpFail), static_cast<EStencilOp>(stencilOpDepthFail), static_cast<EStencilOp>(stencilOpDepthPass));
+            scene.setRenderStateBlendFactors(   state, bfSrcColor, bfDstColor, bfSrcAlpha, bfDstAlpha);
+            scene.setRenderStateBlendOperations(state, boColor, boAlpha);
+            scene.setRenderStateCullMode(       state, cullMode);
+            scene.setRenderStateDrawMode(       state, drawMode);
+            scene.setRenderStateDepthWrite(     state, depthWrite);
+            scene.setRenderStateDepthFunc(      state, depthFunc);
+            scene.setRenderStateStencilFunc(    state, stencilFunc, stencilRefValue, stencilMask);
+            scene.setRenderStateStencilOps(     state, stencilOpFail, stencilOpDepthFail, stencilOpDepthPass);
             scene.setRenderStateColorWriteMask( state, colorWriteMask);
 
             break;
@@ -1857,7 +1819,7 @@ namespace ramses_internal
             UInt32 resourceSize;
             const Byte* resourceData = nullptr;
             action.read(hash);
-            action.read(resourceData, resourceSize);
+            action.readWithoutCopy(resourceData, resourceSize);
             BinaryInputStream stream(resourceData);
             std::unique_ptr<IResource> resource(SingleResourceSerialization::DeserializeResource(stream, hash));
             if (resources)
@@ -1958,6 +1920,16 @@ namespace ramses_internal
             }
         }
         assert(action.isFullyRead());
+    }
+
+    SceneVersionTag SceneActionApplier::ReadSceneVersionTag(SceneActionCollection::SceneActionReader& action)
+    {
+        assert(action.type() == ESceneActionId_SetSceneVersionTag);
+        SceneVersionTag sceneVersionTag;
+        action.read(sceneVersionTag.getReference());
+        assert(sceneVersionTag != InvalidSceneVersionTag);
+        assert(action.isFullyRead());
+        return sceneVersionTag;
     }
 
     void SceneActionApplier::GetSceneSizeInformation(SceneActionCollection::SceneActionReader& action, SceneSizeInformation& sizeInfo)

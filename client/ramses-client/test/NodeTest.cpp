@@ -401,7 +401,7 @@ namespace ramses
         float modelMat[16] = { 0.f };
         EXPECT_EQ(StatusOK, node.getModelMatrix(modelMat));
 
-        expectMatricesEqual(ramses_internal::Matrix44f::Identity.getRawData(), modelMat);
+        expectMatricesEqual(ramses_internal::Matrix44f::Identity.data, modelMat);
     }
 
     TYPED_TEST(NodeTest, getsIdentityInverseModelMatrixInitially)
@@ -410,7 +410,7 @@ namespace ramses
         float modelMat[16] = { 0.f };
         EXPECT_EQ(StatusOK, node.getInverseModelMatrix(modelMat));
 
-        expectMatricesEqual(ramses_internal::Matrix44f::Identity.getRawData(), modelMat);
+        expectMatricesEqual(ramses_internal::Matrix44f::Identity.data, modelMat);
     }
 
     TYPED_TEST(NodeTest, getsModelMatrixComputedFromTransformationChain)
@@ -437,7 +437,7 @@ namespace ramses
         float modelMat[16] = { 0.f };
         EXPECT_EQ(StatusOK, node.getModelMatrix(modelMat));
 
-        expectMatricesEqual(expectedModelMat.getRawData(), modelMat);
+        expectMatricesEqual(expectedModelMat.data, modelMat);
     }
 
     TYPED_TEST(NodeTest, getsInverseModelMatrixComputedFromTransformationChain)
@@ -464,7 +464,7 @@ namespace ramses
         float modelMat[16] = { 0.f };
         EXPECT_EQ(StatusOK, node.getInverseModelMatrix(modelMat));
 
-        expectMatricesEqual(expectedModelMat.getRawData(), modelMat);
+        expectMatricesEqual(expectedModelMat.data, modelMat);
     }
 
     TYPED_TEST(NodeTest, instantiationCreatesExactlyOneLLNode)

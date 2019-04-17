@@ -27,10 +27,12 @@ namespace ramses_internal
     {
     }
 
-    DeviceResourceHandle ResourceUploader::uploadResource(IRenderBackend& renderBackend, ManagedResource res)
+    DeviceResourceHandle ResourceUploader::uploadResource(IRenderBackend& renderBackend, ManagedResource res, UInt32& outVRAMSize)
     {
         const IResource& resourceObject = *res.getResourceObject();
         IDevice& device = renderBackend.getDevice();
+        outVRAMSize = resourceObject.getDecompressedDataSize();
+
         switch (resourceObject.getTypeID())
         {
         case EResourceType_VertexArray:
@@ -50,7 +52,7 @@ namespace ramses_internal
         case EResourceType_Texture2D:
         case EResourceType_Texture3D:
         case EResourceType_TextureCube:
-            return uploadTexture(device, *resourceObject.convertTo<TextureResource>());
+            return uploadTexture(device, *resourceObject.convertTo<TextureResource>(), outVRAMSize);
         case EResourceType_Effect:
         {
             const EffectResource* effectRes = resourceObject.convertTo<EffectResource>();
@@ -86,27 +88,27 @@ namespace ramses_internal
         }
     }
 
-    DeviceResourceHandle ResourceUploader::uploadTexture(IDevice& device, const TextureResource& texture)
+    DeviceResourceHandle ResourceUploader::uploadTexture(IDevice& device, const TextureResource& texture, UInt32& vramSize)
     {
         const Bool generateMipsFlag = texture.getGenerateMipChainFlag();
         const auto& mipDataSizes = texture.getMipDataSizes();
         const UInt32 numProvidedMipLevels = static_cast<UInt32>(mipDataSizes.size());
         assert(numProvidedMipLevels == 1u || !generateMipsFlag);
         const UInt32 numMipLevelsToAllocate = generateMipsFlag ? TextureMathUtils::GetMipLevelCount(texture.getWidth(), texture.getHeight(), texture.getDepth()) : numProvidedMipLevels;
-        const UInt32 totalSizeInBytes = EstimateGPUAllocatedSizeOfTexture(texture, numMipLevelsToAllocate);
+        vramSize = EstimateGPUAllocatedSizeOfTexture(texture, numMipLevelsToAllocate);
 
         // allocate texture
         DeviceResourceHandle textureDeviceHandle;
         switch (texture.getTypeID())
         {
         case EResourceType_Texture2D:
-            textureDeviceHandle = device.allocateTexture2D(texture.getWidth(), texture.getHeight(), texture.getTextureFormat(), numMipLevelsToAllocate, totalSizeInBytes);
+            textureDeviceHandle = device.allocateTexture2D(texture.getWidth(), texture.getHeight(), texture.getTextureFormat(), numMipLevelsToAllocate, vramSize);
             break;
         case EResourceType_Texture3D:
-            textureDeviceHandle = device.allocateTexture3D(texture.getWidth(), texture.getHeight(), texture.getDepth(), texture.getTextureFormat(), numMipLevelsToAllocate, totalSizeInBytes);
+            textureDeviceHandle = device.allocateTexture3D(texture.getWidth(), texture.getHeight(), texture.getDepth(), texture.getTextureFormat(), numMipLevelsToAllocate, vramSize);
             break;
         case EResourceType_TextureCube:
-            textureDeviceHandle = device.allocateTextureCube(texture.getWidth(), texture.getTextureFormat(), numMipLevelsToAllocate, totalSizeInBytes);
+            textureDeviceHandle = device.allocateTextureCube(texture.getWidth(), texture.getTextureFormat(), numMipLevelsToAllocate, vramSize);
             break;
         default:
             assert(false);
@@ -215,7 +217,10 @@ namespace ramses_internal
         }
         else
         {
-            return TextureMathUtils::GetTotalMemoryUsedByMipmappedTexture(GetTexelSizeFromFormat(texture.getTextureFormat()), texture.getWidth(), texture.getHeight(), texture.getDepth(), numMipLevelsToAllocate);
+            if (texture.getTypeID() == EResourceType_TextureCube)
+                return 6u * TextureMathUtils::GetTotalMemoryUsedByMipmappedTexture(GetTexelSizeFromFormat(texture.getTextureFormat()), texture.getWidth(), texture.getWidth(), 1u, numMipLevelsToAllocate);
+            else
+                return TextureMathUtils::GetTotalMemoryUsedByMipmappedTexture(GetTexelSizeFromFormat(texture.getTextureFormat()), texture.getWidth(), texture.getHeight(), texture.getDepth(), numMipLevelsToAllocate);
         }
     }
 }

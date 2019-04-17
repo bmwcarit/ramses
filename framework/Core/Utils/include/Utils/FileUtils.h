@@ -19,20 +19,6 @@ namespace ramses_internal
     class FileUtils
     {
     public:
-
-        /**
-        * Removes a directory.
-        * @param file The path name of the folder to delete.
-        * @return EStatus_RAMSES_OK if directory was deleted successfully.
-        */
-        static EStatus RemoveDirectory(File& directory);
-
-        /**
-         * Creates the directory and if necessary all parent directories.
-         * @return EStatus_RAMSES_OK if directory was created successfully.
-         */
-        static EStatus CreateDirectories(File& directory);
-
         /**
         * Reads all text from a file.
         * @param file The file containing the text.
@@ -64,66 +50,29 @@ namespace ramses_internal
         * @return The return value.
         */
         static EStatus ReadAllBytes(File& file, Vector<Byte>& result);
-
-        /**
-        * Retrieves the current working directory for the calling process
-        * @return File object with current working directory
-        */
-        static File GetCurrentWorkingDirectory();
-
-        /**
-        * Sets the current working directory for the process
-        * @param directory the new working directory
-        * @return CAPU_OK if working directory changed, CAPU_ERROR otherwise
-        */
-        static EStatus SetCurrentWorkingDirectory(const File& directory);
     };
-
-    inline EStatus FileUtils::RemoveDirectory(File& directory)
-    {
-        ramses_capu::File capuFile = ramses_capu::File(directory.getPath());
-        return static_cast<EStatus>(ramses_capu::FileUtils::removeDirectory(capuFile));
-    }
-
-    inline EStatus FileUtils::CreateDirectories(File& directory)
-    {
-        ramses_capu::File capuFile = ramses_capu::File(directory.getPath());
-        return static_cast<EStatus>(ramses_capu::FileUtils::createDirectories(capuFile));
-    }
 
     inline String FileUtils::ReadAllText(File& file)
     {
-        ramses_capu::File capuFile = ramses_capu::File(file.getPath());
-        return ramses_capu::FileUtils::readAllText(capuFile);
+        ramses_capu::File capuFile = ramses_capu::File(file.getPath().stdRef());
+        return String(ramses_capu::FileUtils::readAllText(capuFile));
     }
 
     inline EStatus FileUtils::WriteAllText(File& file, const String& content)
     {
-        ramses_capu::File capuFile = ramses_capu::File(file.getPath());
-        return static_cast<EStatus>(ramses_capu::FileUtils::writeAllText(capuFile,content));
-    }
-
-    inline File FileUtils::GetCurrentWorkingDirectory()
-    {
-        const ramses_internal::String filename = ramses_capu::FileUtils::getCurrentWorkingDirectory().getPath();
-        return File(filename);
-    }
-
-    inline EStatus FileUtils::SetCurrentWorkingDirectory(const File& directory)
-    {
-        ramses_capu::File capuFile = ramses_capu::File(directory.getPath());
-        return static_cast<EStatus>(ramses_capu::FileUtils::setCurrentWorkingDirectory(capuFile));
+        ramses_capu::File capuFile = ramses_capu::File(file.getPath().stdRef());
+        return static_cast<EStatus>(ramses_capu::FileUtils::writeAllText(capuFile,content.stdRef()));
     }
 
     inline EStatus FileUtils::WriteAllBytes(File& file, const Byte* buffer, UInt32 numberOfBytesToWrite)
     {
-        ramses_capu::File capuFile = ramses_capu::File(file.getPath());
+        ramses_capu::File capuFile = ramses_capu::File(file.getPath().stdRef());
         return static_cast<EStatus>(ramses_capu::FileUtils::writeAllBytes(capuFile, buffer, numberOfBytesToWrite));
     }
 
     inline EStatus FileUtils::ReadAllBytes(File& file, Vector<Byte>& result)
     {
-        ramses_capu::File capuFile = ramses_capu::File(file.getPath());
+        ramses_capu::File capuFile = ramses_capu::File(file.getPath().stdRef());
         ramses_capu::uint_t fileSize;
         if (capuFile.getSizeInBytes(fileSize) != ramses_capu::CAPU_OK)
         {

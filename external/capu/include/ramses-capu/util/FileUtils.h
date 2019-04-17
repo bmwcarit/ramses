@@ -18,36 +18,11 @@
 #define RAMSES_CAPU_FILEUTILS_H
 
 #include "ramses-capu/os/File.h"
-#include "ramses-capu/util/FileTraverser.h"
 #include "ramses-capu/os/Memory.h"
 #include <vector>
-#include RAMSES_CAPU_PLATFORM_INCLUDE(FileUtils)
 
 namespace ramses_capu
 {
-    /**
-    * Helper visitor to delete files recursively.
-    */
-    class RecursiveFileDeleter: public IFileVisitor
-    {
-    public:
-        status_t visit(File& file, bool& stepIntoDirectory) override
-        {
-            stepIntoDirectory = false; // not stepping into, because we do our own recursion!
-            if (file.isDirectory())
-            {
-                // first delete directory contents
-                RecursiveFileDeleter deleter;
-                status_t retVal = FileTraverser::accept(file, deleter);
-                if (retVal != CAPU_OK)
-                {
-                    return retVal;
-                }
-            }
-            return file.remove(); // stop if file/directory was not removed
-        }
-    };
-
     /**
     * Helper methods to work with files.
     */
@@ -55,24 +30,11 @@ namespace ramses_capu
     {
     public:
         /**
-        * Removes a directory and all subfiles and subdirectories.
-        * @param directory The directory which should get removed.
-        * @return CAPU_OK is removal was successful.
-        */
-        static status_t removeDirectory(File& directory);
-
-        /**
-         * Creates the directory and if necessary all parent directories.
-         * @return CAPU_OK if directory was created successfully.
-         */
-        static status_t createDirectories(File& directory);
-
-        /**
         * Reads all text from a file.
         * @param file The file containing the text.
         * @return The file content as string.
         */
-        static String readAllText(File& file);
+        static std::string readAllText(File& file);
 
         /**
         * Reads all bytes from a file.
@@ -88,7 +50,7 @@ namespace ramses_capu
         * @param content The content that should go into the file.
         * @return The return value.
         */
-        static status_t writeAllText(File& file, const String& content);
+        static status_t writeAllText(File& file, const std::string& content);
 
         /**
         * Writes all bytes to a file. Existing content will be overwritten.
@@ -98,68 +60,7 @@ namespace ramses_capu
         * @return CAPU_OK if the file was written successfully.
         */
         static status_t writeAllBytes(File& file, const Byte* buffer, uint32_t numberOfBytesToWrite);
-
-        /**
-        * Retrieves the current working directory for the calling process
-        * @return File object with current working directory
-        */
-        static File getCurrentWorkingDirectory();
-
-        /**
-        * Sets the current working directory for the process
-        * @param directory the new working directory
-        * @return CAPU_OK if working directory changed, CAPU_ERROR otherwise
-        */
-        static status_t setCurrentWorkingDirectory(const File& directory);
     };
-
-    inline status_t FileUtils::removeDirectory(File& directory)
-    {
-        // first delete all subfiles and folders
-        RecursiveFileDeleter deleter;
-        FileTraverser::accept(directory, deleter);
-
-        // then delete the directory itself
-        return directory.remove();
-    }
-
-    inline status_t FileUtils::createDirectories(File& directory)
-    {
-        if (directory.exists())
-        {
-            return directory.isDirectory() ? CAPU_OK : CAPU_ERROR;
-        }
-
-        // non recursive traversing up until we find an existing directory.
-        std::vector<String> fileStack;
-        bool success;
-        File parent = directory.getParentFile(success);
-        while (success && !parent.exists())
-        {
-            // bubble up the directories until we find a directory that exists
-            fileStack.push_back(parent.getPath());
-            parent = parent.getParentFile(success);
-        }
-        if (!success)
-        {
-            // wrong path where no parent exists. This is an error
-            return CAPU_ERROR;
-        }
-
-        // now bubble down and create all the directories one after the other
-        std::reverse(fileStack.begin(), fileStack.end());
-        for (const auto& dir : fileStack)
-        {
-            const status_t retVal = File(dir).createDirectory();
-            if (retVal != CAPU_OK)
-            {
-                return retVal;
-            }
-        }
-
-        // finally, create the directory
-        return directory.createDirectory();
-    }
 
     inline status_t FileUtils::readAllBytes(File& file, std::vector<Byte>& result)
     {
@@ -220,7 +121,7 @@ namespace ramses_capu
         return CAPU_OK;
     }
 
-    inline String FileUtils::readAllText(File& file)
+    inline std::string FileUtils::readAllText(File& file)
     {
         // read the file
         ramses_capu::uint_t fileSize;
@@ -258,7 +159,7 @@ namespace ramses_capu
         file.close();
         if (retVal == CAPU_OK || retVal == CAPU_EOF) // read all content
         {
-            String result = String(buffer);
+            std::string result(buffer);
             delete[] buffer;
             return result;
         }
@@ -269,27 +170,17 @@ namespace ramses_capu
         }
     }
 
-    inline status_t FileUtils::writeAllText(File& file, const String& content)
+    inline status_t FileUtils::writeAllText(File& file, const std::string& content)
     {
         if (file.exists())
         {
             file.remove();
         }
         file.open(ramses_capu::READ_WRITE_OVERWRITE_OLD);
-        file.write(content.c_str(), content.getLength());
+        file.write(content.c_str(), content.size());
         file.flush();
         file.close();
         return CAPU_OK;
-    }
-
-    inline File FileUtils::getCurrentWorkingDirectory()
-    {
-        return ramses_capu::os::FileUtils::getCurrentWorkingDirectory();
-    }
-
-    inline status_t FileUtils::setCurrentWorkingDirectory(const File& directory)
-    {
-        return ramses_capu::os::FileUtils::setCurrentWorkingDirectory(directory);
     }
 }
 

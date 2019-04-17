@@ -135,7 +135,8 @@ ACME2_PROJECT(
     #==========================================================================
     # content
     #==========================================================================
-    CONTENT                     ON   external
+    CONTENT                     AUTO external
+
                                 ON   framework
 
                                 ON   client/ramses-client
@@ -206,8 +207,6 @@ ACME2_PROJECT(
 
 
                                 AUTO demo
-
-                                AUTO external/wayland-ivi-example-client
 )
 
 #==========================================================================

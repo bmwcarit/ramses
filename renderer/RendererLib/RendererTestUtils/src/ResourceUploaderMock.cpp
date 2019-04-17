@@ -17,6 +17,6 @@ namespace ramses_internal
 
     ResourceUploaderMock::ResourceUploaderMock()
     {
-        ON_CALL(*this, uploadResource(_, _)).WillByDefault(Return(FakeResourceDeviceHandle));
+        ON_CALL(*this, uploadResource(_, _, _)).WillByDefault(Return(FakeResourceDeviceHandle));
     }
 };

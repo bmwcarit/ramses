@@ -339,11 +339,11 @@ namespace ramses_internal
     {
         switch (wrapMode)
         {
-        case EWrapMethod_Repeat:
+        case EWrapMethod::Repeat:
             return GL_REPEAT;
-        case EWrapMethod_Clamp:
+        case EWrapMethod::Clamp:
             return GL_CLAMP_TO_EDGE;
-        case EWrapMethod_RepeatMirrored:
+        case EWrapMethod::RepeatMirrored:
             return GL_MIRRORED_REPEAT;
         default:
             assert(false && "Invalid wrap mode");

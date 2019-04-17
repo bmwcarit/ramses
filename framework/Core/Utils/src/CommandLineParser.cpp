@@ -18,7 +18,7 @@ namespace ramses_internal
             m_programName = argv[0];
             for (Int index = 1; index < argc; ++index)
             {
-                const Bool startsWithDash = (argv[index][0] == '-');
+                const Bool startsWithDash = (argv[index] && argv[index][0] == '-');
 
                 CommandLineArgument cmdLineArg;
                 cmdLineArg.setName(startsWithDash ? StringUtils::Trim(argv[index]) : argv[index]);

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 #  -------------------------------------------------------------------------
 #  Copyright (C) 2018 BMW Car IT GmbH
@@ -15,6 +15,7 @@ Runs all enabled style checking
 
 import sys, re, string
 from common_modules.common import *
+from common_modules import config
 
 from check_license import check_license_for_file
 from check_header_guards import check_header_guards
@@ -32,12 +33,12 @@ from check_api_export_symbols import check_api_export_symbols
 def main():
 
     if len(sys.argv) > 2:
-        print """
+        print("""
 Usage: check_all_styles.py [<path>]
 
 Takes a path as input and runs style/license header checks with filters where necessary.
 
-"""
+""")
         exit(-1)
 
     if len(sys.argv) < 2:
@@ -45,7 +46,7 @@ Takes a path as input and runs style/license header checks with filters where ne
     else:
         path = os.path.realpath(sys.argv[1])
 
-    print "Check {}".format(path)
+    print("Check {}".format(path))
 
     binary_files = {
         r'\.res$',
@@ -110,6 +111,7 @@ Takes a path as input and runs style/license header checks with filters where ne
         r'^LICENSE\.txt$',   # Contains license info, not related to code/content
         r'^proprietary/oss/LICENSE\.txt$',  # Contains oss license info, not related to code/content
         r'^.lfsconfig$',     # Doesn't need a license
+        r'^proprietary/scripts/text-generator-test/tests',
     }
 
     blacklist_files_formatting = shared_blacklist_non_src_files | {
@@ -156,12 +158,12 @@ Takes a path as input and runs style/license header checks with filters where ne
 
         check_license_for_file               (f, file_contents, path)
 
-    print 'checked {0} files'.format(len(set(src_files) | set(files_formatting) | set(files_license_header)))
+    print('checked {0} files'.format(len(set(src_files) | set(files_formatting) | set(files_license_header))))
 
     if 0 == config.G_WARNING_COUNT:
-        print "your style is awesome! no style guide violations detected."
+        print("your style is awesome! no style guide violations detected.")
     else:
-        print "detected {0} style guide issues".format(config.G_WARNING_COUNT)
+        print("detected {0} style guide issues".format(config.G_WARNING_COUNT))
 
     exit(-config.G_WARNING_COUNT)
 

@@ -366,7 +366,7 @@ ramses_internal::IEmbeddedCompositor& LocalTestRenderer::getEmbeddedCompositor(r
 
 void LocalTestRenderer::setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForSceneActionsApply, uint64_t limitForOffscreenBufferRender)
 {
-    m_renderer->setFrameTimerLimits(limitForClientResourcesUpload, limitForSceneActionsApply, limitForOffscreenBufferRender);
+    m_renderer->setFrameTimerLimits(0u, limitForClientResourcesUpload, limitForSceneActionsApply, limitForOffscreenBufferRender);
 }
 
 bool LocalTestRenderer::hasSystemCompositorController() const

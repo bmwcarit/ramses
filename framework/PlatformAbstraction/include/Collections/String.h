@@ -40,7 +40,7 @@ namespace ramses_internal
         void operator+=(const Char* other);
         void operator+=(const String& other);
         Char& operator[](const UInt index);
-        const Char& operator[](const UInt index) const;
+        Char operator[](const UInt index) const;
 
         String& operator=(const Char* other);
         Bool operator==(const String& other) const;
@@ -65,6 +65,9 @@ namespace ramses_internal
          * @return Reference to this string
          */
         String& swap(String& other);
+
+        const std::string& stdRef() const;
+        std::string& stdRef();
     };
 
     inline IOutputStream& operator<<(IOutputStream& stream, const String& value)
@@ -203,7 +206,7 @@ namespace ramses_internal
         return ramses_capu::String::operator [](index);
     }
 
-    inline const Char& String::operator[](const UInt index) const
+    inline Char String::operator[](const UInt index) const
     {
         return ramses_capu::String::operator [](index);
     }
@@ -313,6 +316,16 @@ namespace ramses_internal
     inline bool String::empty() const
     {
         return getLength() == 0;
+    }
+
+    inline const std::string& String::stdRef() const
+    {
+        return m_string;
+    }
+
+    inline std::string& String::stdRef()
+    {
+        return m_string;
     }
 }
 

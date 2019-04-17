@@ -28,7 +28,7 @@ namespace ramses_capu
         class Thread : private generic::Thread
         {
         public:
-            Thread(const String& name);
+            Thread(const std::string& name);
             ~Thread();
             status_t start(Runnable& runnable);
             status_t join();
@@ -47,7 +47,7 @@ namespace ramses_capu
 
 
         inline
-        Thread::Thread(const String& name)
+        Thread::Thread(const std::string& name)
             : generic::Thread(name)
             , mThread(0)
         {

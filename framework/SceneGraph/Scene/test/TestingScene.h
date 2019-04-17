@@ -646,7 +646,7 @@ namespace ramses_internal
         const RenderGroupHandle      nestedRenderGroupChild         {62u};
         const SceneVersionTag        sceneVersionTag                {63u};
         const UInt32                 renderableInstanceCount        = 64u;
-        const TextureSamplerStates   samplerStates                  { EWrapMethod_Repeat, EWrapMethod_Clamp, EWrapMethod_RepeatMirrored, ESamplingMethod_Nearest, 32u };
+        const TextureSamplerStates   samplerStates                  { EWrapMethod::Repeat, EWrapMethod::Clamp, EWrapMethod::RepeatMirrored, ESamplingMethod::Nearest, 32u };
         const PixelRectangle         blitPassSourceRectangle        = PixelRectangle({1u, 2u, 300u, 400u});
         const PixelRectangle         blitPassDestinationRectangle   = PixelRectangle({5u, 6u, 700u, 800u});
         const DataBufferHandle       indexDataBuffer                { 65u };

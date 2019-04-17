@@ -27,9 +27,7 @@ namespace ramses_internal
             OffscreenBuffer
         };
 
-        TextureSampler()
-        {
-        }
+        TextureSampler() = default;
 
         TextureSampler(const TextureSamplerStates& states_, ContentType type, const ResourceContentHash& texHash, MemoryHandle handle)
             : states(states_)
@@ -40,30 +38,22 @@ namespace ramses_internal
         }
 
         TextureSampler(const TextureSamplerStates& states_, const ResourceContentHash& texHash)
-            : states(states_)
-            , contentType(ContentType::ClientTexture)
-            , textureResource(texHash)
+            : TextureSampler(states_, ContentType::ClientTexture, texHash, InvalidMemoryHandle)
         {
         }
 
         TextureSampler(const TextureSamplerStates& states_, TextureBufferHandle handle)
-            : states(states_)
-            , contentType(ContentType::TextureBuffer)
-            , contentHandle(handle.asMemoryHandle())
+            : TextureSampler(states_, ContentType::TextureBuffer, {}, handle.asMemoryHandle())
         {
         }
 
         TextureSampler(const TextureSamplerStates& states_, RenderBufferHandle handle)
-            : states(states_)
-            , contentType(ContentType::RenderBuffer)
-            , contentHandle(handle.asMemoryHandle())
+            : TextureSampler(states_, ContentType::RenderBuffer, {}, handle.asMemoryHandle())
         {
         }
 
         TextureSampler(const TextureSamplerStates& states_, StreamTextureHandle handle)
-            : states(states_)
-            , contentType(ContentType::StreamTexture)
-            , contentHandle(handle.asMemoryHandle())
+            : TextureSampler(states_, ContentType::StreamTexture, {}, handle.asMemoryHandle())
         {
         }
 

@@ -106,13 +106,13 @@ if __name__ == "__main__":
     targets = get_all_files(targets)
 
     if len(targets) == 0:
-        print """
+        print("""
 \t**** No input provided ****
 \tTakes a list of files/directories as input and performs specific style checking on all files/directories.
 
 \tGives warnings if a line contains unneeded spaces at end of line, contains tab characters (\\t)
 \tor if spaces at line beginning are not divisible by 4.
-"""
+""")
         exit(0)
 
     for t in targets:

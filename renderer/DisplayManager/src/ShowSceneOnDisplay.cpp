@@ -29,16 +29,16 @@ namespace ramses_display_manager
         return static_cast<float>(atof(argVal.c_str()));
     }
 
-    ramses_capu::String parseStringArg(const ramses_internal::RamshInput& input, uint32_t idx)
+    std::string parseStringArg(const ramses_internal::RamshInput& input, uint32_t idx)
     {
-        return input[idx];
+        return input[idx].stdRef();
     }
 
     bool ShowSceneOnDisplay::executeInput(const ramses_internal::RamshInput& input)
     {
         ramses::sceneId_t sceneId = 0xffff;
         ramses::displayId_t displayId = 0xffff;
-        ramses_capu::String confirmationText = "";
+        std::string confirmationText = "";
         int sceneRenderOrder = 0;
 
         bool sceneDefined = false;
@@ -47,22 +47,22 @@ namespace ramses_display_manager
         const uint32_t numArgStrings = static_cast<uint32_t>(input.size());
         for (uint32_t argStrIdx = 0u; argStrIdx < numArgStrings - 1; ++argStrIdx)
         {
-            const ramses_capu::String argStr(input[argStrIdx]);
-            if (argStr == ramses_capu::String("-sceneId"))
+            const std::string argStr(input[argStrIdx].stdRef());
+            if (argStr == std::string("-sceneId"))
             {
                 sceneId = ramses::sceneId_t(parseIntArg(input, ++argStrIdx));
                 sceneDefined = true;
             }
-            else if (argStr == ramses_capu::String("-displayId"))
+            else if (argStr == std::string("-displayId"))
             {
                 displayId = parseIntArg(input, ++argStrIdx);
                 displayDefined = true;
             }
-            else if (argStr == ramses_capu::String("-order"))
+            else if (argStr == std::string("-order"))
             {
                 sceneRenderOrder = parseIntArg(input, ++argStrIdx);
             }
-            else if (argStr == ramses_capu::String("-confirm"))
+            else if (argStr == std::string("-confirm"))
             {
                 confirmationText = parseStringArg(input, ++argStrIdx);
             }

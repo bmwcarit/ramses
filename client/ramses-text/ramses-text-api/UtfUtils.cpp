@@ -10,6 +10,8 @@
 #include "ramses-text/Logger.h"
 #include <assert.h>
 #include <iostream>
+#include <algorithm>
+#include <numeric>
 
 namespace ramses
 {
@@ -22,11 +24,7 @@ namespace ramses
             const uint32_t cUniSurLowStart = 0xdc00;
             const uint32_t cUniSurHighEnd = 0xdbff;
             const uint32_t cUniSurLowEnd = 0xdfff;
-            const uint32_t cUniReplacementChar = 0x0000fffd;
             const uint32_t cHalfBase = 0x0010000;
-            const uint32_t cHalfMask = 0x3ff;
-            const uint32_t cHalfShift = 10;
-            const uint32_t cUniMaxBmp = 0x0000ffff;
 
             const char TrailingBytesForUTF8[256] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -62,7 +60,6 @@ namespace ramses
             {
                 return byte < 254;
             }
-
             bool IsUTF16HighSurrogate(uint16_t word)
             {
                 return cUniSurHighStart <= word && word <= cUniSurHighEnd;
@@ -97,37 +94,57 @@ namespace ramses
             return utf32String;
         }
 
-        uint32_t Utf32_to_Utf16(uint32_t ch)
+        std::string ConvertCharUtf32ToUtf8(char32_t convertChar)
         {
-            if (ch <= cUniMaxBmp)
+            std::string utf8string;
+            if (convertChar <= 127)
             {
-                /* All characters <= 0xFFFF are identical regarding encoding in UTF-16 and UTF-32*/
-                /* UTF-16 surrogate values are illegal in UTF-32; 0xffff or 0xfffe are both reserved values */
-                if (ch >= cUniSurHighStart && ch <= cUniSurLowEnd)
-                {
-                    return cUniReplacementChar;
-                }
-                else
-                {
-                    return ch;
-                }
+                utf8string.push_back(static_cast<char>(convertChar));
+            }
+            else if (convertChar <= 2047)
+            {
+                const char32_t firstByte = (convertChar << 21 >> 27) + 192;
+                const char32_t lastByte = (convertChar << 26 >> 26) + 128;
+                utf8string.push_back(static_cast<char>(firstByte));
+                utf8string.push_back(static_cast<char>(lastByte));
+            }
+            else if (convertChar <= 65535)
+            {
+                const char32_t firstByte = (convertChar << 16 >> 28) + 0xE0;
+                const char32_t secondByte = (convertChar << 20 >> 26) + 0x80;
+                const char32_t thirdByte = (convertChar << 26 >> 26) + 128;
+                utf8string.push_back(static_cast<char>(firstByte));
+                utf8string.push_back(static_cast<char>(secondByte));
+                utf8string.push_back(static_cast<char>(thirdByte));
+            }
+            else if (convertChar <= 1114111)
+            {
+                const char32_t firstByte = (convertChar << 11 >> 29) + 0xF0;
+                const char32_t secondByte = (convertChar << 14 >> 26) + 0x80;
+                const char32_t thirdByte = (convertChar << 20 >> 26) + 0x80;
+                const char32_t fourthByte = (convertChar << 26 >> 26) + 128;
+                utf8string.push_back(static_cast<char>(firstByte));
+                utf8string.push_back(static_cast<char>(secondByte));
+                utf8string.push_back(static_cast<char>(thirdByte));
+                utf8string.push_back(static_cast<char>(fourthByte));
             }
             else
             {
-                if (ch > cUniMaxLegalUTF32)
-                {
-                    return cUniReplacementChar;
-                }
-                else
-                {
-                    ch -= cHalfBase;
-                    uint32_t result;
-                    uint16_t* pUtf16 = reinterpret_cast<uint16_t*>(&result);
-                    pUtf16[0] = static_cast<uint16_t>((ch >> cHalfShift) + cUniSurHighStart);
-                    pUtf16[1] = static_cast<uint16_t>((ch & cHalfMask) + cUniSurLowStart);
-                    return result;
-                }
+                LOG_TEXT_ERROR("UtfUtils: invalid Unicode " << convertChar << " Skipping Character\n" );
             }
+
+            return utf8string;
+        }
+
+        std::string ConvertStrUtf32ToUtf8(const std::u32string& utf32String)
+        {
+            std::string utf8String;
+            utf8String.reserve(2 * utf32String.size());
+            for (char32_t character : utf32String)
+            {
+                utf8String.append(ConvertCharUtf32ToUtf8(character));
+            }
+            return utf8String;
         }
 
         ExtractedUnicodePoint ExtractUnicodePointFromUTF8(std::string::const_iterator strBegin, std::string::const_iterator strEnd)

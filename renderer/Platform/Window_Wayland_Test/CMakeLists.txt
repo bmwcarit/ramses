@@ -13,7 +13,6 @@ ACME_MODULE(
     #==========================================================================
     NAME                    Window_Wayland_Test
     TYPE                    STATIC_LIBRARY
-    TEST_SUFFIX             RNDSANDWICHTEST
 
     #==========================================================================
     # files of this module

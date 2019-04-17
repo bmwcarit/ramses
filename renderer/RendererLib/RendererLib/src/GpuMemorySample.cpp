@@ -31,7 +31,7 @@ namespace ramses_internal
                 {
                     for (const auto& sceneUsage : resourceDescriptor.sceneUsage)
                     {
-                        increaseSceneMemUsageForClientResource(sceneUsage, resourceDescriptor.type, resourceDescriptor.expectedVRAMUsage);
+                        increaseSceneMemUsageForClientResource(sceneUsage, resourceDescriptor.type, resourceDescriptor.vramSize);
                     }
                 }
             }

@@ -275,14 +275,18 @@ namespace ramses
         status_t setWindowIviVisible();
 
         /**
-        * @brief Disables effect deletion, which will prevent that effects are
-        *        ever recompiled/uploaded to GPU. This improves runtime performance,
-        *        but increases GPU memory consumption slightly (shaders are very small)
+        * @brief By default uploaded effects are kept forever in VRAM to avoid
+        *        recompiling and reuploading. As their size is mostly negligible
+        *        this should not have any disadvantages.
+        *        If however it is desired to delete unused effects same as any other resources
+        *        use this method to disable that optimization.
+        *        Note that GPU cache can still prevent effect deletion (see ramses::DisplayConfig::setGPUMemoryCacheSize).
         *
+        * @param[in] enable Set to true if effects should be always kept in VRAM (default), false if they should be deleted if unused as other resources
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t disableEffectDeletion();
+        status_t keepEffectsUploaded(bool enable);
 
         /**
         * @brief Set the amount of GPU memory in bytes that will be used as cache for resources.

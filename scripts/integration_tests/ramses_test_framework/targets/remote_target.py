@@ -39,14 +39,20 @@ class RemoteTarget(Target):
         self.sshConnectionNrAttempts = sshConnectionNrAttempts
         self.sshConnectionTimeoutPerAttempt = sshConnectionTimeoutPerAttempt
         self.sshConnectionSleepPerAttempt = sshConnectionSleepPerAttempt
-        if self.powerDevice:
-            self.powerNrAttempts = powerNrAttempts
-        else:
-            self.powerNrAttempts = 1
+        self.powerNrAttempts = powerNrAttempts
+        self.executableExistsOnTarget = {}
 
     def _start_ramses_application(self, applicationName, args, workingDirectory, nameExtension, env, dltAppID):
         extendedArgs = args+" -myip "+self.tcpTestsInterfaceIp
         return Target._start_ramses_application(self, applicationName, extendedArgs, workingDirectory, nameExtension, env, dltAppID)
+
+    def _executable_exists_on_target(self, binaryPath):
+        if binaryPath in self.executableExistsOnTarget:
+            return self.executableExistsOnTarget[binaryPath]
+        (_, _, exitCode) = self.execute_on_target("type " + binaryPath)  # test -e cannot be used as it does not work for applications in system path
+        result = (exitCode == 0)
+        self.executableExistsOnTarget[binaryPath] = result
+        return result
 
     def start_application(self, applicationName, args="", binaryDirectoryOnTarget=None, nameExtension="", env={}, dltAppID=None):
         #ensure binary is there
@@ -54,8 +60,7 @@ class RemoteTarget(Target):
             binaryPathOnTarget = binaryDirectoryOnTarget + '/' + applicationName
         else:
             binaryPathOnTarget = applicationName
-        (_, _, resultTest) = self.execute_on_target("type " + binaryPathOnTarget) #test -e cannot be used as it does not work for applications in system path
-        if resultTest != 0:
+        if not self._executable_exists_on_target(binaryPathOnTarget):
             log.error("Error: executable '{0}' could not be found (path: '{1}')".format(applicationName, binaryPathOnTarget))
             return Application(None, None, None, applicationName, binaryDirectoryOnTarget, nameExtension)
 
@@ -107,19 +112,17 @@ class RemoteTarget(Target):
 
     def _transfer_screenshots(self, namePattern, originalDirectory, resultDirectory):
         sourcePath = originalDirectory + '/' + namePattern
-        log.info("download screenshot(s): from {0}@{1}:{2} to {3}".format(self.username, self.hostname, sourcePath, resultDirectory))
+        log.info("download screenshot(s): from {}:{} to {}".format(self.hostname, sourcePath, resultDirectory))
         self._scp(sourcePath, True, resultDirectory, False)
 
     def setup(self, transfer_binaries=True):
         nrAttempts = 0
         while (not self.isConnected) and (nrAttempts < self.powerNrAttempts):
             nrAttempts += 1
-            self._connect()
+            self.connect()
             #have you tried turning it off and on again?
             if not self.isConnected and (nrAttempts < self.powerNrAttempts): #no need to try it after last connection attempt
-                self.powerDevice.switch(self.powerOutletNr, False)
-                time.sleep(60)
-                self.powerDevice.switch(self.powerOutletNr, True)
+                self._power_reset()
 
         if not self.isConnected:
             return False
@@ -138,7 +141,7 @@ class RemoteTarget(Target):
                 self._shutdown()
             self.sshClient.close()
 
-    def _connect(self):
+    def connect(self, error_on_fail=True):
         self.sshClient = paramiko.SSHClient()
         self.sshClient.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         log.info("connecting to "+self.name+" hostname: "+self.hostname+" user: "+self.username)
@@ -169,10 +172,18 @@ class RemoteTarget(Target):
                 self.isConnected = True
 
         if not self.isConnected:
-            log.error("Connection to {0} could not be established".format(self.name))
+            if error_on_fail:
+                log.error("Connection to {0} could not be established".format(self.name))
             return
 
+        self.ftpClient = self.sshClient.open_sftp()
         log.info("Connection to {0} successfully established".format(self.name))
+
+    def _power_reset(self):
+        if self.powerDevice:
+            self.powerDevice.switch(self.powerOutletNr, False)
+            time.sleep(60)
+            self.powerDevice.switch(self.powerOutletNr, True)
 
     def _prepare_install_directory(self):
         #create result dir if it does not exist
@@ -182,20 +193,24 @@ class RemoteTarget(Target):
         #make sure it is empty (delete old binaries from previous tests)
         self.execute_on_target("rm -r {0}/*".format(self.ramsesInstallDir))
 
-    def _scp(self, source, sourceIsRemote, dest, destIsRemote):
-        fullSource = source
-        fullDest = dest
-        if sourceIsRemote:
-            fullSource = "{0}@{1}:{2}".format(self.username, self.hostname, source.replace(' ', '\ '))
-        if destIsRemote:
-            fullDest = "{0}@{1}:{2}".format(self.username, self.hostname, dest.replace(' ', '\ '))
+    def _scp(self, source, sourceIsRemote, dest, destIsRemote, dest_has_filename=False):
+        assert not (sourceIsRemote and destIsRemote)
+        assert source.find('*') == -1
+        assert dest.find('*') == -1
 
-        log.info("scp source '{}' to dest '{}'".format(fullSource, fullDest))
+        if not dest_has_filename:
+            dest = dest + '/' + os.path.basename(source)
 
-        if self.privateKey is None:
-            return subprocess.call(["scp", "-P", str(self.sshPort), "-r", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", fullSource, fullDest])
-        else:
-            return subprocess.call(["scp", "-P", str(self.sshPort), "-r", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", "-o", "IdentityFile={0}".format(self.privateKey), fullSource, fullDest])
+        try:
+            if sourceIsRemote:
+                log.info("copy remote source '{}' to local dest '{}'".format(source, dest))
+                self.ftpClient.get(source, dest)
+            if destIsRemote:
+                log.info("copy local source '{}' to remote dest '{}'".format(source, dest))
+                self.ftpClient.put(source, dest)
+        except Exception as e:
+            print('SCP Error:', e)
+            raise
 
     def _transfer_binaries(self):
         packageBaseName = self.buildJobName+'-'+self.ramsesVersion+'-'+self.gitCommitCount\
@@ -216,10 +231,7 @@ class RemoteTarget(Target):
             return False
 
         # transfer package
-        returnCode = self._scp(packagePathOnBuildServer, False, self.ramsesInstallDir, True)
-        if returnCode != 0:
-            log.error("scp call for binary transfer not successful, return code {}".format(returnCode))
-            return False
+        self._scp(packagePathOnBuildServer, False, self.ramsesInstallDir, True)
 
         #extract package
         stdout, stderr, returnCode = self.execute_on_target(
@@ -278,7 +290,7 @@ class RemoteTarget(Target):
     def copy_file_to_target(self, sourceFile, targetFileName, targetWorkingDirectory=None):
         fullTargetFileName = posixpath.join(self._get_merged_working_directory(targetWorkingDirectory), targetFileName)
         # transfer file
-        self._scp(sourceFile, False, fullTargetFileName, True)
+        self._scp(sourceFile, False, fullTargetFileName, True, dest_has_filename=True)
 
     def delete_file(self, fileName):
         self.execute_on_target("rm {0}".format(fileName))

@@ -219,7 +219,7 @@ namespace ramses_internal
 
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
 
-        LOG_INFO(CONTEXT_RENDERER, "IVIControllerSurface::HandleLayerCallback ivi-id: " << controllerSurface.m_iviId);
+        LOG_INFO(CONTEXT_RENDERER, "IVIControllerSurface::HandleLayerCallback: surface " << controllerSurface.m_iviId << " added to layer");
     }
 
     void IVIControllerSurface::HandleStatsCallback(void*                   data,

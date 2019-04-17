@@ -21,7 +21,7 @@ if _core.setup():
     #tests should only run if setup was successful
     result = _core.run_tests()
     _core.tear_down(shutdownTargets=False)
-    if not result and _core.coreImpl.config.useExitcodeOnTestFailure:
+    if not result:
         exit(1)
 else:
     log.info("Setup failed: Aborting tests")

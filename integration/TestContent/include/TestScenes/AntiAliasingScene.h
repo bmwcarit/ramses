@@ -22,8 +22,7 @@ namespace ramses_internal
         {
             NoAA_STATE = 0,
             MSAA_2_STATE,
-            MSAA_4_STATE,
-            FXAA_STATE
+            MSAA_4_STATE
         };
     };
 }

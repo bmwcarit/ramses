@@ -42,7 +42,7 @@ takes neither ownership nor longer term reference unless explicitly specified in
 -# <b>Every RAMSES client object derives from RamsesObject, directly or indirectly</b>
   - RamsesObject provides functionality common for all RAMSES objects
 
--# <b>Make its CTR, DTR protected, Copy/Move-CTR deleted</b>
+-# <b>Make its constructor, destructor protected, Copy/Move-constructor deleted</b>
    - force applications to use factories
 
 -# <b>Every PIMPL object derives from RamsesObjectImpl, directly or indirectly</b>

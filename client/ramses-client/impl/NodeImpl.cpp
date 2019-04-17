@@ -240,14 +240,14 @@ namespace ramses
     status_t NodeImpl::getModelMatrix(float(&modelMatrix)[16]) const
     {
         const ramses_internal::Matrix44f mat44 = getIScene().updateMatrixCache(ramses_internal::ETransformationMatrixType_World, m_nodeHandle);
-        ramses_internal::PlatformMemory::Copy(modelMatrix, mat44.getRawData(), sizeof(modelMatrix));
+        ramses_internal::PlatformMemory::Copy(modelMatrix, mat44.data, sizeof(modelMatrix));
         return StatusOK;
     }
 
     status_t NodeImpl::getInverseModelMatrix(float(&inverseModelMatrix)[16]) const
     {
         const ramses_internal::Matrix44f mat44 = getIScene().updateMatrixCache(ramses_internal::ETransformationMatrixType_Object, m_nodeHandle);
-        ramses_internal::PlatformMemory::Copy(inverseModelMatrix, mat44.getRawData(), sizeof(inverseModelMatrix));
+        ramses_internal::PlatformMemory::Copy(inverseModelMatrix, mat44.data, sizeof(inverseModelMatrix));
         return StatusOK;
     }
 

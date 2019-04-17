@@ -16,10 +16,13 @@ class TestSystemCompositorController(system_compositor_controller_base.SystemCom
         self.renderer.send_ramsh_command("screct {0} 900 0 384 384".format(self.testSurfaceIVIIds["wlClient1"]), waitForRendererConfirmation=True)
         self.renderer.send_ramsh_command("scv {0} 1".format(self.testSurfaceIVIIds["wlClient1"]), waitForRendererConfirmation=True)
         self.renderer.send_ramsh_command("scv {0} 1".format(self.testSurfaceIVIIds["wlClient2"]), waitForRendererConfirmation=True)
+
         self.validateScreenshot(self.renderer, "scc_white_gear_left_and_cube.png", useSystemCompositorForScreenshot=True)
 
         # Add surface of gears No. 1 to layer
         self.renderer.send_ramsh_command("scastl {0} {1}".format(self.testSurfaceIVIIds["wlClient1"], self.testLayer), waitForRendererConfirmation=True)
+
+        self.target.ivi_control.printCurrentState()
 
         # Postcondition: renderer and gears No. 1 and 2 visible
         self.validateScreenshot(self.renderer, "scc_white_gear_left_red_gear_right_and_cube.png", useSystemCompositorForScreenshot=True)

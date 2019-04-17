@@ -82,6 +82,12 @@ namespace ramses
         return m_internalConfig.getWaylandDisplayForSystemCompositorController().c_str();
     }
 
+    status_t RendererConfigImpl::setFrameCallbackMaxPollTime(uint64_t waitTimeInUsec)
+    {
+        m_internalConfig.setFrameCallbackMaxPollTime(std::chrono::microseconds{waitTimeInUsec});
+        return StatusOK;
+    }
+
     IBinaryShaderCache* RendererConfigImpl::getBinaryShaderCache() const
     {
         return m_binaryShaderCache;

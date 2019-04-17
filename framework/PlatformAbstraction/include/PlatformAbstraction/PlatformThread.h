@@ -74,7 +74,7 @@ namespace ramses_internal
 
     inline
     PlatformThread::PlatformThread(const String& threadName)
-        : m_thread(threadName)
+        : m_thread(threadName.stdRef())
     {
         assert(threadName.indexOf(' ') == -1 && "PlatformThread name may not contain spaces");
         assert(threadName.getLength() < 16u);

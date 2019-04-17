@@ -164,14 +164,14 @@ namespace ramses_internal
         return m_warpingEnabled;
     }
 
-    void DisplayConfig::setEffectDeletionDisabled(Bool disabled)
+    void DisplayConfig::setKeepEffectsUploaded(Bool enabled)
     {
-        m_effectDeletionDisabled = disabled;
+        m_keepEffectsUploaded = enabled;
     }
 
-    Bool DisplayConfig::isEffectDeletionDisabled() const
+    Bool DisplayConfig::getKeepEffectsUploaded() const
     {
-        return m_effectDeletionDisabled;
+        return m_keepEffectsUploaded;
     }
 
     Bool DisplayConfig::isStereoDisplay() const

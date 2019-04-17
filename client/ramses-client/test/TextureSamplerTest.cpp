@@ -16,6 +16,7 @@
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/Texture3D.h"
 #include "ramses-client-api/TextureCube.h"
+#include "ramses-client-api/Texture2DBuffer.h"
 #include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderTargetDescription.h"
@@ -25,6 +26,9 @@
 #include "TextureSamplerImpl.h"
 #include "RenderBufferImpl.h"
 #include "Texture2DImpl.h"
+#include "Texture3DImpl.h"
+#include "TextureCubeImpl.h"
+#include "Texture2DBufferImpl.h"
 
 using namespace testing;
 
@@ -32,10 +36,6 @@ namespace ramses
 {
     class TextureSamplerTest : public LocalTestClientWithScene, public ::testing::Test
     {
-    public:
-        TextureSamplerTest()
-        {
-        }
     };
 
     TEST_F(TextureSamplerTest, createSamplerForTexture2D)
@@ -213,5 +213,191 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, m_scene.destroy(streamTexture));
         EXPECT_NE(StatusOK, sampler->validate());
+    }
+
+    TEST_F(TextureSamplerTest, setTextureDataToTexture2D)
+    {
+        const Texture3D& texture3D = createObject<Texture3D>();
+        TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Trilinear, texture3D);
+        ASSERT_NE(nullptr, sampler);
+
+        const Texture2D& texture2D = createObject<Texture2D>();
+        EXPECT_EQ(StatusOK, sampler->setTextureData(texture2D));
+
+        EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapUMode());
+        EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapVMode());
+        EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapRMode());
+        EXPECT_EQ(ETextureSamplingMethod_Trilinear, sampler->getSamplingMethod());
+        EXPECT_EQ(1u, sampler->getAnisotropyLevel());
+        EXPECT_EQ(ERamsesObjectType_Texture2D, sampler->getTextureType());
+
+        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->impl.getTextureSamplerHandle();
+        ASSERT_TRUE(m_internalScene.isTextureSamplerAllocated(samplerHandle));
+        EXPECT_EQ(1u, m_internalScene.getTextureSamplerCount());
+        EXPECT_EQ(ramses_internal::TextureSampler::ContentType::ClientTexture, m_internalScene.getTextureSampler(samplerHandle).contentType);
+        EXPECT_EQ(texture2D.impl.getLowlevelResourceHash(), m_internalScene.getTextureSampler(samplerHandle).textureResource);
+    }
+
+    TEST_F(TextureSamplerTest, setTextureDataFromTexture3DToAnotherTexture3D)
+    {
+        const Texture3D& texture3Doriginal = createObject<Texture3D>();
+        TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Trilinear, texture3Doriginal);
+        ASSERT_NE(nullptr, sampler);
+
+        const Texture3D& texture3D = createObject<Texture3D>();
+        EXPECT_EQ(StatusOK, sampler->setTextureData(texture3D));
+
+        EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapUMode());
+        EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapVMode());
+        EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapRMode());
+        EXPECT_EQ(ETextureSamplingMethod_Trilinear, sampler->getSamplingMethod());
+        EXPECT_EQ(1u, sampler->getAnisotropyLevel());
+        EXPECT_EQ(ERamsesObjectType_Texture3D, sampler->getTextureType());
+
+        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->impl.getTextureSamplerHandle();
+        ASSERT_TRUE(m_internalScene.isTextureSamplerAllocated(samplerHandle));
+        EXPECT_EQ(1u, m_internalScene.getTextureSamplerCount());
+        EXPECT_EQ(ramses_internal::TextureSampler::ContentType::ClientTexture, m_internalScene.getTextureSampler(samplerHandle).contentType);
+        EXPECT_EQ(texture3D.impl.getLowlevelResourceHash(), m_internalScene.getTextureSampler(samplerHandle).textureResource);
+    }
+
+    TEST_F(TextureSamplerTest, failsToSetTextureDataFromTexture2DToTexture3D)
+    {
+        const Texture2D& texture2D = createObject<Texture2D>();
+        TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Trilinear, texture2D, 1u);
+        ASSERT_NE(nullptr, sampler);
+
+        const Texture3D& texture3D = createObject<Texture3D>();
+        EXPECT_NE(StatusOK, sampler->setTextureData(texture3D));
+    }
+
+    TEST_F(TextureSamplerTest, setTextureDataToTextureCube)
+    {
+        const Texture3D& texture3D = createObject<Texture3D>();
+        TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Trilinear, texture3D);
+        ASSERT_NE(nullptr, sampler);
+
+        const TextureCube& textureCube = createObject<TextureCube>();
+        EXPECT_EQ(StatusOK, sampler->setTextureData(textureCube));
+
+        EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapUMode());
+        EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapVMode());
+        EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapRMode());
+        EXPECT_EQ(ETextureSamplingMethod_Trilinear, sampler->getSamplingMethod());
+        EXPECT_EQ(1u, sampler->getAnisotropyLevel());
+        EXPECT_EQ(ERamsesObjectType_TextureCube, sampler->getTextureType());
+
+        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->impl.getTextureSamplerHandle();
+        ASSERT_TRUE(m_internalScene.isTextureSamplerAllocated(samplerHandle));
+        EXPECT_EQ(1u, m_internalScene.getTextureSamplerCount());
+        EXPECT_EQ(ramses_internal::TextureSampler::ContentType::ClientTexture, m_internalScene.getTextureSampler(samplerHandle).contentType);
+        EXPECT_EQ(textureCube.impl.getLowlevelResourceHash(), m_internalScene.getTextureSampler(samplerHandle).textureResource);
+    }
+
+    TEST_F(TextureSamplerTest, setTextureDataToTexture2DBuffer)
+    {
+        const Texture2D& texture2D = createObject<Texture2D>();
+        TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Trilinear, texture2D, 1u);
+        ASSERT_NE(nullptr, sampler);
+
+        const Texture2DBuffer& textureBuffer = createObject<Texture2DBuffer>();
+        EXPECT_EQ(StatusOK, sampler->setTextureData(textureBuffer));
+
+        EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapUMode());
+        EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapVMode());
+        EXPECT_EQ(ETextureSamplingMethod_Trilinear, sampler->getSamplingMethod());
+        EXPECT_EQ(1u, sampler->getAnisotropyLevel());
+        EXPECT_EQ(ERamsesObjectType_Texture2DBuffer, sampler->getTextureType());
+
+        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->impl.getTextureSamplerHandle();
+        ASSERT_TRUE(m_internalScene.isTextureSamplerAllocated(samplerHandle));
+        EXPECT_EQ(1u, m_internalScene.getTextureSamplerCount());
+        EXPECT_EQ(ramses_internal::TextureSampler::ContentType::TextureBuffer, m_internalScene.getTextureSampler(samplerHandle).contentType);
+        EXPECT_EQ(textureBuffer.impl.getTextureBufferHandle().asMemoryHandle(), m_internalScene.getTextureSampler(samplerHandle).contentHandle);
+    }
+
+    TEST_F(TextureSamplerTest, setTextureDataToRenderBuffer)
+    {
+        const Texture2D& texture2D = createObject<Texture2D>();
+        TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Trilinear, texture2D, 1u);
+        ASSERT_NE(nullptr, sampler);
+
+        const RenderBuffer& buffer = createObject<RenderBuffer>();
+        EXPECT_EQ(StatusOK, sampler->setTextureData(buffer));
+
+        EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapUMode());
+        EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapVMode());
+        EXPECT_EQ(ETextureSamplingMethod_Trilinear, sampler->getSamplingMethod());
+        EXPECT_EQ(1u, sampler->getAnisotropyLevel());
+        EXPECT_EQ(ERamsesObjectType_RenderBuffer, sampler->getTextureType());
+
+        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->impl.getTextureSamplerHandle();
+        ASSERT_TRUE(m_internalScene.isTextureSamplerAllocated(samplerHandle));
+        EXPECT_EQ(1u, m_internalScene.getTextureSamplerCount());
+        EXPECT_EQ(ramses_internal::TextureSampler::ContentType::RenderBuffer, m_internalScene.getTextureSampler(samplerHandle).contentType);
+        EXPECT_EQ(buffer.impl.getRenderBufferHandle().asMemoryHandle(), m_internalScene.getTextureSampler(samplerHandle).contentHandle);
+    }
+
+    TEST_F(TextureSamplerTest, setTextureDataToStreamTexture)
+    {
+        const Texture2D& texture2D = createObject<Texture2D>();
+        TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Trilinear, texture2D, 1u);
+        ASSERT_NE(nullptr, sampler);
+
+        const StreamTexture& texture = createObject<StreamTexture>();
+        EXPECT_EQ(StatusOK, sampler->setTextureData(texture));
+
+        EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapUMode());
+        EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapVMode());
+        EXPECT_EQ(ETextureSamplingMethod_Trilinear, sampler->getSamplingMethod());
+        EXPECT_EQ(1u, sampler->getAnisotropyLevel());
+        EXPECT_EQ(ERamsesObjectType_StreamTexture, sampler->getTextureType());
+
+        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->impl.getTextureSamplerHandle();
+        ASSERT_TRUE(m_internalScene.isTextureSamplerAllocated(samplerHandle));
+        EXPECT_EQ(1u, m_internalScene.getTextureSamplerCount());
+        EXPECT_EQ(ramses_internal::TextureSampler::ContentType::StreamTexture, m_internalScene.getTextureSampler(samplerHandle).contentType);
+        EXPECT_EQ(texture.impl.getHandle().asMemoryHandle(), m_internalScene.getTextureSampler(samplerHandle).contentHandle);
+    }
+
+    TEST_F(TextureSamplerTest, failsToSetTextureDataToSamplerMarkedAsConsumer)
+    {
+        const auto& texture2D = createObject<Texture2D>();
+        TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Trilinear, texture2D);
+        ASSERT_NE(nullptr, sampler);
+
+        ASSERT_EQ(StatusOK, this->m_scene.createTextureConsumer(*sampler, 666u));
+
+        const auto& texture2Dother = createObject<Texture2D>();
+        EXPECT_NE(StatusOK, sampler->setTextureData(texture2Dother));
+        const auto& textureCube = createObject<TextureCube>();
+        EXPECT_NE(StatusOK, sampler->setTextureData(textureCube));
+        const auto& textureBuffer = createObject<Texture2DBuffer>();
+        EXPECT_NE(StatusOK, sampler->setTextureData(textureBuffer));
+        const auto& renderBuffer = createObject<RenderBuffer>();
+        EXPECT_NE(StatusOK, sampler->setTextureData(renderBuffer));
+        const auto& streamTexture = createObject<StreamTexture>();
+        EXPECT_NE(StatusOK, sampler->setTextureData(streamTexture));
+    }
+
+    TEST_F(TextureSamplerTest, failsToSetTextureDataFromOtherSceneThanSampler)
+    {
+        const auto& texture2D = createObject<Texture2D>();
+        TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Trilinear, texture2D);
+        ASSERT_NE(nullptr, sampler);
+
+        RamsesClient otherClient("other", this->framework);
+        CreationHelper creationHelper(otherClient.createScene(666u), nullptr, &otherClient);
+
+        const auto& texture2Dother = *creationHelper.createObjectOfType<Texture2D>(nullptr);
+        EXPECT_NE(StatusOK, sampler->setTextureData(texture2Dother));
+        const auto& textureCube = *creationHelper.createObjectOfType<TextureCube>(nullptr);
+        EXPECT_NE(StatusOK, sampler->setTextureData(textureCube));
+        const auto& textureBuffer = *creationHelper.createObjectOfType<Texture2DBuffer>(nullptr);
+        EXPECT_NE(StatusOK, sampler->setTextureData(textureBuffer));
+        const auto& renderBuffer = *creationHelper.createObjectOfType<RenderBuffer>(nullptr);
+        EXPECT_NE(StatusOK, sampler->setTextureData(renderBuffer));
+        const auto& streamTexture = *creationHelper.createObjectOfType<StreamTexture>(nullptr);
+        EXPECT_NE(StatusOK, sampler->setTextureData(streamTexture));
     }
 }

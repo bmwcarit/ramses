@@ -17,7 +17,6 @@ extern "C"
 #endif
 #include "Utils/LogLevel.h"
 #include "Utils/LogMessage.h"
-#include "Collections/ConstString.h"
 #include "Utils/InplaceStringTokenizer.h"
 
 namespace ramses_internal
@@ -132,10 +131,11 @@ namespace ramses_internal
 
         const char* msgData = msg.getStream().c_str();
         uint32_t msgLength = msg.getStream().length();
+        const char* msgDataEnd = msgData + msgLength;
 
         // check if shortcut is possible: short enough line and no linebreaks
         if (msgLength <= maxLineCapacity &&
-            ConstString(msgData).find('\n') < 0)
+            std::find(msgData, msgDataEnd, '\n') == msgDataEnd)
         {
             DLT_LOG1((*dltContext), ll, DLT_STRING(msgData));
         }
@@ -145,7 +145,7 @@ namespace ramses_internal
             String s(msgData, 0, msgLength);
             InplaceStringTokenizer::TokenizeToCStrings(s, maxLineCapacity, '\n',
                 [&](const char* tok) {
-                    if (*tok != 0) {
+                    if (tok && *tok != 0) {
                         DLT_LOG1((*dltContext), ll, DLT_STRING(tok));
                     }
                 });

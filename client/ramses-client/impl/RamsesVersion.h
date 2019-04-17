@@ -24,7 +24,6 @@ namespace ramses_internal
             String versionString;
             UInt32 major;
             UInt32 minor;
-            UInt32 patch;
         };
 
         void WriteToStream(IOutputStream& stream, const String& versionString, const String& gitHash);

@@ -36,7 +36,7 @@ namespace ramses_internal
         TextureBuffer& operator=(TextureBuffer&&) = default;
 
         ETextureFormat      textureFormat = ETextureFormat_Invalid;
-        MipMaps              mipMaps;
+        MipMaps             mipMaps;
 
         static UInt32 GetMipMapDataSizeInBytes(const TextureBuffer& buffer)
         {

@@ -83,17 +83,33 @@ namespace ramses_internal
 
     void ClientResourceUploadingManager::uploadClientResources(const ResourceContentHashVector& resourcesToUpload)
     {
+        UInt32 sizeUploaded = 0u;
         for (UInt32 i = 0; i < resourcesToUpload.size(); ++i)
         {
             const ResourceDescriptor& rd = m_clientResources.getResourceDescriptor(resourcesToUpload[i]);
             const UInt32 resourceSize = rd.resource.getResourceObject()->getDecompressedDataSize();
             uploadClientResource(rd);
             m_stats.clientResourceUploaded(resourceSize);
+            sizeUploaded += resourceSize;
 
             const Bool checkTimeLimit = (i % NumResourcesToUploadInBetweenTimeBudgetChecks == 0) || rd.type == EResourceType_Effect || resourceSize > LargeResourceByteSizeThreshold;
             if (checkTimeLimit && m_frameTimer.isTimeBudgetExceededForSection(EFrameTimerSectionBudget::ClientResourcesUpload))
             {
-                LOG_INFO(CONTEXT_RENDERER, "ClientResourceUploadingManager::uploadClientResources: Interrupt: Exceeded time for client resource upload");
+                const auto numUploaded = i + 1;
+                const auto numRemaining = resourcesToUpload.size() - numUploaded;
+                LOG_INFO(CONTEXT_RENDERER, "ClientResourceUploadingManager::uploadClientResources: Interrupt: Exceeded time for client resource upload (uploaded " << numUploaded << " resources of size " << sizeUploaded << " B, remaining " << numRemaining << " resources to upload)");
+                LOG_INFO_F(CONTEXT_RENDERER, [&](ramses_internal::StringOutputStream& logger)
+                {
+                    logger << "Remaining resources in queue to upload:";
+                    for (UInt32 j = numUploaded; j < resourcesToUpload.size() && j < numUploaded + 10; ++j)
+                    {
+                        const ResourceDescriptor& interruptedRd = m_clientResources.getResourceDescriptor(resourcesToUpload[j]);
+                        logger << " [" << interruptedRd.hash << "; " << EnumToString(interruptedRd.type) << "; " << interruptedRd.decompressedSize << " B]";
+                    }
+                    if (numRemaining > 10)
+                        logger << " ...";
+                });
+
                 break;
             }
         }
@@ -109,19 +125,23 @@ namespace ramses_internal
         assert(pResource->isDeCompressedAvailable());
 
         const UInt32 resourceSize = pResource->getDecompressedDataSize();
-        const DeviceResourceHandle deviceHandle = m_uploader.uploadResource(m_renderBackend, rd.resource);
-        m_clientResources.setResourceData(rd.hash, ManagedResource(), deviceHandle, pResource->getTypeID());
+        UInt32 vramSize = 0;
+        const DeviceResourceHandle deviceHandle = m_uploader.uploadResource(m_renderBackend, rd.resource, vramSize);
         if (deviceHandle.isValid())
         {
             m_clientResourceSizes.put(rd.hash, resourceSize);
             m_clientResourceTotalUploadedSize += resourceSize;
             m_clientResources.setResourceStatus(rd.hash, EResourceStatus_Uploaded);
+            m_clientResources.setResourceSize(rd.hash, pResource->getCompressedDataSize(), resourceSize, vramSize);
         }
         else
         {
             LOG_ERROR(CONTEXT_RENDERER, "ResourceUploadingManager::uploadResource failed to upload resource #" << StringUtils::HexFromResourceContentHash(rd.hash) << " (" << EnumToString(rd.type) << ")");
             m_clientResources.setResourceStatus(rd.hash, EResourceStatus_Broken);
         }
+
+        // release reference to managed resource
+        m_clientResources.setResourceData(rd.hash, ManagedResource(), deviceHandle, pResource->getTypeID());
     }
 
     void ClientResourceUploadingManager::unloadClientResource(const ResourceDescriptor& rd)

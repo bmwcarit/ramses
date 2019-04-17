@@ -15,5 +15,5 @@ _core.read_arguments()
 _core.setup()
 result = _core.run_tests()
 _core.tear_down(shutdownTargets=False)
-if not result and _core.coreImpl.config.useExitcodeOnTestFailure:
+if not result:
     exit(1)

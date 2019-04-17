@@ -19,6 +19,7 @@ from ramses_test_framework.argparser import AdaptedArgParser
 from ramses_test_framework.cores.core_impl import CoreImpl
 from ramses_test_framework import test_classes
 from ramses_test_framework.targets.targetInfo import BridgedTargetInfo
+from ramses_test_framework.targets.target import BridgedTarget
 
 
 class RemoteCoreImpl(CoreImpl):
@@ -114,6 +115,17 @@ class RemoteCoreImpl(CoreImpl):
                 target.gitCommitCount = commitCount
 
         return self.setupTargets(transfer_binaries and (not self.noTransfer))
+
+    def reconnectTargets(self):
+        for target in self.bridgeTargets.itervalues():
+            log.info("reconnect bridge target {}".format(target.name))
+            target.connect(error_on_fail=False)
+        for target in self.targets.itervalues():
+            if isinstance(target, BridgedTarget) and not target.bridgeTarget.isConnected:
+                log.info("skip target {} because bridge not connected".format(target.name))
+            else:
+                log.info("reconnect target {}".format(target.name))
+                target.connect(error_on_fail=False)
 
     def _create_test_runner(self):
         return xmlrunner.XMLTestRunner(output=self.fullResultsDirPath, verbosity=2)

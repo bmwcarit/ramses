@@ -92,8 +92,6 @@ namespace ramses_internal
         ERendererCommand_SystemCompositorControllerDestroyIviSurface,
         // Miscellaneous
         ERendererCommand_SetFrameTimerLimits,
-        // TODO Violin merge this into ERendererCommand_SetFrameTimerLimits in ramses 20+
-        ERendererCommand_SetResourceActionTimer,
         ERendererCommand_SetLimits_FlushesForceApply,
         ERendererCommand_SetLimits_FlushesForceUnsubscribe,
         ERendererCommand_SetSkippingOfUnmodifiedBuffers,
@@ -255,6 +253,7 @@ namespace ramses_internal
         Int32 height = 0;
         WaylandIviLayerId waylandIviLayerId;
         String fileName;
+        int32_t screenIviId = 0;
     };
 
     struct ConfirmationEchoCommand : public RendererCommand
@@ -334,7 +333,6 @@ namespace ramses_internal
         "ERendererCommand_SystemCompositorControllerRemoveIviSurfaceFromIviLayer",
         "ERendererCommand_SystemCompositorControllerDestroyIviSurface",
         "ERendererCommand_SetFrameTimerLimits",
-        "ERendererCommand_SetResourceActionTimer",
         "ERendererCommand_SetLimits_FlushesForceApply",
         "ERendererCommand_SetLimits_FlushesForceUnsubscribe",
         "ERendererCommand_SetSkippingOfUnmodifiedBuffers",

@@ -19,8 +19,3 @@
 ramses_capu::uint_t ComplexTestType::ctor_count = 0u;
 ramses_capu::uint_t ComplexTestType::copyctor_count = 0u;
 ramses_capu::uint_t ComplexTestType::dtor_count = 0u;
-
-ramses_capu::uint_t MoveableComplexTestType::ctor_count = 0u;
-ramses_capu::uint_t MoveableComplexTestType::copyctor_count = 0u;
-ramses_capu::uint_t MoveableComplexTestType::movector_count = 0u;
-ramses_capu::uint_t MoveableComplexTestType::dtor_count = 0u;

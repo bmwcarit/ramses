@@ -42,8 +42,8 @@ namespace ramses
         status_t setIntegrityRGLDeviceUnit(uint32_t rglDeviceUnit);
         uint32_t getIntegrityRGLDeviceUnit() const;
         status_t setWindowIviVisible();
-        status_t disableEffectDeletion();
         status_t setResizable(bool resizable);
+        status_t keepEffectsUploaded(bool enable);
         status_t setGPUMemoryCacheSize(uint64_t size);
         status_t setClearColor(float red, float green, float blue, float alpha);
         status_t setOffscreen(bool offscreenFlag);

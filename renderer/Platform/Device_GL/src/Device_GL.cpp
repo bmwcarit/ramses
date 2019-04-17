@@ -498,7 +498,7 @@ namespace ramses_internal
         if (getUniformLocation(field, uniformLocation))
         {
             assert(0 != value);
-            glUniformMatrix2fv(uniformLocation.getValue(), count, false, value[0].getRawData());
+            glUniformMatrix2fv(uniformLocation.getValue(), count, false, value[0].data);
         }
     }
 
@@ -508,7 +508,7 @@ namespace ramses_internal
         if (getUniformLocation(field, uniformLocation))
         {
             assert(0 != value);
-            glUniformMatrix3fv(uniformLocation.getValue(), count, false, value[0].getRawData());
+            glUniformMatrix3fv(uniformLocation.getValue(), count, false, value[0].data);
         }
     }
 
@@ -518,7 +518,7 @@ namespace ramses_internal
         if (getUniformLocation(field, uniformLocation))
         {
             assert(0 != value);
-            glUniformMatrix4fv(uniformLocation.getValue(), count, false, value[0].getRawData());
+            glUniformMatrix4fv(uniformLocation.getValue(), count, false, value[0].data);
         }
     }
 
@@ -950,31 +950,31 @@ namespace ramses_internal
 
         switch (sampling)
         {
-        case ESamplingMethod_Nearest:
+        case ESamplingMethod::Nearest:
             glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             break;
-        case ESamplingMethod_Bilinear:
+        case ESamplingMethod::Bilinear:
             glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             break;
-        case ESamplingMethod_NearestWithMipmaps:
+        case ESamplingMethod::NearestWithMipmaps:
             glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
             glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             break;
-        case ESamplingMethod_BilinearWithMipMaps:
+        case ESamplingMethod::BilinearWithMipMaps:
             glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
             glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             break;
-        case ESamplingMethod_Trilinear:
+        case ESamplingMethod::Trilinear:
             glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
             glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             break;
-        case ESamplingMethod_MinLinearMagNearest:
+        case ESamplingMethod::MinLinearMagNearest:
             glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             break;
-        case ESamplingMethod_MinNearestMagLinear:
+        case ESamplingMethod::MinNearestMagLinear:
             glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             break;

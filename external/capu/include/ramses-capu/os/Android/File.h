@@ -32,8 +32,8 @@ namespace ramses_capu
         class File: private ramses_capu::posix::File
         {
         public:
-            File(const String& path);
-            File(const File& parent, const ramses_capu::String& path);
+            File(const std::string& path);
+            File(const File& parent, const std::string& path);
             using ramses_capu::posix::File::open;
             using ramses_capu::posix::File::isOpen;
             using ramses_capu::posix::File::isEof;
@@ -54,23 +54,23 @@ namespace ramses_capu
             using ramses_capu::posix::File::getParentPath;
             using ramses_capu::posix::File::getSizeInBytes;
             using ramses_capu::posix::File::isDirectory;
-            status_t copyTo(const ramses_capu::String& otherFilename);
+            status_t copyTo(const std::string& otherFilename);
         };
 
         inline
-        File::File(const String& path)
+        File::File(const std::string& path)
             : ramses_capu::posix::File(path)
         {
         }
 
         inline
-        File::File(const File& parent, const ramses_capu::String& path)
+        File::File(const File& parent, const std::string& path)
             : ramses_capu::posix::File(parent, path)
         {
         }
 
         inline
-        status_t File::copyTo(const ramses_capu::String& otherFilename)
+        status_t File::copyTo(const std::string& otherFilename)
         {
             int_t sourceFile = ::open(mPath.c_str(), O_RDONLY, 0);
             if (-1 == sourceFile)

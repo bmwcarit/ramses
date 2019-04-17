@@ -21,8 +21,6 @@ def compare_images(screenshotPath, desiredImagePath, percentageOfWrongPixelsAllo
     try:
         image = Image.open(screenshotPath)
         desiredImage = Image.open(desiredImagePath)
-        image = image.convert("RGB")  # on the fly convert to RGB image, needed to guarantee 3-value tuple access
-        desiredImage = desiredImage.convert("RGB")  # on the fly convert to RGB image, needed to guarantee 3-value tuple access
 
     except IOError as e:
         log.errorAndAssert("Image file for comparison could not be opened ({} {})".format(e.strerror, e.filename))

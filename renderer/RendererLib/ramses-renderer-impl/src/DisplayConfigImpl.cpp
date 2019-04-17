@@ -194,15 +194,15 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t DisplayConfigImpl::disableEffectDeletion()
-    {
-        m_internalConfig.setEffectDeletionDisabled(true);
-        return StatusOK;
-    }
-
     status_t DisplayConfigImpl::setResizable(bool resizable)
     {
         m_internalConfig.setResizable(resizable);
+        return StatusOK;
+    }
+
+    status_t DisplayConfigImpl::keepEffectsUploaded(bool enable)
+    {
+        m_internalConfig.setKeepEffectsUploaded(enable);
         return StatusOK;
     }
 

@@ -218,72 +218,12 @@ namespace ramses_internal
 
     inline Float  PlatformMath::ArcTan2(Float valy, Float valx)
     {
-        if (valx < 0.f)
-        {
-            if (valy >= 0.f)
-            {
-                return (PlatformMath::ArcTan(valy / valx) + PlatformMath::PI_f);
-            }
-            else
-            {
-                return (PlatformMath::ArcTan(valy / valx) - PlatformMath::PI_f);
-            }
-        }
-        else if (valx == 0.f)
-        {
-            if (valy > 0.f)
-            {
-                return PlatformMath::PI_f;
-            }
-            else if (valy < 0.f)
-            {
-                return -PlatformMath::PI_f;
-            }
-            else
-            {
-                // undefined
-                return 0.f;
-            }
-        }
-        else
-        {
-            return PlatformMath::ArcTan(valy / valx);
-        }
+        return ::std::atan2(valy, valx);
     }
 
     inline Double PlatformMath::ArcTan2(Double valy, Double valx)
     {
-        if (valx < 0)
-        {
-            if (valy >= 0)
-            {
-                return (PlatformMath::ArcTan(valy / valx) + PlatformMath::PI_d);
-            }
-            else
-            {
-                return (PlatformMath::ArcTan(valy / valx) - PlatformMath::PI_d);
-            }
-        }
-        else if (valx == 0)
-        {
-            if (valy > 0)
-            {
-                return PlatformMath::PI_f;
-            }
-            else if (valy < 0)
-            {
-                return -PlatformMath::PI_f;
-            }
-            else
-            {
-                // undefined
-                return 0;
-            }
-        }
-        else
-        {
-            return PlatformMath::ArcTan(valy / valx);
-        }
+        return ::std::atan2(valy, valx);
     }
 
     inline float PlatformMath::Rad2Deg(float val)

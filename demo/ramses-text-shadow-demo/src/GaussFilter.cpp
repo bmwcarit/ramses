@@ -118,7 +118,7 @@ void GaussFilter::setVariance(float variance)
 
     if (sum < sufficientSum)
     {
-        printf("GaussFilter::setVariance Maximum kernel size (%d) is to low for choosen variance (%f), sum: %f < "
+        printf("GaussFilter::setVariance Maximum kernel size (%u) is to low for choosen variance (%f), sum: %f < "
                "sufficientSum: %f\n",
                m_maxKernelSize,
                variance,

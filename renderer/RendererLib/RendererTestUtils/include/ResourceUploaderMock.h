@@ -21,7 +21,7 @@ namespace ramses_internal
     public:
         ResourceUploaderMock();
 
-        MOCK_METHOD2(uploadResource, DeviceResourceHandle(IRenderBackend&, ManagedResource));
+        MOCK_METHOD3(uploadResource, DeviceResourceHandle(IRenderBackend&, ManagedResource, UInt32&));
         MOCK_METHOD4(unloadResource, void(IRenderBackend&, EResourceType, ResourceContentHash, DeviceResourceHandle));
 
         static const DeviceResourceHandle FakeResourceDeviceHandle;

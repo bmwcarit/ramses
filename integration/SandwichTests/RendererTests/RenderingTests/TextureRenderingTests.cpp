@@ -18,6 +18,7 @@
 #include "TestScenes/CubeTextureScene.h"
 #include "TestScenes/TextureCubeAnisotropicTextureFilteringScene.h"
 #include "TestScenes/TextureBufferScene.h"
+#include "TestScenes/TextureSamplerScene.h"
 
 using namespace ramses_internal;
 
@@ -81,6 +82,12 @@ void TextureRenderingTests::setUpTestCases(RendererTestsFramework& testFramework
     testFramework.createTestCaseWithDefaultDisplay(TextureBufferTest_SwitchClientTextureToSceneTextureAndBack, *this, "TextureBufferTest_SwitchClientTextureToSceneTextureAndBack");
     testFramework.createTestCaseWithDefaultDisplay(TextureBufferTest_SwitchClientTextureToSceneTextureAndUpdate, *this, "TextureBufferTest_SwitchClientTextureToSceneTextureAndUpdate");
     testFramework.createTestCaseWithDefaultDisplay(TextureBufferTest_ReMapScene, *this, "TextureBufferTest_ReMapScene");
+
+    testFramework.createTestCaseWithDefaultDisplay(SamplerTest_ChangeData_ClientTexture, *this, "SamplerTest_ChangeData_ClientTexture");
+    testFramework.createTestCaseWithDefaultDisplay(SamplerTest_ChangeData_TextureBufferToClientTexture, *this, "SamplerTest_ChangeData_TextureBufferToClientTexture");
+    testFramework.createTestCaseWithDefaultDisplay(SamplerTest_ChangeData_ClientTextureToTextureBuffer, *this, "SamplerTest_ChangeData_ClientTextureToTextureBuffer");
+    testFramework.createTestCaseWithDefaultDisplay(SamplerTest_ChangeData_ClientTextureToRenderBuffer, *this, "SamplerTest_ChangeData_ClientTextureToRenderBuffer");
+    testFramework.createTestCaseWithDefaultDisplay(SamplerTest_ChangeData_ClientTextureToStreamTexture, *this, "SamplerTest_ChangeData_ClientTextureToStreamTexture");
 }
 
 bool TextureRenderingTests::run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase)
@@ -229,6 +236,46 @@ bool TextureRenderingTests::run(RendererTestsFramework& testFramework, const Ren
         const Bool afterRemapping = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMip", 0u);
 
         return beforeRemapping && blackAfterUnmap && afterRemapping;
+    }
+    case SamplerTest_ChangeData_ClientTexture:
+    {
+        const ramses::sceneId_t sceneId = createAndShowScene<TextureSamplerScene>(testFramework, TextureSamplerScene::EState_ClientTexture);
+        if (!testFramework.renderAndCompareScreenshot("TextureSamplerScene_Initial"))
+            return false;
+        testFramework.getScenesRegistry().setSceneState<TextureSamplerScene>(sceneId, TextureSamplerScene::EState_SetClientTexture);
+        return testFramework.renderAndCompareScreenshot("TextureSamplerScene_Changed");
+    }
+    case SamplerTest_ChangeData_TextureBufferToClientTexture:
+    {
+        const ramses::sceneId_t sceneId = createAndShowScene<TextureSamplerScene>(testFramework, TextureSamplerScene::EState_TextureBuffer);
+        if (!testFramework.renderAndCompareScreenshot("TextureSamplerScene_Initial"))
+            return false;
+        testFramework.getScenesRegistry().setSceneState<TextureSamplerScene>(sceneId, TextureSamplerScene::EState_SetClientTexture);
+        return testFramework.renderAndCompareScreenshot("TextureSamplerScene_Changed");
+    }
+    case SamplerTest_ChangeData_ClientTextureToTextureBuffer:
+    {
+        const ramses::sceneId_t sceneId = createAndShowScene<TextureSamplerScene>(testFramework, TextureSamplerScene::EState_ClientTexture);
+        if (!testFramework.renderAndCompareScreenshot("TextureSamplerScene_Initial"))
+            return false;
+        testFramework.getScenesRegistry().setSceneState<TextureSamplerScene>(sceneId, TextureSamplerScene::EState_SetTextureBuffer);
+        return testFramework.renderAndCompareScreenshot("TextureSamplerScene_Changed");
+    }
+    case SamplerTest_ChangeData_ClientTextureToRenderBuffer:
+    {
+        const ramses::sceneId_t sceneId = createAndShowScene<TextureSamplerScene>(testFramework, TextureSamplerScene::EState_ClientTexture);
+        if (!testFramework.renderAndCompareScreenshot("TextureSamplerScene_Initial"))
+            return false;
+        testFramework.getScenesRegistry().setSceneState<TextureSamplerScene>(sceneId, TextureSamplerScene::EState_SetRenderBuffer);
+        return testFramework.renderAndCompareScreenshot("TextureSamplerScene_ChangedBlue");
+    }
+    case SamplerTest_ChangeData_ClientTextureToStreamTexture:
+    {
+        const ramses::sceneId_t sceneId = createAndShowScene<TextureSamplerScene>(testFramework, TextureSamplerScene::EState_ClientTexture);
+        if (!testFramework.renderAndCompareScreenshot("TextureSamplerScene_Initial"))
+            return false;
+        testFramework.getScenesRegistry().setSceneState<TextureSamplerScene>(sceneId, TextureSamplerScene::EState_SetStreamTexture);
+        return testFramework.renderAndCompareScreenshot("TextureSamplerScene_Changed");
     }
     default:
         assert(!"Invalid texture rendering test ID!");

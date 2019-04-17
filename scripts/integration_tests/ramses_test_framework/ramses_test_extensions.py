@@ -119,6 +119,9 @@ class IVI_Control(object):
         cmd = "screen {0} renderorder {1}".format(screen_id, layer_ids)
         self.command_buffer.append(cmd)
 
+    def getScreenIds(self):
+        return self.start_state['screen'].keys()
+
     def createLayer(self, layer_id, width, height):
         cmd = "layer {0} create {1} {2}".format(layer_id, width, height)
         self.command_buffer.append(cmd)
@@ -161,3 +164,7 @@ class IVI_Control(object):
         current_renderorder = self.getScreenRenderorder(screen_id)
         self._setScreenRenderorder(screen_id, "{} {}".format(current_renderorder, layer_id))
 
+    def printCurrentState(self):
+        self.flush()
+        (stdout, _, _) = self.callIVIControl("scene")
+        log.info("--Start IVI Scene--\n" + "".join(stdout) + "\n--End  IVI Scene--")

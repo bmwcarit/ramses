@@ -181,10 +181,10 @@ namespace ramses
         return status;
     }
 
-    status_t DisplayConfig::disableEffectDeletion()
+    status_t DisplayConfig::keepEffectsUploaded(bool enable)
     {
-        const status_t status = impl.disableEffectDeletion();
-        LOG_HL_RENDERER_API_NOARG(status);
+        const status_t status = impl.keepEffectsUploaded(enable);
+        LOG_HL_RENDERER_API1(status, enable);
         return status;
     }
 

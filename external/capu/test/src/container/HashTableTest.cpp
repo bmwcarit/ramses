@@ -126,6 +126,21 @@ TEST_F(HashTableTest, TestWithString)
     EXPECT_EQ(static_cast<uint32_t>(0), map.count());
 }
 
+TEST_F(HashTableTest, TestWithStdString)
+{
+    ramses_capu::HashTable<std::string, int32_t> map;
+
+    map.put("testFloat", 3);
+    map.put("testFloat4", 4);
+
+    EXPECT_EQ(3, map.at("testFloat"));
+    EXPECT_EQ(4, map.at("testFloat4"));
+
+    // Test clear
+    map.clear();
+    EXPECT_EQ(static_cast<uint32_t>(0), map.count());
+}
+
 TEST_F(HashTableTest, TestCopyConstructor)
 {
     Int32HashMap map1;

@@ -200,7 +200,7 @@ public:
         // Rendered scene TS can either be invalid - never reported as rendered,
         // or the value below if reported as rendered
         for (auto sceneId : scenes)
-            expirationMonitor.onFlushApplied(sceneId, currentFakeTime);
+            expirationMonitor.onFlushApplied(sceneId, currentFakeTime, 0);
     }
 
     void expectScenesReportedToExpirationMonitorAsRendered(std::initializer_list<SceneId> expectedScenesToBeReported)
@@ -262,12 +262,13 @@ TEST_P(ARenderer, SetsVisibilityInSystemCompositorController)
 TEST_P(ARenderer, TakesScreenshotFromSystemCompositorController)
 {
     String fileName("screenshot.png");
+    const int32_t screenIviId = 3;
     SystemCompositorControllerMock* systemCompositorMock = getSystemCompositorMock();
     if(systemCompositorMock != nullptr)
     {
-        EXPECT_CALL(*systemCompositorMock, doScreenshotOfAllScreens(fileName));
+        EXPECT_CALL(*systemCompositorMock, doScreenshot(fileName, screenIviId));
     }
-    renderer.systemCompositorScreenshot(fileName);
+    renderer.systemCompositorScreenshot(fileName, screenIviId);
 }
 
 TEST_P(ARenderer, rendersOneLoopWithSingleDisplayController)

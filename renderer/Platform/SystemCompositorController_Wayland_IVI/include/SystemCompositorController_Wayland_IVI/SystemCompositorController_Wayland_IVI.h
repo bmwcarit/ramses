@@ -37,7 +37,7 @@ namespace ramses_internal
         virtual Bool setSurfaceOpacity(WaylandIviSurfaceId surfaceId, Float opacity) override;
         virtual Bool setSurfaceDestinationRectangle(
             WaylandIviSurfaceId surfaceId, Int32 x, Int32 y, Int32 width, Int32 height) override;
-        virtual Bool doScreenshotOfAllScreens(const String& fileName) override;
+        virtual Bool doScreenshot(const String& fileName, int32_t screenIviId) override;
         virtual Bool addSurfaceToLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) override;
         virtual Bool removeSurfaceFromLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) override;
         virtual Bool destroySurface(WaylandIviSurfaceId surfaceId) override;

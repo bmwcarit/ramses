@@ -29,8 +29,8 @@ namespace ramses_capu
         class File : private generic::File
         {
         public:
-            File(const String& path);
-            File(const File& parent, const ramses_capu::String& path);
+            File(const std::string& path);
+            File(const File& parent, const std::string& path);
             status_t open(const FileMode& mode);
             bool isOpen();
             bool isEof();
@@ -40,15 +40,15 @@ namespace ramses_capu
             status_t getCurrentPosition(uint_t& position) const;
             status_t flush();
             status_t close();
-            status_t renameTo(const ramses_capu::String& newPath);
-            status_t copyTo(const ramses_capu::String& otherPath);
+            status_t renameTo(const std::string& newPath);
+            status_t copyTo(const std::string& otherPath);
             status_t createFile();
             status_t createDirectory();
             status_t remove();
             using generic::File::getFileName;
             using generic::File::getExtension;
             using generic::File::getPath;
-            String getParentPath(bool& success) const;
+            std::string getParentPath(bool& success) const;
             bool isDirectory() const;
             bool exists() const;
             status_t getSizeInBytes(uint_t&) const;
@@ -59,38 +59,39 @@ namespace ramses_capu
             using generic::File::mHandle;
         private:
             bool  mIsOpen;
-            static String removeTrailingBackslash(String path);
+            static std::string removeTrailingBackslash(std::string path);
         };
 
         inline
-        File::File(const String& path)
+        File::File(const std::string& path)
             : generic::File(removeTrailingBackslash(path))
             , mIsOpen(false)
         {
         }
 
         inline
-        File::File(const File& parent, const ramses_capu::String& path)
+        File::File(const File& parent, const std::string& path)
             : generic::File(parent, removeTrailingBackslash(path))
             , mIsOpen(false)
         {
         }
 
         inline
-        String File::removeTrailingBackslash(String path)
+        std::string File::removeTrailingBackslash(std::string path)
         {
-            if (path.endsWith("\\") || path.endsWith("/"))
+            const auto len = path.size();
+            if (len > 0 && (path[len-1] == '\\' || path[len-1] == '/'))
             {
-                if (!path.endsWith(":\\") && !path.endsWith(":/"))
+                if (len < 2 || path[len-2] != ':')
                 {
-                    path.truncate(path.getLength() - 1);
+                    path.resize(len - 1);
                 }
             }
             return path;
         }
 
         inline
-        String File::getParentPath(bool& success) const
+        std::string File::getParentPath(bool& success) const
         {
             char buffer[1000]; // TODO
             char* filePointer = 0;
@@ -107,7 +108,7 @@ namespace ramses_capu
                 buffer[0] = 0;
             }
             success = length > 0;
-            return String(buffer);
+            return std::string(buffer);
         }
 
         inline
@@ -168,7 +169,7 @@ namespace ramses_capu
         }
 
         inline
-        status_t File::renameTo(const ramses_capu::String& newPath)
+        status_t File::renameTo(const std::string& newPath)
         {
             int_t status = MoveFileExA(mPath.c_str(), newPath.c_str(), 0);
             if (status == 0)
@@ -180,7 +181,7 @@ namespace ramses_capu
         }
 
         inline
-        status_t File::copyTo(const ramses_capu::String& otherPath)
+        status_t File::copyTo(const std::string& otherPath)
         {
             int_t status = CopyFileA(mPath.c_str(), otherPath.c_str(), false);
             if (status == 0)
@@ -294,9 +295,13 @@ namespace ramses_capu
             {
                 return CAPU_ERROR;
             }
+            if (length == 0)
+            {
+                return CAPU_OK;
+            }
 
-            size_t result = fwrite(buffer, 1, length, mHandle);
-            if (result != length)
+            size_t result = fwrite(buffer, length, 1, mHandle);
+            if (result != 1u)
             {
                 return CAPU_ERROR;
             }

@@ -16,15 +16,63 @@ namespace ramses
         return{ codes.begin(), codes.end() };
     }
 
-    TEST(UtfUtils, CanConvertUtf32ToUtf16)
+    TEST(UtfUtils, CanConvertUTF32ToUTF8differentOuputByteCounts)
     {
-        EXPECT_EQ(0xdc00d800u, UtfUtils::Utf32_to_Utf16(0x10000));
-        EXPECT_EQ(0xdfffdbbfu, UtfUtils::Utf32_to_Utf16(0xfffff));
+        const std::u32string utf32String{ 0x41, 0xa2, 0xc0b, 0x10425 };
+        const std::string utf8String{ toUTF8String({ 65, 194, 162, 224, 176, 139, 240, 144, 144, 165 }) }; // u8"A¢ఋ𐐥"
+        EXPECT_EQ(utf8String, UtfUtils::ConvertStrUtf32ToUtf8(utf32String));
+    }
 
-        EXPECT_EQ(0x54u, UtfUtils::Utf32_to_Utf16(0x54));
-        EXPECT_EQ(0x65u, UtfUtils::Utf32_to_Utf16(0x65));
-        EXPECT_EQ(0x73u, UtfUtils::Utf32_to_Utf16(0x73));
-        EXPECT_EQ(0x74u, UtfUtils::Utf32_to_Utf16(0x74));
+
+    TEST(UtfUtils, CanConvertCharUTF32ToUTF8differentOuputByteCounts)
+    {
+        // u8"A¢ఋ𐐥"
+        EXPECT_EQ(toUTF8String({ 65 }), UtfUtils::ConvertCharUtf32ToUtf8(0x41));
+        EXPECT_EQ(toUTF8String({ 194, 162 }), UtfUtils::ConvertCharUtf32ToUtf8(0xa2));
+        EXPECT_EQ(toUTF8String({ 224, 176, 139 }), UtfUtils::ConvertCharUtf32ToUtf8(0xc0b));
+        EXPECT_EQ(toUTF8String({ 240, 144, 144, 165 }), UtfUtils::ConvertCharUtf32ToUtf8(0x10425));
+    }
+
+    TEST(UtfUtils, CanConvertUTF32ToUTF8emptyStr)
+    {
+        const std::string emptyStr = "";
+        const std::u32string emptyU32String;
+        EXPECT_EQ(emptyStr, UtfUtils::ConvertStrUtf32ToUtf8(emptyU32String));
+    }
+
+    TEST(UtfUtils, CanConvertUTF32ToUTF8ByteBounds)
+    {
+        const std::u32string utf32String{ 0x7F, 0x80, 0x7FF, 0x800, 0xFFFF, 0x10000};
+        const std::string utf8String{ toUTF8String({ 127, 194, 128, 223, 191, 224, 160, 128, 239, 191, 191, 240, 144, 128, 128}) };
+        EXPECT_EQ(utf8String, UtfUtils::ConvertStrUtf32ToUtf8(utf32String));
+    }
+
+    TEST(UtfUtils, CanConvertUTF32ToUTF8UpperBound)
+    {
+        const std::u32string utf32String{ 0x10FFFF };
+        const std::string utf8String{ toUTF8String({ 0xF4, 0x8F, 0xBF, 0xBF}) };
+        EXPECT_EQ(utf8String, UtfUtils::ConvertStrUtf32ToUtf8(utf32String));
+    }
+
+    TEST(UtfUtils, CanConvertUTF32ToUTF8zeroInput)
+    {
+        const std::u32string utf32String{ 0x0 };
+        const std::string utf8String{ toUTF8String({ 0x0}) };
+        EXPECT_EQ(utf8String, UtfUtils::ConvertStrUtf32ToUtf8(utf32String));
+    }
+
+    TEST(UtfUtils, CanConvertUTF32ToUTF8outOfUpperUnicodeRange)
+    {
+        const std::u32string utf32String{ 0x110000};
+        std::string failStr;
+        EXPECT_EQ(failStr, UtfUtils::ConvertStrUtf32ToUtf8(utf32String));
+    }
+
+    TEST(UtfUtils, CanConvertUTF32ToUTF8containingInvalidChars)
+    {
+        const std::u32string utf32StringWithInvalidChars{ 0x41, 0x110000, 0x42, 0x110000, 0x43 }; //"A invalChar B invalChar C"
+        const std::string utf8String{ toUTF8String({0x41, 0x42, 0x43}) }; //"ABC"
+        EXPECT_EQ(utf8String, UtfUtils::ConvertStrUtf32ToUtf8(utf32StringWithInvalidChars));
     }
 
     TEST(UtfUtils, CanReadDifferentLengthUTF8Char)

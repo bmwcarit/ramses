@@ -181,7 +181,7 @@ namespace ramses_internal
 
         for (UInt32 i = 0; i < 16; i++)
         {
-            EXPECT_EQ(Float(i + 1), m.getRawData()[i]);
+            EXPECT_EQ(Float(i + 1), m.data[i]);
         }
     }
 

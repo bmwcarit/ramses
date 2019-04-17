@@ -17,8 +17,9 @@
 #include "RendererLib/EResourceStatus.h"
 #include "RendererLib/StagingInfo.h"
 #include "RendererLib/OffscreenBufferLinks.h"
-#include <unordered_map>
+#include "RendererLib/FrameTimer.h"
 #include "Scene/EScenePublicationMode.h"
+#include <unordered_map>
 
 namespace ramses_internal
 {
@@ -32,7 +33,6 @@ namespace ramses_internal
     class RendererEventCollector;
     class RendererScenes;
     class DisplayConfig;
-    class FrameTimer;
     class SceneExpirationMonitor;
     class SceneActionCollection;
     class DataReferenceLinkManager;
@@ -133,6 +133,8 @@ namespace ramses_internal
         {
             DisplayHandle display;
             Int32 sceneRenderOrder;
+            FrameTimer::Clock::time_point requestTimeStamp;
+            FrameTimer::Clock::time_point lastLogTimeStamp;
         };
         typedef HashMap<SceneId, SceneMapRequest> SceneMapRequests;
         SceneMapRequests m_scenesToBeMapped;

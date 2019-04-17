@@ -72,7 +72,10 @@ namespace ramses_internal
             m_device.depthFunc(EDepthFunc::Disabled);
             m_device.depthWrite(EDepthWrite::Disabled);
             m_device.colorMask(true, true, true, true);
-            m_device.clearColor({ 0.f, 0.f, 0.f, 0.f });
+            // Use default clear color here, the content should be anyway overwritten by warped 'scenes buffer'.
+            // If warping geometry does not cover whole frame, this clear color will be in the final image.
+            // TODO vaclav use framebuffer clear color set in renderer also here.
+            m_device.clearColor({ 0.f, 0.f, 0.f, 1.f });
             m_device.clear(EClearFlags_Color);
             m_device.setViewport(0u, 0u, m_displayWidth, m_displayHeight);
 

@@ -88,6 +88,8 @@
 #include "VertexDataBufferImpl.h"
 #include "IndexDataBufferImpl.h"
 #include "Texture2DBufferImpl.h"
+#include "DataSlotUtils.h"
+
 #include "Components/FlushTimeInformation.h"
 #include "PlatformAbstraction/PlatformMath.h"
 #include "Utils/TextureMathUtils.h"
@@ -829,6 +831,7 @@ namespace ramses
             samplingMethod,
             anisotropyLevel,
             ERamsesObjectType_Texture2D,
+            ramses_internal::TextureSampler::ContentType::ClientTexture,
             texture.impl.getLowlevelResourceHash(),
             ramses_internal::InvalidMemoryHandle,
             name);
@@ -855,6 +858,7 @@ namespace ramses
         TextureSamplerImpl& pimpl = createTextureSamplerImpl(
             wrapUMode, wrapVMode, wrapRMode, samplingMethod, 1u,
             ERamsesObjectType_Texture3D,
+            ramses_internal::TextureSampler::ContentType::ClientTexture,
             texture.impl.getLowlevelResourceHash(),
             ramses_internal::InvalidMemoryHandle,
             name);
@@ -887,6 +891,7 @@ namespace ramses
         TextureSamplerImpl& pimpl = createTextureSamplerImpl(
             wrapUMode, wrapVMode, ETextureAddressMode_Clamp, samplingMethod, anisotropyLevel,
             ERamsesObjectType_TextureCube,
+            ramses_internal::TextureSampler::ContentType::ClientTexture,
             texture.impl.getLowlevelResourceHash(),
             ramses_internal::InvalidMemoryHandle,
             name);
@@ -919,6 +924,7 @@ namespace ramses
         TextureSamplerImpl& pimpl = createTextureSamplerImpl(
             wrapUMode, wrapVMode, ETextureAddressMode_Clamp, samplingMethod, anisotropyLevel,
             ERamsesObjectType_RenderBuffer,
+            ramses_internal::TextureSampler::ContentType::RenderBuffer,
             ramses_internal::ResourceContentHash::Invalid(),
             renderBuffer.impl.getRenderBufferHandle().asMemoryHandle(),
             name);
@@ -951,6 +957,7 @@ namespace ramses
         TextureSamplerImpl& pimpl = createTextureSamplerImpl(
             wrapUMode, wrapVMode, ETextureAddressMode_Clamp, samplingMethod, anisotropyLevel,
             ERamsesObjectType_Texture2DBuffer,
+            ramses_internal::TextureSampler::ContentType::TextureBuffer,
             ramses_internal::ResourceContentHash::Invalid(),
             textureBuffer.impl.getTextureBufferHandle().asMemoryHandle(),
             name);
@@ -976,6 +983,7 @@ namespace ramses
         TextureSamplerImpl& pimpl = createTextureSamplerImpl(
             wrapUMode, wrapVMode, ETextureAddressMode_Clamp, samplingMethod, 1u,
             ERamsesObjectType_StreamTexture,
+            ramses_internal::TextureSampler::ContentType::StreamTexture,
             ramses_internal::ResourceContentHash::Invalid(),
             streamTexture.impl.getHandle().asMemoryHandle(),
             name);
@@ -992,6 +1000,7 @@ namespace ramses
         ETextureSamplingMethod samplingMethod,
         uint32_t anisotropyLevel,
         ERamsesObjectType samplerType,
+        ramses_internal::TextureSampler::ContentType contentType,
         ramses_internal::ResourceContentHash textureResourceHash,
         ramses_internal::MemoryHandle contentHandle,
         const char* name /*= 0*/)
@@ -1005,7 +1014,7 @@ namespace ramses
             );
 
         TextureSamplerImpl& samplerImpl = *new TextureSamplerImpl(*this, name);
-        samplerImpl.initializeFrameworkData(samplerStates, samplerType, textureResourceHash, contentHandle);
+        samplerImpl.initializeFrameworkData(samplerStates, samplerType, contentType, textureResourceHash, contentHandle);
         return samplerImpl;
     }
 
@@ -1127,13 +1136,13 @@ namespace ramses
         }
 
         const ramses_internal::DataSlotId internalDataSlotId(id);
-        if (hasDataSlotId(internalDataSlotId))
+        if (ramses_internal::DataSlotUtils::HasDataSlotId(m_scene, internalDataSlotId))
         {
             return addErrorEntry("Scene::createTransformationDataProvider failed, duplicate data slot id");
         }
 
         const ramses_internal::NodeHandle nodeHandle = node.impl.getNodeHandle();
-        if (hasDataSlotIdForNode(nodeHandle))
+        if (ramses_internal::DataSlotUtils::HasDataSlotIdForNode(m_scene, nodeHandle))
         {
             return addErrorEntry("Scene::createTransformationDataProvider failed, Node already has a transformation data slot assigned");
         }
@@ -1150,13 +1159,13 @@ namespace ramses
         }
 
         const ramses_internal::DataSlotId internalDataSlotId(id);
-        if (hasDataSlotId(internalDataSlotId))
+        if (ramses_internal::DataSlotUtils::HasDataSlotId(m_scene, internalDataSlotId))
         {
             return addErrorEntry("Scene::createTransformationDataConsumer failed, duplicate data slot id");
         }
 
         const ramses_internal::NodeHandle nodeHandle = node.impl.getNodeHandle();
-        if (hasDataSlotIdForNode(nodeHandle))
+        if (ramses_internal::DataSlotUtils::HasDataSlotIdForNode(m_scene, nodeHandle))
         {
             return addErrorEntry("Scene::createTransformationDataConsumer failed, Node already has a transformation data slot assigned");
         }
@@ -1173,13 +1182,13 @@ namespace ramses
         }
 
         const ramses_internal::DataSlotId internalDataSlotId(id);
-        if (hasDataSlotId(internalDataSlotId))
+        if (ramses_internal::DataSlotUtils::HasDataSlotId(m_scene, internalDataSlotId))
         {
             return addErrorEntry("Scene::createDataProvider failed, duplicate data slot id");
         }
 
         const ramses_internal::DataInstanceHandle dataRef = dataObject.impl.getDataReference();
-        if (hasDataSlotIdForDataObject(dataRef))
+        if (ramses_internal::DataSlotUtils::HasDataSlotIdForDataObject(m_scene, dataRef))
         {
             return addErrorEntry("Scene::createDataProvider failed, data object already has a data slot assigned");
         }
@@ -1196,13 +1205,13 @@ namespace ramses
         }
 
         const ramses_internal::DataSlotId internalDataSlotId(id);
-        if (hasDataSlotId(internalDataSlotId))
+        if (ramses_internal::DataSlotUtils::HasDataSlotId(m_scene, internalDataSlotId))
         {
             return addErrorEntry("Scene::createDataConsumer failed, duplicate data slot id");
         }
 
         const ramses_internal::DataInstanceHandle dataRef = dataObject.impl.getDataReference();
-        if (hasDataSlotIdForDataObject(dataRef))
+        if (ramses_internal::DataSlotUtils::HasDataSlotIdForDataObject(m_scene, dataRef))
         {
             return addErrorEntry("Scene::createDataConsumer failed, data object already has a data slot assigned");
         }
@@ -1219,13 +1228,13 @@ namespace ramses
         }
 
         const ramses_internal::DataSlotId internalDataSlotId(id);
-        if (hasDataSlotId(internalDataSlotId))
+        if (ramses_internal::DataSlotUtils::HasDataSlotId(m_scene, internalDataSlotId))
         {
             return addErrorEntry("Scene::createTextureProvider failed, duplicate data slot id");
         }
 
         const ramses_internal::ResourceContentHash& textureHash = texture.impl.getLowlevelResourceHash();
-        if (hasDataSlotIdForTexture(textureHash))
+        if (ramses_internal::DataSlotUtils::HasDataSlotIdForTexture(m_scene, textureHash))
         {
             return addErrorEntry("Scene::createTextureProvider failed, texture already has a data slot assigned in this scene");
         }
@@ -1242,7 +1251,7 @@ namespace ramses
         }
 
         const ramses_internal::DataSlotId internalDataSlotId(id);
-        if (!hasDataSlotId(internalDataSlotId))
+        if (!ramses_internal::DataSlotUtils::HasDataSlotId(m_scene, internalDataSlotId))
         {
             return addErrorEntry("Scene::updateTextureProvider failed, provider has not been created before.");
         }
@@ -1277,13 +1286,13 @@ namespace ramses
         }
 
         const ramses_internal::DataSlotId internalDataSlotId(id);
-        if (hasDataSlotId(internalDataSlotId))
+        if (ramses_internal::DataSlotUtils::HasDataSlotId(m_scene, internalDataSlotId))
         {
             return addErrorEntry("Scene::createTextureConsumer failed, duplicate data slot id");
         }
 
         const ramses_internal::TextureSamplerHandle& samplerHandle = sampler.impl.getTextureSamplerHandle();
-        if (hasDataSlotIdForTextureSampler(samplerHandle))
+        if (ramses_internal::DataSlotUtils::HasDataSlotIdForTextureSampler(m_scene, samplerHandle))
         {
             return addErrorEntry("Scene::createTextureConsumer failed, texture sampler already has a data slot assigned");
         }
@@ -1561,79 +1570,6 @@ namespace ramses
         }
 
         m_objectRegistry.clearDirtyNodes();
-    }
-
-    bool SceneImpl::hasDataSlotId(ramses_internal::DataSlotId id) const
-    {
-        const ramses_internal::UInt32 slotHandleCount = m_scene.getDataSlotCount();
-        for (ramses_internal::DataSlotHandle slotHandle(0u); slotHandle < slotHandleCount; slotHandle++)
-        {
-            if (m_scene.isDataSlotAllocated(slotHandle) && m_scene.getDataSlot(slotHandle).id == id)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    bool SceneImpl::hasDataSlotIdForNode(ramses_internal::NodeHandle nodeHandle) const
-    {
-        const ramses_internal::UInt32 slotHandleCount = m_scene.getDataSlotCount();
-        for (ramses_internal::DataSlotHandle slotHandle(0u); slotHandle < slotHandleCount; slotHandle++)
-        {
-            if (m_scene.isDataSlotAllocated(slotHandle) && m_scene.getDataSlot(slotHandle).attachedNode == nodeHandle)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    bool SceneImpl::hasDataSlotIdForDataObject(ramses_internal::DataInstanceHandle dataRef) const
-    {
-        const ramses_internal::UInt32 slotHandleCount = m_scene.getDataSlotCount();
-        for (ramses_internal::DataSlotHandle slotHandle(0u); slotHandle < slotHandleCount; slotHandle++)
-        {
-            if (m_scene.isDataSlotAllocated(slotHandle) &&
-                m_scene.getDataSlot(slotHandle).attachedDataReference == dataRef)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    bool SceneImpl::hasDataSlotIdForTextureSampler(ramses_internal::TextureSamplerHandle sampler) const
-    {
-        const ramses_internal::UInt32 slotHandleCount = m_scene.getDataSlotCount();
-        for (ramses_internal::DataSlotHandle slotHandle(0u); slotHandle < slotHandleCount; slotHandle++)
-        {
-            if (m_scene.isDataSlotAllocated(slotHandle) &&
-                m_scene.getDataSlot(slotHandle).attachedTextureSampler == sampler)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    bool SceneImpl::hasDataSlotIdForTexture(const ramses_internal::ResourceContentHash& texture) const
-    {
-        const ramses_internal::UInt32 slotHandleCount = m_scene.getDataSlotCount();
-        for (ramses_internal::DataSlotHandle slotHandle(0u); slotHandle < slotHandleCount; slotHandle++)
-        {
-            if (m_scene.isDataSlotAllocated(slotHandle) &&
-                m_scene.getDataSlot(slotHandle).attachedTexture == texture)
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     void SceneImpl::enqueueSceneCommand(const ramses_internal::SceneCommand& command)

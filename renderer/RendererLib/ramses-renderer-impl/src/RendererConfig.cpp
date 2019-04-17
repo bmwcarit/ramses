@@ -59,6 +59,13 @@ namespace ramses
         return status;
     }
 
+    status_t RendererConfig::setFrameCallbackMaxPollTime(uint64_t waitTimeInUsec)
+    {
+        const status_t status = impl.setFrameCallbackMaxPollTime(waitTimeInUsec);
+        LOG_HL_RENDERER_API1(status, waitTimeInUsec);
+        return status;
+    }
+
     status_t RendererConfig::setWaylandSocketEmbeddedGroup(const char* groupname)
     {
         const status_t status = impl.setWaylandSocketEmbeddedGroup(groupname);

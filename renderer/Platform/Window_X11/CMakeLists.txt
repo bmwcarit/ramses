@@ -36,7 +36,7 @@ ACME_MODULE(
     #==========================================================================
     NAME                    Window_X11_Test
     TYPE                    TEST
-    TEST_SUFFIX             RNDSANDWICHTEST
+    TEST_SUFFIX             RNDSANDWICHTEST_SWRAST
 
     #==========================================================================
     # files of this module

@@ -16,10 +16,10 @@ namespace ramses_internal
     struct TextureSamplerStates
     {
         TextureSamplerStates(
-            EWrapMethod addressModeU = EWrapMethod_Clamp,
-            EWrapMethod addressModeV = EWrapMethod_Clamp,
-            EWrapMethod addressModeR = EWrapMethod_Clamp,
-            ESamplingMethod samplingMode = ESamplingMethod_Trilinear,
+            EWrapMethod addressModeU = EWrapMethod::Clamp,
+            EWrapMethod addressModeV = EWrapMethod::Clamp,
+            EWrapMethod addressModeR = EWrapMethod::Clamp,
+            ESamplingMethod samplingMode = ESamplingMethod::Trilinear,
             UInt32 anisotropyLevel = 1u)
             : m_addressModeU(addressModeU)
             , m_addressModeV(addressModeV)

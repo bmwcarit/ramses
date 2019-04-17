@@ -19,8 +19,8 @@
 
 #include "ramses-capu/util/Runnable.h"
 #include "ramses-capu/os/ThreadState.h"
-#include "ramses-capu/container/String.h"
 #include <atomic>
+#include <string>
 
 namespace ramses_capu
 {
@@ -40,7 +40,7 @@ namespace ramses_capu
         class Thread
         {
         public:
-            Thread(const String& name);
+            Thread(const std::string& name);
             void cancel();
             void resetCancel();
             ThreadState getState() const;
@@ -51,7 +51,7 @@ namespace ramses_capu
         protected:
             ThreadRunnable mRunnable;
             bool mIsStarted;
-            String mName;
+            std::string mName;
         };
 
 
@@ -63,7 +63,7 @@ namespace ramses_capu
         }
 
         inline
-        Thread::Thread(const String& name)
+        Thread::Thread(const std::string& name)
             : mState(static_cast<uint32_t>(TS_NEW))
             , mIsStarted(false)
             , mName(name)

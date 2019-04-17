@@ -27,7 +27,6 @@ ACME_MODULE(
     DEPENDENCIES            ramses-renderer-lib
                             Window_Windows
                             OpenGL
-                            WGL
 )
 
 # This module is tested in the renderer sandwich tests (<ramses>/integration/ramses-renderer-tests)

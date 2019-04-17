@@ -26,7 +26,6 @@ namespace ramses
     class Appearance;
     class Effect;
     class GeometryBinding;
-    class IInputHandler;
     class SceneImpl;
     class RamsesClientImpl;
     class AnimationSystem;
@@ -198,24 +197,6 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t destroy(SceneObject& object);
-
-        /**
-        * @brief Registers an object to handle input events on input volumes within this scene.
-        *
-        * @param[in] inputHandler The object to register as handler for input events.
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t registerInputHandler(IInputHandler& inputHandler);
-
-        /**
-        * @brief Unregisters an input handler within this scene.
-        *
-        * @param[in] inputHandler The object to unregister as handler for input events.
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t unregisterInputHandler(IInputHandler& inputHandler);
 
         /**
          * @brief Expiration timestamp is a point in time till which the scene is considered to be up-to-date.

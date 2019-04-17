@@ -173,7 +173,7 @@ namespace ramses
         ramses_internal::ParticipantIdentifier participantAddress(myGuid, participantName);
 
         LOG_INFO(CONTEXT_FRAMEWORK, "Starting Ramses Client Application: " << participantAddress.getParticipantName() << " guid:" << participantAddress.getParticipantId());
-        const ramses_internal::ArgumentUInt32 periodicLogTimeout(parser, "plt", "periodicLogTimeout", 10);
+        const ramses_internal::ArgumentUInt32 periodicLogTimeout(parser, "plt", "periodicLogTimeout", uint32_t(PeriodicLogIntervalInSeconds));
 
         logEnvironmentVariableIfSet("XDG_RUNTIME_DIR");
         logEnvironmentVariableIfSet("LIBGL_DRIVERS_PATH");

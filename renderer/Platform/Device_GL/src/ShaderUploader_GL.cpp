@@ -107,17 +107,22 @@ namespace ramses_internal
         {
             Int32 infoLength;
             glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &infoLength);
+            if (infoLength > 0)
+            {
+                String str;
+                str.resize(infoLength);
 
-            // Allocate Log Space
-            Char* info = new char[infoLength];
-            Int32 numberCharsUnused;
-            glGetProgramInfoLog(shaderProgram, infoLength, &numberCharsUnused, info);
+                Int32 numChars;
+                glGetProgramInfoLog(shaderProgram, infoLength, &numChars, str.data());
+                str.resize(numChars);
 
-            errorLogOut = "Failed to link shader program:\n";
-            errorLogOut += info;
-            errorLogOut += "\n";
+                errorLogOut = "Failed to link shader program:\n";
+                errorLogOut += str;
+                errorLogOut += "\n";
+            }
+            else
+                errorLogOut = "Failed to link shader program - no info given from compiler\n";
 
-            delete[] info;
             return false;
         }
         else

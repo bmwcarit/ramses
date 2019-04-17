@@ -19,11 +19,12 @@ namespace ramses_internal
         registerKeyword("scs");
 
         getArgument<0>().setDescription("file name including path, where to store the screenshot");
+        getArgument<1>().setDescription("wayland IVI screen id");
     }
 
-    Bool SystemCompositorControllerScreenshot::execute(String& fileName) const
+    Bool SystemCompositorControllerScreenshot::execute(String& fileName, int32_t& screenIviId) const
     {
-        m_rendererCommandBuffer.systemCompositorControllerScreenshot(fileName);
+        m_rendererCommandBuffer.systemCompositorControllerScreenshot(fileName, screenIviId);
         return true;
     }
 }

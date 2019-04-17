@@ -414,10 +414,10 @@ TEST_F(ARendererResourceManager, canUploadAndUpdateAndUnloadTextureBuffer_WithSe
 TEST_F(ARendererResourceManager, canUploadAndUnloadTextureSampler)
 {
     const TextureSamplerHandle textureSampler(1u);
-    const EWrapMethod wrapU(EWrapMethod_Clamp);
-    const EWrapMethod wrapV(EWrapMethod_Repeat);
-    const EWrapMethod wrapR(EWrapMethod_RepeatMirrored);
-    const ESamplingMethod sampling(ESamplingMethod_Bilinear);
+    const EWrapMethod wrapU(EWrapMethod::Clamp);
+    const EWrapMethod wrapV(EWrapMethod::Repeat);
+    const EWrapMethod wrapR(EWrapMethod::RepeatMirrored);
+    const ESamplingMethod sampling(ESamplingMethod::Bilinear);
     const UInt32 anisotropyLevel(2u);
     const TextureSamplerStates state(wrapU, wrapV, wrapR, sampling, anisotropyLevel);
 

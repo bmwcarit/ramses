@@ -123,7 +123,7 @@ namespace ramses
 
         for (uint32_t i = 0u; i < 16u; ++i)
         {
-            EXPECT_FLOAT_EQ(expectedMatrix.getRawData()[i], projMatData[i]);
+            EXPECT_FLOAT_EQ(expectedMatrix.data[i], projMatData[i]);
         }
     }
 

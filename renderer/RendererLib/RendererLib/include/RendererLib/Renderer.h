@@ -88,7 +88,7 @@ namespace ramses_internal
         void systemCompositorSetIviSurfaceVisibility(WaylandIviSurfaceId surfaceId, Bool visibility) const;
         void systemCompositorSetIviSurfaceOpacity(WaylandIviSurfaceId surfaceId, Float opacity) const;
         void systemCompositorSetIviSurfaceDestRectangle(WaylandIviSurfaceId surfaceId, Int32 x, Int32 y, Int32 width, Int32 height) const;
-        void systemCompositorScreenshot(const String& fileName) const;
+        void systemCompositorScreenshot(const String& fileName, int32_t screenIviId) const;
         Bool systemCompositorAddIviSurfaceToIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) const;
         void systemCompositorRemoveIviSurfaceFromIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) const;
         void systemCompositorDestroyIviSurface(WaylandIviSurfaceId surfaceId) const;

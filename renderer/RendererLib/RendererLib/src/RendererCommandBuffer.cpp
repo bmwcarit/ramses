@@ -174,10 +174,10 @@ namespace ramses_internal
         RendererCommands::systemCompositorControllerSetIviSurfaceDestRectangle(surfaceId, x, y, width, height);
     }
 
-    void RendererCommandBuffer::systemCompositorControllerScreenshot(const String& fileName)
+    void RendererCommandBuffer::systemCompositorControllerScreenshot(const String& fileName, int32_t screenIviId)
     {
         PlatformGuard guard(m_lock);
-        RendererCommands::systemCompositorControllerScreenshot(fileName);
+        RendererCommands::systemCompositorControllerScreenshot(fileName, screenIviId);
     }
 
     void RendererCommandBuffer::systemCompositorControllerAddIviSurfaceToIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId)
@@ -228,16 +228,10 @@ namespace ramses_internal
         RendererCommands::setFrameProfilerFilteredRegionFlags(flags);
     }
 
-    void RendererCommandBuffer::setFrameTimerLimits(UInt64 limitForClientResourcesUploadMicrosec, UInt64 limitForSceneActionsApplyMicrosec, UInt64 limitForOffscreenBufferRenderMicrosec)
+    void RendererCommandBuffer::setFrameTimerLimits(UInt64 limitForSceneResourcesUploadMicrosec, UInt64 limitForClientResourcesUploadMicrosec, UInt64 limitForSceneActionsApplyMicrosec, UInt64 limitForOffscreenBufferRenderMicrosec)
     {
         PlatformGuard guard(m_lock);
-        RendererCommands::setFrameTimerLimits(limitForClientResourcesUploadMicrosec, limitForSceneActionsApplyMicrosec, limitForOffscreenBufferRenderMicrosec);
-    }
-
-    void RendererCommandBuffer::setSceneResourceTimerLimit(UInt64 limitForSceneResourcesUploadMicrosec)
-    {
-        PlatformGuard guard(m_lock);
-        RendererCommands::setSceneResourcesTimerLimit(limitForSceneResourcesUploadMicrosec);
+        RendererCommands::setFrameTimerLimits(limitForSceneResourcesUploadMicrosec, limitForClientResourcesUploadMicrosec, limitForSceneActionsApplyMicrosec, limitForOffscreenBufferRenderMicrosec);
     }
 
     void RendererCommandBuffer::setLimitsFlushesForceApply(UInt limitFlushesForceApply)
@@ -463,7 +457,7 @@ namespace ramses_internal
             case ERendererCommand_SystemCompositorControllerScreenshot:
             {
                 const CompositorCommand& cmd = commands.getCommandData<CompositorCommand>(i);
-                systemCompositorControllerScreenshot(cmd.fileName);
+                systemCompositorControllerScreenshot(cmd.fileName, cmd.screenIviId);
             }
             break;
             case ERendererCommand_SystemCompositorControllerAddIviSurfaceToIviLayer:
@@ -523,13 +517,7 @@ namespace ramses_internal
             case ERendererCommand_SetFrameTimerLimits:
             {
                 const auto& cmd = commands.getCommandData<SetFrameTimerLimitsCommmand>(i);
-                setFrameTimerLimits(cmd.limitForClientResourcesUploadMicrosec, cmd.limitForSceneActionsApplyMicrosec, cmd.limitForOffscreenBufferRenderMicrosec);
-            }
-            break;
-            case ERendererCommand_SetResourceActionTimer:
-            {
-                const auto& cmd = commands.getCommandData<SetFrameTimerLimitsCommmand>(i);
-                setSceneResourcesTimerLimit(cmd.limitForSceneResourcesUploadMicrosec);
+                setFrameTimerLimits(cmd.limitForSceneResourcesUploadMicrosec, cmd.limitForClientResourcesUploadMicrosec, cmd.limitForSceneActionsApplyMicrosec, cmd.limitForOffscreenBufferRenderMicrosec);
             }
             break;
             case ERendererCommand_SetLimits_FlushesForceApply:

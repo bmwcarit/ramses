@@ -69,7 +69,7 @@ namespace ramses_internal
         void systemCompositorControllerSetIviSurfaceVisibility(WaylandIviSurfaceId surfaceId, Bool visibility);
         void systemCompositorControllerSetIviSurfaceOpacity(WaylandIviSurfaceId surfaceId, Float opacity);
         void systemCompositorControllerSetIviSurfaceDestRectangle(WaylandIviSurfaceId surfaceId, Int32 x, Int32 y, Int32 width, Int32 height);
-        void systemCompositorControllerScreenshot(const String& fileName);
+        void systemCompositorControllerScreenshot(const String& fileName, int32_t screenIviId);
         void systemCompositorControllerAddIviSurfaceToIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId);
         void systemCompositorControllerRemoveIviSurfaceFromIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId);
         void systemCompositorControllerDestroyIviSurface(WaylandIviSurfaceId surfaceId);
@@ -82,8 +82,7 @@ namespace ramses_internal
         void setFrameProfilerFilteredRegionFlags(UInt32 flags);
 
         void setSkippingOfUnmodifiedBuffers(Bool enable);
-        void setFrameTimerLimits(UInt64 limitForClientResourcesUploadMicrosec, UInt64 limitForSceneActionsApplyMicrosec, UInt64 limitForOffscreenBufferRenderMicrosec);
-        void setSceneResourcesTimerLimit(UInt64 limitForSceneResourcesUpload);
+        void setFrameTimerLimits(UInt64 limitForSceneResourcesUpload, UInt64 limitForClientResourcesUploadMicrosec, UInt64 limitForSceneActionsApplyMicrosec, UInt64 limitForOffscreenBufferRenderMicrosec);
         void setForceApplyPendingFlushesLimit(UInt maximumPendingFlushes);
         void setForceUnsubscribeLimits(UInt maximumPendingFlushes);
 

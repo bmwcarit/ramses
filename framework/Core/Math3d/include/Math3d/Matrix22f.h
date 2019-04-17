@@ -21,10 +21,18 @@ namespace ramses_internal
     class Matrix22f
     {
     public:
-        Float m11;
-        Float m21;
-        Float m12;
-        Float m22;
+        union
+        {
+            struct
+            {
+                Float m11;
+                Float m21;
+                Float m12;
+                Float m22;
+            };
+
+            Float data[4];
+        };
 
         /**
         * Special Identity matrix
@@ -57,13 +65,9 @@ namespace ramses_internal
         */
         Matrix22f(const Vector2& v1, const Vector2& v2);
 
-        /**
-        * Copy constructor to create Matrix from other matrix
-        * @param other Matrix22f to copy data from
-        */
-        Matrix22f(const Matrix22f& other);
-
+        Matrix22f(const Matrix22f& other) = default;
         Matrix22f(Matrix22f&& other) = default;
+        Matrix22f& operator=(const Matrix22f& other) = default;
         Matrix22f& operator=(Matrix22f&& other) = default;
 
         /**
@@ -75,13 +79,6 @@ namespace ramses_internal
         *  Sets all matrix elements to the given value
         */
         void set(const Float val);
-
-        /**
-        * Operator to copy data from an other Matrix22f
-        * @param other Matrix22f to copy data from
-        * @return Reference to local data
-        */
-        Matrix22f& operator=(const Matrix22f& other);
 
         /**
         * Multiplies all elements of the matrix with given value
@@ -130,18 +127,6 @@ namespace ramses_internal
         * @return the resulting Vector2
         */
         Vector2 operator*(const Vector2& vec) const;
-
-        /**
-        * Returns the pointer to the matrix data
-        * @param return pointer to matrix data
-        */
-        Float const* getRawData() const;
-
-        /**
-        * Returns the pointer to the matrix data
-        * @param return pointer to matrix data
-        */
-        Float* getRawData();
     };
 
     inline
@@ -152,14 +137,7 @@ namespace ramses_internal
     }
 
     inline
-        Matrix22f::Matrix22f(const Matrix22f& other)
-    {
-        PlatformMemory::Copy(&m11, &other.m11, 4 * sizeof(Float));
-    }
-
-    inline
         Matrix22f::Matrix22f(const Float _m11, const Float _m12, const Float _m21, const Float _m22)
-
         : m11(_m11), m21(_m21)
         , m12(_m12), m22(_m22)
     {
@@ -189,14 +167,6 @@ namespace ramses_internal
         Matrix22f::set(Float val)
     {
         m11 = m12 = m21 = m22 = val;
-    }
-
-    inline
-        Matrix22f&
-        Matrix22f::operator=(const Matrix22f& other)
-    {
-        PlatformMemory::Copy(&m11, &other.m11, 4 * sizeof(Float));
-        return *this;
     }
 
     inline
@@ -251,18 +221,6 @@ namespace ramses_internal
         Matrix22f::operator!=(const Matrix22f& other) const
     {
         return !operator==(other);
-    }
-
-    inline
-        Float const* Matrix22f::getRawData() const
-    {
-        return &m11;
-    }
-
-    inline
-        Float* Matrix22f::getRawData()
-    {
-        return &m11;
     }
 
     static_assert(std::is_nothrow_move_constructible<Matrix22f>::value &&

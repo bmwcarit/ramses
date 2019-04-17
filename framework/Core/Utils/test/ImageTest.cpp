@@ -11,32 +11,10 @@
 #include "Utils/Image.h"
 #include "Utils/BinaryFileInputStream.h"
 #include "ramses-capu/os/StringUtils.h"
-#include "PlatformAbstraction/PlatformMemory.h"
 #include <array>
 #include <numeric>
 
 using namespace ramses_internal;
-
-template< UInt32 size >
-::testing::AssertionResult AssertArraysEqual( const char* m_expr, const char* n_expr, const char (&m)[size], const char (&n)[size])
-{
-    char mHexValue[5];
-    char nHexValue[5];
-
-    for(UInt32 i = 0; i < size; ++i)
-    {
-        if(m[i] != n[i])
-        {
-            ramses_capu::StringUtils::Sprintf(mHexValue, 5, "0x%02x", m[i]);
-            ramses_capu::StringUtils::Sprintf(nHexValue, 5, "0x%02x", n[i]);
-            return ::testing::AssertionFailure() << m_expr << " and " << n_expr
-                << " differ at position " << i << ": "
-                << mHexValue << " != " << nHexValue << "\n";
-        }
-    }
-
-    return ::testing::AssertionSuccess();
-}
 
 TEST(AnImage, canGetResolution)
 {
@@ -78,8 +56,7 @@ TEST(AnImage, ReportsTheSumOfAllItsPixels)
 
     Image bitmap(10, 10, data, data + sizeof(data));
 
-    // Bitmaps don't have alpha value...
-    UInt64 expectedSumOfPixelData = (1u + 2u + 3u /*+ 4u*/) * 100u;
+    const UInt64 expectedSumOfPixelData = (1u + 2u + 3u + 4u) * 100u;
     EXPECT_EQ(expectedSumOfPixelData, bitmap.getSumOfPixelValues());
 }
 
@@ -90,10 +67,6 @@ TEST(AnImage, CanBeSubtractedFromOtherBitmapWithSameSize)
     UInt8 data1[Width * Height * 4];
     UInt8 data2[Width * Height * 4];
 
-    // Subtraction keeps the larger alpha value
-    const UInt8 smallerAlpha = 13u;
-    const UInt8 largerAlpha = 14u;
-
     for (UInt8 i = 0; i < Width * Height; ++i)
     {
         // create mosaic difference
@@ -103,12 +76,12 @@ TEST(AnImage, CanBeSubtractedFromOtherBitmapWithSameSize)
         data1[4 * i + 0] = value1;
         data1[4 * i + 1] = value1;
         data1[4 * i + 2] = value1;
-        data1[4 * i + 3] = smallerAlpha;
+        data1[4 * i + 3] = value1;
 
         data2[4 * i + 0] = value2;
         data2[4 * i + 1] = value2;
         data2[4 * i + 2] = value2;
-        data2[4 * i + 3] = largerAlpha;
+        data2[4 * i + 3] = value2;
     }
 
     const Image bitmap1(Width, Height, data1, data1 + sizeof(data1));
@@ -116,13 +89,13 @@ TEST(AnImage, CanBeSubtractedFromOtherBitmapWithSameSize)
     const Image bitmapDiff1 = bitmap1.createDiffTo(bitmap2);
     const Image bitmapDiff2 = bitmap2.createDiffTo(bitmap1);
 
-    // W*H pixels, times three components (r, g, b), times a difference of 2 (because of shifted mosaic pattern)
-    const UInt64 expectedDiff = 2u * 3u * Width * Height;
+    // W*H pixels, times 4 components (r, g, b, a), times a difference of 2 (because of shifted mosaic pattern)
+    const UInt64 expectedDiff = 2u * 4u * Width * Height;
 
     EXPECT_EQ(expectedDiff, bitmapDiff1.getSumOfPixelValues());
     EXPECT_EQ(expectedDiff, bitmapDiff2.getSumOfPixelValues());
-    EXPECT_EQ(largerAlpha, bitmapDiff1.getData()[3]);
-    EXPECT_EQ(largerAlpha, bitmapDiff2.getData()[3]);
+    EXPECT_EQ(2u, bitmapDiff2.getData()[3]);
+    EXPECT_EQ(2u, bitmapDiff1.getData()[3]);
 }
 
 TEST(AnImage, YieldsBlackImageWhenSubtractedFromItself)
@@ -131,22 +104,18 @@ TEST(AnImage, YieldsBlackImageWhenSubtractedFromItself)
     constexpr size_t Height = 5;
     UInt8 data[Width * Height * 4];
 
-    // Alpha does not influence the pixel values, but subtraction keeps the alpha value of the first operand
-    const UInt8 alpha = 13u;
-
     for (UInt8 i = 0; i < Width*Height; ++i)
     {
         data[4 * i + 0] = 12u;
         data[4 * i + 1] = 14u;
         data[4 * i + 2] = 11u;
-        data[4 * i + 3] = alpha;
+        data[4 * i + 3] = 13u;
     }
 
     const Image bitmap(Width, Height, data, data + sizeof(data));
     const Image bitmapDiff = bitmap.createDiffTo(bitmap);
 
     EXPECT_EQ(0u, bitmapDiff.getSumOfPixelValues());
-    EXPECT_EQ(alpha, bitmapDiff.getData()[3]);
 }
 
 TEST(AnImage, GivesEmptyImageIfEnlargingToSmallerSize)
@@ -225,8 +194,6 @@ TEST(AnImage, CopyConstructedBitmapIsSame)
     Image copied(bitmap);
 
     EXPECT_EQ(bitmap, copied);
-    EXPECT_EQ(bitmap.getData(), copied.getData());
-    EXPECT_EQ(0, PlatformMemory::Compare(data, copied.getData().data(), sizeof(data)));
 }
 
 TEST(AnImage, AssignedBitmapIsSame)
@@ -261,32 +228,84 @@ TEST(AnImage, MoveAssignedBitmapIsSame)
 
 TEST(AnImage, UnequalSizeBitmapsAreDifferent)
 {
-    UInt8 data[16 * 4] = { 0 };
+    static const UInt8 data[5 * 3 * 4] = { 0 };
+    const Image bitmap(5, 3, data, data + sizeof(data));
 
-    Image bitmap(4, 4, data, data + sizeof(data));
-    Image otherHeight(4, 3, data, data + 4*3*4);
-    Image otherWidth(2, 4, data, data + 2*4*4);
+    const Image otherHeight(5, 2, data, data + 5*2*4);
+    const Image otherWidth(4, 3, data, data + 4*3*4);
+    const Image otherSizeSamePixelCount(3, 5, data, data + sizeof(data));
 
     EXPECT_NE(bitmap, otherHeight);
     EXPECT_NE(bitmap, otherWidth);
+    EXPECT_NE(bitmap, otherSizeSamePixelCount);
 }
 
-TEST(AnImage, IsEqualToFlippedVersionWhenSingleRow)
+TEST(AnImage, FlipsImage2x1)
 {
-    const UInt8 data[2u * 4u] = { 0, 1, 2, 3, 10, 11, 12, 13 };
-    const Image oneRowBitmap(2, 1, data, data + sizeof(data), false);
-    const Image flippedOneRowBitmap(2, 1, data, data + sizeof(data), true);
-    EXPECT_EQ(oneRowBitmap, flippedOneRowBitmap);
-    EXPECT_EQ(oneRowBitmap.getSumOfPixelValues(), flippedOneRowBitmap.getSumOfPixelValues());
+    const std::vector<UInt8> data
+    {
+        1,  2,  3,  4,   5,  6,  7,  8
+    };
+    const Image expectedImage(2, 1,
+    {
+        1,  2,  3,  4,   5,  6,  7,  8
+    });
+
+    EXPECT_EQ(expectedImage, Image(2, 1, data.cbegin(), data.cend(), true));
 }
 
-TEST(AnImage, IsNotEqualToFlippedVersionWhenMultipleRows)
+TEST(AnImage, FlipsImage2x2)
 {
-    const UInt8 data[4u * 4u] = { 0, 1, 2, 3, 10, 11, 12, 13, 20, 21, 22, 23, 30, 31, 32, 33 };
-    const Image multiRowsBitmap(2, 2, data, data + sizeof(data), false);
-    const Image flippedMultiRowsBitmap(2, 2, data, data + sizeof(data), true);
-    EXPECT_NE(multiRowsBitmap, flippedMultiRowsBitmap);
-    EXPECT_EQ(multiRowsBitmap.getSumOfPixelValues(), flippedMultiRowsBitmap.getSumOfPixelValues());
+    const std::vector<UInt8> data
+    {
+        1,  2,  3,  4,   5,  6,  7,  8,
+        9, 10, 11, 12,  13, 14, 15, 16
+    };
+    const Image expectedImage(2, 2,
+    {
+        9, 10, 11, 12,  13, 14, 15, 16,
+        1,  2,  3,  4,   5,  6,  7,  8
+    });
+
+    EXPECT_EQ(expectedImage, Image(2, 2, data.cbegin(), data.cend(), true));
+}
+
+TEST(AnImage, FlipsImage2x3)
+{
+    const std::vector<UInt8> data
+    {
+        1,  2,  3,  4,    5,  6,  7,  8,
+        9, 10, 11, 12,   13, 14, 15, 16,
+        17, 18, 19, 20,  21, 22, 23, 24
+    };
+    const Image expectedImage(2, 3,
+    {
+        17, 18, 19, 20,  21, 22, 23, 24,
+        9, 10, 11, 12,   13, 14, 15, 16,
+        1,  2,  3,  4,    5,  6,  7,  8,
+    });
+
+    EXPECT_EQ(expectedImage, Image(2, 3, data.cbegin(), data.cend(), true));
+}
+
+TEST(AnImage, FlipsImage4x4)
+{
+    const std::vector<UInt8> data
+    {
+        1,  2,  3,  4,    5,  6,  7,  8,   9, 10, 11, 12,  13, 14, 15, 16,
+        17, 18, 19, 20,  21, 22, 23, 24,  25, 26, 27, 28,  29, 30, 31, 32,
+        33, 34, 35, 36,  37, 38, 39, 40,  41, 42, 43, 44,  45, 46, 47, 48,
+        49, 50, 51, 52,  53, 54, 55, 56,  57, 58, 59, 60,  61, 62, 63, 64
+    };
+    const Image expectedImage(4, 4,
+    {
+        49, 50, 51, 52,  53, 54, 55, 56,  57, 58, 59, 60,  61, 62, 63, 64,
+        33, 34, 35, 36,  37, 38, 39, 40,  41, 42, 43, 44,  45, 46, 47, 48,
+        17, 18, 19, 20,  21, 22, 23, 24,  25, 26, 27, 28,  29, 30, 31, 32,
+        1,  2,  3,  4,    5,  6,  7,  8,   9, 10, 11, 12,  13, 14, 15, 16
+    });
+
+    EXPECT_EQ(expectedImage, Image(4, 4, data.cbegin(), data.cend(), true));
 }
 
 TEST(AnImage, getsNumOfNonBlackPixels)

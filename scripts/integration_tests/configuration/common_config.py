@@ -23,5 +23,4 @@ class Config:
         self.imageDiffScaleFactor = 100 #scale factor for the scaled diff images
 
         # common switches
-        self.useExitcodeOnTestFailure = False
         self.ramsesApplicationLogLevel = 5

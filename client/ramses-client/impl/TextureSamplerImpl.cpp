@@ -26,6 +26,7 @@
 #include "Scene/ClientScene.h"
 #include "TextureUtils.h"
 #include "RamsesObjectRegistryIterator.h"
+#include "DataSlotUtils.h"
 
 namespace ramses
 {
@@ -42,32 +43,11 @@ namespace ramses
     void TextureSamplerImpl::initializeFrameworkData(
         const ramses_internal::TextureSamplerStates& samplerStates,
         ERamsesObjectType textureType,
+        ramses_internal::TextureSampler::ContentType contentType,
         ramses_internal::ResourceContentHash textureHash,
         ramses_internal::MemoryHandle contentHandle)
     {
         m_textureType = textureType;
-
-        ramses_internal::TextureSampler::ContentType contentType = ramses_internal::TextureSampler::ContentType::None;
-        switch (textureType)
-        {
-        case ramses::ERamsesObjectType_Texture2D:
-        case ramses::ERamsesObjectType_Texture3D:
-        case ramses::ERamsesObjectType_TextureCube:
-            contentType = ramses_internal::TextureSampler::ContentType::ClientTexture;
-            break;
-        case ramses::ERamsesObjectType_RenderBuffer:
-            contentType = ramses_internal::TextureSampler::ContentType::RenderBuffer;
-            break;
-        case ramses::ERamsesObjectType_Texture2DBuffer:
-            contentType = ramses_internal::TextureSampler::ContentType::TextureBuffer;
-            break;
-        case ramses::ERamsesObjectType_StreamTexture:
-            contentType = ramses_internal::TextureSampler::ContentType::StreamTexture;
-            break;
-        default:
-            assert(false);
-            break;
-        }
         m_textureSamplerHandle = getIScene().allocateTextureSampler({ samplerStates, contentType, textureHash, contentHandle });
     }
 
@@ -76,6 +56,87 @@ namespace ramses
         assert(m_textureSamplerHandle.isValid());
         getIScene().releaseTextureSampler(m_textureSamplerHandle);
         m_textureSamplerHandle = ramses_internal::TextureSamplerHandle::Invalid();
+    }
+
+    status_t TextureSamplerImpl::setTextureData(const Texture2D& texture)
+    {
+        if (!isFromTheSameClientAs(texture.impl))
+            return addErrorEntry("TextureSampler::setTextureData failed, client texture is not from the same client as this sampler.");
+
+        return setTextureDataInternal(ERamsesObjectType_Texture2D, ramses_internal::TextureSampler::ContentType::ClientTexture, texture.impl.getLowlevelResourceHash(), ramses_internal::InvalidMemoryHandle);
+    }
+
+    status_t TextureSamplerImpl::setTextureData(const Texture3D& texture)
+    {
+        if (m_textureType != ERamsesObjectType_Texture3D)
+            return addErrorEntry("TextureSampler::setTextureData failed, changing data from non 3D texture to 3D texture is not supported. Create a new TextureSampler instead.");
+
+        if (!isFromTheSameClientAs(texture.impl))
+            return addErrorEntry("TextureSampler::setTextureData failed, client texture is not from the same client as this sampler.");
+
+        return setTextureDataInternal(ERamsesObjectType_Texture3D, ramses_internal::TextureSampler::ContentType::ClientTexture, texture.impl.getLowlevelResourceHash(), ramses_internal::InvalidMemoryHandle);
+    }
+
+    status_t TextureSamplerImpl::setTextureData(const TextureCube& texture)
+    {
+        if (!isFromTheSameClientAs(texture.impl))
+            return addErrorEntry("TextureSampler::setTextureData failed, client texture is not from the same client as this sampler.");
+
+        return setTextureDataInternal(ERamsesObjectType_TextureCube, ramses_internal::TextureSampler::ContentType::ClientTexture, texture.impl.getLowlevelResourceHash(), ramses_internal::InvalidMemoryHandle);
+    }
+
+    status_t TextureSamplerImpl::setTextureData(const Texture2DBuffer& texture)
+    {
+        if (!getSceneImpl().containsSceneObject(texture.impl))
+            return addErrorEntry("TextureSampler::setTextureData failed, texture2D buffer is not from the same scene as this sampler.");
+
+        return setTextureDataInternal(ERamsesObjectType_Texture2DBuffer, ramses_internal::TextureSampler::ContentType::TextureBuffer, {}, texture.impl.getTextureBufferHandle().asMemoryHandle());
+    }
+
+    status_t TextureSamplerImpl::setTextureData(const RenderBuffer& texture)
+    {
+        if (!getSceneImpl().containsSceneObject(texture.impl))
+            return addErrorEntry("TextureSampler::setTextureData failed, render buffer is not from the same scene as this sampler.");
+
+        if (ERenderBufferAccessMode_WriteOnly == texture.impl.getAccessMode())
+            return addErrorEntry("TextureSampler::setTextureData failed, render buffer has access mode write only.");
+
+        return setTextureDataInternal(ERamsesObjectType_RenderBuffer, ramses_internal::TextureSampler::ContentType::RenderBuffer, {}, texture.impl.getRenderBufferHandle().asMemoryHandle());
+    }
+
+    status_t TextureSamplerImpl::setTextureData(const StreamTexture& texture)
+    {
+        if (!getSceneImpl().containsSceneObject(texture.impl))
+            return addErrorEntry("TextureSampler::setTextureData failed, stream texture is not from the same scene as this sampler.");
+
+        return setTextureDataInternal(ERamsesObjectType_StreamTexture, ramses_internal::TextureSampler::ContentType::StreamTexture, {}, texture.impl.getHandle().asMemoryHandle());
+    }
+
+    status_t TextureSamplerImpl::setTextureDataInternal(ERamsesObjectType textureType,
+        ramses_internal::TextureSampler::ContentType contentType,
+        ramses_internal::ResourceContentHash textureHash,
+        ramses_internal::MemoryHandle contentHandle)
+    {
+        if (ramses_internal::DataSlotUtils::HasDataSlotIdForTextureSampler(getIScene(), m_textureSamplerHandle))
+            // Additional logic would have to be added on renderer side to support change of content to update consumer fallback sampler state.
+            // Also more checks would be required here to make sure only 2D textures are involved.
+            return addErrorEntry("TextureSampler::setTextureData failed, changing texture sampler data for a sampler marked as texture link consumer is not supported. Create a new TextureSampler instead.");
+
+        // With current internal logic re-creating the texture sampler instance adds minimal overhead
+        // and thus extra support for change of data source on internal scene level is not worth the additional complexity.
+        // This should be revisited whenever internal logic changes.
+
+        const ramses_internal::TextureSamplerStates samplerStates = getIScene().getTextureSampler(m_textureSamplerHandle).states;
+        getIScene().releaseTextureSampler(m_textureSamplerHandle);
+
+        // re-allocate with same handle
+        const auto handle = getIScene().allocateTextureSampler({ samplerStates, contentType, textureHash, contentHandle }, m_textureSamplerHandle);
+        UNUSED(handle);
+        assert(m_textureSamplerHandle == handle);
+
+        m_textureType = textureType;
+
+        return StatusOK;
     }
 
     ETextureAddressMode TextureSamplerImpl::getWrapUMode() const
@@ -306,5 +367,4 @@ namespace ramses
 
         return textureStatus;
     }
-
 }

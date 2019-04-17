@@ -9,6 +9,7 @@
 #include "RendererLib/SceneExpirationMonitor.h"
 #include "RendererLib/RendererScenes.h"
 #include "RendererEventCollector.h"
+#include "Scene/SceneActionApplier.h"
 #include "PlatformAbstraction/PlatformTime.h"
 
 namespace ramses_internal
@@ -24,11 +25,12 @@ namespace ramses_internal
         assert(m_sceneTimestamps.count() == 0u);
     }
 
-    void SceneExpirationMonitor::onFlushApplied(SceneId sceneId, FlushTime::Clock::time_point expirationTimestamp)
+    void SceneExpirationMonitor::onFlushApplied(SceneId sceneId, FlushTime::Clock::time_point expirationTimestamp, UInt64 flushIndex)
     {
         TimeStampTag& ts = m_sceneTimestamps[sceneId].expirationTSOfLastAppliedFlush;
         ts.ts = expirationTimestamp;
         ts.tag = m_scenes.getScene(sceneId).getSceneVersionTag();
+        ts.internalIndex = flushIndex;
     }
 
     void SceneExpirationMonitor::onRendered(SceneId sceneId)
@@ -58,7 +60,8 @@ namespace ramses_internal
                 const UInt64 expirationDelay = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - timestamps.expirationTSOfRenderedScene.ts).count();
                 LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: Content of rendered scene " << sceneId << " is expired (version tag of rendered scene " << timestamps.expirationTSOfRenderedScene.tag << "). "
                     << "Expiration time stamp " << expirationTimestamp << " ms, "
-                    << "expired by " << expirationDelay << " ms.");
+                    << "expired by " << expirationDelay << " ms. "
+                    << "Internal flush index " << timestamps.expirationTSOfRenderedScene.internalIndex);
                 expired = true;
             }
 
@@ -67,27 +70,55 @@ namespace ramses_internal
                 const UInt64 expirationTimestamp = std::chrono::duration_cast<std::chrono::milliseconds>(timestamps.expirationTSOfLastAppliedFlush.ts.time_since_epoch()).count();
                 const UInt64 expirationDelay = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - timestamps.expirationTSOfLastAppliedFlush.ts).count();
                 LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: Flush applied to scene " << sceneId << " is expired (version tag of applied flush " << timestamps.expirationTSOfLastAppliedFlush.tag << "). "
-                    << "Expiration time stamp " << expirationTimestamp << " ms, " << "expired by " << expirationDelay << " ms.");
+                    << "Expiration time stamp " << expirationTimestamp << " ms, " << "expired by " << expirationDelay << " ms."
+                    << "Internal flush index " << timestamps.expirationTSOfLastAppliedFlush.internalIndex);
                 expired = true;
             }
 
-            if (!sceneIt.value.stagingInfo->pendingFlushes.empty())
+            if (!sceneIt.value.stagingInfo->pendingFlushes.empty()) // early out if no pending flushes
             {
-                const auto& lastPendingFlush = sceneIt.value.stagingInfo->pendingFlushes.back();
+                const auto& pendingFlushes = sceneIt.value.stagingInfo->pendingFlushes;
+                const auto& lastPendingFlush = pendingFlushes.back();
                 const auto& lastPendingTimeInfo = lastPendingFlush.timeInfo;
-                if (isTSExpired(lastPendingTimeInfo.expirationTimestamp))
+
+                const bool lastPendingFlushExpired = isTSExpired(lastPendingTimeInfo.expirationTimestamp);
+                if (expired || lastPendingFlushExpired) // early out if nothing expired
                 {
                     const UInt64 expirationTimestampPendingFlush = std::chrono::duration_cast<std::chrono::milliseconds>(lastPendingTimeInfo.expirationTimestamp.time_since_epoch()).count();
                     const UInt64 internalTimestampPendingFlush = std::chrono::duration_cast<std::chrono::milliseconds>(lastPendingTimeInfo.internalTimestamp.time_since_epoch()).count();
-                    const UInt64 expirationDelayPendingFlush = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastPendingTimeInfo.expirationTimestamp).count();
-                    LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: Pending flush of scene " << sceneId << " is expired (internal flush index " << lastPendingFlush.flushIndex << "). "
-                        << "Expiration time stamp " << expirationTimestampPendingFlush << " ms, "
-                        << "expired by " << expirationDelayPendingFlush << " ms. "
-                        << "Timestamp of flush creation on client side: " << internalTimestampPendingFlush << " ms. "
-                        << "There might be more expired pending flushes.");
-                    expired = true;
+                    SceneVersionTag sceneVersionTag = timestamps.expirationTSOfLastAppliedFlush.tag;
+                    readSceneVersionTagFromPendingFlushes(pendingFlushes, sceneVersionTag);
+
+                    if (lastPendingFlushExpired)
+                    {
+                        const UInt64 expirationDelayPendingFlush = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastPendingTimeInfo.expirationTimestamp).count();
+                        LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: Latest pending flush of scene " << sceneId << " is expired (version tag after this flush would be applied " << sceneVersionTag << "). "
+                            << "Expiration time stamp " << expirationTimestampPendingFlush << " ms, "
+                            << "expired by " << expirationDelayPendingFlush << " ms. "
+                            << "Timestamp of flush creation on client side: " << internalTimestampPendingFlush << " ms. "
+                            << "Internal flush index " << lastPendingFlush.flushIndex << ". "
+                            << "There is " << pendingFlushes.size() << " pending flushes in total, only latest was checked.");
+                        expired = true;
+                    }
+                    else if (expired)
+                    {
+                        LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: for the expired scene " << sceneId << " there is pending flush which is not expired "
+                            << "(version tag after this flush would be applied " << sceneVersionTag << "). "
+                            << "Expiration time stamp " << expirationTimestampPendingFlush << " ms, timestamp of flush creation on client side: " << internalTimestampPendingFlush << " ms. "
+                            << "Internal flush index " << timestamps.expirationTSOfLastAppliedFlush.internalIndex << ". "
+                            << "There is " << pendingFlushes.size() << " pending flushes in total, only latest was checked.");
+                    }
+
+                    LOG_TRACE_F(CONTEXT_RENDERER, ([&](StringOutputStream& logStream)
+                    {
+                        logStream << "Pending flushes for expired scene " << sceneId << "[internalIndex, expirationTS] : ";
+                        for (const auto& pendingFlush : pendingFlushes)
+                            logStream << "[" << pendingFlush.flushIndex << ", " << expirationTimestampPendingFlush << "] ";
+                    }));
                 }
             }
+            else if (expired)
+                LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: there are no pending flushes for the expired scene " << sceneId);
 
             // report event only if state changed from last time
             if (expired != timestamps.inExpiredState)
@@ -105,5 +136,17 @@ namespace ramses_internal
     {
         auto it = m_sceneTimestamps.find(sceneId);
         return it != m_sceneTimestamps.end() ? it->value.expirationTSOfRenderedScene.ts : FlushTime::InvalidTimestamp;
+    }
+
+    void SceneExpirationMonitor::readSceneVersionTagFromPendingFlushes(const PendingFlushes& pendingFlushes, SceneVersionTag& sceneVersionTag) const
+    {
+        for (const auto& pendingFlush : pendingFlushes)
+        {
+            for (auto actionReader : pendingFlush.sceneActions)
+            {
+                if (actionReader.type() == ESceneActionId_SetSceneVersionTag)
+                    sceneVersionTag = SceneActionApplier::ReadSceneVersionTag(actionReader);
+            }
+        }
     }
 }

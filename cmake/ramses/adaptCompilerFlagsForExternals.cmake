@@ -16,6 +16,8 @@ SET(DISABLED_COMPILER_FLAGS
     -Wcast-align
     -Wshadow
     -Winconsistent-missing-override
+    -Wformat-signedness
+    -Wmissing-include-dirs
     /W1
     /W2
     /W3

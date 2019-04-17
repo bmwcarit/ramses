@@ -24,15 +24,22 @@ namespace ramses_internal
     class Matrix33f
     {
     public:
-        Float m11;
-        Float m21;
-        Float m31;
-        Float m12;
-        Float m22;
-        Float m32;
-        Float m13;
-        Float m23;
-        Float m33;
+        union
+        {
+            struct
+            {
+                Float m11;
+                Float m21;
+                Float m31;
+                Float m12;
+                Float m22;
+                Float m32;
+                Float m13;
+                Float m23;
+                Float m33;
+            };
+            Float data[9];
+        };
 
         /**
         * Special Identity matrix
@@ -75,13 +82,9 @@ namespace ramses_internal
          */
         Matrix33f(const Vector3& v1, const Vector3& v2, const Vector3& v3);
 
-        /**
-         * Copy constructor to create Matrix from other matrix
-         * @param other Matrix33f to copy data from
-         */
-        Matrix33f(const Matrix33f& other);
-
+        Matrix33f(const Matrix33f& other) = default;
         Matrix33f(Matrix33f&& other) = default;
+        Matrix33f& operator=(const Matrix33f& other) = default;
         Matrix33f& operator=(Matrix33f&& other) = default;
 
         /**
@@ -95,13 +98,6 @@ namespace ramses_internal
          *  Sets all matrix elements to the given value
          */
         void set(const Float val);
-
-        /**
-         * Operator to copy data from an other Matrix33f
-         * @param other Matrix33f to copy data from
-         * @return Reference to local data
-         */
-        Matrix33f& operator=(const Matrix33f& other);
 
         /**
          * Multiplies all elements of the matrix with given value
@@ -222,18 +218,6 @@ namespace ramses_internal
          */
         const Float& m(UInt32 column, UInt32 row) const;
 
-        /**
-         * Returns the pointer to the matrix data
-         * @param return pointer to matrix data
-         */
-        Float const* getRawData() const;
-
-        /**
-        * Returns the pointer to the matrix data
-        * @param return pointer to matrix data
-        */
-        Float* getRawData();
-
     protected:
     private:
     };
@@ -244,12 +228,6 @@ namespace ramses_internal
     , m12(0.f), m22(1.f), m32(0.f)
     , m13(0.f), m23(0.f), m33(1.f)
     {
-    }
-
-    inline
-    Matrix33f::Matrix33f(const Matrix33f& other)
-    {
-        PlatformMemory::Copy(&m11, &other.m11, 9 * sizeof(Float));
     }
 
     inline
@@ -305,16 +283,6 @@ namespace ramses_internal
     }
 
     inline
-    Matrix33f&
-    Matrix33f::operator=(const Matrix33f& other)
-    {
-        PlatformMemory::Copy(&m11, &other.m11, 9 * sizeof(Float));
-        return *this;
-    }
-
-
-
-    inline
     Matrix33f
     Matrix33f::operator*(const Float val) const
     {
@@ -322,7 +290,6 @@ namespace ramses_internal
                             m21 * val, m22 * val, m23 * val,
                             m31 * val, m32 * val, m33 * val);
     }
-
 
     inline
     Matrix33f
@@ -371,18 +338,6 @@ namespace ramses_internal
     Matrix33f::operator!=(const Matrix33f& other) const
     {
         return !operator==(other);
-    }
-
-    inline
-    Float const* Matrix33f::getRawData() const
-    {
-        return &m11;
-    }
-
-    inline
-        Float* Matrix33f::getRawData()
-    {
-        return &m11;
     }
 
     static_assert(std::is_nothrow_move_constructible<Matrix33f>::value &&

@@ -16,7 +16,6 @@ namespace ramses_internal
 {
 
     class RendererEventCollector;
-    class ITouchHandler;
 
     class DisplayEventHandler : public IWindowEventHandler
     {

@@ -53,12 +53,12 @@ if __name__ == "__main__":
     targets = get_all_files(targets)
 
     if len(targets) == 0:
-        print """
+        print("""
 \t**** No input provided ****
 \tTakes a list of files/directories as input and performs specific style checking on all files/directories.
 
 \tGives warnings if a file contains more than one class definition or if class name is not identical to file name
-"""
+""")
         exit(0)
 
     for t in targets:

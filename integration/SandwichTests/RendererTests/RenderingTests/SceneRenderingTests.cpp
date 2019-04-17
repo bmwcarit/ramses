@@ -217,9 +217,9 @@ bool SceneRenderingTests::run(RendererTestsFramework& testFramework, const Rende
     case BlitPassTest_BlitsColorBuffer:
         return runBasicTest<BlitPassScene>(testFramework, BlitPassScene::BLITS_COLOR_BUFFER, "BlitPassTest_BlitsColorBuffer");
     case BlitPassTest_BlitsSubregion:
-        return runBasicTest<BlitPassScene>(testFramework, BlitPassScene::BLITS_SUBREGION, "BlitPassTest_BlitsSubregion");
+        return runBasicTest<BlitPassScene>(testFramework, BlitPassScene::BLITS_SUBREGION, "BlitPassTest_BlitsSubregion", 0.25f);
     case BlitPassTest_BlitsDepthBuffer:
-        return runBasicTest<BlitPassScene>(testFramework, BlitPassScene::BLITS_DEPTH_BUFFER, "BlitPassTest_BlitsDepthBuffer");
+        return runBasicTest<BlitPassScene>(testFramework, BlitPassScene::BLITS_DEPTH_BUFFER, "BlitPassTest_BlitsDepthBuffer", 0.25f);
     case BlitPassTest_BlitsDepthStencilBuffer:
         return runBasicTest<BlitPassScene>(testFramework, BlitPassScene::BLITS_DEPTH_STENCIL_BUFFER, "BlitPassTest_BlitsDepthStencilBuffer");
 

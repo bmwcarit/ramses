@@ -3808,4 +3808,513 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneBeingFlushed
     unmapScene();
     destroyDisplay();
 }
+
+TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush)
+{
+    const UInt32 scene = createPublishAndSubscribeScene();
+    update();
+
+    // flush once only to set limit
+    const UInt32 initialTS = 1000u;
+    performFlushWithExpiration(scene, initialTS);
+
+    for (UInt32 i = 0u; i < 10u; ++i)
+    {
+        update();
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(i)));
+    }
+    expectNoEvent();
+
+    // disable expiration
+    performFlushWithExpiration(scene, 0u);
+
+    for (UInt32 i = 0u; i < 10u; ++i)
+    {
+        update();
+        // check with TS after initial TS
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(initialTS + i)));
+    }
+    // expect no expiration as last flush disabled expiration
+    expectNoEvent();
+}
+
+TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush)
+{
+    const UInt32 scene = createPublishAndSubscribeScene();
+    update();
+
+    // flush once only to set limit
+    const UInt32 initialTS = 1000u;
+    performFlushWithExpiration(scene, initialTS);
+
+    for (UInt32 i = 0u; i < 10u; ++i)
+    {
+        update();
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(i)));
+    }
+    expectNoEvent();
+
+    // disable expiration together with some scene changes
+    const NodeHandle nodeHandle(3u);
+    IScene& iscene = *stagingScene[scene];
+    SceneAllocateHelper sceneAllocator(iscene);
+    sceneAllocator.allocateNode(0u, nodeHandle);
+    performFlushWithExpiration(scene, 0u);
+
+    for (UInt32 i = 0u; i < 10u; ++i)
+    {
+        update();
+        // check with TS after initial TS
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(initialTS + i)));
+    }
+    // expect no expiration as last flush disabled expiration
+    expectNoEvent();
+}
+
+TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush_rendered)
+{
+    createDisplayAndExpectSuccess();
+    const UInt32 scene = createPublishAndSubscribeScene();
+    mapScene(scene);
+    showScene(scene);
+
+    update();
+    doRenderLoop();
+
+    // flush once only to set limit
+    const UInt32 initialTS = 1000u;
+    performFlushWithExpiration(scene, initialTS);
+
+    for (UInt32 i = 0u; i < 10u; ++i)
+    {
+        update();
+        doRenderLoop();
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(i)));
+    }
+    expectNoEvent();
+
+    // disable expiration
+    performFlushWithExpiration(scene, 0u);
+
+    for (UInt32 i = 0u; i < 10u; ++i)
+    {
+        update();
+        doRenderLoop();
+        // check with TS after initial TS
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(initialTS + i)));
+    }
+    // expect no expiration as last flush disabled expiration
+    expectNoEvent();
+
+    hideScene(scene);
+    expectContextEnable();
+    unmapScene(scene);
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush_rendered)
+{
+    createDisplayAndExpectSuccess();
+    const UInt32 scene = createPublishAndSubscribeScene();
+    mapScene(scene);
+    showScene(scene);
+
+    update();
+    doRenderLoop();
+
+    // flush once only to set limit
+    const UInt32 initialTS = 1000u;
+    performFlushWithExpiration(scene, initialTS);
+
+    for (UInt32 i = 0u; i < 10u; ++i)
+    {
+        update();
+        doRenderLoop();
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(i)));
+    }
+    expectNoEvent();
+
+    // disable expiration together with some scene changes
+    const NodeHandle nodeHandle(3u);
+    IScene& iscene = *stagingScene[scene];
+    SceneAllocateHelper sceneAllocator(iscene);
+    sceneAllocator.allocateNode(0u, nodeHandle);
+    performFlushWithExpiration(scene, 0u);
+
+    for (UInt32 i = 0u; i < 10u; ++i)
+    {
+        update();
+        doRenderLoop();
+        // check with TS after initial TS
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(initialTS + i)));
+    }
+    // expect no expiration as last flush disabled expiration
+    expectNoEvent();
+
+    hideScene(scene);
+    expectContextEnable();
+    unmapScene(scene);
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush_hiddenAfterRendered)
+{
+    createDisplayAndExpectSuccess();
+    const UInt32 scene = createPublishAndSubscribeScene();
+    mapScene(scene);
+    showScene(scene);
+
+    update();
+    doRenderLoop();
+
+    // flush once only to set limit
+    const UInt32 initialTS = 1000u;
+    performFlushWithExpiration(scene, initialTS);
+
+    for (UInt32 i = 0u; i < 10u; ++i)
+    {
+        update();
+        doRenderLoop();
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(i)));
+    }
+    expectNoEvent();
+
+    hideScene(scene);
+
+    // disable expiration
+    performFlushWithExpiration(scene, 0u);
+
+    for (UInt32 i = 0u; i < 10u; ++i)
+    {
+        update();
+        doRenderLoop();
+        // check with TS after initial TS
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(initialTS + i)));
+    }
+    // expect no expiration as last flush disabled expiration
+    expectNoEvent();
+
+    expectContextEnable();
+    unmapScene(scene);
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush_hiddenAfterRendered)
+{
+    createDisplayAndExpectSuccess();
+    const UInt32 scene = createPublishAndSubscribeScene();
+    mapScene(scene);
+    showScene(scene);
+
+    update();
+    doRenderLoop();
+
+    // flush once only to set limit
+    const UInt32 initialTS = 1000u;
+    performFlushWithExpiration(scene, initialTS);
+
+    for (UInt32 i = 0u; i < 10u; ++i)
+    {
+        update();
+        doRenderLoop();
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(i)));
+    }
+    expectNoEvent();
+
+    hideScene(scene);
+
+    // disable expiration together with some scene changes
+    const NodeHandle nodeHandle(3u);
+    IScene& iscene = *stagingScene[scene];
+    SceneAllocateHelper sceneAllocator(iscene);
+    sceneAllocator.allocateNode(0u, nodeHandle);
+    performFlushWithExpiration(scene, 0u);
+
+    for (UInt32 i = 0u; i < 10u; ++i)
+    {
+        update();
+        doRenderLoop();
+        // check with TS after initial TS
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(initialTS + i)));
+    }
+    // expect no expiration as last flush disabled expiration
+    expectNoEvent();
+
+    expectContextEnable();
+    unmapScene(scene);
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whileModifyingScene_confidenceTest)
+{
+    createDisplayAndExpectSuccess();
+    const UInt32 scene = createPublishAndSubscribeScene();
+    mapScene(scene);
+    showScene(scene);
+
+    update();
+    doRenderLoop();
+
+    // flush once only to set limit
+    const UInt32 initialTS = 1000u;
+    performFlushWithExpiration(scene, initialTS);
+
+    for (UInt32 i = 0u; i < 10u; ++i)
+    {
+        // make change
+        const NodeHandle nodeHandle(i);
+        IScene& iscene = *stagingScene[scene];
+        SceneAllocateHelper sceneAllocator(iscene);
+        sceneAllocator.allocateNode(0u, nodeHandle);
+        performFlushWithExpiration(scene, initialTS + i);
+
+        update();
+        doRenderLoop();
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(initialTS + i - 1)));
+    }
+    expectNoEvent();
+
+    hideScene(scene);
+
+    // disable expiration together with some scene changes
+    const NodeHandle nodeHandle(10u);
+    IScene& iscene = *stagingScene[scene];
+    SceneAllocateHelper sceneAllocator(iscene);
+    sceneAllocator.allocateNode(0u, nodeHandle);
+    performFlushWithExpiration(scene, 0u);
+
+    for (UInt32 i = 10u; i < 20u; ++i)
+    {
+        update();
+        doRenderLoop();
+        // check with TS after initial TS
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(initialTS + i)));
+    }
+    // expect no expiration as last flush disabled expiration
+    expectNoEvent();
+
+    expectContextEnable();
+    unmapScene(scene);
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whenHiddenInBetweenFlushes_confidenceTest)
+{
+    createDisplayAndExpectSuccess();
+    const UInt32 scene = createPublishAndSubscribeScene();
+    mapScene(scene);
+    showScene(scene);
+
+    update();
+    doRenderLoop();
+
+    // flush once only to set limit
+    const UInt32 initialTS = 1000u;
+    performFlushWithExpiration(scene, initialTS);
+
+    for (UInt32 i = 0u; i < 10u; ++i)
+    {
+        // make change
+        const NodeHandle nodeHandle(i);
+        IScene& iscene = *stagingScene[scene];
+        SceneAllocateHelper sceneAllocator(iscene);
+        sceneAllocator.allocateNode(0u, nodeHandle);
+        performFlushWithExpiration(scene, initialTS + i);
+
+        update();
+        doRenderLoop();
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(initialTS + i - 1)));
+
+        // hide scene in between applying flushes with timestamps
+        if (i == 8)
+            hideScene(scene);
+    }
+    expectNoEvent();
+
+    // disable expiration
+    performFlushWithExpiration(scene, 0u);
+
+    for (UInt32 i = 10u; i < 20u; ++i)
+    {
+        update();
+        doRenderLoop();
+        // check with TS after initial TS
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(initialTS + i)));
+    }
+    // expect no expiration as last flush disabled expiration
+    expectNoEvent();
+
+    expectContextEnable();
+    unmapScene(scene);
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whenHiddenInBetweenEmptyFlushes_confidenceTest)
+{
+    createDisplayAndExpectSuccess();
+    const UInt32 scene = createPublishAndSubscribeScene();
+    mapScene(scene);
+    showScene(scene);
+
+    update();
+    doRenderLoop();
+
+    // flush once only to set limit
+    const UInt32 initialTS = 1000u;
+    performFlushWithExpiration(scene, initialTS);
+
+    for (UInt32 i = 0u; i < 10u; ++i)
+    {
+        performFlushWithExpiration(scene, initialTS + i);
+
+        update();
+        doRenderLoop();
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(initialTS + i - 1)));
+
+        // hide scene in between applying flushes with timestamps
+        if (i == 8)
+            hideScene(scene);
+    }
+    expectNoEvent();
+
+    // disable expiration together with some scene changes
+    const NodeHandle nodeHandle(10u);
+    IScene& iscene = *stagingScene[scene];
+    SceneAllocateHelper sceneAllocator(iscene);
+    sceneAllocator.allocateNode(0u, nodeHandle);
+    performFlushWithExpiration(scene, 0u);
+
+    for (UInt32 i = 10u; i < 20u; ++i)
+    {
+        update();
+        doRenderLoop();
+        // check with TS after initial TS
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(initialTS + i)));
+    }
+    // expect no expiration as last flush disabled expiration
+    expectNoEvent();
+
+    expectContextEnable();
+    unmapScene(scene);
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiration_byDisablingExpiration)
+{
+    const UInt32 scene = createPublishAndSubscribeScene();
+
+    for (UInt32 i = 0u; i < 5u; ++i)
+    {
+        performFlushWithExpiration(scene, 1000u + 2u); // will expire
+        update();
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+    }
+    expectEvent(ERendererEventType_SceneExpired);
+
+    // disable expiration
+    performFlushWithExpiration(scene, 0u);
+
+    for (UInt32 i = 0u; i < 5u; ++i)
+    {
+        update();
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+    }
+    expectEvent(ERendererEventType_SceneRecoveredFromExpiration);
+}
+
+TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationOfRenderedContent_byDisablingExpiration)
+{
+    createDisplayAndExpectSuccess();
+    const UInt32 scene = createPublishAndSubscribeScene();
+    mapScene(scene);
+    showScene(scene);
+
+    for (UInt32 i = 0u; i < 5u; ++i)
+    {
+        performFlushWithExpiration(scene, 1000u + 2u); // will expire
+        update();
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+    }
+    expectEvent(ERendererEventType_SceneExpired);
+
+    // disable expiration
+    performFlushWithExpiration(scene, 0u);
+
+    for (UInt32 i = 0u; i < 5u; ++i)
+    {
+        update();
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+    }
+    expectEvent(ERendererEventType_SceneRecoveredFromExpiration);
+
+    hideScene(scene);
+    expectContextEnable();
+    unmapScene(scene);
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiration_byDisablingExpirationWithNonEmptyFlush)
+{
+    const UInt32 scene = createPublishAndSubscribeScene();
+
+    for (UInt32 i = 0u; i < 5u; ++i)
+    {
+        performFlushWithExpiration(scene, 1000u + 2u); // will expire
+        update();
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+    }
+    expectEvent(ERendererEventType_SceneExpired);
+
+    // disable expiration together with some scene changes
+    const NodeHandle nodeHandle(10u);
+    IScene& iscene = *stagingScene[scene];
+    SceneAllocateHelper sceneAllocator(iscene);
+    sceneAllocator.allocateNode(0u, nodeHandle);
+    performFlushWithExpiration(scene, 0u);
+
+    for (UInt32 i = 0u; i < 5u; ++i)
+    {
+        update();
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+    }
+    expectEvent(ERendererEventType_SceneRecoveredFromExpiration);
+}
+
+TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationOfRenderedContent_byDisablingExpirationWithNonEmptyFlush)
+{
+    createDisplayAndExpectSuccess();
+    const UInt32 scene = createPublishAndSubscribeScene();
+    mapScene(scene);
+    showScene(scene);
+
+    for (UInt32 i = 0u; i < 5u; ++i)
+    {
+        performFlushWithExpiration(scene, 1000u + 2u); // will expire
+        update();
+        doRenderLoop();
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+    }
+    expectEvent(ERendererEventType_SceneExpired);
+
+    // disable expiration together with some scene changes
+    const NodeHandle nodeHandle(10u);
+    IScene& iscene = *stagingScene[scene];
+    SceneAllocateHelper sceneAllocator(iscene);
+    sceneAllocator.allocateNode(0u, nodeHandle);
+    performFlushWithExpiration(scene, 0u);
+
+    for (UInt32 i = 0u; i < 5u; ++i)
+    {
+        update();
+        doRenderLoop();
+        expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
+    }
+    expectEvent(ERendererEventType_SceneRecoveredFromExpiration);
+
+    hideScene(scene);
+    expectContextEnable();
+    unmapScene(scene);
+    destroyDisplay();
+}
+
 }

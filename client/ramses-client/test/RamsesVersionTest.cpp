@@ -40,7 +40,6 @@ namespace ramses_internal
         EXPECT_STREQ(::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH, info.gitHash.c_str());
         EXPECT_EQ(static_cast<UInt32>(std::atoi(::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MAJOR)), info.major);
         EXPECT_EQ(static_cast<UInt32>(std::atoi(::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MINOR)), info.minor);
-        EXPECT_EQ(static_cast<UInt32>(std::atoi(::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_PATCH)), info.patch);
     }
 
     TEST_F(ARamsesVersion, canParseCurrentVersionFromFile)
@@ -58,7 +57,6 @@ namespace ramses_internal
         EXPECT_STREQ(::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH, info.gitHash.c_str());
         EXPECT_EQ(static_cast<UInt32>(std::atoi(::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MAJOR)), info.major);
         EXPECT_EQ(static_cast<UInt32>(std::atoi(::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MINOR)), info.minor);
-        EXPECT_EQ(static_cast<UInt32>(std::atoi(::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_PATCH)), info.patch);
     }
 
     TEST_F(ARamsesVersion, canParseReleaseVersion)
@@ -72,7 +70,6 @@ namespace ramses_internal
         EXPECT_STREQ("af98afa8e94", info.gitHash.c_str());
         EXPECT_EQ(17u, info.major);
         EXPECT_EQ(0u, info.minor);
-        EXPECT_EQ(1u, info.patch);
     }
 
     TEST_F(ARamsesVersion, canParseMasterVersion)
@@ -86,7 +83,19 @@ namespace ramses_internal
         EXPECT_STREQ("af98afa8e94", info.gitHash.c_str());
         EXPECT_EQ(0u, info.major);
         EXPECT_EQ(0u, info.minor);
-        EXPECT_EQ(0u, info.patch);
+    }
+
+    TEST_F(ARamsesVersion, canParseOtherVersionSuffix)
+    {
+        BinaryOutputStream out;
+        RamsesVersion::WriteToStream(out, "0.0.0-releaseCandidate", "af98afa8e94");
+        BinaryInputStream in(out.getData());
+        EXPECT_TRUE(RamsesVersion::ReadFromStream(in, info));
+
+        EXPECT_STREQ("0.0.0-releaseCandidate", info.versionString.c_str());
+        EXPECT_STREQ("af98afa8e94", info.gitHash.c_str());
+        EXPECT_EQ(0u, info.major);
+        EXPECT_EQ(0u, info.minor);
     }
 
     TEST_F(ARamsesVersion, canParseVersionNumbersInCorrectOrder)
@@ -100,7 +109,6 @@ namespace ramses_internal
         EXPECT_STREQ("af98afa8e94", info.gitHash.c_str());
         EXPECT_EQ(1u, info.major);
         EXPECT_EQ(2u, info.minor);
-        EXPECT_EQ(3u, info.patch);
     }
 
     TEST_F(ARamsesVersion, canParseLongVersionNumbers)
@@ -114,7 +122,6 @@ namespace ramses_internal
         EXPECT_STREQ("af98afa8e94", info.gitHash.c_str());
         EXPECT_EQ(11u, info.major);
         EXPECT_EQ(22u, info.minor);
-        EXPECT_EQ(333u, info.patch);
     }
 
     TEST_F(ARamsesVersion, canParseUnknownAsHashValue)
@@ -128,10 +135,9 @@ namespace ramses_internal
         EXPECT_STREQ("(unknown)", info.gitHash.c_str());
         EXPECT_EQ(1u, info.major);
         EXPECT_EQ(3u, info.minor);
-        EXPECT_EQ(2u, info.patch);
     }
 
-    TEST_F(ARamsesVersion, canParseFullhashValue)
+    TEST_F(ARamsesVersion, canParseFullHashValue)
     {
         BinaryOutputStream out;
         RamsesVersion::WriteToStream(out, "1.3.2", "ce01334641b90dbfc02cbee5d072cec8f9000afe");
@@ -140,6 +146,45 @@ namespace ramses_internal
 
         EXPECT_STREQ("1.3.2", info.versionString.c_str());
         EXPECT_STREQ("ce01334641b90dbfc02cbee5d072cec8f9000afe", info.gitHash.c_str());
+    }
+
+    TEST_F(ARamsesVersion, canParseMajorMinorPatchTweak)
+    {
+        BinaryOutputStream out;
+        RamsesVersion::WriteToStream(out, "1.3.2.5", "ce01334641b90dbfc02cbee5d072cec8f9000afe");
+        BinaryInputStream in(out.getData());
+        EXPECT_TRUE(RamsesVersion::ReadFromStream(in, info));
+
+        EXPECT_STREQ("1.3.2.5", info.versionString.c_str());
+        EXPECT_STREQ("ce01334641b90dbfc02cbee5d072cec8f9000afe", info.gitHash.c_str());
+        EXPECT_EQ(1u, info.major);
+        EXPECT_EQ(3u, info.minor);
+    }
+
+    TEST_F(ARamsesVersion, canParseDifferentSuffix)
+    {
+        BinaryOutputStream out;
+        RamsesVersion::WriteToStream(out, "1.3.2-foobar", "ce01334641b90dbfc02cbee5d072cec8f9000afe");
+        BinaryInputStream in(out.getData());
+        EXPECT_TRUE(RamsesVersion::ReadFromStream(in, info));
+
+        EXPECT_STREQ("1.3.2-foobar", info.versionString.c_str());
+        EXPECT_STREQ("ce01334641b90dbfc02cbee5d072cec8f9000afe", info.gitHash.c_str());
+        EXPECT_EQ(1u, info.major);
+        EXPECT_EQ(3u, info.minor);
+    }
+
+    TEST_F(ARamsesVersion, canParseRandomStringAfterMajorMinor)
+    {
+        BinaryOutputStream out;
+        RamsesVersion::WriteToStream(out, "1.3.a.b.c+hotfix3", "ce01334641b90dbfc02cbee5d072cec8f9000afe");
+        BinaryInputStream in(out.getData());
+        EXPECT_TRUE(RamsesVersion::ReadFromStream(in, info));
+
+        EXPECT_STREQ("1.3.a.b.c+hotfix3", info.versionString.c_str());
+        EXPECT_STREQ("ce01334641b90dbfc02cbee5d072cec8f9000afe", info.gitHash.c_str());
+        EXPECT_EQ(1u, info.major);
+        EXPECT_EQ(3u, info.minor);
     }
 
     TEST_F(ARamsesVersion, canParseHandCraftedVersionInformation)
@@ -230,17 +275,7 @@ namespace ramses_internal
         RamsesVersion::VersionInfo vi;
         vi.major = ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MAJOR_INT;
         vi.minor = ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MINOR_INT;
-        vi.patch = ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_PATCH_INT;
         EXPECT_TRUE(RamsesVersion::MatchesMajorMinor(::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MAJOR_INT, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MINOR_INT, vi));
-    }
-
-    TEST_F(ARamsesVersion, MatchesCurrentMajorMinorMatchesCurrentDifferentPatchVersion)
-    {
-        RamsesVersion::VersionInfo vi;
-        vi.major = 44;
-        vi.minor = 36;
-        vi.patch = ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_PATCH_INT + 1;
-        EXPECT_TRUE(RamsesVersion::MatchesMajorMinor(44, 36, vi));
     }
 
     TEST_F(ARamsesVersion, AcceptsMasterVersionZeroZeroAlways)
@@ -248,7 +283,6 @@ namespace ramses_internal
         RamsesVersion::VersionInfo vi;
         vi.major = 0;
         vi.minor = 0;
-        vi.patch = ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_PATCH_INT;
         EXPECT_TRUE(RamsesVersion::MatchesMajorMinor(0, 0, vi));
     }
 
@@ -257,7 +291,6 @@ namespace ramses_internal
         RamsesVersion::VersionInfo vi;
         vi.major = 1;
         vi.minor = 2;
-        vi.patch = ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_PATCH_INT;
         EXPECT_TRUE(RamsesVersion::MatchesMajorMinor(0, 0, vi));
     }
 
@@ -266,7 +299,6 @@ namespace ramses_internal
         RamsesVersion::VersionInfo vi;
         vi.major = 55 + 1;
         vi.minor = 66;
-        vi.patch = 77;
         EXPECT_FALSE(RamsesVersion::MatchesMajorMinor(55, 66, vi));
     }
 
@@ -275,7 +307,6 @@ namespace ramses_internal
         RamsesVersion::VersionInfo vi;
         vi.major = 55;
         vi.minor = 66 + 1;
-        vi.patch = 77;
         EXPECT_FALSE(RamsesVersion::MatchesMajorMinor(55, 66, vi));
     }
 }

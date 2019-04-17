@@ -70,8 +70,8 @@ namespace ramses_internal
             , fullscreen("f", "fullscreen", config.getFullscreenState(), "enable fullscreen mode")
             , borderless("bl", "borderless", config.getBorderlessState(), "disable window borders")
             , enableWarping("warp", "enable-warping", config.isWarpingEnabled(), "enable warping")
-            , disableEffectDeletion("ded", "no-effect-delete", config.isEffectDeletionDisabled(), "disable effect deletion")
-            , antialiasingMethod("aa", "antialiasing-method", "", "set antialiasing method (options: MSAA,  FXAA)")
+            , deleteEffects("de", "delete-effects", !config.getKeepEffectsUploaded(), "do not keep effects uploaded")
+            , antialiasingMethod("aa", "antialiasing-method", "", "set antialiasing method (options: MSAA)")
             , antialiasingSampleCount("as", "aa-samples", config.getAntialiasingSampleCount(), "set antialiasing sample count")
             , waylandIviLayerId("lid", "waylandIviLayerId", config.getWaylandIviLayerID().getValue(), "set id of IVI layer the display surface will be added to")
             , waylandIviSurfaceID("sid", "waylandIviSurfaceID", config.getWaylandIviSurfaceID().getValue(), "set id of IVI surface the display will be composited on")
@@ -108,7 +108,7 @@ namespace ramses_internal
         ArgumentBool borderless;
 
         ArgumentBool enableWarping;
-        ArgumentBool disableEffectDeletion;
+        ArgumentBool deleteEffects;
         ArgumentString antialiasingMethod;
         ArgumentUInt32 antialiasingSampleCount;
         ArgumentUInt32 waylandIviLayerId;
@@ -160,7 +160,7 @@ namespace ramses_internal
                         if (!onlyExposedArgs)
                         {
                             sos << enableWarping.getHelpString();
-                            sos << disableEffectDeletion.getHelpString();
+                            sos << deleteEffects.getHelpString();
                             sos << antialiasingMethod.getHelpString();
                             sos << antialiasingSampleCount.getHelpString();
                         }
@@ -188,7 +188,7 @@ namespace ramses_internal
         config.setFullscreenState(rendererArgs.fullscreen.parseValueFromCmdLine(parser));
         config.setBorderlessState(rendererArgs.borderless.parseValueFromCmdLine(parser));
         config.setWarpingEnabled(rendererArgs.enableWarping.parseValueFromCmdLine(parser));
-        config.setEffectDeletionDisabled(rendererArgs.disableEffectDeletion.parseValueFromCmdLine(parser));
+        config.setKeepEffectsUploaded(!rendererArgs.deleteEffects.parseValueFromCmdLine(parser));
         config.setDesiredWindowWidth(rendererArgs.windowWidth.parseValueFromCmdLine(parser));
         config.setDesiredWindowHeight(rendererArgs.windowHeight.parseValueFromCmdLine(parser));
         config.setWindowPositionX(rendererArgs.windowPositionX.parseValueFromCmdLine(parser));
@@ -242,10 +242,6 @@ namespace ramses_internal
         if (String("MSAA") == antialiasingMethodName)
         {
             config.setAntialiasingMethod(EAntiAliasingMethod_MultiSampling);
-        }
-        else if (String("FXAA") == antialiasingMethodName)
-        {
-            config.setAntialiasingMethod(EAntiAliasingMethod_FXAA);
         }
         else
         {

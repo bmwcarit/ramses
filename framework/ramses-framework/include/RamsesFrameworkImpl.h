@@ -61,6 +61,7 @@ namespace ramses
         static ramses_internal::String GetParticipantName(const RamsesFrameworkConfig& config);
         static void logEnvironmentVariableIfSet(const ramses_internal::String& envVarName);
 
+        static constexpr uint32_t PeriodicLogIntervalInSeconds = 2;
         // the framework-wide mutex that is used by all framework-base classes to synchronize access to shared resource
         // has to be used by all logic, component, etc classes
         ramses_internal::PlatformLock m_frameworkLock;

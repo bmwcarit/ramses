@@ -68,7 +68,7 @@ TEST_F(ADisplayConfig, hasDefaultValuesUponConstruction)
     EXPECT_EQ(defaultDisplayConfig.getFullscreenState(), displayConfig.getFullscreenState());
     EXPECT_EQ(defaultDisplayConfig.getBorderlessState(), displayConfig.getBorderlessState());
     EXPECT_EQ(defaultDisplayConfig.isWarpingEnabled(), displayConfig.isWarpingEnabled());
-    EXPECT_EQ(defaultDisplayConfig.isEffectDeletionDisabled(), displayConfig.isEffectDeletionDisabled());
+    EXPECT_EQ(defaultDisplayConfig.getKeepEffectsUploaded(), displayConfig.getKeepEffectsUploaded());
     EXPECT_EQ(defaultDisplayConfig.isStereoDisplay(), displayConfig.isStereoDisplay());
 
     EXPECT_EQ(defaultDisplayConfig.getAntialiasingMethod(), displayConfig.getAntialiasingMethod());
@@ -178,10 +178,10 @@ TEST_F(ADisplayConfig, enablesWarping)
     EXPECT_TRUE(config.impl.getInternalDisplayConfig().isWarpingEnabled());
 }
 
-TEST_F(ADisplayConfig, disablesEffectDeletion)
+TEST_F(ADisplayConfig, disablesKeepingOfEffectsInVRAM)
 {
-    EXPECT_EQ(ramses::StatusOK, config.disableEffectDeletion());
-    EXPECT_TRUE(config.impl.getInternalDisplayConfig().isEffectDeletionDisabled());
+    EXPECT_EQ(ramses::StatusOK, config.keepEffectsUploaded(false));
+    EXPECT_FALSE(config.impl.getInternalDisplayConfig().getKeepEffectsUploaded());
 }
 
 TEST_F(ADisplayConfig, enablesStereoDisplay)

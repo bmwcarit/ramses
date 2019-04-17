@@ -9,12 +9,15 @@
 #ifndef RAMSES_SCENEACTIONCOLLECTION_H
 #define RAMSES_SCENEACTIONCOLLECTION_H
 
-#include "PlatformAbstraction/PlatformTypes.h"
 #include "TransportCommon/ESceneActionId.h"
-#include "PlatformAbstraction/PlatformMemory.h"
+#include "Common/TypedMemoryHandle.h"
+#include "Common/StronglyTypedValue.h"
+#include "SceneAPI/ResourceContentHash.h"
 #include "Collections/Guid.h"
 #include "Collections/String.h"
 #include "Collections/Vector.h"
+#include "PlatformAbstraction/PlatformTypes.h"
+#include "PlatformAbstraction/PlatformMemory.h"
 #include <algorithm>
 #include <iterator>
 
@@ -49,13 +52,26 @@ namespace ramses_internal
         // writing
         void beginWriteSceneAction(ESceneActionId type);
 
+        // concrete types
         void write(const String& str);
-        void write(const Byte* data, UInt32 size);
         void write(const generic_uuid_t& guid);
         void write(const Guid& guid);
-
-        template<typename T>
+        void write(const ResourceContentHash& hash);
+        template <typename T>
+        void write(TypedMemoryHandle<T> handle);
+        template <typename T, T D, typename U>
+        void write(StronglyTypedValue<T, D, U> value);
+        template <typename E, typename = typename std::enable_if<std::is_enum<E>::value>::type>
+        void write(E enumValue);
+        // fixed size array
+        template<typename T, int N, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+        void write(const T(&data)[N]);
+        // generic
+        template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
         void write(const T& value);
+        // generic array
+        template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+        void write(const T* data, UInt32 numElements);
 
         static const UInt32 MaxStringLength = 255;
 
@@ -89,13 +105,28 @@ namespace ramses_internal
             const Byte* data() const;
             UInt32 offsetInCollection() const;
 
+            // concrete types
             void read(String& str);
-            void read(const Byte*& data, UInt32& size);
             void read(generic_uuid_t& guid);
             void read(Guid& guid);
-
-            template<typename T>
+            void read(ResourceContentHash& hash);
+            template <typename T>
+            void read(TypedMemoryHandle<T>& handle);
+            template <typename T, T D, typename U>
+            void read(StronglyTypedValue<T, D, U>& value);
+            template<typename E, typename std::enable_if<std::is_enum<E>::value, int>::type = 0>
+            void read(E& value);
+            // fixed size array
+            template<typename T, int N, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+            void read(T(&data)[N]);
+            // generic
+            template<typename T, typename std::enable_if<std::is_arithmetic<T>::value && !std::is_enum<T>::value, int>::type = 0>
             void read(T& value);
+            // generic array
+            template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+            void read(T* data, UInt32& numElements);
+            // get pointer to written array of bytes and increment reader position
+            void readWithoutCopy(const Byte*& data, UInt32& size);
 
             bool isFullyRead() const;
 
@@ -105,8 +136,10 @@ namespace ramses_internal
 
             SceneActionReader(const SceneActionCollection* collection, UInt actionIndex);
 
-            template<typename T>
-            void readPritimiteValue(T& value);
+            template<typename T, typename = typename std::enable_if<std::is_trivial<T>::value>::type>
+            void readFromByteBlob(T& value);
+            void readFromByteBlob(void* data, size_t size);
+
             UInt32 offsetForIndex(UInt idx) const;
 
             const SceneActionCollection* m_collection;
@@ -149,8 +182,9 @@ namespace ramses_internal
             bool operator==(const ActionInfo&) const;
         };
 
-        template<typename T>
-        void writePritimiteValue(const T& value);
+        template<typename T, typename = typename std::enable_if<std::is_trivial<T>::value>::type>
+        void writeAsByteBlob(const T& value);
+        void writeAsByteBlob(const void* value, size_t size);
         void reserveAdditionalDataCapacity(UInt additionalCapacity);
 
         Vector<Byte> m_data;
@@ -267,49 +301,82 @@ namespace ramses_internal
         // check for MaxStringLength
         const UInt32 truncatedLength = std::min(MaxStringLength, static_cast<UInt32>(str.getLength()));
 
-        // resize if necessary
         reserveAdditionalDataCapacity(sizeof(UInt32) + truncatedLength);
-
-        writePritimiteValue(static_cast<UInt32>(truncatedLength));
-
-        const Byte* strPtr = reinterpret_cast<const Byte*>(str.c_str());
-        m_data.insert(m_data.end(), strPtr, strPtr + truncatedLength);
-    }
-
-    inline void SceneActionCollection::write(const Byte* data, UInt32 size)
-    {
-        reserveAdditionalDataCapacity(sizeof(UInt32) + size);
-        writePritimiteValue(size);
-        m_data.insert(m_data.end(), data, data + size);
+        writeAsByteBlob(static_cast<UInt32>(truncatedLength));
+        writeAsByteBlob(str.c_str(), truncatedLength);
     }
 
     inline void SceneActionCollection::write(const generic_uuid_t& guid)
     {
-        writePritimiteValue(guid);
+        writeAsByteBlob(guid);
     }
 
     inline void SceneActionCollection::write(const Guid& guid)
     {
-        writePritimiteValue(guid.getGuidData());
+        writeAsByteBlob(guid.getGuidData());
     }
 
-    template<typename T>
-    inline void SceneActionCollection::write(const T& value)
+    inline void SceneActionCollection::write(const ResourceContentHash& hash)
     {
-        writePritimiteValue(value);
+        writeAsByteBlob(&hash, sizeof(hash));
     }
 
-    template<typename T>
-    inline void SceneActionCollection::writePritimiteValue(const T& value)
+    template <typename T>
+    void SceneActionCollection::write(TypedMemoryHandle<T> handle)
     {
-        const Byte* valuePtr = reinterpret_cast<const Byte*>(&value);
-        m_data.insert(m_data.end(), valuePtr, valuePtr + sizeof(T));
+        writeAsByteBlob(handle.asMemoryHandle());
+    }
+
+    template <typename T, T D, typename U>
+    void SceneActionCollection::write(StronglyTypedValue<T, D, U> value)
+    {
+        writeAsByteBlob(value.getValue());
+    }
+
+    template <typename E, typename>
+    void SceneActionCollection::write(E enumValue)
+    {
+        static_assert(!std::is_convertible<E, int>::value, "Use enum class! If need to keep old enum, cast explicitly to integral type.");
+        writeAsByteBlob(enumValue);
+    }
+
+    template<typename T, int N, typename>
+    void SceneActionCollection::write(const T(&data)[N])
+    {
+        writeAsByteBlob(data, sizeof(data));
+    }
+
+    template<typename T, typename>
+    void SceneActionCollection::write(const T* data, UInt32 numElements)
+    {
+        const UInt32 byteSize = numElements * sizeof(T);
+        reserveAdditionalDataCapacity(sizeof(UInt32) + byteSize);
+        writeAsByteBlob(numElements);
+        writeAsByteBlob(data, byteSize);
+    }
+
+    template<typename T, typename>
+    void SceneActionCollection::write(const T& value)
+    {
+        writeAsByteBlob(value);
+    }
+
+    template<typename T, typename>
+    void SceneActionCollection::writeAsByteBlob(const T& value)
+    {
+        writeAsByteBlob(&value, sizeof(T));
+    }
+
+    inline void SceneActionCollection::writeAsByteBlob(const void* value, size_t size)
+    {
+        const Byte* valuePtr = static_cast<const Byte*>(value);
+        m_data.insert(m_data.end(), valuePtr, valuePtr + size);
     }
 
     // blob write access
     inline void SceneActionCollection::appendRawData(const Byte* data, UInt dataSize)
     {
-        m_data.insert(m_data.end(), data, data + dataSize);
+        writeAsByteBlob(data, dataSize);
     }
 
     inline Vector<Byte>& SceneActionCollection::getRawDataForDirectWriting()
@@ -398,15 +465,14 @@ namespace ramses_internal
     {
         // read string length
         UInt32 length = 0;
-        readPritimiteValue(length);
+        readFromByteBlob(length);
 
         if (length > 0)
         {
             // read string
             String tmp(length, 0);
-            PlatformMemory::Copy(static_cast<void*>(&tmp[0u]), m_collection->m_data.data() + m_readPosition, length);
+            readFromByteBlob(tmp.data(), length);
             str.swap(tmp);
-            m_readPosition += length;
         }
         else
         {
@@ -414,48 +480,87 @@ namespace ramses_internal
         }
     }
 
-    inline void SceneActionCollection::SceneActionReader::read(const Byte*& data, UInt32& size)
+    inline void SceneActionCollection::SceneActionReader::read(ResourceContentHash& hash)
+    {
+        readFromByteBlob(&hash, sizeof(hash));
+    }
+
+    template<typename T, typename>
+    void SceneActionCollection::SceneActionReader::read(T* data, UInt32& numElements)
     {
         // read array size
-        UInt32 arraySize = 0;
-        readPritimiteValue(arraySize);
+        readFromByteBlob(numElements);
+        const UInt32 byteSize = numElements * sizeof(T);
+        PlatformMemory::Copy(data, m_collection->m_data.data() + m_readPosition, byteSize);
+        m_readPosition += byteSize;
+    }
 
-        if (arraySize > 0)
+    inline void SceneActionCollection::SceneActionReader::readWithoutCopy(const Byte*& data, UInt32& size)
+    {
+        // read array size
+        readFromByteBlob(size);
+        if (size > 0u)
         {
-            size = arraySize;
             data = m_collection->m_data.data() + m_readPosition;
-            m_readPosition += arraySize;
+            m_readPosition += size;
         }
         else
-        {
-            size = 0;
-            data = NULL;
-        }
+            data = nullptr;
     }
 
     inline void SceneActionCollection::SceneActionReader::read(generic_uuid_t& guid)
     {
-        readPritimiteValue(guid);
+        readFromByteBlob(guid);
     }
 
     inline void SceneActionCollection::SceneActionReader::read(Guid& guid)
     {
         generic_uuid_t data;
-        readPritimiteValue(data);
+        readFromByteBlob(data);
         guid = Guid(data);
     }
 
-    template<typename T>
-    inline void SceneActionCollection::SceneActionReader::read(T& value)
+    template<typename E, typename std::enable_if<std::is_enum<E>::value, int>::type>
+    void SceneActionCollection::SceneActionReader::read(E& value)
     {
-        readPritimiteValue(value);
+        static_assert(!std::is_convertible<E, int>::value, "Use enum class! If need to keep old enum, cast explicitly to integral type.");
+        readFromByteBlob(value);
     }
 
-    template<typename T>
-    inline void SceneActionCollection::SceneActionReader::readPritimiteValue(T& value)
+    template <typename T>
+    void SceneActionCollection::SceneActionReader::read(TypedMemoryHandle<T>& handle)
     {
-        PlatformMemory::Copy(reinterpret_cast<Byte*>(&value), m_collection->m_data.data() + m_readPosition, sizeof(T));
-        m_readPosition += sizeof(T);
+        readFromByteBlob(handle.asMemoryHandleReference());
+    }
+
+    template <typename T, T D, typename U>
+    void SceneActionCollection::SceneActionReader::read(StronglyTypedValue<T, D, U>& value)
+    {
+        readFromByteBlob(value.getReference());
+    }
+
+    template<typename T, int N, typename>
+    void SceneActionCollection::SceneActionReader::read(T(&data)[N])
+    {
+        readFromByteBlob(data, sizeof(data));
+    }
+
+    template<typename T, typename std::enable_if<std::is_arithmetic<T>::value && !std::is_enum<T>::value, int>::type>
+    void SceneActionCollection::SceneActionReader::read(T& value)
+    {
+        readFromByteBlob(value);
+    }
+
+    template<typename T, typename>
+    void SceneActionCollection::SceneActionReader::readFromByteBlob(T& value)
+    {
+        readFromByteBlob(&value, sizeof(value));
+    }
+
+    inline void SceneActionCollection::SceneActionReader::readFromByteBlob(void* data, UInt size)
+    {
+        PlatformMemory::Copy(static_cast<Byte*>(data), m_collection->m_data.data() + m_readPosition, size);
+        m_readPosition += size;
     }
 
     inline bool SceneActionCollection::SceneActionReader::isFullyRead() const

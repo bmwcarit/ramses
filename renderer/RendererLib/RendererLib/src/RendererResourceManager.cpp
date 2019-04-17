@@ -176,7 +176,7 @@ namespace ramses_internal
         resourcesToBeRequested.reserve(m_clientResourceRegistry.getAllRequestedResources().size());
         for (const auto& hash : m_clientResourceRegistry.getAllRequestedResources())
         {
-            const UInt64 frameOfLastRequest = m_clientResourceRegistry.getResourceDescriptor(hash).lastUpdateFrameCounter;
+            const UInt64 frameOfLastRequest = m_clientResourceRegistry.getResourceDescriptor(hash).lastRequestFrameIdx;
             if (frameOfLastRequest + m_numberOfFramesToRerequestResource <= m_frameCounter)
             {
                 resourcesToBeRequested.push_back(hash);

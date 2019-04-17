@@ -124,7 +124,6 @@ protected:
         renderer.hideScene(0u);
         renderer.readPixels(0u, 1u, 2u, 3u, 4u);
         renderer.updateWarpingMeshData(0u,warpingMeshData);
-        renderer.logRendererInfo();
         renderer.createOffscreenBuffer(0u, 1u, 1u);
         renderer.destroyOffscreenBuffer(0u, 0u);
         renderer.assignSceneToOffscreenBuffer(0u, 0u);
@@ -134,8 +133,8 @@ protected:
         renderer.setSurfaceVisibility(0u , true);
         renderer.setSurfaceOpacity(0u, 1.0f);
         renderer.setSurfaceRectangle(0u, 0, 0, 0, 0);
-        renderer.takeSystemCompositorScreenshot("");
-        renderer.setFrameTimerLimits(10000u, 10000u, 10000u);
+        renderer.takeSystemCompositorScreenshot("", -1);
+        renderer.setFrameTimerLimits(10001u, 10000u, 10000u, 10000u);
 
         renderer.flush();
         renderer.dispatchEvents(rendererEventHandler);
@@ -535,7 +534,7 @@ TEST_F(ARamsesRenderer, createsNoCommandForSystemCompositorControllerIfNotEnable
     EXPECT_NE(ramses::StatusOK, renderer.setSurfaceVisibility(0, true));
     EXPECT_NE(ramses::StatusOK, renderer.setSurfaceOpacity(0, 0.2f));
     EXPECT_NE(ramses::StatusOK, renderer.setSurfaceRectangle(0, 1, 2, 3, 4));
-    EXPECT_NE(ramses::StatusOK, renderer.takeSystemCompositorScreenshot("unused_name"));
+    EXPECT_NE(ramses::StatusOK, renderer.takeSystemCompositorScreenshot("unused_name", -1));
     checkForRendererCommandCount(0u);
 }
 
@@ -569,7 +568,7 @@ TEST_F(ARamsesRendererWithSystemCompositorController, createsCommandForSystemCom
 
 TEST_F(ARamsesRendererWithSystemCompositorController, createsCommandForSystemCompositorControllerTakeScreenshot)
 {
-    EXPECT_EQ(ramses::StatusOK, renderer.takeSystemCompositorScreenshot("unused_name"));
+    EXPECT_EQ(ramses::StatusOK, renderer.takeSystemCompositorScreenshot("unused_name", -1));
     checkForRendererCommandCount(1u);
     checkForRendererCommand(0u, ramses_internal::ERendererCommand_SystemCompositorControllerScreenshot);
 }
@@ -589,7 +588,7 @@ TEST_F(ARamsesRenderer, doesNotHaveRaceConditionsOrDeadlocks_UsingDoOneLoop)
 
 TEST_F(ARamsesRenderer, doesNotHaveRaceConditionsOrDeadlocks_UsingDoOneLoop_confidenceTest)
 {
-    const ramses_internal::UInt32 callCount = 10;
+    const ramses_internal::UInt32 callCount = 5;
     CallAllApiFunctionsRunnableUsingDoOneLoop runnable(renderer, callCount);
 
     runThreadSanitizerConfidenceTest(runnable);
@@ -608,7 +607,7 @@ TEST_F(ARamsesRenderer, doesNotHaveRaceConditionsOrDeadlocks_UsingRendererThread
 
 TEST_F(ARamsesRenderer, doesNotHaveRaceConditionsOrDeadlocks_UsingRendererThread_confidenceTest)
 {
-    const ramses_internal::UInt32 callCount = 10;
+    const ramses_internal::UInt32 callCount = 5;
     CallAllApiFunctionsRunnableUsingRendererThread runnable(renderer, callCount);
 
     runThreadSanitizerConfidenceTest(runnable);
@@ -696,7 +695,7 @@ TEST(ARamsesRendererWithSeparateRendererThread, canNotifyPerWatchdog)
 
 TEST_F(ARamsesRendererWithDisplay, createsCommandForSettingFrameTimerLimits)
 {
-    EXPECT_EQ(ramses::StatusOK, renderer.setFrameTimerLimits(10000u, 10000u, 10000u));
+    EXPECT_EQ(ramses::StatusOK, renderer.setFrameTimerLimits(10001u, 10000u, 10000u, 10000u));
 
     checkForRendererCommandCount(1u);
     checkForRendererCommand(0u, ramses_internal::ERendererCommand_SetFrameTimerLimits);

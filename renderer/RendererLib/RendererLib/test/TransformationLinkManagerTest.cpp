@@ -158,11 +158,11 @@ TEST_F(ATransformationLinkManager, reportsNoLinkToProviderForProviderNode)
     EXPECT_FALSE(transformationLinkManager.nodeHasDataLinkToProvider(providerSceneId, providerNode));
 }
 
-void expectMatricesEqual(const float mat1[16], const float mat2[16])
+void expectMatricesEqual(const Matrix44f mat1, const Matrix44f mat2)
 {
     for (uint32_t i = 0u; i < 16u; ++i)
     {
-        EXPECT_FLOAT_EQ(mat1[i], mat2[i]);
+        EXPECT_FLOAT_EQ(mat1.data[i], mat2.data[i]);
     }
 }
 
@@ -176,7 +176,7 @@ TEST_F(ATransformationLinkManager, retrievesWorldTransformationFromLinkedProvide
     const Matrix44f expectedMat = Matrix44f::Translation(transVec);
     const Matrix44f transMat = transformationLinkManager.getLinkedTransformationFromDataProvider(ETransformationMatrixType_World, consumerSceneId, consumerNode);
 
-    expectMatricesEqual(expectedMat.getRawData(), transMat.getRawData());
+    expectMatricesEqual(expectedMat, transMat);
 }
 
 TEST_F(ATransformationLinkManager, retrievesObjectTransformationFromLinkedProviderNode)
@@ -189,7 +189,7 @@ TEST_F(ATransformationLinkManager, retrievesObjectTransformationFromLinkedProvid
     const Matrix44f expectedMat = Matrix44f::Translation(-transVec);
     const Matrix44f transMat = transformationLinkManager.getLinkedTransformationFromDataProvider(ETransformationMatrixType_Object, consumerSceneId, consumerNode);
 
-    expectMatricesEqual(expectedMat.getRawData(), transMat.getRawData());
+    expectMatricesEqual(expectedMat, transMat);
 }
 
 TEST_F(ATransformationLinkManager, reportsNoLinksForSceneWithRemovedLink)

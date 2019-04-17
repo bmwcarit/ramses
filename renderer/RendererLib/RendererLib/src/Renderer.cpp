@@ -231,11 +231,11 @@ namespace ramses_internal
         }
     }
 
-    void Renderer::systemCompositorScreenshot(const String& fileName) const
+    void Renderer::systemCompositorScreenshot(const String& fileName, int32_t screenIviId) const
     {
         if(0 != m_systemCompositorController)
         {
-            m_systemCompositorController->doScreenshotOfAllScreens(fileName);
+            m_systemCompositorController->doScreenshot(fileName, screenIviId);
         }
         else
         {

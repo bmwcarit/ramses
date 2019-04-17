@@ -38,6 +38,7 @@ namespace ramses_internal
         void                            addRenderBuffer             (RenderBufferHandle handle, DeviceResourceHandle deviceHandle, UInt32 size, bool writeOnly);
         void                            removeRenderBuffer          (RenderBufferHandle handle);
         DeviceResourceHandle            getRenderBufferDeviceHandle (RenderBufferHandle handle) const;
+        UInt32                          getRenderBufferByteSize     (RenderBufferHandle handle) const;
         void                            getAllRenderBuffers         (RenderBufferHandleVector& renderBuffers) const;
 
         void                            addRenderTarget             (RenderTargetHandle handle, DeviceResourceHandle deviceHandle);
@@ -61,11 +62,12 @@ namespace ramses_internal
         EDataBufferType                 getDataBufferType           (DataBufferHandle handle) const;
         void                            getAllDataBuffers           (DataBufferHandleVector& dataBuffers) const;
 
-        void                            addTextureBuffer(TextureBufferHandle handle, DeviceResourceHandle deviceHandle, ETextureFormat format, UInt32 size);
-        void                            removeTextureBuffer(TextureBufferHandle handle);
+        void                            addTextureBuffer            (TextureBufferHandle handle, DeviceResourceHandle deviceHandle, ETextureFormat format, UInt32 size);
+        void                            removeTextureBuffer         (TextureBufferHandle handle);
         DeviceResourceHandle            getTextureBufferDeviceHandle(TextureBufferHandle handle) const;
-        ETextureFormat                  getTextureBufferFormat(TextureBufferHandle handle) const;
-        void                            getAllTextureBuffers(TextureBufferHandleVector& textureBuffers) const;
+        ETextureFormat                  getTextureBufferFormat      (TextureBufferHandle handle) const;
+        UInt32                          getTextureBufferByteSize    (TextureBufferHandle handle) const;
+        void                            getAllTextureBuffers        (TextureBufferHandleVector& textureBuffers) const;
 
         void                            addTextureSampler            (TextureSamplerHandle handle, DeviceResourceHandle deviceHandle);
         void                            removeTextureSampler         (TextureSamplerHandle handle);

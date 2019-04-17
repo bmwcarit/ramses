@@ -258,12 +258,12 @@ public:
     {
         if(available)
         {
-            printf("\n\nStream %i available !\n", streamId.getValue());
+            printf("\n\nStream %u available !\n", streamId.getValue());
             m_sceneCreator.createMesh(streamId);
         }
         else
         {
-            printf("\n\nStream %i unavailable !\n", streamId.getValue());
+            printf("\n\nStream %u unavailable !\n", streamId.getValue());
             m_sceneCreator.removeMesh(streamId);
         }
     }

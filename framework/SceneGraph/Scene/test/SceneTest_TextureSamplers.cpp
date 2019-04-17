@@ -15,7 +15,7 @@ namespace ramses_internal
 {
     TYPED_TEST_CASE(AScene, SceneTypes);
 
-    static const TextureSamplerStates SamplerStates = { EWrapMethod_Clamp, EWrapMethod_Repeat, EWrapMethod_RepeatMirrored, ESamplingMethod_Trilinear, 4u };
+    static const TextureSamplerStates SamplerStates = { EWrapMethod::Clamp, EWrapMethod::Repeat, EWrapMethod::RepeatMirrored, ESamplingMethod::Trilinear, 4u };
 
     TYPED_TEST(AScene, TextureSamplerCreated)
     {

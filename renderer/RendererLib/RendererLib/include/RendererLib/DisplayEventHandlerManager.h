@@ -16,8 +16,6 @@ namespace ramses_internal
 {
     class DisplayEventHandler;
     class RendererEventCollector;
-    class IInputHandler;
-    class ITouchHandler;
     class RendererScenes;
     class Renderer;
 

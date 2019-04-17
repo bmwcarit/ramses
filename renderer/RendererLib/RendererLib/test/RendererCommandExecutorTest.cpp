@@ -963,14 +963,14 @@ TEST_P(ARendererCommandExecutor, callsSystemCompositorScreenshot)
     const ramses_internal::String firstName("somefilename.png");
     const ramses_internal::String otherName("somethingelse.png");
 
-    m_commandBuffer.systemCompositorControllerScreenshot(firstName);
-    m_commandBuffer.systemCompositorControllerScreenshot(otherName);
+    m_commandBuffer.systemCompositorControllerScreenshot(firstName, 1);
+    m_commandBuffer.systemCompositorControllerScreenshot(otherName, -1);
 
     SystemCompositorControllerMock* systemCompositorMock = getSystemCompositorMock();
     if(systemCompositorMock != nullptr)
     {
-        EXPECT_CALL(*systemCompositorMock, doScreenshotOfAllScreens(firstName));
-        EXPECT_CALL(*systemCompositorMock, doScreenshotOfAllScreens(otherName));
+        EXPECT_CALL(*systemCompositorMock, doScreenshot(firstName, 1));
+        EXPECT_CALL(*systemCompositorMock, doScreenshot(otherName, -1));
     }
     doCommandExecutorLoop();
 }
@@ -995,26 +995,17 @@ TEST_P(ARendererCommandExecutor, setClearColor)
 TEST_P(ARendererCommandExecutor, setFrameTimerLimits)
 {
     //default values
+    ASSERT_EQ(PlatformTime::InfiniteDuration, m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneResourcesUpload));
     ASSERT_EQ(PlatformTime::InfiniteDuration, m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::ClientResourcesUpload));
     ASSERT_EQ(PlatformTime::InfiniteDuration, m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneActionsApply));
     ASSERT_EQ(PlatformTime::InfiniteDuration, m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::OffscreenBufferRender));
 
-    m_commandBuffer.setFrameTimerLimits(1u, 2u, 3u);
+    m_commandBuffer.setFrameTimerLimits(4u, 1u, 2u, 3u);
     doCommandExecutorLoop();
 
+    EXPECT_EQ(std::chrono::microseconds(4u), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneResourcesUpload));
     EXPECT_EQ(std::chrono::microseconds(1u), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::ClientResourcesUpload));
     EXPECT_EQ(std::chrono::microseconds(2u), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneActionsApply));
     EXPECT_EQ(std::chrono::microseconds(3u), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::OffscreenBufferRender));
-}
-
-TEST_P(ARendererCommandExecutor, setSceneResourceUploadTimer)
-{
-    //default values
-    ASSERT_EQ(PlatformTime::InfiniteDuration, m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneResourcesUpload));
-
-    m_commandBuffer.setSceneResourceTimerLimit(1u);
-    doCommandExecutorLoop();
-
-    EXPECT_EQ(std::chrono::microseconds(1u), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneResourcesUpload));
 }
 }

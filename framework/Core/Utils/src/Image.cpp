@@ -14,6 +14,7 @@
 #include "Utils/LogMacros.h"
 #include "Collections/String.h"
 #include "PlatformAbstraction/PlatformMemory.h"
+#include <numeric>
 
 namespace ramses_internal
 {
@@ -39,25 +40,9 @@ namespace ramses_internal
 
     Bool Image::operator==(const Image& other) const
     {
-        if(m_width != other.m_width || m_height != other.m_height)
-        {
-            return false;
-        }
-
-        for (UInt32 y = 0; y < m_height; ++y)
-        {
-            for (UInt32 x = 0; x < m_width; ++x)
-            {
-                const UInt8* myPixel = &m_data[4 * (x + m_width*y)];
-                const UInt8* otherPixel = &other.m_data[4 * (x + m_width*y)];
-
-                if (myPixel[2] != otherPixel[2]) return false; //b
-                if (myPixel[1] != otherPixel[1]) return false; //g
-                if (myPixel[0] != otherPixel[0]) return false; //r
-            }
-        }
-
-        return true;
+        return m_width == other.m_width
+            && m_height == other.m_height
+            && m_data == other.m_data;
     }
 
     Bool Image::operator!=(const Image& other) const
@@ -70,16 +55,11 @@ namespace ramses_internal
         assert(m_width == other.m_width && m_height == other.m_height);
 
         std::vector<UInt8> resultData(m_width * m_height * 4u);
-        for (size_t p = 0u; p < m_width * m_height; ++p)
+        std::transform(m_data.cbegin(), m_data.cend(), other.m_data.cbegin(), resultData.begin(), [](UInt8 c1, UInt8 c2)
         {
-            const auto* p1 = &m_data[p * 4];
-            const auto* p2 = &other.m_data[p * 4];
-            auto* dst = &resultData[p * 4];
-
-            for (int i = 0; i < 3; ++i)
-                dst[i] = (p1[i] >= p2[i] ? p1[i] - p2[i] : p2[i] - p1[i]);
-            dst[3] = std::max<UInt8>(p1[3], p2[3]); // keep max alpha
-        }
+            // cast should not be needed but MSVC2017 deduces 'int' here resulting in compilation warning when assigning back to uint8
+            return static_cast<UInt8>(c1 >= c2 ? c1 - c2 : c2 - c1);
+        });
 
         return Image(m_width, m_height, std::move(resultData));
     }
@@ -137,21 +117,7 @@ namespace ramses_internal
 
     UInt64 Image::getSumOfPixelValues() const
     {
-        UInt64 result = 0;
-
-        for (UInt32 y = 0; y < m_height; ++y)
-        {
-            for (UInt32 x = 0; x < m_width; ++x)
-            {
-                const UInt8* myPixel = &m_data[4 * (x + m_width*y)];
-
-                result += myPixel[2]; //b
-                result += myPixel[1]; //g
-                result += myPixel[0]; //r
-            }
-        }
-
-        return result;
+        return std::accumulate(m_data.cbegin(), m_data.cend(), static_cast<UInt64>(0)); // explicit cast to make sure the accum value is of large enough type
     }
 
     UInt32 Image::getNumberOfNonBlackPixels(UInt8 maxDiffPerColorChannel) const
@@ -162,7 +128,8 @@ namespace ramses_internal
             const UInt8* pxData = &m_data[4 * px];
             if (pxData[0] > maxDiffPerColorChannel ||
                 pxData[1] > maxDiffPerColorChannel ||
-                pxData[2] > maxDiffPerColorChannel)
+                pxData[2] > maxDiffPerColorChannel ||
+                pxData[3] > maxDiffPerColorChannel)
             {
                 result++;
             }

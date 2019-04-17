@@ -46,15 +46,15 @@ namespace ramses_internal
     void SceneActionCollectionCreator::setSceneVersionTag(SceneVersionTag sceneVersionTag)
     {
         collection.beginWriteSceneAction(ESceneActionId_SetSceneVersionTag);
-        collection.write(sceneVersionTag);
+        collection.write(sceneVersionTag.getValue());
     }
 
-    void SceneActionCollectionCreator::setTransformComponent(ETransformPropertyType propertyChanged, TransformHandle node, Vector3 newValue)
+    void SceneActionCollectionCreator::setTransformComponent(ETransformPropertyType propertyChanged, TransformHandle node, const Vector3& newValue)
     {
         collection.beginWriteSceneAction(ESceneActionId_SetTransformComponent);
         collection.write(static_cast<UInt32>(propertyChanged));
         collection.write(node);
-        collection.write(newValue);
+        collection.write(newValue.data);
     }
 
     void SceneActionCollectionCreator::allocateRenderable(NodeHandle nodeHandle, RenderableHandle handle)
@@ -94,9 +94,7 @@ namespace ramses_internal
         collection.write(field);
         collection.write(elementCount);
         for (UInt32 i = 0; i < elementCount; ++i)
-        {
-            collection.write(data[i]);
-        }
+            collection.write(data[i].data);
     }
 
     void SceneActionCollectionCreator::setDataMatrix33fArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const Matrix33f* data)
@@ -106,9 +104,7 @@ namespace ramses_internal
         collection.write(field);
         collection.write(elementCount);
         for (UInt32 i = 0; i < elementCount; ++i)
-        {
-            collection.write(data[i]);
-        }
+            collection.write(data[i].data);
     }
 
     void SceneActionCollectionCreator::setDataMatrix44fArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const Matrix44f* data)
@@ -118,9 +114,7 @@ namespace ramses_internal
         collection.write(field);
         collection.write(elementCount);
         for (UInt32 i = 0; i < elementCount; ++i)
-        {
-            collection.write(data[i]);
-        }
+            collection.write(data[i].data);
     }
 
     void SceneActionCollectionCreator::setDataVector4fArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const Vector4* data)
@@ -130,9 +124,7 @@ namespace ramses_internal
         collection.write(field);
         collection.write(elementCount);
         for (UInt32 i = 0; i < elementCount; ++i)
-        {
-            collection.write(data[i]);
-        }
+            collection.write(data[i].data);
     }
 
     void SceneActionCollectionCreator::setDataVector4iArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const Vector4i* data)
@@ -142,9 +134,7 @@ namespace ramses_internal
         collection.write(field);
         collection.write(elementCount);
         for (UInt32 i = 0; i < elementCount; ++i)
-        {
-            collection.write(data[i]);
-        }
+            collection.write(data[i].data);
     }
 
     void SceneActionCollectionCreator::setDataVector3fArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const Vector3* data)
@@ -154,9 +144,7 @@ namespace ramses_internal
         collection.write(field);
         collection.write(elementCount);
         for (UInt32 i = 0; i < elementCount; ++i)
-        {
-            collection.write(data[i]);
-        }
+            collection.write(data[i].data);
     }
 
     void SceneActionCollectionCreator::setDataVector3iArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const Vector3i* data)
@@ -166,9 +154,7 @@ namespace ramses_internal
         collection.write(field);
         collection.write(elementCount);
         for (UInt32 i = 0; i < elementCount; ++i)
-        {
-            collection.write(data[i]);
-        }
+            collection.write(data[i].data);
     }
 
     void SceneActionCollectionCreator::setDataVector2fArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const Vector2* data)
@@ -178,9 +164,7 @@ namespace ramses_internal
         collection.write(field);
         collection.write(elementCount);
         for (UInt32 i = 0; i < elementCount; ++i)
-        {
-            collection.write(data[i]);
-        }
+            collection.write(data[i].data);
     }
 
     void SceneActionCollectionCreator::setDataVector2iArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const Vector2i* data)
@@ -190,9 +174,7 @@ namespace ramses_internal
         collection.write(field);
         collection.write(elementCount);
         for (UInt32 i = 0; i < elementCount; ++i)
-        {
-            collection.write(data[i]);
-        }
+            collection.write(data[i].data);
     }
 
     void SceneActionCollectionCreator::setDataFloatArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const Float* data)
@@ -200,11 +182,7 @@ namespace ramses_internal
         collection.beginWriteSceneAction(ESceneActionId_SetDataFloatArray);
         collection.write(handle);
         collection.write(field);
-        collection.write(elementCount);
-        for (UInt32 i = 0; i < elementCount; ++i)
-        {
-            collection.write(data[i]);
-        }
+        collection.write(data, elementCount);
     }
 
     void SceneActionCollectionCreator::setDataIntegerArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const Int32* data)
@@ -212,11 +190,7 @@ namespace ramses_internal
         collection.beginWriteSceneAction(ESceneActionId_SetDataIntegerArray);
         collection.write(handle);
         collection.write(field);
-        collection.write(elementCount);
-        for (UInt32 i = 0; i < elementCount; ++i)
-        {
-            collection.write(data[i]);
-        }
+        collection.write(data, elementCount);
     }
 
     void SceneActionCollectionCreator::releaseDataInstance(DataInstanceHandle handle)
@@ -331,16 +305,16 @@ namespace ramses_internal
     {
         collection.beginWriteSceneAction(ESceneActionId_SetStateStencilOps);
         collection.write(stateHandle);
-        collection.write(static_cast<uint8_t>(sfail));
-        collection.write(static_cast<uint8_t>(dpfail));
-        collection.write(static_cast<uint8_t>(dppass));
+        collection.write(sfail);
+        collection.write(dpfail);
+        collection.write(dppass);
     }
 
     void SceneActionCollectionCreator::setRenderStateStencilFunc(RenderStateHandle stateHandle, EStencilFunc func, UInt8 ref, UInt8 mask)
     {
         collection.beginWriteSceneAction(ESceneActionId_SetStateStencilFunc);
         collection.write(stateHandle);
-        collection.write(static_cast<uint8_t>(func));
+        collection.write(func);
         collection.write(ref);
         collection.write(mask);
     }
@@ -349,46 +323,46 @@ namespace ramses_internal
     {
         collection.beginWriteSceneAction(ESceneActionId_SetStateDepthWrite);
         collection.write(stateHandle);
-        collection.write(static_cast<uint8_t>(flag));
+        collection.write(flag);
     }
 
     void SceneActionCollectionCreator::setRenderStateDepthFunc(RenderStateHandle stateHandle, EDepthFunc func)
     {
         collection.beginWriteSceneAction(ESceneActionId_SetStateDepthFunc);
         collection.write(stateHandle);
-        collection.write(static_cast<uint8_t>(func));
+        collection.write(func);
     }
 
     void SceneActionCollectionCreator::setRenderStateCullMode(RenderStateHandle stateHandle, ECullMode cullMode)
     {
         collection.beginWriteSceneAction(ESceneActionId_SetStateCullMode);
         collection.write(stateHandle);
-        collection.write(static_cast<uint8_t>(cullMode));
+        collection.write(cullMode);
     }
 
     void SceneActionCollectionCreator::setRenderStateDrawMode(RenderStateHandle stateHandle, EDrawMode drawMode)
     {
         collection.beginWriteSceneAction(ESceneActionId_SetStateDrawMode);
         collection.write(stateHandle);
-        collection.write(static_cast<uint8_t>(drawMode));
+        collection.write(drawMode);
     }
 
     void SceneActionCollectionCreator::setRenderStateBlendOperations(RenderStateHandle stateHandle, EBlendOperation operationColor, EBlendOperation operationAlpha)
     {
         collection.beginWriteSceneAction(ESceneActionId_SetStateBlendOperations);
         collection.write(stateHandle);
-        collection.write(static_cast<uint8_t>(operationColor));
-        collection.write(static_cast<uint8_t>(operationAlpha));
+        collection.write(operationColor);
+        collection.write(operationAlpha);
     }
 
     void SceneActionCollectionCreator::setRenderStateBlendFactors(RenderStateHandle stateHandle, EBlendFactor srcColor, EBlendFactor destColor, EBlendFactor srcAlpha, EBlendFactor destAlpha)
     {
         collection.beginWriteSceneAction(ESceneActionId_SetStateBlendFactors);
         collection.write(stateHandle);
-        collection.write(static_cast<uint8_t>(srcColor));
-        collection.write(static_cast<uint8_t>(destColor));
-        collection.write(static_cast<uint8_t>(srcAlpha));
-        collection.write(static_cast<uint8_t>(destAlpha));
+        collection.write(srcColor);
+        collection.write(destColor);
+        collection.write(srcAlpha);
+        collection.write(destAlpha);
     }
 
     void SceneActionCollectionCreator::setRenderStateColorWriteMask(RenderStateHandle stateHandle, ColorWriteMask colorMask)
@@ -628,12 +602,12 @@ namespace ramses_internal
     {
         collection.beginWriteSceneAction(ESceneActionId_AllocateTextureSampler);
         collection.write(handle);
-        collection.write(static_cast<UInt32>(sampler.states.m_addressModeU));
-        collection.write(static_cast<UInt32>(sampler.states.m_addressModeV));
-        collection.write(static_cast<UInt32>(sampler.states.m_addressModeR));
-        collection.write(static_cast<UInt32>(sampler.states.m_samplingMode));
+        collection.write(sampler.states.m_addressModeU);
+        collection.write(sampler.states.m_addressModeV);
+        collection.write(sampler.states.m_addressModeR);
+        collection.write(sampler.states.m_samplingMode);
         collection.write(sampler.states.m_anisotropyLevel);
-        collection.write(static_cast<UInt8>(sampler.contentType));
+        collection.write(sampler.contentType);
         if (sampler.contentType == TextureSampler::ContentType::ClientTexture)
             collection.write(sampler.textureResource);
         else
@@ -731,7 +705,7 @@ namespace ramses_internal
     void SceneActionCollectionCreator::allocateTextureBuffer(ETextureFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle)
     {
         collection.beginWriteSceneAction(ESceneActionId_AllocateTextureBuffer);
-        collection.write(textureFormat);
+        collection.write(static_cast<UInt32>(textureFormat));
         collection.write(static_cast<UInt32>(mipMapDimensions.size()));
         for (const auto& size : mipMapDimensions)
         {
@@ -788,7 +762,7 @@ namespace ramses_internal
     {
         collection.beginWriteSceneAction(ESceneActionId_SetRenderPassClearColor);
         collection.write(handle);
-        collection.write(clearColor);
+        collection.write(clearColor.data);
     }
 
     void SceneActionCollectionCreator::setRenderPassClearFlag(RenderPassHandle handle, UInt32 clearFlag)
@@ -900,7 +874,7 @@ namespace ramses_internal
         collection.write(animSystemHandle);
         collection.write(splineHandle);
         collection.write(timeStamp);
-        collection.write(value);
+        collection.write(value.data);
     }
 
     void SceneActionCollectionCreator::animationSystemSetSplineKeyBasicVector3f(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector3& value)
@@ -909,7 +883,7 @@ namespace ramses_internal
         collection.write(animSystemHandle);
         collection.write(splineHandle);
         collection.write(timeStamp);
-        collection.write(value);
+        collection.write(value.data);
     }
 
     void SceneActionCollectionCreator::animationSystemSetSplineKeyBasicVector4f(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector4& value)
@@ -918,7 +892,7 @@ namespace ramses_internal
         collection.write(animSystemHandle);
         collection.write(splineHandle);
         collection.write(timeStamp);
-        collection.write(value);
+        collection.write(value.data);
     }
 
     void SceneActionCollectionCreator::animationSystemSetSplineKeyBasicVector2i(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector2i& value)
@@ -927,7 +901,7 @@ namespace ramses_internal
         collection.write(animSystemHandle);
         collection.write(splineHandle);
         collection.write(timeStamp);
-        collection.write(value);
+        collection.write(value.data);
     }
 
     void SceneActionCollectionCreator::animationSystemSetSplineKeyBasicVector3i(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector3i& value)
@@ -936,7 +910,7 @@ namespace ramses_internal
         collection.write(animSystemHandle);
         collection.write(splineHandle);
         collection.write(timeStamp);
-        collection.write(value);
+        collection.write(value.data);
     }
 
     void SceneActionCollectionCreator::animationSystemSetSplineKeyBasicVector4i(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector4i& value)
@@ -945,7 +919,7 @@ namespace ramses_internal
         collection.write(animSystemHandle);
         collection.write(splineHandle);
         collection.write(timeStamp);
-        collection.write(value);
+        collection.write(value.data);
     }
 
     void SceneActionCollectionCreator::animationSystemSetSplineKeyTangentsInt32(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, Int32 value, const Vector2& tanIn, const Vector2& tanOut)
@@ -955,8 +929,8 @@ namespace ramses_internal
         collection.write(splineHandle);
         collection.write(timeStamp);
         collection.write(value);
-        collection.write(tanIn);
-        collection.write(tanOut);
+        collection.write(tanIn.data);
+        collection.write(tanOut.data);
     }
 
     void SceneActionCollectionCreator::animationSystemSetSplineKeyTangentsFloat(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, Float value, const Vector2& tanIn, const Vector2& tanOut)
@@ -966,8 +940,8 @@ namespace ramses_internal
         collection.write(splineHandle);
         collection.write(timeStamp);
         collection.write(value);
-        collection.write(tanIn);
-        collection.write(tanOut);
+        collection.write(tanIn.data);
+        collection.write(tanOut.data);
     }
 
     void SceneActionCollectionCreator::animationSystemSetSplineKeyTangentsVector2f(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector2& value, const Vector2& tanIn, const Vector2& tanOut)
@@ -976,9 +950,9 @@ namespace ramses_internal
         collection.write(animSystemHandle);
         collection.write(splineHandle);
         collection.write(timeStamp);
-        collection.write(value);
-        collection.write(tanIn);
-        collection.write(tanOut);
+        collection.write(value.data);
+        collection.write(tanIn.data);
+        collection.write(tanOut.data);
     }
 
     void SceneActionCollectionCreator::animationSystemSetSplineKeyTangentsVector3f(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector3& value, const Vector2& tanIn, const Vector2& tanOut)
@@ -987,9 +961,9 @@ namespace ramses_internal
         collection.write(animSystemHandle);
         collection.write(splineHandle);
         collection.write(timeStamp);
-        collection.write(value);
-        collection.write(tanIn);
-        collection.write(tanOut);
+        collection.write(value.data);
+        collection.write(tanIn.data);
+        collection.write(tanOut.data);
     }
 
     void SceneActionCollectionCreator::animationSystemSetSplineKeyTangentsVector4f(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector4& value, const Vector2& tanIn, const Vector2& tanOut)
@@ -998,9 +972,9 @@ namespace ramses_internal
         collection.write(animSystemHandle);
         collection.write(splineHandle);
         collection.write(timeStamp);
-        collection.write(value);
-        collection.write(tanIn);
-        collection.write(tanOut);
+        collection.write(value.data);
+        collection.write(tanIn.data);
+        collection.write(tanOut.data);
     }
 
     void SceneActionCollectionCreator::animationSystemSetSplineKeyTangentsVector2i(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector2i& value, const Vector2& tanIn, const Vector2& tanOut)
@@ -1009,9 +983,9 @@ namespace ramses_internal
         collection.write(animSystemHandle);
         collection.write(splineHandle);
         collection.write(timeStamp);
-        collection.write(value);
-        collection.write(tanIn);
-        collection.write(tanOut);
+        collection.write(value.data);
+        collection.write(tanIn.data);
+        collection.write(tanOut.data);
     }
 
     void SceneActionCollectionCreator::animationSystemSetSplineKeyTangentsVector3i(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector3i& value, const Vector2& tanIn, const Vector2& tanOut)
@@ -1020,9 +994,9 @@ namespace ramses_internal
         collection.write(animSystemHandle);
         collection.write(splineHandle);
         collection.write(timeStamp);
-        collection.write(value);
-        collection.write(tanIn);
-        collection.write(tanOut);
+        collection.write(value.data);
+        collection.write(tanIn.data);
+        collection.write(tanOut.data);
     }
 
     void SceneActionCollectionCreator::animationSystemSetSplineKeyTangentsVector4i(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector4i& value, const Vector2& tanIn, const Vector2& tanOut)
@@ -1031,9 +1005,9 @@ namespace ramses_internal
         collection.write(animSystemHandle);
         collection.write(splineHandle);
         collection.write(timeStamp);
-        collection.write(value);
-        collection.write(tanIn);
-        collection.write(tanOut);
+        collection.write(value.data);
+        collection.write(tanIn.data);
+        collection.write(tanOut.data);
     }
 
     void SceneActionCollectionCreator::animationSystemRemoveSplineKey(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineKeyIndex keyIndex)
@@ -1141,22 +1115,22 @@ namespace ramses_internal
     {
         collection.beginWriteSceneAction(ESceneActionId_CompoundState);
         collection.write(handle);
-        collection.write(static_cast<uint8_t>(rs.blendFactorSrcColor));
-        collection.write(static_cast<uint8_t>(rs.blendFactorDstColor));
-        collection.write(static_cast<uint8_t>(rs.blendFactorSrcAlpha));
-        collection.write(static_cast<uint8_t>(rs.blendFactorDstAlpha));
-        collection.write(static_cast<uint8_t>(rs.blendOperationColor));
-        collection.write(static_cast<uint8_t>(rs.blendOperationAlpha));
-        collection.write(static_cast<uint8_t>(rs.cullMode));
-        collection.write(static_cast<uint8_t>(rs.drawMode));
-        collection.write(static_cast<uint8_t>(rs.depthWrite));
-        collection.write(static_cast<uint8_t>(rs.depthFunc));
-        collection.write(static_cast<uint8_t>(rs.stencilFunc));
+        collection.write(rs.blendFactorSrcColor);
+        collection.write(rs.blendFactorDstColor);
+        collection.write(rs.blendFactorSrcAlpha);
+        collection.write(rs.blendFactorDstAlpha);
+        collection.write(rs.blendOperationColor);
+        collection.write(rs.blendOperationAlpha);
+        collection.write(rs.cullMode);
+        collection.write(rs.drawMode);
+        collection.write(rs.depthWrite);
+        collection.write(rs.depthFunc);
+        collection.write(rs.stencilFunc);
         collection.write(rs.stencilRefValue);
         collection.write(rs.stencilMask);
-        collection.write(static_cast<uint8_t>(rs.stencilOpFail));
-        collection.write(static_cast<uint8_t>(rs.stencilOpDepthFail));
-        collection.write(static_cast<uint8_t>(rs.stencilOpDepthPass));
+        collection.write(rs.stencilOpFail);
+        collection.write(rs.stencilOpDepthFail);
+        collection.write(rs.stencilOpDepthPass);
         collection.write(rs.colorWriteMask);
     }
 

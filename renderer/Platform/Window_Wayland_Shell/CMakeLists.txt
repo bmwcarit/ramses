@@ -35,7 +35,7 @@ ACME_MODULE(
     #==========================================================================
     NAME                    Window_Wayland_Shell_Test
     TYPE                    TEST
-    TEST_SUFFIX             RNDSANDWICHTEST
+    TEST_SUFFIX             RNDSANDWICHTEST_SWRAST
 
     #==========================================================================
     # files of this module

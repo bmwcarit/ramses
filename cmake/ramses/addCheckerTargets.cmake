@@ -6,9 +6,10 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-IF (NOT PYTHONINTERP_FOUND)
-    FIND_PACKAGE(PythonInterp 2.7)
-ENDIF()
+# ensure python3 can be found
+unset(PYTHONINTERP_FOUND CACHE)
+unset(PYTHON_EXECUTABLE CACHE)
+FIND_PACKAGE(PythonInterp 3)
 
 IF (PYTHONINTERP_FOUND)
     ADD_CUSTOM_TARGET(CHECK_CODE_STYLE

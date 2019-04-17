@@ -31,7 +31,7 @@ namespace ramses_capu
         {
 
         public:
-            Thread(const String& name);
+            Thread(const std::string& name);
             using ramses_capu::posix::Thread::start;
             using ramses_capu::posix::Thread::join;
             using ramses_capu::posix::Thread::cancel;
@@ -43,7 +43,7 @@ namespace ramses_capu
         };
 
         inline
-        Thread::Thread(const String& name)
+        Thread::Thread(const std::string& name)
             : ramses_capu::posix::Thread(name)
         {
             pthread_attr_init(&mAttr);

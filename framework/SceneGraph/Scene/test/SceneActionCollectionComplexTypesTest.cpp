@@ -55,6 +55,7 @@ namespace ramses_internal
 
         const UInt32 bufferSize;
         const Vector<Byte> buffer;
+        const float staticBuffer[5] = { 1.f, 2.f, 3.f, 4.f, 5.f };
 
         const Float fval;
         const UInt32 uival;
@@ -185,6 +186,23 @@ namespace ramses_internal
         EXPECT_EQ(SceneActionCollection::MaxStringLength, readString.getLength());
     }
 
+    TEST_F(ASceneActionCollectionComplexTypes, WriteAndGetStaticArray)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_TestAction);
+        collection.write(staticBuffer);
+
+        SceneActionCollection::SceneActionReader reader(collection[0]);
+        float readBuffer[5] = { 0 };
+        reader.read(readBuffer);
+        EXPECT_TRUE(reader.isFullyRead());
+
+        const UInt32 expectedSize = sizeof(staticBuffer);
+        EXPECT_EQ(expectedSize, collection.collectionData().size());
+        EXPECT_EQ(expectedSize, collection[0].size());
+
+        EXPECT_EQ(0, PlatformMemory::Compare(staticBuffer, readBuffer, sizeof(staticBuffer)));
+    }
+
     TEST_F(ASceneActionCollectionComplexTypes, WriteAndGetArray)
     {
         collection.beginWriteSceneAction(ESceneActionId_TestAction);
@@ -193,7 +211,7 @@ namespace ramses_internal
         SceneActionCollection::SceneActionReader reader(collection[0]);
         const Byte* data = nullptr;
         UInt32 size;
-        reader.read(data, size);
+        reader.readWithoutCopy(data, size);
         EXPECT_TRUE(reader.isFullyRead());
 
         const UInt32 expectedSize = bufferSize + sizeof(UInt32);
@@ -212,7 +230,7 @@ namespace ramses_internal
         SceneActionCollection::SceneActionReader reader(collection[0]);
         const Byte* data = nullptr;
         UInt32 size;
-        reader.read(data, size);
+        reader.readWithoutCopy(data, size);
         EXPECT_TRUE(reader.isFullyRead());
 
         const UInt32 expectedSize = sizeof(UInt32);
@@ -261,9 +279,9 @@ namespace ramses_internal
         reader.read(readStr1);
         EXPECT_EQ(str, readStr1);
 
-        const Byte* data;
+        const Byte* data = nullptr;
         UInt32 size;
-        reader.read(data, size);
+        reader.readWithoutCopy(data, size);
 
         ASSERT_EQ(bufferSize, size);
         EXPECT_EQ(0, PlatformMemory::Compare(buffer.data(), data, size));

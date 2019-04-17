@@ -25,12 +25,12 @@ if __name__ == "__main__":
     targets = get_all_files(targets)
 
     if len(targets) == 0:
-        print """
+        print("""
 \t**** No input provided ****
 \tTakes a list of files/directories as input and performs specific style checking on all files/directories.
 
 \tGives warnings if no newline at end of file
-"""
+""")
         exit(0)
 
     for t in targets:

@@ -864,6 +864,26 @@ protected:
         return buffer;
     }
 
+    void doRenderLoop()
+    {
+        DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(DisplayHandle1);
+        EXPECT_CALL(*displayMock.m_displayController, getRenderBackend()).Times(AnyNumber());
+        EXPECT_CALL(*displayMock.m_displayController, getDisplayBuffer()).Times(AnyNumber());
+        EXPECT_CALL(*displayMock.m_displayController, clearBuffer(_, _)).Times(AnyNumber());
+        EXPECT_CALL(*displayMock.m_displayController, getEmbeddedCompositingManager()).Times(AnyNumber());
+        EXPECT_CALL(*displayMock.m_embeddedCompositingManager, notifyClients()).Times(AnyNumber());
+
+        EXPECT_CALL(platformFactoryMock.windowEventsPollingManagerMock, pollWindowsTillAnyCanRender());
+        EXPECT_CALL(*displayMock.m_displayController, handleWindowEvents());
+        EXPECT_CALL(*displayMock.m_displayController, canRenderNewFrame()).WillOnce(Return(true));
+        EXPECT_CALL(*displayMock.m_displayController, enableContext()).Times(AnyNumber());
+        EXPECT_CALL(*displayMock.m_displayController, executePostProcessing()).Times(AnyNumber());
+        EXPECT_CALL(*displayMock.m_displayController, swapBuffers()).Times(AnyNumber());
+        EXPECT_CALL(*displayMock.m_displayController, renderScene(_, _, _, _, _)).Times(AnyNumber());
+
+        renderer.doOneRenderLoop();
+    }
+
     static const DisplayHandle DisplayHandle1;
     static const DisplayHandle DisplayHandle2;
 

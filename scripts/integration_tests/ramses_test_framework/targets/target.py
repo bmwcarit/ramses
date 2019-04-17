@@ -246,29 +246,27 @@ class Target:
     def _take_and_transfer_screenshot(self, renderer, imageName, testClassName, testRunName,
                                       displayNumber, useSystemCompositorForScreenshot, minWidth, minHeight):
         splittedImageName = os.path.splitext(imageName)  # split into image name and extension
-        extendedImageNameBase = splittedImageName[0] + '_' + self.name  # extend name with target name to make unique
-        # Add wildcard, because the system compositor outputs multiple screenshots. One for each screen, that has the suffix "_<number>".
-        screenshotNamePattern = extendedImageNameBase + "*.*"
+        extendedImageName = splittedImageName[0] + '_' + self.name + '.png'  # extend name with target name to make unique
 
         #delete old screenshot files on target if existing
-        self._delete_files_on_target(screenshotNamePattern, self.tmpDir)
+        self._delete_files_on_target(extendedImageName, self.tmpDir)
 
         # trigger screenshot(s)
         if useSystemCompositorForScreenshot:
-            self._take_system_compositor_screenshot(extendedImageNameBase + ".png", renderer)
+            self._take_system_compositor_screenshot(extendedImageName, renderer)
         else:
-            self._take_renderer_screenshot(extendedImageNameBase + ".png", renderer, displayNumber)
+            self._take_renderer_screenshot(extendedImageName, renderer, displayNumber)
 
         resultDirForTest = helper.get_result_dir_subdirectory(self.resultDir, testClassName+"/"+testRunName)
 
-        self._transfer_screenshots(screenshotNamePattern, self.tmpDir, resultDirForTest)
+        self._transfer_screenshots(extendedImageName, self.tmpDir, resultDirForTest)
 
         # delete screenshots on target (disk space is precious these days)
-        self._delete_files_on_target(screenshotNamePattern, self.tmpDir)
+        self._delete_files_on_target(extendedImageName, self.tmpDir)
 
         #search for suitable screenshot
         suitableScreenshotFound = False
-        screenShotFiles = glob.glob(os.path.normcase(resultDirForTest + '/' + screenshotNamePattern))
+        screenShotFiles = glob.glob(os.path.normcase(resultDirForTest + '/' + extendedImageName))
         folderForUnusedPath = helper.get_result_dir_subdirectory(resultDirForTest, 'unused_screenshots')
 
         if len(screenShotFiles) == 0:
@@ -324,34 +322,23 @@ class Target:
 
     def _take_system_compositor_screenshot(self, screenshotName, renderer):
         log.info("Make screenshot of screen using system compositor")
-        renderer.send_ramsh_command("scScreenshot \"{0}\"".format(self.tmpDir+"/"+screenshotName), response_message="Screenshots of all outputs finished")
 
-        counter = 0
-        filesFound = []
-        allScreenshotsWritten = False
-        splittedScreenshotName = os.path.splitext(screenshotName)
-        screenshotNamePattern = self.tmpDir+'/'+splittedScreenshotName[0]+"*"+splittedScreenshotName[1]
+        targetScreenshotPath = self.tmpDir+"/"+screenshotName
+        # TODO(tobias) use explicit screenid instead of -1
+        screen_id = -1
+        renderer.send_ramsh_command("scScreenshot \"{}\" {}".format(targetScreenshotPath, screen_id), response_message="SystemCompositorController_Wayland_IVI::screenshot: Saved screenshot for screen")
 
-        while counter < SYSTEM_COMPOSITOR_SCREENSHOT_TIMEOUT and not allScreenshotsWritten:
-            if len(filesFound) == 0:
-                (filesFound, _, resultTest) = self.execute_on_target("find " + screenshotNamePattern)
-                if resultTest != 0:
-                    log.info("system_compositor_screenshot: file does not exist yet, counter {}, return code {}".format(counter, resultTest, filesFound))
-                    time.sleep(1)
-            else:
-                noFileInUse = True
-                for file in filesFound:
-                    (out, _, _) = self.execute_on_target("lsof " + file)
-                    if (len(out) != 0):
-                        noFileInUse = False
+        startTime = time.time()
+        while time.time() < startTime + SYSTEM_COMPOSITOR_SCREENSHOT_TIMEOUT:
+            (_, _, retCode) = self.execute_on_target("find " + targetScreenshotPath)
+            if retCode == 0:
+                log.info("system_compositor_screenshot: found {}".format(targetScreenshotPath))
+                return True
+            log.info("system_compositor_screenshot: find result {} since {}s ".format(retCode, time.time()-startTime))
+            time.sleep(0.1)
 
-                if noFileInUse:
-                    allScreenshotsWritten = True
-                else:
-                    log.info("system_compositor_screenshot: lsof result {} counter {} ".format(out, counter))
-                    time.sleep(1)
-
-            counter = counter + 1
+        log.warning("system_compositor_screenshot: failed to take screenshot {}".format(screenshotName))
+        return False
 
     def _find_reference_image(self, imageName):
         result = None

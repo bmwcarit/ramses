@@ -18,6 +18,7 @@
 
 namespace ramses_internal
 {
+    class Matrix22f;
     class Matrix33f;
     class Matrix44f;
 
@@ -52,12 +53,10 @@ namespace ramses_internal
         StringOutputStream& operator<<(const UInt16 value);
         StringOutputStream& operator<<(const Int16 value);
         StringOutputStream& operator<<(const Guid& guid);
+        StringOutputStream& operator<<(const Matrix22f& value);
         StringOutputStream& operator<<(const Matrix33f& value);
         StringOutputStream& operator<<(const Matrix44f& value);
         StringOutputStream& operator<<(const ResourceContentHash& value);
-
-        template <typename MatrixType, UInt32 numberOfElements>
-        StringOutputStream& outputMatrix(const MatrixType& matrix);
 
         void clear();
 
@@ -74,6 +73,8 @@ namespace ramses_internal
         void setHexadecimalOutputFormat(EHexadecimalType hexFormat);
 
     private:
+        template <typename MatrixType>
+        StringOutputStream& outputMatrix(const MatrixType& matrix);
         StringOutputStream& write(const char* data, uint32_t size);
 
         String m_buffer;
@@ -330,7 +331,7 @@ namespace ramses_internal
     {
         const UInt writeIdx = m_buffer.getLength();
         m_buffer.resize(m_buffer.getLength() + size);
-        ramses_capu::Memory::Copy(m_buffer.data() + writeIdx, data, size);
+        ramses_capu::Memory::Copy(&m_buffer[writeIdx], data, size);
         return *this;
     }
 

@@ -24,7 +24,7 @@ namespace ramses_internal
     public:
         virtual ~IResourceUploader() {}
 
-        virtual DeviceResourceHandle uploadResource(IRenderBackend& renderBackend, ManagedResource resourceObject) = 0;
+        virtual DeviceResourceHandle uploadResource(IRenderBackend& renderBackend, ManagedResource resourceObject, UInt32& outVRAMSize) = 0;
         virtual void                 unloadResource(IRenderBackend& renderBackend, EResourceType type, ResourceContentHash hash, DeviceResourceHandle handle) = 0;
     };
 }

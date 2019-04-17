@@ -11,6 +11,6 @@
 	path = external/glslang
 	branch = refs/heads/7.8.2853
 [submodule "external/freetype"]
-	url = git://git.sv.nongnu.org/freetype/freetype2.git
+	url = https://git.sv.nongnu.org/r/freetype/freetype2.git
 	path = external/freetype
 	branch = refs/heads/VER-2-6
