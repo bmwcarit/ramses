@@ -53,6 +53,7 @@ namespace ramses_internal
             m_shellSurface = wl_shell_get_shell_surface(m_shellRegistry, m_wlContext.surface);
             wl_shell_surface_set_title(m_shellSurface, m_windowName.c_str());
             wl_shell_surface_set_toplevel(m_shellSurface);
+            registerSurfaceListener();
         }
         else
         {
@@ -69,5 +70,29 @@ namespace ramses_internal
         {
             wl_shell_surface_set_title(m_shellSurface, m_windowName.c_str());
         }
+    }
+
+    void Window_Wayland_Shell::configureCallback(void* userData, wl_shell_surface* surface, uint32_t edges, int32_t width, int32_t height)
+    {
+        Window_Wayland_Shell* window = static_cast<Window_Wayland_Shell*>(userData);
+        (window->m_eventHandler).onResize(width, height);
+    }
+
+    void Window_Wayland_Shell::pingCallback(void* userData, wl_shell_surface* surface, uint32_t serial)
+    {
+        UNUSED(userData);
+        wl_shell_surface_pong(surface, serial);
+    }
+
+    void Window_Wayland_Shell::popupDoneCallback(void* userData, wl_shell_surface* surface)
+    {
+        UNUSED(userData);
+        UNUSED(surface);
+        LOG_DEBUG(CONTEXT_RENDERER, "Window_Wayland::popupDoneCallback called");
+    }
+
+    void Window_Wayland_Shell::registerSurfaceListener()
+    {
+        wl_shell_surface_add_listener(m_shellSurface, &m_shellSurfaceListener, this);
     }
 }

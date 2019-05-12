@@ -410,6 +410,7 @@ namespace ramses_internal
                 {
                     m_width = static_cast<UInt32>(event.xconfigure.width);
                     m_height = static_cast<UInt32>(event.xconfigure.height);
+                    m_eventHandler.onResize(m_width, m_height);
                 }
             }
                 break;

@@ -60,6 +60,18 @@ namespace ramses_internal
             LOG_ERROR(CONTEXT_RENDERER, "Window_Wayland_IVI::createSurface Failed to create ivi-application surface!");
             return false;
         }
+        registerSurfaceListener();
         return true;
+    }
+
+    void Window_Wayland_IVI::configureCallback(void* userData, ivi_surface* surface, int32_t width, int32_t height)
+    {
+        Window_Wayland_IVI* window = static_cast<Window_Wayland_IVI*>(userData);
+        (window->m_eventHandler).onResize(width, height);
+    }
+
+    void Window_Wayland_IVI::registerSurfaceListener()
+    {
+        ivi_surface_add_listener(m_iviApplicationSurface, &m_IVISurfaceListener, this);
     }
 }
