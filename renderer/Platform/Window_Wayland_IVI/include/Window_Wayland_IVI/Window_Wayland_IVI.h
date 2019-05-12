@@ -10,6 +10,7 @@
 #define RAMSES_WINDOW_WAYLAND_IVI_H
 
 #include "Window_Wayland/Window_Wayland.h"
+#include "ivi-application-client-protocol.h"
 
 struct ivi_application;
 struct ivi_surface;
@@ -26,9 +27,21 @@ namespace ramses_internal
 
         virtual void registryGlobalCreated(wl_registry* wl_registry, uint32_t name, const char* interface, uint32_t version) override;
         virtual bool createSurface() override;
+        void registerSurfaceListener();
+
+        static void configureCallback(void* userData, ivi_surface* surface, int32_t width, int32_t height);
 
         ivi_application* m_iviApplicationRegistry = nullptr;
         ivi_surface*     m_iviApplicationSurface  = nullptr;
+
+        const struct IVI_Surface_Listener : public ivi_surface_listener
+        {
+            IVI_Surface_Listener()
+            {
+                configure = configureCallback;
+            }
+
+        } m_IVISurfaceListener;
     };
 }
 

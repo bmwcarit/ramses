@@ -25,6 +25,7 @@ namespace ramses_internal
         virtual void onKeyEvent(EKeyEventType event, UInt32 modifiers, EKeyCode keyCode) = 0;
         virtual void onMouseEvent(EMouseEventType event, Int32 posX, Int32 posY) = 0;
         virtual void onClose() = 0;
+        virtual void onResize(Int32 width, Int32 height) = 0;
     };
 }
 
