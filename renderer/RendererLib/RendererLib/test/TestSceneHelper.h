@@ -96,7 +96,8 @@ namespace ramses_internal
         RenderPassHandle createRenderPassWithCamera()
         {
             const RenderPassHandle pass = m_sceneAllocator.allocateRenderPass();
-            const CameraHandle camera = m_sceneAllocator.allocateCamera(ECameraProjectionType_Renderer, m_sceneAllocator.allocateNode());
+            const auto dataLayout = m_sceneAllocator.allocateDataLayout({{EDataType_Vector2I}, {EDataType_Vector2I}});
+            const CameraHandle camera = m_sceneAllocator.allocateCamera(ECameraProjectionType_Renderer, m_sceneAllocator.allocateNode(), m_sceneAllocator.allocateDataInstance(dataLayout));
             m_scene.setRenderPassCamera(pass, camera);
             return pass;
         }

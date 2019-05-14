@@ -39,7 +39,7 @@ namespace ramses_internal
             SceneId sceneId;
             StreamTextureHandle streamTextureHandle;
         };
-        typedef Vector<StreamSourceSceneUsageEntry> StreamSourceSceneUsageEntryVector;
+        typedef std::vector<StreamSourceSceneUsageEntry> StreamSourceSceneUsageEntryVector;
 
         struct StreamTextureSourceInfo
         {

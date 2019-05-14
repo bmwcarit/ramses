@@ -289,7 +289,9 @@ TEST_F(ARendererSceneUpdater, renderOncePassesAreRetriggeredWhenSceneMapped)
 
     auto& stageScene = *stagingScene[0];
     const RenderPassHandle pass = stageScene.allocateRenderPass();
-    stageScene.setRenderPassCamera(pass, stageScene.allocateCamera(ECameraProjectionType_Orthographic, stageScene.allocateNode()));
+    const auto dataLayout = stageScene.allocateDataLayout({ {EDataType_Vector2I}, {EDataType_Vector2I} });
+    const CameraHandle camera = stageScene.allocateCamera(ECameraProjectionType_Orthographic, stageScene.allocateNode(), stageScene.allocateDataInstance(dataLayout));
+    stageScene.setRenderPassCamera(pass, camera);
     stageScene.setRenderPassRenderOnce(pass, true);
     performFlush();
 

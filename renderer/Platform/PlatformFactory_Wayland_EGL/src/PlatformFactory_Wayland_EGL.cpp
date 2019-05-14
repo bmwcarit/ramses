@@ -42,13 +42,13 @@ namespace ramses_internal
         Window_Wayland* platformWindow = getPlatformWindow<Window_Wayland>(window);
         assert(0 != platformWindow);
 
-        Vector<EGLint> contextAttributes;
+        std::vector<EGLint> contextAttributes;
         getContextAttributes(contextAttributes);
-        Vector<EGLint> surfaceAttributes;
+        std::vector<EGLint> surfaceAttributes;
         getSurfaceAttributes(platformWindow->getMSAASampleCount(), surfaceAttributes);
 
         // if we do offscreen rendering, single buffer should be enough
-        Vector<EGLint> windowSurfaceAttributes;
+        std::vector<EGLint> windowSurfaceAttributes;
         if(window.isOffscreen())
         {
             windowSurfaceAttributes.push_back(EGL_RENDER_BUFFER);

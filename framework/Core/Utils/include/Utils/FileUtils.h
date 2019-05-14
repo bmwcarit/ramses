@@ -49,7 +49,7 @@ namespace ramses_internal
         * @param result A vector which the resulting bytes will be appended to.
         * @return The return value.
         */
-        static EStatus ReadAllBytes(File& file, Vector<Byte>& result);
+        static EStatus ReadAllBytes(File& file, std::vector<Byte>& result);
     };
 
     inline String FileUtils::ReadAllText(File& file)
@@ -70,7 +70,7 @@ namespace ramses_internal
         return static_cast<EStatus>(ramses_capu::FileUtils::writeAllBytes(capuFile, buffer, numberOfBytesToWrite));
     }
 
-    inline EStatus FileUtils::ReadAllBytes(File& file, Vector<Byte>& result)
+    inline EStatus FileUtils::ReadAllBytes(File& file, std::vector<Byte>& result)
     {
         ramses_capu::File capuFile = ramses_capu::File(file.getPath().stdRef());
         ramses_capu::uint_t fileSize;

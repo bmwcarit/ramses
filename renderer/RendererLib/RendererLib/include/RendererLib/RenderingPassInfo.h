@@ -55,7 +55,7 @@ namespace ramses_internal
         MemoryHandle            m_handle;
     };
 
-    typedef Vector<RenderingPassInfo> RenderingPassInfoVector;
+    typedef std::vector<RenderingPassInfo> RenderingPassInfoVector;
 }
 
 #endif

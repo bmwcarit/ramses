@@ -25,8 +25,8 @@ int main(int argc, const char *argv[])
     ArgumentUInt32 repeatTestCount(parser, "rc", "repeatCount", 1);
     ArgumentUInt32 waylandIviLayerId(parser, "lid", "waylandIviLayerId", 3);
 
-    ramses_internal::Vector<ramses_internal::String>  filterInTestStrings;
-    ramses_internal::Vector<ramses_internal::String>  filterOutTestStrings;
+    std::vector<ramses_internal::String>  filterInTestStrings;
+    std::vector<ramses_internal::String>  filterOutTestStrings;
     StringUtils::Tokenize(filterInTest, filterInTestStrings, ':');
     StringUtils::Tokenize(filterOutTest, filterOutTestStrings, ':');
 

@@ -24,11 +24,11 @@ namespace ramses_internal
 
         for (const auto& addedResource : addedResources)
         {
-            const auto it = unneeded.find(addedResource);
+            const auto it = find_c(unneeded, addedResource);
             if (it == unneeded.end())
             {
                 // add as needed resource only if not already unneeded
-                assert(!needed.contains(addedResource));
+                assert(!contains_c(needed, addedResource));
                 needed.push_back(addedResource);
                 // resource is newly needed
                 newlyNeeded.push_back(addedResource);
@@ -51,11 +51,11 @@ namespace ramses_internal
 
         for (const auto& removedResource : removedResources)
         {
-            const auto it = needed.find(removedResource);
+            const auto it = find_c(needed, removedResource);
             if (it == needed.end())
             {
                 // add as unneeded resource only if not already needed
-                assert(!unneeded.contains(removedResource));
+                assert(!contains_c(unneeded, removedResource));
                 unneeded.push_back(removedResource);
             }
             else
@@ -89,7 +89,7 @@ namespace ramses_internal
     {
         for (const auto& res : newlyUnneededPreviouslyNeeded)
         {
-            if (!pendingUnneeded.contains(res))
+            if (!contains_c(pendingUnneeded, res))
             {
                 pendingUnneeded.push_back(res);
             }
@@ -100,7 +100,7 @@ namespace ramses_internal
     {
         for (const auto& res : A)
         {
-            if (B.contains(res))
+            if (contains_c(B, res))
             {
                 return true;
             }
@@ -119,9 +119,9 @@ namespace ramses_internal
 
         for (const auto& res : unneeded)
         {
-            assert(!needed.contains(res));
-            assert(inUse.contains(res));
-            inUse.erase(inUse.find(res));
+            assert(!contains_c(needed, res));
+            assert(contains_c(inUse, res));
+            inUse.erase(find_c(inUse, res));
         }
 
         inUse.insert(inUse.end(), needed.begin(), needed.end());

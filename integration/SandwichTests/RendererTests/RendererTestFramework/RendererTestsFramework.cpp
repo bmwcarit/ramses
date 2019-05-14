@@ -174,7 +174,7 @@ void RendererTestsFramework::destroyOffscreenBuffer(uint32_t testDisplayIdx, ram
     const ramses::displayId_t displayId = m_displays[testDisplayIdx].displayId;
     OffscreenBufferVector& offscreenBuffers = m_displays[testDisplayIdx].offscreenBuffers;
 
-    OffscreenBufferVector::Iterator bufferIter = offscreenBuffers.find(buffer);
+    OffscreenBufferVector::iterator bufferIter = ramses_internal::find_c(offscreenBuffers, buffer);
     assert(bufferIter != offscreenBuffers.end());
     offscreenBuffers.erase(bufferIter);
 
@@ -280,7 +280,7 @@ bool RendererTestsFramework::compareScreenshotInternal(
 
 bool RendererTestsFramework::NameMatchesFilter(const ramses_internal::String& name, const ramses_internal::StringVector& filters)
 {
-    if (filters.contains("*"))
+    if (contains_c(filters, "*"))
     {
         return true;
     }
@@ -354,7 +354,7 @@ void RendererTestsFramework::sortTestCases()
 
     RenderingTestCases unsortedCases;
     unsortedCases.swap(m_testCases);
-    ramses_internal::Vector<bool> processedFlags(numCases, false);
+    std::vector<bool> processedFlags(numCases, false);
 
     while (m_testCases.size() != numCases)
     {

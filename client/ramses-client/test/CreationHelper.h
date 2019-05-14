@@ -118,11 +118,11 @@ namespace ramses
         AnimationSystem* m_animationSystem;
         RamsesClient* m_ramsesClient;
 
-        typedef ramses_internal::Pair<RamsesClient*, ramses::RamsesFramework*> ClientAndFramework;
-        typedef ramses_internal::Vector<ClientAndFramework> RamsesClientAndFrameworkComponentVector;
+        typedef std::pair<RamsesClient*, ramses::RamsesFramework*> ClientAndFramework;
+        typedef std::vector<ClientAndFramework> RamsesClientAndFrameworkComponentVector;
         RamsesClientAndFrameworkComponentVector m_allocatedClientAndFrameworkComponents;
-        ramses_internal::Vector<SceneObject*> m_additionalAllocatedSceneObjects;
-        ramses_internal::Vector<AnimationObject*> m_additionalAllocatedAnimationSystemObjects;
+        std::vector<SceneObject*> m_additionalAllocatedSceneObjects;
+        std::vector<AnimationObject*> m_additionalAllocatedAnimationSystemObjects;
     };
 
     template <> RamsesClient*              CreationHelper::createObjectOfType<RamsesClient             >(const char* name);

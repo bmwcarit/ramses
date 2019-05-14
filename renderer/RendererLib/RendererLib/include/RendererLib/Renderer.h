@@ -89,6 +89,7 @@ namespace ramses_internal
         void systemCompositorSetIviSurfaceOpacity(WaylandIviSurfaceId surfaceId, Float opacity) const;
         void systemCompositorSetIviSurfaceDestRectangle(WaylandIviSurfaceId surfaceId, Int32 x, Int32 y, Int32 width, Int32 height) const;
         void systemCompositorScreenshot(const String& fileName, int32_t screenIviId) const;
+        void systemCompositorSetIviLayerVisibility(WaylandIviLayerId layerId, Bool visibility) const;
         Bool systemCompositorAddIviSurfaceToIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) const;
         void systemCompositorRemoveIviSurfaceFromIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) const;
         void systemCompositorDestroyIviSurface(WaylandIviSurfaceId surfaceId) const;
@@ -115,7 +116,7 @@ namespace ramses_internal
         void onSceneWasRendered(const RendererCachedScene& scene);
 
         static void ActivateDisplayContext(DisplayHandle displayToActivate, DisplayHandle& activeDisplay, IDisplayController& dispController);
-        static void ReorderDisplaysToStartWith(Vector<DisplayHandle>& displays, DisplayHandle displayToStartWith);
+        static void ReorderDisplaysToStartWith(std::vector<DisplayHandle>& displays, DisplayHandle displayToStartWith);
 
         struct DisplayInfo
         {
@@ -151,9 +152,9 @@ namespace ramses_internal
         FrameProfilerMap m_frameProfileRenderer;
 
         // temporary containers kept to avoid re-allocations
-        Vector<DisplayHandle> m_tempDisplaysToRender; // used in RendererLogger - adapt if changing behavior
-        Vector<DisplayHandle> m_tempDisplaysToSwapBuffers;
-        Vector<SceneId> m_tempScenesRendered;
+        std::vector<DisplayHandle> m_tempDisplaysToRender; // used in RendererLogger - adapt if changing behavior
+        std::vector<DisplayHandle> m_tempDisplaysToSwapBuffers;
+        std::vector<SceneId> m_tempScenesRendered;
     };
 }
 

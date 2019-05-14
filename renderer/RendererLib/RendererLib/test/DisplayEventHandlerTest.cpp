@@ -27,7 +27,7 @@ protected:
 
     const RendererEvent getRendererEvent(UInt32 index) const
     {
-        Vector<RendererEvent> events;
+        std::vector<RendererEvent> events;
         m_eventCollector.getEvents(events);
         if (events.size() <= index)
         {

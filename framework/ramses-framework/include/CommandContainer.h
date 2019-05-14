@@ -11,6 +11,7 @@
 
 #include "Collections/Vector.h"
 #include <cstdint>
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -97,7 +98,7 @@ namespace ramses_internal
             COMMAND_BASE_TYPE* m_commandData;
         };
 
-        Vector<Command> m_commands;
+        std::vector<Command> m_commands;
     };
 }
 

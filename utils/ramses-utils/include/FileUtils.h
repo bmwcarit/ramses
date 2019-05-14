@@ -24,7 +24,7 @@ public:
     static void WriteTextToFile(const ramses_internal::String& text, const char* filePath);
     static void WriteHashToFile(ramses_internal::ResourceContentHash hash, const char* filePath);
 
-    static bool ReadFileLines(const char* filePath, ramses_internal::Vector<ramses_internal::String>& lines);
+    static bool ReadFileLines(const char* filePath, std::vector<ramses_internal::String>& lines);
     static bool ReadFileContentsToString(const char* filePath, ramses_internal::String& contents);
 };
 

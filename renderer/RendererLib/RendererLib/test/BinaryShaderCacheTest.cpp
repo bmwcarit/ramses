@@ -69,7 +69,7 @@ public:
         file.open(EFileMode_ReadOnlyBinary);
         UInt fileSize(0);
         file.getSizeInBytes(fileSize);
-        ramses_internal::Vector<uint8_t> data(fileSize);
+        std::vector<uint8_t> data(fileSize);
 
         UInt numReadBytes;
         file.read(reinterpret_cast<ramses_internal::Char*>(data.data()), fileSize, numReadBytes);

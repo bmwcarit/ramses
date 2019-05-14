@@ -121,7 +121,7 @@ IF("${RENDERER_PLATFORM}" STREQUAL "WINDOWS")
     # add additionally needed libs (at the end because of mingw case)
     list(APPEND ramses-sdk_EXTRA_LIBRARIES opengl32.lib psapi)
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        list(APPEND ramses-sdk_EXTRA_LIBRARIES ws2_32)
+        list(APPEND ramses-sdk_EXTRA_LIBRARIES ws2_32 wsock32)
     endif()
 
 ELSEIF("${RENDERER_PLATFORM}" STREQUAL "LINUX-X11")

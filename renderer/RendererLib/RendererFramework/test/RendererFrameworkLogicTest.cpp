@@ -44,7 +44,7 @@ namespace ramses_internal
             rendererCommandBuffer.clear();
         }
 
-        SceneActionCollection createFakeSceneActionCollectionFromTypes(const Vector<ESceneActionId>& types)
+        SceneActionCollection createFakeSceneActionCollectionFromTypes(const std::vector<ESceneActionId>& types)
         {
             SceneActionCollection collection;
             for (auto t : types)

@@ -116,6 +116,6 @@ private:
     uint64_t m_largestAllocationInBytes;
 };
 
-typedef ramses_internal::Vector<PerformanceTestBase*> PerformanceTestBaseVector;
+typedef std::vector<PerformanceTestBase*> PerformanceTestBaseVector;
 
 #endif

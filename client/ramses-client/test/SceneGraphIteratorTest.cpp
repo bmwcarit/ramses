@@ -20,7 +20,7 @@ namespace ramses
     {
     protected:
 
-        AssertionResult checkOrder(SceneGraphIterator& iterator, const ramses_internal::Vector<Node*>& expectedOrder) const
+        AssertionResult checkOrder(SceneGraphIterator& iterator, const std::vector<Node*>& expectedOrder) const
         {
             for (const auto expectedNode : expectedOrder)
             {
@@ -45,7 +45,7 @@ namespace ramses
     {
         SceneGraphIterator iterator(m_root, ETreeTraversalStyle_DepthFirst);
 
-        ramses_internal::Vector<Node*> expectedOrder;
+        std::vector<Node*> expectedOrder;
         expectedOrder.push_back(&m_root);
         expectedOrder.push_back(&m_vis1);
         expectedOrder.push_back(&m_mesh1a);
@@ -61,7 +61,7 @@ namespace ramses
     {
         SceneGraphIterator iterator(m_root, ETreeTraversalStyle_BreadthFirst);
 
-        ramses_internal::Vector<Node*> expectedOrder;
+        std::vector<Node*> expectedOrder;
         expectedOrder.push_back(&m_root);
         expectedOrder.push_back(&m_vis1);
         expectedOrder.push_back(&m_vis2);

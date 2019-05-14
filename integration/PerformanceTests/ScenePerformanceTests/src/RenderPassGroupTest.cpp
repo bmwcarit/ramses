@@ -140,7 +140,7 @@ void RenderPassGroupTest::assignGroupsAndPasses()
 
     if (m_useNestedRenderGroups)
     {
-        ramses_internal::Vector<ramses::RenderGroup*> unassigned(m_groups);
+        std::vector<ramses::RenderGroup*> unassigned(m_groups);
 
         ramses::RenderGroup& parent = *unassigned.back();
         unassigned.pop_back();
@@ -161,7 +161,7 @@ void RenderPassGroupTest::assignGroupsAndPasses()
     }
 }
 
-void RenderPassGroupTest::assignNestedGroup(ramses::RenderGroup& parent, ramses_internal::Vector<ramses::RenderGroup*>& unassigned)
+void RenderPassGroupTest::assignNestedGroup(ramses::RenderGroup& parent, std::vector<ramses::RenderGroup*>& unassigned)
 {
     ramses::RenderGroup* currentGroup;
 

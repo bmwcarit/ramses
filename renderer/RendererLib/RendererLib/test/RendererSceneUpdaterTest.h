@@ -334,6 +334,10 @@ protected:
         const RenderPassHandle renderPassHandle(2u);
         const RenderGroupHandle renderGroupHandle(3u);
         const CameraHandle cameraHandle(4u);
+        const DataLayoutHandle uniformDataLayoutHandle(0u);
+        const DataLayoutHandle geometryDataLayoutHandle(1u);
+        const DataLayoutHandle camDataLayoutHandle(2u);
+        const DataInstanceHandle camDataHandle(2u);
 
         IScene& scene = *stagingScene[sceneIndex];
 
@@ -341,15 +345,13 @@ protected:
         scene.allocateRenderGroup(0u, 0u, renderGroupHandle);
         scene.allocateNode(0u, renderableNode);
         scene.allocateRenderable(renderableNode, renderableHandle);
-        scene.allocateCamera(ECameraProjectionType_Perspective, scene.allocateNode(), cameraHandle);
+        scene.allocateDataLayout({ {EDataType_Vector2I}, {EDataType_Vector2I} }, camDataLayoutHandle);
+        scene.allocateCamera(ECameraProjectionType_Perspective, scene.allocateNode(), scene.allocateDataInstance(camDataLayoutHandle, camDataHandle), cameraHandle);
 
         scene.addRenderableToRenderGroup(renderGroupHandle, renderableHandle, 0u);
         scene.addRenderGroupToRenderPass(renderPassHandle, renderGroupHandle, 0u);
         scene.setRenderPassCamera(renderPassHandle, cameraHandle);
         scene.setRenderPassEnabled(renderPassHandle, true);
-
-        const DataLayoutHandle uniformDataLayoutHandle(0u);
-        const DataLayoutHandle geometryDataLayoutHandle(1u);
 
         DataFieldInfoVector uniformDataFields;
         if (withTextureSampler)
@@ -588,7 +590,7 @@ protected:
         performFlush();
     }
 
-    ramses_internal::Pair<DataSlotId, DataSlotId> createDataSlots(DataInstanceHandle& dataRefConsumer, float providedValue, DataInstanceHandle* dataRefProviderOut = nullptr, UInt32 providerSceneIdx = 0u, UInt32 consumerSceneIdx = 1u)
+    std::pair<DataSlotId, DataSlotId> createDataSlots(DataInstanceHandle& dataRefConsumer, float providedValue, DataInstanceHandle* dataRefProviderOut = nullptr, UInt32 providerSceneIdx = 0u, UInt32 consumerSceneIdx = 1u)
     {
         DataInstanceHandle dataRefProvider;
 
@@ -630,7 +632,7 @@ protected:
         scene.setDataSingleFloat(dataRefProvider, DataFieldHandle(0u), newProvidedValue);
     }
 
-    ramses_internal::Pair<DataSlotId, DataSlotId> createTextureSlots(DataSlotHandle* providerDataSlotHandleOut = nullptr, UInt32 providerSceneIdx = 0u, UInt32 consumerSceneIdx = 1u)
+    std::pair<DataSlotId, DataSlotId> createTextureSlots(DataSlotHandle* providerDataSlotHandleOut = nullptr, UInt32 providerSceneIdx = 0u, UInt32 consumerSceneIdx = 1u)
     {
         IScene& scene1 = *stagingScene[providerSceneIdx];
         IScene& scene2 = *stagingScene[consumerSceneIdx];
@@ -684,7 +686,7 @@ protected:
         scene.setDataSlotTexture(providerDataSlot, newProvidedValue);
     }
 
-    ramses_internal::Pair<DataSlotId, DataSlotId> createTransformationSlots(TransformHandle* providerTransformHandleOut = nullptr, UInt32 providerSceneIdx = 0u, UInt32 consumerSceneIdx = 1u)
+    std::pair<DataSlotId, DataSlotId> createTransformationSlots(TransformHandle* providerTransformHandleOut = nullptr, UInt32 providerSceneIdx = 0u, UInt32 consumerSceneIdx = 1u)
     {
         IScene& scene1 = *stagingScene[providerSceneIdx];
         IScene& scene2 = *stagingScene[consumerSceneIdx];

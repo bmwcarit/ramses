@@ -5,6 +5,7 @@
 #  License, v. 2.0. If a copy of the MPL was not distributed with this
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
+
 from tests.system_compositor_controller_base import system_compositor_controller_base
 
 # Tests if the system compositor controller can make a surface visible.

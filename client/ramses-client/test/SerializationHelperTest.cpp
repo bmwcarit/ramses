@@ -121,10 +121,10 @@ namespace ramses
         T m_deserializationContainer;
     };
 
-    typedef ::testing::Types< ramses_internal::Vector<RamsesObject*>, ramses_internal::HashSet<RamsesObject*> > ContainerObjectTypes;
+    typedef ::testing::Types< std::vector<RamsesObject*>, ramses_internal::HashSet<RamsesObject*> > ContainerObjectTypes;
     TYPED_TEST_CASE(SerializationHelperObjectTest, ContainerObjectTypes);
 
-    typedef ::testing::Types< ramses_internal::Vector<RamsesObjectImpl*>, ramses_internal::HashSet<RamsesObjectImpl*> > ContainerImplTypes;
+    typedef ::testing::Types< std::vector<RamsesObjectImpl*>, ramses_internal::HashSet<RamsesObjectImpl*> > ContainerImplTypes;
     TYPED_TEST_CASE(SerializationHelperImplTest, ContainerImplTypes);
 
     TYPED_TEST(SerializationHelperObjectTest, CanGetCount)

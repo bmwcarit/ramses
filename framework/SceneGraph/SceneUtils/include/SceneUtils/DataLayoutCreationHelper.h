@@ -20,7 +20,7 @@ namespace ramses_internal
 {
     class IScene;
 
-    typedef Vector<UInt32> InputIndexVector;
+    typedef std::vector<UInt32> InputIndexVector;
 
     class DataLayoutCreationHelper
     {

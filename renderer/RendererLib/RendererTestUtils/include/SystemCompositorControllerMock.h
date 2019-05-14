@@ -33,6 +33,7 @@ namespace ramses_internal
         MOCK_METHOD2(removeSurfaceFromLayer, Bool(WaylandIviSurfaceId, WaylandIviLayerId));
         MOCK_METHOD1(destroySurface, Bool(WaylandIviSurfaceId));
         MOCK_METHOD1(createLayer, Bool(WaylandIviLayerId));
+        MOCK_METHOD2(setLayerVisibility, Bool(WaylandIviLayerId, Bool));
         MOCK_CONST_METHOD0(listIVISurfaces, void());
     };
 

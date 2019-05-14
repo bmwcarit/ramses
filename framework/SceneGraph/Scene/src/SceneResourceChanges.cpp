@@ -27,7 +27,7 @@ namespace ramses_internal
     }
 
     template <typename ELEMENTTYPE>
-    void putDataArray(SceneActionCollection& action, const Vector<ELEMENTTYPE>& dataArray)
+    void putDataArray(SceneActionCollection& action, const std::vector<ELEMENTTYPE>& dataArray)
     {
         const UInt32 numElements = static_cast<UInt32>(dataArray.size());
         action.write(numElements);
@@ -40,7 +40,7 @@ namespace ramses_internal
     }
 
     template <typename ELEMENTTYPE>
-    void getDataArray(SceneActionCollection::SceneActionReader& action, Vector<ELEMENTTYPE>& dataArray)
+    void getDataArray(SceneActionCollection::SceneActionReader& action, std::vector<ELEMENTTYPE>& dataArray)
     {
         UInt32 numElements = 0u;
         action.read(numElements);
@@ -58,7 +58,7 @@ namespace ramses_internal
     }
 
     template <typename ELEMENTTYPE>
-    UInt estimatePutDataArraySize(const Vector<ELEMENTTYPE>& dataArray)
+    UInt estimatePutDataArraySize(const std::vector<ELEMENTTYPE>& dataArray)
     {
         return sizeof(UInt32) + sizeof(ELEMENTTYPE) * dataArray.size();
     }

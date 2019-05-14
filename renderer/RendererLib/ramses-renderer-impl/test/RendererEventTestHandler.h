@@ -676,7 +676,7 @@ private:
         }
     }
 
-    ramses_internal::Vector<RendererTestEvent> m_events;
+    std::vector<RendererTestEvent> m_events;
 };
 
 #endif

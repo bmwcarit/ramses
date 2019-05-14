@@ -77,11 +77,11 @@ namespace ramses_internal
 
         // blob write access
         void appendRawData(const Byte* data, UInt dataSize);
-        Vector<Byte>& getRawDataForDirectWriting();
+        std::vector<Byte>& getRawDataForDirectWriting();
         void addRawSceneActionInformation(ESceneActionId type, UInt32 offset);
 
         // blob read access
-        const Vector<Byte>& collectionData() const;
+        const std::vector<Byte>& collectionData() const;
 
         // reading
         class Iterator;
@@ -187,8 +187,8 @@ namespace ramses_internal
         void writeAsByteBlob(const void* value, size_t size);
         void reserveAdditionalDataCapacity(UInt additionalCapacity);
 
-        Vector<Byte> m_data;
-        Vector<ActionInfo> m_actionInfo;
+        std::vector<Byte> m_data;
+        std::vector<ActionInfo> m_actionInfo;
     };
 
     static_assert(std::is_nothrow_move_constructible<SceneActionCollection>::value &&
@@ -379,7 +379,7 @@ namespace ramses_internal
         writeAsByteBlob(data, dataSize);
     }
 
-    inline Vector<Byte>& SceneActionCollection::getRawDataForDirectWriting()
+    inline std::vector<Byte>& SceneActionCollection::getRawDataForDirectWriting()
     {
         return m_data;
     }
@@ -390,7 +390,7 @@ namespace ramses_internal
     }
 
     // blob read access
-    inline const Vector<Byte>& SceneActionCollection::collectionData() const
+    inline const std::vector<Byte>& SceneActionCollection::collectionData() const
     {
         return m_data;
     }

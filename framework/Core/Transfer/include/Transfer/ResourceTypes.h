@@ -16,9 +16,9 @@
 
 namespace ramses_internal
 {
-    typedef Vector<ResourceContentHash> ResourceContentHashVector;
+    typedef std::vector<ResourceContentHash> ResourceContentHashVector;
     typedef StronglyTypedValue<UInt32, static_cast<UInt32>(-1), struct RequesterIDTag> RequesterID;
-    typedef Vector<RenderTargetHandle> RenderTargetHandleVector;
+    typedef std::vector<RenderTargetHandle> RenderTargetHandleVector;
 }
 
 #endif

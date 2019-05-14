@@ -127,9 +127,9 @@ namespace ramses_internal
         return m_scene.allocateRenderState(preallocateHandle(handle));
     }
 
-    CameraHandle SceneAllocateHelper::allocateCamera(ECameraProjectionType type, NodeHandle nodeHandle, CameraHandle handle)
+    CameraHandle SceneAllocateHelper::allocateCamera(ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle viewportDataInstance, CameraHandle handle)
     {
-        return m_scene.allocateCamera(type, nodeHandle, preallocateHandle(handle));
+        return m_scene.allocateCamera(type, nodeHandle, viewportDataInstance, preallocateHandle(handle));
     }
 
     NodeHandle SceneAllocateHelper::allocateNode(UInt32 childrenCount, NodeHandle handle)

@@ -127,7 +127,7 @@ namespace ramses_internal
 
         HashMap<DisplayHandle, IRendererResourceManager*> m_displayResourceManagers;
 
-        std::unordered_map<SceneId, Vector<SceneActionCollection>> m_pendingSceneActions;
+        std::unordered_map<SceneId, std::vector<SceneActionCollection>> m_pendingSceneActions;
 
         struct SceneMapRequest
         {
@@ -145,7 +145,7 @@ namespace ramses_internal
 
         HashSet<SceneId> m_modifiedScenesToRerender;
         //used as caches for algorithms that mark scenes as modified
-        Vector<SceneId> m_offscreeenBufferModifiedScenesVisitingCache;
+        std::vector<SceneId> m_offscreeenBufferModifiedScenesVisitingCache;
         OffscreenBufferLinkVector m_offscreenBufferConsumerSceneLinksCache;
 
         UInt m_maximumPendingFlushes = 60u;

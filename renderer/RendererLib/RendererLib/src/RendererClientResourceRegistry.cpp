@@ -67,7 +67,7 @@ namespace ramses_internal
         }
 
         ResourceDescriptor& rd = *m_resources.get(hash);
-        if (rd.sceneUsage.contains(sceneId))
+        if (contains_c(rd.sceneUsage, sceneId))
         {
             LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::addResourceRef Resource already referenced by scene (" << sceneId.getValue() << ")! #" << StringUtils::HexFromResourceContentHash(hash) << " (" << EnumToString(rd.type) << " : " << EnumToString(rd.status) << ")");
             assert(false);
@@ -89,13 +89,13 @@ namespace ramses_internal
         }
 
         ResourceDescriptor& rd = *m_resources.get(hash);
-        if (!rd.sceneUsage.contains(sceneId))
+        if (!contains_c(rd.sceneUsage, sceneId))
         {
             LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::removeResourceRef Resource not referenced by scene (" << sceneId.getValue() << ")! #" << StringUtils::HexFromResourceContentHash(hash));
             assert(false);
             return;
         }
-        rd.sceneUsage.erase(rd.sceneUsage.find(sceneId));
+        rd.sceneUsage.erase(find_c(rd.sceneUsage, sceneId));
 
         updateListOfResourcesNotInUseByScenes(hash);
     }
@@ -192,33 +192,33 @@ namespace ramses_internal
     {
         if (currentStatus == EResourceStatus_Registered)
         {
-            assert(m_registeredResources.contains(hash));
-            m_registeredResources.erase(m_registeredResources.find(hash));
+            assert(contains_c(m_registeredResources, hash));
+            m_registeredResources.erase(find_c(m_registeredResources, hash));
         }
         else if (currentStatus == EResourceStatus_Requested)
         {
-            assert(m_requestedResources.contains(hash));
-            m_requestedResources.erase(m_requestedResources.find(hash));
+            assert(contains_c(m_requestedResources, hash));
+            m_requestedResources.erase(find_c(m_requestedResources, hash));
         }
         else if (currentStatus == EResourceStatus_Provided)
         {
-            assert(m_providedResources.contains(hash));
-            m_providedResources.erase(m_providedResources.find(hash));
+            assert(contains_c(m_providedResources, hash));
+            m_providedResources.erase(find_c(m_providedResources, hash));
         }
 
         if (newStatus == EResourceStatus_Registered)
         {
-            assert(!m_registeredResources.contains(hash));
+            assert(!contains_c(m_registeredResources, hash));
             m_registeredResources.push_back(hash);
         }
         else if (newStatus == EResourceStatus_Requested)
         {
-            assert(!m_requestedResources.contains(hash));
+            assert(!contains_c(m_requestedResources, hash));
             m_requestedResources.push_back(hash);
         }
         else if (newStatus == EResourceStatus_Provided)
         {
-            assert(!m_providedResources.contains(hash));
+            assert(!contains_c(m_providedResources, hash));
             m_providedResources.push_back(hash);
         }
     }
@@ -229,7 +229,7 @@ namespace ramses_internal
         const Bool isUnused = ((rd != NULL) && rd->sceneUsage.empty());
 
         {
-            ResourceContentHashVector::Iterator it = m_resourcesNotInUseByScenes.find(hash);
+            ResourceContentHashVector::iterator it = find_c(m_resourcesNotInUseByScenes, hash);
             const Bool isContained = (it != m_resourcesNotInUseByScenes.end());
             if (isUnused)
             {
@@ -250,7 +250,7 @@ namespace ramses_internal
         }
 
         {
-            ResourceContentHashVector::Iterator it = m_resourcesNotInUseByScenesAndNotUploaded.find(hash);
+            ResourceContentHashVector::iterator it = find_c(m_resourcesNotInUseByScenesAndNotUploaded, hash);
             const Bool isContained = (it != m_resourcesNotInUseByScenesAndNotUploaded.end());
             const Bool isUploaded = (rd != NULL) && (rd->status == EResourceStatus_Uploaded);
             if (isUnused && !isUploaded)

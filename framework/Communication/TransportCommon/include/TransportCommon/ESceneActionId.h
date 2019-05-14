@@ -95,7 +95,6 @@ namespace ramses_internal
         // camera
         ESceneActionId_AllocateCamera,
         ESceneActionId_ReleaseCamera,
-        ESceneActionId_SetCameraViewport,
         ESceneActionId_SetCameraFrustum,
 
         // render groups
@@ -195,8 +194,8 @@ namespace ramses_internal
         ESceneActionId_NUMBER_OF_TYPES
     };
 
-    typedef Vector<ESceneActionId> SceneActionIdVector;
-    typedef Vector<UInt64> TimeStampVector;
+    typedef std::vector<ESceneActionId> SceneActionIdVector;
+    typedef std::vector<UInt64> TimeStampVector;
 
     enum ESceneActionFlushBits : uint32_t
     {
@@ -289,7 +288,6 @@ case ENUMVALUE: return #ENUMVALUE
             // camera
             CreateNameForEnumID(ESceneActionId_AllocateCamera);
             CreateNameForEnumID(ESceneActionId_ReleaseCamera);
-            CreateNameForEnumID(ESceneActionId_SetCameraViewport);
             CreateNameForEnumID(ESceneActionId_SetCameraFrustum);
 
             // render group

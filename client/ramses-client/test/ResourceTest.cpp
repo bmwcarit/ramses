@@ -71,7 +71,7 @@ namespace ramses
     TEST_F(AResourceTestClient, createTextureWithMipMaps)
     {
         const uint8_t data[2 * 2 * 4] = {};
-        ramses_internal::Vector<MipLevelData> mipLevelData;
+        std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(2 * 2 * 4, data));
         mipLevelData.push_back(MipLevelData(1 * 1 * 4, data));
         Texture2D* texture = client.createTexture2D(2, 2, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
@@ -101,7 +101,7 @@ namespace ramses
     {
         const uint8_t data[4 * 4 * 4] = {};
 
-        ramses_internal::Vector<MipLevelData> mipLevelData;
+        std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(sizeof(data), data));
         mipLevelData.push_back(MipLevelData(2 * 2 * 4, data));
 
@@ -113,7 +113,7 @@ namespace ramses
     {
         const uint8_t data[1] = {};
 
-        ramses_internal::Vector<MipLevelData> mipLevelData;
+        std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(sizeof(data), data));
         mipLevelData.push_back(MipLevelData(sizeof(data), data));
 
@@ -125,7 +125,7 @@ namespace ramses
     {
         const uint8_t data[4 * 4 * 4] = {};
 
-        ramses_internal::Vector<MipLevelData> mipLevelData;
+        std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(sizeof(data), nullptr));
 
         Texture2D* texture = client.createTexture2D(4u, 4u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
@@ -136,7 +136,7 @@ namespace ramses
     {
         const uint8_t data[4 * 4 * 4] = {};
 
-        ramses_internal::Vector<MipLevelData> mipLevelData;
+        std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(0u, data));
 
         Texture2D* texture = client.createTexture2D(4u, 4u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
@@ -147,14 +147,14 @@ namespace ramses
     {
         const uint8_t data[2 * 2 * 4] = {};
         {
-            ramses_internal::Vector<MipLevelData> mipLevelData;
+            std::vector<MipLevelData> mipLevelData;
             mipLevelData.push_back(MipLevelData(sizeof(data), data));
             mipLevelData.push_back(MipLevelData(0u, data));
             Texture2D* texture = client.createTexture2D(2u, 2u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
             EXPECT_EQ(NULL, texture);
         }
         {
-            ramses_internal::Vector<MipLevelData> mipLevelData;
+            std::vector<MipLevelData> mipLevelData;
             mipLevelData.push_back(MipLevelData(sizeof(data), data));
             mipLevelData.push_back(MipLevelData(sizeof(data), nullptr));
             Texture2D* texture = client.createTexture2D(2u, 2u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
@@ -165,7 +165,7 @@ namespace ramses
     TEST_F(AResourceTestClient, createTextureWithWrongSizeOfLowerMipMapData)
     {
         const uint8_t data[2 * 2 * 4] = {};
-        ramses_internal::Vector<MipLevelData> mipLevelData;
+        std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(2 * 2 * 4, data));
         mipLevelData.push_back(MipLevelData(1 * 1 * 2, data));
         Texture2D* texture = client.createTexture2D(2u, 2u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
@@ -281,7 +281,7 @@ namespace ramses
     TEST_F(AResourceTestClient, createCubeTextureWithMipMaps)
     {
         const uint8_t data[2 * 2 * 4] = {};
-        ramses_internal::Vector<CubeMipLevelData> mipLevelData;
+        std::vector<CubeMipLevelData> mipLevelData;
         mipLevelData.push_back(CubeMipLevelData(2 * 2 * 4, data, data, data, data, data, data));
         mipLevelData.push_back(CubeMipLevelData(1 * 1 * 4, data, data, data, data, data, data));
         TextureCube* texture = client.createTextureCube(2, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
@@ -435,7 +435,7 @@ namespace ramses
     {
         const uint8_t data[4 * 4 * 4] = {};
 
-        ramses_internal::Vector<CubeMipLevelData> mipLevelData;
+        std::vector<CubeMipLevelData> mipLevelData;
         mipLevelData.push_back(CubeMipLevelData(sizeof(data), data, data, data, data, data, data));
         mipLevelData.push_back(CubeMipLevelData(2 * 2 * 4, data, data, data, data, data, data));
 
@@ -447,7 +447,7 @@ namespace ramses
     {
         const uint8_t data[1] = {};
 
-        ramses_internal::Vector<CubeMipLevelData> mipLevelData;
+        std::vector<CubeMipLevelData> mipLevelData;
         mipLevelData.push_back(CubeMipLevelData(sizeof(data), data, data, data, data, data, data));
         mipLevelData.push_back(CubeMipLevelData(sizeof(data), data, data, data, data, data, data));
 
@@ -459,7 +459,7 @@ namespace ramses
     {
         const uint8_t data[4 * 4 * 4] = {};
 
-        ramses_internal::Vector<CubeMipLevelData> mipLevelData;
+        std::vector<CubeMipLevelData> mipLevelData;
         mipLevelData.push_back(CubeMipLevelData(sizeof(data), data, data, nullptr, data, data, data));
 
         TextureCube* texture = client.createTextureCube(4u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
@@ -470,7 +470,7 @@ namespace ramses
     {
         const uint8_t data[4 * 4 * 4] = {};
 
-        ramses_internal::Vector<CubeMipLevelData> mipLevelData;
+        std::vector<CubeMipLevelData> mipLevelData;
         mipLevelData.push_back(CubeMipLevelData(0u, data, data, data, data, data, data));
 
         TextureCube* texture = client.createTextureCube(4u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
@@ -481,14 +481,14 @@ namespace ramses
     {
         const uint8_t data[2 * 2 * 4] = {};
         {
-            ramses_internal::Vector<CubeMipLevelData> mipLevelData;
+            std::vector<CubeMipLevelData> mipLevelData;
             mipLevelData.push_back(CubeMipLevelData(sizeof(data), data, data, data, data, data, data));
             mipLevelData.push_back(CubeMipLevelData(0u, data, data, data, data, data, data));
             TextureCube* texture = client.createTextureCube(2u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
             EXPECT_EQ(NULL, texture);
         }
         {
-            ramses_internal::Vector<CubeMipLevelData> mipLevelData;
+            std::vector<CubeMipLevelData> mipLevelData;
             mipLevelData.push_back(CubeMipLevelData(sizeof(data), data, data, data, data, data, data));
             mipLevelData.push_back(CubeMipLevelData(sizeof(data), data, data, data, data, nullptr, data));
             TextureCube* texture = client.createTextureCube(2u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
@@ -499,7 +499,7 @@ namespace ramses
     TEST_F(AResourceTestClient, createTextureCubeWithWrongSizeOfLowerMipMapData)
     {
         const uint8_t data[2 * 2 * 4] = {};
-        ramses_internal::Vector<CubeMipLevelData> mipLevelData;
+        std::vector<CubeMipLevelData> mipLevelData;
         mipLevelData.push_back(CubeMipLevelData(2 * 2 * 4, data, data, data, data, data, data));
         mipLevelData.push_back(CubeMipLevelData(1 * 1 * 2, data, data, data, data, data, data));
         TextureCube* texture = client.createTextureCube(2u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
@@ -522,7 +522,7 @@ namespace ramses
     TEST_F(AResourceTestClient, create3DTextureWithMipMaps)
     {
         const uint8_t data[2 * 2 * 2 * 4] = {};
-        ramses_internal::Vector<MipLevelData> mipLevelData;
+        std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(2 * 2 * 2 * 4, data));
         mipLevelData.push_back(MipLevelData(1 * 1 * 1 * 4, data));
         Texture3D* texture = client.createTexture3D(2u, 2u, 2u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
@@ -647,7 +647,7 @@ namespace ramses
     {
         const uint8_t data[4 * 4 * 4 * 4] = {};
 
-        ramses_internal::Vector<MipLevelData> mipLevelData;
+        std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(sizeof(data), data));
         mipLevelData.push_back(MipLevelData(2 * 2 * 2 * 4, data));
 
@@ -659,7 +659,7 @@ namespace ramses
     {
         const uint8_t data[1] = {};
 
-        ramses_internal::Vector<MipLevelData> mipLevelData;
+        std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(sizeof(data), data));
         mipLevelData.push_back(MipLevelData(sizeof(data), data));
 
@@ -671,7 +671,7 @@ namespace ramses
     {
         const uint8_t data[2 * 2 * 2 * 4] = {};
 
-        ramses_internal::Vector<MipLevelData> mipLevelData;
+        std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(sizeof(data), nullptr));
 
         Texture3D* texture = client.createTexture3D(2u, 2u, 2u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
@@ -682,7 +682,7 @@ namespace ramses
     {
         const uint8_t data[2 * 2 * 2 * 4] = {};
 
-        ramses_internal::Vector<MipLevelData> mipLevelData;
+        std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(0, data));
 
         Texture3D* texture = client.createTexture3D(2u, 2u, 2u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
@@ -693,14 +693,14 @@ namespace ramses
     {
         const uint8_t data[2 * 2 * 2 * 4] = {};
         {
-            ramses_internal::Vector<MipLevelData> mipLevelData;
+            std::vector<MipLevelData> mipLevelData;
             mipLevelData.push_back(MipLevelData(sizeof(data), data));
             mipLevelData.push_back(MipLevelData(0u, data));
             Texture3D* texture = client.createTexture3D(2u, 2u, 2u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
             EXPECT_EQ(NULL, texture);
         }
         {
-            ramses_internal::Vector<MipLevelData> mipLevelData;
+            std::vector<MipLevelData> mipLevelData;
             mipLevelData.push_back(MipLevelData(sizeof(data), data));
             mipLevelData.push_back(MipLevelData(sizeof(data), nullptr));
             Texture3D* texture = client.createTexture3D(2u, 2u, 2u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
@@ -711,7 +711,7 @@ namespace ramses
     TEST_F(AResourceTestClient, create3DTextureWithWrongSizeOfLowerMipMapData)
     {
         const uint8_t data[2 * 2 * 2 * 4] = {};
-        ramses_internal::Vector<MipLevelData> mipLevelData;
+        std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(2 * 2 * 2 * 4, data));
         mipLevelData.push_back(MipLevelData(1 * 1 * 1 * 2, data));
         Texture3D* texture = client.createTexture3D(2u, 2u, 2u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
@@ -721,7 +721,7 @@ namespace ramses
     TEST_F(AResourceTestClient, create3DTextureWithCompressedFormatCanBeCreatedWithArbitraryNonZeroDataSize)
     {
         const uint8_t data[2 * 2 * 2 * 4] = {};
-        ramses_internal::Vector<MipLevelData> mipLevelData;
+        std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(1, data));
         mipLevelData.push_back(MipLevelData(1, data));
         Texture3D* texture = client.createTexture3D(2u, 2u, 2u, ramses::ETextureFormat_ASTC_RGBA_4x4, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");

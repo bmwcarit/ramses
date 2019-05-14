@@ -52,7 +52,7 @@ namespace ramses
     status_t RenderTargetDescriptionImpl::addRenderBuffer(const RenderBufferImpl& renderBuffer)
     {
         const ramses_internal::RenderBufferHandle bufferHandle = renderBuffer.getRenderBufferHandle();
-        if (m_renderBuffers.contains(bufferHandle))
+        if (contains_c(m_renderBuffers, bufferHandle))
         {
             return addErrorEntry("RenderTargetDescription::addRenderBuffer failed: trying to add a render buffer that is already contained!");
         }

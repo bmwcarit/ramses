@@ -43,8 +43,8 @@ private:
 
     ramses::Scene* m_scene;
     ramses::Node* m_parent;
-    ramses_internal::Vector<ramses::Node*> m_children;
-    ramses_internal::Vector<ramses::Node*> m_childrenShuffled;
+    std::vector<ramses::Node*> m_children;
+    std::vector<ramses::Node*> m_childrenShuffled;
 };
 #endif
 

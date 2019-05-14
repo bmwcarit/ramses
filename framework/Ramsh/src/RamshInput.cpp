@@ -39,8 +39,8 @@ namespace ramses_internal
     {
         StringOutputStream cmdStream;
         {
-            StringVector::ConstIterator iter = this->begin();
-            StringVector::ConstIterator end = this->end();
+            StringVector::const_iterator iter = this->begin();
+            StringVector::const_iterator end = this->end();
             for (; iter != end; ++iter)
             {
                 cmdStream << *iter << " ";
@@ -61,7 +61,7 @@ namespace ramses_internal
 
     ramses_internal::Bool RamshInput::operator==(const RamshInput& other) const
     {
-        return StringVector::operator==(other);
+        return static_cast<const StringVector&>(*this) == other;
     }
 
 }

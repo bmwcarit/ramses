@@ -56,7 +56,7 @@ namespace ramses_internal
 
     private:
         DataLayoutHandle m_dataLayoutHandle;
-        Vector<Byte> m_data;
+        std::vector<Byte> m_data;
     };
 }
 

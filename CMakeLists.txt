@@ -6,7 +6,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.3)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
 SET(ramses-sdk_ROOT_CMAKE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -94,8 +94,12 @@ include(cmake/ramses/rendererModulePerConfig.cmake)
 
 ADD_DEFINITIONS(-DRAMSES_LINK_STATIC)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
+if (NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY AND NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+    message(STATUS "Redirect ramses runtime and library output to ${CMAKE_CURRENT_BINARY_DIR}/bin")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+endif()
 set(CMAKE_DEBUG_POSTFIX "") # no debug suffix in this project
 
 set(ramses-sdk_CMAKE_CONFIG_INCLUDES_FOR_SHARED CACHE INTERNAL "")
@@ -136,7 +140,6 @@ ACME2_PROJECT(
     # content
     #==========================================================================
     CONTENT                     AUTO external
-
                                 ON   framework
 
                                 ON   client/ramses-client

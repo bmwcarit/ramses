@@ -20,10 +20,10 @@ namespace ramses_internal
     namespace
     {
         // If two platform backends are created at the same time, they have to have different id's
-        // The numbers have special meaning, therefore the test uses 100 and 101 to make sure they
+        // The numbers have special meaning, therefore the test uses 10000 and 10001 to make sure they
         // don't clash with existing applications
-        const WaylandIviSurfaceId iviSurfaceId(100u);
-        const WaylandIviSurfaceId differentIviSurfaceId(101u);
+        const WaylandIviSurfaceId iviSurfaceId(10000u);
+        const WaylandIviSurfaceId differentIviSurfaceId(10001u);
     }
 
     using namespace testing;

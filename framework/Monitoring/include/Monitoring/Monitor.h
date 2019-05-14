@@ -43,7 +43,7 @@ namespace ramses_internal
 
             File file;
             PlatformLightweightLock lock;
-            Vector<FrameInfo> queue;
+            std::vector<FrameInfo> queue;
         };
 
         PlatformThread m_thread;

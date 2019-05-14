@@ -48,7 +48,7 @@ namespace ramses_internal
         {
             SceneIdVector knownScenes;
             sceneStateInfo.getKnownSceneIds(knownScenes);
-            return knownScenes.contains(scene);
+            return contains_c(knownScenes, scene);
         }
 
     };

@@ -83,9 +83,7 @@ namespace ramses_internal
             if (source.isCameraAllocated(c))
             {
                 const Camera& camera = source.getCamera(c);
-                collector.allocateCamera(camera.projectionType, camera.node, c);
-
-                collector.setCameraViewport(c, camera.viewport);
+                collector.allocateCamera(camera.projectionType, camera.node, camera.viewportDataInstance, c);
                 if (camera.projectionType != ECameraProjectionType_Renderer)
                 {
                     collector.setCameraFrustum(c, camera.frustum);

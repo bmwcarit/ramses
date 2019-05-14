@@ -87,11 +87,10 @@ namespace ramses_internal
         virtual const RenderState&          getRenderState                  (RenderStateHandle stateHandle) const override final;
 
         // Camera
-        virtual CameraHandle                allocateCamera                  (ECameraProjectionType type, NodeHandle nodeHandle, CameraHandle handle = CameraHandle::Invalid()) override;
+        virtual CameraHandle                allocateCamera                  (ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle viewportDataInstance, CameraHandle handle = CameraHandle::Invalid()) override;
         virtual void                        releaseCamera                   (CameraHandle cameraHandle) override;
         virtual Bool                        isCameraAllocated               (CameraHandle handle) const override final;
         virtual UInt32                      getCameraCount                  () const override final;
-        virtual void                        setCameraViewport               (CameraHandle cameraHandle, const Viewport& vp) override;
         virtual void                        setCameraFrustum                (CameraHandle cameraHandle, const Frustum& frustum) override;
         virtual const Camera&               getCamera                       (CameraHandle cameraHandle) const override final;
 

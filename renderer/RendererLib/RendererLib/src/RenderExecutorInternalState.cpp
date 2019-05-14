@@ -118,7 +118,11 @@ namespace ramses_internal
             }
             else
             {
-                newViewport = cameraData.viewport;
+                const auto vpOffsetRef = m_scene->getDataReference(cameraData.viewportDataInstance, Camera::ViewportOffsetField);
+                const auto vpSizeRef = m_scene->getDataReference(cameraData.viewportDataInstance, Camera::ViewportSizeField);
+                const auto vpOffset = m_scene->getDataSingleVector2i(vpOffsetRef, DataFieldHandle{ 0 });
+                const auto vpSize = m_scene->getDataSingleVector2i(vpSizeRef, DataFieldHandle{ 0 });
+                newViewport = Viewport{ vpOffset.x, vpOffset.y, UInt32(vpSize.x), UInt32(vpSize.y) };
                 m_projectionMatrix = CameraMatrixHelper::ProjectionMatrix(
                     ProjectionParams::Frustum(
                         cameraData.projectionType,

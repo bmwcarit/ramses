@@ -28,7 +28,7 @@ namespace ramses_internal
         ramses::dataConsumerId_t consumerSceneDataId;
     };
 
-    using SceneArrayConfig = Vector<SceneConfig>;
+    using SceneArrayConfig = std::vector<SceneConfig>;
 
     class ResourceStressTestSceneArray
     {
@@ -45,7 +45,7 @@ namespace ramses_internal
 
         StressTestRenderer& m_renderer;
         SceneArrayConfig m_sceneConfigs;
-        Vector<std::unique_ptr<ResourceStressTestScene>> m_scenes;
+        std::vector<std::unique_ptr<ResourceStressTestScene>> m_scenes;
     };
 }
 

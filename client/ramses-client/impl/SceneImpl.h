@@ -262,8 +262,8 @@ namespace ramses
         status_t destroyTextureSampler(TextureSampler& sampler);
         status_t destroyObject(SceneObject& object);
 
-        typedef ramses_internal::Pair<NodeImpl*, bool> NodeVisibilityPair;
-        typedef ramses_internal::Vector<NodeVisibilityPair> NodeVisibilityInfoVector;
+        typedef std::pair<NodeImpl*, bool> NodeVisibilityPair;
+        typedef std::vector<NodeVisibilityPair> NodeVisibilityInfoVector;
 
         void applyVisibilityToSubtree(NodeImpl& node, bool visibilityToApply);
         void prepareListOfDirtyNodesForHierarchicalVisibility(NodeVisibilityInfoVector& nodesToProcess);

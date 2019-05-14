@@ -37,7 +37,7 @@ namespace ramses_internal
     protected:
         HANDLE acquireInternal(MemoryHandle handle);
 
-        Vector<UInt8> m_handlePool;
+        std::vector<UInt8> m_handlePool;
         MemoryHandle  m_nextAvailableHint;
         UInt32        m_numberOfAcquired;
     };

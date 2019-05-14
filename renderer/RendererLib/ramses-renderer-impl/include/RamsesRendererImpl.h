@@ -80,6 +80,7 @@ namespace ramses
         status_t systemCompositorSetIviSurfaceVisibility(uint32_t surfaceId, bool visibility);
         status_t systemCompositorSetIviSurfaceOpacity(uint32_t surfaceId, float opacity);
         status_t systemCompositorSetIviSurfaceRectangle(uint32_t surfaceId, int32_t x, int32_t y, int32_t width, int32_t height);
+        status_t systemCompositorSetIviLayerVisibility(uint32_t layerId, bool visibility);
         status_t systemCompositorTakeScreenshot(const char* fileName, int32_t screenIviId);
         status_t systemCompositorAddIviSurfaceToIviLayer(uint32_t surfaceId, uint32_t layerId);
 

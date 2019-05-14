@@ -60,11 +60,11 @@ namespace ramses_internal
         Bool shouldRenderPassBeRendered(RenderPassHandle handle) const;
 
         RenderingPassInfoVector m_sortedRenderingPasses;
-        typedef Vector<RenderableVector> PassRenderableOrder;
+        typedef std::vector<RenderableVector> PassRenderableOrder;
         PassRenderableOrder     m_passRenderableOrder;
         mutable Bool            m_renderableOrderingDirty;
 
-        typedef Vector<Matrix44f> MatrixVector;
+        typedef std::vector<Matrix44f> MatrixVector;
         MatrixVector            m_renderableMatrices;
 
         using RenderPasses = HashSet<RenderPassHandle>;

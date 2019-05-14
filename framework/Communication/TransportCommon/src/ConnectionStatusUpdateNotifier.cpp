@@ -36,7 +36,7 @@ namespace ramses_internal
     void ConnectionStatusUpdateNotifier::unregisterForConnectionUpdates(IConnectionStatusListener* listener)
     {
         PlatformGuard g(m_lock);
-        Vector<IConnectionStatusListener*>::Iterator positionToDelete = m_listeners.find(listener);
+        std::vector<IConnectionStatusListener*>::iterator positionToDelete = find_c(m_listeners, listener);
         if (positionToDelete != m_listeners.end())
         {
             m_listeners.erase(positionToDelete);

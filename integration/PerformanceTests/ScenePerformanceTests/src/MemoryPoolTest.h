@@ -92,7 +92,7 @@ private:
     typedef ramses_internal::MemoryPoolExplicit<DummyObject, uint32_t> ExplicitPoolType;
     ramses_internal::ScopedPointer<IMemoryPool> m_memoryPool;
 
-    ramses_internal::Vector<uint32_t> m_shuffledHandles;
+    std::vector<uint32_t> m_shuffledHandles;
 };
 
 #endif

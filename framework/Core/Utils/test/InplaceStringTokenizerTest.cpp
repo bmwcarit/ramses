@@ -12,9 +12,9 @@
 
 namespace ramses_internal
 {
-    static Vector<String> CollectTokens(const char* str, UInt maxStringLength, Char splitToken)
+    static std::vector<String> CollectTokens(const char* str, UInt maxStringLength, Char splitToken)
     {
-        Vector<String> res;
+        std::vector<String> res;
         String in(str);
         InplaceStringTokenizer::TokenizeToCStrings(in, maxStringLength, splitToken,
             [&res](const char* s) { res.push_back(s); });

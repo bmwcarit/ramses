@@ -78,7 +78,7 @@ namespace ramses_internal
         m_device.clear(EClearFlags_All);
     }
 
-    Bool DisplayController::readPixels(UInt32 x, UInt32 y, UInt32 width, UInt32 height, Vector<UInt8>& dataOut)
+    Bool DisplayController::readPixels(UInt32 x, UInt32 y, UInt32 width, UInt32 height, std::vector<UInt8>& dataOut)
     {
         if (x + width > getDisplayWidth() ||
             y + height > getDisplayHeight())

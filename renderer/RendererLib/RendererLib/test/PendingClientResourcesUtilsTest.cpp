@@ -20,7 +20,7 @@ protected:
     {
         for (const auto& res : resources)
         {
-            EXPECT_TRUE(list.contains(res));
+            EXPECT_TRUE(contains_c(list, res));
         }
     }
 

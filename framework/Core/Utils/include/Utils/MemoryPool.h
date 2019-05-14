@@ -42,7 +42,7 @@ namespace ramses_internal
 
         static_assert(std::is_move_constructible<OBJECTTYPE>::value && std::is_move_assignable<OBJECTTYPE>::value, "OBJECTTYPE must be movable");
     protected:
-        Vector<OBJECTTYPE> m_memoryPool;
+        std::vector<OBJECTTYPE> m_memoryPool;
         HandlePool<HANDLE> m_handlePool;
     };
 

@@ -12,7 +12,7 @@ namespace ramses_internal
 {
     void AnimationDataNotifier::addListener(AnimationDataListener* pListener)
     {
-        if (m_observers.find(pListener) != m_observers.end())
+        if (contains_c(m_observers, pListener))
         {
             return;
         }
@@ -25,7 +25,7 @@ namespace ramses_internal
 
     void AnimationDataNotifier::removeListener(AnimationDataListener* pListener)
     {
-        auto it = m_observers.find(pListener);
+        auto it = find_c(m_observers, pListener);
         if (it != m_observers.end())
         {
             m_observers.erase(it);

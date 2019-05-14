@@ -11,6 +11,7 @@ extends: default
 
 ignore: |
     /external/googletest/
+    /external/asio/
 
 rules:
     line-length: disable

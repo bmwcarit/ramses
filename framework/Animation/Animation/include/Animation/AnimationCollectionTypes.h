@@ -10,17 +10,16 @@
 #define RAMSES_ANIMATIONCOLLECTIONTYPES_H
 
 #include "Animation/AnimationCommon.h"
+#include <vector>
 
 namespace ramses_internal
 {
-    template<typename T>
-    class Vector;
     class AnimationDataBindBase;
 
-    typedef Vector<SplineTimeStamp> SplineTimeStampVector;
-    typedef Vector<DataBindHandle> DataBindHandleVector;
-    typedef Vector<AnimationHandle> AnimationHandleVector;
-    typedef Vector<const AnimationDataBindBase*> ConstDataBindVector;
+    typedef std::vector<SplineTimeStamp> SplineTimeStampVector;
+    typedef std::vector<DataBindHandle> DataBindHandleVector;
+    typedef std::vector<AnimationHandle> AnimationHandleVector;
+    typedef std::vector<const AnimationDataBindBase*> ConstDataBindVector;
 }
 
 #endif

@@ -36,7 +36,7 @@ namespace ramses_internal
         void setAppearanceAndGeometryToAllMeshNodes(ramses::Appearance& appearance, ramses::GeometryBinding& geometry);
         void setTriangleColor(ramses::Appearance& appearance, const ramses::Effect& effect, const Vector4& color);
 
-        Vector<ramses::MeshNode*> m_meshNodes;
+        std::vector<ramses::MeshNode*> m_meshNodes;
     };
 }
 

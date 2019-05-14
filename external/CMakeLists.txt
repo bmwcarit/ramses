@@ -248,3 +248,8 @@ ELSE()
     FILES_SOURCE            ${LZ4_DIR}/lib/*.c
     )
 ENDIF()
+
+
+add_library(asio INTERFACE)
+target_include_directories(asio INTERFACE asio/asio/include)
+ACME_INFO("+ asio")

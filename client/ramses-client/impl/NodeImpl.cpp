@@ -147,7 +147,7 @@ namespace ramses
 
     status_t NodeImpl::removeChild(NodeImpl& node)
     {
-        const auto it = m_children.find(&node);
+        const auto it = ramses_internal::find_c(m_children, &node);
         if (it == m_children.end())
         {
             return node.addErrorEntry("Node::removeChild failed, child not found.");
@@ -271,7 +271,7 @@ namespace ramses
         return getSceneImpl().getObjectRegistry().isNodeDirty(*this);
     }
 
-    void NodeImpl::removeChildInternally(NodeVector::Iterator childIt)
+    void NodeImpl::removeChildInternally(NodeVector::iterator childIt)
     {
         NodeImpl& child = **childIt;
 

@@ -547,9 +547,9 @@ namespace ramses_internal
             m_renderer.getStatistics().flushApplied(sceneID);
 
             // mark scene as modified only if it received scene actions other than those below
-            static const Vector<ESceneActionId> SceneActionsIgnoredForMarkingAsModified = { ESceneActionId_Flush, ESceneActionId_SetSceneVersionTag, ESceneActionId_SetAckFlushState };
+            static const std::vector<ESceneActionId> SceneActionsIgnoredForMarkingAsModified = { ESceneActionId_Flush, ESceneActionId_SetSceneVersionTag, ESceneActionId_SetAckFlushState };
             const bool isFlushWithChanges = std::any_of(pendingFlush.sceneActions.begin(), pendingFlush.sceneActions.end(),
-                [](const SceneActionCollection::SceneActionReader& a) { return !SceneActionsIgnoredForMarkingAsModified.contains(a.type()); });
+                [](const SceneActionCollection::SceneActionReader& a) { return !contains_c(SceneActionsIgnoredForMarkingAsModified, a.type()); });
             if (isFlushWithChanges)
                 // there are changes to scene -> mark it as modified to be re-rendered
                 m_modifiedScenesToRerender.put(sceneID);

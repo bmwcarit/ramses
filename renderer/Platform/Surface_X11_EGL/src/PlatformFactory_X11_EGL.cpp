@@ -38,9 +38,9 @@ namespace ramses_internal
         Window_X11* platformWindow = getPlatformWindow<Window_X11>(window);
         assert(0 != platformWindow);
 
-        Vector<EGLint> contextAttributes;
+        std::vector<EGLint> contextAttributes;
         getContextAttributes(contextAttributes);
-        Vector<EGLint> surfaceAttributes;
+        std::vector<EGLint> surfaceAttributes;
         getSurfaceAttributes(platformWindow->getMSAASampleCount(), surfaceAttributes);
 
         Context_EGL* platformContext = new Context_EGL(

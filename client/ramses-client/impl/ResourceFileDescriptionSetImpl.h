@@ -17,16 +17,16 @@
 
 namespace ramses
 {
-    typedef ramses_internal::Vector<ResourceFileDescription> ResourceFileDescriptionVector;
+    typedef std::vector<ResourceFileDescription> ResourceFileDescriptionVector;
 
     class ResourceFileDescriptionSetImpl
     {
     public:
         ResourceFileDescriptionVector descriptions;
 
-        ramses_internal::Vector<ramses_internal::String> getFilenames() const
+        std::vector<ramses_internal::String> getFilenames() const
         {
-            ramses_internal::Vector<ramses_internal::String> result;
+            std::vector<ramses_internal::String> result;
             result.reserve(descriptions.size());
             for (const auto& desc : descriptions)
             {

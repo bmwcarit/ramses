@@ -32,7 +32,7 @@ namespace ramses_internal
     public:
         GlslEffect(const String& vertexShader,
             const String& fragmentShader,
-            const Vector<String>& compilerDefines,
+            const std::vector<String>& compilerDefines,
             const HashMap<String, EFixedSemantics>& semanticInputs,
             const String& name);
 
@@ -57,7 +57,7 @@ namespace ramses_internal
 
         const String m_vertexShader;
         const String m_fragmentShader;
-        const Vector<String> m_compilerDefines;
+        const std::vector<String> m_compilerDefines;
         const HashMap<String, EFixedSemantics> m_semanticInputs;
         const String m_name;
 

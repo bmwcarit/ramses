@@ -98,7 +98,7 @@ namespace ramses_internal
     {
         PlatformGuard guard(m_frameworkLock);
 
-        auto it = m_periodicLogSuppliers.find(supplier);
+        auto it = find_c(m_periodicLogSuppliers, supplier);
         if (it != m_periodicLogSuppliers.end())
         {
             m_periodicLogSuppliers.erase(it);

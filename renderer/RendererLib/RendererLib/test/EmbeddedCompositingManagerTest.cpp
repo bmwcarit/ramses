@@ -305,7 +305,7 @@ TEST_F(AnEmbeddedCompositingManager, CanDispatchrStreamTexturesStateChange_Multi
     EXPECT_EQ(streamTexture2, (*updatedStreamTexturesPerScene.get(sceneId2))[0]);
 
     ASSERT_EQ(2u, newStreamsResult.size());
-    EXPECT_NE(newStreamsResult.end(), newStreamsResult.find(streamTextureSourceId));
-    EXPECT_NE(newStreamsResult.end(), newStreamsResult.find(streamTextureSourceId2));
+    EXPECT_NE(newStreamsResult.end(), find_c(newStreamsResult, streamTextureSourceId));
+    EXPECT_NE(newStreamsResult.end(), find_c(newStreamsResult, streamTextureSourceId2));
     EXPECT_EQ(0u, obsoleteStreamsResult.size());
 }

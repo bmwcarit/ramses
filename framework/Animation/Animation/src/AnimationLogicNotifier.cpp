@@ -13,13 +13,13 @@ namespace ramses_internal
 {
     void AnimationLogicNotifier::addListener(AnimationLogicListener* pListener)
     {
-        assert((pListener != NULL) && !m_observers.contains(pListener));
+        assert((pListener != NULL) && !contains_c(m_observers, pListener));
         m_observers.push_back(pListener);
     }
 
     void AnimationLogicNotifier::removeListener(AnimationLogicListener* pListener)
     {
-        const AnimationListenerVector::Iterator it = m_observers.find(pListener);
+        const AnimationListenerVector::iterator it = find_c(m_observers, pListener);
         assert(it != m_observers.end());
         m_observers.erase(it);
     }

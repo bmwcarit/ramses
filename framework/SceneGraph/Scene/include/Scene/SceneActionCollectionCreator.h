@@ -80,7 +80,7 @@ namespace ramses_internal
         void setRenderStateColorWriteMask(RenderStateHandle stateHandle, ColorWriteMask colorMask);
 
         // Camera
-        void allocateCamera(ECameraProjectionType type, NodeHandle nodeHandle, CameraHandle handle);
+        void allocateCamera(ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle viewportDataInstance, CameraHandle handle);
         void releaseCamera(CameraHandle cameraHandle);
         void setCameraViewport(CameraHandle cameraHandle, const Viewport& vp);
         void setCameraFrustum(CameraHandle cameraHandle, const Frustum& frustum);

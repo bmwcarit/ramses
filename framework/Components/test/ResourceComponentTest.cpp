@@ -203,7 +203,7 @@ namespace ramses_internal
 
         struct TestResourceData
         {
-            Vector<Byte> data;
+            std::vector<Byte> data;
             ResourceContentHash hash;
         };
 

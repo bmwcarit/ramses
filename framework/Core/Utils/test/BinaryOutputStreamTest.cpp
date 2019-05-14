@@ -236,7 +236,7 @@ namespace ramses_internal
         stream << static_cast<uint32_t>(1);
         EXPECT_EQ(sizeof(uint32_t), stream.getSize());
 
-        Vector<char> vec = stream.release();
+        std::vector<char> vec = stream.release();
         EXPECT_EQ(sizeof(uint32_t), vec.size());
         EXPECT_EQ(0u, stream.getSize());
         EXPECT_TRUE(nullptr == stream.getData());

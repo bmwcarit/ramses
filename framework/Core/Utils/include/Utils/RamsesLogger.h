@@ -56,7 +56,7 @@ namespace ramses_internal
         void log(const LogMessage& msg);
 
         void applyContextFilterCommand(const String& command);
-        Vector<LogContextInformation> getAllContextsInformation() const;
+        std::vector<LogContextInformation> getAllContextsInformation() const;
 
         void setLogLevelForContexts(ELogLevel logLevel);
         ELogLevel getLogLevelByContextId(const String& contextId) const;
@@ -89,8 +89,8 @@ namespace ramses_internal
         ConsoleLogAppender m_consoleLogAppender;
         std::unique_ptr<DltLogAppender> m_dltLogAppender;
         std::unique_ptr<LogAppenderBase> m_platformLogAppender;
-        Vector<LogContext*> m_logContexts;
-        Vector<LogAppenderBase*> m_logAppenders;
+        std::vector<LogContext*> m_logContexts;
+        std::vector<LogAppenderBase*> m_logAppenders;
         LogContext& m_fileTransferContext;
     };
 

@@ -49,7 +49,7 @@ namespace ramses_internal
             LOG_DEBUG(CONTEXT_COMMUNICATION, "ConstructTCPConnectionManager: Daemon Address: " << daemonNetworkAddress.getIp() << ":" << daemonNetworkAddress.getPort());
 
             // allocate
-            return new TCPConnectionSystem(participantNetworkAddress, config.getProtocolVersion(), isDaemon, daemonNetworkAddress, frameworkLock, statisticCollection);
+            return new TCPConnectionSystem(participantNetworkAddress, config.getProtocolVersion(), daemonNetworkAddress, false, frameworkLock, statisticCollection);
         }
 #endif
 

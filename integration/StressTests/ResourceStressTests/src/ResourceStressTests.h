@@ -98,7 +98,7 @@ namespace ramses_internal
             bool                        isInterruptable;
         };
 
-        using OffscreenBuffers = Vector<OffscreenBufferData>;
+        using OffscreenBuffers = std::vector<OffscreenBufferData>;
 
         struct DisplayData
         {
@@ -108,7 +108,7 @@ namespace ramses_internal
             OffscreenBuffers    offscreenBuffers;
         };
 
-        Vector<DisplayData>             m_displays;
+        std::vector<DisplayData>             m_displays;
         const uint32_t                  m_sceneSetsPerDisplay;
 
         static const uint32_t           FirstDisplayWidth = 1200u;

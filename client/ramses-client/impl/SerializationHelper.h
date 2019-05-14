@@ -42,7 +42,7 @@ namespace ramses
         }
 
         template< typename T>
-        static void AddElement(ramses_internal::Vector< T >& container, T& element)
+        static void AddElement(std::vector< T >& container, T& element)
         {
             container.push_back(element);
         }
@@ -132,8 +132,8 @@ namespace ramses
         {
             const ERamsesObjectType baseType = TYPE_ID_OF_RAMSES_OBJECT<ObjectsBaseType>::ID;
 
-            typedef ramses_internal::Pair<ERamsesObjectType, uint32_t> TypeCountPair;
-            ramses_internal::Vector<TypeCountPair> typesToSerialize;
+            typedef std::pair<ERamsesObjectType, uint32_t> TypeCountPair;
+            std::vector<TypeCountPair> typesToSerialize;
             typesToSerialize.reserve(ERamsesObjectType_NUMBER_OF_TYPES);
             uint32_t totalCount = 0u;
 

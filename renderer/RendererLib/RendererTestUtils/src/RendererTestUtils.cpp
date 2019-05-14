@@ -36,7 +36,7 @@ namespace
     // If multiple platform backends are created at the same time, they have to have different id's
     // The numbers have special meaning, therefore the test uses 100, 101, 102, ... to make sure they
     // don't clash with existing applications
-    const uint32_t firstIviSurfaceId = 100;
+    const uint32_t firstIviSurfaceId = 10010;
 }
 
 void RendererTestUtils::SaveScreenshotForDisplay(ramses::RamsesRenderer& renderer, ramses::displayId_t displayId, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const String& screenshotFileName)

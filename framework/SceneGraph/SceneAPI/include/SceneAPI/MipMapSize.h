@@ -19,7 +19,7 @@ namespace ramses_internal
         UInt32 height;
     };
 
-    using MipMapDimensions = Vector<MipMapSize>;
+    using MipMapDimensions = std::vector<MipMapSize>;
 }
 
 #endif

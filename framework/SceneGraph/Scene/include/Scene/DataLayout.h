@@ -66,7 +66,7 @@ namespace ramses_internal
 
     private:
         DataFieldInfoVector m_fields;
-        Vector<UInt32> m_fieldOffsets;
+        std::vector<UInt32> m_fieldOffsets;
         UInt32 m_totalSize = 0u;
     };
 }

@@ -730,7 +730,7 @@ namespace ramses_internal
                             }
                         }
 
-                        Vector<TextureSamplerHandle> samplerList;
+                        std::vector<TextureSamplerHandle> samplerList;
                         for (TextureSamplerHandle i(0); i < scene.getTextureSamplerCount(); i++)
                         {
                             if (scene.isTextureSamplerAllocated(i) && scene.getTextureSampler(i).contentType == TextureSampler::ContentType::StreamTexture && scene.getTextureSampler(i).contentHandle == streamTextureHandle.asMemoryHandle())
@@ -1062,7 +1062,7 @@ namespace ramses_internal
     {
         StartSection("RENDERER EVENTS", context);
 
-        Vector<RendererEvent> events;
+        std::vector<RendererEvent> events;
         updater.m_rendererEventCollector.getEvents(events);
 
         context << events.size() << " renderer event(s) pending to be dispatched" << RendererLogContext::NewLine;

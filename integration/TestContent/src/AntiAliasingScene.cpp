@@ -25,9 +25,9 @@ namespace ramses_internal
     AntiAliasingScene::AntiAliasingScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 /*state*/, const Vector3& cameraPosition)
         : IntegrationScene(ramsesClient, scene, cameraPosition)
     {
-        Vector<Float> pos;
-        Vector<uint16_t> id;
-        Vector<Float> colors;
+        std::vector<Float> pos;
+        std::vector<uint16_t> id;
+        std::vector<Float> colors;
 
         Float zValue = -6.5f;
 

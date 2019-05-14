@@ -33,7 +33,7 @@ namespace ramses_internal
 
     struct DisplayHandleTag {};
     typedef TypedMemoryHandle<DisplayHandleTag> DisplayHandle;
-    typedef Vector<DisplayHandle> DisplayHandleVector;
+    typedef std::vector<DisplayHandle> DisplayHandleVector;
 
     struct OffscreenBufferHandleTag {};
     typedef TypedMemoryHandle<OffscreenBufferHandleTag> OffscreenBufferHandle;
@@ -44,19 +44,19 @@ namespace ramses_internal
     typedef void* NativeHandle;
 
     typedef HashSet<RenderableHandle> RenderableSet;
-    typedef Vector<Bool> BoolVector;
-    typedef Vector<UInt8> UInt8Vector;
-    typedef Vector<RenderTargetHandle> RenderTargetHandleVector;
+    typedef std::vector<Bool> BoolVector;
+    typedef std::vector<UInt8> UInt8Vector;
+    typedef std::vector<RenderTargetHandle> RenderTargetHandleVector;
 
     struct DeviceResourceHandleTag {};
     typedef TypedMemoryHandle<DeviceResourceHandleTag> DeviceResourceHandle;
-    typedef Vector<DeviceResourceHandle> DeviceHandleVector;
+    typedef std::vector<DeviceResourceHandle> DeviceHandleVector;
 
     struct StreamTextureSourceIdTag {};
     typedef StronglyTypedValue<UInt32, 0xFFFFFFFF, StreamTextureSourceIdTag> StreamTextureSourceId;
     static const StreamTextureSourceId InvalidStreamTextureSourceId(0xFFFFFFFF);
     typedef HashSet<StreamTextureSourceId> StreamTextureSourceIdSet;
-    typedef Vector<StreamTextureSourceId> StreamTextureSourceIdVector;
+    typedef std::vector<StreamTextureSourceId> StreamTextureSourceIdVector;
 
     // TODO Violin this needs removing - no need for two types for stream texture id...
     typedef StreamTextureSourceId WaylandIviSurfaceId;
@@ -90,7 +90,7 @@ namespace ramses_internal
         Bool          sendViaDLT;
         UInt8Vector   pixelData;
     };
-    typedef Vector<ScreenshotInfo> ScreenshotInfoVector;
+    typedef std::vector<ScreenshotInfo> ScreenshotInfoVector;
 }
 
 #endif

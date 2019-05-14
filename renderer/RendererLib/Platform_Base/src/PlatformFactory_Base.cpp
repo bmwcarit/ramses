@@ -134,7 +134,7 @@ namespace ramses_internal
         destroyContext(context);
         destroyWindow(window);
 
-        Vector<IRenderBackend*>::Iterator renderBackendIter = m_renderBackends.find(&renderBackend);
+        std::vector<IRenderBackend*>::iterator renderBackendIter = find_c(m_renderBackends, &renderBackend);
         assert(m_renderBackends.end() != renderBackendIter);
         m_renderBackends.erase(renderBackendIter);
         delete &renderBackend;
@@ -158,7 +158,7 @@ namespace ramses_internal
 
     Bool ramses_internal::PlatformFactory_Base::destroyWindow(IWindow& window)
     {
-        Vector<IWindow*>::Iterator iter = m_windows.find(&window);
+        std::vector<IWindow*>::iterator iter = find_c(m_windows, &window);
         if (m_windows.end() != iter)
         {
             IWindow* windowToDelete = *iter;
@@ -172,7 +172,7 @@ namespace ramses_internal
 
     Bool PlatformFactory_Base::destroyContext(IContext& context)
     {
-        Vector<IContext*>::Iterator iter = m_contexts.find(&context);
+        std::vector<IContext*>::iterator iter = find_c(m_contexts, &context);
         if (m_contexts.end() != iter)
         {
             IContext* contextToDelete = *iter;
@@ -186,7 +186,7 @@ namespace ramses_internal
 
     Bool PlatformFactory_Base::destroyDevice(IDevice& device)
     {
-        Vector<IDevice*>::Iterator iter = m_devices.find(&device);
+        std::vector<IDevice*>::iterator iter = find_c(m_devices, &device);
         if (m_devices.end() != iter)
         {
             IDevice* deviceToDelete = *iter;
@@ -200,7 +200,7 @@ namespace ramses_internal
 
     Bool PlatformFactory_Base::destroySurface(ISurface& surface)
     {
-        Vector<ISurface*>::Iterator iter = m_surfaces.find(&surface);
+        std::vector<ISurface*>::iterator iter = find_c(m_surfaces, &surface);
         if (m_surfaces.end() != iter)
         {
             ISurface* surfaceToDelete = *iter;
@@ -220,7 +220,7 @@ namespace ramses_internal
 
     Bool PlatformFactory_Base::destroyEmbeddedCompositor(IEmbeddedCompositor& compositor)
     {
-        Vector<IEmbeddedCompositor*>::Iterator iter = m_embeddedCompositors.find(&compositor);
+        std::vector<IEmbeddedCompositor*>::iterator iter = find_c(m_embeddedCompositors, &compositor);
         if (m_embeddedCompositors.end() != iter)
         {
             IEmbeddedCompositor* compositorToDelete = *iter;
@@ -234,7 +234,7 @@ namespace ramses_internal
 
     Bool PlatformFactory_Base::destroyTextureUploadingAdapter(ITextureUploadingAdapter& textureUploadingAdapter)
     {
-        auto iter = m_textureUploadingAdapters.find(&textureUploadingAdapter);
+        auto iter = find_c(m_textureUploadingAdapters, &textureUploadingAdapter);
         if (m_textureUploadingAdapters.end() != iter)
         {
             delete *iter;

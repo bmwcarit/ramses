@@ -391,16 +391,6 @@ namespace ramses_internal
         collection.write(stateHandle);
     }
 
-    void SceneActionCollectionCreator::setCameraViewport(CameraHandle cameraHandle, const Viewport& vp)
-    {
-        collection.beginWriteSceneAction(ESceneActionId_SetCameraViewport);
-        collection.write(cameraHandle);
-        collection.write(vp.posX);
-        collection.write(vp.posY);
-        collection.write(vp.width);
-        collection.write(vp.height);
-    }
-
     void SceneActionCollectionCreator::setCameraFrustum(CameraHandle cameraHandle, const Frustum& frustum)
     {
         collection.beginWriteSceneAction(ESceneActionId_SetCameraFrustum);
@@ -413,11 +403,12 @@ namespace ramses_internal
         collection.write(frustum.farPlane);
     }
 
-    void SceneActionCollectionCreator::allocateCamera(ECameraProjectionType type, NodeHandle nodeHandle, CameraHandle handle)
+    void SceneActionCollectionCreator::allocateCamera(ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle viewportDataInstance, CameraHandle handle)
     {
         collection.beginWriteSceneAction(ESceneActionId_AllocateCamera);
         collection.write(static_cast<UInt32>(type));
         collection.write(nodeHandle);
+        collection.write(viewportDataInstance);
         collection.write(handle);
     }
 
@@ -1143,7 +1134,7 @@ namespace ramses_internal
         collection.write(resourceSize);
 
         // Serialize resource to collection by simulating a byte output stream pointing to collection buffer
-        Vector<Byte>& actionData = collection.getRawDataForDirectWriting();
+        std::vector<Byte>& actionData = collection.getRawDataForDirectWriting();
         UInt writeStartIdx = actionData.size();
         actionData.resize(writeStartIdx + resourceSize);
         RawBinaryOutputStream stream(actionData.data() + writeStartIdx, resourceSize);

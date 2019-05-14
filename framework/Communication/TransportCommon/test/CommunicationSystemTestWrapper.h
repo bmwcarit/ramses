@@ -76,10 +76,10 @@ namespace ramses_internal
 
         void sendEvent();
 
-        static Vector<ECommunicationSystemType> GetAvailableCommunicationSystemTypes(uint32_t mask = ECommunicationSystemType_All);
+        static std::vector<ECommunicationSystemType> GetAvailableCommunicationSystemTypes(uint32_t mask = ECommunicationSystemType_All);
         ECommunicationSystemType communicationSystemType;
         AsyncEventCounter event;
-        Vector<CommunicationSystemTestWrapper*> knownCommunicationSystems;
+        std::vector<CommunicationSystemTestWrapper*> knownCommunicationSystems;
     };
 
     ACTION_P(SendHandlerCalledEvent, pointerToClassWithSendEventMethod)

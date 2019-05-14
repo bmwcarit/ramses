@@ -18,10 +18,10 @@ namespace ramses_internal
     public:
         static void ConsolidateResource(ResourceContentHashVector& toAddIfNew, ResourceContentHashVector& toRemoveIfContained, const ResourceContentHash& res)
         {
-            const auto it = toRemoveIfContained.find(res);
+            const auto it = find_c(toRemoveIfContained, res);
             if (it == toRemoveIfContained.end())
             {
-                assert(!toAddIfNew.contains(res));
+                assert(!contains_c(toAddIfNew, res));
                 toAddIfNew.push_back(res);
             }
             else

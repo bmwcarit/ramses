@@ -37,10 +37,10 @@ namespace ramses_internal
 {
 
     template<typename T>
-    inline StringOutputStream& operator<<(StringOutputStream& lhs, const Vector<T>& rhs)
+    inline StringOutputStream& operator<<(StringOutputStream& lhs, const std::vector<T>& rhs)
     {
-        typename Vector<T>::ConstIterator it = rhs.begin();
-        const typename Vector<T>::ConstIterator end = rhs.end();
+        typename std::vector<T>::ConstIterator it = rhs.begin();
+        const typename std::vector<T>::ConstIterator end = rhs.end();
 
         for(;it!=end;++it)
         {
@@ -50,7 +50,7 @@ namespace ramses_internal
     }
 
     template<typename A, typename B>
-    inline StringOutputStream& operator<<(StringOutputStream& lhs, const Pair<A,B>& rhs)
+    inline StringOutputStream& operator<<(StringOutputStream& lhs, const std::pair<A,B>& rhs)
     {
         lhs << rhs.first;
         lhs << ";";
@@ -76,9 +76,9 @@ namespace ramses_internal
 
     // converts data and adds it to a Vector (raw data separated by ',')
     template<typename T>
-    struct ArgumentConverter< Vector<T> >
+    struct ArgumentConverter< std::vector<T> >
     {
-        static inline Bool tryConvert(const RamshArgumentData& data, Vector<T>& value)
+        static inline Bool tryConvert(const RamshArgumentData& data, std::vector<T>& value)
         {
             String curr;
 
@@ -108,13 +108,13 @@ namespace ramses_internal
         }
     };
 
-    // converts data and initializes a Pair (raw data separated by ';')
+    // converts data and initializes a std::pair (raw data separated by ';')
     template<typename T1, typename T2>
-    struct ArgumentConverter< Pair<T1,T2> >
+    struct ArgumentConverter< std::pair<T1,T2> >
     {
-        static inline Bool tryConvert(const RamshArgumentData& data, Pair<T1,T2>& value)
+        static inline Bool tryConvert(const RamshArgumentData& data, std::pair<T1,T2>& value)
         {
-            Pair<T1,T2> val;
+            std::pair<T1,T2> val;
 
             Bool result = false;
 

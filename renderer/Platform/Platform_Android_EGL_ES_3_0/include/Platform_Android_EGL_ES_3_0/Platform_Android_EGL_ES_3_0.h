@@ -21,8 +21,8 @@ namespace ramses_internal
         virtual IDevice*      createDevice(IContext& context) override final;
 
     protected:
-        void getContextAttributes(Vector<EGLint>& attributes) const override final;
-        void getSurfaceAttributes(UInt32 msaaSampleCount, Vector<EGLint>& attributes) const override final;
+        void getContextAttributes(std::vector<EGLint>& attributes) const override final;
+        void getSurfaceAttributes(UInt32 msaaSampleCount, std::vector<EGLint>& attributes) const override final;
     };
 }
 

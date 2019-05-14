@@ -76,7 +76,14 @@ namespace ramses_internal
         CameraHandle createTestCamera(const Vector3& translation = Vector3(0.0f), ECameraProjectionType camProjType = ECameraProjectionType_Renderer)
         {
             const NodeHandle cameraNode = m_sceneAllocator.allocateNode();
-            const CameraHandle camera = m_sceneAllocator.allocateCamera(camProjType, cameraNode);
+            const auto vpDataLayout = m_sceneAllocator.allocateDataLayout({ {EDataType_DataReference}, {EDataType_DataReference} });
+            const auto vpDataRefLayout = m_sceneAllocator.allocateDataLayout({ {EDataType_Vector2I} });
+            const auto vpDataInstance = m_sceneAllocator.allocateDataInstance(vpDataLayout);
+            const auto vpOffsetInstance = m_sceneAllocator.allocateDataInstance(vpDataRefLayout);
+            const auto vpSizeInstance = m_sceneAllocator.allocateDataInstance(vpDataRefLayout);
+            m_scene.setDataReference(vpDataInstance, Camera::ViewportOffsetField, vpOffsetInstance);
+            m_scene.setDataReference(vpDataInstance, Camera::ViewportSizeField, vpSizeInstance);
+            const CameraHandle camera = m_sceneAllocator.allocateCamera(camProjType, cameraNode, vpDataInstance);
 
             if (ECameraProjectionType_Perspective == camProjType)
             {
@@ -90,7 +97,8 @@ namespace ramses_internal
 
             if (ECameraProjectionType_Renderer != camProjType)
             {
-                m_scene.setCameraViewport(camera, { 0, 0, FakeVpWidth, FakeVpHeight });
+                m_scene.setDataSingleVector2i(vpOffsetInstance, DataFieldHandle{ 0 }, { 0, 0 });
+                m_scene.setDataSingleVector2i(vpSizeInstance, DataFieldHandle{ 0 }, { Int32(FakeVpWidth), Int32(FakeVpHeight) });
             }
 
             const TransformHandle cameraTransform = m_sceneAllocator.allocateTransform(cameraNode);

@@ -226,7 +226,7 @@ namespace ramses_internal
         virtual void unregisterThread(ramses::ERamsesThreadIdentifier) {}
 
         std::chrono::system_clock::time_point last;
-        Vector<std::chrono::milliseconds> values;
+        std::vector<std::chrono::milliseconds> values;
         bool initialized = false;
     };
 

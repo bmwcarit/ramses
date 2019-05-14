@@ -45,9 +45,7 @@ namespace ramses
 
     bool ramses::ResourceFileDescription::contains(const Resource* resourceObject) const
     {
-        const ResourceObjects& resources = impl->m_resources;
-        ResourceObjects::const_iterator iter = resources.find(resourceObject);
-        return iter != impl->m_resources.end();
+        return ramses_internal::contains_c(impl->m_resources, resourceObject);
     }
 
     uint32_t ResourceFileDescription::getNumberOfResources() const

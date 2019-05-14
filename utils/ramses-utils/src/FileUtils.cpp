@@ -58,7 +58,7 @@ void FileUtils::WriteHashToFile(ramses_internal::ResourceContentHash hash, const
     file.close();
 }
 
-bool FileUtils::ReadFileLines(const char* filePath, ramses_internal::Vector<ramses_internal::String>& lines)
+bool FileUtils::ReadFileLines(const char* filePath, std::vector<ramses_internal::String>& lines)
 {
     lines.clear();
 
@@ -91,7 +91,7 @@ bool FileUtils::ReadFileContentsToString(const char* filePath, ramses_internal::
         return false;
     }
 
-    ramses_internal::Vector<char> charVector(fileSize + 1u);
+    std::vector<char> charVector(fileSize + 1u);
     stat = file.read(&charVector[0], fileSize, readBytes);
     if (stat == ramses_internal::EStatus_RAMSES_OK || stat == ramses_internal::EStatus_RAMSES_EOF)
     {

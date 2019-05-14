@@ -26,16 +26,16 @@ namespace ramses_internal
     public:
         typedef MemoryHandle Type;
 
-        static TypedMemoryHandle Invalid()
+        static constexpr TypedMemoryHandle Invalid()
         {
             return TypedMemoryHandle();
         }
 
-        TypedMemoryHandle()
+        constexpr TypedMemoryHandle()
             : m_handle(InvalidMemoryHandle)
         {}
 
-        explicit TypedMemoryHandle(MemoryHandle handle)
+        explicit constexpr TypedMemoryHandle(MemoryHandle handle)
             : m_handle(handle)
         {}
 

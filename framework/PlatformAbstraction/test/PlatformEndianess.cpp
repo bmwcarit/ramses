@@ -8,8 +8,12 @@
 
 #include "framework_common_gmock_header.h"
 #include "gtest/gtest.h"
-#include "PlatformAbstraction/PlatformTypes.h"
-#include "PlatformAbstraction/PlatformSocket.h"
+
+#ifdef _WIN32
+#include <winsock2.h>
+#else
+#include <arpa/inet.h>
+#endif
 
 namespace ramses_internal
 {

@@ -83,7 +83,7 @@ namespace ramses_internal
         m_finishedPacketFun = finishedPacketFun;
 
         // prepare SerializationInfo
-        Vector<SerializationInfo> serInfos;
+        std::vector<SerializationInfo> serInfos;
         serInfos.reserve(managedResources.size());
         UInt32 overallSize = 0;
 
@@ -143,7 +143,7 @@ namespace ramses_internal
     {
     }
 
-    Vector<IResource*> ResourceStreamDeserializer::processData(const ByteArrayView& data)
+    std::vector<IResource*> ResourceStreamDeserializer::processData(const ByteArrayView& data)
     {
         UInt32 packetNum = 0;
         auto it = data.begin();
@@ -180,7 +180,7 @@ namespace ramses_internal
             ++m_nextPacketNum;
         }
 
-        Vector<IResource*> result;
+        std::vector<IResource*> result;
 
         while (it != data.end())
         {

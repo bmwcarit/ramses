@@ -85,6 +85,7 @@ ACME_MODULE(
     FILES_SOURCE            PlatformAbstraction/src/*.cpp
     DEPENDENCIES            ramses-capu
                             lz4
+                            asio
 
     INCLUDE_BASE            Core/Math3d/include
     FILES_PRIVATE_HEADER    Core/Math3d/include/Math3d/*.h

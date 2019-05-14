@@ -12,8 +12,8 @@ namespace ramses_internal
 {
     void AnimationStateChangeCollector::onAnimationStarted(AnimationHandle handle)
     {
-        assert(!m_startedAnimations.contains(handle));
-        AnimationHandleVector::Iterator iter = m_finishedAnimations.find(handle);
+        assert(!contains_c(m_startedAnimations, handle));
+        AnimationHandleVector::iterator iter = find_c(m_finishedAnimations, handle);
         if (iter != m_finishedAnimations.end())
         {
             m_finishedAnimations.erase(iter);
@@ -24,8 +24,8 @@ namespace ramses_internal
 
     void AnimationStateChangeCollector::onAnimationFinished(AnimationHandle handle)
     {
-        assert(!m_finishedAnimations.contains(handle));
-        AnimationHandleVector::Iterator iter = m_startedAnimations.find(handle);
+        assert(!contains_c(m_finishedAnimations, handle));
+        AnimationHandleVector::iterator iter = find_c(m_startedAnimations, handle);
         if (iter != m_startedAnimations.end())
         {
             m_startedAnimations.erase(iter);

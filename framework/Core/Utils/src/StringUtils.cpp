@@ -145,7 +145,7 @@ namespace ramses_internal
     }
 
 
-    const String StringUtils::ConvertUTF32ArrayIntoHexString(const Vector<uint32_t>& data)
+    const String StringUtils::ConvertUTF32ArrayIntoHexString(const std::vector<uint32_t>& data)
     {
         ramses_internal::StringOutputStream sStream;
         sStream.setHexadecimalOutputFormat(ramses_internal::StringOutputStream::EHexadecimalType_HexLeadingZeros);

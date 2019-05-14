@@ -25,7 +25,7 @@ namespace ramses
     class NodeImpl;
     class ArrayResourceImpl;
 
-    typedef ramses_internal::Vector<BoundingSphere> BoundingSphereVector;
+    typedef std::vector<BoundingSphere> BoundingSphereVector;
     typedef ramses_internal::HashMap<const NodeImpl*, BoundingSphere> NodeImplBoundingSphereMap;
 
     class BoundingSphereCollectionImpl

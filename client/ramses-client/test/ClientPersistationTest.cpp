@@ -374,7 +374,7 @@ namespace ramses
 
     TEST_F(ClientPersistation, compressedFileIsSmallerThanUncompressed)
     {
-        const ramses_internal::Vector<uint16_t> data(1000u, 0u);
+        const std::vector<uint16_t> data(1000u, 0u);
         const UInt16Array* resource = this->client.createConstUInt16Array(static_cast<uint32_t>(data.size()), data.data());
 
         ResourceFileDescription fileDescription("someTempararyFile.ram");
@@ -400,7 +400,7 @@ namespace ramses
     TEST_F(ClientPersistation, compressedFileIsSmallerThanUncompressedWhenUsingSaveSceneToFile)
     {
         Scene* scene = client.createScene(1);
-        const ramses_internal::Vector<uint16_t> data(1000u, 0u);
+        const std::vector<uint16_t> data(1000u, 0u);
         const UInt16Array* resource = this->client.createConstUInt16Array(static_cast<uint32_t>(data.size()), data.data());
 
         ResourceFileDescription fileDescription("someTempararyFile.ram");
@@ -447,8 +447,8 @@ namespace ramses
         }
 
         const UInt bufferLength = 1024*1024;
-        Vector<Char> buf1(bufferLength);
-        Vector<Char> buf2(bufferLength);
+        std::vector<Char> buf1(bufferLength);
+        std::vector<Char> buf2(bufferLength);
 
         UInt offset = 0;
         UInt dummy = 0;

@@ -193,9 +193,9 @@ namespace ramses_internal
         }
     }
 
-    Vector<LogContextInformation> RamsesLogger::getAllContextsInformation() const
+    std::vector<LogContextInformation> RamsesLogger::getAllContextsInformation() const
     {
-        Vector<LogContextInformation> result;
+        std::vector<LogContextInformation> result;
         for (const auto& ctx : m_logContexts)
         {
             result.push_back({ ctx->getContextId(), ctx->getContextName(), ctx->getLogLevel() });
@@ -381,7 +381,7 @@ namespace ramses_internal
     void RamsesLogger::addAppender(LogAppenderBase& appender)
     {
         PlatformLightweightGuard guard(m_appenderLock);
-        if (m_logAppenders.find(&appender) == m_logAppenders.end())
+        if (find_c(m_logAppenders, &appender) == m_logAppenders.end())
         {
             m_logAppenders.push_back(&appender);
         }
@@ -390,7 +390,7 @@ namespace ramses_internal
     void RamsesLogger::removeAppender(LogAppenderBase& appender)
     {
         PlatformLightweightGuard guard(m_appenderLock);
-        auto it = m_logAppenders.find(&appender);
+        auto it = find_c(m_logAppenders, &appender);
         if (it != m_logAppenders.end())
         {
             m_logAppenders.erase(it);

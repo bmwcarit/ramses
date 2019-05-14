@@ -25,7 +25,7 @@ namespace ramses_internal
         LOG_DEBUG(CONTEXT_COMMUNICATION, "TcpDiscoveryDaemon::TcpDiscoveryDaemon: My Address: " << participantNetworkAddress.getIp() << ":" << participantNetworkAddress.getPort());
 
         const NetworkParticipantAddress daemonNetworkAddress;
-        m_communicationSystem.reset(new TCPConnectionSystem(participantNetworkAddress, config.getProtocolVersion(), isDaemon, daemonNetworkAddress, frameworkLock, statisticCollection));
+        m_communicationSystem.reset(new TCPConnectionSystem(participantNetworkAddress, config.getProtocolVersion(), daemonNetworkAddress, true, frameworkLock, statisticCollection));
 
         if (optionalRamsh)
         {

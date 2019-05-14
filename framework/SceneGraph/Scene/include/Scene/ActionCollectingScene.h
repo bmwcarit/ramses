@@ -52,9 +52,8 @@ namespace ramses_internal
         virtual void                        setRenderStateColorWriteMask    (RenderStateHandle stateHandle, ColorWriteMask colorMask) override;
 
         // Camera
-        virtual CameraHandle                allocateCamera                  (ECameraProjectionType type, NodeHandle nodeHandle, CameraHandle handle = CameraHandle::Invalid()) override;
+        virtual CameraHandle                allocateCamera                  (ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle viewportDataInstance, CameraHandle handle = CameraHandle::Invalid()) override;
         virtual void                        releaseCamera                   (CameraHandle cameraHandle) override;
-        virtual void                        setCameraViewport               (CameraHandle cameraHandle, const Viewport& vp) override;
         virtual void                        setCameraFrustum                (CameraHandle cameraHandle, const Frustum& frustum) override;
 
         // Creation/Deletion

@@ -262,7 +262,7 @@ TEST_F(AResourceUploader, uploadsEffectResourceWithBinaryShaderCacheWhenCacheMis
     EXPECT_CALL(binaryShaderProvider, storeBinaryShader(res.getHash(), _, _, _));
     EXPECT_CALL(renderer.deviceMock, uploadShader(_)).WillOnce(Return(DeviceResourceHandle(123)));
     EXPECT_CALL(renderer.deviceMock, getBinaryShader(_, _, _)).
-        WillOnce(DoAll(SetArgReferee<1>(Vector<UInt8>(1)), Return(true)));
+        WillOnce(DoAll(SetArgReferee<1>(std::vector<UInt8>(1)), Return(true)));
     EXPECT_CALL(binaryShaderProvider, binaryShaderUploaded(_, _)).Times(0); // This should only be called when attempting to upload from cache
 
     ManagedResource managedRes(res, dummyManagedResourceCallback);

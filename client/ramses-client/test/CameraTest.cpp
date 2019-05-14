@@ -11,6 +11,7 @@
 #include "ClientTestUtils.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
+#include "ramses-client-api/DataVector2i.h"
 #include "Math3d/CameraMatrixHelper.h"
 
 namespace ramses
@@ -45,11 +46,6 @@ namespace ramses
         EXPECT_EQ(1.0f, this->camera->getTopPlane());
         EXPECT_EQ(0.1f, this->camera->getNearPlane());
         EXPECT_EQ(1.0f, this->camera->getFarPlane());
-
-        EXPECT_EQ(0u, this->camera->getViewportX());
-        EXPECT_EQ(0u, this->camera->getViewportY());
-        EXPECT_EQ(1u, this->camera->getViewportWidth());
-        EXPECT_EQ(1u, this->camera->getViewportHeight());
     }
 
     TYPED_TEST(ACamera, reportsErrorWhenValidatingInitialState)
@@ -59,9 +55,9 @@ namespace ramses
 
     TYPED_TEST(ACamera, canSetItsViewport)
     {
-        EXPECT_EQ(StatusOK, this->camera->setViewport(1, 2, 100, 200));
-        EXPECT_EQ(1u, this->camera->getViewportX());
-        EXPECT_EQ(2u, this->camera->getViewportY());
+        EXPECT_EQ(StatusOK, this->camera->setViewport(1, -2, 100, 200));
+        EXPECT_EQ(1, this->camera->getViewportX());
+        EXPECT_EQ(-2, this->camera->getViewportY());
         EXPECT_EQ(100u, this->camera->getViewportWidth());
         EXPECT_EQ(200u, this->camera->getViewportHeight());
     }
@@ -106,9 +102,9 @@ namespace ramses
 
     TYPED_TEST(ACamera, failsToSetViewportIfInvalid)
     {
-        EXPECT_NE(StatusOK, this->camera->setViewport(0u, 0u, 0u, 0u));
-        EXPECT_NE(StatusOK, this->camera->setViewport(0u, 0u, 1u, 0u));
-        EXPECT_NE(StatusOK, this->camera->setViewport(0u, 0u, 0u, 1u));
+        EXPECT_NE(StatusOK, this->camera->setViewport(0, 0, 0u, 0u));
+        EXPECT_NE(StatusOK, this->camera->setViewport(0, 0, 1u, 0u));
+        EXPECT_NE(StatusOK, this->camera->setViewport(0, 0, 0u, 1u));
     }
 
     TYPED_TEST(ACamera, returnsProjectionMatrix)
@@ -125,6 +121,263 @@ namespace ramses
         {
             EXPECT_FLOAT_EQ(expectedMatrix.data[i], projMatData[i]);
         }
+    }
+
+    TYPED_TEST(ACamera, viewportDataNotBoundInitially)
+    {
+        EXPECT_FALSE(this->camera->isViewportOffsetBound());
+        EXPECT_FALSE(this->camera->isViewportSizeBound());
+    }
+
+    TYPED_TEST(ACamera, canBindViewportData)
+    {
+        const auto do1 = this->m_scene.createDataVector2i();
+        const auto do2 = this->m_scene.createDataVector2i();
+
+        EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do1));
+        EXPECT_EQ(StatusOK, this->camera->bindViewportSize(*do2));
+
+        EXPECT_TRUE(this->camera->isViewportOffsetBound());
+        EXPECT_TRUE(this->camera->isViewportSizeBound());
+    }
+
+    TYPED_TEST(ACamera, canUnbindViewportData)
+    {
+        const auto do1 = this->m_scene.createDataVector2i();
+        const auto do2 = this->m_scene.createDataVector2i();
+
+        EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do1));
+        EXPECT_EQ(StatusOK, this->camera->bindViewportSize(*do2));
+
+        EXPECT_TRUE(this->camera->isViewportOffsetBound());
+        EXPECT_TRUE(this->camera->isViewportSizeBound());
+
+        EXPECT_EQ(StatusOK, this->camera->unbindViewportOffset());
+        EXPECT_EQ(StatusOK, this->camera->unbindViewportSize());
+
+        EXPECT_FALSE(this->camera->isViewportOffsetBound());
+        EXPECT_FALSE(this->camera->isViewportSizeBound());
+    }
+
+    TYPED_TEST(ACamera, getsReferencedViewportValuesWhenBound)
+    {
+        const auto do1 = this->m_scene.createDataVector2i();
+        const auto do2 = this->m_scene.createDataVector2i();
+        do1->setValue(1, 2);
+        do2->setValue(3, 4);
+
+        EXPECT_EQ(StatusOK, this->camera->setViewport(-1, -2, 16, 32));
+
+        EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do1));
+        EXPECT_EQ(StatusOK, this->camera->bindViewportSize(*do2));
+        EXPECT_TRUE(this->camera->isViewportOffsetBound());
+        EXPECT_TRUE(this->camera->isViewportSizeBound());
+
+        EXPECT_EQ(1, this->camera->getViewportX());
+        EXPECT_EQ(2, this->camera->getViewportY());
+        EXPECT_EQ(3u, this->camera->getViewportWidth());
+        EXPECT_EQ(4u, this->camera->getViewportHeight());
+    }
+
+    TYPED_TEST(ACamera, getsCorrectViewportValuesWhenBoundFromOneDataObjectToAnother)
+    {
+        const auto do1 = this->m_scene.createDataVector2i();
+        const auto do2 = this->m_scene.createDataVector2i();
+        do1->setValue(1, 2);
+        do2->setValue(3, 4);
+
+        EXPECT_EQ(StatusOK, this->camera->setViewport(-1, -2, 16, 32));
+
+        EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do1));
+        EXPECT_EQ(StatusOK, this->camera->bindViewportSize(*do2));
+        EXPECT_TRUE(this->camera->isViewportOffsetBound());
+        EXPECT_TRUE(this->camera->isViewportSizeBound());
+
+        EXPECT_EQ(1, this->camera->getViewportX());
+        EXPECT_EQ(2, this->camera->getViewportY());
+        EXPECT_EQ(3u, this->camera->getViewportWidth());
+        EXPECT_EQ(4u, this->camera->getViewportHeight());
+
+        EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do2));
+        EXPECT_EQ(StatusOK, this->camera->bindViewportSize(*do1));
+        EXPECT_TRUE(this->camera->isViewportOffsetBound());
+        EXPECT_TRUE(this->camera->isViewportSizeBound());
+
+        EXPECT_EQ(3, this->camera->getViewportX());
+        EXPECT_EQ(4, this->camera->getViewportY());
+        EXPECT_EQ(1u, this->camera->getViewportWidth());
+        EXPECT_EQ(2u, this->camera->getViewportHeight());
+    }
+
+    TYPED_TEST(ACamera, getsReferencedViewportValuesWhenBound_alsoWhenChangedInDataObject)
+    {
+        const auto do1 = this->m_scene.createDataVector2i();
+        const auto do2 = this->m_scene.createDataVector2i();
+        do1->setValue(1, 2);
+        do2->setValue(3, 4);
+
+        EXPECT_EQ(StatusOK, this->camera->setViewport(-1, -2, 16, 32));
+
+        EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do1));
+        EXPECT_EQ(StatusOK, this->camera->bindViewportSize(*do2));
+        EXPECT_TRUE(this->camera->isViewportOffsetBound());
+        EXPECT_TRUE(this->camera->isViewportSizeBound());
+
+        EXPECT_EQ(1, this->camera->getViewportX());
+        EXPECT_EQ(2, this->camera->getViewportY());
+        EXPECT_EQ(3u, this->camera->getViewportWidth());
+        EXPECT_EQ(4u, this->camera->getViewportHeight());
+
+        do1->setValue(11, 22);
+        do2->setValue(33, 44);
+
+        EXPECT_EQ(11, this->camera->getViewportX());
+        EXPECT_EQ(22, this->camera->getViewportY());
+        EXPECT_EQ(33u, this->camera->getViewportWidth());
+        EXPECT_EQ(44u, this->camera->getViewportHeight());
+    }
+
+    TYPED_TEST(ACamera, canBindDataToTwoCamerasViewports)
+    {
+        auto camera2 = &this->template createObject<TypeParam>("camera");
+
+        const auto do1 = this->m_scene.createDataVector2i();
+        do1->setValue(3, 4);
+
+        EXPECT_EQ(StatusOK, this->camera->setViewport(-1, -2, 16, 32));
+        EXPECT_EQ(StatusOK, camera2->setViewport(-11, -22, 166, 322));
+
+        EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do1));
+        EXPECT_EQ(StatusOK, camera2->bindViewportSize(*do1));
+        EXPECT_TRUE(this->camera->isViewportOffsetBound());
+        EXPECT_TRUE(camera2->isViewportSizeBound());
+
+        EXPECT_EQ(3, this->camera->getViewportX());
+        EXPECT_EQ(4, this->camera->getViewportY());
+        EXPECT_EQ(16u, this->camera->getViewportWidth());
+        EXPECT_EQ(32u, this->camera->getViewportHeight());
+        EXPECT_EQ(-11, camera2->getViewportX());
+        EXPECT_EQ(-22, camera2->getViewportY());
+        EXPECT_EQ(3u, camera2->getViewportWidth());
+        EXPECT_EQ(4u, camera2->getViewportHeight());
+
+        do1->setValue(11, 22);
+
+        EXPECT_EQ(11, this->camera->getViewportX());
+        EXPECT_EQ(22, this->camera->getViewportY());
+        EXPECT_EQ(16u, this->camera->getViewportWidth());
+        EXPECT_EQ(32u, this->camera->getViewportHeight());
+        EXPECT_EQ(-11, camera2->getViewportX());
+        EXPECT_EQ(-22, camera2->getViewportY());
+        EXPECT_EQ(11u, camera2->getViewportWidth());
+        EXPECT_EQ(22u, camera2->getViewportHeight());
+    }
+
+    TYPED_TEST(ACamera, getsOriginalViewportValuesWhenUnbound)
+    {
+        const auto do1 = this->m_scene.createDataVector2i();
+        const auto do2 = this->m_scene.createDataVector2i();
+        do1->setValue(1, 2);
+        do2->setValue(3, 4);
+
+        EXPECT_EQ(StatusOK, this->camera->setViewport(-1, -2, 16, 32));
+
+        EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do1));
+        EXPECT_EQ(StatusOK, this->camera->bindViewportSize(*do2));
+        EXPECT_TRUE(this->camera->isViewportOffsetBound());
+        EXPECT_TRUE(this->camera->isViewportSizeBound());
+
+        EXPECT_EQ(1, this->camera->getViewportX());
+        EXPECT_EQ(2, this->camera->getViewportY());
+        EXPECT_EQ(3u, this->camera->getViewportWidth());
+        EXPECT_EQ(4u, this->camera->getViewportHeight());
+
+        EXPECT_EQ(StatusOK, this->camera->unbindViewportOffset());
+        EXPECT_EQ(StatusOK, this->camera->unbindViewportSize());
+
+        EXPECT_EQ(-1, this->camera->getViewportX());
+        EXPECT_EQ(-2, this->camera->getViewportY());
+        EXPECT_EQ(16u, this->camera->getViewportWidth());
+        EXPECT_EQ(32u, this->camera->getViewportHeight());
+    }
+
+    TYPED_TEST(ACamera, viewportValueSetIfBoundOnlyAffectsOriginalValueThatBecomesActiveAfterUnbound)
+    {
+        const auto do1 = this->m_scene.createDataVector2i();
+        do1->setValue(1, 2);
+
+        EXPECT_EQ(StatusOK, this->camera->setViewport(-1, -2, 16, 32));
+
+        EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do1));
+
+        EXPECT_EQ(1, this->camera->getViewportX());
+        EXPECT_EQ(2, this->camera->getViewportY());
+        EXPECT_EQ(16u, this->camera->getViewportWidth());
+        EXPECT_EQ(32u, this->camera->getViewportHeight());
+
+        EXPECT_EQ(StatusOK, this->camera->setViewport(-11, -22, 166, 322));
+
+        EXPECT_EQ(1, this->camera->getViewportX());
+        EXPECT_EQ(2, this->camera->getViewportY());
+        // width and height are not bound therefore active right away
+        EXPECT_EQ(166u, this->camera->getViewportWidth());
+        EXPECT_EQ(322u, this->camera->getViewportHeight());
+
+        EXPECT_EQ(StatusOK, this->camera->unbindViewportOffset());
+
+        // offset set back to original value, which was updated while bound
+        EXPECT_EQ(-11, this->camera->getViewportX());
+        EXPECT_EQ(-22, this->camera->getViewportY());
+        EXPECT_EQ(166u, this->camera->getViewportWidth());
+        EXPECT_EQ(322u, this->camera->getViewportHeight());
+    }
+
+    TYPED_TEST(ACamera, doesNotReportValidationErrorWhenViewportNotInitializedButBoundToValidData)
+    {
+        // make frustum valid - not testing frustum validity here
+        EXPECT_EQ(StatusOK, this->camera->setFrustum(-1, 1, -1, 1, 0.1f, 0.2f));
+
+        const auto do1 = this->m_scene.createDataVector2i();
+        const auto do2 = this->m_scene.createDataVector2i();
+        do1->setValue(1, 2);
+        do2->setValue(3, 4);
+        EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do1));
+        EXPECT_EQ(StatusOK, this->camera->bindViewportSize(*do2));
+        EXPECT_EQ(StatusOK, this->camera->validate());
+    }
+
+    TYPED_TEST(ACamera, reportsValidationErrorWhenViewportNotInitializedAndBoundToValidDataButUnboundAfterwards)
+    {
+        // make frustum valid - not testing frustum validity here
+        EXPECT_EQ(StatusOK, this->camera->setFrustum(-1, 1, -1, 1, 0.1f, 0.2f));
+
+        const auto do1 = this->m_scene.createDataVector2i();
+        const auto do2 = this->m_scene.createDataVector2i();
+        do1->setValue(1, 2);
+        do2->setValue(3, 4);
+        EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do1));
+        EXPECT_EQ(StatusOK, this->camera->bindViewportSize(*do2));
+        EXPECT_EQ(StatusOK, this->camera->validate());
+
+        EXPECT_EQ(StatusOK, this->camera->unbindViewportOffset());
+        EXPECT_NE(StatusOK, this->camera->validate());
+
+        EXPECT_EQ(StatusOK, this->camera->unbindViewportSize());
+        EXPECT_NE(StatusOK, this->camera->validate());
+    }
+
+    TYPED_TEST(ACamera, reportsValidationErrorWhenViewportNotInitializedAndBoundToInvalidData)
+    {
+        // make frustum valid - not testing frustum validity here
+        EXPECT_EQ(StatusOK, this->camera->setFrustum(-1, 1, -1, 1, 0.1f, 0.2f));
+
+        const auto do1 = this->m_scene.createDataVector2i();
+        const auto do2 = this->m_scene.createDataVector2i();
+        do1->setValue(1, 2);
+        do2->setValue(0, 4);
+        EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do1));
+        EXPECT_EQ(StatusOK, this->camera->bindViewportSize(*do2));
+        EXPECT_NE(StatusOK, this->camera->validate());
     }
 
     class APerspectiveCamera : public LocalTestClientWithScene, public testing::Test

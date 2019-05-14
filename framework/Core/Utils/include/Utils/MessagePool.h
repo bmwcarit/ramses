@@ -40,7 +40,7 @@ namespace ramses_internal
 
     private:
         UInt32          m_nextIndex;
-        Vector<MessageEntry> m_messages;
+        std::vector<MessageEntry> m_messages;
     };
 
     template <UInt32 MaxEntries, UInt32 SuccessMessageEntryID>

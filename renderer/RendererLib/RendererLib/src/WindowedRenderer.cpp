@@ -51,6 +51,7 @@ namespace ramses_internal
         , m_cmdLinkSceneData                               (m_rendererCommandBuffer)
         , m_cmdUnlinkSceneData                             (m_rendererCommandBuffer)
         , m_cmdSystemCompositorControllerListIviSurfaces         (m_rendererCommandBuffer)
+        , m_cmdSystemCompositorControllerSetLayerVisibility      (m_rendererCommandBuffer)
         , m_cmdSystemCompositorControllerSetSurfaceVisibility    (m_rendererCommandBuffer)
         , m_cmdSystemCompositorControllerSetSurfaceOpacity       (m_rendererCommandBuffer)
         , m_cmdSystemCompositorControllerSetSurfaceDestRectangle (m_rendererCommandBuffer)
@@ -174,6 +175,7 @@ namespace ramses_internal
         ramsh.add(m_cmdSystemCompositorControllerListIviSurfaces);
         ramsh.add(m_cmdLinkSceneData);
         ramsh.add(m_cmdUnlinkSceneData);
+        ramsh.add(m_cmdSystemCompositorControllerSetLayerVisibility);
         ramsh.add(m_cmdSystemCompositorControllerSetSurfaceVisibility);
         ramsh.add(m_cmdSystemCompositorControllerSetSurfaceOpacity);
         ramsh.add(m_cmdSystemCompositorControllerSetSurfaceDestRectangle);

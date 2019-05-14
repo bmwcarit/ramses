@@ -36,7 +36,7 @@ public:
 
 private:
 
-    typedef ramses_internal::Vector<PerformanceTestAssert*> PerformanceTestAssertVector;
+    typedef std::vector<PerformanceTestAssert*> PerformanceTestAssertVector;
 
     PerformanceTestBaseVector m_tests;
     PerformanceTestAssertVector m_testAsserts;

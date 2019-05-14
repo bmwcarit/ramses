@@ -12,6 +12,7 @@
 #include "PlatformAbstraction/PlatformTime.h"
 #include "PlatformAbstraction/PlatformEnvironmentVariables.h"
 #include "ramses-capu/os/Console.h"
+#include <time.h>
 
 namespace ramses_internal
 {
@@ -29,7 +30,6 @@ namespace ramses_internal
         const uint64_t now = PlatformTime::GetMillisecondsAbsolute();
         ramses_capu::Console::ConsoleColor logLevelColor;
         const char* logLevelStr = nullptr;
-
 
         switch(logMessage.getLogLevel())
         {
@@ -63,16 +63,26 @@ namespace ramses_internal
             break;
         }
 
+        struct tm posix_tm;
+        time_t posix_time = static_cast<time_t>(now / 1000);
+#ifdef _MSC_VER
+        localtime_s(&posix_tm, &posix_time);
+#else
+        localtime_r(&posix_time, &posix_tm);
+#endif
+        char time_buffer[25] = {0};
+        strftime(time_buffer, sizeof(time_buffer), "%Y%m%d-%H:%M:%S", &posix_tm);
+
         if (m_colorsEnabled)
         {
-            ramses_capu::Console::Print(ramses_capu::Console::WHITE, "%.3f ", now/1000.0);
+            ramses_capu::Console::Print(ramses_capu::Console::WHITE, "%s.%03d ", time_buffer, now % 1000);
             ramses_capu::Console::Print(logLevelColor, logLevelStr);
             ramses_capu::Console::Print(ramses_capu::Console::AQUA, logMessage.getContext().getContextName());
             ramses_capu::Console::Print(" | %s\n", logMessage.getStream().c_str());
         }
         else
         {
-            ramses_capu::Console::Print("%.3f ", now/1000.0);
+            ramses_capu::Console::Print("%s.%03d ", time_buffer, now % 1000);
             ramses_capu::Console::Print(logLevelStr);
             ramses_capu::Console::Print(logMessage.getContext().getContextName());
             ramses_capu::Console::Print(" | %s\n", logMessage.getStream().c_str());

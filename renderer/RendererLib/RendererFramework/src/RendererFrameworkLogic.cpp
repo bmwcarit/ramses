@@ -50,7 +50,7 @@ namespace ramses_internal
                 LOG_INFO(CONTEXT_RENDERER, "RendererFrameworkLogic::handleNewScenesAvailable: scene published: " << newScene.sceneID.getValue() << " @ " << providerID << " name:" << newScene.friendlyName << " publicationmode: " << EnumToString(newScene.publicationMode));
 
                 m_rendererCommands.publishScene(newScene.sceneID, providerID, mode);
-                m_sceneClients.put(newScene.sceneID, MakePair(providerID, newScene.friendlyName));
+                m_sceneClients.put(newScene.sceneID, std::make_pair(providerID, newScene.friendlyName));
             }
             else
             {
@@ -103,7 +103,7 @@ namespace ramses_internal
     {
         PlatformGuard guard(m_frameworkLock);
 
-        const Pair<Guid, String> *sceneIdToProviderID = m_sceneClients.get(sceneId);
+        const std::pair<Guid, String> *sceneIdToProviderID = m_sceneClients.get(sceneId);
         if (nullptr != sceneIdToProviderID)
         {
             const Guid providerID = sceneIdToProviderID->first;
@@ -188,7 +188,7 @@ namespace ramses_internal
         SceneInfoVector unavailableScenes;
         for(const auto& sceneClient : m_sceneClients)
         {
-            const Pair<Guid, String>& clientInfo = sceneClient.value;
+            const std::pair<Guid, String>& clientInfo = sceneClient.value;
             if (clientInfo.first == clientID)
             {
                 unavailableScenes.push_back(SceneInfo(sceneClient.key, clientInfo.second));

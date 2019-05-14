@@ -54,17 +54,17 @@ namespace ramses_internal
 
     }
 
-    const Vector<UInt16>& WarpingMeshData::getIndices() const
+    const std::vector<UInt16>& WarpingMeshData::getIndices() const
     {
         return m_indices;
     }
 
-    const Vector<Vector3>& WarpingMeshData::getVertexPositions() const
+    const std::vector<Vector3>& WarpingMeshData::getVertexPositions() const
     {
         return m_vertexPositions;
     }
 
-    const Vector<Vector2>& WarpingMeshData::getTextureCoordinates() const
+    const std::vector<Vector2>& WarpingMeshData::getTextureCoordinates() const
     {
         return m_textureCoordinates;
     }

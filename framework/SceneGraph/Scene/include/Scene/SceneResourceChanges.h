@@ -69,7 +69,7 @@ namespace ramses_internal
         ESceneResourceAction action;
     };
 
-    typedef Vector<SceneResourceAction> SceneResourceActionVector;
+    typedef std::vector<SceneResourceAction> SceneResourceActionVector;
 
     struct SceneResourceChanges
     {

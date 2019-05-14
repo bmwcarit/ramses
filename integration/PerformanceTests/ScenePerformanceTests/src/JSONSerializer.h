@@ -34,7 +34,7 @@ private:
     void closeScope(char value);
 
     StringOutputStream& m_stream;
-    Vector<bool> m_addDelimiter;
+    std::vector<bool> m_addDelimiter;
 };
 
 template <typename T>

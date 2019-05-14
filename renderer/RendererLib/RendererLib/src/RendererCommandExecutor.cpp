@@ -367,6 +367,13 @@ namespace ramses_internal
                 m_renderer.systemCompositorAddIviSurfaceToIviLayer(command.waylandIviSurfaceId, command.waylandIviLayerId);
                 break;
             }
+            case ERendererCommand_SystemCompositorControllerSetIviLayerVisibility:
+            {
+                const CompositorCommand& command = m_executedCommands.getCommandData<CompositorCommand>(i);
+                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " layerId " << command.waylandIviLayerId);
+                m_renderer.systemCompositorSetIviLayerVisibility(command.waylandIviLayerId, command.visibility);
+                break;
+            }
             case ERendererCommand_SystemCompositorControllerRemoveIviSurfaceFromIviLayer:
             {
                 const CompositorCommand& command = m_executedCommands.getCommandData<CompositorCommand>(i);

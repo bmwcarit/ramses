@@ -9,9 +9,9 @@
 #include "StringUtils.h"
 #include "Utils/StringUtils.h"
 
-void StringUtils::GetLineTokens(const ramses_internal::String& line, char split, ramses_internal::Vector<ramses_internal::String>& tokens)
+void StringUtils::GetLineTokens(const ramses_internal::String& line, char split, std::vector<ramses_internal::String>& tokens)
 {
-    ramses_internal::Vector<ramses_internal::String> allTokens;
+    std::vector<ramses_internal::String> allTokens;
     ramses_internal::StringUtils::Tokenize(line, allTokens, split);
 
     // due to the wired behavior of tokenize provided by capu, we have to filter out those empty tokens.

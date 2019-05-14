@@ -44,12 +44,12 @@ private:
     void shuffleGroupsAndPasses();
 
     void assignGroupsAndPasses();
-    void assignNestedGroup(ramses::RenderGroup& parent, ramses_internal::Vector<ramses::RenderGroup*>& unassigned);
+    void assignNestedGroup(ramses::RenderGroup& parent, std::vector<ramses::RenderGroup*>& unassigned);
 
     ramses::Scene* m_scene;
-    ramses_internal::Vector<ramses::MeshNode*> m_meshes;
-    ramses_internal::Vector<ramses::RenderGroup*> m_groups;
-    ramses_internal::Vector<ramses::RenderPass*> m_passes;
+    std::vector<ramses::MeshNode*> m_meshes;
+    std::vector<ramses::RenderGroup*> m_groups;
+    std::vector<ramses::RenderPass*> m_passes;
 
     bool m_useNestedRenderGroups;
 };

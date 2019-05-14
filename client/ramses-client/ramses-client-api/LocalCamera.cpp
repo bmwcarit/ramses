@@ -8,6 +8,7 @@
 
 // API
 #include "ramses-client-api/LocalCamera.h"
+#include "ramses-client-api/DataVector2i.h"
 
 // internal
 #include "CameraNodeImpl.h"
@@ -30,19 +31,19 @@ namespace ramses
         return status;
     }
 
-    status_t LocalCamera::setViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+    status_t LocalCamera::setViewport(int32_t x, int32_t y, uint32_t width, uint32_t height)
     {
         const status_t status = impl.setViewport(x, y, width, height);
         LOG_HL_CLIENT_API4(status, x, y, width, height);
         return status;
     }
 
-    uint32_t LocalCamera::getViewportX() const
+    int32_t LocalCamera::getViewportX() const
     {
         return impl.getViewportX();
     }
 
-    uint32_t LocalCamera::getViewportY() const
+    int32_t LocalCamera::getViewportY() const
     {
         return impl.getViewportY();
     }
@@ -90,5 +91,43 @@ namespace ramses
     status_t LocalCamera::getProjectionMatrix(float(&projectionMatrix)[16]) const
     {
         return impl.getProjectionMatrix(projectionMatrix);
+    }
+
+    status_t LocalCamera::bindViewportOffset(const DataVector2i& offsetData)
+    {
+        const status_t status = impl.bindViewportOffset(offsetData);
+        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(offsetData));
+        return status;
+    }
+
+    status_t LocalCamera::bindViewportSize(const DataVector2i& sizeData)
+    {
+        const status_t status = impl.bindViewportSize(sizeData);
+        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(sizeData));
+        return status;
+    }
+
+    status_t LocalCamera::unbindViewportOffset()
+    {
+        const status_t status = impl.unbindViewportOffset();
+        LOG_HL_CLIENT_API_NOARG(status);
+        return status;
+    }
+
+    status_t LocalCamera::unbindViewportSize()
+    {
+        const status_t status = impl.unbindViewportSize();
+        LOG_HL_CLIENT_API_NOARG(status);
+        return status;
+    }
+
+    bool LocalCamera::isViewportOffsetBound() const
+    {
+        return impl.isViewportOffsetBound();
+    }
+
+    bool LocalCamera::isViewportSizeBound() const
+    {
+        return impl.isViewportSizeBound();
     }
 }

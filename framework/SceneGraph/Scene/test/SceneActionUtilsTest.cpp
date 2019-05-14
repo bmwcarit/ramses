@@ -70,7 +70,7 @@ namespace ramses_internal
             multiType.push_back(ESceneActionId_AllocateCamera);
         }
 
-        static SceneActionCollection createSceneActionVector(const Vector<ramses_internal::ESceneActionId>& types)
+        static SceneActionCollection createSceneActionVector(const std::vector<ramses_internal::ESceneActionId>& types)
         {
             SceneActionCollection result;
             for(auto type : types)

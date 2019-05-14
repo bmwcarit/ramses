@@ -264,8 +264,8 @@ namespace ramses_internal
         StrictMock<ResourceConsumerServiceHandlerMock> handler;
         receiver->commSystem->setResourceConsumerServiceHandler(&handler);
 
-        Vector<Byte> receivedResourceData;
-        Vector<Byte> sentResourceData;
+        std::vector<Byte> receivedResourceData;
+        std::vector<Byte> sentResourceData;
         EXPECT_CALL(handler, handleSendResource(_, sender->id)).WillOnce(Invoke([this, &receivedResourceData](const ByteArrayView& resourceData, const Guid&)
         {
             receivedResourceData.insert(receivedResourceData.begin(), resourceData.begin(), resourceData.end());
@@ -273,7 +273,7 @@ namespace ramses_internal
         }));
 
         {
-            Vector<Float> data(256 * 1024);  // data size 1MB (sizeof(Float) * 256k)
+            std::vector<Float> data(60000);  // data size ~250k
             for (UInt i = 0; i < data.size(); ++i)
             {
                 data[i] = 1.1f * (i + 1);
@@ -321,11 +321,11 @@ namespace ramses_internal
         StrictMock<ResourceConsumerServiceHandlerMock> handler;
         receiver->commSystem->setResourceConsumerServiceHandler(&handler);
 
-        Vector<Vector<Byte>> receivedResourceData;
-        Vector<Vector<Byte>> sentResourceData;
+        std::vector<std::vector<Byte>> receivedResourceData;
+        std::vector<std::vector<Byte>> sentResourceData;
         EXPECT_CALL(handler, handleSendResource(_, sender->id)).WillRepeatedly(Invoke([this, &receivedResourceData](const ByteArrayView& resourceData, const Guid&)
         {
-            Vector<Byte> data;
+            std::vector<Byte> data;
             data.insert(data.begin(), resourceData.begin(), resourceData.end());
             receivedResourceData.push_back(data);
             state->event.signal();
@@ -333,7 +333,7 @@ namespace ramses_internal
 
         BinaryOutputStream sentResourceDump;
         {
-            Vector<Float> data(numFloatElements);
+            std::vector<Float> data(numFloatElements);
             for (UInt i = 0; i < data.size(); ++i)
             {
                 data[i] = 1.1f * (i + 1);
@@ -359,7 +359,7 @@ namespace ramses_internal
         state->disconnectAll();
     }
 
-    TEST_P(ACommunicationSystemWithDaemonMultiParticipant, canBroadcastMessageToTwoOthers)
+    TEST_P(ACommunicationSystemWithDaemonMultiParticipant, DISABLED_canBroadcastMessageToTwoOthers)
     {
         std::unique_ptr<CommunicationSystemTestWrapper> sender{CommunicationSystemTestFactory::ConstructTestWrapper(*state, "sender")};
         std::unique_ptr<CommunicationSystemTestWrapper> receiver_1{CommunicationSystemTestFactory::ConstructTestWrapper(*state, "receiver1")};

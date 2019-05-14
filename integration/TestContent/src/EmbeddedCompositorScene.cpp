@@ -24,7 +24,7 @@
 
 namespace ramses_internal
 {
-    const StreamTextureSourceId EmbeddedCompositorScene::EmbeddedSurfaceStreamTextureSourceId = StreamTextureSourceId(123u);
+    const StreamTextureSourceId EmbeddedCompositorScene::EmbeddedSurfaceStreamTextureSourceId = StreamTextureSourceId(10123u);
 
     EmbeddedCompositorScene::EmbeddedCompositorScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
         : IntegrationScene(ramsesClient, scene, cameraPosition)

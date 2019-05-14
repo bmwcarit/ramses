@@ -31,7 +31,7 @@ namespace ramses_internal
 
         RenderableHandle            allocateRenderable(NodeHandle nodeHandle, RenderableHandle handle = RenderableHandle::Invalid());
         RenderStateHandle           allocateRenderState(RenderStateHandle handle = RenderStateHandle::Invalid());
-        CameraHandle                allocateCamera(ECameraProjectionType type, NodeHandle nodeHandle, CameraHandle handle = CameraHandle::Invalid());
+        CameraHandle                allocateCamera(ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle viewportDataInstance, CameraHandle handle = CameraHandle::Invalid());
         NodeHandle                  allocateNode(UInt32 childrenCount = 0u, NodeHandle handle = NodeHandle::Invalid());
         TransformHandle             allocateTransform(NodeHandle nodeHandle, TransformHandle handle = TransformHandle::Invalid());
         DataLayoutHandle            allocateDataLayout(const DataFieldInfoVector& dataFields, DataLayoutHandle handle = DataLayoutHandle::Invalid());

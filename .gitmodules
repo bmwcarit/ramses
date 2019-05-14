@@ -14,3 +14,8 @@
 	url = https://git.sv.nongnu.org/r/freetype/freetype2.git
 	path = external/freetype
 	branch = refs/heads/VER-2-6
+[submodule "external/asio"]
+	url = https://github.com/chriskohlhoff/asio.git
+	path = external/asio
+	branch = refs/heads/asio-1-12-2
+

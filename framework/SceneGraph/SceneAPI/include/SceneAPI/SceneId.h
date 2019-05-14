@@ -20,7 +20,7 @@ namespace ramses_internal
     struct SceneIdTag {};
     typedef StronglyTypedValue<UInt64, 0, SceneIdTag> SceneId;
 
-    typedef Vector<SceneId> SceneIdVector;
+    typedef std::vector<SceneId> SceneIdVector;
 
     struct SceneInfo
     {
@@ -45,7 +45,7 @@ namespace ramses_internal
         String friendlyName;
         EScenePublicationMode publicationMode = EScenePublicationMode_Unpublished;
     };
-    typedef Vector<SceneInfo> SceneInfoVector;
+    typedef std::vector<SceneInfo> SceneInfoVector;
 }
 
 #endif

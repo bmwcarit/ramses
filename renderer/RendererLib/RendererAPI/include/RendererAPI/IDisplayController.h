@@ -53,7 +53,7 @@ namespace ramses_internal
         virtual const Matrix44f&        getViewMatrix() const = 0;
         virtual void                    resetView() const = 0;
 
-        virtual Bool                    readPixels(UInt32 x, UInt32 y, UInt32 width, UInt32 height, Vector<UInt8>& dataOut) = 0;
+        virtual Bool                    readPixels(UInt32 x, UInt32 y, UInt32 width, UInt32 height, std::vector<UInt8>& dataOut) = 0;
         virtual Bool                    isWarpingEnabled() const = 0;
         virtual void                    setWarpingMeshData(const WarpingMeshData& warpingMeshData) = 0;
 

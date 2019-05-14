@@ -26,12 +26,12 @@ public:
 
     static ramses::Node& BuildGraphOfNodes(ramses::Scene& scene, uint32_t childrenPerNode, uint32_t depth, ramses::ERamsesObjectType nodeType);
 
-    static void BuildNodesOfVariousTypes(ramses_internal::Vector<ramses::SceneObject*>& outputList, ramses::Scene& scene, uint32_t objectCount);
+    static void BuildNodesOfVariousTypes(std::vector<ramses::SceneObject*>& outputList, ramses::Scene& scene, uint32_t objectCount);
 
     // Create a connected graph where all nodes has exactly one child (essentially a linked list). For convenience the most relevant nodes are returned as pointers.
     static void BuildBranchOfNodes(ramses::Scene& scene, uint32_t nodeCount, ramses::Node*& createdRoot, ramses::Node*& createdMiddle, ramses::Node*& createdLeaf, ramses::ERamsesObjectType nodeType);
 
-    template<typename T> static void ShuffleObjectList(ramses_internal::Vector<T>& list);
+    template<typename T> static void ShuffleObjectList(std::vector<T>& list);
 
 private:
     static void BuildGraphLevel(ramses::Scene& scene, ramses::Node& targetNode, uint32_t childrenPerNode, uint32_t currentDepth, ramses::ERamsesObjectType nodeType);
@@ -46,7 +46,7 @@ private:
 };
 
 template<typename T>
-void PerformanceTestUtils::ShuffleObjectList(ramses_internal::Vector<T>& list)
+void PerformanceTestUtils::ShuffleObjectList(std::vector<T>& list)
 {
     // ramses_capu::random does not support setting the seed value, so we need to re-invent the wheel a bit here, in order to get deterministic values across platforms.
     uint32_t randomSeed = 0;

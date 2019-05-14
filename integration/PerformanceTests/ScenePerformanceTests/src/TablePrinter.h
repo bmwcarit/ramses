@@ -54,7 +54,7 @@ private:
 
     uint32_t m_tableWidth;
     StringOutputStream& m_stream;
-    Vector<uint32_t> m_columnWidths; // Width in chars
+    std::vector<uint32_t> m_columnWidths; // Width in chars
 };
 
 template <typename T>

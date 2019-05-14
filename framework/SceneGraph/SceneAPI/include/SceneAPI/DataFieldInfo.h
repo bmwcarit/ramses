@@ -41,7 +41,7 @@ namespace ramses_internal
         EFixedSemantics semantics;
     };
 
-    typedef Vector<DataFieldInfo> DataFieldInfoVector;
+    typedef std::vector<DataFieldInfo> DataFieldInfoVector;
 }
 
 #endif

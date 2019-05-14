@@ -50,8 +50,8 @@ namespace ramses
         NodeImpl* getNodeImplForHandle(ramses_internal::NodeHandle) const;
 
     private:
-        ramses_internal::Vector<RamsesObjectImpl*> m_objectImpls;
-        ramses_internal::Vector<NodeImpl*>         m_nodeMap;
+        std::vector<RamsesObjectImpl*> m_objectImpls;
+        std::vector<NodeImpl*>         m_nodeMap;
         RamsesObjectImplSet m_dependingObjects;
     };
 

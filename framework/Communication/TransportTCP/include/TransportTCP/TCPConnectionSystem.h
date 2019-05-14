@@ -1,48 +1,48 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2014 BMW Car IT GmbH
+//  Copyright (C) 2018 BMW Car IT GmbH
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#ifndef RAMSES_TCPCONNECTIONSYSTEM_H
-#define RAMSES_TCPCONNECTIONSYSTEM_H
+#ifndef RAMSES_COMMUNICATION_TCPCONNECTIONSYSTEM_H
+#define RAMSES_COMMUNICATION_TCPCONNECTIONSYSTEM_H
 
-#include "TransportTCP/SocketManager.h"
-#include "TransportCommon/ConnectionStatusUpdateNotifier.h"
-#include "NetworkParticipantAddress.h"
-
-#include "PlatformAbstraction/PlatformThread.h"
-#include "Collections/HashSet.h"
-#include "Utils/ScopedPointer.h"
 #include "TransportCommon/ICommunicationSystem.h"
-#include "TransportTCP/EConnectionType.h"
+#include "TransportCommon/ConnectionStatusUpdateNotifier.h"
+#include "PlatformAbstraction/PlatformThread.h"
+#include "TransportTCP/NetworkParticipantAddress.h"
 #include "TransportTCP/EMessageId.h"
 #include "Utils/BinaryOutputStream.h"
-#include "Utils/BinaryInputStream.h"
+#include "Collections/HashSet.h"
+#include "Collections/HashMap.h"
+#include "TransportTCP/AsioWrapper.h"
+#include <deque>
+
 
 namespace ramses_internal
 {
     class StatisticCollectionFramework;
+    class BinaryInputStream;
 
     class TCPConnectionSystem final : public Runnable, public ICommunicationSystem
     {
     public:
-        TCPConnectionSystem(const NetworkParticipantAddress& participantAddress, UInt32 protocolVersion, Bool isDaemon, const NetworkParticipantAddress& daemonAddress,
-            PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection);
-        ~TCPConnectionSystem() override;
+        TCPConnectionSystem(const NetworkParticipantAddress& participantAddress, UInt32 protocolVersion, const NetworkParticipantAddress& daemonAddress, bool pureDaemon,
+                                PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection);
+        ~TCPConnectionSystem();
+
+        static Guid GetDaemonId();
 
         virtual bool connectServices() override;
         virtual bool disconnectServices() override;
 
         virtual IConnectionStatusUpdateNotifier& getConnectionStatusUpdateNotifier() override;
 
-        static Guid GetDaemonId();
-
         // message limits configuration
-        virtual CommunicationSendDataSizes getSendDataSizes() const override final;
-        virtual void setSendDataSizes(const CommunicationSendDataSizes& sizes) override final;
+        virtual CommunicationSendDataSizes getSendDataSizes() const override;
+        virtual void setSendDataSizes(const CommunicationSendDataSizes& sizes) override;
 
         // resource
         virtual bool sendRequestResources(const Guid& to, const ResourceContentHashVector& resources) override;
@@ -71,150 +71,144 @@ namespace ramses_internal
         virtual void triggerLogMessageForPeriodicLog() override;
 
     private:
+        enum class EParticipantState
+        {
+            Invalid,
+            Connecting,
+            WaitingForHello,
+            Established,
+        };
+
+        enum class EParticipantType
+        {
+            Client,
+            Daemon,
+            PureDaemon
+        };
+
+        enum class EQueueType
+        {
+            Normal,
+            Priority
+        };
+
         struct OutMessage
         {
-            OutMessage(EConnectionType connectionType_, EMessageId messageType_, const Guid& to_ = Guid(false))
+            OutMessage(const Guid& to_, EMessageId messageType_)
                 : to(to_)
-                , connectionType(connectionType_)
                 , messageType(messageType_)
-                , stream(new BinaryOutputStream())
             {
-                *stream << static_cast<UInt32>(0) << static_cast<UInt32>(0);
+                stream << static_cast<uint32_t>(0) << static_cast<uint32_t>(messageType);
             }
 
+            // TODO(tobias) make move only in c++14
+            OutMessage(OutMessage&&) = default;
+            OutMessage(const OutMessage&) = default;
+            OutMessage& operator=(const OutMessage&) = default;
+
             Guid to;
-            EConnectionType connectionType;
             EMessageId messageType;
-            std::unique_ptr<BinaryOutputStream> stream;
+            BinaryOutputStream stream;
         };
 
-        struct InMessage
+        struct Participant
         {
-            InMessage(EMessageId type_, UInt32 dataSize)
-                : sender(false)
-                , type(type_)
-                , data(dataSize)
-                , stream(data.data())
-            {}
+            Participant(const NetworkParticipantAddress& address_, asio::io_service& io_,
+                        EParticipantType type_, EParticipantState state_);
+            ~Participant();
 
-            Guid sender;
-            EMessageId type;
-            HeapArray<UInt8> data;
-            BinaryInputStream stream;
-        };
+            NetworkParticipantAddress address;
+            asio::ip::tcp::socket socket;
+            asio::steady_timer connectTimer;
 
-        struct SocketInfo
-        {
-            SocketInfo() {}
-            SocketInfo(const Guid& participant_, PlatformSocket* socket_)
-                : participant(participant_)
-                , socket(socket_)
-                , lastReceived(std::chrono::steady_clock::now())
-            {}
+            std::deque<OutMessage> outQueueNormal;
+            std::deque<OutMessage> outQueuePrio;
+            std::vector<char> currentOutBuffer;
 
-            Guid participant{false};
-            PlatformSocket* socket = nullptr;
+            uint32_t lengthReceiveBuffer;
+            std::vector<char> receiveBuffer;
+
             std::chrono::steady_clock::time_point lastSent;
+            asio::steady_timer sendAliveTimer;
             std::chrono::steady_clock::time_point lastReceived;
+            asio::steady_timer checkReceivedAliveTimer;
+
+            EParticipantType type;
+            EParticipantState state;
         };
+        using ParticipantPtr = std::shared_ptr<Participant>;
 
-        static const constexpr UInt32 resourceDataSizeSimilarToOtherStacks = 1300000;
-        static const constexpr int32_t socketConnectTimeoutMs = 1500;
+        struct RunState
+        {
+            RunState();
 
-        bool sendMessage(OutMessage&& message);
+            asio::io_service        m_io;
+            asio::ip::tcp::acceptor m_acceptor;
+            asio::ip::tcp::socket   m_acceptorSocket;
+        };
+        using RunStatePtr = std::shared_ptr<RunState>;
 
         virtual void run() override;
-        virtual void cancel() override;
 
-        Bool setupListener();
-        void cleanupListener();
-        void trackServerSocket();
-        void connectToDaemon();
+        void doConnect(const ParticipantPtr& pp);
+        void sendConnectionDescriptionOnNewConnection(const ParticipantPtr& pp);
+        void doSendQueuedMessage(const ParticipantPtr& pp);
+        void doTrySendAliveMessage(const ParticipantPtr& pp);
+        void doReadHeader(const ParticipantPtr& pp);
+        void doReadContent(const ParticipantPtr& pp);
 
-        void acceptIncomingConnection(PlatformServerSocket& serverSocket);
-        Bool sendConnectionDescriptionMessage(SocketInfo& si, const NetworkParticipantAddress& to, const EConnectionType& type);
-        Bool sendAddressExchangeMessage(SocketInfo& si, const NetworkParticipantAddress& address, const Guid& to) const;
-        void trackSocket(PlatformSocket& streamSocket);
-        void socketHasData(PlatformSocket& socket);
-        Bool connectWithType(const NetworkParticipantAddress& address, EConnectionType type, HashMap<Guid, PlatformSocket*>& socketMap);
-        Bool handleMessage(const Guid& participantId, PlatformSocket& socket, InMessage& message);
-        void handleConnectorAddressExchangeMessage(InMessage& message);
-        Bool handleConnectionDescriptionMessage(PlatformSocket& socket, InMessage& message);
-        Bool shouldTryConnectTo(const Guid& otherId) const;
-        bool dispatchReceivedMessage(InMessage& message);
-        void tryConnectToOthers();
-        void handleLogRequests();
+        bool openAcceptor();
+        void doAcceptIncomingConnections();
 
-        void sendAllOutMessages(const Vector<OutMessage>& messagesToSend);
-        void sendUnicastMessageToSocket(const OutMessage& message, Vector<Guid>& brokenConnections);
-        void sendBroadcastMessageToSockets(const OutMessage& message, Vector<Guid>& brokenConnections);
-        Bool sendMessageToSocket(SocketInfo& si, const OutMessage& message) const;
+        void sendMessageToParticipant(const ParticipantPtr& pp, OutMessage msg);
+        void removeParticipant(const ParticipantPtr& pp);
+        void addNewParticipantByAddress(const NetworkParticipantAddress& address);
+        void initializeNewlyConnectedParticipant(const ParticipantPtr& pp);
+        void handleReceivedMessage(const ParticipantPtr& pp);
+        bool postMessageForSending(OutMessage msg, bool hasPrio);
+        void updateLastReceivedTime(const ParticipantPtr& pp);
+        void sendConnectorAddressExchangeMessagesForNewParticipant(const ParticipantPtr& newPp);
 
-        std::unique_ptr<InMessage> receiveMessageFromSocket(PlatformSocket& socket);
-        bool readDataFromSocket(PlatformSocket& socket, char* buffer, UInt32 size);
+        void handleConnectionDescriptionMessage(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleConnectorAddressExchange(const ParticipantPtr& pp, BinaryInputStream& stream);
 
-        void removeKnownParticipant(const Guid& idRef, bool addForNewAttempt);
-        void dropConnectionToNewlyAcceptedSocket(PlatformSocket& socket);
-        void addNewParticipantIfUnknown(const NetworkParticipantAddress& address, const char* reason);
-        Bool sendAddressExchangeForNewParticipant(SocketInfo& si, const NetworkParticipantAddress& newAddress);
-        void closeAndCleanupAllConnections();
+        void handleSubscribeScene(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleUnsubscribeScene(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleCreateScene(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleSceneActionList(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handlePublishScene(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleUnpublishScene(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleSceneNotAvailable(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleRequestResources(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleTransferResources(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleResourcesNotAvailable(const ParticipantPtr& pp, BinaryInputStream& stream);
 
-        void clearMessageQueue();
-        void sendAllMessagesInQueue();
+        static const char* EnumToString(EParticipantState e);
+        static const char* EnumToString(EParticipantType e);
 
-        bool sendAliveMessages();
-        bool checkConnectionsAlive();
-        bool removeConnectionsBySocket(const Vector<SocketInfo>& infos);
-
-        void setReadyToSendMessages(bool state);
-
-        // receive methods
-        void handleSceneSubscription(InMessage& message);
-        void handleSceneUnsubscription(InMessage& message);
-
-        void handleCreateScene(InMessage& message);
-        void handleSceneActionList(InMessage& message);
-        void handleScenePublication(InMessage& message);
-        void handleSceneUnpublication(InMessage& message);
-        void handleSceneNotAvailable(InMessage& message);
-
-        void handleResourceRequest(InMessage& message);
-        void handleIncomingResource(InMessage& message);
-        void handleResourcesNotAvailable(InMessage& message);
-
-        SocketManager m_socketManager;
         const NetworkParticipantAddress m_participantAddress;
         const UInt32 m_protocolVersion;
-        const Bool m_isDaemon;
         const NetworkParticipantAddress m_daemonAddress;
-        Bool m_isRunning;
+        const bool m_actAsDaemon;
+        const bool m_hasOtherDaemon;
+        const EParticipantType m_participantType;
+
         CommunicationSendDataSizes m_sendDataSizes;
+
+        PlatformLock& m_frameworkLock;
+        PlatformThread m_thread;
+        StatisticCollectionFramework& m_statisticCollection;
+
+        ConnectionStatusUpdateNotifier m_connectionStatusUpdateNotifier;
 
         IResourceConsumerServiceHandler* m_resourceConsumerHandler;
         IResourceProviderServiceHandler* m_resourceProviderHandler;
         ISceneProviderServiceHandler* m_sceneProviderHandler;
         ISceneRendererServiceHandler* m_sceneRendererHandler;
-        PlatformLock& m_frameworkLock;
-        PlatformLock m_startStopLock;
-        PlatformThread m_mainLoop;
-        ConnectionStatusUpdateNotifier m_connectionStatusUpdateNotifier;
 
-        PlatformLock m_mainLock;
-        ScopedPointer<PlatformServerSocket> m_serverSocket;
-        SocketInfo m_daemonSocket;
-        Vector<OutMessage> m_outMessagesToSend;
-        Vector<PlatformSocket*> m_newlyAcceptedSockets;
-
-        HashSet<Guid> m_unfinishedConnections;
-        HashMap<Guid, NetworkParticipantAddress> m_knownParticipantAddresses;
-        HashMap<Guid, PlatformSocket*> m_controlSockets;
-        HashMap<Guid, PlatformSocket*> m_dataSockets;
-        HashMap<PlatformSocket*, SocketInfo> m_platformSocketMap;
-        bool m_readyToSend;
-
-        StatisticCollectionFramework& m_statisticCollection;
-        std::atomic<bool> m_requestLogConnectionInfo{false};
-        std::atomic<bool> m_requestLogMessageForPeriodicLog{false};
+        RunStatePtr m_runState;
+        HashSet<ParticipantPtr>       m_connectingParticipants;
+        HashMap<Guid, ParticipantPtr> m_establishedParticipants;
     };
 }
 

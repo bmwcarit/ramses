@@ -154,7 +154,7 @@ TEST_F(ARendererResourceRegistry, newlyRegisteredResourceIsInRegisteredList)
 
     const ResourceContentHashVector& resources = registry.getAllRegisteredResources();
     ASSERT_EQ(1u, resources.size());
-    EXPECT_TRUE(resources.contains(resource));
+    EXPECT_TRUE(contains_c(resources, resource));
 }
 
 TEST_F(ARendererResourceRegistry, requestedResourceIsRemovedFromRegisteredList)
@@ -188,7 +188,7 @@ TEST_F(ARendererResourceRegistry, requestedResourceIsInRequestedList)
 
     const ResourceContentHashVector& resources = registry.getAllRequestedResources();
     ASSERT_EQ(1u, resources.size());
-    EXPECT_TRUE(resources.contains(resource));
+    EXPECT_TRUE(contains_c(resources, resource));
 }
 
 TEST_F(ARendererResourceRegistry, providedResourceIsRemovedFromRequestedList)
@@ -225,7 +225,7 @@ TEST_F(ARendererResourceRegistry, providedResourceIsInProvidedList)
 
     const ResourceContentHashVector& resources = registry.getAllProvidedResources();
     ASSERT_EQ(1u, resources.size());
-    EXPECT_TRUE(resources.contains(resource));
+    EXPECT_TRUE(contains_c(resources, resource));
 }
 
 TEST_F(ARendererResourceRegistry, uploadedResourceIsRemovedFromProvidedList)
@@ -293,8 +293,8 @@ TEST_F(ARendererResourceRegistry, onlyResourcesThatBecameUnreferencedAreInUnused
     registry.removeResourceRef(resource4, sceneId);
 
     ASSERT_EQ(2u, resources.size());
-    EXPECT_TRUE(resources.contains(resource1));
-    EXPECT_TRUE(resources.contains(resource4));
+    EXPECT_TRUE(contains_c(resources, resource1));
+    EXPECT_TRUE(contains_c(resources, resource4));
 }
 
 TEST_F(ARendererResourceRegistry, unregisteredResourcesAreRemovedFromUnusedList)
@@ -349,8 +349,8 @@ TEST_F(ARendererResourceRegistry, previouslyUnusedResourceIsRemovedFromUnusedLis
 
     const ResourceContentHashVector& resources = registry.getAllResourcesNotInUseByScenes();
     ASSERT_EQ(2u, resources.size());
-    EXPECT_TRUE(resources.contains(resource1));
-    EXPECT_TRUE(resources.contains(resource4));
+    EXPECT_TRUE(contains_c(resources, resource1));
+    EXPECT_TRUE(contains_c(resources, resource4));
 
     registry.addResourceRef(resource1, sceneId);
     registry.addResourceRef(resource4, sceneId);
@@ -390,8 +390,8 @@ TEST_F(ARendererResourceRegistry, onlyResourcesThatBecameUnreferencedAndNotUploa
     registry.removeResourceRef(resource3, sceneId);
 
     ASSERT_EQ(2u, resources.size());
-    EXPECT_TRUE(resources.contains(resource1));
-    EXPECT_TRUE(resources.contains(resource4));
+    EXPECT_TRUE(contains_c(resources, resource1));
+    EXPECT_TRUE(contains_c(resources, resource4));
 }
 
 TEST_F(ARendererResourceRegistry, unregisteredResourcesAreRemovedFromUnusedNotUploadedList)
@@ -446,8 +446,8 @@ TEST_F(ARendererResourceRegistry, previouslyUnusedResourceIsRemovedFromUnusedNot
 
     const ResourceContentHashVector& resources = registry.getAllResourcesNotInUseByScenesAndNotUploaded();
     ASSERT_EQ(2u, resources.size());
-    EXPECT_TRUE(resources.contains(resource1));
-    EXPECT_TRUE(resources.contains(resource4));
+    EXPECT_TRUE(contains_c(resources, resource1));
+    EXPECT_TRUE(contains_c(resources, resource4));
 
     registry.addResourceRef(resource1, sceneId);
     registry.addResourceRef(resource4, sceneId);

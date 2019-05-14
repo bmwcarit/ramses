@@ -20,7 +20,7 @@ namespace ramses_internal
     struct SplitSceneActionsToChunksMock
     {
         virtual ~SplitSceneActionsToChunksMock() = default;
-        MOCK_METHOD3(call, void(Pair<UInt32, UInt32>, Pair<const Byte*, const Byte*>, bool));
+        MOCK_METHOD3(call, void(std::pair<UInt32, UInt32>, std::pair<const Byte*, const Byte*>, bool));
     };
 
     class TransportUtilitiesTest : public ::testing::Test
@@ -31,7 +31,7 @@ namespace ramses_internal
             , numberOfSceneActions(5u)
             , dataBase(nullptr)
         {
-            chunkActionsCallback = [this](Pair<UInt32, UInt32> actionRange, Pair<const Byte*, const Byte*> dataRange, bool isIncomplete)
+            chunkActionsCallback = [this](std::pair<UInt32, UInt32> actionRange, std::pair<const Byte*, const Byte*> dataRange, bool isIncomplete)
             {
                 chunkActionsMock.call(actionRange, dataRange, isIncomplete);
             };
@@ -40,7 +40,7 @@ namespace ramses_internal
             {
                 sceneActions.addRawSceneActionInformation(ESceneActionId_TestAction, i*sizeOfOneSceneAction);
             }
-            Vector<Byte> data(numberOfSceneActions*sizeOfOneSceneAction);
+            std::vector<Byte> data(numberOfSceneActions*sizeOfOneSceneAction);
             sceneActions.appendRawData(data.data(), data.size());
             dataBase = sceneActions.collectionData().data();
 
@@ -58,7 +58,7 @@ namespace ramses_internal
         SceneActionCollection singleSceneAction;
         const Byte* dataBaseSingle;
         StrictMock<SplitSceneActionsToChunksMock> chunkActionsMock;
-        std::function<void(Pair<UInt32, UInt32>, Pair<const Byte*, const Byte*>, bool)> chunkActionsCallback;
+        std::function<void(std::pair<UInt32, UInt32>, std::pair<const Byte*, const Byte*>, bool)> chunkActionsCallback;
     };
 
     TEST_F(TransportUtilitiesTest, getSingleCallbackForSingleAction)
@@ -69,58 +69,58 @@ namespace ramses_internal
         const Byte* data = actions.collectionData().data();
         const UInt32 dataSize = static_cast<UInt32>(actions.collectionData().size());
 
-        EXPECT_CALL(chunkActionsMock, call(MakePair(0u, 1u), MakePair(data, data + dataSize), false));
+        EXPECT_CALL(chunkActionsMock, call(std::make_pair(0u, 1u), std::make_pair(data, data + dataSize), false));
         TransportUtilities::SplitSceneActionsToChunks(actions, 10u, dataSize, chunkActionsCallback);
     }
 
     TEST_F(TransportUtilitiesTest, getSingleCallbackForAllActionsWhenSendSizesLargeEnough)
     {
-        EXPECT_CALL(chunkActionsMock, call(MakePair(0u, 5u), MakePair(dataBase, dataBase + 500u), false));
+        EXPECT_CALL(chunkActionsMock, call(std::make_pair(0u, 5u), std::make_pair(dataBase, dataBase + 500u), false));
         TransportUtilities::SplitSceneActionsToChunks(sceneActions, sceneActions.numberOfActions(), static_cast<UInt32>(sceneActions.collectionData().size()), chunkActionsCallback);
     }
 
     TEST_F(TransportUtilitiesTest, getMultipleCallbacksWhenNumberOfActionsIsTooSmall)
     {
         InSequence seq;
-        EXPECT_CALL(chunkActionsMock, call(MakePair(0u, 3u), MakePair(dataBase, dataBase + 300u), false));
-        EXPECT_CALL(chunkActionsMock, call(MakePair(3u, 5u), MakePair(dataBase + 300u, dataBase + 500u), false));
+        EXPECT_CALL(chunkActionsMock, call(std::make_pair(0u, 3u), std::make_pair(dataBase, dataBase + 300u), false));
+        EXPECT_CALL(chunkActionsMock, call(std::make_pair(3u, 5u), std::make_pair(dataBase + 300u, dataBase + 500u), false));
         TransportUtilities::SplitSceneActionsToChunks(sceneActions, 3, 600u, chunkActionsCallback);
     }
 
     TEST_F(TransportUtilitiesTest, getMultipleSingleActionsWhenNumberLimitSetToOne)
     {
         InSequence seq;
-        EXPECT_CALL(chunkActionsMock, call(MakePair(0u, 1u), MakePair(dataBase + 0,    dataBase + 100u), false));
-        EXPECT_CALL(chunkActionsMock, call(MakePair(1u, 2u), MakePair(dataBase + 100u, dataBase + 200u), false));
-        EXPECT_CALL(chunkActionsMock, call(MakePair(2u, 3u), MakePair(dataBase + 200u, dataBase + 300u), false));
-        EXPECT_CALL(chunkActionsMock, call(MakePair(3u, 4u), MakePair(dataBase + 300u, dataBase + 400u), false));
-        EXPECT_CALL(chunkActionsMock, call(MakePair(4u, 5u), MakePair(dataBase + 400u, dataBase + 500u), false));
+        EXPECT_CALL(chunkActionsMock, call(std::make_pair(0u, 1u), std::make_pair(dataBase + 0,    dataBase + 100u), false));
+        EXPECT_CALL(chunkActionsMock, call(std::make_pair(1u, 2u), std::make_pair(dataBase + 100u, dataBase + 200u), false));
+        EXPECT_CALL(chunkActionsMock, call(std::make_pair(2u, 3u), std::make_pair(dataBase + 200u, dataBase + 300u), false));
+        EXPECT_CALL(chunkActionsMock, call(std::make_pair(3u, 4u), std::make_pair(dataBase + 300u, dataBase + 400u), false));
+        EXPECT_CALL(chunkActionsMock, call(std::make_pair(4u, 5u), std::make_pair(dataBase + 400u, dataBase + 500u), false));
         TransportUtilities::SplitSceneActionsToChunks(sceneActions, 1, 600u, chunkActionsCallback);
     }
 
     TEST_F(TransportUtilitiesTest, getMultipleCompleteActionsWhenDataSizeFitsExactly)
     {
         InSequence seq;
-        EXPECT_CALL(chunkActionsMock, call(MakePair(0u, 2u), MakePair(dataBase, dataBase + 200u), false));
-        EXPECT_CALL(chunkActionsMock, call(MakePair(2u, 4u), MakePair(dataBase + 200u, dataBase + 400u), false));
-        EXPECT_CALL(chunkActionsMock, call(MakePair(4u, 5u), MakePair(dataBase + 400u, dataBase + 500u), false));
+        EXPECT_CALL(chunkActionsMock, call(std::make_pair(0u, 2u), std::make_pair(dataBase, dataBase + 200u), false));
+        EXPECT_CALL(chunkActionsMock, call(std::make_pair(2u, 4u), std::make_pair(dataBase + 200u, dataBase + 400u), false));
+        EXPECT_CALL(chunkActionsMock, call(std::make_pair(4u, 5u), std::make_pair(dataBase + 400u, dataBase + 500u), false));
         TransportUtilities::SplitSceneActionsToChunks(sceneActions, 10u, 200u, chunkActionsCallback);
     }
 
     TEST_F(TransportUtilitiesTest, getMultipleCallbacksWhenSizeOfActionArrayIsTooSmall)
     {
         InSequence seq;
-        EXPECT_CALL(chunkActionsMock, call(MakePair(0u, 4u), MakePair(dataBase, dataBase + 399u), true));
-        EXPECT_CALL(chunkActionsMock, call(MakePair(3u, 5u), MakePair(dataBase + 399u, dataBase + 500u), false));
+        EXPECT_CALL(chunkActionsMock, call(std::make_pair(0u, 4u), std::make_pair(dataBase, dataBase + 399u), true));
+        EXPECT_CALL(chunkActionsMock, call(std::make_pair(3u, 5u), std::make_pair(dataBase + 399u, dataBase + 500u), false));
         TransportUtilities::SplitSceneActionsToChunks(sceneActions, 6, 399u, chunkActionsCallback);
     }
 
     TEST_F(TransportUtilitiesTest, getMultipleIncompleteCallbacksWhenSizeTooSmall)
     {
         InSequence seq;
-        EXPECT_CALL(chunkActionsMock, call(MakePair(0u, 1u), MakePair(dataBaseSingle, dataBaseSingle + 40u), true));
-        EXPECT_CALL(chunkActionsMock, call(MakePair(0u, 1u), MakePair(dataBaseSingle + 40u, dataBaseSingle + 80u), true));
-        EXPECT_CALL(chunkActionsMock, call(MakePair(0u, 1u), MakePair(dataBaseSingle + 80u, dataBaseSingle + 100u), false));
+        EXPECT_CALL(chunkActionsMock, call(std::make_pair(0u, 1u), std::make_pair(dataBaseSingle, dataBaseSingle + 40u), true));
+        EXPECT_CALL(chunkActionsMock, call(std::make_pair(0u, 1u), std::make_pair(dataBaseSingle + 40u, dataBaseSingle + 80u), true));
+        EXPECT_CALL(chunkActionsMock, call(std::make_pair(0u, 1u), std::make_pair(dataBaseSingle + 80u, dataBaseSingle + 100u), false));
         TransportUtilities::SplitSceneActionsToChunks(singleSceneAction, 3, 40u, chunkActionsCallback);
     }
 }

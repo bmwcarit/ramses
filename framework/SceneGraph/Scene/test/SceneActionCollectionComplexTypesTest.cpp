@@ -54,7 +54,7 @@ namespace ramses_internal
         const generic_uuid_t guidData;
 
         const UInt32 bufferSize;
-        const Vector<Byte> buffer;
+        const std::vector<Byte> buffer;
         const float staticBuffer[5] = { 1.f, 2.f, 3.f, 4.f, 5.f };
 
         const Float fval;

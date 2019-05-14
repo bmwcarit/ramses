@@ -40,7 +40,7 @@ namespace ramses_internal
 
     GlslEffect::GlslEffect(const String& vertexShader,
         const String& fragmentShader,
-        const Vector<String>& compilerDefines,
+        const std::vector<String>& compilerDefines,
         const HashMap<String, EFixedSemantics>& semanticInputs,
         const String& name)
         : m_vertexShader(vertexShader)

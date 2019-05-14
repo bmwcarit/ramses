@@ -65,7 +65,7 @@ namespace ramses_internal
 
     void ClientSceneLogicBase::addSubscriber(const Guid& newSubscriber)
     {
-        if (m_subscribersActive.contains(newSubscriber) || m_subscribersWaitingForScene.contains(newSubscriber))
+        if (contains_c(m_subscribersActive, newSubscriber) || contains_c(m_subscribersWaitingForScene, newSubscriber))
         {
             LOG_WARN(CONTEXT_CLIENT, "ClientSceneLogic::addSubscriber: already has " << newSubscriber << " for scene " << m_sceneId.getValue());
             return;
@@ -78,7 +78,7 @@ namespace ramses_internal
 
     void ClientSceneLogicBase::removeSubscriber(const Guid& subscriber)
     {
-        auto it = m_subscribersActive.find(subscriber);
+        auto it = find_c(m_subscribersActive, subscriber);
         if (it != m_subscribersActive.end())
         {
             m_subscribersActive.erase(it);
@@ -86,7 +86,7 @@ namespace ramses_internal
         }
         else
         {
-            auto waitingForSceneIter = m_subscribersWaitingForScene.find(subscriber);
+            auto waitingForSceneIter = find_c(m_subscribersWaitingForScene, subscriber);
             if (waitingForSceneIter != m_subscribersWaitingForScene.end())
             {
                 m_subscribersWaitingForScene.erase(waitingForSceneIter);
@@ -95,9 +95,9 @@ namespace ramses_internal
         }
     }
 
-    Vector<Guid> ClientSceneLogicBase::getWaitingAndActiveSubscribers() const
+    std::vector<Guid> ClientSceneLogicBase::getWaitingAndActiveSubscribers() const
     {
-        Vector<Guid> result(m_subscribersActive);
+        std::vector<Guid> result(m_subscribersActive);
         result.insert(result.end(), m_subscribersWaitingForScene.begin(), m_subscribersWaitingForScene.end());
         return result;
     }
@@ -153,7 +153,7 @@ namespace ramses_internal
             UInt32 count;
             UInt32 size;
         };
-        Vector<ActionInfo> sceneActionCountPerType(ESceneActionId_NUMBER_OF_TYPES);
+        std::vector<ActionInfo> sceneActionCountPerType(ESceneActionId_NUMBER_OF_TYPES);
         for (const auto& action : collection)
         {
             ActionInfo& info = sceneActionCountPerType[action.type()];

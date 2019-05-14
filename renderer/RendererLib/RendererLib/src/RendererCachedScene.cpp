@@ -252,8 +252,8 @@ namespace ramses_internal
         std::sort(orderedGroupRenderables.begin(), orderedGroupRenderables.end(), renderableComp);
         std::sort(orderedRenderGroups.begin(), orderedRenderGroups.end());
 
-        RenderableOrderVector::Iterator renderablesIterator = orderedGroupRenderables.begin();
-        RenderGroupOrderVector::Iterator renderGroupIterator = orderedRenderGroups.begin();
+        RenderableOrderVector::iterator renderablesIterator = orderedGroupRenderables.begin();
+        RenderGroupOrderVector::iterator renderGroupIterator = orderedRenderGroups.begin();
         while (renderablesIterator != orderedGroupRenderables.end()
             || renderGroupIterator != orderedRenderGroups.end())
         {

@@ -15,7 +15,7 @@
 
 namespace ramses_internal
 {
-    using StreamTextureHandleVector = Vector<StreamTextureHandle>;
+    using StreamTextureHandleVector = std::vector<StreamTextureHandle>;
     using SceneStreamTextures = HashMap<SceneId, StreamTextureHandleVector>;
     using UpdatedSceneIdSet = HashSet<SceneId>;
 

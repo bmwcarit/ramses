@@ -144,8 +144,8 @@ namespace ramses_internal
         const uint32_t TotalNumberOfThreads              = 2 * NumberOfInserterSwapperThreads;
 
         ThreadBarrier barrier(TotalNumberOfThreads);
-        Vector<BufferInserter> inserter(NumberOfInserterSwapperThreads, BufferInserter(buffer, barrier, NumberOfInsertIterationsPerThread));
-        Vector<BufferSwapper>  swapper(NumberOfInserterSwapperThreads, BufferSwapper(buffer, barrier, NumberOfSwapIterationsPerThread));
+        std::vector<BufferInserter> inserter(NumberOfInserterSwapperThreads, BufferInserter(buffer, barrier, NumberOfInsertIterationsPerThread));
+        std::vector<BufferSwapper>  swapper(NumberOfInserterSwapperThreads, BufferSwapper(buffer, barrier, NumberOfSwapIterationsPerThread));
         PlatformThread* threads[TotalNumberOfThreads];
         for(uint32_t i = 0; i < TotalNumberOfThreads; ++i)
         {

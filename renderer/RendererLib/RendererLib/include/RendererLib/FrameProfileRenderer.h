@@ -77,7 +77,7 @@ namespace ramses_internal
         UInt32 m_timingGraphHeight = 16u; // milliseconds
 
         using RenderableCall = std::function<void(const FrameProfilerStatistics&)>;
-        using RenderableList = Vector<RenderableCall>;
+        using RenderableList = std::vector<RenderableCall>;
         RenderableList m_renderables;
 
         DeviceResourceHandle m_timingLinesIndexBuffer;

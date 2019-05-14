@@ -19,12 +19,12 @@ namespace ramses_internal
 {
     namespace LogHelper
     {
-        typedef Pair<ELogLevel, String> ContextFilter;
+        typedef std::pair<ELogLevel, String> ContextFilter;
 
         Bool StringToLogLevel(String str, ELogLevel& logLevel);
         ELogLevel GetLoglevelFromInt(Int32 logLevelInt);
 
-        Vector<ContextFilter> ParseContextFilters(const String& filterCommand);
+        std::vector<ContextFilter> ParseContextFilters(const String& filterCommand);
     }
 }
 

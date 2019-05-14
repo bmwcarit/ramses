@@ -51,13 +51,13 @@ public:
             resourceRegistry.setResourceData(hash, managedRes, DeviceResourceHandle::Invalid(), EResourceType_IndexArray);
         }
 
-        ASSERT_TRUE(resourceRegistry.getAllProvidedResources().contains(hash));
+        ASSERT_TRUE(contains_c(resourceRegistry.getAllProvidedResources(), hash));
     }
 
     void makeResourceUnused(ResourceContentHash hash)
     {
         resourceRegistry.removeResourceRef(hash, sceneId);
-        ASSERT_TRUE(resourceRegistry.getAllResourcesNotInUseByScenes().contains(hash));
+        ASSERT_TRUE(contains_c(resourceRegistry.getAllResourcesNotInUseByScenes(), hash));
     }
 
     void unregisterResource(ResourceContentHash hash)
@@ -314,7 +314,7 @@ TEST_F(AClientResourceUploadingManager, uploadsBatchOfResourceBeforeCheckingIfOu
     // first resource is always uploaded so batch is check frequency constant + 1
     const size_t numResourcesInBatch = ClientResourceUploadingManager::NumResourcesToUploadInBetweenTimeBudgetChecks + 1;
     // create resources to fill one batch and extra resource in addition
-    Vector<ResourceContentHash> resList(numResourcesInBatch + 1);
+    std::vector<ResourceContentHash> resList(numResourcesInBatch + 1);
     UInt64 hash = 1234u;
     for (auto& res : resList)
     {
@@ -350,7 +350,7 @@ TEST_F(AClientResourceUploadingManager, checksTimeBudgetForEachLargeResourceWhen
     const ResourceContentHash res2(1235u, 0u);
     const ResourceContentHash res3(1236u, 0u);
 
-    const Vector<UInt32> dummyData(ClientResourceUploadingManager::LargeResourceByteSizeThreshold / 4 + 1, 0u);
+    const std::vector<UInt32> dummyData(ClientResourceUploadingManager::LargeResourceByteSizeThreshold / 4 + 1, 0u);
     const ArrayResource largeResource(EResourceType_IndexArray, static_cast<UInt32>(dummyData.size()), EDataType_UInt32, reinterpret_cast<const Byte*>(dummyData.data()), ResourceCacheFlag_DoNotCache, "");
 
     registerAndProvideResource(res1, false, &largeResource);

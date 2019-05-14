@@ -190,7 +190,8 @@ namespace ramses
 
     TEST_F(AHarfbuzzFontInstance, ObtainsMultipleGlyphMetricsWithReshaping)
     {
-        const std::u32string str = U" ةحول ";
+        const std::u32string str = {32, 1577, 1581, 1608, 1604, 32, }; //U" ةحول ";
+
         const GlyphMetricsVector positionedGlyphs = getPositionedGlyphs(str, *FontInstanceArabic);
 
         ASSERT_EQ(6u, positionedGlyphs.size());
@@ -207,7 +208,7 @@ namespace ramses
 
     TEST_F(AHarfbuzzFontInstance, ObtainsMultipleGlyphMetricsWithReshaping2)
     {
-        const std::u32string str = U" العربية ";
+        const std::u32string str = {32, 1575, 1604, 1593, 1585, 1576, 1610, 1577, 32, }; //U" العربية ";
         const GlyphMetricsVector positionedGlyphs = getPositionedGlyphs(str, *FontInstanceArabic);
 
         ASSERT_EQ(8u, positionedGlyphs.size());

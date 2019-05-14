@@ -88,7 +88,7 @@ namespace ramses_internal
 
         UInt32       m_numberOfThreads;
         mutable PlatformLightweightLock m_aliveLock;
-        Vector<Bool> m_aliveThreads;
+        std::vector<Bool> m_aliveThreads;
         PlatformWatchdog m_watchdogNotifier;
     };
 }

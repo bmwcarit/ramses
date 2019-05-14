@@ -70,7 +70,6 @@ Takes a path as input and runs style/license header checks with filters where ne
         r'gitconfig$',
         r'\.clang-format$',
         r'\.clang-tidy$',
-        r'^integration/TestContent/res/binary_shader.*',
         r'(^|/)build[^/]*/',
     }
 
@@ -109,9 +108,9 @@ Takes a path as input and runs style/license header checks with filters where ne
         r'\.spdx$',
         r'^CHANGELOG\.txt$', # Doesn't need a license
         r'^LICENSE\.txt$',   # Contains license info, not related to code/content
-        r'^proprietary/oss/LICENSE\.txt$',  # Contains oss license info, not related to code/content
         r'^.lfsconfig$',     # Doesn't need a license
-        r'^proprietary/scripts/text-generator-test/tests',
+        # Only on the build server, needs to be blacklisted
+        r'^envVar\.txt$',
     }
 
     blacklist_files_formatting = shared_blacklist_non_src_files | {

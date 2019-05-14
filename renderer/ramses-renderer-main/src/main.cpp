@@ -33,9 +33,9 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
     ramses_internal::ArgumentBool      disableAutoMapping(parser, "nomap", "disableAutoMapping", false);
     ramses_internal::ArgumentUInt32    msaaSamples(parser, "msaa", "msaaSamples", 1u);
 
-    ramses_internal::Vector<ramses_internal::String> tokens;
+    std::vector<ramses_internal::String> tokens;
     ramses_internal::StringUtils::Tokenize(mappingToParse, tokens, ',');
-    ramses_internal::Vector<MappingCommand> mappingCommands;
+    std::vector<MappingCommand> mappingCommands;
     int tokenIndex = 0;
     while (tokens.size() - tokenIndex >= 3)
     {

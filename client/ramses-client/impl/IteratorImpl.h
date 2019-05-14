@@ -18,7 +18,7 @@ namespace ramses
     class IteratorImpl
     {
     public:
-        typedef ramses_internal::Vector<T> ObjectVector;
+        typedef std::vector<T> ObjectVector;
 
         IteratorImpl()
         {
@@ -44,7 +44,7 @@ namespace ramses
 
     protected:
         ObjectVector                         m_objects;
-        typename ObjectVector::Iterator      m_objectIterator;
+        typename ObjectVector::iterator      m_objectIterator;
     };
 }
 

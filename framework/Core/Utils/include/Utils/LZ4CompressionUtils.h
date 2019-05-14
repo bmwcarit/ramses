@@ -15,26 +15,10 @@ namespace ramses_internal
 {
     namespace LZ4CompressionUtils
     {
-        enum class CompressionLevel : Int8
+        enum class CompressionLevel : int
         {
-            Fast = -1,      // lz4 standard compression
-            HighDefault,    // lz4 high compression, this will automatically choose a good compromise level
-            High1,          // lz4 high compression level 1 (relatively fast and low compression)
-            High2,
-            High3,
-            High4,
-            High5,
-            High6,
-            High7,
-            High8,
-            High9,
-            High10,
-            High11,
-            High12,
-            High13,
-            High14,
-            High15,
-            High16          // lz4 high compression level 16 (slowest, highest compression)
+            Fast,
+            High
         };
 
         //! get maximum required buffer size to compress data of size uncompressedSize

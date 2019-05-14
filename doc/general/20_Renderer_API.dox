@@ -61,7 +61,7 @@ The consumer node (and all its children in scenegraph topology) will transform u
 
 ### DataObject Linking
 
-DataObjects can be used to set values to Appearance's uniforms and these can be linked as well across scenes. As long as data type is matched a data value stored in a DataObject of one scene
+DataObjects can be used to set values to Appearance's uniforms or Camera parameters and these can be linked as well across scenes. As long as data type is matched a data value stored in a DataObject of one scene
 can be used as uniform input of an Appearance in another scene.
 
 ### Texture Linking

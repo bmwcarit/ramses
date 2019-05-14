@@ -30,7 +30,7 @@
 #include "TestStepCommand.h"
 
 
-typedef ramses_internal::Vector<ramses::Scene*> SceneVector;
+typedef std::vector<ramses::Scene*> SceneVector;
 
 ramses::Scene& addAndReturnScene(ramses::RamsesClient& ramses, SceneVector& scenes, ramses_internal::UInt32 sceneId)
 {
@@ -68,7 +68,7 @@ void flushAllScenes(SceneVector& scenes)
 template <typename INTEGRATIONSCENE>
 void createSceneAndSetState(
     ramses::RamsesClient& ramses,
-    ramses_internal::Vector<ramses::Scene*>& scenes,
+    std::vector<ramses::Scene*>& scenes,
     ramses_internal::UInt32 testState,
     ramses_internal::UInt32 sceneId,
     const ramses_internal::Vector3& cameraPosition = ramses_internal::Vector3(0.0f)
@@ -106,7 +106,7 @@ int main(int argc, const char* argv[])
     ramses_internal::UInt32 testState = testStateArgument;
     ramses_internal::Vector3 cameraPosParam(testCameraPosXArgument, testCameraPosYArgument, testCameraPosZArgument);
 
-    ramses_internal::Vector<ramses::Scene*> scenes;
+    std::vector<ramses::Scene*> scenes;
 
     switch (testNr)
     {

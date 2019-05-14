@@ -70,9 +70,7 @@ namespace ramses_internal
     TEST(CompressedMemoryBlobTest, CompressAndDecompressMemoryBlob)
     {
         for (auto compressionLevel : {  LZ4CompressionUtils::CompressionLevel::Fast,
-                                        LZ4CompressionUtils::CompressionLevel::HighDefault,
-                                        LZ4CompressionUtils::CompressionLevel::High1,
-                                        LZ4CompressionUtils::CompressionLevel::High16 })
+                                        LZ4CompressionUtils::CompressionLevel::High })
         {
             const UInt32 size = 1024;
             UInt8 data[size];

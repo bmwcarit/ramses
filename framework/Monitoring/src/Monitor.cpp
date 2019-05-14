@@ -53,7 +53,7 @@ namespace ramses_internal
     {
         while (!isCancelRequested())
         {
-            Vector<FrameInfo> local;
+            std::vector<FrameInfo> local;
             {
                 PlatformLightweightGuard g(lock);
                 local.swap(queue);

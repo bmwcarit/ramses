@@ -26,7 +26,7 @@ namespace ramses_internal
     {
         auto p = [&types](const SceneActionCollection::SceneActionReader& action)-> Bool
             {
-                return types.contains(action.type());
+                return contains_c(types, action.type());
             };
 
         return static_cast<UInt32>(std::count_if(actions.begin(),actions.end(), p));

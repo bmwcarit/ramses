@@ -39,7 +39,7 @@ namespace ramses_internal
         void setKeyInternal(SplineKeyIndex keyIndex, SplineTimeStamp timeStamp, const KeyType& key);
         void shiftKeysByOneStartingFrom(SplineKeyIndex startFromIndex);
 
-        typedef Vector<KeyType> KeyVector;
+        typedef std::vector<KeyType> KeyVector;
 
         KeyVector m_keys;
     };

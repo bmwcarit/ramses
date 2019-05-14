@@ -30,7 +30,7 @@ namespace ramses_internal
         }
 
         void SplitSceneActionsToChunks(const SceneActionCollection& actions, UInt32 maxNumSceneActions, UInt32 maxSizeSceneActions,
-            const std::function<void(Pair<UInt32, UInt32>, Pair<const Byte*, const Byte*>, bool)>& sendFunc)
+                                       const std::function<void(std::pair<UInt32, UInt32>, std::pair<const Byte*, const Byte*>, bool)>& sendFunc)
         {
             assert(maxNumSceneActions > 0);
             assert(maxSizeSceneActions > 0);
@@ -52,7 +52,7 @@ namespace ramses_internal
                 {
                     const bool isIncomplete = chunkSizeFullAction > maxSizeSceneActions;
                     const UInt32 chunkSizeReal = std::min(chunkSizeFullAction, maxSizeSceneActions);
-                    sendFunc(MakePair(chunkStartAction, chunkStartAction + numActionsToSend), MakePair(data + chunkOffsetStart, data + chunkOffsetStart + chunkSizeReal), isIncomplete);
+                    sendFunc(std::make_pair(chunkStartAction, chunkStartAction + numActionsToSend), std::make_pair(data + chunkOffsetStart, data + chunkOffsetStart + chunkSizeReal), isIncomplete);
                     if (isIncomplete)
                     {
                         chunkStartAction = idx;

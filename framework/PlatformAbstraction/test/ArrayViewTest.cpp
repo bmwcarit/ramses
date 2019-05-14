@@ -201,7 +201,7 @@ namespace ramses_internal
         auto testdata = Val<TypeParam>::getValue();
         using TestType = typename std::remove_reference<decltype(*testdata)>::type;
         TypeParam view(testdata, 10);
-        Vector<TestType> result(10);
+        std::vector<TestType> result(10);
 
         UInt i = 0;
         for (const auto c : view)

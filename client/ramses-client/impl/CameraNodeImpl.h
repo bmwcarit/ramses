@@ -19,6 +19,8 @@
 
 namespace ramses
 {
+    class DataVector2i;
+
     class CameraNodeImpl final : public NodeImpl
     {
     public:
@@ -28,9 +30,9 @@ namespace ramses
         // Common for all camera types
         ramses_internal::ECameraProjectionType getProjectionType() const;
 
-        status_t setViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
-        uint32_t getViewportX() const;
-        uint32_t getViewportY() const;
+        status_t setViewport(int32_t x, int32_t y, uint32_t width, uint32_t height);
+        int32_t getViewportX() const;
+        int32_t getViewportY() const;
         uint32_t getViewportWidth() const;
         uint32_t getViewportHeight() const;
 
@@ -56,11 +58,24 @@ namespace ramses
 
         status_t getProjectionMatrix(float(&projectionMatrix)[16]) const;
 
+        status_t bindViewportOffset(const DataVector2i& offsetData);
+        status_t bindViewportSize(const DataVector2i& sizeData);
+        status_t unbindViewportOffset();
+        status_t unbindViewportSize();
+        bool isViewportOffsetBound() const;
+        bool isViewportSizeBound() const;
+
     private:
         ramses_internal::ProjectionParams getProjectionParams() const;
         void                              updateProjectionParamsOnScene(const ramses_internal::ProjectionParams& params);
 
         ramses_internal::CameraHandle m_cameraHandle;
+        ramses_internal::DataLayoutHandle m_viewportDataLayout;
+        ramses_internal::DataInstanceHandle m_viewportDataInstance;
+        ramses_internal::DataLayoutHandle m_viewportDataReferenceLayout;
+        ramses_internal::DataInstanceHandle m_viewportOffsetDataReference;
+        ramses_internal::DataInstanceHandle m_viewportSizeDataReference;
+
         bool m_frustumInitialized;
         bool m_viewportInitialized;
     };

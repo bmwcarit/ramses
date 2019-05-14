@@ -32,7 +32,7 @@ namespace ramses_internal
 
     private:
         PlatformLock& m_lock;
-        Vector<IConnectionStatusListener*> m_listeners;
+        std::vector<IConnectionStatusListener*> m_listeners;
         HashSet<Guid> m_currentState;
     };
 }

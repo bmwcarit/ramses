@@ -19,7 +19,7 @@ namespace ramses_internal
     {
         AnimationHandleVector animHandles;
         m_animationData.getAnimationHandles(animHandles);
-        for (AnimationHandleVector::Iterator it = animHandles.begin();
+        for (AnimationHandleVector::iterator it = animHandles.begin();
             it != animHandles.end(); ++it)
         {
             enqueueAnimation(*it);

@@ -93,7 +93,7 @@ namespace ramses_internal
     TYPED_TEST(RawBinaryOutputStreamBaseTypesTest, WriteAndCheckSingleElement)
     {
         const UInt32 dataSize = 64 * 1024; // 64K
-        Vector<UInt8> data;
+        std::vector<UInt8> data;
         data.resize(dataSize);
 
         RawBinaryOutputStream outstr(&data[0], dataSize);
@@ -111,7 +111,7 @@ namespace ramses_internal
     {
         const UInt32 iterations = 1000;
         const UInt32 dataSize = 64 * 1024; // 64K
-        Vector<UInt8> data;
+        std::vector<UInt8> data;
         data.resize(dataSize);
 
         RawBinaryOutputStream outstr(&data[0], dataSize);
@@ -137,7 +137,7 @@ namespace ramses_internal
     TEST_F(RawBinaryOutputStreamComplexTypesTest, WriteAndCheckString)
     {
         const UInt32 dataSize = 64 * 1024; // 64K
-        Vector<UInt8> data;
+        std::vector<UInt8> data;
         data.resize(dataSize);
 
         RawBinaryOutputStream outstr(&data[0], dataSize);
@@ -154,7 +154,7 @@ namespace ramses_internal
     TEST_F(RawBinaryOutputStreamComplexTypesTest, WriteAndCheckBuffer)
     {
         const UInt32 dataSize = 64 * 1024; // 64K
-        Vector<UInt8> data;
+        std::vector<UInt8> data;
         data.resize(dataSize);
 
         RawBinaryOutputStream outstr(&data[0], dataSize);

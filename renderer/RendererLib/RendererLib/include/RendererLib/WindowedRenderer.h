@@ -27,6 +27,7 @@
 #include "RendererCommands/LinkSceneData.h"
 #include "RendererCommands/UnlinkSceneData.h"
 #include "RendererCommands/SystemCompositorControllerListIviSurfaces.h"
+#include "RendererCommands/SystemCompositorControllerSetLayerVisibility.h"
 #include "RendererCommands/SystemCompositorControllerSetSurfaceVisibility.h"
 #include "RendererCommands/SystemCompositorControllerSetSurfaceOpacity.h"
 #include "RendererCommands/SystemCompositorControllerSetSurfaceDestRectangle.h"
@@ -94,6 +95,7 @@ namespace ramses_internal
         UnlinkSceneData                                   m_cmdUnlinkSceneData;
         ScopedPointer<ShowSceneCommand>                   m_cmdShowSceneOnDisplayInternal;
         SystemCompositorControllerListIviSurfaces         m_cmdSystemCompositorControllerListIviSurfaces;
+        SystemCompositorControllerSetLayerVisibility      m_cmdSystemCompositorControllerSetLayerVisibility;
         SystemCompositorControllerSetSurfaceVisibility    m_cmdSystemCompositorControllerSetSurfaceVisibility;
         SystemCompositorControllerSetSurfaceOpacity       m_cmdSystemCompositorControllerSetSurfaceOpacity;
         SystemCompositorControllerSetSurfaceDestRectangle m_cmdSystemCompositorControllerSetSurfaceDestRectangle;

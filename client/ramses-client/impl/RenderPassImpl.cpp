@@ -236,7 +236,7 @@ namespace ramses
             return addErrorEntry("RenderPass::addRenderGroup failed - renderGroup is not from the same scene as this RenderPass");
         }
 
-        if (!m_renderGroups.contains(&renderGroup))
+        if (!ramses_internal::contains_c(m_renderGroups, &renderGroup))
         {
             const ramses_internal::RenderGroupHandle renderGroupHandle = renderGroup.getRenderGroupHandle();
             getIScene().addRenderGroupToRenderPass(m_renderPassHandle, renderGroupHandle, orderWithinPass);
@@ -248,7 +248,7 @@ namespace ramses
 
     status_t RenderPassImpl::remove(const RenderGroupImpl& renderGroup)
     {
-        RenderGroupVector::Iterator iter = m_renderGroups.find(&renderGroup);
+        RenderGroupVector::iterator iter = ramses_internal::find_c(m_renderGroups, &renderGroup);
         if (iter == m_renderGroups.end())
         {
             return addErrorEntry("RenderPass::removeRenderGroup failed - could not remove RenderGroup from Renderpass because it was not contained");
@@ -261,7 +261,7 @@ namespace ramses
 
     void RenderPassImpl::removeIfContained(const RenderGroupImpl& renderGroup)
     {
-        RenderGroupVector::Iterator iter = m_renderGroups.find(&renderGroup);
+        RenderGroupVector::iterator iter = ramses_internal::find_c(m_renderGroups, &renderGroup);
         if (iter != m_renderGroups.end())
         {
             removeInternal(iter);
@@ -270,7 +270,7 @@ namespace ramses
 
     bool RenderPassImpl::contains(const RenderGroupImpl& renderGroup) const
     {
-        return m_renderGroups.contains(&renderGroup);
+        return ramses_internal::contains_c(m_renderGroups, &renderGroup);
     }
 
     ramses::status_t RenderPassImpl::getRenderGroupOrder(const RenderGroupImpl& renderGroup, int32_t& orderWithinPass) const
@@ -377,7 +377,7 @@ namespace ramses
         return getIScene().getRenderPass(m_renderPassHandle).isEnabled;
     }
 
-    void RenderPassImpl::removeInternal(RenderGroupVector::Iterator iter)
+    void RenderPassImpl::removeInternal(RenderGroupVector::iterator iter)
     {
         const ramses_internal::RenderGroupHandle renderGroupHandle = (*iter)->getRenderGroupHandle();
         getIScene().removeRenderGroupFromRenderPass(m_renderPassHandle, renderGroupHandle);

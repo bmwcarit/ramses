@@ -9,52 +9,18 @@
 #ifndef RAMSES_PAIR_H
 #define RAMSES_PAIR_H
 
-#include "ramses-capu/container/Pair.h"
 #include "ramses-capu/container/Hash.h"
-#include <algorithm>
-
-namespace ramses_internal
-{
-    template<typename A, typename B>
-    class Pair: public ramses_capu::Pair<A, B>
-    {
-    public:
-        Pair()
-        {
-
-        }
-
-        Pair(const A& first_, const B& second_)
-            : ramses_capu::Pair<A, B>(first_, second_)
-        {
-
-        }
-    };
-
-    template <typename A, typename B>
-    Pair<A, B> MakePair(const A& a, const B& b)
-    {
-        return Pair<A, B>(a, b);
-    }
-
-    template<typename A, typename B>
-    inline void swap(Pair<A, B>& a, Pair<A, B>& b)
-    {
-        using std::swap;
-        swap(a.first, b.first);
-        swap(b.second, b.second);
-    }
-}
+#include <utility>
 
 namespace ramses_capu
 {
     /**
-     * Hash code generation for a Pair instance. Necessary e. g. for using a Pair as a key in a hash map.
+     * Hash code generation for a std::pair instance. Necessary e. g. for using a std::pair as a key in a hash map.
      */
     template<typename A, typename B>
-    struct Hash<ramses_internal::Pair<A, B>>
+    struct Hash<std::pair<A, B>>
     {
-        uint_t operator()(const ramses_internal::Pair<A, B>& data)
+        uint_t operator()(const std::pair<A, B>& data)
         {
             return HashValue(data.first, data.second);
         }

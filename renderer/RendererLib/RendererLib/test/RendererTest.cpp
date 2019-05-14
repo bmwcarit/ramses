@@ -76,7 +76,7 @@ public:
             EXPECT_CALL(*displayMock.m_displayController, clearBuffer(buffer, Renderer::DefaultClearColor)).InSequence(SeqRender);
     }
 
-    void expectInterruptibleOffscreenBufferRendered(DisplayHandle display, std::initializer_list<DeviceResourceHandle> buffers, const Vector< std::pair<bool, bool> >& expectClearAndSwapFlags = {}, bool withContextEnable = false)
+    void expectInterruptibleOffscreenBufferRendered(DisplayHandle display, std::initializer_list<DeviceResourceHandle> buffers, const std::vector< std::pair<bool, bool> >& expectClearAndSwapFlags = {}, bool withContextEnable = false)
     {
         DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(display);
         if (withContextEnable)
@@ -401,6 +401,18 @@ TEST_P(ARenderer, clearsOffscreenBufferIfThereIsSceneAssignedToIt)
 
     hideScene(sceneId);
     unmapScene(sceneId);
+}
+
+TEST_P(ARenderer, SetsLayerVisibilityInSystemCompositorController)
+{
+    SystemCompositorControllerMock* systemCompositorMock = getSystemCompositorMock();
+    if(systemCompositorMock != nullptr)
+    {
+        EXPECT_CALL(*systemCompositorMock, setLayerVisibility(WaylandIviLayerId(18u), false));
+        EXPECT_CALL(*systemCompositorMock, setLayerVisibility(WaylandIviLayerId(17u), true));
+    }
+    renderer.systemCompositorSetIviLayerVisibility(WaylandIviLayerId(18u), false);
+    renderer.systemCompositorSetIviLayerVisibility(WaylandIviLayerId(17u), true);
 }
 
 TEST_P(ARenderer, doesNotClearOffscreenBufferIfThereIsNoSceneAssignedToIt)
@@ -1114,8 +1126,10 @@ TEST_P(ARenderer, marksRenderOncePassesAsRenderedAfterRenderingScene)
 
     auto& scene = rendererScenes.getScene(sceneId);
     TestSceneHelper sceneHelper(scene);
+    const auto dataLayout = sceneHelper.m_sceneAllocator.allocateDataLayout({ {EDataType_Vector2I}, {EDataType_Vector2I} });
+    const CameraHandle camera = sceneHelper.m_sceneAllocator.allocateCamera(ECameraProjectionType_Orthographic, sceneHelper.m_sceneAllocator.allocateNode(), sceneHelper.m_sceneAllocator.allocateDataInstance(dataLayout));
     const RenderPassHandle pass = sceneHelper.m_sceneAllocator.allocateRenderPass();
-    scene.setRenderPassCamera(pass, sceneHelper.m_sceneAllocator.allocateCamera(ECameraProjectionType_Orthographic, sceneHelper.m_sceneAllocator.allocateNode()));
+    scene.setRenderPassCamera(pass, camera);
 
     // render
     scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);

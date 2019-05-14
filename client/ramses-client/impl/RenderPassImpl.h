@@ -29,7 +29,7 @@ namespace ramses
     class RenderTarget;
     class RenderTargetImpl;
 
-    typedef ramses_internal::Vector<const RenderGroupImpl*>   RenderGroupVector;
+    typedef std::vector<const RenderGroupImpl*>   RenderGroupVector;
 
     class RenderPassImpl final : public SceneObjectImpl
     {
@@ -77,7 +77,7 @@ namespace ramses
         ramses_internal::RenderPassHandle getRenderPassHandle() const;
 
     private:
-        void removeInternal(RenderGroupVector::Iterator iter);
+        void removeInternal(RenderGroupVector::iterator iter);
 
         ramses_internal::RenderPassHandle   m_renderPassHandle;
         const CameraNodeImpl*               m_cameraImpl;

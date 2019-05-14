@@ -45,7 +45,7 @@ namespace ramses_internal
         PlatformSharedPointer<const IResource> m_resource;
     };
 
-    typedef Vector<ManagedResource> ManagedResourceVector;
+    typedef std::vector<ManagedResource> ManagedResourceVector;
 }
 
 #endif

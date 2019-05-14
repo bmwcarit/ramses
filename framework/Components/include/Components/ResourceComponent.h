@@ -102,7 +102,7 @@ namespace ramses_internal
         class LoadResourcesFromFileTask : public ITask
         {
         public:
-            LoadResourcesFromFileTask(ResourceComponent& component, Vector<ResourceLoadInfo> resourceToLoadInTask, UInt64 taskCreationTime)
+            LoadResourcesFromFileTask(ResourceComponent& component, std::vector<ResourceLoadInfo> resourceToLoadInTask, UInt64 taskCreationTime)
                 : m_resourceComponent(component)
                 , m_resourcesToLoad(std::move(resourceToLoadInTask))
                 , m_taskCreationTime(taskCreationTime)
@@ -111,7 +111,7 @@ namespace ramses_internal
             virtual void execute() override;
         private:
             ResourceComponent& m_resourceComponent;
-            Vector<ResourceLoadInfo> m_resourcesToLoad;
+            std::vector<ResourceLoadInfo> m_resourcesToLoad;
             UInt64 m_taskCreationTime;
         };
 
@@ -120,7 +120,7 @@ namespace ramses_internal
 
         void triggerLoadingResourcesFromFile();
 
-        void sendResourcesFromFile(const Vector<IResource*>& loadedResources, uint64_t bytesLoaded, const Guid& requesterId);
+        void sendResourcesFromFile(const std::vector<IResource*>& loadedResources, uint64_t bytesLoaded, const Guid& requesterId);
         const ResourceInfo& getResourceInfo(const ResourceContentHash& hash) const;
         void storeResourceInfo(const ResourceContentHash& hash, const ResourceInfo& resourceInfo);
 

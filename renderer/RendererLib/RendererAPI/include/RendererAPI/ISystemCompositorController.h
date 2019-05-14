@@ -95,6 +95,16 @@ namespace ramses_internal
          */
         virtual Bool destroySurface(WaylandIviSurfaceId surfaceId) = 0;
 
+        /**
+         * @brief changes the visibility setting of a layer
+         *
+         * @param layerId The id identifying the layer.
+         * @param visibility If \c true the layer will be set to visible, otherwise invisible.
+         *
+         * @return \c true on success \c false otherwise
+         */
+        virtual Bool setLayerVisibility(WaylandIviLayerId layerId, Bool visibility) = 0;
+
     };
 }
 

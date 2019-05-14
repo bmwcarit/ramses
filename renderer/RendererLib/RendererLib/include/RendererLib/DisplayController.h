@@ -56,7 +56,7 @@ namespace ramses_internal
         virtual const Matrix44f&        getViewMatrix() const override;
         virtual void                    resetView() const override;
 
-        virtual Bool                    readPixels(UInt32 x, UInt32 y, UInt32 width, UInt32 height, Vector<UInt8>& dataOut) override;
+        virtual Bool                    readPixels(UInt32 x, UInt32 y, UInt32 width, UInt32 height, std::vector<UInt8>& dataOut) override;
         virtual Bool                    isWarpingEnabled() const override;
         virtual void                    setWarpingMeshData(const WarpingMeshData& warpingMeshData) override;
 

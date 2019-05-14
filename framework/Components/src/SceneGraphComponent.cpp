@@ -100,7 +100,7 @@ namespace ramses_internal
         }
     }
 
-    void SceneGraphComponent::sendSceneActionList(const Vector<Guid>& toVec, SceneActionCollection&& sceneAction, SceneId sceneId, EScenePublicationMode mode)
+    void SceneGraphComponent::sendSceneActionList(const std::vector<Guid>& toVec, SceneActionCollection&& sceneAction, SceneId sceneId, EScenePublicationMode mode)
     {
         UNUSED(mode);
 
@@ -239,7 +239,7 @@ namespace ramses_internal
         for (const auto& p : m_clientSceneLogicMap)
         {
             ClientSceneLogicBase* sceneLogic = p.value;
-            const Vector<Guid> subscribers(sceneLogic->getWaitingAndActiveSubscribers());
+            const std::vector<Guid> subscribers(sceneLogic->getWaitingAndActiveSubscribers());
             for (const auto& sub : subscribers)
             {
                 if (sub != m_myID)

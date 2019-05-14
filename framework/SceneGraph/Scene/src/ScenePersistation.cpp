@@ -81,7 +81,7 @@ namespace ramses_internal
         creator.preallocateSceneSize(scene.getSceneSizeInformation());
         SceneDescriber::describeScene<ClientScene>(scene, creator);
 
-        const Vector<Byte>& actionData = collection.collectionData();
+        const std::vector<Byte>& actionData = collection.collectionData();
 
         outStream << static_cast<UInt32>(gSceneMarker);
         outStream << static_cast<UInt32>(collection.numberOfActions());
@@ -131,7 +131,7 @@ namespace ramses_internal
         SceneActionCollection actions(0, numberOfSceneActionsToRead);
 
         // read data
-        Vector<Byte>& rawActionData = actions.getRawDataForDirectWriting();
+        std::vector<Byte>& rawActionData = actions.getRawDataForDirectWriting();
         rawActionData.resize(sizeOfAllSceneActions);
         inStream.read(reinterpret_cast<char*>(rawActionData.data()), static_cast<UInt32>(rawActionData.size()));
 

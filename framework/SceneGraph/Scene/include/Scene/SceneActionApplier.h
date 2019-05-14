@@ -27,7 +27,7 @@ namespace ramses_internal
     class SceneActionApplier
     {
     public:
-        using ResourceVector = Vector<std::unique_ptr<IResource>>;
+        using ResourceVector = std::vector<std::unique_ptr<IResource>>;
 
         static void ApplyActionsOnScene(IScene& scene, const SceneActionCollection& actions, AnimationSystemFactory* animSystemFactory = nullptr, ResourceVector* resources = nullptr);
         static void ApplyActionRangeOnScene(IScene& scene, const SceneActionCollection& actions, UInt startIdx, UInt endIdx, AnimationSystemFactory* animSystemFactory = nullptr, ResourceVector* resources = nullptr);

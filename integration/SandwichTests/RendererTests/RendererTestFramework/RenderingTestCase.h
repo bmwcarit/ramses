@@ -16,7 +16,7 @@
 
 class IRendererTest;
 
-typedef ramses_internal::Vector<ramses::DisplayConfig> DisplayConfigVector;
+typedef std::vector<ramses::DisplayConfig> DisplayConfigVector;
 
 struct RenderingTestCase
 {

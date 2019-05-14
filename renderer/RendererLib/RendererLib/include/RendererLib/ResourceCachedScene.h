@@ -17,7 +17,7 @@ namespace ramses_internal
     class IResourceDeviceHandleAccessor;
     class IEmbeddedCompositingManager;
 
-    typedef Vector<DeviceHandleVector> DeviceHandleCache;
+    typedef std::vector<DeviceHandleVector> DeviceHandleCache;
 
     class ResourceCachedScene : public DataReferenceLinkCachedScene
     {

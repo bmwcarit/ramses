@@ -131,7 +131,7 @@ namespace ramses_internal
         NiceMock<MockITask> task1;
         NiceMock<MockITask> task2;
         TaskForwardingQueue queue(successor);
-        Vector<ITask*> mockQ;
+        std::vector<ITask*> mockQ;
         std::atomic<bool> unlocked(false);
 
         EXPECT_CALL(successor, enqueue(_)).Times(2).WillRepeatedly(Invoke([&](ITask& task)

@@ -868,6 +868,20 @@ TEST_P(ARendererCommandExecutor, executionClearsSceneActionsRegardlessOfStateOfT
     EXPECT_EQ(0u, m_commandBuffer.getCommands().getTotalCommandCount());
 }
 
+TEST_P(ARendererCommandExecutor, setsLayerVisibility)
+{
+    m_commandBuffer.systemCompositorControllerSetIviLayerVisibility(WaylandIviLayerId(23u),true);
+    m_commandBuffer.systemCompositorControllerSetIviLayerVisibility(WaylandIviLayerId(25u),false);
+
+    SystemCompositorControllerMock* systemCompositorMock = getSystemCompositorMock();
+    if(systemCompositorMock != nullptr)
+    {
+        EXPECT_CALL(*systemCompositorMock, setLayerVisibility(WaylandIviLayerId(23u),true));
+        EXPECT_CALL(*systemCompositorMock, setLayerVisibility(WaylandIviLayerId(25u),false));
+    }
+    m_commandExecutor.executePendingCommands();
+}
+
 TEST_P(ARendererCommandExecutor, setsSurfaceVisibility)
 {
     m_commandBuffer.systemCompositorControllerSetIviSurfaceVisibility(WaylandIviSurfaceId(11u),true);

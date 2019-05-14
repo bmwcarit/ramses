@@ -51,7 +51,8 @@ namespace ramses_internal
     TYPED_TEST(AScene, setsCameraToRenderPass)
     {
         const RenderPassHandle renderPass = this->m_scene.allocateRenderPass();
-        const CameraHandle camera = this->m_scene.allocateCamera(ECameraProjectionType_Renderer, this->m_scene.allocateNode());
+        const auto dataLayout = this->m_scene.allocateDataLayout({{ramses_internal::EDataType_Vector2I}, {ramses_internal::EDataType_Vector2I}});
+        const CameraHandle camera = this->m_scene.allocateCamera(ECameraProjectionType_Renderer, this->m_scene.allocateNode(), this->m_scene.allocateDataInstance(dataLayout));
         EXPECT_FALSE(this->m_scene.getRenderPass(renderPass).camera.isValid());
 
         this->m_scene.setRenderPassCamera(renderPass, camera);

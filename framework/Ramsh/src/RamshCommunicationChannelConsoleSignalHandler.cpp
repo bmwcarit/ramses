@@ -39,7 +39,7 @@ namespace ramses_internal
 
     void RamshCommunicationChannelConsoleSignalHandler::remove(RamshCommunicationChannelConsole* console)
     {
-        Vector<RamshCommunicationChannelConsole*>::Iterator i = m_consoles.find(console);
+        std::vector<RamshCommunicationChannelConsole*>::iterator i = find_c(m_consoles, console);
         if (i != m_consoles.end())
         {
             m_consoles.erase(i);

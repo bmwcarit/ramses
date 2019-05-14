@@ -43,7 +43,7 @@ namespace ramses_internal
 
     };
 
-    typedef Vector<EffectInputInformation> EffectInputInformationVector;
+    typedef std::vector<EffectInputInformation> EffectInputInformationVector;
 
 
     EffectInputInformation::EffectInputInformation()

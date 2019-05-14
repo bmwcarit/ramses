@@ -14,13 +14,11 @@
 
 namespace ramses_internal
 {
-    void checkCompressionDecompression(const Vector<UInt8>& input)
+    void checkCompressionDecompression(const std::vector<UInt8>& input)
     {
         const auto size = static_cast<UInt32>(input.size());
         for (auto level : { LZ4CompressionUtils::CompressionLevel::Fast,
-                            LZ4CompressionUtils::CompressionLevel::HighDefault,
-                            LZ4CompressionUtils::CompressionLevel::High1,
-                            LZ4CompressionUtils::CompressionLevel::High16 })
+                            LZ4CompressionUtils::CompressionLevel::High })
         {
             const UInt32 comressedBound = LZ4CompressionUtils::compressedSizeBound(static_cast<UInt32>(input.size()));
             UInt32 compressedSize = comressedBound;
@@ -36,12 +34,12 @@ namespace ramses_internal
 
     TEST(LZ4CompressionUtilsTest, TestEmptyDataFrame)
     {
-        checkCompressionDecompression(Vector<UInt8>());
+        checkCompressionDecompression(std::vector<UInt8>());
     }
 
     TEST(LZ4CompressionUtilsTest, TestSmallDataFrame)
     {
-        Vector<UInt8> small(6);
+        std::vector<UInt8> small(6);
         PlatformMemory::Copy(small.data(), "foobar", small.size());
         checkCompressionDecompression(small);
     }
@@ -49,7 +47,7 @@ namespace ramses_internal
     TEST(LZ4CompressionUtilsTest, TestBigDataFrame)
     {
         const UInt32 size = 1024 * 128;
-        Vector<UInt8> big(size);
+        std::vector<UInt8> big(size);
         for (auto i = 0u; i < size; ++i)
         {
             PlatformMemory::Set(big.data() + i, static_cast<UInt8>(10+i), sizeof(UInt8));

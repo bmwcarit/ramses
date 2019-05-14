@@ -59,7 +59,7 @@ namespace ramses_internal
         // get size and offset of resources by writing to dummy stream
         VoidOutputStream dummyStream;
         ResourceTableOfContents dummyToc;
-        ramses_internal::Vector<UInt32> resourceOffsetSize;
+        std::vector<UInt32> resourceOffsetSize;
         resourceOffsetSize.reserve(resourcesForFile.size() * 2);
         UInt32 offsetBeforeWrite = 0;
         UInt32 currentPosAfterWrite = 0;

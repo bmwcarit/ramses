@@ -22,7 +22,7 @@ namespace ramses_internal
         SceneId               consumerSceneId;
         DataSlotHandle        consumerSlot;
     };
-    typedef Vector<OffscreenBufferLink> OffscreenBufferLinkVector;
+    typedef std::vector<OffscreenBufferLink> OffscreenBufferLinkVector;
 
     class OffscreenBufferLinks
     {

@@ -54,7 +54,7 @@ public:
 
 private:
 
-    Vector<uint8_t> m_data;
+    std::vector<uint8_t> m_data;
 };
 }
 #endif

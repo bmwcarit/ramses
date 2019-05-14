@@ -89,12 +89,12 @@ namespace ramses_internal
         void startRegion(ERegion region);
         void endRegion(ERegion region);
 
-        using RegionTimings = Vector<Float>;
+        using RegionTimings = std::vector<Float>;
         const RegionTimings& getRegionTimings() const;
 
         void setCounterValue(ECounter counter, UInt32 value);
 
-        using CounterValues = Vector<Float>;
+        using CounterValues = std::vector<Float>;
         const CounterValues& getCounterValues(ECounter counter) const;
 
         // only shows the chosen combination of ERegions
@@ -111,7 +111,7 @@ namespace ramses_internal
         void initNextFrameTimings();
         void setSleepTimeForLastFrame(std::chrono::microseconds sleepTime);
 
-        using RegionTimes = Vector<UInt64>;
+        using RegionTimes = std::vector<UInt64>;
         RegionTimes m_regionStartTimes;
 
         // region measurements in a circular buffer holding last NumberOfFrames data
@@ -120,9 +120,9 @@ namespace ramses_internal
 
         // region measurements for periodic logging
         // these are reset every period
-        Vector<UInt> m_frameTimings;
+        std::vector<UInt> m_frameTimings;
 
-        using Counters = Vector<CounterValues>;
+        using Counters = std::vector<CounterValues>;
         Counters m_counters;
 
         UInt32 m_currentFrameId;

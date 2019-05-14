@@ -44,7 +44,7 @@ namespace ramses_internal
         RamshCommunicationChannelConsoleSignalHandler();
 
         /// List of registered RamshCommunicationChannelConsole instances.
-        Vector<RamshCommunicationChannelConsole*> m_consoles;
+        std::vector<RamshCommunicationChannelConsole*> m_consoles;
     };
 }
 

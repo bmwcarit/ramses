@@ -124,6 +124,7 @@ TEST_F(ARendererCommandBuffer, canFetchAllTypesOfRendererCommands)
     queueToFetch.systemCompositorControllerSetIviSurfaceOpacity(WaylandIviSurfaceId(7), 0.5f);
     queueToFetch.systemCompositorControllerSetIviSurfaceDestRectangle(WaylandIviSurfaceId(8), 0, 0, 64, 128);
     queueToFetch.systemCompositorControllerScreenshot("testScreenshot.png", -1);
+    queueToFetch.systemCompositorControllerSetIviLayerVisibility(WaylandIviLayerId(19), true);
     queueToFetch.systemCompositorControllerAddIviSurfaceToIviLayer(WaylandIviSurfaceId(9u), WaylandIviLayerId(831u));
     queueToFetch.systemCompositorControllerRemoveIviSurfaceFromIviLayer(WaylandIviSurfaceId(25u), WaylandIviLayerId(921u));
     queueToFetch.systemCompositorControllerDestroyIviSurface(WaylandIviSurfaceId(51u));
@@ -132,13 +133,13 @@ TEST_F(ARendererCommandBuffer, canFetchAllTypesOfRendererCommands)
     queueToFetch.setClearColor(displayHandle, clearColor);
     queueToFetch.setFrameTimerLimits(4u, 1u, 2u, 3u);
 
-    EXPECT_EQ(33u, queueToFetch.getCommands().getTotalCommandCount());
+    EXPECT_EQ(34u, queueToFetch.getCommands().getTotalCommandCount());
 
     queue.addCommands(queueToFetch); //fetchRendererCommands
     queueToFetch.clear(); //clear fetched command queue
 
     EXPECT_EQ(0u, queueToFetch.getCommands().getTotalCommandCount());
-    EXPECT_EQ(33u, queue.getCommands().getTotalCommandCount());
+    EXPECT_EQ(34u, queue.getCommands().getTotalCommandCount());
 
     //check some details of the fetched commands
     EXPECT_EQ(ERendererCommand_PublishedScene, queue.getCommands().getCommandType(0));
@@ -153,12 +154,12 @@ TEST_F(ARendererCommandBuffer, canFetchAllTypesOfRendererCommands)
     EXPECT_EQ(static_cast<IResourceProvider*>(&resourceProvider), dispCmd.resourceProvider);
     EXPECT_EQ(static_cast<IResourceUploader*>(&resourceUploader), dispCmd.resourceUploader);
 
-    EXPECT_EQ(ERendererCommand_ConfirmationEcho, queue.getCommands().getCommandType(29));
-    const ConfirmationEchoCommand& echoCmd = queue.getCommands().getCommandData<ConfirmationEchoCommand>(29);
+    EXPECT_EQ(ERendererCommand_ConfirmationEcho, queue.getCommands().getCommandType(30));
+    const ConfirmationEchoCommand& echoCmd = queue.getCommands().getCommandData<ConfirmationEchoCommand>(30);
     EXPECT_TRUE(echoCmd.text == ramses_internal::String("testEcho"));
 
-    EXPECT_EQ(ERendererCommand_SetClearColor, queue.getCommands().getCommandType(31));
-    const auto& clearColorCmd = queue.getCommands().getCommandData<SetClearColorCommand>(31);
+    EXPECT_EQ(ERendererCommand_SetClearColor, queue.getCommands().getCommandType(32));
+    const auto& clearColorCmd = queue.getCommands().getCommandData<SetClearColorCommand>(32);
     EXPECT_TRUE(clearColorCmd.clearColor == clearColor);
 }
 }

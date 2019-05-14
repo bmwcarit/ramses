@@ -26,7 +26,7 @@ namespace ramses_internal
         EDataBufferType bufferType = EDataBufferType::Invalid;
         EDataType       dataType = EDataType_Invalid;
         UInt32          usedSize = 0u;
-        Vector<Byte>    data;
+        std::vector<Byte>    data;
     };
 
     static_assert(std::is_nothrow_move_constructible<GeometryDataBuffer>::value &&

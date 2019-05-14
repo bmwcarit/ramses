@@ -49,7 +49,7 @@ namespace ramses
         // Collection of found bounding spheres, which needs to be combined to a final enclosing sphere
         BoundingSphereVector foundSpheres;
 
-        ramses_internal::Vector<const NodeImpl*> stack;
+        std::vector<const NodeImpl*> stack;
         stack.push_back(&startNode);
 
         // Iterative implementation of depth-first search

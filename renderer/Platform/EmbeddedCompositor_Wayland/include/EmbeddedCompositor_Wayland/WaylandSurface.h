@@ -75,8 +75,8 @@ namespace ramses_internal
         static void ResourceDestroyedCallback(wl_resource* surfaceResource);
 
         IWaylandResource* m_surfaceResource = nullptr;
-        ramses_internal::Vector<WaylandCallbackResource*> m_pendingCallbacks;
-        ramses_internal::Vector<WaylandCallbackResource*> m_frameCallbacks;
+        std::vector<WaylandCallbackResource*> m_pendingCallbacks;
+        std::vector<WaylandCallbackResource*> m_frameCallbacks;
         IWaylandBuffer* m_pendingBuffer = nullptr;
         IWaylandBuffer* m_buffer = nullptr;
         IWaylandIVISurface* m_iviSurface = nullptr;

@@ -75,9 +75,6 @@
 #ifndef NOKERNEL
 #define NOKERNEL
 #endif
-#ifndef NONLS
-#define NONLS
-#endif
 #ifndef NOMB
 #define NOMB
 #endif

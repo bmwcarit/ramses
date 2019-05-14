@@ -94,7 +94,7 @@ namespace ramses_internal
         EXPECT_TRUE(ArgumentBool(parser, "", "v", false));
         EXPECT_EQ(String("192.168.1.1"), String(ArgumentString(parser, "ip", "daemon-ip", "localhost")));
         StringVector files = parser.getNonOptions();
-        EXPECT_TRUE(files.contains("my/test/scene"));
+        EXPECT_TRUE(contains_c(files, "my/test/scene"));
     }
 
     TEST(CommandLineParserTest, fileTargetAtTheEnd)
@@ -108,7 +108,7 @@ namespace ramses_internal
         UNUSED(valueB);
 
         StringVector files = parser.getNonOptions();
-        EXPECT_TRUE(files.contains("my/test/scene"));
+        EXPECT_TRUE(contains_c(files, "my/test/scene"));
         EXPECT_EQ(1U, files.size());
     }
 
@@ -123,8 +123,8 @@ namespace ramses_internal
         UNUSED(valueB);
 
         StringVector files = parser.getNonOptions();
-        EXPECT_TRUE(files.contains("my/test/scene"));
-        EXPECT_TRUE(files.contains("otherFile"));
+        EXPECT_TRUE(contains_c(files, "my/test/scene"));
+        EXPECT_TRUE(contains_c(files, "otherFile"));
         EXPECT_EQ(2U, files.size());
     }
 
@@ -164,9 +164,9 @@ namespace ramses_internal
         EXPECT_TRUE(ArgumentBool(parser, "", "longOptioN", false));
 
         StringVector files = parser.getNonOptions();
-        EXPECT_TRUE(files.contains("testfileOne"));
-        EXPECT_TRUE(files.contains("secondFile"));
-        EXPECT_TRUE(files.contains("thirdfile"));
+        EXPECT_TRUE(contains_c(files, "testfileOne"));
+        EXPECT_TRUE(contains_c(files, "secondFile"));
+        EXPECT_TRUE(contains_c(files, "thirdfile"));
         EXPECT_EQ(3U, files.size());
     }
 

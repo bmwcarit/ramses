@@ -183,7 +183,7 @@ namespace ramses_internal
         StreamTextureSourceId       streamSourceId;
     };
 
-    using RendererEventVector = Vector<RendererEvent>;
+    using RendererEventVector = std::vector<RendererEvent>;
 
     class RendererEventCollector
     {

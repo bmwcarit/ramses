@@ -38,7 +38,7 @@ namespace ramses
         }
 
     protected:
-        typedef ramses_internal::Vector<Animation*> AnimationVector;
+        typedef std::vector<Animation*> AnimationVector;
         void createSomeAnimationsAndPutToSequence(AnimationVector& animations)
         {
             animations.clear();
@@ -64,7 +64,7 @@ namespace ramses
             m_sequence->addAnimation(*animation5, 9999u);
         }
 
-        typedef ramses_internal::Vector<sequenceTimeStamp_t> AnimationSequenceTimes;
+        typedef std::vector<sequenceTimeStamp_t> AnimationSequenceTimes;
         static AnimationSequenceTimes GetStartAndStopTimesWithinSequence(const AnimationVector& animations, const AnimationSequence& sequence)
         {
             AnimationSequenceTimes times;

@@ -21,7 +21,7 @@ namespace ramses_internal
 
     namespace
     {
-        using ResourceVector = Vector<std::unique_ptr<IResource>>;
+        using ResourceVector = std::vector<std::unique_ptr<IResource>>;
 
         class TestResourceStreamSerializer : public ResourceStreamSerializer
         {
@@ -29,7 +29,7 @@ namespace ramses_internal
             void serialize(const ManagedResourceVector& resources)
             {
                 ResourceStreamSerializer::serialize(
-                    [this](UInt32 neededSize) ->Pair<Byte*, UInt32> {
+                    [this](UInt32 neededSize) -> std::pair<Byte*, UInt32> {
                         return preparePacket(neededSize);
                     },
                     [this](UInt32 usedSize) {
@@ -41,14 +41,14 @@ namespace ramses_internal
             MOCK_METHOD1(preparePacket_cb, UInt32(UInt32));
             MOCK_METHOD1(finishedPacket_cb, void(UInt32));
 
-            Vector<Vector<Byte>> packets;
+            std::vector<std::vector<Byte>> packets;
 
         private:
-            Pair<Byte*, UInt32> preparePacket(UInt32 neededSize)
+            std::pair<Byte*, UInt32> preparePacket(UInt32 neededSize)
             {
                 const UInt32 maxSize = preparePacket_cb(neededSize);
-                packets.push_back(Vector<Byte>(maxSize, 0));
-                return MakePair(packets.back().data(), static_cast<UInt32>(packets.back().size()));
+                packets.push_back(std::vector<Byte>(maxSize, 0));
+                return std::make_pair(packets.back().data(), static_cast<UInt32>(packets.back().size()));
             }
 
             void finishedPacket(UInt32 usedSize)
@@ -96,7 +96,7 @@ namespace ramses_internal
                 return res;
             }
 
-            Vector<Byte> metadata;
+            std::vector<Byte> metadata;
         };
 
         void CompareResourceValues(const TestResource& a, const TestResource& b)
@@ -142,11 +142,11 @@ namespace ramses_internal
 
         ResourceVector deserializeAll()
         {
-            Vector<std::unique_ptr<IResource>> result;
+            std::vector<std::unique_ptr<IResource>> result;
             for (const auto& pkt : serializer.packets)
             {
                 ByteArrayView resourceData(pkt.data(), static_cast<UInt32>(pkt.size()));
-                Vector<IResource*> resVec = deserializer.processData(resourceData);
+                std::vector<IResource*> resVec = deserializer.processData(resourceData);
                 for (const auto& res : resVec)
                 {
                     result.push_back(std::unique_ptr<IResource>(res));

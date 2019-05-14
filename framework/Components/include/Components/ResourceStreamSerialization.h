@@ -20,7 +20,7 @@ namespace ramses_internal
     class ResourceStreamSerializer
     {
     public:
-        using PreparePacketFun = std::function<Pair<Byte*, UInt32>(UInt32)>;
+        using PreparePacketFun = std::function<std::pair<Byte*, UInt32>(UInt32)>;
         using FinishedPacketFun = std::function<void(UInt32)>;
 
         void serialize(const PreparePacketFun& preparePacketFun, const FinishedPacketFun& finishedPacketFun, const ManagedResourceVector& resources);
@@ -73,7 +73,7 @@ namespace ramses_internal
     public:
         ResourceStreamDeserializer();
 
-        Vector<IResource*> processData(const ByteArrayView& data);
+        std::vector<IResource*> processData(const ByteArrayView& data);
         bool processingFinished() const;
         bool processingFailed() const;
 
@@ -89,7 +89,7 @@ namespace ramses_internal
         EState m_state;
 
         ResourceContentHash m_currentHash;
-        Vector<Byte> m_currentMetadata;
+        std::vector<Byte> m_currentMetadata;
         UInt32 m_metadataRead;
         std::unique_ptr<IResource> m_currentResource;
 

@@ -27,7 +27,7 @@ namespace ramses_internal
 
     Bool AnimationInstance::hasDataBinding(DataBindHandle handle) const
     {
-        return m_dataBindHandles.find(handle) != m_dataBindHandles.end();
+        return contains_c(m_dataBindHandles, handle);
     }
 
     const AnimationInstance& AnimationInstance::InvalidInstance()

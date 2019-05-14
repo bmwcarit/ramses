@@ -13,6 +13,8 @@
 
 namespace ramses
 {
+    class DataVector2i;
+
     /**
     * @brief The LocalCamera base class is part of a scene and defines a view into the scene
     * defined by the client application.
@@ -45,33 +47,36 @@ namespace ramses
 
         /**
         * @brief Sets the viewport of the LocalCamera. The viewport size does not have to match
-        * the size of the respective RenderTarget (RenderPass binds Camera and RenderTarget).
-        * However, If the sizes match, the projected camera volume will match the viewport space
-        * perfectly. The viewport is aligned with the upper left corner of the RenderTarget texels
-        * (or framebuffer pixels, if no RenderTarget is assigned).
+        * the size of the destination render buffer (RenderTarget or framebuffer).
+        * However when the size matches, the projected camera volume will match the viewport space
+        * perfectly. The viewport is aligned with the lower left corner of the destination render buffer.
         *
-        * @param[in] x horizontal offset of the Viewport quad (zero = leftmost texel)
-        * @param[in] y vertical offset of the Viewport quad (zero = topmost texel)
-        * @param[in] width horizontal size of the Viewport quad
-        * @param[in] height vertical size of the Viewport quad
+        * Important note: if viewport data is bound (see LocalCamera::bindViewportOffset or LocalCamera::bindViewportSize)
+        * the new value will not be effective until unbound, bound values are always overridden by bound data object.
+        * Bound parameters can only be modified via DataObject bound to them.
+        *
+        * @param[in] x horizontal offset of the viewport rectangle (zero = leftmost pixel)
+        * @param[in] y vertical offset of the viewport rectangle (zero = bottommost pixel)
+        * @param[in] width horizontal size of the viewport rectangle
+        * @param[in] height vertical size of the viewport rectangle
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+        status_t setViewport(int32_t x, int32_t y, uint32_t width, uint32_t height);
 
         /**
         * @brief Returns the horizontal offset of the Viewport quad
         *
         * @return horizontal offset of the Viewport quad
         */
-        uint32_t getViewportX() const;
+        int32_t getViewportX() const;
 
         /**
         * @brief Returns the vertical offset of the Viewport quad
         *
         * @return vertical offset of the Viewport quad
         */
-        uint32_t getViewportY() const;
+        int32_t getViewportY() const;
 
         /**
         * @brief Returns the horizontal size of the Viewport quad
@@ -139,6 +144,68 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t getProjectionMatrix(float (&projectionMatrix)[16]) const;
+
+        /**
+        * @brief Binds a DataObject to be used as source for viewport offset values.
+        *
+        * @details In addition to setViewport, which sets viewport parameters directly (if not bound),
+        *          a DataVector2i (DataObject holding 2 integer values) can be bound to viewport offset and size.
+        *          Single DataObject can be bound to multiple inputs (also to other RamsesObject types
+        *          wherever accepted by API) providing a way to share values across instances/inputs
+        *          and also allows data linking across scenes (check documentation and examples for details).
+        *          A value change made to DataObject is reflected everywhere it is bound to.
+        *          While being bound to a DataObject the values set using setViewport are overridden until unbound again.
+        *
+        * @param[in] offsetData Data object with 2 integers that will be used as source for viewport offset values
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t bindViewportOffset(const DataVector2i& offsetData);
+
+        /**
+        * @brief Binds a DataObject to be used as source for viewport size values.
+        *
+        * @details In addition to setViewport, which sets viewport parameters directly (if not bound),
+        *          a DataVector2i (DataObject holding 2 integer values) can be bound to viewport offset and size.
+        *          Single DataObject can be bound to multiple inputs (also to other RamsesObject types
+        *          wherever accepted by API) providing a way to share values across instances/inputs
+        *          and also allows data linking across scenes (check documentation and examples for details).
+        *          A value change made to DataObject is reflected everywhere it is bound to.
+        *          While being bound to a DataObject the values set using setViewport are overridden until unbound again.
+        *
+        * @param[in] sizeData Data object with 2 integers that will be used as source for viewport size values
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t bindViewportSize(const DataVector2i& sizeData);
+
+        /**
+        * @brief Unbinds a currently bound DataObject from viewport offset (see bindViewportOffset).
+        *        Does nothing if no DataObject bound.
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t unbindViewportOffset();
+
+        /**
+        * @brief Unbinds a currently bound DataObject from viewport size (see bindViewportSize).
+        *        Does nothing if no DataObject bound.
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t unbindViewportSize();
+
+        /**
+        * @brief Checks if there is a bound DataObject to viewport offset (see bindViewportOffset).
+        * @return True if there is any DataObject bound, false otherwise.
+        */
+        bool isViewportOffsetBound() const;
+
+        /**
+        * @brief Checks if there is a bound DataObject to viewport size (see bindViewportSize).
+        * @return True if there is any DataObject bound, false otherwise.
+        */
+        bool isViewportSizeBound() const;
 
     protected:
         /**

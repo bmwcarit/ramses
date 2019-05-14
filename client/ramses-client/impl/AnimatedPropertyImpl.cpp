@@ -89,7 +89,7 @@ namespace ramses
             if (getIAnimationSystem().containsAnimationInstance(animInstHandle))
             {
                 const ramses_internal::AnimationInstance& animInst = getIAnimationSystem().getAnimationInstance(animInstHandle);
-                if (animInst.getDataBindings().contains(m_dataBindHandle))
+                if (contains_c(animInst.getDataBindings(), m_dataBindHandle))
                 {
                     ++propertyUsageCount;
                 }

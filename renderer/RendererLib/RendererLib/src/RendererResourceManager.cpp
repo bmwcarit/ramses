@@ -270,7 +270,7 @@ namespace ramses_internal
     {
         for (const auto& resDesc : m_clientResourceRegistry.getAllResourceDescriptors())
         {
-            if (resDesc.value.sceneUsage.contains(sceneId))
+            if (contains_c(resDesc.value.sceneUsage, sceneId))
             {
                 m_clientResourceRegistry.removeResourceRef(resDesc.key, sceneId);
             }

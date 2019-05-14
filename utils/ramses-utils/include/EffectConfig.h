@@ -24,7 +24,7 @@ public:
     void fillEffectDescription(ramses::EffectDescription& description) const;
 
 private:
-    typedef ramses_internal::Vector<ramses_internal::String> Tokens;
+    typedef std::vector<ramses_internal::String> Tokens;
     typedef ramses_internal::HashSet<ramses_internal::String> CompilerDefines;
     typedef ramses_internal::HashMap<ramses_internal::String, ramses::EEffectUniformSemantic> UniformSemantics;
     typedef ramses_internal::HashMap<ramses_internal::String, ramses::EEffectAttributeSemantic> AttributeSemantics;

@@ -376,6 +376,22 @@ namespace ramses
         }
     }
 
+    status_t RamsesRendererImpl::systemCompositorSetIviLayerVisibility(uint32_t layerId, bool visibility)
+    {
+        ramses_internal::PlatformLightweightGuard guard(m_lock);
+
+        if (m_systemCompositorEnabled)
+        {
+            const ramses_internal::WaylandIviLayerId waylandIviLayerId(layerId);
+            m_pendingRendererCommands.systemCompositorControllerSetIviLayerVisibility(waylandIviLayerId, visibility);
+            return StatusOK;
+        }
+        else
+        {
+            return addErrorEntry("RamsesRenderer::setLayerVisibility failed: system compositor was not enabled when creating the renderer.");
+        }
+    }
+
     status_t RamsesRendererImpl::systemCompositorTakeScreenshot(const char* fileName, int32_t screenIviId)
     {
         ramses_internal::PlatformLightweightGuard guard(m_lock);

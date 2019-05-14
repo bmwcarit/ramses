@@ -113,11 +113,10 @@ namespace ramses_internal
         virtual const RenderState&          getRenderState                  (RenderStateHandle stateHandle) const = 0;
 
         // Camera
-        virtual CameraHandle                allocateCamera                  (ECameraProjectionType type, NodeHandle nodeHandle, CameraHandle handle = CameraHandle::Invalid()) = 0;
+        virtual CameraHandle                allocateCamera                  (ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle viewportDataInstance, CameraHandle handle = CameraHandle::Invalid()) = 0;
         virtual void                        releaseCamera                   (CameraHandle cameraHandle) = 0;
         virtual Bool                        isCameraAllocated               (CameraHandle handle) const = 0;
         virtual UInt32                      getCameraCount                  () const = 0;
-        virtual void                        setCameraViewport               (CameraHandle cameraHandle, const Viewport& vp) = 0;
         virtual void                        setCameraFrustum                (CameraHandle cameraHandle, const Frustum& frustum) = 0;
         virtual const Camera&               getCamera                       (CameraHandle cameraHandle) const = 0;
 

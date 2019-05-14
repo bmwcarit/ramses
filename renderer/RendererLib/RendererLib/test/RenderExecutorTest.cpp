@@ -29,8 +29,8 @@ namespace
     const Float fakeNearPlane = 0.1f;
     const Float fakeFarPlane = 1500.f;
 
-    const UInt32 fakeViewportX = 15u;
-    const UInt32 fakeViewportY = 16u;
+    const Int32 fakeViewportX = 15;
+    const Int32 fakeViewportY = 16;
     const UInt32 fakeViewportWidth = 17u;
     const UInt32 fakeViewportHeight = 18u;
 
@@ -38,7 +38,7 @@ namespace
     const UInt32 indexCount = 13;
 }
 
-typedef ramses_internal::Pair<DataInstanceHandle, DataInstanceHandle> DataInstances;
+typedef std::pair<DataInstanceHandle, DataInstanceHandle> DataInstances;
 
 // This Matrix comparison matcher is needed to compare the MVP etc matrices. It must allow
 // a relatively high error because heavy optimizations on some platforms may lead to significant
@@ -180,7 +180,14 @@ protected:
     {
         const RenderPassHandle pass = sceneAllocator.allocateRenderPass();
         const NodeHandle cameraNode = sceneAllocator.allocateNode();
-        const CameraHandle camera = sceneAllocator.allocateCamera(cameraProjType, cameraNode);
+        const auto vpDataLayout = sceneAllocator.allocateDataLayout({ {EDataType_DataReference}, {EDataType_DataReference} });
+        const auto vpDataRefLayout = sceneAllocator.allocateDataLayout({ {EDataType_Vector2I} });
+        const auto vpDataInstance = sceneAllocator.allocateDataInstance(vpDataLayout);
+        const auto vpOffsetInstance = sceneAllocator.allocateDataInstance(vpDataRefLayout);
+        const auto vpSizeInstance = sceneAllocator.allocateDataInstance(vpDataRefLayout);
+        scene.setDataReference(vpDataInstance, Camera::ViewportOffsetField, vpOffsetInstance);
+        scene.setDataReference(vpDataInstance, Camera::ViewportSizeField, vpSizeInstance);
+        const CameraHandle camera = sceneAllocator.allocateCamera(cameraProjType, cameraNode, vpDataInstance);
 
         if (ECameraProjectionType_Perspective == cameraProjType)
         {
@@ -194,7 +201,8 @@ protected:
 
         if (ECameraProjectionType_Renderer != cameraProjType)
         {
-            scene.setCameraViewport(camera, viewport);
+            scene.setDataSingleVector2i(vpOffsetInstance, DataFieldHandle{ 0 }, { viewport.posX, viewport.posY });
+            scene.setDataSingleVector2i(vpSizeInstance, DataFieldHandle{ 0 }, { Int32(viewport.width), Int32(viewport.height) });
         }
 
         sceneAllocator.allocateTransform(cameraNode);

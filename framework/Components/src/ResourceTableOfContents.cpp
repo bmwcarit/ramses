@@ -41,7 +41,7 @@ namespace ramses_internal
         outstream << numberOfEntries;
 
         // sort resources to get deterministic file
-        Vector<ResourceFileEntry> vec;
+        std::vector<ResourceFileEntry> vec;
         vec.reserve(numberOfEntries);
         for (const auto& entry : m_fileContents)
         {

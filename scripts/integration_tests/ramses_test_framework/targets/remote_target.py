@@ -27,14 +27,11 @@ from ramses_test_framework import helper
 class RemoteTarget(Target):
 
     def __init__(self, targetInfo, ramsesInstallDir, resultDir, imagesDesiredDirs, imageDiffScaleFactor,
-                 basePath, ramsesVersion, gitCommitCount, gitCommitHash,
+                 basePath,
                  sshConnectionNrAttempts, sshConnectionTimeoutPerAttempt,
                  sshConnectionSleepPerAttempt, powerNrAttempts, logLevel):
         Target.__init__(self, targetInfo, ramsesInstallDir, resultDir, imagesDesiredDirs, imageDiffScaleFactor, logLevel)
         self.basePath = basePath
-        self.ramsesVersion = ramsesVersion
-        self.gitCommitCount = gitCommitCount
-        self.gitCommitHash = gitCommitHash
         self.privateKey = targetInfo.privateKey
         self.sshConnectionNrAttempts = sshConnectionNrAttempts
         self.sshConnectionTimeoutPerAttempt = sshConnectionTimeoutPerAttempt
@@ -136,10 +133,14 @@ class RemoteTarget(Target):
         return True
 
     def target_specific_tear_down(self, shutdown=True):
-        if self.isConnected:
-            if shutdown:
-                self._shutdown()
-            self.sshClient.close()
+        try:
+            Target.target_specific_tear_down(self, shutdown=shutdown)
+            if self.isConnected:
+                if shutdown:
+                    self._shutdown()
+                self.sshClient.close()
+        except SSHException as e:
+            log.warning('Paramiko exception during target_specific_tear_down: ' + str(e))
 
     def connect(self, error_on_fail=True):
         self.sshClient = paramiko.SSHClient()
@@ -213,22 +214,19 @@ class RemoteTarget(Target):
             raise
 
     def _transfer_binaries(self):
-        packageBaseName = self.buildJobName+'-'+self.ramsesVersion+'-'+self.gitCommitCount\
-                          +'-'+self.gitCommitHash # package name without extension
+        packageBaseName = self.buildJobName+'-*'
 
-        # glob to support any filters set by the user
+        # glob to get single expected archive for target, otherwise fail
         resultList = glob.glob("{0}/{1}".format(self.basePath, packageBaseName))
         if not resultList:
-            log.error("no package found for filter \"{}.tar.gz\"".format(packageBaseName))
+            log.error("no package found for filter \"{}\"".format(packageBaseName))
+            return False
+        elif len(resultList) > 1:
+            log.error("too many packages found for filter \"{}\": {}".format(packageBaseName, resultList))
             return False
 
         packagePathOnBuildServer = "{0}/{1}".format(self.basePath, os.path.basename(resultList[0]))
         packagePathOnTarget = "{0}/{1}".format(self.ramsesInstallDir, os.path.basename(resultList[0]))
-
-        #check that package is available
-        if not os.path.exists(packagePathOnBuildServer):
-            log.error("package \"{}\" could not be found".format(packagePathOnBuildServer))
-            return False
 
         # transfer package
         self._scp(packagePathOnBuildServer, False, self.ramsesInstallDir, True)
@@ -245,8 +243,7 @@ class RemoteTarget(Target):
         self.execute_on_target("rm {0}".format(packagePathOnTarget))
 
         #move contents from subfolder directly to install dir
-        self.execute_on_target(
-            "mv {0}/{1}/* {0}".format(self.ramsesInstallDir, packageBaseName), block=True)
+        self.execute_on_target("mv {0}/{1}/* {0}".format(self.ramsesInstallDir, packageBaseName), block=True)
 
         return True
 
@@ -259,7 +256,7 @@ class RemoteTarget(Target):
         if cwd:
             command = "cd {}; ".format(cwd) + command
 
-        log.info("executing '" + command + "' on target")
+        log.info("[{}]{}".format(self.name, command))
         stdin, stdout, stderr = self.sshClient.exec_command(command)
         stdoutBuffer = Buffer()
         stdoutReader = AsynchronousPipeReader(stdout, stdoutBuffer)

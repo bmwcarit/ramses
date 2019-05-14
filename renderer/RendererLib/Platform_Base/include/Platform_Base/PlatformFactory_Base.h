@@ -77,19 +77,19 @@ namespace ramses_internal
         ISystemCompositorController*    m_systemCompositorController = nullptr;
         Bool                            m_systemCompositorControllerFailedCreation = false;
 
-        Vector<IRenderBackend*> m_renderBackends;
-        Vector<IWindow*> m_windows;
-        Vector<IContext*> m_contexts;
-        Vector<IDevice*> m_devices;
-        Vector<ISurface*> m_surfaces;
-        Vector<IEmbeddedCompositor*> m_embeddedCompositors;
-        Vector<ITextureUploadingAdapter*> m_textureUploadingAdapters;
+        std::vector<IRenderBackend*> m_renderBackends;
+        std::vector<IWindow*> m_windows;
+        std::vector<IContext*> m_contexts;
+        std::vector<IDevice*> m_devices;
+        std::vector<ISurface*> m_surfaces;
+        std::vector<IEmbeddedCompositor*> m_embeddedCompositors;
+        std::vector<ITextureUploadingAdapter*> m_textureUploadingAdapters;
     };
 
     template <typename WINDOW>
     WINDOW* PlatformFactory_Base::getPlatformWindow(IWindow& window)
     {
-        if (m_windows.end() != m_windows.find(&window))
+        if (contains_c(m_windows, &window))
         {
             return static_cast<WINDOW*>(&window);
         }
@@ -100,7 +100,7 @@ namespace ramses_internal
     template <typename CONTEXT>
     CONTEXT* PlatformFactory_Base::getPlatformContext(IContext& context)
     {
-        if (m_contexts.end() != m_contexts.find(&context))
+        if (contains_c(m_contexts, &context))
         {
             return static_cast<CONTEXT*>(&context);
         }
@@ -111,7 +111,7 @@ namespace ramses_internal
     template <typename DEVICE>
     DEVICE* PlatformFactory_Base::getPlatformDevice(IDevice& device)
     {
-        if (m_devices.end() != m_devices.find(&device))
+        if (contains_c(m_devices, &device))
         {
             return static_cast<DEVICE*>(&device);
         }
@@ -122,7 +122,7 @@ namespace ramses_internal
     template <typename SURFACE>
     SURFACE* PlatformFactory_Base::getPlatformSurface(ISurface& surface)
     {
-        if (m_surfaces.end() != m_surfaces.find(&surface))
+        if (contains_c(m_surfaces, &surface))
         {
             return static_cast<SURFACE*>(&surface);
         }
@@ -133,7 +133,7 @@ namespace ramses_internal
     template <typename EMBEDDED_COMPOSITOR>
     EMBEDDED_COMPOSITOR* PlatformFactory_Base::getEmbeddedCompositor(IEmbeddedCompositor& compositor)
     {
-        if (m_embeddedCompositors.end() != m_embeddedCompositors.find(&compositor))
+        if (contains_c(m_embeddedCompositors, &compositor))
         {
             return static_cast<EMBEDDED_COMPOSITOR*>(&compositor);
         }
@@ -144,7 +144,7 @@ namespace ramses_internal
     template <typename TEXTURE_UPLOADING_ADAPTER>
     TEXTURE_UPLOADING_ADAPTER* PlatformFactory_Base::getTextureUploadingAdapter(ITextureUploadingAdapter& textureUploadingAdapter)
     {
-        if (m_textureUploadingAdapters.end() != m_textureUploadingAdapters.find(&textureUploadingAdapter))
+        if (contains_c(m_textureUploadingAdapters, &textureUploadingAdapter))
         {
             return static_cast<TEXTURE_UPLOADING_ADAPTER*>(&textureUploadingAdapter);
         }

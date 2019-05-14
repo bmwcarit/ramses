@@ -11,6 +11,7 @@
 #include "Utils/LogMacros.h"
 #include "RendererLib/RendererLogContext.h"
 #include "RendererAPI/IEmbeddedCompositor.h"
+#include <sstream>
 
 namespace ramses_internal
 {
@@ -750,13 +751,15 @@ namespace ramses_internal
             RendererLogContext context(ERendererLogLevelFlag_Details);
             testFramework.logEmbeddedCompositor(context);
 
-            String outputString = context.getStream().c_str();
+            const std::string outputString = context.getStream().c_str();
 
-            if (outputString !=
-                "1 connected wayland client(s)\n"
-                "  [ivi-surface-id: 123; title: \"TestWaylandApplication\"]\n")
+            std::stringstream expectedLogBuf;
+            expectedLogBuf << "1 connected wayland client(s)\n"
+                           << "  [ivi-surface-id: " << EmbeddedCompositorScene::GetStreamTextureSourceId().getValue() << "; title: \"TestWaylandApplication\"]\n";
+
+            if (outputString != expectedLogBuf.str())
             {
-                LOG_ERROR(CONTEXT_RENDERER, "SingleStreamTextureTests::runEmbeddedCompositingTestCase  Wrong log output: " << outputString);
+                LOG_ERROR(CONTEXT_RENDERER, "SingleStreamTextureTests::runEmbeddedCompositingTestCase  Wrong log output: " << outputString.c_str());
                 testResultValue = false;
             }
 

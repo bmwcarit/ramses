@@ -34,7 +34,7 @@ public:
 
     const String basicVertexShader;
     const String basicFragmentShader;
-    const Vector<String> emptyCompilerDefines;
+    const std::vector<String> emptyCompilerDefines;
     const HashMap<String, EFixedSemantics> emptySemanticInputs;
     const String insertedVersionString;
     const String basicVertexShaderOut;
@@ -110,7 +110,7 @@ TEST_F(AGlslEffect, usesProvidedDefines)
         "{\n"
         "    gl_FragColor = DEFINE_ONE;\n"
         "}\n";
-    Vector<String> compilerDefines;
+    std::vector<String> compilerDefines;
     compilerDefines.push_back("DEFINE_ZERO vec4(0.0)");
     compilerDefines.push_back("DEFINE_ONE vec4(1.0)");
     GlslEffect ge(vertexShader, fragmentShader, compilerDefines, emptySemanticInputs, "");
@@ -136,7 +136,7 @@ TEST_F(AGlslEffect, generatedShaderWithDefaultVersionAndDefinesEmbedded)
         "{\n"
         "    gl_FragColor = vec4(0.0);\n"
         "}\n";
-    Vector<String> compilerDefines;
+    std::vector<String> compilerDefines;
     compilerDefines.push_back("FIRST_DEFINE foo");
     compilerDefines.push_back("OTHER_DEFINE bar");
     GlslEffect ge(vertexShader, fragmentShader, compilerDefines, emptySemanticInputs, "");
@@ -617,7 +617,7 @@ public:
 
     virtual void run()
     {
-        const ramses_internal::Vector<ramses_internal::String> defs;
+        const std::vector<ramses_internal::String> defs;
         const ramses_internal::HashMap<ramses_internal::String, ramses_internal::EFixedSemantics> sems;
         const char* v = "void main(){gl_Position=vec4(0);}";
         const char* f = "void main(){gl_FragColor=vec4(0);}";

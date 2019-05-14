@@ -26,11 +26,8 @@ TEST(AnEffectConfig, canLoadCorrectlyWhenAllLinesAreValid)
 
     typedef ramses_internal::StringVector StringVector;
     const StringVector& defines = descriptionImpl.getCompilerDefines();
-    StringVector::ConstIterator defineIter = defines.find("dummy");
-    EXPECT_TRUE(defineIter != defines.end());
-
-    defineIter = defines.find("dummy1");
-    EXPECT_TRUE(defineIter != defines.end());
+    EXPECT_TRUE(contains_c(defines, "dummy"));
+    EXPECT_TRUE(contains_c(defines, "dummy1"));
 
     typedef ramses::EffectDescriptionImpl::SemanticsMap SemanticsMap;
     const SemanticsMap& semantics = descriptionImpl.getSemanticsMap();

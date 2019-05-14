@@ -246,7 +246,7 @@ bool DisplayRenderingTests::runUpdateWarpingTest(RendererTestsFramework& testFra
     const ramses::WarpingMeshData& defaultWarpMesh = RendererTestUtils::CreateTestWarpingMesh();
     const ramses_internal::WarpingMeshData& defaultWarpData = defaultWarpMesh.impl.getWarpingMeshData();
     const auto& texCoords = defaultWarpData.getTextureCoordinates();
-    ramses_internal::Vector<float> updatedTexCoords(texCoords.size() * 2);
+    std::vector<float> updatedTexCoords(texCoords.size() * 2);
     auto it = updatedTexCoords.begin();
     for (const auto& texCoord : texCoords)
     {

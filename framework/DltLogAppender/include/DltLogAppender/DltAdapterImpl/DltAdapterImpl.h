@@ -107,11 +107,11 @@ namespace ramses_internal
          */
         EDltError m_dltError;
 
-        typedef Pair<DltContext*, LogContext*> ContextPair;
+        typedef std::pair<DltContext*, LogContext*> ContextPair;
         /**
          * Vector of all created contexts.
          */
-        Vector< ContextPair > m_dltContextList;
+        std::vector< ContextPair > m_dltContextList;
 
         std::function<void(const String&, int)> m_logLevelChangeCallback;
     };

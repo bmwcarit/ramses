@@ -181,13 +181,13 @@ namespace ramses_internal
         SceneActionCollection c;
         c.beginWriteSceneAction(ESceneActionId_TestAction);
         c.write(123u);
-        Vector<Byte> oldDataC(c.collectionData());
+        std::vector<Byte> oldDataC(c.collectionData());
 
         SceneActionCollection d;
         d.beginWriteSceneAction(ESceneActionId_AllocateNode);
         d.write(456u);
         d.beginWriteSceneAction(ESceneActionId_ReleaseRenderable);
-        Vector<Byte> oldDataD(d.collectionData());
+        std::vector<Byte> oldDataD(d.collectionData());
 
         c.swap(d);
 
@@ -206,13 +206,13 @@ namespace ramses_internal
         SceneActionCollection c;
         c.beginWriteSceneAction(ESceneActionId_TestAction);
         c.write(123u);
-        Vector<Byte> oldDataC(c.collectionData());
+        std::vector<Byte> oldDataC(c.collectionData());
 
         SceneActionCollection d;
         d.beginWriteSceneAction(ESceneActionId_AllocateNode);
         d.write(456u);
         d.beginWriteSceneAction(ESceneActionId_ReleaseRenderable);
-        Vector<Byte> oldDataD(d.collectionData());
+        std::vector<Byte> oldDataD(d.collectionData());
 
         using ramses_capu::swap;
         swap(c, d);
@@ -273,7 +273,7 @@ namespace ramses_internal
         d.beginWriteSceneAction(ESceneActionId_AllocateNode);
         d.write(456u);
 
-        Vector<Byte> oldDataC(c.collectionData());
+        std::vector<Byte> oldDataC(c.collectionData());
         c.append(d);
 
         EXPECT_EQ(oldDataC.size() + d.collectionData().size(), c.collectionData().size());
@@ -317,7 +317,7 @@ namespace ramses_internal
         const SceneActionCollection::SceneActionReader incompleteReader(c.back());
         const UInt32 offsetIncomplete = incompleteReader.offsetInCollection();
         const UInt32 sizeIncomplete = incompleteReader.size();
-        Vector<Byte> data(c.collectionData());
+        std::vector<Byte> data(c.collectionData());
 
         SceneActionCollection d;
         d.beginWriteSceneAction(ESceneActionId_AllocateNode);
@@ -340,7 +340,7 @@ namespace ramses_internal
         c.write(123u);
 
         const UInt32 sizeIncomplete = c.front().size();
-        Vector<Byte> data(c.collectionData());
+        std::vector<Byte> data(c.collectionData());
 
         SceneActionCollection dTemp;
         dTemp.beginWriteSceneAction(ESceneActionId_TestAction);
@@ -373,7 +373,7 @@ namespace ramses_internal
         c.write(123u);
 
         const UInt32 sizeIncomplete = c.front().size();
-        Vector<Byte> data(c.collectionData());
+        std::vector<Byte> data(c.collectionData());
 
         SceneActionCollection d;
         d.beginWriteSceneAction(ESceneActionId_Incomplete);
@@ -531,7 +531,7 @@ namespace ramses_internal
         c.write(789u);
 
         SceneActionCollection d;
-        Vector<Byte>& rawDataD = d.getRawDataForDirectWriting();
+        std::vector<Byte>& rawDataD = d.getRawDataForDirectWriting();
         rawDataD.insert(rawDataD.end(), c.collectionData().begin(), c.collectionData().end());
         EXPECT_EQ(c.collectionData(), d.collectionData());
 
@@ -545,7 +545,7 @@ namespace ramses_internal
     TEST_F(ASceneActionCollection, hasCorrectActionOffsetsAndSizesAfterWritingMultipleActionsWithDifferentTypes)
     {
         UInt32 bufferSize = 102;
-        Vector<Byte> buffer(bufferSize, 0xFA);
+        std::vector<Byte> buffer(bufferSize, 0xFA);
         String str("hello world");
 
         SceneActionCollection c;

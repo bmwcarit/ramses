@@ -18,7 +18,7 @@
 
 class IRendererTest;
 
-typedef ramses_internal::Vector<RenderingTestCase*> RenderingTestCases;
+typedef std::vector<RenderingTestCase*> RenderingTestCases;
 
 namespace ramses
 {
@@ -84,7 +84,7 @@ public:
     }
 
 protected:
-    typedef ramses_internal::Vector<ramses::offscreenBufferId_t> OffscreenBufferVector;
+    typedef std::vector<ramses::offscreenBufferId_t> OffscreenBufferVector;
     struct TestDisplayInfo
         {
             ramses::displayId_t displayId;
@@ -92,7 +92,7 @@ protected:
             OffscreenBufferVector offscreenBuffers;
         };
 
-    typedef ramses_internal::Vector<TestDisplayInfo> TestDisplays;
+    typedef std::vector<TestDisplayInfo> TestDisplays;
     const TestDisplays& getDisplays() const;
 
 private:

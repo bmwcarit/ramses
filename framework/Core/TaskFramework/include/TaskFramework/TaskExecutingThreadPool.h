@@ -65,7 +65,7 @@ namespace ramses_internal
         /**
          * The instance of the container class which contains the threads of the thread pool which are ready.
          */
-        Vector<std::unique_ptr<TaskExecutingThread>> m_threads;
+        std::vector<std::unique_ptr<TaskExecutingThread>> m_threads;
 
         /**
          * Mutex for protection the thread containers.

@@ -132,7 +132,7 @@ namespace ramses_internal
             UInt8 readingIndex;
         };
 
-        Vector<RenderTargetPair> m_pairedRenderTargets;
+        std::vector<RenderTargetPair> m_pairedRenderTargets;
 
         // Active states for upcoming draw call(s)
         const ShaderGPUResource_GL* m_activeShader;

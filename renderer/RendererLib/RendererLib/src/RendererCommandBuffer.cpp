@@ -174,6 +174,12 @@ namespace ramses_internal
         RendererCommands::systemCompositorControllerSetIviSurfaceDestRectangle(surfaceId, x, y, width, height);
     }
 
+    void RendererCommandBuffer::systemCompositorControllerSetIviLayerVisibility(WaylandIviLayerId layerId, Bool visibility)
+    {
+        PlatformGuard guard(m_lock);
+        RendererCommands::systemCompositorControllerSetIviLayerVisibility(layerId, visibility);
+    }
+
     void RendererCommandBuffer::systemCompositorControllerScreenshot(const String& fileName, int32_t screenIviId)
     {
         PlatformGuard guard(m_lock);
@@ -452,6 +458,12 @@ namespace ramses_internal
             {
                 const CompositorCommand& cmd = commands.getCommandData<CompositorCommand>(i);
                 systemCompositorControllerSetIviSurfaceDestRectangle(cmd.waylandIviSurfaceId,cmd.x, cmd.y, cmd.width, cmd.height);
+            }
+            break;
+            case ERendererCommand_SystemCompositorControllerSetIviLayerVisibility:
+            {
+                const CompositorCommand& cmd = commands.getCommandData<CompositorCommand>(i);
+                systemCompositorControllerSetIviLayerVisibility(cmd.waylandIviLayerId, cmd.visibility);
             }
             break;
             case ERendererCommand_SystemCompositorControllerScreenshot:

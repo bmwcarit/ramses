@@ -64,9 +64,9 @@ namespace ramses
     class AnimatedPropertyTest : public testing::Test
     {
     public:
-        typedef ramses_internal::Vector<EAnimatedPropertyComponent> ComponentVector;
-        typedef ramses_internal::Vector<ComponentVector> PropertyComponentVector;
-        typedef ramses_internal::Vector<EAnimatedProperty> PropertyVector;
+        typedef std::vector<EAnimatedPropertyComponent> ComponentVector;
+        typedef std::vector<ComponentVector> PropertyComponentVector;
+        typedef std::vector<EAnimatedProperty> PropertyVector;
 
         static void SetUpTestCase()
         {

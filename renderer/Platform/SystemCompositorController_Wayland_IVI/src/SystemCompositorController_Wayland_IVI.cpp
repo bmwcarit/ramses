@@ -124,7 +124,7 @@ namespace ramses_internal
 
     void SystemCompositorController_Wayland_IVI::listIVISurfaces() const
     {
-        ramses_internal::Vector<uint32_t> sortedList;
+        std::vector<uint32_t> sortedList;
         sortedList.reserve(m_controllerSurfaces.count());
         for (auto controllerSurface : m_controllerSurfaces)
         {
@@ -341,6 +341,32 @@ namespace ramses_internal
         commitAndFlushControllerChanges();
 
         deleteControllerSurface(*controllerSurface);
+        return true;
+    }
+
+    Bool SystemCompositorController_Wayland_IVI::setLayerVisibility(WaylandIviLayerId layerId, Bool visibility)
+    {
+        LOG_INFO(CONTEXT_RENDERER,
+                 "SystemCompositorController_Wayland_IVI::setLayerVisibility layerId: "
+                     << layerId.getValue() << " visibility: " << visibility);
+
+        // Workaround for bug in compositor, create a new ivi_controller_layer here, otherwise the surface list of the
+        // layer can get wrong, when another application has also changed it in the meantime.
+        ivi_controller_layer* controllerLayer = ivi_controller_layer_create(m_controller, layerId.getValue(), 0, 0);
+        if (nullptr == controllerLayer)
+        {
+            LOG_ERROR(CONTEXT_RENDERER,
+                      "SystemCompositorController_Wayland_IVI::setLayerVisibility ivi_controller_layer_create "
+                      "failed, layer-id: "
+                          << layerId.getValue());
+            return false;
+        }
+
+        ivi_controller_layer_set_visibility(controllerLayer, (visibility) ? 1 : 0);
+
+        commitAndFlushControllerChanges();
+
+        ivi_controller_layer_destroy(controllerLayer, 0);
         return true;
     }
 

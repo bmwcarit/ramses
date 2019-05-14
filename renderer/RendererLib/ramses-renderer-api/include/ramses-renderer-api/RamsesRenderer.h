@@ -487,10 +487,19 @@ namespace ramses
         status_t setSurfaceRectangle(uint32_t surfaceId, int32_t x, int32_t y, int32_t width, int32_t height);
 
         /**
+        * @brief Set visibility of given layer at the system compositor
+        * @param layerId id identifying the layer
+        * @param visibility If \c true the layer's visibility will be enabled, otherwise disabled
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        **/
+        status_t setLayerVisibility(uint32_t layerId, bool visibility);
+
+        /**
         * @brief Trigger the System Compositor to take a screenshot and store it in a file.
         * @param fileName File name including path, for storing the screenshot.
-        * @screenIviId >= 0 to trigger a screenshot on the given IVI screen id, -1 to trigger screenshot
-        *             on a single exisitng screen (fails asynchonously if more than one screen exists)
+        * @param screenIviId >= 0 to trigger a screenshot on the given IVI screen id, -1 to trigger screenshot
+        *             on a single existing screen (fails asynchronously if more than one screen exists)
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */

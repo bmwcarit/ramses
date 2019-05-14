@@ -41,8 +41,8 @@ namespace ramses_internal
     {
         assert(m_consumerToProvidersMap.contains(consumerScene));
         auto& providers = *m_consumerToProvidersMap.get(consumerScene);
-        assert(providers.contains(providerScene));
-        providers.erase(providers.find(providerScene));
+        assert(contains_c(providers, providerScene));
+        providers.erase(find_c(providers, providerScene));
         if (providers.empty())
         {
             m_consumerToProvidersMap.remove(consumerScene);
@@ -74,9 +74,9 @@ namespace ramses_internal
         for (auto& it : m_consumerToProvidersMap)
         {
             auto& providers = it.value;
-            while (providers.contains(scene))
+            while (contains_c(providers, scene))
             {
-                providers.erase(providers.find(scene));
+                providers.erase(find_c(providers, scene));
                 if (providers.empty())
                 {
                     consumersToRemove.push_back(it.key);
@@ -124,14 +124,14 @@ namespace ramses_internal
         SceneIdVector scenes;
         for (const auto& it : m_consumerToProvidersMap)
         {
-            if (!scenes.contains(it.key))
+            if (!contains_c(scenes, it.key))
             {
                 scenes.push_back(it.key);
             }
 
             for (const auto& provider : it.value)
             {
-                if (!scenes.contains(provider))
+                if (!contains_c(scenes, provider))
                 {
                     scenes.push_back(provider);
                 }
@@ -155,7 +155,7 @@ namespace ramses_internal
                 const auto& providers = *m_consumerToProvidersMap.get(currScene);
                 for (const auto provider : providers)
                 {
-                    if (scenes.contains(provider))
+                    if (contains_c(scenes, provider))
                     {
                         dependsOnRestOfTheSet = true;
                         break;

@@ -20,7 +20,7 @@ namespace ramses_internal
         uint32_t memoryUsage = 0;
         String   logInfoMesage = "";
     };
-    using MemoryInfoVector = Vector<MemoryInfo>;
+    using MemoryInfoVector = std::vector<MemoryInfo>;
 
     MemoryInfoVector GetMemoryInfoFromScene(const ramses::SceneImpl& scene);
 }

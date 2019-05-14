@@ -65,7 +65,7 @@ namespace ramses_internal
                     break;
 
                 case EOption_None:
-                    if( m_keywords.contains(argStr) ) // check whether a keyword is the current argument
+                    if( contains_c(m_keywords, argStr) ) // check whether a keyword is the current argument
                     {
                         continue;
                     }

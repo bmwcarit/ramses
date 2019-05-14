@@ -26,7 +26,7 @@ public:
         localSceneIdInfoVector.push_back(SceneInfo(localSceneId, "sceneName"));
     }
 
-    SceneActionCollection createFakeSceneActionCollectionFromTypes(const Vector<ESceneActionId>& types)
+    SceneActionCollection createFakeSceneActionCollectionFromTypes(const std::vector<ESceneActionId>& types)
     {
         SceneActionCollection collection;
         for (auto t : types)
@@ -449,8 +449,8 @@ TEST_F(ASceneGraphComponent, disconnectFromNetworkBroadcastsScenesUnavailableOnN
     sceneGraphComponent.disconnectFromNetwork();
 
     ASSERT_EQ(2u, unpubScenes.size());
-    EXPECT_TRUE(unpubScenes.contains(SceneInfo(SceneId(1), "name1")));
-    EXPECT_TRUE(unpubScenes.contains(SceneInfo(SceneId(3), "name3")));
+    EXPECT_TRUE(contains_c(unpubScenes, SceneInfo(SceneId(1), "name1")));
+    EXPECT_TRUE(contains_c(unpubScenes, SceneInfo(SceneId(3), "name3")));
 }
 
 TEST_F(ASceneGraphComponent, sendsPublishForNewParticipantsAfterDisconnect)

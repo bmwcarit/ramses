@@ -53,7 +53,7 @@ void TestScenes::destroyScenes()
 
     ramses::ResourceIterator resources(m_client);
     ramses::Resource* resource = 0;
-    ramses_internal::Vector<ramses::Resource*> resourcesToDestroy;
+    std::vector<ramses::Resource*> resourcesToDestroy;
     while ((resource = resources.getNext()) != 0)
     {
         resourcesToDestroy.push_back(resource);

@@ -32,7 +32,7 @@ namespace ramses_internal
         return addPlatformDevice(device);
     }
 
-    void Platform_Android_EGL_ES_3_0::getSurfaceAttributes(UInt32 msaaSampleCount, Vector<EGLint>& attributes) const
+    void Platform_Android_EGL_ES_3_0::getSurfaceAttributes(UInt32 msaaSampleCount, std::vector<EGLint>& attributes) const
     {
         attributes.clear();
         attributes.reserve(20u);
@@ -64,7 +64,7 @@ namespace ramses_internal
         attributes.push_back(EGL_NONE);
     }
 
-    void Platform_Android_EGL_ES_3_0::getContextAttributes(Vector<EGLint>& attributes) const
+    void Platform_Android_EGL_ES_3_0::getContextAttributes(std::vector<EGLint>& attributes) const
     {
         attributes.clear();
         attributes.reserve(2u);

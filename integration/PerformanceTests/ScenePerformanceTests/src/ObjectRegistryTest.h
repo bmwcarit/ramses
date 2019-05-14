@@ -40,8 +40,8 @@ private:
     void addObjects();
     void removeObjects();
 
-    ramses_internal::Vector<ramses::SceneObject*> m_objects;
-    ramses_internal::Vector<ramses::SceneObject*> m_objectsShuffled;
+    std::vector<ramses::SceneObject*> m_objects;
+    std::vector<ramses::SceneObject*> m_objectsShuffled;
     ramses::RamsesObjectRegistry m_registry;
 };
 #endif

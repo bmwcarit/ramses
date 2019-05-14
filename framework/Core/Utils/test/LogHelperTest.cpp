@@ -57,7 +57,7 @@ namespace ramses_internal
 
     TEST(ALogHelper_ParseContextFilters, canExtractSingleCommandCorrectly)
     {
-        Vector<LogHelper::ContextFilter> filterCommands = LogHelper::ParseContextFilters("4:logContextString");
+        std::vector<LogHelper::ContextFilter> filterCommands = LogHelper::ParseContextFilters("4:logContextString");
 
         ASSERT_EQ(1u, filterCommands.size());
         EXPECT_EQ(ELogLevel::Info, filterCommands[0].first);
@@ -66,7 +66,7 @@ namespace ramses_internal
 
     TEST(ALogHelper_ParseContextFilters, canExtractMultipleCommandsCorrectly)
     {
-        Vector<LogHelper::ContextFilter> filterCommands = LogHelper::ParseContextFilters("6:six,3:three,4:four");
+        std::vector<LogHelper::ContextFilter> filterCommands = LogHelper::ParseContextFilters("6:six,3:three,4:four");
 
         ASSERT_EQ(3u, filterCommands.size());
         EXPECT_EQ(ELogLevel::Trace, filterCommands[0].first);
@@ -81,7 +81,7 @@ namespace ramses_internal
 
     TEST(ALogHelper_ParseContextFilters, canHandleDescriptiveLoglevelNames)
     {
-        Vector<LogHelper::ContextFilter> filterCommands = LogHelper::ParseContextFilters("trace:six,warn:three,info:four");
+        std::vector<LogHelper::ContextFilter> filterCommands = LogHelper::ParseContextFilters("trace:six,warn:three,info:four");
 
         ASSERT_EQ(3u, filterCommands.size());
         EXPECT_EQ(ELogLevel::Trace, filterCommands[0].first);
@@ -96,7 +96,7 @@ namespace ramses_internal
 
     TEST(ALogHelper_ParseContextFilters, skipsUnknownLogLevelStrings)
     {
-        Vector<LogHelper::ContextFilter> filterCommands = LogHelper::ParseContextFilters("foo:six,warn:three,bar:four");
+        std::vector<LogHelper::ContextFilter> filterCommands = LogHelper::ParseContextFilters("foo:six,warn:three,bar:four");
 
         ASSERT_EQ(1u, filterCommands.size());
         EXPECT_EQ(ELogLevel::Warn, filterCommands[0].first);
@@ -105,13 +105,13 @@ namespace ramses_internal
 
     TEST(ALogHelper_ParseContextFilters, canExtractCommandCorrectlyWhenPassedZeroString)
     {
-        Vector<LogHelper::ContextFilter> filterCommands = LogHelper::ParseContextFilters("");
+        std::vector<LogHelper::ContextFilter> filterCommands = LogHelper::ParseContextFilters("");
         EXPECT_EQ(0u, filterCommands.size());
     }
 
     TEST(ALogHelper_ParseContextFilters, canExtractCommandCorrectlyWhenPassedCurruptString)
     {
-        Vector<LogHelper::ContextFilter> filterCommands = LogHelper::ParseContextFilters("8:");
+        std::vector<LogHelper::ContextFilter> filterCommands = LogHelper::ParseContextFilters("8:");
         EXPECT_EQ(0u, filterCommands.size());
 
         filterCommands = LogHelper::ParseContextFilters(":");

@@ -38,9 +38,9 @@ namespace ramses_internal
         Window_Android* platformWindow = getPlatformWindow<Window_Android>(window);
         assert(0 != platformWindow);
 
-        Vector<EGLint> contextAttributes;
+        std::vector<EGLint> contextAttributes;
         getContextAttributes(contextAttributes);
-        Vector<EGLint> surfaceAttributes;
+        std::vector<EGLint> surfaceAttributes;
         getSurfaceAttributes(platformWindow->getMSAASampleCount(), surfaceAttributes);
 
         Context_EGL* platformContext = new Context_EGL(

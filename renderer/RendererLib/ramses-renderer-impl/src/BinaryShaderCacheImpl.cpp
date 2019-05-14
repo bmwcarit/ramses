@@ -172,7 +172,7 @@ namespace ramses
 
         const uint32_t contentSize = fileHeader.fileSize - sizeof(fileHeader);
 
-        ramses_internal::Vector<uint8_t> content(contentSize);
+        std::vector<uint8_t> content(contentSize);
         ramses_internal::Char* contentData = reinterpret_cast<ramses_internal::Char*>(content.data());
 
         fileInputStream.read(contentData, contentSize);

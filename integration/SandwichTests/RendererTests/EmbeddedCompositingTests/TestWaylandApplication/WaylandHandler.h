@@ -59,7 +59,7 @@ public:
     wl_surface*                           surface        = nullptr;
     // Not allowed by a compositor, but a client can create multiple ivi_surface's belonging to the same wl_surface, so
     // store them in a vector for proper clean-up.
-    ramses_internal::Vector<ivi_surface*> iviSurfaces;
+    std::vector<ivi_surface*> iviSurfaces;
     EGLSurface                            eglsurface     = EGL_NO_SURFACE;
     EGLContext                            eglcontext     = EGL_NO_CONTEXT;
     wl_callback*                          frameCallback  = nullptr;
@@ -134,7 +134,7 @@ private:
     ShellSurfacesHashMap m_shellSurfaces;
 
     bool m_usesSharedDisplay = false;
-    ramses_internal::Vector<SHMBuffer*> m_shmBuffer;
+    std::vector<SHMBuffer*> m_shmBuffer;
 
     const struct Registry_Listener : public wl_registry_listener
     {

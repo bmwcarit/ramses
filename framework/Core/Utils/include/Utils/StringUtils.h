@@ -15,7 +15,7 @@
 
 namespace ramses_internal
 {
-    typedef Vector<String>  StringVector;
+    typedef std::vector<String>  StringVector;
     typedef HashSet<String> StringSet;
     struct ResourceContentHash;
 
@@ -124,7 +124,7 @@ namespace ramses_internal
         * @param length length number of elements in the utf32 array.
         * @return A string containing all utf32 codes in hex format.
         */
-        static const String ConvertUTF32ArrayIntoHexString(const Vector<uint32_t>& data);
+        static const String ConvertUTF32ArrayIntoHexString(const std::vector<uint32_t>& data);
     };
 }
 

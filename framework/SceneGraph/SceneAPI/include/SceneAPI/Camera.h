@@ -43,8 +43,11 @@ namespace ramses_internal
     {
         ECameraProjectionType projectionType = ECameraProjectionType_Renderer;
         Frustum frustum;
-        Viewport viewport{ 0, 0, 1, 1 };
         NodeHandle node;
+        DataInstanceHandle viewportDataInstance;
+
+        static constexpr DataFieldHandle ViewportOffsetField{ 0 };
+        static constexpr DataFieldHandle ViewportSizeField{ 1 };
     };
 }
 

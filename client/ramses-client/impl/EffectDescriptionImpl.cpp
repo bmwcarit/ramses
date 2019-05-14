@@ -147,7 +147,7 @@ namespace ramses
             return false;
         }
 
-        ramses_internal::Vector<char> charVector(fileSize + 1u);
+        std::vector<char> charVector(fileSize + 1u);
         stat = inFile.read(&charVector[0], fileSize, readBytes);
         if (stat == ramses_internal::EStatus_RAMSES_OK || stat == ramses_internal::EStatus_RAMSES_EOF)
         {

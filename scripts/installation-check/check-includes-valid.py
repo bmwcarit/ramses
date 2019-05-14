@@ -121,6 +121,7 @@ installedHeaders = get_installed_includes(installedIncludeDir)
 srcApiHeaders = get_source_api_headers(srcDir)
 
 # check wich headers are unexpected and which are missing
+print "Check missing/too many headers"
 installedSet = set(installedHeaders)
 srcSet = set(srcApiHeaders)
 
@@ -135,6 +136,7 @@ if len(unexpected) > 0 or len(missing) > 0:
     sys.exit(1)
 
 # check installed header dependencies
+print "Check header dependencies"
 numDependencyErrors = 0
 for h in installedHeaders:
     cmd = 'g++ -MM -I"{}" "{}/{}"'.format(installedIncludeDir, installedIncludeDir, h)
@@ -150,6 +152,26 @@ for h in installedHeaders:
 if numDependencyErrors > 0:
     print "ERROR: found dependency errors in installed headers"
     sys.exit(1)
+
+# check installed header with pedantic
+print "Check headers with pedantic"
+numPedanticErrors = 0
+for h in installedHeaders:
+    cmd = 'g++ -Werror -pedantic -I"{}" "{}/{}" -o /tmp/ramses-pedantic-header.o'.format(installedIncludeDir, installedIncludeDir, h)
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out = p.communicate()
+    if p.returncode > 0:
+        print 'Header pedantic check failed for: ', h
+        print cmd
+        print out[0]
+        print out[1]
+        numPedanticErrors += 1
+
+if numPedanticErrors > 0:
+    print "ERROR: found errors with pedantic in installed headers"
+    sys.exit(1)
+
+print "Done"
 
 # normal exit
 sys.exit(0)

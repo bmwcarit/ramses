@@ -41,6 +41,7 @@ namespace ramses_internal
         virtual Bool addSurfaceToLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) override;
         virtual Bool removeSurfaceFromLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) override;
         virtual Bool destroySurface(WaylandIviSurfaceId surfaceId) override;
+        virtual Bool setLayerVisibility(WaylandIviLayerId layerId, Bool visibility) override;
         void         deleteControllerSurface(IVIControllerSurface& controllerSurface);
 
     private:

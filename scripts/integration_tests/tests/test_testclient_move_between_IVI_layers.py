@@ -66,6 +66,7 @@ class TestMoveBetweenIVILayers(test_classes.OnSelectedTargetsTest):
 
     def impl_test(self):
         self.renderer.showScene(26)
+        self.renderer.send_ramsh_command("skipUnmodifiedBuffers 0")
 
         ## Add surface to second layer
         self.renderer.send_ramsh_command("scAddSurfaceToLayer {0} {1}".format(self.rendererSurfaceIviId, self.secondLayerIviId), waitForRendererConfirmation=True)

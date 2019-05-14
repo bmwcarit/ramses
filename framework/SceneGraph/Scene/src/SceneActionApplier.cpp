@@ -642,11 +642,13 @@ namespace ramses_internal
         {
             UInt32 projType;
             NodeHandle nodeHandle;
+            DataInstanceHandle dataInstHandle;
             CameraHandle cameraHandle;
             action.read(projType);
             action.read(nodeHandle);
+            action.read(dataInstHandle);
             action.read(cameraHandle);
-            ALLOCATE_AND_ASSERT_HANDLE(scene.allocateCamera(static_cast<ECameraProjectionType>(projType), nodeHandle, cameraHandle), cameraHandle);
+            ALLOCATE_AND_ASSERT_HANDLE(scene.allocateCamera(static_cast<ECameraProjectionType>(projType), nodeHandle, dataInstHandle, cameraHandle), cameraHandle);
             break;
         }
         case ESceneActionId_ReleaseCamera:
@@ -654,18 +656,6 @@ namespace ramses_internal
             CameraHandle cameraHandle;
             action.read(cameraHandle);
             scene.releaseCamera(cameraHandle);
-            break;
-        }
-        case ESceneActionId_SetCameraViewport:
-        {
-            CameraHandle cameraHandle;
-            Viewport vp;
-            action.read(cameraHandle);
-            action.read(vp.posX);
-            action.read(vp.posY);
-            action.read(vp.width);
-            action.read(vp.height);
-            scene.setCameraViewport(cameraHandle, vp);
             break;
         }
         case ESceneActionId_SetCameraFrustum:

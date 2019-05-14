@@ -78,7 +78,7 @@ if ("${TARGET_OS}" STREQUAL "Windows")
     TARGET_LINK_LIBRARIES(ramses-capu PUBLIC psapi)
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         # add windows sockets in mingw case
-        TARGET_LINK_LIBRARIES(ramses-capu PUBLIC ws2_32)
+        TARGET_LINK_LIBRARIES(ramses-capu PUBLIC ws2_32 wsock32)
     endif()
 elseif ("${TARGET_OS}" STREQUAL "Linux")
     TARGET_LINK_LIBRARIES(ramses-capu PUBLIC rt)

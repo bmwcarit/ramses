@@ -64,7 +64,7 @@ namespace ramses_internal
 
         if (lengthOfMessage >= 0)
         {
-            Vector<Char> buffer(lengthOfMessage + 1); // +1 for null terminator
+            std::vector<Char> buffer(lengthOfMessage + 1); // +1 for null terminator
             const Int32  numberCharacters = PlatformStringUtils::VSprintf(buffer.data(), buffer.size(), fmt, apCopy);
             if (numberCharacters == lengthOfMessage)
             {

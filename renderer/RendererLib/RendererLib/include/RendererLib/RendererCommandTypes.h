@@ -88,6 +88,7 @@ namespace ramses_internal
         ERendererCommand_SystemCompositorControllerSetIviSurfaceDestRectangle,
         ERendererCommand_SystemCompositorControllerScreenshot,
         ERendererCommand_SystemCompositorControllerAddIviSurfaceToIviLayer,
+        ERendererCommand_SystemCompositorControllerSetIviLayerVisibility,
         ERendererCommand_SystemCompositorControllerRemoveIviSurfaceFromIviLayer,
         ERendererCommand_SystemCompositorControllerDestroyIviSurface,
         // Miscellaneous
@@ -330,6 +331,7 @@ namespace ramses_internal
         "ERendererCommand_SystemCompositorControllerSetIviSurfaceDestRectangle",
         "ERendererCommand_SystemCompositorControllerScreenshot",
         "ERendererCommand_SystemCompositorControllerAddIviSurfaceToIviLayer",
+        "ERendererCommand_SystemCompositorControllerSetIviLayerVisibility",
         "ERendererCommand_SystemCompositorControllerRemoveIviSurfaceFromIviLayer",
         "ERendererCommand_SystemCompositorControllerDestroyIviSurface",
         "ERendererCommand_SetFrameTimerLimits",

@@ -290,6 +290,14 @@ namespace ramses_internal
         m_commands.addCommand(ERendererCommand_SystemCompositorControllerSetIviSurfaceDestRectangle, cmd);
     }
 
+    void RendererCommands::systemCompositorControllerSetIviLayerVisibility(WaylandIviLayerId layerId, Bool visibility)
+    {
+        CompositorCommand cmd;
+        cmd.waylandIviLayerId = layerId;
+        cmd.visibility = visibility;
+        m_commands.addCommand(ERendererCommand_SystemCompositorControllerSetIviLayerVisibility, cmd);
+    }
+
     void RendererCommands::systemCompositorControllerScreenshot(const String& fileName, int32_t screenIviId)
     {
         CompositorCommand cmd;

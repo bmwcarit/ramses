@@ -29,8 +29,8 @@ namespace ramses_internal
         IEmbeddedCompositor*         createEmbeddedCompositor() override final;
         ITextureUploadingAdapter*    createTextureUploadingAdapter(IDevice& device, IEmbeddedCompositor& embeddedCompositor, IWindow& window) override final;
 
-        virtual void getContextAttributes(Vector<EGLint>& attributes) const = 0;
-        virtual void getSurfaceAttributes(UInt32 msaaSampleCount, Vector<EGLint>& attributes) const = 0;
+        virtual void getContextAttributes(std::vector<EGLint>& attributes) const = 0;
+        virtual void getSurfaceAttributes(UInt32 msaaSampleCount, std::vector<EGLint>& attributes) const = 0;
 
         //TODO Mohamed: remove use of EC dummy as soon as it is possible to create multiple displays on wayland
         Bool isCreatingWaylandEmbeddedCompositorRequired() const;

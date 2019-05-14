@@ -54,9 +54,9 @@ namespace ramses_internal
             return false;
         }
 
-        Vector<ContextFilter> ParseContextFilters(const String& filterCommand)
+        std::vector<ContextFilter> ParseContextFilters(const String& filterCommand)
         {
-            Vector<ContextFilter> returnValue;
+            std::vector<ContextFilter> returnValue;
             // loop over commands separated by ','
             UInt currentCommandStart = 0;
             do

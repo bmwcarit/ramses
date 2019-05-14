@@ -86,7 +86,7 @@ public:
 
         for (const auto hash : arrivedResourceHashes)
         {
-            auto it = requestedResources.find(hash);
+            auto it = find_c(requestedResources, hash);
             requestedResources.erase(it);
         }
 

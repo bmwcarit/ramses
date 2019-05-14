@@ -29,18 +29,18 @@ namespace ramses_internal
         }
     };
 
-    using RenderPassVector           =  Vector<RenderPassHandle>;
-    using RenderableVector           =  Vector<RenderableHandle>;
-    using RenderPassVector           =  Vector<RenderPassHandle>;
-    using NodeHandleVector           =  Vector<NodeHandle>;
-    using TransformHandleVector      =  Vector<TransformHandle>;
-    using RenderBufferHandleVector   =  Vector<RenderBufferHandle>;
-    using StreamTextureHandleVector  =  Vector<StreamTextureHandle>;
-    using RenderGroupOrderVector     =  Vector<RenderGroupOrderEntry>;
-    using BlitPassHandleVector       =  Vector<BlitPassHandle>;
-    using DataBufferHandleVector     =  Vector<DataBufferHandle>;
-    using TextureBufferHandleVector  =  Vector<TextureBufferHandle>;
-    using TextureSamplerHandleVector =  Vector<TextureSamplerHandle>;
+    using RenderPassVector           =  std::vector<RenderPassHandle>;
+    using RenderableVector           =  std::vector<RenderableHandle>;
+    using RenderPassVector           =  std::vector<RenderPassHandle>;
+    using NodeHandleVector           =  std::vector<NodeHandle>;
+    using TransformHandleVector      =  std::vector<TransformHandle>;
+    using RenderBufferHandleVector   =  std::vector<RenderBufferHandle>;
+    using StreamTextureHandleVector  =  std::vector<StreamTextureHandle>;
+    using RenderGroupOrderVector     =  std::vector<RenderGroupOrderEntry>;
+    using BlitPassHandleVector       =  std::vector<BlitPassHandle>;
+    using DataBufferHandleVector     =  std::vector<DataBufferHandle>;
+    using TextureBufferHandleVector  =  std::vector<TextureBufferHandle>;
+    using TextureSamplerHandleVector =  std::vector<TextureSamplerHandle>;
 }
 
 #endif

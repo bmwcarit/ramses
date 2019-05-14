@@ -195,9 +195,9 @@ namespace ramses_internal
         return m_scene.getCameraCount();
     }
 
-    CameraHandle ActionTestScene::allocateCamera(ECameraProjectionType projType, NodeHandle nodeHandle, CameraHandle handle /*= CameraHandle::Invalid()*/)
+    CameraHandle ActionTestScene::allocateCamera(ECameraProjectionType projType, NodeHandle nodeHandle, DataInstanceHandle viewportDataInstance, CameraHandle handle /*= CameraHandle::Invalid()*/)
     {
-        const CameraHandle actualHandle = m_actionCollector.allocateCamera(projType, nodeHandle, handle);
+        const CameraHandle actualHandle = m_actionCollector.allocateCamera(projType, nodeHandle, viewportDataInstance, handle);
         flushPendingSceneActions();
         return actualHandle;
     }
@@ -205,12 +205,6 @@ namespace ramses_internal
     void ActionTestScene::releaseCamera(CameraHandle cameraHandle)
     {
         m_actionCollector.releaseCamera(cameraHandle);
-        flushPendingSceneActions();
-    }
-
-    void ActionTestScene::setCameraViewport(CameraHandle cameraHandle, const Viewport& vp)
-    {
-        m_actionCollector.setCameraViewport(cameraHandle, vp);
         flushPendingSceneActions();
     }
 

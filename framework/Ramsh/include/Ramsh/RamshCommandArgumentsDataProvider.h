@@ -18,13 +18,13 @@
 namespace ramses_internal
 {
     class RamshArgumentBase;
-    typedef Vector<RamshArgumentBase*> ArgumentVector;
+    typedef std::vector<RamshArgumentBase*> ArgumentVector;
 
     template<typename = void> class RamshArgument;
 
     struct RamshArgumentDataProvider;
 
-    typedef Vector<const RamshArgumentData*> ArgumentDataVector;
+    typedef std::vector<const RamshArgumentData*> ArgumentDataVector;
 
     template<typename T> struct ArgumentConverterProxy;
 
@@ -393,7 +393,7 @@ namespace ramses_internal
         : m_args(args)
     {
         // holds the unconsumed raw data
-        Vector<const String*> in;
+        std::vector<const String*> in;
         m_data.resize(m_args.size());
 
         // initialize the list with references to input
@@ -486,7 +486,7 @@ namespace ramses_internal
     inline String RamshArgumentProvider::argumentString() const
     {
         String s;
-        for(ArgumentVector::ConstIterator it = m_arguments.begin(); it != m_arguments.end(); ++it)
+        for(ArgumentVector::const_iterator it = m_arguments.begin(); it != m_arguments.end(); ++it)
         {
             s.append(" [").append((*it)->keywords()).append(" - ").append((*it)->description()).append("]");
         }

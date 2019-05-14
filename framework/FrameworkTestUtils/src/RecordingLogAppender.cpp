@@ -46,7 +46,7 @@ namespace ramses_internal
         return result;
     }
 
-    const Vector<LogMessage>& RecordingLogAppender::getLogMessages() const
+    const std::vector<LogMessage>& RecordingLogAppender::getLogMessages() const
     {
         return m_messages;
     }

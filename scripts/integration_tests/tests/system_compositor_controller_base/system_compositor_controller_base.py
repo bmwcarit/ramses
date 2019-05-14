@@ -53,6 +53,7 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         self.checkThatApplicationWasStarted(self.rendererbackground)
         self.addCleanup(self.target.kill_application, self.rendererbackground)
         self.expectedSurfaceIds.add("{0}".format(self.testSurfaceIVIIds["rendererbackground"]))
+        self.rendererbackground.send_ramsh_command("skipUnmodifiedBuffers 0", waitForRendererConfirmation=True)
 
         # Create testLayer
         self.target.ivi_control.createLayer(self.testLayer, 1280, 480)
@@ -89,6 +90,7 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.save_application_output, self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
+        self.renderer.send_ramsh_command("skipUnmodifiedBuffers 0", waitForRendererConfirmation=True)
 
         self.expectedSurfaceIds.add("{0}".format(self.testSurfaceIVIIds["renderer"]))
 
@@ -101,8 +103,6 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         self.renderer.wait_for_msg_in_stdout_from_beginning("IVIControllerSurface::HandleLayerCallback: surface {} added to layer".format(self.testSurfaceIVIIds["renderer"]), timeout=application.Application.DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT)
 
         # Put renderer, and ivi-gears No. 1 & 2 on the test layer
-        # TODO(tobias/mohamed/bernhard) sleep for a second to let renderer fully start and add its surface to layer. otherwise renderorder will not work properly
-
         self.target.ivi_control.setLayerRenderorder(self.testLayer, "{0} {1} {2}".format(self.testSurfaceIVIIds["renderer"], self.testSurfaceIVIIds["wlClient1"], self.testSurfaceIVIIds["wlClient2"]))
         self.target.ivi_control.flush()
 

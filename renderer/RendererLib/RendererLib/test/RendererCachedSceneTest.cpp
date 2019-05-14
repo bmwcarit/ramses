@@ -92,8 +92,8 @@ namespace ramses_internal
 
         const RenderableVector& renderables = scene.getOrderedRenderablesForPass(pass);
         EXPECT_EQ(2u, renderables.size());
-        EXPECT_TRUE(renderables.contains(rend1));
-        EXPECT_TRUE(renderables.contains(rend2));
+        EXPECT_TRUE(contains_c(renderables, rend1));
+        EXPECT_TRUE(contains_c(renderables, rend2));
     }
 
     TEST_F(ARendererCachedScene, CachesRenderableOfNestedRenderGroupAfterUpdate)
@@ -109,8 +109,8 @@ namespace ramses_internal
 
         const RenderableVector& renderables = scene.getOrderedRenderablesForPass(pass);
         EXPECT_EQ(2u, renderables.size());
-        EXPECT_TRUE(renderables.contains(rend1));
-        EXPECT_TRUE(renderables.contains(rend2));
+        EXPECT_TRUE(contains_c(renderables, rend1));
+        EXPECT_TRUE(contains_c(renderables, rend2));
     }
 
     TEST_F(ARendererCachedScene, CachesRenderableAddedBetweenTwoUpdates)
@@ -124,14 +124,14 @@ namespace ramses_internal
         scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
 
         const RenderableVector& renderables = scene.getOrderedRenderablesForPass(pass);
-        ASSERT_FALSE(renderables.contains(rend2));
+        ASSERT_FALSE(contains_c(renderables, rend2));
 
         scene.addRenderableToRenderGroup(group, rend2, 0);
 
         scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
 
         EXPECT_EQ(2u, renderables.size());
-        EXPECT_TRUE(renderables.contains(rend2));
+        EXPECT_TRUE(contains_c(renderables, rend2));
     }
 
     TEST_F(ARendererCachedScene, CachesRenderableOfNestedRenderGroupAddedBetweenTwoUpdates)
@@ -146,14 +146,14 @@ namespace ramses_internal
         scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
 
         const RenderableVector& renderables = scene.getOrderedRenderablesForPass(pass);
-        ASSERT_FALSE(renderables.contains(rend2));
+        ASSERT_FALSE(contains_c(renderables, rend2));
 
         scene.addRenderGroupToRenderGroup(group, nestedGroup, 0);
 
         scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
 
         EXPECT_EQ(2u, renderables.size());
-        EXPECT_TRUE(renderables.contains(rend2));
+        EXPECT_TRUE(contains_c(renderables, rend2));
     }
 
     TEST_F(ARendererCachedScene, CachesRenderablesPerPassPerGroupAfterUpdate)
@@ -172,8 +172,8 @@ namespace ramses_internal
 
         const RenderableVector& renderables = scene.getOrderedRenderablesForPass(pass);
         EXPECT_EQ(2u, renderables.size());
-        EXPECT_TRUE(renderables.contains(rend1));
-        EXPECT_TRUE(renderables.contains(rend2));
+        EXPECT_TRUE(contains_c(renderables, rend1));
+        EXPECT_TRUE(contains_c(renderables, rend2));
     }
 
     TEST_F(ARendererCachedScene, RemovesRenderableFromCacheWhenDeleted)
@@ -192,9 +192,9 @@ namespace ramses_internal
 
         const RenderableVector& renderables = scene.getOrderedRenderablesForPass(pass);
         EXPECT_EQ(2u, renderables.size());
-        EXPECT_TRUE(renderables.contains(rend1));
-        EXPECT_FALSE(renderables.contains(rend2));
-        EXPECT_TRUE(renderables.contains(rend3));
+        EXPECT_TRUE(contains_c(renderables, rend1));
+        EXPECT_FALSE(contains_c(renderables, rend2));
+        EXPECT_TRUE(contains_c(renderables, rend3));
     }
 
     TEST_F(ARendererCachedScene, RemovesRenderableFromCacheWhenDeletedAndRemovedFromRenderGroup)
@@ -217,9 +217,9 @@ namespace ramses_internal
 
         const RenderableVector& renderables = scene.getOrderedRenderablesForPass(pass);
         EXPECT_EQ(2u, renderables.size());
-        EXPECT_TRUE(renderables.contains(rend1));
-        EXPECT_FALSE(renderables.contains(rend2));
-        EXPECT_TRUE(renderables.contains(rend3));
+        EXPECT_TRUE(contains_c(renderables, rend1));
+        EXPECT_FALSE(contains_c(renderables, rend2));
+        EXPECT_TRUE(contains_c(renderables, rend3));
     }
 
     TEST_F(ARendererCachedScene, RemovesRenderableFromCacheWhenItsNestedRenderGroupIsRemovedFromRenderGroup)
@@ -244,9 +244,9 @@ namespace ramses_internal
 
         const RenderableVector& renderables = scene.getOrderedRenderablesForPass(pass);
         EXPECT_EQ(2u, renderables.size());
-        EXPECT_TRUE(renderables.contains(rend1));
-        EXPECT_FALSE(renderables.contains(rend2));
-        EXPECT_TRUE(renderables.contains(rend3));
+        EXPECT_TRUE(contains_c(renderables, rend1));
+        EXPECT_FALSE(contains_c(renderables, rend2));
+        EXPECT_TRUE(contains_c(renderables, rend3));
     }
 
     TEST_F(ARendererCachedScene, RemovesRenderPassFromCacheWhenDeleted)
@@ -334,14 +334,14 @@ namespace ramses_internal
 
         const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
         EXPECT_EQ(3u, renderables1.size());
-        EXPECT_TRUE(renderables1.contains(rend1));
-        EXPECT_TRUE(renderables1.contains(rend2));
-        EXPECT_TRUE(renderables1.contains(rend3));
+        EXPECT_TRUE(contains_c(renderables1, rend1));
+        EXPECT_TRUE(contains_c(renderables1, rend2));
+        EXPECT_TRUE(contains_c(renderables1, rend3));
         const RenderableVector& renderables2 = scene.getOrderedRenderablesForPass(pass2);
         EXPECT_EQ(2u, renderables2.size());
-        EXPECT_TRUE(renderables2.contains(rend1));
-        EXPECT_TRUE(renderables2.contains(rend2));
-        EXPECT_FALSE(renderables2.contains(rend3));
+        EXPECT_TRUE(contains_c(renderables2, rend1));
+        EXPECT_TRUE(contains_c(renderables2, rend2));
+        EXPECT_FALSE(contains_c(renderables2, rend3));
     }
 
     TEST_F(ARendererCachedScene, CachesRenderablesContainedInTwoPassesAndDifferentRenderGroups)
@@ -365,14 +365,14 @@ namespace ramses_internal
 
         const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
         EXPECT_EQ(3u, renderables1.size());
-        EXPECT_TRUE(renderables1.contains(rend1));
-        EXPECT_TRUE(renderables1.contains(rend2));
-        EXPECT_TRUE(renderables1.contains(rend3));
+        EXPECT_TRUE(contains_c(renderables1, rend1));
+        EXPECT_TRUE(contains_c(renderables1, rend2));
+        EXPECT_TRUE(contains_c(renderables1, rend3));
         const RenderableVector& renderables2 = scene.getOrderedRenderablesForPass(pass2);
         EXPECT_EQ(2u, renderables2.size());
-        EXPECT_TRUE(renderables2.contains(rend1));
-        EXPECT_TRUE(renderables2.contains(rend2));
-        EXPECT_FALSE(renderables2.contains(rend3));
+        EXPECT_TRUE(contains_c(renderables2, rend1));
+        EXPECT_TRUE(contains_c(renderables2, rend2));
+        EXPECT_FALSE(contains_c(renderables2, rend3));
     }
 
     TEST_F(ARendererCachedScene, CachesRenderablesContainedInTwoPassesAndSharedRenderGroup)
@@ -393,14 +393,14 @@ namespace ramses_internal
 
         const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
         EXPECT_EQ(3u, renderables1.size());
-        EXPECT_TRUE(renderables1.contains(rend1));
-        EXPECT_TRUE(renderables1.contains(rend2));
-        EXPECT_TRUE(renderables1.contains(rend3));
+        EXPECT_TRUE(contains_c(renderables1, rend1));
+        EXPECT_TRUE(contains_c(renderables1, rend2));
+        EXPECT_TRUE(contains_c(renderables1, rend3));
         const RenderableVector& renderables2 = scene.getOrderedRenderablesForPass(pass2);
         EXPECT_EQ(3u, renderables2.size());
-        EXPECT_TRUE(renderables2.contains(rend1));
-        EXPECT_TRUE(renderables2.contains(rend2));
-        EXPECT_TRUE(renderables2.contains(rend3));
+        EXPECT_TRUE(contains_c(renderables2, rend1));
+        EXPECT_TRUE(contains_c(renderables2, rend2));
+        EXPECT_TRUE(contains_c(renderables2, rend3));
     }
 
     TEST_F(ARendererCachedScene, RemovesRenderableFromCacheWhenDeletedAndContainedInTwoPasses)
@@ -419,14 +419,14 @@ namespace ramses_internal
 
         const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
         EXPECT_EQ(2u, renderables1.size());
-        EXPECT_TRUE(renderables1.contains(rend1));
-        EXPECT_FALSE(renderables1.contains(rend2));
-        EXPECT_TRUE(renderables1.contains(rend3));
+        EXPECT_TRUE(contains_c(renderables1, rend1));
+        EXPECT_FALSE(contains_c(renderables1, rend2));
+        EXPECT_TRUE(contains_c(renderables1, rend3));
         const RenderableVector& renderables2 = scene.getOrderedRenderablesForPass(pass2);
         EXPECT_EQ(1u, renderables2.size());
-        EXPECT_TRUE(renderables2.contains(rend1));
-        EXPECT_FALSE(renderables2.contains(rend2));
-        EXPECT_FALSE(renderables2.contains(rend3));
+        EXPECT_TRUE(contains_c(renderables2, rend1));
+        EXPECT_FALSE(contains_c(renderables2, rend2));
+        EXPECT_FALSE(contains_c(renderables2, rend3));
     }
 
     TEST_F(ARendererCachedScene, RemovesRenderableFromCacheWhenDeletedAndContainedInTwoRenderGroups)
@@ -457,14 +457,14 @@ namespace ramses_internal
 
         const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
         EXPECT_EQ(2u, renderables1.size());
-        EXPECT_TRUE(renderables1.contains(rend1));
-        EXPECT_FALSE(renderables1.contains(rend2));
-        EXPECT_TRUE(renderables1.contains(rend3));
+        EXPECT_TRUE(contains_c(renderables1, rend1));
+        EXPECT_FALSE(contains_c(renderables1, rend2));
+        EXPECT_TRUE(contains_c(renderables1, rend3));
         const RenderableVector& renderables2 = scene.getOrderedRenderablesForPass(pass2);
         EXPECT_EQ(1u, renderables2.size());
-        EXPECT_TRUE(renderables2.contains(rend1));
-        EXPECT_FALSE(renderables2.contains(rend2));
-        EXPECT_FALSE(renderables2.contains(rend3));
+        EXPECT_TRUE(contains_c(renderables2, rend1));
+        EXPECT_FALSE(contains_c(renderables2, rend2));
+        EXPECT_FALSE(contains_c(renderables2, rend3));
     }
 
     TEST_F(ARendererCachedScene, RemovesRenderableFromCacheWhenDeletedAndContainedInRenderGroupSharedByTwoPasses)
@@ -491,14 +491,14 @@ namespace ramses_internal
 
         const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
         EXPECT_EQ(2u, renderables1.size());
-        EXPECT_TRUE(renderables1.contains(rend1));
-        EXPECT_FALSE(renderables1.contains(rend2));
-        EXPECT_TRUE(renderables1.contains(rend3));
+        EXPECT_TRUE(contains_c(renderables1, rend1));
+        EXPECT_FALSE(contains_c(renderables1, rend2));
+        EXPECT_TRUE(contains_c(renderables1, rend3));
         const RenderableVector& renderables2 = scene.getOrderedRenderablesForPass(pass2);
         EXPECT_EQ(2u, renderables2.size());
-        EXPECT_TRUE(renderables2.contains(rend1));
-        EXPECT_FALSE(renderables2.contains(rend2));
-        EXPECT_TRUE(renderables2.contains(rend3));
+        EXPECT_TRUE(contains_c(renderables2, rend1));
+        EXPECT_FALSE(contains_c(renderables2, rend2));
+        EXPECT_TRUE(contains_c(renderables2, rend3));
     }
 
     TEST_F(ARendererCachedScene, RemovesRenderableFromCacheWhenSetInvisibleAndContainedInTwoPasses)
@@ -517,14 +517,14 @@ namespace ramses_internal
 
         const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
         EXPECT_EQ(2u, renderables1.size());
-        EXPECT_TRUE(renderables1.contains(rend1));
-        EXPECT_FALSE(renderables1.contains(rend2));
-        EXPECT_TRUE(renderables1.contains(rend3));
+        EXPECT_TRUE(contains_c(renderables1, rend1));
+        EXPECT_FALSE(contains_c(renderables1, rend2));
+        EXPECT_TRUE(contains_c(renderables1, rend3));
         const RenderableVector& renderables2 = scene.getOrderedRenderablesForPass(pass2);
         EXPECT_EQ(1u, renderables2.size());
-        EXPECT_TRUE(renderables2.contains(rend1));
-        EXPECT_FALSE(renderables2.contains(rend2));
-        EXPECT_FALSE(renderables2.contains(rend3));
+        EXPECT_TRUE(contains_c(renderables2, rend1));
+        EXPECT_FALSE(contains_c(renderables2, rend2));
+        EXPECT_FALSE(contains_c(renderables2, rend3));
     }
 
     TEST_F(ARendererCachedScene, RemovesRenderableFromCacheWhenSetInvisibleAndContainedInTwoRenderGroups)
@@ -553,14 +553,14 @@ namespace ramses_internal
 
         const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
         EXPECT_EQ(2u, renderables1.size());
-        EXPECT_TRUE(renderables1.contains(rend1));
-        EXPECT_FALSE(renderables1.contains(rend2));
-        EXPECT_TRUE(renderables1.contains(rend3));
+        EXPECT_TRUE(contains_c(renderables1, rend1));
+        EXPECT_FALSE(contains_c(renderables1, rend2));
+        EXPECT_TRUE(contains_c(renderables1, rend3));
         const RenderableVector& renderables2 = scene.getOrderedRenderablesForPass(pass2);
         EXPECT_EQ(1u, renderables2.size());
-        EXPECT_TRUE(renderables2.contains(rend1));
-        EXPECT_FALSE(renderables2.contains(rend2));
-        EXPECT_FALSE(renderables2.contains(rend3));
+        EXPECT_TRUE(contains_c(renderables2, rend1));
+        EXPECT_FALSE(contains_c(renderables2, rend2));
+        EXPECT_FALSE(contains_c(renderables2, rend3));
     }
 
     TEST_F(ARendererCachedScene, RemovesRenderableFromCacheWhenSetInvisibleAndContainedInRenderGroupSharedByTwoPasses)
@@ -586,14 +586,14 @@ namespace ramses_internal
 
         const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
         EXPECT_EQ(2u, renderables1.size());
-        EXPECT_TRUE(renderables1.contains(rend1));
-        EXPECT_FALSE(renderables1.contains(rend2));
-        EXPECT_TRUE(renderables1.contains(rend3));
+        EXPECT_TRUE(contains_c(renderables1, rend1));
+        EXPECT_FALSE(contains_c(renderables1, rend2));
+        EXPECT_TRUE(contains_c(renderables1, rend3));
         const RenderableVector& renderables2 = scene.getOrderedRenderablesForPass(pass2);
         EXPECT_EQ(2u, renderables2.size());
-        EXPECT_TRUE(renderables2.contains(rend1));
-        EXPECT_FALSE(renderables2.contains(rend2));
-        EXPECT_TRUE(renderables2.contains(rend3));
+        EXPECT_TRUE(contains_c(renderables2, rend1));
+        EXPECT_FALSE(contains_c(renderables2, rend2));
+        EXPECT_TRUE(contains_c(renderables2, rend3));
     }
 
     TEST_F(ARendererCachedScene, RetrievesOrderedRenderPassesBasedOnSetRenderOrder)

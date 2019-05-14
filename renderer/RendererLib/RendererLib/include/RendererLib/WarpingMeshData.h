@@ -22,14 +22,14 @@ namespace ramses_internal
         WarpingMeshData();
         WarpingMeshData(UInt32 indexCount, const UInt16* indices, UInt32 vertexCount, const Float* vertexPositions, const Float* textureCoordinates);
 
-        const Vector<UInt16>& getIndices() const;
-        const Vector<Vector3>& getVertexPositions() const;
-        const Vector<Vector2>& getTextureCoordinates() const;
+        const std::vector<UInt16>& getIndices() const;
+        const std::vector<Vector3>& getVertexPositions() const;
+        const std::vector<Vector2>& getTextureCoordinates() const;
 
     private:
-        Vector<UInt16> m_indices;
-        Vector<Vector3> m_vertexPositions;
-        Vector<Vector2> m_textureCoordinates;
+        std::vector<UInt16> m_indices;
+        std::vector<Vector3> m_vertexPositions;
+        std::vector<Vector2> m_textureCoordinates;
     };
 }
 

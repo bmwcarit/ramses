@@ -1270,7 +1270,7 @@ namespace ramses_internal
 
         GLint numCompressedTextureFormats(0);
         glGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS, &numCompressedTextureFormats);
-        Vector<GLint> compressedTextureFormats(numCompressedTextureFormats);
+        std::vector<GLint> compressedTextureFormats(numCompressedTextureFormats);
         glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, compressedTextureFormats.data());
 
         for (GLint compressedGLTextureFormat : compressedTextureFormats)

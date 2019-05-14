@@ -35,7 +35,7 @@ namespace ramses
 
 namespace ramses_internal
 {
-    using TextureConsumerDataIds = Vector<ramses::dataConsumerId_t>;
+    using TextureConsumerDataIds = std::vector<ramses::dataConsumerId_t>;
 
     class ResourceStressTestScene
     {
@@ -60,7 +60,7 @@ namespace ramses_internal
         DynamicQuad_ClientResources                 m_quadWithClientResources;
         DynamicQuad_SceneResources                  m_quadWithSceneResources;
         DynamicQuad_OffscreenRenderTarget           m_quadWithRenderTarget;
-        Vector<std::unique_ptr<DynamicQuad_ClientResources>>  m_quadsWithTextureConsumerLinks;
+        std::vector<std::unique_ptr<DynamicQuad_ClientResources>>  m_quadsWithTextureConsumerLinks;
     };
 }
 

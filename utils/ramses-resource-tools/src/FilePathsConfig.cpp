@@ -20,7 +20,7 @@ bool FilePathsConfig::loadFromFile(const char* filePath)
         return false;
     }
 
-    ramses_internal::Vector<ramses_internal::String> lines;
+    std::vector<ramses_internal::String> lines;
     if (!FileUtils::ReadFileLines(filePath, lines))
     {
         return false;
@@ -56,7 +56,7 @@ bool FilePathsConfig::parseConfigLine(int lineNumber, const ramses_internal::Str
         return true;
     }
 
-    ramses_internal::Vector<ramses_internal::String> tokens;
+    std::vector<ramses_internal::String> tokens;
     StringUtils::GetLineTokens(line, ' ', tokens);
     if (tokens.empty())
     {

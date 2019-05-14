@@ -26,8 +26,8 @@ namespace ramses_internal
         ISurface*   createSurface(IWindow& window, IContext& context) override final;
         IEmbeddedCompositor*    createEmbeddedCompositor() override;
 
-        virtual void getContextAttributes(Vector<EGLint>& attributes) const = 0;
-        virtual void getSurfaceAttributes(UInt32 msaaSampleCount, Vector<EGLint>& attributes) const = 0;
+        virtual void getContextAttributes(std::vector<EGLint>& attributes) const = 0;
+        virtual void getSurfaceAttributes(UInt32 msaaSampleCount, std::vector<EGLint>& attributes) const = 0;
     };
 }
 

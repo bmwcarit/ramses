@@ -207,7 +207,7 @@ namespace ramses_internal
     DeviceResourceHandle FrameProfileRenderer::createLineIndexBuffer(UInt32 segmentCount)
     {
         const UInt32 indexCount = 2 * segmentCount;
-        Vector<UInt16> indices(indexCount);
+        std::vector<UInt16> indices(indexCount);
         UInt16 id = 0;
         for (UInt32 i = 0; i < indexCount;)
         {
@@ -225,7 +225,7 @@ namespace ramses_internal
     DeviceResourceHandle FrameProfileRenderer::createStackedLinesIndexBuffer(UInt32 lineCount, UInt32 segmentPerLineCount)
     {
         const UInt32 indexCount = 2 * segmentPerLineCount * lineCount;
-        Vector<UInt16> indices(indexCount);
+        std::vector<UInt16> indices(indexCount);
         UInt16 id = 0;
         UInt32 i = 0;
         for (UInt32 l = 0; l < lineCount; l++)

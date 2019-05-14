@@ -126,7 +126,7 @@ namespace ramses
     {
         PerspectiveCamera* camera = this->m_scene.createPerspectiveCamera("my cam");
         camera->setFrustum(0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f);
-        camera->setViewport(1, 2, 3, 4);
+        camera->setViewport(1, -2, 3, 4);
 
         doWriteReadCycle();
 
@@ -139,8 +139,8 @@ namespace ramses
         EXPECT_EQ(0.5f, loadedCamera->getNearPlane());
         EXPECT_EQ(0.6f, loadedCamera->getFarPlane());
 
-        EXPECT_EQ(1u, loadedCamera->getViewportX());
-        EXPECT_EQ(2u, loadedCamera->getViewportY());
+        EXPECT_EQ(1, loadedCamera->getViewportX());
+        EXPECT_EQ(-2, loadedCamera->getViewportY());
         EXPECT_EQ(3u, loadedCamera->getViewportWidth());
         EXPECT_EQ(4u, loadedCamera->getViewportHeight());
     }
@@ -172,7 +172,7 @@ namespace ramses
     {
         OrthographicCamera* camera = this->m_scene.createOrthographicCamera("my cam");
         camera->setFrustum(0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f);
-        camera->setViewport(1, 2, 3, 4);
+        camera->setViewport(1, -2, 3, 4);
 
         doWriteReadCycle();
 
@@ -187,8 +187,8 @@ namespace ramses
         EXPECT_FLOAT_EQ(0.5f, loadedCamera->getNearPlane());
         EXPECT_FLOAT_EQ(0.6f, loadedCamera->getFarPlane());
 
-        EXPECT_EQ(1u, loadedCamera->getViewportX());
-        EXPECT_EQ(2u, loadedCamera->getViewportY());
+        EXPECT_EQ(1, loadedCamera->getViewportX());
+        EXPECT_EQ(-2, loadedCamera->getViewportY());
         EXPECT_EQ(3u, loadedCamera->getViewportWidth());
         EXPECT_EQ(4u, loadedCamera->getViewportHeight());
     }
@@ -1011,7 +1011,7 @@ namespace ramses
         {
             ramses_internal::File file(filename);
             file.open(ramses_internal::EFileMode_WriteNew);
-            ramses_internal::Vector<ramses_internal::Char> zerovector(4096);
+            std::vector<ramses_internal::Char> zerovector(4096);
             file.write(&zerovector[0], zerovector.size());
             file.close();
         }
@@ -1026,7 +1026,7 @@ namespace ramses
         {
             ramses_internal::File file(filename);
             file.open(ramses_internal::EFileMode_WriteNew);
-            ramses_internal::Vector<ramses_internal::Char> zerovector(4096);
+            std::vector<ramses_internal::Char> zerovector(4096);
             file.write(&zerovector[0], zerovector.size());
             file.close();
         }

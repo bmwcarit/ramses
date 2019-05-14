@@ -17,7 +17,6 @@
 #include <gtest/gtest.h>
 #include "ramses-capu/container/HashTable.h"
 #include "ramses-capu/container/HashSet.h"
-#include "ramses-capu/container/Pair.h"
 #include "ramses-capu/Error.h"
 #include "util/ComplexTestType.h"
 #include <vector>

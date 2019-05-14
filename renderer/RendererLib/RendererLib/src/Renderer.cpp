@@ -231,6 +231,19 @@ namespace ramses_internal
         }
     }
 
+    void Renderer::systemCompositorSetIviLayerVisibility(WaylandIviLayerId layerId, Bool visibility) const
+    {
+        if(0 != m_systemCompositorController)
+        {
+            m_systemCompositorController->setLayerVisibility(layerId, visibility);
+        }
+        else
+        {
+            // See above ^^^^
+            LOG_ERROR(CONTEXT_RENDERER, "RamsesRenderer::systemCompositorSetLayerVisibility: system compositor is not available");
+        }
+    }
+
     void Renderer::systemCompositorScreenshot(const String& fileName, int32_t screenIviId) const
     {
         if(0 != m_systemCompositorController)
@@ -555,7 +568,7 @@ namespace ramses_internal
         }
     }
 
-    void Renderer::ReorderDisplaysToStartWith(Vector<DisplayHandle>& displays, DisplayHandle displayToStartWith)
+    void Renderer::ReorderDisplaysToStartWith(std::vector<DisplayHandle>& displays, DisplayHandle displayToStartWith)
     {
         const auto displayToStartWithIt = std::find(displays.begin(), displays.end(), displayToStartWith);
         if (displayToStartWithIt != displays.end())

@@ -52,8 +52,8 @@ int main(int argc, const char *argv[])
     //Do not move this from here, and do not do anything meaningful before it!!!
     ramses_internal::TestForkingController forkingController(waylandSocketEmbedded);
 
-    ramses_internal::Vector<ramses_internal::String>  filterInTestStrings;
-    ramses_internal::Vector<ramses_internal::String>  filterOutTestStrings;
+    std::vector<ramses_internal::String>  filterInTestStrings;
+    std::vector<ramses_internal::String>  filterOutTestStrings;
     ramses_internal::StringUtils::Tokenize(filterInTest, filterInTestStrings, ':');
     ramses_internal::StringUtils::Tokenize(filterOutTest, filterOutTestStrings, ':');
 

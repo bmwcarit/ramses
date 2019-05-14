@@ -20,8 +20,8 @@ namespace ramses_internal
     ramses_internal::String RamshCommand::keywordString() const
     {
         StringOutputStream ss;
-        StringVector::ConstIterator iter = m_keywords.begin();
-        StringVector::ConstIterator end = m_keywords.end();
+        StringVector::const_iterator iter = m_keywords.begin();
+        StringVector::const_iterator end = m_keywords.end();
 
         while (iter != end)
         {

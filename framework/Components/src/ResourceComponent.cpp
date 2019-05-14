@@ -257,7 +257,7 @@ namespace ramses_internal
     void ResourceComponent::triggerLoadingResourcesFromFile()
     {
         PlatformGuard guard(m_frameworkLock);
-        Vector<ResourceLoadInfo> toLoadNow;
+        std::vector<ResourceLoadInfo> toLoadNow;
         bool shouldReserve = true;
         while (m_resourcesToBeLoaded.size() > 0)
         {
@@ -367,7 +367,7 @@ namespace ramses_internal
         ResourceStreamDeserializer* deserializer = *m_resourceDeserializers.get(providerID);
         assert(deserializer != nullptr);
 
-        const Vector<IResource*> resources = deserializer->processData(receivedResourceData);
+        const std::vector<IResource*> resources = deserializer->processData(receivedResourceData);
         for (const auto& res : resources)
         {
             handleArrivedResource(m_resourceStorage.manageResource(*res, false));
@@ -404,7 +404,7 @@ namespace ramses_internal
         handleArrivedResource(m_resourceStorage.manageResource(*loadedResource, true));
     }
 
-    void ResourceComponent::sendResourcesFromFile(const Vector<IResource*>& loadedResources, uint64_t bytesLoaded, const Guid& requesterId)
+    void ResourceComponent::sendResourcesFromFile(const std::vector<IResource*>& loadedResources, uint64_t bytesLoaded, const Guid& requesterId)
     {
         PlatformGuard guard(m_frameworkLock);
         ManagedResourceVector managedResources;
@@ -427,7 +427,7 @@ namespace ramses_internal
         const auto startTime = PlatformTime::GetMillisecondsMonotonic();
 
         struct NetworkResourceInfo {
-            Vector<IResource*> resources;
+            std::vector<IResource*> resources;
             uint64_t accumulatedFileSize;
         };
         HashMap<Guid, NetworkResourceInfo> resourceToSendViaNetwork(m_resourcesToLoad.size());

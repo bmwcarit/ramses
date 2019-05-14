@@ -20,7 +20,7 @@ namespace ramses
     class SceneIteratorImpl : public IteratorImpl<Scene*>
     {
     public:
-        explicit SceneIteratorImpl(const ramses_internal::Vector<Scene*>& scenes)
+        explicit SceneIteratorImpl(const std::vector<Scene*>& scenes)
             : IteratorImpl(scenes)
         {
         }

@@ -111,7 +111,7 @@ namespace ramses_internal
                 getHash(); // try calculate before uncompressed data is lost
                 const auto lz4Level = (level == CompressionLevel::REALTIME) ?
                     LZ4CompressionUtils::CompressionLevel::Fast :
-                    LZ4CompressionUtils::CompressionLevel::High16;
+                    LZ4CompressionUtils::CompressionLevel::High;
                 m_compressedData = CompressedSceneResourceData(new CompressedMemoryBlob(*m_data.get(), lz4Level));
             }
         }

@@ -31,7 +31,7 @@ namespace ramses_internal
     private:
         UInt64 getCurrentMemoryUsageInMBytes() const;
 
-        Vector<GpuMemorySample> m_memorySamples;
+        std::vector<GpuMemorySample> m_memorySamples;
     };
 }
 

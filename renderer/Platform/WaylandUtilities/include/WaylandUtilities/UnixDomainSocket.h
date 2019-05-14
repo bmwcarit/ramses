@@ -45,7 +45,7 @@ namespace ramses_internal
         const String m_socketFileLock;
         int          m_socketFileDescriptor = -1;
         int          m_lockFileDescriptor   = -1;
-        Vector<int>  m_connectedFileDescriptors;
+        std::vector<int>  m_connectedFileDescriptors;
     };
 }
 

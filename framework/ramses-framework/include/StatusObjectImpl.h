@@ -64,7 +64,7 @@ namespace ramses
             uint32_t                indentation;
             ramses_internal::String message;
         };
-        typedef ramses_internal::Vector<ValidationMessage> ValidationMessages;
+        typedef std::vector<ValidationMessage> ValidationMessages;
 
         mutable bool                    m_hasErrorMessages;
         mutable ValidationMessages      m_validationMessages;

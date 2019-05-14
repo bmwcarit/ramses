@@ -124,9 +124,9 @@ namespace ramses_internal
 
         const float z = -1.0f;
 
-        Vector<uint16_t> indices;
-        Vector<float> vertexPositions;
-        Vector<float> textureCoords;
+        std::vector<uint16_t> indices;
+        std::vector<float> vertexPositions;
+        std::vector<float> textureCoords;
 
         const float x = 0.0f;
         const float w = static_cast<float>(DefaultDisplayWidth);

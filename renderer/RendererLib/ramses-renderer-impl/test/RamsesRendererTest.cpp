@@ -135,6 +135,7 @@ protected:
         renderer.setSurfaceRectangle(0u, 0, 0, 0, 0);
         renderer.takeSystemCompositorScreenshot("", -1);
         renderer.setFrameTimerLimits(10001u, 10000u, 10000u, 10000u);
+        renderer.setLayerVisibility(0u, true);
 
         renderer.flush();
         renderer.dispatchEvents(rendererEventHandler);
@@ -534,6 +535,7 @@ TEST_F(ARamsesRenderer, createsNoCommandForSystemCompositorControllerIfNotEnable
     EXPECT_NE(ramses::StatusOK, renderer.setSurfaceVisibility(0, true));
     EXPECT_NE(ramses::StatusOK, renderer.setSurfaceOpacity(0, 0.2f));
     EXPECT_NE(ramses::StatusOK, renderer.setSurfaceRectangle(0, 1, 2, 3, 4));
+    EXPECT_NE(ramses::StatusOK, renderer.setLayerVisibility(17,true));
     EXPECT_NE(ramses::StatusOK, renderer.takeSystemCompositorScreenshot("unused_name", -1));
     checkForRendererCommandCount(0u);
 }
@@ -564,6 +566,13 @@ TEST_F(ARamsesRendererWithSystemCompositorController, createsCommandForSystemCom
     EXPECT_EQ(ramses::StatusOK, renderer.impl.systemCompositorAddIviSurfaceToIviLayer(0, 1));
     checkForRendererCommandCount(1u);
     checkForRendererCommand(0u, ramses_internal::ERendererCommand_SystemCompositorControllerAddIviSurfaceToIviLayer);
+}
+
+TEST_F(ARamsesRendererWithSystemCompositorController, createsCommandForSystemCompositorControllerSetLayerVisibility)
+{
+    EXPECT_EQ(ramses::StatusOK, renderer.setLayerVisibility(17, true));
+    checkForRendererCommandCount(1u);
+    checkForRendererCommand(0u, ramses_internal::ERendererCommand_SystemCompositorControllerSetIviLayerVisibility);
 }
 
 TEST_F(ARamsesRendererWithSystemCompositorController, createsCommandForSystemCompositorControllerTakeScreenshot)

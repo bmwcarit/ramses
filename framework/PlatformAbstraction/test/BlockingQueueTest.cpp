@@ -8,10 +8,10 @@
 
 #include "Collections/BlockingQueue.h"
 #include "PlatformAbstraction/PlatformThread.h"
-#include "ramses-capu/container/Pair.h"
 #include <gtest/gtest.h>
 #include <random>
 #include <vector>
+#include <utility>
 
 namespace ramses_internal
 {
@@ -131,7 +131,7 @@ namespace ramses_internal
         // this ensures correct test configuration
         ASSERT_EQ(0, countProducer * countPerProducer % countConsumer);
 
-        std::vector<ramses_capu::Pair<ramses_capu::Thread*, ramses_capu::Runnable*>> consumer(countConsumer);
+        std::vector<std::pair<ramses_capu::Thread*, ramses_capu::Runnable*>> consumer(countConsumer);
         for (int32_t i = 0; i < countConsumer; ++i)
         {
             consumer[i].second = new Consumer(queue, countPerConsumer, i + 20);
@@ -139,7 +139,7 @@ namespace ramses_internal
             consumer[i].first->start(*consumer[i].second);
         }
 
-        std::vector<ramses_capu::Pair<ramses_capu::Thread*, ramses_capu::Runnable*>> producer(countProducer);
+        std::vector<std::pair<ramses_capu::Thread*, ramses_capu::Runnable*>> producer(countProducer);
         for (int32_t i = 0; i < countProducer; ++i)
         {
             producer[i].second = new Producer(queue, countPerProducer, i + 10);

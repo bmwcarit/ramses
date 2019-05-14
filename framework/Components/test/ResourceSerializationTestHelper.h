@@ -35,16 +35,16 @@ namespace ramses_internal
 
         using Types = ::testing::Types<TextureResource, ArrayResource, EffectResource>;
 
-        static Vector<Vector<Byte>> ConvertResourcesToResourceDataVector(const ManagedResourceVector& resources, UInt32 chunkSize);
+        static std::vector<std::vector<Byte>> ConvertResourcesToResourceDataVector(const ManagedResourceVector& resources, UInt32 chunkSize);
     };
 
-    inline Vector<Vector<Byte>> ResourceSerializationTestHelper::ConvertResourcesToResourceDataVector(const ManagedResourceVector& resources, UInt32 chunkSize)
+    inline std::vector<std::vector<Byte>> ResourceSerializationTestHelper::ConvertResourcesToResourceDataVector(const ManagedResourceVector& resources, UInt32 chunkSize)
     {
-        Vector<Vector<Byte>> resData;
-        Vector<Byte> buffer;
-        auto preparePacketFun = [&](UInt32 neededSize) -> Pair<Byte*, UInt32> {
+        std::vector<std::vector<Byte>> resData;
+        std::vector<Byte> buffer;
+        auto preparePacketFun = [&](UInt32 neededSize) -> std::pair<Byte*, UInt32> {
             buffer.resize(std::min(chunkSize, neededSize));
-            return MakePair(buffer.data(), static_cast<UInt32>(buffer.size()));
+            return std::make_pair(buffer.data(), static_cast<UInt32>(buffer.size()));
         };
         auto finishedPacketFun = [&](UInt32 usedSize) {
             assert(usedSize <= buffer.size());

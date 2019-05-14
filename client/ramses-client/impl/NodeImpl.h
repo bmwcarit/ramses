@@ -80,9 +80,9 @@ namespace ramses
         bool isDirty() const;
 
     private:
-        typedef ramses_internal::Vector<NodeImpl*> NodeVector;
+        typedef std::vector<NodeImpl*> NodeVector;
 
-        void removeChildInternally(NodeVector::Iterator childIt);
+        void removeChildInternally(NodeVector::iterator childIt);
 
         ramses_internal::NodeHandle m_nodeHandle;
 

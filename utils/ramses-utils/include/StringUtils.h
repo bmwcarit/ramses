@@ -15,7 +15,7 @@
 class StringUtils
 {
 public:
-    static void GetLineTokens(const ramses_internal::String& line, char split, ramses_internal::Vector<ramses_internal::String>& tokens);
+    static void GetLineTokens(const ramses_internal::String& line, char split, std::vector<ramses_internal::String>& tokens);
 };
 
 #endif

@@ -18,8 +18,8 @@ namespace ramses
     class MeshNodeImpl;
     class RenderGroupImpl;
 
-    typedef ramses_internal::Vector<const MeshNodeImpl*>  MeshNodeImplVector;
-    typedef ramses_internal::Vector<const RenderGroupImpl*>    RenderGroupImplVector;
+    typedef std::vector<const MeshNodeImpl*>  MeshNodeImplVector;
+    typedef std::vector<const RenderGroupImpl*>    RenderGroupImplVector;
 
     class RenderGroupImpl final : public SceneObjectImpl
     {
@@ -54,11 +54,11 @@ namespace ramses
         ramses_internal::RenderGroupHandle getRenderGroupHandle() const;
 
     private:
-        void removeInternal(MeshNodeImplVector::Iterator iter);
-        void removeInternal(RenderGroupImplVector::Iterator iter);
+        void removeInternal(MeshNodeImplVector::iterator iter);
+        void removeInternal(RenderGroupImplVector::iterator iter);
 
         template <typename ELEMENT>
-        void validateElements(uint32_t& indent, status_t& status, const ramses_internal::Vector<const ELEMENT*>& elements) const;
+        void validateElements(uint32_t& indent, status_t& status, const std::vector<const ELEMENT*>& elements) const;
 
         ramses_internal::RenderGroupHandle  m_renderGroupHandle;
 

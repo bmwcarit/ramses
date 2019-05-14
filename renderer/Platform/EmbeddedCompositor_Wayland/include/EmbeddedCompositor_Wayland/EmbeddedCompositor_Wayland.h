@@ -91,7 +91,7 @@ namespace ramses_internal
         WaylandShellGlobal          m_shellGlobal;
         WaylandIVIApplicationGlobal m_iviApplicationGlobal;
 
-        typedef Vector<IWaylandSurface*> WaylandSurfaces;
+        typedef std::vector<IWaylandSurface*> WaylandSurfaces;
         WaylandSurfaces m_surfaces;
         StreamTextureSourceIdSet m_knownStreamTextureSoruceIds;
         StreamTextureSourceIdSet m_updatedStreamTextureSourceIds;

@@ -29,7 +29,7 @@ DisplayControllerMock::~DisplayControllerMock()
 {
 }
 
-bool DisplayControllerMock::ResizePixelBuffer(UInt32 x, UInt32 y, UInt32 width, UInt32 height, Vector<UInt8>& dataOut)
+bool DisplayControllerMock::ResizePixelBuffer(UInt32 x, UInt32 y, UInt32 width, UInt32 height, std::vector<UInt8>& dataOut)
 {
     dataOut.resize((width - x) * (height - y) * 4u); // Assuming RGBA8 non multisampled
     return true;

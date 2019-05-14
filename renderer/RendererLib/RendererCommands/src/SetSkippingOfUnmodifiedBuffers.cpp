@@ -17,6 +17,7 @@ SetSkippingOfUnmodifiedBuffers::SetSkippingOfUnmodifiedBuffers(RendererCommandBu
 {
     description = "set skipping of unmodified buffer";
     registerKeyword("skub");
+    registerKeyword("skipUnmodifiedBuffers");
     getArgument<0>().setDescription("enable skipping (0: off, 1: enable)");
 }
 

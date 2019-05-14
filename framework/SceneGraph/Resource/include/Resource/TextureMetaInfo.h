@@ -17,7 +17,7 @@
 
 namespace ramses_internal
 {
-    using MipDataSizeVector = Vector<UInt32>;
+    using MipDataSizeVector = std::vector<UInt32>;
 
     struct TextureMetaInfo
     {

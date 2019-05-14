@@ -50,7 +50,7 @@ namespace ramses_internal
             ManagedResource managedRes(resource, deleterMock);
             ResourceInfo resInfo(&resource);
 
-            Vector<Byte> receivedResourceData;
+            std::vector<Byte> receivedResourceData;
             {
                 PlatformGuard g(receiverExpectCallLock);
                 EXPECT_CALL(handler, handleSendResource(_, senderId)).WillOnce(Invoke([this, &receivedResourceData](const ByteArrayView& view, const Guid&)
@@ -71,7 +71,7 @@ namespace ramses_internal
 
             ResourceStreamDeserializer deserializer;
             ByteArrayView view(receivedResourceData.data(), static_cast<UInt32>(receivedResourceData.size()));
-            Vector<IResource*> receivedRecources = deserializer.processData(view);
+            std::vector<IResource*> receivedRecources = deserializer.processData(view);
             EXPECT_TRUE(deserializer.processingFinished());
             EXPECT_EQ(1u, receivedRecources.size());
 
@@ -278,7 +278,7 @@ namespace ramses_internal
             resourceRequestVector.push_back(resourceHash);
         }
 
-        ramses_internal::Vector<ResourceContentHashVector> receivedResourceRequests;
+        std::vector<ResourceContentHashVector> receivedResourceRequests;
         {
             PlatformGuard g(receiverExpectCallLock);
             EXPECT_CALL(providerHandler, handleRequestResources(_, _, senderId)).Times(expectedNumberOfMessages).WillRepeatedly(DoAll(AppendArg0ToVector(&receivedResourceRequests), SendHandlerCalledEvent(this)));
@@ -307,12 +307,12 @@ namespace ramses_internal
         ManagedResourceVector managedResources = { ManagedResource(res1, deleterMock), ManagedResource(res2, deleterMock) };
         auto sentResourceData = ResourceSerializationTestHelper::ConvertResourcesToResourceDataVector(managedResources, sender.getSendDataSizes().resourceDataArray);
 
-        Vector<Vector<Byte>> receivedResourceData;
+        std::vector<std::vector<Byte>> receivedResourceData;
         {
             PlatformGuard g(receiverExpectCallLock);
             EXPECT_CALL(handler, handleSendResource(_, senderId)).Times(1).WillRepeatedly(Invoke([this, &receivedResourceData](const ByteArrayView& resourceData, const Guid&)
             {
-                Vector<Byte> data;
+                std::vector<Byte> data;
                 data.insert(data.begin(), resourceData.begin(), resourceData.end());
                 receivedResourceData.push_back(data);
                 sendEvent();
@@ -335,12 +335,12 @@ namespace ramses_internal
         ManagedResourceVector managedResources = { ManagedResource(res1, deleterMock), ManagedResource(res2, deleterMock) };
         auto sentResourceData = ResourceSerializationTestHelper::ConvertResourcesToResourceDataVector(managedResources, sender.getSendDataSizes().resourceDataArray);
 
-        Vector<Vector<Byte>> receivedResourceData;
+        std::vector<std::vector<Byte>> receivedResourceData;
         {
             PlatformGuard g(receiverExpectCallLock);
             EXPECT_CALL(handler, handleSendResource(_, senderId)).Times(1).WillRepeatedly(Invoke([this, &receivedResourceData](const ByteArrayView& resourceData, const Guid&)
             {
-                Vector<Byte> data;
+                std::vector<Byte> data;
                 data.insert(data.begin(), resourceData.begin(), resourceData.end());
                 receivedResourceData.push_back(data);
                 sendEvent();

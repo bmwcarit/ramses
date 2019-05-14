@@ -232,6 +232,13 @@ namespace ramses
         return status;
     }
 
+    status_t RamsesRenderer::setLayerVisibility(uint32_t layerId, bool visibility)
+    {
+        const status_t status = impl.systemCompositorSetIviLayerVisibility(layerId, visibility);
+        LOG_HL_RENDERER_API2(status, layerId, visibility);
+        return status;
+    }
+
     status_t RamsesRenderer::takeSystemCompositorScreenshot(const char* fileName, int32_t screenIviId)
     {
         const status_t status = impl.systemCompositorTakeScreenshot(fileName, screenIviId);

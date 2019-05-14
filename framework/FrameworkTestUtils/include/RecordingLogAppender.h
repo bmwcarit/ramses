@@ -24,7 +24,7 @@ namespace ramses_internal
 
         Bool hasMessages() const;
         StringVector getFormattedMessages() const;
-        const Vector<LogMessage>& getLogMessages() const;
+        const std::vector<LogMessage>& getLogMessages() const;
 
         String getConcatenatedMessages() const;
 
@@ -32,7 +32,7 @@ namespace ramses_internal
         virtual void logMessage(const LogMessage& message);
         String formatMessage(const LogMessage& msg) const;
 
-        Vector<LogMessage> m_messages;
+        std::vector<LogMessage> m_messages;
     };
 }
 

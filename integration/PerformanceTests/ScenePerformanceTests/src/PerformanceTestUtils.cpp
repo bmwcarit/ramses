@@ -37,7 +37,7 @@ void PerformanceTestUtils::BuildGraphLevel(ramses::Scene& scene, ramses::Node& t
     }
 }
 
-void PerformanceTestUtils::BuildNodesOfVariousTypes(ramses_internal::Vector<ramses::SceneObject*>& outputList, ramses::Scene& scene, uint32_t objectCount)
+void PerformanceTestUtils::BuildNodesOfVariousTypes(std::vector<ramses::SceneObject*>& outputList, ramses::Scene& scene, uint32_t objectCount)
 {
     for (uint32_t i = 0; i < objectCount; i++)
     {

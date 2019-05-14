@@ -13,13 +13,13 @@ namespace ramses_internal
 {
     TEST(AVector, isInitiallyEmpty)
     {
-        Vector<int> v;
+        std::vector<int> v;
         EXPECT_EQ(0u, v.size());
     }
 
     TEST(AVector, canBeConstructedWithDefaultValues)
     {
-        Vector<int> v(2);
+        std::vector<int> v(2);
         ASSERT_EQ(2u, v.size());
         EXPECT_EQ(0, v[0]);
         EXPECT_EQ(0, v[1]);
@@ -27,7 +27,7 @@ namespace ramses_internal
 
     TEST(AVector, canBeConstructedWithGivenValue)
     {
-        Vector<int> v(2, 1);
+        std::vector<int> v(2, 1);
         ASSERT_EQ(2u, v.size());
         EXPECT_EQ(1, v[0]);
         EXPECT_EQ(1, v[1]);
@@ -35,7 +35,7 @@ namespace ramses_internal
 
     TEST(AVector, canBeInitializedFromInitializerList)
     {
-        Vector<int> v = {1, 2, 3};
+        std::vector<int> v = {1, 2, 3};
         ASSERT_EQ(3u, v.size());
         EXPECT_EQ(1, v[0]);
         EXPECT_EQ(2, v[1]);
@@ -44,8 +44,8 @@ namespace ramses_internal
 
     TEST(AVector, canBeCopyConstructed)
     {
-        Vector<int> v = {1, 2, 3};
-        Vector<int> w(v);
+        std::vector<int> v = {1, 2, 3};
+        std::vector<int> w(v);
 
         EXPECT_EQ(3u, v.size());
         ASSERT_EQ(3u, w.size());
@@ -56,8 +56,8 @@ namespace ramses_internal
 
     TEST(AVector, canBeAssignTo)
     {
-        Vector<int> v = {1, 2, 3};
-        Vector<int> w;
+        std::vector<int> v = {1, 2, 3};
+        std::vector<int> w;
         w = v;
 
         EXPECT_EQ(3u, v.size());
@@ -71,8 +71,8 @@ namespace ramses_internal
     {
         // this test is not portable because it relies on implementation specific behavior
         // of vector move operation
-        Vector<int> v = {1, 2, 3};
-        Vector<int> w(std::move(v));
+        std::vector<int> v = {1, 2, 3};
+        std::vector<int> w(std::move(v));
 
         ASSERT_EQ(3u, w.size());
         EXPECT_EQ(1, w[0]);
@@ -84,8 +84,8 @@ namespace ramses_internal
     {
         // this test is not portable because it relies on implementation specific behavior
         // of vector move operation
-        Vector<int> v = {1, 2, 3};
-        Vector<int> w;
+        std::vector<int> v = {1, 2, 3};
+        std::vector<int> w;
         w = std::move(v);
 
         ASSERT_EQ(3u, w.size());

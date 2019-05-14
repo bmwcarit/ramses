@@ -17,7 +17,7 @@ namespace ramses_internal
 {
     ManagedResource RendererResourceManagerUtils::TryLoadResource(ResourceContentHash resourceId, UInt32 resourceSize, const IRendererResourceCache* cache)
     {
-        Vector<Byte> readBuffer(resourceSize);
+        std::vector<Byte> readBuffer(resourceSize);
 
         cache->getResourceData(resourceId, readBuffer.data(), resourceSize);
 

@@ -79,8 +79,8 @@ namespace ramses
     class SceneConfigImpl;
     class ResourceImpl;
 
-    typedef ramses_internal::Vector<Scene*> SceneVector;
-    typedef ramses_internal::Vector<Resource*> ResourceVector;
+    typedef std::vector<Scene*> SceneVector;
+    typedef std::vector<Resource*> ResourceVector;
 
     class RamsesClientImpl final : public RamsesObjectImpl
     {
@@ -164,24 +164,24 @@ namespace ramses
         class LoadResourcesRunnable : public ramses_internal::ITask
         {
         public:
-            LoadResourcesRunnable(RamsesClientImpl& client, const ramses_internal::Vector<ramses_internal::String>& filenames);
+            LoadResourcesRunnable(RamsesClientImpl& client, const std::vector<ramses_internal::String>& filenames);
             virtual void execute() override;
 
         private:
             RamsesClientImpl& m_client;
-            ramses_internal::Vector<ramses_internal::String> m_filenames;
+            std::vector<ramses_internal::String> m_filenames;
         };
 
         class LoadSceneRunnable : public ramses_internal::ITask
         {
         public:
-            LoadSceneRunnable(RamsesClientImpl& client, const ramses_internal::String& sceneFilename, const ramses_internal::Vector<ramses_internal::String>& resourceFilenames);
+            LoadSceneRunnable(RamsesClientImpl& client, const ramses_internal::String& sceneFilename, const std::vector<ramses_internal::String>& resourceFilenames);
             virtual void execute() override;
 
         private:
             RamsesClientImpl& m_client;
             ramses_internal::String m_sceneFilename;
-            ramses_internal::Vector<ramses_internal::String> m_resourceFilenames;
+            std::vector<ramses_internal::String> m_resourceFilenames;
         };
 
         class DeleteSceneRunnable : public ramses_internal::ITask
@@ -226,7 +226,7 @@ namespace ramses
         status_t createAndDeserializeResourceImpls(ramses_internal::IInputStream& inStream, DeserializationContext& deserializationContext, uint32_t count, ResourceVector& container);
         status_t readResourcesFromFile(const ramses_internal::String& resourceFilename);
         Scene* prepareSceneAndResourcesFromFiles(const char* caller, const ramses_internal::String& sceneFilename,
-            const ramses_internal::Vector<ramses_internal::String>& resourceFilenames, ramses_internal::Vector<ResourceLoadStatus>& resourceloadStatus);
+            const std::vector<ramses_internal::String>& resourceFilenames, std::vector<ResourceLoadStatus>& resourceloadStatus);
         void finalizeLoadedScene(Scene* scene);
 
         status_t validateScenes(uint32_t indent) const;
@@ -264,8 +264,8 @@ namespace ramses
         ramses_internal::TaskForwardingQueue m_loadFromFileTaskQueue;
         ramses_internal::EnqueueOnlyOneAtATimeQueue m_deleteSceneQueue;
 
-        ramses_internal::Vector<ResourceLoadStatus> m_asyncResourceLoadStatusVec;
-        ramses_internal::Vector<SceneLoadStatus> m_asyncSceneLoadStatusVec;
+        std::vector<ResourceLoadStatus> m_asyncResourceLoadStatusVec;
+        std::vector<SceneLoadStatus> m_asyncSceneLoadStatusVec;
         ramses_internal::HashSet<ramses_internal::SceneId> m_scenesMarkedForLoadAsLocalOnly;
 
         std::chrono::milliseconds m_clientResourceCacheTimeout;

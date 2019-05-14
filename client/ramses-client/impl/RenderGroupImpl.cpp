@@ -32,7 +32,7 @@ namespace ramses
     }
 
     template <typename OBJECT>
-    void serializeObjects(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext, const ramses_internal::Vector<const OBJECT*>& objects)
+    void serializeObjects(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext, const std::vector<const OBJECT*>& objects)
     {
         outStream << static_cast<uint32_t>(objects.size());
         for(const auto& object : objects)
@@ -55,7 +55,7 @@ namespace ramses
     }
 
     template <typename OBJECT>
-    void deserializeObjects(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext, ramses_internal::Vector<const OBJECT*>& objects)
+    void deserializeObjects(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext, std::vector<const OBJECT*>& objects)
     {
         UNUSED(serializationContext)
         uint32_t numberOfObjects = 0;
@@ -138,7 +138,7 @@ namespace ramses
     bool RenderGroupImpl::contains(const MeshNodeImpl& meshImpl) const
     {
         // const cast just to get ptr for query
-        return m_meshes.contains(const_cast<MeshNodeImpl*>(&meshImpl));
+        return ramses_internal::contains_c(m_meshes, &meshImpl);
     }
 
     const MeshNodeImplVector& RenderGroupImpl::getAllMeshes() const
@@ -172,7 +172,7 @@ namespace ramses
             return addErrorEntry("RenderGroup::addMeshNode failed - meshNode is not from the same scene as this RenderGroup.");
         }
 
-        if (m_meshes.contains(&meshImpl))
+        if (ramses_internal::contains_c(m_meshes, &meshImpl))
         {
             remove(meshImpl);
         }
@@ -186,7 +186,7 @@ namespace ramses
 
     status_t RenderGroupImpl::remove(const MeshNodeImpl& mesh)
     {
-        MeshNodeImplVector::Iterator iter = m_meshes.find(&mesh);
+        MeshNodeImplVector::iterator iter = ramses_internal::find_c(m_meshes, &mesh);
         if (iter == m_meshes.end())
         {
             return addErrorEntry("RenderGroup::remove failed - could not remove MeshNode from RenderGroup because it was not contained");
@@ -199,7 +199,7 @@ namespace ramses
 
     void RenderGroupImpl::removeIfContained(const MeshNodeImpl& mesh)
     {
-        MeshNodeImplVector::Iterator iter = m_meshes.find(&mesh);
+        MeshNodeImplVector::iterator iter = ramses_internal::find_c(m_meshes, &mesh);
         if (iter != m_meshes.end())
         {
             removeInternal(iter);
@@ -213,7 +213,7 @@ namespace ramses
             return addErrorEntry("RenderGroup::addRenderGroup failed - renderGroup is not from the same scene as this RenderGroup.");
         }
 
-        if (m_renderGroups.contains(&renderGroupImpl))
+        if (ramses_internal::contains_c(m_renderGroups, &renderGroupImpl))
         {
             remove(renderGroupImpl);
         }
@@ -227,7 +227,7 @@ namespace ramses
 
     status_t RenderGroupImpl::remove(const RenderGroupImpl& renderGroup)
     {
-        RenderGroupImplVector::Iterator iter = m_renderGroups.find(&renderGroup);
+        RenderGroupImplVector::iterator iter = ramses_internal::find_c(m_renderGroups, &renderGroup);
         if (iter == m_renderGroups.end())
         {
             return addErrorEntry("RenderGroup::removeRenderGroup failed - could not remove render group from RenderGroup because it was not contained");
@@ -240,7 +240,7 @@ namespace ramses
 
     void RenderGroupImpl::removeIfContained(const RenderGroupImpl& renderGroup)
     {
-        RenderGroupImplVector::Iterator iter = m_renderGroups.find(&renderGroup);
+        RenderGroupImplVector::iterator iter = ramses_internal::find_c(m_renderGroups, &renderGroup);
         if (iter != m_renderGroups.end())
         {
             removeInternal(iter);
@@ -249,7 +249,7 @@ namespace ramses
 
     bool RenderGroupImpl::contains(const RenderGroupImpl& renderGroup) const
     {
-        return m_renderGroups.contains(&renderGroup);
+        return ramses_internal::contains_c(m_renderGroups, &renderGroup);
     }
 
     status_t RenderGroupImpl::getRenderGroupOrder(const RenderGroupImpl& renderGroup, int32_t& orderWithinGroup) const
@@ -301,14 +301,14 @@ namespace ramses
         return m_renderGroupHandle;
     }
 
-    void RenderGroupImpl::removeInternal(MeshNodeImplVector::Iterator iter)
+    void RenderGroupImpl::removeInternal(MeshNodeImplVector::iterator iter)
     {
         const ramses_internal::RenderableHandle renderableToRemove = (*iter)->getRenderableHandle();
         getIScene().removeRenderableFromRenderGroup(m_renderGroupHandle, renderableToRemove);
         m_meshes.erase(iter);
     }
 
-    void RenderGroupImpl::removeInternal(RenderGroupImplVector::Iterator iter)
+    void RenderGroupImpl::removeInternal(RenderGroupImplVector::iterator iter)
     {
         const ramses_internal::RenderGroupHandle renderGroupToRemove = (*iter)->getRenderGroupHandle();
         getIScene().removeRenderGroupFromRenderGroup(m_renderGroupHandle, renderGroupToRemove);
@@ -316,7 +316,7 @@ namespace ramses
     }
 
     template <typename ELEMENT>
-    void RenderGroupImpl::validateElements(uint32_t& indent, status_t& status, const ramses_internal::Vector<const ELEMENT*>& elements) const
+    void RenderGroupImpl::validateElements(uint32_t& indent, status_t& status, const std::vector<const ELEMENT*>& elements) const
     {
         for(const auto& element : elements)
         {

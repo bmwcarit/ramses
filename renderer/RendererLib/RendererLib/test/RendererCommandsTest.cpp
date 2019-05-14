@@ -540,6 +540,26 @@ TEST_F(ARendererCommands, createsCommandsForAddingSurfaceToLayerInSystemComposit
     }
 }
 
+TEST_F(ARendererCommands, createsCommandsForSettingLayerVisibilityInSystemCompositorController)
+{
+    queue.systemCompositorControllerSetIviLayerVisibility(WaylandIviLayerId(18), false);
+    queue.systemCompositorControllerSetIviLayerVisibility(WaylandIviLayerId(17), true);
+
+    EXPECT_EQ(2u, queue.getCommands().getTotalCommandCount());
+    {
+        const CompositorCommand& command = queue.getCommands().getCommandData<CompositorCommand>(0);
+        EXPECT_EQ(ERendererCommand_SystemCompositorControllerSetIviLayerVisibility, queue.getCommands().getCommandType(0));
+        EXPECT_EQ(18u, command.waylandIviLayerId.getValue());
+        EXPECT_FALSE(command.visibility);
+    }
+    {
+        const CompositorCommand& command = queue.getCommands().getCommandData<CompositorCommand>(1);
+        EXPECT_EQ(ERendererCommand_SystemCompositorControllerSetIviLayerVisibility, queue.getCommands().getCommandType(1));
+        EXPECT_EQ(17u, command.waylandIviLayerId.getValue());
+        EXPECT_TRUE(command.visibility);
+    }
+}
+
 TEST_F(ARendererCommands, createsCommandsForRemovingSurfaceFromLayerInSystemCompositorController)
 {
     queue.systemCompositorControllerRemoveIviSurfaceFromIviLayer(WaylandIviSurfaceId(73), WaylandIviLayerId(348));

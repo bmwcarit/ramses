@@ -43,9 +43,9 @@ namespace ramses_internal
         ramses::MeshNode* m_sphereMesh;
         ramses::Node* m_transformNode;
 
-        Vector<Vector3> m_spherePositions;
-        Vector<Vector3> m_sphereNormals;
-        Vector<UInt16> m_sphereIndices;
+        std::vector<Vector3> m_spherePositions;
+        std::vector<Vector3> m_sphereNormals;
+        std::vector<UInt16> m_sphereIndices;
     };
 }
 

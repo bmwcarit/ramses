@@ -64,7 +64,7 @@ namespace ramses_internal
         IResourceConsumerComponent&   m_resourceComponent;
         RendererCommandBuffer&        m_rendererCommands;
 
-        HashMap<SceneId, Pair<Guid, String> > m_sceneClients;
+        HashMap<SceneId, std::pair<Guid, String> > m_sceneClients;
         std::unordered_map<SceneId, SceneActionCollection>   m_bufferedSceneActionsPerScene;
         std::unordered_map<SceneId, uint64_t>   m_lastReceivedListCounter;
     };

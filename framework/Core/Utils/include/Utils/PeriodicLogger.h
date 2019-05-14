@@ -49,7 +49,7 @@ namespace ramses_internal
         UInt32         m_periodicLogTimeoutSeconds;
         PlatformThread m_thread;
         PlatformLock&  m_frameworkLock;
-        Vector<IPeriodicLogSupplier*> m_periodicLogSuppliers;
+        std::vector<IPeriodicLogSupplier*> m_periodicLogSuppliers;
         StatisticCollectionFramework& m_statisticCollection;
         UInt32 m_triggerCounter;
         HashMap<SceneId, StatisticCollectionScene*> m_statisticCollectionScenes;

@@ -26,10 +26,10 @@ namespace ramses_internal
         UInt32 getSize() const;
         UInt32 getCapacity() const;
 
-        Vector<char> release();
+        std::vector<char> release();
 
     private:
-        Vector<char> m_buffer;
+        std::vector<char> m_buffer;
     };
 
     inline
@@ -61,9 +61,9 @@ namespace ramses_internal
         return static_cast<uint32_t>(m_buffer.capacity());
     }
 
-    inline Vector<char> BinaryOutputStream::release()
+    inline std::vector<char> BinaryOutputStream::release()
     {
-        Vector<char> result;
+        std::vector<char> result;
         result.swap(m_buffer);
         return result;
     }
