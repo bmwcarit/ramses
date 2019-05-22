@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
     /// [Basic Compositing Example]
 
     ramses::TextureSampler* sampler =
-        scene->createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Nearest, *streamTexture);
+        scene->createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Nearest, ramses::ETextureSamplingMethod_Nearest, *streamTexture);
 
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-example-basic-compositing.vert");

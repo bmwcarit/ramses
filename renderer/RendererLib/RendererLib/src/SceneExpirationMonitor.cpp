@@ -25,11 +25,11 @@ namespace ramses_internal
         assert(m_sceneTimestamps.count() == 0u);
     }
 
-    void SceneExpirationMonitor::onFlushApplied(SceneId sceneId, FlushTime::Clock::time_point expirationTimestamp, UInt64 flushIndex)
+    void SceneExpirationMonitor::onFlushApplied(SceneId sceneId, FlushTime::Clock::time_point expirationTimestamp, SceneVersionTag versionTag, UInt64 flushIndex)
     {
         TimeStampTag& ts = m_sceneTimestamps[sceneId].expirationTSOfLastAppliedFlush;
         ts.ts = expirationTimestamp;
-        ts.tag = m_scenes.getScene(sceneId).getSceneVersionTag();
+        ts.tag = versionTag;
         ts.internalIndex = flushIndex;
     }
 
@@ -84,15 +84,13 @@ namespace ramses_internal
                 const bool lastPendingFlushExpired = isTSExpired(lastPendingTimeInfo.expirationTimestamp);
                 if (expired || lastPendingFlushExpired) // early out if nothing expired
                 {
-                    const UInt64 expirationTimestampPendingFlush = std::chrono::duration_cast<std::chrono::milliseconds>(lastPendingTimeInfo.expirationTimestamp.time_since_epoch()).count();
-                    const UInt64 internalTimestampPendingFlush = std::chrono::duration_cast<std::chrono::milliseconds>(lastPendingTimeInfo.internalTimestamp.time_since_epoch()).count();
-                    SceneVersionTag sceneVersionTag = timestamps.expirationTSOfLastAppliedFlush.tag;
-                    readSceneVersionTagFromPendingFlushes(pendingFlushes, sceneVersionTag);
+                    const UInt64 expirationTimestampPendingFlush = asMilliseconds(lastPendingTimeInfo.expirationTimestamp);
+                    const UInt64 internalTimestampPendingFlush = asMilliseconds(lastPendingTimeInfo.internalTimestamp);
 
                     if (lastPendingFlushExpired)
                     {
                         const UInt64 expirationDelayPendingFlush = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastPendingTimeInfo.expirationTimestamp).count();
-                        LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: Latest pending flush of scene " << sceneId << " is expired (version tag after this flush would be applied " << sceneVersionTag << "). "
+                        LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: Latest pending flush of scene " << sceneId << " is expired (version tag of this flush " << lastPendingFlush.versionTag << "). "
                             << "Expiration time stamp " << expirationTimestampPendingFlush << " ms, "
                             << "expired by " << expirationDelayPendingFlush << " ms. "
                             << "Timestamp of flush creation on client side: " << internalTimestampPendingFlush << " ms. "
@@ -103,17 +101,16 @@ namespace ramses_internal
                     else if (expired)
                     {
                         LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: for the expired scene " << sceneId << " there is pending flush which is not expired "
-                            << "(version tag after this flush would be applied " << sceneVersionTag << "). "
                             << "Expiration time stamp " << expirationTimestampPendingFlush << " ms, timestamp of flush creation on client side: " << internalTimestampPendingFlush << " ms. "
                             << "Internal flush index " << timestamps.expirationTSOfLastAppliedFlush.internalIndex << ". "
                             << "There is " << pendingFlushes.size() << " pending flushes in total, only latest was checked.");
                     }
 
-                    LOG_TRACE_F(CONTEXT_RENDERER, ([&](StringOutputStream& logStream)
+                    LOG_INFO_F(CONTEXT_RENDERER, ([&](StringOutputStream& logStream)
                     {
-                        logStream << "Pending flushes for expired scene " << sceneId << "[internalIndex, expirationTS] : ";
+                        logStream << "Pending flushes for expired scene " << sceneId << "[internalIndex, expirationTS, versionTag] : ";
                         for (const auto& pendingFlush : pendingFlushes)
-                            logStream << "[" << pendingFlush.flushIndex << ", " << expirationTimestampPendingFlush << "] ";
+                            logStream << "[" << pendingFlush.flushIndex << ", " << asMilliseconds(pendingFlush.timeInfo.expirationTimestamp) << ", " << pendingFlush.versionTag << "] ";
                     }));
                 }
             }
@@ -136,17 +133,5 @@ namespace ramses_internal
     {
         auto it = m_sceneTimestamps.find(sceneId);
         return it != m_sceneTimestamps.end() ? it->value.expirationTSOfRenderedScene.ts : FlushTime::InvalidTimestamp;
-    }
-
-    void SceneExpirationMonitor::readSceneVersionTagFromPendingFlushes(const PendingFlushes& pendingFlushes, SceneVersionTag& sceneVersionTag) const
-    {
-        for (const auto& pendingFlush : pendingFlushes)
-        {
-            for (auto actionReader : pendingFlush.sceneActions)
-            {
-                if (actionReader.type() == ESceneActionId_SetSceneVersionTag)
-                    sceneVersionTag = SceneActionApplier::ReadSceneVersionTag(actionReader);
-            }
-        }
     }
 }

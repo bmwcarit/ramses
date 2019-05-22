@@ -17,12 +17,13 @@ namespace ramses_internal
     class TextureSamplerGPUResource : public GPUResource
     {
     public:
-        TextureSamplerGPUResource(EWrapMethod wrapMethodU, EWrapMethod wrapMethodV, EWrapMethod wrapMethodR, ESamplingMethod samplingMethod, UInt32 anisotropyLvl, UInt32 gpuAddress, UInt32 dataSizeInBytes)
+        TextureSamplerGPUResource(EWrapMethod wrapMethodU, EWrapMethod wrapMethodV, EWrapMethod wrapMethodR, ESamplingMethod minSamplingMethod, ESamplingMethod magSamplingMethod, UInt32 anisotropyLvl, UInt32 gpuAddress, UInt32 dataSizeInBytes)
             : GPUResource(gpuAddress, dataSizeInBytes)
             , wrapU(wrapMethodU)
             , wrapV(wrapMethodV)
             , wrapR(wrapMethodR)
-            , sampling(samplingMethod)
+            , minSampling(minSamplingMethod)
+            , magSampling(magSamplingMethod)
             , anisotropyLevel(anisotropyLvl)
         {
         }
@@ -30,7 +31,8 @@ namespace ramses_internal
         const EWrapMethod wrapU;
         const EWrapMethod wrapV;
         const EWrapMethod wrapR;
-        const ESamplingMethod sampling;
+        const ESamplingMethod minSampling;
+        const ESamplingMethod magSampling;
         const UInt32 anisotropyLevel;
     };
 }

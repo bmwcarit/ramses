@@ -809,7 +809,8 @@ namespace ramses
     TextureSampler* SceneImpl::createTextureSampler(
         ETextureAddressMode wrapUMode,
         ETextureAddressMode wrapVMode,
-        ETextureSamplingMethod samplingMethod,
+        ETextureSamplingMethod minSamplingMethod,
+        ETextureSamplingMethod magSamplingMethod,
         uint32_t anisotropyLevel,
         const Texture2D& texture,
         const char* name /*= 0*/)
@@ -826,9 +827,16 @@ namespace ramses
             return NULL;
         }
 
+        if (ETextureSamplingMethod_Nearest != magSamplingMethod && ETextureSamplingMethod_Linear != magSamplingMethod)
+        {
+            addErrorEntry("Scene::createTextureSampler failed, mag sampling method must be set to Nearest or Linear.");
+            return NULL;
+        }
+
         TextureSamplerImpl& pimpl = createTextureSamplerImpl(
             wrapUMode, wrapVMode, ETextureAddressMode_Clamp,
-            samplingMethod,
+            minSamplingMethod,
+            magSamplingMethod,
             anisotropyLevel,
             ERamsesObjectType_Texture2D,
             ramses_internal::TextureSampler::ContentType::ClientTexture,
@@ -845,7 +853,8 @@ namespace ramses
         ETextureAddressMode wrapUMode,
         ETextureAddressMode wrapVMode,
         ETextureAddressMode wrapRMode,
-        ETextureSamplingMethod samplingMethod,
+        ETextureSamplingMethod minSamplingMethod,
+        ETextureSamplingMethod magSamplingMethod,
         const Texture3D& texture,
         const char* name /*= 0*/)
     {
@@ -855,8 +864,14 @@ namespace ramses
             return NULL;
         }
 
+        if (ETextureSamplingMethod_Nearest != magSamplingMethod && ETextureSamplingMethod_Linear != magSamplingMethod)
+        {
+            addErrorEntry("Scene::createTextureSampler failed, mag sampling method must be set to Nearest or Linear.");
+            return NULL;
+        }
+
         TextureSamplerImpl& pimpl = createTextureSamplerImpl(
-            wrapUMode, wrapVMode, wrapRMode, samplingMethod, 1u,
+            wrapUMode, wrapVMode, wrapRMode, minSamplingMethod, magSamplingMethod, 1u,
             ERamsesObjectType_Texture3D,
             ramses_internal::TextureSampler::ContentType::ClientTexture,
             texture.impl.getLowlevelResourceHash(),
@@ -871,7 +886,8 @@ namespace ramses
     TextureSampler* SceneImpl::createTextureSampler(
         ETextureAddressMode wrapUMode,
         ETextureAddressMode wrapVMode,
-        ETextureSamplingMethod samplingMethod,
+        ETextureSamplingMethod minSamplingMethod,
+        ETextureSamplingMethod magSamplingMethod,
         uint32_t anisotropyLevel,
         const TextureCube& texture,
         const char* name /*= 0*/)
@@ -888,8 +904,14 @@ namespace ramses
             return NULL;
         }
 
+        if (ETextureSamplingMethod_Nearest != magSamplingMethod && ETextureSamplingMethod_Linear != magSamplingMethod)
+        {
+            addErrorEntry("Scene::createTextureSampler failed, mag sampling method must be set to Nearest or Linear.");
+            return NULL;
+        }
+
         TextureSamplerImpl& pimpl = createTextureSamplerImpl(
-            wrapUMode, wrapVMode, ETextureAddressMode_Clamp, samplingMethod, anisotropyLevel,
+            wrapUMode, wrapVMode, ETextureAddressMode_Clamp, minSamplingMethod, magSamplingMethod, anisotropyLevel,
             ERamsesObjectType_TextureCube,
             ramses_internal::TextureSampler::ContentType::ClientTexture,
             texture.impl.getLowlevelResourceHash(),
@@ -901,7 +923,7 @@ namespace ramses
         return sampler;
     }
 
-    TextureSampler* SceneImpl::createTextureSampler(ETextureAddressMode wrapUMode, ETextureAddressMode wrapVMode, ETextureSamplingMethod samplingMethod, uint32_t anisotropyLevel, const RenderBuffer& renderBuffer, const char* name)
+    TextureSampler* SceneImpl::createTextureSampler(ETextureAddressMode wrapUMode, ETextureAddressMode wrapVMode, ETextureSamplingMethod minSamplingMethod, ETextureSamplingMethod magSamplingMethod , uint32_t anisotropyLevel, const RenderBuffer& renderBuffer, const char* name)
     {
         if (!containsSceneObject(renderBuffer.impl))
         {
@@ -921,8 +943,14 @@ namespace ramses
             return NULL;
         }
 
+        if (ETextureSamplingMethod_Nearest != magSamplingMethod && ETextureSamplingMethod_Linear != magSamplingMethod)
+        {
+            addErrorEntry("Scene::createTextureSampler failed, mag sampling method must be set to Nearest or Linear.");
+            return NULL;
+        }
+
         TextureSamplerImpl& pimpl = createTextureSamplerImpl(
-            wrapUMode, wrapVMode, ETextureAddressMode_Clamp, samplingMethod, anisotropyLevel,
+            wrapUMode, wrapVMode, ETextureAddressMode_Clamp, minSamplingMethod, magSamplingMethod, anisotropyLevel,
             ERamsesObjectType_RenderBuffer,
             ramses_internal::TextureSampler::ContentType::RenderBuffer,
             ramses_internal::ResourceContentHash::Invalid(),
@@ -937,7 +965,8 @@ namespace ramses
     ramses::TextureSampler* SceneImpl::createTextureSampler(
         ETextureAddressMode wrapUMode,
         ETextureAddressMode wrapVMode,
-        ETextureSamplingMethod samplingMethod,
+        ETextureSamplingMethod minSamplingMethod,
+        ETextureSamplingMethod magSamplingMethod,
         uint32_t anisotropyLevel,
         const Texture2DBuffer& textureBuffer,
         const char* name)
@@ -954,8 +983,14 @@ namespace ramses
             return NULL;
         }
 
+        if (ETextureSamplingMethod_Nearest != magSamplingMethod && ETextureSamplingMethod_Linear != magSamplingMethod)
+        {
+            addErrorEntry("Scene::createTextureSampler failed, mag sampling method must be set to Nearest or Linear.");
+            return NULL;
+        }
+
         TextureSamplerImpl& pimpl = createTextureSamplerImpl(
-            wrapUMode, wrapVMode, ETextureAddressMode_Clamp, samplingMethod, anisotropyLevel,
+            wrapUMode, wrapVMode, ETextureAddressMode_Clamp, minSamplingMethod, magSamplingMethod, anisotropyLevel,
             ERamsesObjectType_Texture2DBuffer,
             ramses_internal::TextureSampler::ContentType::TextureBuffer,
             ramses_internal::ResourceContentHash::Invalid(),
@@ -970,7 +1005,8 @@ namespace ramses
     ramses::TextureSampler* SceneImpl::createTextureSampler(
         ETextureAddressMode wrapUMode,
         ETextureAddressMode wrapVMode,
-        ETextureSamplingMethod samplingMethod,
+        ETextureSamplingMethod minSamplingMethod,
+        ETextureSamplingMethod magSamplingMethod,
         const StreamTexture& streamTexture,
         const char* name)
     {
@@ -980,8 +1016,14 @@ namespace ramses
             return NULL;
         }
 
+        if (ETextureSamplingMethod_Nearest != magSamplingMethod && ETextureSamplingMethod_Linear != magSamplingMethod)
+        {
+            addErrorEntry("Scene::createTextureSampler failed, mag sampling method must be set to Nearest or Linear.");
+            return NULL;
+        }
+
         TextureSamplerImpl& pimpl = createTextureSamplerImpl(
-            wrapUMode, wrapVMode, ETextureAddressMode_Clamp, samplingMethod, 1u,
+            wrapUMode, wrapVMode, ETextureAddressMode_Clamp, minSamplingMethod, magSamplingMethod, 1u,
             ERamsesObjectType_StreamTexture,
             ramses_internal::TextureSampler::ContentType::StreamTexture,
             ramses_internal::ResourceContentHash::Invalid(),
@@ -997,7 +1039,8 @@ namespace ramses
         ETextureAddressMode wrapUMode,
         ETextureAddressMode wrapVMode,
         ETextureAddressMode wrapRMode,
-        ETextureSamplingMethod samplingMethod,
+        ETextureSamplingMethod minSamplingMethod,
+        ETextureSamplingMethod magSamplingMethod,
         uint32_t anisotropyLevel,
         ERamsesObjectType samplerType,
         ramses_internal::TextureSampler::ContentType contentType,
@@ -1009,7 +1052,8 @@ namespace ramses
             TextureUtils::GetTextureAddressModeInternal(wrapUMode),
             TextureUtils::GetTextureAddressModeInternal(wrapVMode),
             TextureUtils::GetTextureAddressModeInternal(wrapRMode),
-            TextureUtils::GetTextureSamplingInternal(samplingMethod),
+            TextureUtils::GetTextureSamplingInternal(minSamplingMethod),
+            TextureUtils::GetTextureSamplingInternal(magSamplingMethod),
             anisotropyLevel
             );
 
@@ -1323,11 +1367,7 @@ namespace ramses
             m_nextSceneVersion = InvalidSceneVersionTag;
         }
 
-        if (sceneVersion != InvalidSceneVersionTag)
-        {
-            const ramses_internal::SceneVersionTag internalSceneVersionTag(sceneVersion);
-            m_scene.setSceneVersionTag(internalSceneVersionTag);
-        }
+        const ramses_internal::SceneVersionTag sceneVersionInternal = (sceneVersion == InvalidSceneVersionTag ? ramses_internal::InvalidSceneVersionTag : ramses_internal::SceneVersionTag(sceneVersion));
 
         ramses_internal::SceneCommandExecutor::Execute(*this, m_commandBuffer);
         applyHierarchicalVisibility();
@@ -1336,7 +1376,7 @@ namespace ramses
         const auto timestampOfFlushCall = ramses_internal::FlushTime::Clock::now();
         const ramses_internal::FlushTimeInformation flushTimeInfo { m_expirationTimestamp, timestampOfFlushCall };
 
-        getClientImpl().getClientApplication().flush(m_scene.getSceneId(), internalMode, flushTimeInfo);
+        getClientImpl().getClientApplication().flush(m_scene.getSceneId(), internalMode, flushTimeInfo, sceneVersionInternal);
 
         getClientImpl().updateClientResourceCache();
 

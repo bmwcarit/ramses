@@ -42,6 +42,8 @@ class Target:
         self.password = targetInfo.password
         self.sshPort = targetInfo.sshPort
         self.tcpTestsInterfaceIp = targetInfo.tcpTestsInterfaceIp
+        self.tcpAliveIntervalMs = None
+        self.tcpAliveTimeoutMs = None
 
         self.ramsesInstallDir = ramsesInstallDir
         self.resultDir = resultDir

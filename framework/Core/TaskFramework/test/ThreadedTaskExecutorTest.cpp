@@ -234,7 +234,7 @@ namespace ramses_internal
 
     INSTANTIATE_TEST_CASE_P(testWithDifferentNotificationValues,
         WatchDogTimeoutTest,
-        testing::Values(100, 300, 800));
+        testing::Values(300, 800));
 
     TEST_P(WatchDogTimeoutTest, watchdogConfigTimeoutsAreBaseForAliveNotification)
     {

@@ -10,6 +10,7 @@
 #define RAMSES_STAGINGINFO_H
 
 #include "SceneAPI/SceneSizeInformation.h"
+#include "SceneAPI/SceneVersionTag.h"
 #include "Scene/SceneActionCollection.h"
 #include "Scene/SceneResourceChanges.h"
 #include "Transfer/ResourceTypes.h"
@@ -27,6 +28,7 @@ namespace ramses_internal
         Bool                  isSynchronous = false;
         UInt64                flushIndex = 0u;
         FlushTimeInformation  timeInfo;
+        SceneVersionTag       versionTag;
         TimeStampVector       additionalTimestamps;
 
         // Resource lists below are consolidated for this flush and all previous pending flushes.

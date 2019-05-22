@@ -48,9 +48,6 @@ namespace ramses_internal
 
         void preallocateSceneSize(const SceneSizeInformation& sizeInfo);
 
-        // Generic scene information
-        void setSceneVersionTag(SceneVersionTag sceneVersionTag);
-
         // Renderable allocation
         void allocateRenderable(NodeHandle nodeHandle, RenderableHandle handle);
         void releaseRenderable(RenderableHandle renderableHandle);
@@ -227,6 +224,7 @@ namespace ramses_internal
             const SceneSizeInformation& sizeInfo = SceneSizeInformation(),
             const SceneResourceChanges& resourceChanges = SceneResourceChanges(),
             const FlushTimeInformation& flushTimeInfo = {},
+            SceneVersionTag versionTag = InvalidSceneVersionTag,
             std::initializer_list<UInt64> additionalTimestamps = {});
 
         // compound actions

@@ -127,7 +127,8 @@ namespace ramses
         ramses::TextureSampler* createTextureSampler(
             ETextureAddressMode wrapUMode,
             ETextureAddressMode wrapVMode,
-            ETextureSamplingMethod samplingMethod,
+            ETextureSamplingMethod minSamplingMethod,
+            ETextureSamplingMethod magSamplingMethod,
             uint32_t anisotropyLevel,
             const Texture2D& texture,
             const char* name);
@@ -136,14 +137,16 @@ namespace ramses
             ETextureAddressMode wrapUMode,
             ETextureAddressMode wrapVMode,
             ETextureAddressMode wrapRMode,
-            ETextureSamplingMethod samplingMethod,
+            ETextureSamplingMethod minSamplingMethod,
+            ETextureSamplingMethod magSamplingMethod,
             const Texture3D& texture,
             const char* name);
 
         ramses::TextureSampler* createTextureSampler(
             ETextureAddressMode wrapUMode,
             ETextureAddressMode wrapVMode,
-            ETextureSamplingMethod samplingMethod,
+            ETextureSamplingMethod minSamplingMethod,
+            ETextureSamplingMethod magSamplingMethod,
             uint32_t anisotropyLevel,
             const TextureCube& texture,
             const char* name);
@@ -151,7 +154,8 @@ namespace ramses
         ramses::TextureSampler* createTextureSampler(
             ETextureAddressMode wrapUMode,
             ETextureAddressMode wrapVMode,
-            ETextureSamplingMethod samplingMethod,
+            ETextureSamplingMethod minSamplingMethod,
+            ETextureSamplingMethod magSamplingMethod,
             uint32_t anisotropyLevel,
             const RenderBuffer& renderBuffer,
             const char* name);
@@ -159,7 +163,8 @@ namespace ramses
         ramses::TextureSampler* createTextureSampler(
             ETextureAddressMode wrapUMode,
             ETextureAddressMode wrapVMode,
-            ETextureSamplingMethod samplingMethod,
+            ETextureSamplingMethod minSamplingMethod,
+            ETextureSamplingMethod magSamplingMethod,
             uint32_t anisotropyLevel,
             const Texture2DBuffer& textureBuffer,
             const char* name);
@@ -167,7 +172,8 @@ namespace ramses
         ramses::TextureSampler* createTextureSampler(
             ETextureAddressMode wrapUMode,
             ETextureAddressMode wrapVMode,
-            ETextureSamplingMethod samplingMethod,
+            ETextureSamplingMethod minSamplingMethod,
+            ETextureSamplingMethod magSamplingMethod,
             const StreamTexture& streamTexture,
             const char* name);
 
@@ -175,7 +181,8 @@ namespace ramses
             ETextureAddressMode wrapUMode,
             ETextureAddressMode wrapVMode,
             ETextureAddressMode wrapRMode,
-            ETextureSamplingMethod samplingMethod,
+            ETextureSamplingMethod minSamplingMethod,
+            ETextureSamplingMethod magSamplingMethod,
             uint32_t anisotropyLevel,
             ERamsesObjectType samplerType,
             ramses_internal::TextureSampler::ContentType contentType,

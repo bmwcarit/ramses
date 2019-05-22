@@ -74,10 +74,10 @@ namespace ramses_internal
         return m_publishedScenes.hasElement(sceneId);
     }
 
-    void ClientApplicationLogic::flush(SceneId sceneId, ESceneFlushMode flushMode, const FlushTimeInformation& timeInfo)
+    void ClientApplicationLogic::flush(SceneId sceneId, ESceneFlushMode flushMode, const FlushTimeInformation& timeInfo, SceneVersionTag versionTag)
     {
         PlatformGuard guard(m_frameworkLock);
-        m_scenegraphProviderComponent->handleFlush(sceneId, flushMode, timeInfo);
+        m_scenegraphProviderComponent->handleFlush(sceneId, flushMode, timeInfo, versionTag);
     }
 
     void ClientApplicationLogic::removeScene(SceneId sceneId)

@@ -15,6 +15,8 @@ SET(RENDERER_CONFIG_LIST
     "windows-wgl-es-3-0"
     "windows-wgl-4-2-core"
     "windows-wgl-4-5"
+
+    "android-egl-es-3-0"
     )
 
 #helper macro
@@ -27,18 +29,20 @@ FUNCTION(RENDERER_MODULE_PER_CONFIG MODULE_PREFIX_NAME RENDERER_SPECIFIC_DEPENDE
 
     FOREACH(PLATFORM_NAME ${RENDERER_CONFIG_LIST})
 
-        SET(MYMODULE_NAME "${MODULE_PREFIX_NAME}-${PLATFORM_NAME}")
+        if (TARGET platform-${PLATFORM_NAME})
+            SET(MYMODULE_NAME "${MODULE_PREFIX_NAME}-${PLATFORM_NAME}")
 
-        # build acme module for this configuration
-        ACME_MODULE(NAME             ${MYMODULE_NAME}
-                    DEPENDENCIES     ${RENDERER_SPECIFIC_DEPENDENCIES}
-                    ${ADDITIONAL_MODULE_SETTINGS})
+            # build acme module for this configuration
+            ACME_MODULE(NAME             ${MYMODULE_NAME}
+                        DEPENDENCIES     ${RENDERER_SPECIFIC_DEPENDENCIES}
+                        ${ADDITIONAL_MODULE_SETTINGS})
 
-        IF("${ACME_TYPE}" STREQUAL "SHARED_LIBRARY" AND TARGET ${MYMODULE_NAME})
-            SET_TARGET_PROPERTIES(${MYMODULE_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR})
-            GET_TARGET_PROPERTY(MYMODULE_SOVERSION ${MYMODULE_NAME} SOVERSION)
-            ACME_INFO("    setting shared library version to ${MYMODULE_SOVERSION}")
-        ENDIF()
+            IF("${ACME_TYPE}" STREQUAL "SHARED_LIBRARY" AND TARGET ${MYMODULE_NAME})
+                SET_TARGET_PROPERTIES(${MYMODULE_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR})
+                GET_TARGET_PROPERTY(MYMODULE_SOVERSION ${MYMODULE_NAME} SOVERSION)
+                ACME_INFO("    setting shared library version to ${MYMODULE_SOVERSION}")
+            ENDIF()
+        endif()
 
     ENDFOREACH()
 

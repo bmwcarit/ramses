@@ -50,11 +50,18 @@ namespace ramses
         ETextureAddressMode getWrapRMode() const;
 
         /**
-        * @brief Gets the texture sampling method
+        * @brief Gets the texture min sampling method
         *
-        * @return ETextureSamplingMethod sampling method
+        * @return ETextureSamplingMethod min sampling method
         */
-        ETextureSamplingMethod getSamplingMethod() const;
+        ETextureSamplingMethod getMinSamplingMethod() const;
+
+        /**
+        * @brief Gets the texture mag sampling method
+        *
+        * @return ETextureSamplingMethod mag sampling method
+        */
+        ETextureSamplingMethod getMagSamplingMethod() const;
 
         /**
         * @brief Gets the texture sampling anisotropy level

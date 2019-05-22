@@ -35,13 +35,13 @@ namespace ramses_internal
 
         std::vector<Guid> getWaitingAndActiveSubscribers() const;
 
-        virtual void flushSceneActions(ESceneFlushMode flushMode, const FlushTimeInformation& flushTimeInfo) = 0;
+        virtual void flushSceneActions(ESceneFlushMode flushMode, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) = 0;
 
         const char* getSceneStateString() const;
 
     protected:
         virtual void postAddSubscriber() {};
-        void sendSceneToWaitingSubscribers(const IScene& scene, const FlushTimeInformation& flushTimeInfo);
+        void sendSceneToWaitingSubscribers(const IScene& scene, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag);
         void printFlushInfo(StringOutputStream& sos, const char* name, const SceneActionCollection& collection, ESceneFlushMode flushMode) const;
 
         ISceneGraphSender&     m_scenegraphSender;

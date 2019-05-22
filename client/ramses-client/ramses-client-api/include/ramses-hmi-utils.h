@@ -12,6 +12,7 @@
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "ramses-framework-api/APIExport.h"
 #include "ramses-client-api/Scene.h"
+#include <string>
 
 namespace ramses
 {
@@ -139,6 +140,7 @@ namespace ramses
          * @param[in] scene the source scene
          */
         static void DumpUnrequiredSceneObjects(const Scene& scene);
+        static void DumpUnrequiredSceneObjectsToFile(const Scene& scene, std::ofstream& out);
     };
 }
 

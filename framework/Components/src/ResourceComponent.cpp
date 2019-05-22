@@ -138,21 +138,21 @@ namespace ramses_internal
 
             if (!resourceToSendViaNetwork.empty())
             {
-                sos << "send locally available ";
+                sos << "send " << resourceToSendViaNetwork.size() << " locally available ";
                 for (const auto& res : resourceToSendViaNetwork)
                     sos << StringUtils::HexFromResourceContentHash(res.getResourceObject()->getHash()) << " ";
                 sos << "; ";
             }
             if (!resourcesToBeLoaded.empty())
             {
-                sos << "load from file ";
+                sos << "load " << resourcesToBeLoaded.size() << " from file ";
                 for (const auto& hash : resourcesToBeLoaded)
                     sos << StringUtils::HexFromResourceContentHash(hash) << " ";
                 sos << "; ";
             }
             if (!unavailableResources.empty())
             {
-                sos << "send unavailable ";
+                sos << "send " << unavailableResources.size() << " unavailable ";
                 for (const auto& hash : unavailableResources)
                     sos << StringUtils::HexFromResourceContentHash(hash) << " ";
             }

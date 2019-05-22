@@ -241,7 +241,7 @@ ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t scen
     effect->findUniformInput ( "textureSampler", textureUnif );
 
     ramses::Texture2D* fallbackTexture = ramses::RamsesUtils::CreateTextureResourceFromPng ( "res/ramses-example-offscreenbuffer.png", client );
-    ramses::TextureSampler* textureSampler = clientScene->createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Bilinear, *fallbackTexture, 1u, "textureSamplerConsumer");
+    ramses::TextureSampler* textureSampler = clientScene->createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Linear, ramses::ETextureSamplingMethod_Linear, *fallbackTexture, 1u, "textureSamplerConsumer");
     appearance->setInputTexture(textureUnif, *textureSampler);
 
     return clientScene;

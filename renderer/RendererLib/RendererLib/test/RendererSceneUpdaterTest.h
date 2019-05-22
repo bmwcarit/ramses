@@ -90,7 +90,7 @@ protected:
     {
         const SceneId sceneId = getSceneId(sceneIndex);
         rendererSceneUpdater->handleScenePublished(sceneId, Guid(true), EScenePublicationMode_LocalAndRemote);
-        EXPECT_TRUE(sceneStateExecutor.getSceneState(sceneId) == ESceneState_Published);
+        EXPECT_TRUE(sceneStateExecutor.getSceneState(sceneId) == ESceneState::Published);
         expectEvent(ERendererEventType_ScenePublished);
     }
 
@@ -99,14 +99,14 @@ protected:
         const SceneId sceneId = getSceneId(sceneIndex);
         EXPECT_CALL(sceneGraphConsumerComponent, subscribeScene(_, sceneId));
         rendererSceneUpdater->handleSceneSubscriptionRequest(sceneId);
-        EXPECT_TRUE(sceneStateExecutor.getSceneState(sceneId) == ESceneState_SubscriptionRequested);
+        EXPECT_TRUE(sceneStateExecutor.getSceneState(sceneId) == ESceneState::SubscriptionRequested);
     }
 
     void receiveScene(UInt32 sceneIndex = 0u)
     {
         const SceneId sceneId = getSceneId(sceneIndex);
         rendererSceneUpdater->handleSceneReceived(SceneInfo(sceneId));
-        EXPECT_TRUE(sceneStateExecutor.getSceneState(sceneId) == ESceneState_SubscriptionPending);
+        EXPECT_TRUE(sceneStateExecutor.getSceneState(sceneId) == ESceneState::SubscriptionPending);
         EXPECT_TRUE(rendererScenes.hasScene(sceneId));
     }
 
@@ -123,7 +123,7 @@ protected:
         {
             //receive initial flush
             performFlush(sceneIndex);
-            EXPECT_TRUE(sceneStateExecutor.getSceneState(sceneId) == ESceneState_Subscribed);
+            EXPECT_TRUE(sceneStateExecutor.getSceneState(sceneId) == ESceneState::Subscribed);
             expectEvents({ ERendererEventType_SceneSubscribed });
         }
 
@@ -256,13 +256,14 @@ protected:
         EXPECT_FALSE(renderer.getDisplaySceneIsMappedTo(sceneId).isValid());
     }
 
-    NodeHandle handleSceneActionCreateNode(UInt32 sceneIndex = 0u)
+    NodeHandle performFlushWithCreateNodeAction(UInt32 sceneIndex = 0u, size_t numNodes = 1u, bool synchronous = false)
     {
-        const NodeHandle nodeHandle(3u);
+        NodeHandle nodeHandle;
         IScene& scene = *stagingScene[sceneIndex];
         SceneAllocateHelper sceneAllocator(scene);
-        sceneAllocator.allocateNode(0u, nodeHandle);
-        performFlush(sceneIndex);
+        for (size_t i = 0; i < numNodes; ++i)
+            nodeHandle = sceneAllocator.allocateNode();
+        performFlush(sceneIndex, synchronous);
 
         return nodeHandle;
     }
@@ -273,21 +274,16 @@ protected:
         EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->surfaceMock, enable()).Times(times);
     }
 
-    void performFlush(UInt32 sceneIndex = 0u, bool synchronous = false, SceneVersionTag version = SceneVersionTag::DefaultValue(), const SceneSizeInformation* sizeInfo = nullptr, const FlushTimeInformation& timeInfo = {})
+    void performFlush(UInt32 sceneIndex = 0u, bool synchronous = false, SceneVersionTag version = InvalidSceneVersionTag, const SceneSizeInformation* sizeInfo = nullptr, const FlushTimeInformation& timeInfo = {})
     {
         ActionCollectingScene& scene = *stagingScene[sceneIndex];
-        if (version != SceneVersionTag::DefaultValue())
-        {
-            scene.setSceneVersionTag(version);
-        }
-
         const SceneSizeInformation newSizeInfo = (sizeInfo ? *sizeInfo : scene.getSceneSizeInformation());
         const SceneSizeInformation currSizeInfo = rendererScenes.hasScene(scene.getSceneId()) ? rendererScenes.getScene(scene.getSceneId()).getSceneSizeInformation() : SceneSizeInformation();
 
         SceneActionCollection sceneActions(std::move(scene.getSceneActionCollection()));
 
         SceneActionCollectionCreator creator(sceneActions);
-        creator.flush(1u, synchronous, newSizeInfo > currSizeInfo, newSizeInfo, scene.getResourceChanges(), timeInfo);
+        creator.flush(1u, synchronous, newSizeInfo > currSizeInfo, newSizeInfo, scene.getResourceChanges(), timeInfo, version);
         scene.clearResourceChanges();
         rendererSceneUpdater->handleSceneActions(stagingScene[sceneIndex]->getSceneId(), sceneActions);
     }

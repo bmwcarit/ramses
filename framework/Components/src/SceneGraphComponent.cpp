@@ -145,16 +145,16 @@ namespace ramses_internal
         }
     }
 
-    void SceneGraphComponent::sendPublishScene(SceneId sceneId, const Guid& providerID, EScenePublicationMode mode, const String& name)
+    void SceneGraphComponent::sendPublishScene(SceneId sceneId, EScenePublicationMode mode, const String& name)
     {
-        LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::publishScene: publishing scene: " << sceneId.getValue() << " mode: " << EnumToString(mode) << " from: " << providerID);
+        LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::publishScene: publishing scene: " << sceneId.getValue() << " mode: " << EnumToString(mode));
 
         SceneInfoVector newScenes;
         newScenes.push_back(SceneInfo(sceneId, name));
 
         if (m_sceneRendererHandler)
         {
-            m_sceneRendererHandler->handleNewScenesAvailable(newScenes, providerID, mode);
+            m_sceneRendererHandler->handleNewScenesAvailable(newScenes, m_myID, mode);
         }
         if (mode != EScenePublicationMode_LocalOnly)
         {
@@ -323,13 +323,13 @@ namespace ramses_internal
         sceneLogic.unpublish();
     }
 
-    void SceneGraphComponent::handleFlush(SceneId sceneId, ESceneFlushMode flushMode, const FlushTimeInformation& flushTimeInfo)
+    void SceneGraphComponent::handleFlush(SceneId sceneId, ESceneFlushMode flushMode, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag)
     {
         assert(m_clientSceneLogicMap.contains(sceneId));
 
         ClientSceneLogicBase& sceneLogic = **m_clientSceneLogicMap.get(sceneId);
 
-        sceneLogic.flushSceneActions(flushMode, flushTimeInfo);
+        sceneLogic.flushSceneActions(flushMode, flushTimeInfo, versionTag);
     }
 
     void SceneGraphComponent::handleRemoveScene(SceneId sceneId)

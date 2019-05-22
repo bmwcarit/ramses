@@ -43,12 +43,6 @@ namespace ramses_internal
         putSceneSizeInformation(sizeInfo);
     }
 
-    void SceneActionCollectionCreator::setSceneVersionTag(SceneVersionTag sceneVersionTag)
-    {
-        collection.beginWriteSceneAction(ESceneActionId_SetSceneVersionTag);
-        collection.write(sceneVersionTag.getValue());
-    }
-
     void SceneActionCollectionCreator::setTransformComponent(ETransformPropertyType propertyChanged, TransformHandle node, const Vector3& newValue)
     {
         collection.beginWriteSceneAction(ESceneActionId_SetTransformComponent);
@@ -596,7 +590,8 @@ namespace ramses_internal
         collection.write(sampler.states.m_addressModeU);
         collection.write(sampler.states.m_addressModeV);
         collection.write(sampler.states.m_addressModeR);
-        collection.write(sampler.states.m_samplingMode);
+        collection.write(sampler.states.m_minSamplingMode);
+        collection.write(sampler.states.m_magSamplingMode);
         collection.write(sampler.states.m_anisotropyLevel);
         collection.write(sampler.contentType);
         if (sampler.contentType == TextureSampler::ContentType::ClientTexture)
@@ -1154,6 +1149,7 @@ namespace ramses_internal
         const SceneSizeInformation& sizeInfo,
         const SceneResourceChanges& resourceChanges,
         const FlushTimeInformation& flushTimeInfo,
+        SceneVersionTag versionTag,
         std::initializer_list<UInt64> additionalTimestamps)
     {
         const bool hasTimestamps = additionalTimestamps.size() > 0;
@@ -1180,6 +1176,8 @@ namespace ramses_internal
 
         collection.write(static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(flushTimeInfo.expirationTimestamp).time_since_epoch().count()));
         collection.write(static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(flushTimeInfo.internalTimestamp).time_since_epoch().count()));
+
+        collection.write(versionTag);
 
         if (hasTimestamps)
         {

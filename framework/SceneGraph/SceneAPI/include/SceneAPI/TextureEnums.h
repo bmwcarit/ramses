@@ -18,24 +18,22 @@ namespace ramses_internal
     enum class ESamplingMethod : uint8_t
     {
         Nearest = 0,
-        NearestWithMipmaps,
-        Bilinear,
-        BilinearWithMipMaps,
-        Trilinear,
-        MinLinearMagNearest,
-        MinNearestMagLinear,
+        Linear,
+        Nearest_MipMapNearest,
+        Nearest_MipMapLinear,
+        Linear_MipMapNearest,
+        Linear_MipMapLinear,
         NUMBER_OF_ELEMENTS
     };
 
     static const char* SamplingMethodNames[] =
     {
         "ESamplingMethod_Nearest",
-        "ESamplingMethod_NearestWithMipmaps",
-        "ESamplingMethod_Bilinear",
-        "ESamplingMethod_BilinearWithMipMaps",
-        "ESamplingMethod_Trilinear",
-        "ESamplingMethod_MinLinearMagNearest",
-        "ESamplingMethod_MinNearestMagLinear"
+        "ESamplingMethod_Linear",
+        "ESamplingMethod_Nearest_MipMapNearest",
+        "ESamplingMethod_Nearest_MipMapLinear",
+        "ESamplingMethod_Linear_MipMapNearest",
+        "ESamplingMethod_Linear_MipMapLinear",
     };
     ENUM_TO_STRING(ESamplingMethod, SamplingMethodNames, ESamplingMethod::NUMBER_OF_ELEMENTS);
 

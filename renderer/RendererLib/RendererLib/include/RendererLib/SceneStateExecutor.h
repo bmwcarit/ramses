@@ -34,6 +34,7 @@ namespace ramses_internal
         void setMappingAndUploading           (SceneId sceneId);
         void setMapped                        (SceneId sceneId);
         void setUnmapped                      (SceneId sceneId);
+        void setRenderedRequested             (SceneId sceneId);
         void setRendered                      (SceneId sceneId);
         void setHidden                        (SceneId sceneId);
 
@@ -47,6 +48,7 @@ namespace ramses_internal
         Bool checkIfCanBeMappingAndUploading  (SceneId sceneId) const;
         Bool checkIfCanBeMapped               (SceneId sceneId) const;
         Bool checkIfCanBeUnmapped             (SceneId sceneId) const;
+        Bool checkIfCanBeRenderedRequested    (SceneId sceneId) const;
         Bool checkIfCanBeShown                (SceneId sceneId) const;
         Bool checkIfCanBeHidden               (SceneId sceneId) const;
 
@@ -62,6 +64,7 @@ namespace ramses_internal
         Bool canBeMappingAndUploading  (SceneId sceneId) const;
         Bool canBeMapped               (SceneId sceneId) const;
         Bool canBeUnmapped             (SceneId sceneId) const;
+        Bool canBeRenderedRequested    (SceneId sceneId) const;
         Bool canBeShown                (SceneId sceneId) const;
         Bool canBeHidden               (SceneId sceneId) const;
 

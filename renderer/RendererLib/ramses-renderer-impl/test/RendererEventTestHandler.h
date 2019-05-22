@@ -608,14 +608,14 @@ public:
         expectEvent(event);
     }
 
-    void expectSceneFlushed(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersionTag, ramses::ESceneResourceStatus resourceStatus)
+    void expectSceneFlushed(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersionTag, ramses::ESceneResourceStatus resourceStatus, const uint32_t withinLast = 1u)
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_SceneFlushed;
         event.sceneId = sceneId;
         event.sceneVersionTag = sceneVersionTag;
         event.resourceStatus = resourceStatus;
-        expectEvent(event);
+        expectEvent(event, withinLast);
     }
 
     void expectSceneExpired(ramses::sceneId_t sceneId)
@@ -662,6 +662,11 @@ public:
         event.mousePosX = mousePosX;
         event.mousePosY = mousePosY;
         expectEvent(event);
+    }
+
+    void expectNoEvent()
+    {
+        EXPECT_TRUE(m_events.empty());
     }
 
 private:

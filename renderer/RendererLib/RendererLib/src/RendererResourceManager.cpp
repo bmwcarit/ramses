@@ -737,11 +737,12 @@ namespace ramses_internal
         const EWrapMethod     wrapU           = states.m_addressModeU;
         const EWrapMethod     wrapV           = states.m_addressModeV;
         const EWrapMethod     wrapR           = states.m_addressModeR;
-        const ESamplingMethod sampling        = states.m_samplingMode;
+        const ESamplingMethod minSampling     = states.m_minSamplingMode;
+        const ESamplingMethod magSampling     = states.m_magSamplingMode;
         const UInt32          anisotropyLevel = states.m_anisotropyLevel;
 
         IDevice& device = m_renderBackend.getDevice();
-        DeviceResourceHandle deviceHandle = device.uploadTextureSampler(wrapU, wrapV, wrapR, sampling, anisotropyLevel);
+        DeviceResourceHandle deviceHandle = device.uploadTextureSampler(wrapU, wrapV, wrapR, minSampling, magSampling, anisotropyLevel);
         assert(deviceHandle.isValid());
 
         sceneResources.addTextureSampler(handle, deviceHandle);

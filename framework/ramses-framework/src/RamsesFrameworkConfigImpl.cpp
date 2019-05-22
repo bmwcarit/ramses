@@ -147,6 +147,9 @@ namespace ramses
             m_tcpConfig.setIPAddress(ArgumentString(m_parser, "myip", "myipaddress", m_tcpConfig.getIPAddress()));
             m_tcpConfig.setDaemonIPAddress(ArgumentString(m_parser, "i", "daemon-ip", m_tcpConfig.getDaemonIPAddress()));
             m_tcpConfig.setDaemonPort(ArgumentUInt16(m_parser, "p", "daemon-port", m_tcpConfig.getDaemonPort()));
+
+            m_tcpConfig.setAliveInterval(std::chrono::milliseconds(ArgumentUInt32(m_parser, "tcpAlive", "tcpAlive", static_cast<uint32_t>(m_tcpConfig.getAliveInterval().count()))));
+            m_tcpConfig.setAliveTimeout(std::chrono::milliseconds(ArgumentUInt32(m_parser, "tcpAliveTimeout", "tcpAliveTimeout", static_cast<uint32_t>(m_tcpConfig.getAliveTimeout().count()))));
         }
 
         if (userProvidedGuid.hasValue())

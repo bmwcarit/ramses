@@ -53,9 +53,6 @@ namespace ramses_internal
         virtual SceneId                     getSceneId                      () const final override;
         virtual const String&               getName                         () const final override;
 
-        virtual void                        setSceneVersionTag              (SceneVersionTag sceneVersionTag) override;
-        virtual SceneVersionTag             getSceneVersionTag              () const override final;
-
         // Renderables
         virtual RenderableHandle            allocateRenderable              (NodeHandle nodeHandle, RenderableHandle handle = RenderableHandle::Invalid()) override;
         virtual void                        releaseRenderable               (RenderableHandle renderableHandle) override;
@@ -356,7 +353,6 @@ namespace ramses_internal
 
         const String                m_name;
         const SceneId               m_sceneId;
-        SceneVersionTag             m_sceneVersionTag;
     };
 
     template <template<typename, typename> class MEMORYPOOL>

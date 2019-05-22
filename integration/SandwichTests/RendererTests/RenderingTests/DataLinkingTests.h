@@ -43,6 +43,9 @@ private:
         DataLinkTest_ProviderRemoved,
         DataLinkTest_ConsumerRemoved,
 
+        ViewportLinkTest_NoLinks,
+        ViewportLinkTest_Linked,
+
         TextureLinkTest_NoLinks,
         TextureLinkTest_Linked,
         TextureLinkTest_LinksRemoved,

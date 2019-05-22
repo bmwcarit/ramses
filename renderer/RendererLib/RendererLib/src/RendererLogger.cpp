@@ -140,11 +140,7 @@ namespace ramses_internal
                 RendererCachedScene& rendererScene = updater.m_rendererScenes.getScene(sceneId);
                 sceneName = rendererScene.getName();
             }
-            DisplayHandle displayHandle = DisplayHandle::Invalid();
-            if (sceneState == ESceneState_MappingAndUploading || sceneState == ESceneState_Mapped || sceneState == ESceneState_Rendered)
-            {
-                displayHandle = updater.m_renderer.getDisplaySceneIsMappedTo(sceneId);
-            }
+            const DisplayHandle displayHandle = updater.m_renderer.getDisplaySceneIsMappedTo(sceneId);
 
             context << "Scene [id: " << sceneId.getValue() << "]" << RendererLogContext::NewLine;
             context.indent();
@@ -250,7 +246,7 @@ namespace ramses_internal
         for (const auto& sceneInfo : dispBufferInfo.mappedScenes)
         {
             const String& sceneName = updater.m_rendererScenes.getScene(sceneInfo.sceneId).getName();
-            const Bool shown = ( updater.m_sceneStateExecutor.getSceneState(sceneInfo.sceneId) == ESceneState_Rendered );
+            const Bool shown = ( updater.m_sceneStateExecutor.getSceneState(sceneInfo.sceneId) == ESceneState::Rendered );
             context << "[ SceneId: " << sceneInfo.sceneId.getValue() << "; order: " << sceneInfo.globalSceneOrder << "; shown: " << shown << "; name: \"" << sceneName << "\" ]" << RendererLogContext::NewLine;
         }
         context.unindent();

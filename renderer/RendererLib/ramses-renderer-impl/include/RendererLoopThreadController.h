@@ -46,6 +46,7 @@ namespace ramses_internal
         std::chrono::microseconds m_minimumFrameDuration;
         Bool m_threadStarted;
         ELoopMode m_loopMode = ELoopMode_UpdateAndRender;
+        PlatformConditionVariable m_rendererDestroyedCondVar;
 
         Bool m_destroyRenderer;
     };

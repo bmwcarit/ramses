@@ -308,7 +308,8 @@ namespace ramses_internal
                 samplerStates.m_addressModeU,
                 samplerStates.m_addressModeV,
                 samplerStates.m_addressModeR,
-                samplerStates.m_samplingMode,
+                samplerStates.m_minSamplingMode,
+                samplerStates.m_magSamplingMode,
                 samplerStates.m_anisotropyLevel);
             break;
         }

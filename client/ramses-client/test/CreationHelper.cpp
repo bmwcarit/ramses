@@ -374,7 +374,7 @@ namespace ramses
         uint8_t data[4] = { 0u };
         MipLevelData mipLevelData(sizeof(data), data);
         Texture2D* texture = m_ramsesClient->createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, ResourceCacheFlag_DoNotCache, "texture");
-        return m_scene->createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Mirror, ETextureSamplingMethod_NearestWithMipmaps, *texture, 1u, name);
+        return m_scene->createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Mirror, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Nearest, *texture, 1u, name);
     }
     template <> RenderBuffer* CreationHelper::createObjectOfType<RenderBuffer>(const char* name)
     {

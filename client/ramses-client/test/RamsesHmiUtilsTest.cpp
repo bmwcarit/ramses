@@ -42,8 +42,8 @@ namespace ramses
             Texture2D* texture3 = CreateTestTexture(clientForSaving, 3u);
 
             Scene* scene = clientForSaving.createScene(1);
-            scene->createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Bilinear, *texture1, 1, "sampler1");
-            scene->createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Bilinear, *texture2, 1, "sampler2");
+            scene->createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, *texture1, 1, "sampler1");
+            scene->createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, *texture2, 1, "sampler2");
 
             ResourceFileDescription resDesc1("res1.ramres");
             resDesc1.add(texture1);

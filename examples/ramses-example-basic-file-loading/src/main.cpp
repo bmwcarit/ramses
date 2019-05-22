@@ -141,7 +141,8 @@ int main(int argc, char* argv[])
         ramses::TextureSampler* sampler = scene->createTextureSampler(
             ramses::ETextureAddressMode_Repeat,
             ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureSamplingMethod_Bilinear,
+            ramses::ETextureSamplingMethod_Linear,
+            ramses::ETextureSamplingMethod_Linear,
             *texture);
 
         ramses::EffectDescription effectDesc;

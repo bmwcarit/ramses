@@ -15,7 +15,6 @@
 #include "Collections/String.h"
 #include "Collections/StringOutputStream.h"
 #include "Collections/HashSet.h"
-#include "ConsoleLogCapture.h"
 #include "PlatformAbstraction/PlatformMath.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "TablePrinter.h"

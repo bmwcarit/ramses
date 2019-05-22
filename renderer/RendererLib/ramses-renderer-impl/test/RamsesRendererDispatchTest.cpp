@@ -47,7 +47,6 @@ namespace ramses_internal
             , m_scene(SceneInfo(SceneId(m_sceneId)))
             , m_sceneGraphProvider(m_framework.impl.getScenegraphComponent())
             , m_sceneGraphSender(m_framework.impl.getScenegraphComponent())
-            , m_sceneVersionTag(12u)
         {
         }
 
@@ -118,13 +117,12 @@ namespace ramses_internal
             m_handler.expectSceneMapped(sceneIdToMap, expectSuccess ? ramses::ERendererEventResult_OK : ramses::ERendererEventResult_FAIL);
         }
 
-        void namedSceneFlush(ramses::sceneId_t newSceneId)
+        void namedSceneFlush(ramses::sceneId_t newSceneId, ramses::sceneVersionTag_t versionTag)
         {
             SceneActionCollection sceneActions;
             SceneActionCollectionCreator creator(sceneActions);
-            ramses_internal::SceneVersionTag internalVersionTag(m_sceneVersionTag);
-            creator.setSceneVersionTag(internalVersionTag);
-            creator.flush(1u, false, false);
+            const ramses_internal::SceneVersionTag internalVersionTag(versionTag);
+            creator.flush(1u, false, false, {}, {}, {}, internalVersionTag);
             m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(sceneActions), ramses_internal::SceneId(newSceneId), EScenePublicationMode_LocalOnly);
         }
 
@@ -165,8 +163,6 @@ namespace ramses_internal
 
         ramses_internal::ISceneGraphProviderComponent& m_sceneGraphProvider;
         ramses_internal::ISceneGraphSender& m_sceneGraphSender;
-
-        ramses::sceneVersionTag_t m_sceneVersionTag;
     };
 
     class ARamsesRendererDispatchWithProviderConsumerScenes : public ARamsesRendererDispatch
@@ -301,13 +297,62 @@ namespace ramses_internal
         m_handler.expectSceneUnpublished(m_sceneId);
     }
 
-    TEST_F(ARamsesRendererDispatch, generatesEventForNamedSceneFlush)
+    TEST_F(ARamsesRendererDispatch, generatesEventAfterApplyingFlushWithVersionTag)
     {
         createPublishedAndSubscribedScene(m_sceneId, m_scene);
 
-        namedSceneFlush(m_sceneId);
+        const ramses::sceneVersionTag_t versionTag{ 333 };
+        namedSceneFlush(m_sceneId, versionTag);
         updateAndDispatch(m_handler);
-        m_handler.expectSceneFlushed(m_sceneId, m_sceneVersionTag, ramses::ESceneResourceStatus_Pending);
+        m_handler.expectSceneFlushed(m_sceneId, versionTag, ramses::ESceneResourceStatus_Pending);
+    }
+
+    TEST_F(ARamsesRendererDispatch, generatesTwoEventsAfterApplyingTwoFlushesWithDifferentVersionTag)
+    {
+        createPublishedAndSubscribedScene(m_sceneId, m_scene);
+
+        const ramses::sceneVersionTag_t versionTag1{ 333 };
+        const ramses::sceneVersionTag_t versionTag2{ 444 };
+        namedSceneFlush(m_sceneId, versionTag1);
+        namedSceneFlush(m_sceneId, versionTag2);
+        updateAndDispatch(m_handler);
+        m_handler.expectSceneFlushed(m_sceneId, versionTag1, ramses::ESceneResourceStatus_Pending, 2u);
+        m_handler.expectSceneFlushed(m_sceneId, versionTag2, ramses::ESceneResourceStatus_Pending, 1u);
+    }
+
+    TEST_F(ARamsesRendererDispatch, generatesTwoEventsAfterApplyingTwoFlushesWithSameVersionTag)
+    {
+        createPublishedAndSubscribedScene(m_sceneId, m_scene);
+
+        const ramses::sceneVersionTag_t versionTag1{ 333 };
+        const ramses::sceneVersionTag_t versionTag2{ 333 };
+        namedSceneFlush(m_sceneId, versionTag1);
+        namedSceneFlush(m_sceneId, versionTag2);
+        updateAndDispatch(m_handler);
+        m_handler.expectSceneFlushed(m_sceneId, versionTag1, ramses::ESceneResourceStatus_Pending, 2u);
+        m_handler.expectSceneFlushed(m_sceneId, versionTag2, ramses::ESceneResourceStatus_Pending, 1u);
+    }
+
+    TEST_F(ARamsesRendererDispatch, generatesEventsOnlyAfterApplyingFlushesWithValidVersionTag)
+    {
+        createPublishedAndSubscribedScene(m_sceneId, m_scene);
+
+        const ramses::sceneVersionTag_t versionTag1{ 333 };
+        const ramses::sceneVersionTag_t versionTag2{ 444 };
+        const ramses::sceneVersionTag_t versionTag3{ ramses::InvalidSceneVersionTag };
+        const ramses::sceneVersionTag_t versionTag4{ 555 };
+        const ramses::sceneVersionTag_t versionTag5{ 555 };
+        namedSceneFlush(m_sceneId, versionTag1);
+        namedSceneFlush(m_sceneId, versionTag2);
+        namedSceneFlush(m_sceneId, versionTag3);
+        namedSceneFlush(m_sceneId, versionTag4);
+        namedSceneFlush(m_sceneId, versionTag5);
+        updateAndDispatch(m_handler);
+        m_handler.expectSceneFlushed(m_sceneId, versionTag1, ramses::ESceneResourceStatus_Pending, 4u);
+        m_handler.expectSceneFlushed(m_sceneId, versionTag2, ramses::ESceneResourceStatus_Pending, 3u);
+        // no event for invalid version tag
+        m_handler.expectSceneFlushed(m_sceneId, versionTag4, ramses::ESceneResourceStatus_Pending, 2u);
+        m_handler.expectSceneFlushed(m_sceneId, versionTag5, ramses::ESceneResourceStatus_Pending, 1u);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesEventForSceneExpired)

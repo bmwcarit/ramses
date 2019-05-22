@@ -69,7 +69,8 @@ namespace ramses_internal
         ramses::TextureSampler* sampler = m_scene.createTextureSampler(
             ramses::ETextureAddressMode_Repeat,
             ramses::ETextureAddressMode_Repeat,
-            getSamplingMethod(enumState),
+            getMinSamplingMethod(enumState),
+            getMagSamplingMethod(enumState),
             *texture);
 
         createMesh(*sampler, enumState);
@@ -147,30 +148,47 @@ namespace ramses_internal
         mesh->setGeometryBinding(*geometry);
     }
 
-    ramses::ETextureSamplingMethod Texture2DSamplingScene::getSamplingMethod(EState state) const
+    ramses::ETextureSamplingMethod Texture2DSamplingScene::getMinSamplingMethod(EState state) const
     {
         switch (state)
         {
         case EState_Nearest:
+        case EState_MinNearestMagLinear:
             return ramses::ETextureSamplingMethod_Nearest;
 
         case EState_NearestWithMipMaps:
-            return ramses::ETextureSamplingMethod_NearestWithMipmaps;
+            return ramses::ETextureSamplingMethod_Nearest_MipMapNearest;
 
         case EState_Bilinear:
-            return ramses::ETextureSamplingMethod_Bilinear;
+        case EState_MinLinearMagNearest:
+            return ramses::ETextureSamplingMethod_Linear;
 
         case EState_BilinearWithMipMaps:
-            return ramses::ETextureSamplingMethod_BilinearWithMipMaps;
+            return ramses::ETextureSamplingMethod_Linear_MipMapNearest;
 
         case EState_Trilinear:
-            return ramses::ETextureSamplingMethod_Trilinear;
+            return ramses::ETextureSamplingMethod_Linear_MipMapLinear;
+        default:
+            assert(false);
+            return ramses::ETextureSamplingMethod_Nearest;
+        }
+    }
 
+    ramses::ETextureSamplingMethod Texture2DSamplingScene::getMagSamplingMethod(EState state) const
+    {
+        switch (state)
+        {
+        case EState_Nearest:
+        case EState_NearestWithMipMaps:
         case EState_MinLinearMagNearest:
-            return ramses::ETextureSamplingMethod_MinLinearMagNearest;
+            return ramses::ETextureSamplingMethod_Nearest;
 
+        case EState_Bilinear:
+        case EState_BilinearWithMipMaps:
+        case EState_Trilinear:
         case EState_MinNearestMagLinear:
-            return ramses::ETextureSamplingMethod_MinNearestMagLinear;
+            return ramses::ETextureSamplingMethod_Linear;
+
         default:
             assert(false);
             return ramses::ETextureSamplingMethod_Nearest;

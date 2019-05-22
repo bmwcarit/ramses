@@ -9,38 +9,43 @@
 #ifndef RAMSES_PLATFORM_STRING_H
 #define RAMSES_PLATFORM_STRING_H
 
-#include <ramses-capu/container/String.h>
-#include <PlatformAbstraction/PlatformTypes.h>
+#include "PlatformAbstraction/PlatformTypes.h"
 #include "Collections/IOutputStream.h"
 #include "Collections/IInputStream.h"
+#include "ramses-capu/os/StringUtils.h"
+#include "ramses-capu/container/Hash.h"
+#include <string>
+#include <cctype>
 
 namespace ramses_internal
 {
-    class String: public ramses_capu::String
+    class String
     {
     public:
         String();
         String(const Char* data);
-        String(const Char* data, const Int start);
-        String(UInt initialSize, const Char character);
-        String(const Char* data, const Int start, const Int end);
+        String(const Char* data, Int start);
+        String(UInt initialSize, Char character);
+        String(const Char* data, Int start, Int end);
+        String(const std::string& other);
+        String(std::string&& other);
         String(const String& other) = default;
-        String(const ramses_capu::String& other);
         String(String&& other) = default;
         ~String();
         const Char* c_str() const;
         Char at(UInt position) const;
-        Int find(const String& substring, const UInt startPos = 0) const;
+        Int find(const String& substring, UInt startPos = 0) const;
+        Int find(char ch, UInt offset = 0) const;
         String& operator=(const String& other) = default;
         String& operator=(String&& other) = default;
-        String& operator=(const Char character);
+        String& operator=(Char character);
         String operator+(const String& rOperand) const;
         String operator+(const Char* rOperand) const;
-        void operator+=(const Char character);
+        void operator+=(Char character);
         void operator+=(const Char* other);
         void operator+=(const String& other);
-        Char& operator[](const UInt index);
-        Char operator[](const UInt index) const;
+        Char& operator[](UInt index);
+        Char operator[](UInt index) const;
 
         String& operator=(const Char* other);
         Bool operator==(const String& other) const;
@@ -49,15 +54,25 @@ namespace ramses_internal
         Bool operator!=(const char* other) const;
         String& append(const String& other);
         String& append(const Char* other);
-        String substr(UInt start, UInt length) const;
+        String substr(UInt start, Int length) const;
         UInt getLength() const;
-        Int indexOf(const Char ch, const UInt startPos = 0) const;
-        Int lastIndexOf(const Char ch) const;
+        Int indexOf(Char ch, UInt startPos = 0) const;
+        Int lastIndexOf(Char ch) const;
         void toUpperCase();
         void toLowerCase();
-        String replace(const String& search, const String& replace, UInt startPos = 0) const;
         void clear();
         bool empty() const;
+        void resize(UInt newSize);
+        char* data();
+        const char* data() const;
+        String& truncate(UInt length);
+        void reserve(UInt capacity);
+        UInt capacity() const;
+        bool startsWith(const String& other) const;
+        bool endsWith(const String& other) const;
+        bool operator<(const String& other) const;
+        bool operator>(const String& other) const;
+        Int rfind(char ch) const;
 
         /**
          * Swaps this string with another
@@ -68,6 +83,11 @@ namespace ramses_internal
 
         const std::string& stdRef() const;
         std::string& stdRef();
+
+    private:
+        void initFromGivenData(const char* data, UInt start, UInt end, UInt size);
+
+        std::string m_string;
     };
 
     inline IOutputStream& operator<<(IOutputStream& stream, const String& value)
@@ -113,33 +133,88 @@ namespace ramses_internal
     {
     }
 
-    inline String::String(const ramses_internal::Char* data)
-        : ramses_capu::String(data)
+    inline String::String(const Char* other)
+    {
+        if (other && *other)
+            m_string = other;
+    }
+
+    inline String::String(const Char* data, Int start)
+    {
+        if (data)
+            m_string = data + start;
+    }
+
+    inline String::String(const Char* data, Int start, Int end)
+    {
+        initFromGivenData(data, start, end, ramses_capu::StringUtils::Strnlen(data, end + 1));
+    }
+
+    inline String::String(UInt initialSize, Char character)
+        : m_string(initialSize, character)
     {
     }
 
-    inline String::String(const ramses_internal::Char* data, const ramses_internal::Int start)
-        : ramses_capu::String(data, start)
+    inline String::String(const std::string& other)
+        : m_string(other)
     {
     }
 
-    inline String::String(const ramses_internal::Char* data, const ramses_internal::Int start, const ramses_internal::Int end)
-        : ramses_capu::String(data, start, end)
-    {
-    }
-
-    inline String::String(const ramses_capu::String& other)
-        : ramses_capu::String(other)
-    {
-    }
-
-    inline String::String(UInt initialSize, const Char character)
-        : ramses_capu::String(initialSize, character)
+    inline String::String(std::string&& other)
+        : m_string(std::move(other))
     {
     }
 
     inline String::~String()
     {
+    }
+
+    inline void String::initFromGivenData(const char* data, UInt start, UInt end, UInt size)
+    {
+        // no data
+        if (!data)
+        {
+            return;
+        }
+
+        // end before start
+        if (end < start)
+        {
+            return;
+        }
+
+        // start too big
+        if (start > size)
+        {
+            return;
+        }
+
+        // end too big, adjust to point to the last character
+        UInt theend = end;
+        if (theend >= size)
+        {
+            theend = size - 1;
+        }
+
+        // do the work
+        const char* startdata = data + start;
+        const size_t endPos = theend - start + 1;
+        m_string.assign(startdata, startdata + endPos);
+    }
+
+    inline void String::resize(UInt newSize)
+    {
+        m_string.resize(newSize);
+    }
+
+    inline const char* String::data() const
+    {
+        return m_string.data();
+    }
+
+    inline char* String::data()
+    {
+        return m_string.data() ? &m_string[0] : nullptr;
     }
 
     inline String String::operator+(const String& rOperand) const
@@ -160,23 +235,26 @@ namespace ramses_internal
         return result.append(rOperand.c_str());
     }
 
-    inline String& String::operator=(const ramses_internal::Char* other)
+    inline String& String::operator=(const Char* other)
     {
-        ramses_capu::String::operator=(other);
+        if (other)
+            m_string = other;
+        else
+            m_string.clear();
         return *this;
     }
 
-    inline Bool String::operator==(const ramses_internal::String& other) const
+    inline Bool String::operator==(const String& other) const
     {
-        return ramses_capu::String::operator==(other);
+        return m_string == other.m_string;
     }
 
     inline Bool String::operator==(const char* other) const
     {
-        return ramses_capu::String::operator==(other);
+        return m_string == other;
     }
 
-    inline Bool String::operator!=(const ramses_internal::String& other) const
+    inline Bool String::operator!=(const String& other) const
     {
         return !operator==(other);
     }
@@ -186,109 +264,110 @@ namespace ramses_internal
         return !operator==(other);
     }
 
-    inline void String::operator+=(const Char character)
+    inline void String::operator+=(Char character)
     {
-        ramses_capu::String::operator+=(character);
+        char tmp[2] = {character, '\0'};
+        operator+=(tmp);
     }
 
     inline void String::operator+=(const Char* other)
     {
-        ramses_capu::String::operator+=(other);
+        append(other);
     }
 
     inline void String::operator+=(const String& other)
     {
-        ramses_capu::String::operator+=(other.c_str());
+        m_string += other.m_string;
     }
 
-    inline Char& String::operator[](const UInt index)
+    inline Char& String::operator[](UInt index)
     {
-        return ramses_capu::String::operator [](index);
+        return m_string[index];
     }
 
-    inline Char String::operator[](const UInt index) const
+    inline Char String::operator[](UInt index) const
     {
-        return ramses_capu::String::operator [](index);
+        return m_string[index];
     }
 
-
-    inline String& String::operator=(const Char character)
+    inline String& String::operator=(Char character)
     {
-        ramses_capu::String::operator=(character);
-        return *this;
+        char tmp[2] = {character, '\0'};
+        return operator=(tmp);
     }
 
     inline String& String::append(const String& other)
     {
-        ramses_capu::String::append(other);
+        m_string += other.m_string;
         return *this;
     }
 
     inline void String::toUpperCase()
     {
-        ramses_capu::String::toUpperCase();
+        for (auto& c : m_string)
+            c = static_cast<char>(std::toupper(c));
     }
 
     inline void String::toLowerCase()
     {
-        ramses_capu::String::toLowerCase();
+        for (auto& c : m_string)
+            c = static_cast<char>(std::tolower(c));
     }
 
-    inline String& String::append(const ramses_internal::Char* other)
+    inline String& String::append(const Char* other)
     {
-        ramses_capu::String::append(other);
+        if (other)
+            m_string += other;
         return *this;
     }
 
-    inline String String::substr(UInt start, UInt length) const
+    inline String String::substr(UInt start, Int length) const
     {
+        if (length < 0)
+            length = m_string.size();
         return String(c_str(), start, start + length - 1);
     }
 
     inline const Char* String::c_str() const
     {
-        return ramses_capu::String::c_str();
+        return m_string.c_str();
     }
 
     inline UInt String::getLength() const
     {
-        return ramses_capu::String::getLength();
+        return m_string.size();
     }
 
-    inline Int String::indexOf(const ramses_internal::Char ch, const UInt startPos /*= 0*/) const
+    inline Int String::indexOf(Char ch, UInt startPos /*= 0*/) const
     {
-        return ramses_capu::String::find(ch, startPos);
+        return ramses_capu::StringUtils::IndexOf(c_str(), ch, startPos);
     }
 
-    inline Int String::lastIndexOf(const ramses_internal::Char ch) const
+    inline Int String::lastIndexOf(Char ch) const
     {
-        return ramses_capu::String::rfind(ch);
+        return ramses_capu::StringUtils::LastIndexOf(c_str(), ch);
     }
 
     inline String& String::swap(String& other)
     {
-        ramses_capu::String::swap(other);
+        m_string.swap(other.m_string);
         return *this;
     }
 
-    inline Int String::find(const String& substring, const UInt startPos) const
+    inline Int String::find(const String& substring, UInt startPos) const
     {
-        if (startPos >= getLength())
-        {
+        size_t res = m_string.find(substring.m_string, startPos);
+        if (res == std::string::npos)
             return -1;
-        }
+        return res;
+    }
 
-        const Char* stringStart = &(c_str()[startPos]);
-        const Char* pos = strstr(stringStart, substring.c_str());
-
-        if (pos)
-        {
-            return (pos - c_str());
-        }
-        else
-        {
+    inline Int String::find(char ch, UInt startPos) const
+    {
+        size_t res = m_string.find(ch, startPos);
+        if (res == std::string::npos)
             return -1;
-        }
+        return res;
     }
 
     inline Char String::at(UInt position) const
@@ -303,19 +382,69 @@ namespace ramses_internal
         }
     }
 
-    inline String String::replace(const String& search, const String& replace, UInt startPos) const
-    {
-        return ramses_capu::String::replace(search, replace, startPos);
-    }
-
     inline void String::clear()
     {
         truncate(0);
     }
 
+    inline String& String::truncate(UInt length)
+    {
+        if (length >= getLength())
+        {
+            // nothing to do
+            return *this;
+        }
+
+        m_string.resize(length);
+        return *this;
+    }
+
     inline bool String::empty() const
     {
         return getLength() == 0;
+    }
+
+    inline void String::reserve(UInt capacity)
+    {
+        m_string.reserve(capacity);
+    }
+
+    inline UInt String::capacity() const
+    {
+        return m_string.capacity();
+    }
+
+    inline bool String::startsWith(const String& other) const
+    {
+        return find(other, 0) == 0;
+    }
+
+    inline bool String::endsWith(const String& other) const
+    {
+        bool result = false;
+        UInt ownLen = getLength();
+        UInt otherLen = other.getLength();
+        if (otherLen <= ownLen)
+        {
+            Int offset = static_cast<Int>(ownLen) - static_cast<Int>(otherLen);
+            result = (-1 != find(other, offset));
+        }
+        return result;
+    }
+
+    inline bool String::operator<(const String& other) const
+    {
+        return m_string < other.m_string;
+    }
+
+    inline bool String::operator>(const String& other) const
+    {
+        return m_string > other.m_string;
+    }
+
+    inline Int String::rfind(char ch) const
+    {
+        return ramses_capu::StringUtils::LastIndexOf(c_str(), ch);
     }
 
     inline const std::string& String::stdRef() const
@@ -339,5 +468,15 @@ namespace ramses_capu
             return HashMemoryRange(key.data(), key.getLength());
         }
     };
+
+    template<>
+    struct Hash<std::string>
+    {
+        uint_t operator()(const std::string& key)
+        {
+            return HashMemoryRange(key.data(), key.size());
+        }
+    };
 }
+
 #endif

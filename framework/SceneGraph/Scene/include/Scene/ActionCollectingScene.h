@@ -21,9 +21,6 @@ namespace ramses_internal
 
         virtual void                        preallocateSceneSize            (const SceneSizeInformation& sizeInfo) override;
 
-        // Generic scene info
-        virtual void                        setSceneVersionTag              (SceneVersionTag sceneVersionTag) override;
-
         // Renderable allocation
         virtual RenderableHandle            allocateRenderable              (NodeHandle nodeHandle, RenderableHandle handle = RenderableHandle::Invalid()) override;
         virtual void                        releaseRenderable               (RenderableHandle renderableHandle) override;

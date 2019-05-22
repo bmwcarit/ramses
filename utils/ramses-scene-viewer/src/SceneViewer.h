@@ -34,10 +34,13 @@ namespace ramses_internal
         ramses::Scene* loadSceneWithResources(ramses::RamsesClient& client, const String& sceneFile, const String& resFile);
         void validateContent(const ramses::RamsesClient& client, const ramses::Scene& scene) const;
 
+        static std::string getFileName(std::string path);
+        std::string m_sceneName;
         CommandLineParser m_parser;
         ArgumentBool   m_helpArgument;
         ArgumentString m_scenePathAndFileArgument;
         ArgumentString m_optionalResFileArgument;
+        ArgumentString m_validationUnrequiredObjectsDirectoryArgument;
     };
 }
 

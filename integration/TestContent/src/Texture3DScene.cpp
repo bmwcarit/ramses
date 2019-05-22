@@ -109,7 +109,8 @@ namespace ramses_internal
             ramses::ETextureAddressMode_Repeat,
             ramses::ETextureAddressMode_Repeat,
             ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureSamplingMethod_NearestWithMipmaps,
+            ramses::ETextureSamplingMethod_Nearest_MipMapNearest,
+            ramses::ETextureSamplingMethod_Nearest,
             *m_texture);
 
         ramses::UniformInput textureInput;

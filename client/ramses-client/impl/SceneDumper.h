@@ -49,7 +49,6 @@ namespace ramses
     public:
         SceneDumper(const ramses::SceneImpl& scene);
         void dumpUnrequiredObjects(ramses_internal::StringOutputStream& output);
-
     private:
         typedef ramses_internal::HashSet<const GeometryBindingImpl*> GeometryBindingSet;
         typedef ramses_internal::HashSet<const TextureSamplerImpl*>  TextureSamplerSet;

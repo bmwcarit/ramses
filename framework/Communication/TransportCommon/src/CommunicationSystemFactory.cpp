@@ -49,7 +49,7 @@ namespace ramses_internal
             LOG_DEBUG(CONTEXT_COMMUNICATION, "ConstructTCPConnectionManager: Daemon Address: " << daemonNetworkAddress.getIp() << ":" << daemonNetworkAddress.getPort());
 
             // allocate
-            return new TCPConnectionSystem(participantNetworkAddress, config.getProtocolVersion(), daemonNetworkAddress, false, frameworkLock, statisticCollection);
+            return new TCPConnectionSystem(participantNetworkAddress, config.getProtocolVersion(), daemonNetworkAddress, false, frameworkLock, statisticCollection, config.m_tcpConfig.getAliveInterval(), config.m_tcpConfig.getAliveTimeout());
         }
 #endif
 
@@ -88,6 +88,7 @@ namespace ramses_internal
     {
         UNUSED(participantIdentifier);
         UNUSED(frameworkLock);
+        UNUSED(statisticCollection)
 
         switch (config.getUsedProtocol())
         {

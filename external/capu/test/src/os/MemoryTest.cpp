@@ -16,7 +16,6 @@
 
 #include <gtest/gtest.h>
 #include "ramses-capu/os/Memory.h"
-#include "ramses-capu/container/String.h"
 
 TEST(Memory, compare)
 {

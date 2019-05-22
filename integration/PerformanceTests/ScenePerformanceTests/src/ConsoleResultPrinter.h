@@ -9,7 +9,6 @@
 #ifndef RAMSES_CONSOLERESULTPRINTER_H
 #define RAMSES_CONSOLERESULTPRINTER_H
 
-#include "ConsoleLogCapture.h"
 #include "Utils/LogContext.h"
 #include "Collections/StringOutputStream.h"
 

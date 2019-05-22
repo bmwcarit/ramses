@@ -15,7 +15,7 @@ namespace ramses_internal
 {
     TYPED_TEST_CASE(AScene, SceneTypes);
 
-    static const TextureSamplerStates SamplerStates = { EWrapMethod::Clamp, EWrapMethod::Repeat, EWrapMethod::RepeatMirrored, ESamplingMethod::Trilinear, 4u };
+    static const TextureSamplerStates SamplerStates = { EWrapMethod::Clamp, EWrapMethod::Repeat, EWrapMethod::RepeatMirrored, ESamplingMethod::Linear, ESamplingMethod::Nearest, 4u };
 
     TYPED_TEST(AScene, TextureSamplerCreated)
     {
@@ -48,7 +48,8 @@ namespace ramses_internal
         EXPECT_EQ(SamplerStates.m_addressModeU, this->m_scene.getTextureSampler(sampler).states.m_addressModeU);
         EXPECT_EQ(SamplerStates.m_addressModeV, this->m_scene.getTextureSampler(sampler).states.m_addressModeV);
         EXPECT_EQ(SamplerStates.m_addressModeR, this->m_scene.getTextureSampler(sampler).states.m_addressModeR);
-        EXPECT_EQ(SamplerStates.m_samplingMode, this->m_scene.getTextureSampler(sampler).states.m_samplingMode);
+        EXPECT_EQ(SamplerStates.m_minSamplingMode, this->m_scene.getTextureSampler(sampler).states.m_minSamplingMode);
+        EXPECT_EQ(SamplerStates.m_magSamplingMode, this->m_scene.getTextureSampler(sampler).states.m_magSamplingMode);
         EXPECT_EQ(SamplerStates.m_anisotropyLevel, this->m_scene.getTextureSampler(sampler).states.m_anisotropyLevel);
     }
 

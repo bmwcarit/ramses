@@ -10,11 +10,11 @@
 
 :: check number of arguments
 IF "%~4"=="" (
-    ECHO "Usage: %~n0 <config> <build-dir> <install-dir> <generator> [<gl-version>]"
+    ECHO "Usage: %~n0 <config> <build-dir> <install-dir> <generator>"
     EXIT /B 1
 )
-IF NOT "%~6"=="" (
-    ECHO "Usage: %~n0 <config> <build-dir> <install-dir> <generator> [<gl-version>]"
+IF NOT "%~5"=="" (
+    ECHO "Usage: %~n0 <config> <build-dir> <install-dir> <generator>"
     EXIT /B 1
 )
 
@@ -22,12 +22,10 @@ SET BUILD_CONFIG=%1
 SET TEST_DIR=%2
 SET INSTALL_DIR=%~3
 SET CMAKE_GENERATOR=%4
-SET GL_VERSION=%5
-SET RENDERER_PLATFORM="WINDOWS"
 SET CURRENT_WORKING_DIRECTORY=%cd%
 SET SCRIPT_DIR=%~dp0
 
-echo "++++ Create test environment for install check of static lib (%BUILD_CONFIG%, %GL_VERSION%) ++++"
+echo "++++ Create test environment for install check of static lib (%BUILD_CONFIG%) ++++"
 
 :: test here
 rd /S /Q %TEST_DIR%
@@ -41,24 +39,10 @@ rd /S /Q test-cmake.config
 mkdir test-cmake.config
 cd  test-cmake.config
 
-cmake -G%CMAKE_GENERATOR% -DCMAKE_PREFIX_PATH="%INSTALL_DIR%/lib" -DRAMSES_RENDERER_PLATFORM=%RENDERER_PLATFORM% -DGL_VERSION=%GL_VERSION% --build test-cmake.config %SCRIPT_DIR%/static-lib-check/
-cmake --build . --config %BUILD_CONFIG%
-
-IF /I "%ERRORLEVEL%" NEQ "0" (
-    cd %CURRENT_WORKING_DIRECTORY%
-    ECHO %~n0: build failed
-    EXIT /B 1
-)
-
-IF /I NOT %CMAKE_GENERATOR%=="Ninja" (
-SET EXECUTABLE_PATH=%cd%\%BUILD_CONFIG%
-) ELSE (
-SET EXECUTABLE_PATH=%cd%
-)
 SET PATH=%INSTALL_DIR%/lib;%PATH%
 
-cd %EXECUTABLE_PATH%
-call ramses-static-lib-check
+cmake -G%CMAKE_GENERATOR% -DCMAKE_PREFIX_PATH="%INSTALL_DIR%/lib" -DRAMSES_RENDERER_PLATFORM="WINDOWS" -DGL_VERSION="GLES3.0;GL4.2;GL4.5" --build test-cmake.config %SCRIPT_DIR%/static-lib-check/
+cmake --build . --config %BUILD_CONFIG% --target run-all
 
 ::check for errors
 IF /I "%ERRORLEVEL%" NEQ "0" (

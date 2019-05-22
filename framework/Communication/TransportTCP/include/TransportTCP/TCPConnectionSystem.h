@@ -30,7 +30,8 @@ namespace ramses_internal
     {
     public:
         TCPConnectionSystem(const NetworkParticipantAddress& participantAddress, UInt32 protocolVersion, const NetworkParticipantAddress& daemonAddress, bool pureDaemon,
-                                PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection);
+                            PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection,
+                            std::chrono::milliseconds aliveInterval, std::chrono::milliseconds aliveTimeout);
         ~TCPConnectionSystem();
 
         static Guid GetDaemonId();
@@ -192,6 +193,8 @@ namespace ramses_internal
         const bool m_actAsDaemon;
         const bool m_hasOtherDaemon;
         const EParticipantType m_participantType;
+        const std::chrono::milliseconds m_aliveInterval;
+        const std::chrono::milliseconds m_aliveIntervalTimeout;
 
         CommunicationSendDataSizes m_sendDataSizes;
 

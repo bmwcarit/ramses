@@ -51,7 +51,8 @@ namespace ramses
         ETextureAddressMode getWrapUMode() const;
         ETextureAddressMode getWrapVMode() const;
         ETextureAddressMode getWrapRMode() const;
-        ETextureSamplingMethod getSamplingMethod() const;
+        ETextureSamplingMethod getMinSamplingMethod() const;
+        ETextureSamplingMethod getMagSamplingMethod() const;
         uint32_t getAnisotropyLevel() const;
 
         status_t setTextureData(const Texture2D& texture);

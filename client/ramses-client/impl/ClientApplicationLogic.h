@@ -14,6 +14,7 @@
 #include "Components/ResourceHashUsage.h"
 #include "Components/ResourceFileInputStream.h"
 
+#include "SceneAPI/SceneVersionTag.h"
 #include "Scene/EScenePublicationMode.h"
 #include "Scene/ESceneFlushMode.h"
 #include "Collections/HashSet.h"
@@ -49,7 +50,7 @@ namespace ramses_internal
         void unpublishScene(SceneId sceneId);
         Bool isScenePublished(SceneId sceneId) const;
 
-        void flush(SceneId sceneId, ESceneFlushMode flushMode, const FlushTimeInformation& timeInfo);
+        void flush(SceneId sceneId, ESceneFlushMode flushMode, const FlushTimeInformation& timeInfo, SceneVersionTag versionTag);
         void removeScene(SceneId sceneId);
 
         virtual void handleSubscribeScene(const SceneId& sceneId, const Guid& consumerID) override;

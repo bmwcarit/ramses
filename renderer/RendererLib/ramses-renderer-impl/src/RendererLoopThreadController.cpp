@@ -102,6 +102,7 @@ namespace ramses_internal
                 delete m_windowedRenderer;
                 m_windowedRenderer = NULL;
                 m_destroyRenderer = false;
+                m_rendererDestroyedCondVar.signal();
             }
             else if (!doRendering)
             {
@@ -164,18 +165,13 @@ namespace ramses_internal
 
     void RendererLoopThreadController::destroyRenderer()
     {
-        {
-            PlatformLightweightGuard guard(m_lock);
-            m_destroyRenderer = true;
-        }
-
+        PlatformLightweightGuard guard(m_lock);
+        m_destroyRenderer = true;
         m_sleepConditionVar.signal();
 
-        Bool rendererDestroyed = false;
-        while (!rendererDestroyed)
+        while (m_windowedRenderer)
         {
-            PlatformLightweightGuard guard(m_lock);
-            rendererDestroyed = (m_windowedRenderer == NULL);
+            m_rendererDestroyedCondVar.wait(&m_lock);
         }
     }
 }

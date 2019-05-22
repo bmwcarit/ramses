@@ -19,7 +19,6 @@
 #include "SceneAPI/ECameraProjectionType.h"
 #include "SceneAPI/SceneId.h"
 #include "SceneAPI/DataSlot.h"
-#include "SceneAPI/SceneVersionTag.h"
 #include "SceneAPI/RenderState.h"
 #include "SceneAPI/EFixedSemantics.h"
 #include "SceneAPI/DataFieldInfo.h"
@@ -74,9 +73,6 @@ namespace ramses_internal
 
         virtual const String&               getName                         () const = 0;
         virtual SceneId                     getSceneId                      () const = 0;
-
-        virtual void                        setSceneVersionTag              (SceneVersionTag sceneVersionTag) = 0;
-        virtual SceneVersionTag             getSceneVersionTag              () const = 0;
 
         virtual void                        setAckFlushState                (bool /*state*/) {}
 

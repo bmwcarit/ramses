@@ -11,7 +11,7 @@
 #include "ramses-capu/os/Memory.h"
 #include "Utils/LogContext.h"
 #include "Utils/LogMessage.h"
-#include "ramses-capu/container/String.h"
+#include "Collections/String.h"
 
 using namespace ramses_internal;
 

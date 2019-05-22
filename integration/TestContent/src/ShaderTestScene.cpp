@@ -111,7 +111,7 @@ namespace ramses_internal
         else if (state == TEXTURE_SIZE)
         {
             const ramses::Texture2D& texture = *ramses::TextureUtils::CreateTextureResourceFromPng("res/ramses-test-client-file-loading-texture.png", m_client);
-            ramses::TextureSampler& texSampler = *m_scene.createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Nearest, texture);
+            ramses::TextureSampler& texSampler = *m_scene.createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Nearest, ramses::ETextureSamplingMethod_Nearest, texture);
 
             const Float textureCoordsArray[] = { 0.f, 1.f, 1.f, 1.f, 0.f, 0.f };
             const ramses::Vector2fArray* textureCoords = m_client.createConstVector2fArray(3u, textureCoordsArray);

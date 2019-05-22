@@ -207,7 +207,8 @@ namespace ramses_internal
         ramses::TextureSampler* sampler = m_scene.createTextureSampler(
             ramses::ETextureAddressMode_Repeat,
             ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureSamplingMethod_NearestWithMipmaps,
+            ramses::ETextureSamplingMethod_Nearest_MipMapNearest,
+            ramses::ETextureSamplingMethod_Nearest,
             *texture);
 
         delete[] rgba8_level0;

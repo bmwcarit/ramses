@@ -26,7 +26,7 @@ namespace ramses_internal
         void readFlushByIndex(UInt idx, TimeStampVector* timestamps = nullptr)
         {
             ASSERT_TRUE(idx < collection.numberOfActions());
-            SceneActionApplier::ReadParameterForFlushAction(collection[idx], flushIdx, isSynchronous, hasSizeInfo, sizeInfo, resourceChanges, timeInfo, timestamps);
+            SceneActionApplier::ReadParameterForFlushAction(collection[idx], flushIdx, isSynchronous, hasSizeInfo, sizeInfo, resourceChanges, timeInfo, versionTag, timestamps);
         }
 
         SceneActionCollection collection;
@@ -40,6 +40,7 @@ namespace ramses_internal
         SceneSizeInformation sizeInfo;
         SceneResourceChanges resourceChanges;
         FlushTimeInformation timeInfo;
+        SceneVersionTag versionTag;
     };
 
     TEST_F(ASceneActionCollectionCreatorAndApplier, createsExpectedNumberAndTypeOfActions)
@@ -112,16 +113,16 @@ namespace ramses_internal
 
     TEST_F(ASceneActionCollectionCreatorAndApplier, canPassNullptrForTimestamps)
     {
-        creator.flush(1u, false, false, SceneSizeInformation(), SceneResourceChanges(), {}, {1, 2, 3});
-        creator.flush(2u, false, false, SceneSizeInformation(), SceneResourceChanges(), {}, {});
+        creator.flush(1u, false, false, SceneSizeInformation(), SceneResourceChanges(), {}, {}, {1, 2, 3});
+        creator.flush(2u, false, false, SceneSizeInformation(), SceneResourceChanges(), {}, {}, {});
         readFlushByIndex(0, nullptr);
         readFlushByIndex(1, nullptr);
     }
 
     TEST_F(ASceneActionCollectionCreatorAndApplier, canReadTimestampsWithValidPointer)
     {
-        creator.flush(1u, false, false, SceneSizeInformation(), SceneResourceChanges(), {}, {1, 2, 3});
-        creator.flush(2u, false, false, SceneSizeInformation(), SceneResourceChanges(), {}, {});
+        creator.flush(1u, false, false, SceneSizeInformation(), SceneResourceChanges(), {}, {}, {1, 2, 3});
+        creator.flush(2u, false, false, SceneSizeInformation(), SceneResourceChanges(), {}, {}, {});
 
         TimeStampVector ts1;
         readFlushByIndex(0, &ts1);
@@ -154,5 +155,14 @@ namespace ramses_internal
 
         readFlushByIndex(0);
         EXPECT_EQ(timeInfoIn, timeInfo);
+    }
+
+    TEST_F(ASceneActionCollectionCreatorAndApplier, canReadVersionTagFromFlush)
+    {
+        const SceneVersionTag versionTagIn{ 333 };
+        creator.flush(1u, false, false, SceneSizeInformation(), SceneResourceChanges(), {}, versionTagIn);
+
+        readFlushByIndex(0);
+        EXPECT_EQ(versionTagIn, versionTag);
     }
 }

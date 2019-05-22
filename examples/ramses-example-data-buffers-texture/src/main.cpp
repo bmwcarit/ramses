@@ -153,6 +153,7 @@ int main(int argc, char* argv[])
         ramses::ETextureAddressMode_Clamp,
         ramses::ETextureAddressMode_Clamp,
         ramses::ETextureSamplingMethod_Nearest,
+        ramses::ETextureSamplingMethod_Nearest,
         *texture);
     /// [Data Buffer Texture Example create buffer]
 

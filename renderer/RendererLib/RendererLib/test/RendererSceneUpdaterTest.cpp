@@ -25,7 +25,7 @@ const ResourceContentHash ARendererSceneUpdater::InvalidResource2(0xff00ff02, 0)
 TEST_F(ARendererSceneUpdater, processesAsynchronousFlushForSubscribedScene)
 {
     createPublishAndSubscribeScene();
-    const NodeHandle nodeHandle = handleSceneActionCreateNode();
+    const NodeHandle nodeHandle = performFlushWithCreateNodeAction();
     update();
     const IScene& scene = rendererScenes.getScene(stagingScene[0]->getSceneId());
     EXPECT_TRUE(scene.isNodeAllocated(nodeHandle));
@@ -79,7 +79,7 @@ TEST_F(ARendererSceneUpdater, ignoresSceneActionsForNotSubscribedScene)
     createStagingScene();
     publishScene();
 
-    handleSceneActionCreateNode();
+    performFlushWithCreateNodeAction();
     update();
     // there is no scene to apply actions to
 }
@@ -90,7 +90,7 @@ TEST_F(ARendererSceneUpdater, ignoresSceneActionsForNotReceivedScene)
     publishScene();
     requestSceneSubscription();
 
-    handleSceneActionCreateNode();
+    performFlushWithCreateNodeAction();
     update();
     // there is no scene to apply actions to
 }
@@ -101,7 +101,7 @@ TEST_F(ARendererSceneUpdater, ignoresSceneActionsAddedAfterSceneWasUnsubscribed)
 
     EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(_, getSceneId()));
     rendererSceneUpdater->handleSceneUnsubscriptionRequest(getSceneId(), false);
-    ASSERT_EQ(ESceneState_Published, sceneStateExecutor.getSceneState(getSceneId()));
+    ASSERT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(getSceneId()));
 
     EXPECT_FALSE(rendererScenes.hasScene(getSceneId()));
 }
@@ -112,7 +112,7 @@ TEST_F(ARendererSceneUpdater, ignoresSceneActionsAddedAfterSceneWasUnsubscribedB
 
     EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(_, getSceneId()));
     rendererSceneUpdater->handleSceneUnsubscriptionRequest(getSceneId(), true);
-    ASSERT_EQ(ESceneState_Published, sceneStateExecutor.getSceneState(getSceneId()));
+    ASSERT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(getSceneId()));
 
     EXPECT_FALSE(rendererScenes.hasScene(getSceneId()));
 }
@@ -123,7 +123,7 @@ TEST_F(ARendererSceneUpdater, ignoresSceneActionsAddedBetweenUnsubscriptionAndRe
 
     EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(_, getSceneId()));
     rendererSceneUpdater->handleSceneUnsubscriptionRequest(getSceneId(), false);
-    ASSERT_EQ(ESceneState_Published, sceneStateExecutor.getSceneState(getSceneId()));
+    ASSERT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(getSceneId()));
 
     performFlush(0u, false, SceneVersionTag(1u));
 
@@ -347,14 +347,39 @@ TEST_F(ARendererSceneUpdater, canHideSceneIfNotShownYet)
     rendererSceneUpdater->handleSceneShowRequest(getSceneId());
     rendererSceneUpdater->handleSceneHideRequest(getSceneId());
     expectEvents({ ERendererEventType_SceneShowFailed, ERendererEventType_SceneHidden });
-    EXPECT_EQ(ESceneState_Mapped, sceneStateExecutor.getSceneState(getSceneId()));
+    EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
 
     // show failed (was canceled) and scene is still in mapped state
     update();
     expectNoEvent();
-    EXPECT_EQ(ESceneState_Mapped, sceneStateExecutor.getSceneState(getSceneId()));
+    EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
 
     // unmap scene
+    expectContextEnable();
+    unmapScene();
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, canNotUnmapSceneWhichWasRequestedToBeShown)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    mapScene();
+    update();
+
+    rendererSceneUpdater->handleSceneShowRequest(getSceneId());
+
+    rendererSceneUpdater->handleSceneUnmappingRequest(getSceneId());
+    expectEvents({ ERendererEventType_SceneUnmapFailed });
+    EXPECT_EQ(ESceneState::RenderRequested, sceneStateExecutor.getSceneState(getSceneId()));
+
+    update();
+    expectEvents({ ERendererEventType_SceneShown });
+    EXPECT_EQ(ESceneState::Rendered, sceneStateExecutor.getSceneState(getSceneId()));
+
+    // unmap scene
+    hideScene();
     expectContextEnable();
     unmapScene();
 
@@ -373,11 +398,11 @@ TEST_F(ARendererSceneUpdater, canUnsubscribeSceneIfSubscriptionRequested)
     EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(_, getSceneId()));
     rendererSceneUpdater->handleSceneUnsubscriptionRequest(getSceneId(), false);
     expectEvents({ ERendererEventType_SceneSubscribeFailed, ERendererEventType_SceneUnsubscribed });
-    EXPECT_EQ(ESceneState_Published, sceneStateExecutor.getSceneState(getSceneId()));
+    EXPECT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(getSceneId()));
 
     update();
     expectNoEvent();
-    EXPECT_EQ(ESceneState_Published, sceneStateExecutor.getSceneState(getSceneId()));
+    EXPECT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(getSceneId()));
 }
 
 TEST_F(ARendererSceneUpdater, canUnsubscribeSceneIfSubscriptionPending)
@@ -393,11 +418,11 @@ TEST_F(ARendererSceneUpdater, canUnsubscribeSceneIfSubscriptionPending)
     EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(_, getSceneId()));
     rendererSceneUpdater->handleSceneUnsubscriptionRequest(getSceneId(), false);
     expectEvents({ ERendererEventType_SceneSubscribeFailed, ERendererEventType_SceneUnsubscribed });
-    EXPECT_EQ(ESceneState_Published, sceneStateExecutor.getSceneState(getSceneId()));
+    EXPECT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(getSceneId()));
 
     update();
     expectNoEvent();
-    EXPECT_EQ(ESceneState_Published, sceneStateExecutor.getSceneState(getSceneId()));
+    EXPECT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(getSceneId()));
 }
 
 
@@ -980,9 +1005,91 @@ TEST_F(ARendererSceneUpdater, doesNotApplySceneActionsIfUpdateTimeBudgetExceeded
     // simulate no time left for update operations
     frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
 
-    performFlush();
+    performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply + 1);
     update();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+}
+
+TEST_F(ARendererSceneUpdater, interruptsApplyingBigFlushWithLimitedBudgetAndFinishesAfterSeveralUpdates)
+{
+    createPublishAndSubscribeScene();
+    createPublishAndSubscribeScene(); // need 2 scenes to allow partial flush processing
+
+    performFlush();
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    // simulate no time left for update operations
+    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
+
+    performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply * 3);
+
+    for (int i = 0; i < 6; ++i)
+    {
+        update();
+        EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+    }
+
+    // eventually applies last chunk of big flush
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+}
+
+TEST_F(ARendererSceneUpdater, interruptsApplyingManySmallFlushesWithLimitedBudgetAndFinishesAfterSeveralUpdates)
+{
+    createPublishAndSubscribeScene();
+    createPublishAndSubscribeScene(); // need 2 scenes to allow partial flush processing
+
+    performFlush();
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    // simulate no time left for update operations
+    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
+
+    // make sure there will be no force apply or unsubscribe
+    rendererSceneUpdater->setLimitFlushesForceApply(999999);
+    rendererSceneUpdater->setLimitFlushesForceUnsubscribe(999999);
+
+    for (int i = 0; i < 3; ++i)
+        performFlush();
+
+    for (int i = 0; i < 2; ++i)
+    {
+        // due to 0 limit at most one small flush is applied per update
+        update();
+        EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+    }
+
+    // eventually applies last flush
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+}
+
+TEST_F(ARendererSceneUpdater, interruptsApplyingSeveralBigFlushesWithLimitedBudgetAndFinishesAfterSeveralUpdates)
+{
+    createPublishAndSubscribeScene();
+    createPublishAndSubscribeScene(); // need 2 scenes to allow partial flush processing
+
+    performFlush();
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    // simulate no time left for update operations
+    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
+
+    for (int i = 0; i < 3; ++i)
+        performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply);
+
+    for (int i = 0; i < 8; ++i)
+    {
+        update();
+        EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+    }
+
+    // eventually applies last chunk of last big flush
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 }
 
 TEST_F(ARendererSceneUpdater, continuesApplyingPendingSceneActionsNextUpdateAfterUpdateTimeBudgetExceeded)
@@ -993,7 +1100,7 @@ TEST_F(ARendererSceneUpdater, continuesApplyingPendingSceneActionsNextUpdateAfte
     // simulate no time left for update operations
     frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
 
-    performFlush();
+    performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply * 3);
     update();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
@@ -1015,7 +1122,7 @@ TEST_F(ARendererSceneUpdater, continuesApplyingPendingSceneActionsNextUpdateAfte
     // simulate no time left for update operations
     frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
 
-    performFlush();
+    performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply * 3);
     update();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
@@ -1041,7 +1148,7 @@ TEST_F(ARendererSceneUpdater, ignoresUpdateTimeBudgetIfThereIsNoOtherSceneToBloc
     // simulate no time left for update operations
     frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
 
-    performFlush();
+    performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply + 1);
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 }
@@ -1062,7 +1169,7 @@ TEST_F(ARendererSceneUpdater, ignoresUpdateTimeBudgetIfSceneIsShown)
     // simulate no time left for update operations
     frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
 
-    performFlush();
+    performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply + 1);
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
@@ -1082,7 +1189,7 @@ TEST_F(ARendererSceneUpdater, willMapSceneOnlyAfterAllPartialFlushesApplied)
     // simulate no time left for update operations
     frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
 
-    performFlush();
+    performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply * 10); // will call multiple updates -> make sure there's enough actions to interrupt
     update();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
     // now has pending flush
@@ -1123,7 +1230,7 @@ TEST_F(ARendererSceneUpdater, willShowSceneOnlyAfterAllPartialFlushesApplied)
     // simulate no time left for update operations
     frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
 
-    performFlush();
+    performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply * 10); // will call multiple updates -> make sure there's enough actions to interrupt
     update();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
     // now has pending flush
@@ -1152,6 +1259,57 @@ TEST_F(ARendererSceneUpdater, willShowSceneOnlyAfterAllPartialFlushesApplied)
     destroyDisplay();
 }
 
+TEST_F(ARendererSceneUpdater, willShowSceneAsSoonAsPartialFlushAppliedEvenIfOtherFlushesPending)
+{
+    createDisplayAndExpectSuccess();
+
+    createPublishAndSubscribeScene();
+    createPublishAndSubscribeScene(); // need 2 scenes to allow partial flush processing
+
+    mapScene();
+    update();
+
+    // simulate no time left for update operations
+    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
+
+    // big flush
+    performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply * 3);
+    // small flushes
+    performFlush();
+    performFlush();
+    performFlush();
+
+    update();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+    // now has pending flushes
+
+    // request show
+    rendererSceneUpdater->handleSceneShowRequest(getSceneId(0u));
+
+    for (UInt i = 0; i < 5; ++i)
+    {
+        update();
+        EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+        expectNoEvent();
+    }
+
+    // this update applies last chunk of big flush
+    update();
+    // now scene could be shown
+    expectEvent(ERendererEventType_SceneShown);
+    // but there are still pending (not interrupted) flushes
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+
+    // scene is shown now, partial applying not allowed -> rest of flushes are applied right away
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    hideScene();
+    expectContextEnable();
+    unmapScene();
+    destroyDisplay();
+}
+
 TEST_F(ARendererSceneUpdater, confidenceTest_appliesMultipleConsecutiveFlushesBasedOnUpdateTimeBudget)
 {
     createPublishAndSubscribeScene();
@@ -1159,7 +1317,7 @@ TEST_F(ARendererSceneUpdater, confidenceTest_appliesMultipleConsecutiveFlushesBa
 
     for (UInt i = 0u; i < 5u; ++i)
     {
-        performFlush();
+        performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply * 3);
 
         // no time for update
         frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
@@ -1174,6 +1332,48 @@ TEST_F(ARendererSceneUpdater, confidenceTest_appliesMultipleConsecutiveFlushesBa
     }
 }
 
+TEST_F(ARendererSceneUpdater, generatesNamedFlushEventAfterItIsFullyAppliedWhenInterrupted)
+{
+    createPublishAndSubscribeScene();
+    createPublishAndSubscribeScene(); // need 2 scenes to allow partial flush processing
+
+    performFlush();
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    // no budget for actions applying
+    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
+
+    const SceneVersionTag versionTag(333);
+    IScene& scene = *stagingScene[0];
+
+    // generate big enough flush so that it contains multiple chunks and will be interrupted at least once
+    SceneAllocateHelper sceneAllocator(scene);
+    for (int i = 0; i < 1000; ++i)
+        sceneAllocator.allocateNode();
+
+    performFlush(0, false, versionTag);
+
+    // check it was really interrupted
+    update();
+    expectNoEvent();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+
+    // wait for it to be finished
+    while (!lastFlushWasAppliedOnRendererScene())
+    {
+        // expect no event till flush fully applied
+        expectNoEvent();
+        update();
+    }
+
+    // expect named flush to be reported after flush fully applied
+    RendererEventVector events;
+    rendererEventCollector.dispatchEvents(events);
+    ASSERT_EQ(1u, events.size());
+    EXPECT_EQ(ERendererEventType_SceneFlushed, events[0].eventType);
+    EXPECT_EQ(versionTag, events[0].sceneVersionTag);
+}
 
 /////////////////////////////////////////////
 // Other tests
@@ -1323,7 +1523,7 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfNonEmptyFlushApplied)
     update();
     expectNoScenesModified();
 
-    handleSceneActionCreateNode();
+    performFlushWithCreateNodeAction();
     update();
     expectScenesModified();
 
@@ -1381,7 +1581,7 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfEmptyAsynchFlushAppli
     mapScene();
     showScene();
 
-    handleSceneActionCreateNode();
+    performFlushWithCreateNodeAction();
     update();
     expectScenesModified();
 
@@ -1402,7 +1602,7 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfEmptySynchFlushApplie
     mapScene();
     showScene();
 
-    handleSceneActionCreateNode();
+    performFlushWithCreateNodeAction();
     update();
     expectScenesModified();
 
@@ -1986,7 +2186,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_IfScene
     expectNoScenesModified();
 
     //update scene mapped to buffer
-    handleSceneActionCreateNode(0u);
+    performFlushWithCreateNodeAction(0u);
     //expect both scenes modified
     update();
     expectScenesModified({0u, 1u});
@@ -2036,7 +2236,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_IfScene
     expectNoScenesModified();
 
     //update scene mapped to buffer
-    handleSceneActionCreateNode(1u);
+    performFlushWithCreateNodeAction(1u);
 
     update();
     expectScenesModified({ 1u, 2u });
@@ -2082,7 +2282,7 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_OffscreenBufferLinking_
     expectNoScenesModified();
 
     //update consumer
-    handleSceneActionCreateNode(1u);
+    performFlushWithCreateNodeAction(1u);
     //expect only consumer modified
     update();
     expectScenesModified({ 1u });
@@ -2138,7 +2338,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_TwoCons
     expectNoScenesModified();
 
     //update scene mapped to buffer
-    handleSceneActionCreateNode(0u);
+    performFlushWithCreateNodeAction(0u);
     //expect both scenes modified
     update();
     expectScenesModified({0u, 1u, 2u});
@@ -2201,7 +2401,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Indirec
     expectNoScenesModified();
 
     //update scene mapped to buffer 1
-    handleSceneActionCreateNode(0u);
+    performFlushWithCreateNodeAction(0u);
     //expect all scenes modified
     update();
     expectScenesModified({0u, 1u, 2u});
@@ -2258,7 +2458,7 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_OffscreenBufferLinking_
     expectNoScenesModified();
 
     //update scene mapped to buffer 1
-    handleSceneActionCreateNode(0u);
+    performFlushWithCreateNodeAction(0u);
     //expect only this scene to be modified
     update();
     expectScenesModified({0u});
@@ -2331,7 +2531,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Confide
     expectNoScenesModified();
 
     //update s2
-    handleSceneActionCreateNode(2u);
+    performFlushWithCreateNodeAction(2u);
 
     update();
     expectScenesModified({ 2u, 3u, 4u, 5u });
@@ -2398,7 +2598,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Confide
     expectNoScenesModified();
 
     //update s3
-    handleSceneActionCreateNode(3u);
+    performFlushWithCreateNodeAction(3u);
 
     update();
     expectScenesModified({ 3u, 4u });

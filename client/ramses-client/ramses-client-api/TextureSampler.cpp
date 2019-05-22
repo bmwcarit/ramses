@@ -46,9 +46,14 @@ namespace ramses
         return impl.getWrapRMode();
     }
 
-    ETextureSamplingMethod TextureSampler::getSamplingMethod() const
+    ETextureSamplingMethod TextureSampler::getMinSamplingMethod() const
     {
-        return impl.getSamplingMethod();
+        return impl.getMinSamplingMethod();
+    }
+
+    ETextureSamplingMethod TextureSampler::getMagSamplingMethod() const
+    {
+        return impl.getMagSamplingMethod();
     }
 
     uint32_t TextureSampler::getAnisotropyLevel() const

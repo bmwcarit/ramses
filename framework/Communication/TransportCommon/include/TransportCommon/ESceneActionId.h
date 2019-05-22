@@ -21,11 +21,8 @@ namespace ramses_internal
 
     enum ESceneActionId
     {
-        // scene
-        ESceneActionId_SetSceneVersionTag = 0,
-
         // nodes
-        ESceneActionId_SetTransformComponent,
+        ESceneActionId_SetTransformComponent = 0,
         ESceneActionId_AllocateNode,
         ESceneActionId_ReleaseNode,
         ESceneActionId_AllocateTransform,
@@ -214,9 +211,6 @@ case ENUMVALUE: return #ENUMVALUE
     {
         switch (type)
         {
-            // scene
-            CreateNameForEnumID(ESceneActionId_SetSceneVersionTag);
-
             // nodes
             CreateNameForEnumID(ESceneActionId_SetTransformComponent);
             CreateNameForEnumID(ESceneActionId_AllocateNode);

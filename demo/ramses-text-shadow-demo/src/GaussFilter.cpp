@@ -35,6 +35,7 @@ GaussFilter::GaussFilter(ramses::RenderBuffer& inputBuffer,
     ramses::TextureSampler& textureSampler = *scene.createTextureSampler(ramses::ETextureAddressMode_Clamp,
                                                                          ramses::ETextureAddressMode_Clamp,
                                                                          ramses::ETextureSamplingMethod_Nearest,
+                                                                         ramses::ETextureSamplingMethod_Nearest,
                                                                          inputBuffer);
 
     float vertexPositionsArray[] = {0.0f,

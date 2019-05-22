@@ -13,7 +13,7 @@ namespace ramses_internal
     void SceneStateInfo::addScene(SceneId sceneId, const Guid& clientWhereSceneIsAvailable, EScenePublicationMode mode)
     {
         assert(!m_scenesInfo.contains(sceneId));
-        SceneInfo sceneInfo = { clientWhereSceneIsAvailable, ESceneState_Published, mode };
+        SceneInfo sceneInfo = { clientWhereSceneIsAvailable, ESceneState::Published, mode };
         m_scenesInfo.put(sceneId, sceneInfo);
     }
 
@@ -39,7 +39,7 @@ namespace ramses_internal
     {
         SceneInfo* sceneInfo = m_scenesInfo.get(sceneId);
         if (!sceneInfo)
-            return ESceneState_Unknown;
+            return ESceneState::Unknown;
         return sceneInfo->state;
     }
 

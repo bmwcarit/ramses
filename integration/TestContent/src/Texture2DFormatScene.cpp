@@ -245,6 +245,7 @@ namespace ramses_internal
             ramses::ETextureAddressMode_Repeat,
             ramses::ETextureAddressMode_Repeat,
             ramses::ETextureSamplingMethod_Nearest,
+            ramses::ETextureSamplingMethod_Nearest,
             *texture);
 
         createQuad(*sampler);

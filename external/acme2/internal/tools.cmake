@@ -44,60 +44,6 @@ MACRO(ACME_ERROR)
     MESSAGE(FATAL_ERROR "Cancel Build.")
 ENDMACRO()
 
-
-#==============================================================================
-# argument splitter
-#==============================================================================
-
-# Split arguments passed to a function into several lists separated by
-# specified identifiers that do not have an associated list e.g.:
-#
-# SET(arguments
-#   hello world
-#   LIST3 foo bar
-#   LIST1 fuz baz
-#   )
-# ARGUMENT_SPLITTER("${arguments}" "LIST1 LIST2 LIST3" ARG)
-#
-# results in 8 distinct variables:
-#  * ARG_DEFAULT_FOUND: 1
-#  * ARG_DEFAULT: hello;world
-#  * ARG_LIST1_FOUND: 1
-#  * ARG_LIST1: fuz;baz
-#  * ARG_LIST2_FOUND: 0
-#  * ARG_LIST2:
-#  * ARG_LIST3_FOUND: 1
-#  * ARG_LIST3: foo;bar
-
-MACRO(ARGUMENT_SPLITTER argInput argKeywordList argPrefix)
-
-    SET(inputTokenList "${argInput}")
-    SET(keywordList ${argKeywordList})
-    SET(splitter_prefix ${argPrefix})
-
-    # initialize all out variables to default values
-    FOREACH(keyword ${keywordList})
-        SET(${splitter_prefix}${keyword}_FOUND 0)
-        SET(${splitter_prefix}${keyword} "")
-    ENDFOREACH()
-
-    # iterate all tokens of provided input
-    FOREACH(token ${inputTokenList})
-        # check if current token is a keyword
-        LIST(FIND keywordList ${token} tokenIsKeyword)
-
-        IF (NOT ${tokenIsKeyword} EQUAL -1)
-            # if current token is keyword, set found variable to true
-            SET(lastKeyword ${token})
-            SET(${splitter_prefix}${token}_FOUND 1)
-        ELSE ()
-            # if current token is not keyword, append token to variable of last found keyword
-            LIST(APPEND ${splitter_prefix}${lastKeyword} ${token})
-        ENDIF ()
-    ENDFOREACH()
-
-ENDMACRO(ARGUMENT_SPLITTER)
-
 #==============================================================================
 # file list resolver
 #==============================================================================

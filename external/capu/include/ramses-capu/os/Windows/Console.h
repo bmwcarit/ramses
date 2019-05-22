@@ -18,7 +18,7 @@
 #define RAMSES_CAPU_WINDOWS_CONSOLE_H
 
 #include "ramses-capu/os/Windows/MinimalWindowsH.h"
-#include "ramses-capu/container/String.h"
+#include "ramses-capu/Error.h"
 #include <conio.h>
 #include <mutex>
 

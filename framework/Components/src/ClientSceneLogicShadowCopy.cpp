@@ -33,7 +33,7 @@ namespace ramses_internal
         sendShadowCopySceneToWaitingSubscribers();
     }
 
-    void ClientSceneLogicShadowCopy::flushSceneActions(ESceneFlushMode flushMode, const FlushTimeInformation& flushTimeInfo)
+    void ClientSceneLogicShadowCopy::flushSceneActions(ESceneFlushMode flushMode, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag)
     {
         const SceneSizeInformation sceneSizes(m_scene.getSceneSizeInformation());
 
@@ -67,7 +67,8 @@ namespace ramses_internal
                 sceneSizes > m_sceneShadowCopy.getSceneSizeInformation(),
                 sceneSizes,
                 m_scene.getResourceChanges(),
-                flushTimeInfo);
+                flushTimeInfo,
+                versionTag);
         }
 
         // reserve memory in ClientScene after flush because flush might add a lot of data
@@ -91,8 +92,10 @@ namespace ramses_internal
 
         m_scene.clearResourceChanges();
 
-        // store flush time info for async new subscribers, scene validity must also be guaranteed for them
+        // store flush time info and version for async new subscribers, scene validity must also be guaranteed for them
         m_flushTimeInfoOfLastFlush = flushTimeInfo;
+        if (versionTag != InvalidSceneVersionTag)
+            m_lastVersionTag = versionTag;
 
         // send to subscribers if flushed for first time
         if (m_flushCounter == 1u)
@@ -110,6 +113,6 @@ namespace ramses_internal
             return;
         }
 
-        sendSceneToWaitingSubscribers(m_sceneShadowCopy, m_flushTimeInfoOfLastFlush);
+        sendSceneToWaitingSubscribers(m_sceneShadowCopy, m_flushTimeInfoOfLastFlush, m_lastVersionTag);
     }
 }

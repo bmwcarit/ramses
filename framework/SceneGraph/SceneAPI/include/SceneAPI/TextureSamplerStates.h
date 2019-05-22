@@ -19,12 +19,14 @@ namespace ramses_internal
             EWrapMethod addressModeU = EWrapMethod::Clamp,
             EWrapMethod addressModeV = EWrapMethod::Clamp,
             EWrapMethod addressModeR = EWrapMethod::Clamp,
-            ESamplingMethod samplingMode = ESamplingMethod::Trilinear,
+            ESamplingMethod minSamplingMode = ESamplingMethod::Linear_MipMapLinear,
+            ESamplingMethod magSamplingMode = ESamplingMethod::Linear,
             UInt32 anisotropyLevel = 1u)
             : m_addressModeU(addressModeU)
             , m_addressModeV(addressModeV)
             , m_addressModeR(addressModeR)
-            , m_samplingMode(samplingMode)
+            , m_minSamplingMode(minSamplingMode)
+            , m_magSamplingMode(magSamplingMode)
             , m_anisotropyLevel(anisotropyLevel)
         {
         }
@@ -32,7 +34,8 @@ namespace ramses_internal
         EWrapMethod     m_addressModeU;
         EWrapMethod     m_addressModeV;
         EWrapMethod     m_addressModeR;
-        ESamplingMethod m_samplingMode;
+        ESamplingMethod m_minSamplingMode;
+        ESamplingMethod m_magSamplingMode;
         UInt32          m_anisotropyLevel;
     };
 }

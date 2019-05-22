@@ -19,7 +19,7 @@ namespace ramses_internal
     public:
         ClientSceneLogicShadowCopy(ISceneGraphSender& sceneGraphSender, ClientScene& scene, const Guid& clientAddress);
 
-        virtual void flushSceneActions(ESceneFlushMode flushMode, const FlushTimeInformation& flushTimeInfo) override;
+        virtual void flushSceneActions(ESceneFlushMode flushMode, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) override;
 
     private:
         virtual void postAddSubscriber() override;
@@ -27,6 +27,7 @@ namespace ramses_internal
 
         SceneWithExplicitMemory m_sceneShadowCopy;
         FlushTimeInformation m_flushTimeInfoOfLastFlush;
+        SceneVersionTag m_lastVersionTag = InvalidSceneVersionTag;
     };
 }
 

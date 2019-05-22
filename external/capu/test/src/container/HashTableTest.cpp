@@ -110,36 +110,6 @@ TEST_F(HashTableTest, TestWithEnum)
     EXPECT_EQ(3, map.at(TEST_VALUE1));
 }
 
-TEST_F(HashTableTest, TestWithString)
-{
-    ramses_capu::HashTable<ramses_capu::String, int32_t> map;
-
-    map.put("testFloat", 3);
-    map.put("testFloat4", 4);
-
-    EXPECT_EQ(3, map.at("testFloat"));
-    EXPECT_EQ(4, map.at("testFloat4"));
-
-    // Test clear
-    map.clear();
-    EXPECT_EQ(static_cast<uint32_t>(0), map.count());
-}
-
-TEST_F(HashTableTest, TestWithStdString)
-{
-    ramses_capu::HashTable<std::string, int32_t> map;
-
-    map.put("testFloat", 3);
-    map.put("testFloat4", 4);
-
-    EXPECT_EQ(3, map.at("testFloat"));
-    EXPECT_EQ(4, map.at("testFloat4"));
-
-    // Test clear
-    map.clear();
-    EXPECT_EQ(static_cast<uint32_t>(0), map.count());
-}
-
 TEST_F(HashTableTest, TestCopyConstructor)
 {
     Int32HashMap map1;
@@ -339,24 +309,6 @@ TEST_F(HashTableTest, TestMapRehashWithObjects)
 
     SomeClass cTest(3); // same i value as c3 -> 3 must get returned
     EXPECT_EQ(3u, table.at(cTest));
-}
-
-TEST_F(HashTableTest, TestMapRehashWithStrings)
-{
-    ramses_capu::HashTable<ramses_capu::String, uint32_t> table(2);
-    ramses_capu::String s1 = "s1";
-    ramses_capu::String s2 = "s2";
-    ramses_capu::String s3 = "s3";
-    ramses_capu::String s4 = "s4";
-
-    table.put(s1, 1);
-    table.put(s2, 2);
-    table.put(s3, 3);
-    table.put(s4, 4); // rehashing
-
-    ramses_capu::status_t returnCode = 0;
-    EXPECT_EQ(3u, table.at(s3, &returnCode));
-    EXPECT_EQ(ramses_capu::CAPU_OK, returnCode);
 }
 
 TEST_F(HashTableTest, TestClear)

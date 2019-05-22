@@ -96,7 +96,8 @@ namespace ramses_internal
         ramses::TextureSampler* sampler = m_scene.createTextureSampler(
             ramses::ETextureAddressMode_Clamp,
             ramses::ETextureAddressMode_Clamp,
-            ramses::ETextureSamplingMethod_Bilinear,
+            ramses::ETextureSamplingMethod_Linear,
+            ramses::ETextureSamplingMethod_Linear,
             *cubeTexture);
 
         ramses::UniformInput cubeTextureinput;

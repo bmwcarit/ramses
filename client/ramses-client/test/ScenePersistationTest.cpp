@@ -848,15 +848,16 @@ namespace ramses
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteATextureSampler)
     {
-        ETextureAddressMode wrapUMode = ETextureAddressMode_Mirror;
-        ETextureAddressMode wrapVMode = ETextureAddressMode_Repeat;
-        ETextureSamplingMethod samplingMethod = ETextureSamplingMethod_BilinearWithMipMaps;
-        uint8_t data[4] = { 0u };
-        MipLevelData mipLevelData(sizeof(data), data);
-        Texture2D* texture = this->client.createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, "texture");
+        const ETextureAddressMode wrapUMode = ETextureAddressMode_Mirror;
+        const ETextureAddressMode wrapVMode = ETextureAddressMode_Repeat;
+        const ETextureSamplingMethod minSamplingMethod = ETextureSamplingMethod_Linear_MipMapNearest;
+        const ETextureSamplingMethod magSamplingMethod = ETextureSamplingMethod_Linear;
+        const uint8_t data[4] = { 0u };
+        const MipLevelData mipLevelData(sizeof(data), data);
+        const Texture2D* texture = this->client.createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, "texture");
         m_resources.add(texture);
 
-        TextureSampler* sampler = this->m_scene.createTextureSampler(wrapUMode, wrapVMode, samplingMethod, *texture, 8u, "sampler");
+        TextureSampler* sampler = this->m_scene.createTextureSampler(wrapUMode, wrapVMode, minSamplingMethod, magSamplingMethod, *texture, 8u, "sampler");
         ASSERT_TRUE(0 != sampler);
 
         doWriteReadCycle();
@@ -866,7 +867,8 @@ namespace ramses
 
         EXPECT_EQ(wrapUMode, loadedSampler->getWrapUMode());
         EXPECT_EQ(wrapVMode, loadedSampler->getWrapVMode());
-        EXPECT_EQ(samplingMethod, loadedSampler->getSamplingMethod());
+        EXPECT_EQ(minSamplingMethod, loadedSampler->getMinSamplingMethod());
+        EXPECT_EQ(magSamplingMethod, loadedSampler->getMagSamplingMethod());
         EXPECT_EQ(8u, loadedSampler->getAnisotropyLevel());
         EXPECT_EQ(texture->impl.getLowlevelResourceHash(), this->m_sceneLoaded->impl.getIScene().getTextureSampler(loadedSampler->impl.getTextureSamplerHandle()).textureResource);
         EXPECT_EQ(ERamsesObjectType_Texture2D, loadedSampler->impl.getTextureType());

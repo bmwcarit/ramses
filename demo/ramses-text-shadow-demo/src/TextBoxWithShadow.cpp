@@ -30,10 +30,12 @@ TextBoxWithShadow::TextBoxWithShadow(std::u32string         string,
     ramses::TextureSampler* textureSamplerText = scene.createTextureSampler(ramses::ETextureAddressMode_Clamp,
                                                                             ramses::ETextureAddressMode_Clamp,
                                                                             ramses::ETextureSamplingMethod_Nearest,
+                                                                            ramses::ETextureSamplingMethod_Nearest,
                                                                             textRenderBuffer);
 
     ramses::TextureSampler* textureSamplerShadow = scene.createTextureSampler(ramses::ETextureAddressMode_Clamp,
                                                                               ramses::ETextureAddressMode_Clamp,
+                                                                              ramses::ETextureSamplingMethod_Nearest,
                                                                               ramses::ETextureSamplingMethod_Nearest,
                                                                               blurredTextRenderBuffer);
 

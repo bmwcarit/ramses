@@ -113,14 +113,14 @@ namespace ramses_internal
     TEST_F(ASceneStateInfo, CanGetSceneState)
     {
         sceneStateInfo.addScene(sceneId, guid, EScenePublicationMode_LocalAndRemote);
-        EXPECT_EQ(ESceneState_Published, sceneStateInfo.getSceneState(sceneId));
+        EXPECT_EQ(ESceneState::Published, sceneStateInfo.getSceneState(sceneId));
     }
 
     TEST_F(ASceneStateInfo, CanSetSceneState)
     {
         sceneStateInfo.addScene(sceneId, guid, EScenePublicationMode_LocalAndRemote);
-        sceneStateInfo.setSceneState(sceneId, ESceneState_Subscribed);
-        EXPECT_EQ(ESceneState_Subscribed, sceneStateInfo.getSceneState(sceneId));
+        sceneStateInfo.setSceneState(sceneId, ESceneState::Subscribed);
+        EXPECT_EQ(ESceneState::Subscribed, sceneStateInfo.getSceneState(sceneId));
     }
 
     TEST_F(ASceneStateInfo, CanGetClientGuid)

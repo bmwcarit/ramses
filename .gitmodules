@@ -18,4 +18,3 @@
 	url = https://github.com/chriskohlhoff/asio.git
 	path = external/asio
 	branch = refs/heads/asio-1-12-2
-

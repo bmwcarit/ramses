@@ -18,12 +18,11 @@ namespace ramses
     enum ETextureSamplingMethod
     {
         ETextureSamplingMethod_Nearest = 0,
-        ETextureSamplingMethod_NearestWithMipmaps,
-        ETextureSamplingMethod_Bilinear,
-        ETextureSamplingMethod_BilinearWithMipMaps,
-        ETextureSamplingMethod_Trilinear,
-        ETextureSamplingMethod_MinLinearMagNearest,
-        ETextureSamplingMethod_MinNearestMagLinear,
+        ETextureSamplingMethod_Linear,
+        ETextureSamplingMethod_Nearest_MipMapNearest,
+        ETextureSamplingMethod_Nearest_MipMapLinear,
+        ETextureSamplingMethod_Linear_MipMapNearest,
+        ETextureSamplingMethod_Linear_MipMapLinear,
         ETextureSamplingMethod_NUMBER_OF_ELEMENTS
     };
 

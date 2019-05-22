@@ -21,15 +21,14 @@ namespace ramses_internal
 {
     static const constexpr uint32_t ResourceDataSize = 300000;
 
-    static const constexpr std::chrono::milliseconds AliveInterval{300};
-    static const constexpr std::chrono::milliseconds AliveIntervalTimeout{6 * AliveInterval};
-
     TCPConnectionSystem::TCPConnectionSystem(const NetworkParticipantAddress& participantAddress,
                                                      uint32_t protocolVersion,
                                                      const NetworkParticipantAddress& daemonAddress,
                                                      bool pureDaemon,
                                                      PlatformLock& frameworkLock,
-                                                     StatisticCollectionFramework& statisticCollection)
+                                                     StatisticCollectionFramework& statisticCollection,
+                                                     std::chrono::milliseconds aliveInterval,
+                                                     std::chrono::milliseconds aliveTimeout)
         : m_participantAddress(participantAddress)
         , m_protocolVersion(protocolVersion)
         , m_daemonAddress(daemonAddress)
@@ -41,6 +40,8 @@ namespace ramses_internal
                             (pureDaemon ? EParticipantType::PureDaemon
                              : EParticipantType::Daemon)
                             : EParticipantType::Client)
+        , m_aliveInterval(aliveInterval)
+        , m_aliveIntervalTimeout(aliveTimeout)
         , m_sendDataSizes(CommunicationSendDataSizes {
             std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max(),
             ResourceDataSize, std::numeric_limits<uint32_t>::max(),
@@ -74,10 +75,17 @@ namespace ramses_internal
                                                sos << "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::connectServices: "
                                                    << m_participantAddress.getParticipantId() << "/" << m_participantAddress.getParticipantName()
                                                    << " at " << m_participantAddress.getIp() << ":" << m_participantAddress.getPort()
-                                                   << ", type " << EnumToString(m_participantType);
+                                                   << ", type " << EnumToString(m_participantType)
+                                                   << ", aliveInterval " << static_cast<int64_t>(m_aliveInterval.count()) << "ms, aliveTimeout " << static_cast<int64_t>(m_aliveIntervalTimeout.count()) << "ms";
                                                if (m_hasOtherDaemon)
                                                    sos << ", other daemon at " << m_daemonAddress.getIp() << ":" << m_daemonAddress.getPort();
                                            }));
+        if (m_aliveIntervalTimeout < m_aliveInterval + std::chrono::milliseconds{100})
+        {
+            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << "): Alive timeout very low, expect issues " <<
+                     "(alive " << static_cast<int64_t>(m_aliveInterval.count()) << ", timeout " << static_cast<int64_t>(m_aliveIntervalTimeout.count()) << ")");
+        }
+
         if (m_runState)
         {
             LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::connectServices: called more than once");
@@ -348,7 +356,7 @@ namespace ramses_internal
                                   pp->currentOutBuffer.clear();
                                   pp->lastSent = std::chrono::steady_clock::now();
 
-                                  pp->sendAliveTimer.expires_after(AliveInterval);
+                                  pp->sendAliveTimer.expires_after(m_aliveInterval);
                                   pp->sendAliveTimer.async_wait([this, pp](asio::error_code ee) {
                                                                     if (!ee)
                                                                     {
@@ -439,7 +447,7 @@ namespace ramses_internal
     void TCPConnectionSystem::updateLastReceivedTime(const ParticipantPtr& pp)
     {
         pp->lastReceived = std::chrono::steady_clock::now();
-        pp->checkReceivedAliveTimer.expires_after(AliveIntervalTimeout);
+        pp->checkReceivedAliveTimer.expires_after(m_aliveIntervalTimeout);
         pp->checkReceivedAliveTimer.async_wait([this, pp](asio::error_code e) {
                                                    if (!e)
                                                    {
@@ -447,7 +455,7 @@ namespace ramses_internal
                                                        LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::updateLastReceivedTime: alive message from " <<
                                                                 pp->address.ParticipantIdentifier::getParticipantId() << " too old. lastReceived " <<
                                                                 (std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(now - pp->lastReceived).count()) << "ms ago, expected alive " <<
-                                                                (std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(now - pp->lastReceived - AliveInterval).count()) << "ms ago");
+                                                                (std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(now - pp->lastReceived - m_aliveInterval).count()) << "ms ago");
                                                        removeParticipant(pp);
                                                    }
                                                });

@@ -27,7 +27,7 @@ namespace ramses_internal
         SceneExpirationMonitor(const RendererScenes& scenes, RendererEventCollector& eventCollector);
         ~SceneExpirationMonitor();
 
-        void onFlushApplied(SceneId sceneId, FlushTime::Clock::time_point expirationTimestamp, UInt64 flushIndex);
+        void onFlushApplied(SceneId sceneId, FlushTime::Clock::time_point expirationTimestamp, SceneVersionTag versionTag, UInt64 flushIndex);
         void onRendered(SceneId sceneId);
         void onHidden(SceneId sceneId);
         void checkExpiredScenes(FlushTime::Clock::time_point currentTime);
@@ -37,8 +37,6 @@ namespace ramses_internal
         FlushTime::Clock::time_point getExpirationTimestampOfRenderedScene(SceneId sceneId) const;
 
     private:
-        void readSceneVersionTagFromPendingFlushes(const PendingFlushes& pendingFlushes, SceneVersionTag& sceneVersionTag) const;
-
         struct TimeStampTag
         {
             FlushTime::Clock::time_point ts = FlushTime::InvalidTimestamp;

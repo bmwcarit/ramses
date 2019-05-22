@@ -82,7 +82,7 @@ namespace ramses_internal
         virtual void setViewport         (UInt32 x, UInt32 y, UInt32 width, UInt32 height) = 0;
         virtual void enableScissorTest   (Bool flag) = 0;
         virtual void setScissorRegion    (UInt32 x, UInt32 y, UInt32 width, UInt32 height) = 0;
-        virtual void setTextureSampling  (DataFieldHandle field, EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod sampling, UInt32 anisotropyLevel) = 0;
+        virtual void setTextureSampling  (DataFieldHandle field, EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod minSampling, ESamplingMethod magSampling, UInt32 anisotropyLevel) = 0;
 
         // resources
         virtual DeviceResourceHandle    allocateVertexBuffer        (EDataType dataType, UInt32 sizeInBytes) = 0;
@@ -115,7 +115,7 @@ namespace ramses_internal
         virtual DeviceResourceHandle    uploadRenderBuffer          (const RenderBuffer& renderBuffer) = 0;
         virtual void                    deleteRenderBuffer          (DeviceResourceHandle handle) = 0;
 
-        virtual DeviceResourceHandle    uploadTextureSampler        (EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod sampling, UInt32 anisotropyLevel) = 0;
+        virtual DeviceResourceHandle    uploadTextureSampler        (EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod minSampling, ESamplingMethod magSampling, UInt32 anisotropyLevel) = 0;
         virtual void                    deleteTextureSampler        (DeviceResourceHandle handle) = 0;
         virtual void                    activateTextureSampler      (DeviceResourceHandle handle, DataFieldHandle field) = 0;
 

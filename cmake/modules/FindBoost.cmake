@@ -62,8 +62,10 @@ ELSE()
             ENDIF()
 
             # get msvc version
-            IF ("${MSVC_VERSION}" EQUAL 1900 OR "${MSVC_VERSION}" GREATER 1900)   # VS2015 is 1900 , VS2017 >= 1910, they are ABI compatible
-            SET(Boost_MSVC_LIB_PATH "14.0")
+            IF ("${MSVC_VERSION}" EQUAL 1900)  # VS2015
+                SET(Boost_MSVC_LIB_PATH "14.0")
+            ELSEIF ("${MSVC_VERSION}" EQUAL 1910 OR "${MSVC_VERSION}" GREATER 1910)  # VS2017 is 1910 - 1919
+                SET(Boost_MSVC_LIB_PATH "14.1")
             ENDIF()
 
             IF (DEFINED Boost_MSVC_LIB_PATH)

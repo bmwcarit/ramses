@@ -150,7 +150,7 @@ namespace ramses_internal
 
     const ramses::TextureSampler& MultiTypeLinkScene::createSampler(const ramses::Texture2D& texture)
     {
-        return *m_scene.createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Nearest, texture, 1u, "dataLinkSampler");
+        return *m_scene.createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Nearest, ramses::ETextureSamplingMethod_Nearest, texture, 1u, "dataLinkSampler");
     }
 
     void MultiTypeLinkScene::setSampler(ramses::Appearance& appearance, const ramses::TextureSampler& sampler)

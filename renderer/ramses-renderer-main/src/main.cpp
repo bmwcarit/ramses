@@ -77,6 +77,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
         displayConfig.setWaylandIviSurfaceID(displayConfig.getWaylandIviSurfaceID() + i);
 
         displayManager.createDisplay(displayConfig);
+        displayManager.dispatchAndFlush();
     }
 
     // apply mapping commands

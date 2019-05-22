@@ -35,7 +35,6 @@ namespace ramses_internal
     SceneT<MEMORYPOOL>::SceneT(const SceneInfo& sceneInfo)
         : m_name(sceneInfo.friendlyName)
         , m_sceneId(sceneInfo.sceneID)
-        , m_sceneVersionTag(InvalidSceneVersionTag)
     {
     }
 
@@ -787,18 +786,6 @@ namespace ramses_internal
     const String& SceneT<MEMORYPOOL>::getName() const
     {
         return m_name;
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setSceneVersionTag(SceneVersionTag sceneVersionTag)
-    {
-        m_sceneVersionTag = sceneVersionTag;
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    SceneVersionTag SceneT<MEMORYPOOL>::getSceneVersionTag() const
-    {
-        return m_sceneVersionTag;
     }
 
     template <template<typename, typename> class MEMORYPOOL>

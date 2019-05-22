@@ -88,18 +88,5 @@ namespace ramses_internal
 
         EXPECT_EQ(sceneInfo.sceneID, scene.getSceneId());
         EXPECT_EQ(sceneInfo.friendlyName, scene.getName());
-        EXPECT_EQ(InvalidSceneVersionTag, scene.getSceneVersionTag());
-    }
-
-    TYPED_TEST(AScene, SetsSceneVersionTagCorrectly)
-    {
-        const SceneInfo sceneInfo;
-        TypeParam scene(sceneInfo);
-        EXPECT_EQ(InvalidSceneVersionTag, scene.getSceneVersionTag());
-
-        SceneVersionTag versionTag(25u);
-        scene.setSceneVersionTag(versionTag);
-        EXPECT_EQ(versionTag, scene.getSceneVersionTag());
-
     }
 }

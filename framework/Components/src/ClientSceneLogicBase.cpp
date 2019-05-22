@@ -40,7 +40,7 @@ namespace ramses_internal
         if (m_scenePublicationMode == EScenePublicationMode_Unpublished)
         {
             m_scenePublicationMode = publicationMode;
-            m_scenegraphSender.sendPublishScene(m_sceneId, m_myID, publicationMode, m_scene.getName());
+            m_scenegraphSender.sendPublishScene(m_sceneId, publicationMode, m_scene.getName());
         }
     }
 
@@ -102,7 +102,7 @@ namespace ramses_internal
         return result;
     }
 
-    void ClientSceneLogicBase::sendSceneToWaitingSubscribers(const IScene& scene, const FlushTimeInformation& flushTimeInfo)
+    void ClientSceneLogicBase::sendSceneToWaitingSubscribers(const IScene& scene, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag)
     {
         if (m_subscribersWaitingForScene.empty())
         {
@@ -125,7 +125,8 @@ namespace ramses_internal
             true,
             scene.getSceneSizeInformation(),
             resourceChanges,
-            flushTimeInfo);
+            flushTimeInfo,
+            versionTag);
 
         LOG_INFO(CONTEXT_CLIENT, "Sending scene " << scene.getSceneId() << " to " << m_subscribersWaitingForScene.size() << " subscribers, " <<
             collection.numberOfActions() << " scene actions (" << collection.collectionData().size() << " bytes)" <<

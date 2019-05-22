@@ -125,6 +125,7 @@ namespace ramses_internal
             ramses::ETextureAddressMode_Repeat,
             ramses::ETextureAddressMode_Repeat,
             ramses::ETextureSamplingMethod_Nearest,
+            ramses::ETextureSamplingMethod_Nearest,
             *streamTexture);
 
         ramses::Appearance* appearance = m_scene.createAppearance(*m_effect, "triangle appearance");

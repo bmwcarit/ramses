@@ -30,9 +30,6 @@ namespace ramses_internal
         virtual const String&               getName                         () const override;
         virtual SceneId                     getSceneId                      () const override;
 
-        virtual void                        setSceneVersionTag              (SceneVersionTag sceneVersionTag) override;
-        virtual SceneVersionTag             getSceneVersionTag              () const override;
-
         // Renderable
         virtual RenderableHandle            allocateRenderable              (NodeHandle nodeHandle, RenderableHandle handle = RenderableHandle::Invalid()) override;
         virtual void                        releaseRenderable               (RenderableHandle renderableHandle) override;

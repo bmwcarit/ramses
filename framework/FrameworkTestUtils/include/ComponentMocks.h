@@ -70,7 +70,7 @@ namespace ramses_internal
         MOCK_METHOD2(handleCreateScene, void(ClientScene& scene, bool enableLocalOnlyOptimization));
         MOCK_METHOD2(handlePublishScene, void(SceneId sceneId, EScenePublicationMode publicationMode));
         MOCK_METHOD1(handleUnpublishScene, void(SceneId sceneId));
-        MOCK_METHOD3(handleFlush, void(SceneId sceneId, ESceneFlushMode flushMode, const FlushTimeInformation&));
+        MOCK_METHOD4(handleFlush, void(SceneId sceneId, ESceneFlushMode flushMode, const FlushTimeInformation&, SceneVersionTag));
         MOCK_METHOD1(handleRemoveScene, void(SceneId sceneId));
         MOCK_METHOD2(handleSceneSubscription, void(SceneId sceneId, const Guid& subscriber));
         MOCK_METHOD2(handleSceneUnsubscription, void(SceneId sceneId, const Guid& subscriber));

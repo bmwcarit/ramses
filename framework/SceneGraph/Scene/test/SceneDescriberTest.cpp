@@ -31,14 +31,6 @@ namespace ramses_internal
             : creator(actions)
         {}
 
-        void expectSetSceneVersionTagAction(SceneActionCollection::SceneActionReader action, SceneVersionTag versionTag)
-        {
-            EXPECT_EQ(ESceneActionId_SetSceneVersionTag, action.type());
-            SceneVersionTag actualVersion;
-            action.read(actualVersion);
-            EXPECT_EQ(versionTag, actualVersion);
-        }
-
         void expectAllocateNodeAction(SceneActionCollection::SceneActionReader action, NodeHandle handle, UInt32 expectedChildrenCount)
         {
             EXPECT_EQ(ESceneActionId_AllocateNode, action.type());
@@ -159,9 +151,6 @@ namespace ramses_internal
 
     TEST_F(SceneDescriberTest, checksDescriptionActionsForSceneWithParentAndThreeChildren)
     {
-        SceneVersionTag versionTag(124u);
-        m_scene.setSceneVersionTag(versionTag);
-
         NodeHandle parent = m_scene.allocateNode();
         NodeHandle child2 = m_scene.allocateNode();
         NodeHandle child3 = m_scene.allocateNode();
@@ -173,7 +162,7 @@ namespace ramses_internal
 
         SceneDescriber::describeScene<IScene>(m_scene, creator);
 
-        ASSERT_EQ(8u, actions.numberOfActions());
+        ASSERT_EQ(7u, actions.numberOfActions());
         uint32_t actionIdx = 0u;
 
         expectAllocateNodeAction  (actions[actionIdx++], parent, 3u);
@@ -184,8 +173,6 @@ namespace ramses_internal
         expectAddChildToNodeAction(actions[actionIdx++], parent, child1);
         expectAddChildToNodeAction(actions[actionIdx++], parent, child2);
         expectAddChildToNodeAction(actions[actionIdx++], parent, child3);
-
-        expectSetSceneVersionTagAction(actions[actionIdx++], versionTag);
     }
 
     TEST_F(SceneDescriberTest, skipSceneActionForDataInstancesWithBinaryDataEqualZero)

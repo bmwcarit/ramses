@@ -20,7 +20,6 @@
 #include <gtest/gtest.h>
 
 #include "ramses-capu/container/HashTable.h"
-#include "ramses-capu/container/String.h"
 
 class HashTableTest: public ::testing::Test
 {

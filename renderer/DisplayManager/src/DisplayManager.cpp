@@ -72,7 +72,6 @@ namespace ramses_display_manager
     {
         ramses_internal::PlatformGuard guard(m_lock);
         const ramses::displayId_t displayId = m_ramsesRenderer.createDisplay(config);
-        m_ramsesRenderer.flush();
 
         return displayId;
     }
@@ -81,7 +80,6 @@ namespace ramses_display_manager
     {
         ramses_internal::PlatformGuard guard(m_lock);
         m_ramsesRenderer.destroyDisplay(displayId);
-        m_ramsesRenderer.flush();
     }
 
     void DisplayManager::processConfirmationEchoCommand(const char* text)

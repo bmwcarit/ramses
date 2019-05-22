@@ -68,49 +68,70 @@ namespace ramses_internal
         {
             sceneStateExecutor.setPublished(sceneId, senderID, EScenePublicationMode_LocalAndRemote);
             expectRendererEvent(ERendererEventType_ScenePublished);
-            EXPECT_EQ(ESceneState_Published, sceneStateExecutor.getSceneState(sceneId));
+            EXPECT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(sceneId));
         }
 
         void subscribeScene()
         {
             EXPECT_CALL(sceneGraphConsumerComponent, subscribeScene(senderID, sceneId));
             sceneStateExecutor.setSubscriptionRequested(sceneId);
-            EXPECT_EQ(ESceneState_SubscriptionRequested, sceneStateExecutor.getSceneState(sceneId));
+            EXPECT_EQ(ESceneState::SubscriptionRequested, sceneStateExecutor.getSceneState(sceneId));
         }
 
         void receiveScene()
         {
             sceneStateExecutor.setSubscriptionPending(sceneId);
             expectNoRendererEvent();
-            EXPECT_EQ(ESceneState_SubscriptionPending, sceneStateExecutor.getSceneState(sceneId));
+            EXPECT_EQ(ESceneState::SubscriptionPending, sceneStateExecutor.getSceneState(sceneId));
         }
 
         void receiveFlush()
         {
             sceneStateExecutor.setSubscribed(sceneId);
             expectRendererEvent(ERendererEventType_SceneSubscribed);
-            EXPECT_EQ(ESceneState_Subscribed, sceneStateExecutor.getSceneState(sceneId));
+            EXPECT_EQ(ESceneState::Subscribed, sceneStateExecutor.getSceneState(sceneId));
         }
 
         void requestMapScene()
         {
             sceneStateExecutor.setMapRequested(sceneId, mapDisplayHandle);
             expectNoRendererEvent();
-            EXPECT_EQ(ESceneState_MapRequested, sceneStateExecutor.getSceneState(sceneId));
+            EXPECT_EQ(ESceneState::MapRequested, sceneStateExecutor.getSceneState(sceneId));
         }
 
         void setSceneMappingAndUploading()
         {
             sceneStateExecutor.setMappingAndUploading(sceneId);
             expectNoRendererEvent();
-            EXPECT_EQ(ESceneState_MappingAndUploading, sceneStateExecutor.getSceneState(sceneId));
+            EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(sceneId));
         }
 
         void setSceneMapped()
         {
             sceneStateExecutor.setMapped(sceneId);
             expectRendererEvent(ERendererEventType_SceneMapped);
-            EXPECT_EQ(ESceneState_Mapped, sceneStateExecutor.getSceneState(sceneId));
+            EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(sceneId));
+        }
+
+        void setSceneRenderedRequested()
+        {
+            sceneStateExecutor.setRenderedRequested(sceneId);
+            expectNoRendererEvent();
+            EXPECT_EQ(ESceneState::RenderRequested, sceneStateExecutor.getSceneState(sceneId));
+        }
+
+        void setSceneRendered()
+        {
+            sceneStateExecutor.setRendered(sceneId);
+            expectRendererEvent(ERendererEventType_SceneShown);
+            EXPECT_EQ(ESceneState::Rendered, sceneStateExecutor.getSceneState(sceneId));
+        }
+
+        void setSceneHidden()
+        {
+            sceneStateExecutor.setHidden(sceneId);
+            expectRendererEvent(ERendererEventType_SceneHidden);
+            EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(sceneId));
         }
 
         void createDisplay()
@@ -211,6 +232,37 @@ namespace ramses_internal
         destroyDisplay();
     }
 
+    TEST_F(ASceneStateExecutor, canUnpublishRenderedRequestedScene)
+    {
+        publishScene();
+        subscribeScene();
+        receiveScene();
+        receiveFlush();
+        createDisplay();
+        requestMapScene();
+        setSceneMappingAndUploading();
+        setSceneMapped();
+        setSceneRenderedRequested();
+        EXPECT_TRUE(sceneStateExecutor.checkIfCanBeUnpublished(sceneId));
+        destroyDisplay();
+    }
+
+    TEST_F(ASceneStateExecutor, canUnpublishRenderedScene)
+    {
+        publishScene();
+        subscribeScene();
+        receiveScene();
+        receiveFlush();
+        createDisplay();
+        requestMapScene();
+        setSceneMappingAndUploading();
+        setSceneMapped();
+        setSceneRenderedRequested();
+        setSceneRendered();
+        EXPECT_TRUE(sceneStateExecutor.checkIfCanBeUnpublished(sceneId));
+        destroyDisplay();
+    }
+
     TEST_F(ASceneStateExecutor, canNotUnpublishUnknownScene)
     {
         const SceneId sceneIdForUnknownScene(1u);
@@ -272,6 +324,39 @@ namespace ramses_internal
         requestMapScene();
         setSceneMappingAndUploading();
         setSceneMapped();
+        EXPECT_FALSE(sceneStateExecutor.checkIfCanBeSubscriptionRequested(sceneId));
+        expectRendererEvent(ERendererEventType_SceneSubscribeFailed);
+        destroyDisplay();
+    }
+
+    TEST_F(ASceneStateExecutor, canNotRequestSubscriptionForRenderedRequestedScene)
+    {
+        publishScene();
+        subscribeScene();
+        receiveScene();
+        receiveFlush();
+        createDisplay();
+        requestMapScene();
+        setSceneMappingAndUploading();
+        setSceneMapped();
+        setSceneRenderedRequested();
+        EXPECT_FALSE(sceneStateExecutor.checkIfCanBeSubscriptionRequested(sceneId));
+        expectRendererEvent(ERendererEventType_SceneSubscribeFailed);
+        destroyDisplay();
+    }
+
+    TEST_F(ASceneStateExecutor, canNotRequestSubscriptionForRenderedScene)
+    {
+        publishScene();
+        subscribeScene();
+        receiveScene();
+        receiveFlush();
+        createDisplay();
+        requestMapScene();
+        setSceneMappingAndUploading();
+        setSceneMapped();
+        setSceneRenderedRequested();
+        setSceneRendered();
         EXPECT_FALSE(sceneStateExecutor.checkIfCanBeSubscriptionRequested(sceneId));
         expectRendererEvent(ERendererEventType_SceneSubscribeFailed);
         destroyDisplay();
@@ -341,6 +426,39 @@ namespace ramses_internal
         requestMapScene();
         setSceneMappingAndUploading();
         setSceneMapped();
+        EXPECT_FALSE(sceneStateExecutor.checkIfCanBeUnsubscribed(sceneId));
+        expectRendererEvent(ERendererEventType_SceneUnsubscribeFailed);
+        destroyDisplay();
+    }
+
+    TEST_F(ASceneStateExecutor, canNotUnsubscribeRenderedRequestedScene)
+    {
+        publishScene();
+        subscribeScene();
+        receiveScene();
+        receiveFlush();
+        createDisplay();
+        requestMapScene();
+        setSceneMappingAndUploading();
+        setSceneMapped();
+        setSceneRenderedRequested();
+        EXPECT_FALSE(sceneStateExecutor.checkIfCanBeUnsubscribed(sceneId));
+        expectRendererEvent(ERendererEventType_SceneUnsubscribeFailed);
+        destroyDisplay();
+    }
+
+    TEST_F(ASceneStateExecutor, canNotUnsubscribeRenderedScene)
+    {
+        publishScene();
+        subscribeScene();
+        receiveScene();
+        receiveFlush();
+        createDisplay();
+        requestMapScene();
+        setSceneMappingAndUploading();
+        setSceneMapped();
+        setSceneRenderedRequested();
+        setSceneRendered();
         EXPECT_FALSE(sceneStateExecutor.checkIfCanBeUnsubscribed(sceneId));
         expectRendererEvent(ERendererEventType_SceneUnsubscribeFailed);
         destroyDisplay();
@@ -448,6 +566,54 @@ namespace ramses_internal
         destroyDisplay();
     }
 
+    TEST_F(ASceneStateExecutor, canNotMapASceneWhichIsRenderedRequested)
+    {
+        createDisplay();
+        publishScene();
+        subscribeScene();
+        receiveScene();
+        receiveFlush();
+        requestMapScene();
+        setSceneMappingAndUploading();
+        setSceneMapped();
+        setSceneRenderedRequested();
+        EXPECT_FALSE(sceneStateExecutor.checkIfCanBeMapped(sceneId));
+        expectRendererEvent(ERendererEventType_SceneMapFailed);
+        destroyDisplay();
+    }
+
+    TEST_F(ASceneStateExecutor, canNotMapASceneWhichIsRendered)
+    {
+        createDisplay();
+        publishScene();
+        subscribeScene();
+        receiveScene();
+        receiveFlush();
+        requestMapScene();
+        setSceneMappingAndUploading();
+        setSceneMapped();
+        setSceneRenderedRequested();
+        setSceneRendered();
+        EXPECT_FALSE(sceneStateExecutor.checkIfCanBeMapped(sceneId));
+        expectRendererEvent(ERendererEventType_SceneMapFailed);
+        destroyDisplay();
+    }
+
+    TEST_F(ASceneStateExecutor, canNotHideASceneWhichIsMapped)
+    {
+        createDisplay();
+        publishScene();
+        subscribeScene();
+        receiveScene();
+        receiveFlush();
+        requestMapScene();
+        setSceneMappingAndUploading();
+        setSceneMapped();
+        EXPECT_FALSE(sceneStateExecutor.checkIfCanBeHidden(sceneId));
+        expectRendererEvent(ERendererEventType_SceneHideFailed);
+        destroyDisplay();
+    }
+
     TEST_F(ASceneStateExecutor, canUnmapMappedScene)
     {
         createDisplay();
@@ -524,6 +690,21 @@ namespace ramses_internal
         requestMapScene();
         setSceneMappingAndUploading();
         EXPECT_TRUE(sceneStateExecutor.checkIfCanBeUnmapped(sceneId));
+        destroyDisplay();
+    }
+
+    TEST_F(ASceneStateExecutor, canNotUnmapRenderedRequestedScene)
+    {
+        createDisplay();
+        publishScene();
+        subscribeScene();
+        receiveScene();
+        receiveFlush();
+        requestMapScene();
+        setSceneMappingAndUploading();
+        setSceneMapped();
+        setSceneRenderedRequested();
+        EXPECT_FALSE(sceneStateExecutor.checkIfCanBeUnmapped(sceneId));
         destroyDisplay();
     }
 
@@ -651,7 +832,7 @@ namespace ramses_internal
         publishScene();
         sceneStateExecutor.setUnpublished(sceneId);
         expectRendererEvent(ERendererEventType_SceneUnpublished);
-        EXPECT_EQ(ESceneState_Unknown, sceneStateExecutor.getSceneState(sceneId));
+        EXPECT_EQ(ESceneState::Unknown, sceneStateExecutor.getSceneState(sceneId));
     }
 
     TEST_F(ASceneStateExecutor, unpublishesSceneRequestedForSubscription)
@@ -660,7 +841,7 @@ namespace ramses_internal
         subscribeScene();
         sceneStateExecutor.setUnpublished(sceneId);
         expectRendererEvents({ ERendererEventType_SceneSubscribeFailed, ERendererEventType_SceneUnpublished });
-        EXPECT_EQ(ESceneState_Unknown, sceneStateExecutor.getSceneState(sceneId));
+        EXPECT_EQ(ESceneState::Unknown, sceneStateExecutor.getSceneState(sceneId));
     }
 
     TEST_F(ASceneStateExecutor, unpublishesSubscribeRequestedScene)
@@ -669,7 +850,7 @@ namespace ramses_internal
         subscribeScene();
         sceneStateExecutor.setUnpublished(sceneId);
         expectRendererEvents({ ERendererEventType_SceneSubscribeFailed, ERendererEventType_SceneUnpublished });
-        EXPECT_EQ(ESceneState_Unknown, sceneStateExecutor.getSceneState(sceneId));
+        EXPECT_EQ(ESceneState::Unknown, sceneStateExecutor.getSceneState(sceneId));
     }
 
     TEST_F(ASceneStateExecutor, unpublishesReceivedScene)
@@ -679,7 +860,7 @@ namespace ramses_internal
         receiveScene();
         sceneStateExecutor.setUnpublished(sceneId);
         expectRendererEvents({ ERendererEventType_SceneSubscribeFailed, ERendererEventType_SceneUnpublished });
-        EXPECT_EQ(ESceneState_Unknown, sceneStateExecutor.getSceneState(sceneId));
+        EXPECT_EQ(ESceneState::Unknown, sceneStateExecutor.getSceneState(sceneId));
     }
 
     TEST_F(ASceneStateExecutor, unpublishesSubscribedScene)
@@ -690,7 +871,7 @@ namespace ramses_internal
         receiveFlush();
         sceneStateExecutor.setUnpublished(sceneId);
         expectRendererEvents({ ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished });
-        EXPECT_EQ(ESceneState_Unknown, sceneStateExecutor.getSceneState(sceneId));
+        EXPECT_EQ(ESceneState::Unknown, sceneStateExecutor.getSceneState(sceneId));
     }
 
     TEST_F(ASceneStateExecutor, unpublishesMapRequestedScene)
@@ -704,7 +885,7 @@ namespace ramses_internal
         requestMapScene();
         sceneStateExecutor.setUnpublished(sceneId);
         expectRendererEvents({ ERendererEventType_SceneMapFailed, ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished });
-        EXPECT_EQ(ESceneState_Unknown, sceneStateExecutor.getSceneState(sceneId));
+        EXPECT_EQ(ESceneState::Unknown, sceneStateExecutor.getSceneState(sceneId));
 
         destroyDisplay();
     }
@@ -721,7 +902,7 @@ namespace ramses_internal
         setSceneMappingAndUploading();
         sceneStateExecutor.setUnpublished(sceneId);
         expectRendererEvents({ ERendererEventType_SceneMapFailed, ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished });
-        EXPECT_EQ(ESceneState_Unknown, sceneStateExecutor.getSceneState(sceneId));
+        EXPECT_EQ(ESceneState::Unknown, sceneStateExecutor.getSceneState(sceneId));
 
         destroyDisplay();
     }
@@ -739,7 +920,46 @@ namespace ramses_internal
         setSceneMapped();
         sceneStateExecutor.setUnpublished(sceneId);
         expectRendererEvents({ ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished });
-        EXPECT_EQ(ESceneState_Unknown, sceneStateExecutor.getSceneState(sceneId));
+        EXPECT_EQ(ESceneState::Unknown, sceneStateExecutor.getSceneState(sceneId));
+
+        destroyDisplay();
+    }
+
+    TEST_F(ASceneStateExecutor, unpublishesRenderedRequestedScene)
+    {
+        createDisplay();
+
+        publishScene();
+        subscribeScene();
+        receiveScene();
+        receiveFlush();
+        requestMapScene();
+        setSceneMappingAndUploading();
+        setSceneMapped();
+        setSceneRenderedRequested();
+        sceneStateExecutor.setUnpublished(sceneId);
+        expectRendererEvents({ ERendererEventType_SceneShowFailed, ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished });
+        EXPECT_EQ(ESceneState::Unknown, sceneStateExecutor.getSceneState(sceneId));
+
+        destroyDisplay();
+    }
+
+    TEST_F(ASceneStateExecutor, unpublishesRenderedScene)
+    {
+        createDisplay();
+
+        publishScene();
+        subscribeScene();
+        receiveScene();
+        receiveFlush();
+        requestMapScene();
+        setSceneMappingAndUploading();
+        setSceneMapped();
+        setSceneRenderedRequested();
+        setSceneRendered();
+        sceneStateExecutor.setUnpublished(sceneId);
+        expectRendererEvents({ ERendererEventType_SceneHiddenIndirect, ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished });
+        EXPECT_EQ(ESceneState::Unknown, sceneStateExecutor.getSceneState(sceneId));
 
         destroyDisplay();
     }
@@ -835,6 +1055,74 @@ namespace ramses_internal
         destroyDisplay();
     }
 
+    TEST_F(ASceneStateExecutor, renderRequestsMappedScene)
+    {
+        createDisplay();
+
+        publishScene();
+        subscribeScene();
+        receiveScene();
+        receiveFlush();
+        requestMapScene();
+        setSceneMappingAndUploading();
+        setSceneMapped();
+        setSceneRenderedRequested();
+
+        destroyDisplay();
+    }
+
+    TEST_F(ASceneStateExecutor, rendersRenderedRequestedScene)
+    {
+        createDisplay();
+
+        publishScene();
+        subscribeScene();
+        receiveScene();
+        receiveFlush();
+        requestMapScene();
+        setSceneMappingAndUploading();
+        setSceneMapped();
+        setSceneRenderedRequested();
+        setSceneRendered();
+
+        destroyDisplay();
+    }
+
+    TEST_F(ASceneStateExecutor, hidesRenderedRequestedScene)
+    {
+        createDisplay();
+
+        publishScene();
+        subscribeScene();
+        receiveScene();
+        receiveFlush();
+        requestMapScene();
+        setSceneMappingAndUploading();
+        setSceneMapped();
+        setSceneRenderedRequested();
+        setSceneHidden();
+
+        destroyDisplay();
+    }
+
+    TEST_F(ASceneStateExecutor, hidesRenderedScene)
+    {
+        createDisplay();
+
+        publishScene();
+        subscribeScene();
+        receiveScene();
+        receiveFlush();
+        requestMapScene();
+        setSceneMappingAndUploading();
+        setSceneMapped();
+        setSceneRenderedRequested();
+        setSceneRendered();
+        setSceneHidden();
+
+        destroyDisplay();
+    }
+
     TEST_F(ASceneStateExecutor, unmapsMappedScene)
     {
         createDisplay();
@@ -857,7 +1145,7 @@ namespace ramses_internal
         publishScene();
         sceneStateExecutor.setUnpublished(sceneId);
         expectRendererEvent(ERendererEventType_SceneUnpublished);
-        EXPECT_EQ(ESceneState_Unknown, sceneStateExecutor.getSceneState(sceneId));
+        EXPECT_EQ(ESceneState::Unknown, sceneStateExecutor.getSceneState(sceneId));
         publishScene();
     }
 
@@ -907,6 +1195,6 @@ namespace ramses_internal
 
     TEST_F(ASceneStateExecutor, getsUnknownStateForUnknownScene)
     {
-        EXPECT_EQ(ESceneState_Unknown, sceneStateExecutor.getSceneState(SceneId(0u)));
+        EXPECT_EQ(ESceneState::Unknown, sceneStateExecutor.getSceneState(SceneId(0u)));
     }
 }

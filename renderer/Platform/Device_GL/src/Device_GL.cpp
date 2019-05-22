@@ -740,14 +740,14 @@ namespace ramses_internal
         m_resourceMapper.deleteResource(bufferHandle);
     }
 
-    DeviceResourceHandle Device_GL::uploadTextureSampler(EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod sampling, UInt32 anisotropyLevel)
+    DeviceResourceHandle Device_GL::uploadTextureSampler(EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod minSampling, ESamplingMethod magSampling, UInt32 anisotropyLevel)
     {
         GLuint sampler;
         glGenSamplers(1, &sampler);
 
-        setTextureFiltering(sampler, wrapU, wrapV, wrapR, sampling, anisotropyLevel);
+        setTextureFiltering(sampler, wrapU, wrapV, wrapR, minSampling, magSampling, anisotropyLevel);
 
-        const GPUResource& textureSamplerGPUResource = *new TextureSamplerGPUResource(wrapU, wrapV, wrapR, sampling, anisotropyLevel, sampler, 0);
+        const GPUResource& textureSamplerGPUResource = *new TextureSamplerGPUResource(wrapU, wrapV, wrapR, minSampling, magSampling, anisotropyLevel, sampler, 0);
         return m_resourceMapper.registerResource(textureSamplerGPUResource);
     }
 
@@ -938,7 +938,7 @@ namespace ramses_internal
         renderTargetPair->readingIndex = (renderTargetPair->readingIndex + 1) % 2;
     }
 
-    void Device_GL::setTextureFiltering(GLenum target, EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod sampling, UInt32 anisotropyLevel)
+    void Device_GL::setTextureFiltering(GLenum target, EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod minSampling, ESamplingMethod magSampling, UInt32 anisotropyLevel)
     {
         const GLenum wrappingModeR = TypesConversion_GL::GetWrapMode(wrapR);
         const GLenum wrappingModeU = TypesConversion_GL::GetWrapMode(wrapU);
@@ -948,34 +948,37 @@ namespace ramses_internal
         glTexParameteri(target, GL_TEXTURE_WRAP_T, wrappingModeV);
         glTexParameteri(target, GL_TEXTURE_WRAP_R, wrappingModeR);
 
-        switch (sampling)
+        switch (minSampling)
         {
         case ESamplingMethod::Nearest:
             glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             break;
-        case ESamplingMethod::Bilinear:
+        case ESamplingMethod::Linear:
             glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             break;
-        case ESamplingMethod::NearestWithMipmaps:
+        case ESamplingMethod::Nearest_MipMapNearest:
             glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-            glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             break;
-        case ESamplingMethod::BilinearWithMipMaps:
+        case ESamplingMethod::Nearest_MipMapLinear:
+            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+            break;
+        case ESamplingMethod::Linear_MipMapNearest:
             glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-            glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             break;
-        case ESamplingMethod::Trilinear:
+        case ESamplingMethod::Linear_MipMapLinear:
             glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-            glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             break;
-        case ESamplingMethod::MinLinearMagNearest:
-            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        default:
+            assert(false && "Unsupported texture sampling method");
+            break;
+        }
+
+        switch (magSampling)
+        {
+        case ESamplingMethod::Nearest:
             glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             break;
-        case ESamplingMethod::MinNearestMagLinear:
-            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        case ESamplingMethod::Linear:
             glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             break;
         default:
@@ -1004,12 +1007,12 @@ namespace ramses_internal
         return texID;
     }
 
-    void Device_GL::setTextureSampling(DataFieldHandle field, EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod sampling, UInt32 anisotropyLevel)
+    void Device_GL::setTextureSampling(DataFieldHandle field, EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod minSampling, ESamplingMethod magSampling, UInt32 anisotropyLevel)
     {
         // TODO violin try to remove dependency of sampling state to uniform input. Idea: provide texture explicitly, or use more modern sampler objects
         const GLenum target = TypesConversion_GL::GetTextureTargetFromTextureInputType(m_activeShader->getTextureSlot(field).textureType);
 
-        setTextureFiltering(target, wrapU, wrapV, wrapR, sampling, anisotropyLevel);
+        setTextureFiltering(target, wrapU, wrapV, wrapR, minSampling, magSampling, anisotropyLevel);
     }
 
     DeviceResourceHandle Device_GL::allocateVertexBuffer(EDataType dataType, UInt32 sizeInBytes)

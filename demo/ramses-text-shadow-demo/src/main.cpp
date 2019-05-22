@@ -61,7 +61,8 @@ int main(int argc, char* argv[])
     ramses::TextureSampler& backgroundTextureSampler =
         *scene.createTextureSampler(ramses::ETextureAddressMode_Repeat,
                                     ramses::ETextureAddressMode_Repeat,
-                                    ramses::ETextureSamplingMethod_Bilinear,
+                                    ramses::ETextureSamplingMethod_Linear,
+                                    ramses::ETextureSamplingMethod_Linear,
                                     backgroundTexture);
 
     ImageBox backgroundImageBox(backgroundTextureSampler, displayWidth, displayHeight, false, client, scene, &renderGroup, 0);

@@ -78,6 +78,9 @@ namespace ramses_internal
 
         void setLimitFlushesForceApply(UInt limitForPendingFlushesForceApply);
         void setLimitFlushesForceUnsubscribe(UInt limitForPendingFlushesForceUnsubscribe);
+
+        static constexpr UInt SceneActionsPerChunkToApply = 100u;
+
     private:
         void destroyScene(SceneId sceneID);
         void unloadSceneResourcesAndUnrefSceneResources(SceneId sceneId);
@@ -86,7 +89,7 @@ namespace ramses_internal
 
         UInt32 updateScenePendingFlushes(SceneId sceneID, StagingInfo& stagingInfo);
         void applySceneActions(IScene& scene, PendingFlush& flushInfo);
-        void applySceneActionsPartially(IScene& scene, PendingFlush& flushInfo);
+        void applySceneActionsPartially(IScene& scene, PendingFlush& flushInfo, bool firstChunk);
         UInt32 applyPendingFlushes(SceneId sceneID, StagingInfo& stagingInfo, EResourceStatus resourcesStatus, Bool applyFlushPartially);
         void processStagedResourceChanges(SceneId sceneID, StagingInfo& stagingInfo, DisplayHandle& activeDisplay);
 
@@ -138,7 +141,6 @@ namespace ramses_internal
         };
         typedef HashMap<SceneId, SceneMapRequest> SceneMapRequests;
         SceneMapRequests m_scenesToBeMapped;
-        HashSet<SceneId> m_scenesToBeShown;
 
         // extracted from RendererSceneUpdater::updateScenesTransformationCache to avoid per frame allocation
         HashSet<SceneId> m_scenesNeedingTransformationCacheUpdate;

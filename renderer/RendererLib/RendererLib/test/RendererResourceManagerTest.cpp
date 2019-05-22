@@ -417,11 +417,12 @@ TEST_F(ARendererResourceManager, canUploadAndUnloadTextureSampler)
     const EWrapMethod wrapU(EWrapMethod::Clamp);
     const EWrapMethod wrapV(EWrapMethod::Repeat);
     const EWrapMethod wrapR(EWrapMethod::RepeatMirrored);
-    const ESamplingMethod sampling(ESamplingMethod::Bilinear);
+    const ESamplingMethod minSampling(ESamplingMethod::Linear);
+    const ESamplingMethod magSampling(ESamplingMethod::Linear_MipMapLinear);
     const UInt32 anisotropyLevel(2u);
-    const TextureSamplerStates state(wrapU, wrapV, wrapR, sampling, anisotropyLevel);
+    const TextureSamplerStates state(wrapU, wrapV, wrapR, minSampling, magSampling, anisotropyLevel);
 
-    EXPECT_CALL(renderer.deviceMock, uploadTextureSampler(wrapU, wrapV, wrapR, sampling, anisotropyLevel));
+    EXPECT_CALL(renderer.deviceMock, uploadTextureSampler(wrapU, wrapV, wrapR, minSampling, magSampling, anisotropyLevel));
     resourceManager.uploadTextureSampler(textureSampler, fakeSceneId, state);
 
     EXPECT_EQ(DeviceMock::FakeTextureSamplerDeviceHandle, resourceManager.getTextureSamplerDeviceHandle(textureSampler, fakeSceneId));

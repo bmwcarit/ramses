@@ -107,7 +107,7 @@ namespace ramses
     {
         const RenderBuffer* renderBuffer = m_scene.createRenderBuffer(400u, 400u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
         ASSERT_TRUE(renderBuffer != nullptr);
-        m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, *renderBuffer);
+        m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Nearest, *renderBuffer);
         EXPECT_NE(StatusOK, renderBuffer->validate());
     }
 
@@ -116,7 +116,7 @@ namespace ramses
         const RenderBuffer* renderBuffer = m_scene.createRenderBuffer(400u, 400u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
         ASSERT_TRUE(renderBuffer != nullptr);
         useInRenderPass(*renderBuffer);
-        m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, *renderBuffer);
+        m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Nearest, *renderBuffer);
         EXPECT_EQ(StatusOK, renderBuffer->validate());
     }
 
@@ -125,7 +125,7 @@ namespace ramses
         const RenderBuffer* renderBuffer = m_scene.createRenderBuffer(400u, 400u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
         ASSERT_TRUE(renderBuffer != nullptr);
         useInBlitPassAsDestination(*renderBuffer);
-        m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, *renderBuffer);
+        m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Nearest, *renderBuffer);
         EXPECT_EQ(StatusOK, renderBuffer->validate());
     }
 

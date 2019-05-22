@@ -48,11 +48,6 @@ namespace ramses_internal
     {
         switch (action.type())
         {
-        case ESceneActionId_SetSceneVersionTag:
-        {
-            scene.setSceneVersionTag(ReadSceneVersionTag(action));
-            break;
-        }
         case ESceneActionId_AllocateNode:
         {
             UInt32 childrenCount = 0u;
@@ -823,7 +818,8 @@ namespace ramses_internal
             action.read(sampler.states.m_addressModeU);
             action.read(sampler.states.m_addressModeV);
             action.read(sampler.states.m_addressModeR);
-            action.read(sampler.states.m_samplingMode);
+            action.read(sampler.states.m_minSamplingMode);
+            action.read(sampler.states.m_magSamplingMode);
             action.read(sampler.states.m_anisotropyLevel);
 
             action.read(sampler.contentType);
@@ -1866,6 +1862,7 @@ namespace ramses_internal
         SceneSizeInformation& sizeInfo,
         SceneResourceChanges& resourceChanges,
         FlushTimeInformation& flushTimeInfo,
+        SceneVersionTag& versionTag,
         TimeStampVector* timestamps)
     {
         assert(action.type() == ESceneActionId_Flush);
@@ -1887,6 +1884,8 @@ namespace ramses_internal
         flushTimeInfo.expirationTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(tsVal));
         action.read(tsVal);
         flushTimeInfo.internalTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(tsVal));
+
+        action.read(versionTag);
 
         if (hasTimestamps)
         {
@@ -1910,16 +1909,6 @@ namespace ramses_internal
             }
         }
         assert(action.isFullyRead());
-    }
-
-    SceneVersionTag SceneActionApplier::ReadSceneVersionTag(SceneActionCollection::SceneActionReader& action)
-    {
-        assert(action.type() == ESceneActionId_SetSceneVersionTag);
-        SceneVersionTag sceneVersionTag;
-        action.read(sceneVersionTag.getReference());
-        assert(sceneVersionTag != InvalidSceneVersionTag);
-        assert(action.isFullyRead());
-        return sceneVersionTag;
     }
 
     void SceneActionApplier::GetSceneSizeInformation(SceneActionCollection::SceneActionReader& action, SceneSizeInformation& sizeInfo)

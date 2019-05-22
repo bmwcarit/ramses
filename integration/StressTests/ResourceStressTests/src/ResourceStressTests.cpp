@@ -10,7 +10,6 @@
 
 #include "ramses-renderer-api/RendererConfig.h"
 
-#include "ConsoleLogCapture.h"
 #include "Utils/Argument.h"
 #include "ResourceStressTestSceneArray.h"
 #include "RenderExecutor.h"

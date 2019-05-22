@@ -25,7 +25,7 @@ namespace ramses_internal
     {
         const uint32_t numArgStrings = static_cast<uint32_t>(input.size());
         UInt32 displayId(0);
-        ESceneState sceneState(ESceneState_Unknown);
+        ESceneState sceneState(ESceneState::Unknown);
 
         LOG_INFO(CONTEXT_RAMSH, "Warning: Executing showScene command which is unsafe and only for debugging...");
         LOG_INFO(CONTEXT_RAMSH, "If showScene is not successful, you may run it again and necessarily with a higher timeout value until it successfully recovers from any intermediate states thru the target rendered scene state");
@@ -53,51 +53,51 @@ namespace ramses_internal
 
         //checking if scene is already rendered or ready to execute
         sceneState = m_renderer.getSceneStateExecutor().getSceneState(sceneId);
-        if (sceneState==ESceneState_Rendered)
+        if (sceneState==ESceneState::Rendered)
         {
             LOG_ERROR(CONTEXT_RAMSH, "Scene is already rendered!");
             return false;
         }
-        else if (!((sceneState==ESceneState_Published) || (sceneState==ESceneState_Subscribed) || (sceneState==ESceneState_Mapped)))
+        else if (!((sceneState==ESceneState::Published) || (sceneState==ESceneState::Subscribed) || (sceneState==ESceneState::Mapped)))
         {
             LOG_ERROR(CONTEXT_RAMSH, "Scene is not published, subscribed or mapped! Not possible to execute show scene command.");
             return false;
         }
         else
         {
-            if(sceneState!=ESceneState_Published)
+            if(sceneState!=ESceneState::Published)
             {
-                LOG_ERROR(CONTEXT_RAMSH, "Recovering scene " << sceneId << " from " << SceneStateNames[sceneState] << " state...");
+                LOG_ERROR(CONTEXT_RAMSH, "Recovering scene " << sceneId << " from " << EnumToString(sceneState) << " state...");
             }
         }
 
-        if (sceneState==ESceneState_Published)
+        if (sceneState==ESceneState::Published)
         {
             m_renderer.getRendererCommandBuffer().subscribeScene(sceneId);
-            sceneState=waitForSceneState(sceneId,ESceneState_Subscribed);
-            if (sceneState!=ESceneState_Subscribed)
+            sceneState=waitForSceneState(sceneId,ESceneState::Subscribed);
+            if (sceneState!=ESceneState::Subscribed)
             {
                 LOG_ERROR(CONTEXT_RAMSH, "Subscribing scene request" << sceneId.getValue() << " is timed out!");
                 return false;
             }
         }
 
-        if (sceneState==ESceneState_Subscribed)
+        if (sceneState==ESceneState::Subscribed)
         {
             m_renderer.getRendererCommandBuffer().mapSceneToDisplay(sceneId, DisplayHandle(displayId), 0);
-            sceneState=waitForSceneState(sceneId,ESceneState_Mapped);
-            if (sceneState!=ESceneState_Mapped)
+            sceneState=waitForSceneState(sceneId,ESceneState::Mapped);
+            if (sceneState!=ESceneState::Mapped)
             {
                 LOG_ERROR(CONTEXT_RAMSH, "Mapping scene request" << sceneId.getValue() << " is timed out!");
                 return false;
             }
         }
 
-        if (sceneState==ESceneState_Mapped)
+        if (sceneState==ESceneState::Mapped)
         {
             m_renderer.getRendererCommandBuffer().showScene(sceneId);
-            sceneState=waitForSceneState(sceneId,ESceneState_Rendered);
-            if (sceneState!=ESceneState_Rendered)
+            sceneState=waitForSceneState(sceneId,ESceneState::Rendered);
+            if (sceneState!=ESceneState::Rendered)
             {
                 LOG_ERROR(CONTEXT_RAMSH, "Rendering scene request" << sceneId.getValue() << " is timed out!");
                 return false;
@@ -110,7 +110,7 @@ namespace ramses_internal
 
     ESceneState ShowSceneCommand::waitForSceneState(SceneId sceneId, ESceneState targetSceneState)
     {
-        ESceneState sceneState(ESceneState_Unknown);
+        ESceneState sceneState(ESceneState::Unknown);
         UInt32 execution_time(0);
         while (execution_time < m_timeout)
         {

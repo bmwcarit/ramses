@@ -26,7 +26,7 @@ FOREACH(PROPERTY ${ACME2_API})
 ENDFOREACH()
 
 # values provided by ACME_PROJECT call are in PROJECT_<value>
-ARGUMENT_SPLITTER("${PROJECT_SETTINGS}" "${ACME2_API}" PROJECT_)
+cmake_parse_arguments(PROJECT "" "" "${ACME2_API}" ${PROJECT_SETTINGS})
 
 # default values are in DEFAULT_<value>
 INCLUDE(${ACME2_BASE_DIR}/internal/init_default_settings.cmake)

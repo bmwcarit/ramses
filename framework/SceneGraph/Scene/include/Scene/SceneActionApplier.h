@@ -39,8 +39,8 @@ namespace ramses_internal
             SceneSizeInformation& sizeInfo,
             SceneResourceChanges& resourceChanges,
             FlushTimeInformation& flushTimeInfo,
+            SceneVersionTag& versionTag,
             TimeStampVector* timestamps);
-        static SceneVersionTag ReadSceneVersionTag(SceneActionCollection::SceneActionReader& action);
 
     private:
         static void GetSceneSizeInformation(SceneActionCollection::SceneActionReader& action, SceneSizeInformation& sizeInfo);

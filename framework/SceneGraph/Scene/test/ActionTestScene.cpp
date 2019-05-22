@@ -27,17 +27,6 @@ namespace ramses_internal
         return m_scene.getSceneId();
     }
 
-    SceneVersionTag ActionTestScene::getSceneVersionTag() const
-    {
-        return m_scene.getSceneVersionTag();
-    }
-
-    void ActionTestScene::setSceneVersionTag(SceneVersionTag sceneVersionTag)
-    {
-        m_actionCollector.setSceneVersionTag(sceneVersionTag);
-        flushPendingSceneActions();
-    }
-
     UInt32 ActionTestScene::getRenderableCount() const
     {
         return m_scene.getRenderableCount();

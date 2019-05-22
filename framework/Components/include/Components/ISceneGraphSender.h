@@ -20,7 +20,7 @@ namespace ramses_internal
     {
     public:
         virtual ~ISceneGraphSender() {}
-        virtual void sendPublishScene        (SceneId sceneId, const Guid& clientThatHasScene, EScenePublicationMode publicationMode, const String& name) = 0;
+        virtual void sendPublishScene        (SceneId sceneId, EScenePublicationMode publicationMode, const String& name) = 0;
         virtual void sendUnpublishScene      (SceneId sceneId, EScenePublicationMode publicationMode) = 0;
         virtual void sendCreateScene         (const Guid& to, const SceneInfo& sceneInfo, EScenePublicationMode publicationMode) = 0;
         virtual void sendSceneActionList     (const std::vector<Guid>& to, SceneActionCollection&& sceneAction, SceneId sceneId, EScenePublicationMode mode) = 0;

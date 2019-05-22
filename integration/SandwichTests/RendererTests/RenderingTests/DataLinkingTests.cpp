@@ -10,6 +10,7 @@
 #include "TestScenes/TransformationLinkScene.h"
 #include "TestScenes/MultiTransformationLinkScene.h"
 #include "TestScenes/DataLinkScene.h"
+#include "TestScenes/ViewportLinkScene.h"
 #include "TestScenes/TextureLinkScene.h"
 #include "TestScenes/MultiTypeLinkScene.h"
 #include "TestScenes/MultipleTrianglesScene.h"
@@ -38,6 +39,9 @@ void DataLinkingTests::setUpTestCases(RendererTestsFramework& testFramework)
     testFramework.createTestCaseWithDefaultDisplay(DataLinkTest_LinksRemoved, *this, "DataLinkTest_LinksRemoved");
     testFramework.createTestCaseWithDefaultDisplay(DataLinkTest_ProviderRemoved, *this, "DataLinkTest_ProviderRemoved");
     testFramework.createTestCaseWithDefaultDisplay(DataLinkTest_ConsumerRemoved, *this, "DataLinkTest_ConsumerRemoved");
+
+    testFramework.createTestCaseWithDefaultDisplay(ViewportLinkTest_NoLinks, *this, "ViewportLinkTest_NoLinks");
+    testFramework.createTestCaseWithDefaultDisplay(ViewportLinkTest_Linked, *this, "ViewportLinkTest_Linked");
 
     testFramework.createTestCaseWithDefaultDisplay(TextureLinkTest_NoLinks, *this, "TextureLinkTest_NoLinks");
     testFramework.createTestCaseWithDefaultDisplay(TextureLinkTest_Linked, *this, "TextureLinkTest_Linked");
@@ -309,6 +313,20 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
         scene.flush();
 
         expectedImageName = "DataLinkTest_RemovedConsumer";
+    }
+        break;
+
+    case ViewportLinkTest_NoLinks:
+        testFramework.createAndShowScene<ViewportLinkScene>(ViewportLinkScene::VIEWPORT_CONSUMER, m_cameraMid);
+        expectedImageName = "ViewportLinkTest_NoLinks";
+        break;
+    case ViewportLinkTest_Linked:
+    {
+        const auto providerSceneId = testFramework.createAndShowScene<ViewportLinkScene>(ViewportLinkScene::VIEWPORT_PROVIDER, m_cameraMid);
+        const auto consumerSceneId = testFramework.createAndShowScene<ViewportLinkScene>(ViewportLinkScene::VIEWPORT_CONSUMER, m_cameraMid);
+        testFramework.createDataLink(providerSceneId, ViewportLinkScene::ViewportOffsetProviderId, consumerSceneId, ViewportLinkScene::ViewportOffsetConsumerId);
+        testFramework.createDataLink(providerSceneId, ViewportLinkScene::ViewportSizeProviderId, consumerSceneId, ViewportLinkScene::ViewportSizeConsumerId);
+        expectedImageName = "ViewportLinkTest_Linked";
     }
         break;
 

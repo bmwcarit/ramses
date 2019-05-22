@@ -138,7 +138,7 @@ namespace ramses_internal
             assert(m_textureBuffer == nullptr);
             m_textureBuffer = m_scene.createTexture2DBuffer(1, 4u, 4u, ramses::ETextureFormat_RGBA8);
             m_textureBuffer->setData(reinterpret_cast<const char*>(rgba_4x4_blue), 0, 0, 0, 4, 4);
-            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_NearestWithMipmaps, *m_textureBuffer);
+            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_Nearest_MipMapNearest, ramses::ETextureSamplingMethod_Nearest, *m_textureBuffer);
             mipToFetch = 0;
             break;
         }
@@ -149,7 +149,7 @@ namespace ramses_internal
             m_textureBuffer->setData(reinterpret_cast<const char*>(rgba_4x4_blue) , 0, 0, 0, 4, 4);
             m_textureBuffer->setData(reinterpret_cast<const char*>(rgba_2x2_green), 1, 0, 0, 2, 2);
             m_textureBuffer->setData(reinterpret_cast<const char*>(rgba_1x1_red)  , 2, 0, 0, 1, 1);
-            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_NearestWithMipmaps, *m_textureBuffer);
+            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_Nearest_MipMapNearest, ramses::ETextureSamplingMethod_Nearest, *m_textureBuffer);
             break;
         }
         case EState_PartialUpdate:
@@ -157,7 +157,7 @@ namespace ramses_internal
             assert(m_textureBuffer == nullptr);
             m_textureBuffer = m_scene.createTexture2DBuffer(1, 4u, 4u, ramses::ETextureFormat_RGBA8);
             m_textureBuffer->setData(reinterpret_cast<const char*>(rgba_4x4_blue), 0, 0, 0, 4, 4);
-            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_NearestWithMipmaps, *m_textureBuffer);
+            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_Nearest_MipMapNearest, ramses::ETextureSamplingMethod_Nearest, *m_textureBuffer);
 
             // update
             m_textureBuffer->setData(reinterpret_cast<const char*>(rgba_2x2_green), 0, 1, 1, 2, 2);
@@ -172,7 +172,7 @@ namespace ramses_internal
             m_textureBuffer->setData(reinterpret_cast<const char*>(rgba_4x4_blue), 0, 0, 0, 4, 4);
             m_textureBuffer->setData(reinterpret_cast<const char*>(rgba_2x2_green), 1, 0, 0, 2, 2);
             m_textureBuffer->setData(reinterpret_cast<const char*>(rgba_1x1_red), 2, 0, 0, 1, 1);
-            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_NearestWithMipmaps, *m_textureBuffer);
+            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_Nearest_MipMapNearest, ramses::ETextureSamplingMethod_Nearest, *m_textureBuffer);
 
             // update
             m_textureBuffer->setData(reinterpret_cast<const char*>(rgba_1x1_red), 1, 1, 1, 1, 1);
@@ -187,7 +187,7 @@ namespace ramses_internal
             m_textureBuffer->setData(reinterpret_cast<const char*>(rg_4x4_red)  , 0, 0, 0, 4, 4);
             m_textureBuffer->setData(reinterpret_cast<const char*>(rg_2x2_green), 1, 0, 0, 2, 2);
             m_textureBuffer->setData(reinterpret_cast<const char*>(rg_1x1_black), 2, 0, 0, 1, 1);
-            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_NearestWithMipmaps, *m_textureBuffer);
+            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_Nearest_MipMapNearest, ramses::ETextureSamplingMethod_Nearest, *m_textureBuffer);
 
             // update
             m_textureBuffer->setData(reinterpret_cast<const char*>(rg_1x1_black), 1, 1, 1, 1, 1);
@@ -200,7 +200,7 @@ namespace ramses_internal
             const ramses::MipLevelData mip2x2(sizeof(rgba_2x2_green), rgba_2x2_green);
             const ramses::MipLevelData mips[] = { mip2x2 };
             m_clientTexture = m_client.createTexture2D(2u, 2u, ramses::ETextureFormat_RGBA8, 1u, mips);
-            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_NearestWithMipmaps, *m_clientTexture);
+            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_Nearest_MipMapNearest, ramses::ETextureSamplingMethod_Nearest, *m_clientTexture);
             mipToFetch = 0;
             break;
         }
@@ -208,14 +208,14 @@ namespace ramses_internal
         {
             // don't create new resource, use existing one (to discover weird resource reuse bugs)
             assert(nullptr != m_clientTexture);
-            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_NearestWithMipmaps, *m_clientTexture);
+            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_Nearest_MipMapNearest, ramses::ETextureSamplingMethod_Nearest, *m_clientTexture);
             mipToFetch = 0;
             break;
         }
         case EState_SwitchBackToExistingTextureBufferAndUpdate:
         {
             assert(nullptr != m_textureBuffer);
-            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_NearestWithMipmaps, *m_textureBuffer);
+            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_Nearest_MipMapNearest, ramses::ETextureSamplingMethod_Nearest, *m_textureBuffer);
             m_textureBuffer->setData(reinterpret_cast<const char*>(rgba_4x4_red), 0, 0, 0, 4, 4);
             mipToFetch = 0;
             break;

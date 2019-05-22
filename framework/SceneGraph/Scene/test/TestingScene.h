@@ -31,8 +31,6 @@ namespace ramses_internal
                 scene.preallocateSceneSize(SceneSizeInformation(100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u));
             }
 
-            scene.setSceneVersionTag(sceneVersionTag);
-
             scene.allocateNode(0u, parent);
             scene.allocateNode(0u, child);
             scene.allocateNode(0u, childChild1);
@@ -202,7 +200,6 @@ namespace ramses_internal
             CheckDataBuffersEquivalentTo<OTHERSCENE>(otherScene);
             CheckTextureBuffersEquivalentTo<OTHERSCENE>(otherScene);
             CheckDataSlotsEquivalentTo<OTHERSCENE>(otherScene);
-            CheckSceneVersionTagEquivalentTo<OTHERSCENE>(otherScene);
         }
 
         template <typename OTHERSCENE>
@@ -374,7 +371,8 @@ namespace ramses_internal
             EXPECT_EQ(samplerStates.m_addressModeU, otherScene.getTextureSampler(samplerWithTextureResource).states.m_addressModeU);
             EXPECT_EQ(samplerStates.m_addressModeV, otherScene.getTextureSampler(samplerWithTextureResource).states.m_addressModeV);
             EXPECT_EQ(samplerStates.m_addressModeR, otherScene.getTextureSampler(samplerWithTextureResource).states.m_addressModeR);
-            EXPECT_EQ(samplerStates.m_samplingMode, otherScene.getTextureSampler(samplerWithTextureResource).states.m_samplingMode);
+            EXPECT_EQ(samplerStates.m_minSamplingMode, otherScene.getTextureSampler(samplerWithTextureResource).states.m_minSamplingMode);
+            EXPECT_EQ(samplerStates.m_magSamplingMode, otherScene.getTextureSampler(samplerWithTextureResource).states.m_magSamplingMode);
             EXPECT_EQ(samplerStates.m_anisotropyLevel, otherScene.getTextureSampler(samplerWithTextureResource).states.m_anisotropyLevel);
 
             EXPECT_EQ(textureHash, otherScene.getTextureSampler(samplerWithTextureResource).textureResource);
@@ -578,12 +576,6 @@ namespace ramses_internal
             EXPECT_EQ(samplerWithTextureResource, dataSlot.attachedTextureSampler);
         }
 
-        template <typename OTHERSCENE>
-        void CheckSceneVersionTagEquivalentTo(const OTHERSCENE& otherScene) const
-        {
-            EXPECT_EQ(sceneVersionTag, otherScene.getSceneVersionTag());
-        }
-
         SCENE                       scene;
 
         const ResourceContentHash   indexArrayHash                  {111u, 0};
@@ -640,9 +632,8 @@ namespace ramses_internal
         const RenderGroupHandle      renderGroup2                   {60u};
         const RenderGroupHandle      nestedRenderGroupParent        {61u};
         const RenderGroupHandle      nestedRenderGroupChild         {62u};
-        const SceneVersionTag        sceneVersionTag                {63u};
         const UInt32                 renderableInstanceCount        = 64u;
-        const TextureSamplerStates   samplerStates                  { EWrapMethod::Repeat, EWrapMethod::Clamp, EWrapMethod::RepeatMirrored, ESamplingMethod::Nearest, 32u };
+        const TextureSamplerStates   samplerStates                  { EWrapMethod::Repeat, EWrapMethod::Clamp, EWrapMethod::RepeatMirrored, ESamplingMethod::Nearest, ESamplingMethod::Linear, 32u };
         const PixelRectangle         blitPassSourceRectangle        = PixelRectangle({1u, 2u, 300u, 400u});
         const PixelRectangle         blitPassDestinationRectangle   = PixelRectangle({5u, 6u, 700u, 800u});
         const DataBufferHandle       indexDataBuffer                { 65u };

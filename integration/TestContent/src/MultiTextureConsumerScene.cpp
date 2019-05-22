@@ -63,7 +63,8 @@ namespace ramses_internal
         ramses::TextureSampler *sampler = m_scene.createTextureSampler(
             ramses::ETextureAddressMode_Repeat,
             ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureSamplingMethod_Bilinear,
+            ramses::ETextureSamplingMethod_Linear,
+            ramses::ETextureSamplingMethod_Linear,
             texture,
             1u);
 

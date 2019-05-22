@@ -258,7 +258,7 @@ QuadSceneInfo* createQuadSceneContent(ramses::RamsesClient& client, ramses::scen
     effect->findUniformInput("textureSampler", textureInput);
     ramses::Texture2D* fallbackTexture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-example-local-datalink-texture-fallback.png", client);
     sceneInfo->textureSampler = sceneInfo->scene->createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp,
-        ramses::ETextureSamplingMethod_Bilinear, *fallbackTexture);
+        ramses::ETextureSamplingMethod_Linear, ramses::ETextureSamplingMethod_Linear, *fallbackTexture);
     appearance->setInputTexture(textureInput, *sceneInfo->textureSampler);
 
     sceneInfo->consumerNode = sceneInfo->scene->createNode("quad root node");

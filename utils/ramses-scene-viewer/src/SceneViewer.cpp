@@ -23,6 +23,9 @@
 #include "PlatformAbstraction/PlatformThread.h"
 #include "RendererLib/RendererConfigUtils.h"
 #include "ramses-hmi-utils.h"
+#include <fstream>
+#include "ramses-capu/os/StringUtils.h"
+#include <ramses-capu/os/PlatformInclude.h>
 
 namespace ramses_internal
 {
@@ -31,12 +34,14 @@ namespace ramses_internal
         , m_helpArgument(m_parser, "help", "help", false, "Print this help")
         , m_scenePathAndFileArgument(m_parser, "s", "scene", String(), "Scene path+file")
         , m_optionalResFileArgument(m_parser, "r", "res", String(), "Resource file")
+        , m_validationUnrequiredObjectsDirectoryArgument(m_parser, "vd", "validation-output-directory", String(), "Directory Path were validation output should be saved")
     {
         GetRamsesLogger().initialize(m_parser, String(), String(), false);
 
         const bool   helpRequested    = m_helpArgument;
         const String scenePathAndFile = m_scenePathAndFileArgument;
         const String optionalResFile  = m_optionalResFileArgument;
+        m_sceneName = getFileName(scenePathAndFile.c_str());
 
         if (helpRequested)
         {
@@ -65,7 +70,7 @@ namespace ramses_internal
 
     void SceneViewer::printUsage() const
     {
-        String argumentHelpString = m_helpArgument.getHelpString() + m_scenePathAndFileArgument.getHelpString() + m_optionalResFileArgument.getHelpString();
+        String argumentHelpString = m_helpArgument.getHelpString() + m_scenePathAndFileArgument.getHelpString() + m_optionalResFileArgument.getHelpString() + m_validationUnrequiredObjectsDirectoryArgument.getHelpString();
 
         const String& programName = m_parser.getProgramName();
         LOG_INFO(CONTEXT_CLIENT,
@@ -90,6 +95,7 @@ namespace ramses_internal
 
         ramses::DisplayConfig displayConfig(argc, argv);
         const ramses::displayId_t displayId = displayManager.createDisplay(displayConfig);
+        displayManager.dispatchAndFlush();
 
         ramses::RamsesClient client("client-scene-reader", framework);
         framework.connect();
@@ -105,8 +111,17 @@ namespace ramses_internal
         loadedScene->publish();
         loadedScene->flush();
         validateContent(client, *loadedScene);
+        if (m_validationUnrequiredObjectsDirectoryArgument.wasDefined() && m_validationUnrequiredObjectsDirectoryArgument.hasValue())
+        {
+            std::string unrequiredObjectsReportFilePath = ramses_internal::String(m_validationUnrequiredObjectsDirectoryArgument).c_str();
 
+            unrequiredObjectsReportFilePath.append(m_sceneName + "_unrequObjsReport.txt");
+            std::ofstream unrequObjsOfstream(unrequiredObjectsReportFilePath);
+
+            ramses::RamsesHMIUtils::DumpUnrequiredSceneObjectsToFile(*loadedScene, unrequObjsOfstream);
+        }
         ramses::RamsesHMIUtils::DumpUnrequiredSceneObjects(*loadedScene);
+
 
         displayManager.showSceneOnDisplay(loadedScene->getSceneId(), displayId);
 
@@ -134,13 +149,38 @@ namespace ramses_internal
         }
 
         LOG_INFO(CONTEXT_CLIENT, "Scene validation report: " << scene.getValidationReport(ramses::EValidationSeverity_Info));
-
         validateStatus = client.validate();
         if (validateStatus != ramses::StatusOK)
         {
             LOG_ERROR(CONTEXT_CLIENT, "Client validate failed: " << client.getStatusMessage(validateStatus));
         }
 
-        LOG_INFO(CONTEXT_CLIENT, "Client validation report: " << client.getValidationReport(ramses::EValidationSeverity_Info));
+        LOG_INFO(CONTEXT_CLIENT,
+                 "Client validation report: " << client.getValidationReport(ramses::EValidationSeverity_Info));
+
+        if (m_validationUnrequiredObjectsDirectoryArgument.wasDefined() && m_validationUnrequiredObjectsDirectoryArgument.hasValue())
+        {
+            std::string validationFilePath = ramses_internal::String(m_validationUnrequiredObjectsDirectoryArgument).c_str();
+            validationFilePath.append(m_sceneName + "_validationReport.txt");
+            std::ofstream validationFile(validationFilePath);
+            validationFile << client.getValidationReport(ramses::EValidationSeverity_Info) << std::endl;
+        }
+    }
+
+    std::string SceneViewer::getFileName(std::string path)
+    {
+        ramses_capu::int_t lastSeparator = ramses_capu::StringUtils::LastIndexOf(path.c_str(), '/');
+        if (lastSeparator == -1)
+        {
+            lastSeparator = ramses_capu::StringUtils::LastIndexOf(path.c_str(), '\\');
+        }
+        if (lastSeparator != -1)
+        {
+            return std::string(path, lastSeparator + 1);
+        }
+        else
+        {
+            return path;
+        }
     }
 }

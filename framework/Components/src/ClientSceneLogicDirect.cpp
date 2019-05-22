@@ -27,7 +27,7 @@ namespace ramses_internal
     {
     }
 
-    void ClientSceneLogicDirect::flushSceneActions(ESceneFlushMode flushMode, const FlushTimeInformation& flushTimeInfo)
+    void ClientSceneLogicDirect::flushSceneActions(ESceneFlushMode flushMode, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag)
     {
         const SceneSizeInformation sceneSizes(m_scene.getSceneSizeInformation());
 
@@ -63,7 +63,8 @@ namespace ramses_internal
                 sceneSizes > m_previousSceneSizes,
                 sceneSizes,
                 m_scene.getResourceChanges(),
-                flushTimeInfo);
+                flushTimeInfo,
+                versionTag);
 
             m_previousSceneSizes = sceneSizes;
         }
@@ -89,7 +90,7 @@ namespace ramses_internal
 
         if (isPublished())
         {
-            sendSceneToWaitingSubscribers(m_scene, flushTimeInfo);
+            sendSceneToWaitingSubscribers(m_scene, flushTimeInfo, versionTag);
         }
     }
 }

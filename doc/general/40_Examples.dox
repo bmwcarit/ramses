@@ -135,6 +135,18 @@ Client side configuration:
 Renderer side link creation:
 @snippet ramses-example-local-datalink/src/main.cpp Data Linking Example Renderer
 
+## Viewport Linking
+This code creates two scenes with content and a master scene. The master scene is only used to control position and size
+of the other two scenes (in 2D) using data linking - it links viewport parameters to the other scenes' cameras. The master scene
+has no knowledge of the other scenes except for their camera viewport data consumer IDs.
+
+Content side setup:
+@snippet ramses-example-local-viewport-link/src/main.cpp Viewport Link Example Content
+Master scene side setup:
+@snippet ramses-example-local-viewport-link/src/main.cpp Viewport Link Example Master
+Linking together:
+@snippet ramses-example-local-viewport-link/src/main.cpp Viewport Link Example
+
 ## Offscreen Buffer
 This code creates a scene with a triangle and a texture consumer, then creates a second scene and renders it into an offscreen buffer.
 The offscreen buffer is then linked to the first scene so that it is used as a texture on the triangle.

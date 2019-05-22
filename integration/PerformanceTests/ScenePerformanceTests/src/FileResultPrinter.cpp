@@ -12,7 +12,6 @@
 #include "Utils/File.h"
 #include "Utils/FileUtils.h"
 #include "Utils/LogMacros.h"
-#include "ConsoleLogCapture.h"
 #include "PlatformAbstraction/PlatformTime.h"
 
 namespace ramses_internal {

@@ -30,7 +30,7 @@ ENDFOREACH()
 # values provided by ACME_PROJECT call are in PROJECT_<value>
 
 # values provided by ACME_MODULE call are in MOUDLE_<value>
-ARGUMENT_SPLITTER("${MODULE_SETTINGS}" "${ACME2_API}" MODULE_)
+cmake_parse_arguments(MODULE "" "" "${ACME2_API}" ${MODULE_SETTINGS})
 
 # apply module settings or use project values,
 # if property was was not provided

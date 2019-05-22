@@ -248,13 +248,14 @@ namespace ramses
     TextureSampler* Scene::createTextureSampler(
         ETextureAddressMode wrapUMode,
         ETextureAddressMode wrapVMode,
-        ETextureSamplingMethod samplingMethod,
+        ETextureSamplingMethod minSamplingMethod,
+        ETextureSamplingMethod magSamplingMethod,
         const Texture2D& texture,
         uint32_t anisotropyLevel,
         const char* name)
     {
-        TextureSampler* texSampler = impl.createTextureSampler(wrapUMode, wrapVMode, samplingMethod, anisotropyLevel, texture, name);
-        LOG_HL_CLIENT_API6(LOG_API_RAMSESOBJECT_PTR_STRING(texSampler), wrapUMode, wrapVMode, samplingMethod, anisotropyLevel, LOG_API_RAMSESOBJECT_STRING(texture), name);
+        TextureSampler* texSampler = impl.createTextureSampler(wrapUMode, wrapVMode, minSamplingMethod, magSamplingMethod, anisotropyLevel, texture, name);
+        LOG_HL_CLIENT_API7(LOG_API_RAMSESOBJECT_PTR_STRING(texSampler), wrapUMode, wrapVMode, minSamplingMethod, magSamplingMethod, anisotropyLevel, LOG_API_RAMSESOBJECT_STRING(texture), name);
         return texSampler;
     }
 
@@ -262,63 +263,68 @@ namespace ramses
         ETextureAddressMode wrapUMode,
         ETextureAddressMode wrapVMode,
         ETextureAddressMode wrapRMode,
-        ETextureSamplingMethod samplingMethod,
+        ETextureSamplingMethod minSamplingMethod,
+        ETextureSamplingMethod magSamplingMethod,
         const Texture3D& texture,
         const char* name)
     {
-        TextureSampler* texSampler = impl.createTextureSampler(wrapUMode, wrapVMode, wrapRMode, samplingMethod, texture, name);
-        LOG_HL_CLIENT_API6(LOG_API_RAMSESOBJECT_PTR_STRING(texSampler), wrapUMode, wrapVMode, wrapRMode, samplingMethod, LOG_API_RAMSESOBJECT_STRING(texture), name);
+        TextureSampler* texSampler = impl.createTextureSampler(wrapUMode, wrapVMode, wrapRMode, minSamplingMethod, magSamplingMethod, texture, name);
+        LOG_HL_CLIENT_API7(LOG_API_RAMSESOBJECT_PTR_STRING(texSampler), wrapUMode, wrapVMode, wrapRMode, minSamplingMethod, magSamplingMethod, LOG_API_RAMSESOBJECT_STRING(texture), name);
         return texSampler;
     }
 
     TextureSampler* Scene::createTextureSampler(
         ETextureAddressMode wrapUMode,
         ETextureAddressMode wrapVMode,
-        ETextureSamplingMethod samplingMethod,
+        ETextureSamplingMethod minSamplingMethod,
+        ETextureSamplingMethod magSamplingMethod,
         const TextureCube& texture,
         uint32_t anisotropyLevel,
         const char* name)
     {
-        TextureSampler* texSampler = impl.createTextureSampler(wrapUMode, wrapVMode, samplingMethod, anisotropyLevel,texture, name);
-        LOG_HL_CLIENT_API6(LOG_API_RAMSESOBJECT_PTR_STRING(texSampler), wrapUMode, wrapVMode, samplingMethod, anisotropyLevel, LOG_API_RAMSESOBJECT_STRING(texture), name);
+        TextureSampler* texSampler = impl.createTextureSampler(wrapUMode, wrapVMode, minSamplingMethod, magSamplingMethod, anisotropyLevel,texture, name);
+        LOG_HL_CLIENT_API7(LOG_API_RAMSESOBJECT_PTR_STRING(texSampler), wrapUMode, wrapVMode, minSamplingMethod, magSamplingMethod, anisotropyLevel, LOG_API_RAMSESOBJECT_STRING(texture), name);
         return texSampler;
     }
 
     TextureSampler* Scene::createTextureSampler(
         ETextureAddressMode wrapUMode,
         ETextureAddressMode wrapVMode,
-        ETextureSamplingMethod samplingMethod,
+        ETextureSamplingMethod minSamplingMethod,
+        ETextureSamplingMethod magSamplingMethod,
         const RenderBuffer& renderBuffer,
         uint32_t anisotropyLevel,
         const char* name)
     {
-        TextureSampler* texSampler = impl.createTextureSampler(wrapUMode, wrapVMode, samplingMethod, anisotropyLevel, renderBuffer, name);
-        LOG_HL_CLIENT_API6(LOG_API_RAMSESOBJECT_PTR_STRING(texSampler), wrapUMode, wrapVMode, samplingMethod, anisotropyLevel, LOG_API_RAMSESOBJECT_STRING(renderBuffer), name);
+        TextureSampler* texSampler = impl.createTextureSampler(wrapUMode, wrapVMode, minSamplingMethod, magSamplingMethod, anisotropyLevel, renderBuffer, name);
+        LOG_HL_CLIENT_API7(LOG_API_RAMSESOBJECT_PTR_STRING(texSampler), wrapUMode, wrapVMode, minSamplingMethod, magSamplingMethod, anisotropyLevel, LOG_API_RAMSESOBJECT_STRING(renderBuffer), name);
         return texSampler;
     }
 
     TextureSampler* Scene::createTextureSampler(
         ETextureAddressMode wrapUMode,
         ETextureAddressMode wrapVMode,
-        ETextureSamplingMethod samplingMethod,
+        ETextureSamplingMethod minSamplingMethod,
+        ETextureSamplingMethod magSamplingMethod,
         const Texture2DBuffer& texture2DBuffer,
         uint32_t anisotropyLevel,
         const char* name)
     {
-        TextureSampler* texSampler = impl.createTextureSampler(wrapUMode, wrapVMode, samplingMethod, anisotropyLevel, texture2DBuffer, name);
-        LOG_HL_CLIENT_API6(LOG_API_RAMSESOBJECT_PTR_STRING(texSampler), wrapUMode, wrapVMode, samplingMethod, anisotropyLevel, LOG_API_RAMSESOBJECT_STRING(texture2DBuffer), name);
+        TextureSampler* texSampler = impl.createTextureSampler(wrapUMode, wrapVMode, minSamplingMethod, magSamplingMethod, anisotropyLevel, texture2DBuffer, name);
+        LOG_HL_CLIENT_API7(LOG_API_RAMSESOBJECT_PTR_STRING(texSampler), wrapUMode, wrapVMode, minSamplingMethod, magSamplingMethod, anisotropyLevel, LOG_API_RAMSESOBJECT_STRING(texture2DBuffer), name);
         return texSampler;
     }
 
     TextureSampler* Scene::createTextureSampler(
         ETextureAddressMode wrapUMode,
         ETextureAddressMode wrapVMode,
-        ETextureSamplingMethod samplingMethod,
+        ETextureSamplingMethod minSamplingMethod,
+        ETextureSamplingMethod magSamplingMethod,
         const StreamTexture& streamTexture,
         const char* name)
     {
-        TextureSampler* texSampler = impl.createTextureSampler(wrapUMode, wrapVMode, samplingMethod, streamTexture, name);
-        LOG_HL_CLIENT_API5(LOG_API_RAMSESOBJECT_PTR_STRING(texSampler), wrapUMode, wrapVMode, samplingMethod, LOG_API_RAMSESOBJECT_STRING(streamTexture), name);
+        TextureSampler* texSampler = impl.createTextureSampler(wrapUMode, wrapVMode, minSamplingMethod, magSamplingMethod, streamTexture, name);
+        LOG_HL_CLIENT_API6(LOG_API_RAMSESOBJECT_PTR_STRING(texSampler), wrapUMode, wrapVMode, minSamplingMethod, magSamplingMethod, LOG_API_RAMSESOBJECT_STRING(streamTexture), name);
         return texSampler;
     }
 

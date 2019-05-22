@@ -1,0 +1,7 @@
+/build*/
+*~
+*.swp
+*.orig
+*.pyc
+local.properties
+.DS_Store

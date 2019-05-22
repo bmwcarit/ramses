@@ -26,6 +26,7 @@ def make_license_re(license_text):
         if len(license_line) > 0:
             esc_line = re.escape(license_line)
             re_text = esc_line.replace(r"\[YYYY\]", r"2\d{3}(-2\d{3})?")
+            re_text = re_text.replace(r'XXXX', r'(?:Car IT GmbH|AG)')
             re_text = r'^(//|::|#)' + re_text + '$'
             license_lines_re.append(re_text)
 

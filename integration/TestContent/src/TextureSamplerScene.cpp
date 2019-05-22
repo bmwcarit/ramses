@@ -42,13 +42,13 @@ namespace ramses_internal
         if (state == EState::EState_ClientTexture)
         {
             const ramses::Texture2D* texture = m_client.createTexture2D(2, 2, ramses::ETextureFormat_RGB8, 1, mipLevelData, false);
-            m_sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Nearest, *texture);
+            m_sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Nearest, ramses::ETextureSamplingMethod_Nearest, *texture);
         }
         else if (state == EState::EState_TextureBuffer)
         {
             ramses::Texture2DBuffer* texture = m_scene.createTexture2DBuffer(1, 2, 2, ramses::ETextureFormat_RGB8);
             texture->setData(reinterpret_cast<const char*>(rgb8), 0, 0, 0, 2, 2);
-            m_sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Nearest, *texture);
+            m_sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Nearest, ramses::ETextureSamplingMethod_Nearest, *texture);
         }
 
         const ramses::Effect* effect = getTestEffect("ramses-test-client-textured");

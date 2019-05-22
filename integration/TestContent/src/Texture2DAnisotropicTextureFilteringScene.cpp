@@ -107,7 +107,8 @@ namespace ramses_internal
         ramses::TextureSampler* sampler = m_scene.createTextureSampler(
             ramses::ETextureAddressMode_Repeat,
             ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureSamplingMethod_Trilinear,
+            ramses::ETextureSamplingMethod_Linear_MipMapLinear,
+            ramses::ETextureSamplingMethod_Linear,
             *texture,
             16u);
         appearance->setInputTexture(textureInput, *sampler);
@@ -116,7 +117,8 @@ namespace ramses_internal
         ramses::TextureSampler* sampler1 = m_scene.createTextureSampler(
             ramses::ETextureAddressMode_Repeat,
             ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureSamplingMethod_Trilinear,
+            ramses::ETextureSamplingMethod_Linear_MipMapLinear,
+            ramses::ETextureSamplingMethod_Linear,
             *texture);
         appearance1->setInputTexture(textureInput, *sampler1);
     }

@@ -11,6 +11,7 @@
 
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "Collections/String.h"
+#include <chrono>
 
 namespace ramses
 {
@@ -29,6 +30,11 @@ namespace ramses
         void setDaemonPort(uint16_t port);
         void setDaemonIPAddress(const ramses_internal::String& ipAddress);
 
+        std::chrono::milliseconds getAliveInterval() const;
+        std::chrono::milliseconds getAliveTimeout() const;
+        void setAliveInterval(std::chrono::milliseconds interval);
+        void setAliveTimeout(std::chrono::milliseconds timeout);
+
     private:
         static const uint16_t DefaultPort;
         static const uint16_t DefaultDaemonPort;
@@ -38,6 +44,8 @@ namespace ramses
         ramses_internal::String m_ipAddress;
         uint16_t m_daemonPort;
         ramses_internal::String m_daemonIP;
+        std::chrono::milliseconds m_aliveInterval;
+        std::chrono::milliseconds m_aliveTimeout;
     };
 }
 

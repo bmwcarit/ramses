@@ -44,7 +44,8 @@ namespace ramses
         , m_textureSampler(*scene.createTextureSampler(
             ETextureAddressMode_Clamp,
             ETextureAddressMode_Clamp,
-            ETextureSamplingMethod_Bilinear,
+            ETextureSamplingMethod_Linear,
+            ETextureSamplingMethod_Linear,
             m_textureBuffer))
     {
         m_freeQuads.push_back(Quad(QuadOffset(0, 0), size));

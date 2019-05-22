@@ -200,7 +200,7 @@ public:
         // Rendered scene TS can either be invalid - never reported as rendered,
         // or the value below if reported as rendered
         for (auto sceneId : scenes)
-            expirationMonitor.onFlushApplied(sceneId, currentFakeTime, 0);
+            expirationMonitor.onFlushApplied(sceneId, currentFakeTime, {}, 0);
     }
 
     void expectScenesReportedToExpirationMonitorAsRendered(std::initializer_list<SceneId> expectedScenesToBeReported)

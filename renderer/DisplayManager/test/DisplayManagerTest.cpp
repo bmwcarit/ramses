@@ -42,10 +42,16 @@ public:
 
         displayConfig.setWaylandIviSurfaceID(1u);
         otherDisplayId = displayManager.createDisplay(displayConfig);
-        renderer.doOneLoop();
-        displayManager.dispatchAndFlush();
 
+        // flush and loop to execute the creation
+        displayManager.dispatchAndFlush();
+        renderer.doOneLoop();
         EXPECT_EQ(2u, renderer.impl.getRenderer().getRenderer().getDisplayControllerCount());
+
+        // dispatch to get the event of successful creation
+        displayManager.dispatchAndFlush();
+        EXPECT_TRUE(displayManager.isDisplayCreated(displayId));
+        EXPECT_TRUE(displayManager.isDisplayCreated(otherDisplayId));
     }
 
 protected:
@@ -715,6 +721,7 @@ TEST_F(ADisplayManager, reportsCorrectDisplayCreationState)
 {
     ramses::DisplayConfig displayConfig;
     ramses::displayId_t customDisplay = displayManager.createDisplay(displayConfig);
+    displayManager.dispatchAndFlush();
 
     EXPECT_FALSE(displayManager.isDisplayCreated(customDisplay));
     renderer.doOneLoop();
@@ -723,6 +730,7 @@ TEST_F(ADisplayManager, reportsCorrectDisplayCreationState)
     EXPECT_TRUE(displayManager.isDisplayCreated(customDisplay));
 
     displayManager.destroyDisplay(customDisplay);
+    displayManager.dispatchAndFlush();
     EXPECT_TRUE(displayManager.isDisplayCreated(customDisplay));
 
     renderer.doOneLoop();
@@ -763,11 +771,11 @@ TEST_F(ADisplayManagerWithAutomapping, willAutomaticallyShowSceneWhenDisplayIsCr
     ASSERT_TRUE(displayManager.isDisplayCreated(otherDisplayId));
     displayManager.destroyDisplay(displayId);
     displayManager.destroyDisplay(otherDisplayId);
+    displayManager.dispatchAndFlush();
     renderer.doOneLoop();
     displayManager.dispatchAndFlush();
     ASSERT_FALSE(displayManager.isDisplayCreated(displayId));
     ASSERT_FALSE(displayManager.isDisplayCreated(otherDisplayId));
-
 
     ramses::displayId_t defaultDisplay(0u);
     scenePublished();

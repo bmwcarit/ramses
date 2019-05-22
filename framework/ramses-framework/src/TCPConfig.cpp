@@ -19,6 +19,8 @@ namespace ramses
         , m_ipAddress("127.0.0.1")
         , m_daemonPort(DefaultDaemonPort)
         , m_daemonIP("127.0.0.1")
+        , m_aliveInterval(300)
+        , m_aliveTimeout(m_aliveInterval * 6)
     {
     }
 
@@ -42,7 +44,6 @@ namespace ramses
         return m_daemonIP;
     }
 
-
     void TCPConfig::setPort(uint16_t port)
     {
         m_port = port;
@@ -62,5 +63,26 @@ namespace ramses
     void TCPConfig::setDaemonIPAddress(const ramses_internal::String& ipAddress)
     {
         m_daemonIP = ipAddress;
+    }
+
+
+    std::chrono::milliseconds TCPConfig::getAliveInterval() const
+    {
+        return m_aliveInterval;
+    }
+
+    std::chrono::milliseconds TCPConfig::getAliveTimeout() const
+    {
+        return m_aliveTimeout;
+    }
+
+    void TCPConfig::setAliveInterval(std::chrono::milliseconds interval)
+    {
+        m_aliveInterval = interval;
+    }
+
+    void TCPConfig::setAliveTimeout(std::chrono::milliseconds factor)
+    {
+        m_aliveTimeout = factor;
     }
 }

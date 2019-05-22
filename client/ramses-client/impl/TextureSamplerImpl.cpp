@@ -154,9 +154,14 @@ namespace ramses
         return TextureUtils::GetTextureAddressModeFromInternal(getIScene().getTextureSampler(m_textureSamplerHandle).states.m_addressModeR);
     }
 
-    ETextureSamplingMethod TextureSamplerImpl::getSamplingMethod() const
+    ETextureSamplingMethod TextureSamplerImpl::getMinSamplingMethod() const
     {
-        return TextureUtils::GetTextureSamplingFromInternal(getIScene().getTextureSampler(m_textureSamplerHandle).states.m_samplingMode);
+        return TextureUtils::GetTextureSamplingFromInternal(getIScene().getTextureSampler(m_textureSamplerHandle).states.m_minSamplingMode);
+    }
+
+    ETextureSamplingMethod TextureSamplerImpl::getMagSamplingMethod() const
+    {
+        return TextureUtils::GetTextureSamplingFromInternal(getIScene().getTextureSampler(m_textureSamplerHandle).states.m_magSamplingMode);
     }
 
     uint32_t TextureSamplerImpl::getAnisotropyLevel() const

@@ -23,12 +23,6 @@ namespace ramses_internal
         m_creator.preallocateSceneSize(sizeInfo);
     }
 
-    void ActionCollectingScene::setSceneVersionTag(SceneVersionTag sceneVersionTag)
-    {
-        ResourceChangeCollectingScene::setSceneVersionTag(sceneVersionTag);
-        m_creator.setSceneVersionTag(sceneVersionTag);
-    }
-
     void ActionCollectingScene::setDataResource(DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor)
     {
         ResourceChangeCollectingScene::setDataResource(containerHandle, field, hash, dataBuffer, instancingDivisor);

@@ -53,7 +53,7 @@ TEST_F(AWarpingPass, ValidRenderBackendCallsOnExecute)
 
     EXPECT_CALL(device, activateTexture(inputColorBuffer, Ne(DataFieldHandle::Invalid())));
     const UInt32 isotropicFilteringLevel = 1;
-    EXPECT_CALL(device, setTextureSampling(Ne(DataFieldHandle::Invalid()), EWrapMethod::Clamp, EWrapMethod::Clamp, EWrapMethod::Clamp, ESamplingMethod::Bilinear, isotropicFilteringLevel));
+    EXPECT_CALL(device, setTextureSampling(Ne(DataFieldHandle::Invalid()), EWrapMethod::Clamp, EWrapMethod::Clamp, EWrapMethod::Clamp, ESamplingMethod::Linear, ESamplingMethod::Linear, isotropicFilteringLevel));
 
     EXPECT_CALL(device, activateIndexBuffer(Ne(DeviceResourceHandle::Invalid())));
     EXPECT_CALL(device, activateVertexBuffer(Ne(DeviceResourceHandle::Invalid()), Ne(DataFieldHandle::Invalid()), 0u)).Times(2);

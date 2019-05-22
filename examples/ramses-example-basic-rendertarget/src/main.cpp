@@ -117,6 +117,7 @@ int main(int argc, char* argv[])
             ramses::ETextureAddressMode_Repeat,
             ramses::ETextureAddressMode_Repeat,
             ramses::ETextureSamplingMethod_Nearest,
+            ramses::ETextureSamplingMethod_Nearest,
             *renderBuffer);
 
         // set render target sampler as input
