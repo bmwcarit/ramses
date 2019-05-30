@@ -78,7 +78,7 @@ namespace ramses_internal
 
             // process window creation related events
             EXPECT_CALL(this->m_eventHandlerMock, onFocusChange(_)).Times(AnyNumber());
-            EXPECT_CALL(this->m_eventHandlerMock, onResize(_)).Times(AnyNumber());
+            EXPECT_CALL(this->m_eventHandlerMock, onResize(_, _)).Times(AnyNumber());
             EXPECT_CALL(this->m_eventHandlerMock, onMove(_)).Times(AnyNumber());
             processAllEvents();
         }

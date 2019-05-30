@@ -46,7 +46,7 @@ namespace ramses_internal
         IRenderBackend* createRenderBackend(bool multisampling = false, bool useDifferentIviId = false)
         {
             EXPECT_CALL(eventHandlerMock, onFocusChange(_)).Times(AnyNumber());
-            EXPECT_CALL(eventHandlerMock, onResize(_)).Times(AnyNumber());
+            EXPECT_CALL(eventHandlerMock, onResize(_, _)).Times(AnyNumber());
             EXPECT_CALL(eventHandlerMock, onMove(_)).Times(AnyNumber());
 
             DisplayConfig displayConfig;
