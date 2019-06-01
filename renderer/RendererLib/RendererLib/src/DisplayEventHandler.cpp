@@ -63,7 +63,9 @@ namespace ramses_internal
 
     void DisplayEventHandler::onResize(UInt32 width, UInt32 height)
     {
-        UNUSED(width);
-        UNUSED(height);
+       ResizeEvent resizeEvent;
+       resizeEvent.width = width;
+       resizeEvent.height = height;
+       m_eventCollector.addEvent(ERendererEventType_WindowResizeEvent, m_displayHandle, resizeEvent);
     }
 }
