@@ -81,6 +81,7 @@ namespace ramses_internal
         ERendererEventType_WindowClosed,
         ERendererEventType_WindowKeyEvent,
         ERendererEventType_WindowMouseEvent,
+        ERendererEventType_WindowResizeEvent,
         ERendererEventType_StreamSurfaceAvailable,
         ERendererEventType_StreamSurfaceUnavailable,
 
@@ -140,6 +141,7 @@ namespace ramses_internal
         "ERendererEventType_WindowClosed",
         "ERendererEventType_WindowKeyEvent",
         "ERendererEventType_WindowMouseEvent",
+        "ERendererEventType_WindowResizeEvent",
         "ERendererEventType_StreamSurfaceAvailable",
         "ERendererEventType_StreamSurfaceUnavailable"
     };
@@ -157,6 +159,12 @@ namespace ramses_internal
         EKeyEventType type = EKeyEventType_Invalid;
         UInt32        modifier;
         EKeyCode      keyCode;
+    };
+
+    struct ResizeEvent
+    {
+        UInt32 width;
+        UInt32 height;
     };
 
     struct RendererEvent
@@ -179,6 +187,7 @@ namespace ramses_internal
         SceneVersionTag             sceneVersionTag;
         EResourceStatus             resourceStatus = EResourceStatus_Unknown;
         MouseEvent                  mouseEvent;
+        ResizeEvent                 resizeEvent;
         KeyEvent                    keyEvent;
         StreamTextureSourceId       streamSourceId;
     };
@@ -314,6 +323,14 @@ namespace ramses_internal
             RendererEvent event(eventType);
             event.displayHandle = display;
             event.keyEvent = keyEvent;
+            pushEventToQueue(event);
+        }
+
+        void addEvent(ERendererEventType eventType, DisplayHandle display, ResizeEvent resizeEvent)
+        {
+            RendererEvent event(eventType);
+            event.displayHandle = display;
+            event.resizeEvent = resizeEvent;
             pushEventToQueue(event);
         }
 
