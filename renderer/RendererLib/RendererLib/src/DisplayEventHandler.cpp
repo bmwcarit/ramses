@@ -61,7 +61,7 @@ namespace ramses_internal
         m_eventCollector.addEvent(ERendererEventType_WindowClosed, m_displayHandle);
     }
 
-    void DisplayEventHandler::onResize(Int32 width, Int32 height)
+    void DisplayEventHandler::onResize(UInt32 width, UInt32 height)
     {
         UNUSED(width);
         UNUSED(height);
