@@ -122,3 +122,12 @@ TEST_F(ADisplayEventHandler, createsRendererEventOnWindowClosedEvent)
     EXPECT_EQ(ERendererEventType_WindowClosed, event.eventType);
     EXPECT_EQ(m_displayHandle, event.displayHandle);
 }
+
+TEST_F(ADisplayEventHandler, createsRendererEventOnWindowResizeEvent)
+{
+    m_displayEventHandler.onResize(1280u, 480u);
+
+    const RendererEvent event = getRendererEvent(0u);
+    EXPECT_EQ(ERendererEventType_WindowResizeEvent, event.eventType);
+    EXPECT_EQ(m_displayHandle, event.displayHandle);
+}
