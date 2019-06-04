@@ -49,11 +49,14 @@ namespace ramses_internal
         , m_frameworkLock(frameworkLock)
         , m_thread("R_TCP_ConnSys")
         , m_statisticCollection(statisticCollection)
-        , m_connectionStatusUpdateNotifier(frameworkLock)
+        , m_ramsesConnectionStatusUpdateNotifier(m_participantAddress.getParticipantName(), "ramses", frameworkLock)
+        , m_dcsmConnectionStatusUpdateNotifier(m_participantAddress.getParticipantName(), "dcsm", frameworkLock)
         , m_resourceConsumerHandler(nullptr)
         , m_resourceProviderHandler(nullptr)
         , m_sceneProviderHandler(nullptr)
         , m_sceneRendererHandler(nullptr)
+        , m_dcsmProviderHandler(nullptr)
+        , m_dcsmConsumerHandler(nullptr)
     {
     }
 
@@ -129,9 +132,14 @@ namespace ramses_internal
         return true;
     }
 
-    IConnectionStatusUpdateNotifier& TCPConnectionSystem::getConnectionStatusUpdateNotifier()
+    IConnectionStatusUpdateNotifier& TCPConnectionSystem::getRamsesConnectionStatusUpdateNotifier()
     {
-        return m_connectionStatusUpdateNotifier;
+        return m_ramsesConnectionStatusUpdateNotifier;
+    }
+
+    IConnectionStatusUpdateNotifier& TCPConnectionSystem::getDcsmConnectionStatusUpdateNotifier()
+    {
+        return m_dcsmConnectionStatusUpdateNotifier;
     }
 
     CommunicationSendDataSizes TCPConnectionSystem::getSendDataSizes() const
@@ -164,6 +172,16 @@ namespace ramses_internal
         m_sceneRendererHandler = handler;
     }
 
+    void TCPConnectionSystem::setDcsmProviderServiceHandler(IDcsmProviderServiceHandler* handler)
+    {
+        m_dcsmProviderHandler = handler;
+    }
+
+    void TCPConnectionSystem::setDcsmConsumerServiceHandler(IDcsmConsumerServiceHandler* handler)
+    {
+        m_dcsmConsumerHandler = handler;
+    }
+
     void TCPConnectionSystem::run()
     {
         // set up connection acceptor
@@ -186,7 +204,10 @@ namespace ramses_internal
         for (const auto& pp : m_establishedParticipants)
         {
             if (pp.value->type != EParticipantType::PureDaemon)
-                m_connectionStatusUpdateNotifier.triggerNotification(pp.value->address.getParticipantId(), EConnectionStatus_NotConnected);
+            {
+                m_ramsesConnectionStatusUpdateNotifier.triggerNotification(pp.value->address.getParticipantId(), EConnectionStatus_NotConnected);
+                m_dcsmConnectionStatusUpdateNotifier.triggerNotification(pp.value->address.getParticipantId(), EConnectionStatus_NotConnected);
+            }
         }
 
         m_runState->m_acceptor.close();
@@ -470,7 +491,10 @@ namespace ramses_internal
                  ", state " << EnumToString(pp->state));
 
         if (pp->state == EParticipantState::Established && pp->type != EParticipantType::PureDaemon)
-            m_connectionStatusUpdateNotifier.triggerNotification(pp->address.getParticipantId(), EConnectionStatus_NotConnected);
+        {
+            m_ramsesConnectionStatusUpdateNotifier.triggerNotification(pp->address.getParticipantId(), EConnectionStatus_NotConnected);
+            m_dcsmConnectionStatusUpdateNotifier.triggerNotification(pp->address.getParticipantId(), EConnectionStatus_NotConnected);
+        }
 
         // tear down and cancel everything
         pp->socket.close();
@@ -642,6 +666,24 @@ namespace ramses_internal
         case EMessageId_CreateScene:
             handleCreateScene(pp, stream);
             break;
+        case EMessageId_DcsmRegisterContent:
+            handleDcsmRegisterContent(pp, stream);
+            break;
+        case EMessageId_DcsmCanvasSizeChange:
+            handleDcsmCanvasSizeChange(pp, stream);
+            break;
+        case EMessageId_DcsmContentStatusChange:
+            handleDcsmContentStatusChange(pp, stream);
+            break;
+        case EMessageId_DcsmContentAvailable:
+            handleDcsmContentAvailable(pp, stream);
+            break;
+        case EMessageId_DcsmCategoryContentSwitchRequest:
+            handleDcsmCategoryContentSwitchRequest(pp, stream);
+            break;
+        case EMessageId_DcsmRequestUnregisterContent:
+            handleDcsmRequestUnregisterContent(pp, stream);
+            break;
         default:
             LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleReceivedMessage: Invalid messagetype " << messageType << " From " << pp->address.getParticipantId());
             removeParticipant(pp);
@@ -713,7 +755,10 @@ namespace ramses_internal
         m_establishedParticipants.put(guid, pp);
 
         if (pp->type != EParticipantType::PureDaemon)
-            m_connectionStatusUpdateNotifier.triggerNotification(guid, EConnectionStatus_Connected);
+        {
+            m_ramsesConnectionStatusUpdateNotifier.triggerNotification(guid, EConnectionStatus_Connected);
+            m_dcsmConnectionStatusUpdateNotifier.triggerNotification(guid, EConnectionStatus_Connected);
+        }
 
         sendConnectorAddressExchangeMessagesForNewParticipant(pp);
     }
@@ -1278,6 +1323,169 @@ namespace ramses_internal
             m_resourceConsumerHandler->handleResourcesNotAvailable(resources, pp->address.getParticipantId());
         }
     }
+
+    // --
+    bool TCPConnectionSystem::sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, SizeInfo sizeinfo, AnimationInformation ai)
+    {
+        OutMessage msg(to, EMessageId_DcsmCanvasSizeChange);
+        msg.stream << contentID.getValue()
+                   << sizeinfo.width
+                   << sizeinfo.height
+                   << ai.startTimeStamp
+                   << ai.finishedTimeStamp;
+        return postMessageForSending(std::move(msg), true);
+    }
+
+    void TCPConnectionSystem::handleDcsmCanvasSizeChange(const ParticipantPtr& pp, BinaryInputStream& stream)
+    {
+        if (m_dcsmProviderHandler)
+        {
+            ContentID contentID;
+            stream >> contentID.getReference();
+
+            SizeInfo sizeInfo;
+            stream >> sizeInfo.width;
+            stream >> sizeInfo.height;
+
+            AnimationInformation ai;
+            stream >> ai.startTimeStamp;
+            stream >> ai.finishedTimeStamp;
+
+            PlatformGuard guard(m_frameworkLock);
+            m_dcsmProviderHandler->handleCanvasSizeChange(contentID, sizeInfo, ai, pp->address.getParticipantId());
+        }
+    }
+
+    // --
+    bool TCPConnectionSystem::sendDcsmContentStatusChange(const Guid& to, ContentID contentID, EDcsmStatus status, AnimationInformation ai)
+    {
+        OutMessage msg(to, EMessageId_DcsmContentStatusChange);
+        msg.stream << contentID.getValue()
+                   << status
+                   << ai.startTimeStamp
+                   << ai.finishedTimeStamp;
+        return postMessageForSending(std::move(msg), true);
+    }
+
+    void TCPConnectionSystem::handleDcsmContentStatusChange(const ParticipantPtr& pp, BinaryInputStream& stream)
+    {
+        if (m_dcsmProviderHandler)
+        {
+            ContentID contentID;
+            stream >> contentID.getReference();
+
+            EDcsmStatus statusInfo;
+            stream >> statusInfo;
+
+            AnimationInformation ai;
+            stream >> ai.startTimeStamp;
+            stream >> ai.finishedTimeStamp;
+
+            PlatformGuard guard(m_frameworkLock);
+            m_dcsmProviderHandler->handleContentStatusChange(contentID, statusInfo, ai, pp->address.getParticipantId());
+        }
+    }
+
+    // --
+    bool TCPConnectionSystem::sendDcsmBroadcastRegisterContent(ContentID contentID, Category category)
+    {
+        OutMessage msg(Guid(false), EMessageId_DcsmRegisterContent);
+        msg.stream << contentID.getValue()
+                   << category.getValue();
+        return postMessageForSending(std::move(msg), true);
+    }
+
+    bool TCPConnectionSystem::sendDcsmRegisterContent(const Guid& to, ContentID contentID, Category category)
+    {
+        OutMessage msg(Guid(to), EMessageId_DcsmRegisterContent);
+        msg.stream << contentID.getValue()
+                   << category.getValue();
+        return postMessageForSending(std::move(msg), true);
+    }
+
+    void TCPConnectionSystem::handleDcsmRegisterContent(const ParticipantPtr& pp, BinaryInputStream& stream)
+    {
+        if (m_dcsmConsumerHandler)
+        {
+            ContentID contentID;
+            stream >> contentID.getReference();
+
+            Category category;
+            stream >> category.getReference();
+
+            PlatformGuard guard(m_frameworkLock);
+            m_dcsmConsumerHandler->handleRegisterContent(contentID, category, pp->address.getParticipantId());
+        }
+    }
+
+    // --
+    bool TCPConnectionSystem::sendDcsmContentAvailable(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor)
+    {
+        OutMessage msg(to, EMessageId_DcsmContentAvailable);
+        msg.stream << contentID.getValue()
+                   << technicalContentType
+                   << technicalContentDescriptor.getValue();
+        return postMessageForSending(std::move(msg), true);
+    }
+
+    void TCPConnectionSystem::handleDcsmContentAvailable(const ParticipantPtr& pp, BinaryInputStream& stream)
+    {
+        if (m_dcsmConsumerHandler)
+        {
+            ContentID contentID;
+            stream >> contentID.getReference();
+
+            ETechnicalContentType technicalContentType;
+            stream >> technicalContentType;
+
+            TechnicalContentDescriptor technicalContentDescriptor;
+            stream >> technicalContentDescriptor.getReference();
+
+            PlatformGuard guard(m_frameworkLock);
+            m_dcsmConsumerHandler->handleContentAvailable(contentID, technicalContentType, technicalContentDescriptor, pp->address.getParticipantId());
+        }
+    }
+
+    // --
+    bool TCPConnectionSystem::sendDcsmCategoryContentSwitchRequest(const Guid& to, ContentID contentID)
+    {
+        OutMessage msg(to, EMessageId_DcsmCategoryContentSwitchRequest);
+        msg.stream << contentID.getValue();
+        return postMessageForSending(std::move(msg), true);
+    }
+
+    void TCPConnectionSystem::handleDcsmCategoryContentSwitchRequest(const ParticipantPtr& pp, BinaryInputStream& stream)
+    {
+        if (m_dcsmConsumerHandler)
+        {
+            ContentID contentID;
+            stream >> contentID.getReference();
+
+            PlatformGuard guard(m_frameworkLock);
+            m_dcsmConsumerHandler->handleCategoryContentSwitchRequest(contentID, pp->address.getParticipantId());
+        }
+    }
+
+    // --
+    bool TCPConnectionSystem::sendDcsmBroadcastRequestUnregisterContent(ContentID contentID)
+    {
+        OutMessage msg(Guid(false), EMessageId_DcsmRequestUnregisterContent);
+        msg.stream << contentID.getValue();
+        return postMessageForSending(std::move(msg), true);
+    }
+
+    void TCPConnectionSystem::handleDcsmRequestUnregisterContent(const ParticipantPtr& pp, BinaryInputStream& stream)
+    {
+        if (m_dcsmConsumerHandler)
+        {
+            ContentID contentID;
+            stream >> contentID.getReference();
+
+            PlatformGuard guard(m_frameworkLock);
+            m_dcsmConsumerHandler->handleRequestUnregisterContent(contentID, pp->address.getParticipantId());
+        }
+    }
+
 
     // --- ramsh command handling ---
     void TCPConnectionSystem::logConnectionInfo()

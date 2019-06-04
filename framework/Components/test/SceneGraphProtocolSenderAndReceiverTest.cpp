@@ -21,6 +21,7 @@ namespace ramses_internal
     {
     public:
         ASceneGraphProtocolSenderAndReceiverTest()
+            : AbstractSenderAndReceiverTest(EServiceType::Ramses)
         {
             receiver.setSceneRendererServiceHandler(&consumerHandler);
             receiver.setSceneProviderServiceHandler(&providerHandler);

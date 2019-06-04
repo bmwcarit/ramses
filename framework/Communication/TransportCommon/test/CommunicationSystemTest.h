@@ -24,7 +24,7 @@ namespace ramses_internal
     {
     public:
         ACommunicationSystem()
-            : state(CommunicationSystemTestFactory::ConstructTestState(GetParam()))
+            : state(CommunicationSystemTestFactory::ConstructTestState(GetParam(), EServiceType::Ramses))
         {
         }
 
@@ -36,11 +36,11 @@ namespace ramses_internal
         StrictMock<MockConnectionStatusListener> listener;
     };
 
-    class ACommunicationSystemWithDaemon : public ::testing::TestWithParam<ECommunicationSystemType>
+    class ACommunicationSystemWithDaemon : public ::testing::TestWithParam<std::tuple<ECommunicationSystemType, EServiceType>>
     {
     public:
         ACommunicationSystemWithDaemon()
-            : state(CommunicationSystemTestFactory::ConstructTestState(GetParam()))
+            : state(CommunicationSystemTestFactory::ConstructTestState(std::get<0>(GetParam()), std::get<1>(GetParam())))
             , daemon(CommunicationSystemTestFactory::ConstructDiscoveryDaemonTestWrapper(*state))
         {
         }
@@ -62,6 +62,11 @@ namespace ramses_internal
         std::unique_ptr<CommunicationSystemTestState> state;
         std::unique_ptr<CommunicationSystemDiscoveryDaemonTestWrapper> daemon;
     };
+
+#define TESTING_SERVICETYPE_RAMSES(commsysProvider) \
+    ::testing::Combine(::testing::ValuesIn(commsysProvider), ::testing::Values(EServiceType::Ramses))
+#define TESTING_SERVICETYPE_DCSM(commsysProvider) \
+    ::testing::Combine(::testing::ValuesIn(commsysProvider), ::testing::Values(EServiceType::Dcsm))
 }
 
 #endif

@@ -47,7 +47,7 @@ namespace ramses
 
         ramses_internal::ResourceComponent& getResourceComponent();
         ramses_internal::SceneGraphComponent& getScenegraphComponent();
-        ramses_internal::IConnectionStatusUpdateNotifier& getConnectionStatusUpdateNotifier();
+        ramses_internal::IConnectionStatusUpdateNotifier& getRamsesConnectionStatusUpdateNotifier();
         ramses_internal::ParticipantIdentifier getParticipantAddress() const;
         ramses_internal::Ramsh& getRamsh();
         ramses_internal::PlatformLock& getFrameworkLock();

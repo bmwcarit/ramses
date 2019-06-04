@@ -44,12 +44,14 @@ class RemoteCoreImpl(CoreImpl):
         transferGroup.add_argument("--package", action="store_true", default=False, help="for package upload to target. search in <basepath>, expect single result")
         transferGroup.add_argument("--noTransfer", action="store_true", default=False, help="do not transfer binaries (for debugging)")
         parser.add_argument("--filter", help="test filter")
+        parser.add_argument("--random-seed", default=self.randomTestSeed, help="random seed used for test ordering")
         targetsGroup.add_argument("--targets", default=None, help="target filter")
 
     def _interpret_arguments(self, args):
         self.basePath = args.basePath
         self.usePackage = args.package
         self.filter = args.filter
+        self.randomTestSeed = args.random_seed
         self.noTransfer = args.noTransfer
         if args.targets:
             self.config.filterTargets(args.targets)

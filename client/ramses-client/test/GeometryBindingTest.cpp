@@ -555,7 +555,7 @@ namespace ramses
         EXPECT_NE(StatusOK, geometry->validate());
 
         // restore the effect in sharedTestState after this test case
-        sharedTestState->effect = sharedTestState->createEffect(sharedTestState->getClient());
+        sharedTestState->effect = sharedTestState->createEffect(sharedTestState->getClient(), false);
         ASSERT_TRUE(NULL != sharedTestState->effect);
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));

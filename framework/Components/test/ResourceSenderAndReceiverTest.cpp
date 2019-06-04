@@ -28,7 +28,8 @@ namespace ramses_internal
     {
     public:
         AResourceSenderAndReceiverTest()
-            : deleterMock(deleterCallbackMock)
+            : AbstractSenderAndReceiverTest(EServiceType::Ramses)
+            , deleterMock(deleterCallbackMock)
         {
             receiver.setResourceConsumerServiceHandler(&handler);
             receiver.setResourceProviderServiceHandler(&providerHandler);

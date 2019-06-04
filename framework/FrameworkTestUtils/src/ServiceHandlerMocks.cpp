@@ -41,4 +41,20 @@ namespace ramses_internal
     SceneRendererServiceHandlerMock::~SceneRendererServiceHandlerMock()
     {
     }
+
+    DcsmProviderServiceHandlerMock::DcsmProviderServiceHandlerMock()
+    {
+    }
+
+    DcsmProviderServiceHandlerMock::~DcsmProviderServiceHandlerMock()
+    {
+    }
+
+    DcsmConsumerServiceHandlerMock::DcsmConsumerServiceHandlerMock()
+    {
+    }
+
+    DcsmConsumerServiceHandlerMock::~DcsmConsumerServiceHandlerMock()
+    {
+    }
 }

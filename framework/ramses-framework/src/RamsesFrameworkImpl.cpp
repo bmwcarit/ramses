@@ -35,9 +35,9 @@ namespace ramses
         , m_threadWatchdogConfig(config.m_watchdogConfig)
         // NOTE: ThreadingSystem must always be constructed after CommunicationSystem
         , m_threadStrategy(3, config.m_watchdogConfig)
-        , resourceComponent(m_threadStrategy.e, m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getConnectionStatusUpdateNotifier(),
+        , resourceComponent(m_threadStrategy.e, m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getRamsesConnectionStatusUpdateNotifier(),
             m_statisticCollection, m_frameworkLock, config.getMaximumTotalBytesForAsyncResourceLoading())
-        , scenegraphComponent(m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getConnectionStatusUpdateNotifier(), m_frameworkLock)
+        , scenegraphComponent(m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getRamsesConnectionStatusUpdateNotifier(), m_frameworkLock)
         , m_ramshCommandLogConnectionInformation(*m_communicationSystem)
     {
         m_ramsh->start();
@@ -55,9 +55,9 @@ namespace ramses
         return scenegraphComponent;
     }
 
-    ramses_internal::IConnectionStatusUpdateNotifier& RamsesFrameworkImpl::getConnectionStatusUpdateNotifier()
+    ramses_internal::IConnectionStatusUpdateNotifier& RamsesFrameworkImpl::getRamsesConnectionStatusUpdateNotifier()
     {
-        return m_communicationSystem->getConnectionStatusUpdateNotifier();
+        return m_communicationSystem->getRamsesConnectionStatusUpdateNotifier();
     }
 
     ramses_internal::ParticipantIdentifier RamsesFrameworkImpl::getParticipantAddress() const

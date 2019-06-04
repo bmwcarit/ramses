@@ -23,8 +23,8 @@ namespace ramses_internal
     class AbstractSenderAndReceiverTest : public ::testing::TestWithParam<ECommunicationSystemType>
     {
     public:
-        AbstractSenderAndReceiverTest()
-            : m_state(CommunicationSystemTestFactory::ConstructTestState(GetParam()))
+        AbstractSenderAndReceiverTest(EServiceType serviceType)
+            : m_state(CommunicationSystemTestFactory::ConstructTestState(GetParam(), serviceType))
             , m_daemon(CommunicationSystemTestFactory::ConstructDiscoveryDaemonTestWrapper(*m_state))
             , m_senderTestWrapper(CommunicationSystemTestFactory::ConstructTestWrapper(*m_state, "sender"))
             , m_receiverTestWrapper(CommunicationSystemTestFactory::ConstructTestWrapper(*m_state, "receiver"))

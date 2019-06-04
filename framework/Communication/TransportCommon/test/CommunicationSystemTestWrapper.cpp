@@ -70,8 +70,9 @@ namespace ramses_internal
         }
     }
 
-    CommunicationSystemTestState::CommunicationSystemTestState(ECommunicationSystemType type)
+    CommunicationSystemTestState::CommunicationSystemTestState(ECommunicationSystemType type, EServiceType serviceType_)
         : communicationSystemType(type)
+        , serviceType(serviceType_)
     {
         static bool initializedLogger = false;
         if (!initializedLogger)
@@ -185,12 +186,28 @@ namespace ramses_internal
 
     void CommunicationSystemTestWrapper::registerForConnectionUpdates()
     {
-        commSystem->getConnectionStatusUpdateNotifier().registerForConnectionUpdates(&statusUpdateListener);
+        switch (state.serviceType)
+        {
+        case EServiceType::Ramses:
+            commSystem->getRamsesConnectionStatusUpdateNotifier().registerForConnectionUpdates(&statusUpdateListener);
+            break;
+        case EServiceType::Dcsm:
+            commSystem->getDcsmConnectionStatusUpdateNotifier().registerForConnectionUpdates(&statusUpdateListener);
+            break;
+        }
     }
 
     void CommunicationSystemTestWrapper::unregisterForConnectionUpdates()
     {
-        commSystem->getConnectionStatusUpdateNotifier().unregisterForConnectionUpdates(&statusUpdateListener);
+        switch (state.serviceType)
+        {
+        case EServiceType::Ramses:
+            commSystem->getRamsesConnectionStatusUpdateNotifier().unregisterForConnectionUpdates(&statusUpdateListener);
+            break;
+        case EServiceType::Dcsm:
+            commSystem->getDcsmConnectionStatusUpdateNotifier().unregisterForConnectionUpdates(&statusUpdateListener);
+            break;
+        }
     }
 
     CommunicationSystemDiscoveryDaemonTestWrapper::CommunicationSystemDiscoveryDaemonTestWrapper(CommunicationSystemTestState& state_)

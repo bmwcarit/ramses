@@ -11,7 +11,7 @@ import unittest
 import os
 import time
 import re
-import itertools
+import random
 
 from ramses_test_framework import helper
 from ramses_test_framework import log
@@ -28,6 +28,7 @@ class CoreImpl:
         self.basePath = ""
         self.filter = None
         self.fullResultsDirPath = ""
+        self.randomTestSeed = random.randint(0, 10000000)
 
     def read_arguments(self):
         pass
@@ -64,19 +65,34 @@ class CoreImpl:
             self._expand_test_suite(suite, expandedSuite)
 
         #filter
-        filteredSuite = unittest.TestSuite()
+        testList = []
         if self.filter is None:
-            filteredSuite = expandedSuite
+            testList = [t for t in expandedSuite]
         else:
             for test in expandedSuite:
                 filter_re = re.compile(self.filter, re.IGNORECASE)
                 if filter_re.search(test.id()):
-                    filteredSuite.addTest(test)
+                    testList.append(test)
 
+        # sort by id for deterministic order
+        testList = sorted(testList, key=lambda x: x.id())
+
+        # use local rng to shuffle
+        log.info("Seed used for test ordering: {}".format(self.randomTestSeed))
+        rng = random.Random(self.randomTestSeed)
+        random.shuffle(testList, lambda: rng.random())
+
+        # add to final test suite
+        filteredSuite = unittest.TestSuite()
+        for t in testList:
+            filteredSuite.addTest(t)
+
+        # print tests to run in final order
         log.color_separator(log.light_cyan,"discovered tests:")
         for test in filteredSuite:
             log.info(test.id())
         print("\n")
+
         #small wait for output formatting
         time.sleep(0.01)
         #run
@@ -169,10 +185,12 @@ class LocalCoreImpl(CoreImpl):
         parser.add_argument("--platform", default=self.config.defaultPlatform,
             help="Platform to use as default, possibilities: '"+self.config.defaultPlatform+"' (default), 'x11-egl-es-3-0', 'wayland-ivi-egl-es-3-0', ...")
         parser.add_argument("--filter", help="test filter")
+        parser.add_argument("--random-seed", default=self.randomTestSeed, help="random seed used for test ordering")
         args = parser.parse_args()
         self.basePath = os.path.normcase(args.path)
         self.platform = args.platform
         self.filter = args.filter
+        self.randomTestSeed = args.random_seed
 
     def createTargets(self):
         CoreImpl.createTargets(self)

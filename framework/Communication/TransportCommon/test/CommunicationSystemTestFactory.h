@@ -15,9 +15,9 @@ namespace ramses_internal
 {
     namespace CommunicationSystemTestFactory
     {
-        inline std::unique_ptr<CommunicationSystemTestState> ConstructTestState(ECommunicationSystemType type)
+        inline std::unique_ptr<CommunicationSystemTestState> ConstructTestState(ECommunicationSystemType commType, EServiceType serviceType)
         {
-            return std::unique_ptr<CommunicationSystemTestState>{new CommunicationSystemTestState(type)};
+            return std::unique_ptr<CommunicationSystemTestState>{new CommunicationSystemTestState(commType, serviceType)};
         }
 
         inline std::unique_ptr<CommunicationSystemDiscoveryDaemonTestWrapper> ConstructDiscoveryDaemonTestWrapper(CommunicationSystemTestState& state)

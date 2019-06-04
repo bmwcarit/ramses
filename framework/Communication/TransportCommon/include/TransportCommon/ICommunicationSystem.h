@@ -14,6 +14,7 @@
 #include "Transfer/ResourceTypes.h"
 #include "Components/ManagedResource.h"
 #include "Utils/IPeriodicLogSupplier.h"
+#include "Components/DcsmTypes.h"
 
 namespace ramses_internal
 {
@@ -40,7 +41,9 @@ namespace ramses_internal
         virtual bool connectServices() = 0;
         virtual bool disconnectServices() = 0;
 
-        virtual IConnectionStatusUpdateNotifier& getConnectionStatusUpdateNotifier() = 0;
+        virtual IConnectionStatusUpdateNotifier& getRamsesConnectionStatusUpdateNotifier() = 0;
+        virtual IConnectionStatusUpdateNotifier& getDcsmConnectionStatusUpdateNotifier() = 0;
+
 
         // resource
         virtual bool sendRequestResources(const Guid& to, const ResourceContentHashVector& resources) = 0;
@@ -59,6 +62,18 @@ namespace ramses_internal
         virtual bool sendInitializeScene(const Guid& to, const SceneInfo& sceneInfo) = 0;
         virtual uint64_t sendSceneActionList(const Guid& to, const SceneId& sceneId, const SceneActionCollection& actions, const uint64_t& actionListCounter) = 0;
 
+        // dcsm client -> renderer
+        virtual bool sendDcsmBroadcastRegisterContent(ContentID contentID, Category) = 0;
+        virtual bool sendDcsmRegisterContent(const Guid& to, ContentID contentID, Category) = 0;
+        virtual bool sendDcsmContentAvailable(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) = 0;
+        virtual bool sendDcsmCategoryContentSwitchRequest(const Guid& to, ContentID contentID) = 0;
+        virtual bool sendDcsmBroadcastRequestUnregisterContent(ContentID contentID) = 0;
+
+        // dcsm renderer -> client
+        virtual bool sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, SizeInfo sizeinfo, AnimationInformation) = 0;
+        virtual bool sendDcsmContentStatusChange(const Guid& to, ContentID contentID, EDcsmStatus status, AnimationInformation) = 0;
+
+
         // message limits configuration
         virtual CommunicationSendDataSizes getSendDataSizes() const = 0;
         virtual void setSendDataSizes(const CommunicationSendDataSizes& sizes) = 0;
@@ -69,6 +84,11 @@ namespace ramses_internal
         virtual void setSceneProviderServiceHandler(ISceneProviderServiceHandler* handler) = 0;
         virtual void setSceneRendererServiceHandler(ISceneRendererServiceHandler* handler) = 0;
 
+        virtual void setDcsmProviderServiceHandler(IDcsmProviderServiceHandler* handler) = 0;
+        virtual void setDcsmConsumerServiceHandler(IDcsmConsumerServiceHandler* handler) = 0;
+
+
+        // log triggers
         virtual void logConnectionInfo() = 0;
         virtual void triggerLogMessageForPeriodicLog() override = 0;
     };

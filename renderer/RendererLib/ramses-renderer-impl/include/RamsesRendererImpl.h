@@ -89,7 +89,7 @@ namespace ramses
         void logConfirmationEcho(const ramses_internal::String& text);
         status_t logRendererInfo();
 
-        const ramses_internal::RendererCommands& getCommands() const;
+        const ramses_internal::RendererCommands& getPendingCommands() const;
 
         status_t startThread();
         status_t stopThread();

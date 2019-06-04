@@ -492,7 +492,6 @@ namespace ramses
         {
             return addErrorEntry("Appearance::set failed, element count does not match");
         }
-
         return StatusOK;
     }
 
@@ -532,6 +531,10 @@ namespace ramses
     template <typename T>
     status_t AppearanceImpl::setDataArrayChecked(uint32_t elementCount, const T* values, const EffectInputImpl& input)
     {
+        if (input.getSemantics() != ramses_internal::EFixedSemantics_Invalid)
+        {
+            return addErrorEntry("Appearance::set failed, can't access value of semantic uniform");
+        }
         CHECK_RETURN_ERR(checkEffectInputValidityAndValueCompatibility(input, elementCount, ramses_internal::TypeToEDataTypeTraits<T>::DataType));
 
         const BindableInput* bindableInput = m_bindableInputs.get(input.getInputIndex());
@@ -567,6 +570,10 @@ namespace ramses
     template <typename T>
     status_t AppearanceImpl::getDataArrayChecked(uint32_t elementCount, T* values, const EffectInputImpl& input) const
     {
+        if (input.getSemantics() != ramses_internal::EFixedSemantics_Invalid)
+        {
+            return addErrorEntry("Appearance::set failed, can't access value of semantic uniform");
+        }
         CHECK_RETURN_ERR(checkEffectInputValidityAndValueCompatibility(input, elementCount, ramses_internal::TypeToEDataTypeTraits<T>::DataType));
 
         const BindableInput* bindableInput = m_bindableInputs.get(input.getInputIndex());

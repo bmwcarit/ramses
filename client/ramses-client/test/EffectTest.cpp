@@ -43,6 +43,14 @@ namespace ramses
 
     TestEffectCreator* AnEffect::sharedTestState = 0;
 
+    class AnEffectWithSemantics : public AnEffect
+    {
+    public:
+        static void SetUpTestCase()
+        {
+            sharedTestState = new TestEffectCreator(true);
+        }
+    };
 
     TEST_F(AnEffect, hasProperNumberOfInputs)
     {
@@ -116,7 +124,7 @@ namespace ramses
         EXPECT_TRUE(input.isValid());
     }
 
-    TEST_F(AnEffect, findsUniformInputBySemantic)
+    TEST_F(AnEffectWithSemantics, findsUniformInputBySemantic)
     {
         const Effect* effect = sharedTestState->effect;
         UniformInput input;
@@ -134,6 +142,22 @@ namespace ramses
 
     TEST_F(AnEffect, getsAttributeInputByIndex)
     {
+        const Effect*  effect = sharedTestState->effect;
+        AttributeInput input;
+        EXPECT_EQ(StatusOK, effect->getAttributeInput(1u, input));
+
+        EXPECT_STREQ("vec2fArrayInput", input.getName());
+        EXPECT_EQ(effect->impl.getLowlevelResourceHash(), input.impl.getEffectHash());
+        EXPECT_EQ(EEffectInputDataType_Vector2F, input.getDataType());
+        EXPECT_EQ(ramses_internal::EDataType_Vector2Buffer, input.impl.getDataType());
+        EXPECT_EQ(ramses_internal::EFixedSemantics_Invalid, input.impl.getSemantics());
+        EXPECT_EQ(EEffectAttributeSemantic_Invalid, input.getSemantics());
+        EXPECT_EQ(1u, input.impl.getInputIndex());
+        EXPECT_TRUE(input.isValid());
+    }
+
+    TEST_F(AnEffectWithSemantics, getsAttributeInputByIndex)
+    {
         const Effect* effect = sharedTestState->effect;
         AttributeInput input;
         EXPECT_EQ(StatusOK, effect->getAttributeInput(1u, input));
@@ -148,7 +172,7 @@ namespace ramses
         EXPECT_TRUE(input.isValid());
     }
 
-    TEST_F(AnEffect, findsAttributeInputBySemantic)
+    TEST_F(AnEffectWithSemantics, findsAttributeInputBySemantic)
     {
         const Effect* effect = sharedTestState->effect;
         AttributeInput input;
@@ -190,13 +214,29 @@ namespace ramses
         EXPECT_EQ(effect->impl.getLowlevelResourceHash(), input.impl.getEffectHash());
         EXPECT_EQ(EEffectInputDataType_Vector2F, input.getDataType());
         EXPECT_EQ(ramses_internal::EDataType_Vector2Buffer, input.impl.getDataType());
+        EXPECT_EQ(ramses_internal::EFixedSemantics_Invalid, input.impl.getSemantics());
+        EXPECT_EQ(EEffectAttributeSemantic_Invalid, input.getSemantics());
+        EXPECT_EQ(1u, input.impl.getInputIndex());
+        EXPECT_TRUE(input.isValid());
+    }
+
+    TEST_F(AnEffectWithSemantics, findsAttributeInputByName)
+    {
+        const Effect*  effect = sharedTestState->effect;
+        AttributeInput input;
+        EXPECT_EQ(StatusOK, effect->findAttributeInput("vec2fArrayInput", input));
+
+        EXPECT_STREQ("vec2fArrayInput", input.getName());
+        EXPECT_EQ(effect->impl.getLowlevelResourceHash(), input.impl.getEffectHash());
+        EXPECT_EQ(EEffectInputDataType_Vector2F, input.getDataType());
+        EXPECT_EQ(ramses_internal::EDataType_Vector2Buffer, input.impl.getDataType());
         EXPECT_EQ(ramses_internal::EFixedSemantics_TextPositionsAttribute, input.impl.getSemantics());
         EXPECT_EQ(EEffectAttributeSemantic_TextPositions, input.getSemantics());
         EXPECT_EQ(1u, input.impl.getInputIndex());
         EXPECT_TRUE(input.isValid());
     }
 
-    TEST_F(AnEffect, findsTextureInputWithSemantics)
+    TEST_F(AnEffectWithSemantics, findsTextureInputWithSemantics)
     {
         const Effect* effect = sharedTestState->effect;
         UniformInput input;

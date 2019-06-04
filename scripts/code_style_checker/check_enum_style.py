@@ -15,10 +15,10 @@ from common_modules.common import *
 def check_enum_style(filename, clean_file_contents):
     """
     Check that enums have
-    - E prefix on name
-    - first value is defined
-    - have name prefix for normal enum
-    - do not have name prefix for enum classes
+    - E prefix on name if old enum
+    - name is CamelCase
+    - enumerators have name prefix if old enum
+    - enumerators have no name prefix if enum class
     """
 
     # enum [class] <name> [: maybe type] { <values> }
@@ -32,14 +32,14 @@ def check_enum_style(filename, clean_file_contents):
         enum_name = g[1]
         enum_values = [l for l in [l.strip() for l in g[2].split('\n')] if l is not '']
 
-        # must start with an 'E'
-        if not enum_name.startswith('E'):
+        # old enum must start with an 'E'
+        if not is_enum_class and not enum_name.startswith('E'):
             log_warning("check_enum_style", filename, line_number, "enum must begin with 'E': " + enum_name)
         # must be camel case
         if enum_name.upper() == enum_name:
             log_warning("check_enum_style", filename, line_number, "enum must be CamelCase: " + enum_name)
 
-        # check that 'old' enum have name prefix on values, enum classes do NOT have name prefix
+        # old enum has prefix on values, enum class does NOT have name prefix
         for v in enum_values:
             if is_enum_class:
                 if v.startswith(enum_name):

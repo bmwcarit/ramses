@@ -78,7 +78,7 @@ protected:
     ARamsesRenderer(ramses::RendererConfig rendererConfig = ramses::RendererConfig())
     : framework()
     , renderer(framework, rendererConfig)
-    , commandBuffer(renderer.impl.getCommands())
+    , commandBuffer(renderer.impl.getPendingCommands())
     {
     }
 

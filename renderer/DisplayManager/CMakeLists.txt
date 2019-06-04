@@ -49,4 +49,6 @@ ACME_MODULE(
     DEPENDENCIES            DisplayManager
                             RendererTestUtils
                             ramses-gmock-main
+                            ramses-client-api
+                            ramses-client
 )

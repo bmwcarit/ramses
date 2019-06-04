@@ -114,13 +114,23 @@ namespace ramses_internal
         EXPECT_EQ(16u, sizeof(generic_uuid_t));
     }
 
-    TEST(HashTest, HashGuid)
+    TEST(GuidTest, HashGuid)
     {
         Guid guid(true);
         guid.toString();
         Guid guid2(guid);
 
         EXPECT_EQ(ramses_capu::HashValue(guid), ramses_capu::HashValue(guid2));
+        EXPECT_EQ(ramses_capu::Hash<Guid>()(guid), ramses_capu::Hash<Guid>()(guid2));
+    }
+
+    TEST(GuidTest, HashersForGuidEqual)
+    {
+        Guid guid(true);
+        Guid guid2(true);
+
+        EXPECT_EQ(std::hash<Guid>()(guid), ramses_capu::Hash<Guid>()(guid));
+        EXPECT_EQ(std::hash<Guid>()(guid2), ramses_capu::Hash<Guid>()(guid2));
     }
 
     TEST(GuidTest, createsRandom)

@@ -12,6 +12,7 @@
 #include "Ramsh/RamshTools.h"
 #include "PlatformAbstraction/PlatformGuard.h"
 #include "Utils/RamsesLogger.h"
+#include "PlatformAbstraction/PlatformEnvironmentVariables.h"
 
 #include "ramses-capu/os/Console.h"
 
@@ -22,11 +23,19 @@ namespace ramses_internal
         , m_checkInputThread("R_Ramsh_Console")
         , m_commandHistory()
         , m_nextCommandFromHistory(0)
+        , m_interactiveMode([]() {
+                                String dummy;
+                                return !PlatformEnvironmentVariables::get("DISABLE_RAMSH_INTERACTIVE_MODE", dummy);
+                            }())
     {
         RamshCommunicationChannelConsoleSignalHandler::getInstance().insert(this);
-        GetRamsesLogger().setAfterConsoleLogCallback([this]() { afterSendCallback(); });
-        ramses_capu::Console::Print("%s", promptString().c_str());
-        ramses_capu::Console::Flush();
+        if (m_interactiveMode)
+        {
+            // register callback to output prompt and unfinished command after each log message
+            GetRamsesLogger().setAfterConsoleLogCallback([this]() { afterSendCallback(); });
+            ramses_capu::Console::Print("%s", promptString().c_str());
+            ramses_capu::Console::Flush();
+        }
     }
 
     RamshCommunicationChannelConsole::~RamshCommunicationChannelConsole()
@@ -70,7 +79,16 @@ namespace ramses_internal
         case'\n': // enter/return
             {
                 m_lock.lock();
-                ramses_capu::Console::Print("\n");
+                if (m_interactiveMode)
+                {
+                    ramses_capu::Console::Print("\n");
+                }
+                else
+                {
+                    // Print command once when in non-interactive mode, allows easier correlation
+                    // between and command and reaction
+                    ramses_capu::Console::Print("%s\n", promptString().c_str());
+                }
                 if(0 != m_ramsh)
                 {
                     m_pausePrompt = true;
@@ -94,9 +112,12 @@ namespace ramses_internal
                     m_nextCommandFromHistory = 0;
                 }
 
-                //new prompt
-                ramses_capu::Console::Print("%s", promptString().c_str());
-                ramses_capu::Console::Flush();
+                if (m_interactiveMode)
+                {
+                    //new prompt
+                    ramses_capu::Console::Print("%s", promptString().c_str());
+                    ramses_capu::Console::Flush();
+                }
 
                 m_lock.unlock();
                 break;
@@ -116,7 +137,8 @@ namespace ramses_internal
                     }
                 }
 
-                if(!inputEmpty)
+                // only delete characters when there is something to delete (prevent messing up other output)
+                if(m_interactiveMode && !inputEmpty)
                 {
                     ramses_capu::Console::Print("\b \b");
                     ramses_capu::Console::Flush();
@@ -149,9 +171,12 @@ namespace ramses_internal
         }
             break;
         default:
-            //echo
-            ramses_capu::Console::Print("%c",c);
-            ramses_capu::Console::Flush();
+            if (m_interactiveMode)
+            {
+                //echo input
+                ramses_capu::Console::Print("%c",c);
+                ramses_capu::Console::Flush();
+            }
             m_lock.lock();
             m_input.append(String(1,c));
             m_lock.unlock();

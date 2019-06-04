@@ -34,7 +34,7 @@ namespace ramses
         , m_binaryShaderCache(config.impl.getBinaryShaderCache() ? new BinaryShaderCacheProxy(*(config.impl.getBinaryShaderCache())) : NULL)
         , m_rendererResourceCache(config.impl.getRendererResourceCache() ? new RendererResourceCacheProxy(*(config.impl.getRendererResourceCache())) : nullptr)
         , m_pendingRendererCommands()
-        , m_rendererFrameworkLogic(framework.impl.getConnectionStatusUpdateNotifier(), framework.impl.getResourceComponent(), framework.impl.getScenegraphComponent(), m_rendererCommandBuffer, framework.impl.getFrameworkLock())
+        , m_rendererFrameworkLogic(framework.impl.getRamsesConnectionStatusUpdateNotifier(), framework.impl.getResourceComponent(), framework.impl.getScenegraphComponent(), m_rendererCommandBuffer, framework.impl.getFrameworkLock())
         , m_platformFactory(platformFactory != NULL ? platformFactory : ramses_internal::PlatformFactory_Base::CreatePlatformFactory(m_internalConfig))
         , m_resourceUploader(m_rendererStatistics, m_binaryShaderCache.get())
         , m_renderer(new ramses_internal::WindowedRenderer(m_rendererCommandBuffer, framework.impl.getScenegraphComponent(), *m_platformFactory, m_rendererStatistics, m_internalConfig.getKPIFileName()))
@@ -198,7 +198,7 @@ namespace ramses
         m_pendingRendererCommands.confirmationEcho(text);
     }
 
-    const ramses_internal::RendererCommands& RamsesRendererImpl::getCommands() const
+    const ramses_internal::RendererCommands& RamsesRendererImpl::getPendingCommands() const
     {
         return m_pendingRendererCommands;
     }

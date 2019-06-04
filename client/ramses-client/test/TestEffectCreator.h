@@ -19,10 +19,10 @@ namespace ramses
     class TestEffectCreator : public LocalTestClientWithScene
     {
     public:
-        TestEffectCreator()
+        TestEffectCreator(bool withSemantics = false)
             : LocalTestClientWithScene()
         {
-            effect = createEffect(client);
+            effect = createEffect(client, withSemantics);
             EXPECT_TRUE(effect != NULL);
             appearance = this->m_scene.createAppearance(*effect);
             EXPECT_TRUE(appearance != NULL);
@@ -33,7 +33,7 @@ namespace ramses
             EXPECT_EQ(StatusOK, this->m_scene.destroy(*appearance));
         }
 
-        static Effect* createEffect(RamsesClient& client)
+        static Effect* createEffect(RamsesClient& client, bool withSemantics)
         {
             ramses_internal::String VertexShader(
                 "uniform lowp float floatInput;\n"
@@ -94,9 +94,13 @@ namespace ramses
             ramses::EffectDescription effectDesc;
             effectDesc.setVertexShader(VertexShader.c_str());
             effectDesc.setFragmentShader(FragmentShader.c_str());
-            effectDesc.setUniformSemantic("matrix44fInput", ramses::EEffectUniformSemantic_ModelViewMatrix);
-            effectDesc.setAttributeSemantic("vec2fArrayInput", ramses::EEffectAttributeSemantic_TextPositions);
-            effectDesc.setUniformSemantic("texture2dInput", ramses::EEffectUniformSemantic_TextTexture);
+
+            if (withSemantics)
+            {
+                effectDesc.setAttributeSemantic("vec2fArrayInput", ramses::EEffectAttributeSemantic_TextPositions);
+                effectDesc.setUniformSemantic("matrix44fInput", ramses::EEffectUniformSemantic_ModelViewMatrix);
+                effectDesc.setUniformSemantic("texture2dInput", ramses::EEffectUniformSemantic_TextTexture);
+            }
 
             return client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "input test effect");
         }

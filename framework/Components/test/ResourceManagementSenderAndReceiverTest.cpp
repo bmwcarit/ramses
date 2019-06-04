@@ -17,6 +17,7 @@ namespace ramses_internal
     {
     public:
         AResourceManagementSenderAndReceiverTest()
+            : AbstractSenderAndReceiverTest(EServiceType::Ramses)
         {
             receiver.setResourceProviderServiceHandler(&handler);
         }

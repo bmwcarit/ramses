@@ -44,6 +44,7 @@ class RamshCommunicationChannelConsole : public RamshCommunicationChannel, publi
         std::vector<String> m_commandHistory;
         uint32_t m_nextCommandFromHistory;
 
+        const bool m_interactiveMode;
 };
 
 }// namespace ramses_internal

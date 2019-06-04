@@ -404,7 +404,7 @@ namespace ramses
         return status;
     }
 
-    status_t Appearance::getInputTexture(const UniformInput& input, const TextureSampler*& textureSampler)
+    status_t Appearance::getInputTexture(const UniformInput& input, const TextureSampler*& textureSampler) const
     {
         return impl.getInputTexture(input.impl, textureSampler);
     }

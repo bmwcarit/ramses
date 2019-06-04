@@ -1003,10 +1003,12 @@ namespace ramses
         {
             if (resourceStatus.successful)
             {
+                LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesClient::dispatchEvents(resourceFileLoadSucceeded): " << resourceStatus.filename);
                 clientEventHandler.resourceFileLoadSucceeded(resourceStatus.filename.c_str());
             }
             else
             {
+                LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesClient::dispatchEvents(resourceFileLoadFailed): " << resourceStatus.filename);
                 clientEventHandler.resourceFileLoadFailed(resourceStatus.filename.c_str());
             }
         }
@@ -1020,13 +1022,14 @@ namespace ramses
                 const ramses_internal::UInt64 start = ramses_internal::PlatformTime::GetMillisecondsMonotonic();
                 finalizeLoadedScene(scene);
                 const ramses_internal::UInt64 end = ramses_internal::PlatformTime::GetMillisecondsMonotonic();
-                LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesClient::dispatchEvents: Synchronous postprocessing of scene loaded from '" <<
+                LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesClient::dispatchEvents(sceneFileLoadSucceeded): Synchronous postprocessing of scene loaded from '" <<
                          sceneStatus.sceneFilename << "' (sceneName: " << scene->getName() << ", sceneId " << scene->getSceneId() << ") in " << (end - start) << " ms");
 
                 clientEventHandler.sceneFileLoadSucceeded(sceneStatus.sceneFilename.c_str(), scene);
             }
             else
             {
+                LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesClient::dispatchEvents(sceneFileLoadFailed): " << sceneStatus.sceneFilename);
                 clientEventHandler.sceneFileLoadFailed(sceneStatus.sceneFilename.c_str());
             }
         }

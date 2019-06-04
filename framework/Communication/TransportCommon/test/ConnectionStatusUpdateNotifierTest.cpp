@@ -25,20 +25,20 @@ namespace ramses_internal
 
     TEST_F(AConnectionStatusUpdateNotifier, doesNotNotifyAnyoneIfNooneRegistered)
     {
-        ConnectionStatusUpdateNotifier notifier(lock);
+        ConnectionStatusUpdateNotifier notifier(String(), String(), lock);
         notifier.triggerNotification(Guid(true), EConnectionStatus_Connected);
     }
 
     TEST_F(AConnectionStatusUpdateNotifier, doesNotNotifyListenerOfNooneConnected)
     {
-        ConnectionStatusUpdateNotifier notifier(lock);
+        ConnectionStatusUpdateNotifier notifier(String(), String(), lock);
         notifier.registerForConnectionUpdates(&listener);
         notifier.unregisterForConnectionUpdates(&listener);
     }
 
     TEST_F(AConnectionStatusUpdateNotifier, notifiesAboutAllCurrentlyConnectedParticipants)
     {
-        ConnectionStatusUpdateNotifier notifier(lock);
+        ConnectionStatusUpdateNotifier notifier(String(), String(), lock);
         Guid p1(true);
         Guid p2(true);
         notifier.triggerNotification(p1, EConnectionStatus_Connected);
@@ -51,7 +51,7 @@ namespace ramses_internal
 
     TEST_F(AConnectionStatusUpdateNotifier, notifiesAboutNewlyConnectedParticipants)
     {
-        ConnectionStatusUpdateNotifier notifier(lock);
+        ConnectionStatusUpdateNotifier notifier(String(), String(), lock);
         notifier.registerForConnectionUpdates(&listener);
 
         Guid p1(true);
@@ -61,7 +61,7 @@ namespace ramses_internal
 
     TEST_F(AConnectionStatusUpdateNotifier, doesNotNotifyAfterUnregister)
     {
-        ConnectionStatusUpdateNotifier notifier(lock);
+        ConnectionStatusUpdateNotifier notifier(String(), String(), lock);
         notifier.registerForConnectionUpdates(&listener);
         notifier.unregisterForConnectionUpdates(&listener);
 
@@ -71,7 +71,7 @@ namespace ramses_internal
 
     TEST_F(AConnectionStatusUpdateNotifier, notifiesAboutDisconnectingParticipants)
     {
-        ConnectionStatusUpdateNotifier notifier(lock);
+        ConnectionStatusUpdateNotifier notifier(String(), String(), lock);
 
         Guid p(true);
         EXPECT_CALL(listener, newParticipantHasConnected(p));
@@ -85,7 +85,7 @@ namespace ramses_internal
 
     TEST_F(AConnectionStatusUpdateNotifier, doesNotNotifyForAlreadyDisconnectedParticipants)
     {
-        ConnectionStatusUpdateNotifier notifier(lock);
+        ConnectionStatusUpdateNotifier notifier(String(), String(), lock);
 
         Guid p(true);
         notifier.triggerNotification(p, EConnectionStatus_Connected);

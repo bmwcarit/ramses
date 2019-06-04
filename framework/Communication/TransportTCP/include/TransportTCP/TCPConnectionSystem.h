@@ -39,7 +39,8 @@ namespace ramses_internal
         virtual bool connectServices() override;
         virtual bool disconnectServices() override;
 
-        virtual IConnectionStatusUpdateNotifier& getConnectionStatusUpdateNotifier() override;
+        virtual IConnectionStatusUpdateNotifier& getRamsesConnectionStatusUpdateNotifier() override;
+        virtual IConnectionStatusUpdateNotifier& getDcsmConnectionStatusUpdateNotifier() override;
 
         // message limits configuration
         virtual CommunicationSendDataSizes getSendDataSizes() const override;
@@ -62,12 +63,26 @@ namespace ramses_internal
         virtual bool sendInitializeScene(const Guid& to, const SceneInfo& sceneInfo) override;
         virtual uint64_t sendSceneActionList(const Guid& to, const SceneId& sceneId, const SceneActionCollection& actions, const uint64_t& actionListCounter) override;
 
+        // dcsm client -> renderer
+        virtual bool sendDcsmBroadcastRegisterContent(ContentID contentID, Category) override;
+        virtual bool sendDcsmRegisterContent(const Guid& to, ContentID contentID, Category) override;
+        virtual bool sendDcsmContentAvailable(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) override;
+        virtual bool sendDcsmCategoryContentSwitchRequest(const Guid& to, ContentID contentID) override;
+        virtual bool sendDcsmBroadcastRequestUnregisterContent(ContentID contentID) override;
+
+        // dcsm renderer -> client
+        virtual bool sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, SizeInfo sizeinfo, AnimationInformation) override;
+        virtual bool sendDcsmContentStatusChange(const Guid& to, ContentID contentID, EDcsmStatus status, AnimationInformation) override;
+
         // set service handlers
         void setResourceProviderServiceHandler(IResourceProviderServiceHandler* handler) override;
         void setResourceConsumerServiceHandler(IResourceConsumerServiceHandler* handler) override;
         void setSceneProviderServiceHandler(ISceneProviderServiceHandler* handler) override;
         void setSceneRendererServiceHandler(ISceneRendererServiceHandler* handler) override;
+        void setDcsmProviderServiceHandler(IDcsmProviderServiceHandler* handler) override;
+        void setDcsmConsumerServiceHandler(IDcsmConsumerServiceHandler* handler) override;
 
+        // log triggers
         virtual void logConnectionInfo() override;
         virtual void triggerLogMessageForPeriodicLog() override;
 
@@ -184,6 +199,13 @@ namespace ramses_internal
         void handleTransferResources(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleResourcesNotAvailable(const ParticipantPtr& pp, BinaryInputStream& stream);
 
+        void handleDcsmCanvasSizeChange(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleDcsmContentStatusChange(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleDcsmRegisterContent(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleDcsmContentAvailable(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleDcsmCategoryContentSwitchRequest(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleDcsmRequestUnregisterContent(const ParticipantPtr& pp, BinaryInputStream& stream);
+
         static const char* EnumToString(EParticipantState e);
         static const char* EnumToString(EParticipantType e);
 
@@ -202,12 +224,15 @@ namespace ramses_internal
         PlatformThread m_thread;
         StatisticCollectionFramework& m_statisticCollection;
 
-        ConnectionStatusUpdateNotifier m_connectionStatusUpdateNotifier;
+        ConnectionStatusUpdateNotifier m_ramsesConnectionStatusUpdateNotifier;
+        ConnectionStatusUpdateNotifier m_dcsmConnectionStatusUpdateNotifier;
 
         IResourceConsumerServiceHandler* m_resourceConsumerHandler;
         IResourceProviderServiceHandler* m_resourceProviderHandler;
         ISceneProviderServiceHandler* m_sceneProviderHandler;
         ISceneRendererServiceHandler* m_sceneRendererHandler;
+        IDcsmProviderServiceHandler* m_dcsmProviderHandler;
+        IDcsmConsumerServiceHandler* m_dcsmConsumerHandler;
 
         RunStatePtr m_runState;
         HashSet<ParticipantPtr>       m_connectingParticipants;

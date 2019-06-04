@@ -31,7 +31,13 @@ namespace ramses_internal
             return true;
         }
 
-        virtual IConnectionStatusUpdateNotifier& getConnectionStatusUpdateNotifier() override
+        virtual IConnectionStatusUpdateNotifier& getRamsesConnectionStatusUpdateNotifier() override
+        {
+            static FakeConnectionStatusUpdateNotifier fake;
+            return fake;
+        }
+
+        virtual IConnectionStatusUpdateNotifier& getDcsmConnectionStatusUpdateNotifier() override
         {
             static FakeConnectionStatusUpdateNotifier fake;
             return fake;
@@ -92,6 +98,41 @@ namespace ramses_internal
             return 0u;
         }
 
+        virtual bool sendDcsmBroadcastRegisterContent(ContentID /*contentID*/, Category) override
+        {
+            return true;
+        }
+
+        virtual bool sendDcsmRegisterContent(const Guid& /*to*/, ContentID /*contentID*/, Category) override
+        {
+            return true;
+        }
+
+        virtual bool sendDcsmContentAvailable(const Guid& /*to*/, ContentID /*contentID*/, ETechnicalContentType /*technicalContentType*/, TechnicalContentDescriptor /*technicalContentDescriptor*/) override
+        {
+            return true;
+        }
+
+        virtual bool sendDcsmCategoryContentSwitchRequest(const Guid& /*to*/, ContentID /*contentID*/) override
+        {
+            return true;
+        }
+
+        virtual bool sendDcsmBroadcastRequestUnregisterContent(ContentID /*contentID*/) override
+        {
+            return true;
+        }
+
+        virtual bool sendDcsmCanvasSizeChange(const Guid& /*to*/, ContentID /*contentID*/, SizeInfo /*sizeinfo*/, AnimationInformation) override
+        {
+            return true;
+        }
+
+        virtual bool sendDcsmContentStatusChange(const Guid& /*to*/, ContentID /*contentID*/, EDcsmStatus /*status*/, AnimationInformation) override
+        {
+            return true;
+        }
+
         virtual void setResourceProviderServiceHandler(IResourceProviderServiceHandler* /*handler*/) override
         {
         }
@@ -105,6 +146,14 @@ namespace ramses_internal
         }
 
         virtual void setSceneRendererServiceHandler(ISceneRendererServiceHandler* /*handler*/) override
+        {
+        }
+
+        virtual void setDcsmProviderServiceHandler(IDcsmProviderServiceHandler* /*handler*/) override
+        {
+        }
+
+        virtual void setDcsmConsumerServiceHandler(IDcsmConsumerServiceHandler* /*handler*/) override
         {
         }
 

@@ -163,6 +163,7 @@ class Target:
         #use custom daemon port for all ramses applications to avoid connections to other applications running on the system (e.g. the HMI)
         extendedArgs += " -p {}".format(CUSTOM_DAEMON_PORT)
         env['DISABLE_CONSOLE_COLORS'] = '1'
+        env['DISABLE_RAMSH_INTERACTIVE_MODE'] = '1'
         application = self.start_application(applicationName, extendedArgs, binaryDirectoryOnTarget, nameExtension, env, dltAppID)
         if self.systemMonitor is not None:
             self.systemMonitor.addApplication(applicationName)

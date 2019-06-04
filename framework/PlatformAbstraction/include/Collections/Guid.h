@@ -149,4 +149,16 @@ namespace ramses_capu
     };
 }
 
+namespace std
+{
+    template<>
+    struct hash<ramses_internal::Guid>
+    {
+        size_t operator()(const ramses_internal::Guid& key) const
+        {
+            return ramses_capu::HashMemoryRange(&(key.getGuidData()), sizeof(ramses_internal::generic_uuid_t));
+        }
+    };
+}
+
 #endif

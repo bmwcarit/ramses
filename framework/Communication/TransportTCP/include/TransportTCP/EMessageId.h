@@ -39,6 +39,14 @@ namespace ramses_internal
 
         // scene
         EMessageId_CreateScene,
+
+        // dcsm
+        EMessageId_DcsmRegisterContent,
+        EMessageId_DcsmCanvasSizeChange,
+        EMessageId_DcsmContentStatusChange,
+        EMessageId_DcsmContentAvailable,
+        EMessageId_DcsmCategoryContentSwitchRequest,
+        EMessageId_DcsmRequestUnregisterContent,
     };
 
 #ifndef CreateNameForEnumID

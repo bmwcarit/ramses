@@ -10,6 +10,7 @@
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "RamsesRendererImpl.h"
 #include "RamsesFrameworkImpl.h"
+#include "DisplayManager/RendererEventChainer.h"
 #include "PlatformAbstraction/PlatformGuard.h"
 
 namespace ramses_display_manager
@@ -94,10 +95,17 @@ namespace ramses_display_manager
         m_ramsesRenderer.linkData(providerSceneId, providerId, consumerSceneId, consumerId);
     }
 
-    void DisplayManager::dispatchAndFlush()
+    void DisplayManager::dispatchAndFlush(ramses::IRendererEventHandler* customHandler)
     {
         ramses_internal::PlatformGuard guard(m_lock);
-        m_ramsesRenderer.dispatchEvents(*this);
+        if (customHandler)
+        {
+            RendererEventChainer chainer{ *customHandler, *this };
+            m_ramsesRenderer.dispatchEvents(chainer);
+        }
+        else
+            m_ramsesRenderer.dispatchEvents(*this);
+
         m_ramsesRenderer.flush();
     }
 
@@ -107,71 +115,76 @@ namespace ramses_display_manager
         return m_isRunning && !m_exitCommand->exitRequested();
     }
 
-    bool DisplayManager::isSceneShown(ramses::sceneId_t sceneId) const
-    {
-        ramses_internal::PlatformGuard guard(m_lock);
-        if (m_currentSceneStates.contains(sceneId))
-        {
-            return m_currentSceneStates.at(sceneId) == ESceneState_Rendered;
-        }
-        return false;
-    }
-
     bool DisplayManager::isDisplayCreated(ramses::displayId_t display) const
     {
         ramses_internal::PlatformGuard guard(m_lock);
         return m_createdDisplays.hasElement(display);
     }
 
-    DisplayManager::ESceneState DisplayManager::getCurrentSceneState(ramses::sceneId_t sceneId)
+    DisplayManager::ESceneState DisplayManager::getSceneState(ramses::sceneId_t sceneId) const
     {
-        if (m_currentSceneStates.contains(sceneId))
-        {
-            return m_currentSceneStates[sceneId];
-        }
-        return ESceneState_Unpublished;
+        ramses_internal::PlatformGuard guard(m_lock);
+        return getCurrentSceneState(sceneId);
     }
 
-    DisplayManager::ESceneState DisplayManager::getTargetSceneState(ramses::sceneId_t sceneId)
+
+    ramses::displayId_t DisplayManager::getDisplaySceneIsMappedTo(ramses::sceneId_t sceneId) const
     {
-        if (m_targetSceneStates.contains(sceneId))
-        {
-            return m_targetSceneStates[sceneId];
-        }
-        return ESceneState_Unpublished;
+        ramses_internal::PlatformGuard guard(m_lock);
+        const auto it = m_scenesInfo.find(sceneId);
+        return it != m_scenesInfo.end() ? it->second.mappingInfo.displayMappedTo : ramses::InvalidDisplayId;
     }
 
-    bool DisplayManager::isInTargetState(ramses::sceneId_t sceneId)
+    DisplayManager::ESceneState DisplayManager::getCurrentSceneState(ramses::sceneId_t sceneId) const
+    {
+        const auto it = m_scenesInfo.find(sceneId);
+        return it != m_scenesInfo.end() ? it->second.currentState : ESceneState::Unpublished;
+    }
+
+    DisplayManager::ESceneState DisplayManager::getTargetSceneState(ramses::sceneId_t sceneId) const
+    {
+        const auto it = m_scenesInfo.find(sceneId);
+        return it != m_scenesInfo.end() ? it->second.targetState : ESceneState::Unpublished;
+    }
+
+    DisplayManager::ESceneStateCommand DisplayManager::getLastSceneStateCommandWaitingForReply(ramses::sceneId_t sceneId) const
+    {
+        const auto it = m_scenesInfo.find(sceneId);
+        return it != m_scenesInfo.end() ? it->second.lastCommandWaitigForReply : ESceneStateCommand::None;
+    }
+
+    bool DisplayManager::isInTargetState(ramses::sceneId_t sceneId) const
     {
         return getCurrentSceneState(sceneId) == getTargetSceneState(sceneId);
     }
 
     void DisplayManager::goToTargetState(ramses::sceneId_t sceneId)
     {
-        if (isInTargetState(sceneId))
-        {
+        if (isInTargetState(sceneId) || getLastSceneStateCommandWaitingForReply(sceneId) != ESceneStateCommand::None)
             return;
-        }
 
-        ESceneState currentSceneState = getCurrentSceneState(sceneId);
-        ESceneState targetSceneState = getTargetSceneState(sceneId);
+        SceneInfo& sceneInfo = m_scenesInfo[sceneId];
+        const ESceneState currentSceneState = sceneInfo.currentState;
+        const ESceneState targetSceneState = sceneInfo.targetState;
 
         switch (currentSceneState)
         {
-        case ESceneState_Unpublished:
+        case ESceneState::Unpublished:
             //cannot do anything here. Event handler scenePublished will trigger this again
             break;
 
-        case ESceneState_Published:
+        case ESceneState::Published:
+
             switch (targetSceneState)
             {
-            case ESceneState_Subscribed:
-            case ESceneState_Mapped:
-            case ESceneState_Rendered:
-                // Subscribe to scene
+            case ESceneState::Subscribed:
+            case ESceneState::Mapped:
+            case ESceneState::Rendered:
+                LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager initiating subscribe to scene with id :" << sceneId);
                 if (m_ramsesRenderer.subscribeScene(sceneId) == ramses::StatusOK)
                 {
-                    m_currentSceneStates.put(sceneId, ESceneState_GoingToSubscribed);
+                    m_scenesInfo[sceneId].currentState = ESceneState::GoingToSubscribed;
+                    sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Subscribe;
                 }
                 break;
 
@@ -181,57 +194,59 @@ namespace ramses_display_manager
             }
             break;
 
-        case ESceneState_Subscribed:
+        case ESceneState::Subscribed:
 
             switch (targetSceneState)
             {
-
-            case ESceneState_Mapped:
-            case ESceneState_Rendered:
+            case ESceneState::Mapped:
+            case ESceneState::Rendered:
             {
-                assert(m_scenesMappingInfo.contains(sceneId));
-                const MappingInfo& mapInfo = m_scenesMappingInfo[sceneId];
+                assert(m_scenesInfo.count(sceneId) > 0);
+                MappingInfo& mapInfo = sceneInfo.mappingInfo;
                 // only subscribe, if display is created
                 if (isDisplayCreated(mapInfo.display))
                 {
+                    LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager initiating map of scene with id :" << sceneId);
                     if (m_ramsesRenderer.mapScene(mapInfo.display, sceneId, mapInfo.renderOrder) == ramses::StatusOK)
                     {
-                        m_currentSceneStates.put(sceneId, ESceneState_GoingToMapped);
+                        sceneInfo.currentState = ESceneState::GoingToMapped;
+                        sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Map;
+                        mapInfo.displayMappedTo = mapInfo.display;
                     }
                 }
                 break;
-
             }
-            case ESceneState_Published:
+            case ESceneState::Published:
+                LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager initiating unsubscribe of scene with id :" << sceneId);
                 if (m_ramsesRenderer.unsubscribeScene(sceneId) == ramses::StatusOK)
-                {
-                    m_currentSceneStates.put(sceneId, ESceneState_GoingToPublished);
-                }
+                    sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Unsubscribe;
                 break;
 
             default:
                 assert(false);
-
             }
             break;
 
-        case ESceneState_Mapped:
+        case ESceneState::Mapped:
 
             switch (targetSceneState)
             {
-
-            case ESceneState_Rendered:
+            case ESceneState::Rendered:
+                LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager initiating show of scene with id :" << sceneId);
                 if (m_ramsesRenderer.showScene(sceneId) == ramses::StatusOK)
                 {
-                    m_currentSceneStates.put(sceneId, ESceneState_GoingToRendered);
+                    sceneInfo.currentState = ESceneState::GoingToRendered;
+                    sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Show;
                 }
                 break;
 
-            case ESceneState_Subscribed:
-            case ESceneState_Published:
+            case ESceneState::Subscribed:
+            case ESceneState::Published:
+                LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager initiating show of scene with id :" << sceneId);
                 if (m_ramsesRenderer.unmapScene(sceneId) == ramses::StatusOK)
                 {
-                    m_currentSceneStates.put(sceneId, ESceneState_GoingToSubscribed);
+                    sceneInfo.currentState = ESceneState::GoingToSubscribed;
+                    sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Unmap;
                 }
                 break;
 
@@ -240,17 +255,18 @@ namespace ramses_display_manager
             }
             break;
 
-        case ESceneState_Rendered:
+        case ESceneState::Rendered:
 
             switch (targetSceneState)
             {
-
-            case ESceneState_Mapped:
-            case ESceneState_Subscribed:
-            case ESceneState_Published:
+            case ESceneState::Mapped:
+            case ESceneState::Subscribed:
+            case ESceneState::Published:
+                LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager initiating hide of scene with id :" << sceneId);
                 if (m_ramsesRenderer.hideScene(sceneId) == ramses::StatusOK)
                 {
-                    m_currentSceneStates.put(sceneId, ESceneState_GoingToMapped);
+                    sceneInfo.currentState = ESceneState::GoingToMapped;
+                    sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Hide;
                 }
                 break;
 
@@ -259,10 +275,9 @@ namespace ramses_display_manager
             }
             break;
 
-        case ESceneState_GoingToPublished:
-        case ESceneState_GoingToSubscribed:
-        case ESceneState_GoingToMapped:
-        case ESceneState_GoingToRendered:
+        case ESceneState::GoingToSubscribed:
+        case ESceneState::GoingToMapped:
+        case ESceneState::GoingToRendered:
             //Cannot do anything, waiting for renderer event handlers to continue
             break;
 
@@ -273,34 +288,29 @@ namespace ramses_display_manager
 
     void DisplayManager::handleShowCommand(ramses::sceneId_t sceneId, MappingInfo mappingInfo)
     {
-        ESceneState currentSceneState = getCurrentSceneState(sceneId);
+        const ESceneState currentSceneState = getCurrentSceneState(sceneId);
 
         //check whether scene was already mapped
         switch (currentSceneState)
         {
-        //check if scene is unpublished
-        case ESceneState_Unpublished:
-            m_currentSceneStates.put(sceneId, ESceneState_GoingToPublished);
-            break;
-
         //check whether scene was already mapped
-        case ESceneState_Mapped:
-        case ESceneState_Rendered:
-        case ESceneState_GoingToMapped:
-        case ESceneState_GoingToRendered:
-            assert(m_scenesMappingInfo.contains(sceneId));
-            if (!(m_scenesMappingInfo[sceneId] == mappingInfo))
+        case ESceneState::Mapped:
+        case ESceneState::Rendered:
+        case ESceneState::GoingToMapped:
+        case ESceneState::GoingToRendered:
+            assert(m_scenesInfo.count(sceneId));
+            if (!(m_scenesInfo[sceneId].mappingInfo == mappingInfo))
             {
                 LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::handleShowCommand: cannot execute show command for scene with id :" << sceneId << " because it was mapped with different parameters before!");
                 return;
             }
-            // trigger confirmation immediatly when alreay shown (avoids race between command and showing)
-            if (currentSceneState == ESceneState_Rendered)
+            // trigger confirmation immediately when already shown (avoids race between command and showing)
+            if (currentSceneState == ESceneState::Rendered)
             {
-                if (mappingInfo.confirmationText != ramses_internal::String())
+                if (!mappingInfo.confirmationText.empty())
                 {
                     processConfirmationEchoCommand(mappingInfo.confirmationText.c_str());
-                    mappingInfo.confirmationText = "";
+                    mappingInfo.confirmationText.clear();
                 }
             }
             break;
@@ -309,8 +319,8 @@ namespace ramses_display_manager
             break;
         }
 
-        m_scenesMappingInfo.put(sceneId, mappingInfo);
-        m_targetSceneStates.put(sceneId, ESceneState_Rendered);
+        m_scenesInfo[sceneId].mappingInfo = mappingInfo;
+        m_scenesInfo[sceneId].targetState = ESceneState::Rendered;
 
         goToTargetState(sceneId);
     }
@@ -319,14 +329,13 @@ namespace ramses_display_manager
     {
         switch (getCurrentSceneState(sceneId))
         {
-        case ESceneState_Rendered:
-        case ESceneState_GoingToRendered:
-        case ESceneState_Mapped:
-        case ESceneState_GoingToMapped:
-        case ESceneState_Subscribed:
-        case ESceneState_GoingToSubscribed:
-            m_scenesMappingInfo.remove(sceneId);
-            m_targetSceneStates.put(sceneId, ESceneState_Published);
+        case ESceneState::Rendered:
+        case ESceneState::GoingToRendered:
+        case ESceneState::Mapped:
+        case ESceneState::GoingToMapped:
+        case ESceneState::Subscribed:
+        case ESceneState::GoingToSubscribed:
+            m_scenesInfo[sceneId].targetState = ESceneState::Published;
             goToTargetState(sceneId);
             break;
         default:
@@ -338,12 +347,11 @@ namespace ramses_display_manager
     {
         switch (getCurrentSceneState(sceneId))
         {
-        case ESceneState_Rendered:
-        case ESceneState_GoingToRendered:
-        case ESceneState_Mapped:
-        case ESceneState_GoingToMapped:
-            m_scenesMappingInfo.remove(sceneId);
-            m_targetSceneStates.put(sceneId, ESceneState_Subscribed);
+        case ESceneState::Rendered:
+        case ESceneState::GoingToRendered:
+        case ESceneState::Mapped:
+        case ESceneState::GoingToMapped:
+            m_scenesInfo[sceneId].targetState = ESceneState::Subscribed;
             goToTargetState(sceneId);
             break;
         default:
@@ -355,9 +363,9 @@ namespace ramses_display_manager
     {
         switch (getCurrentSceneState(sceneId))
         {
-        case ESceneState_Rendered:
-        case ESceneState_GoingToRendered:
-            m_targetSceneStates.put(sceneId, ESceneState_Mapped);
+        case ESceneState::Rendered:
+        case ESceneState::GoingToRendered:
+            m_scenesInfo[sceneId].targetState = ESceneState::Mapped;
             goToTargetState(sceneId);
             break;
         default:
@@ -368,23 +376,22 @@ namespace ramses_display_manager
     /* IRendererEventHandler handlers */
     void DisplayManager::scenePublished(ramses::sceneId_t sceneId)
     {
-        assert(!m_currentSceneStates.contains(sceneId) || m_currentSceneStates[sceneId] == ESceneState_GoingToPublished);
+        assert(m_scenesInfo.count(sceneId) == 0 || m_scenesInfo[sceneId].currentState == ESceneState::Unpublished);
 
         //update current scene state
-        m_currentSceneStates.put(sceneId, ESceneState_Published);
+        m_scenesInfo[sceneId].currentState = ESceneState::Published;
 
         //update current target scene state
-        if (getTargetSceneState(sceneId) == ESceneState_Unpublished)
+        if (getTargetSceneState(sceneId) == ESceneState::Unpublished)
         {
             if (m_autoShow)
             {
-                m_targetSceneStates.put(sceneId, ESceneState_Rendered);
-                MappingInfo mapInfo = { 0u, 0, "" };
-                m_scenesMappingInfo.put(sceneId, mapInfo);
+                m_scenesInfo[sceneId].targetState = ESceneState::Rendered;
+                m_scenesInfo[sceneId].mappingInfo = { 0u, 0, "" };
             }
             else
             {
-                m_targetSceneStates.put(sceneId, ESceneState_Published);
+                m_scenesInfo[sceneId].targetState = ESceneState::Published;
             }
         }
 
@@ -393,80 +400,67 @@ namespace ramses_display_manager
 
     void DisplayManager::sceneUnpublished(ramses::sceneId_t sceneId)
     {
-        assert(getCurrentSceneState(sceneId) == ESceneState_Published
-               || getCurrentSceneState(sceneId) == ESceneState_GoingToSubscribed);
+        assert(getCurrentSceneState(sceneId) == ESceneState::Published || getCurrentSceneState(sceneId) == ESceneState::GoingToSubscribed);
 
-        m_currentSceneStates.remove(sceneId);
+        m_scenesInfo[sceneId].currentState = ESceneState::Unpublished;
 
-        //only remove mapping request if in auto-mode (scene gets mapped again anyway), otherwise keep as scene might be available again after reconnect
-        if (getTargetSceneState(sceneId)!= ESceneState_Rendered || m_autoShow)
-        {
-            m_targetSceneStates.remove(sceneId);
-            m_scenesMappingInfo.remove(sceneId);
-        }
+        // If showOnDisplay used for scene or DM in auto mode, it will get shown again automatically when scene re-published.
+        // If any other 'explicit' state requested remove its info, if re-published DM will not do anything.
+        // Forget target state if in auto-mode (always implicitly 'rendered' in auto-mode) or there was other explicit state.
+        if (getTargetSceneState(sceneId) != ESceneState::Rendered || m_autoShow)
+            m_scenesInfo[sceneId].targetState = ESceneState::Unpublished;
     }
 
     void DisplayManager::sceneSubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result)
     {
+        //another request, other than display manager, or broken state
+        if (getLastSceneStateCommandWaitingForReply(sceneId) != ESceneStateCommand::Subscribe)
+        {
+            LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DisplayManager - received subscription event but did not ask for one, ignoring unexpected state change event for scene " << sceneId);
+            return;
+        }
+        m_scenesInfo[sceneId].lastCommandWaitigForReply = ESceneStateCommand::None;
+
         switch (result)
         {
         case ramses::ERendererEventResult_OK:
-            //another request, other then display manager
-            if (getCurrentSceneState(sceneId) != ESceneState_GoingToSubscribed)
-            {
-                LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DisplayManager - ignoring unexpected state change event for scene " << sceneId );
-                return;
-            }
-            m_currentSceneStates.put(sceneId, ESceneState_Subscribed);
-            goToTargetState(sceneId);
+            m_scenesInfo[sceneId].currentState = ESceneState::Subscribed;
             break;
         case ramses::ERendererEventResult_FAIL:
-            if (ESceneState_Unpublished != getCurrentSceneState(sceneId))
-            {
-                //if the scene was not unpublished while it was still going to subscribed
-                if (getCurrentSceneState(sceneId) != ESceneState_GoingToSubscribed)
-                {
-                   LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DisplayManager - ignoring unexpected state change event for scene " << sceneId );
-                   return;
-                }
-                m_currentSceneStates.put(sceneId, ESceneState_Published);
-            }
             LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::sceneSubscribed: Could not subscribe scene with id :" << sceneId);
             break;
         case ramses::ERendererEventResult_INDIRECT:
         default:
             assert(false);
         }
+
+        goToTargetState(sceneId);
     }
 
     void DisplayManager::sceneUnsubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result)
     {
+        //another request, other than display manager, or broken state
+        if (result != ramses::ERendererEventResult_INDIRECT)
+        {
+            if (getLastSceneStateCommandWaitingForReply(sceneId) != ESceneStateCommand::Unsubscribe)
+            {
+                LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DisplayManager - received unsubscription event but did not ask for one, ignoring unexpected state change event for scene " << sceneId);
+                return;
+            }
+            m_scenesInfo[sceneId].lastCommandWaitigForReply = ESceneStateCommand::None;
+        }
+
         switch (result)
         {
         case ramses::ERendererEventResult_OK:
-            if (getCurrentSceneState(sceneId) != ESceneState_GoingToPublished)
-            {
-                LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DisplayManager - ignoring unexpected state change event for scene " << sceneId);
-                return;
-            }
-            m_currentSceneStates.put(sceneId, ESceneState_Published);
+            m_scenesInfo[sceneId].currentState = ESceneState::Published;
             goToTargetState(sceneId);
             break;
         case ramses::ERendererEventResult_INDIRECT:
-            m_currentSceneStates.put(sceneId, ESceneState_Published);
+            m_scenesInfo[sceneId].currentState = ESceneState::Published;
             break;
         case ramses::ERendererEventResult_FAIL:
-            if(ESceneState_Unpublished != getCurrentSceneState(sceneId))
-            {
-                //if the scene was not unpublished while it was still going to published
-                if (getCurrentSceneState(sceneId) != ESceneState_GoingToPublished)
-                {
-                    LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DisplayManager - ignoring unexpected state change event for scene " << sceneId );
-                    return;
-                }
-                m_currentSceneStates.put(sceneId, ESceneState_Subscribed);
-                LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::sceneUnsubscribed: Could not unsubscribe scene with id :" << sceneId);
-            }
+            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::sceneUnsubscribed: Could not unsubscribe scene with id :" << sceneId);
             break;
         default:
             assert(false);
@@ -475,67 +469,57 @@ namespace ramses_display_manager
 
     void DisplayManager::sceneMapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result)
     {
+        //another request, other than display manager, or broken state
+        if (getLastSceneStateCommandWaitingForReply(sceneId) != ESceneStateCommand::Map)
+        {
+            LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DisplayManager - received map event but did not ask for one, ignoring unexpected state change event for scene " << sceneId);
+            return;
+        }
+        m_scenesInfo[sceneId].lastCommandWaitigForReply = ESceneStateCommand::None;
 
         switch (result)
         {
         case ramses::ERendererEventResult_OK:
-            //another request, other then display manager
-            if (getCurrentSceneState(sceneId) != ESceneState_GoingToMapped)
-            {
-                LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DisplayManager - ignoring unexpected state change event for scene " << sceneId );
-                return;
-            }
-            m_currentSceneStates.put(sceneId, ESceneState_Mapped);
-            goToTargetState(sceneId);
+            m_scenesInfo[sceneId].currentState = ESceneState::Mapped;
             break;
         case ramses::ERendererEventResult_FAIL:
-            if(ESceneState_Unpublished != getCurrentSceneState(sceneId))
-            {
-                //if the scene was not unpublished while it was still going to mapped
-                if (getCurrentSceneState(sceneId) != ESceneState_GoingToMapped)
-                {
-                    LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DisplayManager - ignoring unexpected state change event for scene " << sceneId );
-                    return;
-                }
-                m_currentSceneStates.put(sceneId, ESceneState_Subscribed);
-                LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::sceneMapped: Could not map scene with id :" << sceneId);
-            }
+            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::sceneMapped: Could not map scene with id :" << sceneId);
+            m_scenesInfo[sceneId].mappingInfo.displayMappedTo = ramses::InvalidDisplayId;
             break;
         case ramses::ERendererEventResult_INDIRECT:
         default:
             assert(false);
         }
+
+        goToTargetState(sceneId);
     }
 
     void DisplayManager::sceneUnmapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result)
     {
+        //another request, other than display manager, or broken state
+        if (result != ramses::ERendererEventResult_INDIRECT)
+        {
+            if (getLastSceneStateCommandWaitingForReply(sceneId) != ESceneStateCommand::Unmap)
+            {
+                LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DisplayManager - received unmap event but did not ask for one, ignoring unexpected state change event for scene " << sceneId);
+                return;
+            }
+            m_scenesInfo[sceneId].lastCommandWaitigForReply = ESceneStateCommand::None;
+        }
+
         switch (result)
         {
         case ramses::ERendererEventResult_OK:
-            //another request, other then display manager
-            if (getCurrentSceneState(sceneId) != ESceneState_GoingToSubscribed)
-            {
-                LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DisplayManager - ignoring unexpected state change event for scene " << sceneId );
-                return;
-            }
-            m_currentSceneStates.put(sceneId, ESceneState_Subscribed);
+            m_scenesInfo[sceneId].currentState = ESceneState::Subscribed;
+            m_scenesInfo[sceneId].mappingInfo.displayMappedTo = ramses::InvalidDisplayId;
             goToTargetState(sceneId);
             break;
         case ramses::ERendererEventResult_INDIRECT:
-            m_currentSceneStates.put(sceneId, ESceneState_Subscribed);
+            m_scenesInfo[sceneId].currentState = ESceneState::Subscribed;
+            m_scenesInfo[sceneId].mappingInfo.displayMappedTo = ramses::InvalidDisplayId;
             break;
         case ramses::ERendererEventResult_FAIL:
-            if(ESceneState_Unpublished != getCurrentSceneState(sceneId))
-            {
-                //if the scene was not unpublished while it was still going to subscribed
-                if (getCurrentSceneState(sceneId) != ESceneState_GoingToSubscribed)
-                {
-                    LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DisplayManager - ignoring unexpected state change event for scene " << sceneId );
-                    return;
-                }
-                m_currentSceneStates.put(sceneId, ESceneState_Mapped);
-                LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::sceneUnmapped: Could not unmap scene with id :" << sceneId);
-            }
+            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::sceneUnmapped: Could not unmap scene with id :" << sceneId);
             break;
         default:
             assert(false);
@@ -544,71 +528,59 @@ namespace ramses_display_manager
 
     void DisplayManager::sceneShown(ramses::sceneId_t sceneId, ramses::ERendererEventResult result)
     {
+        //another request, other than display manager, or broken state
+        if (getLastSceneStateCommandWaitingForReply(sceneId) != ESceneStateCommand::Show)
+        {
+            LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DisplayManager - received show event but did not ask for one, ignoring unexpected state change event for scene " << sceneId);
+            return;
+        }
+        m_scenesInfo[sceneId].lastCommandWaitigForReply = ESceneStateCommand::None;
 
         switch (result)
         {
         case ramses::ERendererEventResult_OK:
-            //another request, other then display manager
-            if (getCurrentSceneState(sceneId) != ESceneState_GoingToRendered)
+            m_scenesInfo[sceneId].currentState = ESceneState::Rendered;
+            if (!m_scenesInfo[sceneId].mappingInfo.confirmationText.empty())
             {
-                LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DisplayManager - ignoring unexpected state change event for scene " << sceneId );
-                return;
+                processConfirmationEchoCommand(m_scenesInfo[sceneId].mappingInfo.confirmationText.c_str());
+                m_scenesInfo[sceneId].mappingInfo.confirmationText.clear();
             }
-            m_currentSceneStates.put(sceneId, ESceneState_Rendered);
-            if (m_scenesMappingInfo[sceneId].confirmationText != ramses_internal::String(""))
-            {
-                processConfirmationEchoCommand(m_scenesMappingInfo[sceneId].confirmationText.c_str());
-                m_scenesMappingInfo[sceneId].confirmationText = "";
-            }
-            goToTargetState(sceneId);
             break;
         case ramses::ERendererEventResult_FAIL:
-            if (ESceneState_Unpublished != getCurrentSceneState(sceneId))
-            {
-                //if the scene was not unpublished while it was still going to rendered
-                if (getCurrentSceneState(sceneId) != ESceneState_GoingToRendered)
-                {
-                    LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DisplayManager - ignoring unexpected state change event for scene " << sceneId );
-                    return;
-                }
-                m_currentSceneStates.put(sceneId, ESceneState_Mapped);
-                LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::sceneShown: Could not map scene with id :" << sceneId);
-            }
+            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::sceneShown: Could not map scene with id :" << sceneId);
             break;
         case ramses::ERendererEventResult_INDIRECT:
         default:
             assert(false);
         }
+
+        goToTargetState(sceneId);
     }
 
     void DisplayManager::sceneHidden(ramses::sceneId_t sceneId, ramses::ERendererEventResult result)
     {
+        //another request, other than display manager, or broken state
+        if (result != ramses::ERendererEventResult_INDIRECT)
+        {
+            if (getLastSceneStateCommandWaitingForReply(sceneId) != ESceneStateCommand::Hide)
+            {
+                LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DisplayManager - received hide event but did not ask for one, ignoring unexpected state change event for scene " << sceneId);
+                return;
+            }
+            m_scenesInfo[sceneId].lastCommandWaitigForReply = ESceneStateCommand::None;
+        }
+
         switch (result)
         {
         case ramses::ERendererEventResult_OK:
-            if (getCurrentSceneState(sceneId) != ESceneState_GoingToMapped)
-            {
-                LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DisplayManager - ignoring unexpected state change event for scene " << sceneId );
-                return;
-            }
-            m_currentSceneStates.put(sceneId, ESceneState_Mapped);
+            m_scenesInfo[sceneId].currentState = ESceneState::Mapped;
             goToTargetState(sceneId);
             break;
         case ramses::ERendererEventResult_INDIRECT:
-            m_currentSceneStates.put(sceneId, ESceneState_Mapped);
+            m_scenesInfo[sceneId].currentState = ESceneState::Mapped;
             break;
         case ramses::ERendererEventResult_FAIL:
-            if(ESceneState_Unpublished != getCurrentSceneState(sceneId))
-            {
-                //if the scene was not unpublished while it was still going to mapped
-                if (getCurrentSceneState(sceneId) == ESceneState_GoingToMapped)
-                {
-                    LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DisplayManager - ignoring unexpected state change event for scene " << sceneId );
-                    return;
-                }
-                m_currentSceneStates.put(sceneId, ESceneState_Rendered);
-                LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::sceneHidden: Could not hide scene with id :" << sceneId);
-            }
+            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::sceneHidden: Could not hide scene with id :" << sceneId);
             break;
         default:
             assert(false);
@@ -617,36 +589,28 @@ namespace ramses_display_manager
 
     void DisplayManager::displayCreated(ramses::displayId_t displayId, ramses::ERendererEventResult result)
     {
-        if (ramses::ERendererEventResult_OK == result)
+        if (result == ramses::ERendererEventResult_OK)
         {
             m_createdDisplays.put(displayId);
-            ramses_capu::HashTable<ramses::sceneId_t, MappingInfo>::Iterator mapIt = m_scenesMappingInfo.begin();
-            while (mapIt != m_scenesMappingInfo.end())
+            for (const auto& it : m_scenesInfo)
             {
-                if (displayId == mapIt->value.display)
-                {
-                    goToTargetState(mapIt->key);
-                }
-                mapIt++;
+                if (it.second.mappingInfo.display == displayId)
+                    goToTargetState(it.first);
             }
         }
     }
 
     void DisplayManager::displayDestroyed(ramses::displayId_t displayId, ramses::ERendererEventResult result)
     {
-        if (ramses::ERendererEventResult_OK == result)
-        {
+        if (result == ramses::ERendererEventResult_OK)
             m_createdDisplays.remove(displayId);
-        }
     }
 
     void DisplayManager::keyEvent(ramses::displayId_t displayId, ramses::EKeyEvent keyEvent, uint32_t keyModifiers, ramses::EKeyCode keyCode)
     {
         UNUSED(displayId);
         if (keyEvent != ramses::EKeyEvent_Pressed)
-        {
             return;
-        }
 
         ramses_internal::RendererCommandBuffer& commandBuffer = m_ramsesRenderer.impl.getRenderer().getRendererCommandBuffer();
         if (keyCode == ramses::EKeyCode_Escape && keyModifiers == ramses::EKeyModifier_NoModifier)
@@ -656,7 +620,7 @@ namespace ramses_display_manager
         }
 
         // flymode: steer camera with keyboard from rendering window
-        if (ramses::EKeyCode_0 == keyCode)
+        if (keyCode == ramses::EKeyCode_0)
         {
             commandBuffer.resetView();
             commandBuffer.setViewPosition(ramses_internal::Vector3());
@@ -725,5 +689,4 @@ namespace ramses_display_manager
         UNUSED(displayId);
         m_isRunning = false;
     }
-
 }

@@ -732,7 +732,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getInputTexture(const UniformInput& input, const TextureSampler*& textureSampler);
+        status_t getInputTexture(const UniformInput& input, const TextureSampler*& textureSampler) const;
 
         /**
         * @brief Bind a DataObject to the Appearance's uniform input.

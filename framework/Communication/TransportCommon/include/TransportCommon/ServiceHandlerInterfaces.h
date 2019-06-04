@@ -13,6 +13,7 @@
 #include "Resource/ResourceInfo.h"
 #include "SceneAPI/SceneId.h"
 #include "Collections/ArrayView.h"
+#include "Components/DcsmTypes.h"
 
 namespace ramses_internal
 {
@@ -57,6 +58,24 @@ namespace ramses_internal
 
         virtual void handleInitializeScene(const SceneInfo& sceneInfo, const Guid& providerID) = 0;
         virtual void handleSceneActionList(const SceneId& sceneId, SceneActionCollection&& actions, const uint64_t& counter, const Guid& providerID) = 0;
+    };
+
+    class IDcsmProviderServiceHandler
+    {
+    public:
+        virtual ~IDcsmProviderServiceHandler() {};
+        virtual void handleCanvasSizeChange(ContentID contentID, SizeInfo sizeinfo, AnimationInformation, const Guid& consumerID) = 0;
+        virtual void handleContentStatusChange(ContentID contentID, EDcsmStatus status, AnimationInformation, const Guid& consumerID) = 0;
+    };
+
+    class IDcsmConsumerServiceHandler
+    {
+    public:
+        virtual ~IDcsmConsumerServiceHandler() {};
+        virtual void handleRegisterContent(ContentID contentID, Category, const Guid& providerID) = 0;
+        virtual void handleContentAvailable(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID) = 0;
+        virtual void handleCategoryContentSwitchRequest(ContentID contentID, const Guid& providerID) = 0;
+        virtual void handleRequestUnregisterContent(ContentID contentID, const Guid& providerID) = 0;
     };
 }
 

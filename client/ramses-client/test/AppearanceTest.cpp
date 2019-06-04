@@ -25,9 +25,10 @@ namespace ramses
     class AAppearanceTest : public ::testing::Test
     {
     public:
+
         static void SetUpTestCase()
         {
-            sharedTestState = new TestEffectCreator;
+            sharedTestState = new TestEffectCreator(false);
         }
 
         static void TearDownTestCase()
@@ -84,12 +85,19 @@ namespace ramses
         }
 
         static TestEffectCreator* sharedTestState;
-
         Appearance* appearance;
     };
 
     TestEffectCreator* AAppearanceTest::sharedTestState = 0;
 
+    class AAppearanceTestWithSemanticUniforms : public AAppearanceTest
+    {
+    public:
+        static void SetUpTestCase()
+        {
+            sharedTestState = new TestEffectCreator(true);
+        }
+    };
 
     TEST_F(AAppearanceTest, getsTheSameEffectUsedToCreateIt)
     {
@@ -870,7 +878,7 @@ namespace ramses
         EXPECT_NE(StatusOK, appearance->bindInput(inputObject, *dataObject));
     }
 
-    TEST_F(AAppearanceTest, failsToBindDataObjectIfInputHasSemantics)
+    TEST_F(AAppearanceTestWithSemanticUniforms, failsToBindDataObjectIfInputHasSemantics)
     {
         UniformInput inputObject;
         EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("matrix44fInput", inputObject));

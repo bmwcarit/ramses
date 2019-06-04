@@ -195,30 +195,31 @@ IF (NOT ramses-sdk_DISABLE_WAYLAND_IVI_EXTENSION)
     ENDIF()
 ENDIF()
 
+if (wayland-ivi-extension_FOUND OR TARGET wayland-ivi-extension)
+    # wayland ivi example/test application
+    ACME_MODULE(
+        #==========================================================================
+        # general module information
+        #==========================================================================
+        NAME                    ivi-gears
+        TYPE                    BINARY
+        ENABLE_INSTALL          ON
 
-# wayland ivi example/test application
-ACME_MODULE(
-    #==========================================================================
-    # general module information
-    #==========================================================================
-    NAME                    ivi-gears
-    TYPE                    BINARY
-    ENABLE_INSTALL          ON
+        #==========================================================================
+        # files of this module
+        #==========================================================================
+        FILES_SOURCE            wayland-ivi-example-client/gears.c
 
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_SOURCE            wayland-ivi-example-client/gears.c
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
-    DEPENDENCIES            EGL
-                            OpenGL
-                            wayland-client
-                            wayland-egl
-                            wayland-ivi-extension
-)
+        #==========================================================================
+        # dependencies
+        #==========================================================================
+        DEPENDENCIES            EGL
+                                OpenGL
+                                wayland-client
+                                wayland-egl
+                                wayland-ivi-extension
+    )
+endif()
 
 # LZ4 de-/compression library
 OPTION(ramses-sdk_ALLOW_PLATFORM_LZ4 "Enable to search for platform provided lz4" ON)

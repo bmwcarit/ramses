@@ -46,9 +46,14 @@ namespace ramses_internal
         return true;
     }
 
-    IConnectionStatusUpdateNotifier& ForwardingCommunicationSystem::getConnectionStatusUpdateNotifier()
+    IConnectionStatusUpdateNotifier& ForwardingCommunicationSystem::getRamsesConnectionStatusUpdateNotifier()
     {
-        return m_connectionStatusUpdateNotifier;
+        return m_ramsesConnectionStatusUpdateNotifier;
+    }
+
+    IConnectionStatusUpdateNotifier& ForwardingCommunicationSystem::getDcsmConnectionStatusUpdateNotifier()
+    {
+        return m_dcsmConnectionStatusUpdateNotifier;
     }
 
     bool ForwardingCommunicationSystem::sendSubscribeScene(const Guid& to, const SceneId& sceneId)
@@ -152,6 +157,69 @@ namespace ramses_internal
         return 1u;
     }
 
+    bool ForwardingCommunicationSystem::sendDcsmBroadcastRegisterContent(ContentID contentID, Category category)
+    {
+        if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmConsumerHandler)
+        {
+            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleRegisterContent(contentID, category, m_id);
+        }
+        return true;
+    }
+
+    bool ForwardingCommunicationSystem::sendDcsmRegisterContent(const Guid& to, ContentID contentID, Category category)
+    {
+        if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmConsumerHandler && to == m_targetCommunicationSystem->m_id)
+        {
+            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleRegisterContent(contentID, category, m_id);
+        }
+        return true;
+    }
+
+    bool ForwardingCommunicationSystem::sendDcsmContentAvailable(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor)
+    {
+        if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmConsumerHandler && to == m_targetCommunicationSystem->m_id)
+        {
+            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleContentAvailable(contentID, technicalContentType, technicalContentDescriptor, m_id);
+        }
+        return true;
+    }
+
+    bool ForwardingCommunicationSystem::sendDcsmCategoryContentSwitchRequest(const Guid& to, ContentID contentID)
+    {
+        if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmConsumerHandler && to == m_targetCommunicationSystem->m_id)
+        {
+            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleCategoryContentSwitchRequest(contentID, m_id);
+        }
+        return true;
+    }
+
+    bool ForwardingCommunicationSystem::sendDcsmBroadcastRequestUnregisterContent(ContentID contentID)
+    {
+        if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmConsumerHandler)
+        {
+            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleRequestUnregisterContent(contentID, m_id);
+        }
+        return true;
+    }
+
+    bool ForwardingCommunicationSystem::sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, SizeInfo sizeinfo, AnimationInformation ai)
+    {
+        if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmProviderHandler && to == m_targetCommunicationSystem->m_id)
+        {
+            m_targetCommunicationSystem->m_dcsmProviderHandler->handleCanvasSizeChange(contentID, sizeinfo, ai, m_id);
+        }
+        return true;
+    }
+
+    bool ForwardingCommunicationSystem::sendDcsmContentStatusChange(const Guid& to, ContentID contentID, EDcsmStatus status, AnimationInformation ai)
+    {
+        if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmProviderHandler && to == m_targetCommunicationSystem->m_id)
+        {
+            m_targetCommunicationSystem->m_dcsmProviderHandler->handleContentStatusChange(contentID, status, ai, m_id);
+        }
+        return true;
+    }
+
     CommunicationSendDataSizes ForwardingCommunicationSystem::getSendDataSizes() const
     {
         return CommunicationSendDataSizes{ std::numeric_limits<UInt32>::max(), std::numeric_limits<UInt32>::max(),
@@ -181,6 +249,16 @@ namespace ramses_internal
     void ForwardingCommunicationSystem::setSceneRendererServiceHandler(ISceneRendererServiceHandler* handler)
     {
         m_sceneRendererHandler = handler;
+    }
+
+    void ForwardingCommunicationSystem::setDcsmProviderServiceHandler(IDcsmProviderServiceHandler* handler)
+    {
+        m_dcsmProviderHandler = handler;
+    }
+
+    void ForwardingCommunicationSystem::setDcsmConsumerServiceHandler(IDcsmConsumerServiceHandler* handler)
+    {
+        m_dcsmConsumerHandler = handler;
     }
 
     void ForwardingCommunicationSystem::logConnectionInfo()

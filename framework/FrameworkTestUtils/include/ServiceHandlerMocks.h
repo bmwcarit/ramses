@@ -62,6 +62,28 @@ namespace ramses_internal
             handleSceneActionList_rvr(sceneId, actions, counter, providerID);
         }
     };
+
+    class DcsmProviderServiceHandlerMock : public IDcsmProviderServiceHandler
+    {
+    public:
+        DcsmProviderServiceHandlerMock();
+        ~DcsmProviderServiceHandlerMock() override;
+
+        MOCK_METHOD4(handleCanvasSizeChange, void(ContentID contentID, SizeInfo sizeinfo, AnimationInformation, const Guid& consumerID));
+        MOCK_METHOD4(handleContentStatusChange, void(ContentID contentID, EDcsmStatus status, AnimationInformation, const Guid& consumerID));
+    };
+
+    class DcsmConsumerServiceHandlerMock : public IDcsmConsumerServiceHandler
+    {
+    public:
+        DcsmConsumerServiceHandlerMock();
+        ~DcsmConsumerServiceHandlerMock() override;
+
+        MOCK_METHOD3(handleRegisterContent, void(ContentID contentID, Category, const Guid& providerID));
+        MOCK_METHOD4(handleContentAvailable, void(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID));
+        MOCK_METHOD2(handleCategoryContentSwitchRequest, void(ContentID contentID, const Guid& providerID));
+        MOCK_METHOD2(handleRequestUnregisterContent, void(ContentID contentID, const Guid& providerID));
+    };
 }
 
 #endif
