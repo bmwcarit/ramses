@@ -503,7 +503,7 @@ namespace ramses_internal
             {
                 window->m_height = HIWORD(lParam);
                 window->m_width = LOWORD(lParam);
-                (window->eventHandler).onResize(m_width, m_height);
+                window->m_eventHandler.onResize(window->m_width, window->m_height);
             }
         }
         break;
