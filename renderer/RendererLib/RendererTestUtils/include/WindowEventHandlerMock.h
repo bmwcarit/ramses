@@ -24,8 +24,6 @@ namespace ramses_internal
         ~WindowEventHandlerMock() override;
 
         MOCK_METHOD2(onResize, void(UInt32 width, UInt32 height));
-        MOCK_METHOD1(onMove, void(const IWindow& surface));
-        MOCK_METHOD1(onFocusChange, void(Bool bFocused));
         MOCK_METHOD3(onKeyEvent, void(EKeyEventType event, UInt32 modifiers, EKeyCode keyCode));
         MOCK_METHOD3(onMouseEvent, void(EMouseEventType event, Int32 posX, Int32 posY));
         MOCK_METHOD0(onClose, void());
