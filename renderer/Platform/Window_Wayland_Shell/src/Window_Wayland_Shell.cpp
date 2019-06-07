@@ -74,8 +74,10 @@ namespace ramses_internal
 
     void Window_Wayland_Shell::configureCallback(void* userData, wl_shell_surface* surface, uint32_t edges, int32_t width, int32_t height)
     {
+        UNUSED(surface);
+        UNUSED(edges);
         Window_Wayland_Shell* window = static_cast<Window_Wayland_Shell*>(userData);
-        (window->m_eventHandler).onResize(width, height);
+        window->m_eventHandler.onResize(width, height);
     }
 
     void Window_Wayland_Shell::pingCallback(void* userData, wl_shell_surface* surface, uint32_t serial)
