@@ -282,6 +282,14 @@ namespace ramses
         virtual void mouseEvent(displayId_t displayId, EMouseEvent eventType, int32_t mousePosX, int32_t mousePosY) = 0;
 
         /**
+        * @brief This method will be called when a display's window has been resized
+        * @param displayId The ramses display whose corresponding window was resized
+        * @param width The new width of the window
+        * @param height The new height of the window
+        */
+        virtual void windowResized(displayId_t displayId, uint32_t width, uint32_t height) = 0;
+
+        /**
         * @brief This method will be called when a display's window has been closed
         * @param displayId The display on which the event occurred
         */
@@ -564,7 +572,6 @@ namespace ramses
             (void)keyCode;
         }
 
-
         /**
         * @copydoc ramses::IRendererEventHandler::mouseEvent
         */
@@ -574,6 +581,16 @@ namespace ramses
             (void)eventType;
             (void)mousePosX;
             (void)mousePosY;
+        }
+
+        /**
+        * @copydoc ramses::IRendererEventHandler::windowResized
+        */
+        virtual void windowResized(displayId_t displayId, uint32_t width, uint32_t height) override
+        {
+            (void)displayId;
+            (void)width;
+            (void)height;
         }
 
         /**
