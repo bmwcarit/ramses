@@ -51,6 +51,7 @@ enum ERendererEventTestType
     ERendererEventTestType_SceneExpired,
     ERendererEventTestType_SceneRecoveredAfterExpiration,
     ERendererEventTestType_WindowClosed,
+    ERendererEventTestType_WindowResized,
     ERendererEventTestType_KeyEvent,
     ERendererEventTestType_MouseEvent
 };
@@ -80,7 +81,9 @@ struct RendererTestEvent
             && keyCode == other.keyCode
             && mouseEvent == other.mouseEvent
             && mousePosX == other.mousePosX
-            && mousePosY == other.mousePosY;
+            && mousePosY == other.mousePosY
+            && windowWidth == other.windowWidth
+            && windowHeight == other.windowHeight;
     }
 
     ERendererEventTestType eventType;
@@ -105,6 +108,8 @@ struct RendererTestEvent
     ramses::EMouseEvent mouseEvent;
     int32_t mousePosX;
     int32_t mousePosY;
+    uint32_t windowWidth;
+    uint32_t windowHeight;
 };
 
 class RendererEventTestHandler : public ramses::IRendererEventHandler
@@ -364,6 +369,16 @@ public:
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_WindowClosed;
         event.displayId = displayId;
+        m_events.push_back(event);
+    }
+
+    virtual void windowResized(ramses::displayId_t displayId, uint32_t width, uint32_t height)
+    {
+        RendererTestEvent event;
+        event.eventType = ERendererEventTestType_WindowResized;
+        event.displayId = displayId;
+        event.windowWidth = width;
+        event.windowHeight = height;
         m_events.push_back(event);
     }
 
@@ -639,6 +654,16 @@ public:
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_WindowClosed;
         event.displayId = displayId;
+        expectEvent(event);
+    }
+
+    void expectWindowResized(ramses::displayId_t displayId, uint32_t width, uint32_t height)
+    {
+        RendererTestEvent event;
+        event.eventType = ERendererEventTestType_WindowResized;
+        event.displayId = displayId;
+        event.windowWidth = width;
+        event.windowHeight = height;
         expectEvent(event);
     }
 

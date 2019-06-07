@@ -202,6 +202,12 @@ namespace ramses_display_manager
             m_handler2.windowClosed(displayId);
         }
 
+        virtual void windowResized(ramses::displayId_t displayId, uint32_t width, uint32_t height) override
+        {
+            m_handler1.windowResized(displayId, width, height);
+            m_handler2.windowResized(displayId, width, height);
+        }
+
     private:
         ramses::IRendererEventHandler& m_handler1;
         ramses::IRendererEventHandler& m_handler2;

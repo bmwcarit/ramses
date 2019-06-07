@@ -728,6 +728,15 @@ namespace ramses_internal
         m_handler.expectWindowClosed(m_displayId);
     }
 
+    TEST_F(ARamsesRendererDispatch, generatesEventForWindowResized)
+    {
+        const ramses::displayId_t m_displayId = createDisplayAndExpectResult();
+        const ramses_internal::DisplayHandle displayHandle(m_displayId);
+        m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onResize(100, 200);
+        updateAndDispatch(m_handler);
+        m_handler.expectWindowResized(m_displayId, 100, 200);
+    }
+
     TEST_F(ARamsesRendererDispatch, generatesEventForKeyPressed)
     {
         const ramses::displayId_t m_displayId = createDisplayAndExpectResult();

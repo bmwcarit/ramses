@@ -592,6 +592,9 @@ namespace ramses
                     RamsesRendererUtils::GetMouseEvent(event.mouseEvent.type),
                     event.mouseEvent.pos.x, event.mouseEvent.pos.y);
                 break;
+            case ramses_internal::ERendererEventType_WindowResizeEvent:
+                rendererEventHandler.windowResized(event.displayHandle.asMemoryHandle(), event.resizeEvent.width, event.resizeEvent.height);
+                break;
             case ramses_internal::ERendererEventType_StreamSurfaceAvailable:
                 rendererEventHandler.streamAvailabilityChanged(ramses::streamSource_t(event.streamSourceId.getValue()), true);
                 break;
