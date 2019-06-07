@@ -77,6 +77,26 @@ namespace ramses_internal
         EXPECT_EQ(Window_Windows::convertVirtualKeyCodeIntoRamsesKeyCode(0x73, 0), EKeyCode_F4);
     }
 
+    TEST(Window_Windows, propagatesResizeEvents)
+    {
+        DisplayConfig config;
+        config.setResizable(true);
+        NiceMock<WindowEventHandlerMock> eventHandlerMock;
+        Window_Windows window(config, eventHandlerMock, 0);
+
+        ASSERT_TRUE(window.init());
+        for (UInt32 i = 0; i < 10; i++) // enforce handling of all enqueued window events which will trigger our event handler
+            window.handleEvents();
+
+        const uint32_t width = 15;
+        const uint32_t height = 20;
+        const int packedWindowSize = (static_cast<int>(height) << 16) | width;
+        ASSERT_TRUE(PostMessage(window.getNativeWindowHandle(), WM_SIZE, 0, packedWindowSize));
+
+        EXPECT_CALL(eventHandlerMock, onResize(15, 20)).Times(1);
+        window.handleEvents();
+    }
+
     TEST_F(AWindowWindows, singleKeyPressEventTriggersKeyPressedEventWithCorrectKeyCode)
     {
         testKeyCode(0x41,        EKeyCode_A);
