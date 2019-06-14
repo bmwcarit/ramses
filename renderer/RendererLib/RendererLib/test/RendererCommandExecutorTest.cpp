@@ -189,6 +189,8 @@ public:
         EXPECT_CALL(getRenderBackendMock(displayHandle).deviceMock, colorMask(true, true, true, true)).Times(callCountExpectation);
         EXPECT_CALL(getRenderBackendMock(displayHandle).deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f })).Times(callCountExpectation);
         EXPECT_CALL(getRenderBackendMock(displayHandle).deviceMock, depthWrite(EDepthWrite::Enabled)).Times(callCountExpectation);
+        RenderState::ScissorRegion scissorRegion{};
+        EXPECT_CALL(getRenderBackendMock(displayHandle).deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion)).Times(callCountExpectation);
         EXPECT_CALL(getRenderBackendMock(displayHandle).deviceMock, clear(_)).Times(callCountExpectation);
         if (interruptible)
             EXPECT_CALL(getRenderBackendMock(displayHandle).deviceMock, pairRenderTargetsForDoubleBuffering(_, _));

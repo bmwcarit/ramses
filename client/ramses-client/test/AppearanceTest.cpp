@@ -124,15 +124,15 @@ namespace ramses
     TEST_F(AAppearanceTest, setGetDepthWrite)
     {
         EDepthWrite depthWriteMode = EDepthWrite_Disabled;
-        EXPECT_EQ(StatusOK, appearance->setDepthWrite(true));
+        EXPECT_EQ(StatusOK, appearance->setDepthWrite(EDepthWrite_Enabled));
         EXPECT_EQ(StatusOK, appearance->getDepthWriteMode(depthWriteMode));
         EXPECT_EQ(EDepthWrite_Enabled, depthWriteMode);
 
-        EXPECT_EQ(StatusOK, appearance->setDepthWrite(false));
+        EXPECT_EQ(StatusOK, appearance->setDepthWrite(EDepthWrite_Disabled));
         EXPECT_EQ(StatusOK, appearance->getDepthWriteMode(depthWriteMode));
         EXPECT_EQ(EDepthWrite_Disabled, depthWriteMode);
 
-        EXPECT_EQ(StatusOK, appearance->setDepthWrite(true));
+        EXPECT_EQ(StatusOK, appearance->setDepthWrite(EDepthWrite_Enabled));
         EXPECT_EQ(StatusOK, appearance->getDepthWriteMode(depthWriteMode));
         EXPECT_EQ(EDepthWrite_Enabled, depthWriteMode);
     }
@@ -146,6 +146,24 @@ namespace ramses
         EXPECT_EQ(StatusOK, appearance->setDepthFunction(EDepthFunc_GreaterEqual));
         EXPECT_EQ(StatusOK, appearance->getDepthFunction(depthFunc));
         EXPECT_EQ(EDepthFunc_GreaterEqual, depthFunc);
+    }
+
+    TEST_F(AAppearanceTest, setGetScissorTest)
+    {
+        EScissorTest mode = EScissorTest_Disabled;
+        EXPECT_EQ(StatusOK, appearance->setScissorTest(EScissorTest_Enabled, 1, 2, 3u, 4u));
+        EXPECT_EQ(StatusOK, appearance->getScissorTestState(mode));
+        EXPECT_EQ(EScissorTest_Enabled, mode);
+
+        int16_t x = 0;
+        int16_t y = 0;
+        uint16_t width = 0u;
+        uint16_t height = 0;
+        EXPECT_EQ(StatusOK, appearance->getScissorRegion(x, y, width, height));
+        EXPECT_EQ(1, x);
+        EXPECT_EQ(2, y);
+        EXPECT_EQ(3u, width);
+        EXPECT_EQ(4u, height);
     }
 
     TEST_F(AAppearanceTest, setGetStencilFunc)

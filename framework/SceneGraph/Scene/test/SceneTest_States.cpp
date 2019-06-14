@@ -39,6 +39,8 @@ namespace ramses_internal
         const RenderStateHandle state = this->m_scene.allocateRenderState();
 
         const RenderState& rs = this->m_scene.getRenderState(state);
+        const RenderState::ScissorRegion scissorRegion{ 0, 0, 0u, 0u };
+        EXPECT_EQ(scissorRegion              , rs.scissorRegion);
         EXPECT_EQ(EBlendFactor::SrcAlpha     , rs.blendFactorSrcColor);
         EXPECT_EQ(EBlendFactor::OneMinusSrcAlpha, rs.blendFactorDstColor);
         EXPECT_EQ(EBlendFactor::One          , rs.blendFactorSrcAlpha);
@@ -49,6 +51,7 @@ namespace ramses_internal
         EXPECT_EQ(EDrawMode::Triangles       , rs.drawMode);
         EXPECT_EQ(EDepthFunc::SmallerEqual   , rs.depthFunc);
         EXPECT_EQ(EDepthWrite::Enabled       , rs.depthWrite);
+        EXPECT_EQ(EScissorTest::Disabled     , rs.scissorTest);
         EXPECT_EQ(EStencilFunc::Disabled     , rs.stencilFunc);
         EXPECT_EQ(0u                        , rs.stencilRefValue);
         EXPECT_EQ(0xFF                      , rs.stencilMask);
@@ -113,6 +116,17 @@ namespace ramses_internal
 
         const RenderState& rs = this->m_scene.getRenderState(state);
         EXPECT_EQ(EDepthFunc::GreaterEqual, rs.depthFunc);
+    }
+
+    TYPED_TEST(AScene, SetsStateScissorTest)
+    {
+        const RenderStateHandle state = this->m_scene.allocateRenderState();
+        this->m_scene.setRenderStateScissorTest(state, EScissorTest::Enabled, { 1, 2, 3, 4 });
+
+        const RenderState& rs = this->m_scene.getRenderState(state);
+        EXPECT_EQ(EScissorTest::Enabled, rs.scissorTest);
+        const RenderState::ScissorRegion scissorRegion{ 1, 2, 3, 4 };
+        EXPECT_EQ(scissorRegion, rs.scissorRegion);
     }
 
     TYPED_TEST(AScene, SetsStateStencilFunc)

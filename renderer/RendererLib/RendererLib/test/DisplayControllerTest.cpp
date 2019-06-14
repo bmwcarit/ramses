@@ -64,6 +64,8 @@ namespace ramses_internal
         EXPECT_CALL(m_renderBackend.deviceMock, colorMask(true, true, true, true));
         EXPECT_CALL(m_renderBackend.deviceMock, clearColor(clearColor));
         EXPECT_CALL(m_renderBackend.deviceMock, depthWrite(EDepthWrite::Enabled));
+        RenderState::ScissorRegion scissorRegion{};
+        EXPECT_CALL(m_renderBackend.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
         EXPECT_CALL(m_renderBackend.deviceMock, clear(_));
 
         displayController.clearBuffer(DeviceMock::FakeFrameBufferRenderTargetDeviceHandle, clearColor);

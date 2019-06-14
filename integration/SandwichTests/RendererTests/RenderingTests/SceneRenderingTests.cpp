@@ -30,28 +30,29 @@ using namespace ramses_internal;
 
 void SceneRenderingTests::setUpTestCases(RendererTestsFramework& testFramework)
 {
-    testFramework.createTestCaseWithDefaultDisplay(RenderStateTest_Culling, *this, "RenderStateRendererTest_Culling");
-    testFramework.createTestCaseWithDefaultDisplay(RenderStateTest_ColorMask, *this, "RenderStateRendererTest_ColorMask");
-    testFramework.createTestCaseWithDefaultDisplay(RenderStateTest_DepthFunc, *this, "RenderStateRendererTest_DepthFunc");
-    testFramework.createTestCaseWithDefaultDisplay(RenderStateTest_DrawMode, *this, "RenderStateRendererTest_DrawMode");
-    testFramework.createTestCaseWithDefaultDisplay(RenderStateTest_StencilTest1, *this, "RenderStateRendererTest_StencilTest1");
-    testFramework.createTestCaseWithDefaultDisplay(RenderStateTest_StencilTest2, *this, "RenderStateRendererTest_StencilTest2");
-    testFramework.createTestCaseWithDefaultDisplay(RenderStateTest_StencilTest3, *this, "RenderStateRendererTest_StencilTest3");
+    testFramework.createTestCaseWithDefaultDisplay(RenderStateTest_Culling, *this, "RenderStateTest_Culling");
+    testFramework.createTestCaseWithDefaultDisplay(RenderStateTest_ColorMask, *this, "RenderStateTest_ColorMask");
+    testFramework.createTestCaseWithDefaultDisplay(RenderStateTest_DepthFunc, *this, "RenderStateTest_DepthFunc");
+    testFramework.createTestCaseWithDefaultDisplay(RenderStateTest_DrawMode, *this, "RenderStateTest_DrawMode");
+    testFramework.createTestCaseWithDefaultDisplay(RenderStateTest_StencilTest1, *this, "RenderStateTest_StencilTest1");
+    testFramework.createTestCaseWithDefaultDisplay(RenderStateTest_StencilTest2, *this, "RenderStateTest_StencilTest2");
+    testFramework.createTestCaseWithDefaultDisplay(RenderStateTest_StencilTest3, *this, "RenderStateTest_StencilTest3");
+    testFramework.createTestCaseWithDefaultDisplay(RenderStateTest_ScissorTest, *this, "RenderStateTest_ScissorTest");
 
-    testFramework.createTestCaseWithDefaultDisplay(AppearanceTest_RedTriangles, *this, "AppearanceRendererTest_RedTriangles");
-    testFramework.createTestCaseWithDefaultDisplay(AppearanceTest_GreenTriangles, *this, "AppearanceRendererTest_GreenTriangles");
-    testFramework.createTestCaseWithDefaultDisplay(AppearanceTest_ChangeAppearance, *this, "AppearanceRendererTest_ChangeAppearance");
-    testFramework.createTestCaseWithDefaultDisplay(AppearanceTest_TrianglesWithSharedColor, *this, "AppearanceRendererTest_TrianglesWithSharedColor");
-    testFramework.createTestCaseWithDefaultDisplay(AppearanceTest_TrianglesWithUnsharedColor, *this, "AppearanceRendererTest_TrianglesWithUnsharedColor");
+    testFramework.createTestCaseWithDefaultDisplay(AppearanceTest_RedTriangles, *this, "AppearanceTest_RedTriangles");
+    testFramework.createTestCaseWithDefaultDisplay(AppearanceTest_GreenTriangles, *this, "AppearanceTest_GreenTriangles");
+    testFramework.createTestCaseWithDefaultDisplay(AppearanceTest_ChangeAppearance, *this, "AppearanceTest_ChangeAppearance");
+    testFramework.createTestCaseWithDefaultDisplay(AppearanceTest_TrianglesWithSharedColor, *this, "AppearanceTest_TrianglesWithSharedColor");
+    testFramework.createTestCaseWithDefaultDisplay(AppearanceTest_TrianglesWithUnsharedColor, *this, "AppearanceTest_TrianglesWithUnsharedColor");
 
-    testFramework.createTestCaseWithDefaultDisplay(BlendingTest_BlendingDisabled, *this, "BlendingRendererTest_BlendingDisabled");
-    testFramework.createTestCaseWithDefaultDisplay(BlendingTest_AlphaBlending, *this, "BlendingRendererTest_AlphaBlending");
-    testFramework.createTestCaseWithDefaultDisplay(BlendingTest_SubtractiveBlending, *this, "BlendingRendererTest_SubtractiveBlending");
-    testFramework.createTestCaseWithDefaultDisplay(BlendingTest_AdditiveBlending, *this, "BlendingRendererTest_AdditiveBlending");
+    testFramework.createTestCaseWithDefaultDisplay(BlendingTest_BlendingDisabled, *this, "BlendingTest_BlendingDisabled");
+    testFramework.createTestCaseWithDefaultDisplay(BlendingTest_AlphaBlending, *this, "BlendingTest_AlphaBlending");
+    testFramework.createTestCaseWithDefaultDisplay(BlendingTest_SubtractiveBlending, *this, "BlendingTest_SubtractiveBlending");
+    testFramework.createTestCaseWithDefaultDisplay(BlendingTest_AdditiveBlending, *this, "BlendingTest_AdditiveBlending");
 
-    testFramework.createTestCaseWithDefaultDisplay(CameraTest_Perspective, *this, "CameraRendererTest_Perspective");
-    testFramework.createTestCaseWithDefaultDisplay(CameraTest_Orthographic, *this, "CameraRendererTest_Orthographic");
-    testFramework.createTestCaseWithDefaultDisplay(CameraTest_Viewport, *this, "CameraRendererTest_Viewport");
+    testFramework.createTestCaseWithDefaultDisplay(CameraTest_Perspective, *this, "CameraTest_Perspective");
+    testFramework.createTestCaseWithDefaultDisplay(CameraTest_Orthographic, *this, "CameraTest_Orthographic");
+    testFramework.createTestCaseWithDefaultDisplay(CameraTest_Viewport, *this, "CameraTest_Viewport");
 
     testFramework.createTestCaseWithDefaultDisplay(SceneModificationTest_DeleteMeshNode, *this, "SceneModificationTest_DeleteMeshNode");
     testFramework.createTestCaseWithDefaultDisplay(SceneModificationTest_NoVisibility, *this, "SceneModificationTest_NoVisibility");
@@ -122,7 +123,7 @@ void SceneRenderingTests::setUpTestCases(RendererTestsFramework& testFramework)
 
     testFramework.createTestCaseWithDefaultDisplay(FrameProfiler_Show, *this, "RendererTest_FrameProfiler");
 
-    RenderingTestCase& testCase = testFramework.createTestCaseWithDefaultDisplay(AntiAliasingTest_MSAA4, *this, "AntiAliasingRendererTest_MSAA4");
+    RenderingTestCase& testCase = testFramework.createTestCaseWithDefaultDisplay(AntiAliasingTest_MSAA4, *this, "AntiAliasingTest_MSAA4");
     testCase.m_displayConfigs.front().setMultiSampling(4u);
 }
 
@@ -144,6 +145,8 @@ bool SceneRenderingTests::run(RendererTestsFramework& testFramework, const Rende
         return runBasicTest<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::STENCIL_TEST_2, "MultipleTrianglesScene_StencilTest_2");
     case RenderStateTest_StencilTest3:
         return runBasicTest<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::STENCIL_TEST_3, "MultipleTrianglesScene_StencilTest_3");
+    case RenderStateTest_ScissorTest:
+        return runBasicTest<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::SCISSOR_TEST, "MultipleTrianglesScene_ScissorTest");
     case AppearanceTest_RedTriangles:
         return runBasicTest<SingleAppearanceScene>(testFramework, SingleAppearanceScene::RED_TRIANGLES, "SingleAppearanceScene_RedTriangles");
     case AppearanceTest_GreenTriangles:

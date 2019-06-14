@@ -12,7 +12,6 @@
 #include "ramses-text-api/IFontInstance.h"
 #include "ramses-text/Freetype2Headers.h"
 #include "ramses-text/FontData.h"
-#include "ramses-text/CommonHashers.h"
 #include "ramses-text/Logger.h"
 #include <unordered_map>
 #include <memory>

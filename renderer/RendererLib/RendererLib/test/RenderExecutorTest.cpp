@@ -358,6 +358,9 @@ protected:
 
         // RetiresOnSaturation makes it possible to invoke this expect method multiple times without
         // the expectations override each other                                                                                      .RetiresOnSaturation();
+
+        //TODO Mohamed: move those expectations in the if-clause after the caching issue of render states is clarified
+        EXPECT_CALL(device, scissorTest(_, _)).RetiresOnSaturation();
         if (expectRenderStateChanges)
         {
             EXPECT_CALL(device, depthFunc(_))                                                                                                     .RetiresOnSaturation();
@@ -426,6 +429,9 @@ protected:
         {
             EXPECT_CALL(device, depthWrite(EDepthWrite::Enabled));
         }
+
+        RenderState::ScissorRegion scissorRegion{};
+        EXPECT_CALL(device, scissorTest(EScissorTest::Disabled, scissorRegion));
 
         EXPECT_CALL(device, clear(clearFlags));
     }
@@ -811,6 +817,8 @@ TEST_F(ARenderExecutor, RenderStatesAppliedForEachRenderableIfDifferent)
     const RenderStateHandle state1 = scene.getRenderable(renderable1).renderState;
     const RenderStateHandle state2 = scene.getRenderable(renderable2).renderState;
 
+    scene.setRenderStateScissorTest(state1, EScissorTest::Disabled, {});
+    scene.setRenderStateScissorTest(state2, EScissorTest::Enabled, {});
     scene.setRenderStateDepthWrite(state1, EDepthWrite::Enabled);
     scene.setRenderStateDepthWrite(state2, EDepthWrite::Disabled);
     scene.setRenderStateColorWriteMask(state1, EColorWriteFlag_Red);

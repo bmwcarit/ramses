@@ -34,6 +34,11 @@ foreach(glversion "" ${GL_VERSION})
     target_link_libraries(${name} ${ramses-shared-lib_LIBRARIES})
     target_include_directories(${name} PRIVATE ${ramses-shared-lib_INCLUDE_DIRS})
 
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        get_filename_component(ramses-shared-lib_LIBDIR ${ramses-shared-lib_LIBRARIES} DIRECTORY)
+        target_link_libraries(${name} "-Wl,-rpath-link,${ramses-shared-lib_LIBDIR}")
+    endif()
+
     add_custom_target(run-${name}
         COMMAND $<TARGET_FILE:${name}>
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}

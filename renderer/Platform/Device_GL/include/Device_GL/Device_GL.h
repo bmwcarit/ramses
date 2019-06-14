@@ -43,6 +43,7 @@ namespace ramses_internal
         virtual void clearStencil          (Int32 s) override;
         virtual void depthFunc             (EDepthFunc func) override;
         virtual void depthWrite            (EDepthWrite flag) override;
+        virtual void scissorTest           (EScissorTest state, const RenderState::ScissorRegion& region) override;
         virtual void blendFactors          (EBlendFactor sourceColor, EBlendFactor destinationColor, EBlendFactor sourceAlpha, EBlendFactor destinationAlpha) override;
         virtual void blendOperations       (EBlendOperation operationColor, EBlendOperation operationAlpha) override;
         virtual void cullMode              (ECullMode mode) override;
@@ -50,8 +51,6 @@ namespace ramses_internal
         virtual void stencilOp             (EStencilOp sfail, EStencilOp dpfail, EStencilOp dppass) override;
         virtual void drawMode              (EDrawMode mode) override;
         virtual void setViewport           (UInt32 start, UInt32 end, UInt32 width, UInt32 height) override;
-        virtual void enableScissorTest     (Bool flag) override;
-        virtual void setScissorRegion      (UInt32 x, UInt32 y, UInt32 width, UInt32 height) override;
         virtual void setTextureSampling    (DataFieldHandle field, EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod minSampling, ESamplingMethod magSampling, UInt32 anisotropyLevel) override;
 
         virtual void setConstant(DataFieldHandle field, UInt32 count, const Float*      value) override;

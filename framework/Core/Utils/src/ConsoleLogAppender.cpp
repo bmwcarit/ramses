@@ -18,10 +18,7 @@ namespace ramses_internal
 {
     ConsoleLogAppender::ConsoleLogAppender()
         : m_callback([]() {})
-        , m_colorsEnabled([]() {
-                                String dummy;
-                                return !PlatformEnvironmentVariables::get("DISABLE_CONSOLE_COLORS", dummy);
-                            }())
+        , m_colorsEnabled(!PlatformEnvironmentVariables::HasEnvVar("DISABLE_CONSOLE_COLORS"))
     {
     }
 

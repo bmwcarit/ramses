@@ -107,6 +107,29 @@ namespace ramses
         return StatusOK;
     }
 
+    status_t AppearanceImpl::setScissorTest(EScissorTest flag, int16_t x, int16_t y, uint16_t width, uint16_t height)
+    {
+        getIScene().setRenderStateScissorTest(m_renderStateHandle, AppearanceUtils::GetScissorTestInternal(flag), { x, y, width, height });
+        return StatusOK;
+    }
+
+    status_t AppearanceImpl::getScissorTestState(EScissorTest& mode) const
+    {
+        mode = AppearanceUtils::GetScissorTestFromInternal(getIScene().getRenderState(m_renderStateHandle).scissorTest);
+        return StatusOK;
+    }
+
+    status_t AppearanceImpl::getScissorRegion(int16_t& x, int16_t& y, uint16_t& width, uint16_t& height) const
+    {
+        const auto& scissorRegion = getIScene().getRenderState(m_renderStateHandle).scissorRegion;
+        x = scissorRegion.x;
+        y = scissorRegion.y;
+        width = scissorRegion.width;
+        height = scissorRegion.height;
+
+        return StatusOK;
+    }
+
     status_t AppearanceImpl::setStencilFunc(EStencilFunc func, uint8_t ref, uint8_t mask)
     {
         getIScene().setRenderStateStencilFunc(m_renderStateHandle, AppearanceUtils::GetStencilFuncInternal(func), ref, mask);

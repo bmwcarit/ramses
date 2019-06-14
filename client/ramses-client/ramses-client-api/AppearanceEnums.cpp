@@ -76,6 +76,12 @@ namespace ramses
         "Enabled",
     };
 
+    const char* ScissorTestNames[] =
+    {
+        "Disabled",
+        "Enabled",
+    };
+
     const char* DepthFuncNames[] =
     {
         "Disabled",
@@ -128,6 +134,7 @@ namespace ramses
     ENUM_TO_STRING(EBlendFactor, BlendFactorNames, EBlendFactor_NUMBER_OF_ELEMENTS);
     ENUM_TO_STRING(ECullMode, CullModeNames, ECullMode_NUMBER_OF_ELEMENTS);
     ENUM_TO_STRING(EDepthWrite, DepthWriteNames, EDepthWrite_NUMBER_OF_ELEMENTS);
+    ENUM_TO_STRING(EScissorTest, ScissorTestNames, EScissorTest_NUMBER_OF_ELEMENTS);
     ENUM_TO_STRING(EDepthFunc, DepthFuncNames, EDepthFunc_NUMBER_OF_ELEMENTS);
     ENUM_TO_STRING(EStencilFunc, StencilFuncNames, EStencilFunc_NUMBER_OF_ELEMENTS);
     ENUM_TO_STRING(EStencilOperation, StencilOperationNames, EStencilOperation_NUMBER_OF_ELEMENTS);
@@ -157,6 +164,11 @@ namespace ramses
     const char* getDepthWriteString(EDepthWrite depthWrite)
     {
         return EnumToString(depthWrite);
+    }
+
+    const char* getScissorTestString(EScissorTest scissorTest)
+    {
+        return EnumToString(scissorTest);
     }
 
     const char* getDepthFuncString(EDepthFunc depthFunc)

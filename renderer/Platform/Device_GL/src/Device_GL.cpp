@@ -267,6 +267,19 @@ namespace ramses_internal
         glDepthMask(flag == EDepthWrite::Enabled);
     }
 
+    void Device_GL::scissorTest(EScissorTest state, const RenderState::ScissorRegion& region)
+    {
+        if (state == EScissorTest::Disabled)
+        {
+            glDisable(GL_SCISSOR_TEST);
+        }
+        else
+        {
+            glEnable(GL_SCISSOR_TEST);
+            glScissor(region.x, region.y, region.width, region.height);
+        }
+    }
+
     void Device_GL::blendFactors(EBlendFactor sourceColor, EBlendFactor destinationColor, EBlendFactor sourceAlpha, EBlendFactor destinationAlpha)
     {
         const GLenum glSourceColor = TypesConversion_GL::GetBlendFactor(sourceColor);
@@ -338,23 +351,6 @@ namespace ramses_internal
     void Device_GL::setViewport(UInt32 x, UInt32 y, UInt32 width, UInt32 height)
     {
         glViewport(x, y, width, height);
-    }
-
-    void Device_GL::enableScissorTest(Bool flag)
-    {
-        if (flag)
-        {
-            glEnable(GL_SCISSOR_TEST);
-        }
-        else
-        {
-            glDisable(GL_SCISSOR_TEST);
-        }
-    }
-
-    void Device_GL::setScissorRegion(UInt32 x, UInt32 y, UInt32 width, UInt32 height)
-    {
-        glScissor(x, y, width, height);
     }
 
     GLHandle Device_GL::createTexture(UInt32 width, UInt32 height, ETextureFormat storageFormat) const

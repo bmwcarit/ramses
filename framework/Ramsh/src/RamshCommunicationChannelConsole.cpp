@@ -23,10 +23,7 @@ namespace ramses_internal
         , m_checkInputThread("R_Ramsh_Console")
         , m_commandHistory()
         , m_nextCommandFromHistory(0)
-        , m_interactiveMode([]() {
-                                String dummy;
-                                return !PlatformEnvironmentVariables::get("DISABLE_RAMSH_INTERACTIVE_MODE", dummy);
-                            }())
+        , m_interactiveMode(!PlatformEnvironmentVariables::HasEnvVar("DISABLE_RAMSH_INTERACTIVE_MODE"))
     {
         RamshCommunicationChannelConsoleSignalHandler::getInstance().insert(this);
         if (m_interactiveMode)

@@ -22,6 +22,7 @@
 #include "TransportCommon/LogConnectionInfo.h"
 #include "Utils/StatisticCollection.h"
 #include "Ramsh/RamshDLT.h"
+#include "Components/DcsmComponent.h"
 
 namespace ramses_internal
 {
@@ -32,6 +33,8 @@ namespace ramses
 {
     class RamsesFrameworkConfig;
     class RamsesFrameworkConfigImpl;
+    class DcsmProvider;
+    class DcsmConsumer;
 
     class RamsesFrameworkImpl : public StatusObjectImpl
     {
@@ -44,9 +47,14 @@ namespace ramses
         status_t connect();
         bool isConnected() const;
         status_t disconnect();
+        DcsmConsumer* createDcsmConsumer();
+        status_t destroyDcsmConsumer(const DcsmConsumer&);
+        DcsmProvider* createDcsmProvider();
+        status_t destroyDcsmProvider(const DcsmProvider&);
 
         ramses_internal::ResourceComponent& getResourceComponent();
         ramses_internal::SceneGraphComponent& getScenegraphComponent();
+        ramses_internal::DcsmComponent& getDcsmComponent();
         ramses_internal::IConnectionStatusUpdateNotifier& getRamsesConnectionStatusUpdateNotifier();
         ramses_internal::ParticipantIdentifier getParticipantAddress() const;
         ramses_internal::Ramsh& getRamsh();
@@ -76,7 +84,10 @@ namespace ramses
         ramses_internal::ThreadingSystem m_threadStrategy;
         ramses_internal::ResourceComponent resourceComponent;
         ramses_internal::SceneGraphComponent scenegraphComponent;
+        ramses_internal::DcsmComponent m_dcsmComponent;
         ramses_internal::LogConnectionInfo m_ramshCommandLogConnectionInformation;
+        std::unique_ptr<DcsmProvider> m_dcsmProvider;
+        std::unique_ptr<DcsmConsumer> m_dcsmConsumer;
     };
 }
 

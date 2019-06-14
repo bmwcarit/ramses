@@ -46,6 +46,15 @@ namespace ramses
         */
         const char* getValidationReport(EValidationSeverity severity = EValidationSeverity_Info) const;
 
+        /**
+        * @brief Get the string description for a status provided by a RAMSES API function
+        *
+        * @param status Status returned by a RAMSES API function call
+        * @return If value refers to an existing status message, the string with text description for status is returned.
+        *         If no status message for value is available, unknown status message is returned.
+        */
+        const char* getStatusMessage(status_t status) const;
+
     protected:
         /**
         * Stores internal data for implementation specifics of StatusObject.

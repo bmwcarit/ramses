@@ -236,6 +236,12 @@ namespace ramses_internal
         m_creator.setRenderStateDepthFunc(stateHandle, func);
     }
 
+    void ActionCollectingScene::setRenderStateScissorTest(RenderStateHandle stateHandle, EScissorTest flag, const RenderState::ScissorRegion& region)
+    {
+        ResourceChangeCollectingScene::setRenderStateScissorTest(stateHandle, flag, region);
+        m_creator.setRenderStateScissorTest(stateHandle, flag, region);
+    }
+
     void ActionCollectingScene::setRenderStateCullMode(RenderStateHandle stateHandle, ECullMode cullMode)
     {
         if (ResourceChangeCollectingScene::getRenderState(stateHandle).cullMode != cullMode)

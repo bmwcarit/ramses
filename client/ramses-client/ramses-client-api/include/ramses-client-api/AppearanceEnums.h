@@ -100,6 +100,16 @@ namespace ramses
     };
 
     /**
+    * Specifies the scissor test state.
+    */
+    enum EScissorTest
+    {
+        EScissorTest_Disabled = 0,
+        EScissorTest_Enabled,
+        EScissorTest_NUMBER_OF_ELEMENTS
+    };
+
+    /**
     * Specifies the depth function.
     */
     enum EDepthFunc
@@ -208,6 +218,15 @@ namespace ramses
      * @return String representation of the depth write
      */
     RAMSES_API const char* getDepthWriteString(EDepthWrite depthWrite);
+
+    /**
+     * @brief Returns string representation for scissor test
+     * @details Useful for logging, etc.
+     *
+     * @param scissorTest The enum parameter for which you will get the string
+     * @return String representation of the scissor test
+     */
+    RAMSES_API const char* getScissorTestString(EScissorTest scissorTest);
 
     /**
      * @brief Returns string representation for depth function

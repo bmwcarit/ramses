@@ -42,14 +42,12 @@ namespace ramses_display_manager
         virtual ~DisplayManager();
 
         // IDisplayManager
-        virtual void showSceneOnDisplay            (ramses::sceneId_t sceneId, ramses::displayId_t displayId, int32_t sceneRenderOrder = 0, const char* confirmationText = nullptr) override final;
-        virtual void unsubscribeScene              (ramses::sceneId_t sceneId) override final;
-        virtual void unmapScene                    (ramses::sceneId_t sceneId) override final;
-        virtual void hideScene                     (ramses::sceneId_t sceneId) override final;
-        virtual void linkData                      (ramses::sceneId_t providerSceneId, ramses::dataProviderId_t providerId, ramses::sceneId_t consumerSceneId, ramses::dataConsumerId_t consumerId) override final;
+        virtual bool setSceneState(ramses::sceneId_t sceneId, SceneState state, const char* confirmationText = "") override final;
+        virtual bool setSceneMapping(ramses::sceneId_t sceneId, ramses::displayId_t displayId, int32_t sceneRenderOrder = 0) override final;
+        virtual void linkData(ramses::sceneId_t providerSceneId, ramses::dataProviderId_t providerId, ramses::sceneId_t consumerSceneId, ramses::dataConsumerId_t consumerId) override final;
         virtual void processConfirmationEchoCommand(const char* text) override final;
 
-        void dispatchAndFlush(ramses::IRendererEventHandler* customHandler = nullptr);
+        void dispatchAndFlush(IEventHandler* eventHandler = nullptr, ramses::IRendererEventHandler* customRendererEventHandler = nullptr);
 
         ramses::displayId_t createDisplay(const ramses::DisplayConfig& config);
         void destroyDisplay(ramses::displayId_t displayId);
@@ -57,20 +55,7 @@ namespace ramses_display_manager
         bool isRunning() const;
         bool isDisplayCreated(ramses::displayId_t display) const;
 
-        enum class ESceneState
-        {
-            Unpublished,
-            Published,
-            Subscribed,
-            Mapped,
-            Rendered,
-
-            GoingToSubscribed,
-            GoingToMapped,
-            GoingToRendered
-        };
-
-        ESceneState getSceneState(ramses::sceneId_t sceneId) const;
+        SceneState getLastReportedSceneState(ramses::sceneId_t sceneId) const;
         ramses::displayId_t getDisplaySceneIsMappedTo(ramses::sceneId_t sceneId) const;
 
     private:
@@ -92,13 +77,6 @@ namespace ramses_display_manager
         {
             ramses::displayId_t display = ramses::InvalidDisplayId;
             int32_t renderOrder = 0;
-            ramses_internal::String confirmationText;
-            ramses::displayId_t displayMappedTo = ramses::InvalidDisplayId;
-
-            bool operator==(const MappingInfo& other)
-            {
-                return display == other.display && renderOrder == other.renderOrder;
-            }
         };
 
         enum class ESceneStateCommand
@@ -112,25 +90,32 @@ namespace ramses_display_manager
             Hide
         };
 
-        struct SceneInfo
+        enum class ESceneStateInternal
         {
-            ESceneState currentState = ESceneState::Unpublished;
-            ESceneState targetState = ESceneState::Unpublished;
-            ESceneStateCommand lastCommandWaitigForReply = ESceneStateCommand::None;
-            MappingInfo mappingInfo;
+            Unpublished,
+            Published,
+            Subscribed,
+            MappedAndAssigned,
+            Rendered
         };
 
-        ESceneState getCurrentSceneState(ramses::sceneId_t sceneId) const;
-        ESceneState getTargetSceneState(ramses::sceneId_t sceneId) const;
-        ESceneStateCommand getLastSceneStateCommandWaitingForReply(ramses::sceneId_t sceneId) const;
-        bool isInTargetState(ramses::sceneId_t sceneId) const;
-        void goToTargetState(ramses::sceneId_t sceneId);
+        struct SceneInfo
+        {
+            ESceneStateInternal currentState = ESceneStateInternal::Unpublished;
+            ESceneStateInternal targetState = ESceneStateInternal::Unpublished;
+            ESceneStateCommand lastCommandWaitigForReply = ESceneStateCommand::None;
+            MappingInfo mappingInfo;
+            std::string targetStateConfirmationText;
+        };
 
-        void handleShowCommand(ramses::sceneId_t sceneId, MappingInfo mappingInfo);
-        void handleHideCommand(ramses::sceneId_t sceneId);
-        void handleUnmapCommand(ramses::sceneId_t sceneId);
-        void handleSubscribeCommand(ramses::sceneId_t sceneId);
-        void handleUnsubscribeCommand(ramses::sceneId_t sceneId);
+        ESceneStateInternal getCurrentSceneState(ramses::sceneId_t sceneId) const;
+        ESceneStateInternal getTargetSceneState(ramses::sceneId_t sceneId) const;
+        ESceneStateCommand getLastSceneStateCommandWaitingForReply(ramses::sceneId_t sceneId) const;
+        void goToTargetState(ramses::sceneId_t sceneId);
+        void setCurrentSceneState(ramses::sceneId_t sceneId, ESceneStateInternal state);
+
+        static SceneState GetSceneStateFromInternal(ESceneStateInternal internalState);
+        static ESceneStateInternal GetInternalSceneState(SceneState state);
 
         ramses::RamsesRenderer& m_ramsesRenderer;
 
@@ -138,6 +123,14 @@ namespace ramses_display_manager
 
         std::unordered_map<ramses::sceneId_t, SceneInfo> m_scenesInfo;
         ramses_capu::HashSet<ramses::displayId_t> m_createdDisplays;
+
+        struct Event
+        {
+            ramses::sceneId_t sceneId;
+            SceneState state;
+            ramses::displayId_t displaySceneIsMappedTo;
+        };
+        std::vector<Event> m_pendingEvents;
 
         std::unique_ptr<ramses_internal::RamshCommandExit> m_exitCommand;
         std::unique_ptr<ShowSceneOnDisplay>                m_showOnDisplayCommand;

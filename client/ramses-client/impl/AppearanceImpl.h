@@ -58,6 +58,9 @@ namespace ramses
         status_t getDepthFunction(EDepthFunc& func) const;
         status_t setDepthWrite(EDepthWrite flag);
         status_t getDepthWriteMode(EDepthWrite& mode) const;
+        status_t setScissorTest(EScissorTest flag, int16_t x, int16_t y, uint16_t width, uint16_t height);
+        status_t getScissorTestState(EScissorTest& flag) const;
+        status_t getScissorRegion(int16_t& x, int16_t& y, uint16_t& width, uint16_t& height) const;
         status_t setStencilFunc(EStencilFunc func, uint8_t ref, uint8_t mask);
         status_t getStencilFunc(EStencilFunc& func, uint8_t& ref, uint8_t& mask) const;
         status_t setStencilOperation(EStencilOperation sfail, EStencilOperation dpfail, EStencilOperation dppass);

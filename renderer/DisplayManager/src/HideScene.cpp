@@ -23,7 +23,7 @@ namespace ramses_display_manager
 
     bool HideScene::execute(uint64_t& sceneId) const
     {
-        m_displayManager.hideScene(ramses::sceneId_t(sceneId));
+        m_displayManager.setSceneState(ramses::sceneId_t{ sceneId }, ramses_display_manager::SceneState::Ready);
 
         return true;
     }

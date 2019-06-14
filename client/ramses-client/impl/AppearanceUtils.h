@@ -169,6 +169,34 @@ namespace ramses
             }
         }
 
+        static ramses_internal::EScissorTest GetScissorTestInternal(EScissorTest scissorTest)
+        {
+            switch (scissorTest)
+            {
+            case EScissorTest_Disabled:
+                return ramses_internal::EScissorTest::Disabled;
+            case EScissorTest_Enabled:
+                return ramses_internal::EScissorTest::Enabled;
+            default:
+                assert(false);
+                return ramses_internal::EScissorTest::Disabled;
+            }
+        }
+
+        static EScissorTest GetScissorTestFromInternal(ramses_internal::EScissorTest scissorTest)
+        {
+            switch (scissorTest)
+            {
+            case ramses_internal::EScissorTest::Disabled:
+                return EScissorTest_Disabled;
+            case ramses_internal::EScissorTest::Enabled:
+                return EScissorTest_Enabled;
+            default:
+                assert(false);
+                return EScissorTest_Disabled;
+            }
+        }
+
         static ramses_internal::EDepthFunc GetDepthFuncInternal(EDepthFunc depthFunc)
         {
             switch (depthFunc)

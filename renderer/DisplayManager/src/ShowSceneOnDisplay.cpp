@@ -73,7 +73,8 @@ namespace ramses_display_manager
             return false;
         }
 
-        m_displayManager.showSceneOnDisplay(sceneId, displayId, sceneRenderOrder, confirmationText.c_str());
+        m_displayManager.setSceneMapping(sceneId, displayId, sceneRenderOrder);
+        m_displayManager.setSceneState(sceneId, ramses_display_manager::SceneState::Rendered, confirmationText.c_str());
 
         return true;
     }

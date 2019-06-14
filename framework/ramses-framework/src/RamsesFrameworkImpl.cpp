@@ -18,6 +18,10 @@
 #include "ramses-framework-api/RamsesFrameworkConfig.h"
 #include "Ramsh/RamshFactory.h"
 #include "PlatformAbstraction/synchronized_clock.h"
+#include "DcsmProviderImpl.h"
+#include "ramses-framework-api/DcsmProvider.h"
+#include "DcsmConsumerImpl.h"
+#include "ramses-framework-api/DcsmConsumer.h"
 
 namespace ramses
 {
@@ -38,6 +42,7 @@ namespace ramses
         , resourceComponent(m_threadStrategy.e, m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getRamsesConnectionStatusUpdateNotifier(),
             m_statisticCollection, m_frameworkLock, config.getMaximumTotalBytesForAsyncResourceLoading())
         , scenegraphComponent(m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getRamsesConnectionStatusUpdateNotifier(), m_frameworkLock)
+        , m_dcsmComponent(m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getDcsmConnectionStatusUpdateNotifier(), m_frameworkLock)
         , m_ramshCommandLogConnectionInformation(*m_communicationSystem)
     {
         m_ramsh->start();
@@ -53,6 +58,11 @@ namespace ramses
     ramses_internal::SceneGraphComponent& RamsesFrameworkImpl::getScenegraphComponent()
     {
         return scenegraphComponent;
+    }
+
+    ramses_internal::DcsmComponent& RamsesFrameworkImpl::getDcsmComponent()
+    {
+        return m_dcsmComponent;
     }
 
     ramses_internal::IConnectionStatusUpdateNotifier& RamsesFrameworkImpl::getRamsesConnectionStatusUpdateNotifier()
@@ -142,6 +152,54 @@ namespace ramses
         LOG_INFO(CONTEXT_SMOKETEST, "RamsesFrameworkImpl::disconnect end of disconnect");
         LOG_INFO(CONTEXT_FRAMEWORK, "RamsesFrameworkImpl::disconnect: done ok");
 
+        return StatusOK;
+    }
+
+    DcsmProvider* RamsesFrameworkImpl::createDcsmProvider()
+    {
+        // TODO(tobias) check if creation allowed based on m_participantAddress
+
+        if (m_dcsmProvider)
+        {
+            addErrorEntry("RamsesFramework::createDcsmProvider: can only create one provider per framework");
+            return nullptr;
+        }
+        DcsmProviderImpl* impl = new DcsmProviderImpl(getDcsmComponent());
+        m_dcsmProvider.reset(new DcsmProvider(*impl));
+        return m_dcsmProvider.get();
+    }
+
+    status_t RamsesFrameworkImpl::destroyDcsmProvider(const DcsmProvider& provider)
+    {
+        if (!m_dcsmProvider || m_dcsmProvider.get() != &provider)
+        {
+            return addErrorEntry("RamsesFramework::destroyDcsmProvider: provider does not belong to this framework");
+        }
+        m_dcsmProvider.reset();
+        return StatusOK;
+    }
+
+    DcsmConsumer* RamsesFrameworkImpl::createDcsmConsumer()
+    {
+        // TODO(tobias) check if creation allowed based on m_participantAddress
+
+        if (m_dcsmConsumer)
+        {
+            addErrorEntry("RamsesFramework::createDcsmConsumer: can only create one consumer per framework");
+            return nullptr;
+        }
+        DcsmConsumerImpl* impl = new DcsmConsumerImpl(*this);
+        m_dcsmConsumer.reset(new DcsmConsumer(*impl));
+        return m_dcsmConsumer.get();
+    }
+
+    status_t RamsesFrameworkImpl::destroyDcsmConsumer(const DcsmConsumer& consumer)
+    {
+        if (!m_dcsmConsumer || m_dcsmConsumer.get() != &consumer)
+        {
+            return addErrorEntry("RamsesFramework::destroyDcsmConsumer: consumer does not belong to this framework");
+        }
+        m_dcsmConsumer.reset();
         return StatusOK;
     }
 

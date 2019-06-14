@@ -571,6 +571,20 @@ namespace ramses_internal
             scene.setRenderStateDepthWrite(stateHandle, flag);
             break;
         }
+        case ESceneActionId_SetStateScissorTest:
+        {
+            RenderStateHandle stateHandle;
+            EScissorTest flag = EScissorTest::NUMBER_OF_ELEMENTS;
+            RenderState::ScissorRegion region;
+            action.read(stateHandle);
+            action.read(flag);
+            action.read(region.x);
+            action.read(region.y);
+            action.read(region.width);
+            action.read(region.height);
+            scene.setRenderStateScissorTest(stateHandle, flag, region);
+            break;
+        }
         case ESceneActionId_SetStateDepthFunc:
         {
             RenderStateHandle stateHandle;
@@ -1744,7 +1758,8 @@ namespace ramses_internal
         }
         case ESceneActionId_CompoundState:
         {
-            RenderStateHandle state;
+            RenderStateHandle stateHandle;
+            RenderState::ScissorRegion scissorRegion;
             EBlendFactor bfSrcColor;
             EBlendFactor bfDstColor;
             EBlendFactor bfSrcAlpha;
@@ -1755,6 +1770,7 @@ namespace ramses_internal
             EDrawMode drawMode;
             EDepthWrite depthWrite;
             EDepthFunc depthFunc;
+            EScissorTest scissorTest;
             EStencilFunc stencilFunc;
             uint8_t stencilRefValue;
             uint8_t stencilMask;
@@ -1763,7 +1779,11 @@ namespace ramses_internal
             EStencilOp stencilOpDepthPass;
             ColorWriteMask  colorWriteMask;
 
-            action.read(state);
+            action.read(stateHandle);
+            action.read(scissorRegion.x);
+            action.read(scissorRegion.y);
+            action.read(scissorRegion.width);
+            action.read(scissorRegion.height);
             action.read(bfSrcColor);
             action.read(bfDstColor);
             action.read(bfSrcAlpha);
@@ -1774,6 +1794,7 @@ namespace ramses_internal
             action.read(drawMode);
             action.read(depthWrite);
             action.read(depthFunc);
+            action.read(scissorTest);
             action.read(stencilFunc);
             action.read(stencilRefValue);
             action.read(stencilMask);
@@ -1782,19 +1803,20 @@ namespace ramses_internal
             action.read(stencilOpDepthPass);
             action.read(colorWriteMask);
 
-            const RenderStateHandle stateHandleNew = scene.allocateRenderState(state);
-            assert(state == stateHandleNew);
+            const RenderStateHandle stateHandleNew = scene.allocateRenderState(stateHandle);
+            assert(stateHandle == stateHandleNew);
             UNUSED(stateHandleNew);
 
-            scene.setRenderStateBlendFactors(   state, bfSrcColor, bfDstColor, bfSrcAlpha, bfDstAlpha);
-            scene.setRenderStateBlendOperations(state, boColor, boAlpha);
-            scene.setRenderStateCullMode(       state, cullMode);
-            scene.setRenderStateDrawMode(       state, drawMode);
-            scene.setRenderStateDepthWrite(     state, depthWrite);
-            scene.setRenderStateDepthFunc(      state, depthFunc);
-            scene.setRenderStateStencilFunc(    state, stencilFunc, stencilRefValue, stencilMask);
-            scene.setRenderStateStencilOps(     state, stencilOpFail, stencilOpDepthFail, stencilOpDepthPass);
-            scene.setRenderStateColorWriteMask( state, colorWriteMask);
+            scene.setRenderStateBlendFactors(   stateHandle, bfSrcColor, bfDstColor, bfSrcAlpha, bfDstAlpha);
+            scene.setRenderStateBlendOperations(stateHandle, boColor, boAlpha);
+            scene.setRenderStateCullMode(       stateHandle, cullMode);
+            scene.setRenderStateDrawMode(       stateHandle, drawMode);
+            scene.setRenderStateDepthWrite(     stateHandle, depthWrite);
+            scene.setRenderStateDepthFunc(      stateHandle, depthFunc);
+            scene.setRenderStateScissorTest(     stateHandle, scissorTest, scissorRegion);
+            scene.setRenderStateStencilFunc(    stateHandle, stencilFunc, stencilRefValue, stencilMask);
+            scene.setRenderStateStencilOps(     stateHandle, stencilOpFail, stencilOpDepthFail, stencilOpDepthPass);
+            scene.setRenderStateColorWriteMask( stateHandle, colorWriteMask);
 
             break;
         }

@@ -63,15 +63,6 @@ namespace ramses
         virtual ~RamsesClient();
 
         /**
-        * @brief Get the string description for a status provided by an RAMSES client API function
-        *
-        * @param status Status returned by a RAMSES client API function call
-        * @return If value refers to an existing status message, the string with text description for status is returned.
-        If no status message for value is available, unknown status message is returned.
-        */
-        const char* getStatusMessage(status_t status) const;
-
-        /**
         * @brief Create a new empty Scene.
         *
         * @param[in] sceneId The scene id for global identification of the Scene (is used for scene mapping on renderer side).

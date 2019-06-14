@@ -57,10 +57,10 @@ namespace ramses
         return impl.getBlendingOperations(operationColor, operationAlpha);
     }
 
-    status_t Appearance::setDepthWrite(bool enable)
+    status_t Appearance::setDepthWrite(EDepthWrite mode)
     {
-        const status_t status = impl.setDepthWrite(enable ? EDepthWrite_Enabled : EDepthWrite_Disabled);
-        LOG_HL_CLIENT_API1(status, enable);
+        const status_t status = impl.setDepthWrite(mode);
+        LOG_HL_CLIENT_API1(status, mode);
         return status;
     }
 
@@ -79,6 +79,23 @@ namespace ramses
     status_t Appearance::getDepthFunction(EDepthFunc& func) const
     {
         return impl.getDepthFunction(func);
+    }
+
+    status_t Appearance::setScissorTest(EScissorTest mode, int16_t x, int16_t y, uint16_t width, uint16_t height)
+    {
+        const status_t status = impl.setScissorTest(mode, x, y, width, height);
+        LOG_HL_CLIENT_API5(status, mode, x, y, width, height);
+        return status;
+    }
+
+    status_t Appearance::getScissorTestState(EScissorTest& state) const
+    {
+        return impl.getScissorTestState(state);
+    }
+
+    status_t Appearance::getScissorRegion(int16_t& x, int16_t& y, uint16_t& width, uint16_t& height) const
+    {
+        return impl.getScissorRegion(x, y, width, height);
     }
 
     status_t Appearance::setStencilFunction(EStencilFunc func, uint8_t ref, uint8_t mask)

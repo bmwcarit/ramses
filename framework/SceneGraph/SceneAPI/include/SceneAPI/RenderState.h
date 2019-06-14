@@ -11,6 +11,7 @@
 
 #include "Common/BitForgeMacro.h"
 #include "Utils/LoggingUtils.h"
+#include "Math3d/Quad.h"
 
 namespace ramses_internal
 {
@@ -66,6 +67,13 @@ namespace ramses_internal
         AlwaysPass,
         NeverPass,
         Invalid,
+        NUMBER_OF_ELEMENTS
+    };
+
+    enum class EScissorTest : uint8_t
+    {
+        Disabled = 0,
+        Enabled,
         NUMBER_OF_ELEMENTS
     };
 
@@ -175,6 +183,11 @@ namespace ramses_internal
         "Invalid",
     };
 
+    static const char* ScissorTestNames[] =
+    {
+        "Disabled",
+        "Enabled",
+    };
 
     static const char* StencilFuncNames[] =
     {
@@ -216,11 +229,26 @@ namespace ramses_internal
     ENUM_TO_STRING(EDepthWrite, DepthWriteNames, EDepthWrite::NUMBER_OF_ELEMENTS);
     ENUM_TO_STRING(EDepthFunc, DepthFuncNames, EDepthFunc::NUMBER_OF_ELEMENTS);
     ENUM_TO_STRING(EStencilFunc, StencilFuncNames, EStencilFunc::NUMBER_OF_ELEMENTS);
+    ENUM_TO_STRING(EScissorTest, ScissorTestNames, EScissorTest::NUMBER_OF_ELEMENTS);
     ENUM_TO_STRING(EStencilOp, StencilOperationNames, EStencilOp::NUMBER_OF_ELEMENTS);
     ENUM_TO_STRING(EDrawMode, DrawModeNames, EDrawMode::NUMBER_OF_ELEMENTS);
 
     struct RenderState
     {
+        struct ScissorRegion
+        {
+            Int16 x = 0;
+            Int16 y = 0;
+            UInt16 width = 0u;
+            UInt16 height = 0u;
+
+            bool operator==(const ScissorRegion& o) const
+            {
+                return x == o.x && y == o.y && width == o.width && height == o.height;
+            }
+        };
+
+        ScissorRegion   scissorRegion;
         EBlendFactor    blendFactorSrcColor = EBlendFactor::SrcAlpha;
         EBlendFactor    blendFactorDstColor = EBlendFactor::OneMinusSrcAlpha;
         EBlendFactor    blendFactorSrcAlpha = EBlendFactor::One;
@@ -232,6 +260,7 @@ namespace ramses_internal
         EDrawMode       drawMode = EDrawMode::Triangles;
         EDepthFunc      depthFunc = EDepthFunc::SmallerEqual;
         EDepthWrite     depthWrite = EDepthWrite::Enabled;
+        EScissorTest    scissorTest = EScissorTest::Disabled;
         EStencilFunc    stencilFunc = EStencilFunc::Disabled;
         EStencilOp      stencilOpFail = EStencilOp::Keep;
         EStencilOp      stencilOpDepthFail = EStencilOp::Keep;

@@ -188,15 +188,6 @@ namespace ramses
         status_t setSkippingOfUnmodifiedBuffers(bool enable = true);
 
         /**
-        * @brief Get the string description for a status provided by RamsesRenderer API function
-        *
-        * @param status Status returned by a RamsesRenderer function call
-        * @return If value refers to an existing status message, the string with text description for status is returned.
-                  If no status message for value is available, unknown status message is returned.
-        */
-        const char* getStatusMessage(status_t status) const;
-
-        /**
          * @brief Creates a display based on provided display config.
          *        Creation of a display is an asynchronous action and the display will be created during the next render loop.
          *        The result of the createDisplay can be retrieved via dispatchEvents which will trigger a callback

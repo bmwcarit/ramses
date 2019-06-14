@@ -102,6 +102,10 @@ namespace ramses_internal
             , drawMode(EDrawMode::Lines)
             , depthWrite(EDepthWrite::Enabled)
             , depthFunc(EDepthFunc::SmallerEqual)
+            , scissorTest(EScissorTest::Enabled)
+            , scissorRegion{
+                12, 14, 16, 18
+            }
             , stencilFunc(EStencilFunc::NotEqual)
             , stencilRefValue(99u)
             , stencilMask(3u)
@@ -121,6 +125,8 @@ namespace ramses_internal
             EDrawMode       drawMode;
             EDepthWrite     depthWrite;
             EDepthFunc      depthFunc;
+            EScissorTest    scissorTest;
+            RenderState::ScissorRegion scissorRegion;
             EStencilFunc    stencilFunc;
             UInt8           stencilRefValue;
             UInt8           stencilMask;
@@ -139,6 +145,7 @@ namespace ramses_internal
             m_scene.setRenderStateDrawMode(       state, data.drawMode);
             m_scene.setRenderStateDepthWrite(     state, data.depthWrite);
             m_scene.setRenderStateDepthFunc(      state, data.depthFunc);
+            m_scene.setRenderStateScissorTest(    state, data.scissorTest, data.scissorRegion);
             m_scene.setRenderStateStencilFunc(    state, data.stencilFunc, data.stencilRefValue, data.stencilMask);
             m_scene.setRenderStateStencilOps(     state, data.stencilOpFail, data.stencilOpDepthFail, data.stencilOpDepthPass);
             m_scene.setRenderStateColorWriteMask( state, data.colorWriteMask);

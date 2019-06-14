@@ -77,11 +77,11 @@ namespace ramses
         /**
         * @brief Enables or disables writing to depth buffer.
         *
-        * @param[in] enable Flag denoting enabling or disabling depth writes.
+        * @param[in] mode Flag denoting enabling or disabling depth writes.
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setDepthWrite(bool enable);
+        status_t setDepthWrite(EDepthWrite mode);
 
         /**
         * @brief Gets the current state of writing to depth buffer.
@@ -110,6 +110,39 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t getDepthFunction(EDepthFunc& func) const;
+
+        /**
+        * @brief Enables or disables scissor test and sets region for scissor test
+        *
+        * @param[in] state Flag denoting enabling or disabling scissor test.
+        * @param[in] x Offset of scissor region on x-axis.
+        * @param[in] y Offset of scissor region on y-axis.
+        * @param[in] width Width of scissor region.
+        * @param[in] height Height of scissor region.
+        * @return status == 0 for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setScissorTest(EScissorTest state, int16_t x, int16_t y, uint16_t width, uint16_t height);
+
+        /**
+        * @brief Gets the current state of scissor test.
+        * @param[out] state State of scissor test
+        * @return status == 0 for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t getScissorTestState(EScissorTest& state) const;
+
+        /**
+        * @brief Gets region for scissor test
+        *
+        * @param[out] x Offset of scissor region on x-axis.
+        * @param[out] y Offset of scissor region on y-axis.
+        * @param[out] width Width of scissor region.
+        * @param[out] height Height of scissor region.
+        * @return status == 0 for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t getScissorRegion(int16_t& x, int16_t& y, uint16_t& width, uint16_t& height) const;
 
         /**
         * @brief Sets stencil function, reference and mask value for stencil testing.

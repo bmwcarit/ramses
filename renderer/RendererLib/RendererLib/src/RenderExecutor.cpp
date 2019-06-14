@@ -74,6 +74,8 @@ namespace ramses_internal
                     m_state.getDevice().depthWrite(EDepthWrite::Enabled);
                 }
 
+                m_state.getDevice().scissorTest(EScissorTest::Disabled, {});
+
                 m_state.getDevice().clear(clearFlags);
             }
         }
@@ -129,6 +131,10 @@ namespace ramses_internal
     void RenderExecutor::executeRenderStates() const
     {
         IDevice& device = m_state.getDevice();
+
+        // TODO Mohamed: merge with rasterizer cached state, first check wrong cached states due to explicit state change on clear
+        device.scissorTest(m_state.scissorState.m_scissorTest, m_state.scissorState.m_scissorRegion);
+
         if (m_state.depthStencilState.hasChanged())
         {
             const DepthStencilState& depthStencilState = m_state.depthStencilState.getState();
@@ -364,6 +370,9 @@ namespace ramses_internal
 
         const RenderState& renderState = renderScene.getRenderState(renderable.renderState);
 
+        m_state.scissorState.m_scissorTest = renderState.scissorTest;
+        m_state.scissorState.m_scissorRegion = renderState.scissorRegion;
+
         DepthStencilState depthStencilState;
         depthStencilState.m_depthFunc          = renderState.depthFunc;
         depthStencilState.m_depthWrite         = renderState.depthWrite;
@@ -374,6 +383,7 @@ namespace ramses_internal
         depthStencilState.m_stencilOpFail      = renderState.stencilOpFail;
         depthStencilState.m_stencilRefValue    = renderState.stencilRefValue;
         m_state.depthStencilState.setState(depthStencilState);
+
 
         BlendState blendState;
         blendState.m_blendFactorSrcColor = renderState.blendFactorSrcColor;

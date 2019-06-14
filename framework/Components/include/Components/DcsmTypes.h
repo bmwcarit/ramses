@@ -10,6 +10,7 @@
 #define RAMSES_COMPONENT_DCSMTYPES_H
 
 #include "Common/StronglyTypedValue.h"
+#include "Utils/LoggingUtils.h"
 
 namespace ramses_internal
 {
@@ -19,11 +20,19 @@ namespace ramses_internal
 
     enum class ETechnicalContentType : uint32_t
     {
-        RamsesSceneID
+        RamsesSceneID,
     };
 
-    using TechnicalContentDescriptor = StronglyTypedValue<uint64_t, 0, struct TechnicalContentDescriptorTag>;
+    inline const char* EnumToString(ETechnicalContentType val)
+    {
+        switch (val)
+        {
+        case ETechnicalContentType::RamsesSceneID: return "ETechnicalContentType::RamsesSceneID";
+        }
+        return "ETechnicalContentType::<UNKNOWN>";
+    }
 
+    using TechnicalContentDescriptor = StronglyTypedValue<uint64_t, 0, struct TechnicalContentDescriptorTag>;
 
     struct SizeInfo
     {
@@ -41,8 +50,20 @@ namespace ramses_internal
         Unregistered,
         Registered,
         ContentRequested,
-        Shown
+        Shown,
     };
+
+    inline const char* EnumToString(EDcsmStatus val)
+    {
+        switch (val)
+        {
+        case EDcsmStatus::Unregistered: return "EDcsmStatus::Unregistered";
+        case EDcsmStatus::Registered: return "EDcsmStatus::Registered";
+        case EDcsmStatus::ContentRequested: return "EDcsmStatus::ContentRequested";
+        case EDcsmStatus::Shown: return "EDcsmStatus::Shown";
+        }
+        return "EDcsmStatus::<UNKNOWN>";
+    }
 
     struct AnimationInformation
     {

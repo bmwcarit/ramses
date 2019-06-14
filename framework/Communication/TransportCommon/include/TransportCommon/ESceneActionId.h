@@ -83,6 +83,7 @@ namespace ramses_internal
         ESceneActionId_SetStateStencilFunc,
         ESceneActionId_SetStateDepthWrite,
         ESceneActionId_SetStateDepthFunc,
+        ESceneActionId_SetStateScissorTest,
         ESceneActionId_SetStateCullMode,
         ESceneActionId_SetStateDrawMode,
         ESceneActionId_SetStateBlendOperations,
@@ -273,6 +274,7 @@ case ENUMVALUE: return #ENUMVALUE
             CreateNameForEnumID(ESceneActionId_SetStateStencilFunc);
             CreateNameForEnumID(ESceneActionId_SetStateDepthWrite);
             CreateNameForEnumID(ESceneActionId_SetStateDepthFunc);
+            CreateNameForEnumID(ESceneActionId_SetStateScissorTest);
             CreateNameForEnumID(ESceneActionId_SetStateCullMode);
             CreateNameForEnumID(ESceneActionId_SetStateDrawMode);
             CreateNameForEnumID(ESceneActionId_SetStateBlendOperations);

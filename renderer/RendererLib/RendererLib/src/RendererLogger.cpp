@@ -266,10 +266,10 @@ namespace ramses_internal
             context << "Display [id: " << managerIt.key << "]" << RendererLogContext::NewLine;
             context.indent();
             context << resourceManager->m_clientResourceRegistry.getAllResourceDescriptors().count() << " Resources" << RendererLogContext::NewLine << RendererLogContext::NewLine;
-            context << "Status:" << RendererLogContext::NewLine;
-            context.indent();
 
             // Infos by resource status
+            context << "Status:" << RendererLogContext::NewLine;
+            context.indent();
             for (UInt32 i = 0; i < EResourceStatus_NUMBER_OF_ELEMENTS; i++)
             {
                 const EResourceStatus status = static_cast<EResourceStatus>(i);
@@ -287,19 +287,24 @@ namespace ramses_internal
             }
             context.unindent();
 
-            if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
+            context << RendererLogContext::NewLine;
+            context << "Overview:" << RendererLogContext::NewLine;
+            context.indent();
             {
-                context << RendererLogContext::NewLine << "Details: " << RendererLogContext::NewLine;
-                context.indent();
+                UInt32 totalCount = 0;
+                UInt32 totalCompressedSize = 0;
+                UInt32 totalDecompressedSize = 0;
+                UInt32 totalVRAMSize = 0;
+
                 //Infos by resource type
                 for (UInt32 i = 0; i < EResourceType_NUMBER_OF_ELEMENTS; i++)
                 {
                     const EResourceType type = static_cast<EResourceType>(i);
 
                     UInt32 count = 0;
-                    UInt32 totalCompressedSize = 0;
-                    UInt32 totalDecompressedSize = 0;
-                    UInt32 totalVRAMSize = 0;
+                    UInt32 compressedSize = 0;
+                    UInt32 decompressedSize = 0;
+                    UInt32 VRAMSize = 0;
                     context << EnumToString(type) << RendererLogContext::NewLine;
 
                     ResourceContentHashVector resources;
@@ -316,30 +321,41 @@ namespace ramses_internal
                     for(const auto& resource : resources)
                     {
                         const ResourceDescriptor& resourceDescriptor = resourceManager->m_clientResourceRegistry.getResourceDescriptor(resource);
-                        context << "[";
-                        context << "handle: " << resourceDescriptor.deviceHandle << "; ";
-                        context << "hash: " << resourceDescriptor.hash << "; ";
-                        context << "scene usage: (";
-                        for(const auto sceneId : resourceDescriptor.sceneUsage)
+                        if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
                         {
-                            context << sceneId.getValue() << ", ";
+                            context << "[";
+                            context << "handle: " << resourceDescriptor.deviceHandle << "; ";
+                            context << "hash: " << resourceDescriptor.hash << "; ";
+                            context << "scene usage: (";
+                            for (const auto sceneId : resourceDescriptor.sceneUsage)
+                            {
+                                context << sceneId.getValue() << ", ";
+                            }
+                            context << "); ";
+                            context << "status: " << EnumToString(resourceDescriptor.status) << "; ";
+                            context << "sizeKB (compressed/decompressed/vram): " << resourceDescriptor.compressedSize / 1024 << "/" << resourceDescriptor.decompressedSize / 1024 << "/" << resourceDescriptor.vramSize / 1024;
+                            context << "]" << RendererLogContext::NewLine;
                         }
-                        context << "); ";
-                        context << "status: " << EnumToString(resourceDescriptor.status) << "; ";
-                        context << "sizeKB (compressed/decompressed/vram): " << resourceDescriptor.compressedSize / 1024 << "/" << resourceDescriptor.decompressedSize / 1024 << "/" << resourceDescriptor.vramSize / 1024;
-                        context << "]" << RendererLogContext::NewLine;
 
-                        totalCompressedSize += resourceDescriptor.compressedSize;
-                        totalDecompressedSize += resourceDescriptor.decompressedSize;
-                        totalVRAMSize += resourceDescriptor.vramSize;
+                        compressedSize += resourceDescriptor.compressedSize;
+                        decompressedSize += resourceDescriptor.decompressedSize;
+                        VRAMSize += resourceDescriptor.vramSize;
                         count++;
                     }
                     context << count << " resources of type " << EnumToString(type)
-                        << " total size KB (compressed/decompressed/vram): " << totalCompressedSize / 1024 << "/" << totalDecompressedSize / 1024 << "/" << totalVRAMSize / 1024
+                        << " total size KB (compressed/decompressed/vram): " << compressedSize / 1024 << "/" << decompressedSize / 1024 << "/" << VRAMSize / 1024
                         << RendererLogContext::NewLine;
                     context.unindent();
+
+                    totalCount += count;
+                    totalCompressedSize += compressedSize;
+                    totalDecompressedSize += decompressedSize;
+                    totalVRAMSize += VRAMSize;
                 }
-                context.unindent();
+
+                context << RendererLogContext::NewLine << totalCount << " client resources in total, size KB (compressed/decompressed/vram): "
+                    << totalCompressedSize / 1024 << "/" << totalDecompressedSize / 1024 << "/" << totalVRAMSize / 1024
+                    << RendererLogContext::NewLine;
             }
             context.unindent();
         }
@@ -369,7 +385,6 @@ namespace ramses_internal
                 context.indent();
 
                 context << "Render buffers: " << scene.getRenderBufferCount() << RendererLogContext::NewLine;
-                if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
                 {
                     RenderBufferHandleVector rbs;
                     resRegistry.getAllRenderBuffers(rbs);
@@ -379,14 +394,17 @@ namespace ramses_internal
                     for (const auto rb : rbs)
                     {
                         const RenderBuffer& rbDesc = scene.getRenderBuffer(rb);
-                        context << rb << " (deviceHandle " << resRegistry.getRenderBufferDeviceHandle(rb) << ") ";
-                        context << "[" << rbDesc.width << "x" << rbDesc.height << "; " << EnumToString(rbDesc.type) << "; " << EnumToString(rbDesc.format) << "; " << EnumToString(rbDesc.accessMode) << "; " << rbDesc.sampleCount << " samples] ";
-                        context << resRegistry.getRenderBufferByteSize(rb) / 1024 << " KB";
-                        context << RendererLogContext::NewLine;
+                        if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
+                        {
+                            context << rb << " (deviceHandle " << resRegistry.getRenderBufferDeviceHandle(rb) << ") ";
+                            context << "[" << rbDesc.width << "x" << rbDesc.height << "; " << EnumToString(rbDesc.type) << "; " << EnumToString(rbDesc.format) << "; " << EnumToString(rbDesc.accessMode) << "; " << rbDesc.sampleCount << " samples] ";
+                            context << resRegistry.getRenderBufferByteSize(rb) / 1024 << " KB";
+                            context << RendererLogContext::NewLine;
+                        }
                         size += resRegistry.getRenderBufferByteSize(rb);
                     }
+                    context << "Total KB: " << size / 1024 << RendererLogContext::NewLine;
                     context.unindent();
-                    context << "Total KB: " << size / 1024 << RendererLogContext::NewLine << RendererLogContext::NewLine;
                 }
 
                 context << "Render targets: " << scene.getRenderTargetCount() << RendererLogContext::NewLine;
@@ -404,7 +422,6 @@ namespace ramses_internal
                             context << scene.getRenderTargetRenderBuffer(rt, i) << " ";
                         context << "]" << RendererLogContext::NewLine;
                     }
-                    context << RendererLogContext::NewLine;
                     context.unindent();
                 }
 
@@ -423,12 +440,10 @@ namespace ramses_internal
                         context << bp << " [renderBuffer deviceHandles: src " << bpSrc << " -> dst " << bpDst << "]";
                         context << RendererLogContext::NewLine;
                     }
-                    context << RendererLogContext::NewLine;
                     context.unindent();
                 }
 
                 context << "Texture buffers: " << scene.getTextureBufferCount() << RendererLogContext::NewLine;
-                if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
                 {
                     TextureBufferHandleVector tbs;
                     resRegistry.getAllTextureBuffers(tbs);
@@ -438,20 +453,22 @@ namespace ramses_internal
                     for (const auto tb : tbs)
                     {
                         const TextureBuffer& tbDesc = scene.getTextureBuffer(tb);
-                        context << tb << " (deviceHandle " << resRegistry.getTextureBufferDeviceHandle(tb) << ") " << EnumToString(tbDesc.textureFormat);
-                        context << " mips: ";
-                        for (const auto& mip : tbDesc.mipMaps)
-                            context << "[" << mip.width << "x" << mip.height << "] ";
-                        context << resRegistry.getTextureBufferByteSize(tb) / 1024 << " KB";
-                        context << RendererLogContext::NewLine;
+                        if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
+                        {
+                            context << tb << " (deviceHandle " << resRegistry.getTextureBufferDeviceHandle(tb) << ") " << EnumToString(tbDesc.textureFormat);
+                            context << " mips: ";
+                            for (const auto& mip : tbDesc.mipMaps)
+                                context << "[" << mip.width << "x" << mip.height << "] ";
+                            context << resRegistry.getTextureBufferByteSize(tb) / 1024 << " KB";
+                            context << RendererLogContext::NewLine;
+                        }
                         size += resRegistry.getTextureBufferByteSize(tb);
                     }
+                    context << "Total KB: " << size / 1024 << RendererLogContext::NewLine;
                     context.unindent();
-                    context << "Total KB: " << size / 1024 << RendererLogContext::NewLine << RendererLogContext::NewLine;
                 }
 
                 context << "Data buffers: " << scene.getDataBufferCount() << RendererLogContext::NewLine;
-                if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
                 {
                     DataBufferHandleVector dbs;
                     resRegistry.getAllDataBuffers(dbs);
@@ -461,14 +478,17 @@ namespace ramses_internal
                     for (const auto db : dbs)
                     {
                         const GeometryDataBuffer& dbDesc = scene.getDataBuffer(db);
-                        context << db << " (deviceHandle " << resRegistry.getDataBufferDeviceHandle(db) << ") ";
-                        context << EnumToString(dbDesc.bufferType) << " " << EnumToString(dbDesc.dataType);
-                        context << " size used/allocated in B: " << dbDesc.usedSize << "/" << dbDesc.data.size();
-                        context << RendererLogContext::NewLine;
+                        if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
+                        {
+                            context << db << " (deviceHandle " << resRegistry.getDataBufferDeviceHandle(db) << ") ";
+                            context << EnumToString(dbDesc.bufferType) << " " << EnumToString(dbDesc.dataType);
+                            context << " size used/allocated in B: " << dbDesc.usedSize << "/" << dbDesc.data.size();
+                            context << RendererLogContext::NewLine;
+                        }
                         size += UInt32(dbDesc.data.size());
                     }
+                    context << "Total KB: " << size / 1024 << RendererLogContext::NewLine;
                     context.unindent();
-                    context << "Total KB: " << size / 1024 << RendererLogContext::NewLine << RendererLogContext::NewLine;
                 }
 
                 context << "Stream textures: " << scene.getStreamTextureCount() << RendererLogContext::NewLine;
@@ -480,7 +500,6 @@ namespace ramses_internal
                     context.indent();
                     for (const auto st : sts)
                         context << st << " [sourceId " << resRegistry.getStreamTextureSourceId(st) << "]" << RendererLogContext::NewLine;
-                    context << RendererLogContext::NewLine;
                     context.unindent();
                 }
 

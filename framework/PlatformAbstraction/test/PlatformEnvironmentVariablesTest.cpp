@@ -17,6 +17,13 @@ namespace ramses_internal
         EXPECT_TRUE(PlatformEnvironmentVariables::get("PATH", tmp));
     }
 
+    TEST(EnvironmentVariables, hasTest)
+    {
+        String tmp;
+        EXPECT_TRUE(PlatformEnvironmentVariables::HasEnvVar("PATH"));
+        EXPECT_FALSE(PlatformEnvironmentVariables::HasEnvVar("RAMSES_THIS_VAR_WILL_NOT_EXIST"));
+    }
+
     TEST(EnvironmentVariables, setTest)
     {
         PlatformEnvironmentVariables::SetEnvVar("RAMSES_SOME_ENVVAR", "foo");

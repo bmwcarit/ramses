@@ -136,6 +136,14 @@ namespace ramses_internal
         }
     }
 
+    void LoggingDevice::scissorTest(EScissorTest flag, const RenderState::ScissorRegion& region)
+    {
+        if (m_logContext.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
+        {
+            m_logContext << "set scissor test: [flag: " << EnumToString(flag) << "; x: " << region.x << "; y: " << region.y << "; width: " << region.width << "; height: " << region.height << "]" << RendererLogContext::NewLine;
+        }
+    }
+
     void LoggingDevice::stencilFunc(EStencilFunc func, UInt8 ref, UInt8 mask)
     {
         if (m_logContext.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
@@ -155,16 +163,6 @@ namespace ramses_internal
     void LoggingDevice::setViewport(UInt32 x, UInt32 y, UInt32 width, UInt32 height)
     {
         m_logContext << "set viewport: [x: " << x << "; y: " << y << "; w: " << width << "; h: " << height << " ]" <<RendererLogContext::NewLine;
-    }
-
-    void LoggingDevice::enableScissorTest(Bool flag)
-    {
-        m_logContext << (flag ? "enable" : "disable") << " scissor test"  << RendererLogContext::NewLine;
-    }
-
-    void LoggingDevice::setScissorRegion(UInt32 x, UInt32 y, UInt32 width, UInt32 height)
-    {
-        m_logContext << "set scissor region: [x: " << x << "; y: " << y << "; w: " << width << "; h: " << height << " ]" << RendererLogContext::NewLine;
     }
 
     void LoggingDevice::drawMode(EDrawMode mode)

@@ -41,6 +41,7 @@ namespace ramses_internal
         MOCK_METHOD2(setRenderStateDrawMode,        void (RenderStateHandle, EDrawMode));
         MOCK_METHOD2(setRenderStateDepthWrite,      void (RenderStateHandle, EDepthWrite));
         MOCK_METHOD2(setRenderStateDepthFunc,       void (RenderStateHandle, EDepthFunc));
+        MOCK_METHOD3(setRenderStateScissorTest,     void(RenderStateHandle, EScissorTest, const RenderState::ScissorRegion&));
         MOCK_METHOD4(setRenderStateStencilFunc,     void (RenderStateHandle, EStencilFunc, UInt8, UInt8));
         MOCK_METHOD4(setRenderStateStencilOps,      void (RenderStateHandle, EStencilOp, EStencilOp, EStencilOp));
         MOCK_METHOD2(setRenderStateColorWriteMask,  void (RenderStateHandle, ColorWriteMask));
@@ -186,6 +187,8 @@ namespace ramses_internal
         rs.drawMode = EDrawMode::Lines;
         rs.depthWrite = EDepthWrite::Enabled;
         rs.depthFunc = EDepthFunc::SmallerEqual;
+        rs.scissorTest = EScissorTest::Enabled;
+        rs.scissorRegion = { 1, 2, 3, 4 };
         rs.stencilFunc = EStencilFunc::NotEqual;
         rs.stencilRefValue = 99u;
         rs.stencilMask = 3u;
@@ -207,6 +210,7 @@ namespace ramses_internal
         EXPECT_CALL(scene, setRenderStateDrawMode(state, rs.drawMode));
         EXPECT_CALL(scene, setRenderStateDepthWrite(state, rs.depthWrite));
         EXPECT_CALL(scene, setRenderStateDepthFunc(state, rs.depthFunc));
+        EXPECT_CALL(scene, setRenderStateScissorTest(state, rs.scissorTest, rs.scissorRegion));
         EXPECT_CALL(scene, setRenderStateStencilFunc(state, rs.stencilFunc, rs.stencilRefValue, rs.stencilMask));
         EXPECT_CALL(scene, setRenderStateStencilOps(state, rs.stencilOpFail, rs.stencilOpDepthFail, rs.stencilOpDepthPass));
         EXPECT_CALL(scene, setRenderStateColorWriteMask(state, rs.colorWriteMask));

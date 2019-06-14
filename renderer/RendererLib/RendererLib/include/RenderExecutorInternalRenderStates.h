@@ -42,6 +42,13 @@ namespace ramses_internal
         }
     };
 
+    // TODO Mohamed : merge into RasterizerState once caching fixed
+    struct ScissorState
+    {
+        EScissorTest m_scissorTest = EScissorTest::NUMBER_OF_ELEMENTS;
+        RenderState::ScissorRegion m_scissorRegion = {0, 0, 0, 0};
+    };
+
     struct BlendState
     {
         EBlendFactor    m_blendFactorSrcColor = EBlendFactor::NUMBER_OF_ELEMENTS;

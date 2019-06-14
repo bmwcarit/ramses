@@ -6,191 +6,126 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "gmock/gmock.h"
 #include "ramses-framework-api/StronglyTypedValue.h"
-#include "stdint.h"
+#include "gmock/gmock.h"
+#include <cstdint>
+#include <unordered_set>
 
-using namespace ramses;
-
-class AClassWithDataAndOperators
+namespace ramses
 {
-public:
-    explicit AClassWithDataAndOperators(uint32_t data)
-        : m_data(data)
+    namespace
     {
+        struct UInt32Tag {};
+        typedef StronglyTypedValue<uint32_t, UInt32Tag> StronglyTypedUInt32;
+
+        typedef StronglyTypedValue<void*, struct VoidPtrTag> StronglyTypedPtr;
     }
 
-    AClassWithDataAndOperators(const AClassWithDataAndOperators& other)
-        : m_data(other.m_data)
+    TEST(AStronglyTypedValue, CanBeCreatedWithUInt32)
     {
+        StronglyTypedUInt32 stronglyTypedUInt(12u);
     }
 
-    AClassWithDataAndOperators& operator=(const AClassWithDataAndOperators& other)
+    TEST(AStronglyTypedValue, ReturnsCorrectUInt32Value)
     {
-        m_data = other.m_data;
-        return *this;
+        StronglyTypedUInt32 stronglyTypedUInt(12u);
+        EXPECT_EQ(12u, stronglyTypedUInt.getValue());
     }
 
-    uint32_t getData()
+    TEST(AStronglyTypedValue, ReturnsCorrectUInt32Reference)
     {
-        return m_data;
+        StronglyTypedUInt32 stronglyTypedUInt(12u);
+        EXPECT_EQ(12u, stronglyTypedUInt.getReference());
     }
 
-    void setData(uint32_t data)
+    TEST(AStronglyTypedValue, ReturnedReferenceChangeEffectsValue_UInt32)
     {
-        m_data = data;
+        StronglyTypedUInt32 stronglyTypedUInt(12u);
+        stronglyTypedUInt.getReference() = 34u;
+        EXPECT_EQ(34u, stronglyTypedUInt.getReference());
     }
 
-    MOCK_CONST_METHOD1(equalsCalled, void(uint32_t));
-    bool operator==(const AClassWithDataAndOperators& other) const
+    TEST(AStronglyTypedValue, EqualsToOtherIfSameUInt32Value)
     {
-        equalsCalled(other.m_data);
-        return m_data == other.m_data;
+        StronglyTypedUInt32 stronglyTypedUInt1(12u);
+        StronglyTypedUInt32 stronglyTypedUInt2(12u);
+        EXPECT_TRUE(stronglyTypedUInt1 == stronglyTypedUInt2);
+        EXPECT_FALSE(stronglyTypedUInt1 != stronglyTypedUInt2);
     }
 
-    MOCK_CONST_METHOD1(notEqualsCalled, void(uint32_t));
-    bool operator!=(const AClassWithDataAndOperators& other) const
+    TEST(AStronglyTypedValue, DoesNotEqualToOtherIfDifferentUInt32Value)
     {
-        notEqualsCalled(other.m_data);
-        return m_data != other.m_data;
+        StronglyTypedUInt32 stronglyTypedUInt1(12u);
+        StronglyTypedUInt32 stronglyTypedUInt2(34u);
+        EXPECT_FALSE(stronglyTypedUInt1 == stronglyTypedUInt2);
+        EXPECT_TRUE(stronglyTypedUInt1 != stronglyTypedUInt2);
     }
 
-private:
-    uint32_t m_data;
-};
+    TEST(AStronglyTypedValue, CanBeCopiedWithUInt32AsValue)
+    {
+        StronglyTypedUInt32 stronglyTypedUInt1(12u);
+        StronglyTypedUInt32 stronglyTypedUInt2(stronglyTypedUInt1);
+        EXPECT_EQ(stronglyTypedUInt1, stronglyTypedUInt2);
+    }
 
-struct UInt32Tag {};
-typedef StronglyTypedValue<uint32_t, UInt32Tag> StronglyTypedUInt32;
+    TEST(AStronglyTypedValue, CanBeCopyAssignedWithUInt32AsValue)
+    {
+        StronglyTypedUInt32 stronglyTypedUInt1(12u);
+        StronglyTypedUInt32 stronglyTypedUInt2(34u);
+        stronglyTypedUInt2 = stronglyTypedUInt1;
+        EXPECT_EQ(stronglyTypedUInt1, stronglyTypedUInt2);
+    }
 
-struct AClassWithDataAndOperatorsTag {};
-typedef StronglyTypedValue<AClassWithDataAndOperators, AClassWithDataAndOperatorsTag> StronglyTypedClass;
+    TEST(AStronglyTypedValue, canBeUsedWithPointer)
+    {
+        int i = 1;
+        int j = 2;
+        StronglyTypedPtr p1(&i);
+        StronglyTypedPtr p2(&i);
+        StronglyTypedPtr p3(&j);
 
-TEST(AStronglyTypedValue, CanBeCreatedWithUInt32)
-{
-    StronglyTypedUInt32 stronglyTypedUInt(12u);
-}
+        EXPECT_TRUE(p1 == p2);
+        EXPECT_TRUE(p1 != p3);
+        EXPECT_FALSE(p1 == p3);
+        EXPECT_TRUE(p1.getValue() == &i);
 
-TEST(AStronglyTypedValue, CanBeCreatedWithClass)
-{
-    StronglyTypedClass stronglyTypedClass(AClassWithDataAndOperators(12u));
-}
+        p3 = p1;
+        EXPECT_TRUE(p1 == p3);
 
-TEST(AStronglyTypedValue, ReturnsCorrectUInt32Value)
-{
-    StronglyTypedUInt32 stronglyTypedUInt(12u);
-    EXPECT_EQ(12u, stronglyTypedUInt.getValue());
-}
+        StronglyTypedPtr p4(nullptr);
+        EXPECT_TRUE(p4.getValue() == nullptr);
 
-TEST(AStronglyTypedValue, ReturnsCorrectClassValue)
-{
-    StronglyTypedClass stronglyTypedClass(AClassWithDataAndOperators(12u));
-    EXPECT_EQ(12u, stronglyTypedClass.getValue().getData());
-}
+        p4.getReference() = &j;
+        EXPECT_TRUE(p4.getValue() == &j);
+    }
 
-TEST(AStronglyTypedValue, ReturnsCorrectUInt32Reference)
-{
-    StronglyTypedUInt32 stronglyTypedUInt(12u);
-    EXPECT_EQ(12u, stronglyTypedUInt.getReference());
-}
+    TEST(AStronglyTypedValue, canBeUsedInStdHashContainerWithIntegral)
+    {
+        StronglyTypedUInt32 i1(1);
+        StronglyTypedUInt32 i2(2);
+        StronglyTypedUInt32 i3(3);
 
-TEST(AStronglyTypedValue, ReturnsCorrectClassReference)
-{
-    StronglyTypedClass stronglyTypedClass(AClassWithDataAndOperators(12u));
-    EXPECT_EQ(12u, stronglyTypedClass.getReference().getData());
-}
+        std::unordered_set<StronglyTypedUInt32> si;
+        si.insert(i1);
+        si.insert(i2);
+        EXPECT_TRUE(si.find(i1) != si.end());
+        EXPECT_TRUE(si.find(i2) != si.end());
+        EXPECT_FALSE(si.find(i3) != si.end());
+    }
 
-TEST(AStronglyTypedValue, ReturnedReferenceChangeEffectsValue_UInt32)
-{
-    StronglyTypedUInt32 stronglyTypedUInt(12u);
-    stronglyTypedUInt.getReference() = 34u;
-    EXPECT_EQ(34u, stronglyTypedUInt.getReference());
-}
+    TEST(AStronglyTypedValue, canBeUsedInStdHashContainerWithPointer)
+    {
+        int i = 1;
+        int j = 2;
+        StronglyTypedPtr p1(&i);
+        StronglyTypedPtr p2(nullptr);
+        StronglyTypedPtr p3(&j);
 
-TEST(AStronglyTypedValue, ReturnedReferenceChangeEffectsValue_Class)
-{
-    StronglyTypedClass stronglyTypedClass(AClassWithDataAndOperators(12u));
-    stronglyTypedClass.getReference().setData(34u);
-    EXPECT_EQ(34u, stronglyTypedClass.getReference().getData());
-}
-
-TEST(AStronglyTypedValue, CallsEqualsOperator)
-{
-    StronglyTypedClass stronglyTypedClass1(AClassWithDataAndOperators(12u));
-    StronglyTypedClass stronglyTypedClass2(AClassWithDataAndOperators(34u));
-    EXPECT_CALL(stronglyTypedClass1.getReference(), equalsCalled(34u)).Times(1);
-    EXPECT_FALSE(stronglyTypedClass1 == stronglyTypedClass2);
-}
-
-TEST(AStronglyTypedValue, CallsNotEqualsOperator)
-{
-    StronglyTypedClass stronglyTypedClass1(AClassWithDataAndOperators(12u));
-    StronglyTypedClass stronglyTypedClass2(AClassWithDataAndOperators(34u));
-    EXPECT_CALL(stronglyTypedClass1.getReference(), notEqualsCalled(34u)).Times(1);
-    EXPECT_TRUE(stronglyTypedClass1 != stronglyTypedClass2);
-}
-
-TEST(AStronglyTypedValue, EqualsToOtherIfSameUInt32Value)
-{
-    StronglyTypedUInt32 stronglyTypedUInt1(12u);
-    StronglyTypedUInt32 stronglyTypedUInt2(12u);
-    EXPECT_TRUE(stronglyTypedUInt1 == stronglyTypedUInt2);
-    EXPECT_FALSE(stronglyTypedUInt1 != stronglyTypedUInt2);
-}
-
-TEST(AStronglyTypedValue, DoesNotEqualToOtherIfDifferentUInt32Value)
-{
-    StronglyTypedUInt32 stronglyTypedUInt1(12u);
-    StronglyTypedUInt32 stronglyTypedUInt2(34u);
-    EXPECT_FALSE(stronglyTypedUInt1 == stronglyTypedUInt2);
-    EXPECT_TRUE(stronglyTypedUInt1 != stronglyTypedUInt2);
-}
-
-TEST(AStronglyTypedValue, EqualsToOtherIfSameClassValue)
-{
-    StronglyTypedClass stronglyTypedClass1(AClassWithDataAndOperators(12u));
-    StronglyTypedClass stronglyTypedClass2(AClassWithDataAndOperators(12u));
-    EXPECT_CALL(stronglyTypedClass1.getReference(), equalsCalled(12u)).Times(1);
-    EXPECT_CALL(stronglyTypedClass1.getReference(), notEqualsCalled(12u)).Times(1);
-    EXPECT_TRUE(stronglyTypedClass1 == stronglyTypedClass2);
-    EXPECT_FALSE(stronglyTypedClass1 != stronglyTypedClass2);
-}
-
-TEST(AStronglyTypedValue, DoesNotEqualToOtherIfDifferentClassValue)
-{
-    StronglyTypedClass stronglyTypedClass1(AClassWithDataAndOperators(12u));
-    StronglyTypedClass stronglyTypedClass2(AClassWithDataAndOperators(34u));
-    EXPECT_CALL(stronglyTypedClass1.getReference(), equalsCalled(34u)).Times(1);
-    EXPECT_CALL(stronglyTypedClass1.getReference(), notEqualsCalled(34u)).Times(1);
-    EXPECT_FALSE(stronglyTypedClass1 == stronglyTypedClass2);
-    EXPECT_TRUE(stronglyTypedClass1 != stronglyTypedClass2);
-}
-
-TEST(AStronglyTypedValue, CanBeCopiedWithUInt32AsValue)
-{
-    StronglyTypedUInt32 stronglyTypedUInt1(12u);
-    StronglyTypedUInt32 stronglyTypedUInt2(stronglyTypedUInt1);
-    EXPECT_EQ(stronglyTypedUInt1, stronglyTypedUInt2);
-}
-
-TEST(AStronglyTypedValue, CanBeCopiedWithClassAsValue)
-{
-    StronglyTypedClass stronglyTypedClass1(AClassWithDataAndOperators(12u));
-    StronglyTypedClass stronglyTypedClass2(stronglyTypedClass1);
-    EXPECT_EQ(stronglyTypedClass1.getValue().getData(), stronglyTypedClass2.getValue().getData());
-}
-
-TEST(AStronglyTypedValue, CanBeCopyAssignedWithUInt32AsValue)
-{
-    StronglyTypedUInt32 stronglyTypedUInt1(12u);
-    StronglyTypedUInt32 stronglyTypedUInt2(34u);
-    stronglyTypedUInt2 = stronglyTypedUInt1;
-    EXPECT_EQ(stronglyTypedUInt1, stronglyTypedUInt2);
-}
-
-TEST(AStronglyTypedValue, CanBeCopyAssignedWithClassAsValue)
-{
-    StronglyTypedClass stronglyTypedClass1(AClassWithDataAndOperators(12u));
-    StronglyTypedClass stronglyTypedClass2(AClassWithDataAndOperators(34u));
-    stronglyTypedClass2 = stronglyTypedClass1;
-    EXPECT_EQ(stronglyTypedClass1.getValue().getData(), stronglyTypedClass2.getValue().getData());
+        std::unordered_set<StronglyTypedPtr> sp;
+        sp.insert(p1);
+        sp.insert(p2);
+        EXPECT_TRUE(sp.find(p1) != sp.end());
+        EXPECT_TRUE(sp.find(p2) != sp.end());
+        EXPECT_FALSE(sp.find(p3) != sp.end());
+    }
 }

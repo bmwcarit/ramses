@@ -122,8 +122,8 @@ namespace ramses_internal
         }
         ramses::RamsesHMIUtils::DumpUnrequiredSceneObjects(*loadedScene);
 
-
-        displayManager.showSceneOnDisplay(loadedScene->getSceneId(), displayId);
+        displayManager.setSceneMapping(loadedScene->getSceneId(), displayId);
+        displayManager.setSceneState(loadedScene->getSceneId(), ramses_display_manager::SceneState::Rendered);
 
         while (displayManager.isRunning())
         {

@@ -13,7 +13,6 @@
 #include "ramses-text-api/GlyphMetrics.h"
 #include "ramses-text/GlyphGeometry.h"
 #include "ramses-text/GlyphTexturePage.h"
-#include "ramses-text/CommonHashers.h"
 
 #include <unordered_map>
 #include <set>

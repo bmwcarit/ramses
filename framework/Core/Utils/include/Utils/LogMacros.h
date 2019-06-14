@@ -19,6 +19,7 @@ namespace ramses_internal
     extern LogContext& CONTEXT_CLIENT;
     extern LogContext& CONTEXT_RENDERER;
     extern LogContext& CONTEXT_PERIODIC;
+    extern LogContext& CONTEXT_DCSM;
 
     extern LogContext& CONTEXT_COMMUNICATION;
     extern LogContext& CONTEXT_PROFILING;

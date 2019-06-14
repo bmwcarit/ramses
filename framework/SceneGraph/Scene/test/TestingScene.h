@@ -59,6 +59,7 @@ namespace ramses_internal
             scene.setRenderStateDrawMode(renderState, EDrawMode::Triangles);
             scene.setRenderStateDepthWrite(renderState, EDepthWrite::Disabled);
             scene.setRenderStateDepthFunc(renderState, EDepthFunc::GreaterEqual);
+            scene.setRenderStateScissorTest(renderState, EScissorTest::Enabled, { 10, 20, 30, 40 });
             scene.setRenderStateStencilFunc(renderState, EStencilFunc::NotEqual, 12u, 0xAA);
             scene.setRenderStateStencilOps(renderState, EStencilOp::Increment, EStencilOp::IncrementWrap, EStencilOp::Decrement);
             const ColorWriteMask colorMask = EColorWriteFlag_Red | EColorWriteFlag_Blue;
@@ -273,6 +274,9 @@ namespace ramses_internal
             EXPECT_EQ(EDrawMode::Triangles               , rs.drawMode);
             EXPECT_EQ(EDepthFunc::GreaterEqual           , rs.depthFunc);
             EXPECT_EQ(EDepthWrite::Disabled              , rs.depthWrite);
+            EXPECT_EQ(EScissorTest::Enabled              , rs.scissorTest);
+            const RenderState::ScissorRegion scissorRegion{ 10, 20, 30u, 40u };
+            EXPECT_EQ(scissorRegion                      , rs.scissorRegion);
             EXPECT_EQ(EStencilFunc::NotEqual             , rs.stencilFunc);
             EXPECT_EQ(12u                                , rs.stencilRefValue);
             EXPECT_EQ(0xAA                               , rs.stencilMask);

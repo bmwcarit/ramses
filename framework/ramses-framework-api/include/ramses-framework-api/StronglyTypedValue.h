@@ -10,6 +10,8 @@
 #define RAMSES_STRONGLYTYPEDVALUE_H
 
 #include "ramses-framework-api/APIExport.h"
+#include <functional>
+#include <type_traits>
 
 namespace ramses
 {
@@ -93,8 +95,29 @@ namespace ramses
             return m_value != other.m_value;
         }
 
+        static_assert(std::is_arithmetic<BaseType>::value || std::is_pointer<BaseType>::value, "expected arithmetic or pointer basetype");
+
     private:
         BaseType m_value;
+    };
+}
+
+namespace std
+{
+    /// Hasher for StronglyTypedValue for use in STL hash maps
+    template <typename _BaseType, typename _UniqueId>
+    struct hash<ramses::StronglyTypedValue<_BaseType, _UniqueId>>
+    {
+    public:
+        /**
+        * @brief Hasher implementation
+        * @param v Value to be hashed
+        * @returns Hash usable in STL hash maps.
+        */
+        size_t operator()(const ramses::StronglyTypedValue<_BaseType, _UniqueId>& v) const
+        {
+            return static_cast<size_t>(hash<_BaseType>()(v.getValue()));
+        }
     };
 }
 

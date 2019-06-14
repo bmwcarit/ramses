@@ -68,7 +68,7 @@ namespace ramses_internal
         {
             m_device.activateRenderTarget(m_framebuffer);
             m_device.cullMode(ECullMode::Disabled);
-            m_device.enableScissorTest(false);
+            m_device.scissorTest(EScissorTest::Disabled, {});
             m_device.depthFunc(EDepthFunc::Disabled);
             m_device.depthWrite(EDepthWrite::Disabled);
             m_device.colorMask(true, true, true, true);

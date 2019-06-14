@@ -540,6 +540,8 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthStencilA
     EXPECT_CALL(renderer.deviceMock, colorMask(true, true, true, true));
     EXPECT_CALL(renderer.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
     EXPECT_CALL(renderer.deviceMock, depthWrite(EDepthWrite::Enabled));
+    RenderState::ScissorRegion scissorRegion{};
+    EXPECT_CALL(renderer.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
     EXPECT_CALL(renderer.deviceMock, clear(_));
     resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, false);
 
@@ -576,12 +578,15 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithDoubleBuffering)
     EXPECT_CALL(renderer.deviceMock, colorMask(true, true, true, true));
     EXPECT_CALL(renderer.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
     EXPECT_CALL(renderer.deviceMock, depthWrite(EDepthWrite::Enabled));
+    RenderState::ScissorRegion scissorRegion{};
+    EXPECT_CALL(renderer.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
     EXPECT_CALL(renderer.deviceMock, clear(_));
 
     EXPECT_CALL(renderer.deviceMock, activateRenderTarget(offscreenBufferDeviceHandle2));
     EXPECT_CALL(renderer.deviceMock, colorMask(true, true, true, true));
     EXPECT_CALL(renderer.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
     EXPECT_CALL(renderer.deviceMock, depthWrite(EDepthWrite::Enabled));
+    EXPECT_CALL(renderer.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
     EXPECT_CALL(renderer.deviceMock, clear(_));
     EXPECT_CALL(renderer.deviceMock, pairRenderTargetsForDoubleBuffering(_, _));
     resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, true);
@@ -604,6 +609,8 @@ TEST_F(ARendererResourceManager, CanUnloadOffscreenBuffer)
     EXPECT_CALL(renderer.deviceMock, colorMask(true, true, true, true));
     EXPECT_CALL(renderer.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
     EXPECT_CALL(renderer.deviceMock, depthWrite(EDepthWrite::Enabled));
+    RenderState::ScissorRegion scissorRegion{};
+    EXPECT_CALL(renderer.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
     EXPECT_CALL(renderer.deviceMock, clear(_));
     resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, false);
 
@@ -623,6 +630,8 @@ TEST_F(ARendererResourceManager, CanUnloadDoubleBufferedOffscreenBuffer)
     EXPECT_CALL(renderer.deviceMock, colorMask(true, true, true, true)).Times(2u);
     EXPECT_CALL(renderer.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f })).Times(2u);
     EXPECT_CALL(renderer.deviceMock, depthWrite(EDepthWrite::Enabled)).Times(2u);
+    RenderState::ScissorRegion scissorRegion{};
+    EXPECT_CALL(renderer.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion)).Times(2u);
     EXPECT_CALL(renderer.deviceMock, clear(_)).Times(2u);
     EXPECT_CALL(renderer.deviceMock, pairRenderTargetsForDoubleBuffering(_, _));
     resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, true);

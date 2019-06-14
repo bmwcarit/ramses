@@ -13,7 +13,6 @@
 #include "ramses-text/Freetype2Headers.h"
 #include "ramses-text-api/Glyph.h"
 #include "ramses-text/FontData.h"
-#include "ramses-text/CommonHashers.h"
 #include <unordered_map>
 
 namespace ramses

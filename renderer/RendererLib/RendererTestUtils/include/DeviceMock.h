@@ -59,11 +59,10 @@ namespace ramses_internal
         MOCK_METHOD1(depthFunc, void(EDepthFunc));
         MOCK_METHOD1(depthWrite, void(EDepthWrite));
         MOCK_METHOD3(stencilFunc, void(EStencilFunc, UInt8, UInt8));
+        MOCK_METHOD2(scissorTest, void(EScissorTest, const RenderState::ScissorRegion&));
         MOCK_METHOD3(stencilOp, void(EStencilOp, EStencilOp, EStencilOp));
         MOCK_METHOD1(drawMode, void(EDrawMode));
         MOCK_METHOD4(setViewport, void(UInt32, UInt32, UInt32, UInt32));
-        MOCK_METHOD1(enableScissorTest, void(Bool));
-        MOCK_METHOD4(setScissorRegion, void(UInt32, UInt32, UInt32, UInt32));
         MOCK_METHOD7(setTextureSampling, void(DataFieldHandle, EWrapMethod, EWrapMethod, EWrapMethod, ESamplingMethod, ESamplingMethod, UInt32));
 
         MOCK_METHOD2(allocateVertexBuffer, DeviceResourceHandle(EDataType, UInt32));

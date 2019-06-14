@@ -36,6 +36,7 @@ private:
         RenderStateTest_StencilTest1,
         RenderStateTest_StencilTest2,
         RenderStateTest_StencilTest3,
+        RenderStateTest_ScissorTest,
 
         AppearanceTest_RedTriangles,
         AppearanceTest_GreenTriangles,

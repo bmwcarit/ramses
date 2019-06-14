@@ -88,7 +88,7 @@ void TextLayoutDemo::addColoredBox(ramses::Node& parent, float x, float y, float
     geometry->setInputBuffer(m_colorQuadEffectPositionsInput, m_quadVertices);
 
     ramses::Appearance* quadAppearance = m_scene.createAppearance(m_colorQuadEffect, "quad appearance");
-    quadAppearance->setDepthWrite(false);//text must be able to overwrite existing quad pixels
+    quadAppearance->setDepthWrite(ramses::EDepthWrite_Disabled);//text must be able to overwrite existing quad pixels
     quadAppearance->setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
     quadAppearance->setBlendingFactors(ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha, ramses::EBlendFactor_One, ramses::EBlendFactor_One);
 

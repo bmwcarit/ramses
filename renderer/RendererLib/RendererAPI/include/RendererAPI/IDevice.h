@@ -15,6 +15,7 @@
 #include "SceneAPI/RenderState.h"
 #include "SceneAPI/EDataType.h"
 #include "Resource/TextureMetaInfo.h"
+#include "Math3d/Quad.h"
 
 namespace ramses_internal
 {
@@ -76,12 +77,11 @@ namespace ramses_internal
         virtual void cullMode            (ECullMode mode) = 0;
         virtual void depthFunc           (EDepthFunc func) = 0;
         virtual void depthWrite          (EDepthWrite flag) = 0;
+        virtual void scissorTest         (EScissorTest flag, const RenderState::ScissorRegion& region) = 0;
         virtual void stencilFunc         (EStencilFunc func, UInt8 ref, UInt8 mask) = 0;
         virtual void stencilOp           (EStencilOp sfail, EStencilOp dpfail, EStencilOp dppass) = 0;
         virtual void drawMode            (EDrawMode mode) = 0;
         virtual void setViewport         (UInt32 x, UInt32 y, UInt32 width, UInt32 height) = 0;
-        virtual void enableScissorTest   (Bool flag) = 0;
-        virtual void setScissorRegion    (UInt32 x, UInt32 y, UInt32 width, UInt32 height) = 0;
         virtual void setTextureSampling  (DataFieldHandle field, EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod minSampling, ESamplingMethod magSampling, UInt32 anisotropyLevel) = 0;
 
         // resources

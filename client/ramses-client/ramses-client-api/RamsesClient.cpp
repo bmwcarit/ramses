@@ -90,11 +90,6 @@ namespace ramses
         return status;
     }
 
-    const char* RamsesClient::getStatusMessage(status_t status) const
-    {
-        return impl.getStatusMessage(status);
-    }
-
     const FloatArray* RamsesClient::createConstFloatArray(uint32_t count, const float* arrayData, resourceCacheFlag_t cacheFlag, const char* name)
     {
         const FloatArray* arr = impl.createConstFloatArray(count, arrayData, cacheFlag, name);

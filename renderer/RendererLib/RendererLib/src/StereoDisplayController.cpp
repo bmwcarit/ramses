@@ -62,6 +62,7 @@ namespace ramses_internal
             device.colorMask(true, true, true, true);
             device.clearColor({ 0.f, 0.f, 0.f, 1.f });
             device.depthWrite(EDepthWrite::Enabled);
+            device.scissorTest(EScissorTest::Disabled, {});
             device.clear(EClearFlags_All);
         }
     }

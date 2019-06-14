@@ -101,7 +101,7 @@ int main(int argc, const char* argv[])
                 ramses::Scene* scene = fileLoadingScene.getCreatedScene();
                 scene->publish();
 
-                while (displayManager.getSceneState(sceneId) != ramses_display_manager::DisplayManager::ESceneState::Rendered)
+                while (displayManager.getLastReportedSceneState(sceneId) != ramses_display_manager::SceneState::Rendered)
                 {
                     renderer.doOneLoop();
                     displayManager.dispatchAndFlush();
@@ -126,7 +126,7 @@ int main(int argc, const char* argv[])
 
                 clientScene.publish();
                 clientScene.flush();
-                while (displayManager.getSceneState(sceneId) != ramses_display_manager::DisplayManager::ESceneState::Rendered)
+                while (displayManager.getLastReportedSceneState(sceneId) != ramses_display_manager::SceneState::Rendered)
                 {
                     renderer.doOneLoop();
                     displayManager.dispatchAndFlush();

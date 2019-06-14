@@ -519,6 +519,8 @@ protected:
             EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, colorMask(true, true, true, true)).Times(expectationTimes);
             EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f })).Times(expectationTimes);
             EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, depthWrite(EDepthWrite::Enabled)).Times(expectationTimes);
+            RenderState::ScissorRegion scissorRegion{};
+            EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion)).Times(expectationTimes);
             EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, clear(_)).Times(expectationTimes);
         }
     }

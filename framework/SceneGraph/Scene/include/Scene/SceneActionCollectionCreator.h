@@ -72,6 +72,7 @@ namespace ramses_internal
         void setRenderStateDrawMode(RenderStateHandle stateHandle, EDrawMode drawMode);
         void setRenderStateDepthFunc(RenderStateHandle stateHandle, EDepthFunc func);
         void setRenderStateDepthWrite(RenderStateHandle stateHandle, EDepthWrite flag);
+        void setRenderStateScissorTest(RenderStateHandle stateHandle, EScissorTest flag, const RenderState::ScissorRegion& region);
         void setRenderStateStencilFunc(RenderStateHandle stateHandle, EStencilFunc func, UInt8 ref, UInt8 mask);
         void setRenderStateStencilOps(RenderStateHandle stateHandle, EStencilOp sfail, EStencilOp dpfail, EStencilOp dppass);
         void setRenderStateColorWriteMask(RenderStateHandle stateHandle, ColorWriteMask colorMask);

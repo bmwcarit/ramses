@@ -87,11 +87,6 @@ namespace ramses
         return impl.getLoopMode();
     }
 
-    const char* RamsesRenderer::getStatusMessage(status_t status) const
-    {
-        return impl.getStatusMessage(status);
-    }
-
     displayId_t RamsesRenderer::createDisplay(const DisplayConfig& config)
     {
         const displayId_t displayId = impl.createDisplay(config);

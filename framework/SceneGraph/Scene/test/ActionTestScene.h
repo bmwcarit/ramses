@@ -55,6 +55,7 @@ namespace ramses_internal
         virtual void                        setRenderStateDrawMode                (RenderStateHandle stateHandle, EDrawMode drawMode) override;
         virtual void                        setRenderStateDepthFunc               (RenderStateHandle stateHandle, EDepthFunc func) override;
         virtual void                        setRenderStateDepthWrite              (RenderStateHandle stateHandle, EDepthWrite flag) override;
+        virtual void                        setRenderStateScissorTest             (RenderStateHandle stateHandle, EScissorTest flag, const RenderState::ScissorRegion& region) override;
         virtual void                        setRenderStateStencilFunc             (RenderStateHandle stateHandle, EStencilFunc func, UInt8 ref, UInt8 mask) override;
         virtual void                        setRenderStateStencilOps              (RenderStateHandle stateHandle, EStencilOp sfail, EStencilOp dpfail, EStencilOp dppass) override;
         virtual void                        setRenderStateColorWriteMask          (RenderStateHandle stateHandle, ColorWriteMask colorMask) override;

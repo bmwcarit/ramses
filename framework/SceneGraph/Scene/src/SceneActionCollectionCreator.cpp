@@ -327,6 +327,17 @@ namespace ramses_internal
         collection.write(func);
     }
 
+    void SceneActionCollectionCreator::setRenderStateScissorTest(RenderStateHandle stateHandle, EScissorTest flag, const RenderState::ScissorRegion& region)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_SetStateScissorTest);
+        collection.write(stateHandle);
+        collection.write(flag);
+        collection.write(region.x);
+        collection.write(region.y);
+        collection.write(region.width);
+        collection.write(region.height);
+    }
+
     void SceneActionCollectionCreator::setRenderStateCullMode(RenderStateHandle stateHandle, ECullMode cullMode)
     {
         collection.beginWriteSceneAction(ESceneActionId_SetStateCullMode);
@@ -1101,6 +1112,10 @@ namespace ramses_internal
     {
         collection.beginWriteSceneAction(ESceneActionId_CompoundState);
         collection.write(handle);
+        collection.write(rs.scissorRegion.x);
+        collection.write(rs.scissorRegion.y);
+        collection.write(rs.scissorRegion.width);
+        collection.write(rs.scissorRegion.height);
         collection.write(rs.blendFactorSrcColor);
         collection.write(rs.blendFactorDstColor);
         collection.write(rs.blendFactorSrcAlpha);
@@ -1111,6 +1126,7 @@ namespace ramses_internal
         collection.write(rs.drawMode);
         collection.write(rs.depthWrite);
         collection.write(rs.depthFunc);
+        collection.write(rs.scissorTest);
         collection.write(rs.stencilFunc);
         collection.write(rs.stencilRefValue);
         collection.write(rs.stencilMask);

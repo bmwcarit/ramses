@@ -92,6 +92,7 @@ namespace ramses_internal
 
         CachedState < DeviceResourceHandle >    shaderDeviceHandle;
         CachedState < DeviceResourceHandle >    indexBufferDeviceHandle;
+        ScissorState                            scissorState;
         CachedState < DepthStencilState >       depthStencilState;
         CachedState < BlendState >              blendState;
         CachedState < RasterizerState >         rasterizerState;

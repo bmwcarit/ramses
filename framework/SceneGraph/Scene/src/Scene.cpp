@@ -555,6 +555,13 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
+    void ramses_internal::SceneT<MEMORYPOOL>::setRenderStateScissorTest(RenderStateHandle stateHandle, EScissorTest flag, const RenderState::ScissorRegion& region)
+    {
+        m_states.getMemory(stateHandle)->scissorTest = flag;
+        m_states.getMemory(stateHandle)->scissorRegion = region;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
     void SceneT<MEMORYPOOL>::setRenderStateStencilFunc(RenderStateHandle stateHandle, EStencilFunc func, UInt8 ref, UInt8 mask)
     {
         RenderState& state = *m_states.getMemory(stateHandle);

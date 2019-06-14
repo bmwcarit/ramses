@@ -98,9 +98,9 @@ namespace ramses_internal
             m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
             m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
-            m_redTriangle.GetAppearance().setDepthWrite(false);
-            m_greenTriangle.GetAppearance().setDepthWrite(false);
-            m_blueTriangle.GetAppearance().setDepthWrite(false);
+            m_redTriangle.GetAppearance().setDepthWrite(ramses::EDepthWrite_Disabled);
+            m_greenTriangle.GetAppearance().setDepthWrite(ramses::EDepthWrite_Disabled);
+            m_blueTriangle.GetAppearance().setDepthWrite(ramses::EDepthWrite_Disabled);
             addMeshNodeToDefaultRenderGroup(*m_meshNode1, 99);
             addMeshNodeToDefaultRenderGroup(*m_meshNode2, -1);
             addMeshNodeToDefaultRenderGroup(*m_meshNode3, 1);
@@ -248,6 +248,17 @@ namespace ramses_internal
             m_redTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation_Decrement, ramses::EStencilOperation_Decrement, ramses::EStencilOperation_Decrement);
             m_blueTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc_GreaterEqual, 0, 0xff);
             m_blueTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation_Increment, ramses::EStencilOperation_Increment, ramses::EStencilOperation_Increment);
+            m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
+            m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
+            m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
+            addMeshNodeToDefaultRenderGroup(*m_meshNode1, 0);
+            addMeshNodeToDefaultRenderGroup(*m_meshNode2, 1);
+            addMeshNodeToDefaultRenderGroup(*m_meshNode3, 2);
+            break;
+        case SCISSOR_TEST:
+            m_greenTriangle.GetAppearance().setScissorTest(ramses::EScissorTest_Enabled, 90, 50, 50u, 150u);
+            m_redTriangle.GetAppearance().setScissorTest(ramses::EScissorTest_Enabled, 90, 50, 50u, 150u);
+            m_blueTriangle.GetAppearance().setScissorTest(ramses::EScissorTest_Enabled, 100, 50, 50u, 100u);
             m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
             m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());

@@ -156,6 +156,12 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
+    void ActionTestScene::setRenderStateScissorTest(RenderStateHandle stateHandle, EScissorTest flag, const RenderState::ScissorRegion& region)
+    {
+        m_actionCollector.setRenderStateScissorTest(stateHandle, flag, region);
+        flushPendingSceneActions();
+    }
+
     void ActionTestScene::setRenderStateStencilFunc(RenderStateHandle stateHandle, EStencilFunc func, UInt8 ref, UInt8 mask)
     {
         m_actionCollector.setRenderStateStencilFunc(stateHandle, func, ref, mask);

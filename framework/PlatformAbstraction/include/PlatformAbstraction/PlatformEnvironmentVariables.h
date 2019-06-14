@@ -18,6 +18,7 @@ namespace ramses_internal
     {
     public:
         static Bool get(const String& key, String& value);
+        static bool HasEnvVar(const String& key);
 
         static void SetEnvVar(const String& key, const String& value);
         static inline void UnsetEnvVar(const String& key);
@@ -38,6 +39,11 @@ namespace ramses_internal
         value = env;
         return (0 != env);
 #endif
+    }
+
+    inline bool PlatformEnvironmentVariables::HasEnvVar(const String& key)
+    {
+        return getenv(key.c_str()) != nullptr;
     }
 
     inline

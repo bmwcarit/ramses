@@ -33,4 +33,10 @@ namespace ramses
     {
         return impl.getValidationReport(severity);
     }
+
+    const char* StatusObject::getStatusMessage(status_t status) const
+    {
+        return impl.getStatusMessage(status);
+    }
+
 }
