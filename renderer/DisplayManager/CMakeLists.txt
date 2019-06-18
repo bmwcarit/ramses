@@ -18,6 +18,7 @@ ACME_MODULE(
     #==========================================================================
     # files of this module
     #==========================================================================
+    INCLUDE_BASE            include
     FILES_PRIVATE_HEADER    include/DisplayManager/*.h
     FILES_SOURCE            src/*.cpp
 
