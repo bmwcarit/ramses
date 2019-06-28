@@ -20,6 +20,7 @@ namespace ramses_internal
         , m_eglBindWaylandDisplayWL(nullptr)
         , m_eglUnbindWaylandDisplayWL(nullptr)
         , m_extensionsSupported(false)
+        , m_dmabufExtensionsSupported(false)
     {
         Init();
     }
@@ -32,6 +33,7 @@ namespace ramses_internal
         , m_eglBindWaylandDisplayWL(nullptr)
         , m_eglUnbindWaylandDisplayWL(nullptr)
         , m_extensionsSupported(false)
+        , m_dmabufExtensionsSupported(false)
     {
         Init();
     }
@@ -61,6 +63,13 @@ namespace ramses_internal
             assert(m_eglUnbindWaylandDisplayWL != nullptr);
 
             m_extensionsSupported = true;
+        }
+
+        if (CheckExtensionAvailable(glExtensions, "GL_OES_EGL_image") &&
+            CheckExtensionAvailable(eglExtensions, "EGL_KHR_image_base") &&
+            CheckExtensionAvailable(eglExtensions, "EGL_EXT_image_dma_buf_import"))
+        {
+            m_dmabufExtensionsSupported = true;
         }
     }
 
@@ -149,5 +158,10 @@ namespace ramses_internal
     bool WaylandEGLExtensionProcs::areExtensionsSupported()const
     {
         return m_extensionsSupported;
+    }
+
+    bool WaylandEGLExtensionProcs::areDmabufExtensionsSupported() const
+    {
+        return m_dmabufExtensionsSupported;
     }
 }

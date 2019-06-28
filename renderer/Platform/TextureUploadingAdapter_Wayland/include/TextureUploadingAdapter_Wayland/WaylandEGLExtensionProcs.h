@@ -38,6 +38,7 @@ namespace ramses_internal
         EGLBoolean eglUnbindWaylandDisplayWL(wl_display* waylandDisplay) const;
 
         bool areExtensionsSupported()const;
+        bool areDmabufExtensionsSupported()const;
 
     private:
 
@@ -54,6 +55,7 @@ namespace ramses_internal
         PFNEGLUNBINDWAYLANDDISPLAYWL m_eglUnbindWaylandDisplayWL;
 
         bool m_extensionsSupported;
+        bool m_dmabufExtensionsSupported;
     };
 }
 

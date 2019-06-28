@@ -16,6 +16,7 @@
 #include "EmbeddedCompositor_Wayland/WaylandIVIApplicationGlobal.h"
 #include "EmbeddedCompositor_Wayland/IEmbeddedCompositor_Wayland.h"
 #include "EmbeddedCompositor_Wayland/IWaylandResource.h"
+#include "EmbeddedCompositor_Wayland/LinuxDmabufGlobal.h"
 #include "Collections/HashMap.h"
 
 namespace ramses_internal
@@ -92,6 +93,7 @@ namespace ramses_internal
         WaylandCompositorGlobal     m_compositorGlobal;
         WaylandShellGlobal          m_shellGlobal;
         WaylandIVIApplicationGlobal m_iviApplicationGlobal;
+        LinuxDmabufGlobal           m_linuxDmabufGlobal;
 
         typedef std::vector<IWaylandSurface*> WaylandSurfaces;
         WaylandSurfaces m_surfaces;
