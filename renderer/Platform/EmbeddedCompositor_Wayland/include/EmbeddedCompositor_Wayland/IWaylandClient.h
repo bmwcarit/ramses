@@ -8,6 +8,9 @@
 #ifndef RAMSES_IWAYLANDCLIENT_H
 #define RAMSES_IWAYLANDCLIENT_H
 
+// For pid_t, uid_t, gid_t
+#include <unistd.h>
+
 namespace ramses_internal
 {
     class IWaylandResource;
