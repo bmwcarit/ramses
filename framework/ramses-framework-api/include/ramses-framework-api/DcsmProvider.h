@@ -26,31 +26,32 @@ namespace ramses
     {
     public:
         /**
-         * @brief Assigns a ramses scene ID to a contentID and category and announces the
-         *        availability of that content to listening consumers.
+         * @brief Assigns a ramses scene ID to a contentID and category and offers
+         *        that content to listening consumers. Should only be called if content
+         *        could and should currently be shown.
          *        The ramses scene belonging to the scene ID must not exist yet.
          *
-         * @param contentID The ID of the content to be registered
+         * @param contentID The ID of the content to be offered
          * @param category The category the content is made for
          * @param scene The ramses scene ID containing the content.
          * @return StatusOK for success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().
          */
-        status_t registerRamsesContent(ContentID contentID, Category category, sceneId_t scene);
+        status_t offerContent(ContentID contentID, Category category, sceneId_t scene);
 
         /**
-         * @brief Requests that a content can be unregistered. A successful request
-         *        will trigger a call to contentUnregistered() in the handler.
+         * @brief Request to stop offering a content. A successful request
+         *        will trigger a call to stopOfferAccepted in the handler.
          *
-         * @param contentID The ID of the content to be unregistered.
+         * @param contentID The ID of the content to be stopped offering.
          * @return StatusOK for a successful request, otherwise the returned status
          *         can be used to resolve error message using getStatusMessage().
          */
-        status_t requestUnregisterContent(ContentID contentID);
+        status_t requestStopOfferContent(ContentID contentID);
 
         /**
          * @brief Marks the content ready for displaying. This function might be
-         *        called any time after registerRamsesContent().
+         *        called any time after offerContent().
          *        A connected DcsmConsumer might request a content to be marked as
          *        ready, resulting in a call to contentReadyRequest() in the event
          *        handler (see dispatchEvents).
@@ -65,15 +66,17 @@ namespace ramses
         status_t markContentReady(ContentID contentID);
 
         /**
-         * @brief Requests a connected DcsmConsumer to switch to this content.
+         * @brief Requests an assigned DcsmConsumer to switch to/focus this content within a category.
          *        This function must not be called to enable a consumer to use this
          *        content, it is only needed when the provider side wants to influence
-         *        the consumer application logic in what to content to use.
+         *        the consumer application logic concerning which content to use.
+         *
+         * @param contentID The ID of the content to request focus for
          *
          * @return StatusOK for success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().
          */
-        status_t requestContentShown(ContentID contentID);
+        status_t requestContentFocus(ContentID contentID);
 
         /**
          * @brief Communication from DcsmConsumer will be handled by a
@@ -105,9 +108,23 @@ namespace ramses
          */
         class DcsmProviderImpl& impl;
 
-        DcsmProvider()                    = delete;
-        DcsmProvider(const DcsmProvider&) = delete;
-        DcsmProvider& operator=(const DcsmProvider&) = delete;
+        /**
+         * @brief Deleted default constructor
+         */
+        DcsmProvider() = delete;
+
+        /**
+         * @brief Deleted copy constructor
+         * @param other unused
+         */
+        DcsmProvider(const DcsmProvider& other) = delete;
+
+        /**
+         * @brief Deleted copy assignment
+         * @param other unused
+         * @return unused
+         */
+        DcsmProvider& operator=(const DcsmProvider& other) = delete;
     };
 }
 

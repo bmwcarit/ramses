@@ -325,13 +325,7 @@ public:
     }
 };
 
-//INSTANTIATE_TEST_CASE_P(ReachTargetStateWithUnpublish, ADisplayManagerWithRenderer_ReachTargetStateWithUnpublish, Range(0, ADisplayManagerWithRenderer_ReachTargetStateWithUnpublish::NumCombinations));
-// TODO reenable full set of combinations after fix!!!
-INSTANTIATE_TEST_CASE_P(ReachTargetStateWithUnpublish1, ADisplayManagerWithRenderer_ReachTargetStateWithUnpublish, Range(0, 33));
-INSTANTIATE_TEST_CASE_P(ReachTargetStateWithUnpublish2, ADisplayManagerWithRenderer_ReachTargetStateWithUnpublish, Range(36, 37));
-INSTANTIATE_TEST_CASE_P(ReachTargetStateWithUnpublish3, ADisplayManagerWithRenderer_ReachTargetStateWithUnpublish, Range(40, 41));
-INSTANTIATE_TEST_CASE_P(ReachTargetStateWithUnpublish4, ADisplayManagerWithRenderer_ReachTargetStateWithUnpublish, Range(44, 45));
-INSTANTIATE_TEST_CASE_P(ReachTargetStateWithUnpublish5, ADisplayManagerWithRenderer_ReachTargetStateWithUnpublish, Range(48, ADisplayManagerWithRenderer_ReachTargetStateWithUnpublish::NumCombinations));
+INSTANTIATE_TEST_CASE_P(ReachTargetStateWithUnpublish, ADisplayManagerWithRenderer_ReachTargetStateWithUnpublish, Range(0, ADisplayManagerWithRenderer_ReachTargetStateWithUnpublish::NumCombinations));
 
 TEST_P(ADisplayManagerWithRenderer_ReachTargetStateWithUnpublish, unpublishAtEveryStepWhileReachingEveryState)
 {

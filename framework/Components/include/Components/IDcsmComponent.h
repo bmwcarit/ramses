@@ -23,13 +23,13 @@ namespace ramses_internal
         virtual bool setLocalConsumerAvailability(bool available) = 0;
         virtual bool setLocalProviderAvailability(bool available) = 0;
 
-        virtual bool sendRegisterContent(ContentID contentID, Category) = 0;
-        virtual bool sendContentAvailable(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) = 0;
-        virtual bool sendCategoryContentSwitchRequest(const Guid& to, ContentID contentID) = 0;
-        virtual bool sendRequestUnregisterContent(ContentID contentID) = 0;
+        virtual bool sendOfferContent(ContentID contentID, Category) = 0;
+        virtual bool sendContentReady(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) = 0;
+        virtual bool sendContentFocusRequest(ContentID contentID) = 0;
+        virtual bool sendRequestStopOfferContent(ContentID contentID) = 0;
 
         virtual bool sendCanvasSizeChange(ContentID contentID, SizeInfo sizeInfo, AnimationInformation ai) = 0;
-        virtual bool sendContentStatusChange(ContentID contentID, EDcsmStatus status, AnimationInformation ai) = 0;
+        virtual bool sendContentStateChange(ContentID contentID, EDcsmState status, SizeInfo sizeInfo, AnimationInformation ai) = 0;
 
         virtual bool dispatchProviderEvents(IDcsmProviderEventHandler& handler) = 0;
         virtual bool dispatchConsumerEvents(ramses::IDcsmConsumerEventHandler& handler) = 0;

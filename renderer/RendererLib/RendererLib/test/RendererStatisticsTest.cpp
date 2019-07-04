@@ -330,20 +330,22 @@ TEST_F(ARendererStatistics, tracksSceneResourceUploads)
     EXPECT_FALSE(logOutputContains("RSUploaded"));
 }
 
-TEST_F(ARendererStatistics, tracksShaderCompilation)
+TEST_F(ARendererStatistics, tracksShaderCompilationAndTimes)
 {
-    stats.shaderCompiled();
+    stats.shaderCompiled(2u);
     stats.frameFinished(0u);
     EXPECT_TRUE(logOutputContains("shadersCompiled 1"));
+    EXPECT_TRUE(logOutputContains("for total ms:0"));
 
     stats.reset();
     EXPECT_FALSE(logOutputContains("shadersCompiled"));
 
-    stats.shaderCompiled();
-    stats.shaderCompiled();
-    stats.shaderCompiled();
+    stats.shaderCompiled(3000u);
+    stats.shaderCompiled(5000u);
+    stats.shaderCompiled(7000u);
     stats.frameFinished(0u);
     EXPECT_TRUE(logOutputContains("shadersCompiled 3"));
+    EXPECT_TRUE(logOutputContains("for total ms:15"));
 
     stats.reset();
     EXPECT_FALSE(logOutputContains("shadersCompiled"));
@@ -362,8 +364,8 @@ TEST_F(ARendererStatistics, confidenceTest_fullLogOutput)
 
         stats.clientResourceUploaded(2u);
         stats.clientResourceUploaded(77u);
-        stats.shaderCompiled();
-        stats.shaderCompiled();
+        stats.shaderCompiled(0u);
+        stats.shaderCompiled(1000u);
 
         stats.trackArrivedFlush(sceneId1, 123, 5, 3, 4);
         stats.flushBlocked(sceneId1);
@@ -397,6 +399,7 @@ TEST_F(ARendererStatistics, confidenceTest_fullLogOutput)
         EXPECT_TRUE(logOutputContains("], drawcallsPerFrame 25, numFrames 4"));
         EXPECT_TRUE(logOutputContains("clientResUploaded 2 (79 B)"));
         EXPECT_TRUE(logOutputContains("shadersCompiled 2"));
+        EXPECT_TRUE(logOutputContains("for total ms:1"));
         EXPECT_TRUE(logOutputContains("FB1: 3; OB11: 1 (intr: 1)"));
         EXPECT_TRUE(logOutputContains("FB2: 2"));
         EXPECT_TRUE(logOutputContains("Scene 11: rendered 2, framesFArrived 3, framesFApplied 1, framesFBlocked 2, maxFramesWithNoFApplied 2, maxFramesFBlocked 2, FArrived 3, FApplied 1, actions/F (123/123/123.000000), RC+/F (5/5/5.000000), RC-/F (3/3/3.000000), RS/F (4/4/4.000000), RSUploaded 2 (80 B)"));

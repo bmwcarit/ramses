@@ -14,6 +14,8 @@
 #include <PlatformAbstraction/PlatformTypes.h>
 #include "Utils/CommandLineParser.h"
 #include "Collections/StringOutputStream.h"
+#include "Math3d/Vector3.h"
+#include "InplaceStringTokenizer.h"
 
 namespace ramses_internal
 {
@@ -152,6 +154,7 @@ namespace ramses_internal
     typedef Argument<String>    ArgumentString;
     typedef Argument<UInt16>    ArgumentUInt16;
     typedef Argument<UInt32>    ArgumentUInt32;
+    typedef Argument<Vector3>    ArgumentVec3;
 
     template<>
     inline void Argument<Float>::interpretValue()
@@ -211,6 +214,33 @@ namespace ramses_internal
             if (value >= 0 && static_cast<unsigned long long>(value) <= std::numeric_limits<uint32_t>::max())
             {
                 m_value = static_cast<uint32_t>(value);
+            }
+        }
+    }
+
+    template<>
+    inline void Argument<Vector3>::interpretValue()
+    {
+        if (hasValue())
+        {
+            const auto& string = getUnconvertedString();
+
+            if (string.startsWith("[") && string.endsWith("]"))
+            {
+                auto withoutBrackets = string.substr(1, string.getLength() - 2);
+
+                size_t componentsFound = 0;
+                float components[3];
+                auto putComponentsToVector = [&](const char* vectorComponentAsString) {
+                    if(componentsFound < 3)
+                        components[componentsFound] = static_cast<Float>(atof(vectorComponentAsString));
+                    ++componentsFound;
+                };
+
+                InplaceStringTokenizer::TokenizeToCStrings(withoutBrackets, withoutBrackets.getLength(), ',', putComponentsToVector);
+
+                if (3 == componentsFound)
+                    memcpy(m_value.data, components, 3 * sizeof(float));
             }
         }
     }

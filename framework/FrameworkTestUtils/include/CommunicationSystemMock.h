@@ -46,13 +46,14 @@ namespace ramses_internal
         MOCK_METHOD2(sendInitializeScene, bool(const Guid& to, const SceneInfo& sceneInfo));
         MOCK_METHOD4(sendSceneActionList, uint64_t(const Guid& to, const SceneId& sceneId, const SceneActionCollection& actions, const uint64_t& actionListCounter));
 
-        MOCK_METHOD2(sendDcsmBroadcastRegisterContent, bool(ContentID contentID, Category));
-        MOCK_METHOD3(sendDcsmRegisterContent, bool(const Guid& to, ContentID contentID, Category));
-        MOCK_METHOD4(sendDcsmContentAvailable, bool(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor));
-        MOCK_METHOD2(sendDcsmCategoryContentSwitchRequest, bool(const Guid& to, ContentID contentID));
-        MOCK_METHOD1(sendDcsmBroadcastRequestUnregisterContent, bool(ContentID contentID));
+        MOCK_METHOD2(sendDcsmBroadcastOfferContent, bool(ContentID contentID, Category));
+        MOCK_METHOD3(sendDcsmOfferContent, bool(const Guid& to, ContentID contentID, Category));
+        MOCK_METHOD4(sendDcsmContentReady, bool(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor));
+        MOCK_METHOD2(sendDcsmContentFocusRequest, bool(const Guid& to, ContentID contentID));
+        MOCK_METHOD1(sendDcsmBroadcastRequestStopOfferContent, bool(ContentID contentID));
+        MOCK_METHOD1(sendDcsmBroadcastForceStopOfferContent, bool(ContentID contentID));
         MOCK_METHOD4(sendDcsmCanvasSizeChange, bool(const Guid& to, ContentID contentID, SizeInfo sizeinfo, AnimationInformation));
-        MOCK_METHOD4(sendDcsmContentStatusChange, bool(const Guid& to, ContentID contentID, EDcsmStatus status, AnimationInformation));
+        MOCK_METHOD5(sendDcsmContentStateChange, bool(const Guid& to, ContentID contentID, EDcsmState status, SizeInfo, AnimationInformation));
 
         MOCK_METHOD0(logConnectionInfo, void());
         MOCK_METHOD0(triggerLogMessageForPeriodicLog, void());

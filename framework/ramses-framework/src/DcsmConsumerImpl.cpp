@@ -30,7 +30,19 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t DcsmConsumerImpl::sendCanvasSizeChange(ContentID contentID, SizeInfo size, AnimationInformation animationInformation)
+    status_t DcsmConsumerImpl::assignContentToConsumer(ContentID contentID, SizeInfo size)
+    {
+        ramses_internal::SizeInfo riSize;
+        riSize.width = size.width;
+        riSize.height = size.height;
+
+        if (!m_component.sendContentStateChange(ramses_internal::ContentID(contentID.getValue()), ramses_internal::EDcsmState::Assigned,
+                                                riSize, ramses_internal::AnimationInformation{0, 0}))
+            return addErrorEntry("DcsmConsumer::sendContentStateChange caused by assignContentToConsumer failed");
+        return StatusOK;
+    }
+
+    status_t DcsmConsumerImpl::contentSizeChange(ContentID contentID, SizeInfo size, AnimationInformation animationInformation)
     {
         ramses_internal::SizeInfo riSize;
         riSize.width = size.width;
@@ -40,19 +52,47 @@ namespace ramses
         riAi.finishedTimeStamp = animationInformation.finishTime;
 
         if (!m_component.sendCanvasSizeChange(ramses_internal::ContentID(contentID.getValue()), riSize, riAi))
-            return addErrorEntry("DcsmConsumer::sendCanvasSizeChange failed");
+            return addErrorEntry("DcsmConsumer::sendContentSizeChange failed");
         return StatusOK;
     }
 
-    status_t DcsmConsumerImpl::sendContentStatusChange(ContentID contentID, EDcsmStatus status, AnimationInformation animationInformation)
+    status_t DcsmConsumerImpl::contentStateChange(ContentID contentID, EDcsmState state, AnimationInformation animationInformation)
     {
-        ramses_internal::EDcsmStatus riStatus = static_cast<ramses_internal::EDcsmStatus>(status);   // cast is allowed and tested
+        ramses_internal::EDcsmState riState;
+        switch (state)
+        {
+        case EDcsmState::Offered:
+            riState = ramses_internal::EDcsmState::Offered;
+            break;
+        case EDcsmState::Assigned:
+            riState = ramses_internal::EDcsmState::Assigned;
+            break;
+        case EDcsmState::Ready:
+            riState = ramses_internal::EDcsmState::Ready;
+            break;
+        case EDcsmState::Shown:
+            riState = ramses_internal::EDcsmState::Shown;
+            break;
+        default:
+            return addErrorEntry("DcsmConsumer::sendContentStatusChange failed with invalid EDcsmState");
+        }
         ramses_internal::AnimationInformation riAi;
         riAi.startTimeStamp = animationInformation.startTime;
         riAi.finishedTimeStamp = animationInformation.finishTime;
 
-        if (!m_component.sendContentStatusChange(ramses_internal::ContentID(contentID.getValue()), riStatus, riAi))
+        if (!m_component.sendContentStateChange(ramses_internal::ContentID(contentID.getValue()), riState, ramses_internal::SizeInfo{0, 0}, riAi))
             return addErrorEntry("DcsmConsumer::sendContentStatusChange failed");
         return StatusOK;
     }
+
+    status_t DcsmConsumerImpl::acceptStopOffer(ContentID contentID, AnimationInformation animationInformation)
+    {
+        ramses_internal::AnimationInformation riAi;
+        riAi.startTimeStamp = animationInformation.startTime;
+        riAi.finishedTimeStamp = animationInformation.finishTime;
+        if (!m_component.sendContentStateChange(ramses_internal::ContentID(contentID.getValue()), ramses_internal::EDcsmState::AcceptStopOffer, ramses_internal::SizeInfo{0, 0}, riAi))
+            return addErrorEntry("DcsmConsumer::sendAcceptStopOffer failed");
+        return StatusOK;
+    }
+
 }

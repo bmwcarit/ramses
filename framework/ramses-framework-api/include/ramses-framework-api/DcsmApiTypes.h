@@ -114,15 +114,15 @@ namespace ramses
      * @brief DCSM content states. Used to request a specific state from provider via
      *        DcsmConsumer::sendContentStatusChange.
      */
-    enum class EDcsmStatus
+    enum class EDcsmState
     {
-        /// Request content to be unregistered
-        Unregistered,
-        /// Request content to registered only state
-        Registered,
+        /// Release content to offered state, i.e. no longer assigned to consumer
+        Offered,
+        /// Request content to assigned only state
+        Assigned,
         /// Request content to be prepare to be shown at any time
         Ready,
-        /// Request content to be shown, i.e. actively updated
+        /// Request content in shown state, i.e. actively updated
         Shown,
     };
 }

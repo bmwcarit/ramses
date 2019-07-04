@@ -77,6 +77,11 @@ namespace ramses_internal
                 m_state.getDevice().scissorTest(EScissorTest::Disabled, {});
 
                 m_state.getDevice().clear(clearFlags);
+
+                //reset cached render states that were updated on device before clearing
+                m_state.depthStencilState.reset();
+                m_state.blendState.reset();
+                m_state.rasterizerState.reset();
             }
         }
 

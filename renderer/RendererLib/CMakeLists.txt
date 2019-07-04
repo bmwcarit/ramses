@@ -12,7 +12,8 @@ file(GLOB
 
 file(GLOB
     RAMSES_RENDERER_FILES_SOURCE
-    ramses-renderer-impl/src/*.cpp)
+    ramses-renderer-impl/src/*.cpp
+    ramses-renderer-impl/src/DisplayManager/*.cpp)
 
 
 add_library(ramses-renderer-api INTERFACE)
@@ -38,6 +39,7 @@ ACME_MODULE(
     # Not possible to solve now, without splitting in two libs (which is the correct solution)
     INCLUDE_BASE            ramses-renderer-impl/include
     FILES_PRIVATE_HEADER    ramses-renderer-impl/include/*.h
+                            ramses-renderer-impl/include/DisplayManager/*.h
     FILES_SOURCE            ${RAMSES_RENDERER_FILES_SOURCE}
 
     INCLUDE_BASE            RendererAPI/include
@@ -160,6 +162,7 @@ ACME_MODULE(
     # dependencies
     #==========================================================================
     DEPENDENCIES            ramses-renderer-lib
+                            ramses-client
                             ramses-gmock-main
                             RendererTestUtils
                             FrameworkTestUtils

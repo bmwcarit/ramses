@@ -140,4 +140,3 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
             if self.renderer.send_ramsh_command("scl", response_message=surfaceIdSearchRegEx, timeout=1):
                 return 1
         return 0
-

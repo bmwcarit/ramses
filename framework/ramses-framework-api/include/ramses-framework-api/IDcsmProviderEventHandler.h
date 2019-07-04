@@ -22,18 +22,18 @@ namespace ramses
     {
     public:
         /**
-         * @brief Called if a content was switched to not being shown.
+         * @brief Called if a content will be switched to be hidden.
          *
-         * @param contentID The ID of the hidden content
+         * @param contentID The ID of the content being hidden
          * @param animInfo animation information for hiding the content:
          *                 startTime: beginning of a potential animation
          *                 endTime: end of a potential animation and
          *                          time point when content gets hidden
          */
-        virtual void contentHidden(ContentID contentID, AnimationInformation animInfo) = 0;
+        virtual void contentHide(ContentID contentID, AnimationInformation animInfo) = 0;
 
         /**
-         * @brief Called if a content was switched to being shown.
+         * @brief Called if a content will be switched to shown.
          *
          * @param contentID The ID of the shown content
          * @param animInfo animation information for showing the content:
@@ -41,44 +41,61 @@ namespace ramses
          *                            time point when content gets shown
          *                 endTime: end of a potential animation
          */
-        virtual void contentShown(ContentID contentID, AnimationInformation animInfo) = 0;
+        virtual void contentShow(ContentID contentID, AnimationInformation animInfo) = 0;
 
         /**
-         * @brief Called after a content was being requested to be unregistered.
-         *        After animation is finished and content is hidden, content is
-         *        unregistered and the associated scene can be safely unpublished.
+         * @brief Called after a content was requested to no longer be offered.
+         *        After this function returns, content is no longer offered.
+         *        After the animation is finished, the associated scene can be
+         *        safely unpublished.
          *
-         * @param contentID The ID of the content to be unregistered
+         * @param contentID The ID of the content to be unoffered
          * @param animInfo animation information for hiding the content:
          *                 startTime: beginning of a potential animation
          *                 endTime: end of a potential animation and
          *                          time point when content gets hidden
          */
-        virtual void contentUnregistered(ContentID contentID, AnimationInformation animInfo) = 0;
+        virtual void stopOfferAccepted(ContentID contentID, AnimationInformation animInfo) = 0;
 
         /**
          * @brief Called after the rendering viewport for the content has been
-         *        changed. Will be called once after a DcsmConsumer signed up for
+         *        changed. Will be called once after a DcsmConsumer assigned itself for
          *        the content, and every time the consumer changes the rendering
          *        viewport size.
          *
-         * @param contentID The ID of the content to be unregistered
+         * @param contentID The ID of the content for which the viewport changes
          * @param sizeInfo the new viewport
          * @param animInfo animation information for resizing the content:
          *                 startTime: beginning of a potential animation
          *                 endTime: end of a potential animation and
          *                          time point when content has to have new size
          */
-        virtual void canvasSizeChanged(ContentID contentID, SizeInfo sizeInfo, AnimationInformation animInfo) = 0;
+        virtual void contentSizeChange(ContentID contentID, SizeInfo sizeInfo, AnimationInformation animInfo) = 0;
 
         /**
          * @brief Called after a DcsmConsumer requested the content and it has not
          *        been marked ready yet. After this function has been called,
          *        markContentReady() of the DcsmProvider shall be called.
          *
-         * @param contentID The ID of the content to be unregistered
+         * @param contentID The ID of the content to be marked as ready
          */
-        virtual void contentReadyRequest(ContentID contentID) = 0;
+        virtual void contentReadyRequested(ContentID contentID) = 0;
+
+        /**
+         * @brief Called after an assigned DcsmConsumer is no longer interested in
+         *        the content or the scene associated with it. After the animation
+         *        has been finished, the associated scene can be safely unpublished.
+         *        Note that the content has to be marked ready again after the call
+         *        of this callback, should a DcsmConsumer request it to be ready
+         *        again.
+         *
+         * @param animInfo animation information for resizing the content:
+         *                 startTime: beginning of a potential animation
+         *                 endTime: end of a potential animation and
+         *                          time point when content has to have new size
+         * @param contentID The ID of the content to be released
+         */
+        virtual void contentRelease(ContentID contentID, AnimationInformation animInfo) = 0;
 
         /**
          * @brief Destructor

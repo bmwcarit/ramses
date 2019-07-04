@@ -7,6 +7,7 @@
 #  -------------------------------------------------------------------------
 
 from tests.system_compositor_controller_base import system_compositor_controller_base
+from ramses_test_framework.ramses_test_extensions import ensureSystemCompositorRoundTrip
 
 # Tests if the system compositor controller can make a surface visible.
 class TestSystemCompositorController(system_compositor_controller_base.SystemCompositorControllerBase):
@@ -18,6 +19,7 @@ class TestSystemCompositorController(system_compositor_controller_base.SystemCom
         # Make ivi-gears No. 1 visible
         self.renderer.send_ramsh_command("scv {0} 1".format(self.testSurfaceIVIIds["wlClient1"]), waitForRendererConfirmation=True)
 
+        ensureSystemCompositorRoundTrip(self.renderer, self.testSurfaceIVIIds["wlClient1"])
         # Postcondition: renderer and gears visible
         self.validateScreenshot(self.renderer, "scc_red_gear_left_and_cube.png", useSystemCompositorForScreenshot=True)
 

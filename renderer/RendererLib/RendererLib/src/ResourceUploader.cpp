@@ -163,8 +163,11 @@ namespace ramses_internal
         if (!m_binaryShaderCache)
         {
             LOG_TRACE(CONTEXT_RENDERER, "ResourceUploader::queryBinaryShaderCacheAndUploadEffect: no binary shader cache present");
-            m_stats.shaderCompiled();
-            return device.uploadShader(effect);
+            auto steadyNow = std::chrono::steady_clock::now();
+            auto handle = device.uploadShader(effect);
+            int64_t steadyDiff = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - steadyNow).count();
+            m_stats.shaderCompiled(steadyDiff);
+            return handle;
         }
 
         if (m_binaryShaderCache->hasBinaryShader(hash))
@@ -192,8 +195,10 @@ namespace ramses_internal
         }
 
         // If this point is reached, we either have no cache or the cache was broken.
+        auto steadyNow = std::chrono::steady_clock::now();
         const DeviceResourceHandle sourceShaderHandle = device.uploadShader(effect);
-        m_stats.shaderCompiled();
+        int64_t steadyDiff = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - steadyNow).count();
+        m_stats.shaderCompiled(steadyDiff);
 
         if (sourceShaderHandle.isValid() && m_binaryShaderCache->shouldBinaryShaderBeCached(hash))
         {

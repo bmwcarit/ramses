@@ -196,8 +196,6 @@ ACME2_PROJECT(
                                 AUTO renderer/Platform/Platform_X11_EGL_ES_3_0
                                 AUTO renderer/Platform/Platform_Android_EGL_ES_3_0
 
-                                AUTO renderer/DisplayManager
-
                                 AUTO ramses-shared-lib
 
                                 AUTO renderer/ramses-renderer-main

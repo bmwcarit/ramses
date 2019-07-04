@@ -47,6 +47,7 @@ namespace ramses_internal
         EMessageId_DcsmContentAvailable,
         EMessageId_DcsmCategoryContentSwitchRequest,
         EMessageId_DcsmRequestUnregisterContent,
+        EMessageId_DcsmForceUnregisterContent,
     };
 
 #ifndef CreateNameForEnumID

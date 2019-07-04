@@ -218,6 +218,13 @@ namespace ramses_internal
 
         if (!resourcesToBeRetrievedFromProvider.empty())
         {
+            LOG_INFO_F(CONTEXT_FRAMEWORK, ([&](ramses_internal::StringOutputStream& sos) {
+                sos << "ResourceComponent::requestResourceAsynchronouslyFromFramework(provider " << providerID << ", requester " << requesterID
+                    << "): " << "request from network " << resourcesToBeRetrievedFromProvider.size() << " resources: ";
+                for (const auto& hash : resourcesToBeRetrievedFromProvider)
+                    sos << StringUtils::HexFromResourceContentHash(hash) << " ";
+                sos << "; ";
+            }));
             m_communicationSystem.sendRequestResources(providerID, resourcesToBeRetrievedFromProvider);
         }
 
@@ -226,23 +233,17 @@ namespace ramses_internal
 
             if (!resourcesLocallyAvailable.empty())
             {
-                sos << "locally available ";
+                sos << "locally available " << resourcesLocallyAvailable.size() << " resources: ";
                 for (const auto& hash : resourcesLocallyAvailable)
                     sos << StringUtils::HexFromResourceContentHash(hash) << " ";
                 sos << "; ";
             }
             if (!resourcesToBeLoaded.empty())
             {
-                sos << "load from file ";
+                sos << "load from file " << resourcesToBeLoaded.size() << " resources: ";
                 for (const auto& hash : resourcesToBeLoaded)
                     sos << StringUtils::HexFromResourceContentHash(hash) << " ";
                 sos << "; ";
-            }
-            if (!resourcesToBeRetrievedFromProvider.empty())
-            {
-                sos << "request from network ";
-                for (const auto& hash : resourcesToBeRetrievedFromProvider)
-                    sos << StringUtils::HexFromResourceContentHash(hash) << " ";
             }
         }));
 
@@ -334,6 +335,8 @@ namespace ramses_internal
     {
         ManagedResourceVector res;
         m_arrivedResources[requesterID].swap(res);
+        LOG_INFO(CONTEXT_FRAMEWORK, "ResourceComponent::popArrivedResources: " << res.size()
+            << " resources have arrived for requester " << requesterID);
         return res;
     }
 

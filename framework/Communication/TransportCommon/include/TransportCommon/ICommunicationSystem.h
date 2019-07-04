@@ -62,16 +62,17 @@ namespace ramses_internal
         virtual bool sendInitializeScene(const Guid& to, const SceneInfo& sceneInfo) = 0;
         virtual uint64_t sendSceneActionList(const Guid& to, const SceneId& sceneId, const SceneActionCollection& actions, const uint64_t& actionListCounter) = 0;
 
-        // dcsm client -> renderer
-        virtual bool sendDcsmBroadcastRegisterContent(ContentID contentID, Category) = 0;
-        virtual bool sendDcsmRegisterContent(const Guid& to, ContentID contentID, Category) = 0;
-        virtual bool sendDcsmContentAvailable(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) = 0;
-        virtual bool sendDcsmCategoryContentSwitchRequest(const Guid& to, ContentID contentID) = 0;
-        virtual bool sendDcsmBroadcastRequestUnregisterContent(ContentID contentID) = 0;
+        // dcsm provider -> consumer
+        virtual bool sendDcsmBroadcastOfferContent(ContentID contentID, Category) = 0;
+        virtual bool sendDcsmOfferContent(const Guid& to, ContentID contentID, Category) = 0;
+        virtual bool sendDcsmContentReady(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) = 0;
+        virtual bool sendDcsmContentFocusRequest(const Guid& to, ContentID contentID) = 0;
+        virtual bool sendDcsmBroadcastRequestStopOfferContent(ContentID contentID) = 0;
+        virtual bool sendDcsmBroadcastForceStopOfferContent(ContentID contentID) = 0;
 
-        // dcsm renderer -> client
+        // dcsm consumer -> provider
         virtual bool sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, SizeInfo sizeinfo, AnimationInformation) = 0;
-        virtual bool sendDcsmContentStatusChange(const Guid& to, ContentID contentID, EDcsmStatus status, AnimationInformation) = 0;
+        virtual bool sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, SizeInfo, AnimationInformation) = 0;
 
 
         // message limits configuration

@@ -23,6 +23,7 @@
 #include "Utils/StatisticCollection.h"
 #include "Ramsh/RamshDLT.h"
 #include "Components/DcsmComponent.h"
+#include "Components/LogDcsmInfo.h"
 
 namespace ramses_internal
 {
@@ -82,10 +83,11 @@ namespace ramses
         bool m_connected;
         const ramses_internal::ThreadWatchdogConfig m_threadWatchdogConfig;
         ramses_internal::ThreadingSystem m_threadStrategy;
-        ramses_internal::ResourceComponent resourceComponent;
-        ramses_internal::SceneGraphComponent scenegraphComponent;
+        ramses_internal::ResourceComponent m_resourceComponent;
+        ramses_internal::SceneGraphComponent m_scenegraphComponent;
         ramses_internal::DcsmComponent m_dcsmComponent;
         ramses_internal::LogConnectionInfo m_ramshCommandLogConnectionInformation;
+        ramses_internal::LogDcsmInfo m_ramshCommandLogDcsmInformation;
         std::unique_ptr<DcsmProvider> m_dcsmProvider;
         std::unique_ptr<DcsmConsumer> m_dcsmConsumer;
     };

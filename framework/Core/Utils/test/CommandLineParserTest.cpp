@@ -258,6 +258,30 @@ namespace ramses_internal
         EXPECT_TRUE(parser.getNonOptions().empty());
     }
 
+    TEST(CommandLineParserTest, Vec3Arguments)
+    {
+        const Char* params[] = { "myExe", "-correct", "[5,6,7]", "-noValue", "-overflow", "[6,7,8,9]", "-withoutParentheses", "5,6,7", "-wrong", "[5,6]", "-verywrong", "[5,6,7" };
+        CommandLineParser parser(12, params);
+
+        const Vector3 defaultValue(1, 2, 3);
+        const Vector3 correct           = ArgumentVec3(parser, "correct", "", defaultValue);
+        const Vector3 noValue           = ArgumentVec3(parser, "noValue", "", defaultValue);
+        const Vector3 overflow          = ArgumentVec3(parser, "overflow", "", defaultValue);
+        const Vector3 withoutParentheses= ArgumentVec3(parser, "withoutParentheses", "", defaultValue);
+        const Vector3 wrong             = ArgumentVec3(parser, "wrong", "", defaultValue);
+        const Vector3 verywrong         = ArgumentVec3(parser, "verywrong", "", defaultValue);
+
+        EXPECT_EQ(Vector3(5, 6, 7), correct);
+        EXPECT_EQ(defaultValue, noValue);
+        EXPECT_EQ(defaultValue, overflow);
+        EXPECT_EQ(defaultValue, withoutParentheses);
+        EXPECT_EQ(defaultValue, wrong);
+        EXPECT_EQ(defaultValue, verywrong);
+
+
+        EXPECT_TRUE(parser.getNonOptions().empty());
+    }
+
     TEST(CommandLineParserTest, DelayedParsingArgumentBool)
     {
         const Char* params[] = { "myExe", "-x"};

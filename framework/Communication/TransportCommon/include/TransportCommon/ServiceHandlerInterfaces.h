@@ -65,17 +65,18 @@ namespace ramses_internal
     public:
         virtual ~IDcsmProviderServiceHandler() {};
         virtual void handleCanvasSizeChange(ContentID contentID, SizeInfo sizeinfo, AnimationInformation, const Guid& consumerID) = 0;
-        virtual void handleContentStatusChange(ContentID contentID, EDcsmStatus status, AnimationInformation, const Guid& consumerID) = 0;
+        virtual void handleContentStateChange(ContentID contentID, EDcsmState status, SizeInfo, AnimationInformation, const Guid& consumerID) = 0;
     };
 
     class IDcsmConsumerServiceHandler
     {
     public:
         virtual ~IDcsmConsumerServiceHandler() {};
-        virtual void handleRegisterContent(ContentID contentID, Category, const Guid& providerID) = 0;
-        virtual void handleContentAvailable(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID) = 0;
-        virtual void handleCategoryContentSwitchRequest(ContentID contentID, const Guid& providerID) = 0;
-        virtual void handleRequestUnregisterContent(ContentID contentID, const Guid& providerID) = 0;
+        virtual void handleOfferContent(ContentID contentID, Category, const Guid& providerID) = 0;
+        virtual void handleContentReady(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID) = 0;
+        virtual void handleContentFocusRequest(ContentID contentID, const Guid& providerID) = 0;
+        virtual void handleRequestStopOfferContent(ContentID contentID, const Guid& providerID) = 0;
+        virtual void handleForceStopOfferContent(ContentID contentID, const Guid& providerID) = 0;
     };
 }
 

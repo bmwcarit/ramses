@@ -6,6 +6,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 from tests.system_compositor_controller_base import system_compositor_controller_base
+from ramses_test_framework.ramses_test_extensions import ensureSystemCompositorRoundTrip
 
 # Tests if the system compositor controller can control a new surface, which registers while the renderer is already running.
 class TestSystemCompositorController(system_compositor_controller_base.SystemCompositorControllerBase):
@@ -24,6 +25,7 @@ class TestSystemCompositorController(system_compositor_controller_base.SystemCom
         self.renderer.send_ramsh_command("scastl {0} {1}".format(self.testSurfaceIVIIds["wlClient3"], self.testLayer), waitForRendererConfirmation=True)
         self.renderer.send_ramsh_command("scv {0} 1".format(self.testSurfaceIVIIds["wlClient3"]), waitForRendererConfirmation=True)
 
+        ensureSystemCompositorRoundTrip(self.renderer, self.testSurfaceIVIIds["wlClient3"])
         # Postcondition: renderer and gears No. 3 visible
         self.validateScreenshot(self.renderer, "scc_big_red_gear_left_and_cube.png", useSystemCompositorForScreenshot=True)
 

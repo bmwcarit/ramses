@@ -36,22 +36,23 @@ namespace ramses_internal
 
         void SetUp() override
         {
-            EXPECT_CALL(comm, sendDcsmBroadcastRegisterContent(_, _)).Times(AnyNumber());
-            EXPECT_CALL(comm, sendDcsmRegisterContent(_, _, _)).Times(AnyNumber());
-            EXPECT_CALL(comm, sendDcsmContentAvailable(_, _, _, _)).Times(AnyNumber());
-            EXPECT_CALL(comm, sendDcsmCategoryContentSwitchRequest(_, _)).Times(AnyNumber());
-            EXPECT_CALL(comm, sendDcsmBroadcastRequestUnregisterContent(_)).Times(AnyNumber());
+            EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(_, _)).Times(AnyNumber());
+            EXPECT_CALL(comm, sendDcsmOfferContent(_, _, _)).Times(AnyNumber());
+            EXPECT_CALL(comm, sendDcsmContentReady(_, _, _, _)).Times(AnyNumber());
+            EXPECT_CALL(comm, sendDcsmContentFocusRequest(_, _)).Times(AnyNumber());
+            EXPECT_CALL(comm, sendDcsmBroadcastRequestStopOfferContent(_)).Times(AnyNumber());
+            EXPECT_CALL(comm, sendDcsmBroadcastForceStopOfferContent(_)).Times(AnyNumber());
             EXPECT_CALL(comm, sendDcsmCanvasSizeChange(_, _, _, _)).Times(AnyNumber());
-            EXPECT_CALL(comm, sendDcsmContentStatusChange(_, _, _, _)).Times(AnyNumber());
+            EXPECT_CALL(comm, sendDcsmContentStateChange(_, _, _, _, _)).Times(AnyNumber());
 
-            EXPECT_CALL(provider, canvasSizeChange(_, _, _, _)).Times(AnyNumber());
-            EXPECT_CALL(provider, contentStatusChange(_, _, _, _)).Times(AnyNumber());
+            EXPECT_CALL(provider, contentSizeChange(_, _, _)).Times(AnyNumber());
+            EXPECT_CALL(provider, contentStateChange(_, _, _, _)).Times(AnyNumber());
 
-            EXPECT_CALL(consumer, registerContent(_, _)).Times(AnyNumber());
-            EXPECT_CALL(consumer, contentAvailable(_, _, _)).Times(AnyNumber());
-            EXPECT_CALL(consumer, categoryContentSwitchRequest(_)).Times(AnyNumber());
-            EXPECT_CALL(consumer, requestUnregisterContent(_)).Times(AnyNumber());
-            EXPECT_CALL(consumer, forceUnregisterContent(_)).Times(AnyNumber());
+            EXPECT_CALL(consumer, contentOffered(_, _)).Times(AnyNumber());
+            EXPECT_CALL(consumer, contentReady(_, _, _)).Times(AnyNumber());
+            EXPECT_CALL(consumer, contentFocusRequest(_)).Times(AnyNumber());
+            EXPECT_CALL(consumer, contentStopOfferRequest(_)).Times(AnyNumber());
+            EXPECT_CALL(consumer, forceContentOfferStopped(_)).Times(AnyNumber());
         }
 
         void commThread(unsigned int seed)
@@ -79,22 +80,34 @@ namespace ramses_internal
                         comp.newParticipantHasConnected(remoteId);
                     if (rnd() < 20)
                         comp.newParticipantHasConnected(Guid(true));
+                    if (rnd() < 40)
+                        comp.handleOfferContent(ContentID{rnd()%5}, Category{cnt++}, localId);
+                    if (rnd() < 10)
+                        comp.handleOfferContent(ContentID{rnd()%5}, Category{cnt++}, Guid(true));
+                    if (rnd() < 50)
+                        comp.handleContentReady(ContentID{rnd()%5}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{cnt++}, localId);
+                    if (rnd() < 10)
+                        comp.handleContentReady(ContentID{rnd()%5}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{cnt++}, Guid(true));
+                    if (rnd() < 50)
+                        comp.handleContentFocusRequest(ContentID{rnd()%5}, localId);
+                    if (rnd() < 10)
+                        comp.handleContentFocusRequest(ContentID{rnd()%5}, Guid(true));
+                    if (rnd() < 30)
+                        comp.handleRequestStopOfferContent(ContentID{rnd()%5}, localId);
+                    if (rnd() < 10)
+                        comp.handleRequestStopOfferContent(ContentID{rnd()%5}, Guid(true));
+                    if (rnd() < 50)
+                        comp.handleCanvasSizeChange(ContentID{rnd()%5}, SizeInfo{1, 1}, AnimationInformation{20, 100}, localId);
+                    if (rnd() < 10)
+                        comp.handleCanvasSizeChange(ContentID{rnd()%5}, SizeInfo{1, 1}, AnimationInformation{20, 100}, Guid(true));
+                    if (rnd() < 70)
+                        comp.handleContentStateChange(ContentID{rnd()%5}, static_cast<EDcsmState>(rnd()%8), SizeInfo{0, 0}, AnimationInformation{10, 20}, localId);
+                    if (rnd() < 50)
+                        comp.handleContentStateChange(ContentID{rnd()%5}, static_cast<EDcsmState>(rnd()%8), SizeInfo{1, 1}, AnimationInformation{10, 20}, localId);
+                    if (rnd() < 30)
+                        comp.handleContentStateChange(ContentID{rnd()%5}, static_cast<EDcsmState>(rnd()%8), SizeInfo{0, 0}, AnimationInformation{10, 20}, localId);
                     if (rnd() < 20)
-                        comp.sendRegisterContent(ContentID{rnd()%5}, Category{cnt++});
-                    if (rnd() < 50)
-                        comp.sendContentAvailable(localId, ContentID{rnd()%5}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{cnt++});
-                    if (rnd() < 10)
-                        comp.sendContentAvailable(Guid(true), ContentID{rnd()%5}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{cnt++});
-                    if (rnd() < 50)
-                        comp.sendCategoryContentSwitchRequest(localId, ContentID{rnd()%5});
-                    if (rnd() < 10)
-                        comp.sendCategoryContentSwitchRequest(Guid(true), ContentID{rnd()%5});
-                    if (rnd() < 50)
-                        comp.sendRequestUnregisterContent(ContentID{rnd()%5});
-                    if (rnd() < 50)
-                        comp.sendCanvasSizeChange(ContentID{rnd()%5}, SizeInfo{1, 1}, AnimationInformation{20, 100});
-                    if (rnd() < 50)
-                        comp.sendContentStatusChange(ContentID{rnd()%5}, static_cast<EDcsmStatus>(rnd()%8), AnimationInformation{10, 20});
+                        comp.handleContentStateChange(ContentID{rnd()%5}, static_cast<EDcsmState>(rnd()%8), SizeInfo{1, 1}, AnimationInformation{10, 20}, localId);
                 }
                 std::this_thread::sleep_for(std::chrono::milliseconds{rnd() % 10});
             }
@@ -111,16 +124,6 @@ namespace ramses_internal
                            std::uniform_int_distribution<uint32_t> dis(0, 100);
                            return dis(gen);
                        };
-            auto target = [&]() {
-                              const auto rval = rnd();
-                              if (rval < 40)
-                                  return localId;
-                              else if (rval < 70)
-                                  return remoteId;
-                              else if (rval < 95)
-                                  return Guid(true);
-                              return Guid(false);
-                          };
 
             startBarrier.wait();
 
@@ -128,13 +131,13 @@ namespace ramses_internal
             while (!shouldStop)
             {
                 if (rnd() < 50)
-                    comp.sendRegisterContent(ContentID{rnd()%5}, Category{1});
+                    comp.sendOfferContent(ContentID{rnd()%5}, Category{1});
                 if (rnd() < 50)
-                    comp.sendContentAvailable(target(), ContentID{rnd()%5}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{2});
+                    comp.sendContentReady(ContentID{rnd()%5}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{2});
                 if (rnd() < 50)
-                    comp.sendCategoryContentSwitchRequest(target(), ContentID{rnd()%5});
-                if (rnd() < 50)
-                    comp.sendRequestUnregisterContent(ContentID{rnd()%5});
+                    comp.sendContentFocusRequest(ContentID{rnd()%5});
+                if (rnd() < 30)
+                    comp.sendRequestStopOfferContent(ContentID{rnd()%5});
                 if (rnd() < 10)
                     comp.setLocalProviderAvailability(false);
                 if (rnd() < 90)
@@ -160,8 +163,10 @@ namespace ramses_internal
             {
                 if (rnd() < 50)
                     comp.sendCanvasSizeChange(ContentID{rnd()%5}, SizeInfo{1, 2}, AnimationInformation{10, 20});
-                if (rnd() < 50)
-                    comp.sendContentStatusChange(ContentID{rnd()%5}, static_cast<EDcsmStatus>(rnd()%8), AnimationInformation{10, 20});
+                if (rnd() < 70)
+                    comp.sendContentStateChange(ContentID{rnd()%5}, static_cast<EDcsmState>(rnd()%8), SizeInfo{0, 0}, AnimationInformation{10, 20});
+                if (rnd() < 30)
+                    comp.sendContentStateChange(ContentID{rnd()%5}, static_cast<EDcsmState>(rnd()%8), SizeInfo{1, 1}, AnimationInformation{10, 20});
                 if (rnd() < 10)
                     comp.setLocalConsumerAvailability(false);
                 if (rnd() < 90)

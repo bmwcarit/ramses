@@ -16,3 +16,9 @@ namespace ramses_internal
     DcsmConsumerEventHandlerMock::DcsmConsumerEventHandlerMock() = default;
     DcsmConsumerEventHandlerMock::~DcsmConsumerEventHandlerMock() = default;
 }
+
+namespace ramses
+{
+    DcsmProviderEventHandlerMock::DcsmProviderEventHandlerMock() = default;
+    DcsmProviderEventHandlerMock::~DcsmProviderEventHandlerMock() = default;
+}

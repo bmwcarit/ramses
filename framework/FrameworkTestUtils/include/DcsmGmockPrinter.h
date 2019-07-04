@@ -17,65 +17,60 @@ namespace ramses_internal
 {
     inline void PrintTo(const ContentID& id, ::std::ostream* os)
     {
-        *os << "ContentID:" << id.getValue();
+        *os << "ri:ContentID:" << id.getValue();
     }
 
     inline void PrintTo(const Category& id, ::std::ostream* os)
     {
-        *os << "Category:" << id.getValue();
+        *os << "ri:Category:" << id.getValue();
     }
 
     inline void PrintTo(const TechnicalContentDescriptor& id, ::std::ostream* os)
     {
-        *os << "TechnicalContentDescriptor:" << id.getValue();
+        *os << "ri:TechnicalContentDescriptor:" << id.getValue();
     }
 
     inline void PrintTo(const SizeInfo& si, ::std::ostream* os)
     {
-        *os << "SizeInfo[" << si.width << "x" << si.height << "]";
+        *os << "ri:SizeInfo[" << si.width << "x" << si.height << "]";
     }
 
     inline void PrintTo(const AnimationInformation& ai, ::std::ostream* os)
     {
-        *os << "AnimationInformation[" << ai.startTimeStamp << ";" << ai.finishedTimeStamp << "]";
+        *os << "ri:AnimationInformation[" << ai.startTimeStamp << ";" << ai.finishedTimeStamp << "]";
     }
 
-    inline void PrintTo(const EDcsmStatus& status, ::std::ostream* os)
+    inline void PrintTo(const EDcsmState& state, ::std::ostream* os)
     {
-        *os << EnumToString(status);
+        *os << "ri:" << EnumToString(state);
     }
 }
 
 namespace ramses
 {
-    inline void PrintTo(const ContentID& id, ::std::ostream* os)
+    inline void PrintTo(const ramses::ContentID& id, ::std::ostream* os)
     {
-        *os << "ContentID:" << id.getValue();
+        *os << "r:ContentID:" << id.getValue();
     }
 
-    inline void PrintTo(const Category& id, ::std::ostream* os)
+    inline void PrintTo(const ramses::Category& id, ::std::ostream* os)
     {
-        *os << "Category:" << id.getValue();
+        *os << "r:Category:" << id.getValue();
     }
 
-    inline void PrintTo(const TechnicalContentDescriptor& id, ::std::ostream* os)
+    inline void PrintTo(const ramses::TechnicalContentDescriptor& id, ::std::ostream* os)
     {
-        *os << "TechnicalContentDescriptor:" << id.getValue();
+        *os << "r:TechnicalContentDescriptor:" << id.getValue();
     }
 
-    inline void PrintTo(const SizeInfo& si, ::std::ostream* os)
+    inline void PrintTo(const ramses::SizeInfo& si, ::std::ostream* os)
     {
-        *os << "SizeInfo[" << si.width << "x" << si.height << "]";
+        *os << "r:SizeInfo[" << si.width << "x" << si.height << "]";
     }
 
-    inline void PrintTo(const AnimationInformation& ai, ::std::ostream* os)
+    inline void PrintTo(const ramses::AnimationInformation& ai, ::std::ostream* os)
     {
-        *os << "AnimationInformation[" << ai.startTime << ";" << ai.finishTime << "]";
-    }
-
-    inline void PrintTo(const EDcsmStatus& status, ::std::ostream* os)
-    {
-        *os << EnumToString(static_cast<ramses_internal::EDcsmStatus>(status));
+        *os << "r:AnimationInformation[" << ai.startTime << ";" << ai.finishTime << "]";
     }
 }
 

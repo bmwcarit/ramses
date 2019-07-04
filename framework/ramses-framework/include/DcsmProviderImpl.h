@@ -12,7 +12,7 @@
 #include "ramses-framework-api/IDcsmProviderEventHandler.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 
-#include "Components/DcsmComponent.h"
+#include "Components/IDcsmComponent.h"
 #include "Components/IDcsmProviderEventHandler.h"
 
 #include "StatusObjectImpl.h"
@@ -30,27 +30,26 @@ namespace ramses
         DcsmProviderImpl(ramses_internal::IDcsmComponent& dcsm);
         ~DcsmProviderImpl() override;
 
-        status_t registerRamsesContent(ContentID contentID, Category category, sceneId_t scene);
-        status_t unregisterRamsesContent(ContentID contentID);
+        status_t offerContent(ContentID contentID, Category category, sceneId_t scene);
+        status_t requestStopOfferContent(ContentID contentID);
 
         status_t markContentReady(ContentID contentID);
 
-        status_t requestContentShown(ContentID contentID);
+        status_t requestContentFocus(ContentID contentID);
 
         status_t dispatchEvents(ramses::IDcsmProviderEventHandler& handler);
 
-        virtual void canvasSizeChange(ContentID, SizeInfo, AnimationInformation, const ramses_internal::Guid&) override;
-        virtual void contentStatusChange(ContentID, EDcsmStatus, AnimationInformation, const ramses_internal::Guid&) override;
+        virtual void contentSizeChange(ContentID, SizeInfo, AnimationInformation) override;
+        virtual void contentStateChange(ContentID, ramses_internal::EDcsmState, SizeInfo, AnimationInformation) override;
 
     private:
         struct DcsmProviderMapContent
         {
-            sceneId_t             scene;
-            Category              category = Category(0);
-            ramses_internal::Guid destId{};
-            EDcsmStatus           status = EDcsmStatus::Registered;
-            bool                  ready = false;
-            bool                  contentRequested = false;
+            sceneId_t                       scene;
+            Category                        category = Category(0);
+            ramses_internal::EDcsmState     status = ramses_internal::EDcsmState::Offered;
+            bool                            ready = false;
+            bool                            contentRequested = false;
         };
 
         ramses_internal::IDcsmComponent& m_dcsm;

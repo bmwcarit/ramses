@@ -35,7 +35,7 @@ G_LICENSE_TEMPLATE_PROP = """
   Copyright (C) [YYYY] BMW XXXX
   All rights reserved.
   -------------------------------------------------------------------------
-  This document contains proprietary information belonging to BMW Car IT.
+  This document contains proprietary information belonging to BMW XXXX.
   Passing on and copying of this document, use and communication of its
   contents is not permitted without prior written authorization.
   -------------------------------------------------------------------------

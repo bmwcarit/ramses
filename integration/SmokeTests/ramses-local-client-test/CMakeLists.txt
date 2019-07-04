@@ -12,5 +12,5 @@ RENDERER_MODULE_PER_CONFIG_STATIC(ramses-local-client-test
     FILES_SOURCE   src/*
     FILES_RESOURCE ../../TestContent/res/*
     DEPENDENCIES   TestContent
-                   DisplayManager
+                   ramses-renderer-lib
 )

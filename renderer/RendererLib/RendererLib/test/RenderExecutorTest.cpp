@@ -584,7 +584,39 @@ TEST_F(ARenderExecutor, RenderMultipleRenderPassesIntoMultipleRenderTargets)
         expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix1);
         expectActivateRenderTarget(renderTargetDeviceHandle2, true, fakeVp2);
         expectClearRenderTarget();
-        expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix2, false, false, false);
+        expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix2, false, true, false);
+    }
+
+    executeScene();
+}
+
+TEST_F(ARenderExecutor, ResetsCachedRenderStatesAfterClearingRenderTargets)
+{
+    const RenderPassHandle pass1 = createRenderPassWithCamera(ECameraProjectionType_Perspective);
+    const RenderableHandle renderable1 = createTestRenderable(createTestDataInstance(), createRenderGroup(pass1));
+
+    const RenderPassHandle pass2 = createRenderPassWithCamera(ECameraProjectionType_Perspective);
+    const RenderableHandle renderable2 = createTestRenderable(createTestDataInstance(), createRenderGroup(pass2));
+    const RenderTargetHandle targetHandle2 = createRenderTarget(17, 21);
+    scene.setRenderPassRenderTarget(pass2, targetHandle2);
+
+    scene.setRenderPassRenderOrder(pass1, 0);
+    scene.setRenderPassRenderOrder(pass2, 1);
+
+    updateScenes();
+
+    const DeviceResourceHandle renderTargetDeviceHandle2 = resourceManager.getRenderTargetDeviceHandle(targetHandle2, scene.getSceneId());
+    const Matrix44f projMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane));
+
+    {
+        InSequence seq;
+
+        expectActivateFramebufferRenderTarget();
+        expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, Matrix44f::Identity, projMatrix);
+        expectActivateRenderTarget(renderTargetDeviceHandle2, false);
+        expectClearRenderTarget();
+        //render states are set again but shader and index buffer do not have to be set again
+        expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, Matrix44f::Identity, projMatrix, false, true, false);
     }
 
     executeScene();

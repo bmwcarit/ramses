@@ -6,6 +6,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 from tests.system_compositor_controller_base import system_compositor_controller_base
+from ramses_test_framework.ramses_test_extensions import ensureSystemCompositorRoundTrip
 
 # Tests if destroying a surface with the system compositor controller works.
 class TestSystemCompositorController(system_compositor_controller_base.SystemCompositorControllerBase):
@@ -15,11 +16,13 @@ class TestSystemCompositorController(system_compositor_controller_base.SystemCom
         self.renderer.send_ramsh_command("screct {0} 900 0 384 384".format(self.testSurfaceIVIIds["wlClient1"]), waitForRendererConfirmation=True)
         self.renderer.send_ramsh_command("scv {0} 1".format(self.testSurfaceIVIIds["wlClient1"]), waitForRendererConfirmation=True)
         self.renderer.send_ramsh_command("scv {0} 1".format(self.testSurfaceIVIIds["wlClient2"]), waitForRendererConfirmation=True)
+        ensureSystemCompositorRoundTrip(self.renderer, self.testSurfaceIVIIds["wlClient2"])
         self.validateScreenshot(self.renderer, "scc_white_gear_left_red_gear_right_and_cube.png", useSystemCompositorForScreenshot=True)
 
         # Destroy surface of ivi-gears No. 1
         self.renderer.send_ramsh_command("scds {0}".format(self.testSurfaceIVIIds["wlClient1"]), waitForRendererConfirmation=True)
 
+        ensureSystemCompositorRoundTrip(self.renderer, self.testSurfaceIVIIds["wlClient2"])
         # Postcondition: renderer and gears No. 2 visible
         self.validateScreenshot(self.renderer, "scc_white_gear_left_and_cube.png", useSystemCompositorForScreenshot=True)
 

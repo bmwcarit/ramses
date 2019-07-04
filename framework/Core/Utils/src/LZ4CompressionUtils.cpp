@@ -43,8 +43,8 @@ namespace ramses_internal
                     reinterpret_cast<char*>(compressedBuffer.data()),
                     plainSize,
                     static_cast<int>(compressedBuffer.size()),
-                    // use define for highest compression, available at least lz4 >=1.7.5
-                    LZ4HC_CLEVEL_MAX);
+                    // using higher compression causes too excessive times to be able to use
+                    LZ4HC_CLEVEL_DEFAULT);
             }
 
             compressedBufferSize = compressedSize;

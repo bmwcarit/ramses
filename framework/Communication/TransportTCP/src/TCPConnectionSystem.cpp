@@ -684,6 +684,9 @@ namespace ramses_internal
         case EMessageId_DcsmRequestUnregisterContent:
             handleDcsmRequestUnregisterContent(pp, stream);
             break;
+        case EMessageId_DcsmForceUnregisterContent:
+            handleDcsmForceStopOfferContent(pp, stream);
+            break;
         default:
             LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleReceivedMessage: Invalid messagetype " << messageType << " From " << pp->address.getParticipantId());
             removeParticipant(pp);
@@ -1357,11 +1360,13 @@ namespace ramses_internal
     }
 
     // --
-    bool TCPConnectionSystem::sendDcsmContentStatusChange(const Guid& to, ContentID contentID, EDcsmStatus status, AnimationInformation ai)
+    bool TCPConnectionSystem::sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, SizeInfo si, AnimationInformation ai)
     {
         OutMessage msg(to, EMessageId_DcsmContentStatusChange);
         msg.stream << contentID.getValue()
                    << status
+                   << si.width
+                   << si.height
                    << ai.startTimeStamp
                    << ai.finishedTimeStamp;
         return postMessageForSending(std::move(msg), true);
@@ -1374,20 +1379,24 @@ namespace ramses_internal
             ContentID contentID;
             stream >> contentID.getReference();
 
-            EDcsmStatus statusInfo;
+            EDcsmState statusInfo;
             stream >> statusInfo;
+
+            SizeInfo si;
+            stream >> si.width;
+            stream >> si.height;
 
             AnimationInformation ai;
             stream >> ai.startTimeStamp;
             stream >> ai.finishedTimeStamp;
 
             PlatformGuard guard(m_frameworkLock);
-            m_dcsmProviderHandler->handleContentStatusChange(contentID, statusInfo, ai, pp->address.getParticipantId());
+            m_dcsmProviderHandler->handleContentStateChange(contentID, statusInfo, si, ai, pp->address.getParticipantId());
         }
     }
 
     // --
-    bool TCPConnectionSystem::sendDcsmBroadcastRegisterContent(ContentID contentID, Category category)
+    bool TCPConnectionSystem::sendDcsmBroadcastOfferContent(ContentID contentID, Category category)
     {
         OutMessage msg(Guid(false), EMessageId_DcsmRegisterContent);
         msg.stream << contentID.getValue()
@@ -1395,7 +1404,7 @@ namespace ramses_internal
         return postMessageForSending(std::move(msg), true);
     }
 
-    bool TCPConnectionSystem::sendDcsmRegisterContent(const Guid& to, ContentID contentID, Category category)
+    bool TCPConnectionSystem::sendDcsmOfferContent(const Guid& to, ContentID contentID, Category category)
     {
         OutMessage msg(Guid(to), EMessageId_DcsmRegisterContent);
         msg.stream << contentID.getValue()
@@ -1414,12 +1423,12 @@ namespace ramses_internal
             stream >> category.getReference();
 
             PlatformGuard guard(m_frameworkLock);
-            m_dcsmConsumerHandler->handleRegisterContent(contentID, category, pp->address.getParticipantId());
+            m_dcsmConsumerHandler->handleOfferContent(contentID, category, pp->address.getParticipantId());
         }
     }
 
     // --
-    bool TCPConnectionSystem::sendDcsmContentAvailable(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor)
+    bool TCPConnectionSystem::sendDcsmContentReady(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor)
     {
         OutMessage msg(to, EMessageId_DcsmContentAvailable);
         msg.stream << contentID.getValue()
@@ -1442,12 +1451,12 @@ namespace ramses_internal
             stream >> technicalContentDescriptor.getReference();
 
             PlatformGuard guard(m_frameworkLock);
-            m_dcsmConsumerHandler->handleContentAvailable(contentID, technicalContentType, technicalContentDescriptor, pp->address.getParticipantId());
+            m_dcsmConsumerHandler->handleContentReady(contentID, technicalContentType, technicalContentDescriptor, pp->address.getParticipantId());
         }
     }
 
     // --
-    bool TCPConnectionSystem::sendDcsmCategoryContentSwitchRequest(const Guid& to, ContentID contentID)
+    bool TCPConnectionSystem::sendDcsmContentFocusRequest(const Guid& to, ContentID contentID)
     {
         OutMessage msg(to, EMessageId_DcsmCategoryContentSwitchRequest);
         msg.stream << contentID.getValue();
@@ -1462,12 +1471,12 @@ namespace ramses_internal
             stream >> contentID.getReference();
 
             PlatformGuard guard(m_frameworkLock);
-            m_dcsmConsumerHandler->handleCategoryContentSwitchRequest(contentID, pp->address.getParticipantId());
+            m_dcsmConsumerHandler->handleContentFocusRequest(contentID, pp->address.getParticipantId());
         }
     }
 
     // --
-    bool TCPConnectionSystem::sendDcsmBroadcastRequestUnregisterContent(ContentID contentID)
+    bool TCPConnectionSystem::sendDcsmBroadcastRequestStopOfferContent(ContentID contentID)
     {
         OutMessage msg(Guid(false), EMessageId_DcsmRequestUnregisterContent);
         msg.stream << contentID.getValue();
@@ -1482,7 +1491,27 @@ namespace ramses_internal
             stream >> contentID.getReference();
 
             PlatformGuard guard(m_frameworkLock);
-            m_dcsmConsumerHandler->handleRequestUnregisterContent(contentID, pp->address.getParticipantId());
+            m_dcsmConsumerHandler->handleRequestStopOfferContent(contentID, pp->address.getParticipantId());
+        }
+    }
+
+    // --
+    bool TCPConnectionSystem::sendDcsmBroadcastForceStopOfferContent(ContentID contentID)
+    {
+        OutMessage msg(Guid(false), EMessageId_DcsmForceUnregisterContent);
+        msg.stream << contentID.getValue();
+        return postMessageForSending(std::move(msg), true);
+    }
+
+    void TCPConnectionSystem::handleDcsmForceStopOfferContent(const ParticipantPtr& pp, BinaryInputStream& stream)
+    {
+        if (m_dcsmConsumerHandler)
+        {
+            ContentID contentID;
+            stream >> contentID.getReference();
+
+            PlatformGuard guard(m_frameworkLock);
+            m_dcsmConsumerHandler->handleForceStopOfferContent(contentID, pp->address.getParticipantId());
         }
     }
 

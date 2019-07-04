@@ -291,6 +291,29 @@ namespace ramses_internal
         EXPECT_EQ(Viewport(), m_executorState.viewportState.getState());
     }
 
+    TEST_F(ARenderExecutorInternalState, canResetCachedStates)
+    {
+        m_executorState.blendState.setState(BlendState());
+        m_executorState.depthStencilState.setState(DepthStencilState());
+        m_executorState.rasterizerState.setState(RasterizerState());
+
+        ASSERT_FALSE(m_executorState.blendState.hasChanged());
+        ASSERT_FALSE(m_executorState.depthStencilState.hasChanged());
+        ASSERT_FALSE(m_executorState.rasterizerState.hasChanged());
+
+        m_executorState.blendState.reset();
+        m_executorState.depthStencilState.reset();
+        m_executorState.rasterizerState.reset();
+
+        EXPECT_TRUE(m_executorState.blendState.hasChanged());
+        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+        EXPECT_TRUE(m_executorState.rasterizerState.hasChanged());
+
+        EXPECT_FALSE(m_executorState.blendState.getState()          != BlendState());
+        EXPECT_FALSE(m_executorState.depthStencilState.getState()   != DepthStencilState());
+        EXPECT_FALSE(m_executorState.rasterizerState.getState()     != RasterizerState());
+    }
+
     TEST_F(ARenderExecutorInternalState, canIncrementAndGetRenderPassAndRenderableIdx)
     {
         EXPECT_EQ(0u, m_executorState.m_currentRenderIterator.getRenderPassIdx());

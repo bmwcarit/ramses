@@ -27,16 +27,16 @@ namespace ramses
     {
     }
 
-    status_t DcsmProvider::registerRamsesContent(ContentID contentID, Category category, sceneId_t scene)
+    status_t DcsmProvider::offerContent(ContentID contentID, Category category, sceneId_t scene)
     {
-        auto status = impl.registerRamsesContent(contentID, category, scene);
+        auto status = impl.offerContent(contentID, category, scene);
         LOG_HL_CLIENT_API3(status, contentID.getValue(), category.getValue(), scene);
         return status;
     }
 
-    status_t DcsmProvider::requestUnregisterContent(ContentID contentID)
+    status_t DcsmProvider::requestStopOfferContent(ContentID contentID)
     {
-        auto status = impl.unregisterRamsesContent(contentID);
+        auto status = impl.requestStopOfferContent(contentID);
         LOG_HL_CLIENT_API1(status, contentID.getValue());
         return status;
     }
@@ -48,9 +48,9 @@ namespace ramses
         return status;
     }
 
-    status_t DcsmProvider::requestContentShown(ContentID contentID)
+    status_t DcsmProvider::requestContentFocus(ContentID contentID)
     {
-        auto status = impl.requestContentShown(contentID);
+        auto status = impl.requestContentFocus(contentID);
         LOG_HL_CLIENT_API1(status, contentID.getValue());
         return status;
     }

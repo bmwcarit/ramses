@@ -6,6 +6,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 from tests.system_compositor_controller_base import system_compositor_controller_base
+from ramses_test_framework.ramses_test_extensions import ensureSystemCompositorRoundTrip
 
 # Tests if the system compositor controller can make a surface invisible.
 class TestSystemCompositorController(system_compositor_controller_base.SystemCompositorControllerBase):
@@ -13,10 +14,12 @@ class TestSystemCompositorController(system_compositor_controller_base.SystemCom
     def impl_test(self):
         # Precondition: renderer and gears visible
         self.renderer.send_ramsh_command("scv {0} 1".format(self.testSurfaceIVIIds["wlClient1"]), waitForRendererConfirmation=True)
+        ensureSystemCompositorRoundTrip(self.renderer, self.testSurfaceIVIIds["wlClient2"])
         self.validateScreenshot(self.renderer, "scc_red_gear_left_and_cube.png", useSystemCompositorForScreenshot=True)
 
         # Make ivi-gears No. 1 invisible
         self.renderer.send_ramsh_command("scv {0} 0".format(self.testSurfaceIVIIds["wlClient1"]), waitForRendererConfirmation=True)
 
+        ensureSystemCompositorRoundTrip(self.renderer, self.testSurfaceIVIIds["wlClient2"])
         # Postcondition: renderer and gears visible
         self.validateScreenshot(self.renderer, "scc_only_cube.png", useSystemCompositorForScreenshot=True)

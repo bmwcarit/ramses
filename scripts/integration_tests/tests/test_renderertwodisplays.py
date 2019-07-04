@@ -12,7 +12,7 @@ from ramses_test_framework import test_classes
 from ramses_test_framework import log
 from ramses_test_framework.ramses_test_extensions import with_ramses_process_check
 from ramses_test_framework.targets.target import DEFAULT_TEST_SURFACE
-
+from ramses_test_framework.ramses_test_extensions import ensureSystemCompositorRoundTrip
 
 class TestRendererTwoDisplays(test_classes.OnAllDefaultTargetsTest):
 
@@ -25,6 +25,7 @@ class TestRendererTwoDisplays(test_classes.OnAllDefaultTargetsTest):
         #those wayland ivi surface ids depend on workaround in standalone renderer that increments the ivi surface id by 1 for every created display
         self.displaysIviSurfaceIds = [DEFAULT_TEST_SURFACE, DEFAULT_TEST_SURFACE + 1, DEFAULT_TEST_SURFACE + 2]
         self.renderer = self.target.start_default_renderer("--numDisplays 3 --disableAutoMapping -sid {0}".format(self.displaysIviSurfaceIds[0]))
+        self.renderer.send_ramsh_command("skub 0", waitForRendererConfirmation=True)
 
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
@@ -59,4 +60,5 @@ class TestRendererTwoDisplays(test_classes.OnAllDefaultTargetsTest):
             #test displays are next to each other
             self.renderer.send_ramsh_command("screct {0} 0 0 200 600".format(self.displaysIviSurfaceIds[1]), waitForRendererConfirmation=True)
             self.renderer.send_ramsh_command("screct {0} 200 0 200 600".format(self.displaysIviSurfaceIds[2]), waitForRendererConfirmation=True)
+            ensureSystemCompositorRoundTrip(self.renderer, self.displaysIviSurfaceIds[2])
             self.validateScreenshot(self.renderer, "testClient_twoDisplaysPlacedTogether.png", useSystemCompositorForScreenshot=True)

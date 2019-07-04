@@ -52,13 +52,14 @@ namespace ramses_internal
         EXPECT_FALSE(csw->commSystem->sendSceneNotAvailable(to, SceneId(123)));
         EXPECT_FALSE(csw->commSystem->sendInitializeScene(to, SceneInfo()));
         EXPECT_EQ(0u, csw->commSystem->sendSceneActionList(to, SceneId(123), SceneActionCollection(), 1));
-        EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastRegisterContent(ContentID{}, Category{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmRegisterContent(to, ContentID{}, Category{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentAvailable(to, ContentID{}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmCategoryContentSwitchRequest(to, ContentID{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastRequestUnregisterContent(ContentID{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastOfferContent(ContentID{}, Category{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmOfferContent(to, ContentID{}, Category{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentReady(to, ContentID{}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentFocusRequest(to, ContentID{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastRequestStopOfferContent(ContentID{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastForceStopOfferContent(ContentID{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmCanvasSizeChange(to, ContentID{}, SizeInfo{}, AnimationInformation{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentStatusChange(to, ContentID{}, EDcsmStatus::Unregistered, AnimationInformation{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentStateChange(to, ContentID{}, EDcsmState::Offered, SizeInfo{}, AnimationInformation{}));
     }
 
     TEST_P(ACommunicationSystem, sendFunctionsFailAfterCallingDisconnect)
@@ -79,13 +80,14 @@ namespace ramses_internal
         EXPECT_FALSE(csw->commSystem->sendSceneNotAvailable(to, SceneId(123)));
         EXPECT_FALSE(csw->commSystem->sendInitializeScene(to, SceneInfo()));
         EXPECT_EQ(0u, csw->commSystem->sendSceneActionList(to, SceneId(123), SceneActionCollection(), 1));
-        EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastRegisterContent(ContentID{}, Category{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmRegisterContent(to, ContentID{}, Category{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentAvailable(to, ContentID{}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmCategoryContentSwitchRequest(to, ContentID{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastRequestUnregisterContent(ContentID{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastOfferContent(ContentID{}, Category{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmOfferContent(to, ContentID{}, Category{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentReady(to, ContentID{}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentFocusRequest(to, ContentID{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastRequestStopOfferContent(ContentID{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastForceStopOfferContent(ContentID{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmCanvasSizeChange(to, ContentID{}, SizeInfo{}, AnimationInformation{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentStatusChange(to, ContentID{}, EDcsmStatus::Unregistered, AnimationInformation{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentStateChange(to, ContentID{}, EDcsmState::Offered, SizeInfo{}, AnimationInformation{}));
     }
 
     class ACommunicationSystemWithDaemonConnectionSetup : public ACommunicationSystemWithDaemon

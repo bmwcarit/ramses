@@ -52,6 +52,12 @@ namespace ramses_internal
             return m_changed;
         }
 
+        void reset()
+        {
+            m_changed = true;
+            m_state = STATETYPE();
+        }
+
     private:
         STATETYPE m_state;
         Bool      m_changed;

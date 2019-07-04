@@ -64,15 +64,16 @@ namespace ramses_internal
         virtual uint64_t sendSceneActionList(const Guid& to, const SceneId& sceneId, const SceneActionCollection& actions, const uint64_t& actionListCounter) override;
 
         // dcsm client -> renderer
-        virtual bool sendDcsmBroadcastRegisterContent(ContentID contentID, Category) override;
-        virtual bool sendDcsmRegisterContent(const Guid& to, ContentID contentID, Category) override;
-        virtual bool sendDcsmContentAvailable(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) override;
-        virtual bool sendDcsmCategoryContentSwitchRequest(const Guid& to, ContentID contentID) override;
-        virtual bool sendDcsmBroadcastRequestUnregisterContent(ContentID contentID) override;
+        virtual bool sendDcsmBroadcastOfferContent(ContentID contentID, Category) override;
+        virtual bool sendDcsmOfferContent(const Guid& to, ContentID contentID, Category) override;
+        virtual bool sendDcsmContentReady(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) override;
+        virtual bool sendDcsmContentFocusRequest(const Guid& to, ContentID contentID) override;
+        virtual bool sendDcsmBroadcastRequestStopOfferContent(ContentID contentID) override;
+        virtual bool sendDcsmBroadcastForceStopOfferContent(ContentID contentID) override;
 
         // dcsm renderer -> client
-        virtual bool sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, SizeInfo sizeinfo, AnimationInformation) override;
-        virtual bool sendDcsmContentStatusChange(const Guid& to, ContentID contentID, EDcsmStatus status, AnimationInformation) override;
+        virtual bool sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, SizeInfo sizeinfo, AnimationInformation ai) override;
+        virtual bool sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, SizeInfo si, AnimationInformation ai) override;
 
         // set service handlers
         void setResourceProviderServiceHandler(IResourceProviderServiceHandler* handler) override;
@@ -205,6 +206,7 @@ namespace ramses_internal
         void handleDcsmContentAvailable(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmCategoryContentSwitchRequest(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmRequestUnregisterContent(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleDcsmForceStopOfferContent(const ParticipantPtr& pp, BinaryInputStream& stream);
 
         static const char* EnumToString(EParticipantState e);
         static const char* EnumToString(EParticipantType e);

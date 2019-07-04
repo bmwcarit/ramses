@@ -39,25 +39,27 @@ namespace ramses
         , m_threadWatchdogConfig(config.m_watchdogConfig)
         // NOTE: ThreadingSystem must always be constructed after CommunicationSystem
         , m_threadStrategy(3, config.m_watchdogConfig)
-        , resourceComponent(m_threadStrategy.e, m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getRamsesConnectionStatusUpdateNotifier(),
+        , m_resourceComponent(m_threadStrategy.e, m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getRamsesConnectionStatusUpdateNotifier(),
             m_statisticCollection, m_frameworkLock, config.getMaximumTotalBytesForAsyncResourceLoading())
-        , scenegraphComponent(m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getRamsesConnectionStatusUpdateNotifier(), m_frameworkLock)
+        , m_scenegraphComponent(m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getRamsesConnectionStatusUpdateNotifier(), m_frameworkLock)
         , m_dcsmComponent(m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getDcsmConnectionStatusUpdateNotifier(), m_frameworkLock)
         , m_ramshCommandLogConnectionInformation(*m_communicationSystem)
+        , m_ramshCommandLogDcsmInformation(m_dcsmComponent)
     {
         m_ramsh->start();
         m_ramsh->add(m_ramshCommandLogConnectionInformation);
+        m_ramsh->add(m_ramshCommandLogDcsmInformation);
         m_periodicLogger.registerPeriodicLogSupplier(m_communicationSystem.get());
     }
 
     ramses_internal::ResourceComponent& RamsesFrameworkImpl::getResourceComponent()
     {
-        return resourceComponent;
+        return m_resourceComponent;
     }
 
     ramses_internal::SceneGraphComponent& RamsesFrameworkImpl::getScenegraphComponent()
     {
-        return scenegraphComponent;
+        return m_scenegraphComponent;
     }
 
     ramses_internal::DcsmComponent& RamsesFrameworkImpl::getDcsmComponent()
@@ -145,7 +147,7 @@ namespace ramses
             return addErrorEntry("Not connected, cannot disconnect");
         }
 
-        scenegraphComponent.disconnectFromNetwork();
+        m_scenegraphComponent.disconnectFromNetwork();
         m_communicationSystem->disconnectServices();
 
         m_connected = false;
@@ -157,6 +159,8 @@ namespace ramses
 
     DcsmProvider* RamsesFrameworkImpl::createDcsmProvider()
     {
+        LOG_INFO(ramses_internal::CONTEXT_FRAMEWORK, "RamsesFramework::createDcsmProvider for " << m_participantAddress.getParticipantId() << " / " << m_participantAddress.getParticipantName());
+
         // TODO(tobias) check if creation allowed based on m_participantAddress
 
         if (m_dcsmProvider)
@@ -171,6 +175,8 @@ namespace ramses
 
     status_t RamsesFrameworkImpl::destroyDcsmProvider(const DcsmProvider& provider)
     {
+        LOG_INFO(ramses_internal::CONTEXT_FRAMEWORK, "RamsesFramework::destroyDcsmProvider for " << m_participantAddress.getParticipantId() << " / " << m_participantAddress.getParticipantName());
+
         if (!m_dcsmProvider || m_dcsmProvider.get() != &provider)
         {
             return addErrorEntry("RamsesFramework::destroyDcsmProvider: provider does not belong to this framework");
@@ -181,6 +187,8 @@ namespace ramses
 
     DcsmConsumer* RamsesFrameworkImpl::createDcsmConsumer()
     {
+        LOG_INFO(ramses_internal::CONTEXT_FRAMEWORK, "RamsesFramework::createDcsmConsumer for " << m_participantAddress.getParticipantId() << " / " << m_participantAddress.getParticipantName());
+
         // TODO(tobias) check if creation allowed based on m_participantAddress
 
         if (m_dcsmConsumer)
@@ -195,6 +203,8 @@ namespace ramses
 
     status_t RamsesFrameworkImpl::destroyDcsmConsumer(const DcsmConsumer& consumer)
     {
+        LOG_INFO(ramses_internal::CONTEXT_FRAMEWORK, "RamsesFramework::destroyDcsmConsumer for " << m_participantAddress.getParticipantId() << " / " << m_participantAddress.getParticipantName());
+
         if (!m_dcsmConsumer || m_dcsmConsumer.get() != &consumer)
         {
             return addErrorEntry("RamsesFramework::destroyDcsmConsumer: consumer does not belong to this framework");

@@ -26,8 +26,6 @@ namespace ramses
 
 namespace ramses_internal
 {
-    // TODO(tobias): add content state transitions test (register, unregister done): canvas change maybe?
-
     class ICommunicationSystem;
     class IConnectionStatusUpdateNotifier;
     class IDcsmProviderEventHandler;
@@ -47,49 +45,66 @@ namespace ramses_internal
 
         // Local consumer send methods
         virtual bool sendCanvasSizeChange(ContentID contentID, SizeInfo sizeInfo, AnimationInformation ai) override;
-        virtual bool sendContentStatusChange(ContentID contentID, EDcsmStatus status, AnimationInformation ai) override;
+        virtual bool sendContentStateChange(ContentID contentID, EDcsmState status, SizeInfo sizeInfo, AnimationInformation ai) override;
 
         // Local provider send methods
-        virtual bool sendRegisterContent(ContentID contentID, Category) override;
-        virtual bool sendContentAvailable(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) override;
-        virtual bool sendCategoryContentSwitchRequest(const Guid& to, ContentID contentID) override;
-        virtual bool sendRequestUnregisterContent(ContentID contentID) override;
+        virtual bool sendOfferContent(ContentID contentID, Category) override;
+        virtual bool sendContentReady(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) override;
+        virtual bool sendContentFocusRequest(ContentID contentID) override;
+        virtual bool sendRequestStopOfferContent(ContentID contentID) override;
 
         // IDcsmProviderServiceHandler implementation
         virtual void handleCanvasSizeChange(ContentID contentID, SizeInfo sizeinfo, AnimationInformation, const Guid& consumerID) override;
-        virtual void handleContentStatusChange(ContentID contentID, EDcsmStatus status, AnimationInformation, const Guid& consumerID) override;
+        virtual void handleContentStateChange(ContentID contentID, EDcsmState status, SizeInfo, AnimationInformation, const Guid& consumerID) override;
 
         // IDcsmConsumerServiceHandler implementation
-        virtual void handleRegisterContent(ContentID contentID, Category, const Guid& providerID) override;
-        virtual void handleContentAvailable(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID) override;
-        virtual void handleCategoryContentSwitchRequest(ContentID contentID, const Guid& providerID) override;
-        virtual void handleRequestUnregisterContent(ContentID contentID, const Guid& providerID) override;
+        virtual void handleOfferContent(ContentID contentID, Category, const Guid& providerID) override;
+        virtual void handleContentReady(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID) override;
+        virtual void handleContentFocusRequest(ContentID contentID, const Guid& providerID) override;
+        virtual void handleRequestStopOfferContent(ContentID contentID, const Guid& providerID) override;
+        virtual void handleForceStopOfferContent(ContentID contentID, const Guid& providerID) override;
 
         virtual bool dispatchProviderEvents(IDcsmProviderEventHandler& handler) override;
         virtual bool dispatchConsumerEvents(ramses::IDcsmConsumerEventHandler& handler) override;
 
+        // for logging
+        void logInfo();
+
         // For testing only
         Guid getContentProviderID(ContentID content) const;
+        Guid getContentConsumerID(ContentID content) const;
+
+        enum class ContentState
+        {
+            Unknown,
+            Offered,
+            Assigned,
+            ReadyRequested,
+            Ready,
+            Shown,
+            StopOfferRequested,
+        };
+        ContentState getContentState(ContentID content) const;
 
     private:
         struct ContentInfo
         {
             ContentID content;
             Category category;
+            ContentState state;
             Guid providerID;
-            bool unregisterRequested;
             Guid consumerID;
-            EDcsmStatus consumedStatus;
+            // TODO(tobias): add more infos (tech etc) for periodic/ramsh logging
         };
 
         enum class EDcsmCommandType {
-            RegisterContent,
-            ContentAvailable,
-            ContentStatusChange,
+            OfferContent,
+            ContentReady,
+            ContentStateChange,
             CanvasSizeChange,
-            CategoryContentSwitchRequest,
-            UnregisterContent,
-            ForceUnregisterContent,
+            ContentFocusRequest,
+            StopOfferContentRequest,
+            ForceStopOfferContent,
         };
 
         struct DcsmEvent
@@ -99,27 +114,30 @@ namespace ramses_internal
             Category                   category;
             TechnicalContentDescriptor descriptor;
             ETechnicalContentType      contentType;
-            EDcsmStatus                status;
+            EDcsmState                 state;
             SizeInfo                   size;
             AnimationInformation       animation;
             Guid                       from;
         };
 
         void addProviderEvent_CanvasSizeChange(ContentID contentID, SizeInfo sizeinfo, AnimationInformation, const Guid& consumerID);
-        void addProviderEvent_ContentStatusChange(ContentID contentID, EDcsmStatus status, AnimationInformation, const Guid& consumerID);
-        void addConsumerEvent_RegisterContent(ContentID contentID, Category, const Guid& providerID);
-        void addConsumerEvent_ContentAvailable(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID);
-        void addConsumerEvent_CategoryContentSwitchRequest(ContentID contentID, const Guid& providerID);
-        void addConsumerEvent_RequestUnregisterContent(ContentID contentID, const Guid& providerID);
-        void addConsumerEvent_ForceUnregisterContent(ContentID contentID, const Guid& providerID);
+        void addProviderEvent_ContentStateChange(ContentID contentID, EDcsmState status, SizeInfo sizeInfo,AnimationInformation, const Guid& consumerID);
+        void addConsumerEvent_OfferContent(ContentID contentID, Category, const Guid& providerID);
+        void addConsumerEvent_ContentReady(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID);
+        void addConsumerEvent_ContentFocusRequest(ContentID contentID, const Guid& providerID);
+        void addConsumerEvent_RequestStopOfferContent(ContentID contentID, const Guid& providerID);
+        void addConsumerEvent_ForceStopOfferContent(ContentID contentID, const Guid& providerID);
 
         const char* EnumToString(EDcsmCommandType cmd) const;
+        const char* EnumToString(ContentState val) const;
+
         bool isValidETechnicalContentType(const char* callerMethod, ETechnicalContentType val) const;
-        bool isValidEDcsmStatus(const char* callerMethod, EDcsmStatus val) const;
+        bool isValidEDcsmState(const char* callerMethod, EDcsmState val) const;
         bool isAllowedToSendTo(const char* callerMethod, const Guid& id) const;
         bool isAllowedToReceiveFrom(const char* callerMethod, const Guid& id) const;
         bool isLocallyProvidingContent(const char* callerMethod, ContentID content) const;
-        bool isContentKnown(const char* callerMethod, ContentID content) const;
+        bool isValidContent(const char* callerMethod, ContentID content) const;
+        bool isValidStateTransition(const char* callerMethod, const ContentInfo& ci, EDcsmState transition, ContentState& newState) const;
 
         const Guid m_myID;
         ICommunicationSystem& m_communicationSystem;

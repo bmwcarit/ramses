@@ -28,6 +28,14 @@ def with_ramses_process_check(setup_func):  # decorator function
     return extended_setup_func
 
 
+def ensureSystemCompositorRoundTrip(renderer, ivisurfaceid):
+    watchRenderer = renderer.start_watch_stdout()
+    renderer.send_ramsh_command("scSetSurfaceOpacity {0} 0.5".format(ivisurfaceid))
+    renderer.send_ramsh_command("scSetSurfaceOpacity {0} 1.0".format(ivisurfaceid))
+    opacityExecutedInSystemCompositor = renderer.wait_for_msg_in_stdout(watchRenderer, "IVIControllerSurface::HandleOpacityCallBack ivi-id: {0} opacity: 256".format(ivisurfaceid), timeout=15)
+    assert(opacityExecutedInSystemCompositor) # Could not ensure system compositor roundtrip
+
+
 class IVI_Control(object):
 
     def __init__(self, target, xdg_runtime_dir):

@@ -31,17 +31,32 @@ namespace ramses
         return result;
     }
 
-    status_t DcsmConsumer::sendCanvasSizeChange(ContentID contentID, SizeInfo size, AnimationInformation animationInformation)
+    status_t DcsmConsumer::assignContentToConsumer(ContentID contentID, SizeInfo size)
     {
-        const status_t result = impl.sendCanvasSizeChange(contentID, size, animationInformation);
+        const status_t result = impl.assignContentToConsumer(contentID, size);
+        LOG_HL_CLIENT_API3(result, contentID.getValue(), size.width, size.height);
+        return result;
+    }
+
+    status_t DcsmConsumer::contentSizeChange(ContentID contentID, SizeInfo size, AnimationInformation animationInformation)
+    {
+        const status_t result = impl.contentSizeChange(contentID, size, animationInformation);
         LOG_HL_CLIENT_API5(result, contentID.getValue(), size.width, size.height, animationInformation.startTime, animationInformation.finishTime);
         return result;
     }
 
-    status_t DcsmConsumer::sendContentStatusChange(ContentID contentID, EDcsmStatus status, AnimationInformation animationInformation)
+    status_t DcsmConsumer::contentStateChange(ContentID contentID, EDcsmState state, AnimationInformation animationInformation)
     {
-        const status_t result = impl.sendContentStatusChange(contentID, status, animationInformation);
-        LOG_HL_CLIENT_API4(result, contentID.getValue(), static_cast<uint32_t>(status), animationInformation.startTime, animationInformation.finishTime);
+        const status_t result = impl.contentStateChange(contentID, state, animationInformation);
+        LOG_HL_CLIENT_API4(result, contentID.getValue(), static_cast<uint32_t>(state), animationInformation.startTime, animationInformation.finishTime);
         return result;
     }
+
+    status_t DcsmConsumer::acceptStopOffer(ContentID contentID, AnimationInformation animationInformation)
+    {
+        const status_t result = impl.acceptStopOffer(contentID, animationInformation);
+        LOG_HL_CLIENT_API3(result, contentID.getValue(), animationInformation.startTime, animationInformation.finishTime);
+        return result;
+    }
+
 }

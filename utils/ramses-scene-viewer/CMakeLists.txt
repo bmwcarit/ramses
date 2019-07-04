@@ -13,5 +13,5 @@ RENDERER_MODULE_PER_CONFIG_STATIC(ramses-scene-viewer
     FILES_SOURCE            src/*.cpp
 
     DEPENDENCIES            ramses-client
-                            DisplayManager
+                            ramses-renderer-lib
 )

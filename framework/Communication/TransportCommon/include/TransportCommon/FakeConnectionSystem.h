@@ -98,27 +98,32 @@ namespace ramses_internal
             return 0u;
         }
 
-        virtual bool sendDcsmBroadcastRegisterContent(ContentID /*contentID*/, Category) override
+        virtual bool sendDcsmBroadcastOfferContent(ContentID /*contentID*/, Category) override
         {
             return true;
         }
 
-        virtual bool sendDcsmRegisterContent(const Guid& /*to*/, ContentID /*contentID*/, Category) override
+        virtual bool sendDcsmOfferContent(const Guid& /*to*/, ContentID /*contentID*/, Category) override
         {
             return true;
         }
 
-        virtual bool sendDcsmContentAvailable(const Guid& /*to*/, ContentID /*contentID*/, ETechnicalContentType /*technicalContentType*/, TechnicalContentDescriptor /*technicalContentDescriptor*/) override
+        virtual bool sendDcsmContentReady(const Guid& /*to*/, ContentID /*contentID*/, ETechnicalContentType /*technicalContentType*/, TechnicalContentDescriptor /*technicalContentDescriptor*/) override
         {
             return true;
         }
 
-        virtual bool sendDcsmCategoryContentSwitchRequest(const Guid& /*to*/, ContentID /*contentID*/) override
+        virtual bool sendDcsmContentFocusRequest(const Guid& /*to*/, ContentID /*contentID*/) override
         {
             return true;
         }
 
-        virtual bool sendDcsmBroadcastRequestUnregisterContent(ContentID /*contentID*/) override
+        virtual bool sendDcsmBroadcastRequestStopOfferContent(ContentID /*contentID*/) override
+        {
+            return true;
+        }
+
+        virtual bool sendDcsmBroadcastForceStopOfferContent(ContentID /*contentID*/) override
         {
             return true;
         }
@@ -128,7 +133,7 @@ namespace ramses_internal
             return true;
         }
 
-        virtual bool sendDcsmContentStatusChange(const Guid& /*to*/, ContentID /*contentID*/, EDcsmStatus /*status*/, AnimationInformation) override
+        virtual bool sendDcsmContentStateChange(const Guid& /*to*/, ContentID /*contentID*/, EDcsmState /*status*/, SizeInfo, AnimationInformation) override
         {
             return true;
         }

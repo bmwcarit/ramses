@@ -70,7 +70,7 @@ namespace ramses_internal
         ~DcsmProviderServiceHandlerMock() override;
 
         MOCK_METHOD4(handleCanvasSizeChange, void(ContentID contentID, SizeInfo sizeinfo, AnimationInformation, const Guid& consumerID));
-        MOCK_METHOD4(handleContentStatusChange, void(ContentID contentID, EDcsmStatus status, AnimationInformation, const Guid& consumerID));
+        MOCK_METHOD5(handleContentStateChange, void(ContentID contentID, EDcsmState status, SizeInfo, AnimationInformation, const Guid& consumerID));
     };
 
     class DcsmConsumerServiceHandlerMock : public IDcsmConsumerServiceHandler
@@ -79,10 +79,11 @@ namespace ramses_internal
         DcsmConsumerServiceHandlerMock();
         ~DcsmConsumerServiceHandlerMock() override;
 
-        MOCK_METHOD3(handleRegisterContent, void(ContentID contentID, Category, const Guid& providerID));
-        MOCK_METHOD4(handleContentAvailable, void(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID));
-        MOCK_METHOD2(handleCategoryContentSwitchRequest, void(ContentID contentID, const Guid& providerID));
-        MOCK_METHOD2(handleRequestUnregisterContent, void(ContentID contentID, const Guid& providerID));
+        MOCK_METHOD3(handleOfferContent, void(ContentID contentID, Category, const Guid& providerID));
+        MOCK_METHOD4(handleContentReady, void(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID));
+        MOCK_METHOD2(handleContentFocusRequest, void(ContentID contentID, const Guid& providerID));
+        MOCK_METHOD2(handleRequestStopOfferContent, void(ContentID contentID, const Guid& providerID));
+        MOCK_METHOD2(handleForceStopOfferContent, void(ContentID contentID, const Guid& providerID));
     };
 }
 

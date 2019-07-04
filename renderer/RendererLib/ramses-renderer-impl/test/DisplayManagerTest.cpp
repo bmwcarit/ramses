@@ -16,14 +16,6 @@
 #include "RendererLib/RendererCommands.h"
 #include "RamsesRendererImpl.h"
 
-// to give linker missing definition of platform specific factory create
-#include "Platform_Base/PlatformFactory_Base.h"
-#include "PlatformFactoryMock.h"
-ramses_internal::IPlatformFactory* ramses_internal::PlatformFactory_Base::CreatePlatformFactory(const ramses_internal::RendererConfig&)
-{
-    return new ::testing::NiceMock<ramses_internal::PlatformFactoryNiceMock>();
-}
-
 using namespace ramses_display_manager;
 using namespace testing;
 

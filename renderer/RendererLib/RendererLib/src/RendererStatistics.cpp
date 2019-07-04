@@ -75,9 +75,10 @@ namespace ramses_internal
         strTexStat.maxUpdatesPerFrame = std::max(strTexStat.maxUpdatesPerFrame, numUpdates);
     }
 
-    void RendererStatistics::shaderCompiled()
+    void RendererStatistics::shaderCompiled(int64_t microsecondsUsed)
     {
         m_shadersCompiled++;
+        m_microsecondsForShaderCompilation += microsecondsUsed;
     }
 
     void RendererStatistics::trackArrivedFlush(SceneId sceneId, UInt numSceneActions, UInt numAddedClientResources, UInt numRemovedClientResources, UInt numSceneResourceActions)
@@ -180,6 +181,7 @@ namespace ramses_internal
         m_clientResourcesUploaded = 0u;
         m_clientResourcesBytesUploaded = 0u;
         m_shadersCompiled = 0u;
+        m_microsecondsForShaderCompilation = 0u;
 
         for (auto& sceneStatIt : m_sceneStatistics)
         {
@@ -237,7 +239,7 @@ namespace ramses_internal
         if (m_clientResourcesUploaded > 0u)
             str << ", clientResUploaded " << m_clientResourcesUploaded << " (" << m_clientResourcesBytesUploaded << " B)";
         if (m_shadersCompiled > 0u)
-            str << ", shadersCompiled " << m_shadersCompiled;
+            str << ", shadersCompiled " << m_shadersCompiled << " for total ms:" << m_microsecondsForShaderCompilation/1000 ;
         str << "\n";
 
         for (const auto& dbStat : m_displayStatistics)

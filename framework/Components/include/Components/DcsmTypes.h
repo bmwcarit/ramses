@@ -43,26 +43,33 @@ namespace ramses_internal
         {
             return width == rhs.width && height == rhs.height;
         }
+
+        bool operator!=(const SizeInfo& rhs) const
+        {
+            return !(*this == rhs);
+        }
     };
 
-    enum class EDcsmStatus : uint32_t
+    enum class EDcsmState : uint32_t
     {
-        Unregistered,
-        Registered,
-        ContentRequested,
+        Offered,
+        Assigned,
+        Ready,
         Shown,
+        AcceptStopOffer,
     };
 
-    inline const char* EnumToString(EDcsmStatus val)
+    inline const char* EnumToString(EDcsmState val)
     {
         switch (val)
         {
-        case EDcsmStatus::Unregistered: return "EDcsmStatus::Unregistered";
-        case EDcsmStatus::Registered: return "EDcsmStatus::Registered";
-        case EDcsmStatus::ContentRequested: return "EDcsmStatus::ContentRequested";
-        case EDcsmStatus::Shown: return "EDcsmStatus::Shown";
+        case EDcsmState::Offered: return "EDcsmState::Offered";
+        case EDcsmState::Assigned: return "EDcsmState::Assigned";
+        case EDcsmState::Ready: return "EDcsmState::Ready";
+        case EDcsmState::Shown: return "EDcsmState::Shown";
+        case EDcsmState::AcceptStopOffer: return "EDcsmState::AcceptStopOffer";
         }
-        return "EDcsmStatus::<UNKNOWN>";
+        return "EDcsmState::<UNKNOWN>";
     }
 
     struct AnimationInformation

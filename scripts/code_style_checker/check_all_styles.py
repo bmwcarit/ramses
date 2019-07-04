@@ -60,6 +60,7 @@ Takes a path as input and runs style/license header checks with filters where ne
         r'\.bin$',
         r'\.pac$',
         r'\.rex$',
+        r'\.ctm$',
         r'\.tar\.bz2$',
     }
 
@@ -70,6 +71,11 @@ Takes a path as input and runs style/license header checks with filters where ne
         r'gitconfig$',
         r'\.clang-format$',
         r'\.clang-tidy$',
+        # Protobuffer files
+        r'\.pb.h$',
+        r'\.pb.cc$',
+        r'\.proto$',
+        r'\.ptx$',
         r'(^|/)build[^/]*/',
     }
 

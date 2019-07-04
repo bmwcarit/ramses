@@ -8,6 +8,7 @@
 
 from tests.system_compositor_controller_base import system_compositor_controller_base
 from ramses_test_framework.application import Application
+from ramses_test_framework.ramses_test_extensions import ensureSystemCompositorRoundTrip
 
 # Tests if the system compositor controller can control a new surface, which has the same id than a destroyed one before.
 class TestSystemCompositorController(system_compositor_controller_base.SystemCompositorControllerBase):
@@ -28,5 +29,6 @@ class TestSystemCompositorController(system_compositor_controller_base.SystemCom
         # wait for content available on wlClient3 surface before doing screenshot
         self.renderer.wait_for_msg_in_stdout_from_beginning("IVIControllerSurface::HandleContentCallback ivi-id: {} contentState: 1".format(self.testSurfaceIVIIds["wlClient3"]), timeout=Application.DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT)
 
+        ensureSystemCompositorRoundTrip(self.renderer, self.testSurfaceIVIIds["wlClient3"])
         # Postcondition: renderer and gears No. 3 visible
         self.validateScreenshot(self.renderer, "scc_big_red_gear_left_and_cube.png", useSystemCompositorForScreenshot=True)

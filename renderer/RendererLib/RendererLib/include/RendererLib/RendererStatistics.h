@@ -38,7 +38,7 @@ namespace ramses_internal
         void clientResourceUploaded(UInt byteSize);
         void sceneResourceUploaded(SceneId sceneId, UInt byteSize);
         void streamTextureUpdated(StreamTextureSourceId sourceId, UInt numUpdates);
-        void shaderCompiled();
+        void shaderCompiled(int64_t microsecondsUsed);
 
         void untrackScene(SceneId sceneId);
         void untrackOffscreenBuffer(DisplayHandle displayHandle, DeviceResourceHandle offscreenBuffer);
@@ -59,6 +59,7 @@ namespace ramses_internal
         UInt m_clientResourcesUploaded = 0u;
         UInt m_clientResourcesBytesUploaded = 0u;
         UInt m_shadersCompiled = 0u;
+        UInt64 m_microsecondsForShaderCompilation = 0u;
 
         struct SceneStatistics
         {

@@ -26,8 +26,10 @@ namespace ramses
 
         status_t dispatchEvents(IDcsmConsumerEventHandler& handler);
 
-        status_t sendCanvasSizeChange(ContentID contentID, SizeInfo size, AnimationInformation animationInformation);
-        status_t sendContentStatusChange(ContentID contentID, EDcsmStatus status, AnimationInformation animationInformation);
+        status_t assignContentToConsumer(ContentID contentID, SizeInfo size);
+        status_t contentSizeChange(ContentID contentID, SizeInfo size, AnimationInformation animationInformation);
+        status_t contentStateChange(ContentID contentID, EDcsmState status, AnimationInformation animationInformation);
+        status_t acceptStopOffer(ContentID contentID, AnimationInformation animationInformation);
 
     private:
         ramses_internal::DcsmComponent& m_component;

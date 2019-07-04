@@ -205,6 +205,7 @@ protected:
     void unpublishMapRequestedScene(UInt32 sceneIndex = 0u)
     {
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
+        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(_, sceneId));
         rendererSceneUpdater->handleSceneUnpublished(sceneId);
         expectEvents({ ERendererEventType_SceneMapFailed, ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished });
         EXPECT_FALSE(renderer.getDisplaySceneIsMappedTo(sceneId).isValid());
@@ -213,6 +214,7 @@ protected:
     void unpublishMappedScene(UInt32 sceneIndex = 0u)
     {
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
+        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(_, sceneId));
         rendererSceneUpdater->handleSceneUnpublished(sceneId);
         expectEvents({ ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished });
         EXPECT_FALSE(renderer.getDisplaySceneIsMappedTo(sceneId).isValid());
@@ -221,6 +223,7 @@ protected:
     void unpublishShownScene(UInt32 sceneIndex = 0u)
     {
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
+        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(_, sceneId));
         rendererSceneUpdater->handleSceneUnpublished(sceneId);
         expectEvents({ ERendererEventType_SceneHiddenIndirect, ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished });
 

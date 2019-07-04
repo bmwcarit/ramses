@@ -80,6 +80,8 @@ namespace ramses_internal
             {
                 m_rendererEventCollector.addEvent(ERendererEventType_SceneSubscribeFailed, sceneId);
             }
+            // explicitly unsubscribe to avoid race in case client re-published scene while previous subscription was being processed
+            m_sceneGraphConsumerComponent.unsubscribeScene(m_scenesStateInfo.getSceneClientGuid(sceneId), sceneId);
         default:
             break;
         }
@@ -126,10 +128,10 @@ namespace ramses_internal
             default:
                 assert(false);
             }
+            m_sceneGraphConsumerComponent.unsubscribeScene(m_scenesStateInfo.getSceneClientGuid(sceneId), sceneId);
         }
 
         m_scenesStateInfo.setSceneState(sceneId, ESceneState::Published);
-        m_sceneGraphConsumerComponent.unsubscribeScene(m_scenesStateInfo.getSceneClientGuid(sceneId), sceneId);
 
         LOG_INFO(CONTEXT_RENDERER, "Scene " << sceneId.getValue() << " is in state PUBLISHED caused by command UNSUBSCRIBE (indirect: " << indirect << ")");
     }

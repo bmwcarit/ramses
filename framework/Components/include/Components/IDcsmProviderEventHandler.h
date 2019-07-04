@@ -10,6 +10,7 @@
 #define RAMSES_COMPONENTS_IDCSMPROVIDEREVENTHANDLER_H
 
 #include "ramses-framework-api/DcsmApiTypes.h"
+#include "Components/DcsmTypes.h"
 
 namespace ramses_internal
 {
@@ -20,8 +21,8 @@ namespace ramses_internal
     public:
         virtual ~IDcsmProviderEventHandler() = default;
 
-        virtual void canvasSizeChange(ramses::ContentID, ramses::SizeInfo, ramses::AnimationInformation, const Guid& consumerID) = 0;
-        virtual void contentStatusChange(ramses::ContentID, ramses::EDcsmStatus, ramses::AnimationInformation, const Guid& consumerID) = 0;
+        virtual void contentSizeChange(ramses::ContentID, ramses::SizeInfo, ramses::AnimationInformation) = 0;
+        virtual void contentStateChange(ramses::ContentID, ramses_internal::EDcsmState, ramses::SizeInfo, ramses::AnimationInformation) = 0;
     };
 }
 

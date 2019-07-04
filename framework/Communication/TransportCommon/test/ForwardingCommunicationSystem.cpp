@@ -157,47 +157,56 @@ namespace ramses_internal
         return 1u;
     }
 
-    bool ForwardingCommunicationSystem::sendDcsmBroadcastRegisterContent(ContentID contentID, Category category)
+    bool ForwardingCommunicationSystem::sendDcsmBroadcastOfferContent(ContentID contentID, Category category)
     {
         if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmConsumerHandler)
         {
-            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleRegisterContent(contentID, category, m_id);
+            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleOfferContent(contentID, category, m_id);
         }
         return true;
     }
 
-    bool ForwardingCommunicationSystem::sendDcsmRegisterContent(const Guid& to, ContentID contentID, Category category)
+    bool ForwardingCommunicationSystem::sendDcsmOfferContent(const Guid& to, ContentID contentID, Category category)
     {
         if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmConsumerHandler && to == m_targetCommunicationSystem->m_id)
         {
-            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleRegisterContent(contentID, category, m_id);
+            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleOfferContent(contentID, category, m_id);
         }
         return true;
     }
 
-    bool ForwardingCommunicationSystem::sendDcsmContentAvailable(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor)
+    bool ForwardingCommunicationSystem::sendDcsmContentReady(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor)
     {
         if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmConsumerHandler && to == m_targetCommunicationSystem->m_id)
         {
-            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleContentAvailable(contentID, technicalContentType, technicalContentDescriptor, m_id);
+            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleContentReady(contentID, technicalContentType, technicalContentDescriptor, m_id);
         }
         return true;
     }
 
-    bool ForwardingCommunicationSystem::sendDcsmCategoryContentSwitchRequest(const Guid& to, ContentID contentID)
+    bool ForwardingCommunicationSystem::sendDcsmContentFocusRequest(const Guid& to, ContentID contentID)
     {
         if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmConsumerHandler && to == m_targetCommunicationSystem->m_id)
         {
-            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleCategoryContentSwitchRequest(contentID, m_id);
+            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleContentFocusRequest(contentID, m_id);
         }
         return true;
     }
 
-    bool ForwardingCommunicationSystem::sendDcsmBroadcastRequestUnregisterContent(ContentID contentID)
+    bool ForwardingCommunicationSystem::sendDcsmBroadcastRequestStopOfferContent(ContentID contentID)
     {
         if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmConsumerHandler)
         {
-            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleRequestUnregisterContent(contentID, m_id);
+            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleRequestStopOfferContent(contentID, m_id);
+        }
+        return true;
+    }
+
+    bool ForwardingCommunicationSystem::sendDcsmBroadcastForceStopOfferContent(ContentID contentID)
+    {
+        if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmConsumerHandler)
+        {
+            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleForceStopOfferContent(contentID, m_id);
         }
         return true;
     }
@@ -211,11 +220,11 @@ namespace ramses_internal
         return true;
     }
 
-    bool ForwardingCommunicationSystem::sendDcsmContentStatusChange(const Guid& to, ContentID contentID, EDcsmStatus status, AnimationInformation ai)
+    bool ForwardingCommunicationSystem::sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, SizeInfo si, AnimationInformation ai)
     {
         if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmProviderHandler && to == m_targetCommunicationSystem->m_id)
         {
-            m_targetCommunicationSystem->m_dcsmProviderHandler->handleContentStatusChange(contentID, status, ai, m_id);
+            m_targetCommunicationSystem->m_dcsmProviderHandler->handleContentStateChange(contentID, status, si, ai, m_id);
         }
         return true;
     }

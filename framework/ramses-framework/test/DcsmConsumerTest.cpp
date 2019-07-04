@@ -78,7 +78,9 @@ namespace ramses
     TEST_F(ADcsmConsumer, sendCallWithUnknownContentFails)
     {
         DcsmConsumer* c = fw.createDcsmConsumer();
-        EXPECT_NE(StatusOK, c->sendCanvasSizeChange(ContentID{123}, SizeInfo{1, 2}, AnimationInformation{0, 0}));
-        EXPECT_NE(StatusOK, c->sendContentStatusChange(ContentID{123}, EDcsmStatus::Registered, AnimationInformation{0, 0}));
+        EXPECT_NE(StatusOK, c->assignContentToConsumer(ContentID{123}, SizeInfo{1, 2}));
+        EXPECT_NE(StatusOK, c->contentSizeChange(ContentID{123}, SizeInfo{1, 2}, AnimationInformation{0, 0}));
+        EXPECT_NE(StatusOK, c->contentStateChange(ContentID{123}, EDcsmState::Offered, AnimationInformation{0, 0}));
+        EXPECT_NE(StatusOK, c->acceptStopOffer(ContentID{123}, AnimationInformation{0, 0}));
     }
 }
