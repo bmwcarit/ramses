@@ -107,7 +107,22 @@ namespace ramses
         */
         virtual void binaryShaderUploaded(effectId_t effectId, bool success) const override;
 
-    private:
+        /**
+         * @brief Deleted copy constructor
+         * @param other unused
+         */
+        BinaryShaderCache(const BinaryShaderCache& other) = delete;
+
+        /**
+         * @brief Deleted copy assignment
+         * @param other unused
+         * @return unused
+         */
+        BinaryShaderCache& operator=(const BinaryShaderCache& other) = delete;
+
+        /**
+        * Stores internal data for implementation specifics of this class.
+        */
         class BinaryShaderCacheImpl& impl;
     };
 }

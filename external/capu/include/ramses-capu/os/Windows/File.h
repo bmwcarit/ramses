@@ -30,49 +30,36 @@ namespace ramses_capu
         {
         public:
             File(const std::string& path);
-            File(const File& parent, const std::string& path);
-            status_t open(const FileMode& mode);
-            bool isOpen();
-            bool isEof();
-            status_t read(char* buffer, uint_t length, uint_t& numBytes);
-            status_t write(const char* buffer, uint_t length);
+            using generic::File::open;
+            using generic::File::isOpen;
+            using generic::File::isEof;
             using generic::File::seek;
+            using generic::File::read;
+            using generic::File::write;
+            using generic::File::flush;
+            using generic::File::close;
             status_t getCurrentPosition(uint_t& position) const;
-            status_t flush();
-            status_t close();
-            status_t renameTo(const std::string& newPath);
-            status_t copyTo(const std::string& otherPath);
             status_t createFile();
             status_t createDirectory();
             status_t remove();
             using generic::File::getFileName;
             using generic::File::getExtension;
             using generic::File::getPath;
-            std::string getParentPath(bool& success) const;
             bool isDirectory() const;
             bool exists() const;
             status_t getSizeInBytes(uint_t&) const;
-            ~File();
 
         protected:
+            using generic::File::mIsOpen;
             using generic::File::mPath;
             using generic::File::mHandle;
         private:
-            bool  mIsOpen;
             static std::string removeTrailingBackslash(std::string path);
         };
 
         inline
         File::File(const std::string& path)
             : generic::File(removeTrailingBackslash(path))
-            , mIsOpen(false)
-        {
-        }
-
-        inline
-        File::File(const File& parent, const std::string& path)
-            : generic::File(parent, removeTrailingBackslash(path))
-            , mIsOpen(false)
         {
         }
 
@@ -88,27 +75,6 @@ namespace ramses_capu
                 }
             }
             return path;
-        }
-
-        inline
-        std::string File::getParentPath(bool& success) const
-        {
-            char buffer[1000]; // TODO
-            char* filePointer = 0;
-            int_t length = GetFullPathNameA(getPath().c_str(), sizeof(buffer), buffer, &filePointer);
-            if (filePointer)
-            {
-                // "trim" last path component
-                *(filePointer) = 0;
-            }
-            else
-            {
-                // no path found
-                length = 0;
-                buffer[0] = 0;
-            }
-            success = length > 0;
-            return std::string(buffer);
         }
 
         inline
@@ -166,184 +132,6 @@ namespace ramses_capu
         {
             DWORD dwAttributes = GetFileAttributesA(mPath.c_str());
             return (dwAttributes != INVALID_FILE_ATTRIBUTES);
-        }
-
-        inline
-        status_t File::renameTo(const std::string& newPath)
-        {
-            int_t status = MoveFileExA(mPath.c_str(), newPath.c_str(), 0);
-            if (status == 0)
-            {
-                return CAPU_ERROR;
-            }
-            mPath = newPath;
-            return CAPU_OK;
-        }
-
-        inline
-        status_t File::copyTo(const std::string& otherPath)
-        {
-            int_t status = CopyFileA(mPath.c_str(), otherPath.c_str(), false);
-            if (status == 0)
-            {
-                return CAPU_ERROR;
-            }
-            return CAPU_OK;
-        }
-
-        inline
-        status_t File::open(const FileMode& mode)
-        {
-            errno_t error;
-            // try to open file
-            const char* flags = "";
-            switch (mode)
-            {
-            case READ_ONLY:
-                flags = "r";
-                break;
-            case WRITE_NEW:
-                flags = "w";
-                break;
-            case READ_WRITE_EXISTING:
-                flags = "r+";
-                break;
-            case READ_WRITE_OVERWRITE_OLD:
-                flags = "w+";
-                break;
-            case READ_ONLY_BINARY:
-                flags = "rb";
-                break;
-            case WRITE_NEW_BINARY:
-                flags = "wb";
-                break;
-            case READ_WRITE_EXISTING_BINARY:
-                flags = "r+b";
-                break;
-            case READ_WRITE_OVERWRITE_OLD_BINARY:
-                flags = "w+b";
-                break;
-            default:
-                flags = "";
-            }
-            error  = fopen_s(&mHandle, mPath.c_str(), flags);
-            if (error == 0)
-            {
-                mIsOpen = true;
-                return CAPU_OK;
-            }
-            return CAPU_ERROR;
-        }
-
-        inline
-        bool
-        File::isOpen()
-        {
-            return mIsOpen;
-        }
-
-        inline
-        bool File::isEof()
-        {
-            if (mHandle == NULL)
-            {
-                return false;
-            }
-            return (feof(mHandle) != 0);
-        }
-
-        inline
-        status_t
-        File::read(char* buffer, uint_t length, uint_t& numBytes)
-        {
-            if (buffer == NULL)
-            {
-                return CAPU_EINVAL;
-            }
-
-            if (mHandle == NULL)
-            {
-                return CAPU_ERROR;
-            }
-
-            size_t result = fread(buffer, 1, length, mHandle);
-
-            if (result == length)
-            {
-                numBytes = result;
-                return CAPU_OK;
-            }
-
-            if (feof(mHandle))
-            {
-                numBytes = result;
-                return CAPU_EOF;
-            }
-
-            return CAPU_ERROR;
-        }
-
-        inline
-        status_t
-        File::write(const char* buffer, uint_t length)
-        {
-            if (buffer == NULL)
-            {
-                return CAPU_EINVAL;
-            }
-            if (mHandle == NULL)
-            {
-                return CAPU_ERROR;
-            }
-            if (length == 0)
-            {
-                return CAPU_OK;
-            }
-
-            size_t result = fwrite(buffer, length, 1, mHandle);
-            if (result != 1u)
-            {
-                return CAPU_ERROR;
-            }
-            return CAPU_OK;
-        }
-
-        inline
-        status_t
-        File::flush()
-        {
-            if (mHandle != NULL)
-            {
-                int_t error = fflush(mHandle);
-                if (error == 0)
-                {
-                    return CAPU_OK;
-                }
-            }
-            return CAPU_ERROR;
-        }
-
-        inline
-        status_t
-        File::close()
-        {
-            if (mHandle != NULL)
-            {
-                fclose(mHandle);
-                mHandle = NULL;
-                mIsOpen = false;
-                return CAPU_OK;
-            }
-            return CAPU_ERROR;
-        }
-
-        inline
-        File::~File()
-        {
-            if (mHandle != NULL)
-            {
-                fclose(mHandle);
-            }
         }
 
         inline

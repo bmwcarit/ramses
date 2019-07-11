@@ -32,7 +32,7 @@ namespace ramses
         /**
         * @brief Destructor of DefaultRendererResourceCache
         */
-        virtual ~DefaultRendererResourceCache();
+        virtual ~DefaultRendererResourceCache() override;
 
         /**
         * @brief Called by RamsesRenderer to ask for a resource with the given id.
@@ -96,7 +96,22 @@ namespace ramses
         */
         bool loadFromFile(const char* filePath);
 
-    private:
+        /**
+         * @brief Deleted copy constructor
+         * @param other unused
+         */
+        DefaultRendererResourceCache(const DefaultRendererResourceCache& other) = delete;
+
+        /**
+         * @brief Deleted copy assignment
+         * @param other unused
+         * @return unused
+         */
+        DefaultRendererResourceCache& operator=(const DefaultRendererResourceCache& other) = delete;
+
+        /**
+        * Stores internal data for implementation specifics of this class.
+        */
         class DefaultRendererResourceCacheImpl& impl;
     };
 }

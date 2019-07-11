@@ -41,13 +41,6 @@ namespace ramses_capu
         File(const std::string& filepath);
 
         /**
-         * Create a new instance for a file.
-         * @param parent Parent directory of the file.
-         * @param path The path of the file.
-         */
-        File(const File& parent, const std::string& path);
-
-        /**
          * try to open the file
          * @param mode to specify the file mode
               READ_ONLY  opens file for reading.
@@ -78,21 +71,6 @@ namespace ramses_capu
          * @return CAPU_OK, if deletion was successfull.
          */
         status_t remove();
-        /**
-         * Rename the file.
-         * @param newPath The new path/filename.
-         * @return return CAPU_OK if file was renamed
-         *        CAPU_ERROR otherwise
-         */
-        status_t renameTo(const std::string& newPath);
-
-        /**
-         * Copy the file.
-         * @param newPath The filename of the copied file.
-         * @return CAPU_OK if file was copied
-         *        CAPU_ERROR otherwise
-         */
-        status_t copyTo(const std::string& newPath);
 
         /**
          * return true if file is open else false
@@ -167,7 +145,7 @@ namespace ramses_capu
          * Gets the plain name of the file (the part after the last \\ or /)
          * @return The plain name of the file.
          */
-        const std::string getFileName() const;
+        std::string getFileName() const;
 
         /**
          * Get the current path or filename of the file.
@@ -179,14 +157,7 @@ namespace ramses_capu
          * Get file extension.
          * @return The filename extension of the file.
          */
-        const std::string getExtension() const;
-
-        /**
-        * Get the parent file of the current file.
-        * @param success Indicates if a parent file was found.
-        * @return The parent file. Returns an invalid file if no parent file was found.
-        */
-        File getParentFile(bool& success) const;
+        std::string getExtension() const;
 
         /**
          * Destruct current instance.
@@ -197,12 +168,6 @@ namespace ramses_capu
     inline
     File::File(const std::string& filepath)
         : ramses_capu::os::File(filepath)
-    {
-    }
-
-    inline
-    File::File(const File& parent, const std::string& filepath)
-        : ramses_capu::os::File(parent, filepath)
     {
     }
 
@@ -287,21 +252,7 @@ namespace ramses_capu
     }
 
     inline
-    status_t
-    File::renameTo(const std::string& newPath)
-    {
-        return ramses_capu::os::File::renameTo(newPath);
-    }
-
-    inline
-    status_t
-    File::copyTo(const std::string& newPath)
-    {
-        return ramses_capu::os::File::copyTo(newPath);
-    }
-
-    inline
-    const std::string File::getFileName() const
+    std::string File::getFileName() const
     {
         return ramses_capu::os::File::getFileName();
     }
@@ -319,16 +270,9 @@ namespace ramses_capu
     }
 
     inline
-    const std::string File::getExtension() const
+    std::string File::getExtension() const
     {
         return ramses_capu::os::File::getExtension();
-    }
-
-    inline
-    File File::getParentFile(bool& success) const
-    {
-        std::string parentPath = ramses_capu::os::File::getParentPath(success);
-        return File(parentPath);
     }
 
     inline

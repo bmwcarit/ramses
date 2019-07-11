@@ -102,7 +102,6 @@ if (NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY AND NOT DEFINED CMAKE_RUNTIME_OUT
 endif()
 set(CMAKE_DEBUG_POSTFIX "") # no debug suffix in this project
 
-set(ramses-sdk_CMAKE_CONFIG_INCLUDES_FOR_SHARED CACHE INTERNAL "")
 set(ramses-sdk_CMAKE_CONFIG_INCLUDES_FOR_STATIC CACHE INTERNAL "")
 set(ramses-shared-lib-MIXIN CACHE INTERNAL "")
 
@@ -157,6 +156,7 @@ ACME2_PROJECT(
                                 AUTO renderer/Platform/Window_Windows
                                 AUTO renderer/Platform/Window_X11
                                 AUTO renderer/Platform/Window_Wayland
+                                AUTO renderer/Platform/Window_Integrity_RGL
 
                                 # Context Components
                                 AUTO renderer/Platform/Context_WGL
@@ -182,6 +182,7 @@ ACME2_PROJECT(
                                 AUTO renderer/Platform/Surface_X11_EGL
                                 AUTO renderer/Platform/Surface_Wayland_EGL
                                 AUTO renderer/Platform/Surface_EGL_Offscreen
+                                AUTO renderer/Platform/Surface_Integrity_RGL_EGL
                                 AUTO renderer/Platform/Surface_Android_EGL
                                 AUTO renderer/Platform/PlatformFactory_Wayland_EGL
                                 AUTO renderer/Platform/PlatformFactory_Wayland_IVI_EGL
@@ -194,6 +195,7 @@ ACME2_PROJECT(
                                 AUTO renderer/Platform/Platform_Wayland_IVI_EGL_ES_3_0
                                 AUTO renderer/Platform/Platform_Wayland_Shell_EGL_ES_3_0
                                 AUTO renderer/Platform/Platform_X11_EGL_ES_3_0
+                                AUTO renderer/Platform/Platform_Integrity_RGL_EGL_ES_3_0
                                 AUTO renderer/Platform/Platform_Android_EGL_ES_3_0
 
                                 AUTO ramses-shared-lib
@@ -261,28 +263,24 @@ FOREACH(configmodule ${configmodules})
     ENDIF()
 
     # generate and install helper files
-    if (configmodule MATCHES "ramses-shared")
-        set(ramses-sdk_CMAKE_CONFIG_INCLUDES_CURRENT ${ramses-sdk_CMAKE_CONFIG_INCLUDES_FOR_SHARED})
-    else()
-        set(ramses-sdk_CMAKE_CONFIG_INCLUDES_CURRENT ${ramses-sdk_CMAKE_CONFIG_INCLUDES_FOR_STATIC})
+    if (configmodule MATCHES "ramses-static")
+        foreach(optionalmodule IN LISTS ramses-sdk_CMAKE_CONFIG_INCLUDES_FOR_STATIC)
+            get_filename_component(fname "${optionalmodule}" NAME_WE)
+            set(fname "${fname}.cmake")
+            CONFIGURE_PACKAGE_CONFIG_FILE(
+                "${optionalmodule}"
+                "${CMAKE_CURRENT_BINARY_DIR}/cmake-config-${configmodule}/ramses-optional-${fname}"
+                INSTALL_DESTINATION "${ramses-sdk_FIND_SCRIPT_INSTALL_DIR}"
+                PATH_VARS PROJECT_INSTALL_HEADER PROJECT_INSTALL_STATIC_LIB PROJECT_INSTALL_SHARED_LIB
+                NO_SET_AND_CHECK_MACRO
+                NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+            INSTALL(
+                FILES       ${CMAKE_CURRENT_BINARY_DIR}/cmake-config-${configmodule}/ramses-optional-${fname}
+                DESTINATION ${ramses-sdk_FIND_SCRIPT_INSTALL_DIR}
+                )
+            ACME_INFO("G ${fname} (${configmodule})")
+        endforeach()
     endif()
-
-    foreach(optionalmodule IN LISTS ramses-sdk_CMAKE_CONFIG_INCLUDES_CURRENT)
-        get_filename_component(fname "${optionalmodule}" NAME_WE)
-        set(fname "${fname}.cmake")
-        CONFIGURE_PACKAGE_CONFIG_FILE(
-            "${optionalmodule}"
-            "${CMAKE_CURRENT_BINARY_DIR}/cmake-config-${configmodule}/ramses-optional-${fname}"
-            INSTALL_DESTINATION "${ramses-sdk_FIND_SCRIPT_INSTALL_DIR}"
-            PATH_VARS PROJECT_INSTALL_HEADER PROJECT_INSTALL_STATIC_LIB PROJECT_INSTALL_SHARED_LIB
-            NO_SET_AND_CHECK_MACRO
-            NO_CHECK_REQUIRED_COMPONENTS_MACRO)
-        INSTALL(
-            FILES       ${CMAKE_CURRENT_BINARY_DIR}/cmake-config-${configmodule}/ramses-optional-${fname}
-            DESTINATION ${ramses-sdk_FIND_SCRIPT_INSTALL_DIR}
-            )
-        ACME_INFO("G ${fname} (${configmodule})")
-    endforeach()
 
     # generate CMake config file (use ${configmodule}Template.cmake.in as base)
     CONFIGURE_PACKAGE_CONFIG_FILE(

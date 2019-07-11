@@ -31,6 +31,15 @@ namespace ramses_internal
     };
 }
 
+#define CHECK_RETURN_ERR(expr) \
+    { \
+        const ramses::status_t statusRet = (expr); \
+        if (statusRet != ramses::StatusOK) \
+        { \
+            return statusRet; \
+        } \
+    }
+
 namespace ramses
 {
     class StatusObjectImpl

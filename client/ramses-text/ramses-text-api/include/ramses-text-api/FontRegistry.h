@@ -29,7 +29,7 @@ namespace ramses
         /**
         * @brief Destructor for FontRegistry. Destroys all created fonts
         */
-        virtual ~FontRegistry();
+        virtual ~FontRegistry() override;
 
         /**
         * @brief Get font instance object corresponding to given id
@@ -86,7 +86,20 @@ namespace ramses
         /**
         * Stores internal data for implementation specifics of FontRegistry.
         */
-        class FontRegistryImpl* impl;
+        class FontRegistryImpl& impl;
+
+        /**
+         * @brief Deleted copy constructor
+         * @param other unused
+         */
+        FontRegistry(const FontRegistry& other) = delete;
+
+        /**
+         * @brief Deleted copy assignment
+         * @param other unused
+         * @return unused
+         */
+        FontRegistry& operator=(const FontRegistry& other) = delete;
     };
 }
 

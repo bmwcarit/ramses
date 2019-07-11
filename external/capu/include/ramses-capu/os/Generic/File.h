@@ -29,36 +29,185 @@ namespace ramses_capu
         {
         public:
             File(const std::string& path);
-            File(const File& parent, const std::string& path);
-            const std::string getFileName() const;
-            const std::string getExtension() const;
+            status_t open(const FileMode& mode);
+            bool isOpen();
+            bool isEof();
+            status_t read(char* buffer, uint_t length, uint_t& numBytes);
+            status_t write(const char* buffer, uint_t length);
+            status_t flush();
+            status_t close();
+            std::string getFileName() const;
+            std::string getExtension() const;
             const std::string& getPath() const;
             status_t seek(int_t offset, FileSeekOrigin origin);
             ~File();
 
         protected:
+            bool mIsOpen;
             std::string mPath;
             FILE* mHandle;
         };
 
         inline
         File::File(const std::string& path)
-            : mPath(path)
+            : mIsOpen(false)
+            , mPath(path)
             , mHandle(NULL)
         {
-        }
-
-        inline
-        File::File(const File& parent, const std::string& path)
-            : mPath(parent.getPath())
-            , mHandle(NULL)
-        {
-            mPath.append("/").append(path);
         }
 
         inline
         File::~File()
         {
+            if (mHandle != NULL)
+            {
+                fclose(mHandle);
+            }
+        }
+
+        inline
+        bool
+        File::isOpen()
+        {
+            return mIsOpen;
+        }
+
+        inline
+        bool
+        File::isEof()
+        {
+            if (mHandle == NULL)
+            {
+                return false;
+            }
+            return (feof(mHandle) != 0);
+        }
+
+
+        inline
+        status_t File::open(const FileMode& mode)
+        {
+            // try to open file
+            const char* flags = "";
+            switch (mode)
+            {
+            case READ_ONLY:
+                flags = "r";
+                break;
+            case WRITE_NEW:
+                flags = "w";
+                break;
+            case READ_WRITE_EXISTING:
+                flags = "r+";
+                break;
+            case READ_WRITE_OVERWRITE_OLD:
+                flags = "w+";
+                break;
+            case READ_ONLY_BINARY:
+                flags = "rb";
+                break;
+            case WRITE_NEW_BINARY:
+                flags = "wb";
+                break;
+            case READ_WRITE_EXISTING_BINARY:
+                flags = "r+b";
+                break;
+            case READ_WRITE_OVERWRITE_OLD_BINARY:
+                flags = "w+b";
+                break;
+            default:
+                flags = "";
+            }
+            mHandle  = fopen(mPath.c_str(), flags);
+            if (mHandle != NULL)
+            {
+                mIsOpen = true;
+                return CAPU_OK;
+            }
+            return CAPU_ERROR;
+        }
+
+        inline
+        status_t
+        File::read(char* buffer, uint_t length, uint_t& numBytes)
+        {
+            if (buffer == NULL)
+            {
+                return CAPU_EINVAL;
+            }
+            if (mHandle == NULL)
+            {
+                return CAPU_ERROR;
+            }
+
+            size_t result = fread(buffer, 1, length, mHandle);
+
+            if (result == length)
+            {
+                numBytes = result;
+                return CAPU_OK;
+            }
+
+            if (feof(mHandle))
+            {
+                numBytes = result;
+                return CAPU_EOF;
+            }
+            return CAPU_ERROR;
+        }
+
+        inline
+        status_t
+        File::write(const char* buffer, uint_t length)
+        {
+            if (buffer == NULL)
+            {
+                return CAPU_EINVAL;
+            }
+            if (mHandle == NULL)
+            {
+                return CAPU_ERROR;
+            }
+            if (length == 0)
+            {
+                return CAPU_OK;
+            }
+
+            size_t result = fwrite(buffer, length, 1, mHandle);
+            if (result != 1u)
+            {
+                return CAPU_ERROR;
+            }
+            return CAPU_OK;
+        }
+
+        inline
+        status_t
+        File::flush()
+        {
+            if (mHandle != NULL)
+            {
+                int_t error = fflush(mHandle);
+                if (error == 0)
+                {
+                    return CAPU_OK;
+                }
+            }
+            return CAPU_ERROR;
+        }
+
+        inline
+        status_t
+        File::close()
+        {
+            if (mHandle != NULL)
+            {
+                fclose(mHandle);
+                mHandle = NULL;
+                mIsOpen = false;
+                return CAPU_OK;
+            }
+            return CAPU_ERROR;
         }
 
         inline
@@ -68,7 +217,7 @@ namespace ramses_capu
         }
 
         inline
-        const std::string File::getExtension() const
+        std::string File::getExtension() const
         {
             int_t position = StringUtils::LastIndexOf(mPath.c_str(), '.');
             if (position < 0)
@@ -80,7 +229,7 @@ namespace ramses_capu
         }
 
         inline
-        const std::string File::getFileName() const
+        std::string File::getFileName() const
         {
             int_t lastSeparator = StringUtils::LastIndexOf(mPath.c_str(), '/');
             if (lastSeparator == -1)

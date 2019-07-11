@@ -39,7 +39,7 @@ namespace ramses
         /**
         * @brief Destructor of RamsesRenderer
         */
-        virtual ~RamsesRenderer();
+        virtual ~RamsesRenderer() override;
 
         /**
         * @brief Prepare content to be rendered in next frame and render next frame.
@@ -549,11 +549,18 @@ namespace ramses
         */
         class RamsesRendererImpl& impl;
 
-    protected:
         /**
-        * @brief Copy constructor of RamsesRenderer
-        */
-        RamsesRenderer(const RamsesRenderer&);
+         * @brief Deleted copy constructor
+         * @param other unused
+         */
+        RamsesRenderer(const RamsesRenderer& other) = delete;
+
+        /**
+         * @brief Deleted copy assignment
+         * @param other unused
+         * @return unused
+         */
+        RamsesRenderer& operator=(const RamsesRenderer& other) = delete;
     };
 }
 

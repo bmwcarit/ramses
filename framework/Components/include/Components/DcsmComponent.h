@@ -16,6 +16,7 @@
 #include "PlatformAbstraction/PlatformLock.h"
 #include "ramses-framework-api/DcsmApiTypes.h"
 #include "Collections/HashMap.h"
+#include "Utils/IPeriodicLogSupplier.h"
 #include <unordered_map>
 
 
@@ -31,7 +32,7 @@ namespace ramses_internal
     class IDcsmProviderEventHandler;
     class IDcsmConsumerEventHandler;
 
-    class DcsmComponent final : public IDcsmComponent, public IConnectionStatusListener, public IDcsmProviderServiceHandler, public IDcsmConsumerServiceHandler
+    class DcsmComponent final : public IDcsmComponent, public IConnectionStatusListener, public IDcsmProviderServiceHandler, public IDcsmConsumerServiceHandler, public IPeriodicLogSupplier
     {
     public:
         DcsmComponent(const Guid& myID, ICommunicationSystem& communicationSystem, IConnectionStatusUpdateNotifier& connectionStatusUpdateNotifier, PlatformLock& frameworkLock);
@@ -69,6 +70,7 @@ namespace ramses_internal
 
         // for logging
         void logInfo();
+        virtual void triggerLogMessageForPeriodicLog() override;
 
         // For testing only
         Guid getContentProviderID(ContentID content) const;

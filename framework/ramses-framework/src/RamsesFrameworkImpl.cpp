@@ -50,6 +50,18 @@ namespace ramses
         m_ramsh->add(m_ramshCommandLogConnectionInformation);
         m_ramsh->add(m_ramshCommandLogDcsmInformation);
         m_periodicLogger.registerPeriodicLogSupplier(m_communicationSystem.get());
+        m_periodicLogger.registerPeriodicLogSupplier(&m_dcsmComponent);
+    }
+
+    RamsesFrameworkImpl::~RamsesFrameworkImpl()
+    {
+        LOG_INFO(CONTEXT_CLIENT, "RamsesFramework::~RamsesFramework: guid " << m_participantAddress.getParticipantId() << ", wasConnected " << m_connected);
+        if (m_connected)
+        {
+            disconnect();
+        }
+        m_periodicLogger.removePeriodicLogSupplier(m_communicationSystem.get());
+        m_periodicLogger.removePeriodicLogSupplier(&m_dcsmComponent);
     }
 
     ramses_internal::ResourceComponent& RamsesFrameworkImpl::getResourceComponent()
@@ -105,16 +117,6 @@ namespace ramses
     ramses_internal::StatisticCollectionFramework& RamsesFrameworkImpl::getStatisticCollection()
     {
         return m_statisticCollection;
-    }
-
-    RamsesFrameworkImpl::~RamsesFrameworkImpl()
-    {
-        LOG_INFO(CONTEXT_CLIENT, "RamsesFramework::~RamsesFramework: guid " << m_participantAddress.getParticipantId() << ", wasConnected " << m_connected);
-        if (m_connected)
-        {
-            disconnect();
-        }
-        m_periodicLogger.removePeriodicLogSupplier(m_communicationSystem.get());
     }
 
     ramses::status_t RamsesFrameworkImpl::connect()

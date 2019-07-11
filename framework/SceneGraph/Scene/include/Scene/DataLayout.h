@@ -32,6 +32,10 @@ namespace ramses_internal
             m_fieldOffsets.reserve(fields.size());
             for (const auto& field : fields)
             {
+                const uint32_t alignmentRequirement = static_cast<uint32_t>(EnumToAlignment(field.dataType));
+                if (m_totalSize % alignmentRequirement != 0)
+                    m_totalSize += alignmentRequirement - (m_totalSize % alignmentRequirement);
+
                 m_fieldOffsets.push_back(m_totalSize);
                 m_totalSize += static_cast<UInt32>(EnumToSize(field.dataType)) * field.elementCount;
             }

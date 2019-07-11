@@ -92,6 +92,7 @@ file(GLOB_RECURSE
     ../framework/ramses-framework-api/include/ramses-framework-api/*.h
     ../client/ramses-client/ramses-client-api/include/ramses-client-api/*.h
     ../client/ramses-text/ramses-text-api/include/ramses-text-api/*.h
+    ../client/ramses-client/ramses-client-api/include/*.h
     ../renderer/RendererLib/ramses-renderer-api/include/ramses-renderer-api/*.h)
 
 FILE(GLOB RAMSES_API_DOCUMENTS_ALL

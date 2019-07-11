@@ -34,6 +34,6 @@ private:
     static void DummyMethod();
 
     uint32_t m_newResourceId = 5000;
-    ramses::DefaultRendererResourceCache m_cache = ramses::DefaultRendererResourceCache(10 * 1000 * 1000);
+    ramses::DefaultRendererResourceCache m_cache{10 * 1000 * 1000};
 };
 #endif

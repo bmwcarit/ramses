@@ -35,11 +35,9 @@ namespace ramses_internal
         //from a non-existing file. Both return a string of length 0
         File textDataFile("res/test-text-data-empty.txt");
 
-        EXPECT_TRUE(textDataFile.exists() == false);
-
+        EXPECT_FALSE(textDataFile.exists());
         textDataFile.createFile();
-
-        EXPECT_TRUE(textDataFile.exists() == true);
+        EXPECT_TRUE(textDataFile.exists());
 
         String readText = FileUtils::ReadAllText(textDataFile);
         uint32_t textSize = static_cast<uint32_t>(readText.getLength());

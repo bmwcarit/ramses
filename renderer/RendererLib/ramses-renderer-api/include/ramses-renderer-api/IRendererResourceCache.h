@@ -25,7 +25,7 @@ namespace ramses
         /**
         * @brief Destructor of IRendererResourceCache
         */
-        virtual ~IRendererResourceCache() {};
+        virtual ~IRendererResourceCache() = default;
 
         /**
          * @brief Called by RamsesRenderer to ask for a resource with the given id.

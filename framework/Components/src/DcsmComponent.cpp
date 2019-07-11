@@ -1213,8 +1213,8 @@ namespace ramses_internal
         PlatformGuard guard(m_frameworkLock);
         LOG_INFO_F(CONTEXT_DCSM, ([&](StringOutputStream& sos) {
             sos << "DcsmComponent(" << m_myID << ")::logInfo:\n"
-                << "  LocalConsumer " << m_localConsumerAvailable << " (events pending " << m_providerEvents.size() << ")\n"
                 << "  LocalProvider " << m_localProviderAvailable << " (events pending " << m_consumerEvents.size() << ")\n"
+                << "  LocalConsumer " << m_localConsumerAvailable << " (events pending " << m_providerEvents.size() << ")\n"
                 << "  Connected participants:\n";
             for (const auto& p : m_connectedParticipants)
                 sos << "  - " << p << "\n";
@@ -1231,4 +1231,30 @@ namespace ramses_internal
         }));
     }
 
+    void DcsmComponent::triggerLogMessageForPeriodicLog()
+    {
+        PlatformGuard guard(m_frameworkLock);
+        LOG_INFO_F(CONTEXT_DCSM, ([&](StringOutputStream& sos) {
+            sos << "Dcsm(" << m_myID << ") LP:" << m_localProviderAvailable << " LC:" << m_localConsumerAvailable
+                << " CP[";
+            for (const auto& p : m_connectedParticipants)
+                sos << p << ";";
+            sos << "] C[";
+            for (const auto& p : m_contentRegistry)
+            {
+                const auto& ci = p.value;
+                sos << ci.content << "," << ci.category << "," << EnumToString(ci.state);
+                if (!ci.providerID.isInvalid())
+                    sos << "," << ci.providerID;
+                else
+                    sos << ",-";
+                if (!ci.consumerID.isInvalid())
+                    sos << "," << ci.consumerID;
+                else
+                    sos << ",-";
+                sos << ";";
+            }
+            sos << "]";
+        }));
+    }
 }

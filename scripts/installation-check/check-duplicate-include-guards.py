@@ -17,20 +17,22 @@ def main():
 
     print('Check for duplicate include guards')
 
-    guard = re.compile('#define (RAMSES_\w+_H)')
+    guard = re.compile(r'#define (RAMSES_\w+_H)')
     matches = {}
     for dirpath, _, files in os.walk(sdkroot):
         relpath = os.path.relpath(dirpath, sdkroot)
         if not relpath.startswith('.'):
             for fn in files:
-                full_path = os.path.join(dirpath, fn)
-                with open(full_path, 'r') as f:
-                    m = guard.search(f.read())
-                    if m:
-                        g = m.group(1)
-                        m = matches.get(g, [])
-                        m.append(full_path)
-                        matches[g] = m
+                # Exclude patch files - they will always emit duplicate header guards
+                if not fn.endswith('.patch'):
+                    full_path = os.path.join(dirpath, fn)
+                    with open(full_path, 'r') as f:
+                        m = guard.search(f.read())
+                        if m:
+                            g = m.group(1)
+                            m = matches.get(g, [])
+                            m.append(full_path)
+                            matches[g] = m
 
     dups = []
     for k, v in matches.iteritems():

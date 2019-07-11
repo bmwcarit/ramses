@@ -149,7 +149,13 @@ namespace ramses
 
     std::vector<uint8_t> FontRegistryImpl::LoadFile(const char* fontFileName)
     {
-        std::ifstream input(fontFileName, std::ios::binary);
-        return std::vector<uint8_t>(std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>());
+        std::ifstream input(fontFileName, std::ios::binary | std::ios::ate);
+        const auto size = input.tellg();
+        if (input.fail() || size < 0)
+            return {};
+        std::vector<uint8_t> vec(static_cast<std::size_t>(size));
+        input.seekg(0);
+        input.read(reinterpret_cast<char*>(vec.data()), vec.size());
+        return vec;
     }
 }

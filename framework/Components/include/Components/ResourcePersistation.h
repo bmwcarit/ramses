@@ -25,15 +25,11 @@ namespace ramses_internal
     class ResourcePersistation
     {
     public:
-        static String convertToResourceFilename(const String& filename);
-
         static void WriteNamedResourcesWithTOCToStream(BinaryFileOutputStream& outStream, const ManagedResourceVector& resourcesForFile, bool compress);
         static void WriteOneResourceToStream(IOutputStream& outStream, const ManagedResource& resource);
 
         static IResource* ReadOneResourceFromStream(IInputStream& inStream, const ResourceContentHash& hash);
         static IResource* RetrieveResourceFromStream(BinaryFileInputStream& inStream, const ResourceFileEntry& entry);
-    private:
-        static const char* ResourceFileExtension;
     };
 }
 

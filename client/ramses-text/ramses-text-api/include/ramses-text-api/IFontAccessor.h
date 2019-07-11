@@ -29,7 +29,7 @@ namespace ramses
         /**
         * @brief Empty destructor
         */
-        virtual ~IFontAccessor() {};
+        virtual ~IFontAccessor() = default;
 
         /**
         * @brief Gets a font instance object using font instance id

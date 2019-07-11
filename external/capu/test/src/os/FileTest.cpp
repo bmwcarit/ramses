@@ -30,15 +30,6 @@ TEST(File, ConstructorTest)
     EXPECT_TRUE(f2.isOpen());
 }
 
-TEST(File, ConstructorParentTest)
-{
-    ramses_capu::File parent("ParentDir");
-    ramses_capu::File childFile(parent, "childFilename");
-
-    EXPECT_STREQ("childFilename", childFile.getFileName().c_str());
-    EXPECT_STREQ("ParentDir/childFilename", childFile.getPath().c_str());
-}
-
 TEST(File, CantOpenNonExistingFile)
 {
     ramses_capu::File f1("foobar.txt");
@@ -311,99 +302,11 @@ TEST(File, TestCreateAndDelete)
     EXPECT_EQ(ramses_capu::CAPU_OK, file.remove());
     EXPECT_FALSE(file.exists());
 }
+
 TEST(File, TestExists)
 {
     ramses_capu::File file(".");
     EXPECT_TRUE(file.exists());
-}
-TEST(File, TestRenameSuccess)
-{
-    ramses_capu::File file("temp");
-    EXPECT_EQ(ramses_capu::CAPU_OK, file.createFile());
-    ramses_capu::status_t status = file.renameTo("temp2");
-    EXPECT_EQ(ramses_capu::CAPU_OK, status);
-    EXPECT_EQ(std::string("temp2"), file.getFileName());
-
-    ramses_capu::File file2("temp2");
-    EXPECT_TRUE(file2.exists());
-
-    status = file2.renameTo("temp");
-    EXPECT_EQ(ramses_capu::CAPU_OK, status);
-    EXPECT_EQ(std::string("temp"), file2.getFileName());
-
-    EXPECT_EQ(ramses_capu::CAPU_OK, file2.remove());
-}
-
-TEST(File, TestRenameFileDoesNotExist)
-{
-    ramses_capu::File file("something");
-    ramses_capu::status_t status = file.renameTo("somethingElse");
-    EXPECT_EQ(ramses_capu::CAPU_ERROR, status);
-    EXPECT_EQ(std::string("something"), file.getFileName());
-}
-
-TEST(File, TestCopy)
-{
-    ramses_capu::File file("something2");
-    ramses_capu::File fileDest("something3");
-    EXPECT_EQ(ramses_capu::CAPU_OK, file.createFile());
-
-    EXPECT_FALSE(fileDest.exists());
-    file.copyTo(fileDest.getFileName());
-    EXPECT_TRUE(fileDest.exists());
-
-    file.remove();
-    fileDest.remove();
-}
-
-TEST(File, TestCopyOnExisitingFile)
-{
-    ramses_capu::File file("something2");
-    ramses_capu::File fileDest("something3");
-    EXPECT_EQ(ramses_capu::CAPU_OK, file.createFile());
-    EXPECT_EQ(ramses_capu::CAPU_OK, fileDest.createFile());
-    fileDest.open(ramses_capu::READ_WRITE_EXISTING_BINARY);
-    fileDest.write("hello", 5u);
-    fileDest.close();
-
-    file.open(ramses_capu::READ_WRITE_EXISTING_BINARY);
-    file.write("overridden", 10u);
-    file.close();
-
-    EXPECT_EQ(ramses_capu::CAPU_OK, file.copyTo(fileDest.getFileName())); // will override the hello bytes.
-
-    EXPECT_TRUE(fileDest.exists());
-    ramses_capu::uint_t size;
-    fileDest.getSizeInBytes(size);
-    EXPECT_EQ(10u, size);
-
-    file.remove();
-    fileDest.remove();
-}
-
-TEST(File, TestCopyOnNotAccessibleDestFile)
-{
-    ramses_capu::File file("something2");
-    ramses_capu::File fileDest("/foo/something3");
-    EXPECT_EQ(ramses_capu::CAPU_OK, file.createFile());
-
-    EXPECT_EQ(ramses_capu::CAPU_ERROR, file.copyTo(fileDest.getPath()));
-    EXPECT_FALSE(fileDest.exists());
-
-    file.remove();
-    fileDest.remove();
-}
-
-TEST(File, TestCopyOnNotExistingSourceFile)
-{
-    ramses_capu::File file("/foo/something2");
-    ramses_capu::File fileDest("something3");
-
-    EXPECT_EQ(ramses_capu::CAPU_ERROR, file.copyTo(fileDest.getPath()));
-    EXPECT_FALSE(fileDest.exists());
-
-    file.remove();
-    fileDest.remove();
 }
 
 TEST(File, TestGetFilename)
@@ -494,77 +397,3 @@ TEST(File, CreateAndRemoveDirectory)
     EXPECT_FALSE(temp.isDirectory());
     EXPECT_FALSE(temp.exists());
 }
-
-TEST(File, GetParentFile1)
-{
-    bool success;
-    ramses_capu::File temp123("temp1/temp2/temp3");
-
-    ramses_capu::File temp12 = temp123.getParentFile(success);
-    EXPECT_TRUE(success);
-    EXPECT_STREQ("temp2", temp12.getFileName().c_str());
-
-    ramses_capu::File temp1 = temp12.getParentFile(success);
-    EXPECT_TRUE(success);
-    EXPECT_STREQ("temp1", temp1.getFileName().c_str());
-
-    // expect the working dir
-    ramses_capu::File temp0 = temp1.getParentFile(success);
-    EXPECT_TRUE(success);
-    EXPECT_TRUE(temp0.exists());
-}
-
-TEST(File, GetParentFile2)
-{
-    bool success;
-    ramses_capu::File temp123("/temp1/temp2/temp3");
-    ramses_capu::File temp12 = temp123.getParentFile(success);
-    EXPECT_TRUE(success);
-    EXPECT_STREQ("temp2", temp12.getFileName().c_str());
-
-    ramses_capu::File temp1 = temp12.getParentFile(success);
-    EXPECT_TRUE(success);
-    EXPECT_STREQ("temp1", temp1.getFileName().c_str());
-
-    ramses_capu::File temp = temp1.getParentFile(success);
-    EXPECT_TRUE(success);
-    EXPECT_TRUE(temp.exists());
-
-    ramses_capu::File temp0 = temp.getParentFile(success);
-    EXPECT_FALSE(success);
-}
-
-#ifdef OS_WINDOWS
-
-TEST(File, GetParentFile3)
-{
-    bool success;
-    ramses_capu::File temp1234("d:/temp1\\temp2/temp3\\temp4");
-    ramses_capu::File temp123 = temp1234.getParentFile(success);
-    EXPECT_TRUE(success);
-    EXPECT_STREQ("temp3", temp123.getFileName().c_str());
-
-    ramses_capu::File temp12 = temp123.getParentFile(success);
-    EXPECT_TRUE(success);
-    EXPECT_STREQ("temp2", temp12.getFileName().c_str());
-
-    ramses_capu::File temp1 = temp12.getParentFile(success);
-    EXPECT_TRUE(success);
-    EXPECT_STREQ("temp1", temp1.getFileName().c_str());
-
-    ramses_capu::File temp0 = temp1.getParentFile(success);
-    EXPECT_TRUE(success);
-
-    ramses_capu::File temp00 = temp0.getParentFile(success);
-    EXPECT_FALSE(success);
-}
-
-TEST(File, GetParentFile4)
-{
-    bool success;
-    ramses_capu::File temp("d:/");
-    ramses_capu::File temp0 = temp.getParentFile(success);
-    EXPECT_FALSE(success);
-}
-
-#endif

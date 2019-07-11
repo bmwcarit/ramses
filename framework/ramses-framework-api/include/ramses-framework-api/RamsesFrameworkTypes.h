@@ -165,15 +165,6 @@ namespace ramses
     * @brief Requests the render to not cache a resource. This is the default value.
     */
     const resourceCacheFlag_t ResourceCacheFlag_DoNotCache = resourceCacheFlag_t(static_cast<uint32_t>(-1));
-
-#define CHECK_RETURN_ERR(expr) \
-    { \
-        const ramses::status_t statusRet = (expr); \
-        if (statusRet != ramses::StatusOK) \
-        { \
-            return statusRet; \
-        } \
-    }
 }
 
 #endif

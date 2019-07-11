@@ -41,7 +41,7 @@ namespace ramses
         /**
         * @brief Destructor of RamsesFrameworkConfig
         */
-        ~RamsesFrameworkConfig();
+        ~RamsesFrameworkConfig() override;
 
         /**
          * @brief Request a certain type of ramses shell
@@ -159,11 +159,18 @@ namespace ramses
         */
         class RamsesFrameworkConfigImpl& impl;
 
-    private:
         /**
-        * @brief Copy constructor of RamsesFrameworkConfig
-        */
-        RamsesFrameworkConfig(const RamsesFrameworkConfig&);
+         * @brief Deleted copy constructor
+         * @param other unused
+         */
+        RamsesFrameworkConfig(const RamsesFrameworkConfig& other) = delete;
+
+        /**
+         * @brief Deleted copy assignment
+         * @param other unused
+         * @return unused
+         */
+        RamsesFrameworkConfig& operator=(const RamsesFrameworkConfig& other) = delete;
     };
 
 }

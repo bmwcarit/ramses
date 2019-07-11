@@ -39,6 +39,19 @@ namespace ramses
         * Stores internal data for implementation specifics of WarpingMeshData.
         */
         class WarpingMeshDataImpl& impl;
+
+        /**
+         * @brief Deleted copy constructor
+         * @param other unused
+         */
+        WarpingMeshData(const WarpingMeshData& other) = delete;
+
+        /**
+         * @brief Deleted copy assignment
+         * @param other unused
+         * @return unused
+         */
+        WarpingMeshData& operator=(const WarpingMeshData& other) = delete;
     };
 }
 

@@ -74,7 +74,7 @@ namespace ramses
         /**
         * @brief Destructor of IBinaryShaderCache
         */
-        virtual ~IBinaryShaderCache() {};
+        virtual ~IBinaryShaderCache() = default;
 
         /**
          * @brief Used by RamsesRenderer to ask the application if it provides binary data for the Effect with the given effectId.

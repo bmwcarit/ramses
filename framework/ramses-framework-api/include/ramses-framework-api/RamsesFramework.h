@@ -13,6 +13,7 @@
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "RamsesFrameworkConfig.h"
 #include "ramses-framework-api/APIExport.h"
+#include "ramses-framework-api/StatusObject.h"
 
 namespace ramses
 {
@@ -23,7 +24,7 @@ namespace ramses
     * @brief Class representing ramses framework components that are needed
     *        to initialize an instance of ramses client and renderer.
     */
-    class RAMSES_API RamsesFramework
+    class RAMSES_API RamsesFramework : public StatusObject
     {
     public:
         /**
@@ -119,18 +120,25 @@ namespace ramses
         /**
         * @brief Destructor of RamsesFramework
         */
-        ~RamsesFramework();
+        ~RamsesFramework() override;
 
         /**
         * Stores internal data for implementation specifics of RamsesFramework
         */
         class RamsesFrameworkImpl& impl;
 
-    private:
         /**
-        * @brief Copy constructor of RamsesFramework
-        */
-        RamsesFramework(const RamsesFramework&);
+         * @brief Deleted copy constructor
+         * @param other unused
+         */
+        RamsesFramework(const RamsesFramework& other) = delete;
+
+        /**
+         * @brief Deleted copy assignment
+         * @param other unused
+         * @return unused
+         */
+        RamsesFramework& operator=(const RamsesFramework& other) = delete;
     };
 }
 

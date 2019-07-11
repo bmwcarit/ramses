@@ -63,9 +63,10 @@ namespace ramses
         unsigned int height = 0;
         std::vector<unsigned char> data;
 
-        if (lodepng::decode(data, width, height, pngFilePath) != 0)
+        const unsigned int ret = lodepng::decode(data, width, height, pngFilePath);
+        if (ret != 0)
         {
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesUtils::CreateTextureResourceFromPng: Could not load PNG. File not found or invalid format: " << pngFilePath);
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesUtils::CreateTextureResourceFromPng: Could not load PNG. File not found or invalid format: " << pngFilePath << " (error code " << ret << ")");
             return nullptr;
         }
 

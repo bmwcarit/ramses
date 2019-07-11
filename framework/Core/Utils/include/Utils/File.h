@@ -39,14 +39,11 @@ namespace ramses_internal
     {
     public:
         explicit File(const String& filepath);
-        File(const File& parent, const String& path);
         EStatus open(const EFileMode& mode);
         EStatus createFile();
         EStatus createDirectory();
         Bool exists() const;
         EStatus remove();
-        EStatus renameTo(const String& newPath);
-        EStatus copyTo(const String& newPath);
         Bool isOpen();
         Bool isEof();
         Bool isDirectory() const;
@@ -57,10 +54,9 @@ namespace ramses_internal
         EStatus getPos(UInt& position);
         EStatus flush();
         EStatus close();
-        const String getFileName() const;
-        const String getPath() const;
-        const String getExtension() const;
-        File getParentFile(Bool& success) const;
+        String getFileName() const;
+        String getPath() const;
+        String getExtension() const;
 
     private:
         explicit File(const ramses_capu::File& file);
@@ -72,12 +68,6 @@ namespace ramses_internal
     inline
     File::File(const String& filepath)
         : ramses_capu::File(filepath.stdRef())
-    {
-    }
-
-    inline
-    File::File(const File& parent, const String& path)
-        : ramses_capu::File(parent, path.stdRef())
     {
     }
 
@@ -119,20 +109,6 @@ namespace ramses_internal
     File::remove()
     {
         return static_cast<EStatus>(ramses_capu::File::remove());
-    }
-
-    inline
-    EStatus
-    File::renameTo(const String& newPath)
-    {
-        return static_cast<EStatus>(ramses_capu::File::renameTo(newPath.stdRef()));
-    }
-
-    inline
-    EStatus
-    File::copyTo(const String& newPath)
-    {
-        return static_cast<EStatus>(ramses_capu::File::copyTo(newPath.stdRef()));
     }
 
     inline
@@ -192,31 +168,24 @@ namespace ramses_internal
     }
 
     inline
-    const String
+    String
     File::getFileName() const
     {
         return String(ramses_capu::File::getFileName());
     }
 
     inline
-    const String
+    String
     File::getPath() const
     {
         return String(ramses_capu::File::getPath());
     }
 
     inline
-    const String
+    String
     File::getExtension() const
     {
         return String(ramses_capu::File::getExtension());
-    }
-
-    inline
-    File
-    File::getParentFile(Bool& success) const
-    {
-        return File(ramses_capu::File::getParentFile(success));
     }
 
     inline

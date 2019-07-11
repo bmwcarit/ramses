@@ -9,6 +9,7 @@
 import test_classes
 import log
 import re
+from ramses_test_framework import application
 
 def ramses_process_check(target):
     ramsesProcesses = target.get_process_list("ramses")
@@ -32,8 +33,8 @@ def ensureSystemCompositorRoundTrip(renderer, ivisurfaceid):
     watchRenderer = renderer.start_watch_stdout()
     renderer.send_ramsh_command("scSetSurfaceOpacity {0} 0.5".format(ivisurfaceid))
     renderer.send_ramsh_command("scSetSurfaceOpacity {0} 1.0".format(ivisurfaceid))
-    opacityExecutedInSystemCompositor = renderer.wait_for_msg_in_stdout(watchRenderer, "IVIControllerSurface::HandleOpacityCallBack ivi-id: {0} opacity: 256".format(ivisurfaceid), timeout=15)
-    assert(opacityExecutedInSystemCompositor) # Could not ensure system compositor roundtrip
+    opacityExecutedInSystemCompositor = renderer.wait_for_msg_in_stdout(watchRenderer, "IVIControllerSurface::HandleOpacityCallBack ivi-id: {0} opacity: 256".format(ivisurfaceid), timeout=application.Application.DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT)
+    assert(opacityExecutedInSystemCompositor)  # Could not ensure system compositor roundtrip
 
 
 class IVI_Control(object):

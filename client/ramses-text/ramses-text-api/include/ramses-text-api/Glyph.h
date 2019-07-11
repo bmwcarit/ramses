@@ -59,13 +59,23 @@ namespace ramses
         }
 
         /**
-        * @brief Comparison operator
+        * @brief Equal comparison operator
         * @param[in] rhs The glyph key to be compared with
         * @returns True if glyph keys are identical, false otherwise
         */
         bool operator==(const GlyphKey& rhs) const
         {
             return identifier == rhs.identifier && fontInstanceId == rhs.fontInstanceId;
+        }
+
+        /**
+        * @brief Unequal comparison operator
+        * @param[in] rhs The glyph key to be compared with
+        * @returns False if glyph keys are identical, true otherwise
+        */
+        bool operator!=(const GlyphKey& rhs) const
+        {
+            return !(*this == rhs);
         }
 
         /// Glyph id

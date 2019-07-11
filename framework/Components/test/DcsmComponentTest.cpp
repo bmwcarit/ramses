@@ -1822,7 +1822,7 @@ namespace ramses_internal
     // TODO: test handleForceStopOfferContent in every state + does not show for late new local consumer
 
 
-    TEST_F(ADcsmComponent, canLogInfo)
+    TEST_F(ADcsmComponent, canCallLogFunctions)
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
@@ -1836,6 +1836,7 @@ namespace ramses_internal
         EXPECT_TRUE(comp.sendRequestStopOfferContent(ContentID(11)));
         EXPECT_TRUE(comp.sendContentStateChange(ContentID(11), EDcsmState::AcceptStopOffer, SizeInfo{0, 0}, AnimationInformation{4, 5}));
         comp.logInfo();
+        comp.triggerLogMessageForPeriodicLog();
         ignorePendingEvents();
     }
 

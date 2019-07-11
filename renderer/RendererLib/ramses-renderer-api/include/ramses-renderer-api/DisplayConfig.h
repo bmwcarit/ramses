@@ -382,6 +382,13 @@ namespace ramses
         * Stores internal data for implementation specifics of DisplayConfig.
         */
         class DisplayConfigImpl& impl;
+
+        /**
+         * @brief Deleted copy assignment
+         * @param other unused
+         * @return unused
+         */
+        DisplayConfig& operator=(const DisplayConfig& other) = delete;
     };
 }
 

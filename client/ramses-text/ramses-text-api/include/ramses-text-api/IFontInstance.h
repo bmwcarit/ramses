@@ -24,7 +24,7 @@ namespace ramses
         /**
         * @brief Empty destructor
         */
-        virtual ~IFontInstance() {};
+        virtual ~IFontInstance() = default;
 
         /**
         * @brief Check if font instance supports a char using it's UTF32 char code

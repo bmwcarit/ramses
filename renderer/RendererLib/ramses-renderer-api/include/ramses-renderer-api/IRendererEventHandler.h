@@ -298,9 +298,7 @@ namespace ramses
         /**
         * @brief Empty destructor
         */
-        virtual ~IRendererEventHandler()
-        {
-        }
+        virtual ~IRendererEventHandler() = default;
     };
 
     /**

@@ -77,8 +77,8 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         # The two ivi-gears are started before the renderer, to cover the case, that the scc gets the notification of the already
         # exisiting surfaces at it's startup time. In addition there is also a test which covers the case, when the renderer gets notified
         # about a newly created ivi-surface.
-        self.assertTrue(self.wlClient1.is_initialised(timeout=30))
-        self.assertTrue(self.wlClient2.is_initialised(timeout=30))
+        self.assertTrue(self.wlClient1.is_initialised(timeout=application.Application.DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT))
+        self.assertTrue(self.wlClient2.is_initialised(timeout=application.Application.DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT))
 
         # Start daemon
         self.ramsesDaemon = self.target.start_daemon()

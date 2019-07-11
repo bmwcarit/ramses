@@ -190,6 +190,13 @@ namespace ramses
         * Stores internal data for implementation specifics of RendererConfig.
         */
         class RendererConfigImpl& impl;
+
+        /**
+         * @brief Deleted copy assignment
+         * @param other unused
+         * @return unused
+         */
+        RendererConfig& operator=(const RendererConfig& other) = delete;
     };
 }
 

@@ -18,7 +18,7 @@
 class RendererTestEventHandler : public ramses::RendererEventHandlerEmpty
 {
 public:
-    RendererTestEventHandler(ramses::RamsesRenderer& renderer, const uint64_t timeoutMs = 2000u)
+    RendererTestEventHandler(ramses::RamsesRenderer& renderer, const uint64_t timeoutMs = 6000u)
         : m_renderer(renderer)
         , m_timeoutMs(timeoutMs)
     {

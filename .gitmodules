@@ -19,5 +19,6 @@
 	path = external/asio
 	branch = refs/heads/asio-1-12-2
 [submodule "external/lz4"]
-	path = external/lz4
 	url = https://github.com/lz4/lz4.git
+	path = external/lz4
+	branch = refs/heads/v1.7.5

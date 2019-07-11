@@ -12,6 +12,7 @@ from ramses_test_framework import log
 from ramses_test_framework import helper
 from ramses_test_framework.ramses_test_extensions import with_ramses_process_check
 from ramses_test_framework.targets.target import DEFAULT_TEST_LAYER
+from ramses_test_framework import application
 
 # The test start a RAMSES renderer, those surface is initially invisible. The test application then
 # creates and shows a scene with a red triangle. After the sceneShown event is received from the renderer
@@ -46,10 +47,10 @@ class TestNoInitialBlackFrame(test_classes.OnSelectedTargetsTest):
         log.info("output saved")
 
     def impl_test(self):
-        surfaceMadeVisible = self.application.wait_for_msg_in_stdout_from_beginning("Surface should be still invisible", timeout=30)
+        surfaceMadeVisible = self.application.wait_for_msg_in_stdout_from_beginning("Surface should be still invisible", timeout=application.Application.DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT)
 
         self.validateScreenshot(self.application, "black_rgb.png", useSystemCompositorForScreenshot=True)
 
-        self.assertTrue(self.application.send_ramsh_command("step 1", response_message="Surface with scene should now be visible", timeout=1))
+        self.assertTrue(self.application.send_ramsh_command("step 1", response_message="Surface with scene should now be visible", timeout=application.Application.DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT))
 
         self.validateScreenshot(self.application, "red_triangle_on_blue_background.png", useSystemCompositorForScreenshot=True)

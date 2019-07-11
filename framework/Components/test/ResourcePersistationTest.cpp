@@ -81,15 +81,6 @@ namespace ramses_internal
         ResourceDeleterCallingCallback m_deleterMock;
     };
 
-    TEST_F(AResourcePersistation, convertFilenameToResourceFilename)
-    {
-        EXPECT_STREQ( "test.ramres",           ResourcePersistation::convertToResourceFilename( "test.ramscene" ).c_str());
-        EXPECT_STREQ( "relative/path.ramres",  ResourcePersistation::convertToResourceFilename( "relative/path.ramscene" ).c_str());
-        EXPECT_STREQ( "/absolute/path.ramres", ResourcePersistation::convertToResourceFilename( "/absolute/path.ramscene" ).c_str());
-        EXPECT_STREQ( "anything.ramres",       ResourcePersistation::convertToResourceFilename( "anything.xml" ).c_str());
-        EXPECT_STREQ( "noExtension.ramres",    ResourcePersistation::convertToResourceFilename( "noExtension" ).c_str());
-    }
-
     TEST_F(AResourcePersistation, WriteRead_TextureResource)
     {
         const TextureMetaInfo texDesc(2u, 3u, 1u, ETextureFormat_RGB8, false, { 1u, 2u });

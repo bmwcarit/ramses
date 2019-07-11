@@ -24,6 +24,19 @@ namespace ramses
         */
         class AnimatedPropertyImpl& impl;
 
+        /**
+         * @brief Deleted copy constructor
+         * @param other unused
+         */
+        AnimatedProperty(const AnimatedProperty& other) = delete;
+
+        /**
+         * @brief Deleted copy assignment
+         * @param other unused
+         * @return unused
+         */
+        AnimatedProperty& operator=(const AnimatedProperty& other) = delete;
+
     protected:
         /**
         * @brief AnimatedPropertyFactory is the factory for creating animated properties.
@@ -42,24 +55,9 @@ namespace ramses
         explicit AnimatedProperty(AnimatedPropertyImpl& pimpl);
 
         /**
-        * @brief Copy constructor of animated property
-        *
-        * @param[in] other Other instance of animated property class
-        */
-        AnimatedProperty(const AnimatedProperty& other);
-
-        /**
-        * @brief Assignment operator of animated property.
-        *
-        * @param[in] other Other instance of animated property class
-        * @return This instance after assignment
-        */
-        AnimatedProperty& operator=(const AnimatedProperty& other);
-
-        /**
         * @brief Destructor of the animated property
         */
-        virtual ~AnimatedProperty();
+        virtual ~AnimatedProperty() override;
     };
 
     /// Vector component ID for binding single/multi component data

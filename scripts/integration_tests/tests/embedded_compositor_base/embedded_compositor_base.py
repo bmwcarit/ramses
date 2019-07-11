@@ -9,6 +9,7 @@
 from ramses_test_framework import test_classes
 from ramses_test_framework import log
 from ramses_test_framework.ramses_test_extensions import with_ramses_process_check
+from ramses_test_framework import application
 
 
 class EmbeddedCompositorBase(test_classes.OnSelectedTargetsTest):
@@ -58,7 +59,7 @@ class EmbeddedCompositorBase(test_classes.OnSelectedTargetsTest):
         self.addCleanup(self.target.kill_application, self.wlClient)
         surfaceFound = self.renderer.wait_for_msg_in_stdout(self.watchSurfaceFound,
                                                             "embedded-compositing client surface found for existing streamtexture: {}".format(iviID),
-                                                            timeout=30)
+                                                            timeout=application.Application.DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT)
         self.assertTrue(surfaceFound, msg="Surface was not found by renderer")
 
     def _killIviGears(self):
@@ -66,7 +67,7 @@ class EmbeddedCompositorBase(test_classes.OnSelectedTargetsTest):
         self.target.kill_application(self.wlClient)
         surfaceIsGone = self.renderer.wait_for_msg_in_stdout(self.watchSurfaceIsGone,
                                                             "embedded-compositing client surface destroyed",
-                                                            timeout=30)
+                                                            timeout=application.Application.DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT)
         self.assertTrue(surfaceIsGone, msg="Surface was not destroyed")
 
     def _stopIviGears(self):
@@ -74,7 +75,7 @@ class EmbeddedCompositorBase(test_classes.OnSelectedTargetsTest):
         self.target.execute_on_target("killall -SIGINT " + self.wlClient.name)
         surfaceIsGone = self.renderer.wait_for_msg_in_stdout(self.watchSurfaceIsGone,
                                                             "embedded-compositing client surface destroyed",
-                                                            timeout=30)
+                                                            timeout=application.Application.DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT)
         self.assertTrue(surfaceIsGone, msg="Surface was not destroyed")
 
     def syncSceneOnClientAndRenderer(self, sceneId):

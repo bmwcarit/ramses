@@ -28,8 +28,9 @@ namespace ramses_internal
 
     void Image::loadFromFilePNG(const String& filename)
     {
-        if (lodepng::decode(m_data, m_width, m_height, filename.c_str()) != 0)
-            LOG_ERROR(CONTEXT_FRAMEWORK, "Error while loading PNG file: " << filename);
+        const unsigned int ret = lodepng::decode(m_data, m_width, m_height, filename.c_str());
+        if (ret != 0)
+            LOG_ERROR(CONTEXT_FRAMEWORK, "Error while loading PNG file: " << filename << " (error code " << ret << ")");
     }
 
     void Image::saveToFilePNG(const String& filename) const

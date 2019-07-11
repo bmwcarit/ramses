@@ -22,21 +22,6 @@
 
 namespace ramses_internal
 {
-    const char* ResourcePersistation::ResourceFileExtension = ".ramres";
-
-    String ResourcePersistation::convertToResourceFilename( const String& filename )
-    {
-        const ramses_internal::File originalFile( filename );
-        const ramses_internal::String fileExtension = originalFile.getExtension();
-        const ramses_internal::Bool filenameHasExtension = fileExtension.getLength() > 0u;
-
-        const ramses_internal::UInt filenameLength   = filename.getLength();
-        const ramses_internal::UInt extensionLength  = fileExtension.getLength() + (filenameHasExtension ? 1u : 0u);
-        const ramses_internal::UInt basePathLength   = filenameLength - extensionLength;
-
-        return filename.substr(0u, basePathLength ) + ResourceFileExtension;
-    }
-
     void ResourcePersistation::WriteOneResourceToStream(IOutputStream& outStream, const ManagedResource& resource)
     {
         const IResource& r = *resource.getResourceObject();

@@ -12,7 +12,7 @@ from ramses_test_framework import log
 
 class Application:
 
-    DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT = 30
+    DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT = 60
 
     def __init__(self, stdin, stdout, stderr, name, workingDirectoryAbsolute, nameExtension=""):
         self.stdin = stdin

@@ -97,12 +97,23 @@ namespace ramses
         */
         bool                    deleteTextLine(TextLineId textId);
 
-    private:
-
         /**
         * Stores internal data for implementation specifics of TextCache.
         */
         class TextCacheImpl* impl;
+
+        /**
+         * @brief Deleted copy constructor
+         * @param other unused
+         */
+        TextCache(const TextCache& other) = delete;
+
+        /**
+         * @brief Deleted copy assignment
+         * @param other unused
+         * @return unused
+         */
+        TextCache& operator=(const TextCache& other) = delete;
     };
 }
 

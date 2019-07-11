@@ -14,19 +14,22 @@
 namespace ramses
 {
     RamsesFramework::RamsesFramework(int32_t argc, const char * argv[])
-        : impl(RamsesFrameworkImpl::createImpl(argc, argv))
+        : StatusObject(RamsesFrameworkImpl::createImpl(argc, argv))
+        , impl(static_cast<RamsesFrameworkImpl&>(StatusObject::impl))
     {
         LOG_HL_CLIENT_API1(LOG_API_VOID, ramses_internal::APILoggingHelper::MakeLoggingString(argc, argv));
     }
 
     RamsesFramework::RamsesFramework(int32_t argc, char * argv[])
-        : impl(RamsesFrameworkImpl::createImpl(argc, const_cast<const char**>(argv)))
+        : StatusObject(RamsesFrameworkImpl::createImpl(argc, const_cast<const char**>(argv)))
+        , impl(static_cast<RamsesFrameworkImpl&>(StatusObject::impl))
     {
         LOG_HL_CLIENT_API1(LOG_API_VOID, ramses_internal::APILoggingHelper::MakeLoggingString(argc, const_cast<const char**>(argv)));
     }
 
     RamsesFramework::RamsesFramework(const RamsesFrameworkConfig& config)
-        : impl(RamsesFrameworkImpl::createImpl(config))
+        : StatusObject(RamsesFrameworkImpl::createImpl(config))
+        , impl(static_cast<RamsesFrameworkImpl&>(StatusObject::impl))
     {
         LOG_HL_CLIENT_API1(LOG_API_VOID, LOG_API_GENERIC_OBJECT_STRING(config));
     }
@@ -34,7 +37,6 @@ namespace ramses
     RamsesFramework::~RamsesFramework()
     {
         LOG_HL_CLIENT_API_NOARG(LOG_API_VOID);
-        delete &impl;
     }
 
     status_t RamsesFramework::connect()

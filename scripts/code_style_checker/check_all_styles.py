@@ -68,6 +68,7 @@ Takes a path as input and runs style/license header checks with filters where ne
     shared_blacklist = binary_files | {
         r'\.git',
         r'\.gitignore',
+        r'\.patch',
         r'gitconfig$',
         r'\.clang-format$',
         r'\.clang-tidy$',

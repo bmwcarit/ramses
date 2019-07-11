@@ -137,6 +137,38 @@ namespace ramses_internal
         };
     }
 
+    inline UInt EnumToAlignment(EDataType type)
+    {
+        switch (type)
+        {
+        case EDataType_Int32            : return alignof(Int32);
+        case EDataType_UInt16           : return alignof(UInt16);
+        case EDataType_UInt32           : return alignof(UInt32);
+        case EDataType_Float            : return alignof(Float);
+        case EDataType_Vector2F         : return alignof(Float);
+        case EDataType_Vector3F         : return alignof(Float);
+        case EDataType_Vector4F         : return alignof(Float);
+        case EDataType_Vector2I         : return alignof(Int32);
+        case EDataType_Vector3I         : return alignof(Int32);
+        case EDataType_Vector4I         : return alignof(Int32);
+        case EDataType_Matrix22F        : return alignof(Float);
+        case EDataType_Matrix33F        : return alignof(Float);
+        case EDataType_Matrix44F        : return alignof(Float);
+
+        case EDataType_DataReference    : return alignof(DataInstanceHandle);
+        case EDataType_TextureSampler   : return alignof(TextureSamplerHandle);
+        case EDataType_Indices          : return alignof(ResourceField);
+        case EDataType_UInt16Buffer     : return alignof(ResourceField);
+        case EDataType_FloatBuffer      : return alignof(ResourceField);
+        case EDataType_Vector2Buffer    : return alignof(ResourceField);
+        case EDataType_Vector3Buffer    : return alignof(ResourceField);
+        case EDataType_Vector4Buffer    : return alignof(ResourceField);
+        default:
+            assert(false);
+            return 0;
+        };
+    }
+
     inline static Bool IsBufferDataType(EDataType dataType)
     {
         return dataType == EDataType_Indices

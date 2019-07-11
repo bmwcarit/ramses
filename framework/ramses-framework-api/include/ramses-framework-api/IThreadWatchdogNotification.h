@@ -39,7 +39,7 @@ namespace ramses
         /**
         * Virtual destructor of IThreadWatchdogNotification
         */
-        virtual ~IThreadWatchdogNotification() {};
+        virtual ~IThreadWatchdogNotification() = default;
 
         /**
         * This method is invoked cyclic with threadID of alive threads.

@@ -95,11 +95,7 @@ namespace ramses_internal
             {
                 const DataLayoutHandle layoutHandle = iscene.getLayoutOfDataInstance(DataInstanceHandle(h));
                 const DataLayout& layout = iscene.getDataLayout(layoutHandle);
-                const uint32_t numFields = layout.getFieldCount();
-                for(uint32_t j = 0; j < numFields; ++j)
-                {
-                    memoryUsage += static_cast<UInt32>(EnumToSize(layout.getField(DataFieldHandle(j)).dataType) * layout.getField(DataFieldHandle(j)).elementCount);
-                }
+                memoryUsage += layout.getTotalSize();
             }
             return memoryUsage;
         }));

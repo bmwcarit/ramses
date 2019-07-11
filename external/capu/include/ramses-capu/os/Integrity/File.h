@@ -31,12 +31,9 @@ namespace ramses_capu
         class File: private ramses_capu::posix::File
         {
         public:
-            File(const std::string& path);
-            File(const File& parent, const std::string& path);
-
-            status_t open(const FileMode& mode);
-            status_t close();
-
+            using ramses_capu::posix::File::File;
+            using ramses_capu::posix::File::open;
+            using ramses_capu::posix::File::close;
             using ramses_capu::posix::File::isOpen;
             using ramses_capu::posix::File::isEof;
             using ramses_capu::posix::File::read;
@@ -44,7 +41,6 @@ namespace ramses_capu
             using ramses_capu::posix::File::seek;
             using ramses_capu::posix::File::getCurrentPosition;
             using ramses_capu::posix::File::flush;
-            using ramses_capu::posix::File::renameTo;
             using ramses_capu::posix::File::createFile;
             using ramses_capu::posix::File::createDirectory;
             using ramses_capu::posix::File::remove;
@@ -52,37 +48,10 @@ namespace ramses_capu
             using ramses_capu::posix::File::getFileName;
             using ramses_capu::posix::File::getExtension;
             using ramses_capu::posix::File::getPath;
-            using ramses_capu::posix::File::getParentPath;
             using ramses_capu::posix::File::getSizeInBytes;
             using ramses_capu::posix::File::isDirectory;
-            using ramses_capu::posix::File::copyTo;
 
         };
-
-        inline
-        File::File(const std::string& path)
-            : ramses_capu::posix::File(path)
-        {
-        }
-
-        inline
-        File::File(const File& parent, const std::string& path)
-            : ramses_capu::posix::File(parent, path)
-        {
-        }
-
-        inline
-        status_t File::open(const FileMode& mode)
-        {
-            return ramses_capu::posix::File::open(mode);
-        }
-
-        inline
-        status_t File::close()
-        {
-            return ramses_capu::posix::File::close();
-        }
-
     }
 }
 #endif // RAMSES_CAPU_INTEGRITY_ARM_V7L_FILE_H
