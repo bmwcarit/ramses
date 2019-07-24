@@ -26,6 +26,7 @@
 #include <fstream>
 #include "ramses-capu/os/StringUtils.h"
 #include <ramses-capu/os/PlatformInclude.h>
+#include "ScreenshotSaver.h"
 
 namespace ramses_internal
 {
@@ -35,6 +36,10 @@ namespace ramses_internal
         , m_scenePathAndFileArgument(m_parser, "s", "scene", String(), "Scene path+file")
         , m_optionalResFileArgument(m_parser, "r", "res", String(), "Resource file")
         , m_validationUnrequiredObjectsDirectoryArgument(m_parser, "vd", "validation-output-directory", String(), "Directory Path were validation output should be saved")
+        , m_screenshotFile(m_parser, "x", "screenshot-file", String(), "Screenshot filename. Setting to non-empty enables screenshot capturing after the scene is shown")
+        , m_screenshotWidth(m_parser, "xw", "screenshot-width", 800, "The chosen width for the screenshot if selected")
+        , m_screenshotHeight(m_parser, "xh", "screenshot-height", 600, "The chosen height for the screenshot if selected")
+        , m_screenshotSaver{nullptr}
     {
         GetRamsesLogger().initialize(m_parser, String(), String(), false);
 
@@ -70,7 +75,7 @@ namespace ramses_internal
 
     void SceneViewer::printUsage() const
     {
-        String argumentHelpString = m_helpArgument.getHelpString() + m_scenePathAndFileArgument.getHelpString() + m_optionalResFileArgument.getHelpString() + m_validationUnrequiredObjectsDirectoryArgument.getHelpString();
+        String argumentHelpString = m_helpArgument.getHelpString() + m_scenePathAndFileArgument.getHelpString() + m_optionalResFileArgument.getHelpString() + m_validationUnrequiredObjectsDirectoryArgument.getHelpString() + m_screenshotWidth.getHelpString() + m_screenshotHeight.getHelpString() + m_screenshotFile.getHelpString();
 
         const String& programName = m_parser.getProgramName();
         LOG_INFO(CONTEXT_CLIENT,
@@ -94,6 +99,19 @@ namespace ramses_internal
         ramses_display_manager::DisplayManager displayManager(renderer, framework, false);
 
         ramses::DisplayConfig displayConfig(argc, argv);
+        // TODO add a getter for screen width/height in DisplayConfig and remove m_screenshotWidth and m_screenshotHeight and this error check
+        const String screenshotFile = m_screenshotFile;
+        if (screenshotFile != "")
+        {
+            const auto result = displayConfig.setWindowRectangle(0, 0, m_screenshotWidth, m_screenshotHeight);
+
+            if (ramses::StatusOK != result)
+            {
+                LOG_ERROR(CONTEXT_CLIENT, "Failed setting window rectangle, did you enable screenshot capturing but forgot to set width and height of it?");
+                return;
+            }
+        }
+
         const ramses::displayId_t displayId = displayManager.createDisplay(displayConfig);
         displayManager.dispatchAndFlush();
 
@@ -125,9 +143,14 @@ namespace ramses_internal
         displayManager.setSceneMapping(loadedScene->getSceneId(), displayId);
         displayManager.setSceneState(loadedScene->getSceneId(), ramses_display_manager::SceneState::Rendered);
 
+        if(screenshotFile != "")
+        {
+            m_screenshotSaver = std::make_unique<ramses::ScreenshotSaver>(ramses::ScreenshotSaver(renderer, displayId, m_screenshotWidth, m_screenshotHeight, screenshotFile.c_str()));
+        }
+
         while (displayManager.isRunning())
         {
-            displayManager.dispatchAndFlush();
+            displayManager.dispatchAndFlush(nullptr, m_screenshotSaver.get());
             ramses_internal::PlatformThread::Sleep(30u);
         }
     }
