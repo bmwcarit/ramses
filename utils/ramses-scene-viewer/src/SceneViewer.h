@@ -9,10 +9,14 @@
 #ifndef RAMSES_SCENE_VIEWER_SCENEVIEWER_H
 #define RAMSES_SCENE_VIEWER_SCENEVIEWER_H
 
+#include <memory>
 #include "Utils/CommandLineParser.h"
 #include "Utils/Argument.h"
 #include "Collections/String.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
+#include "ramses-renderer-api/IRendererEventHandler.h"
+#include "ramses-renderer-api/RamsesRenderer.h"
+#include "ScreenshotSaver.h"
 
 namespace ramses
 {
@@ -41,6 +45,11 @@ namespace ramses_internal
         ArgumentString m_scenePathAndFileArgument;
         ArgumentString m_optionalResFileArgument;
         ArgumentString m_validationUnrequiredObjectsDirectoryArgument;
+        ArgumentString m_screenshotFile;
+        ArgumentUInt32 m_screenshotWidth;
+        ArgumentUInt32 m_screenshotHeight;
+
+        std::unique_ptr<ramses::ScreenshotSaver> m_screenshotSaver;
     };
 }
 
