@@ -31,7 +31,7 @@ namespace ramses
                 }
             }
 
-            if (iterator.getNext() != NULL)
+            if (iterator.getNext() != nullptr)
             {
                 return AssertionFailure() << "Retrieved more nodes than expected";
             }
@@ -77,13 +77,13 @@ namespace ramses
     {
         SceneGraphIterator iter(m_mesh1b, ETreeTraversalStyle_DepthFirst);
         EXPECT_EQ(&m_mesh1b, iter.getNext());
-        EXPECT_EQ(0, iter.getNext());
+        EXPECT_EQ(nullptr, iter.getNext());
     }
 
     TEST_F(SceneGraphIteratorTest, traverseOnlyOneLeaf_BreathFirst)
     {
         SceneGraphIterator iter(m_mesh1b, ETreeTraversalStyle_BreadthFirst);
         EXPECT_EQ(&m_mesh1b, iter.getNext());
-        EXPECT_EQ(0, iter.getNext());
+        EXPECT_EQ(nullptr, iter.getNext());
     }
 }

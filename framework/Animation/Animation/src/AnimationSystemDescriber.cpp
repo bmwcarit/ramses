@@ -31,7 +31,7 @@ namespace ramses_internal
         for (SplineHandle handle(0u); handle < numSplines; ++handle)
         {
             const SplineBase* const spline = animationSystemSource.getSpline(handle);
-            if (spline != NULL)
+            if (spline != nullptr)
             {
                 collector.animationSystemAllocateSpline(animSystemHandle, spline->getKeyType(), spline->getDataType(), handle);
                 CopySpline(collector, animSystemHandle, spline, handle);
@@ -169,7 +169,7 @@ namespace ramses_internal
         for (DataBindHandle handle(0u); handle < numDataBinds; ++handle)
         {
             const AnimationDataBindBase* const dataBind = animationSystemSource.getDataBinding(handle);
-            if (dataBind != NULL)
+            if (dataBind != nullptr)
             {
                 collector.animationSystemAllocateDataBinding(animSystemHandle, dataBind->getBindID(), dataBind->getHandle(), dataBind->getHandle2(), handle);
             }

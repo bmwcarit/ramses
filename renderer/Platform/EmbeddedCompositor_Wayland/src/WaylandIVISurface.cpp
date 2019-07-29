@@ -83,7 +83,7 @@ namespace ramses_internal
         if (nullptr != m_resource)
         {
             // Remove ResourceDestroyedCallback
-            m_resource->setImplementation(&m_iviSurfaceInterface, this, 0);
+            m_resource->setImplementation(&m_iviSurfaceInterface, this, nullptr);
             delete m_resource;
         }
     }

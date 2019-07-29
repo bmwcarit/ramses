@@ -19,7 +19,7 @@ namespace ramses_internal
         , m_windowSurfaceAttributes(windowSurfaceAttributes)
         , m_swapInterval(swapInterval)
     {
-        if(0 != sharedContext)
+        if(nullptr != sharedContext)
         {
             const EGLContext contextHandleToShare = sharedContext->m_eglSurfaceData.eglContext;
             LOG_DEBUG(CONTEXT_RENDERER, "Context_EGL::Context_EGL Sharing new context with existing context " << contextHandleToShare);
@@ -47,7 +47,7 @@ namespace ramses_internal
 
         const Char* contextExtensionsNativeString = eglQueryString(m_eglSurfaceData.eglDisplay, EGL_EXTENSIONS);
 
-        if (0 != contextExtensionsNativeString)
+        if (nullptr != contextExtensionsNativeString)
         {
             LOG_INFO(CONTEXT_RENDERER, "Context_EGL::init(): EGL extensions: " << contextExtensionsNativeString);
             parseContextExtensions(contextExtensionsNativeString);

@@ -47,7 +47,7 @@ namespace ramses
     TYPED_TEST(ClientPersistationTest, canReadWriteResources)
     {
         TypeParam* resource = this->template createResource<TypeParam>("resourceName");
-        ASSERT_TRUE(resource != NULL);
+        ASSERT_TRUE(resource != nullptr);
 
         ResourceFileDescription fileDescription("someTempararyFile.ram");
         fileDescription.add(resource);
@@ -65,10 +65,10 @@ namespace ramses
     TYPED_TEST(ClientPersistationTest, canReadWriteResourcesWithMultipleFiles)
     {
         TypeParam* resource1 = this->template createResource<TypeParam>("resourceName1");
-        ASSERT_TRUE(resource1 != NULL);
+        ASSERT_TRUE(resource1 != nullptr);
 
         TypeParam* resource2 = this->template createResource<TypeParam>("resourceName2");
-        ASSERT_TRUE(resource2 != NULL);
+        ASSERT_TRUE(resource2 != nullptr);
 
         ResourceFileDescriptionSet allFileDescriptions;
         ResourceFileDescription fileDescription1("someTemporaryFile.ram");
@@ -204,7 +204,7 @@ namespace ramses
         for(const auto& resObj : resourceObjects)
         {
             const ramses::Resource* res = RamsesUtils::TryConvert<ramses::Resource>(*resObj);
-            ASSERT_TRUE(NULL != res);
+            ASSERT_TRUE(nullptr != res);
             outputFile.impl->m_resources.push_back(res);
         }
 
@@ -233,7 +233,7 @@ namespace ramses
 
     TEST_F(ClientPersistation, saveResourcesToFile_NoFilename)
     {
-        ResourceFileDescription fileDescription(NULL);
+        ResourceFileDescription fileDescription(nullptr);
         ramses::status_t status = client.saveResources(fileDescription, false);
         EXPECT_NE(ramses::StatusOK, status);
     }
@@ -257,7 +257,7 @@ namespace ramses
 
     TEST_F(ClientPersistation, loadResourcesFromFile_NoFilename)
     {
-        ramses::status_t status = m_clientForLoading.loadResources(ResourceFileDescription(NULL));
+        ramses::status_t status = m_clientForLoading.loadResources(ResourceFileDescription(nullptr));
         EXPECT_NE(ramses::StatusOK, status);
     }
 
@@ -322,7 +322,7 @@ namespace ramses
         EXPECT_STREQ(name, objectPerName->getName());
 
         const ObjectType* specificObject = RamsesUtils::TryConvert<ObjectType>(*objectPerName);
-        EXPECT_TRUE(0 != specificObject);
+        EXPECT_TRUE(nullptr != specificObject);
         return specificObject;
     }
 
@@ -354,17 +354,17 @@ namespace ramses
 
         // load small scene
         Scene *loadedSmallScene = m_clientForLoading.loadSceneFromFile("smallScene.ramscene", resourceSetSmall);
-        ASSERT_TRUE(loadedSmallScene != 0);
-        EXPECT_TRUE(m_clientForLoading.findResourceById(effect1->getResourceId()) != 0);
-        EXPECT_FALSE(m_clientForLoading.findResourceById(effect2->getResourceId()) != 0);
+        ASSERT_TRUE(loadedSmallScene != nullptr);
+        EXPECT_TRUE(m_clientForLoading.findResourceById(effect1->getResourceId()) != nullptr);
+        EXPECT_FALSE(m_clientForLoading.findResourceById(effect2->getResourceId()) != nullptr);
 
         const Appearance* loadedSmallAppearance1 = getObjectFromScene<Appearance>(loadedSmallScene, "appearance1");
         EXPECT_EQ(loadedSmallAppearance1->getEffect().getResourceId(), appearance->getEffect().getResourceId());
 
         // load big scene, all appearances can find their effects
         Scene *loadedBigScene = m_clientForLoading.loadSceneFromFile("bigScene.ramscene", resourceSetBig);
-        ASSERT_TRUE(loadedBigScene != 0);
-        EXPECT_TRUE(m_clientForLoading.findResourceById(effect2->getResourceId()) != 0);
+        ASSERT_TRUE(loadedBigScene != nullptr);
+        EXPECT_TRUE(m_clientForLoading.findResourceById(effect2->getResourceId()) != nullptr);
 
         const Appearance* loadedBigAppearance1 = getObjectFromScene<Appearance>(loadedBigScene, "appearance1");
         const Appearance* loadedBigAppearance2 = getObjectFromScene<Appearance>(loadedBigScene, "appearance2");

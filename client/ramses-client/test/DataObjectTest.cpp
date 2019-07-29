@@ -35,16 +35,16 @@ namespace ramses
         void checkConversion(T& dataObj)
         {
             DataObject* baseObj = RamsesUtils::TryConvert<DataObject>(dataObj);
-            ASSERT_TRUE(baseObj != NULL);
+            ASSERT_TRUE(baseObj != nullptr);
             T* concreteObj = RamsesUtils::TryConvert<T>(*baseObj);
-            EXPECT_TRUE(concreteObj != NULL);
+            EXPECT_TRUE(concreteObj != nullptr);
             EXPECT_EQ(&dataObj, concreteObj);
 
             const T& constDataObj = dataObj;
             const DataObject* constBaseObj = RamsesUtils::TryConvert<DataObject>(constDataObj);
-            ASSERT_TRUE(constBaseObj != NULL);
+            ASSERT_TRUE(constBaseObj != nullptr);
             const T* constConcreteObj = RamsesUtils::TryConvert<T>(*constBaseObj);
-            EXPECT_TRUE(constConcreteObj != NULL);
+            EXPECT_TRUE(constConcreteObj != nullptr);
             EXPECT_EQ(&constDataObj, constConcreteObj);
         }
     };

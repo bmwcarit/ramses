@@ -80,7 +80,7 @@ namespace ramses_internal
 
     String StringUtils::HexFromResourceContentHash( const ResourceContentHash& n )
     {
-        // 2 concatenated uint64_t numbers yield 32 hex chars, prepended by '0x' and a NULL stop byte => 35 chars
+        // 2 concatenated uint64_t numbers yield 32 hex chars, prepended by '0x' and a \0 stop byte => 35 chars
         String str(34u, '\0');
         ramses_capu::StringUtils::Sprintf(const_cast<char*>(str.c_str()), 35u, "0x%016llx%016llx", n.highPart, n.lowPart);
         return str;
@@ -88,7 +88,7 @@ namespace ramses_internal
 
     String StringUtils::HexFromNumber( uint64_t n )
     {
-        // uint64_t yields 16 hex chars, prepended by '0x' and a NULL stop byte => 19 chars
+        // uint64_t yields 16 hex chars, prepended by '0x' and a \0 stop byte => 19 chars
         String str(18u, '\0');
         ramses_capu::StringUtils::Sprintf(const_cast<char*>(str.c_str()), 19u, "0x%016llx", n);
         return str;
@@ -96,7 +96,7 @@ namespace ramses_internal
 
     String StringUtils::HexFromNumber( uint32_t n )
     {
-        // uint32_t yields 8 hex chars, prepended by '0x' and a NULL stop byte => 11 chars
+        // uint32_t yields 8 hex chars, prepended by '0x' and a \0 stop byte => 11 chars
         String str(10u, '\0');
         ramses_capu::StringUtils::Sprintf(const_cast<char*>(str.c_str()), 11u, "0x%08x", n);
         return str;
@@ -104,7 +104,7 @@ namespace ramses_internal
 
     String StringUtils::HexFromNumber( uint8_t n )
     {
-        // uint8_t yields 2 hex chars, prepended by '0x' and a NULL stop byte => 5 chars
+        // uint8_t yields 2 hex chars, prepended by '0x' and a \0 stop byte => 5 chars
         String str(4u, '\0');
         ramses_capu::StringUtils::Sprintf(const_cast<char*>(str.c_str()), 5u, "0x%02x", n);
         return str;

@@ -109,15 +109,15 @@ namespace ramses_internal
     {
         PlatformSharedPointer<ramses_capu::uint_t> sp;
         EXPECT_EQ(0, sp.use_count());
-        EXPECT_TRUE(0 == sp.get());
+        EXPECT_TRUE(nullptr == sp.get());
     }
 
     TEST_F(ASharedPtr, ConstructorWithNullPointerVariable)
     {
-        ramses_capu::uint_t *nullPtr = 0;
+        ramses_capu::uint_t *nullPtr = nullptr;
         PlatformSharedPointer<ramses_capu::uint_t> sp(nullPtr);
         EXPECT_EQ(1, sp.use_count());
-        EXPECT_TRUE(0 == sp.get());
+        EXPECT_TRUE(nullptr == sp.get());
         EXPECT_TRUE(nullptr == sp);
     }
 
@@ -125,7 +125,7 @@ namespace ramses_internal
     {
         PlatformSharedPointer<ramses_capu::uint_t> sp(nullptr);
         EXPECT_EQ(0, sp.use_count());
-        EXPECT_TRUE(0 == sp.get());
+        EXPECT_TRUE(nullptr == sp.get());
         EXPECT_TRUE(nullptr == sp);
     }
 
@@ -157,17 +157,17 @@ namespace ramses_internal
     {
         PlatformSharedPointer<ramses_capu::uint_t> sp(nullptr, DeletingTestDeleter<ramses_capu::uint_t>(wasCalled));
         EXPECT_EQ(1, sp.use_count());
-        EXPECT_TRUE(0 == sp.get());
+        EXPECT_TRUE(nullptr == sp.get());
         EXPECT_TRUE(nullptr == sp);
         EXPECT_FALSE(wasCalled);
     }
 
     TEST_F(ASharedPtr, ConstructorWithNullPointerVariableWithDeleter)
     {
-        ramses_capu::uint_t *nullPtr = 0;
+        ramses_capu::uint_t *nullPtr = nullptr;
         PlatformSharedPointer<ramses_capu::uint_t> sp(nullPtr, DeletingTestDeleter<ramses_capu::uint_t>(wasCalled));
         EXPECT_EQ(1, sp.use_count());
-        EXPECT_TRUE(0 == sp.get());
+        EXPECT_TRUE(nullptr == sp.get());
         EXPECT_TRUE(nullptr == sp);
         EXPECT_FALSE(wasCalled);
     }
@@ -358,7 +358,7 @@ namespace ramses_internal
     {
         PlatformSharedPointer<BaseClass> sp(new BaseClass(123));
         sp.reset();
-        EXPECT_TRUE(sp.get() == NULL);
+        EXPECT_TRUE(sp.get() == nullptr);
         EXPECT_EQ(0, sp.use_count());
         EXPECT_EQ(0u, BaseClass::mReferences);
         sp.reset();
@@ -371,7 +371,7 @@ namespace ramses_internal
         PlatformSharedPointer<BaseClass> other(sp);
         EXPECT_EQ(2, sp.use_count());
         sp.reset();
-        EXPECT_TRUE(sp.get() == NULL);
+        EXPECT_TRUE(sp.get() == nullptr);
         EXPECT_EQ(0, sp.use_count());
         EXPECT_EQ(1, other.use_count());
         EXPECT_EQ(1u, BaseClass::mReferences);
@@ -381,7 +381,7 @@ namespace ramses_internal
     {
         PlatformSharedPointer<BaseClass> sp;
         sp.reset(new BaseClass(123));
-        EXPECT_TRUE(sp.get() != NULL);
+        EXPECT_TRUE(sp.get() != nullptr);
         EXPECT_EQ(1, sp.use_count());
         EXPECT_EQ(123u, sp->mValue);
     }
@@ -390,7 +390,7 @@ namespace ramses_internal
     {
         PlatformSharedPointer<BaseClass> sp(new BaseClass(456));
         sp.reset(new BaseClass(123));
-        EXPECT_TRUE(sp.get() != NULL);
+        EXPECT_TRUE(sp.get() != nullptr);
         EXPECT_EQ(1, sp.use_count());
         EXPECT_EQ(123u, sp->mValue);
         EXPECT_EQ(1u, BaseClass::mReferences);
@@ -449,7 +449,7 @@ namespace ramses_internal
         PlatformSharedPointer<BaseClass> sp(new BaseClass(123));
         PlatformSharedPointer<BaseClass> other;
         sp.swap(other);
-        EXPECT_TRUE(sp.get() == NULL);
+        EXPECT_TRUE(sp.get() == nullptr);
         EXPECT_EQ(123u, other->mValue);
         EXPECT_EQ(1u, BaseClass::mReferences);
     }

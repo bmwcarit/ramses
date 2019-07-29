@@ -51,7 +51,7 @@ namespace ramses_internal
             const EDataType indexElementType = static_cast<EDataType>(elementTypeAsUInt);
 
             // Data for resource will be filled later
-            return new ArrayResource(arrayType, elementCount, indexElementType, NULL, cacheFlag, name);
+            return new ArrayResource(arrayType, elementCount, indexElementType, nullptr, cacheFlag, name);
         }
 
     private:

@@ -137,7 +137,7 @@ namespace ramses_internal
 
         if (InvalidGLHandle != shaderHandle)
         {
-            glShaderSource(shaderHandle, 1, &stageSource, NULL);
+            glShaderSource(shaderHandle, 1, &stageSource, nullptr);
             glCompileShader(shaderHandle);
 
             GLint compilationResult = GL_FALSE;

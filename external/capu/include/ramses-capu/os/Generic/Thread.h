@@ -57,8 +57,8 @@ namespace ramses_capu
 
         inline
         ThreadRunnable::ThreadRunnable()
-            : thread(NULL)
-            , runnable(NULL)
+            : thread(nullptr)
+            , runnable(nullptr)
         {
         }
 

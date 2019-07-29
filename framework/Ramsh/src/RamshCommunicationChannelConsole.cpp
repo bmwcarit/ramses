@@ -86,7 +86,7 @@ namespace ramses_internal
                     // between and command and reaction
                     ramses_capu::Console::Print("%s\n", promptString().c_str());
                 }
-                if(0 != m_ramsh)
+                if(nullptr != m_ramsh)
                 {
                     m_pausePrompt = true;
 
@@ -184,7 +184,7 @@ namespace ramses_internal
     String RamshCommunicationChannelConsole::promptString() const
     {
         PlatformGuard g(m_lock);
-        if (m_ramsh!=0)
+        if (m_ramsh!=nullptr)
         {
             String currentPrompt(m_ramsh->getPrompt());
             currentPrompt.append(m_input);

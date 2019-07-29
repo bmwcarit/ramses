@@ -71,7 +71,7 @@ namespace ramses_internal
         : Device_Base()
         , m_context(context)
         , m_resourceMapper(context.getResources())
-        , m_activeShader(0)
+        , m_activeShader(nullptr)
         , m_activePrimitiveDrawMode(EDrawMode::Triangles)
         , m_activeIndexArrayElementSizeBytes(2u)
         , m_majorApiVersion(majorApiVersion)
@@ -127,7 +127,7 @@ namespace ramses_internal
 
         LOAD_ALL_API_PROCS;
 
-        const Char* tmp = NULL;
+        const Char* tmp = nullptr;
 
         tmp = reinterpret_cast<const Char*>(glGetString(GL_VENDOR));
         LOG_INFO(CONTEXT_RENDERER, "Device_GL::init:  OpenGL vendor is " << tmp);
@@ -396,14 +396,14 @@ namespace ramses_internal
 
     Bool Device_GL::getUniformLocation(DataFieldHandle field, GLInputLocation& location) const
     {
-        assert(0 != m_activeShader);
+        assert(nullptr != m_activeShader);
         location = m_activeShader->getUniformLocation(field);
         return location != GLInputLocationInvalid;
     }
 
     Bool Device_GL::getAttributeLocation(DataFieldHandle field, GLInputLocation& location) const
     {
-        assert(0 != m_activeShader);
+        assert(nullptr != m_activeShader);
         location = m_activeShader->getAttributeLocation(field);
         return location != GLInputLocationInvalid;
     }
@@ -413,7 +413,7 @@ namespace ramses_internal
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
-            assert(0 != value);
+            assert(nullptr != value);
             glUniform1fv(uniformLocation.getValue(), count, value);
         }
     }
@@ -423,7 +423,7 @@ namespace ramses_internal
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
-            assert(0 != value);
+            assert(nullptr != value);
             glUniform2fv(uniformLocation.getValue(), count, value[0].data);
         }
     }
@@ -433,7 +433,7 @@ namespace ramses_internal
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
-            assert(0 != value);
+            assert(nullptr != value);
             glUniform3fv(uniformLocation.getValue(), count, value[0].data);
         }
     }
@@ -443,7 +443,7 @@ namespace ramses_internal
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
-            assert(0 != value);
+            assert(nullptr != value);
             glUniform4fv(uniformLocation.getValue(), count, value[0].data);
         }
     }
@@ -453,7 +453,7 @@ namespace ramses_internal
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
-            assert(0 != value);
+            assert(nullptr != value);
             glUniform1iv(uniformLocation.getValue(), count, value);
         }
     }
@@ -463,7 +463,7 @@ namespace ramses_internal
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
-            assert(0 != value);
+            assert(nullptr != value);
             glUniform2iv(uniformLocation.getValue(), count, value[0].data);
         }
     }
@@ -473,7 +473,7 @@ namespace ramses_internal
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
-            assert(0 != value);
+            assert(nullptr != value);
             glUniform3iv(uniformLocation.getValue(), count, value[0].data);
         }
     }
@@ -483,7 +483,7 @@ namespace ramses_internal
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
-            assert(0 != value);
+            assert(nullptr != value);
             glUniform4iv(uniformLocation.getValue(), count, value[0].data);
         }
     }
@@ -493,7 +493,7 @@ namespace ramses_internal
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
-            assert(0 != value);
+            assert(nullptr != value);
             glUniformMatrix2fv(uniformLocation.getValue(), count, false, value[0].data);
         }
     }
@@ -503,7 +503,7 @@ namespace ramses_internal
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
-            assert(0 != value);
+            assert(nullptr != value);
             glUniformMatrix3fv(uniformLocation.getValue(), count, false, value[0].data);
         }
     }
@@ -513,7 +513,7 @@ namespace ramses_internal
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
-            assert(0 != value);
+            assert(nullptr != value);
             glUniformMatrix4fv(uniformLocation.getValue(), count, false, value[0].data);
         }
     }
@@ -1041,13 +1041,13 @@ namespace ramses_internal
         GLInputLocation vertexInputAddress;
         if (getAttributeLocation(field, vertexInputAddress))
         {
-            assert(m_activeShader != NULL);
+            assert(m_activeShader != nullptr);
             const VertexBufferGPUResource& arrayResource = m_resourceMapper.getResourceAs<VertexBufferGPUResource>(handle);
 
             glBindBuffer(GL_ARRAY_BUFFER, arrayResource.getGPUAddress());
             glEnableVertexAttribArray(vertexInputAddress.getValue());
 
-            glVertexAttribPointer(vertexInputAddress.getValue(), arrayResource.getNumComponentsPerElement(), GL_FLOAT, GL_FALSE, 0, NULL);
+            glVertexAttribPointer(vertexInputAddress.getValue(), arrayResource.getNumComponentsPerElement(), GL_FLOAT, GL_FALSE, 0, nullptr);
 
             glVertexAttribDivisor(vertexInputAddress.getValue(), instancingDivisor);
         }
@@ -1140,7 +1140,7 @@ namespace ramses_internal
         const ShaderGPUResource_GL& shaderProgramGL = m_resourceMapper.getResourceAs<ShaderGPUResource_GL>(handle);
         if (m_activeShader == &shaderProgramGL)
         {
-            m_activeShader = NULL;
+            m_activeShader = nullptr;
         }
 
         m_resourceMapper.deleteResource(handle);

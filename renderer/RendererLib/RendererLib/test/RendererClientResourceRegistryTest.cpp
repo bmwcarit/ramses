@@ -55,7 +55,7 @@ TEST_F(ARendererResourceRegistry, registeredResourceHasCorrectStatus)
 
     const ResourceDescriptor& rd = registry.getResourceDescriptor(resource);
     EXPECT_FALSE(rd.deviceHandle.isValid());
-    EXPECT_TRUE(NULL == rd.resource.getResourceObject());
+    EXPECT_TRUE(nullptr == rd.resource.getResourceObject());
     EXPECT_TRUE(rd.sceneUsage.empty());
     EXPECT_EQ(EResourceStatus_Registered, rd.status);
     EXPECT_EQ(EResourceType_Invalid, rd.type);
@@ -148,7 +148,6 @@ TEST_F(ARendererResourceRegistry, canSetResourceData)
 
 TEST_F(ARendererResourceRegistry, newlyRegisteredResourceIsInRegisteredList)
 {
-    const SceneId sceneId(11u);
     const ResourceContentHash resource(123u, 0u);
     registry.registerResource(resource);
 
@@ -159,7 +158,6 @@ TEST_F(ARendererResourceRegistry, newlyRegisteredResourceIsInRegisteredList)
 
 TEST_F(ARendererResourceRegistry, requestedResourceIsRemovedFromRegisteredList)
 {
-    const SceneId sceneId(11u);
     const ResourceContentHash resource(123u, 0u);
     registry.registerResource(resource);
     EXPECT_FALSE(registry.getAllRegisteredResources().empty());
@@ -170,7 +168,6 @@ TEST_F(ARendererResourceRegistry, requestedResourceIsRemovedFromRegisteredList)
 
 TEST_F(ARendererResourceRegistry, unregisteredResourceIsRemovedFromRegisteredList)
 {
-    const SceneId sceneId(11u);
     const ResourceContentHash resource(123u, 0u);
     registry.registerResource(resource);
     EXPECT_FALSE(registry.getAllRegisteredResources().empty());
@@ -181,7 +178,6 @@ TEST_F(ARendererResourceRegistry, unregisteredResourceIsRemovedFromRegisteredLis
 
 TEST_F(ARendererResourceRegistry, requestedResourceIsInRequestedList)
 {
-    const SceneId sceneId(11u);
     const ResourceContentHash resource(123u, 0u);
     registry.registerResource(resource);
     registry.setResourceStatus(resource, EResourceStatus_Requested);
@@ -193,7 +189,6 @@ TEST_F(ARendererResourceRegistry, requestedResourceIsInRequestedList)
 
 TEST_F(ARendererResourceRegistry, providedResourceIsRemovedFromRequestedList)
 {
-    const SceneId sceneId(11u);
     const ResourceContentHash resource(123u, 0u);
     registry.registerResource(resource);
     registry.setResourceStatus(resource, EResourceStatus_Requested);
@@ -205,7 +200,6 @@ TEST_F(ARendererResourceRegistry, providedResourceIsRemovedFromRequestedList)
 
 TEST_F(ARendererResourceRegistry, unregisteredResourceIsRemovedFromRequestedList)
 {
-    const SceneId sceneId(11u);
     const ResourceContentHash resource(123u, 0u);
     registry.registerResource(resource);
     registry.setResourceStatus(resource, EResourceStatus_Requested);
@@ -217,7 +211,6 @@ TEST_F(ARendererResourceRegistry, unregisteredResourceIsRemovedFromRequestedList
 
 TEST_F(ARendererResourceRegistry, providedResourceIsInProvidedList)
 {
-    const SceneId sceneId(11u);
     const ResourceContentHash resource(123u, 0u);
     registry.registerResource(resource);
     registry.setResourceStatus(resource, EResourceStatus_Requested);
@@ -230,7 +223,6 @@ TEST_F(ARendererResourceRegistry, providedResourceIsInProvidedList)
 
 TEST_F(ARendererResourceRegistry, uploadedResourceIsRemovedFromProvidedList)
 {
-    const SceneId sceneId(11u);
     const ResourceContentHash resource(123u, 0u);
     registry.registerResource(resource);
     registry.setResourceStatus(resource, EResourceStatus_Requested);
@@ -243,7 +235,6 @@ TEST_F(ARendererResourceRegistry, uploadedResourceIsRemovedFromProvidedList)
 
 TEST_F(ARendererResourceRegistry, brokenResourceIsRemovedFromProvidedList)
 {
-    const SceneId sceneId(11u);
     const ResourceContentHash resource(123u, 0u);
     registry.registerResource(resource);
     registry.setResourceStatus(resource, EResourceStatus_Requested);
@@ -256,7 +247,6 @@ TEST_F(ARendererResourceRegistry, brokenResourceIsRemovedFromProvidedList)
 
 TEST_F(ARendererResourceRegistry, unregisteredResourceIsRemovedFromProvidedList)
 {
-    const SceneId sceneId(11u);
     const ResourceContentHash resource(123u, 0u);
     registry.registerResource(resource);
     registry.setResourceStatus(resource, EResourceStatus_Requested);

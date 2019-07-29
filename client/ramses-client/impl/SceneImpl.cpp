@@ -415,7 +415,7 @@ namespace ramses
         if (!isFromTheSameClientAs(effect.impl))
         {
             addErrorEntry("Scene::createAppearance failed, effect is not from the same client as this scene.");
-            return NULL;
+            return nullptr;
         }
 
         AppearanceImpl* pimpl = createAppearanceImpl(name);
@@ -436,7 +436,7 @@ namespace ramses
         if (!isFromTheSameClientAs(fallbackTexture.impl))
         {
             addErrorEntry("Scene::createStreamTexture failed, fallbackTexture is not from this RamsesClient.");
-            return NULL;
+            return nullptr;
         }
 
         StreamTextureImpl& pimpl = *new StreamTextureImpl( *this, name);
@@ -452,7 +452,7 @@ namespace ramses
         if (!isFromTheSameClientAs(effect.impl))
         {
             addErrorEntry("Scene::createGeometryBinding failed, effect is not from the same client as this scene.");
-            return NULL;
+            return nullptr;
         }
 
         GeometryBindingImpl& pimpl = *new GeometryBindingImpl(*this, name);
@@ -533,8 +533,8 @@ namespace ramses
     status_t SceneImpl::destroyRenderTarget(RenderTarget& renderTarget)
     {
         RamsesObjectRegistryIterator iterator(m_objectRegistry, ERamsesObjectType_RenderPass);
-        const RenderPass* renderPass = NULL;
-        while ((renderPass = iterator.getNext<RenderPass>()) != NULL)
+        const RenderPass* renderPass = nullptr;
+        while ((renderPass = iterator.getNext<RenderPass>()) != nullptr)
         {
             if (&renderTarget == renderPass->impl.getRenderTarget())
             {
@@ -720,38 +720,38 @@ namespace ramses
         if (!containsSceneObject(sourceRenderBuffer.impl))
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Scene(" << m_scene.getSceneId() << ")::createBlitPass failed, source render buffer is not from this scene.");
-            return NULL;
+            return nullptr;
         }
 
         if (!containsSceneObject(destinationRenderBuffer.impl))
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Scene(" << m_scene.getSceneId() << ")::createBlitPass failed, destination render buffer is not from this scene.");
-            return NULL;
+            return nullptr;
         }
 
         if (sourceRenderBuffer.getBufferType() != destinationRenderBuffer.getBufferType())
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Scene(" << m_scene.getSceneId() << ")::createBlitPass failed, source and destination buffers have different buffer types");
-            return NULL;
+            return nullptr;
         }
 
         if (sourceRenderBuffer.getBufferFormat() != destinationRenderBuffer.getBufferFormat())
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Scene(" << m_scene.getSceneId() << ")::createBlitPass failed, source and destination buffers have different buffer formats");
-            return NULL;
+            return nullptr;
         }
 
         if (sourceRenderBuffer.getHeight() != destinationRenderBuffer.getHeight() ||
             sourceRenderBuffer.getWidth() != destinationRenderBuffer.getWidth())
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Scene(" << m_scene.getSceneId() << ")::createBlitPass failed, source and destination buffers have different dimensions");
-            return NULL;
+            return nullptr;
         }
 
         if (&sourceRenderBuffer == &destinationRenderBuffer)
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Scene(" << m_scene.getSceneId() << ")::createBlitPass failed, source and destination cannot be the same buffer");
-            return NULL;
+            return nullptr;
         }
 
         BlitPassImpl& pimpl = *new BlitPassImpl(*this, name);
@@ -767,19 +767,19 @@ namespace ramses
         if (0 == width || 0 == height)
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Scene(" << m_scene.getSceneId() << ")::createRenderBuffer failed: cannot create a render buffer with 0 width and/or height!");
-            return NULL;
+            return nullptr;
         }
 
         if (!TextureUtils::IsRenderBufferTypeCompatibleWithFormat(bufferType, bufferFormat))
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Scene(" << m_scene.getSceneId() << ")::createRenderBuffer failed: render buffer format incompatible with its type!");
-            return NULL;
+            return nullptr;
         }
 
         if (ERenderBufferAccessMode_WriteOnly != accessMode && 0u != sampleCount)
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Scene(" << m_scene.getSceneId() << ")::createRenderBuffer failed: can not create render buffer with read/write access mode and MSAA sampleCount other than Zero!");
-            return NULL;
+            return nullptr;
         }
 
         RenderBufferImpl& pimpl = *new RenderBufferImpl(*this, name);
@@ -795,7 +795,7 @@ namespace ramses
         if (rtDesc.validate(0u) != StatusOK)
         {
             addErrorEntry("Scene::createRenderTarget failed, RenderTargetDescription is invalid.");
-            return NULL;
+            return nullptr;
         }
 
         RenderTargetImpl& pimpl = *new RenderTargetImpl(*this, name);
@@ -818,19 +818,19 @@ namespace ramses
         if (!isFromTheSameClientAs(texture.impl))
         {
             addErrorEntry("Scene::createTextureSampler failed, texture 2D is not from the same client as this scene.");
-            return NULL;
+            return nullptr;
         }
 
         if (anisotropyLevel < 1)
         {
             addErrorEntry("Scene::createTextureSampler failed, anisotropyLevel must be at least 1.");
-            return NULL;
+            return nullptr;
         }
 
         if (ETextureSamplingMethod_Nearest != magSamplingMethod && ETextureSamplingMethod_Linear != magSamplingMethod)
         {
             addErrorEntry("Scene::createTextureSampler failed, mag sampling method must be set to Nearest or Linear.");
-            return NULL;
+            return nullptr;
         }
 
         TextureSamplerImpl& pimpl = createTextureSamplerImpl(
@@ -861,13 +861,13 @@ namespace ramses
         if (!isFromTheSameClientAs(texture.impl))
         {
             addErrorEntry("Scene::createTextureSampler failed, texture 3D is not from the same client as this scene.");
-            return NULL;
+            return nullptr;
         }
 
         if (ETextureSamplingMethod_Nearest != magSamplingMethod && ETextureSamplingMethod_Linear != magSamplingMethod)
         {
             addErrorEntry("Scene::createTextureSampler failed, mag sampling method must be set to Nearest or Linear.");
-            return NULL;
+            return nullptr;
         }
 
         TextureSamplerImpl& pimpl = createTextureSamplerImpl(
@@ -895,19 +895,19 @@ namespace ramses
         if (!isFromTheSameClientAs(texture.impl))
         {
             addErrorEntry("Scene::createTextureSampler failed, texture Cube is not from the same client as this scene.");
-            return NULL;
+            return nullptr;
         }
 
         if (anisotropyLevel < 1)
         {
             addErrorEntry("Scene::createTextureSampler failed, anisotropyLevel must be at least 1.");
-            return NULL;
+            return nullptr;
         }
 
         if (ETextureSamplingMethod_Nearest != magSamplingMethod && ETextureSamplingMethod_Linear != magSamplingMethod)
         {
             addErrorEntry("Scene::createTextureSampler failed, mag sampling method must be set to Nearest or Linear.");
-            return NULL;
+            return nullptr;
         }
 
         TextureSamplerImpl& pimpl = createTextureSamplerImpl(
@@ -928,25 +928,25 @@ namespace ramses
         if (!containsSceneObject(renderBuffer.impl))
         {
             addErrorEntry("Scene::createTextureSampler failed, render buffer is not from this scene.");
-            return NULL;
+            return nullptr;
         }
 
         if (anisotropyLevel < 1)
         {
             addErrorEntry("Scene::createTextureSampler failed, anisotropyLevel must be at least 1.");
-            return NULL;
+            return nullptr;
         }
 
         if (ERenderBufferAccessMode_WriteOnly == renderBuffer.impl.getAccessMode())
         {
             addErrorEntry("Scene::createTextureSampler failed, render buffer has access mode write only.");
-            return NULL;
+            return nullptr;
         }
 
         if (ETextureSamplingMethod_Nearest != magSamplingMethod && ETextureSamplingMethod_Linear != magSamplingMethod)
         {
             addErrorEntry("Scene::createTextureSampler failed, mag sampling method must be set to Nearest or Linear.");
-            return NULL;
+            return nullptr;
         }
 
         TextureSamplerImpl& pimpl = createTextureSamplerImpl(
@@ -974,19 +974,19 @@ namespace ramses
         if (!containsSceneObject(textureBuffer.impl))
         {
             addErrorEntry("Scene::createTextureSampler failed, texture2D buffer is not from this scene.");
-            return NULL;
+            return nullptr;
         }
 
         if (anisotropyLevel < 1)
         {
             addErrorEntry("Scene::createTextureSampler failed, anisotropyLevel must be at least 1.");
-            return NULL;
+            return nullptr;
         }
 
         if (ETextureSamplingMethod_Nearest != magSamplingMethod && ETextureSamplingMethod_Linear != magSamplingMethod)
         {
             addErrorEntry("Scene::createTextureSampler failed, mag sampling method must be set to Nearest or Linear.");
-            return NULL;
+            return nullptr;
         }
 
         TextureSamplerImpl& pimpl = createTextureSamplerImpl(
@@ -1013,13 +1013,13 @@ namespace ramses
         if (!containsSceneObject(streamTexture.impl))
         {
             addErrorEntry("Scene::createTextureSampler failed, streamTexture is not from this scene.");
-            return NULL;
+            return nullptr;
         }
 
         if (ETextureSamplingMethod_Nearest != magSamplingMethod && ETextureSamplingMethod_Linear != magSamplingMethod)
         {
             addErrorEntry("Scene::createTextureSampler failed, mag sampling method must be set to Nearest or Linear.");
-            return NULL;
+            return nullptr;
         }
 
         TextureSamplerImpl& pimpl = createTextureSamplerImpl(
@@ -1428,16 +1428,6 @@ namespace ramses
         return destroyObject(animationSystem);
     }
 
-    const ramses_internal::ClientScene& SceneImpl::getIScene() const
-    {
-        return m_scene;
-    }
-
-    ramses_internal::ClientScene& SceneImpl::getIScene()
-    {
-        return m_scene;
-    }
-
     RamsesObjectRegistry& SceneImpl::getObjectRegistry()
     {
         return m_objectRegistry;
@@ -1473,8 +1463,8 @@ namespace ramses
     {
         const ERamsesObjectType type = TYPE_ID_OF_RAMSES_OBJECT<CONTAINER>::ID;
         RamsesObjectRegistryIterator iterator(m_objectRegistry, type);
-        CONTAINER* container = NULL;
-        while ((container = iterator.getNextNonConst<CONTAINER>()) != NULL)
+        CONTAINER* container = nullptr;
+        while ((container = iterator.getNextNonConst<CONTAINER>()) != nullptr)
         {
             container->impl.removeIfContained(object.impl);
         }
@@ -1506,8 +1496,8 @@ namespace ramses
     bool SceneImpl::cameraIsAssignedToRenderPasses(const Camera& camera)
     {
         RamsesObjectRegistryIterator iterator(m_objectRegistry, ERamsesObjectType_RenderPass);
-        const RenderPass* renderPass = NULL;
-        while ((renderPass = iterator.getNext<RenderPass>()) != NULL)
+        const RenderPass* renderPass = nullptr;
+        while ((renderPass = iterator.getNext<RenderPass>()) != nullptr)
         {
             if (renderPass->getCamera() == &camera)
             {
@@ -1566,7 +1556,7 @@ namespace ramses
 
         for (auto node : dirtyNodes)
         {
-            assert(node != NULL);
+            assert(node != nullptr);
 
             // find a visibility state of the branch this dirty node is in
             // while doing that also check if any ancestor is already dirty,
@@ -1574,7 +1564,7 @@ namespace ramses
             bool needsToBeProcessed = true;
             bool parentVisibility = true;
             NodeImpl* currParent = node->getParentImpl();
-            while (parentVisibility && (currParent != NULL) && needsToBeProcessed)
+            while (parentVisibility && (currParent != nullptr) && needsToBeProcessed)
             {
                 if (currParent->isOfType(ERamsesObjectType_Node))
                 {

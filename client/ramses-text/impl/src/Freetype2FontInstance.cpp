@@ -175,7 +175,7 @@ namespace ramses
 
             if (ftGlyph->format != FT_GLYPH_FORMAT_BITMAP)
             {
-                error = FT_Glyph_To_Bitmap(&ftGlyph, FT_RENDER_MODE_NORMAL, 0, 1);
+                error = FT_Glyph_To_Bitmap(&ftGlyph, FT_RENDER_MODE_NORMAL, nullptr, 1);
                 if (error)
                 {
                     LOG_TEXT_ERROR("Freetype2FontInstance::extractGlyphBitmapData:  FT_Glyph_To_Bitmap failed - error: " << error);

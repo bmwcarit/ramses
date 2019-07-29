@@ -1052,9 +1052,9 @@ namespace ramses_internal
             action.read(sizeInfo.animationCount);
 
             IAnimationSystem* animationSystem = animSystemFactory->createAnimationSystem(flags, sizeInfo);
-            assert(animationSystem != NULL);
+            assert(animationSystem != nullptr);
 
-            if (animationSystem != NULL)
+            if (animationSystem != nullptr)
             {
                 scene.addAnimationSystem(animationSystem, animSystemHandle);
             }
@@ -1077,7 +1077,7 @@ namespace ramses_internal
             const AnimationTime globalTime(globalTimeStamp);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->setTime(globalTime);
             }
@@ -1096,7 +1096,7 @@ namespace ramses_internal
             action.read(splineHandle);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 ALLOCATE_AND_ASSERT_HANDLE(animSystem->allocateSpline(keyType, dataTypeID, splineHandle), splineHandle);
             }
@@ -1116,7 +1116,7 @@ namespace ramses_internal
             action.read(dataBindHandle);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 ALLOCATE_AND_ASSERT_HANDLE(animSystem->allocateDataBinding(scene, dataBindID, handle1, handle2, dataBindHandle), dataBindHandle);
             }
@@ -1138,7 +1138,7 @@ namespace ramses_internal
             action.read(handle);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 ALLOCATE_AND_ASSERT_HANDLE(animSystem->allocateAnimationInstance(splineHandle, interpolationType, vectorComponent, handle), handle);
             }
@@ -1154,7 +1154,7 @@ namespace ramses_internal
             action.read(handle);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 ALLOCATE_AND_ASSERT_HANDLE(animSystem->allocateAnimation(animInstHandle, handle), handle);
             }
@@ -1170,7 +1170,7 @@ namespace ramses_internal
             action.read(dataBindHandle);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->addDataBindingToAnimationInstance(animationInstanceHandle, dataBindHandle);
             }
@@ -1188,7 +1188,7 @@ namespace ramses_internal
             action.read(value);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->setSplineKeyBasicBool(splineHandle, timeStamp, value);
             }
@@ -1206,7 +1206,7 @@ namespace ramses_internal
             action.read(value);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->setSplineKeyBasicInt32(splineHandle, timeStamp, value);
             }
@@ -1224,7 +1224,7 @@ namespace ramses_internal
             action.read(value);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->setSplineKeyBasicFloat(splineHandle, timeStamp, value);
             }
@@ -1242,7 +1242,7 @@ namespace ramses_internal
             action.read(value.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->setSplineKeyBasicVector2f(splineHandle, timeStamp, value);
             }
@@ -1260,7 +1260,7 @@ namespace ramses_internal
             action.read(value.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->setSplineKeyBasicVector3f(splineHandle, timeStamp, value);
             }
@@ -1278,7 +1278,7 @@ namespace ramses_internal
             action.read(value.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->setSplineKeyBasicVector4f(splineHandle, timeStamp, value);
             }
@@ -1296,7 +1296,7 @@ namespace ramses_internal
             action.read(value.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->setSplineKeyBasicVector2i(splineHandle, timeStamp, value);
             }
@@ -1314,7 +1314,7 @@ namespace ramses_internal
             action.read(value.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->setSplineKeyBasicVector3i(splineHandle, timeStamp, value);
             }
@@ -1332,7 +1332,7 @@ namespace ramses_internal
             action.read(value.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->setSplineKeyBasicVector4i(splineHandle, timeStamp, value);
             }
@@ -1354,7 +1354,7 @@ namespace ramses_internal
             action.read(tanOut.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->setSplineKeyTangentsInt32(splineHandle, timeStamp, value, tanIn, tanOut);
             }
@@ -1376,7 +1376,7 @@ namespace ramses_internal
             action.read(tanOut.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->setSplineKeyTangentsFloat(splineHandle, timeStamp, value, tanIn, tanOut);
             }
@@ -1398,7 +1398,7 @@ namespace ramses_internal
             action.read(tanOut.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->setSplineKeyTangentsVector2f(splineHandle, timeStamp, value, tanIn, tanOut);
             }
@@ -1420,7 +1420,7 @@ namespace ramses_internal
             action.read(tanOut.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->setSplineKeyTangentsVector3f(splineHandle, timeStamp, value, tanIn, tanOut);
             }
@@ -1442,7 +1442,7 @@ namespace ramses_internal
             action.read(tanOut.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->setSplineKeyTangentsVector4f(splineHandle, timeStamp, value, tanIn, tanOut);
             }
@@ -1464,7 +1464,7 @@ namespace ramses_internal
             action.read(tanOut.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->setSplineKeyTangentsVector2i(splineHandle, timeStamp, value, tanIn, tanOut);
             }
@@ -1486,7 +1486,7 @@ namespace ramses_internal
             action.read(tanOut.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->setSplineKeyTangentsVector3i(splineHandle, timeStamp, value, tanIn, tanOut);
             }
@@ -1508,7 +1508,7 @@ namespace ramses_internal
             action.read(tanOut.data);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->setSplineKeyTangentsVector4i(splineHandle, timeStamp, value, tanIn, tanOut);
             }
@@ -1524,7 +1524,7 @@ namespace ramses_internal
             action.read(keyIndex);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->removeSplineKey(splineHandle, keyIndex);
             }
@@ -1541,7 +1541,7 @@ namespace ramses_internal
             const AnimationTime startTime(timeStamp);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->setAnimationStartTime(handle, timeStamp);
             }
@@ -1558,7 +1558,7 @@ namespace ramses_internal
             const AnimationTime startTime(timeStamp);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->setAnimationStopTime(handle, timeStamp);
             }
@@ -1581,7 +1581,7 @@ namespace ramses_internal
             const AnimationTime globalTime(timeStamp);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->setAnimationProperties(handle, playbackSpeed, flags, loopDuration, globalTime);
             }
@@ -1595,7 +1595,7 @@ namespace ramses_internal
             action.read(handle);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->stopAnimationAndRollback(handle);
             }
@@ -1609,7 +1609,7 @@ namespace ramses_internal
             action.read(handle);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->removeSpline(handle);
             }
@@ -1623,7 +1623,7 @@ namespace ramses_internal
             action.read(handle);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->removeDataBinding(handle);
             }
@@ -1637,7 +1637,7 @@ namespace ramses_internal
             action.read(handle);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->removeAnimationInstance(handle);
             }
@@ -1651,7 +1651,7 @@ namespace ramses_internal
             action.read(handle);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != NULL)
+            if (animSystem != nullptr)
             {
                 animSystem->removeAnimation(handle);
             }

@@ -56,7 +56,7 @@ namespace ramses
 {
     AnimationSystemData::AnimationSystemData()
         : m_objectRegistry()
-        , m_animationSystem(NULL)
+        , m_animationSystem(nullptr)
         , m_animatedSetterDelay(100u)
     {
     }
@@ -241,7 +241,7 @@ namespace ramses
 
     Animation* AnimationSystemData::createAnimation(const AnimatedPropertyImpl& animatedProperty, const Spline& spline, const char* name)
     {
-        assert(m_animationSystem != NULL);
+        assert(m_animationSystem != nullptr);
         const ramses_internal::EDataTypeID dataBindDataTypeID = animatedProperty.getDataTypeID();
         const ramses_internal::EDataTypeID splineDataTypeID = SplineImpl::GetDataTypeForSplineType(spline.getType());
         if (ramses_internal::AnimationData::CheckDataTypeCompatibility(splineDataTypeID, dataBindDataTypeID, animatedProperty.getVectorComponent()))
@@ -256,12 +256,12 @@ namespace ramses
             return animation;
         }
 
-        return NULL;
+        return nullptr;
     }
 
     AnimatedSetter* AnimationSystemData::createAnimatedSetter(const AnimatedPropertyImpl& animatedProperty, const char* name)
     {
-        assert(m_animationSystem != NULL);
+        assert(m_animationSystem != nullptr);
         AnimatedSetterImpl& pimpl = *new AnimatedSetterImpl(*m_animationSystem, m_animatedSetterDelay, name);
 
         pimpl.initializeFrameworkData(animatedProperty);
@@ -273,7 +273,7 @@ namespace ramses
 
     AnimationSequence* AnimationSystemData::createAnimationSequence(const char* name)
     {
-        assert(m_animationSystem != NULL);
+        assert(m_animationSystem != nullptr);
         AnimationSequenceImpl& pimpl = *new AnimationSequenceImpl(*m_animationSystem, name);
         AnimationSequence* sequence = new AnimationSequence(pimpl);
         m_objectRegistry.addObject(*sequence);
@@ -323,7 +323,7 @@ namespace ramses
     AnimatedProperty* AnimationSystemData::createAnimatedProperty(const EffectInputImpl& propertyOwner, const AppearanceImpl& appearance, EAnimatedPropertyComponent ePropertyComponent, ramses_internal::TDataBindID bindID, const char* name)
     {
         AnimatedProperty* animProperty = m_animatedPropertyFactory->createAnimatedProperty(propertyOwner, appearance, ePropertyComponent, bindID, name);
-        if (animProperty != NULL)
+        if (animProperty != nullptr)
         {
             m_objectRegistry.addObject(*animProperty);
         }

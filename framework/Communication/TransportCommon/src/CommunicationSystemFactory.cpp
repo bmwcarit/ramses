@@ -24,6 +24,7 @@
 
 #include "RamsesFrameworkConfigImpl.h"
 #include "ramses-framework-api/RamsesFrameworkConfig.h"
+#include <memory>
 
 
 namespace ramses_internal
@@ -32,7 +33,7 @@ namespace ramses_internal
 
 #if defined(HAS_TCP_COMM)
         // Construct TCPConnectionSystem
-        TCPConnectionSystem* ConstructTCPConnectionManager(const ramses::RamsesFrameworkConfigImpl& config, const ParticipantIdentifier& participantIdentifier,
+        auto ConstructTCPConnectionManager(const ramses::RamsesFrameworkConfigImpl& config, const ParticipantIdentifier& participantIdentifier,
             PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection)
         {
             LOG_INFO(CONTEXT_COMMUNICATION, "Use TCPConnectionSystem");
@@ -49,7 +50,7 @@ namespace ramses_internal
             LOG_DEBUG(CONTEXT_COMMUNICATION, "ConstructTCPConnectionManager: Daemon Address: " << daemonNetworkAddress.getIp() << ":" << daemonNetworkAddress.getPort());
 
             // allocate
-            return new TCPConnectionSystem(participantNetworkAddress, config.getProtocolVersion(), daemonNetworkAddress, false, frameworkLock, statisticCollection, config.m_tcpConfig.getAliveInterval(), config.m_tcpConfig.getAliveTimeout());
+            return std::make_unique<TCPConnectionSystem>(participantNetworkAddress, config.getProtocolVersion(), daemonNetworkAddress, false, frameworkLock, statisticCollection, config.m_tcpConfig.getAliveInterval(), config.m_tcpConfig.getAliveTimeout());
         }
 #endif
 
@@ -62,7 +63,7 @@ namespace ramses_internal
         UNUSED(statisticCollection);
         UNUSED(optionalRamsh);
 
-        IDiscoveryDaemon* constructedDaemon = 0;
+        IDiscoveryDaemon* constructedDaemon = nullptr;
         switch(config.getUsedProtocol())
         {
             case EConnectionProtocol_TCP:
@@ -83,7 +84,7 @@ namespace ramses_internal
         return constructedDaemon;
     }
 
-    ICommunicationSystem* CommunicationSystemFactory::ConstructCommunicationSystem(const ramses::RamsesFrameworkConfigImpl& config, const ParticipantIdentifier& participantIdentifier,
+    std::unique_ptr<ICommunicationSystem> CommunicationSystemFactory::ConstructCommunicationSystem(const ramses::RamsesFrameworkConfigImpl& config, const ParticipantIdentifier& participantIdentifier,
         PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection)
     {
         UNUSED(participantIdentifier);
@@ -95,19 +96,18 @@ namespace ramses_internal
 #if defined(HAS_TCP_COMM)
         case EConnectionProtocol_TCP:
         {
-            TCPConnectionSystem* connectionManager = ConstructTCPConnectionManager(config, participantIdentifier, frameworkLock, statisticCollection);
-            return connectionManager;
+            return ConstructTCPConnectionManager(config, participantIdentifier, frameworkLock, statisticCollection);
         }
 #endif
         case EConnectionProtocol_Fake:
         {
             LOG_INFO(CONTEXT_COMMUNICATION, "Using no connection system");
-            return new FakeConnectionSystem();
+            return std::make_unique<FakeConnectionSystem>();
         }
         default:
             assert(false && "Unable to construct connection system for given protocol");
             LOG_FATAL(CONTEXT_COMMUNICATION, "Unable to construct connection system for given protocol: " << config.getUsedProtocol());
-            return 0;
+            return nullptr;
         }
     }
 }

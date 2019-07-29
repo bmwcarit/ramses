@@ -96,7 +96,7 @@ namespace ramses
         for(const auto& animation : m_animations)
         {
             const AnimationImpl* anim = findAnimation(animation.key);
-            if (anim == NULL)
+            if (anim == nullptr)
             {
                 addValidationMessage(EValidationSeverity_Error, indent, "animation contained in sequence does not exist anymore, was probably destroyed but still used by it");
                 status = getValidationErrorStatus();
@@ -447,7 +447,7 @@ namespace ramses
             }
         }
 
-        return NULL;
+        return nullptr;
     }
 
     sequenceTimeStamp_t AnimationSequenceImpl::getAnimationSequenceStopTime() const

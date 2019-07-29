@@ -22,6 +22,15 @@ using namespace testing;
 class SceneRendererStateTracker final : public ramses::RendererEventHandlerEmpty
 {
 public:
+    enum class RendererSceneState
+    {
+        Unpublished,
+        Published,
+        Subscribed,
+        Mapped,
+        Rendered
+    };
+
     explicit SceneRendererStateTracker(ramses::sceneId_t sceneId)
         : m_sceneId(sceneId)
     {
@@ -31,7 +40,7 @@ public:
     {
         if (sceneId == m_sceneId)
         {
-            m_lastState = SceneState::Unavailable;
+            m_lastState = RendererSceneState::Published;
             if (m_wasUnpublished)
                 m_wasRepublished = true;
         }
@@ -40,26 +49,26 @@ public:
     virtual void sceneSubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
     {
         if (sceneId == m_sceneId && result != ramses::ERendererEventResult_FAIL)
-            m_lastState = SceneState::Available;
+            m_lastState = RendererSceneState::Subscribed;
     }
 
     virtual void sceneMapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
     {
         if (sceneId == m_sceneId && result != ramses::ERendererEventResult_FAIL)
-            m_lastState = SceneState::Ready;
+            m_lastState = RendererSceneState::Mapped;
     }
 
     virtual void sceneShown(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
     {
         if (sceneId == m_sceneId && result != ramses::ERendererEventResult_FAIL)
-            m_lastState = SceneState::Rendered;
+            m_lastState = RendererSceneState::Rendered;
     }
 
     virtual void sceneUnpublished(ramses::sceneId_t sceneId) override
     {
         if (sceneId == m_sceneId)
         {
-            m_lastState = SceneState::Unavailable;
+            m_lastState = RendererSceneState::Unpublished;
             m_wasUnpublished = true;
         }
     }
@@ -67,22 +76,22 @@ public:
     virtual void sceneUnsubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
     {
         if (sceneId == m_sceneId && result != ramses::ERendererEventResult_FAIL)
-            m_lastState = SceneState::Unavailable;
+            m_lastState = RendererSceneState::Published;
     }
 
     virtual void sceneUnmapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
     {
         if (sceneId == m_sceneId && result != ramses::ERendererEventResult_FAIL)
-            m_lastState = SceneState::Available;
+            m_lastState = RendererSceneState::Subscribed;
     }
 
     virtual void sceneHidden(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
     {
         if (sceneId == m_sceneId && result != ramses::ERendererEventResult_FAIL)
-            m_lastState = SceneState::Ready;
+            m_lastState = RendererSceneState::Mapped;
     }
 
-    SceneState getLastState() const
+    RendererSceneState getLastState() const
     {
         return m_lastState;
     }
@@ -94,7 +103,7 @@ public:
 
 private:
     const ramses::sceneId_t m_sceneId;
-    SceneState m_lastState = SceneState::Unavailable;
+    RendererSceneState m_lastState = RendererSceneState::Unpublished;
     bool m_wasUnpublished = false;
     bool m_wasRepublished = false;
 };
@@ -199,11 +208,25 @@ protected:
     {
         const auto lastDMState = ramsesClientRenderer->m_displayManager.getLastReportedSceneState(ramsesClientRenderer->m_sceneId);
         const auto lastTrackedState = m_sceneStateTracker.m_lastState;
-        const auto lastTrackedRendererState = m_sceneRendererStateTracker.getLastState();
         EXPECT_EQ(lastTrackedState, lastDMState);
-        EXPECT_EQ(lastTrackedRendererState, lastDMState);
         const auto expectedDisplay = (lastTrackedState == SceneState::Ready || lastTrackedState == SceneState::Rendered) ? ramsesClientRenderer->m_displayId : ramses::InvalidDisplayId;
         EXPECT_EQ(expectedDisplay, m_sceneStateTracker.m_displayMappedTo);
+
+        static const std::vector<std::pair<SceneState, SceneRendererStateTracker::RendererSceneState>> ValidStatePairs =
+        {
+            { SceneState::Unavailable, SceneRendererStateTracker::RendererSceneState::Unpublished },
+            { SceneState::Unavailable, SceneRendererStateTracker::RendererSceneState::Published },
+            { SceneState::Available, SceneRendererStateTracker::RendererSceneState::Subscribed },
+            { SceneState::Available, SceneRendererStateTracker::RendererSceneState::Mapped }, // scene mapped on renderer but not yet assigned/linked from DM's POV
+            { SceneState::Ready, SceneRendererStateTracker::RendererSceneState::Mapped },
+            { SceneState::Rendered, SceneRendererStateTracker::RendererSceneState::Rendered },
+        };
+        const auto lastTrackedRendererState = m_sceneRendererStateTracker.getLastState();
+        const auto validIt = std::find_if(ValidStatePairs.cbegin(), ValidStatePairs.cend(), [&](const auto& validPair)
+        {
+            return validPair.first == lastDMState && validPair.second == lastTrackedRendererState;
+        });
+        EXPECT_TRUE(validIt != ValidStatePairs.cend());
     }
 
     ramses::IRendererEventHandler& m_displayManagerEventHandler;
@@ -231,7 +254,7 @@ TEST_F(ADisplayManagerWithRenderer, willShowSceneWhenPublished)
 
     EXPECT_EQ(SceneState::Rendered, ramsesClientRenderer->m_displayManager.getLastReportedSceneState(ramsesClientRenderer->m_sceneId));
     EXPECT_EQ(SceneState::Rendered, m_sceneStateTracker.m_lastState);
-    EXPECT_EQ(SceneState::Rendered, m_sceneRendererStateTracker.getLastState());
+    EXPECT_EQ(SceneRendererStateTracker::RendererSceneState::Rendered, m_sceneRendererStateTracker.getLastState());
 }
 
 /////////

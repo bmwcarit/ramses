@@ -23,8 +23,8 @@ namespace ramses
 {
     RenderPassImpl::RenderPassImpl(SceneImpl& scene, const char* renderpassName)
         : SceneObjectImpl(scene, ERamsesObjectType_RenderPass, renderpassName)
-        , m_cameraImpl(0)
-        , m_renderTargetImpl(0)
+        , m_cameraImpl(nullptr)
+        , m_renderTargetImpl(nullptr)
     {
     }
 
@@ -38,7 +38,7 @@ namespace ramses
 
         outStream << m_renderPassHandle;
 
-        if (m_cameraImpl != NULL)
+        if (m_cameraImpl != nullptr)
         {
             outStream << serializationContext.getIDForObject(m_cameraImpl);
         }
@@ -47,7 +47,7 @@ namespace ramses
             outStream << SerializationContext::GetObjectIDNull();
         }
 
-        if (m_renderTargetImpl != NULL)
+        if (m_renderTargetImpl != nullptr)
         {
             outStream << serializationContext.getIDForObject(m_renderTargetImpl);
         }
@@ -59,7 +59,7 @@ namespace ramses
         outStream << static_cast<uint32_t>(m_renderGroups.size());
         for (const auto groupImpl : m_renderGroups)
         {
-            assert(0 != groupImpl);
+            assert(nullptr != groupImpl);
             outStream << serializationContext.getIDForObject(groupImpl);
         }
 
@@ -82,7 +82,7 @@ namespace ramses
 
         for (uint32_t i = 0; i < numberOfGroups; ++i)
         {
-            RenderGroupImpl* groupImpl = NULL;
+            RenderGroupImpl* groupImpl = nullptr;
             serializationContext.ReadDependentPointerAndStoreAsID(inStream, groupImpl);
             m_renderGroups.push_back(groupImpl);
         }
@@ -114,7 +114,7 @@ namespace ramses
         status_t status = SceneObjectImpl::validate(indent);
         indent += IndentationStep;
 
-        if (0 == m_cameraImpl)
+        if (nullptr == m_cameraImpl)
         {
             addValidationMessage(EValidationSeverity_Warning, indent, "renderpass does not have a camera set");
             status = getValidationErrorStatus();
@@ -136,7 +136,7 @@ namespace ramses
             }
         }
 
-        if (0 != m_renderTargetImpl)
+        if (nullptr != m_renderTargetImpl)
         {
             if (addValidationOfDependentObject(indent, *m_renderTargetImpl) != StatusOK)
             {
@@ -174,7 +174,7 @@ namespace ramses
             return addErrorEntry("RenderPass::setCamera failed - camera is not from the same scene as this RenderPass");
         }
 
-        if (cameraImpl.isOfType(ERamsesObjectType_RemoteCamera) && 0 != m_renderTargetImpl)
+        if (cameraImpl.isOfType(ERamsesObjectType_RemoteCamera) && nullptr != m_renderTargetImpl)
         {
             // This is supposed to prevent accidental use of the wrong camera type. "Remote" camera will overwrite the camera settings with the renderer's camera
             // which is probably not desired behavior
@@ -199,12 +199,12 @@ namespace ramses
 
     const Camera* RenderPassImpl::getCamera() const
     {
-        if (m_cameraImpl != NULL)
+        if (m_cameraImpl != nullptr)
         {
             return &RamsesObjectTypeUtils::ConvertTo<Camera>(m_cameraImpl->getRamsesObject());
         }
 
-        return NULL;
+        return nullptr;
     }
 
     status_t RenderPassImpl::setClearColor(const ramses_internal::Vector4& clearColor)
@@ -323,9 +323,9 @@ namespace ramses
         }
 
         ramses_internal::RenderTargetHandle rtHandle(ramses_internal::RenderTargetHandle::Invalid());
-        if (0 != renderTargetImpl)
+        if (nullptr != renderTargetImpl)
         {
-            if (NULL == m_cameraImpl || !m_cameraImpl->isOfType(ERamsesObjectType_LocalCamera))
+            if (nullptr == m_cameraImpl || !m_cameraImpl->isOfType(ERamsesObjectType_LocalCamera))
             {
                 //(Violin) This error message is supposed to prevent the user from rendering into a render target with a remote camera (renderer's camera)
                 return addErrorEntry("RenderPass::setRenderTarget failed - must explicitly assign a custom camera (perspective or orthographic) before rendering to render terget.");
@@ -347,12 +347,12 @@ namespace ramses
 
     const RenderTarget* RenderPassImpl::getRenderTarget() const
     {
-        if (m_renderTargetImpl != NULL)
+        if (m_renderTargetImpl != nullptr)
         {
             return &RamsesObjectTypeUtils::ConvertTo<RenderTarget>(m_renderTargetImpl->getRamsesObject());
         }
 
-        return NULL;
+        return nullptr;
     }
 
     status_t RenderPassImpl::setRenderOrder(int32_t renderOrder)

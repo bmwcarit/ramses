@@ -28,13 +28,6 @@ IF (ramses-sdk_ENABLE_TCP_SUPPORT)
         FILES_SOURCE            Communication/TransportTCP/test/*.cpp)
 ENDIF()
 
-IF(ramses-sdk_BUILD_PERFORMANCE_PROFILER_SUPPORT MATCHES VTUNE)
-    FIND_PACKAGE(VTune QUIET)
-    IF (VTune_FOUND)
-        SET(ramses-framework-VTune_MIXIN DEPENDENCIES VTune)
-    ENDIF()
-ENDIF()
-
 IF(ramses-sdk_HAS_DLT)
     SET(ramses-framework-DLT_MIXIN
         DEPENDENCIES            automotive-dlt
@@ -179,19 +172,12 @@ ACME_MODULE(
 
     # conditional values
     ${ramses-framework-TCP_MIXIN}
-    ${ramses-framework-VTune_MIXIN}
     ${ramses-framework-DLT_MIXIN}
     ${ramses-framework-AndroidLogger_MIXIN}
 )
 
 IF (ramses-sdk_ENABLE_TCP_SUPPORT)
   TARGET_COMPILE_DEFINITIONS(ramses-framework PUBLIC "-DHAS_TCP_COMM=1")
-ENDIF()
-
-IF(ramses-sdk_BUILD_PERFORMANCE_PROFILER_SUPPORT MATCHES LOG_OUTPUT)
-  TARGET_COMPILE_DEFINITIONS(ramses-framework PUBLIC "-DPERFORMANCE_PROFILER_OUTPUT_TYPE_LOG=1")
-ELSEIF(ramses-sdk_BUILD_PERFORMANCE_PROFILER_SUPPORT MATCHES VTUNE)
-  TARGET_COMPILE_DEFINITIONS(ramses-framework PUBLIC "-DPERFORMANCE_PROFILER_OUTPUT_TYPE_VTUNE=1")
 ENDIF()
 
 IF (ramses-sdk_HAS_DLT)

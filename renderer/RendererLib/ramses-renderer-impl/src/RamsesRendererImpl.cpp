@@ -31,11 +31,11 @@ namespace ramses
     RamsesRendererImpl::RamsesRendererImpl(RamsesFramework& framework, const RendererConfig& config, ramses_internal::IPlatformFactory* platformFactory)
         : StatusObjectImpl()
         , m_internalConfig(config.impl.getInternalRendererConfig())
-        , m_binaryShaderCache(config.impl.getBinaryShaderCache() ? new BinaryShaderCacheProxy(*(config.impl.getBinaryShaderCache())) : NULL)
+        , m_binaryShaderCache(config.impl.getBinaryShaderCache() ? new BinaryShaderCacheProxy(*(config.impl.getBinaryShaderCache())) : nullptr)
         , m_rendererResourceCache(config.impl.getRendererResourceCache() ? new RendererResourceCacheProxy(*(config.impl.getRendererResourceCache())) : nullptr)
         , m_pendingRendererCommands()
         , m_rendererFrameworkLogic(framework.impl.getRamsesConnectionStatusUpdateNotifier(), framework.impl.getResourceComponent(), framework.impl.getScenegraphComponent(), m_rendererCommandBuffer, framework.impl.getFrameworkLock())
-        , m_platformFactory(platformFactory != NULL ? platformFactory : ramses_internal::PlatformFactory_Base::CreatePlatformFactory(m_internalConfig))
+        , m_platformFactory(platformFactory != nullptr ? platformFactory : ramses_internal::PlatformFactory_Base::CreatePlatformFactory(m_internalConfig))
         , m_resourceUploader(m_rendererStatistics, m_binaryShaderCache.get())
         , m_renderer(new ramses_internal::WindowedRenderer(m_rendererCommandBuffer, framework.impl.getScenegraphComponent(), *m_platformFactory, m_rendererStatistics, m_internalConfig.getKPIFileName()))
         , m_nextDisplayId(0u)
@@ -547,7 +547,7 @@ namespace ramses
                 break;
             }
             case ramses_internal::ERendererEventType_ReadPixelsFromFramebufferFailed:
-                rendererEventHandler.framebufferPixelsRead(NULL, 0u, event.displayHandle.asMemoryHandle(), ERendererEventResult_FAIL);
+                rendererEventHandler.framebufferPixelsRead(nullptr, 0u, event.displayHandle.asMemoryHandle(), ERendererEventResult_FAIL);
                 break;
             case ramses_internal::ERendererEventType_WarpingDataUpdated:
                 rendererEventHandler.warpingMeshDataUpdated(event.displayHandle.asMemoryHandle(), ERendererEventResult_OK);

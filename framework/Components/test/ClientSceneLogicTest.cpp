@@ -918,7 +918,6 @@ TYPED_TEST(AClientSceneLogic_All, sendListOfNewResourcesTogetherWithFlush)
     ASSERT_EQ(6u, actionsFromSendScene.numberOfActions());
     ASSERT_EQ(ESceneActionId_Flush, actionsFromSendScene[5].type());
     bool isSync;
-    SceneVersionTag sceneVersion;
     bool hasSizeInfo;
     SceneResourceChanges resourceChanges;
     SceneSizeInformation sizeInfo;
@@ -1021,7 +1020,6 @@ TYPED_TEST(AClientSceneLogic_All, sendListOfObsoleteResourcesTogetherWithFlush)
     ASSERT_EQ(ESceneActionId_Flush, actionsFromSendScene[5].type());
 
     bool isSync;
-    SceneVersionTag sceneVersion;
     bool hasSizeInfo;
     SceneResourceChanges resourceChanges;
     SceneSizeInformation sizeInfo;
@@ -1108,7 +1106,6 @@ TEST_F(AClientSceneLogic_ShadowCopy, sendsSceneToNewlySubscribedRendererWithNewR
     ASSERT_EQ(ESceneActionId_Flush, actionsFromSendScene.back().type());
 
     bool isSync;
-    SceneVersionTag sceneVersion;
     bool hasSizeInfo;
     SceneResourceChanges resourceChanges;
     SceneSizeInformation sizeInfo;
@@ -1143,7 +1140,6 @@ TEST_F(AClientSceneLogic_ShadowCopy, sendsSceneToNewlySubscribedRendererWithVali
     ASSERT_EQ(ESceneActionId_Flush, actionsFromSendScene.back().type());
 
     bool isSync;
-    SceneVersionTag sceneVersion;
     bool hasSizeInfo;
     SceneResourceChanges resourceChanges;
     SceneSizeInformation sizeInfo;
@@ -1180,7 +1176,6 @@ TEST_F(AClientSceneLogic_ShadowCopy, sendsSceneToNewlySubscribedRendererWithLast
     ASSERT_EQ(ESceneActionId_Flush, actionsFromSendScene.back().type());
 
     bool isSync;
-    SceneVersionTag sceneVersion;
     bool hasSizeInfo;
     SceneResourceChanges resourceChanges;
     SceneSizeInformation sizeInfo;
@@ -1221,7 +1216,6 @@ TEST_F(AClientSceneLogic_Direct, sendsSceneToNewlySubscribedRendererWithNewResou
     ASSERT_EQ(ESceneActionId_Flush, actionsFromSendScene.back().type());
 
     bool isSync;
-    SceneVersionTag sceneVersion;
     bool hasSizeInfo;
     SceneResourceChanges resourceChanges;
     SceneSizeInformation sizeInfo;

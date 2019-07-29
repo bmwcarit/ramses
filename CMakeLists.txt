@@ -40,7 +40,7 @@ ELSE ()
     ENDIF ()
 ENDIF (NOT CMAKE_BUILD_TYPE)
 
-MESSAGE(STATUS "Ramses Build Config: SystemName ${CMAKE_SYSTEM_NAME}, SystemVersion ${CMAKE_SYSTEM_VERSION}, CompilerID ${CMAKE_CXX_COMPILER_ID}, TargetOS ${TARGET_OS}, TargetArch ${TARGET_ARCH}, BuildType ${CMAKE_BUILD_TYPE}, TargetBitness ${TARGET_BITNESS}")
+MESSAGE(STATUS "Ramses Build Config: SystemName ${CMAKE_SYSTEM_NAME}, SystemVersion ${CMAKE_SYSTEM_VERSION}, CompilerID ${CMAKE_CXX_COMPILER_ID}, TargetOS ${TARGET_OS}, BuildType ${CMAKE_BUILD_TYPE}, TargetBitness ${TARGET_BITNESS}")
 
 # find options
 OPTION(ramses-sdk_ALLOW_PLATFORM_FREETYPE "Enable to search for platform provided freetype and harfbuzz" ON)
@@ -59,11 +59,6 @@ OPTION(ramses-sdk_BUILD_WITH_LTO "Build all targets with link time optimization 
 
 SET(ramses-sdk_CONSOLE_LOGLEVEL "" CACHE STRING "Console log level.")
 SET_PROPERTY(CACHE ramses-sdk_CONSOLE_LOGLEVEL PROPERTY STRINGS "off" "fatal" "error" "warn" "info" "debug" "trace" "")
-
-# performance profiler options
-SET(ramses-sdk_BUILD_PERFORMANCE_PROFILER_SUPPORT "OFF" CACHE STRING "Include performance profiler support")
-SET_PROPERTY(CACHE ramses-sdk_BUILD_PERFORMANCE_PROFILER_SUPPORT PROPERTY STRINGS OFF LOG_OUTPUT VTUNE)
-SET(ramses-sdk_BUILD_PERFORMANCE_PROFILER_VTUNE_INSTALL_DIR "" CACHE STRING "Install directory of Intel VTune")
 
 #install options
 OPTION(ramses-sdk_INSTALL_STATIC_LIBS "Install static libraries: ON, OFF" ON)
@@ -243,12 +238,6 @@ ENDIF()
 IF (ramses-sdk_INSTALL_STATIC_LIBS)
     LIST(APPEND configmodules ramses-static-lib)
 ENDIF()
-
-# optionally add config script for vtune
-if (ramses-sdk_BUILD_PERFORMANCE_PROFILER_SUPPORT MATCHES VTUNE)
-    list(APPEND ramses-sdk_CMAKE_CONFIG_INCLUDES_FOR_STATIC
-        "cmake/templates/vtune-static.cmake.in")
-endif()
 
 FOREACH(configmodule ${configmodules})
 

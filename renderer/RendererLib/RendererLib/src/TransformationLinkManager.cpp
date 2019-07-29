@@ -128,13 +128,13 @@ namespace ramses_internal
     DataSlotHandle TransformationLinkManager::getDataSlotForNode(SceneId sceneId, NodeHandle node) const
     {
         const NodeToSlotMap* nodeToSlotMap = m_nodesToDataSlots.get(sceneId);
-        if (nodeToSlotMap == NULL)
+        if (nodeToSlotMap == nullptr)
         {
             return DataSlotHandle::Invalid();
         }
 
         DataSlotHandle* slotEntry = nodeToSlotMap->get(node);
-        if (slotEntry == NULL)
+        if (slotEntry == nullptr)
         {
             return DataSlotHandle::Invalid();
         }

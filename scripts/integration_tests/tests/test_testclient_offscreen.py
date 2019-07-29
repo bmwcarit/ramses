@@ -47,7 +47,7 @@ class TestOffscreenRenderer(test_classes.OnSelectedTargetsTest):
         self.checkThatApplicationWasStarted(self.ramsesDaemon)
         self.addCleanup(self.target.kill_application, self.ramsesDaemon)
         # rendererGreenBackground is only there to create some neutral background (hence the name)
-        self.rendererGreenBackground = self.target.start_default_renderer(args="-nomap -w 1440 -h 540 --waylandIviSurfaceID {0}".format(self.testSurfaceIVIIds["rendererGreenBackground"]))
+        self.rendererGreenBackground = self.target.start_default_renderer(nameExtension='display', args="-nomap -w 1440 -h 540 --waylandIviSurfaceID {0}".format(self.testSurfaceIVIIds["rendererGreenBackground"]))
         self.checkThatApplicationWasStarted(self.rendererGreenBackground)
         self.addCleanup(self.target.kill_application, self.rendererGreenBackground)
         # Using test scene MultipleTrianglesScene (tn 5) in state THREE_TRIANGLES (ts 0)
@@ -62,8 +62,8 @@ class TestOffscreenRenderer(test_classes.OnSelectedTargetsTest):
         self.target.kill_application(self.ramsesDaemon)
         log.info("all applications killed")
         self.save_application_output(self.testClient)
-        self.save_application_output(self.rendererGreenBackground, nr=0)
-        self.save_application_output(self.offscreenRenderer, nr=1)
+        self.save_application_output(self.rendererGreenBackground)
+        self.save_application_output(self.offscreenRenderer)
         self.save_application_output(self.ramsesDaemon)
         log.info("output saved")
 
@@ -81,7 +81,7 @@ class TestOffscreenRenderer(test_classes.OnSelectedTargetsTest):
         # Using a new surface 101 also we need to set a specific filename
         # for the embedded socket to avoid collisions with
         # test framework default setting of embedded socket name...
-        self.offscreenRenderer = self.target.start_default_renderer(args="-off -nomap --waylandIviSurfaceID {0} --wayland-socket-embedded wayland-123".format(self.testSurfaceIVIIds["offscreenRenderer"]))
+        self.offscreenRenderer = self.target.start_default_renderer(nameExtension='offscreen', args="-off -nomap --waylandIviSurfaceID {0} --wayland-socket-embedded wayland-123".format(self.testSurfaceIVIIds["offscreenRenderer"]))
         self.checkThatApplicationWasStarted(self.offscreenRenderer)
         self.addCleanup(self.target.kill_application, self.offscreenRenderer)
         # showing scene 26, i.e. MultipleTriangleScene::THREE_TRIANGLES from the ramses-test-client

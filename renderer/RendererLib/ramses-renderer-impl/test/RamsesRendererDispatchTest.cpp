@@ -29,7 +29,7 @@ namespace ramses_internal
 {
     using namespace testing;
 
-    NiceMock<PlatformFactoryNiceMock>* gPlatformFactoryMock = NULL;
+    NiceMock<PlatformFactoryNiceMock>* gPlatformFactoryMock = nullptr;
 
     ramses_internal::IPlatformFactory* ramses_internal::PlatformFactory_Base::CreatePlatformFactory(const ramses_internal::RendererConfig&)
     {
@@ -542,7 +542,7 @@ namespace ramses_internal
 
     TEST_F(ARamsesRendererDispatch, generatesFAILEventForDisplayCreation)
     {
-        ON_CALL(*gPlatformFactoryMock, createRenderBackend(_, _)).WillByDefault(Return(static_cast<ramses_internal::IRenderBackend*>(NULL)));
+        ON_CALL(*gPlatformFactoryMock, createRenderBackend(_, _)).WillByDefault(Return(static_cast<ramses_internal::IRenderBackend*>(nullptr)));
         createDisplayAndExpectResult(ramses::ERendererEventResult_FAIL);
     }
 

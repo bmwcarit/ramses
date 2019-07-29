@@ -151,7 +151,7 @@ namespace ramses_internal
 
     DeviceResourceHandle DisplayController::getDisplayBuffer() const
     {
-        assert(0 != m_postProcessing);
+        assert(nullptr != m_postProcessing);
         return m_postProcessing->getScenesRenderTarget();
     }
 

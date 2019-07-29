@@ -441,7 +441,7 @@ namespace ramses
     uint32_t SplineImpl::getNumKeys() const
     {
         const ramses_internal::SplineBase* spline = getIAnimationSystem().getSpline(m_splineHandle);
-        if (spline != NULL)
+        if (spline != nullptr)
         {
             return spline->getNumKeys();
         }
@@ -548,7 +548,7 @@ namespace ramses
 
     status_t SplineImpl::checkIfKeyIndexValid(const ramses_internal::SplineBase* spline, ramses_internal::SplineKeyIndex keyIndex) const
     {
-        assert(spline != NULL);
+        assert(spline != nullptr);
         if (keyIndex >= spline->getNumKeys())
         {
             return addErrorEntry("Spline::getKey failed, invalid spline key index.");
@@ -563,7 +563,7 @@ namespace ramses
         typedef ramses_internal::SplineKey<EDataType> SplineKeyType;
         typedef ramses_internal::Spline<ramses_internal::SplineKey, EDataType> SplineType;
 
-        assert(spline != NULL);
+        assert(spline != nullptr);
         assert(spline->getKeyType() == ramses_internal::ESplineKeyType_Basic);
         assert(spline->getDataType() == ramses_internal::DataTypeToDataIDSelector<EDataType>::DataTypeID);
 
@@ -578,7 +578,7 @@ namespace ramses
         typedef ramses_internal::SplineKeyTangents<EDataType> SplineKeyType;
         typedef ramses_internal::Spline<ramses_internal::SplineKeyTangents, EDataType> SplineType;
 
-        assert(spline != NULL);
+        assert(spline != nullptr);
         assert(spline->getKeyType() == ramses_internal::ESplineKeyType_Tangents);
         assert(spline->getDataType() == ramses_internal::DataTypeToDataIDSelector<EDataType>::DataTypeID);
 

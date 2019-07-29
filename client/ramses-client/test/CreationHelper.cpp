@@ -85,12 +85,12 @@ namespace ramses
             delete component.second;
         }
 
-        if (m_animationSystem != NULL)
+        if (m_animationSystem != nullptr)
         {
             destroyAdditionalAllocatedAnimationSystemObjects();
         }
 
-        if (m_scene != NULL)
+        if (m_scene != nullptr)
         {
             destroyAdditionalAllocatedSceneObjects();
         }
@@ -108,7 +108,7 @@ namespace ramses
 
     void CreationHelper::destroyAdditionalAllocatedSceneObjects()
     {
-        assert(m_scene != NULL);
+        assert(m_scene != nullptr);
         for(const auto& obj : m_additionalAllocatedSceneObjects)
         {
             ASSERT_TRUE(m_scene->destroy(*obj) == StatusOK);
@@ -118,7 +118,7 @@ namespace ramses
 
     void CreationHelper::destroyAdditionalAllocatedAnimationSystemObjects()
     {
-        assert(m_animationSystem != NULL);
+        assert(m_animationSystem != nullptr);
         for (const auto& obj : m_additionalAllocatedAnimationSystemObjects)
         {
             ASSERT_TRUE(m_animationSystem->destroy(*obj) == StatusOK);

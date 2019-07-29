@@ -34,12 +34,12 @@ namespace ramses
         static void TearDownTestCase()
         {
             delete sharedTestState;
-            sharedTestState = NULL;
+            sharedTestState = nullptr;
         }
 
         void SetUp()
         {
-            EXPECT_TRUE(sharedTestState != NULL);
+            EXPECT_TRUE(sharedTestState != nullptr);
             appearance = sharedTestState->appearance;
         }
 
@@ -59,12 +59,12 @@ namespace ramses
             const uint8_t data[] = { 1, 2, 3 };
             const MipLevelData mipData(3u, data);
             Texture2D* texture = sharedTestState->getClient().createTexture2D(1u, 1u, ETextureFormat_RGB8, 1u, &mipData, false);
-            EXPECT_TRUE(texture != NULL);
+            EXPECT_TRUE(texture != nullptr);
             info.texture2D = texture;
-            info.textureCube = NULL;
+            info.textureCube = nullptr;
 
             TextureSampler* sampler = sharedTestState->getScene().createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
-            EXPECT_TRUE(sampler != NULL);
+            EXPECT_TRUE(sampler != nullptr);
             info.sampler = sampler;
         }
 
@@ -75,12 +75,12 @@ namespace ramses
             const uint8_t data[] = { 1, 2, 3 };
             const CubeMipLevelData mipData(3u, data, data, data, data, data, data);
             TextureCube* texture = sharedTestState->getClient().createTextureCube(1u, ETextureFormat_RGB8, 1u, &mipData, false);
-            EXPECT_TRUE(texture != NULL);
+            EXPECT_TRUE(texture != nullptr);
             info.textureCube = texture;
-            info.texture2D = NULL;
+            info.texture2D = nullptr;
 
             TextureSampler* sampler = sharedTestState->getScene().createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
-            EXPECT_TRUE(sampler != NULL);
+            EXPECT_TRUE(sampler != nullptr);
             info.sampler = sampler;
         }
 
@@ -88,7 +88,7 @@ namespace ramses
         Appearance* appearance;
     };
 
-    TestEffectCreator* AAppearanceTest::sharedTestState = 0;
+    TestEffectCreator* AAppearanceTest::sharedTestState = nullptr;
 
     class AAppearanceTestWithSemanticUniforms : public AAppearanceTest
     {
@@ -276,9 +276,9 @@ namespace ramses
         const MipLevelData mipData(3u, texData);
 
         Texture2D* texture = sharedTestState->getClient().createTexture2D(1u, 1u, ETextureFormat_RGB8, 1u, &mipData, false);
-        ASSERT_TRUE(texture != NULL);
+        ASSERT_TRUE(texture != nullptr);
         TextureSampler* textureSampler = sharedTestState->getScene().createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
-        ASSERT_TRUE(textureSampler != NULL);
+        ASSERT_TRUE(textureSampler != nullptr);
 
         EXPECT_NE(StatusOK, appearance->setInputTexture(inputObject, *textureSampler));
 
@@ -295,11 +295,11 @@ namespace ramses
         const MipLevelData mipData(3u, texData);
 
         Texture2D* texture = sharedTestState->getClient().createTexture2D(1u, 1u, ETextureFormat_RGB8, 1u, &mipData, false);
-        ASSERT_TRUE(texture != NULL);
+        ASSERT_TRUE(texture != nullptr);
 
         ramses::Scene& anotherScene = *sharedTestState->getClient().createScene(1u);
         TextureSampler* textureSampler = anotherScene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
-        ASSERT_TRUE(textureSampler != NULL);
+        ASSERT_TRUE(textureSampler != nullptr);
 
         EXPECT_NE(StatusOK, appearance->setInputTexture(inputObject, *textureSampler));
 
@@ -315,9 +315,9 @@ namespace ramses
         const uint8_t texData[] = { 1, 2, 3 };
         const MipLevelData mipData(3u, texData);
         Texture2D* texture = sharedTestState->getClient().createTexture2D(1u, 1u, ETextureFormat_RGB8, 1u, &mipData, false);
-        ASSERT_TRUE(texture != NULL);
+        ASSERT_TRUE(texture != nullptr);
         TextureSampler* textureSampler = sharedTestState->getScene().createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
-        ASSERT_TRUE(textureSampler != NULL);
+        ASSERT_TRUE(textureSampler != nullptr);
 
         EXPECT_EQ(StatusOK, appearance->setInputTexture(inputObject, *textureSampler));
 
@@ -772,9 +772,9 @@ namespace ramses
         const MipLevelData mipData(3u, texData);
 
         Texture2D* texture = sharedTestState->getClient().createTexture2D(1u, 1u, ETextureFormat_RGB8, 1u, &mipData, false);
-        ASSERT_TRUE(texture != NULL);
+        ASSERT_TRUE(texture != nullptr);
         TextureSampler* textureSampler = sharedTestState->getScene().createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
-        ASSERT_TRUE(textureSampler != NULL);
+        ASSERT_TRUE(textureSampler != nullptr);
 
         EXPECT_EQ(StatusOK, appearance->setInputTexture(inputObject, *textureSampler));
 
@@ -796,9 +796,9 @@ namespace ramses
         const CubeMipLevelData mipData(3u, texData, texData, texData, texData, texData, texData);
 
         TextureCube* texture = sharedTestState->getClient().createTextureCube(1u, ETextureFormat_RGB8, 1u, &mipData, false);
-        ASSERT_TRUE(texture != NULL);
+        ASSERT_TRUE(texture != nullptr);
         TextureSampler* textureSampler = sharedTestState->getScene().createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, *texture);
-        ASSERT_TRUE(textureSampler != NULL);
+        ASSERT_TRUE(textureSampler != nullptr);
 
         EXPECT_EQ(StatusOK, appearance->setInputTexture(inputObject, *textureSampler));
 
@@ -824,7 +824,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("floatInput", inputObject));
 
         DataFloat* dataObject = sharedTestState->getScene().createDataFloat();
-        ASSERT_TRUE(dataObject != NULL);
+        ASSERT_TRUE(dataObject != nullptr);
 
         EXPECT_EQ(StatusOK, appearance->bindInput(inputObject, *dataObject));
         EXPECT_TRUE(appearance->isInputBound(inputObject));
@@ -840,7 +840,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, appearance->setInputValueFloat(inputObject, 666.f));
 
         DataFloat* dataObject = sharedTestState->getScene().createDataFloat();
-        ASSERT_TRUE(dataObject != NULL);
+        ASSERT_TRUE(dataObject != nullptr);
         dataObject->setValue(333.f);
 
         EXPECT_EQ(StatusOK, appearance->bindInput(inputObject, *dataObject));
@@ -866,7 +866,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("floatInputArray", inputObject));
 
         DataFloat* dataObject = sharedTestState->getScene().createDataFloat();
-        ASSERT_TRUE(dataObject != NULL);
+        ASSERT_TRUE(dataObject != nullptr);
 
         EXPECT_NE(StatusOK, appearance->bindInput(inputObject, *dataObject));
     }
@@ -878,7 +878,7 @@ namespace ramses
 
         ramses::Scene& anotherScene = *sharedTestState->getClient().createScene(1u);
         DataFloat* dataObject = anotherScene.createDataFloat();
-        ASSERT_TRUE(dataObject != NULL);
+        ASSERT_TRUE(dataObject != nullptr);
 
         EXPECT_NE(StatusOK, appearance->bindInput(inputObject, *dataObject));
 
@@ -891,7 +891,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("vec4fInput", inputObject));
 
         DataFloat* dataObject = sharedTestState->getScene().createDataFloat();
-        ASSERT_TRUE(dataObject != NULL);
+        ASSERT_TRUE(dataObject != nullptr);
 
         EXPECT_NE(StatusOK, appearance->bindInput(inputObject, *dataObject));
     }
@@ -902,7 +902,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("matrix44fInput", inputObject));
 
         DataMatrix44f* dataObject = sharedTestState->getScene().createDataMatrix44f();
-        ASSERT_TRUE(dataObject != NULL);
+        ASSERT_TRUE(dataObject != nullptr);
 
         EXPECT_NE(StatusOK, appearance->bindInput(inputObject, *dataObject));
     }
@@ -914,7 +914,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, appearance->setInputValueFloat(inputObject, 666.f));
 
         DataFloat* dataObject = sharedTestState->getScene().createDataFloat();
-        ASSERT_TRUE(dataObject != NULL);
+        ASSERT_TRUE(dataObject != nullptr);
 
         EXPECT_EQ(StatusOK, appearance->bindInput(inputObject, *dataObject));
         dataObject->setValue(13.f);
@@ -943,7 +943,7 @@ namespace ramses
         getTextureCubeInputInfo(textureCubeInputInfo);
 
         Appearance* newAppearance = sharedTestState->getScene().createAppearance(*sharedTestState->effect, "New Appearance");
-        ASSERT_TRUE(NULL != newAppearance);
+        ASSERT_TRUE(nullptr != newAppearance);
 
         EXPECT_EQ(StatusOK, newAppearance->setInputTexture(texture2DInputInfo.input, *texture2DInputInfo.sampler));
         EXPECT_EQ(StatusOK, newAppearance->setInputTexture(textureCubeInputInfo.input, *textureCubeInputInfo.sampler));
@@ -967,7 +967,7 @@ namespace ramses
         getTextureCubeInputInfo(textureCubeInputInfo);
 
         Appearance* newAppearance = sharedTestState->getScene().createAppearance(*sharedTestState->effect, "New Appearance");
-        ASSERT_TRUE(NULL != newAppearance);
+        ASSERT_TRUE(nullptr != newAppearance);
         EXPECT_EQ(StatusOK, newAppearance->setInputTexture(texture2DInputInfo.input, *texture2DInputInfo.sampler));
         EXPECT_EQ(StatusOK, newAppearance->setInputTexture(textureCubeInputInfo.input, *textureCubeInputInfo.sampler));
         EXPECT_EQ(StatusOK, newAppearance->validate());
@@ -990,7 +990,7 @@ namespace ramses
         getTextureCubeInputInfo(textureCubeInputInfo);
 
         Appearance* newAppearance = sharedTestState->getScene().createAppearance(*sharedTestState->effect, "New Appearance");
-        ASSERT_TRUE(NULL != newAppearance);
+        ASSERT_TRUE(nullptr != newAppearance);
         EXPECT_EQ(StatusOK, newAppearance->setInputTexture(texture2DInputInfo.input, *texture2DInputInfo.sampler));
         EXPECT_EQ(StatusOK, newAppearance->setInputTexture(textureCubeInputInfo.input, *textureCubeInputInfo.sampler));
         EXPECT_EQ(StatusOK, newAppearance->validate());
@@ -999,7 +999,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("floatInput", inputObject));
 
         DataFloat* dataObject = sharedTestState->getScene().createDataFloat();
-        ASSERT_TRUE(dataObject != NULL);
+        ASSERT_TRUE(dataObject != nullptr);
 
         EXPECT_EQ(StatusOK, newAppearance->bindInput(inputObject, *dataObject));
         EXPECT_EQ(StatusOK, newAppearance->validate());

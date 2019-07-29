@@ -17,7 +17,7 @@ namespace ramses_internal
 {
     ResourceStorage::ResourceStorage(PlatformLock& lockToUse)
         : m_resourceMapLock(lockToUse)
-        , m_listener(0)
+        , m_listener(nullptr)
         , m_bytesCurrentlyUsedByResourcesInMemory(0)
     {
     }
@@ -49,7 +49,7 @@ namespace ramses_internal
         m_resourceMapLock.lock();
         for (const auto& item : m_resourceMap)
         {
-            if (item.value.resource != 0)
+            if (item.value.resource != nullptr)
             {
                 ManagedResource res = createManagedResource(item.value.resource);
                 result.push_back(res);
@@ -63,7 +63,7 @@ namespace ramses_internal
     {
         PlatformGuard lock(m_resourceMapLock);
         RefCntResource* entry = m_resourceMap.get(hash);
-        if (entry && entry->resource != 0)
+        if (entry && entry->resource != nullptr)
         {
             ManagedResource managedRes = createManagedResource(entry->resource);
             return managedRes;
@@ -91,7 +91,7 @@ namespace ramses_internal
     ramses_internal::ResourceHashUsage ResourceStorage::getResourceHashUsage(const ResourceContentHash& hash)
     {
         ResourceHashUsageCallback deleter(*this);
-        ResourceContentHash* hashObjectToUse = 0;
+        ResourceContentHash* hashObjectToUse = nullptr;
         m_resourceMapLock.lock();
         RefCntResource* entry = m_resourceMap.get(hash);
         if (entry)
@@ -104,7 +104,7 @@ namespace ramses_internal
             RefCntResource newEntry;
             newEntry.refCount = 0;
             newEntry.hashUsages = 1;
-            newEntry.resource = 0;
+            newEntry.resource = nullptr;
             newEntry.deletionAllowed = false;
             newEntry.hash = new ResourceContentHash(hash);
             m_resourceMap.put(hash, newEntry);
@@ -127,7 +127,7 @@ namespace ramses_internal
             RefCntResource newEntry;
             newEntry.refCount = 0;
             newEntry.hashUsages = 0;
-            newEntry.resource = 0;
+            newEntry.resource = nullptr;
             newEntry.resourceInfo = resourceInfo;
             newEntry.deletionAllowed = false;
             newEntry.hash = new ResourceContentHash(hash);
@@ -140,7 +140,7 @@ namespace ramses_internal
         RefCntResource* entry = m_resourceMap.get(hash);
         assert(entry);
         //if real resource is available, update internally stored information first (could have changed, e.g. due to compression)
-        if (entry->resource != 0)
+        if (entry->resource != nullptr)
         {
             entry->resourceInfo = ResourceInfo(entry->resource);
         }
@@ -153,13 +153,13 @@ namespace ramses_internal
 
         const ResourceContentHash hash = resource.getHash();
         LOG_TRACE(CONTEXT_FRAMEWORK, "Adding resource:" << StringUtils::HexFromResourceContentHash(hash));
-        const IResource* resourceToReturn = 0;
+        const IResource* resourceToReturn = nullptr;
         m_resourceMapLock.lock();
         RefCntResource* entry = m_resourceMap.get(hash);
         if (entry)
         {
             ++entry->refCount;
-            if (0 == entry->resource)
+            if (nullptr == entry->resource)
             {
                 entry->resource = &resource;
                 entry->resourceInfo = ResourceInfo(&resource);
@@ -256,7 +256,7 @@ namespace ramses_internal
                     }
                 }
                 delete internalResource;
-                entry.resource = 0;
+                entry.resource = nullptr;
 
                 if (entry.hashUsages == 0)
                 {
@@ -265,7 +265,7 @@ namespace ramses_internal
                     m_resourceMap.remove(hash);
                     delete hashObject;
                 }
-                if (0 != m_listener)
+                if (nullptr != m_listener)
                 {
                     m_listener->onBytesNeededByStorageDecreased(m_bytesCurrentlyUsedByResourcesInMemory);
                 }

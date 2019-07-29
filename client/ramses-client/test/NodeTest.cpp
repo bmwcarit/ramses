@@ -47,7 +47,7 @@ namespace ramses
     {
         Node& parent = this->createNode("parent");
         Node& child = this->createNode("child");
-        EXPECT_EQ(NULL, child.getParent());
+        EXPECT_EQ(nullptr, child.getParent());
         EXPECT_FALSE(child.hasParent());
 
         EXPECT_EQ(StatusOK, child.setParent(parent));
@@ -71,7 +71,7 @@ namespace ramses
     TYPED_TEST(NodeTest, shouldNotAddNodeFromOneSceneAsChildToNodeInOtherScene)
     {
         Scene& otherScene = *this->client.createScene(1234u);
-        CreationHelper otherSceneCreationHelper(&otherScene, NULL, &this->client);
+        CreationHelper otherSceneCreationHelper(&otherScene, nullptr, &this->client);
         Node& parent = *otherSceneCreationHelper.template createObjectOfType<TypeParam>("parent");
         EXPECT_EQ(0u, parent.getChildCount());
 
@@ -109,12 +109,12 @@ namespace ramses
         Node& child = this->createNode("child");
         EXPECT_EQ(StatusOK, parent.addChild(child));
 
-        ASSERT_TRUE(parent.getChild(0) != 0);
-        ASSERT_TRUE(child.getParent() != 0);
+        ASSERT_TRUE(parent.getChild(0) != nullptr);
+        ASSERT_TRUE(child.getParent() != nullptr);
 
         this->m_scene.destroy(child);
 
-        EXPECT_EQ(NULL, parent.getChild(0));
+        EXPECT_EQ(nullptr, parent.getChild(0));
         EXPECT_FALSE(parent.hasChild());
     }
 
@@ -124,12 +124,12 @@ namespace ramses
         Node& child = this->createNode("child");
         EXPECT_EQ(StatusOK, parent.addChild(child));
 
-        ASSERT_TRUE(parent.getChild(0) != 0);
-        ASSERT_TRUE(child.getParent() != 0);
+        ASSERT_TRUE(parent.getChild(0) != nullptr);
+        ASSERT_TRUE(child.getParent() != nullptr);
 
         this->m_scene.destroy(parent);
 
-        EXPECT_EQ(NULL, child.getParent());
+        EXPECT_EQ(nullptr, child.getParent());
         EXPECT_FALSE(child.hasParent());
     }
 
@@ -139,13 +139,13 @@ namespace ramses
         Node& child = this->createNode("child");
         EXPECT_EQ(StatusOK, parent.addChild(child));
 
-        ASSERT_TRUE(parent.getChild(0) != 0);
-        ASSERT_TRUE(child.getParent() != 0);
+        ASSERT_TRUE(parent.getChild(0) != nullptr);
+        ASSERT_TRUE(child.getParent() != nullptr);
 
         EXPECT_EQ(StatusOK, parent.removeChild(child));
 
-        EXPECT_EQ(NULL, parent.getChild(0));
-        EXPECT_EQ(NULL, child.getParent());
+        EXPECT_EQ(nullptr, parent.getChild(0));
+        EXPECT_EQ(nullptr, child.getParent());
     }
 
     TYPED_TEST(NodeTest, shouldAddParentToNodeAndGetChild)
@@ -162,13 +162,13 @@ namespace ramses
         Node& child = this->createNode("child");
         EXPECT_EQ(StatusOK, child.setParent(parent));
 
-        ASSERT_TRUE(child.getParent() != 0);
-        ASSERT_TRUE(parent.getChild(0) != 0);
+        ASSERT_TRUE(child.getParent() != nullptr);
+        ASSERT_TRUE(parent.getChild(0) != nullptr);
 
         EXPECT_EQ(StatusOK, child.removeParent());
 
-        EXPECT_EQ(NULL, child.getParent());
-        EXPECT_EQ(NULL, parent.getChild(0));
+        EXPECT_EQ(nullptr, child.getParent());
+        EXPECT_EQ(nullptr, parent.getChild(0));
     }
 
     TYPED_TEST(NodeTest, confidenceTest_shouldRemoveAllChildren)
@@ -181,18 +181,18 @@ namespace ramses
         EXPECT_EQ(StatusOK, parent.addChild(child2));
         EXPECT_EQ(StatusOK, parent.addChild(child3));
 
-        ASSERT_TRUE(parent.getChild(0) != 0);
-        ASSERT_TRUE(parent.getChild(1) != 0);
-        ASSERT_TRUE(parent.getChild(2) != 0);
+        ASSERT_TRUE(parent.getChild(0) != nullptr);
+        ASSERT_TRUE(parent.getChild(1) != nullptr);
+        ASSERT_TRUE(parent.getChild(2) != nullptr);
 
         EXPECT_EQ(StatusOK, parent.removeAllChildren());
 
-        EXPECT_EQ(NULL, parent.getChild(0));
-        EXPECT_EQ(NULL, parent.getChild(1));
-        EXPECT_EQ(NULL, parent.getChild(2));
-        EXPECT_EQ(NULL, child1.getParent());
-        EXPECT_EQ(NULL, child2.getParent());
-        EXPECT_EQ(NULL, child3.getParent());
+        EXPECT_EQ(nullptr, parent.getChild(0));
+        EXPECT_EQ(nullptr, parent.getChild(1));
+        EXPECT_EQ(nullptr, parent.getChild(2));
+        EXPECT_EQ(nullptr, child1.getParent());
+        EXPECT_EQ(nullptr, child2.getParent());
+        EXPECT_EQ(nullptr, child3.getParent());
         EXPECT_TRUE(child1.impl.isDirty());
         EXPECT_TRUE(child2.impl.isDirty());
         EXPECT_TRUE(child3.impl.isDirty());
@@ -269,7 +269,7 @@ namespace ramses
         EXPECT_EQ(&child1, parent.getChild(0));
         EXPECT_EQ(&child3, parent.getChild(1));
         EXPECT_EQ(&child4, parent.getChild(2));
-        EXPECT_EQ(0, parent.getChild(3));
+        EXPECT_EQ(nullptr, parent.getChild(3));
 
         parent.removeChild(child1);
 
@@ -277,25 +277,25 @@ namespace ramses
 
         EXPECT_EQ(&child3, parent.getChild(0));
         EXPECT_EQ(&child4, parent.getChild(1));
-        EXPECT_EQ(0, parent.getChild(2));
-        EXPECT_EQ(0, parent.getChild(3));
+        EXPECT_EQ(nullptr, parent.getChild(2));
+        EXPECT_EQ(nullptr, parent.getChild(3));
 
         parent.removeChild(child4);
 
         // children -> 3
 
         EXPECT_EQ(&child3, parent.getChild(0));
-        EXPECT_EQ(0, parent.getChild(1));
-        EXPECT_EQ(0, parent.getChild(2));
-        EXPECT_EQ(0, parent.getChild(3));
+        EXPECT_EQ(nullptr, parent.getChild(1));
+        EXPECT_EQ(nullptr, parent.getChild(2));
+        EXPECT_EQ(nullptr, parent.getChild(3));
     }
 
     TYPED_TEST(NodeTest, canBeConvertedToNode)
     {
         RamsesObject& obj = this->createNode("node");
-        EXPECT_TRUE(RamsesUtils::TryConvert<Node>(obj) != NULL);
+        EXPECT_TRUE(RamsesUtils::TryConvert<Node>(obj) != nullptr);
         const RamsesObject& constObj = obj;
-        EXPECT_TRUE(RamsesUtils::TryConvert<Node>(constObj) != NULL);
+        EXPECT_TRUE(RamsesUtils::TryConvert<Node>(constObj) != nullptr);
     }
 
     TYPED_TEST(NodeTest, reportsErrorWhenSettingParentToItself)
@@ -308,7 +308,7 @@ namespace ramses
     {
         Scene& anotherScene = *this->client.createScene(12u);
 
-        CreationHelper otherSceneCreationHelper(&anotherScene, NULL, &this->client);
+        CreationHelper otherSceneCreationHelper(&anotherScene, nullptr, &this->client);
         Node& parent = *otherSceneCreationHelper.template createObjectOfType<TypeParam>("parent");
 
         Node& node = this->createNode("node");

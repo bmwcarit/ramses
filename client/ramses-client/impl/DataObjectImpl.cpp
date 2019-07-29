@@ -124,7 +124,7 @@ namespace ramses
     {
         assert(ramses_internal::TypeToEDataTypeTraits<T>::DataType == m_dataType);
         const T* data = ramses_internal::ISceneDataArrayAccessor::GetDataArray<T>(&getIScene(), m_dataReference, ramses_internal::DataFieldHandle(0u));
-        assert(data != NULL);
+        assert(data != nullptr);
         value = data[0];
 
         return StatusOK;

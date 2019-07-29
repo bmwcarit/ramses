@@ -83,7 +83,7 @@ namespace ramses_internal
         //DLT_LOG_OFF indicates that message is not logged
         //DLT_LOG_DEFAULT is unused here
 
-        DltLogLevelType ll = DLT_LOG_OFF;
+        auto ll = DLT_LOG_OFF;
 
         switch(msg.getLogLevel())
         {
@@ -105,20 +105,10 @@ namespace ramses_internal
         case ELogLevel::Fatal:
             ll = DLT_LOG_FATAL;
             break;
-        default:
-            //LL_OFF remains -> DLT_LOG_OFF is already set above
-            break;
+        case ELogLevel::Off:
+            // no need to continue
+            return;
         }
-
-        if(ll == DLT_LOG_OFF)
-        {
-            return; // no need to continue
-        }
-        WARNINGS_PUSH
-
-        // DISABLE WARNING
-        WARNING_DISABLE_LINUX(-Wold-style-cast)
-
 
         UInt maxLineCapacity = 130u;
 #ifdef DLT_MESSAGE_MAX_SIZE
@@ -137,7 +127,10 @@ namespace ramses_internal
         if (msgLength <= maxLineCapacity &&
             std::find(msgData, msgDataEnd, '\n') == msgDataEnd)
         {
+            WARNINGS_PUSH
+            WARNING_DISABLE_LINUX(-Wold-style-cast)
             DLT_LOG1((*dltContext), ll, DLT_STRING(msgData));
+            WARNINGS_POP
         }
         else
         {
@@ -146,12 +139,13 @@ namespace ramses_internal
             InplaceStringTokenizer::TokenizeToCStrings(s, maxLineCapacity, '\n',
                 [&](const char* tok) {
                     if (tok && *tok != 0) {
+                        WARNINGS_PUSH
+                        WARNING_DISABLE_LINUX(-Wold-style-cast)
                         DLT_LOG1((*dltContext), ll, DLT_STRING(tok));
+                        WARNINGS_POP
                     }
                 });
         }
-
-        WARNINGS_POP
     }
 
     bool DltAdapterImpl::registerApplication(const String& id,const String& description)

@@ -80,7 +80,7 @@ namespace ramses_capu
         status_t File::createFile()
         {
             FILE* handle = fopen(mPath.c_str(), "w");
-            if (handle == NULL)
+            if (handle == nullptr)
             {
                 return CAPU_ERROR;
             }

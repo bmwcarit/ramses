@@ -70,7 +70,6 @@ public:
     void run()
     {
         ramses_capu::Thread::Sleep(1000);
-        return;
     }
 };
 

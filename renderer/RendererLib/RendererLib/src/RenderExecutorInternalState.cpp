@@ -12,10 +12,10 @@
 namespace ramses_internal
 {
     RenderExecutorInternalState::RenderExecutorInternalState(IDevice& device, const FrameBufferInfo& frameBuffer, const SceneRenderExecutionIterator& renderFrom, const FrameTimer* frameTimer)
-        : viewportState(Viewport(std::numeric_limits<UInt32>::max(), std::numeric_limits<UInt32>::max(), std::numeric_limits<UInt32>::max(), std::numeric_limits<UInt32>::max()))
+        : viewportState(Viewport(std::numeric_limits<Int32>::max(), std::numeric_limits<Int32>::max(), std::numeric_limits<UInt32>::max(), std::numeric_limits<UInt32>::max()))
         , m_currentRenderIterator(renderFrom)
         , m_device(device)
-        , m_scene(0)
+        , m_scene(nullptr)
         , m_frameBuffer(frameBuffer)
         , m_rendererVirtualViewMatrix(Matrix44f::Identity)
         , m_projectionMatrix(Matrix44f::Identity)
@@ -40,7 +40,7 @@ namespace ramses_internal
 
     const RendererCachedScene& RenderExecutorInternalState::getScene() const
     {
-        assert(0 != m_scene);
+        assert(nullptr != m_scene);
         return *m_scene;
     }
 

@@ -6,6 +6,12 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
+# let cmake know c++ version
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+
 # set additional flags dependent on used compiler and version
 
 # helper function to add flags
@@ -94,7 +100,7 @@ ENDIF()
 
 # flags for integrity
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Integrity")
-    ADD_FLAGS(RAMSES_C_CXX_FLAGS "--diag_suppress=381,111,2008,620,82,1974")
+    ADD_FLAGS(RAMSES_C_CXX_FLAGS "--diag_suppress=381,111,2008,620,82,1974 --quit_after_warnings")
     ADD_FLAGS(CMAKE_EXE_LINKER_FLAGS "--c++14")
 
     # integrity is an unknown system to the eglplatform.h header

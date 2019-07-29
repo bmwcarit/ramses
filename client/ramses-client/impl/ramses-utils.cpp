@@ -37,7 +37,7 @@ namespace ramses
             return &RamsesObjectTypeUtils::ConvertTo<T>(obj);
         }
 
-        return NULL;
+        return nullptr;
     }
 
     template <typename T>
@@ -48,7 +48,7 @@ namespace ramses
             return &RamsesObjectTypeUtils::ConvertTo<T>(obj);
         }
 
-        return NULL;
+        return nullptr;
     }
 
     Texture2D* RamsesUtils::CreateTextureResourceFromPng(const char* pngFilePath, RamsesClient& ramsesClient, const char* name/* = 0*/)
@@ -211,7 +211,7 @@ namespace ramses
             mipLevelData[currentMipMapIndex].m_data = nextData;
 
             originalData = nextData;
-            nextData = NULL;
+            nextData = nullptr;
             originalWidth = nextWidth;
             originalHeight = nextHeight;
             currentMipMapIndex++;
@@ -260,7 +260,7 @@ namespace ramses
         }
 
         delete[] data;
-        data = NULL;
+        data = nullptr;
     }
 
     void RamsesUtils::DeleteGeneratedMipMaps(CubeMipLevelData*& data, uint32_t numMipMaps)
@@ -275,7 +275,7 @@ namespace ramses
             delete[] data[level].m_dataNZ;
         }
         delete[] data;
-        data = NULL;
+        data = nullptr;
     }
 
     nodeId_t RamsesUtils::GetNodeId(const Node& node)

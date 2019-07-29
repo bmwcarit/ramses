@@ -19,34 +19,34 @@ namespace ramses_internal
 {
     struct ResourceContentHash
     {
-        ResourceContentHash()
+        constexpr ResourceContentHash()
             : lowPart(0)
             , highPart(0)
         {
         }
 
-        ResourceContentHash(UInt64 low, UInt64 high)
+        constexpr ResourceContentHash(UInt64 low, UInt64 high)
             : lowPart(low)
             , highPart(high)
         {
         }
 
-        static ResourceContentHash Invalid()
+        constexpr static ResourceContentHash Invalid()
         {
             return ResourceContentHash();
         }
 
-        inline bool isValid() const
+        constexpr inline bool isValid() const
         {
             return *this != Invalid();
         }
 
-        inline bool operator==(const ResourceContentHash& rhs) const
+        constexpr inline bool operator==(const ResourceContentHash& rhs) const
         {
             return (lowPart == rhs.lowPart && highPart == rhs.highPart);
         }
 
-        inline bool operator!=(const ResourceContentHash& rhs) const
+        constexpr inline bool operator!=(const ResourceContentHash& rhs) const
         {
             return !(*this == rhs);
         }
@@ -55,7 +55,7 @@ namespace ramses_internal
         UInt64 highPart;
     };
 
-    inline Bool operator<(ResourceContentHash const& lhs, ResourceContentHash const& rhs)
+    constexpr inline Bool operator<(ResourceContentHash const& lhs, ResourceContentHash const& rhs)
     {
         return lhs.highPart == rhs.highPart ? lhs.lowPart < rhs.lowPart : lhs.highPart < rhs.highPart;
     }

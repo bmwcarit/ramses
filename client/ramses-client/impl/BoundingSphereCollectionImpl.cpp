@@ -167,7 +167,7 @@ namespace ramses
 
         const uint32_t vertexCount = vertices.getElementCount();
         const ramses_internal::ManagedResource managedResource = GetInternalManagedResource(vertices);
-        const bool failedToLoad = (NULL == managedResource.getResourceObject());
+        const bool failedToLoad = (nullptr == managedResource.getResourceObject());
 
         if (failedToLoad)
         {

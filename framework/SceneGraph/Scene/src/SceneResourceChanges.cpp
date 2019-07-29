@@ -47,7 +47,7 @@ namespace ramses_internal
 
         if (numElements > 0u)
         {
-            const Byte* rawData = NULL;
+            const Byte* rawData = nullptr;
             UInt32 size = 0u;
             action.readWithoutCopy(rawData, size);
 

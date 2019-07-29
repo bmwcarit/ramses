@@ -29,9 +29,9 @@ namespace ramses
     const RenderGroup* RenderPassGroupIterator::getNext()
     {
         const RenderGroupImpl* renderGroup = impl->getNext();
-        if (renderGroup == NULL)
+        if (renderGroup == nullptr)
         {
-            return NULL;
+            return nullptr;
         }
 
         return &RamsesObjectTypeUtils::ConvertTo<RenderGroup>(renderGroup->getRamsesObject());

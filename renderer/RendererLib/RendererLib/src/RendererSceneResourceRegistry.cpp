@@ -103,7 +103,7 @@ namespace ramses_internal
     void RendererSceneResourceRegistry::getBlitPassDeviceHandles(BlitPassHandle handle, DeviceResourceHandle& srcRenderTargetDeviceHandle, DeviceResourceHandle& dstRenderTargetDeviceHandle) const
     {
         const BlitPassEntry* const bpEntry = m_blitPasses.get(handle);
-        assert(bpEntry != NULL);
+        assert(bpEntry != nullptr);
         srcRenderTargetDeviceHandle = bpEntry->sourceRenderTargetDeviceHandle;
         dstRenderTargetDeviceHandle = bpEntry->destinationRenderTargetDeviceHandle;
     }

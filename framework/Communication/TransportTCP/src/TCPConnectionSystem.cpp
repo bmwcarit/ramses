@@ -1240,7 +1240,7 @@ namespace ramses_internal
         for (const auto& managedResource : managedResources)
         {
             const IResource* resource = managedResource.getResourceObject();
-            assert(resource != NULL);
+            assert(resource != nullptr);
             resource->compress(IResource::CompressionLevel::REALTIME);
         }
 

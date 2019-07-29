@@ -93,7 +93,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, status);
 
         m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTemporaryFile.ram", {});
-        ASSERT_TRUE(0 != m_sceneLoaded);
+        ASSERT_TRUE(nullptr != m_sceneLoaded);
 
         ObjectTypeHistogram origSceneNumbers;
         ObjectTypeHistogram loadedSceneNumbers;
@@ -109,7 +109,7 @@ namespace ramses
         EXPECT_EQ(origSceneSizeInfo, loadedSceneSizeInfo);
 
         const auto animationSystemLoaded = RamsesUtils::TryConvert<AnimationSystem>(*m_sceneLoaded->findObjectByName("animation system"));
-        ASSERT_TRUE(0 != animationSystemLoaded);
+        ASSERT_TRUE(nullptr != animationSystemLoaded);
     }
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteARemoteCamera)
@@ -246,7 +246,7 @@ namespace ramses
         m_resources.add(effect);
 
         GeometryBinding* geometry = this->m_scene.createGeometryBinding(*effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
         EXPECT_EQ(StatusOK, geometry->setIndices(*indices));
 
         doWriteReadCycle();
@@ -730,9 +730,9 @@ namespace ramses
         Node* loadedGrandParent = this->getObjectForTesting<Node>("node1");
         Node* loadedParent = this->getObjectForTesting<Node>("node2");
         Node* loadedChild = this->getObjectForTesting<Node>("node3");
-        ASSERT_TRUE(NULL != loadedGrandParent);
-        ASSERT_TRUE(NULL != loadedParent);
-        ASSERT_TRUE(NULL != loadedChild);
+        ASSERT_TRUE(nullptr != loadedGrandParent);
+        ASSERT_TRUE(nullptr != loadedParent);
+        ASSERT_TRUE(nullptr != loadedChild);
         EXPECT_EQ(loadedParent, loadedChild->getParent());
         EXPECT_EQ(loadedGrandParent, loadedParent->getParent());
         EXPECT_EQ(loadedParent, loadedGrandParent->getChild(0u));
@@ -780,8 +780,8 @@ namespace ramses
         Node* loadedTranslateNode = getObjectForTesting<Node>("translate node 1");
         Node* loadedChild = getObjectForTesting<Node>("groupnode child");
 
-        ASSERT_TRUE(0 != loadedTranslateNode);
-        ASSERT_TRUE(0 != loadedChild);
+        ASSERT_TRUE(nullptr != loadedTranslateNode);
+        ASSERT_TRUE(nullptr != loadedChild);
 
         EXPECT_EQ(1u, node->getChildCount());
         EXPECT_EQ(loadedChild, loadedTranslateNode->getChild(0u));
@@ -806,8 +806,8 @@ namespace ramses
         Node* loadedRotateNode = getObjectForTesting<Node>("rotate node 1");
         Node* loadedChild = getObjectForTesting<Node>("groupnode child");
 
-        ASSERT_TRUE(0 != loadedRotateNode);
-        ASSERT_TRUE(0 != loadedChild);
+        ASSERT_TRUE(nullptr != loadedRotateNode);
+        ASSERT_TRUE(nullptr != loadedChild);
 
         EXPECT_EQ(1u, loadedRotateNode->getChildCount());
         EXPECT_EQ(loadedChild, loadedRotateNode->getChild(0u));
@@ -832,8 +832,8 @@ namespace ramses
         Node* loadedScaleNode = getObjectForTesting<Node>("scale node");
         Node* loadedChild = getObjectForTesting<Node>("groupnode child");
 
-        ASSERT_TRUE(0 != loadedScaleNode);
-        ASSERT_TRUE(0 != loadedChild);
+        ASSERT_TRUE(nullptr != loadedScaleNode);
+        ASSERT_TRUE(nullptr != loadedChild);
 
         EXPECT_EQ(1u, loadedScaleNode->getChildCount());
         EXPECT_EQ(loadedChild, loadedScaleNode->getChild(0u));
@@ -858,12 +858,12 @@ namespace ramses
         m_resources.add(texture);
 
         TextureSampler* sampler = this->m_scene.createTextureSampler(wrapUMode, wrapVMode, minSamplingMethod, magSamplingMethod, *texture, 8u, "sampler");
-        ASSERT_TRUE(0 != sampler);
+        ASSERT_TRUE(nullptr != sampler);
 
         doWriteReadCycle();
 
         TextureSampler* loadedSampler = getObjectForTesting<TextureSampler>("sampler");
-        ASSERT_TRUE(0 != loadedSampler);
+        ASSERT_TRUE(nullptr != loadedSampler);
 
         EXPECT_EQ(wrapUMode, loadedSampler->getWrapUMode());
         EXPECT_EQ(wrapVMode, loadedSampler->getWrapVMode());
@@ -883,7 +883,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, status);
 
         m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTempararyFile.ram", ResourceFileDescriptionSet());
-        ASSERT_TRUE(0 != m_sceneLoaded);
+        ASSERT_TRUE(nullptr != m_sceneLoaded);
 
         EXPECT_EQ(sceneId, m_sceneLoaded->getSceneId());
     }
@@ -894,7 +894,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, client.saveSceneToFile(*client.createScene(sceneId), "someTempararyFile.ram", ResourceFileDescriptionSet(), false));
 
         m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTempararyFile.ram", ResourceFileDescriptionSet());
-        ASSERT_TRUE(0 != m_sceneLoaded);
+        ASSERT_TRUE(nullptr != m_sceneLoaded);
         EXPECT_EQ(EScenePublicationMode_LocalAndRemote, m_sceneLoaded->impl.getPublicationModeSetFromSceneConfig());
     }
 
@@ -907,7 +907,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, client.saveSceneToFile(*client.createScene(sceneId, config), "someTempararyFile.ram", ResourceFileDescriptionSet(), false));
 
         m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTempararyFile.ram", ResourceFileDescriptionSet());
-        ASSERT_TRUE(0 != m_sceneLoaded);
+        ASSERT_TRUE(nullptr != m_sceneLoaded);
         EXPECT_EQ(EScenePublicationMode_LocalOnly, m_sceneLoaded->impl.getPublicationModeSetFromSceneConfig());
     }
 
@@ -918,7 +918,7 @@ namespace ramses
 
         m_clientForLoading.markSceneIdForLoadingAsLocalOnly(sceneId);
         m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTempararyFile.ram", ResourceFileDescriptionSet());
-        ASSERT_TRUE(0 != m_sceneLoaded);
+        ASSERT_TRUE(nullptr != m_sceneLoaded);
         EXPECT_EQ(EScenePublicationMode_LocalOnly, m_sceneLoaded->impl.getPublicationModeSetFromSceneConfig());
     }
 
@@ -937,11 +937,11 @@ namespace ramses
         m_clientForLoading.markSceneIdForLoadingAsLocalOnly(sceneId3);
         m_clientForLoading.markSceneIdForLoadingAsLocalOnly(83);
         ramses::Scene* sceneLoaded1 = m_clientForLoading.loadSceneFromFile("someTempararyFile1.ram", ResourceFileDescriptionSet());
-        ASSERT_TRUE(0 != sceneLoaded1);
+        ASSERT_TRUE(nullptr != sceneLoaded1);
         ramses::Scene* sceneLoaded2 = m_clientForLoading.loadSceneFromFile("someTempararyFile2.ram", ResourceFileDescriptionSet());
-        ASSERT_TRUE(0 != sceneLoaded2);
+        ASSERT_TRUE(nullptr != sceneLoaded2);
         ramses::Scene* sceneLoaded3 = m_clientForLoading.loadSceneFromFile("someTempararyFile3.ram", ResourceFileDescriptionSet());
-        ASSERT_TRUE(0 != sceneLoaded3);
+        ASSERT_TRUE(nullptr != sceneLoaded3);
 
         EXPECT_EQ(EScenePublicationMode_LocalOnly, sceneLoaded1->impl.getPublicationModeSetFromSceneConfig());
         EXPECT_EQ(EScenePublicationMode_LocalAndRemote, sceneLoaded2->impl.getPublicationModeSetFromSceneConfig());
@@ -964,7 +964,7 @@ namespace ramses
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, reportsErrorWhenSavingSceneToFileWithNoFileName)
     {
-        ramses::status_t status = client.saveSceneToFile(m_scene, NULL, ResourceFileDescriptionSet(), false);
+        ramses::status_t status = client.saveSceneToFile(m_scene, nullptr, ResourceFileDescriptionSet(), false);
         EXPECT_NE(ramses::StatusOK, status);
     }
 
@@ -997,7 +997,7 @@ namespace ramses
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, doesNotLoadSceneFromFileWithoutFileName)
     {
-        ramses::Scene* scene = client.loadSceneFromFile(NULL, ResourceFileDescriptionSet());
+        ramses::Scene* scene = client.loadSceneFromFile(nullptr, ResourceFileDescriptionSet());
         EXPECT_TRUE(nullptr == scene);
     }
 
@@ -1141,11 +1141,11 @@ namespace ramses
         EXPECT_EQ(StatusOK, effectDesc.setFragmentShaderFromFile("res/ramses-client-test_minimalShader.frag"));
 
         Effect* const effect = this->client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "effect");
-        ASSERT_TRUE(effect != NULL);
+        ASSERT_TRUE(effect != nullptr);
         m_resources.add(effect);
 
         Appearance* const appearance = this->m_scene.createAppearance(*effect, "appearance");
-        ASSERT_TRUE(appearance != NULL);
+        ASSERT_TRUE(appearance != nullptr);
 
         static const float verts[9] = { 0.f };
         const Vector3fArray* const vertices = this->client.createConstVector3fArray(3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vertices");
@@ -1158,16 +1158,16 @@ namespace ramses
         effect->findAttributeInput("a_position", positionsInput);
 
         GeometryBinding* const geometry = this->m_scene.createGeometryBinding(*effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
         EXPECT_EQ(StatusOK, geometry->setIndices(*indices));
         EXPECT_EQ(StatusOK, geometry->setInputBuffer(positionsInput, *vertices));
 
         MeshNode* const meshNode1 = this->m_scene.createMeshNode("mesh1");
         MeshNode* const meshNode2 = this->m_scene.createMeshNode("mesh2");
         MeshNode* const meshNode3 = this->m_scene.createMeshNode("mesh3");
-        ASSERT_TRUE(meshNode1 != NULL);
-        ASSERT_TRUE(meshNode2 != NULL);
-        ASSERT_TRUE(meshNode3 != NULL);
+        ASSERT_TRUE(meshNode1 != nullptr);
+        ASSERT_TRUE(meshNode2 != nullptr);
+        ASSERT_TRUE(meshNode3 != nullptr);
         EXPECT_EQ(StatusOK, meshNode1->setAppearance(*appearance));
         EXPECT_EQ(StatusOK, meshNode2->setAppearance(*appearance));
         EXPECT_EQ(StatusOK, meshNode3->setAppearance(*appearance));
@@ -1178,11 +1178,11 @@ namespace ramses
         doWriteReadCycle();
 
         const RamsesObject* const effectLoaded = this->m_clientForLoading.findObjectByName("effect");
-        EXPECT_TRUE(effectLoaded != NULL && effectLoaded->isOfType(ERamsesObjectType_Effect));
+        EXPECT_TRUE(effectLoaded != nullptr && effectLoaded->isOfType(ERamsesObjectType_Effect));
         const RamsesObject* const verticesLoaded = this->m_clientForLoading.findObjectByName("vertices");
-        EXPECT_TRUE(verticesLoaded != NULL && verticesLoaded->isOfType(ERamsesObjectType_Vector3fArray));
+        EXPECT_TRUE(verticesLoaded != nullptr && verticesLoaded->isOfType(ERamsesObjectType_Vector3fArray));
         const RamsesObject* const indicesLoaded = this->m_clientForLoading.findObjectByName("indices");
-        EXPECT_TRUE(indicesLoaded != NULL && indicesLoaded->isOfType(ERamsesObjectType_UInt16Array));
+        EXPECT_TRUE(indicesLoaded != nullptr && indicesLoaded->isOfType(ERamsesObjectType_UInt16Array));
 
         const Appearance* const appearanceLoaded = getObjectForTesting<Appearance>("appearance");
         const GeometryBinding* const geometryLoaded = getObjectForTesting<GeometryBinding>("geometry");

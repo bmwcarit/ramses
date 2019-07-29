@@ -41,7 +41,7 @@ namespace ramses_internal
     , m_data(data)
     , m_size(size)
     {
-        assert(data != NULL && size > 0u);
+        assert(data != nullptr && size > 0u);
     }
 
     template<typename T>

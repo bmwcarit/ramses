@@ -29,8 +29,8 @@ namespace ramses_internal
         static void WriteSceneToFile(const String& filename, const ClientScene& scene);
 
         static void ReadSceneMetadataFromStream(IInputStream& inStream, SceneCreationInformation& createInfo);
-        static void ReadSceneFromStream(IInputStream& inStream, IScene& scene, AnimationSystemFactory* animSystemFactory = NULL);
-        static void ReadSceneFromFile(const String& filename, IScene& scene, AnimationSystemFactory* animSystemFactory = NULL);
+        static void ReadSceneFromStream(IInputStream& inStream, IScene& scene, AnimationSystemFactory* animSystemFactory = nullptr);
+        static void ReadSceneFromFile(const String& filename, IScene& scene, AnimationSystemFactory* animSystemFactory = nullptr);
     };
 }
 

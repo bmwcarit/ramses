@@ -159,7 +159,7 @@ namespace ramses
         * @param pixelData Pointer to the pixel data in uncompressed RGBA8 format.
         *                  Check result and pixelDataSize first to determine the state and size of the data.
         *                  The data is available at the pointer only during the dispatch of this event.
-        *                  The pointer is NULL in case of failure.
+        *                  The pointer is nullptr in case of failure.
         * @param pixelDataSize The number of elements in the data array pixelData, ie. number of pixels * 4 (color channels).
         *                      The size is 0 in case of failure.
         * @param displayId Display id of display that the callback refers to.
@@ -248,13 +248,13 @@ namespace ramses
         /**
         * @brief This method will be called when a new IVI video stream becomes available, or when an existing stream disappears
         * In terms of Wayland protocol, a stream is available if an "ivi_application" exists which has created a wayland surface
-        * (wl_surface) with ivi_id=streamId, and the surface has at least one attached non-NULL buffer (i.e. renderable content).
+        * (wl_surface) with ivi_id=streamId, and the surface has at least one attached non-nullptr buffer (i.e. renderable content).
         *
         * It is possible that the ivi_application does not update its surface (by providing new buffers/frames), but RAMSES has
         * no way of knowing that, hence a stream is _NOT_ reported unavailable in that case.
         *
         * A surface becomes unavailable whenever either the ivi_application is destroyed, or when it crashed, or when it attached
-        * a NULL buffer to the stream surface with id=streamId (i.e. actively told wayland that it should not render contents to
+        * a nullptr buffer to the stream surface with id=streamId (i.e. actively told wayland that it should not render contents to
         * this ivi surface).
         *
         * @param streamId The IVI stream id

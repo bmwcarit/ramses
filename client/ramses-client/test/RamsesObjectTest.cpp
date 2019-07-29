@@ -133,8 +133,8 @@ namespace ramses
         RamsesObject& obj = this->template createObject<TypeParam>("object");
         const RamsesObject& constObj = obj;
 
-        EXPECT_TRUE(NULL != RamsesUtils::TryConvert<TypeParam>(obj));
-        EXPECT_TRUE(NULL != RamsesUtils::TryConvert<TypeParam>(constObj));
+        EXPECT_TRUE(nullptr != RamsesUtils::TryConvert<TypeParam>(obj));
+        EXPECT_TRUE(nullptr != RamsesUtils::TryConvert<TypeParam>(constObj));
     }
 
     TYPED_TEST_P(RamsesObjectTest, convertToRamsesObject)
@@ -142,8 +142,8 @@ namespace ramses
         TypeParam& obj = this->template createObject<TypeParam>("object");
         const TypeParam& constObj = obj;
 
-        EXPECT_TRUE(NULL != RamsesUtils::TryConvert<RamsesObject>(obj));
-        EXPECT_TRUE(NULL != RamsesUtils::TryConvert<RamsesObject>(constObj));
+        EXPECT_TRUE(nullptr != RamsesUtils::TryConvert<RamsesObject>(obj));
+        EXPECT_TRUE(nullptr != RamsesUtils::TryConvert<RamsesObject>(constObj));
     }
 
     TYPED_TEST_P(RamsesObjectTest, convertToItsClosestBaseClass)
@@ -155,8 +155,8 @@ namespace ramses
 
         if (TYPE_ID_OF_RAMSES_OBJECT<BaseClassType>::ID != ERamsesObjectType_Invalid)
         {
-            EXPECT_TRUE(NULL != RamsesUtils::TryConvert<BaseClassType>(obj));
-            EXPECT_TRUE(NULL != RamsesUtils::TryConvert<BaseClassType>(constObj));
+            EXPECT_TRUE(nullptr != RamsesUtils::TryConvert<BaseClassType>(obj));
+            EXPECT_TRUE(nullptr != RamsesUtils::TryConvert<BaseClassType>(constObj));
         }
     }
 
@@ -184,7 +184,7 @@ namespace ramses
         const RamsesObject& obj = this->template createObject<TypeParam>("object");
 
         obj.validate();
-        EXPECT_TRUE(NULL != obj.getValidationReport());
+        EXPECT_TRUE(nullptr != obj.getValidationReport());
     }
 
     TYPED_TEST_P(RamsesObjectTest, validationStringContainsObjectTypeAndName)
@@ -228,13 +228,13 @@ namespace ramses
 
         if (constObj.getType() != ERamsesObjectType_SplineStepBool)
         {
-            EXPECT_TRUE(NULL == RamsesUtils::TryConvert<SplineStepBool>(obj));
-            EXPECT_TRUE(NULL == RamsesUtils::TryConvert<SplineStepBool>(constObj));
+            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<SplineStepBool>(obj));
+            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<SplineStepBool>(constObj));
         }
         else
         {
-            EXPECT_TRUE(NULL == RamsesUtils::TryConvert<SplineStepInt32>(obj));
-            EXPECT_TRUE(NULL == RamsesUtils::TryConvert<SplineStepInt32>(constObj));
+            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<SplineStepInt32>(obj));
+            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<SplineStepInt32>(constObj));
         }
     }
 

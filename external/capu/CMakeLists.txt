@@ -15,8 +15,8 @@
 #
 
 # check for required cmake vars
-IF (NOT DEFINED TARGET_OS OR NOT DEFINED TARGET_ARCH OR "${TARGET_OS}" MATCHES "unknown" OR "${TARGET_ARCH}" MATCHES "unknown" OR NOT TARGET_BITNESS)
-    ACME_ERROR("TARGET_OS, TARGET_ARCH and TARGET_BITNESS must be set")
+IF (NOT DEFINED TARGET_OS OR "${TARGET_OS}" MATCHES "unknown" OR NOT TARGET_BITNESS)
+    ACME_ERROR("TARGET_OS and TARGET_BITNESS must be set")
 ENDIF()
 
 # set vars for defines and Config.h.in

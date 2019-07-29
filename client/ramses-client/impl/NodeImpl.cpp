@@ -22,7 +22,7 @@ namespace ramses
 
     NodeImpl::NodeImpl(SceneImpl& scene, ERamsesObjectType type, const char* nodeName)
         : SceneObjectImpl(scene, type, nodeName)
-        , m_parent(0)
+        , m_parent(nullptr)
         , m_visibility(true)
     {
     }
@@ -66,7 +66,7 @@ namespace ramses
         if (parentNodeHandle.isValid())
         {
             m_parent = serializationContext.getNodeImplForHandle(parentNodeHandle);
-            if (m_parent == NULL)
+            if (m_parent == nullptr)
             {
                 return addErrorEntry("Node::resolveDeserializationDependencies failed, m_parent is NULL.");
             }
@@ -78,7 +78,7 @@ namespace ramses
         {
             const ramses_internal::NodeHandle childNodeHandle = getIScene().getChild(m_nodeHandle, i);
             NodeImpl* childNode = serializationContext.getNodeImplForHandle(childNodeHandle);
-            if (childNode == NULL)
+            if (childNode == nullptr)
             {
                 return addErrorEntry("Node::resolveDeserializationDependencies failed, childNode is NULL.");
             }
@@ -127,7 +127,7 @@ namespace ramses
     {
         if (index >= static_cast<uint32_t>(m_children.size()))
         {
-            return NULL;
+            return nullptr;
         }
 
         const NodeImpl& child = getChildImpl(index);
@@ -170,17 +170,17 @@ namespace ramses
 
     bool NodeImpl::hasParent() const
     {
-        return (m_parent != NULL);
+        return (m_parent != nullptr);
     }
 
     Node* NodeImpl::getParent()
     {
-        return m_parent ? &RamsesObjectTypeUtils::ConvertTo<Node>(m_parent->getRamsesObject()) : NULL;
+        return m_parent ? &RamsesObjectTypeUtils::ConvertTo<Node>(m_parent->getRamsesObject()) : nullptr;
     }
 
     const Node* NodeImpl::getParent() const
     {
-        return m_parent ? &RamsesObjectTypeUtils::ConvertTo<Node>(m_parent->getRamsesObject()) : NULL;
+        return m_parent ? &RamsesObjectTypeUtils::ConvertTo<Node>(m_parent->getRamsesObject()) : nullptr;
     }
 
     NodeImpl* NodeImpl::getParentImpl()
@@ -276,7 +276,7 @@ namespace ramses
         NodeImpl& child = **childIt;
 
         m_children.erase(childIt);
-        child.m_parent = NULL;
+        child.m_parent = nullptr;
         child.markDirty();
 
         getIScene().removeChildFromNode(m_nodeHandle, child.m_nodeHandle);

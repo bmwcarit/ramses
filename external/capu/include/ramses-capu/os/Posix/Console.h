@@ -143,7 +143,7 @@ namespace ramses_capu
                     {
                         highestFileDesciptor = stdinHandle;
                     }
-                    const int_t result = select(highestFileDesciptor + 1, &fdset, NULL, NULL, NULL);
+                    const int_t result = select(highestFileDesciptor + 1, &fdset, nullptr, nullptr, nullptr);
                     if (result > 0)
                     {
                         if (FD_ISSET(stdinHandle, &fdset))

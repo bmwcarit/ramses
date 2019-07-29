@@ -17,7 +17,7 @@ namespace ramses_internal
             return;
         }
 
-        if (pListener != 0)
+        if (pListener != nullptr)
         {
             m_observers.push_back(pListener);
         }

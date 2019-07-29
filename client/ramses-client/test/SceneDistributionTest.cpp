@@ -140,7 +140,7 @@ namespace ramses
     {
         const ramses_internal::SceneId sceneId(33u);
         Scene* otherScene = client.createScene(sceneId.getValue());
-        ASSERT_TRUE(otherScene != NULL);
+        ASSERT_TRUE(otherScene != nullptr);
         const ramses_internal::SceneId sceneID(otherScene->impl.getSceneId());
         const ramses_internal::IScene& otherIScene = otherScene->impl.getIScene();
 

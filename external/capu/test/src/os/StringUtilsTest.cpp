@@ -58,7 +58,7 @@ TEST(StringUtils, Strlen1)
 
 TEST(StringUtils, Strlen2)
 {
-    EXPECT_EQ(static_cast<ramses_capu::uint_t>(0),  ramses_capu::StringUtils::Strlen(0));
+    EXPECT_EQ(static_cast<ramses_capu::uint_t>(0),  ramses_capu::StringUtils::Strlen(nullptr));
 }
 
 TEST(StringUtils, Strnlen_n_smaller_than_length)
@@ -153,7 +153,7 @@ TEST(StringUtils, LastIndexOf)
     EXPECT_EQ(11, ramses_capu::StringUtils::LastIndexOf("______555555asdfasdf", '5'));
     EXPECT_EQ(-1, ramses_capu::StringUtils::LastIndexOf("111", '5'));
     EXPECT_EQ(-1, ramses_capu::StringUtils::LastIndexOf("", '5'));
-    EXPECT_EQ(-1, ramses_capu::StringUtils::LastIndexOf(0, '5'));
+    EXPECT_EQ(-1, ramses_capu::StringUtils::LastIndexOf(nullptr, '5'));
 }
 
 TEST(StringUtils, IndexOf)
@@ -163,7 +163,7 @@ TEST(StringUtils, IndexOf)
     EXPECT_EQ(0, ramses_capu::StringUtils::IndexOf("555555asdfasdf", '5'));
     EXPECT_EQ(-1, ramses_capu::StringUtils::IndexOf("111", '5'));
     EXPECT_EQ(-1, ramses_capu::StringUtils::IndexOf("", '5'));
-    EXPECT_EQ(-1, ramses_capu::StringUtils::IndexOf(0, '5'));
+    EXPECT_EQ(-1, ramses_capu::StringUtils::IndexOf(nullptr, '5'));
 }
 
 TEST(StringUtils, StartsWith1)
@@ -181,8 +181,8 @@ TEST(StringUtils, StartsWith1)
 
 TEST(StringUtils, StartsWith2)
 {
-    EXPECT_FALSE(ramses_capu::StringUtils::StartsWith("prefixwithsuffix", 0));
-    EXPECT_FALSE(ramses_capu::StringUtils::StartsWith(0, "prefix"));
+    EXPECT_FALSE(ramses_capu::StringUtils::StartsWith("prefixwithsuffix", nullptr));
+    EXPECT_FALSE(ramses_capu::StringUtils::StartsWith(nullptr, "prefix"));
 }
 
 TEST(StringUtils, IndexOf2)

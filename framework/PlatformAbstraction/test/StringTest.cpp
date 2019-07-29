@@ -349,21 +349,21 @@ TEST(String, TestSubStringCTor2)
 
 TEST(String, TestSubStringCTor3)
 {
-    String str(static_cast<const char*>(0), 4);
+    String str(static_cast<const char*>(nullptr), 4);
     EXPECT_STREQ("", str.c_str());
     EXPECT_EQ(0u, str.getLength());
 }
 
 TEST(String, TestSubStringCTor4)
 {
-    String str(0, 4, 9);
+    String str(nullptr, 4, 9);
     EXPECT_STREQ("", str.c_str());
     EXPECT_EQ(0u, str.getLength());
 }
 
 TEST(String, TestSubStringCTor5)
 {
-    String str(0, 9, 4);
+    String str(nullptr, 9, 4);
     EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("", str.c_str()));
     EXPECT_EQ(0u, str.getLength());
 }

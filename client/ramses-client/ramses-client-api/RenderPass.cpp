@@ -73,7 +73,7 @@ namespace ramses
 
     status_t RenderPass::setRenderTarget(RenderTarget* renderTarget)
     {
-        const status_t status = impl.setRenderTarget(renderTarget ? &renderTarget->impl : 0);
+        const status_t status = impl.setRenderTarget(renderTarget ? &renderTarget->impl : nullptr);
         LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_PTR_STRING(renderTarget));
         return status;
     }

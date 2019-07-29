@@ -15,7 +15,7 @@ namespace ramses_internal
     const Float SplineIterator::InvalidLocalTime = -1.f;
 
     SplineIterator::SplineIterator()
-        : m_spline(0)
+        : m_spline(nullptr)
         , m_timeStamp(InvalidSplineTimeStamp)
         , m_segmentLocalTime(InvalidLocalTime)
     {
@@ -28,7 +28,7 @@ namespace ramses_internal
             resetForSplineChange(spline);
         }
 
-        if (m_spline == 0)
+        if (m_spline == nullptr)
         {
             return;
         }
@@ -145,8 +145,8 @@ namespace ramses_internal
     {
         resetSegment();
         resetSegmentLocalTime();
-        m_spline = 0;
-        if (spline != 0 && spline->getNumKeys() > 0u)
+        m_spline = nullptr;
+        if (spline != nullptr && spline->getNumKeys() > 0u)
         {
             m_spline = spline;
         }

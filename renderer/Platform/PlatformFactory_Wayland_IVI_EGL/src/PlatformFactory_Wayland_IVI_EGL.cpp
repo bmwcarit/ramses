@@ -34,13 +34,13 @@ namespace ramses_internal
         if(InvalidWaylandIviLayerId == displayConfig.getWaylandIviLayerID())
         {
             LOG_ERROR(CONTEXT_RENDERER, "Can not create Wayland IVI window because IVI layer ID was not set in display config!");
-            return NULL;
+            return nullptr;
         }
 
         if(InvalidWaylandIviSurfaceId == displayConfig.getWaylandIviSurfaceID())
         {
             LOG_ERROR(CONTEXT_RENDERER, "Can not create Wayland IVI window because IVI surface ID was not set in display config!");
-            return NULL;
+            return nullptr;
         }
 
         Window_Wayland_IVI* platformWindow = new Window_Wayland_IVI(displayConfig, windowEventHandler, m_windows.size());

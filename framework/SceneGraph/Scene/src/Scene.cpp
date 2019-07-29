@@ -216,7 +216,7 @@ namespace ramses_internal
     {
         const StreamTextureHandle streamTextureHandle = m_streamTextures.allocate(handle);
         StreamTexture* streamTexture = m_streamTextures.getMemory(streamTextureHandle);
-        assert(0 != streamTexture);
+        assert(nullptr != streamTexture);
         streamTexture->fallbackTexture = fallbackTextureHash;
         streamTexture->source = streamSource;
         return streamTextureHandle;

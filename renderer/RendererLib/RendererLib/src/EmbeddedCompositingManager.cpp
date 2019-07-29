@@ -41,7 +41,7 @@ namespace ramses_internal
     void EmbeddedCompositingManager::deleteStreamTexture(StreamTextureHandle handle, StreamTextureSourceId source, SceneId sceneId)
     {
         StreamTextureSourceInfo* streamTextureSourceInfo = m_streamTextureSourceInfoMap.get(source);
-        assert(NULL != streamTextureSourceInfo);
+        assert(nullptr != streamTextureSourceInfo);
 
         //remove scene usage instance
         auto& sceneUsage = streamTextureSourceInfo->sceneUsage;
@@ -95,7 +95,7 @@ namespace ramses_internal
         if(m_embeddedCompositor.isContentAvailableForStreamTexture(source))
         {
             StreamTextureSourceInfo* streamTextureSourceInfo = m_streamTextureSourceInfoMap.get(source);
-            assert(NULL != streamTextureSourceInfo);
+            assert(nullptr != streamTextureSourceInfo);
             return streamTextureSourceInfo->compositedTextureHandle;
         }
 

@@ -40,7 +40,7 @@ namespace ramses_internal
     IContext* PlatformFactory_Wayland_EGL::createContext(IWindow& window)
     {
         Window_Wayland* platformWindow = getPlatformWindow<Window_Wayland>(window);
-        assert(0 != platformWindow);
+        assert(nullptr != platformWindow);
 
         std::vector<EGLint> contextAttributes;
         getContextAttributes(contextAttributes);
@@ -66,7 +66,7 @@ namespace ramses_internal
                     &surfaceAttributes[0],
                     &windowSurfaceAttributes[0],
                     swapInterval,
-                    0);
+                    nullptr);
         return addPlatformContext(platformContext);
     }
 
@@ -74,8 +74,8 @@ namespace ramses_internal
     {
         Window_Wayland* platformWindow = getPlatformWindow<Window_Wayland>(window);
         Context_EGL* platformContext = getPlatformContext<Context_EGL>(context);
-        assert(0 != platformWindow);
-        assert(0 != platformContext);
+        assert(nullptr != platformWindow);
+        assert(nullptr != platformContext);
 
         ISurface* platformSurface = nullptr;
         if(window.isOffscreen())

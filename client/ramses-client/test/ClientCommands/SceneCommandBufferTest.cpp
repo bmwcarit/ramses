@@ -73,9 +73,10 @@ namespace ramses_internal
         {}
 
         BufferInserter(const BufferInserter& rhs)
-        : buffer(rhs.buffer)
-        , iterations(rhs.iterations)
-        , barrier(rhs.barrier)
+            : Runnable()
+            , buffer(rhs.buffer)
+            , iterations(rhs.iterations)
+            , barrier(rhs.barrier)
         {}
 
         void run()
@@ -104,9 +105,10 @@ namespace ramses_internal
         {}
 
         BufferSwapper(const BufferSwapper& rhs)
-        : buffer(rhs.buffer)
-        , iterations(rhs.iterations)
-        , barrier(rhs.barrier)
+            : Runnable()
+            , buffer(rhs.buffer)
+            , iterations(rhs.iterations)
+            , barrier(rhs.barrier)
         {}
 
         void run()

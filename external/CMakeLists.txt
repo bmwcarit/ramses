@@ -139,17 +139,10 @@ IF (ramses-sdk_ALLOW_CUSTOM_FREETYPE AND NOT freetype_FOUND)
     # Not possible to use CMake targets because of complicated CMake scripts of each lib
     # TODO(tobias/violin): try with newer versions of FT/HB to use CMake install targets
     if(${ramses-sdk_INSTALL_STATIC_LIBS})
-        if (${CMAKE_VERSION} VERSION_LESS "2.9")  # aka not 2.8.x
-            install(FILES
-                ${CMAKE_CURRENT_BINARY_DIR}/freetype/libfreetype.a
-                ${CMAKE_CURRENT_BINARY_DIR}/harfbuzz/libharfbuzz.a
-                DESTINATION ${PROJECT_INSTALL_STATIC_LIB})
-        else()
-            install(FILES
-                $<TARGET_FILE:freetype>
-                $<TARGET_FILE:harfbuzz>
-                DESTINATION ${PROJECT_INSTALL_STATIC_LIB})
-         endif()
+        install(FILES
+            $<TARGET_FILE:freetype>
+            $<TARGET_FILE:harfbuzz>
+            DESTINATION ${PROJECT_INSTALL_STATIC_LIB})
     endif()
 
     # restore c/cxx flags
@@ -167,11 +160,11 @@ IF (ramses-sdk_ALLOW_CUSTOM_FREETYPE AND NOT freetype_FOUND)
     ACME_INFO("+ freetype")
 ENDIF()
 
-
-IF (ramses-sdk_ENABLE_DLT)
+# try to find automotive-dlt (if not already available)
+IF (ramses-sdk_ENABLE_DLT AND NOT automotive-dlt_FOUND)
     FIND_PACKAGE(automotive-dlt QUIET)
 ENDIF()
-IF (automotive-dlt_FOUND)
+IF (ramses-sdk_ENABLE_DLT AND automotive-dlt_FOUND)
     SET(ramses-sdk_HAS_DLT TRUE CACHE BOOL "dlt found" FORCE)
     ACME_INFO("+ automotive-dlt (platform)")
 ELSEIF()

@@ -97,7 +97,7 @@ namespace ramses_internal
     {
         for(const auto& comSystem : knownCommunicationSystems)
         {
-            assert(comSystem != 0);
+            assert(comSystem != nullptr);
             EXPECT_TRUE(comSystem->commSystem->connectServices());
         }
 
@@ -108,7 +108,7 @@ namespace ramses_internal
     {
         for (const auto& comSystem : knownCommunicationSystems)
         {
-            assert(comSystem != 0);
+            assert(comSystem != nullptr);
             comSystem->commSystem->disconnectServices();
         }
 
@@ -132,7 +132,7 @@ namespace ramses_internal
 
         for (const auto& comSystem : knownCommunicationSystems)
         {
-            assert(comSystem != 0);
+            assert(comSystem != nullptr);
             comSystem->registerForConnectionUpdates();
         }
 
@@ -165,11 +165,11 @@ namespace ramses_internal
         : id(id_)
         , state(state_)
     {
-        ramses::RamsesFrameworkConfigImpl config(0, NULL);
+        ramses::RamsesFrameworkConfigImpl config(0, nullptr);
         config.enableProtocolVersionOffset();
         state.applyConfigurationForSelectedConnectionSystemType(config, false, commSysConfig_);
 
-        commSystem.reset(CommunicationSystemFactory::ConstructCommunicationSystem(config, ParticipantIdentifier(id, name), frameworkLock, statisticCollection));
+        commSystem = CommunicationSystemFactory::ConstructCommunicationSystem(config, ParticipantIdentifier(id, name), frameworkLock, statisticCollection);
         state.knownCommunicationSystems.push_back(this);
 
         // trigger event on mock call
@@ -212,7 +212,7 @@ namespace ramses_internal
 
     CommunicationSystemDiscoveryDaemonTestWrapper::CommunicationSystemDiscoveryDaemonTestWrapper(CommunicationSystemTestState& state_)
     {
-        ramses::RamsesFrameworkConfigImpl config(0, NULL);
+        ramses::RamsesFrameworkConfigImpl config(0, nullptr);
         config.enableProtocolVersionOffset();
         state_.applyConfigurationForSelectedConnectionSystemType(config, true, ECommunicationSystemTestConfiguration_Default);
 

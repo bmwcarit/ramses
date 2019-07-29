@@ -338,7 +338,7 @@ namespace ramses_capu
          *         CAPU_ENO_MEMORY if allocation of element is failed
          *
          */
-        status_t put(const Key& key, const T& value, T* oldValue = NULL);
+        status_t put(const Key& key, const T& value, T* oldValue = nullptr);
 
         /**
          * Get const value associated with key in the hashtable.

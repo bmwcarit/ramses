@@ -45,6 +45,7 @@ RENDERER_MODULE_PER_CONFIG_STATIC(RendererLifecycleTests
     ${RendererTests-resources_MIXIN}
 
     DEPENDENCIES            TestContent FrameworkTestUtils RendererTestUtils
+                            ramses-gmock-main
 )
 
 # TODO Violin/Alex add support for embedded compositing on a renderer with x11-backend

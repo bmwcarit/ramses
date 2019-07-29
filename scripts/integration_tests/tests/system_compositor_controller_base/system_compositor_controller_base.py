@@ -77,8 +77,8 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         # The two ivi-gears are started before the renderer, to cover the case, that the scc gets the notification of the already
         # exisiting surfaces at it's startup time. In addition there is also a test which covers the case, when the renderer gets notified
         # about a newly created ivi-surface.
-        self.assertTrue(self.wlClient1.is_initialised(timeout=application.Application.DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT))
-        self.assertTrue(self.wlClient2.is_initialised(timeout=application.Application.DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT))
+        self.assertTrue(self.wlClient1.is_initialised())
+        self.assertTrue(self.wlClient2.is_initialised())
 
         # Start daemon
         self.ramsesDaemon = self.target.start_daemon()
@@ -100,7 +100,7 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         self.addCleanup(self.target.kill_application, self.testClient)
 
         # make sure renderer added its surface to layer before applying renderorder
-        self.renderer.wait_for_msg_in_stdout_from_beginning("IVIControllerSurface::HandleLayerCallback: surface {} added to layer".format(self.testSurfaceIVIIds["renderer"]), timeout=application.Application.DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT)
+        self.renderer.wait_for_msg_in_stdout_from_beginning("IVIControllerSurface::HandleLayerCallback: surface {} added to layer".format(self.testSurfaceIVIIds["renderer"]))
 
         # Put renderer, and ivi-gears No. 1 & 2 on the test layer
         self.target.ivi_control.setLayerRenderorder(self.testLayer, "{0} {1} {2}".format(self.testSurfaceIVIIds["renderer"], self.testSurfaceIVIIds["wlClient1"], self.testSurfaceIVIIds["wlClient2"]))

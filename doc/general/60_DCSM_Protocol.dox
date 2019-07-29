@@ -1,0 +1,146 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2019 BMW AG
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+/**
+
+@page DCSMProtocol The Display Cluster State Management Protocol
+
+# What is DCSM
+
+DCSM stands for Display Cluster State Management. It is a protocol which enables the provider and the consumer of any distributable or
+streamed graphical content to negotiate about the current state of the graphical content, e.g. if the content is supposed to be shown
+or not. The DCSM protocol is designed to work for any graphical content, be it video streams or rendered computer graphics content.
+Additionally to the state changes, it allows to synchronize between provider and consumer about the size of the content and about
+transition animations into new sizes and new content states.
+
+# Consumer and Provider
+
+The Consumer is the part of the system, which owns the display and is able to show received Content on that display. The Provider is the
+part of the system, which owns and controls the actual graphical content and makes it available to the Consumer. The design of the
+protocol puts the Consumer in charge of what is being shown when and in which size. The Provider controls, what is available for being shown and how the graphical content looks.
+
+There can be multiple Consumers and Providers in a DCSM system. Providers offer their Content to all Consumers, but a Content might only
+be assigned to one Consumer at a time.
+
+# Content States
+
+The Content may be in different states. The protocol is used to synchronize those states between Consumer and Provider.
+
+<b>Offered</b><br>
+This is the initial state of every Content after it has been created by the provider. It means the graphical content could be made
+available for any interested Consumer. The Provider will announce the potential availability to all connected and future Consumers. The
+actual graphical content may not even exist yet.
+
+A Content is always offered for exactly one Category. This is an application defined value which indicates in which context this
+graphical content is supposed to be used. Each Category can be associated with any number of Contents. The Consumer controls which
+Contents of a Category are in which state.
+
+<b>Assigned</b><br>
+When a Consumer decides to claim an offered Content for himself, the Content state switches to Assigned. The Content is now bound to
+the Consumer, and no other Consumer can claim it until the assigned Consumer releases this Content again. There are no requirements
+about the actual graphical content being available on the Consumer side connected to this state.
+
+<b>Ready</b><br>
+If a Content is in a Ready state, it means it is not shown, but it could be shown with minimal latency. This implicates that the
+graphical content is available on the consumer side. Getting to the Ready state from the Assigned state may therefore take some time and
+may fail, depending on how the graphical content is being made available.
+
+<b>Shown</b><br>
+The Content is currently shown. For the Provider this may mean, that it needs to keep the Contents graphical content updated.
+
+<b>AcceptStopOffer</b><br>
+This not a real state, but it is used in a ContentStateChange message to allow a Provider to stop offering a Content currently in use by
+a Consumer.
+
+# Protocol messages
+
+<b>OfferContent(<i>ContentID, Category, ProviderID</i>)</b><br>
+This message is broadcasted by a provider to all connected Consumers. It announces a new Content being Offered by that Provider. It
+carries a <i>ContentID</i>, which serves as a simple Content identifier and a <i>Category</i>, which defines in which context this
+Content can be used. The <i>ProviderID</i> identifies the Provider to an interested Consumer.
+
+<b>ContentStateChange(<i>ContentID, DcsmState, AnimationInformation, SizeInfo</i>)</b><br>
+This message is sent from Consumer to Provider to either inform about state changes or, in case of switching from Assigned to Ready,
+request a state change. This request has to be answered with a ContentReady message. Next to the Content identifier <i>ContentID</i>
+the message contains the new state <i>DcsmState</i> and <i>AnimationInformation</i>.
+
+<i>AnimationInformation</i> consists of two time stamps which tell when a synchronized transition between the current and the target
+state occurs. The first time stamp is the start of the transition animation, the second time stamp is the end of the animation. The
+time stamps need to be valid for both Consumer and Provider to work properly. It is up to the application to make sure of this. Both
+time stamps may be 0 for when there is no transition needed or unnecessary, transition makes only sense when switching to or from
+Shown state. Note that the start time should be chosen in a way that takes latencies (e.g. from network) into account, so that Provider
+and Consumer start animation and showing event at the same time.
+
+When switching to Shown, the Consumer starts displaying the content at the start time point, Provider animates a transition between
+start and end time. When switching away from Shown, Consumer stops showing the Content a the end time point, Provider animates a
+transition between start and end time.
+
+When the state change indicates a Consumer trying to claim Content (state change from Offered to Assigned), and only then, the message
+has to carry a non-zero <i>SizeInfo</i>, which provides initial size information to the Provider, which now may adapt the graphical
+content to that size.
+
+<b>CanvasSizeChange(<i>ContentID, SizeInfo, AnimationInformation</i>)</b><br>
+This message is sent from the Consumer to the Provider, when the size of the content should change. It has a <i>ContentID</i> and a
+<i>SizeInfo</i>. It contains the new size as viewport width and height. Additionally, it has <i>AnimationInformation</i>, which carries
+information for the Provider about when to animate the size change.
+
+<b>ContentReady(<i>ContentID, TechnicalContentType, TechnicalContentDescriptor</i>)</b><br>
+This message is a direct reply of the Provider to to a ContentStateChange message from the Consumer which switches from Assigned to
+Ready state. It carries the <i>ContentID</i> and information about how to be able to receive the actual graphical content.
+<i>TechnicalContentType</i> is an application defined value which imforms about what kind of mechanism is used to distribute or stream
+the graphical content, in case there are multiple mechanism available. <i>TechnicalContentDescriptor</i> can be used by the application
+to communicate about which identifier, address or descriptor shall be used to receive the graphical content.
+
+When this message is being sent, the Provider has to have the graphical content fully available for use by the Consumer.
+
+The same TechnicalContentDescriptor might be used for different Contents, if they are within the same Category. This would mean that
+there are multiple logical contexts which this technical content can offer. A switch from one Content with a TechnicalContentDescriptor
+to another one with the same descriptor would make the Provider trigger a change of the graphical content from one logical context to
+another, the Provider may animate a transition between the two contexts according to the AnimationInformation provided.
+
+<b>ContentFocusRequest(<i>ContentID</i>)</b><br>
+The Provider sends this message to the Consumer, if it wants to request the Consumer to switch to the Content <i>ContentID</i> as
+active Content for that Category. The Consumer may follow that request by bringing the Content to a Shown state or may not follow it by
+ignoring it.
+
+<b>StopOfferContentRequest(<i>ContentID</i>)</b><br>
+The Provider broadcasts this message to all Consumers, if it wants to stop providing the Content <i>ContentID</i>. A Consumer not
+currently assigned to the Content may now forget about this Content. The assigned Consumer has to reply with a ContentStateChange
+message for that <i>ContentID</i> and the state AcceptStopOffer. This gives it the opportunity to provide a <i>AnimationInformation</i> in case
+the Content is in state Shown and needs to be hidden with an animation (see above).
+
+After this ContentStateChange message has been received and the transition animation has been executed and the Content is hidden, the
+Provider and previously assigned Consumer may release the Content and graphical content.
+
+# Implementation
+
+In the Ramses solution there is a DCSM Implementation. It implements the DCSM protocol specifically to control Ramses scenes.
+
+There are four major components in this implementation:
+
+- The internal DcsmComponent uses Ramses' ConnectionSystems to communicate to other DCSMComponents and implements all the message and state logic
+  of DCSM in a generic way.
+- The DcsmProvider is a simplified API which can be used by a content provider application to provide Ramses scenes as content.
+- The DcsmConsumer is an API which can be used by a consumer application to receive Ramses scenes as Content and render it.
+- The DcsmRenderer is a simplified API which unifies calls to a renderer and DCSM. It is based on DcsmConsumer and RamsesRenderer and
+  is used to render Content in form of Ramses Scenes.
+
+Refer to the API documentation for details about usage of the last three API classes.
+
+# Protocol example sequence diagrams
+
+- Sequence 1 - Switching between different widgets within one area
+
+@image html sequence1a.png "Switching between different widgets within one area - Part I"
+@image html sequence1b.png "Switching between different widgets within one area - Part II"
+
+- Sequence 2 - Provider offers event notification, Consumer always shows if possible
+
+@image html sequence2.png "Provider offers event notification, Consumer always shows if possible"
+
+*/

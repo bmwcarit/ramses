@@ -52,7 +52,7 @@ namespace ramses_internal
         HandlerInfo info;
         gSignalMap.get(sig, info); // get current state if exists
 
-        info.previousHandler = 0;
+        info.previousHandler = nullptr;
         info.handler = handler;
         info.chainPrevious = chainPreviousHandler;
         info.active = false;

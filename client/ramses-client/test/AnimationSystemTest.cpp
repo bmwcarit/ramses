@@ -36,34 +36,34 @@ namespace ramses
         }
 
     protected:
-        AnimationSequence* createAnimationSequence(Animation** animation = NULL, Node** animatedNode = NULL)
+        AnimationSequence* createAnimationSequence(Animation** animation = nullptr, Node** animatedNode = nullptr)
         {
             SplineLinearVector3f* spline = animationSystem.createSplineLinearVector3f("spline");
-            EXPECT_FALSE(spline == NULL);
+            EXPECT_FALSE(spline == nullptr);
 
             spline->setKey(0u, 0.0f, 0.0f, 0.0f);
             spline->setKey(5000u, 1.0f, 1.0f, 1.0f);
 
             Node* node = m_scene.createNode("node");
-            EXPECT_FALSE(node == NULL);
+            EXPECT_FALSE(node == nullptr);
             node->setTranslation(1.0f, 1.0f, 1.0f);
 
             AnimatedProperty* prop = animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Translation, EAnimatedPropertyComponent_All);
-            EXPECT_FALSE(prop == NULL);
+            EXPECT_FALSE(prop == nullptr);
 
             Animation* anim = animationSystem.createAnimation(*prop, *spline, "anim");
-            EXPECT_FALSE(anim == NULL);
+            EXPECT_FALSE(anim == nullptr);
 
             AnimationSequence* sequence = animationSystem.createAnimationSequence("sequence");
-            EXPECT_FALSE(sequence == NULL);
+            EXPECT_FALSE(sequence == nullptr);
 
             sequence->addAnimation(*anim);
 
-            if (animation != NULL)
+            if (animation != nullptr)
             {
                 *animation = anim;
             }
-            if (animatedNode != NULL)
+            if (animatedNode != nullptr)
             {
                 *animatedNode = node;
             }
@@ -105,79 +105,79 @@ namespace ramses
     {
         AnimationSystem* otherAnimationSystem = this->getScene().createAnimationSystem();
         SplineLinearVector3f* spline = otherAnimationSystem->createSplineLinearVector3f("spline");
-        EXPECT_FALSE(spline == NULL);
+        EXPECT_FALSE(spline == nullptr);
         Node* node = this->m_scene.createNode("node");
-        EXPECT_FALSE(node == NULL);
+        EXPECT_FALSE(node == nullptr);
         AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Translation);
-        EXPECT_FALSE(prop == NULL);
+        EXPECT_FALSE(prop == nullptr);
 
         Animation* anim = this->animationSystem.createAnimation(*prop, *spline, "anim");
-        EXPECT_TRUE(anim == NULL);
+        EXPECT_TRUE(anim == nullptr);
     }
 
     TEST_F(AnimationSystemTest, createAnimationWithAnimatedPropertyFromDifferentAnimationSystemFails)
     {
         AnimationSystem* otherAnimationSystem = this->getScene().createAnimationSystem();
         SplineLinearVector3f* spline = this->animationSystem.createSplineLinearVector3f("spline");
-        EXPECT_FALSE(spline == NULL);
+        EXPECT_FALSE(spline == nullptr);
         Node* node = this->m_scene.createNode("node");
-        EXPECT_FALSE(node == NULL);
+        EXPECT_FALSE(node == nullptr);
         AnimatedProperty* prop = otherAnimationSystem->createAnimatedProperty(*node, EAnimatedProperty_Translation);
-        EXPECT_FALSE(prop == NULL);
+        EXPECT_FALSE(prop == nullptr);
 
         Animation* anim = this->animationSystem.createAnimation(*prop, *spline, "anim");
-        EXPECT_TRUE(anim == NULL);
+        EXPECT_TRUE(anim == nullptr);
     }
 
     TEST_F(AnimationSystemTest, createAnimatedSetterWithAnimatedPropertyFromDifferentAnimationSystemFails)
     {
         AnimationSystem* otherAnimationSystem = this->getScene().createAnimationSystem();
         Node* node = this->m_scene.createNode("node");
-        EXPECT_FALSE(node == NULL);
+        EXPECT_FALSE(node == nullptr);
         AnimatedProperty* prop = otherAnimationSystem->createAnimatedProperty(*node, EAnimatedProperty_Translation);
-        EXPECT_FALSE(prop == NULL);
+        EXPECT_FALSE(prop == nullptr);
 
         AnimatedSetter* anim = this->animationSystem.createAnimatedSetter(*prop, "anim");
-        EXPECT_TRUE(anim == NULL);
+        EXPECT_TRUE(anim == nullptr);
     }
 
     TEST_F(AnimationSystemTest, createAnimationWithSplineAndPropertyDataMismatchFails)
     {
         SplineLinearFloat* spline = this->animationSystem.createSplineLinearFloat("spline");
-        EXPECT_FALSE(spline == NULL);
+        EXPECT_FALSE(spline == nullptr);
         Node* node = this->m_scene.createNode("node");
-        EXPECT_FALSE(node == NULL);
+        EXPECT_FALSE(node == nullptr);
         AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Translation);
-        EXPECT_FALSE(prop == NULL);
+        EXPECT_FALSE(prop == nullptr);
 
         Animation* anim = this->animationSystem.createAnimation(*prop, *spline, "anim");
-        EXPECT_TRUE(anim == NULL);
+        EXPECT_TRUE(anim == nullptr);
     }
 
     TEST_F(AnimationSystemTest, createAnimationWithSplineAndPropertyComponentMismatchFails)
     {
         SplineLinearVector3f* spline = this->animationSystem.createSplineLinearVector3f("spline");
-        EXPECT_FALSE(spline == NULL);
+        EXPECT_FALSE(spline == nullptr);
         Node* node = this->m_scene.createNode("node");
-        EXPECT_FALSE(node == NULL);
+        EXPECT_FALSE(node == nullptr);
         AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Translation, EAnimatedPropertyComponent_Y);
-        EXPECT_FALSE(prop == NULL);
+        EXPECT_FALSE(prop == nullptr);
 
         Animation* anim = this->animationSystem.createAnimation(*prop, *spline, "anim");
-        EXPECT_TRUE(anim == NULL);
+        EXPECT_TRUE(anim == nullptr);
     }
 
     TEST_F(AnimationSystemTest, realTimeAnimationSystemCanBeConvertedToAnimationSystem)
     {
         RamsesObject& obj = this->createObject<AnimationSystemRealTime>("anim system");
-        EXPECT_TRUE(RamsesUtils::TryConvert<AnimationSystem>(obj) != NULL);
+        EXPECT_TRUE(RamsesUtils::TryConvert<AnimationSystem>(obj) != nullptr);
         const RamsesObject& constObj = obj;
-        EXPECT_TRUE(RamsesUtils::TryConvert<AnimationSystem>(constObj) != NULL);
+        EXPECT_TRUE(RamsesUtils::TryConvert<AnimationSystem>(constObj) != nullptr);
     }
 
     TEST_F(AnimationSystemTest, retrieveAnimationFromFinishedAnimationsWhenAnimationFinished)
     {
-        Animation* animation = NULL;
+        Animation* animation = nullptr;
         AnimationSequence* sequence = createAnimationSequence(&animation);
         sequence->startAt(0u);
 
@@ -190,7 +190,7 @@ namespace ramses
 
     TEST_F(AnimationSystemTest, retrieveAnimationFromFinishedAnimationsWhenAnimationStopped)
     {
-        Animation* animation = NULL;
+        Animation* animation = nullptr;
         AnimationSequence* sequence = createAnimationSequence(&animation);
         sequence->startAt(0u);
 
@@ -205,7 +205,7 @@ namespace ramses
 
     TEST_F(AnimationSystemTest, canValidate)
     {
-        Animation* animation = NULL;
+        Animation* animation = nullptr;
         createAnimationSequence(&animation);
         EXPECT_EQ(StatusOK, animationSystem.validate());
     }
@@ -243,8 +243,8 @@ namespace ramses
 
     TEST_F(AnimationSystemTest, failsToValidateIfOneOfItsObjectsNotValidated)
     {
-        Animation* animation = NULL;
-        Node* node = NULL;
+        Animation* animation = nullptr;
+        Node* node = nullptr;
         createAnimationSequence(&animation, &node);
         this->animationSystem.destroy(*animation);
         this->getScene().destroy(*node);
@@ -261,8 +261,8 @@ namespace ramses
 
     TEST_F(AnimationSystemTestClientSideProcessing, createAnimationSystemWithClientSideProcessingAndCheckInterpolationResults)
     {
-        Node* node = NULL;
-        AnimationSequence* sequence = createAnimationSequence(NULL, &node);
+        Node* node = nullptr;
+        AnimationSequence* sequence = createAnimationSequence(nullptr, &node);
         sequence->startAt(0u);
 
         this->animationSystem.setTime(2500u);
@@ -282,20 +282,20 @@ namespace ramses
     {
         Node& animatable = this->createObject<Node>("animatable");
         AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(animatable, EAnimatedProperty_Translation, EAnimatedPropertyComponent_All);
-        ASSERT_TRUE(prop != NULL);
+        ASSERT_TRUE(prop != nullptr);
 
         SplineLinearVector3f* spline = this->animationSystem.createSplineLinearVector3f();
-        ASSERT_TRUE(spline != NULL);
+        ASSERT_TRUE(spline != nullptr);
         const ramses_internal::Vector3 startValue(0.f);
         const ramses_internal::Vector3 endValue(1.f);
         EXPECT_EQ(StatusOK, spline->setKey(0u, startValue.x, startValue.y, startValue.z));
         EXPECT_EQ(StatusOK, spline->setKey(100u, endValue.x, endValue.y, endValue.z));
 
         Animation* animation = this->animationSystem.createAnimation(*prop, *spline);
-        ASSERT_TRUE(animation != NULL);
+        ASSERT_TRUE(animation != nullptr);
 
         AnimationSequence* animSequence = this->animationSystem.createAnimationSequence();
-        ASSERT_TRUE(animSequence != NULL);
+        ASSERT_TRUE(animSequence != nullptr);
         EXPECT_EQ(StatusOK, animSequence->addAnimation(*animation));
         EXPECT_EQ(StatusOK, animSequence->startAt(0u));
 
@@ -315,20 +315,20 @@ namespace ramses
     {
         Node& animatable = this->createObject<Node>("animatable");
         AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(animatable, EAnimatedProperty_Rotation, EAnimatedPropertyComponent_All);
-        ASSERT_TRUE(prop != NULL);
+        ASSERT_TRUE(prop != nullptr);
 
         SplineLinearVector3f* spline = this->animationSystem.createSplineLinearVector3f();
-        ASSERT_TRUE(spline != NULL);
+        ASSERT_TRUE(spline != nullptr);
         const ramses_internal::Vector3 startValue(0.f);
         const ramses_internal::Vector3 endValue(1.f);
         EXPECT_EQ(StatusOK, spline->setKey(0u, startValue.x, startValue.y, startValue.z));
         EXPECT_EQ(StatusOK, spline->setKey(100u, endValue.x, endValue.y, endValue.z));
 
         Animation* animation = this->animationSystem.createAnimation(*prop, *spline);
-        ASSERT_TRUE(animation != NULL);
+        ASSERT_TRUE(animation != nullptr);
 
         AnimationSequence* animSequence = this->animationSystem.createAnimationSequence();
-        ASSERT_TRUE(animSequence != NULL);
+        ASSERT_TRUE(animSequence != nullptr);
         EXPECT_EQ(StatusOK, animSequence->addAnimation(*animation));
         EXPECT_EQ(StatusOK, animSequence->startAt(0u));
 
@@ -348,20 +348,20 @@ namespace ramses
     {
         Node& animatable = this->createObject<Node>("animatable");
         AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(animatable, EAnimatedProperty_Scaling, EAnimatedPropertyComponent_All);
-        ASSERT_TRUE(prop != NULL);
+        ASSERT_TRUE(prop != nullptr);
 
         SplineLinearVector3f* spline = this->animationSystem.createSplineLinearVector3f();
-        ASSERT_TRUE(spline != NULL);
+        ASSERT_TRUE(spline != nullptr);
         const ramses_internal::Vector3 startValue(0.f);
         const ramses_internal::Vector3 endValue(1.f);
         EXPECT_EQ(StatusOK, spline->setKey(0u, startValue.x, startValue.y, startValue.z));
         EXPECT_EQ(StatusOK, spline->setKey(100u, endValue.x, endValue.y, endValue.z));
 
         Animation* animation = this->animationSystem.createAnimation(*prop, *spline);
-        ASSERT_TRUE(animation != NULL);
+        ASSERT_TRUE(animation != nullptr);
 
         AnimationSequence* animSequence = this->animationSystem.createAnimationSequence();
-        ASSERT_TRUE(animSequence != NULL);
+        ASSERT_TRUE(animSequence != nullptr);
         EXPECT_EQ(StatusOK, animSequence->addAnimation(*animation));
         EXPECT_EQ(StatusOK, animSequence->startAt(0u));
 
@@ -380,28 +380,28 @@ namespace ramses
     TEST_F(AnimationSystemTestClientSideProcessing, canAnimatePropertyUniformInput)
     {
         Effect* effect = TestEffectCreator::createEffect(this->client, false);
-        ASSERT_TRUE(effect != NULL);
+        ASSERT_TRUE(effect != nullptr);
         UniformInput uniformInput;
         EXPECT_EQ(StatusOK, effect->findUniformInput("vec3fInput", uniformInput));
 
         Appearance* appearance = this->m_scene.createAppearance(*effect);
-        ASSERT_TRUE(appearance != NULL);
+        ASSERT_TRUE(appearance != nullptr);
 
         AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(uniformInput, *appearance, EAnimatedPropertyComponent_All);
-        ASSERT_TRUE(prop != NULL);
+        ASSERT_TRUE(prop != nullptr);
 
         SplineLinearVector3f* spline = this->animationSystem.createSplineLinearVector3f();
-        ASSERT_TRUE(spline != NULL);
+        ASSERT_TRUE(spline != nullptr);
         const ramses_internal::Vector3 startValue(0.f);
         const ramses_internal::Vector3 endValue(1.f);
         EXPECT_EQ(StatusOK, spline->setKey(0u, startValue.x, startValue.y, startValue.z));
         EXPECT_EQ(StatusOK, spline->setKey(100u, endValue.x, endValue.y, endValue.z));
 
         Animation* animation = this->animationSystem.createAnimation(*prop, *spline);
-        ASSERT_TRUE(animation != NULL);
+        ASSERT_TRUE(animation != nullptr);
 
         AnimationSequence* animSequence = this->animationSystem.createAnimationSequence();
-        ASSERT_TRUE(animSequence != NULL);
+        ASSERT_TRUE(animSequence != nullptr);
         EXPECT_EQ(StatusOK, animSequence->addAnimation(*animation));
         EXPECT_EQ(StatusOK, animSequence->startAt(0u));
 
@@ -422,20 +422,20 @@ namespace ramses
         DataVector3f& animatable = this->createObject<DataVector3f>("animatable");
 
         AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(animatable, EAnimatedPropertyComponent_All);
-        ASSERT_TRUE(prop != NULL);
+        ASSERT_TRUE(prop != nullptr);
 
         SplineLinearVector3f* spline = this->animationSystem.createSplineLinearVector3f();
-        ASSERT_TRUE(spline != NULL);
+        ASSERT_TRUE(spline != nullptr);
         const ramses_internal::Vector3 startValue(0.f);
         const ramses_internal::Vector3 endValue(1.f);
         EXPECT_EQ(StatusOK, spline->setKey(0u, startValue.x, startValue.y, startValue.z));
         EXPECT_EQ(StatusOK, spline->setKey(100u, endValue.x, endValue.y, endValue.z));
 
         Animation* animation = this->animationSystem.createAnimation(*prop, *spline);
-        ASSERT_TRUE(animation != NULL);
+        ASSERT_TRUE(animation != nullptr);
 
         AnimationSequence* animSequence = this->animationSystem.createAnimationSequence();
-        ASSERT_TRUE(animSequence != NULL);
+        ASSERT_TRUE(animSequence != nullptr);
         EXPECT_EQ(StatusOK, animSequence->addAnimation(*animation));
         EXPECT_EQ(StatusOK, animSequence->startAt(0u));
 

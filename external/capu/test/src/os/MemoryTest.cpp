@@ -48,10 +48,10 @@ TEST(Memory, copy)
     ramses_capu::Memory::Copy(string2, string1, 0);
     EXPECT_EQ(0, ramses_capu::Memory::Compare(string1, string2, strlen(string1)));
 
-    ramses_capu::Memory::Copy(string2, 0, 0);
+    ramses_capu::Memory::Copy(string2, nullptr, 0);
     EXPECT_EQ(0, ramses_capu::Memory::Compare(string1, string2, strlen(string1)));
 
-    ramses_capu::Memory::Copy(0, string1, 0);
+    ramses_capu::Memory::Copy(nullptr, string1, 0);
     EXPECT_EQ(0, ramses_capu::Memory::Compare(string1, string2, strlen(string1)));
 }
 

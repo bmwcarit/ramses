@@ -97,6 +97,8 @@ namespace ramses_internal
         ramses::RamsesRenderer renderer(framework, rendererConfig);
         renderer.startThread();
         ramses_display_manager::DisplayManager displayManager(renderer, framework, false);
+        // allow camera free move
+        displayManager.enableKeysHandling();
 
         ramses::DisplayConfig displayConfig(argc, argv);
         // TODO add a getter for screen width/height in DisplayConfig and remove m_screenshotWidth and m_screenshotHeight and this error check

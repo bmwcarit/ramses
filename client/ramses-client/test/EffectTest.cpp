@@ -30,18 +30,18 @@ namespace ramses
         static void TearDownTestCase()
         {
             delete sharedTestState;
-            sharedTestState = 0;
+            sharedTestState = nullptr;
         }
 
         void SetUp()
         {
-            EXPECT_TRUE(sharedTestState != NULL);
+            EXPECT_TRUE(sharedTestState != nullptr);
         }
 
         static TestEffectCreator* sharedTestState;
     };
 
-    TestEffectCreator* AnEffect::sharedTestState = 0;
+    TestEffectCreator* AnEffect::sharedTestState = nullptr;
 
     class AnEffectWithSemantics : public AnEffect
     {
@@ -270,12 +270,12 @@ namespace ramses
             "}");
 
         /// Can create ...
-        EXPECT_NE(static_cast<Effect*>(0), sharedTestState->getClient().impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, ""));
+        EXPECT_NE(static_cast<Effect*>(nullptr), sharedTestState->getClient().impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, ""));
 
         effectDesc.setAttributeSemantic("a_position", EEffectAttributeSemantic_TextPositions);
 
         /// Can not create ...
-        EXPECT_EQ(static_cast<Effect*>(0), sharedTestState->getClient().impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, ""));
+        EXPECT_EQ(static_cast<Effect*>(nullptr), sharedTestState->getClient().impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, ""));
     }
 
     TEST_F(AnEffect, canNotCreateEffectWhenTextTextureCoordinatesSemanticsHasWrongType)
@@ -296,12 +296,12 @@ namespace ramses
             "}");
 
         /// Can create ...
-        EXPECT_NE(static_cast<Effect*>(0), sharedTestState->getClient().impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, ""));
+        EXPECT_NE(static_cast<Effect*>(nullptr), sharedTestState->getClient().impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, ""));
 
         effectDesc.setAttributeSemantic("a_texcoord", EEffectAttributeSemantic_TextTextureCoordinates);
 
         /// Can not create ...
-        EXPECT_EQ(static_cast<Effect*>(0), sharedTestState->getClient().impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, ""));
+        EXPECT_EQ(static_cast<Effect*>(nullptr), sharedTestState->getClient().impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, ""));
     }
 
     TEST_F(AnEffect, canNotCreateEffectWhenTextTextureSemanticsHasWrongType)
@@ -322,11 +322,11 @@ namespace ramses
             "}");
 
         /// Can create ...
-        EXPECT_NE(static_cast<Effect*>(0), sharedTestState->getClient().impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, ""));
+        EXPECT_NE(static_cast<Effect*>(nullptr), sharedTestState->getClient().impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, ""));
 
         effectDesc.setUniformSemantic("u_texture", EEffectUniformSemantic_TextTexture);
 
         /// Can not create ...
-        EXPECT_EQ(static_cast<Effect*>(0), sharedTestState->getClient().impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, ""));
+        EXPECT_EQ(static_cast<Effect*>(nullptr), sharedTestState->getClient().impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, ""));
     }
 }

@@ -64,7 +64,7 @@ namespace ramses_internal
         for (UInt i = 0u; i < numDataBinds; ++i)
         {
             AnimationDataBindBase* const pDataBind = m_animationData.getDataBinding(dataBindHandles[i]);
-            assert(pDataBind != 0);
+            assert(pDataBind != nullptr);
             pDataBind->setInitialValue();
         }
     }

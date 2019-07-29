@@ -61,7 +61,7 @@ namespace ramses_internal
 
                 String fileName;
                 int fd = CreateAnonymousFile(size, fileName);
-                uint8_t* bufferData = static_cast<uint8_t*>(mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
+                uint8_t* bufferData = static_cast<uint8_t*>(mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
 
                 for (uint32_t i = 0; i < width * height; i++)
                 {

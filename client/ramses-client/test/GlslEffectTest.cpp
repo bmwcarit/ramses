@@ -52,7 +52,7 @@ TEST_F(AGlslEffect, canParseBasicShaders)
 {
     GlslEffect ge(basicVertexShader, basicFragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    ASSERT_TRUE(res.get() != NULL);
+    ASSERT_TRUE(res.get() != nullptr);
 
     EXPECT_STREQ(basicVertexShaderOut.c_str(), res->getVertexShader());
     EXPECT_STREQ(basicFragmentShaderOut.c_str(), res->getFragmentShader());
@@ -65,7 +65,7 @@ TEST_F(AGlslEffect, usesPassedName)
 {
     GlslEffect ge(basicVertexShader, basicFragmentShader, emptyCompilerDefines, emptySemanticInputs, "someName");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    ASSERT_TRUE(res.get() != NULL);
+    ASSERT_TRUE(res.get() != nullptr);
 
     EXPECT_EQ(String("someName"), res->getName());
 }
@@ -74,28 +74,28 @@ TEST_F(AGlslEffect, rejectsEmptyVertexShader)
 {
     GlslEffect ge("", basicFragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    EXPECT_TRUE(res.get() == NULL);
+    EXPECT_TRUE(res.get() == nullptr);
 }
 
 TEST_F(AGlslEffect, rejectsBrokenVertexShader)
 {
     GlslEffect ge("foo", basicFragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    EXPECT_TRUE(res.get() == NULL);
+    EXPECT_TRUE(res.get() == nullptr);
 }
 
 TEST_F(AGlslEffect, rejectsEmptyFragmentShader)
 {
     GlslEffect ge(basicVertexShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    EXPECT_TRUE(res.get() == NULL);
+    EXPECT_TRUE(res.get() == nullptr);
 }
 
 TEST_F(AGlslEffect, rejectsBrokenFragmentShader)
 {
     GlslEffect ge(basicVertexShader, "bar", emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    EXPECT_TRUE(res.get() == NULL);
+    EXPECT_TRUE(res.get() == nullptr);
 }
 
 TEST_F(AGlslEffect, usesProvidedDefines)
@@ -115,7 +115,7 @@ TEST_F(AGlslEffect, usesProvidedDefines)
     compilerDefines.push_back("DEFINE_ONE vec4(1.0)");
     GlslEffect ge(vertexShader, fragmentShader, compilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    ASSERT_TRUE(res.get() != NULL);
+    ASSERT_TRUE(res.get() != nullptr);
 
     EXPECT_TRUE(String(res->getVertexShader()).find(compilerDefines[0]) != -1);
     EXPECT_TRUE(String(res->getVertexShader()).find(compilerDefines[1]) != -1);
@@ -141,7 +141,7 @@ TEST_F(AGlslEffect, generatedShaderWithDefaultVersionAndDefinesEmbedded)
     compilerDefines.push_back("OTHER_DEFINE bar");
     GlslEffect ge(vertexShader, fragmentShader, compilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    ASSERT_TRUE(res.get() != NULL);
+    ASSERT_TRUE(res.get() != nullptr);
 
     const char* expectedVertexShader =
         "#version 100\n"
@@ -187,7 +187,7 @@ TEST_F(AGlslEffect, acceptsGLSLES30Shaders)
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
 
-    EXPECT_TRUE(res.get() != NULL);
+    EXPECT_TRUE(res.get() != nullptr);
 }
 
 TEST_F(AGlslEffect, doesNotAcceptMixedES2VertexAndES3FragmentShaders)
@@ -213,7 +213,7 @@ TEST_F(AGlslEffect, doesNotAcceptMixedES2VertexAndES3FragmentShaders)
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
 
-    EXPECT_TRUE(res.get() == NULL);
+    EXPECT_TRUE(res.get() == nullptr);
 }
 
 TEST_F(AGlslEffect, doesNotAcceptMixedES3VertexAndES2FragmentShaders)
@@ -238,7 +238,7 @@ TEST_F(AGlslEffect, doesNotAcceptMixedES3VertexAndES2FragmentShaders)
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
 
-    EXPECT_TRUE(res.get() == NULL);
+    EXPECT_TRUE(res.get() == nullptr);
 }
 
 TEST_F(AGlslEffect, doesNotAcceptOtherGLSLVersionsThan100And300)
@@ -263,7 +263,7 @@ TEST_F(AGlslEffect, doesNotAcceptOtherGLSLVersionsThan100And300)
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
 
-    EXPECT_TRUE(res.get() == NULL);
+    EXPECT_TRUE(res.get() == nullptr);
 }
 
 TEST_F(AGlslEffect, canParseShaderInputs)
@@ -294,7 +294,7 @@ TEST_F(AGlslEffect, canParseShaderInputs)
 
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, semantics, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    ASSERT_TRUE(res.get() != NULL);
+    ASSERT_TRUE(res.get() != nullptr);
 
     const EffectInputInformationVector& uniforms = res->getUniformInputs();
     const EffectInputInformationVector& attributes = res->getAttributeInputs();
@@ -329,7 +329,7 @@ TEST_F(AGlslEffect, canParseSamplerInputsGLSLES2)
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
 
-    ASSERT_TRUE(res.get() != NULL);
+    ASSERT_TRUE(res.get() != nullptr);
 
     EXPECT_EQ(0u, res->getAttributeInputs().size());
 
@@ -363,7 +363,7 @@ TEST_F(AGlslEffect, canParseSamplerInputsGLSLES3)
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
 
-    ASSERT_TRUE(res.get() != NULL);
+    ASSERT_TRUE(res.get() != nullptr);
 
     EXPECT_EQ(0u, res->getAttributeInputs().size());
 
@@ -394,7 +394,7 @@ TEST_F(AGlslEffect, canParseArrayInputs)
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
 
-    ASSERT_TRUE(res.get() != NULL);
+    ASSERT_TRUE(res.get() != nullptr);
 
     EXPECT_EQ(0u, res->getAttributeInputs().size());
 
@@ -426,7 +426,7 @@ TEST_F(AGlslEffect, failsWithWrongSemanticForType)
 
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, semantics, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    EXPECT_TRUE(res.get() == NULL);
+    EXPECT_TRUE(res.get() == nullptr);
 }
 
 TEST_F(AGlslEffect, ignoresNormalGlobalsAndVaryings)
@@ -450,7 +450,7 @@ TEST_F(AGlslEffect, ignoresNormalGlobalsAndVaryings)
         "}\n";
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    ASSERT_TRUE(res.get() != NULL);
+    ASSERT_TRUE(res.get() != nullptr);
 
     EXPECT_EQ(0u, res->getUniformInputs().size());
     EXPECT_EQ(0u, res->getAttributeInputs().size());
@@ -476,7 +476,7 @@ TEST_F(AGlslEffect, canParseStructUniform)
         "}\n";
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    ASSERT_TRUE(res.get() != NULL);
+    ASSERT_TRUE(res.get() != nullptr);
 
     EXPECT_EQ(2u, res->getUniformInputs().size());
     VerifyUniformInputExists(*res, "s.a");
@@ -503,7 +503,7 @@ TEST_F(AGlslEffect, canParseArrayOfStructUniform)
         "}\n";
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    ASSERT_TRUE(res.get() != NULL);
+    ASSERT_TRUE(res.get() != nullptr);
 
     EXPECT_EQ(8u, res->getUniformInputs().size());
     VerifyUniformInputExists(*res, "s[0].a");
@@ -543,7 +543,7 @@ TEST_F(AGlslEffect, canParseNestedStructUniform)
         "}\n";
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    ASSERT_TRUE(res.get() != NULL);
+    ASSERT_TRUE(res.get() != nullptr);
 
     EXPECT_EQ(3u, res->getUniformInputs().size());
     VerifyUniformInputExists(*res, "ns.c");
@@ -577,7 +577,7 @@ TEST_F(AGlslEffect, canParseArrayOfNestedStructUniforms)
         "}\n";
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    ASSERT_TRUE(res.get() != NULL);
+    ASSERT_TRUE(res.get() != nullptr);
 
     EXPECT_EQ(20u, res->getUniformInputs().size());
 
@@ -624,7 +624,7 @@ public:
 
         GlslEffect eff(v, f, defs, sems, "myname");
         ScopedPointer<EffectResource> resource(eff.createEffectResource(ResourceCacheFlag(0u)));
-        createdSuccessfully = (resource.get() != NULL);
+        createdSuccessfully = (resource.get() != nullptr);
     }
 
     Bool createdSuccessfully;
@@ -650,7 +650,7 @@ TEST_F(AGlslEffect, hasDefaultShaderVersion100)
 {
     GlslEffect ge(basicVertexShader, basicFragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    ASSERT_TRUE(res.get() != NULL);
+    ASSERT_TRUE(res.get() != nullptr);
     EXPECT_EQ(100u, ge.getVertexShaderVersion());
     EXPECT_EQ(100u, ge.getFragmentShaderVersion());
 }
@@ -662,7 +662,7 @@ TEST_F(AGlslEffect, isAbleToParseShadersWithVersionString)
 
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    ASSERT_TRUE(res.get() != NULL);
+    ASSERT_TRUE(res.get() != nullptr);
 }
 
 TEST_F(AGlslEffect, rejectsShadersWithVersionStringWithoutNewline)
@@ -672,7 +672,7 @@ TEST_F(AGlslEffect, rejectsShadersWithVersionStringWithoutNewline)
 
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    ASSERT_TRUE(res.get() == NULL);
+    ASSERT_TRUE(res.get() == nullptr);
 }
 
 TEST_F(AGlslEffect, rejectsShadersWithUnsupportedVersions)
@@ -698,7 +698,7 @@ TEST_F(AGlslEffect, rejectsShadersWithUnsupportedVersions)
 
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    ASSERT_TRUE(res.get() == NULL);
+    ASSERT_TRUE(res.get() == nullptr);
 }
 
 TEST_F(AGlslEffect, acceptsReturnStatementsEveryWhere)
@@ -719,7 +719,7 @@ TEST_F(AGlslEffect, acceptsReturnStatementsEveryWhere)
 
     GlslEffect ge(vertexShader, basicFragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    EXPECT_TRUE(res.get() != NULL);
+    EXPECT_TRUE(res.get() != nullptr);
 }
 
 TEST_F(AGlslEffect, acceptsLoopsInShaders)
@@ -738,7 +738,7 @@ TEST_F(AGlslEffect, acceptsLoopsInShaders)
 
     GlslEffect ge(vertexShader, basicFragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    EXPECT_TRUE(res.get() != NULL);
+    EXPECT_TRUE(res.get() != nullptr);
 }
 
 TEST_F(AGlslEffect, doesNotSupportExternalTextureExtension)
@@ -766,7 +766,7 @@ TEST_F(AGlslEffect, doesNotSupportExternalTextureExtension)
 
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    EXPECT_TRUE(res.get() == NULL);
+    EXPECT_TRUE(res.get() == nullptr);
 }
 
 TEST_F(AGlslEffect, doesNotSupportFloatTextureExtension)
@@ -795,7 +795,7 @@ TEST_F(AGlslEffect, doesNotSupportFloatTextureExtension)
 
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    EXPECT_TRUE(res.get() == NULL);
+    EXPECT_TRUE(res.get() == nullptr);
 }
 
 TEST_F(AGlslEffect, doesNotSupport3DTextureExtension)
@@ -823,7 +823,7 @@ TEST_F(AGlslEffect, doesNotSupport3DTextureExtension)
 
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    EXPECT_TRUE(res.get() == NULL);
+    EXPECT_TRUE(res.get() == nullptr);
 }
 
 TEST_F(AGlslEffect, treatsUniformDeclaredInBothStagesWithSameNameAsSingleUniform)
@@ -843,7 +843,7 @@ TEST_F(AGlslEffect, treatsUniformDeclaredInBothStagesWithSameNameAsSingleUniform
 
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     const ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    ASSERT_TRUE(res.get() != NULL);
+    ASSERT_TRUE(res.get() != nullptr);
 
     EXPECT_EQ(1u, res->getUniformInputs().size());
 }
@@ -865,7 +865,7 @@ TEST_F(AGlslEffect, rejectsEffectWithUniformDeclaredInBothStagesWithSameNameButD
 
     GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     const ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    EXPECT_TRUE(res.get() == NULL);
+    EXPECT_TRUE(res.get() == nullptr);
 }
 
 TEST_F(AGlslEffect, DISABLED_acceptsActiveAsKeyword)
@@ -879,5 +879,5 @@ TEST_F(AGlslEffect, DISABLED_acceptsActiveAsKeyword)
         "}\n";
     GlslEffect ge(vertexShader, basicFragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     ScopedPointer<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    EXPECT_TRUE(res.get() != NULL);
+    EXPECT_TRUE(res.get() != nullptr);
 }

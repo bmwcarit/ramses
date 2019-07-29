@@ -97,7 +97,7 @@ namespace ramses_internal
         glDebugMessageCallback(debugCallback, &m_errorOccured);
 
         // enable all debug messages...
-        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
 
         // ... except redundant state change warnings on nvidia cards
         const std::array<const GLuint, 1> messageIds{{8}};

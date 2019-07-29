@@ -15,7 +15,7 @@ namespace ramses_internal
 {
 
     TaskExecutingThread::TaskExecutingThread(UInt16 workerIndex, IThreadAliveNotifier& aliveHandler)
-            : m_pBlockingTaskQueue(0)
+            : m_pBlockingTaskQueue(nullptr)
             , m_thread("R_Taskpool_Thrd")
             , m_workerIndex(workerIndex)
             , m_aliveHandler(aliveHandler)
@@ -54,7 +54,7 @@ namespace ramses_internal
             m_pBlockingTaskQueue->addTask(nullptr);
 
             m_thread.join();
-            m_pBlockingTaskQueue = 0;
+            m_pBlockingTaskQueue = nullptr;
             m_bThreadStarted = false;
         }
     }
@@ -80,21 +80,21 @@ namespace ramses_internal
         if (m_bThreadStarted && isCancelRequested())
         {
             m_thread.join();
-            m_pBlockingTaskQueue = 0;
+            m_pBlockingTaskQueue = nullptr;
             m_bThreadStarted = false;
         }
     }
 
     void TaskExecutingThread::run()
     {
-        if (0 != m_pBlockingTaskQueue)
+        if (nullptr != m_pBlockingTaskQueue)
         {
             m_aliveHandler.notifyAlive(m_workerIndex);
             while (!isCancelRequested())
             {
                 ITask* const pTaskToExecute = m_pBlockingTaskQueue->popTask(m_aliveHandler.calculateTimeout());
                 m_aliveHandler.notifyAlive(m_workerIndex);
-                if (0 != pTaskToExecute)
+                if (nullptr != pTaskToExecute)
                 {
                     pTaskToExecute->execute();
                     pTaskToExecute->release();

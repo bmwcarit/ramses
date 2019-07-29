@@ -46,12 +46,12 @@ namespace ramses
         static void TearDownTestCase()
         {
             delete sharedTestState;
-            sharedTestState = NULL;
+            sharedTestState = nullptr;
         }
 
         void SetUp()
         {
-            EXPECT_TRUE(sharedTestState != NULL);
+            EXPECT_TRUE(sharedTestState != nullptr);
         }
 
     protected:
@@ -90,7 +90,7 @@ namespace ramses
         {
             float verts[9] = { 0.f };
             const Vector3fArray* vertices = sharedTestState->getClient().createConstVector3fArray(3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec3Vertices");
-            EXPECT_TRUE(vertices != NULL);
+            EXPECT_TRUE(vertices != nullptr);
             if (!vertices)
                 return nullptr;
 
@@ -105,7 +105,7 @@ namespace ramses
         {
             float verts[8] = { 0.2f };
             const Vector2fArray* vertices = sharedTestState->getClient().createConstVector2fArray(4u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec2Vertices");
-            EXPECT_TRUE(vertices != NULL);
+            EXPECT_TRUE(vertices != nullptr);
             if (!vertices)
                 return nullptr;
 
@@ -120,7 +120,7 @@ namespace ramses
         {
             float verts[8] = { 0.4f };
             const Vector4fArray* vertices = sharedTestState->getClient().createConstVector4fArray(2u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec4Vertices");
-            EXPECT_TRUE(vertices != NULL);
+            EXPECT_TRUE(vertices != nullptr);
             if (!vertices)
                 return nullptr;
 
@@ -135,7 +135,7 @@ namespace ramses
         {
             float verts[8] = { 0.1f };
             const FloatArray* vertices = sharedTestState->getClient().createConstFloatArray(8u, verts, ResourceCacheFlag_DoNotCache, "floatVertices");
-            EXPECT_TRUE(vertices != NULL);
+            EXPECT_TRUE(vertices != nullptr);
             if (!vertices)
                 return nullptr;
 
@@ -150,7 +150,7 @@ namespace ramses
         {
             uint32_t inds[3] = { 0u };
             const UInt32Array* indices = sharedTestState->getClient().createConstUInt32Array(3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
-            EXPECT_TRUE(indices != NULL);
+            EXPECT_TRUE(indices != nullptr);
             if (!indices)
                 return nullptr;
 
@@ -163,14 +163,14 @@ namespace ramses
         static TestEffectCreator* sharedTestState;
     };
 
-    TestEffectCreator* GeometryBindingTest::sharedTestState = 0;
+    TestEffectCreator* GeometryBindingTest::sharedTestState = nullptr;
 
     TEST_F(GeometryBindingTest, CanGetEffect)
     {
         Effect* emptyEffect = TestEffects::CreateTestEffect(sharedTestState->getClient());
 
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*emptyEffect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         const Effect& resultEffect = geometry->getEffect();
         EXPECT_EQ(resultEffect.getResourceId(), emptyEffect->getResourceId());
@@ -188,7 +188,7 @@ namespace ramses
         Effect* emptyEffect = TestEffects::CreateTestEffect(sharedTestState->getClient());
 
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*emptyEffect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         const uint32_t fieldCount = sharedTestState->getInternalScene().getDataLayout(geometry->impl.getAttributeDataLayout()).getFieldCount();
         EXPECT_EQ(1u, fieldCount);
@@ -200,7 +200,7 @@ namespace ramses
     TEST_F(GeometryBindingTest, indicesFieldIsCreatedAtFixedSlot)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         const ramses_internal::DataFieldHandle indicesField(GeometryBindingImpl::IndicesDataFieldIndex);
         const ramses_internal::EFixedSemantics semantics = sharedTestState->getInternalScene().getDataLayout(geometry->impl.getAttributeDataLayout()).getField(indicesField).semantics;
@@ -212,11 +212,11 @@ namespace ramses
     TEST_F(GeometryBindingTest, canSetResource)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         static const float verts[9] = { 0.f };
         const Vector3fArray* const vertices = sharedTestState->getClient().createConstVector3fArray(3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vertices");
-        ASSERT_TRUE(vertices != NULL);
+        ASSERT_TRUE(vertices != nullptr);
 
         AttributeInput input;
         EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("vec3fArrayInput", input));
@@ -230,11 +230,11 @@ namespace ramses
     TEST_F(GeometryBindingTest, reportsErrorWhenSettingResourceToInvalidInput)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         static const float verts[9] = { 0.f };
         const Vector3fArray* const vertices = sharedTestState->getClient().createConstVector3fArray(3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vertices");
-        ASSERT_TRUE(vertices != NULL);
+        ASSERT_TRUE(vertices != nullptr);
 
         AttributeInput input;
         EXPECT_NE(StatusOK, geometry->setInputBuffer(input, *vertices));
@@ -246,11 +246,11 @@ namespace ramses
     TEST_F(GeometryBindingTest, reportsErrorWhenSettingResourceWithMismatchingTypeInEffect)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         static const float verts[8] = { 0.f };
         const Vector2fArray* const vertices = sharedTestState->getClient().createConstVector2fArray(4u, verts, ramses::ResourceCacheFlag_DoNotCache, "vertices");
-        ASSERT_TRUE(vertices != NULL);
+        ASSERT_TRUE(vertices != nullptr);
 
         AttributeInput input;
         EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("vec3fArrayInput", input));
@@ -263,12 +263,12 @@ namespace ramses
     TEST_F(GeometryBindingTest, reportsErrorWhenSettingVec2ArrayResourceFromAnotherClient)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         float verts[8] = { 0.f };
         RamsesClient anotherClient("anotherLocalTestClient", sharedTestState->getFramework());
         const Vector2fArray* const vertices = anotherClient.createConstVector2fArray(4u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec2Vertices");
-        ASSERT_TRUE(vertices != NULL);
+        ASSERT_TRUE(vertices != nullptr);
 
         AttributeInput input;
         EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("vec2fArrayInput", input));
@@ -280,12 +280,12 @@ namespace ramses
     TEST_F(GeometryBindingTest, reportsErrorWhenSettingVec3ArrayResourceFromAnotherClient)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         float verts[9] = { 0.f };
         RamsesClient anotherClient("anotherLocalTestClient", sharedTestState->getFramework());
         const Vector3fArray* const vertices = anotherClient.createConstVector3fArray(3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec3Vertices");
-        ASSERT_TRUE(vertices != NULL);
+        ASSERT_TRUE(vertices != nullptr);
 
         AttributeInput input;
         EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("vec3fArrayInput", input));
@@ -297,12 +297,12 @@ namespace ramses
     TEST_F(GeometryBindingTest, reportsErrorWhenSettingVec4ArrayResourceFromAnotherClient)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         float verts[8] = { 0.f };
         RamsesClient anotherClient("anotherLocalTestClient", sharedTestState->getFramework());
         const Vector4fArray* const vertices = anotherClient.createConstVector4fArray(2u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec2Vertices");
-        ASSERT_TRUE(vertices != NULL);
+        ASSERT_TRUE(vertices != nullptr);
 
         AttributeInput input;
         EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("vec4fArrayInput", input));
@@ -314,7 +314,7 @@ namespace ramses
     TEST_F(GeometryBindingTest, reportsErrorWhenSettingIndexDataBufferFromAnotherScene)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         Scene* otherScene = sharedTestState->getClient().createScene(777u);
         ASSERT_NE(nullptr, otherScene);
@@ -332,7 +332,7 @@ namespace ramses
     TEST_F(GeometryBindingTest, reportsErrorWhenSettingVertexDataBufferFromAnotherScene)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         Scene* otherScene = sharedTestState->getClient().createScene(777u);
         ASSERT_NE(nullptr, otherScene);
@@ -352,12 +352,12 @@ namespace ramses
     TEST_F(GeometryBindingTest, reportsErrorWhenSettingFloatArrayResourceFromAnotherClient)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         float verts[8] = { 0.f };
         RamsesClient anotherClient("anotherLocalTestClient", sharedTestState->getFramework());
         const FloatArray* const vertices = anotherClient.createConstFloatArray(8u, verts, ResourceCacheFlag_DoNotCache, "floatVertices");
-        ASSERT_TRUE(vertices != NULL);
+        ASSERT_TRUE(vertices != nullptr);
 
         AttributeInput input;
         EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("floatArrayInput", input));
@@ -369,12 +369,12 @@ namespace ramses
     TEST_F(GeometryBindingTest, reportsErrorWhenSettingUint16ArrayIndicesFromAnotherClient)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         uint16_t inds[3] = { 0u };
         RamsesClient anotherClient("anotherLocalTestClient", sharedTestState->getFramework());
         const UInt16Array* const indices = anotherClient.createConstUInt16Array(3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
-        ASSERT_TRUE(indices != NULL);
+        ASSERT_TRUE(indices != nullptr);
 
         EXPECT_EQ(0u, geometry->impl.getIndicesCount());
         EXPECT_NE(StatusOK, geometry->setIndices(*indices));
@@ -385,12 +385,12 @@ namespace ramses
     TEST_F(GeometryBindingTest, reportsErrorWhenSettingUint32ArrayIndicesFromAnotherClient)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         uint32_t inds[3] = { 0u };
         RamsesClient anotherClient("anotherLocalTestClient", sharedTestState->getFramework());
         const UInt32Array* const indices = anotherClient.createConstUInt32Array(3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
-        ASSERT_TRUE(indices != NULL);
+        ASSERT_TRUE(indices != nullptr);
 
         EXPECT_EQ(0u, geometry->impl.getIndicesCount());
         EXPECT_NE(StatusOK, geometry->setIndices(*indices));
@@ -401,11 +401,11 @@ namespace ramses
     TEST_F(GeometryBindingTest, canSetIndicesResource16)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         const uint16_t inds[3] = { 0u };
         const UInt16Array* const indices = sharedTestState->getClient().createConstUInt16Array(3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
-        ASSERT_TRUE(indices != NULL);
+        ASSERT_TRUE(indices != nullptr);
 
         EXPECT_EQ(0u, geometry->impl.getIndicesCount());
         EXPECT_EQ(StatusOK, geometry->setIndices(*indices));
@@ -419,11 +419,11 @@ namespace ramses
     TEST_F(GeometryBindingTest, canSetIndicesResource32)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         const uint32_t inds[3] = { 0u };
         const UInt32Array* const indices = sharedTestState->getClient().createConstUInt32Array(3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
-        ASSERT_TRUE(indices != NULL);
+        ASSERT_TRUE(indices != nullptr);
 
         EXPECT_EQ(0u, geometry->impl.getIndicesCount());
         EXPECT_EQ(StatusOK, geometry->setIndices(*indices));
@@ -437,10 +437,10 @@ namespace ramses
     TEST_F(GeometryBindingTest, canSetIndicesDataBuffer16)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         IndexDataBuffer* const indices = sharedTestState->getScene().createIndexDataBuffer(sizeof(uint16_t), EDataType_UInt16, "index data buffer");
-        ASSERT_TRUE(indices != NULL);
+        ASSERT_TRUE(indices != nullptr);
 
         EXPECT_EQ(0u, geometry->impl.getIndicesCount());
         EXPECT_EQ(StatusOK, geometry->setIndices(*indices));
@@ -454,10 +454,10 @@ namespace ramses
     TEST_F(GeometryBindingTest, canSetIndicesDataBuffer32)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         IndexDataBuffer* const indices = sharedTestState->getScene().createIndexDataBuffer(sizeof(uint32_t), EDataType_UInt32, "index data buffer");
-        ASSERT_TRUE(indices != NULL);
+        ASSERT_TRUE(indices != nullptr);
 
         EXPECT_EQ(0u, geometry->impl.getIndicesCount());
         EXPECT_EQ(StatusOK, geometry->setIndices(*indices));
@@ -474,11 +474,11 @@ namespace ramses
         EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("vec3fArrayInput", input));
 
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         const float verts[9] = { 0.f };
         const Vector3fArray* const vertices = sharedTestState->getClient().createConstVector3fArray(3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vertices");
-        ASSERT_TRUE(vertices != NULL);
+        ASSERT_TRUE(vertices != nullptr);
 
         EXPECT_EQ(StatusOK, geometry->setInputBuffer(input, *vertices));
         checkHashSetToInternalScene(*geometry, ramses_internal::DataFieldHandle(3u), *vertices, 0u);
@@ -493,10 +493,10 @@ namespace ramses
         EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("vec3fArrayInput", input));
 
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         VertexDataBuffer* const vertices = sharedTestState->getScene().createVertexDataBuffer(3 * sizeof(float), EDataType_Vector3F, "vertices");
-        ASSERT_TRUE(vertices != NULL);
+        ASSERT_TRUE(vertices != nullptr);
 
         EXPECT_EQ(StatusOK, geometry->setInputBuffer(input, *vertices, 16u));
         checkDataBufferSetToInternalScene(*geometry, ramses_internal::DataFieldHandle(3u), vertices->impl, 16u);
@@ -511,11 +511,11 @@ namespace ramses
         EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("vec2fArrayInput", input));
 
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         const float verts[9] = { 0.f };
         const Vector3fArray* const vertices = sharedTestState->getClient().createConstVector3fArray(3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vertices");
-        ASSERT_TRUE(vertices != NULL);
+        ASSERT_TRUE(vertices != nullptr);
 
         EXPECT_NE(StatusOK, geometry->setInputBuffer(input, *vertices));
 
@@ -529,10 +529,10 @@ namespace ramses
         EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("vec2fArrayInput", input));
 
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         VertexDataBuffer* const vertices = sharedTestState->getScene().createVertexDataBuffer(sizeof(float), EDataType_Float, "vertices");
-        ASSERT_TRUE(vertices != NULL);
+        ASSERT_TRUE(vertices != nullptr);
 
         EXPECT_NE(StatusOK, geometry->setInputBuffer(input, *vertices));
 
@@ -551,12 +551,12 @@ namespace ramses
         EXPECT_EQ(StatusOK, geometry->validate());
 
         EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*sharedTestState->effect));
-        sharedTestState->effect = NULL;
+        sharedTestState->effect = nullptr;
         EXPECT_NE(StatusOK, geometry->validate());
 
         // restore the effect in sharedTestState after this test case
         sharedTestState->effect = sharedTestState->createEffect(sharedTestState->getClient(), false);
-        ASSERT_TRUE(NULL != sharedTestState->effect);
+        ASSERT_TRUE(nullptr != sharedTestState->effect);
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
         EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*floatArray));
@@ -671,7 +671,7 @@ namespace ramses
         GeometryBinding* geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
 
         VertexDataBuffer* const vertexDataBuffer = sharedTestState->getScene().createVertexDataBuffer(3 * sizeof(float), EDataType_Float, "vertices");
-        ASSERT_TRUE(vertexDataBuffer != NULL);
+        ASSERT_TRUE(vertexDataBuffer != nullptr);
         AttributeInput input;
         EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("floatArrayInput", input));
         geometry->setInputBuffer(input, *vertexDataBuffer);
@@ -702,7 +702,7 @@ namespace ramses
         GeometryBinding* geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
 
         VertexDataBuffer* const vertexDataBuffer = sharedTestState->getScene().createVertexDataBuffer(3 * sizeof(float), EDataType_Float, "vertices");
-        ASSERT_TRUE(vertexDataBuffer != NULL);
+        ASSERT_TRUE(vertexDataBuffer != nullptr);
         AttributeInput input;
         EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("floatArrayInput", input));
         geometry->setInputBuffer(input, *vertexDataBuffer);

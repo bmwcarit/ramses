@@ -47,10 +47,10 @@ class TestNoInitialBlackFrame(test_classes.OnSelectedTargetsTest):
         log.info("output saved")
 
     def impl_test(self):
-        surfaceMadeVisible = self.application.wait_for_msg_in_stdout_from_beginning("Surface should be still invisible", timeout=application.Application.DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT)
+        surfaceMadeVisible = self.application.wait_for_msg_in_stdout_from_beginning("Surface should be still invisible")
 
         self.validateScreenshot(self.application, "black_rgb.png", useSystemCompositorForScreenshot=True)
 
-        self.assertTrue(self.application.send_ramsh_command("step 1", response_message="Surface with scene should now be visible", timeout=application.Application.DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT))
+        self.assertTrue(self.application.send_ramsh_command("step 1", response_message="Surface with scene should now be visible"))
 
         self.validateScreenshot(self.application, "red_triangle_on_blue_background.png", useSystemCompositorForScreenshot=True)

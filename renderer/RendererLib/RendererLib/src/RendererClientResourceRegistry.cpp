@@ -226,7 +226,7 @@ namespace ramses_internal
     void RendererClientResourceRegistry::updateListOfResourcesNotInUseByScenes(const ResourceContentHash& hash)
     {
         const ResourceDescriptor* rd = m_resources.get(hash);
-        const Bool isUnused = ((rd != NULL) && rd->sceneUsage.empty());
+        const Bool isUnused = ((rd != nullptr) && rd->sceneUsage.empty());
 
         {
             ResourceContentHashVector::iterator it = find_c(m_resourcesNotInUseByScenes, hash);
@@ -252,7 +252,7 @@ namespace ramses_internal
         {
             ResourceContentHashVector::iterator it = find_c(m_resourcesNotInUseByScenesAndNotUploaded, hash);
             const Bool isContained = (it != m_resourcesNotInUseByScenesAndNotUploaded.end());
-            const Bool isUploaded = (rd != NULL) && (rd->status == EResourceStatus_Uploaded);
+            const Bool isUploaded = (rd != nullptr) && (rd->status == EResourceStatus_Uploaded);
             if (isUnused && !isUploaded)
             {
                 // put to list if not already contained

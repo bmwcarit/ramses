@@ -25,7 +25,7 @@ namespace ramses
     TEST_F(ARamsesUtilsTest, createTextureResourceFromPng)
     {
         Texture2D* texture = RamsesUtils::CreateTextureResourceFromPng("res/sampleTexture.png", client);
-        ASSERT_TRUE(NULL != texture);
+        ASSERT_TRUE(nullptr != texture);
         if(texture)
         {
             EXPECT_EQ(StatusOK, client.destroy(*texture));
@@ -35,7 +35,7 @@ namespace ramses
     TEST_F(ARamsesUtilsTest, createTextureResourceFromPng_withName)
     {
         Texture2D* texture = RamsesUtils::CreateTextureResourceFromPng("res/sampleTexture.png", client, "mytesttexturename");
-        ASSERT_TRUE(NULL != texture);
+        ASSERT_TRUE(nullptr != texture);
         if(texture)
         {
             ASSERT_STREQ("mytesttexturename", texture->getName());
@@ -46,19 +46,19 @@ namespace ramses
     TEST_F(ARamsesUtilsTest, createTextureResourceFromPng_invalidFileFormat)
     {
         Texture2D* texture = RamsesUtils::CreateTextureResourceFromPng("res/sampleTexture_invalid.png", client);
-        EXPECT_TRUE(NULL == texture);
+        EXPECT_TRUE(nullptr == texture);
     }
 
     TEST_F(ARamsesUtilsTest, createTextureResourceFromPng_nonexistantFile)
     {
         Texture2D* texture = RamsesUtils::CreateTextureResourceFromPng("res/this_file_should_not_exist_here_fdsgferg8u43g.png", client);
-        EXPECT_TRUE(NULL == texture);
+        EXPECT_TRUE(nullptr == texture);
     }
 
     TEST_F(ARamsesUtilsTest, createTextureResourceFromPng_NULLFile)
     {
-        Texture2D* texture = RamsesUtils::CreateTextureResourceFromPng(NULL, client);
-        EXPECT_TRUE(NULL == texture);
+        Texture2D* texture = RamsesUtils::CreateTextureResourceFromPng(nullptr, client);
+        EXPECT_TRUE(nullptr == texture);
     }
 
     TEST_F(ARamsesUtilsTest, generateMipMapsForTexture2D)

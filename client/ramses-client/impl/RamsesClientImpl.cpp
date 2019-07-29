@@ -157,9 +157,9 @@ namespace ramses
         sceneInfo.sceneID = ramses_internal::SceneId(sceneId);
 
         ramses_internal::ClientScene* internalScene = m_sceneFactory.createScene(sceneInfo);
-        if (NULL == internalScene)
+        if (nullptr == internalScene)
         {
-            return NULL;
+            return nullptr;
         }
 
         SceneImpl& pimpl = *new SceneImpl(*internalScene, sceneConfig, *this);
@@ -241,7 +241,7 @@ namespace ramses
         if (!TextureUtils::TextureParametersValid(width, height, depth, mipMapCount) || !TextureUtils::MipDataValid(width, height, depth, mipMapCount, mipLevelData, format))
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::createTexture: invalid parameters");
-            return NULL;
+            return nullptr;
         }
 
         if (generateMipChain && (!FormatSupportsMipChainGeneration(format) || (mipMapCount > 1)))
@@ -340,7 +340,7 @@ namespace ramses
 
     bool RamsesClientImpl::validateArray(uint32_t count, const void* arrayData) const
     {
-        if (0u == count || NULL == arrayData)
+        if (0u == count || nullptr == arrayData)
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::validateArray Array resource must have element count > 0 and data must not be NULL!");
             return false;
@@ -352,7 +352,7 @@ namespace ramses
     {
         if (!validateArray(count, arrayData))
         {
-            return NULL;
+            return nullptr;
         }
 
         ArrayResourceImpl& pimpl = createArrayResourceImpl(count, reinterpret_cast<const ramses_internal::Byte*>(arrayData), cacheFlag, name, ramses_internal::EDataType_Float, ERamsesObjectType_FloatArray, ramses_internal::EResourceType_VertexArray);
@@ -367,7 +367,7 @@ namespace ramses
     {
         if (!validateArray(count, arrayData))
         {
-            return NULL;
+            return nullptr;
         }
 
         ArrayResourceImpl& pimpl = createArrayResourceImpl(count, reinterpret_cast<const ramses_internal::Byte*>(arrayData), cacheFlag, name, ramses_internal::EDataType_Vector2F, ERamsesObjectType_Vector2fArray, ramses_internal::EResourceType_VertexArray);
@@ -382,7 +382,7 @@ namespace ramses
     {
         if (!validateArray(count, arrayData))
         {
-            return NULL;
+            return nullptr;
         }
 
         ArrayResourceImpl& pimpl = createArrayResourceImpl(count, reinterpret_cast<const ramses_internal::Byte*>(arrayData), cacheFlag, name, ramses_internal::EDataType_Vector3F, ERamsesObjectType_Vector3fArray, ramses_internal::EResourceType_VertexArray);
@@ -397,7 +397,7 @@ namespace ramses
     {
         if (!validateArray(count, arrayData))
         {
-            return NULL;
+            return nullptr;
         }
 
         ArrayResourceImpl& pimpl = createArrayResourceImpl(count, reinterpret_cast<const ramses_internal::Byte*>(arrayData), cacheFlag, name, ramses_internal::EDataType_Vector4F, ERamsesObjectType_Vector4fArray, ramses_internal::EResourceType_VertexArray);
@@ -411,7 +411,7 @@ namespace ramses
     {
         if (!validateArray(count, arrayData))
         {
-            return NULL;
+            return nullptr;
         }
 
         ArrayResourceImpl& pimpl = createArrayResourceImpl(count, reinterpret_cast<const ramses_internal::Byte*>(arrayData), cacheFlag, name, ramses_internal::EDataType_UInt16, ERamsesObjectType_UInt16Array, ramses_internal::EResourceType_IndexArray);
@@ -425,7 +425,7 @@ namespace ramses
     {
         if (!validateArray(count, arrayData))
         {
-            return NULL;
+            return nullptr;
         }
 
         ArrayResourceImpl& pimpl = createArrayResourceImpl(count, reinterpret_cast<const ramses_internal::Byte*>(arrayData), cacheFlag, name, ramses_internal::EDataType_UInt32, ERamsesObjectType_UInt32Array, ramses_internal::EResourceType_IndexArray);
@@ -520,17 +520,17 @@ namespace ramses
         ramses_internal::ManagedResourceVector managedResources;
         for (const auto res : resources)
         {
-            assert(res != NULL);
+            assert(res != nullptr);
             const ramses_internal::ResourceContentHash& hash = res->impl.getLowlevelResourceHash();
             const ramses_internal::ManagedResource managedRes = getClientApplication().getResource(hash);
-            if (managedRes.getResourceObject() != NULL)
+            if (managedRes.getResourceObject() != nullptr)
             {
                 managedResources.push_back(managedRes);
             }
             else
             {
                 const ramses_internal::ManagedResource forceLoadedResource = getClientApplication().forceLoadResource(hash);
-                assert(forceLoadedResource.getResourceObject() != NULL);
+                assert(forceLoadedResource.getResourceObject() != nullptr);
                 managedResources.push_back(forceLoadedResource);
             }
         }
@@ -771,9 +771,9 @@ namespace ramses
             ramses_internal::PlatformGuard g(m_clientLock);
             internalScene = m_sceneFactory.createScene(sceneInfo);
         }
-        if (NULL == internalScene)
+        if (nullptr == internalScene)
         {
-            return NULL;
+            return nullptr;
         }
         internalScene->preallocateSceneSize(sizeInformation);
 
@@ -835,7 +835,7 @@ namespace ramses
         // if not all resources loaded scene loading fails
         if (!allResourcesLoadedSuccessfully)
         {
-            return NULL;
+            return nullptr;
         }
 
         ramses_internal::File inputFile(sceneFilename);
@@ -844,13 +844,13 @@ namespace ramses
         if (inputStream.getState() != ramses_internal::EStatus_RAMSES_OK)
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::" << caller << ":  failed to open file");
-            return NULL;
+            return nullptr;
         }
 
         if (!ReadRamsesVersionAndPrintWarningOnMismatch(inputStream, "scene file"))
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::" << caller << ": failed to read from file");
-            return NULL;
+            return nullptr;
         }
 
         Scene* scene = prepareSceneFromInputStream(caller, sceneFilename, inputStream);
@@ -1116,7 +1116,7 @@ namespace ramses
             }
         }
 
-        return NULL;
+        return nullptr;
     }
 
     ramses_internal::ResourceHashUsage RamsesClientImpl::getHashUsage_ThreadSafe(const ramses_internal::ResourceContentHash& hash) const
@@ -1154,7 +1154,7 @@ namespace ramses
             }
         }
 
-        return NULL;
+        return nullptr;
     }
 
     Effect* RamsesClientImpl::createEffect(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag, const char* name)
@@ -1167,7 +1167,7 @@ namespace ramses
         if (!effectResource)
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::createEffect  Failed to create effect resource (name: '" << effectName << "') :\n    " << effectBlock.getErrorMessages());
-            return NULL;
+            return nullptr;
         }
 
         return createEffectFromResource(effectResource, name);
@@ -1175,9 +1175,9 @@ namespace ramses
 
     Effect* RamsesClientImpl::createEffectFromResource(const ramses_internal::EffectResource* res, const ramses_internal::String& name)
     {
-        if (0 == res)
+        if (nullptr == res)
         {
-            return NULL;
+            return nullptr;
         }
         ramses_internal::ManagedResource managedRes = manageResource(res);
         ramses_internal::ResourceHashUsage hashUsage = m_appLogic.getHashUsage(managedRes.getResourceObject()->getHash());
@@ -1287,8 +1287,8 @@ namespace ramses
     {
         status_t status = StatusOK;
         ResourceIteratorImpl iter(*this, ERamsesObjectType_Resource);
-        RamsesObject* ramsesObject = NULL;
-        while (NULL != (ramsesObject = iter.getNext()))
+        RamsesObject* ramsesObject = nullptr;
+        while (nullptr != (ramsesObject = iter.getNext()))
         {
             const Resource& resource = RamsesObjectTypeUtils::ConvertTo<Resource>(*ramsesObject);
             const status_t resourceStatus = addValidationOfDependentObject(indent, resource.impl);
@@ -1332,7 +1332,7 @@ namespace ramses
         {
             return iter->value;
         }
-        return NULL;
+        return nullptr;
     }
 
     void RamsesClientImpl::updateClientResourceCache()

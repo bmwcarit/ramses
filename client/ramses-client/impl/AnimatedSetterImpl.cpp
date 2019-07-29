@@ -263,7 +263,7 @@ namespace ramses
         for(const auto& dataBind : dataBinds)
         {
             const AnimatedPropertyImpl* animProperty = m_animation.findAnimatedProperty(dataBind);
-            if (animProperty == NULL)
+            if (animProperty == nullptr)
             {
                 addValidationMessage(EValidationSeverity_Error, indent, "assigned AnimatedProperty does not exist anymore, was probably destroyed but still used by Animation");
                 status = getValidationErrorStatus();

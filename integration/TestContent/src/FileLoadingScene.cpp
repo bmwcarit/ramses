@@ -33,6 +33,7 @@
 #include "RamsesObjectTypeUtils.h"
 #include "TextureUtils.h"
 #include "Math3d/Vector3.h"
+#include "Utils/File.h"
 
 namespace ramses_internal
 {
@@ -47,12 +48,14 @@ namespace ramses_internal
             ramses::RamsesClient separateClient("ramses-test-client-fileLoadingScene-createFiles", separateFramework);
             createFiles(separateClient, sceneId, cameraPosition, folder);
             loadFromFiles(clientForLoading, folder);
+            cleanupFiles(folder);
             break;
         }
         case CREATE_SAVE_DESTROY_LOAD_USING_SAME_CLIENT:
         {
             createFiles(clientForLoading, sceneId, cameraPosition, folder);
             loadFromFiles(clientForLoading, folder);
+            cleanupFiles(folder);
             break;
         }
         default:
@@ -274,5 +277,15 @@ namespace ramses_internal
     ramses::Scene* FileLoadingScene::getCreatedScene()
     {
         return m_createdScene;
+    }
+
+    void FileLoadingScene::cleanupFiles(const String& folder)
+    {
+        for (const auto& name : {"/texture.ramres", "/triangle.ramres", "/tempfile.ramses"})
+        {
+            File file(folder + name);
+            if (file.exists())
+                file.remove();
+        }
     }
 }

@@ -183,7 +183,7 @@ namespace ramses
     status_t GeometryBindingImpl::validateResource(uint32_t indent, ramses_internal::ResourceContentHash resourceHash) const
     {
         const Resource* resource = getClientImpl().scanForResourceWithHash(resourceHash);
-        if (NULL == resource)
+        if (nullptr == resource)
         {
             addValidationMessage(EValidationSeverity_Error, indent, "GeometryBinding is referring to resource that does not exist");
             return getValidationErrorStatus();

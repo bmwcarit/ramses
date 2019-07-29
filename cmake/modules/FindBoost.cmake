@@ -18,7 +18,7 @@ ELSE()
     # handle linux and windows separately, not much in common
     IF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         # boost path in container
-        SET(Boost_BASE_PATH /opt/boost/${TARGET_ARCH}/)
+        SET(Boost_BASE_PATH /opt/boost/X86_${TARGET_BITNESS}/)
 
         # try to find libs and includes
         FIND_LIBRARY(boost_system_LIBRARY
@@ -54,13 +54,6 @@ ELSE()
         IF (Boost_BASE_PATH)
             MESSAGE(STATUS "Use Boost_BASE_PATH: ${Boost_BASE_PATH}")
 
-            # get bitness
-            IF ("${TARGET_ARCH}" STREQUAL "X86_64")
-                SET(Boost_LIB_BITNESS "64")
-            ELSE()
-                SET(Boost_LIB_BITNESS "32")
-            ENDIF()
-
             # get msvc version
             IF ("${MSVC_VERSION}" EQUAL 1900)  # VS2015
                 SET(Boost_MSVC_LIB_PATH "14.0")
@@ -69,7 +62,7 @@ ELSE()
             ENDIF()
 
             IF (DEFINED Boost_MSVC_LIB_PATH)
-                SET(Boost_LIBRARY_PATH_GUESSED "${Boost_BASE_PATH}/lib${Boost_LIB_BITNESS}-msvc-${Boost_MSVC_LIB_PATH}")
+                SET(Boost_LIBRARY_PATH_GUESSED "${Boost_BASE_PATH}/lib${TARGET_BITNESS}-msvc-${Boost_MSVC_LIB_PATH}")
                 SET(Boost_INCLUDE_PATH_GUESSED "${Boost_BASE_PATH}")
             ENDIF()
         ENDIF()

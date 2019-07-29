@@ -40,7 +40,7 @@ namespace ramses_internal
             IResource* resource = EffectResource::CreateResourceFromMetadataStream(inStream, effectResource.getCacheFlag(), name);
             if (!resource)
             {
-                return NULL;
+                return nullptr;
             }
             resource->setResourceData(effectResource.getResourceData());
             return resource->convertTo<EffectResource>();
@@ -127,7 +127,7 @@ namespace ramses_internal
     {
         EffectResource effectBefore("asd", "def", uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
         ScopedPointer<EffectResource> effectAfter(serializeDeserialize(effectBefore, ""));
-        ASSERT_TRUE(effectAfter.get() != NULL);
+        ASSERT_TRUE(effectAfter.get() != nullptr);
 
         EXPECT_EQ(EResourceType_Effect, effectAfter->getTypeID());
     }
@@ -136,7 +136,7 @@ namespace ramses_internal
     {
         EffectResource effectBefore("asd", "def", uniformInputs, attributeInputs, "", ResourceCacheFlag(15u));
         ScopedPointer<EffectResource> effectAfter(serializeDeserialize(effectBefore, ""));
-        ASSERT_TRUE(effectAfter.get() != NULL);
+        ASSERT_TRUE(effectAfter.get() != nullptr);
 
         EXPECT_EQ(effectBefore.getHash(), effectAfter->getHash());
         EXPECT_STREQ(effectBefore.getVertexShader(), effectAfter->getVertexShader());
@@ -150,7 +150,7 @@ namespace ramses_internal
     {
         EffectResource effectBefore("asd", "def", uniformInputs, attributeInputs, "some name", ResourceCacheFlag(0u));
         ScopedPointer<EffectResource> effectAfter(serializeDeserialize(effectBefore, "different name"));
-        ASSERT_TRUE(effectAfter.get() != NULL);
+        ASSERT_TRUE(effectAfter.get() != nullptr);
 
         EXPECT_EQ(String("different name"), effectAfter->getName());
     }

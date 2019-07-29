@@ -17,7 +17,7 @@ namespace ramses_internal
     AnimationSystem::AnimationSystem(UInt32 flags, const AnimationSystemSizeInformation& sizeInfo)
         : m_animationData(sizeInfo)
         , m_animationLogic(m_animationData)
-        , m_animationProcessing(NULL)
+        , m_animationProcessing(nullptr)
         , m_flags(flags)
         , m_handle(AnimationSystemHandle::Invalid())
     {
@@ -546,7 +546,7 @@ namespace ramses_internal
         AnimationTime::Duration animDuration = 0u;
 
         const SplineBase* const spline = m_animationData.getSpline(animationInstance.getSplineHandle());
-        if (spline != 0)
+        if (spline != nullptr)
         {
             const UInt32 numKeys = spline->getNumKeys();
             if (numKeys > 0u)

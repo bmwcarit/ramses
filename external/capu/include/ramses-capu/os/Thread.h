@@ -39,8 +39,18 @@ namespace ramses_capu
          */
         Thread(const std::string& name = "");
 
-        Thread(const Thread&) = delete;
-        Thread& operator=(const Thread&) = delete;
+        /**
+         * @brief Deleted copy constructor
+         * @param other unused
+         */
+        Thread(const Thread& other) = delete;
+
+        /**
+         * @brief Deleted copy assignment
+         * @param other unused
+         * @return unused
+         */
+        Thread& operator=(const Thread& other) = delete;
 
         /**
          * Starts the thread.

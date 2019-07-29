@@ -236,7 +236,7 @@ namespace ramses
         * @brief Get an object from the scene by name
         *
         * @param[in] name The name of the object to get.
-        * @return Pointer to the object if found, NULL otherwise.
+        * @return Pointer to the object if found, nullptr otherwise.
         */
         const RamsesObject* findObjectByName(const char* name) const;
 
@@ -274,7 +274,7 @@ namespace ramses
         * @param[in] sourceRenderBuffer Render buffer used as source to blit from
         * @param[in] destinationRenderBuffer Render buffer used as destination to blit to
         * @param[in] name The optional name of the created blit pass.
-        * @return A pointer to a BlitPass if successful or NULL on failure.
+        * @return A pointer to a BlitPass if successful or nullptr on failure.
         **/
         BlitPass* createBlitPass(const RenderBuffer& sourceRenderBuffer, const RenderBuffer& destinationRenderBuffer, const char* name = 0);
 

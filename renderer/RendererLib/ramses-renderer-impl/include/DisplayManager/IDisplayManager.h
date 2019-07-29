@@ -12,6 +12,11 @@
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include <cassert>
 
+namespace ramses
+{
+    class IRendererEventHandler;
+}
+
 namespace ramses_display_manager
 {
     enum class SceneState
@@ -22,6 +27,8 @@ namespace ramses_display_manager
         Rendered
     };
 
+    class IEventHandler;
+
     class IDisplayManager
     {
     public:
@@ -29,8 +36,10 @@ namespace ramses_display_manager
 
         virtual bool setSceneState(ramses::sceneId_t sceneId, SceneState state, const char* confirmationText = "") = 0;
         virtual bool setSceneMapping(ramses::sceneId_t sceneId, ramses::displayId_t displayId, int32_t sceneRenderOrder = 0) = 0;
+        virtual bool setSceneOffscreenBufferMapping(ramses::sceneId_t sceneId, ramses::displayId_t displayId, uint32_t width, uint32_t height, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTextureSamplerId) = 0;
         virtual void linkData(ramses::sceneId_t providerSceneId, ramses::dataProviderId_t providerId, ramses::sceneId_t consumerSceneId, ramses::dataConsumerId_t consumerId) = 0;
         virtual void processConfirmationEchoCommand(const char* text) = 0;
+        virtual void dispatchAndFlush(IEventHandler* eventHandler = nullptr, ramses::IRendererEventHandler* customRendererEventHandler = nullptr) = 0;
     };
 
     static constexpr int GetNumSceneStates()

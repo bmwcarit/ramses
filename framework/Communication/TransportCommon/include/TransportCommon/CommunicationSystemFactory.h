@@ -10,6 +10,7 @@
 #define RAMSES_COMMUNICATIONSYSTEMFACTORY_H
 
 #include "PlatformAbstraction/PlatformTypes.h"
+#include <memory>
 
 namespace ramses
 {
@@ -28,7 +29,7 @@ namespace ramses_internal
     class CommunicationSystemFactory
     {
     public:
-        static ICommunicationSystem* ConstructCommunicationSystem(const ramses::RamsesFrameworkConfigImpl& config,
+        static std::unique_ptr<ICommunicationSystem> ConstructCommunicationSystem(const ramses::RamsesFrameworkConfigImpl& config,
             const ParticipantIdentifier& participantIdentifier, PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection);
 
         static IDiscoveryDaemon* ConstructDiscoveryDaemon(const ramses::RamsesFrameworkConfigImpl& config, PlatformLock& frameworkLoc,

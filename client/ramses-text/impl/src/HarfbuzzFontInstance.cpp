@@ -82,7 +82,7 @@ namespace ramses
                     break;
             }
 
-            hb_shape(m_hbFont, hbBuffer, 0, 0);
+            hb_shape(m_hbFont, hbBuffer, nullptr, 0);
 
             uint32_t glyphCount;
             hb_glyph_info_t* glyph_info = hb_buffer_get_glyph_infos(hbBuffer, &glyphCount);

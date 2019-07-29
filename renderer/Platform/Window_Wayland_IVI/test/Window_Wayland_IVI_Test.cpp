@@ -15,7 +15,7 @@
 
 namespace ramses_internal
 {
-    NiceMock<PlatformFactoryNiceMock>* gPlatformFactoryMock = NULL;
+    NiceMock<PlatformFactoryNiceMock>* gPlatformFactoryMock = nullptr;
 
     ramses_internal::IPlatformFactory* ramses_internal::PlatformFactory_Base::CreatePlatformFactory(const ramses_internal::RendererConfig&)
     {

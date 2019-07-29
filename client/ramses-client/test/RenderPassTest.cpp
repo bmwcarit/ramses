@@ -213,7 +213,7 @@ namespace ramses
 
         renderGroup->addMeshNode(mesh);
         renderpass.setCamera(*perspectiveCamera);
-        renderpass.setRenderTarget(0);
+        renderpass.setRenderTarget(nullptr);
         renderpass.addRenderGroup(*renderGroup);
 
         renderpass.setClearFlags(ramses::EClearFlags::EClearFlags_None);
@@ -228,7 +228,7 @@ namespace ramses
 
         renderGroup->addMeshNode(mesh);
         renderpass.setCamera(*perspectiveCamera);
-        renderpass.setRenderTarget(0);
+        renderpass.setRenderTarget(nullptr);
         renderpass.addRenderGroup(*renderGroup);
 
         renderpass.setClearFlags(ramses::EClearFlags::EClearFlags_Stencil);
@@ -243,7 +243,7 @@ namespace ramses
 
         renderGroup->addMeshNode(mesh);
         renderpass.setCamera(*perspectiveCamera);
-        renderpass.setRenderTarget(0);
+        renderpass.setRenderTarget(nullptr);
         renderpass.addRenderGroup(*renderGroup);
 
         renderpass.setClearFlags(ramses::EClearFlags::EClearFlags_Depth);
@@ -258,7 +258,7 @@ namespace ramses
 
         renderGroup->addMeshNode(mesh);
         renderpass.setCamera(*perspectiveCamera);
-        renderpass.setRenderTarget(0);
+        renderpass.setRenderTarget(nullptr);
         renderpass.addRenderGroup(*renderGroup);
 
         renderpass.setClearFlags(ramses::EClearFlags::EClearFlags_Color);
@@ -273,7 +273,7 @@ namespace ramses
 
         renderGroup->addMeshNode(mesh);
         renderpass.setCamera(*perspectiveCamera);
-        renderpass.setRenderTarget(0);
+        renderpass.setRenderTarget(nullptr);
         renderpass.addRenderGroup(*renderGroup);
 
         renderpass.setClearFlags(ramses::EClearFlags::EClearFlags_All);
@@ -282,7 +282,7 @@ namespace ramses
 
     TEST_F(ARenderPass, hasNoCameraByDefaultWhichIsInterpretedAsIdentityViewMatrix)
     {
-        EXPECT_EQ(NULL, renderpass.getCamera());
+        EXPECT_EQ(nullptr, renderpass.getCamera());
     }
 
     TEST_F(ARenderPass, returnsTheSameCameraWhichWasSet)
@@ -353,14 +353,14 @@ namespace ramses
 
     TEST_F(ARenderPass, hasFrameBufferAsDefaultRenderTarget)
     {
-        EXPECT_EQ(0, renderpass.getRenderTarget());
+        EXPECT_EQ(nullptr, renderpass.getRenderTarget());
         EXPECT_FALSE(m_scene.impl.getIScene().getRenderPass(renderpass.impl.getRenderPassHandle()).renderTarget.isValid());
     }
 
     TEST_F(ARenderPass, canBeAssignedFrameBufferAsRenderTarget)
     {
-        EXPECT_EQ(StatusOK, renderpass.setRenderTarget(0));
-        EXPECT_EQ(0, renderpass.getRenderTarget());
+        EXPECT_EQ(StatusOK, renderpass.setRenderTarget(nullptr));
+        EXPECT_EQ(nullptr, renderpass.getRenderTarget());
         EXPECT_FALSE(m_scene.impl.getIScene().getRenderPass(renderpass.impl.getRenderPassHandle()).renderTarget.isValid());
     }
 
@@ -374,8 +374,8 @@ namespace ramses
         renderpass.setRenderTarget(renderTarget);
 
         // then set framebuffer rendering
-        EXPECT_EQ(StatusOK, renderpass.setRenderTarget(0));
-        EXPECT_EQ(0, renderpass.getRenderTarget());
+        EXPECT_EQ(StatusOK, renderpass.setRenderTarget(nullptr));
+        EXPECT_EQ(nullptr, renderpass.getRenderTarget());
         EXPECT_FALSE(m_scene.impl.getIScene().getRenderPass(renderpass.impl.getRenderPassHandle()).renderTarget.isValid());
     }
 
@@ -387,10 +387,10 @@ namespace ramses
         RenderTargetDescription rtDesc;
         rtDesc.addRenderBuffer(*renderBuffer);
         RenderTarget* renderTarget = anotherScene.createRenderTarget(rtDesc);
-        ASSERT_TRUE(NULL != renderTarget);
+        ASSERT_TRUE(nullptr != renderTarget);
 
         PerspectiveCamera* camera = createDummyPerspectiveCamera();
-        ASSERT_TRUE(NULL != camera);
+        ASSERT_TRUE(nullptr != camera);
         EXPECT_EQ(StatusOK, renderpass.setCamera(*camera));
 
         EXPECT_NE(StatusOK, renderpass.setRenderTarget(renderTarget));

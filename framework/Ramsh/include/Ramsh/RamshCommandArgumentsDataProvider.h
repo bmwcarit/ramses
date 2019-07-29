@@ -47,7 +47,7 @@ namespace ramses_internal
         // amount of data consumed by the argument - usually 2 for data arguments (parameter name + data)
         virtual UInt32 amountConsumed() const;
 
-        // try to set the argument's data with a given keyword (doesn't modify the argument itself, just returns a data object or NULL if keyword doesn't match)
+        // try to set the argument's data with a given keyword (doesn't modify the argument itself, just returns a data object or nullptr if keyword doesn't match)
         const RamshArgumentData* set(const String& keyword, const String& data) const;
 
         const RamshArgumentData* forceSet(const String& data) const;

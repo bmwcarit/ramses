@@ -81,7 +81,7 @@ namespace ramses
         for(const auto& dataBind : dataBinds)
         {
             const AnimatedPropertyImpl* animProperty = findAnimatedProperty(dataBind);
-            if (animProperty == NULL)
+            if (animProperty == nullptr)
             {
                 addValidationMessage(EValidationSeverity_Error, indent, "assigned AnimatedProperty does not exist anymore, was probably destroyed but still used by Animation");
                 status = getValidationErrorStatus();
@@ -94,7 +94,7 @@ namespace ramses
 
         // validate assigned spline
         const SplineImpl* spline = findSpline(animInstance.getSplineHandle());
-        if (spline == NULL)
+        if (spline == nullptr)
         {
             addValidationMessage(EValidationSeverity_Error, indent, "assigned Spline does not exist anymore, was probably destroyed but still used by Animation");
             status = getValidationErrorStatus();
@@ -157,7 +157,7 @@ namespace ramses
             }
         }
 
-        return NULL;
+        return nullptr;
     }
 
     const SplineImpl* AnimationImpl::findSpline(ramses_internal::SplineHandle handle) const
@@ -174,6 +174,6 @@ namespace ramses
             }
         }
 
-        return NULL;
+        return nullptr;
     }
 }

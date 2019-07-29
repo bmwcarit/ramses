@@ -189,7 +189,7 @@ namespace ramses_internal
 
             LOG_DEBUG(CONTEXT_RENDERER, "Window_X11::destroyLastInstance XCloseDisplay");
             XCloseDisplay(m_X11WindowData.display);
-            m_X11WindowData.display = 0;
+            m_X11WindowData.display = nullptr;
         }
         else
         {
@@ -201,7 +201,7 @@ namespace ramses_internal
     Bool Window_X11::init()
     {
         LOG_DEBUG(CONTEXT_RENDERER, "Window_X11::initX11WindowAndGetNativeHandles XOpenDisplay");
-        m_X11WindowData.display = XOpenDisplay(0);
+        m_X11WindowData.display = XOpenDisplay(nullptr);
         if (!m_X11WindowData.display)
         {
             LOG_ERROR(CONTEXT_RENDERER, "Error: Unable to open X display\n");
@@ -501,7 +501,7 @@ namespace ramses_internal
                 }
 
                 KeySym keySym = NoSymbol;
-                if (XLookupString(&event.xkey, text, sizeof(text), &keySym, NULL) != -1)
+                if (XLookupString(&event.xkey, text, sizeof(text), &keySym, nullptr) != -1)
                 {
                     const EKeyCode keyCode = convertKeySymbolIntoRamsesKeyCode(keySym);
                     m_eventHandler.onKeyEvent(EKeyEventType_Pressed, m_keyModifiers, keyCode);
@@ -544,7 +544,7 @@ namespace ramses_internal
                 }
 
                 KeySym keySym = NoSymbol;
-                if (XLookupString(&event.xkey, text, sizeof(text), &keySym, NULL) != -1)
+                if (XLookupString(&event.xkey, text, sizeof(text), &keySym, nullptr) != -1)
                 {
                     const EKeyCode keyCode = convertKeySymbolIntoRamsesKeyCode(keySym);
                     m_eventHandler.onKeyEvent(EKeyEventType_Released, m_keyModifiers, keyCode);

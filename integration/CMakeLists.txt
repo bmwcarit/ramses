@@ -12,6 +12,4 @@ IF(ramses-sdk_BUILD_SMOKE_TESTS)
     ADD_SUBDIRECTORY(SmokeTests)
     ADD_SUBDIRECTORY(StressTests)
     ADD_SUBDIRECTORY(PlatformTests)
-    ADD_SUBDIRECTORY(PerformanceTests)
 ENDIF()
-

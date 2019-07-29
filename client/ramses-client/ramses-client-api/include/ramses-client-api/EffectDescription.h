@@ -105,7 +105,7 @@ namespace ramses
         /**
         * @brief Gets compiler define.
         * @param[in] index Index of define to retrieve.
-        * @return Compiler define for given index. NULL if not previously set.
+        * @return Compiler define for given index. nullptr if not previously set.
         */
         const char*        getCompilerDefine(uint32_t index) const;
 

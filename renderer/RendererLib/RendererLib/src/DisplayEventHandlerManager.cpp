@@ -40,7 +40,7 @@ namespace ramses_internal
     {
         assert(m_displayHandlers.contains(display));
 
-        DisplayEventHandler* oldHandler = NULL;
+        DisplayEventHandler* oldHandler = nullptr;
         m_displayHandlers.remove(display, &oldHandler);
         delete oldHandler;
     }

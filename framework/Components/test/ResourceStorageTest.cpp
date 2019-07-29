@@ -300,14 +300,14 @@ namespace ramses_internal
         EXPECT_EQ(hash, hashUsage.getHash());
 
         ManagedResource obtainedRes = storage.getResource(hash);
-        EXPECT_EQ(0, obtainedRes.getResourceObject());
+        EXPECT_EQ(nullptr, obtainedRes.getResourceObject());
     }
 
     TEST_F(AResourceStorage, ReturnsEmptyWhenAskesForUnavailableResourceHash)
     {
 
         ManagedResource obtainedRes = storage.getResource(ResourceContentHash(123456, 0));
-        EXPECT_EQ(0, obtainedRes.getResourceObject());
+        EXPECT_EQ(nullptr, obtainedRes.getResourceObject());
     }
 
     TEST_F(AResourceStorage, ReturnsAllManagedResources)

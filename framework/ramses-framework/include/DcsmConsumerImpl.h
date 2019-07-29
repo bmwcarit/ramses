@@ -9,8 +9,8 @@
 #ifndef RAMSES_DCSMCONSUMERIMPL_H
 #define RAMSES_DCSMCONSUMERIMPL_H
 
+#include "IDcsmConsumerImpl.h"
 #include "StatusObjectImpl.h"
-#include "ramses-framework-api/DcsmApiTypes.h"
 #include "ramses-framework-api/IDcsmConsumerEventHandler.h"
 #include "Components/DcsmComponent.h"
 
@@ -18,18 +18,17 @@ namespace ramses
 {
     class RamsesFrameworkImpl;
 
-    class DcsmConsumerImpl : public StatusObjectImpl
+    class DcsmConsumerImpl final : public IDcsmConsumerImpl, public StatusObjectImpl
     {
     public:
         DcsmConsumerImpl(RamsesFrameworkImpl& framework);
-        ~DcsmConsumerImpl();
+        virtual ~DcsmConsumerImpl() override;
 
-        status_t dispatchEvents(IDcsmConsumerEventHandler& handler);
-
-        status_t assignContentToConsumer(ContentID contentID, SizeInfo size);
-        status_t contentSizeChange(ContentID contentID, SizeInfo size, AnimationInformation animationInformation);
-        status_t contentStateChange(ContentID contentID, EDcsmState status, AnimationInformation animationInformation);
-        status_t acceptStopOffer(ContentID contentID, AnimationInformation animationInformation);
+        virtual status_t dispatchEvents(IDcsmConsumerEventHandler& handler) override;
+        virtual status_t assignContentToConsumer(ContentID contentID, SizeInfo size) override;
+        virtual status_t contentSizeChange(ContentID contentID, SizeInfo size, AnimationInformation animationInformation) override;
+        virtual status_t contentStateChange(ContentID contentID, EDcsmState status, AnimationInformation animationInformation) override;
+        virtual status_t acceptStopOffer(ContentID contentID, AnimationInformation animationInformation) override;
 
     private:
         ramses_internal::DcsmComponent& m_component;

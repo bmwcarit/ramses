@@ -33,7 +33,7 @@ namespace ramses_internal
         }
 
         m_wlContext.display = wl_display_connect(m_waylandDisplay.empty()? nullptr : m_waylandDisplay.c_str());
-        if (NULL == m_wlContext.display)
+        if (nullptr == m_wlContext.display)
         {
             LOG_ERROR(CONTEXT_RENDERER, "Window_Wayland::init Could not connect to system compositor (compositor running and or correct socket set?)");
             return false;
@@ -187,7 +187,7 @@ namespace ramses_internal
         assert(callbackWaylandObject == window->m_wlContext.frameRenderingDoneWaylandCallbacObject);
 
         wl_callback_destroy(callbackWaylandObject);
-        window->m_wlContext.frameRenderingDoneWaylandCallbacObject = NULL;
+        window->m_wlContext.frameRenderingDoneWaylandCallbacObject = nullptr;
         window->m_wlContext.previousFrameRenderingDone = true;
 
         window->registerFrameRenderingDoneCallback();

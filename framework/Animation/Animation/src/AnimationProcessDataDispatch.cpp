@@ -27,7 +27,7 @@ namespace ramses_internal
 
         for (const auto dataBind : m_processData.m_dataBinds)
         {
-            assert(dataBind != 0);
+            assert(dataBind != nullptr);
             dataBind->dispatch(*this);
         }
     }

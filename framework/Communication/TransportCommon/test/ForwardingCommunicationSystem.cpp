@@ -19,11 +19,11 @@ namespace ramses_internal
 {
     ForwardingCommunicationSystem::ForwardingCommunicationSystem(const Guid& id)
         : m_id(id)
-        , m_targetCommunicationSystem(0)
-        , m_resourceConsumerHandler(0)
-        , m_resourceProviderHandler(0)
-        , m_sceneProviderHandler(0)
-        , m_sceneRendererHandler(0)
+        , m_targetCommunicationSystem(nullptr)
+        , m_resourceConsumerHandler(nullptr)
+        , m_resourceProviderHandler(nullptr)
+        , m_sceneProviderHandler(nullptr)
+        , m_sceneRendererHandler(nullptr)
     {
     }
 

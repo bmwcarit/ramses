@@ -117,7 +117,7 @@ namespace ramses_internal
 
     void ClientResourceUploadingManager::uploadClientResource(const ResourceDescriptor& rd)
     {
-        assert(rd.resource.getResourceObject() != NULL);
+        assert(rd.resource.getResourceObject() != nullptr);
         assert(!rd.deviceHandle.isValid());
         LOG_TRACE(CONTEXT_PROFILING, "        ResourceUploadingManager::uploadResource upload resource of type " << EnumToString(rd.type));
 
@@ -203,7 +203,7 @@ namespace ramses_internal
         {
             const ResourceDescriptor& rd = m_clientResources.getResourceDescriptor(resource);
             assert(rd.status == EResourceStatus_Provided);
-            assert(rd.resource.getResourceObject() != NULL);
+            assert(rd.resource.getResourceObject() != nullptr);
             const IResource* resourceObj = rd.resource.getResourceObject();
             resourceObj->decompress();
             totalSize += resourceObj->getDecompressedDataSize();

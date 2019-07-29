@@ -30,8 +30,8 @@ class IntegrationTest(unittest.TestCase):
             useSystemCompositorForScreenshot, compareForEquality)
         self.screenshotNumber += 1
 
-    def save_application_output_on_target(self, application, target, nr=None):
-        target.save_application_output(application, self.fullClassName(), self.name_test_run(), nr)
+    def save_application_output_on_target(self, application, target):
+        target.save_application_output(application, self.fullClassName(), self.name_test_run())
 
     def checkThatApplicationWasStarted(self, application):
         self.assertTrue(application.started, "Application {} could not be started".format(application.name))
@@ -102,8 +102,8 @@ class OneConnectionTest(IntegrationTest):
     def get_nr_targets(self):
         return 1
 
-    def save_application_output(self, application, nr=None):
-        self.save_application_output_on_target(application, self.target, nr)
+    def save_application_output(self, application):
+        self.save_application_output_on_target(application, self.target)
 
     def name_test_run(self):
         return "testRun_target_{}".format(self.target.name)

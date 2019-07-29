@@ -30,6 +30,7 @@ SET(DISABLED_COMPILER_FLAGS
     /w34355
     /w34062
     --quit_after_warnings
+    --coverage   # coverage broken for some externals
 )
 
 # disabled blacklisted compiler flags for this directory

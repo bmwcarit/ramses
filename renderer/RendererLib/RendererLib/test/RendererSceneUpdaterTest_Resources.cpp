@@ -7,6 +7,9 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererSceneUpdaterTest.h"
+#include "TestRandom.h"
+#include "Resource/EffectResource.h"
+#include <memory>
 
 namespace ramses_internal {
 
@@ -2718,6 +2721,97 @@ TEST_F(ARendererSceneUpdater, forceUnsubscribesSceneIfSceneResourcesUploadExceed
     expectContextEnable();
     expectRenderableResourcesDeleted();
     unmapScene(sceneIdx1);
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, confidenceTest_forcePendingFlushWithNewResourcesBeingRequestedAndRandomlyUnrequestedAndRandomlyFailingToUpload)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+
+    createRenderable();
+    setRenderableResources();
+
+    expectResourceRequest();
+    expectContextEnable();
+    expectRenderableResourcesUploaded();
+    mapScene();
+    showScene();
+
+    constexpr int NumFlushesToForceApply = 10;
+    rendererSceneUpdater->setLimitFlushesForceApply(NumFlushesToForceApply);
+
+    IScene& scene = *stagingScene[0];
+    NodeHandle node{ 999u };
+    RenderableHandle renderable{ 999u };
+    NiceMock<ManagedResourceDeleterCallbackMock> resDeleterCb;
+    ResourceDeleterCallingCallback resDeleter{ resDeleterCb };
+
+    // ignore effect unload mock - depends on successful uploads and removed usages of uploaded effects
+    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteShader(_)).Times(AnyNumber());
+    // ignore resource request mock - can re-request if many iterations
+    EXPECT_CALL(resourceProvider1, requestResourceAsyncronouslyFromFramework(_, _, getSceneId())).Times(AnyNumber());
+
+    std::unique_ptr<EffectResource> prevRequestedResource;
+    for (int i = 0; i < 1000; ++i)
+    {
+        node++;
+        renderable++;
+
+        std::unique_ptr<EffectResource> effectRes{ new EffectResource{std::to_string(i).c_str(), std::to_string(i).c_str(), EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache} };
+        const ResourceContentHash effectHash(effectRes->getHash());
+
+        scene.allocateNode(0u, node);
+        scene.allocateRenderable(node, renderable);
+        scene.setRenderableEffect(renderable, effectHash);
+
+        // remove random renderable effect usage every few updates
+        if ((i + 1) % 3 == 0)
+        {
+            const RenderableHandle rendToDelete{ 999u + MemoryHandle(TestRandom::Get(0, i - 1)) };
+            if (scene.isRenderableAllocated(rendToDelete))
+            {
+                const auto resToCancel = scene.getRenderable(rendToDelete).effectResource;
+                EXPECT_CALL(resourceProvider1, cancelResourceRequest(resToCancel, _)).Times(AnyNumber()); // canceled if not arrived already
+                scene.releaseRenderable(rendToDelete);
+                if (prevRequestedResource && prevRequestedResource->getHash() == resToCancel)
+                    prevRequestedResource.reset();
+            }
+        }
+
+        performFlush(0u, true);
+
+        // simulate previously requested resource arriving and randomly fail to upload
+        if (prevRequestedResource)
+        {
+            EXPECT_CALL(resourceProvider1, popArrivedResources(_)).WillOnce(Invoke([&](const RequesterID&) { return ManagedResourceVector{ ManagedResource{*prevRequestedResource, resDeleter} }; }));
+            expectContextEnable();
+            if (TestRandom::Get(0, 3) == 0)
+                EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, uploadShader(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+            else
+                EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, uploadShader(_)).WillOnce(Return(DeviceMock::FakeShaderDeviceHandle));
+        }
+        else
+            EXPECT_CALL(resourceProvider1, popArrivedResources(_)).WillOnce(Return(ManagedResourceVector{}));
+        prevRequestedResource.swap(effectRes);
+
+        update();
+    }
+
+    // canceling resources is done lazily only when there is some other resource requested
+    // make sure all previous flushes were force applied to match cancelResourceRequest mock call count
+    EXPECT_CALL(resourceProvider1, popArrivedResources(_)).Times(AnyNumber()).WillRepeatedly(Return(ManagedResourceVector{}));
+    for (int i = 0; i < NumFlushesToForceApply; ++i)
+    {
+        performFlush(0u, true);
+        update();
+    }
+
+    hideScene();
+    expectContextEnable();
+    expectRenderableResourcesDeleted(DisplayHandle1, false);
+    unmapScene();
 
     destroyDisplay();
 }

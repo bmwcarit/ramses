@@ -92,7 +92,7 @@ namespace ramses
 
     RamsesObject* RamsesObjectRegistry::findObjectByName(const char* name)
     {
-        RamsesObject* object(0);
+        RamsesObject* object(nullptr);
         m_objectsByName.get(name, object);
         return object;
     }

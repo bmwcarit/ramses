@@ -24,6 +24,7 @@ namespace ramses
     TEST(AStronglyTypedValue, CanBeCreatedWithUInt32)
     {
         StronglyTypedUInt32 stronglyTypedUInt(12u);
+        (void)stronglyTypedUInt;
     }
 
     TEST(AStronglyTypedValue, ReturnsCorrectUInt32Value)

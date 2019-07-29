@@ -29,8 +29,8 @@ namespace ramses
 {
     MeshNodeImpl::MeshNodeImpl(SceneImpl& scene, const char* nodeName)
         : NodeImpl(scene, ERamsesObjectType_MeshNode, nodeName)
-        , m_appearanceImpl(0)
-        , m_geometryImpl(0)
+        , m_appearanceImpl(nullptr)
+        , m_geometryImpl(nullptr)
     {
     }
 
@@ -43,7 +43,7 @@ namespace ramses
         CHECK_RETURN_ERR(NodeImpl::serialize(outStream, serializationContext));
 
         outStream << m_renderableHandle;
-        if (m_appearanceImpl != NULL)
+        if (m_appearanceImpl != nullptr)
         {
             outStream << serializationContext.getIDForObject(m_appearanceImpl);
         }
@@ -51,7 +51,7 @@ namespace ramses
         {
             outStream << SerializationContext::GetObjectIDNull();
         }
-        if (m_geometryImpl != NULL)
+        if (m_geometryImpl != nullptr)
         {
             outStream << serializationContext.getIDForObject(m_geometryImpl);
         }
@@ -90,7 +90,7 @@ namespace ramses
     {
         status_t status = NodeImpl::validate(indent);
         indent += IndentationStep;
-        if (0 == m_appearanceImpl)
+        if (nullptr == m_appearanceImpl)
         {
             addValidationMessage(EValidationSeverity_Error, indent, "meshnode does not have an appearance set");
             status = getValidationErrorStatus();
@@ -103,7 +103,7 @@ namespace ramses
             }
         }
 
-        if (0 == m_geometryImpl)
+        if (nullptr == m_geometryImpl)
         {
             addValidationMessage(EValidationSeverity_Error, indent, "meshnode does not have a geometryBinding set");
             status = getValidationErrorStatus();
@@ -158,7 +158,7 @@ namespace ramses
             return StatusOK;
         }
 
-        if (m_geometryImpl != 0 && !AreGeometryAndAppearanceCompatible(*m_geometryImpl, appearance))
+        if (m_geometryImpl != nullptr && !AreGeometryAndAppearanceCompatible(*m_geometryImpl, appearance))
         {
             return addErrorEntry("MeshNode::setAppearance failed - previously assigned geometry does not provide all vertex attributes required by the appearance!");
         }
@@ -183,7 +183,7 @@ namespace ramses
             return StatusOK;
         }
 
-        if (m_appearanceImpl != 0 && !AreGeometryAndAppearanceCompatible(geometry, *m_appearanceImpl))
+        if (m_appearanceImpl != nullptr && !AreGeometryAndAppearanceCompatible(geometry, *m_appearanceImpl))
         {
             return addErrorEntry("MeshNode::setGeometry failed - the geometry does not provide all vertex attributes required by previously assigned appearance!");
         }
@@ -204,11 +204,11 @@ namespace ramses
 
     status_t MeshNodeImpl::removeAppearanceAndGeometry()
     {
-        m_appearanceImpl = NULL;
+        m_appearanceImpl = nullptr;
 
         getIScene().setRenderableDataInstanceAndStateAndEffect(m_renderableHandle, ramses_internal::DataInstanceHandle::Invalid(), ramses_internal::RenderStateHandle::Invalid(), ramses_internal::ResourceContentHash::Invalid());
 
-        m_geometryImpl = NULL;
+        m_geometryImpl = nullptr;
 
         getIScene().setRenderableDataInstance(m_renderableHandle, ramses_internal::ERenderableDataSlotType_Geometry, ramses_internal::DataInstanceHandle::Invalid());
         return setIndexCount(0u);
@@ -255,12 +255,12 @@ namespace ramses
 
     const Appearance* MeshNodeImpl::getAppearance() const
     {
-        if (m_appearanceImpl != NULL)
+        if (m_appearanceImpl != nullptr)
         {
             return &RamsesObjectTypeUtils::ConvertTo<Appearance>(m_appearanceImpl->getRamsesObject());
         }
 
-        return NULL;
+        return nullptr;
     }
 
     Appearance* MeshNodeImpl::getAppearance()
@@ -276,12 +276,12 @@ namespace ramses
 
     const GeometryBinding* MeshNodeImpl::getGeometryBinding() const
     {
-        if (m_geometryImpl != NULL)
+        if (m_geometryImpl != nullptr)
         {
             return &RamsesObjectTypeUtils::ConvertTo<GeometryBinding>(m_geometryImpl->getRamsesObject());
         }
 
-        return NULL;
+        return nullptr;
     }
 
     GeometryBinding* MeshNodeImpl::getGeometryBinding()

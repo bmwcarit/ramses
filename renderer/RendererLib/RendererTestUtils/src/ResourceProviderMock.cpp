@@ -36,10 +36,10 @@ const EffectResource ResourceProviderMock::dummyEffectResource("", "", EffectInp
 const ResourceContentHash ResourceProviderMock::FakeEffectHash(ResourceProviderMock::dummyEffectResource.getHash());
 
 ResourceProviderMock::ResourceProviderMock()
-    : vertArrayResource(EResourceType_VertexArray, 0, EDataType_Float, NULL, ResourceCacheFlag_DoNotCache, String())
-    , vertArrayResource2(EResourceType_VertexArray, 0, EDataType_Float, NULL, ResourceCacheFlag_DoNotCache, String())
-    , indexArrayResource(EResourceType_IndexArray, 0, EDataType_UInt16, NULL, ResourceCacheFlag_DoNotCache, String())
-    , indexArrayResource2(EResourceType_IndexArray, 0, EDataType_UInt16, NULL, ResourceCacheFlag_DoNotCache, String())
+    : vertArrayResource(EResourceType_VertexArray, 0, EDataType_Float, nullptr, ResourceCacheFlag_DoNotCache, String())
+    , vertArrayResource2(EResourceType_VertexArray, 0, EDataType_Float, nullptr, ResourceCacheFlag_DoNotCache, String())
+    , indexArrayResource(EResourceType_IndexArray, 0, EDataType_UInt16, nullptr, ResourceCacheFlag_DoNotCache, String())
+    , indexArrayResource2(EResourceType_IndexArray, 0, EDataType_UInt16, nullptr, ResourceCacheFlag_DoNotCache, String())
     , textureResource(EResourceType_Texture2D, TextureMetaInfo(1u, 1u, 1u, ETextureFormat_R8, false, { 1u }), ResourceCacheFlag_DoNotCache, String())
     , textureResource2(EResourceType_Texture2D, TextureMetaInfo(2u, 2u, 1u, ETextureFormat_R8, true, { 4u }), ResourceCacheFlag_DoNotCache, String())
     , indexArrayIsAvailable(true)

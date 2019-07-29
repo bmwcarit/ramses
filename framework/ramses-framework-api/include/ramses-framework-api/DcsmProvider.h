@@ -67,7 +67,7 @@ namespace ramses
 
         /**
          * @brief Requests an assigned DcsmConsumer to switch to/focus this content within a category.
-         *        This function must not be called to enable a consumer to use this
+         *        This function does not have to be called to enable a consumer to use this
          *        content, it is only needed when the provider side wants to influence
          *        the consumer application logic concerning which content to use.
          *

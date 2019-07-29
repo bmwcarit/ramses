@@ -31,7 +31,7 @@ namespace ramses_internal
     void SceneStateInfo::setSceneState(SceneId sceneId, ESceneState sceneState)
     {
         SceneInfo* sceneInfo = m_scenesInfo.get(sceneId);
-        assert(0 != sceneInfo);
+        assert(nullptr != sceneInfo);
         sceneInfo->state = sceneState;
     }
 
@@ -54,7 +54,7 @@ namespace ramses_internal
     Guid SceneStateInfo::getSceneClientGuid(SceneId sceneId) const
     {
         SceneInfo* sceneInfo = m_scenesInfo.get(sceneId);
-        assert(0 != sceneInfo);
+        assert(nullptr != sceneInfo);
         return sceneInfo->clientWhereSceneIsAvailable;
     }
 

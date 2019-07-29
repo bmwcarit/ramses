@@ -84,7 +84,7 @@ namespace ramses
     {
         UNUSED(bufferSize);
 
-        assert(NULL != buffer);
+        assert(nullptr != buffer);
         assert(bufferSize > 0);
 
         BinaryShaderTable::Iterator iter = m_binaryShaders.find(effectId);
@@ -100,7 +100,7 @@ namespace ramses
 
     void BinaryShaderCacheImpl::storeBinaryShader(const ramses_internal::ResourceContentHash& effectId, const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, uint32_t binaryShaderFormat)
     {
-        assert(NULL != binaryShaderData);
+        assert(nullptr != binaryShaderData);
         assert(binaryShaderDataSize > 0);
 
         if (hasBinaryShader(effectId))

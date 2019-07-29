@@ -40,7 +40,7 @@ namespace ramses_internal
         UNUSED(data)
         LOG_DEBUG(CONTEXT_RENDERER, "WaylandBuffer::ClientBufferDestroyed data: " << data);
 
-        WaylandBuffer* buffer(0);
+        WaylandBuffer* buffer(nullptr);
 
 WARNINGS_PUSH
 WARNING_DISABLE_LINUX(-Winvalid-offsetof)
@@ -51,7 +51,7 @@ WARNING_DISABLE_LINUX(-Wold-style-cast)
 
 WARNINGS_POP
 
-        assert(buffer != 0);
+        assert(buffer != nullptr);
 
         buffer->m_compositor.handleBufferDestroyed(*buffer);
         delete buffer;

@@ -36,7 +36,7 @@ namespace ramses_internal
     IContext* PlatformFactory_X11_EGL::createContext(IWindow& window)
     {
         Window_X11* platformWindow = getPlatformWindow<Window_X11>(window);
-        assert(0 != platformWindow);
+        assert(nullptr != platformWindow);
 
         std::vector<EGLint> contextAttributes;
         getContextAttributes(contextAttributes);
@@ -50,7 +50,7 @@ namespace ramses_internal
                     &surfaceAttributes[0],
                     nullptr,
                     1,
-                    0);
+                    nullptr);
 
         return addPlatformContext(platformContext);
     }
@@ -59,8 +59,8 @@ namespace ramses_internal
     {
         Window_X11* platformWindow = getPlatformWindow<Window_X11>(window);
         Context_EGL* platformContext = getPlatformContext<Context_EGL>(context);
-        assert(0 != platformWindow);
-        assert(0 != platformContext);
+        assert(nullptr != platformWindow);
+        assert(nullptr != platformContext);
         Surface_X11_EGL* platformSurface = new Surface_X11_EGL(*platformWindow, *platformContext);
         return addPlatformSurface(platformSurface);
     }

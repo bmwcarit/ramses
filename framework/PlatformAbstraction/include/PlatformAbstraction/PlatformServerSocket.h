@@ -23,7 +23,7 @@ namespace ramses_internal
 
         PlatformSocket* accept(UInt32 timeout = 0);
         EStatus close();
-        EStatus bind(UInt16 port, const char* addr = NULL);
+        EStatus bind(UInt16 port, const char* addr = nullptr);
         EStatus listen(UInt8 backlog);
         UInt16 getPort();
         const SocketDescription& getSocketDescription() const;

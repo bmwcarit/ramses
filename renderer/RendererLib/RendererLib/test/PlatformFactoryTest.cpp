@@ -119,7 +119,7 @@ namespace ramses_internal
     {
         StrictMock<PlatformFactory_BaseMock> platformFactory(rendererConfig);
         IRenderBackend* renderBackend = createRenderBackend(platformFactory);
-        ASSERT_TRUE(NULL != renderBackend);
+        ASSERT_TRUE(nullptr != renderBackend);
 
         destroyRenderBackend(platformFactory, *renderBackend);
     }

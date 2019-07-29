@@ -289,6 +289,17 @@ namespace ramses
 
         ramses_internal::FlushTime::Clock::time_point m_expirationTimestamp;
     };
+
+    // define here to allow inlining
+    inline const ramses_internal::ClientScene& SceneImpl::getIScene() const
+    {
+        return m_scene;
+    }
+
+    inline ramses_internal::ClientScene& SceneImpl::getIScene()
+    {
+        return m_scene;
+    }
 }
 
 #endif

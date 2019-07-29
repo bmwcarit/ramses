@@ -17,7 +17,7 @@
 #include "PlatformFactoryMock.h"
 #include "Platform_Base/PlatformFactory_Base.h"
 
-ramses_internal::NiceMock<ramses_internal::PlatformFactoryNiceMock>* gPlatformFactoryMock = NULL;
+ramses_internal::NiceMock<ramses_internal::PlatformFactoryNiceMock>* gPlatformFactoryMock = nullptr;
 
 ramses_internal::IPlatformFactory* ramses_internal::PlatformFactory_Base::CreatePlatformFactory(const ramses_internal::RendererConfig&)
 {

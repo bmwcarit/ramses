@@ -100,7 +100,7 @@ namespace ramses_internal
             {
                 PlatformLightweightGuard guard(m_lock);
                 delete m_windowedRenderer;
-                m_windowedRenderer = NULL;
+                m_windowedRenderer = nullptr;
                 m_destroyRenderer = false;
                 m_rendererDestroyedCondVar.signal();
             }
@@ -111,7 +111,7 @@ namespace ramses_internal
             }
             else
             {
-                assert(m_windowedRenderer != NULL);
+                assert(m_windowedRenderer != nullptr);
                 ramses::RamsesRendererUtils::DoOneLoop(*m_windowedRenderer, loopMode, lastLoopSleepTime);
 
                 const UInt64 loopEndTime = PlatformTime::GetMicrosecondsMonotonic();

@@ -38,7 +38,7 @@ namespace ramses_internal
     {
         const SplineHandle splineHandle = m_animationData.allocateSpline(m_spline);
         const SplineBase* const pSplineManaged = m_animationData.getSpline(splineHandle);
-        EXPECT_NE(static_cast<SplineBase*>(0), pSplineManaged);
+        EXPECT_NE(static_cast<SplineBase*>(nullptr), pSplineManaged);
         EXPECT_EQ(m_spline.getNumKeys(), pSplineManaged->getNumKeys());
     }
 
@@ -68,7 +68,7 @@ namespace ramses_internal
 
         const SplineHandle splineHandle = m_animationData.allocateSpline(spline);
         const SplineBase* const pSplineManaged = m_animationData.getSpline(splineHandle);
-        EXPECT_NE(static_cast<SplineBase*>(0), pSplineManaged);
+        EXPECT_NE(static_cast<SplineBase*>(nullptr), pSplineManaged);
         const SplineVec3& splineManaged = *(static_cast<const SplineVec3*>(pSplineManaged));
 
         const UInt32 numKeys = spline.getNumKeys();
@@ -89,7 +89,7 @@ namespace ramses_internal
 
         const SplineHandle splineHandle = m_animationData.allocateSpline(spline);
         const SplineBase* const pSplineManaged = m_animationData.getSpline(splineHandle);
-        EXPECT_NE(static_cast<SplineBase*>(0), pSplineManaged);
+        EXPECT_NE(static_cast<SplineBase*>(nullptr), pSplineManaged);
         const SplineVec3& splineManaged = *(static_cast<const SplineVec3*>(pSplineManaged));
 
         EXPECT_CALL(m_dataListener, onSplineChanged(splineHandle));
@@ -106,7 +106,7 @@ namespace ramses_internal
 
         const SplineHandle splineHandle = m_animationData.allocateSpline(spline);
         const SplineBase* const pSplineManaged = m_animationData.getSpline(splineHandle);
-        EXPECT_NE(static_cast<SplineBase*>(0), pSplineManaged);
+        EXPECT_NE(static_cast<SplineBase*>(nullptr), pSplineManaged);
         EXPECT_EQ(ESplineKeyType_Tangents, pSplineManaged->getKeyType());
         EXPECT_EQ(EDataTypeID_Vector3f, pSplineManaged->getDataType());
         const SplineVec3& splineManaged = *(static_cast<const SplineVec3*>(pSplineManaged));
@@ -138,7 +138,7 @@ namespace ramses_internal
     {
         const DataBindHandle handle = m_animationData.allocateDataBinding(m_dataBind);
         const AnimationDataBindBase* const pDataBindManaged = m_animationData.getDataBinding(handle);
-        EXPECT_NE(static_cast<AnimationDataBindBase*>(0), pDataBindManaged);
+        EXPECT_NE(static_cast<AnimationDataBindBase*>(nullptr), pDataBindManaged);
     }
 
     TEST_F(AnimationDataTest, DataBindingContentsMatch)

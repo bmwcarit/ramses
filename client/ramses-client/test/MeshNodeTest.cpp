@@ -147,8 +147,8 @@ namespace ramses
 
     TEST_F(MeshNodeTest, getsNullPointerForInitalAppearanceAndGeometry)
     {
-        EXPECT_EQ(NULL, m_meshNode->getAppearance());
-        EXPECT_EQ(NULL, m_meshNode->getGeometryBinding());
+        EXPECT_EQ(nullptr, m_meshNode->getAppearance());
+        EXPECT_EQ(nullptr, m_meshNode->getGeometryBinding());
     }
 
     TEST_F(MeshNodeTest, setsAndGetsSameAppearance)
@@ -165,7 +165,7 @@ namespace ramses
         Scene& anotherScene = *client.createScene(12u);
 
         Appearance* appearance = anotherScene.createAppearance(*TestEffects::CreateTestEffect(client), "appearance");
-        ASSERT_TRUE(appearance != NULL);
+        ASSERT_TRUE(appearance != nullptr);
 
         EXPECT_NE(StatusOK, m_meshNode->setAppearance(*appearance));
         client.destroy(anotherScene);
@@ -187,7 +187,7 @@ namespace ramses
         Scene& anotherScene = *client.createScene(12u);
 
         GeometryBinding* geometry = anotherScene.createGeometryBinding(*TestEffects::CreateTestEffect(client), "geometry");
-        ASSERT_TRUE(geometry != NULL);
+        ASSERT_TRUE(geometry != nullptr);
 
         const UInt16Array& indexArray = createValidIndexArray();
         EXPECT_EQ(StatusOK, geometry->setIndices(indexArray));
@@ -276,8 +276,8 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, m_meshNode->removeAppearanceAndGeometry());
 
-        EXPECT_TRUE(NULL == m_meshNode->getAppearance());
-        EXPECT_TRUE(NULL == m_meshNode->getGeometryBinding());
+        EXPECT_TRUE(nullptr == m_meshNode->getAppearance());
+        EXPECT_TRUE(nullptr == m_meshNode->getGeometryBinding());
 
         const RenderableHandle renderableHandle = m_meshNode->impl.getRenderableHandle();
         EXPECT_FALSE(this->m_internalScene.getRenderable(renderableHandle).dataInstances[ERenderableDataSlotType_Uniforms].isValid());

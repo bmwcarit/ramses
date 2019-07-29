@@ -387,7 +387,7 @@ namespace ramses
         * @brief Get an object from the animation system by name
         *
         * @param[in] name The name of the object to get.
-        * @return Pointer to the object if found, NULL otherwise.
+        * @return Pointer to the object if found, nullptr otherwise.
         */
         const RamsesObject* findObjectByName(const char* name) const;
 

@@ -223,7 +223,7 @@ namespace ramses_internal
     void TransformationCachedSceneT<MEMORYPOOL>::computeWorldMatrixForNode(NodeHandle node, Matrix44f& chainMatrix) const
     {
         const TransformHandle* transformPtr = m_nodeToTransformMap.get(node);
-        if (transformPtr != NULL)
+        if (transformPtr != nullptr)
         {
             const TransformHandle transform = *transformPtr;
             const Matrix44f matrix =
@@ -239,7 +239,7 @@ namespace ramses_internal
     void TransformationCachedSceneT<MEMORYPOOL>::computeObjectMatrixForNode(NodeHandle node, Matrix44f& chainMatrix) const
     {
         const TransformHandle* transformPtr = m_nodeToTransformMap.get(node);
-        if (transformPtr != NULL)
+        if (transformPtr != nullptr)
         {
             const TransformHandle transform = *transformPtr;
             const Matrix44f matrix =

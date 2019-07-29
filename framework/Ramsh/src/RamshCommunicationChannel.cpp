@@ -15,7 +15,7 @@ namespace ramses_internal
     }
 
     RamshCommunicationChannel::RamshCommunicationChannel()
-        : m_ramsh(0)
+        : m_ramsh(nullptr)
     {
 
     }

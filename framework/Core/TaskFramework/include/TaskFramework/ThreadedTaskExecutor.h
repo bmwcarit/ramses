@@ -57,10 +57,6 @@ namespace ramses_internal
         void deinit();
 
         /**
-         * Start the instance with the executing thread and the thread pool.
-         */
-        void start();
-        /**
          * Stop the instance with the executing thread and the thread pool.
          */
         void stop();
@@ -72,6 +68,11 @@ namespace ramses_internal
         virtual UInt32 calculateTimeout() const override;
 
     private:
+        /**
+         * Start the instance with the executing thread and the thread pool.
+         */
+        void start();
+
         /**
          * The processing task queue instance.
          */

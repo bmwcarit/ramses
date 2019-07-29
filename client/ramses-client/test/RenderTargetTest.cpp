@@ -30,7 +30,7 @@ namespace ramses
         rtDesc.addRenderBuffer(rb);
 
         const RenderTarget* renderTarget = m_scene.createRenderTarget(rtDesc, "RenderTarget");
-        ASSERT_TRUE(renderTarget != NULL);
+        ASSERT_TRUE(renderTarget != nullptr);
         EXPECT_EQ(16u, renderTarget->getWidth());
         EXPECT_EQ(8u, renderTarget->getHeight());
 
@@ -45,6 +45,6 @@ namespace ramses
         RenderTargetDescription invalidRtDesc; // no buffers
 
         const RenderTarget* renderTarget = m_scene.createRenderTarget(invalidRtDesc, "RenderTarget");
-        EXPECT_TRUE(renderTarget == NULL);
+        EXPECT_TRUE(renderTarget == nullptr);
     }
 }

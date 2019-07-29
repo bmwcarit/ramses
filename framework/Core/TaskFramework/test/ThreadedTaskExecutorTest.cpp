@@ -86,10 +86,9 @@ namespace ramses_internal
         ThreadWatchdogConfig config;
         config.setThreadWatchDogCallback(&mockCallback);
         config.setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier_Workers, 100);
-        ThreadedTaskExecutor ex(2, config);
 
         EXPECT_CALL(mockCallback, notifyThread(ramses::ERamsesThreadIdentifier_Workers)).Times(AtLeast(1)).WillRepeatedly(ReleaseSyncCall(&syncWaiter));
-        ex.start();
+        ThreadedTaskExecutor ex(2, config);
 
         const EStatus status = syncWaiter.wait(2000);
         EXPECT_EQ(EStatus_RAMSES_OK, status);
@@ -133,7 +132,6 @@ namespace ramses_internal
         PlatformEvent taskIsBeingWorkedEvent;
         BlockingTask blockingTask(taskBlockingLock, taskIsBeingWorkedEvent);
         ThreadedTaskExecutor taskSystem(2, config);
-        taskSystem.start();
         taskSystem.enqueue(blockingTask);
 
         // wait for thread to go into blocked state during execution
@@ -155,7 +153,6 @@ namespace ramses_internal
     TEST(AThreadedTaskExecutor, executesEnqueuedTasks)
     {
         ThreadedTaskExecutor ex(4);
-        ex.start();
 
         LongRunningTestTask task;
         EXPECT_CALL(task, execute());
@@ -168,7 +165,6 @@ namespace ramses_internal
     TEST(ThreadedTaskExecutor, destructorWaitsForUnfinishedTasks)
     {
         ThreadedTaskExecutor* ex = new ThreadedTaskExecutor(16);
-        ex->start();
 
         NiceMock<LongRunningTestTask> task;
 
@@ -187,10 +183,9 @@ namespace ramses_internal
         ThreadWatchdogConfig config;
         config.setThreadWatchDogCallback(&mockCallback);
         config.setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier_Workers, 10000);
-        ThreadedTaskExecutor ex(2, config);
 
         EXPECT_CALL(mockCallback, notifyThread(ramses::ERamsesThreadIdentifier_Workers)).Times(AtLeast(1)).WillRepeatedly(ReleaseSyncCall(&syncWaiter));
-        ex.start();
+        ThreadedTaskExecutor ex(2, config);
 
         std::thread t([&]()
         {
@@ -245,8 +240,6 @@ namespace ramses_internal
         config.setThreadWatchDogCallback(&watchDog);
         config.setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier_Workers, timeout);
         ThreadedTaskExecutor ex(3, config);
-
-        ex.start();
         std::this_thread::sleep_for(std::chrono::milliseconds(timeout * 3));
         ex.stop();
 
@@ -260,7 +253,6 @@ namespace ramses_internal
     TEST(ThreadedTaskExecutor, stoppingReleasesUnhandledTasks)
     {
         ThreadedTaskExecutor* ex = new ThreadedTaskExecutor(1);
-        ex->start();
 
         PlatformLock taskBlockingLock;
         taskBlockingLock.lock();
@@ -284,7 +276,6 @@ namespace ramses_internal
     TEST(AnEnqueueOnlyOneAtATimeQueue, waitForAllTasksExecutionWhenAskedToShutDown)
     {
         ThreadedTaskExecutor ex(1);
-        ex.start();
         // c-->b-->a-->threaded executor
         EnqueueOnlyOneAtATimeQueue a(ex);
         EnqueueOnlyOneAtATimeQueue b(static_cast<ITaskQueue&>(a));

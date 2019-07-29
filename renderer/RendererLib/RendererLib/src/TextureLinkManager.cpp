@@ -191,13 +191,13 @@ namespace ramses_internal
     DataSlotHandle TextureLinkManager::getDataSlotForSampler(SceneId sceneId, TextureSamplerHandle sampler) const
     {
         const SamplerToSlotMap* samplerToSlotMap = m_samplersToDataSlots.get(sceneId);
-        if (samplerToSlotMap == NULL)
+        if (samplerToSlotMap == nullptr)
         {
             return DataSlotHandle::Invalid();
         }
 
         DataSlotHandle* slotEntry = samplerToSlotMap->get(sampler);
-        if (slotEntry == NULL)
+        if (slotEntry == nullptr)
         {
             return DataSlotHandle::Invalid();
         }

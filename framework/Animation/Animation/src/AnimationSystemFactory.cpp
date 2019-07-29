@@ -31,10 +31,10 @@ namespace ramses_internal
             flags |= EAnimationSystemFlags_FullProcessing;
             return new AnimationSystem(flags, sizeInfo);
         case EAnimationSystemOwner_Client:
-            assert(m_actionCollector != 0);
+            assert(m_actionCollector != nullptr);
             return new ActionCollectingAnimationSystem(flags, *m_actionCollector, sizeInfo);
         default:
-            return NULL;
+            return nullptr;
         }
     }
 }

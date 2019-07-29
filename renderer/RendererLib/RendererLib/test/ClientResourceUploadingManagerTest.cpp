@@ -76,7 +76,7 @@ public:
         const ResourceDescriptor& rd = resourceRegistry.getResourceDescriptor(hash);
         EXPECT_EQ(EResourceStatus_Uploaded, rd.status);
         EXPECT_EQ(ResourceUploaderMock::FakeResourceDeviceHandle, rd.deviceHandle);
-        EXPECT_TRUE(rd.resource.getResourceObject() == NULL);
+        EXPECT_TRUE(rd.resource.getResourceObject() == nullptr);
     }
 
     void expectResourceUploadFailed(ResourceContentHash hash)
@@ -85,7 +85,7 @@ public:
         const ResourceDescriptor& rd = resourceRegistry.getResourceDescriptor(hash);
         EXPECT_EQ(EResourceStatus_Broken, rd.status);
         EXPECT_FALSE(rd.deviceHandle.isValid());
-        EXPECT_TRUE(rd.resource.getResourceObject() == NULL);
+        EXPECT_TRUE(rd.resource.getResourceObject() == nullptr);
     }
 
     void expectResourceStatus(ResourceContentHash hash, EResourceStatus status)

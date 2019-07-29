@@ -40,7 +40,7 @@ namespace ramses
         * @param[in] index Index of the child Node to be returned. Index range is [0..getChildCount()-1].
         *
         * @return Pointer to Node, if child at index exists.
-        * @return NULL if child at index does not exist.
+        * @return nullptr if child at index does not exist.
         */
         Node* getChild(uint32_t index);
         /** @copydoc getChild(uint32_t) */
@@ -84,7 +84,7 @@ namespace ramses
         /**
         * @brief Gets parent Node of this Node.
         *
-        * @return Pointer to parent Node, if parent exists, NULL otherwise.
+        * @return Pointer to parent Node, if parent exists, nullptr otherwise.
         */
         Node* getParent();
         /** @copydoc getParent() */

@@ -442,7 +442,7 @@ namespace ramses_internal
             m_buffer->release();
         }
 
-        setWaylandBuffer(0);
+        setWaylandBuffer(nullptr);
     }
 
     void WaylandSurface::sendFrameCallbacks(UInt32 time)

@@ -326,7 +326,7 @@ namespace ramses_internal
 
         // make sure managed resource created in writeTestResourceFile() was freed,
         // so resolveResources() has to trigger loading it from file
-        EXPECT_EQ(NULL, localResourceComponent.getResource(resourceHash).getResourceObject());
+        EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).getResourceObject());
 
         RequesterID requesterID(1);
         Guid providerID(true);
@@ -352,7 +352,7 @@ namespace ramses_internal
 
         // make sure managed resource created in writeTestResourceFile() was freed,
         // so resolveResources() has to trigger loading it from file
-        EXPECT_EQ(NULL, localResourceComponent.getResource(resourceHash).getResourceObject());
+        EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).getResourceObject());
 
         RequesterID requesterID(1);
         Guid        providerID(true);
@@ -377,9 +377,8 @@ namespace ramses_internal
 
         // make sure managed resource created in writeTestResourceFile() was freed,
         // so resolveResources() has to trigger loading it from file
-        EXPECT_EQ(NULL, localResourceComponent.getResource(resourceHash).getResourceObject());
+        EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).getResourceObject());
 
-        RequesterID requesterID(1);
         Guid        providerID(true);
         localResourceComponent.handleRequestResources(requestedResourceHashes, 0, providerID);
         localResourceComponent.handleRequestResources(requestedResourceHashes, 0, providerID);
@@ -407,7 +406,7 @@ namespace ramses_internal
         {
             // make sure managed resource created in writeTestResourceFile() was freed,
             // so resolveResources() has to trigger loading it from file
-            EXPECT_EQ(NULL, localResourceComponent.getResource(resourceHash).getResourceObject());
+            EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).getResourceObject());
 
             RequesterID requesterID(1);
             Guid        providerID(true);
@@ -439,7 +438,7 @@ namespace ramses_internal
         {
             // make sure managed resource created in writeTestResourceFile() was freed,
             // so resolveResources() has to trigger loading it from file
-            EXPECT_EQ(NULL, localResourceComponent.getResource(resourceHash).getResourceObject());
+            EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).getResourceObject());
 
             RequesterID requesterID(1);
             Guid        providerID(true);
@@ -956,7 +955,7 @@ namespace ramses_internal
 
         // make sure managed resource created in writeTestResourceFile() was freed,
         // so handleResourceRequest has to load it from file before sending
-        EXPECT_EQ(0, localResourceComponent.getResource(resourceHash).getResourceObject());
+        EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).getResourceObject());
 
         Guid requester(true);
         localResourceComponent.handleRequestResources(requestedResourceHashes, 0u, requester);
@@ -1230,29 +1229,27 @@ namespace ramses_internal
         // test
         const auto loadedResourcesBefore = statistics.statResourcesLoadedFromFileNumber.getCounterValue();
         ManagedResource fromfile = localResourceComponent.forceLoadResource(hash);
-        EXPECT_TRUE(fromfile.getResourceObject() != 0);
+        EXPECT_TRUE(fromfile.getResourceObject() != nullptr);
         EXPECT_TRUE(localResourceComponent.hasResourceFile(resourceFileName));
         EXPECT_EQ(1u, statistics.statResourcesLoadedFromFileNumber.getCounterValue() - loadedResourcesBefore);
 
         localResourceComponent.removeResourceFile(resourceFileName);
         EXPECT_FALSE(localResourceComponent.hasResourceFile(resourceFileName));
 
-        EXPECT_TRUE(fromfile.getResourceObject() != 0);
+        EXPECT_TRUE(fromfile.getResourceObject() != nullptr);
         fromfile = ManagedResource();
-        EXPECT_TRUE(fromfile.getResourceObject() == 0);
+        EXPECT_TRUE(fromfile.getResourceObject() == nullptr);
     }
 
     TEST_F(AResourceComponentWithThreadedTaskExecutorTest, HandleResourceRequest_AsynchronousLoadingResourceFromFileAndSendsIt)
     {
-        executor.start();
-
         ResourceContentHashVector requestedResourceHashes;
         ResourceContentHash resourceHash = writeTestResourceFile();
         requestedResourceHashes.push_back(resourceHash);
 
         // make sure managed resource created in writeTestResourceFile() was freed,
         // so handleResourceRequest has to load it from file before sending
-        EXPECT_EQ(0, localResourceComponent.getResource(resourceHash).getResourceObject());
+        EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).getResourceObject());
 
         Guid requester(true);
         ramses_internal::PlatformEvent syncWaiter;

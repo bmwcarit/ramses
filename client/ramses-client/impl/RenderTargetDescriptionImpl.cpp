@@ -15,7 +15,7 @@
 namespace ramses
 {
     RenderTargetDescriptionImpl::RenderTargetDescriptionImpl()
-        : m_scene(NULL)
+        : m_scene(nullptr)
     {
     }
 
@@ -35,7 +35,7 @@ namespace ramses
         }
         else
         {
-            assert(m_scene != NULL);
+            assert(m_scene != nullptr);
             for(const auto& rb : m_renderBuffers)
             {
                 if (!m_scene->getIScene().isRenderBufferAllocated(rb))
@@ -58,7 +58,7 @@ namespace ramses
         }
 
         const SceneImpl& scene = renderBuffer.getSceneImpl();
-        if (m_scene != NULL)
+        if (m_scene != nullptr)
         {
             assert(!m_renderBuffers.empty());
 

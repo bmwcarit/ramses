@@ -30,14 +30,14 @@ namespace ramses
         const Texture2D& fallbackTexture = createObject<Texture2D>("fallbackTexture");
         StreamTexture* streamTexture = this->m_scene.createStreamTexture(fallbackTexture, streamSource_t(0), "testStreamTexture");
 
-        ASSERT_NE(static_cast<StreamTexture*>(0), streamTexture);
+        ASSERT_NE(static_cast<StreamTexture*>(nullptr), streamTexture);
     }
 
     TEST_F(StreamTextureTest, reportsErrorWhenValidatedWithInvalidFallbackTexture)
     {
         const Texture2D& fallbackTexture = createObject<Texture2D>("fallbackTexture");
         StreamTexture* streamTexture = this->m_scene.createStreamTexture(fallbackTexture, streamSource_t(0), "testStreamTexture");
-        ASSERT_TRUE(NULL != streamTexture);
+        ASSERT_TRUE(nullptr != streamTexture);
         EXPECT_EQ(StatusOK, streamTexture->validate());
 
         EXPECT_EQ(StatusOK, client.destroy(fallbackTexture));
@@ -49,7 +49,7 @@ namespace ramses
         const Texture2D& fallbackTexture = createObject<Texture2D>("fallbackTexture");
         StreamTexture* streamTexture = this->m_scene.createStreamTexture(fallbackTexture, streamSource_t(0), "testStreamTexture");
 
-        ASSERT_NE(static_cast<StreamTexture*>(0), streamTexture);
+        ASSERT_NE(static_cast<StreamTexture*>(nullptr), streamTexture);
 
         EXPECT_FALSE(streamTexture->getForceFallbackImage());
 

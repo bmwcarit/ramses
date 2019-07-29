@@ -9,40 +9,14 @@
 #include "RendererTestUtils.h"
 #include "Utils/CommandLineParser.h"
 #include "Utils/Argument.h"
-#include "Utils/StringUtils.h"
-#include "RendererLifecycleTests.h"
+#include "gmock/gmock.h"
 
-using namespace ramses_internal;
-using namespace ramses;
-
-int main(int argc, const char *argv[])
+int main(int argc, char *argv[])
 {
-    CommandLineParser parser(argc, argv);
-    ArgumentString filterInTest(parser, "fi", "filterIn", "*");
-    ArgumentString filterOutTest(parser, "fo", "filterOut", "");
-    ArgumentUInt32 repeatTestCount(parser, "rc", "repeatCount", 1);
-    ArgumentUInt32 waylandIviLayerId(parser, "lid", "waylandIviLayerId", 3);
-
-    std::vector<ramses_internal::String>  filterInTestStrings;
-    std::vector<ramses_internal::String>  filterOutTestStrings;
-    StringUtils::Tokenize(filterInTest, filterInTestStrings, ':');
-    StringUtils::Tokenize(filterOutTest, filterOutTestStrings, ':');
-
+    ramses_internal::CommandLineParser parser(argc, argv);
+    ramses_internal::ArgumentUInt32 waylandIviLayerId(parser, "lid", "waylandIviLayerId", 3);
     RendererTestUtils::SetWaylandIviLayerID(waylandIviLayerId);
-    ramses_internal::RendererLifecycleTests lifecycleTests(filterInTestStrings, filterOutTestStrings, argc, argv);
 
-    for (ramses_internal::UInt32 i = 0; i < repeatTestCount; ++i)
-    {
-        const bool successLifecycleTests = lifecycleTests.runTests();
-
-        lifecycleTests.logReport();
-
-        if (!successLifecycleTests)
-        {
-            printf("Some lifecycle tests failed! Look above for more detailed info.\n");
-            return 1;
-        }
-    }
-
-    return 0;
+    testing::InitGoogleMock(&argc, argv);
+    return RUN_ALL_TESTS();
 }

@@ -54,7 +54,7 @@ namespace ramses
 
                 ResourceFileDescription resources(resourceFilename.c_str());
                 Scene* scene = CreateScene(client, resources, sceneId);
-                ASSERT_TRUE(scene != NULL);
+                ASSERT_TRUE(scene != nullptr);
 
                 ResourceFileDescriptionSet    resourceVector;
                 resourceVector.add(resources);
@@ -91,7 +91,7 @@ namespace ramses
                 resourcesDescription.add(indices);
 
                 GeometryBinding* geometry = scene->createGeometryBinding(*effect, "geometry");
-                assert(geometry != NULL);
+                assert(geometry != nullptr);
                 EXPECT_EQ(StatusOK, geometry->setIndices(*indices));
 
                 //mesh node

@@ -499,7 +499,7 @@ namespace ramses_internal
         m_container.setVal1(1, initVal2);
 
         const SplineBase* const pSpline = m_animationData.getSpline(m_splineHandle);
-        EXPECT_NE(static_cast<const SplineBase *>(0), pSpline);
+        EXPECT_NE(static_cast<const SplineBase *>(nullptr), pSpline);
         EXPECT_EQ(ESplineKeyType_Tangents, pSpline->getKeyType());
         EXPECT_EQ(EDataTypeID_Vector3f, pSpline->getDataType());
         const Spline<SplineKeyTangents, Vector3>& spline = static_cast<const Spline<SplineKeyTangents, Vector3>&>(*pSpline);

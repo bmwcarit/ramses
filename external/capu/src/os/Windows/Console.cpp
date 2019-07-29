@@ -35,7 +35,7 @@ namespace ramses_capu
         char readBuffer;
         DWORD bytesRead = 0;
         const DWORD numberOfBytesToRead = 1;
-        const BOOL ret = ReadFile(fileHandle, &readBuffer, numberOfBytesToRead, &bytesRead, NULL);
+        const BOOL ret = ReadFile(fileHandle, &readBuffer, numberOfBytesToRead, &bytesRead, nullptr);
         if (ret)
         {
             if (0 == bytesRead)
@@ -74,7 +74,7 @@ namespace ramses_capu
         HANDLE previouslyCreatedEventHandle = GetInterruptEventHandle();
         if (previouslyCreatedEventHandle == INVALID_HANDLE_VALUE)
         {
-            HANDLE createdEventHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
+            HANDLE createdEventHandle = CreateEvent(nullptr, FALSE, FALSE, nullptr);
             SetEventHandle(createdEventHandle);
         }
     }

@@ -60,9 +60,6 @@ namespace ramses_internal
 
     private:
         explicit File(const ramses_capu::File& file);
-
-        friend class BinaryFileOutputStream;
-        friend class BinaryFileInputStream;
     };
 
     inline

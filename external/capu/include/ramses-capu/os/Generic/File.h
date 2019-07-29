@@ -29,6 +29,11 @@ namespace ramses_capu
         {
         public:
             File(const std::string& path);
+            File(File&& other);
+            File& operator=(File&& other);
+            File(const File& other) = delete;
+            File& operator=(const File& other) = delete;
+
             status_t open(const FileMode& mode);
             bool isOpen();
             bool isEof();
@@ -52,14 +57,38 @@ namespace ramses_capu
         File::File(const std::string& path)
             : mIsOpen(false)
             , mPath(path)
-            , mHandle(NULL)
+            , mHandle(nullptr)
         {
+        }
+
+        inline
+        File::File(File&& other)
+            : mIsOpen(other.mIsOpen)
+            , mPath(std::move(other.mPath))
+            , mHandle(other.mHandle)
+        {
+            other.mIsOpen = false;
+            other.mHandle = nullptr;
+        }
+
+        inline
+        File& File::operator=(File&& other)
+        {
+            if (&other == this)
+                return *this;
+            mIsOpen = other.mIsOpen;
+            mPath = std::move(other.mPath);
+            mHandle = other.mHandle;
+
+            other.mIsOpen = false;
+            other.mHandle = nullptr;
+            return *this;
         }
 
         inline
         File::~File()
         {
-            if (mHandle != NULL)
+            if (mHandle != nullptr)
             {
                 fclose(mHandle);
             }
@@ -76,7 +105,7 @@ namespace ramses_capu
         bool
         File::isEof()
         {
-            if (mHandle == NULL)
+            if (mHandle == nullptr)
             {
                 return false;
             }
@@ -119,7 +148,7 @@ namespace ramses_capu
                 flags = "";
             }
             mHandle  = fopen(mPath.c_str(), flags);
-            if (mHandle != NULL)
+            if (mHandle != nullptr)
             {
                 mIsOpen = true;
                 return CAPU_OK;
@@ -131,11 +160,11 @@ namespace ramses_capu
         status_t
         File::read(char* buffer, uint_t length, uint_t& numBytes)
         {
-            if (buffer == NULL)
+            if (buffer == nullptr)
             {
                 return CAPU_EINVAL;
             }
-            if (mHandle == NULL)
+            if (mHandle == nullptr)
             {
                 return CAPU_ERROR;
             }
@@ -160,11 +189,11 @@ namespace ramses_capu
         status_t
         File::write(const char* buffer, uint_t length)
         {
-            if (buffer == NULL)
+            if (buffer == nullptr)
             {
                 return CAPU_EINVAL;
             }
-            if (mHandle == NULL)
+            if (mHandle == nullptr)
             {
                 return CAPU_ERROR;
             }
@@ -185,7 +214,7 @@ namespace ramses_capu
         status_t
         File::flush()
         {
-            if (mHandle != NULL)
+            if (mHandle != nullptr)
             {
                 int_t error = fflush(mHandle);
                 if (error == 0)
@@ -200,10 +229,10 @@ namespace ramses_capu
         status_t
         File::close()
         {
-            if (mHandle != NULL)
+            if (mHandle != nullptr)
             {
                 fclose(mHandle);
-                mHandle = NULL;
+                mHandle = nullptr;
                 mIsOpen = false;
                 return CAPU_OK;
             }
@@ -249,7 +278,7 @@ namespace ramses_capu
         inline
         status_t File::seek(int_t offset, FileSeekOrigin origin)
         {
-            if (mHandle == NULL)
+            if (mHandle == nullptr)
             {
                 return CAPU_ERROR;
             }

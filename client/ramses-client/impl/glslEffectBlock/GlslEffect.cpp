@@ -48,7 +48,7 @@ namespace ramses_internal
         , m_compilerDefines(compilerDefines)
         , m_semanticInputs(semanticInputs)
         , m_name(name)
-        , m_effectResource(NULL)
+        , m_effectResource(nullptr)
         , m_vertexShaderVersion(0)
         , m_fragmentShaderVersion(0)
     {
@@ -75,7 +75,7 @@ namespace ramses_internal
         if (!createShaderParts(vertexShaderParts, defineString, m_vertexShader) ||
             !createShaderParts(fragmentShaderParts, defineString, m_fragmentShader))
         {
-            return NULL;
+            return nullptr;
         }
 
         TBuiltInResource glslCompilationResources;
@@ -86,30 +86,30 @@ namespace ramses_internal
         if (!parseShader(*glslVertexShader, glslCompilationResources, vertexShaderParts, "vertex shader") ||
             !parseShader(*glslFragmentShader, glslCompilationResources, fragmentShaderParts, "fragment shader"))
         {
-            return NULL;
+            return nullptr;
         }
 
         ScopedPointer<glslang::TProgram> program(linkProgram(glslVertexShader.get(), glslFragmentShader.get()));
         if (!program.get())
         {
-            return NULL;
+            return nullptr;
         }
 
         GlslToEffectConverter glslToEffectConverter(m_semanticInputs);
         if (!glslToEffectConverter.parseShaderProgram(program.get()))
         {
             m_errorMessages << "[GLSL Input Parser] " << glslToEffectConverter.getStatusMessage();
-            return NULL;
+            return nullptr;
         }
 
         if (!extractAndCheckShaderVersions(program.get()))
         {
-            return NULL;
+            return nullptr;
         }
 
         if (!extractAndCheckExtensions(program.get()))
         {
-            return NULL;
+            return nullptr;
         }
 
         const EffectInputInformationVector& uniformInputs = glslToEffectConverter.getUniformInputs();
@@ -184,13 +184,13 @@ namespace ramses_internal
         if (!program->link(EShMsgDefault))
         {
             m_errorMessages << "[GLSL Compiler] Shader Program Linker Error:\n" << program->getInfoLog() << "\n";
-            return NULL;
+            return nullptr;
         }
 
         if (!program->buildReflection())
         {
             m_errorMessages << "[GLSL Compiler] Shader program error in buildReflection\n";
-            return NULL;
+            return nullptr;
         }
         return program.release();
     }

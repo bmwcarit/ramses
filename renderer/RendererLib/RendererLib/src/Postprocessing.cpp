@@ -21,7 +21,7 @@ namespace ramses_internal
         , m_displayWidth(width)
         , m_displayHeight(height)
         , m_framebuffer(device.getFramebufferRenderTarget())
-        , m_warpingPass(0)
+        , m_warpingPass(nullptr)
     {
         if (effectIds != EPostProcessingEffect_None)
         {
@@ -64,7 +64,7 @@ namespace ramses_internal
 
     void Postprocessing::execute()
     {
-        if (0 != m_warpingPass)
+        if (nullptr != m_warpingPass)
         {
             m_device.activateRenderTarget(m_framebuffer);
             m_device.cullMode(ECullMode::Disabled);
@@ -100,7 +100,7 @@ namespace ramses_internal
 
     void Postprocessing::setWarpingMeshData(const WarpingMeshData& warpingMeshData)
     {
-        assert(0 != m_warpingPass);
+        assert(nullptr != m_warpingPass);
         delete m_warpingPass;
 
         m_warpingPass = new WarpingPass(m_device, warpingMeshData);

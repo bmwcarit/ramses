@@ -27,7 +27,7 @@ namespace ramses_internal
     IDevice* Platform_Wayland_IVI_EGL_ES_3_0::createDevice(IContext& context)
     {
         Context_EGL* platformContext = getPlatformContext<Context_EGL>(context);
-        assert(0 != platformContext);
+        assert(nullptr != platformContext);
         Device_GL* device = new Device_GL(*platformContext, 3, 0, true);
         return addPlatformDevice(device);
     }

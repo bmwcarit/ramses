@@ -80,7 +80,7 @@ namespace ramses_capu
         inline
         status_t File::createFile()
         {
-            HANDLE handle = CreateFileA(mPath.c_str(), 0, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+            HANDLE handle = CreateFileA(mPath.c_str(), 0, 0, nullptr, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
             bool status = (handle != INVALID_HANDLE_VALUE);
             CloseHandle(handle);
             if (status)
@@ -149,8 +149,8 @@ namespace ramses_capu
         inline
         status_t File::getSizeInBytes(uint_t& size) const
         {
-            HANDLE fileHandle = CreateFileA(mPath.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-            if (fileHandle == NULL)
+            HANDLE fileHandle = CreateFileA(mPath.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+            if (fileHandle == nullptr)
             {
                 return CAPU_ENOT_EXIST;
             }

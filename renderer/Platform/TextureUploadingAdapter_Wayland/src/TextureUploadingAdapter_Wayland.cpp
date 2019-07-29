@@ -48,7 +48,7 @@ namespace ramses_internal
             const GLuint texID = m_device.getTextureAddress(textureHandle);
             glBindTexture(GL_TEXTURE_2D, texID);
 
-            const EGLImage eglImage = m_waylandEglExtensionProcs.eglCreateImageKHR(NULL, EGL_WAYLAND_BUFFER_WL, bufferResource, NULL);
+            const EGLImage eglImage = m_waylandEglExtensionProcs.eglCreateImageKHR(nullptr, EGL_WAYLAND_BUFFER_WL, bufferResource, nullptr);
             assert(EGL_NO_IMAGE != eglImage);
             m_waylandEglExtensionProcs.glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, eglImage);
             m_waylandEglExtensionProcs.eglDestroyImageKHR(eglImage);

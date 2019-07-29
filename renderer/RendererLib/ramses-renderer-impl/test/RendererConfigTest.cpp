@@ -15,7 +15,7 @@ TEST(ARendererConfig, hasDefaultValuesUponConstruction)
 {
     const ramses_internal::RendererConfig defaultConfig;
     ramses::RendererConfig config;
-    EXPECT_EQ(NULL, config.impl.getBinaryShaderCache());
+    EXPECT_EQ(nullptr, config.impl.getBinaryShaderCache());
 
     const ramses_internal::RendererConfig& internalConfig = config.impl.getInternalRendererConfig();
 

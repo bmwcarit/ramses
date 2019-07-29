@@ -191,20 +191,18 @@ class Target:
             if externalNetwork:
                 self.systemMonitor.addNetworkParameters(interfaceNames = ["eth0"])
 
-    def save_application_output(self, application, testClassName, testRunName, nr=None):
+    def save_application_output(self, application, testClassName, testRunName):
         """" saves the output of an application to a file
 
         This method can only be called if application was stopped before.
-        If multiple instances of one application are started on one target the nr parameter can be used to
-        generate unique filenames
         """
 
         if not application.started:
             resultDirForTest = self.resultDir+'/'+testClassName+"/"+testRunName
-            if nr is None:
-                fileName = "{0}_{1}".format(application.name, self.name)
+            if application.nameExtension:
+                fileName = "{0}_{1}_{2}".format(application.name, application.nameExtension, self.name)
             else:
-                fileName = "{0}{1}_{2}".format(application.name, nr, self.name)
+                fileName = "{0}_{1}".format(application.name, self.name)
 
             stdoutOutputList = application.get_stdout_data()
             if stdoutOutputList:

@@ -52,7 +52,7 @@ namespace ramses
     TEST(DistributedSceneTest, givesErrorWhenRemotePublishingAfterEnablingLocalOnlyOptmisations)
     {
         RamsesFramework framework(sizeof(clientArgs) / sizeof(char*), clientArgs);
-        RamsesClient remoteClient(NULL, framework);
+        RamsesClient remoteClient(nullptr, framework);
         framework.connect();
         SceneConfig config;
         config.setPublicationMode(EScenePublicationMode_LocalOnly);
@@ -63,7 +63,7 @@ namespace ramses
     TEST(DistributedSceneTest, canPublishRemotelyIfSetInConfig)
     {
         RamsesFramework framework(sizeof(clientArgs) / sizeof(char*), clientArgs);
-        RamsesClient remoteClient(NULL, framework);
+        RamsesClient remoteClient(nullptr, framework);
         framework.connect();
         SceneConfig config;
         config.setPublicationMode(EScenePublicationMode_LocalAndRemote);
@@ -74,7 +74,7 @@ namespace ramses
     TEST(DistributedSceneTest, canPublishRemotelyIfNoSettingInConfig)
     {
         RamsesFramework framework(sizeof(clientArgs) / sizeof(char*), clientArgs);
-        RamsesClient remoteClient(NULL, framework);
+        RamsesClient remoteClient(nullptr, framework);
         framework.connect();
         SceneConfig config;
         Scene* distributedScene = remoteClient.createScene(1u, config);
@@ -84,7 +84,7 @@ namespace ramses
     TEST(DistributedSceneTest, canPublishLocallyWhenEnablingLocalOnlyOptimisations)
     {
         RamsesFramework framework(sizeof(clientArgs) / sizeof(char*), clientArgs);
-        RamsesClient remoteClient(NULL, framework);
+        RamsesClient remoteClient(nullptr, framework);
         framework.connect();
         SceneConfig config;
         config.setPublicationMode(EScenePublicationMode_LocalOnly);
@@ -95,7 +95,7 @@ namespace ramses
     TEST(DistributedSceneTest, reportsErrorWhenPublishSceneIfNotConnected)
     {
         RamsesFramework framework;
-        RamsesClient remoteClient(NULL, framework);
+        RamsesClient remoteClient(nullptr, framework);
         Scene* distributedScene = remoteClient.createScene(1u);
         EXPECT_NE(StatusOK, distributedScene->publish());
     }
@@ -150,10 +150,10 @@ namespace ramses
 
         RamsesClient anotherClient("anotherClient", framework);
         Effect* effect = anotherClient.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "emptyEffect");
-        ASSERT_TRUE(NULL != effect);
+        ASSERT_TRUE(nullptr != effect);
 
         Appearance* appearance = m_scene.createAppearance(*effect, "appearance");
-        EXPECT_TRUE(NULL == appearance);
+        EXPECT_TRUE(nullptr == appearance);
     }
 
     TEST_F(AScene, failsToCreateGeometryBindingWhenEffectIsFromAnotherClient)
@@ -164,10 +164,10 @@ namespace ramses
 
         RamsesClient anotherClient("anotherClient", framework);
         Effect* effect = anotherClient.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "emptyEffect");
-        ASSERT_TRUE(NULL != effect);
+        ASSERT_TRUE(nullptr != effect);
 
         GeometryBinding* geometryBinding = m_scene.createGeometryBinding(*effect, "geometryBinding");
-        EXPECT_TRUE(NULL == geometryBinding);
+        EXPECT_TRUE(nullptr == geometryBinding);
     }
 
     TEST_F(AScene, failsToCreateTextureSamplerWhenTextureIsFromAnotherClient)
@@ -177,28 +177,28 @@ namespace ramses
             const uint8_t data[] = { 1, 2, 3 };
             const MipLevelData mipData(3u, data);
             Texture2D* texture = anotherClient.createTexture2D(1u, 1u, ETextureFormat_RGB8, 1u, &mipData, false);
-            ASSERT_TRUE(texture != NULL);
+            ASSERT_TRUE(texture != nullptr);
 
             TextureSampler* textureSampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
-            EXPECT_TRUE(NULL == textureSampler);
+            EXPECT_TRUE(nullptr == textureSampler);
         }
         {
             const uint8_t data[1 * 2 * 2 * 4] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
             MipLevelData mipLevelData(sizeof(data), data);
-            Texture3D* texture = anotherClient.createTexture3D(2, 1, 2, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, NULL);
-            ASSERT_TRUE(NULL != texture);
+            Texture3D* texture = anotherClient.createTexture3D(2, 1, 2, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, nullptr);
+            ASSERT_TRUE(nullptr != texture);
 
             TextureSampler* textureSampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
-            EXPECT_TRUE(NULL == textureSampler);
+            EXPECT_TRUE(nullptr == textureSampler);
         }
         {
             const uint8_t data[4 * 10 * 10] = {};
             CubeMipLevelData mipLevelData(sizeof(data), data, data, data, data, data, data);
             TextureCube* texture = anotherClient.createTextureCube(10, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false);
-            ASSERT_TRUE(NULL != texture);
+            ASSERT_TRUE(nullptr != texture);
 
             TextureSampler* textureSampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
-            EXPECT_TRUE(NULL == textureSampler);
+            EXPECT_TRUE(nullptr == textureSampler);
         }
     }
 
@@ -206,10 +206,10 @@ namespace ramses
     {
         Scene& anotherScene = *client.createScene(12u);
         RenderBuffer* renderBuffer = anotherScene.createRenderBuffer(100u, 100u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
-        ASSERT_TRUE(NULL != renderBuffer);
+        ASSERT_TRUE(nullptr != renderBuffer);
 
         TextureSampler* textureSampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *renderBuffer);
-        EXPECT_TRUE(NULL == textureSampler);
+        EXPECT_TRUE(nullptr == textureSampler);
 
         client.destroy(anotherScene);
     }
@@ -219,10 +219,10 @@ namespace ramses
         Scene& anotherScene = *client.createScene(12u);
         const Texture2D& fallbackTexture = createObject<Texture2D>("fallbackTexture");
         StreamTexture* streamTexture = anotherScene.createStreamTexture(fallbackTexture, streamSource_t(1), "testStreamTexture");
-        ASSERT_TRUE(NULL != streamTexture);
+        ASSERT_TRUE(nullptr != streamTexture);
 
         TextureSampler* textureSampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *streamTexture);
-        EXPECT_TRUE(NULL == textureSampler);
+        EXPECT_TRUE(nullptr == textureSampler);
 
         client.destroy(anotherScene);
     }
@@ -230,10 +230,10 @@ namespace ramses
     TEST_F(AScene, failsToCreateTextureSamplerWhenRenderBufferIsNotReadable)
     {
         RenderBuffer* renderBuffer = m_scene.createRenderBuffer(100u, 100u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_WriteOnly);
-        ASSERT_TRUE(NULL != renderBuffer);
+        ASSERT_TRUE(nullptr != renderBuffer);
 
         TextureSampler* textureSampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *renderBuffer);
-        EXPECT_TRUE(NULL == textureSampler);
+        EXPECT_TRUE(nullptr == textureSampler);
     }
 
     TEST_F(AScene, reportsErrorWhenCreateTransformationDataProviderWithNodeFromAnotherScene)
@@ -241,7 +241,7 @@ namespace ramses
         Scene& anotherScene = *client.createScene(12u);
 
         Node* node = anotherScene.createNode("node");
-        ASSERT_TRUE(NULL != node);
+        ASSERT_TRUE(nullptr != node);
 
         EXPECT_NE(StatusOK, m_scene.createTransformationDataProvider(*node, 1u));
 
@@ -253,7 +253,7 @@ namespace ramses
         Scene& anotherScene = *client.createScene(12u);
 
         Node* node = anotherScene.createNode("groupNode");
-        ASSERT_TRUE(NULL != node);
+        ASSERT_TRUE(nullptr != node);
 
         EXPECT_NE(StatusOK, m_scene.createTransformationDataConsumer(*node, 1u));
 
@@ -536,7 +536,7 @@ namespace ramses
         Scene& anotherScene = *client.createScene(12u);
 
         DataFloat* dataObject = anotherScene.createDataFloat();
-        ASSERT_TRUE(NULL != dataObject);
+        ASSERT_TRUE(nullptr != dataObject);
 
         EXPECT_NE(StatusOK, m_scene.createDataProvider(*dataObject, 1u));
 
@@ -548,7 +548,7 @@ namespace ramses
         Scene& anotherScene = *client.createScene(12u);
 
         DataFloat* dataObject = anotherScene.createDataFloat();
-        ASSERT_TRUE(NULL != dataObject);
+        ASSERT_TRUE(nullptr != dataObject);
 
         EXPECT_NE(StatusOK, m_scene.createDataConsumer(*dataObject, 1u));
 
@@ -612,7 +612,7 @@ namespace ramses
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
         const Texture2D* texture = anotherClient.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
-        ASSERT_TRUE(NULL != texture);
+        ASSERT_TRUE(nullptr != texture);
 
         EXPECT_NE(StatusOK, m_scene.createTextureProvider(*texture, 1u));
     }
@@ -623,10 +623,10 @@ namespace ramses
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
         Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
-        ASSERT_TRUE(NULL != texture);
+        ASSERT_TRUE(nullptr != texture);
 
         const TextureSampler* sampler = anotherScene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
-        ASSERT_TRUE(NULL != sampler);
+        ASSERT_TRUE(nullptr != sampler);
 
         EXPECT_NE(StatusOK, m_scene.createTextureConsumer(*sampler, 1u));
 
@@ -640,7 +640,7 @@ namespace ramses
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
         Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
-        ASSERT_TRUE(NULL != texture);
+        ASSERT_TRUE(nullptr != texture);
 
         EXPECT_EQ(StatusOK, m_scene.createTextureProvider(*texture, 666u));
 
@@ -659,12 +659,12 @@ namespace ramses
         uint8_t data1 = 0u;
         MipLevelData mipData1(1u, &data1);
         Texture2D* texture1 = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData1, false);
-        ASSERT_TRUE(NULL != texture1);
+        ASSERT_TRUE(nullptr != texture1);
 
         uint8_t data2 = 1u;
         MipLevelData mipData2(1u, &data2);
         Texture2D* texture2 = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData2, false);
-        ASSERT_TRUE(NULL != texture2);
+        ASSERT_TRUE(nullptr != texture2);
 
         EXPECT_EQ(StatusOK, m_scene.createTextureProvider(*texture1, 666u));
         EXPECT_EQ(StatusOK, m_scene.updateTextureProvider(*texture2, 666u));
@@ -684,10 +684,10 @@ namespace ramses
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
         Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
-        ASSERT_TRUE(NULL != texture);
+        ASSERT_TRUE(nullptr != texture);
 
         const TextureSampler* sampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
-        ASSERT_TRUE(NULL != sampler);
+        ASSERT_TRUE(nullptr != sampler);
 
         EXPECT_EQ(StatusOK, m_scene.createTextureConsumer(*sampler, 666u));
 
@@ -706,10 +706,10 @@ namespace ramses
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
         Texture3D* texture = client.createTexture3D(1u, 1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
-        ASSERT_TRUE(NULL != texture);
+        ASSERT_TRUE(nullptr != texture);
 
         const TextureSampler* sampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
-        ASSERT_TRUE(NULL != sampler);
+        ASSERT_TRUE(nullptr != sampler);
 
         EXPECT_NE(StatusOK, m_scene.createTextureConsumer(*sampler, 666u));
     }
@@ -719,10 +719,10 @@ namespace ramses
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
         Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
-        ASSERT_TRUE(NULL != texture);
+        ASSERT_TRUE(nullptr != texture);
 
         TextureSampler* sampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
-        ASSERT_TRUE(NULL != sampler);
+        ASSERT_TRUE(nullptr != sampler);
 
         EXPECT_EQ(StatusOK, m_scene.createTextureConsumer(*sampler, 666u));
 
@@ -740,10 +740,10 @@ namespace ramses
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
         Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
-        ASSERT_TRUE(NULL != texture);
+        ASSERT_TRUE(nullptr != texture);
 
         TextureSampler* sampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
-        ASSERT_TRUE(NULL != sampler);
+        ASSERT_TRUE(nullptr != sampler);
 
         EXPECT_EQ(StatusOK, m_scene.createTextureConsumer(*sampler, 666u));
         EXPECT_NE(StatusOK, m_scene.createTextureConsumer(*sampler, 667u));
@@ -754,7 +754,7 @@ namespace ramses
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
         Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
-        ASSERT_TRUE(NULL != texture);
+        ASSERT_TRUE(nullptr != texture);
 
         EXPECT_EQ(StatusOK, m_scene.createTextureProvider(*texture, 666u));
         EXPECT_NE(StatusOK, m_scene.createTextureProvider(*texture, 667u));
@@ -765,14 +765,14 @@ namespace ramses
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
         Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
-        ASSERT_TRUE(NULL != texture);
+        ASSERT_TRUE(nullptr != texture);
         Texture2D* texture2 = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
-        ASSERT_TRUE(NULL != texture2);
+        ASSERT_TRUE(nullptr != texture2);
 
         TextureSampler* sampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
-        ASSERT_TRUE(NULL != sampler);
+        ASSERT_TRUE(nullptr != sampler);
         TextureSampler* sampler2 = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture2);
-        ASSERT_TRUE(NULL != sampler2);
+        ASSERT_TRUE(nullptr != sampler2);
 
         EXPECT_EQ(StatusOK, m_scene.createTextureProvider(*texture, dataProviderId_t(1u)));
         EXPECT_NE(StatusOK, m_scene.createTextureProvider(*texture2, dataProviderId_t(1u)));
@@ -788,7 +788,7 @@ namespace ramses
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
         Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
-        ASSERT_TRUE(NULL != texture);
+        ASSERT_TRUE(nullptr != texture);
 
         EXPECT_NE(StatusOK, m_scene.updateTextureProvider(*texture, dataProviderId_t(1u)));
     }
@@ -799,7 +799,7 @@ namespace ramses
         const streamSource_t source(1);
         StreamTexture* streamTexture = this->m_scene.createStreamTexture(texture2D, source, "testStreamTexture");
 
-        ASSERT_NE(static_cast<StreamTexture*>(0), streamTexture);
+        ASSERT_NE(static_cast<StreamTexture*>(nullptr), streamTexture);
         EXPECT_EQ(source, streamTexture->impl.getStreamSource());
         EXPECT_EQ(texture2D.impl.getLowlevelResourceHash(), streamTexture->impl.getFallbackTextureHash());
     }
@@ -812,10 +812,10 @@ namespace ramses
 
         RamsesClient anotherClient("anotherLocalTestClient", framework);
         Texture2D* anotherTexture = anotherClient.createTexture2D(10, 12, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, "name");
-        ASSERT_TRUE(NULL != anotherTexture);
+        ASSERT_TRUE(nullptr != anotherTexture);
 
         StreamTexture* streamTexture = this->m_scene.createStreamTexture(*anotherTexture, streamSource_t(0), "StreamTexture");
-        EXPECT_TRUE(NULL == streamTexture);
+        EXPECT_TRUE(nullptr == streamTexture);
     }
 
     TEST_F(AScene, canCreateTextureSamplerForTexture2DWithDefaultAnisotropyLevel)
@@ -823,7 +823,7 @@ namespace ramses
         const Texture2D& texture2D = createObject<Texture2D>("testTexture2D");
         const TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, texture2D);
 
-        ASSERT_NE(static_cast<TextureSampler*>(0), sampler);
+        ASSERT_NE(static_cast<TextureSampler*>(nullptr), sampler);
         EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapUMode());
         EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapVMode());
         EXPECT_EQ(ETextureSamplingMethod_Nearest, sampler->getMinSamplingMethod());
@@ -837,7 +837,7 @@ namespace ramses
         const RenderBuffer& renderBuffer = createObject<RenderBuffer>("renderBuffer");
         const TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, renderBuffer);
 
-        ASSERT_NE(static_cast<TextureSampler*>(0), sampler);
+        ASSERT_NE(static_cast<TextureSampler*>(nullptr), sampler);
         EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapUMode());
         EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapVMode());
         EXPECT_EQ(ETextureSamplingMethod_Nearest, sampler->getMinSamplingMethod());
@@ -851,7 +851,7 @@ namespace ramses
         const TextureCube& textureCube = createObject<TextureCube>("testTextureCube");
         const TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, textureCube);
 
-        ASSERT_NE(static_cast<TextureSampler*>(0), sampler);
+        ASSERT_NE(static_cast<TextureSampler*>(nullptr), sampler);
         EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapUMode());
         EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapVMode());
         EXPECT_EQ(ETextureSamplingMethod_Linear, sampler->getMinSamplingMethod());
@@ -864,21 +864,21 @@ namespace ramses
     {
         const Texture2D& texture = createObject<Texture2D>("testTexture2D");
         TextureSampler* textureSampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, texture, 0);
-        EXPECT_TRUE(NULL == textureSampler);
+        EXPECT_TRUE(nullptr == textureSampler);
     }
 
     TEST_F(AScene, cantCreateTextureSamplerForTextureCubeWithWrongAnisotropyValue)
     {
         const TextureCube& textureCube = createObject<TextureCube>("testTextureCube");
         const TextureSampler* textureSampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, textureCube, 0);
-        EXPECT_TRUE(NULL == textureSampler);
+        EXPECT_TRUE(nullptr == textureSampler);
     }
 
     TEST_F(AScene, cantCreateTextureSamplerForRenderBufferWithWrongAnisotropyValue)
     {
         const RenderBuffer& renderBuffer = createObject<RenderBuffer>("renderBuffer");
         const TextureSampler* textureSampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, renderBuffer, 0);
-        EXPECT_TRUE(NULL == textureSampler);
+        EXPECT_TRUE(nullptr == textureSampler);
     }
 
     TEST_F(AScene, cantCreateTextureSamplerWithWrongMagSamplingMethod)
@@ -894,73 +894,73 @@ namespace ramses
         const RenderBuffer& sourceRenderBuffer = createObject<RenderBuffer>("src renderBuffer");
         const RenderBuffer& destinationRenderBuffer = createObject<RenderBuffer>("dst renderBuffer");
         const BlitPass* blitPass = m_scene.createBlitPass(sourceRenderBuffer, destinationRenderBuffer, "blitpass");
-        EXPECT_TRUE(NULL != blitPass);
+        EXPECT_TRUE(nullptr != blitPass);
     }
 
     TEST_F(AScene, cannotCreateBlitPass_WithSourceRenderBufferFromDifferentScene)
     {
         Scene& anotherScene = *client.createScene(12u);
         const RenderBuffer* sourceRenderBuffer = anotherScene.createRenderBuffer(100u, 100u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
-        ASSERT_TRUE(NULL != sourceRenderBuffer);
+        ASSERT_TRUE(nullptr != sourceRenderBuffer);
 
         const RenderBuffer& destinationRenderBuffer = createObject<RenderBuffer>("dst renderBuffer");
         const BlitPass* blitPass = m_scene.createBlitPass(*sourceRenderBuffer, destinationRenderBuffer, "blitpass");
-        EXPECT_TRUE(NULL == blitPass);
+        EXPECT_TRUE(nullptr == blitPass);
     }
 
     TEST_F(AScene, cannotCreateBlitPass_WithSourceAndDestinationRenderBufferFromDifferentScenes)
     {
         Scene& anotherScene = *client.createScene(12u);
         const RenderBuffer* destinationRenderBuffer = anotherScene.createRenderBuffer(100u, 100u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
-        ASSERT_TRUE(NULL != destinationRenderBuffer);
+        ASSERT_TRUE(nullptr != destinationRenderBuffer);
 
         const RenderBuffer& sourceRenderBuffer = createObject<RenderBuffer>("src renderBuffer");
         const BlitPass* blitPass = m_scene.createBlitPass(sourceRenderBuffer, *destinationRenderBuffer, "blitpass");
-        EXPECT_TRUE(NULL == blitPass);
+        EXPECT_TRUE(nullptr == blitPass);
     }
 
     TEST_F(AScene, cannotCreateBlitPass_WithSourceAndDestinationRenderBuffersHavingDifferentType)
     {
         const RenderBuffer* sourceRenderBuffer = m_scene.createRenderBuffer(100u, 100u, ERenderBufferType_Color, ERenderBufferFormat_R8, ERenderBufferAccessMode_ReadWrite);
         const RenderBuffer* destinationRenderBuffer = m_scene.createRenderBuffer(100u, 100u, ERenderBufferType_Depth, ERenderBufferFormat_Depth24, ERenderBufferAccessMode_ReadWrite);
-        ASSERT_TRUE(NULL != sourceRenderBuffer);
-        ASSERT_TRUE(NULL != destinationRenderBuffer);
+        ASSERT_TRUE(nullptr != sourceRenderBuffer);
+        ASSERT_TRUE(nullptr != destinationRenderBuffer);
 
         const BlitPass* blitPass = m_scene.createBlitPass(*sourceRenderBuffer, *destinationRenderBuffer, "blitpass");
-        EXPECT_TRUE(NULL == blitPass);
+        EXPECT_TRUE(nullptr == blitPass);
     }
 
     TEST_F(AScene, cannotCreateBlitPass_WithSourceAndDestinationRenderBuffersHavingDifferentFormat)
     {
         const RenderBuffer* sourceRenderBuffer = m_scene.createRenderBuffer(100u, 100u, ERenderBufferType_Color, ERenderBufferFormat_R8, ERenderBufferAccessMode_ReadWrite);
         const RenderBuffer* destinationRenderBuffer = m_scene.createRenderBuffer(100u, 100u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
-        ASSERT_TRUE(NULL != sourceRenderBuffer);
-        ASSERT_TRUE(NULL != destinationRenderBuffer);
+        ASSERT_TRUE(nullptr != sourceRenderBuffer);
+        ASSERT_TRUE(nullptr != destinationRenderBuffer);
 
         const BlitPass* blitPass = m_scene.createBlitPass(*sourceRenderBuffer, *destinationRenderBuffer, "blitpass");
-        EXPECT_TRUE(NULL == blitPass);
+        EXPECT_TRUE(nullptr == blitPass);
     }
 
     TEST_F(AScene, cannotCreateBlitPass_WithSourceAndDestinationRenderBuffersHavinghDifferentWidth)
     {
         const RenderBuffer* sourceRenderBuffer = m_scene.createRenderBuffer(1u, 100u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
         const RenderBuffer* destinationRenderBuffer = m_scene.createRenderBuffer(100u, 100u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
-        ASSERT_TRUE(NULL != sourceRenderBuffer);
-        ASSERT_TRUE(NULL != destinationRenderBuffer);
+        ASSERT_TRUE(nullptr != sourceRenderBuffer);
+        ASSERT_TRUE(nullptr != destinationRenderBuffer);
 
         const BlitPass* blitPass = m_scene.createBlitPass(*sourceRenderBuffer, *destinationRenderBuffer, "blitpass");
-        EXPECT_TRUE(NULL == blitPass);
+        EXPECT_TRUE(nullptr == blitPass);
     }
 
     TEST_F(AScene, cannotCreateBlitPass_WithSourceAndDestinationRenderBuffersHavingDifferentHeight)
     {
         const RenderBuffer* sourceRenderBuffer = m_scene.createRenderBuffer(100u, 1u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
         const RenderBuffer* destinationRenderBuffer = m_scene.createRenderBuffer(100u, 100u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
-        ASSERT_TRUE(NULL != sourceRenderBuffer);
-        ASSERT_TRUE(NULL != destinationRenderBuffer);
+        ASSERT_TRUE(nullptr != sourceRenderBuffer);
+        ASSERT_TRUE(nullptr != destinationRenderBuffer);
 
         const BlitPass* blitPass = m_scene.createBlitPass(*sourceRenderBuffer, *destinationRenderBuffer, "blitpass");
-        EXPECT_TRUE(NULL == blitPass);
+        EXPECT_TRUE(nullptr == blitPass);
     }
 
     TEST_F(AScene, cannotCreateBlitPass_WithSameSourceAndDestinationRenderBuffers)

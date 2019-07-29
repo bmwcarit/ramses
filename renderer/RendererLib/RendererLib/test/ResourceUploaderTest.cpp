@@ -36,7 +36,7 @@ class BinaryShaderProviderFake : public BinaryShaderProviderMock
 public:
     BinaryShaderProviderFake()
     : m_effectHash()
-    , m_binaryShaderData(NULL)
+    , m_binaryShaderData(nullptr)
     , m_binaryShaderDataSize(0)
     , m_binaryShaderFormat(0)
     {
@@ -102,7 +102,7 @@ public:
 
 TEST_F(AResourceUploader, uploadsVertexArrayResource)
 {
-    const ArrayResource res(EResourceType_VertexArray, 0, EDataType_Float, 0, ResourceCacheFlag_DoNotCache, String());
+    const ArrayResource res(EResourceType_VertexArray, 0, EDataType_Float, nullptr, ResourceCacheFlag_DoNotCache, String());
     ManagedResource managedRes(res, dummyManagedResourceCallback);
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(_)).Times(1);
 
@@ -114,7 +114,7 @@ TEST_F(AResourceUploader, uploadsVertexArrayResource)
 
 TEST_F(AResourceUploader, uploadsIndexArrayResource16)
 {
-    const ArrayResource res(EResourceType_IndexArray, 0, EDataType_UInt16, 0, ResourceCacheFlag_DoNotCache, String());
+    const ArrayResource res(EResourceType_IndexArray, 0, EDataType_UInt16, nullptr, ResourceCacheFlag_DoNotCache, String());
     ManagedResource managedRes(res, dummyManagedResourceCallback);
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(_)).Times(1);
 
@@ -396,7 +396,7 @@ TEST_F(AResourceUploader, uploadsWithMultipleRenderBackends)
 {
     StrictMock<RenderBackendStrictMock> additionalRenderer;
 
-    const ArrayResource res(EResourceType_VertexArray, 0, EDataType_Float, 0, ResourceCacheFlag_DoNotCache, String());
+    const ArrayResource res(EResourceType_VertexArray, 0, EDataType_Float, nullptr, ResourceCacheFlag_DoNotCache, String());
     ManagedResource managedRes(res, dummyManagedResourceCallback);
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(_)).Times(1);
 

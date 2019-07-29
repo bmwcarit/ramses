@@ -97,7 +97,7 @@ namespace ramses_internal
         {
             EXPECT_EQ(m_animSystemSource.containsSpline(handle), m_animSystemTarget.containsSpline(handle));
             const SplineBase* const splineSrc = m_animSystemSource.getSpline(handle);
-            if (splineSrc != NULL)
+            if (splineSrc != nullptr)
             {
                 const SplineBase* const splineTgt = m_animSystemTarget.getSpline(handle);
                 EXPECT_EQ(splineSrc->getKeyType(), splineTgt->getKeyType());
@@ -114,7 +114,7 @@ namespace ramses_internal
         {
             EXPECT_EQ(m_animSystemSource.containsDataBinding(handle), m_animSystemTarget.containsDataBinding(handle));
             const AnimationDataBindBase* const dataBindSrc = m_animSystemSource.getDataBinding(handle);
-            if (dataBindSrc != NULL)
+            if (dataBindSrc != nullptr)
             {
                 const AnimationDataBindBase* const dataBindTgt = m_animSystemTarget.getDataBinding(handle);
                 EXPECT_EQ(dataBindSrc->getContainerType(), dataBindTgt->getContainerType());

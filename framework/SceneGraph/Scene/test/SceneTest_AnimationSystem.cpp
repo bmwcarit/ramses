@@ -24,7 +24,7 @@ namespace ramses_internal
 
         auto id = this->m_scene.addAnimationSystem(animSystem);
 
-        EXPECT_TRUE(this->m_scene.getAnimationSystem(id) != NULL);
+        EXPECT_TRUE(this->m_scene.getAnimationSystem(id) != nullptr);
         EXPECT_EQ(static_cast<UInt32>(EAnimationSystemFlags_FullProcessing), animSystem->getFlags());
     }
 
@@ -35,7 +35,7 @@ namespace ramses_internal
 
         auto id = this->m_scene.addAnimationSystem(animSystem);
 
-        EXPECT_TRUE(this->m_scene.getAnimationSystem(id) != NULL);
+        EXPECT_TRUE(this->m_scene.getAnimationSystem(id) != nullptr);
         EXPECT_NE(0u, animSystem->getFlags() & EAnimationSystemFlags_FullProcessing);
     }
 
@@ -46,7 +46,7 @@ namespace ramses_internal
 
         auto id = this->m_scene.addAnimationSystem(animSystem);
 
-        EXPECT_TRUE(this->m_scene.getAnimationSystem(id) != NULL);
+        EXPECT_TRUE(this->m_scene.getAnimationSystem(id) != nullptr);
         EXPECT_EQ(0u, animSystem->getFlags() & EAnimationSystemFlags_FullProcessing);
     }
 
@@ -88,11 +88,11 @@ namespace ramses_internal
         auto id1 = this->m_scene.addAnimationSystem(animSystem1);
         auto id2 = this->m_scene.addAnimationSystem(animSystem2);
 
-        EXPECT_TRUE(this->m_scene.getAnimationSystem(id2) != NULL);
+        EXPECT_TRUE(this->m_scene.getAnimationSystem(id2) != nullptr);
 
         this->m_scene.removeAnimationSystem(id2);
 
-        EXPECT_EQ(NULL, this->m_scene.getAnimationSystem(id2));
+        EXPECT_EQ(nullptr, this->m_scene.getAnimationSystem(id2));
 
         Bool id1Found = false;
         Bool id2Found = false;

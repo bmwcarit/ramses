@@ -52,7 +52,7 @@ namespace ramses
     TEST_F(RenderBufferTest, canCreateRenderBuffer)
     {
         const RenderBuffer* renderBuffer = m_scene.createRenderBuffer(600u, 400u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_WriteOnly, 4u, "RenderBuffer");
-        ASSERT_TRUE(renderBuffer != NULL);
+        ASSERT_TRUE(renderBuffer != nullptr);
         EXPECT_EQ(600u, renderBuffer->getWidth());
         EXPECT_EQ(400u, renderBuffer->getHeight());
         EXPECT_EQ(ERenderBufferType_Color, renderBuffer->getBufferType());
@@ -66,26 +66,26 @@ namespace ramses
     TEST_F(RenderBufferTest, failsToCreateRenderBufferWithZeroWidthOrHeight)
     {
         RenderBuffer* rbWithZeroWidth = m_scene.createRenderBuffer(0u, 400u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
-        EXPECT_EQ(NULL, rbWithZeroWidth);
+        EXPECT_EQ(nullptr, rbWithZeroWidth);
 
         RenderBuffer* rbWithZeroHeight = m_scene.createRenderBuffer(400u, 0u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
-        EXPECT_EQ(NULL, rbWithZeroHeight);
+        EXPECT_EQ(nullptr, rbWithZeroHeight);
     }
 
     TEST_F(RenderBufferTest, failsToCreateRenderBufferOfIncompatibleTypeAndFormat)
     {
-        EXPECT_TRUE(NULL == m_scene.createRenderBuffer(1u, 1u, ERenderBufferType_Color, ERenderBufferFormat_Depth24, ERenderBufferAccessMode_ReadWrite));
-        EXPECT_TRUE(NULL == m_scene.createRenderBuffer(1u, 1u, ERenderBufferType_Color, ERenderBufferFormat_Depth24_Stencil8, ERenderBufferAccessMode_ReadWrite));
-        EXPECT_TRUE(NULL == m_scene.createRenderBuffer(1u, 1u, ERenderBufferType_Depth, ERenderBufferFormat_Depth24_Stencil8, ERenderBufferAccessMode_ReadWrite));
-        EXPECT_TRUE(NULL == m_scene.createRenderBuffer(1u, 1u, ERenderBufferType_Depth, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite));
-        EXPECT_TRUE(NULL == m_scene.createRenderBuffer(1u, 1u, ERenderBufferType_DepthStencil, ERenderBufferFormat_Depth24, ERenderBufferAccessMode_ReadWrite));
-        EXPECT_TRUE(NULL == m_scene.createRenderBuffer(1u, 1u, ERenderBufferType_DepthStencil, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite));
+        EXPECT_TRUE(nullptr == m_scene.createRenderBuffer(1u, 1u, ERenderBufferType_Color, ERenderBufferFormat_Depth24, ERenderBufferAccessMode_ReadWrite));
+        EXPECT_TRUE(nullptr == m_scene.createRenderBuffer(1u, 1u, ERenderBufferType_Color, ERenderBufferFormat_Depth24_Stencil8, ERenderBufferAccessMode_ReadWrite));
+        EXPECT_TRUE(nullptr == m_scene.createRenderBuffer(1u, 1u, ERenderBufferType_Depth, ERenderBufferFormat_Depth24_Stencil8, ERenderBufferAccessMode_ReadWrite));
+        EXPECT_TRUE(nullptr == m_scene.createRenderBuffer(1u, 1u, ERenderBufferType_Depth, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite));
+        EXPECT_TRUE(nullptr == m_scene.createRenderBuffer(1u, 1u, ERenderBufferType_DepthStencil, ERenderBufferFormat_Depth24, ERenderBufferAccessMode_ReadWrite));
+        EXPECT_TRUE(nullptr == m_scene.createRenderBuffer(1u, 1u, ERenderBufferType_DepthStencil, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite));
     }
 
     TEST_F(RenderBufferTest, canNotCreateReadWriteMSAARenderBuffer)
     {
         const RenderBuffer* renderBuffer = m_scene.createRenderBuffer(400u, 400u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 4u);
-        EXPECT_EQ(NULL, renderBuffer);
+        EXPECT_EQ(nullptr, renderBuffer);
     }
 
     TEST_F(RenderBufferTest, reportsErrorIfNotUsedInAnyRenderPassNorBlitPass)

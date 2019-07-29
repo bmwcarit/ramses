@@ -75,7 +75,7 @@ namespace ramses_internal
         if (!topLevelBlocks || topLevelBlocks->getSequence().size() < 2)
         {
             m_message << "unexpected internal structure on top level";
-            return NULL;
+            return nullptr;
         }
         const glslang::TIntermSequence& topLevelSeq = topLevelBlocks->getSequence();
         const TIntermNode* linkerObjectsNode = topLevelSeq.back();
@@ -83,7 +83,7 @@ namespace ramses_internal
         if (!linkerObjectsAggregate)
         {
             m_message << "unexpected internal structure in linker objects";
-            return NULL;
+            return nullptr;
         }
         return &linkerObjectsAggregate->getSequence();
     }

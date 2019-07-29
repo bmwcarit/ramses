@@ -363,8 +363,6 @@ namespace ramses_internal
     {
         init();
 
-        const WaylandIviSurfaceId surfaceIVIId(123);
-
         StrictMock<WaylandSurfaceMock> surface;
         embeddedCompositor->addWaylandSurface(surface);
 
@@ -377,7 +375,6 @@ namespace ramses_internal
     {
         init();
 
-        const WaylandIviSurfaceId surfaceIVIId(123);
 
         StrictMock<WaylandSurfaceMock> surface;
         embeddedCompositor->addWaylandSurface(surface);
@@ -555,8 +552,6 @@ namespace ramses_internal
     TEST_F(AEmbeddedCompositor_Wayland, CanLogInfos)
     {
         init();
-
-        const WaylandIviSurfaceId surfaceIVIId(123);
 
         StrictMock<WaylandSurfaceMock> surface;
         embeddedCompositor->addWaylandSurface(surface);

@@ -25,10 +25,10 @@ namespace ramses
         ramses::SceneIterator iter(client);
 
         ramses::Scene* sceneFromIterator = iter.getNext();
-        ASSERT_TRUE(0 != sceneFromIterator);
+        ASSERT_TRUE(nullptr != sceneFromIterator);
         // id of only existing scene - the default test scene
         EXPECT_EQ(123u, sceneFromIterator->getSceneId());
-        EXPECT_TRUE(0 == iter.getNext());
+        EXPECT_TRUE(nullptr == iter.getNext());
     }
 
     TEST_F(ASceneIterator, returnsCorrectSceneWhenDereferenced_WithSeveralScenes)
@@ -38,10 +38,10 @@ namespace ramses
 
         ramses::Scene* sceneFromIterator = iter.getNext();
         ramses::Scene* scene2FromIterator = iter.getNext();
-        ASSERT_TRUE(0 != sceneFromIterator);
-        ASSERT_TRUE(0 != scene2FromIterator);
+        ASSERT_TRUE(nullptr != sceneFromIterator);
+        ASSERT_TRUE(nullptr != scene2FromIterator);
         EXPECT_TRUE(sceneFromIterator != scene2FromIterator);
-        EXPECT_TRUE(0 == iter.getNext());
+        EXPECT_TRUE(nullptr == iter.getNext());
     }
 
     TEST_F(ASceneIterator, doesNotReturnDestroyedScene)
@@ -52,7 +52,7 @@ namespace ramses
 
         // one scene always created in class ctor
         EXPECT_TRUE(&m_scene == iter.getNext());
-        EXPECT_TRUE(0 == iter.getNext());
+        EXPECT_TRUE(nullptr == iter.getNext());
     }
 
     class ASceneIteratorWithoutAvailableScenes : public LocalTestClient, public ::testing::Test
@@ -63,7 +63,7 @@ namespace ramses
     {
         ramses::SceneIterator iter(client);
 
-        EXPECT_TRUE(0 == iter.getNext());
+        EXPECT_TRUE(nullptr == iter.getNext());
     }
 
 }

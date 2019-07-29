@@ -20,8 +20,8 @@ namespace ramses_internal
 {
     ClientApplicationLogic::ClientApplicationLogic(const Guid& myId, PlatformLock& frameworkLock)
         : m_frameworkLock(frameworkLock)
-        , m_resourceComponent(0)
-        , m_scenegraphProviderComponent(0)
+        , m_resourceComponent(nullptr)
+        , m_scenegraphProviderComponent(nullptr)
         , m_myId(myId)
     {
     }
@@ -43,9 +43,9 @@ namespace ramses_internal
         PlatformGuard guard(m_frameworkLock);
         if (m_scenegraphProviderComponent)
         {
-            m_scenegraphProviderComponent->setSceneProviderServiceHandler(NULL);
+            m_scenegraphProviderComponent->setSceneProviderServiceHandler(nullptr);
         }
-        m_scenegraphProviderComponent = 0;
+        m_scenegraphProviderComponent = nullptr;
     }
 
     void ClientApplicationLogic::createScene(ClientScene& scene, bool enableLocalOnlyOptimization)

@@ -54,7 +54,7 @@ TEST(File, WriteTest)
     EXPECT_TRUE(f1.isOpen());
 
     // invalid params
-    status = f1.write(NULL, 0);
+    status = f1.write(nullptr, 0);
     EXPECT_EQ(ramses_capu::CAPU_EINVAL, status);
 
     // write data
@@ -153,7 +153,7 @@ TEST(File, ReadTest)
         EXPECT_TRUE(f3.isOpen());
 
         // invalid params
-        status = f3.read(NULL, 0, read);
+        status = f3.read(nullptr, 0, read);
         EXPECT_EQ(ramses_capu::CAPU_EINVAL, status);
 
         read = 0;
@@ -245,6 +245,7 @@ TEST(File, Seek)
     EXPECT_EQ(ramses_capu::CAPU_OK, status);
     // seek forwards to end of file
     status = writeFile.seek(5, ramses_capu::FROM_CURRENT_POSITION);
+    EXPECT_EQ(ramses_capu::CAPU_OK, status);
     status = writeFile.write(buf3, 1);
     EXPECT_EQ(ramses_capu::CAPU_OK, status);
     writeFile.close();

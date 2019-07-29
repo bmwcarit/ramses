@@ -13,7 +13,7 @@ namespace ramses_internal
 {
     CommandLineParser::CommandLineParser(Int argc, char const* const* argv)
     {
-        if (argc > 0 && 0 != argv)
+        if (argc > 0 && nullptr != argv)
         {
             m_programName = argv[0];
             for (Int index = 1; index < argc; ++index)
@@ -27,7 +27,7 @@ namespace ramses_internal
                 {
                     const String nextElement(argv[index + 1]);
 
-                    char* endptr = 0;
+                    char* endptr = nullptr;
                     const Double unusedValue = strtod(nextElement.c_str(), &endptr);
                     UNUSED(unusedValue);
 
@@ -65,7 +65,7 @@ namespace ramses_internal
 
     const CommandLineArgument* CommandLineParser::getOption(const String& shortname, const String& longname, Bool canHaveValue) const
     {
-        CommandLineArgument* argument = NULL;
+        CommandLineArgument* argument = nullptr;
         for (auto& current : m_args)
         {
             if (current.getName() == shortname || current.getName() == longname)

@@ -31,6 +31,19 @@ namespace ramses_capu
 
         Runnable() : mCancel(false) {}
 
+        /**
+         * @brief Deleted copy constructor
+         * @param other unused
+         */
+        Runnable(const Runnable& other) = delete;
+
+        /**
+         * @brief Deleted copy assignment
+         * @param other unused
+         * @return unused
+         */
+        Runnable& operator=(const Runnable& other) = delete;
+
         virtual ~Runnable() {}
 
         /**

@@ -19,7 +19,7 @@ namespace ramses_internal
         , m_watchdogCallback(callback)
         , m_lastNotificationTimeMilliSeconds(0u)
     {
-        if (0 != m_watchdogCallback)
+        if (nullptr != m_watchdogCallback)
         {
             m_watchdogCallback->registerThread(m_thread);
         }
@@ -27,7 +27,7 @@ namespace ramses_internal
 
     PlatformWatchdog::~PlatformWatchdog()
     {
-        if (0 != m_watchdogCallback)
+        if (nullptr != m_watchdogCallback)
         {
             m_watchdogCallback->unregisterThread(m_thread);
         }
@@ -39,7 +39,7 @@ namespace ramses_internal
         if ( (timeNowMilliSeconds - m_lastNotificationTimeMilliSeconds) >= m_intervalMilliSeconds / 2)
         {
             LOG_TRACE(CONTEXT_FRAMEWORK, "notify watchdog from thread " << EnumToString(m_thread));
-            if (0 != m_watchdogCallback)
+            if (nullptr != m_watchdogCallback)
             {
                 m_watchdogCallback->notifyThread(m_thread);
             }

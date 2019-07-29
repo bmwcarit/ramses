@@ -24,37 +24,37 @@ namespace ramses_internal
     public:
         typedef _BaseType BaseType;
 
-        static StronglyTypedValue DefaultValue()
+        constexpr static StronglyTypedValue DefaultValue()
         {
             return StronglyTypedValue(_DefaultValue);
         }
 
-        explicit StronglyTypedValue(BaseType value)
+        constexpr explicit StronglyTypedValue(BaseType value)
             : m_value(value)
         {
         }
 
-        StronglyTypedValue()
+        constexpr StronglyTypedValue()
             : m_value(_DefaultValue)
         {
         }
 
-        BaseType getValue() const
+        constexpr BaseType getValue() const
         {
             return m_value;
         }
 
-        BaseType& getReference()
+        constexpr BaseType& getReference()
         {
             return m_value;
         }
 
-        bool operator==(const StronglyTypedValue& other) const
+        constexpr bool operator==(const StronglyTypedValue& other) const
         {
             return m_value == other.m_value;
         }
 
-        bool operator!=(const StronglyTypedValue& other) const
+        constexpr bool operator!=(const StronglyTypedValue& other) const
         {
             return m_value != other.m_value;
         }

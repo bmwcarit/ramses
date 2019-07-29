@@ -43,7 +43,7 @@ namespace ramses
         const Texture2D& texture2D = createObject<Texture2D>("testTexture2D");
         const TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, texture2D, 1u, "testSampler2D");
 
-        ASSERT_NE(static_cast<TextureSampler*>(0), sampler);
+        ASSERT_NE(static_cast<TextureSampler*>(nullptr), sampler);
         EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapUMode());
         EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapVMode());
         EXPECT_EQ(ETextureSamplingMethod_Linear, sampler->getMinSamplingMethod());
@@ -63,7 +63,7 @@ namespace ramses
         const Texture2D& texture2D = createObject<Texture2D>("testTexture2D");
         const TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, texture2D, 16u, "testSampler2D");
 
-        ASSERT_NE(static_cast<TextureSampler*>(0), sampler);
+        ASSERT_NE(static_cast<TextureSampler*>(nullptr), sampler);
         EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapUMode());
         EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapVMode());
         EXPECT_EQ(ETextureSamplingMethod_Linear, sampler->getMinSamplingMethod());
@@ -77,7 +77,7 @@ namespace ramses
         const Texture3D& texture3D = createObject<Texture3D>("testTexture3D");
         const TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureAddressMode_Mirror, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, texture3D, "testSampler3D");
 
-        ASSERT_NE(static_cast<TextureSampler*>(0), sampler);
+        ASSERT_NE(static_cast<TextureSampler*>(nullptr), sampler);
         EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapUMode());
         EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapVMode());
         EXPECT_EQ(ETextureAddressMode_Mirror, sampler->getWrapRMode());
@@ -92,7 +92,7 @@ namespace ramses
         const TextureCube& textureCube = createObject<TextureCube>("testTextureCube");
         const TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, textureCube, 1u, "testSamplerCube");
 
-        ASSERT_NE(static_cast<TextureSampler*>(0), sampler);
+        ASSERT_NE(static_cast<TextureSampler*>(nullptr), sampler);
         EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapUMode());
         EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapVMode());
         EXPECT_EQ(ETextureSamplingMethod_Linear, sampler->getMinSamplingMethod());
@@ -106,7 +106,7 @@ namespace ramses
         const TextureCube& textureCube = createObject<TextureCube>("testTextureCube");
         const TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, textureCube, 16u, "testSamplerCube");
 
-        ASSERT_NE(static_cast<TextureSampler*>(0), sampler);
+        ASSERT_NE(static_cast<TextureSampler*>(nullptr), sampler);
         EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapUMode());
         EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapVMode());
         EXPECT_EQ(ETextureSamplingMethod_Linear, sampler->getMinSamplingMethod());
@@ -120,7 +120,7 @@ namespace ramses
         const RenderBuffer& renderBuffer = createObject<RenderBuffer>();
         TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, renderBuffer, 16u);
 
-        ASSERT_NE(static_cast<TextureSampler*>(0), sampler);
+        ASSERT_NE(static_cast<TextureSampler*>(nullptr), sampler);
         EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapUMode());
         EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapVMode());
         EXPECT_EQ(ETextureSamplingMethod_Linear, sampler->getMinSamplingMethod());
@@ -140,7 +140,7 @@ namespace ramses
         const StreamTexture& streamTexture = createObject<StreamTexture>();
         const TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, streamTexture);
 
-        ASSERT_NE(static_cast<TextureSampler*>(0), sampler);
+        ASSERT_NE(static_cast<TextureSampler*>(nullptr), sampler);
         EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapUMode());
         EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapVMode());
         EXPECT_EQ(ETextureSamplingMethod_Linear, sampler->getMinSamplingMethod());
@@ -161,7 +161,7 @@ namespace ramses
     {
         const Texture2D& texture2D = createObject<Texture2D>("testTexture2D");
         const TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, texture2D, 1u, "testSampler2D");
-        ASSERT_TRUE(NULL != sampler);
+        ASSERT_TRUE(nullptr != sampler);
         EXPECT_EQ(StatusOK, sampler->validate());
 
         EXPECT_EQ(StatusOK, client.destroy(texture2D));
@@ -172,7 +172,7 @@ namespace ramses
     {
         const Texture3D& texture3D = createObject<Texture3D>("testTexture3D");
         const TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureAddressMode_Mirror, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, texture3D, "testSampler3D");
-        ASSERT_TRUE(NULL != sampler);
+        ASSERT_TRUE(nullptr != sampler);
         EXPECT_EQ(StatusOK, sampler->validate());
 
         EXPECT_EQ(StatusOK, client.destroy(texture3D));
@@ -183,7 +183,7 @@ namespace ramses
     {
         const TextureCube& textureCube = createObject<TextureCube>("testTextureCube");
         const TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, textureCube, 1u, "testSamplerCube");
-        ASSERT_TRUE(NULL != sampler);
+        ASSERT_TRUE(nullptr != sampler);
         EXPECT_EQ(StatusOK, sampler->validate());
 
         EXPECT_EQ(StatusOK, client.destroy(textureCube));
@@ -204,7 +204,7 @@ namespace ramses
         renderPass.setRenderTarget(rt);
 
         TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, renderBuffer);
-        ASSERT_TRUE(NULL != sampler);
+        ASSERT_TRUE(nullptr != sampler);
         EXPECT_EQ(StatusOK, sampler->validate());
 
         EXPECT_EQ(StatusOK, m_scene.destroy(renderBuffer));
@@ -215,7 +215,7 @@ namespace ramses
     {
         StreamTexture& streamTexture = createObject<StreamTexture>();
         TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, streamTexture);
-        ASSERT_TRUE(NULL != sampler);
+        ASSERT_TRUE(nullptr != sampler);
         EXPECT_EQ(StatusOK, sampler->validate());
 
         EXPECT_EQ(StatusOK, m_scene.destroy(streamTexture));

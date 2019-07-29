@@ -19,8 +19,7 @@ class Application:
         self.stdout = stdout
         self.stderr = stderr
         self.name = name # executable name
-        # description name so one can make a difference between two applications started from the same executable
-        self.extendedName = name + nameExtension;
+        self.nameExtension = nameExtension
         self.started = False
         self.initialised = True
         self.initialisationMessage = None
@@ -111,10 +110,10 @@ class Application:
     def start_watch_stdout(self):
         return self.stdoutBufferWatcher.start_watch()
 
-    def wait_for_msg_in_stdout(self, watch_id=None, msg=None, timeout=None):
+    def wait_for_msg_in_stdout(self, watch_id=None, msg=None, timeout=DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT):
         return self.stdoutBufferWatcher.wait_for_msg(watch_id, msg, timeout)
 
-    def wait_for_msg_in_stdout_from_beginning(self, msg=None, timeout=None):
+    def wait_for_msg_in_stdout_from_beginning(self, msg=None, timeout=DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT):
         return self.stdoutBufferWatcher.wait_for_msg(self.stdoutBufferWatcher.get_watch_from_beginning(), msg, timeout)
 
     def get_stdout_data(self):
@@ -133,7 +132,7 @@ class Application:
         self.initialisationMessage = msg
         self.initialised = False
 
-    def is_initialised(self, timeout=None):
+    def is_initialised(self, timeout=DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT):
         if self.initialisationMessage and not self.initialised and self.initialisationWatchID:
             log.info("waiting for initialisation message")
             self.initialised = self.wait_for_msg_in_stdout(self.initialisationWatchID, self.initialisationMessage, timeout)

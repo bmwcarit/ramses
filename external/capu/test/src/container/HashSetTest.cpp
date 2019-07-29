@@ -396,11 +396,6 @@ TEST(HashSet, TestMoveConstructor)
 
     ramses_capu::HashSet<uint32_t> set2(std::move(set1));
 
-    EXPECT_EQ(0u, set1.count());
-    EXPECT_FALSE(set1.hasElement(1));
-    EXPECT_FALSE(set1.hasElement(2));
-    EXPECT_FALSE(set1.hasElement(3));
-
     EXPECT_EQ(3u, set2.count());
     EXPECT_TRUE(set2.hasElement(1));
     EXPECT_TRUE(set2.hasElement(2));
@@ -438,11 +433,6 @@ TEST(HashSet, TestMoveAssign)
 
     ramses_capu::HashSet<uint32_t> set2;
     set2 = std::move(set1);
-
-    EXPECT_EQ(0u, set1.count());
-    EXPECT_FALSE(set1.hasElement(1));
-    EXPECT_FALSE(set1.hasElement(2));
-    EXPECT_FALSE(set1.hasElement(3));
 
     EXPECT_EQ(3u, set2.count());
     EXPECT_TRUE(set2.hasElement(1));

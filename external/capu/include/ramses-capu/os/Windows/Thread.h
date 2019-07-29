@@ -52,7 +52,7 @@ namespace ramses_capu
         {
             generic::ThreadRunnable* tr = reinterpret_cast<generic::ThreadRunnable*>(arg);
             tr->thread->setState(TS_RUNNING);
-            if (tr->runnable != NULL)
+            if (tr->runnable != nullptr)
             {
                 tr->runnable->run();
             }
@@ -86,8 +86,8 @@ namespace ramses_capu
             mRunnable.runnable = &runnable;
             mRunnable.thread->setState(TS_STARTING);
             mIsStarted = true;
-            mThreadHandle = CreateThread(NULL, 0, Thread::run, &mRunnable, 0, &mThreadId);
-            if (mThreadHandle == NULL)
+            mThreadHandle = CreateThread(nullptr, 0, Thread::run, &mRunnable, 0, &mThreadId);
+            if (mThreadHandle == nullptr)
             {
                 mRunnable.thread->setState(TS_NEW);
                 mIsStarted = false;

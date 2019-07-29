@@ -74,13 +74,13 @@ namespace ramses_capu
             pthread_setname_np(pthread_self(), tr->thread->getName());
 #endif
             tr->thread->setState(TS_RUNNING);
-            if (tr->runnable != NULL)
+            if (tr->runnable != nullptr)
             {
                 tr->runnable->run();
             }
             tr->thread->setState(TS_TERMINATED);
-            pthread_exit(NULL);
-            return NULL;
+            pthread_exit(nullptr);
+            return nullptr;
         }
 
         inline
@@ -115,7 +115,7 @@ namespace ramses_capu
             {
                 return CAPU_ERROR;
             }
-            if (pthread_join(mThread, NULL) == 0)
+            if (pthread_join(mThread, nullptr) == 0)
             {
                 mIsStarted = false;
                 return CAPU_OK;

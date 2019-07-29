@@ -101,7 +101,7 @@ namespace ramses_internal
                 else
                 {
                     const ramses::RamsesObject* ro = scene.findObjectByName(validationRequestCommand.optionalObjectName.c_str());
-                    if (0 != ro)
+                    if (nullptr != ro)
                     {
                         ro->validate();
                         LOG_INFO(ramses_internal::CONTEXT_CLIENT, "Validation:  " << ro->getValidationReport(validationRequestCommand.severity));

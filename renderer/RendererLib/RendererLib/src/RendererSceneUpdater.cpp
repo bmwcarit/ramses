@@ -838,6 +838,9 @@ namespace ramses_internal
                     m_renderer.resetRenderInterruptState();
                     m_renderer.setSceneShown(sceneId, true);
                     m_sceneStateExecutor.setRendered(sceneId);
+                    // in case there are any scenes depending on this scene via OB link,
+                    // mark it as modified so that OB link dependency checker re-renders all that need it
+                    m_modifiedScenesToRerender.put(sceneId);
                 }
             }
         }

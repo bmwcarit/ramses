@@ -65,6 +65,8 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
     // renderer object by default does not automap anymore
     // stand alone renderer by default enables automap, unless explicitly disabled
     ramses_display_manager::DisplayManager displayManager(renderer, framework, !disableAutoMapping.wasDefined());
+    // allow camera free move
+    displayManager.enableKeysHandling();
 
     for (uint32_t i = 0u; i < numDisplays; ++i)
     {

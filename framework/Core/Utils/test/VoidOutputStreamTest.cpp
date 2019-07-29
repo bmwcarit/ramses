@@ -109,7 +109,7 @@ namespace ramses_internal
     TEST_F(VoidOutputStreamTest, InsertRawData)
     {
         const UInt32 sentSize = 37u;
-        stream.write(NULL, sentSize);
+        stream.write(nullptr, sentSize);
         EXPECT_EQ( sentSize,  stream.getSize());
     }
 

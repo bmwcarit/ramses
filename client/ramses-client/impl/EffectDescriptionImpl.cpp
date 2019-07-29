@@ -120,7 +120,7 @@ namespace ramses
             return m_compilerDefines[index].c_str();
         }
 
-        return NULL;
+        return nullptr;
     }
 
     const EffectDescriptionImpl::SemanticsMap& EffectDescriptionImpl::getSemanticsMap() const

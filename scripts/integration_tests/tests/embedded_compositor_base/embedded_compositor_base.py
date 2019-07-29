@@ -58,24 +58,21 @@ class EmbeddedCompositorBase(test_classes.OnSelectedTargetsTest):
         self.checkThatApplicationWasStarted(self.wlClient)
         self.addCleanup(self.target.kill_application, self.wlClient)
         surfaceFound = self.renderer.wait_for_msg_in_stdout(self.watchSurfaceFound,
-                                                            "embedded-compositing client surface found for existing streamtexture: {}".format(iviID),
-                                                            timeout=application.Application.DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT)
+                                                            "embedded-compositing client surface found for existing streamtexture: {}".format(iviID))
         self.assertTrue(surfaceFound, msg="Surface was not found by renderer")
 
     def _killIviGears(self):
         self.watchSurfaceIsGone = self.renderer.start_watch_stdout()
         self.target.kill_application(self.wlClient)
         surfaceIsGone = self.renderer.wait_for_msg_in_stdout(self.watchSurfaceIsGone,
-                                                            "embedded-compositing client surface destroyed",
-                                                            timeout=application.Application.DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT)
+                                                            "embedded-compositing client surface destroyed")
         self.assertTrue(surfaceIsGone, msg="Surface was not destroyed")
 
     def _stopIviGears(self):
         self.watchSurfaceIsGone = self.renderer.start_watch_stdout()
         self.target.execute_on_target("killall -SIGINT " + self.wlClient.name)
         surfaceIsGone = self.renderer.wait_for_msg_in_stdout(self.watchSurfaceIsGone,
-                                                            "embedded-compositing client surface destroyed",
-                                                            timeout=application.Application.DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT)
+                                                            "embedded-compositing client surface destroyed")
         self.assertTrue(surfaceIsGone, msg="Surface was not destroyed")
 
     def syncSceneOnClientAndRenderer(self, sceneId):
@@ -83,7 +80,5 @@ class EmbeddedCompositorBase(test_classes.OnSelectedTargetsTest):
         self.flushIsReceived = self.renderer.start_watch_stdout()
         self.testClient.send_ramsh_command("sceneversion {} {}".format(self.flushname, sceneId), waitForRendererConfirmation=False)
         flushWasReceived = self.renderer.wait_for_msg_in_stdout(self.flushIsReceived,
-                                                            "Named flush applied on scene {} with sceneVersionTag {}".format(sceneId, self.flushname),
-                                                            timeout=30)
+                                                            "Named flush applied on scene {} with sceneVersionTag {}".format(sceneId, self.flushname))
         self.assertTrue(flushWasReceived, msg="Renderer didn't receive named flush")
-

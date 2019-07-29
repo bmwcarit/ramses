@@ -125,7 +125,7 @@ namespace ramses_capu
                 {
                     // pipe is not handleable by WaitForMultipleObjects, must be handled separately
                     DWORD bytesAvailable = 0;
-                    DWORD peekStat = PeekNamedPipe(fileHandle, NULL, 0, NULL, &bytesAvailable, NULL);
+                    DWORD peekStat = PeekNamedPipe(fileHandle, nullptr, 0, nullptr, &bytesAvailable, nullptr);
                     if (peekStat != 0 && bytesAvailable > 0)
                     {
                         status = ReadOneCharacter(fileHandle, buffer);

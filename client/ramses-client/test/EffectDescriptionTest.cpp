@@ -22,7 +22,7 @@ namespace ramses
         EEffectUniformSemantic getSemanticForUniform(const char* inputName)
         {
             ramses_internal::EFixedSemantics* internalSemantic = effectDesc.impl.getSemanticsMap().get(inputName);
-            if (internalSemantic == NULL)
+            if (internalSemantic == nullptr)
             {
                 return EEffectUniformSemantic_Invalid;
             }
@@ -33,7 +33,7 @@ namespace ramses
         EEffectAttributeSemantic getSemanticForAttribute(const char* inputName)
         {
             ramses_internal::EFixedSemantics* internalSemantic = effectDesc.impl.getSemanticsMap().get(inputName);
-            if (internalSemantic == NULL)
+            if (internalSemantic == nullptr)
             {
                 return EEffectAttributeSemantic_Invalid;
             }
@@ -54,9 +54,9 @@ namespace ramses
 
     TEST_F(EffectDescriptionTest, setShaderWithNULLRetrievesEmptyString)
     {
-        EXPECT_EQ(StatusOK, effectDesc.setVertexShader(NULL));
+        EXPECT_EQ(StatusOK, effectDesc.setVertexShader(nullptr));
         EXPECT_STREQ("", effectDesc.getVertexShader());
-        EXPECT_EQ(StatusOK, effectDesc.setFragmentShader(NULL));
+        EXPECT_EQ(StatusOK, effectDesc.setFragmentShader(nullptr));
         EXPECT_STREQ("", effectDesc.getFragmentShader());
     }
 
@@ -84,8 +84,8 @@ namespace ramses
 
     TEST_F(EffectDescriptionTest, addDefineAsNULLReportsError)
     {
-        EXPECT_NE(StatusOK, effectDesc.addCompilerDefine(NULL));
-        EXPECT_EQ(NULL, effectDesc.getCompilerDefine(0u));
+        EXPECT_NE(StatusOK, effectDesc.addCompilerDefine(nullptr));
+        EXPECT_EQ(nullptr, effectDesc.getCompilerDefine(0u));
         EXPECT_EQ(0u, effectDesc.getNumberOfCompilerDefines());
     }
 
@@ -106,7 +106,7 @@ namespace ramses
 
     TEST_F(EffectDescriptionTest, addSemanticNameAsNULLReportsError)
     {
-        EXPECT_NE(StatusOK, effectDesc.setUniformSemantic(NULL, EEffectUniformSemantic_CameraViewMatrix));
+        EXPECT_NE(StatusOK, effectDesc.setUniformSemantic(nullptr, EEffectUniformSemantic_CameraViewMatrix));
         EXPECT_EQ(0u, effectDesc.impl.getSemanticsMap().count());
     }
 
@@ -158,7 +158,7 @@ namespace ramses
         const char* fileName = "nofile%&";
         EXPECT_NE(StatusOK, effectDesc.setVertexShaderFromFile(fileName));
         EXPECT_NE(StatusOK, effectDesc.setFragmentShaderFromFile(fileName));
-        EXPECT_NE(StatusOK, effectDesc.setVertexShaderFromFile(NULL));
-        EXPECT_NE(StatusOK, effectDesc.setFragmentShaderFromFile(NULL));
+        EXPECT_NE(StatusOK, effectDesc.setVertexShaderFromFile(nullptr));
+        EXPECT_NE(StatusOK, effectDesc.setFragmentShaderFromFile(nullptr));
     }
 }

@@ -15,8 +15,8 @@ namespace ramses_internal
 {
     TEST(AArrayResource, hasCorrectArrayType)
     {
-        ArrayResource vertArray(EResourceType_VertexArray, 5, EDataType_Vector3F, NULL, ResourceCacheFlag(0u), String());
-        ArrayResource indArray(EResourceType_IndexArray, 5, EDataType_Vector3F, NULL, ResourceCacheFlag(0u), String());
+        ArrayResource vertArray(EResourceType_VertexArray, 5, EDataType_Vector3F, nullptr, ResourceCacheFlag(0u), String());
+        ArrayResource indArray(EResourceType_IndexArray, 5, EDataType_Vector3F, nullptr, ResourceCacheFlag(0u), String());
 
         EXPECT_EQ(EResourceType_VertexArray, vertArray.getTypeID());
         EXPECT_EQ(EResourceType_IndexArray, indArray.getTypeID());
@@ -24,14 +24,14 @@ namespace ramses_internal
 
     TEST(AArrayResource, hasCorrectElementCount)
     {
-        ArrayResource vertArray(EResourceType_VertexArray, 5, EDataType_Vector3F, NULL, ResourceCacheFlag(0u), String());
+        ArrayResource vertArray(EResourceType_VertexArray, 5, EDataType_Vector3F, nullptr, ResourceCacheFlag(0u), String());
 
         EXPECT_EQ(5u, vertArray.getElementCount());
     }
 
     TEST(AArrayResource, hasCorrectElementType)
     {
-        ArrayResource vertArray(EResourceType_VertexArray, 5, EDataType_Vector3F, NULL, ResourceCacheFlag(0u), String());
+        ArrayResource vertArray(EResourceType_VertexArray, 5, EDataType_Vector3F, nullptr, ResourceCacheFlag(0u), String());
 
         EXPECT_EQ(EDataType_Vector3F, vertArray.getElementType());
     }
@@ -39,7 +39,7 @@ namespace ramses_internal
     TEST(AArrayResource, hasCorrectCacheFlag)
     {
         const ResourceCacheFlag flag(15u);
-        ArrayResource vertArray(EResourceType_VertexArray, 5, EDataType_Vector3F, NULL, flag, String());
+        ArrayResource vertArray(EResourceType_VertexArray, 5, EDataType_Vector3F, nullptr, flag, String());
         EXPECT_EQ(flag, vertArray.getCacheFlag());
     }
 }

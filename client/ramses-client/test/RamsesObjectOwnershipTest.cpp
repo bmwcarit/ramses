@@ -188,7 +188,7 @@ namespace ramses
     TYPED_TEST(SceneOwnershipTest, sceneObjectsAreOfTypeSceneObject)
     {
         const SceneObject* obj = &this->template createObject<TypeParam>("objectName");
-        ASSERT_TRUE(0 != obj);
+        ASSERT_TRUE(nullptr != obj);
         EXPECT_TRUE(obj->isOfType(ERamsesObjectType_SceneObject));
         EXPECT_TRUE(obj->isOfType(ERamsesObjectType_ClientObject));
     }
@@ -196,7 +196,7 @@ namespace ramses
     TYPED_TEST(SceneOwnershipTest, sceneObjectsHaveReferenceToTheirScene)
     {
         const SceneObject* obj = &this->template createObject<TypeParam>("objectName");
-        ASSERT_TRUE(0 != obj);
+        ASSERT_TRUE(nullptr != obj);
         EXPECT_EQ(&this->m_scene.impl, &obj->impl.getSceneImpl());
         EXPECT_EQ(&this->m_scene.impl.getIScene(), &obj->impl.getIScene());
         EXPECT_EQ(&this->client.impl, &obj->impl.getClientImpl());
@@ -205,9 +205,9 @@ namespace ramses
     TYPED_TEST(SceneOwnershipTest, sceneContainsCreatedObject)
     {
         const RamsesObject* obj = &this->template createObject<TypeParam>("objectName");
-        ASSERT_TRUE(0 != obj);
+        ASSERT_TRUE(nullptr != obj);
         const RamsesObject* sn = this->m_scene.findObjectByName("objectName");
-        ASSERT_TRUE(0 != sn);
+        ASSERT_TRUE(nullptr != sn);
         EXPECT_EQ(obj, sn);
         EXPECT_EQ(obj, this->m_constRefToScene.findObjectByName("objectName"));
     }
@@ -219,10 +219,10 @@ namespace ramses
     TYPED_TEST(SceneOwnershipTest, sceneDoesNotContainDestroyedObject)
     {
         SceneObject* obj = &this->template createObject<TypeParam>("objectName");
-        ASSERT_TRUE(0 != obj);
+        ASSERT_TRUE(nullptr != obj);
         EXPECT_EQ(StatusOK, this->m_scene.destroy(*obj));
         const RamsesObject* sn = this->m_scene.findObjectByName("objectName");
-        ASSERT_TRUE(0 == sn);
+        ASSERT_TRUE(nullptr == sn);
 
         this->expectNoFrameworkObjectsAllocated();
     }
@@ -253,7 +253,7 @@ namespace ramses
     TYPED_TEST(AnimationSystemOwnershipTest, animationSystemObjectsAreOfTypeAnimationObject)
     {
         const AnimationObject* obj = &this->template createObject<TypeParam>("objectName");
-        ASSERT_TRUE(0 != obj);
+        ASSERT_TRUE(nullptr != obj);
         EXPECT_TRUE(obj->isOfType(ERamsesObjectType_AnimationObject));
         EXPECT_TRUE(obj->isOfType(ERamsesObjectType_SceneObject));
         EXPECT_TRUE(obj->isOfType(ERamsesObjectType_ClientObject));
@@ -262,7 +262,7 @@ namespace ramses
     TYPED_TEST(AnimationSystemOwnershipTest, animationSystemObjectsHaveReferenceToTheirAnimationSystem)
     {
         const AnimationObject* obj = &this->template createObject<TypeParam>("objectName");
-        ASSERT_TRUE(0 != obj);
+        ASSERT_TRUE(nullptr != obj);
         EXPECT_EQ(&this->animationSystem.impl, &obj->impl.getAnimationSystemImpl());
         EXPECT_EQ(&this->animationSystem.impl.getIAnimationSystem(), &obj->impl.getIAnimationSystem());
         EXPECT_EQ(&this->m_scene.impl, &obj->impl.getSceneImpl());
@@ -273,35 +273,35 @@ namespace ramses
     TYPED_TEST(AnimationSystemOwnershipTest, animationSystemContainsCreatedObject)
     {
         const RamsesObject* obj = &this->template createObject<TypeParam>("objectName");
-        ASSERT_TRUE(0 != obj);
+        ASSERT_TRUE(nullptr != obj);
         const RamsesObject* sn = this->animationSystem.findObjectByName("objectName");
-        ASSERT_TRUE(0 != sn);
+        ASSERT_TRUE(nullptr != sn);
         EXPECT_EQ(obj, sn);
     }
 
     TYPED_TEST(AnimationSystemOwnershipTest, animationSystemDoesNotContainDestroyedObject)
     {
         AnimationObject* obj = &this->template createObject<TypeParam>("objectName");
-        ASSERT_TRUE(0 != obj);
+        ASSERT_TRUE(nullptr != obj);
         EXPECT_EQ(StatusOK, this->animationSystem.destroy(*obj));
         const RamsesObject* sn = this->animationSystem.findObjectByName("objectName");
-        ASSERT_TRUE(0 == sn);
+        ASSERT_TRUE(nullptr == sn);
         this->expectNoFrameworkObjectsAllocated();
     }
 
     TYPED_TEST(ClientOwnershipTest, clientContainsCreatedObject)
     {
         const RamsesObject* obj = &this->template createObject<TypeParam>("objectName");
-        ASSERT_TRUE(0 != obj);
+        ASSERT_TRUE(nullptr != obj);
         const RamsesObject* sn = this->client.findObjectByName("objectName");
-        ASSERT_TRUE(0 != sn);
+        ASSERT_TRUE(nullptr != sn);
         EXPECT_EQ(obj, sn);
     }
 
     TYPED_TEST(ClientOwnershipTest, clientDoesNotContainDestroyedObject)
     {
         RamsesObject* obj = &this->template createObject<TypeParam>("objectName");
-        ASSERT_TRUE(0 != obj);
+        ASSERT_TRUE(nullptr != obj);
         if (obj->getType() == ERamsesObjectType_Scene)
         {
             this->client.destroy(static_cast<Scene&>(*obj));
@@ -311,50 +311,50 @@ namespace ramses
             this->client.destroy(static_cast<Resource&>(*obj));
         }
         const RamsesObject* sn = this->client.findObjectByName("objectName");
-        ASSERT_TRUE(0 == sn);
+        ASSERT_TRUE(nullptr == sn);
     }
 
     TYPED_TEST(SceneOwnershipTest, sceneObjectNameChanged)
     {
         RamsesObject* obj = &this->template createObject<TypeParam>("objectName");
-        ASSERT_TRUE(0 != obj);
+        ASSERT_TRUE(nullptr != obj);
         obj->setName("otherObjectName");
         RamsesObject* sn = this->m_scene.findObjectByName("otherObjectName");
-        ASSERT_TRUE(0 != sn);
+        ASSERT_TRUE(nullptr != sn);
         EXPECT_EQ(obj, sn);
     }
 
     TYPED_TEST(AnimationSystemOwnershipTest, animationObjectNameChanged)
     {
         RamsesObject* obj = &this->template createObject<TypeParam>("objectName");
-        ASSERT_TRUE(0 != obj);
+        ASSERT_TRUE(nullptr != obj);
         obj->setName("otherObjectName");
         RamsesObject* sn = this->animationSystem.findObjectByName("otherObjectName");
-        ASSERT_TRUE(0 != sn);
+        ASSERT_TRUE(nullptr != sn);
         EXPECT_EQ(obj, sn);
     }
 
     TYPED_TEST(ClientOwnershipTest, clientObjectsAreOfTypeClientObject)
     {
         const ClientObject* obj = &this->template createObject<TypeParam>("objectName");
-        ASSERT_TRUE(0 != obj);
+        ASSERT_TRUE(nullptr != obj);
         EXPECT_TRUE(obj->isOfType(ERamsesObjectType_ClientObject));
     }
 
     TYPED_TEST(ClientOwnershipTest, clientObjectsHaveReferenceToTheirClient)
     {
         const ClientObject* obj = &this->template createObject<TypeParam>("objectName");
-        ASSERT_TRUE(0 != obj);
+        ASSERT_TRUE(nullptr != obj);
         EXPECT_EQ(&this->client.impl, &obj->impl.getClientImpl());
     }
 
     TYPED_TEST(ClientOwnershipTest, clinetObjectNameChanged)
     {
         RamsesObject* obj = &this->template createObject<TypeParam>("objectName");
-        ASSERT_TRUE(0 != obj);
+        ASSERT_TRUE(nullptr != obj);
         obj->setName("otherObjectName");
         RamsesObject* sn = this->client.findObjectByName("otherObjectName");
-        ASSERT_TRUE(0 != sn);
+        ASSERT_TRUE(nullptr != sn);
         EXPECT_EQ(obj, sn);
     }
 
@@ -365,7 +365,7 @@ namespace ramses
 
         this->m_scene.destroy(objTyped);
         const RamsesObject* sn = this->m_scene.findObjectByName("objectName");
-        EXPECT_EQ(NULL, sn);
+        EXPECT_EQ(nullptr, sn);
     }
 
     TYPED_TEST(AnimationSystemOwnershipTest, animationSystemNotContainsDestroyedObject)
@@ -375,7 +375,7 @@ namespace ramses
 
         this->animationSystem.destroy(objTyped);
         const RamsesObject* sn = this->animationSystem.findObjectByName("objectName");
-        EXPECT_EQ(NULL, sn);
+        EXPECT_EQ(nullptr, sn);
     }
 
     TYPED_TEST(ClientOwnershipTest, clientNotContainsDestroyedObject)
@@ -385,6 +385,6 @@ namespace ramses
 
         this->client.destroy(objTyped);
         const RamsesObject* sn = this->client.findObjectByName("objectName");
-        EXPECT_EQ(NULL, sn);
+        EXPECT_EQ(nullptr, sn);
     }
 }

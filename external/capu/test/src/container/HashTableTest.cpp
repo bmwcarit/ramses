@@ -156,11 +156,6 @@ TEST_F(HashTableTest, TestMoveConstructor)
 
     Int32HashMap map2(std::move(map1));
 
-    EXPECT_EQ(0u, map1.count());
-    EXPECT_FALSE(map1.contains(1));
-    EXPECT_FALSE(map1.contains(2));
-    EXPECT_FALSE(map1.contains(3));
-
     EXPECT_EQ(3u, map2.count());
     EXPECT_TRUE(map2.contains(1));
     EXPECT_TRUE(map2.contains(2));
@@ -176,11 +171,6 @@ TEST_F(HashTableTest, TestMoveAssign)
 
     Int32HashMap map2;
     map2 = std::move(map1);
-
-    EXPECT_EQ(0u, map1.count());
-    EXPECT_FALSE(map1.contains(1));
-    EXPECT_FALSE(map1.contains(2));
-    EXPECT_FALSE(map1.contains(3));
 
     EXPECT_EQ(3u, map2.count());
     EXPECT_TRUE(map2.contains(1));

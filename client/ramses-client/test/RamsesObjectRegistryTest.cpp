@@ -78,7 +78,7 @@ namespace ramses
         m_dummyObject.setName("name");
         m_registry.addObject(m_dummyObject);
         m_registry.removeObject(m_dummyObject);
-        EXPECT_TRUE(NULL == m_registry.findObjectByName("name"));
+        EXPECT_TRUE(nullptr == m_registry.findObjectByName("name"));
         EXPECT_EQ(0u, m_registry.getNumberOfObjects(ERamsesObjectType_Node));
         EXPECT_EQ(0u, m_registry.getNumberOfObjects(ERamsesObjectType_RenderBuffer));
         RamsesObjectVector objects;
@@ -98,7 +98,7 @@ namespace ramses
         m_dummyObject.setName("name");
         m_registry.addObject(m_dummyObject);
         m_registry.removeObject(m_dummyObject);
-        EXPECT_TRUE(NULL == m_registry.findObjectByName("name"));
+        EXPECT_TRUE(nullptr == m_registry.findObjectByName("name"));
     }
 
     TEST_F(ARamsesObjectRegistry, cannotFindObjectByOldNameWhenNameUpdatedAfterAdding)

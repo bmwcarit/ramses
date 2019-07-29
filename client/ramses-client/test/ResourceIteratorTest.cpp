@@ -41,7 +41,7 @@ namespace ramses
         }
 
         template<typename OtherResourceType>
-        OtherResourceType* createResource(const char* name = NULL)
+        OtherResourceType* createResource(const char* name = nullptr)
         {
             return m_creationHelper.createObjectOfType<OtherResourceType>(name);
         }
@@ -55,7 +55,7 @@ namespace ramses
     {
         ResourceIterator iter(this->client, this->getTypeIDForResourceType());
 
-        EXPECT_TRUE(0 == iter.getNext());
+        EXPECT_TRUE(nullptr == iter.getNext());
     }
 
     TYPED_TEST(RamsesClientResourceIteratorTest, SkipsOtherTypes)
@@ -73,9 +73,9 @@ namespace ramses
         ResourceIterator iter(this->client, this->getTypeIDForResourceType());
 
         Resource* res = iter.getNext();
-        ASSERT_TRUE(0 != res);
+        ASSERT_TRUE(nullptr != res);
         EXPECT_EQ(this->getTypeIDForResourceType(), res->getType());
-        EXPECT_TRUE(0 == iter.getNext());
+        EXPECT_TRUE(nullptr == iter.getNext());
     }
 
     TYPED_TEST(RamsesClientResourceIteratorTest, ReturnsMultipleIfAvailable)
@@ -103,12 +103,12 @@ namespace ramses
         ResourceIterator iter(this->client, this->getTypeIDForResourceType());
 
         Resource* res = iter.getNext();
-        ASSERT_TRUE(0 != res);
+        ASSERT_TRUE(nullptr != res);
         EXPECT_EQ(this->getTypeIDForResourceType(), res->getType());
         Resource* res2 = iter.getNext();
-        ASSERT_TRUE(0 != res2);
+        ASSERT_TRUE(nullptr != res2);
         EXPECT_EQ(this->getTypeIDForResourceType(), res2->getType());
         EXPECT_NE(res, res2);
-        EXPECT_TRUE(0 == iter.getNext());
+        EXPECT_TRUE(nullptr == iter.getNext());
     }
 }

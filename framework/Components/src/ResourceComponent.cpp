@@ -45,8 +45,8 @@ namespace ramses_internal
 
     ResourceComponent::~ResourceComponent()
     {
-        m_communicationSystem.setResourceConsumerServiceHandler(NULL);
-        m_communicationSystem.setResourceProviderServiceHandler(NULL);
+        m_communicationSystem.setResourceConsumerServiceHandler(nullptr);
+        m_communicationSystem.setResourceProviderServiceHandler(nullptr);
 
         m_connectionStatusUpdateNotifier.unregisterForConnectionUpdates(this);
         m_taskQueueForResourceLoading.disableAcceptingTasksAfterExecutingCurrentQueue();
@@ -172,7 +172,7 @@ namespace ramses_internal
             LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceComponent::requestResourceAsynchronouslyFromFramework:" << StringUtils::HexFromResourceContentHash(hash));
             ManagedResource managedResource = m_resourceStorage.getResource(hash);
 
-            if (managedResource.getResourceObject() != 0)
+            if (managedResource.getResourceObject() != nullptr)
             {
                 // already available
                 resourcesLocallyAvailable.push_back(hash);
@@ -512,7 +512,7 @@ namespace ramses_internal
 
     ManagedResource ResourceComponent::forceLoadResource(const ResourceContentHash& hash)
     {
-        BinaryFileInputStream* resourceStream(0);
+        BinaryFileInputStream* resourceStream(nullptr);
         ResourceFileEntry entry;
         const EStatus canLoadFromFile = m_resourceFiles.getEntry(hash, resourceStream, entry);
         if (canLoadFromFile == EStatus_RAMSES_OK)

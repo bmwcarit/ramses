@@ -41,6 +41,32 @@ namespace ramses_capu
         File(const std::string& filepath);
 
         /**
+         * @brief Move constructor
+         * @param other moved from File
+         */
+        File(File&& other) = default;
+
+        /**
+         * @brief Move assignment
+         * @param other moved from File
+         * @return this File
+         */
+        File& operator=(File&& other) = default;
+
+        /**
+         * @brief Deleted copy constructor
+         * @param other unused
+         */
+        File(const File& other) = delete;
+
+        /**
+         * @brief Deleted copy assignment
+         * @param other unused
+         * @return unused
+         */
+        File& operator=(const File& other) = delete;
+
+        /**
          * try to open the file
          * @param mode to specify the file mode
               READ_ONLY  opens file for reading.

@@ -28,37 +28,37 @@ namespace ramses
     AnimatedProperty* AnimatedPropertyFactory::createAnimatedProperty(const NodeImpl& propertyOwner, EAnimatedPropertyComponent ePropertyComponent, ramses_internal::TDataBindID bindID, const char* name)
     {
         AnimatedPropertyImpl* pimpl = createAnimatedPropertyImpl(propertyOwner, ePropertyComponent, bindID, name);
-        if (pimpl != NULL)
+        if (pimpl != nullptr)
         {
             AnimatedProperty* animProperty = new AnimatedProperty(*pimpl);
             return animProperty;
         }
 
-        return NULL;
+        return nullptr;
     }
 
     AnimatedProperty* AnimatedPropertyFactory::createAnimatedProperty(const EffectInputImpl& propertyOwner, const AppearanceImpl& appearance, EAnimatedPropertyComponent ePropertyComponent, ramses_internal::TDataBindID bindID, const char* name)
     {
         AnimatedPropertyImpl* pimpl = createAnimatedPropertyImpl(propertyOwner, appearance, ePropertyComponent, bindID, name);
-        if (pimpl != NULL)
+        if (pimpl != nullptr)
         {
             AnimatedProperty* animProperty = new AnimatedProperty(*pimpl);
             return animProperty;
         }
 
-        return NULL;
+        return nullptr;
     }
 
     AnimatedProperty* AnimatedPropertyFactory::createAnimatedProperty(const DataObjectImpl& propertyOwner, EAnimatedPropertyComponent ePropertyComponent, ramses_internal::TDataBindID bindID, const char* name)
     {
         AnimatedPropertyImpl* pimpl = createAnimatedPropertyImpl(propertyOwner, ePropertyComponent, bindID, name);
-        if (pimpl != NULL)
+        if (pimpl != nullptr)
         {
             AnimatedProperty* animProperty = new AnimatedProperty(*pimpl);
             return animProperty;
         }
 
-        return NULL;
+        return nullptr;
     }
 
     AnimatedPropertyImpl* AnimatedPropertyFactory::createAnimatedPropertyImpl(const NodeImpl& propertyOwner, EAnimatedPropertyComponent ePropertyComponent, ramses_internal::TDataBindID bindID, const char* name)
@@ -66,13 +66,13 @@ namespace ramses
         if (!AnimatedPropertyUtils::isComponentMatchingTransformNode(ePropertyComponent))
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimatedPropertyFactory::createAnimatedPropertyImpl:  cannot initialize animated property, requested property and/or component is not compatible");
-            return NULL;
+            return nullptr;
         }
 
         if (!m_animationSystem.getSceneImpl().containsSceneObject(propertyOwner))
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimatedPropertyFactory::createAnimatedPropertyImpl:  cannot initialize animated property, requested property and animation system do not belong to the same scene");
-            return NULL;
+            return nullptr;
         }
 
         const ramses_internal::MemoryHandle handle1 = propertyOwner.getTransformHandle().asMemoryHandle();
@@ -86,13 +86,13 @@ namespace ramses
         if (!AnimatedPropertyUtils::isComponentMatchingEffectInput(ePropertyComponent, propertyOwner.getDataType()))
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimatedPropertyFactory::createAnimatedPropertyImpl:  cannot initialize animated property, requested property and/or component is not compatible");
-            return NULL;
+            return nullptr;
         }
 
         if (!m_animationSystem.getSceneImpl().containsSceneObject(appearance))
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimatedPropertyFactory::createAnimatedPropertyImpl:  cannot initialize animated property, requested property and animation system do not belong to the same scene");
-            return NULL;
+            return nullptr;
         }
 
         ramses_internal::MemoryHandle handle2 = ramses_internal::InvalidMemoryHandle;
@@ -121,13 +121,13 @@ namespace ramses
         if (!AnimatedPropertyUtils::isComponentMatchingEffectInput(ePropertyComponent, propertyOwner.getDataType()))
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimatedPropertyFactory::createAnimatedPropertyImpl:  cannot initialize animated property, requested property and/or component is not compatible");
-            return NULL;
+            return nullptr;
         }
 
         if (!m_animationSystem.getSceneImpl().containsSceneObject(propertyOwner))
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimatedPropertyFactory::createAnimatedPropertyImpl:  cannot initialize animated property, requested property and animation system do not belong to the same scene");
-            return NULL;
+            return nullptr;
         }
 
         const ramses_internal::MemoryHandle handle1 = propertyOwner.getDataReference().asMemoryHandle();

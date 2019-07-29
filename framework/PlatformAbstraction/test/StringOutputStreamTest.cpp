@@ -391,7 +391,7 @@ namespace ramses_internal
     TEST(AStringOutputStream, PrintsNullVoidPointerAsHex)
     {
         StringOutputStream stream;
-        void* nullPointer = 0;
+        void* nullPointer = nullptr;
         stream << nullPointer;
 
         EXPECT_THAT(stream.c_str(), AnyOf(StrEq("0"), StrEq("0x0"), StrEq("00000000"), StrEq("0000000000000000"), StrEq("(nil)")));

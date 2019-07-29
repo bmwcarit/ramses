@@ -260,8 +260,8 @@ TEST_F(ARendererSceneUpdater, updateScenesWillUpdateRealTimeAnimationSystems)
     const IScene& rendererScene = rendererScenes.getScene(getSceneId());
     const IAnimationSystem* rendAnimSystem = rendererScene.getAnimationSystem(hdl1);
     const IAnimationSystem* rendAnimSystemReal = rendererScene.getAnimationSystem(hdl2);
-    ASSERT_TRUE(rendAnimSystem != NULL);
-    ASSERT_TRUE(rendAnimSystemReal != NULL);
+    ASSERT_TRUE(rendAnimSystem != nullptr);
+    ASSERT_TRUE(rendAnimSystemReal != nullptr);
 
     const AnimationTime time1 = rendAnimSystem->getTime();
     const AnimationTime time1real = rendAnimSystemReal->getTime();
@@ -1542,6 +1542,7 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfEmptyAsynchFlushAppli
     createPublishAndSubscribeScene();
     mapScene();
     showScene();
+    update();
 
     expectNoScenesModified();
 
@@ -1561,6 +1562,7 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfEmptySynchFlushApplie
     createPublishAndSubscribeScene();
     mapScene();
     showScene();
+    update();
 
     expectNoScenesModified();
 
@@ -2717,6 +2719,51 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfOffscreenBufferUnlinkedFrom
 
     unlinkConsumer(getSceneId(scene1), consumer);
     expectScenesModified({ scene1 });
+
+    update();
+    expectNoScenesModified();
+
+    hideScene(scene1);
+    hideScene(scene2);
+    expectContextEnable();
+    unmapScene(scene1);
+    expectContextEnable();
+    unmapScene(scene2);
+
+    expectContextEnable();
+    expectRenderTargetDeleted();
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, MarksSceneAsModified_WhenProviderSceneAssignedToOBIsShownAfterOBLinked)
+{
+    createDisplayAndExpectSuccess();
+    const UInt32 scene1 = createPublishAndSubscribeScene();
+    const UInt32 scene2 = createPublishAndSubscribeScene();
+    const DataSlotId consumer = createTextureConsumer(scene1);
+    mapScene(scene1);
+    mapScene(scene2);
+    showScene(scene1);
+
+    const OffscreenBufferHandle buffer(1u);
+    expectContextEnable();
+    expectRenderTargetUploaded(DisplayHandle1, true);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    EXPECT_TRUE(assignSceneToOffscreenBuffer(scene2, buffer));
+
+    update();
+    expectNoScenesModified();
+
+    createBufferLink(buffer, getSceneId(scene1), consumer);
+    expectScenesModified({ scene1 });
+
+    update();
+    expectNoScenesModified();
+
+    showScene(scene2);
+    expectScenesModified({ scene1, scene2 });
 
     update();
     expectNoScenesModified();

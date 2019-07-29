@@ -37,9 +37,9 @@ namespace ramses
         , m_periodicLogger(m_frameworkLock, m_statisticCollection)
         , m_connected(false)
         , m_threadWatchdogConfig(config.m_watchdogConfig)
-        // NOTE: ThreadingSystem must always be constructed after CommunicationSystem
-        , m_threadStrategy(3, config.m_watchdogConfig)
-        , m_resourceComponent(m_threadStrategy.e, m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getRamsesConnectionStatusUpdateNotifier(),
+        // NOTE: ThreadedTaskExecutor must always be constructed after CommunicationSystem
+        , m_threadedTaskExecutor(3, config.m_watchdogConfig)
+        , m_resourceComponent(m_threadedTaskExecutor, m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getRamsesConnectionStatusUpdateNotifier(),
             m_statisticCollection, m_frameworkLock, config.getMaximumTotalBytesForAsyncResourceLoading())
         , m_scenegraphComponent(m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getRamsesConnectionStatusUpdateNotifier(), m_frameworkLock)
         , m_dcsmComponent(m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getDcsmConnectionStatusUpdateNotifier(), m_frameworkLock)
@@ -106,7 +106,7 @@ namespace ramses
 
     ramses_internal::ITaskQueue& RamsesFrameworkImpl::getTaskQueue()
     {
-        return m_threadStrategy.e;
+        return m_threadedTaskExecutor;
     }
 
     ramses_internal::PeriodicLogger& RamsesFrameworkImpl::getPeriodicLogger()

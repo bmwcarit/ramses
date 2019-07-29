@@ -76,15 +76,15 @@ namespace ramses
 
         static void TearDownTestCase()
         {
-            sharedAnimationSystem = NULL;
+            sharedAnimationSystem = nullptr;
             delete sharedEffectCreator;
-            sharedEffectCreator = NULL;
+            sharedEffectCreator = nullptr;
         }
 
         void SetUp()
         {
-            EXPECT_TRUE(sharedEffectCreator != NULL);
-            EXPECT_TRUE(sharedAnimationSystem != NULL);
+            EXPECT_TRUE(sharedEffectCreator != nullptr);
+            EXPECT_TRUE(sharedAnimationSystem != nullptr);
         }
 
         AnimatedPropertyTest()
@@ -121,7 +121,7 @@ namespace ramses
                     for (const auto property : animatableProperties)
                     {
                         const AnimatedProperty* prop = createAnimatedProperty(*sharedAnimationSystem, animatable, comp, property, *sharedEffectCreator->appearance);
-                        EXPECT_FALSE(prop == NULL);
+                        EXPECT_FALSE(prop == nullptr);
                     }
                 }
             }
@@ -133,7 +133,7 @@ namespace ramses
             for (const auto property : animatableProperties)
             {
                 const AnimatedProperty* prop = createAnimatedProperty(*sharedAnimationSystem, animatable, EAnimatedPropertyComponent_W, property, *sharedEffectCreator->appearance);
-                EXPECT_TRUE(prop == NULL);
+                EXPECT_TRUE(prop == nullptr);
             }
         }
 
@@ -171,21 +171,21 @@ namespace ramses
         UniformInput animatable;
         getValidUniformInput(animatable, "vec2fInput");
         AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable, *sharedEffectCreator->appearance, EAnimatedPropertyComponent_Z);
-        EXPECT_TRUE(prop == NULL);
+        EXPECT_TRUE(prop == nullptr);
     }
 
     TEST_F(AnAnimatedProperty, createAnimatedPropertyWithInvalidParams_DataObject_Vector2F_Z_Animation)
     {
         DataVector2f& animatable = sharedEffectCreator->createObject<DataVector2f>("animatable");
         AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable, EAnimatedPropertyComponent_Z);
-        EXPECT_TRUE(prop == NULL);
+        EXPECT_TRUE(prop == nullptr);
     }
 
     TEST_F(AnAnimatedProperty, failsToCreateAnimatedPropertyForInvalidUniformInput)
     {
         UniformInput animatable;
         AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable, *sharedEffectCreator->appearance);
-        EXPECT_TRUE(prop == NULL);
+        EXPECT_TRUE(prop == nullptr);
     }
 
     TEST_F(AnAnimatedProperty, failsToCreateAnimatedPropertyForUniformInputBelongingToDifferentAppearance)
@@ -193,7 +193,7 @@ namespace ramses
         UniformInput animatable;
         getValidUniformInput(animatable, "vec4fInput");
         AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable, sharedEffectCreator->createObject<Appearance>());
-        EXPECT_TRUE(prop == NULL);
+        EXPECT_TRUE(prop == nullptr);
     }
 
     TEST_F(AnAnimatedProperty, failsToCreateIfPropertyIsFromAnotherScene_Node)
@@ -202,7 +202,7 @@ namespace ramses
         Node& animatable = *otherScene->createNode();
 
         AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable, EAnimatedProperty_Translation);
-        EXPECT_TRUE(prop == NULL);
+        EXPECT_TRUE(prop == nullptr);
     }
 
     TEST_F(AnAnimatedProperty, failsToCreateIfPropertyIsFromAnotherScene_Uniform)
@@ -214,7 +214,7 @@ namespace ramses
         AnimationSystem* otherAnimationSystem = otherScene->createAnimationSystem();
 
         AnimatedProperty* prop = otherAnimationSystem->createAnimatedProperty(animatable, *sharedEffectCreator->appearance);
-        EXPECT_TRUE(prop == NULL);
+        EXPECT_TRUE(prop == nullptr);
     }
 
     TEST_F(AnAnimatedProperty, failsToCreateIfPropertyIsFromAnotherScene_DataObject)
@@ -225,7 +225,7 @@ namespace ramses
         AnimationSystem* otherAnimationSystem = otherScene->createAnimationSystem();
 
         AnimatedProperty* prop = otherAnimationSystem->createAnimatedProperty(animatable);
-        EXPECT_TRUE(prop == NULL);
+        EXPECT_TRUE(prop == nullptr);
     }
 
     TEST_F(AnAnimatedProperty, failsToCreateAnimatedPropertyForUniformInputWithUnsupportedDataType)
@@ -233,7 +233,7 @@ namespace ramses
         UniformInput animatable;
         getValidUniformInput(animatable, "matrix44fInput");
         AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable, *sharedEffectCreator->appearance);
-        EXPECT_TRUE(prop == NULL);
+        EXPECT_TRUE(prop == nullptr);
     }
 
     TEST_F(AnAnimatedProperty, failsToCreateAnimatedPropertyForDataObjectWithUnsupportedDataType)
@@ -241,14 +241,14 @@ namespace ramses
         DataMatrix44f& animatable = sharedEffectCreator->createObject<DataMatrix44f>("animatable");
 
         AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable);
-        EXPECT_TRUE(prop == NULL);
+        EXPECT_TRUE(prop == nullptr);
     }
 
     TEST_F(AnAnimatedProperty, removalOfAnimatedPropertyReleasesItsDataBind)
     {
         Node& animatable = sharedEffectCreator->createObject<Node>("animatable");
         AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable, EAnimatedProperty_Translation, EAnimatedPropertyComponent_All);
-        ASSERT_TRUE(prop != NULL);
+        ASSERT_TRUE(prop != nullptr);
         const ramses_internal::DataBindHandle dataBind = prop->impl.getDataBindHandle();
         EXPECT_TRUE(sharedAnimationSystem->impl.getIAnimationSystem().containsDataBinding(dataBind));
 
@@ -261,7 +261,7 @@ namespace ramses
     {
         Node& animatable = sharedEffectCreator->createObject<Node>("animatable");
         AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable, EAnimatedProperty_Translation, EAnimatedPropertyComponent_All);
-        ASSERT_TRUE(prop != NULL);
+        ASSERT_TRUE(prop != nullptr);
         EXPECT_EQ(StatusOK, prop->validate());
     }
 
@@ -269,7 +269,7 @@ namespace ramses
     {
         Node& animatable = sharedEffectCreator->createObject<Node>("animatable");
         AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable, EAnimatedProperty_Translation, EAnimatedPropertyComponent_All);
-        ASSERT_TRUE(prop != NULL);
+        ASSERT_TRUE(prop != nullptr);
 
         sharedEffectCreator->getScene().destroy(animatable);
 
@@ -280,10 +280,10 @@ namespace ramses
     {
         Node& animatable = sharedEffectCreator->createObject<Node>("animatable");
         AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable, EAnimatedProperty_Translation, EAnimatedPropertyComponent_All);
-        ASSERT_TRUE(prop != NULL);
+        ASSERT_TRUE(prop != nullptr);
 
         Spline* spline = sharedAnimationSystem->createSplineLinearVector3f();
-        ASSERT_TRUE(spline != NULL);
+        ASSERT_TRUE(spline != nullptr);
 
         sharedAnimationSystem->createAnimation(*prop, *spline);
         sharedAnimationSystem->createAnimation(*prop, *spline);

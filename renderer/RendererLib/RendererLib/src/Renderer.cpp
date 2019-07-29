@@ -178,7 +178,7 @@ namespace ramses_internal
 
     void Renderer::systemCompositorListIviSurfaces() const
     {
-        if(0 != m_systemCompositorController)
+        if(nullptr != m_systemCompositorController)
         {
             m_systemCompositorController->listIVISurfaces();
         }
@@ -194,7 +194,7 @@ namespace ramses_internal
 
     void Renderer::systemCompositorSetIviSurfaceVisibility(WaylandIviSurfaceId surfaceId, Bool visibility) const
     {
-        if(0 != m_systemCompositorController)
+        if(nullptr != m_systemCompositorController)
         {
             m_systemCompositorController->setSurfaceVisibility(surfaceId, visibility);
         }
@@ -207,7 +207,7 @@ namespace ramses_internal
 
     void Renderer::systemCompositorSetIviSurfaceOpacity(WaylandIviSurfaceId surfaceId, Float opacity) const
     {
-        if(0 != m_systemCompositorController)
+        if(nullptr != m_systemCompositorController)
         {
             m_systemCompositorController->setSurfaceOpacity(surfaceId, opacity);
         }
@@ -220,7 +220,7 @@ namespace ramses_internal
 
     void Renderer::systemCompositorSetIviSurfaceDestRectangle(WaylandIviSurfaceId surfaceId, Int32 x, Int32 y, Int32 width, Int32 height) const
     {
-        if(0 != m_systemCompositorController)
+        if(nullptr != m_systemCompositorController)
         {
             m_systemCompositorController->setSurfaceDestinationRectangle(surfaceId, x, y, width, height);
         }
@@ -233,7 +233,7 @@ namespace ramses_internal
 
     void Renderer::systemCompositorSetIviLayerVisibility(WaylandIviLayerId layerId, Bool visibility) const
     {
-        if(0 != m_systemCompositorController)
+        if(nullptr != m_systemCompositorController)
         {
             m_systemCompositorController->setLayerVisibility(layerId, visibility);
         }
@@ -246,7 +246,7 @@ namespace ramses_internal
 
     void Renderer::systemCompositorScreenshot(const String& fileName, int32_t screenIviId) const
     {
-        if(0 != m_systemCompositorController)
+        if(nullptr != m_systemCompositorController)
         {
             m_systemCompositorController->doScreenshot(fileName, screenIviId);
         }
@@ -259,7 +259,7 @@ namespace ramses_internal
 
     Bool Renderer::systemCompositorAddIviSurfaceToIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) const
     {
-        if(0 != m_systemCompositorController)
+        if(nullptr != m_systemCompositorController)
         {
             return m_systemCompositorController->addSurfaceToLayer(surfaceId, layerId);
         }
@@ -274,7 +274,7 @@ namespace ramses_internal
 
     void Renderer::systemCompositorRemoveIviSurfaceFromIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) const
     {
-        if(0 != m_systemCompositorController)
+        if(nullptr != m_systemCompositorController)
         {
             m_systemCompositorController->removeSurfaceFromLayer(surfaceId, layerId);
         }
@@ -287,7 +287,7 @@ namespace ramses_internal
 
     void Renderer::systemCompositorDestroyIviSurface(WaylandIviSurfaceId surfaceId) const
     {
-        if(0 != m_systemCompositorController)
+        if(nullptr != m_systemCompositorController)
         {
             m_systemCompositorController->destroySurface(surfaceId);
         }
@@ -711,9 +711,9 @@ namespace ramses_internal
     IDisplayController* Renderer::createDisplayControllerFromConfig(const DisplayConfig& config, DisplayEventHandler& displayEventHandler)
     {
         IRenderBackend* renderBackend = m_platformFactory.createRenderBackend(config, displayEventHandler);
-        if (NULL == renderBackend)
+        if (nullptr == renderBackend)
         {
-            return 0;
+            return nullptr;
         }
 
         if (m_systemCompositorController != nullptr)
@@ -723,7 +723,7 @@ namespace ramses_internal
 
             if (!systemCompositorAddIviSurfaceToIviLayer(rendererSurfaceIVIID, rendererLayerIVIID))
             {
-                return 0;
+                return nullptr;
             }
 
             systemCompositorSetIviSurfaceVisibility(rendererSurfaceIVIID, config.getStartVisibleIvi());
@@ -733,7 +733,7 @@ namespace ramses_internal
         // The initialization of display controller below needs active context
         renderBackend->getSurface().enable();
 
-        IDisplayController* displayController = NULL;
+        IDisplayController* displayController = nullptr;
         if (config.isStereoDisplay())
         {
             displayController = new StereoDisplayController(*renderBackend);
@@ -744,7 +744,7 @@ namespace ramses_internal
             const UInt32 numSamples = (config.getAntialiasingMethod() == EAntiAliasingMethod_MultiSampling) ? config.getAntialiasingSampleCount() : 1u;
             displayController = new DisplayController(*renderBackend, numSamples, postProcessorEffects);
         }
-        assert(displayController != NULL);
+        assert(displayController != nullptr);
 
         displayController->setViewPosition(config.getCameraPosition());
         displayController->setViewRotation(config.getCameraRotation());
@@ -818,7 +818,7 @@ namespace ramses_internal
 
     void Renderer::updateSystemCompositorController() const
     {
-        if (0 != m_systemCompositorController)
+        if (nullptr != m_systemCompositorController)
         {
             LOG_TRACE(CONTEXT_PROFILING, "Renderer::updateSystemCompositorController update system compositor controller");
             m_systemCompositorController->update();

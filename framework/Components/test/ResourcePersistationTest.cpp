@@ -32,7 +32,7 @@ namespace ramses_internal
 
         IResource* readWriteResource(const ManagedResource& inResource)
         {
-            IResource* loaded = 0;
+            IResource* loaded = nullptr;
 
             {
                 File file("filename");
@@ -46,7 +46,7 @@ namespace ramses_internal
                 loaded = ResourcePersistation::ReadOneResourceFromStream(stream, inResource.getResourceObject()->getHash());
             }
 
-            EXPECT_TRUE(0 != loaded);
+            EXPECT_TRUE(nullptr != loaded);
 
             return loaded;
         }
@@ -138,7 +138,7 @@ namespace ramses_internal
         const UInt32 cnt = 200;
         const ResourceCacheFlag flag(15u);
 
-        ArrayResource res(EResourceType_VertexArray, cnt, EDataType_Vector2F, NULL, flag, "resName");
+        ArrayResource res(EResourceType_VertexArray, cnt, EDataType_Vector2F, nullptr, flag, "resName");
         SceneResourceData vertices(new MemoryBlob(cnt * EnumToSize(EDataType_Vector2F)));
         for (UInt i = 0; i < 2*cnt; ++i)
         {
@@ -161,7 +161,7 @@ namespace ramses_internal
         const UInt32 cnt = 220;
         const ResourceCacheFlag flag(15u);
 
-        ArrayResource res(EResourceType_IndexArray, cnt, EDataType_UInt16, NULL, flag, "resName");
+        ArrayResource res(EResourceType_IndexArray, cnt, EDataType_UInt16, nullptr, flag, "resName");
         SceneResourceData indices(new MemoryBlob(cnt * EnumToSize(EDataType_UInt16)));
         for (UInt i = 0; i < cnt; ++i)
         {
@@ -184,7 +184,7 @@ namespace ramses_internal
         const UInt32 cnt = 220;
         const ResourceCacheFlag flag(15u);
 
-        ArrayResource res(EResourceType_IndexArray, cnt, EDataType_UInt32, NULL, flag, "resName");
+        ArrayResource res(EResourceType_IndexArray, cnt, EDataType_UInt32, nullptr, flag, "resName");
         SceneResourceData indices(new MemoryBlob(cnt * EnumToSize(EDataType_UInt32)));
         for (UInt i = 0; i < cnt; ++i)
         {

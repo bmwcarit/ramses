@@ -346,7 +346,7 @@ namespace ramses_internal
             {
                 // animation system
                 const IAnimationSystem* animSystem = source.getAnimationSystem(animId);
-                assert(animSystem != NULL);
+                assert(animSystem != nullptr);
                 collector.addAnimationSystem(animId, animSystem->getFlags(), animSystem->getTotalSizeInformation());
                 AnimationSystemDescriber::DescribeAnimationSystem(*animSystem, collector, animId);
             }

@@ -33,7 +33,7 @@ TEST_F(ASceneFactory, cannotCreateTwoScenesWithTheSameId)
 {
     IScene* scene = factory.createScene(SceneInfo());
     ASSERT_TRUE(nullptr != scene);
-    EXPECT_TRUE(0 == factory.createScene(SceneInfo(scene->getSceneId())));
+    EXPECT_TRUE(nullptr == factory.createScene(SceneInfo(scene->getSceneId())));
 }
 
 TEST_F(ASceneFactory, createsSceneWithProvidedOptions)

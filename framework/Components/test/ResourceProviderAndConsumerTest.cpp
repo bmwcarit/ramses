@@ -101,7 +101,7 @@ namespace ramses_internal
         ASSERT_EQ(0u, resourceProvider.getResources().size()); //double check
 
         const IResource* consumerResource = consumerManagedResource.getResourceObject();
-        ASSERT_TRUE(0u != consumerResource);
+        ASSERT_TRUE(nullptr != consumerResource);
         EXPECT_EQ(EResourceType_VertexArray, consumerResource->getTypeID());
         EXPECT_EQ(resourceHash, consumerResource->getHash());
     }

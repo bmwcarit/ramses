@@ -71,19 +71,19 @@ namespace ramses
         RamsesObject* iteratedObject1 = iterator.getNext();
         RamsesObject* iteratedObject2 = iterator.getNext();
 
-        ASSERT_TRUE(NULL != iteratedObject1);
-        ASSERT_TRUE(NULL != iteratedObject2);
+        ASSERT_TRUE(nullptr != iteratedObject1);
+        ASSERT_TRUE(nullptr != iteratedObject2);
         EXPECT_TRUE(ro1 == iteratedObject1);
-        EXPECT_TRUE(NULL != RamsesUtils::TryConvert<TypeParam>(*iteratedObject1));
+        EXPECT_TRUE(nullptr != RamsesUtils::TryConvert<TypeParam>(*iteratedObject1));
         EXPECT_TRUE(ro2 == iteratedObject2);
-        EXPECT_TRUE(NULL != RamsesUtils::TryConvert<TypeParam>(*iteratedObject2));
-        EXPECT_TRUE(NULL == iterator.getNext());
+        EXPECT_TRUE(nullptr != RamsesUtils::TryConvert<TypeParam>(*iteratedObject2));
+        EXPECT_TRUE(nullptr == iterator.getNext());
     }
 
     TYPED_TEST(SceneObjectIteratorTest, ObjectIteratorDirectlyReturnsNullIfNoObjectsAvailable)
     {
         SceneObjectIterator iterator(this->m_scene, this->getTypeIDForObjectType());
 
-        EXPECT_TRUE(0 == iterator.getNext());
+        EXPECT_TRUE(nullptr == iterator.getNext());
     }
 }

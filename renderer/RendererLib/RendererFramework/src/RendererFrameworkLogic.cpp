@@ -38,7 +38,7 @@ namespace ramses_internal
     RendererFrameworkLogic::~RendererFrameworkLogic()
     {
         m_connectionStatusUpdateNotifier.unregisterForConnectionUpdates(this);
-        m_sceneGraphConsumerComponent.setSceneRendererServiceHandler(NULL);
+        m_sceneGraphConsumerComponent.setSceneRendererServiceHandler(nullptr);
     }
 
     void RendererFrameworkLogic::handleNewScenesAvailable(const SceneInfoVector& newScenes, const Guid& providerID, EScenePublicationMode mode)

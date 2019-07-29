@@ -108,7 +108,7 @@ protected:
     static void callAllApiCoreFunctions(ramses::RamsesRenderer& renderer)
     {
         const ramses::DisplayConfig displayConfig;
-        ramses::WarpingMeshData warpingMeshData(0, 0, 0, 0, 0);
+        ramses::WarpingMeshData warpingMeshData(0, nullptr, 0, nullptr, nullptr);
         ramses::RendererEventHandlerEmpty rendererEventHandler;
 
         renderer.getStatusMessage(ramses::StatusOK);
@@ -424,7 +424,7 @@ TEST_F(ARamsesRenderer, createsCommandForLoggingRenderInfo)
 */
 TEST_F(ARamsesRenderer, createsNoCommandForWarpingDataUpdateOnInvalidDisplay)
 {
-    ramses::WarpingMeshData warpingData(0u, NULL, 0u, NULL, NULL);
+    ramses::WarpingMeshData warpingData(0u, nullptr, 0u, nullptr, nullptr);
 
     EXPECT_NE(ramses::StatusOK, renderer.updateWarpingMeshData(ramses::displayId_t(0u), warpingData));
     checkForRendererCommandCount(0u);
@@ -432,7 +432,7 @@ TEST_F(ARamsesRenderer, createsNoCommandForWarpingDataUpdateOnInvalidDisplay)
 
 TEST_F(ARamsesRendererWithDisplay, createsNoCommandForWarpingDataUpdateOnDisplayWithoutWarping)
 {
-    ramses::WarpingMeshData warpingData(0u, NULL, 0u, NULL, NULL);
+    ramses::WarpingMeshData warpingData(0u, nullptr, 0u, nullptr, nullptr);
 
     EXPECT_NE(ramses::StatusOK, renderer.updateWarpingMeshData(displayId, warpingData));
     checkForRendererCommandCount(0u);
@@ -440,7 +440,7 @@ TEST_F(ARamsesRendererWithDisplay, createsNoCommandForWarpingDataUpdateOnDisplay
 
 TEST_F(ARamsesRendererWithDisplay, createsNoCommandForInvalidWarpingDataUpdateOnWarpingDisplay)
 {
-    ramses::WarpingMeshData warpingData(0u, NULL, 0u, NULL, NULL);
+    ramses::WarpingMeshData warpingData(0u, nullptr, 0u, nullptr, nullptr);
 
     EXPECT_NE(ramses::StatusOK, renderer.updateWarpingMeshData(warpingDisplayId, warpingData));
     checkForRendererCommandCount(0u);

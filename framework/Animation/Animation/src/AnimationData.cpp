@@ -58,7 +58,7 @@ namespace ramses_internal
     void AnimationData::removeSplineKey(SplineHandle handle, SplineKeyIndex keyIndex)
     {
         SplineBase* spline = getSplineInternal(handle);
-        assert(spline != NULL);
+        assert(spline != nullptr);
         spline->removeKey(keyIndex);
         notifySplineChanged(handle);
     }
@@ -66,7 +66,7 @@ namespace ramses_internal
     void AnimationData::removeSplineKeys(SplineHandle handle)
     {
         SplineBase* spline = getSplineInternal(handle);
-        assert(spline != NULL);
+        assert(spline != nullptr);
         spline->removeAllKeys();
         notifySplineChanged(handle);
     }
@@ -95,7 +95,7 @@ namespace ramses_internal
 
     AnimationInstanceHandle AnimationData::allocateAnimationInstance(SplineHandle splineHandle, EInterpolationType interpolationType, EVectorComponent vectorComponent, AnimationInstanceHandle handle)
     {
-        assert(getSpline(splineHandle) != 0 && interpolationType != EInterpolationType_Invalid);
+        assert(getSpline(splineHandle) != nullptr && interpolationType != EInterpolationType_Invalid);
         const AnimationInstanceHandle handleActual = m_animationInstancePool.allocate(handle);
         AnimationInstance animationInstance(splineHandle, interpolationType, vectorComponent);
         *m_animationInstancePool.getMemory(handleActual) = animationInstance;
@@ -223,7 +223,7 @@ namespace ramses_internal
         processData.m_animation = animation;
         getDataBindingsForAnimationInstance(animation.m_animationInstanceHandle, processData.m_dataBinds);
         processData.m_spline = getSpline(animInst.getSplineHandle());
-        assert(processData.m_spline != 0);
+        assert(processData.m_spline != nullptr);
         processData.m_interpolationType = animInst.getInterpolationType();
         processData.m_dataComponent = animInst.getVectorComponentFlag();
     }
@@ -231,11 +231,11 @@ namespace ramses_internal
     Bool AnimationData::isDataBindingCompatibleWithAnimationInstance(const AnimationInstance& animationInstance, DataBindHandle dataBindHandle) const
     {
         const SplineBase* const pSpline = getSpline(animationInstance.getSplineHandle());
-        assert(pSpline != 0);
+        assert(pSpline != nullptr);
         const EDataTypeID splineDataType = pSpline->getDataType();
 
         const AnimationDataBindBase* const pDataBind = getDataBinding(dataBindHandle);
-        assert(pDataBind != 0);
+        assert(pDataBind != nullptr);
         const EDataTypeID dataBindDataType = pDataBind->getDataType();
 
         return CheckDataTypeCompatibility(splineDataType, dataBindDataType, animationInstance.getVectorComponentFlag());
@@ -288,7 +288,7 @@ namespace ramses_internal
         for (UInt i = 0u; i < numDataBinds; ++i)
         {
             const AnimationDataBindBase* const pDataBind = getDataBinding(dataBindHandles[i]);
-            assert(pDataBind != 0);
+            assert(pDataBind != nullptr);
             dataBinds[i] = pDataBind;
         }
     }

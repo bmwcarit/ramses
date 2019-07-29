@@ -39,45 +39,43 @@ namespace ramses_internal
             : m_handle(handle)
         {}
 
-        Bool isValid() const
+        constexpr Bool isValid() const
         {
             return m_handle != Invalid();
         }
 
         // conversion
-        inline
-        MemoryHandle asMemoryHandle() const
+        constexpr inline MemoryHandle asMemoryHandle() const
         {
             return m_handle;
         }
 
-        inline
-        MemoryHandle& asMemoryHandleReference()
+        constexpr inline MemoryHandle& asMemoryHandleReference()
         {
             return m_handle;
         }
 
         // operators ++/--
-        inline TypedMemoryHandle& operator++()
+        constexpr inline TypedMemoryHandle& operator++()
         {
             ++m_handle;
             return *this;
         }
 
-        inline TypedMemoryHandle operator++(int)
+        constexpr inline TypedMemoryHandle operator++(int)
         {
             TypedMemoryHandle res(m_handle);
             ++m_handle;
             return res;
         }
 
-        inline TypedMemoryHandle& operator--()
+        constexpr inline TypedMemoryHandle& operator--()
         {
             --m_handle;
             return *this;
         }
 
-        inline TypedMemoryHandle operator--(int)
+        constexpr inline TypedMemoryHandle operator--(int)
         {
             TypedMemoryHandle res(m_handle);
             --m_handle;
@@ -85,115 +83,115 @@ namespace ramses_internal
         }
 
         // operators ==/!=
-        inline friend Bool operator==(TypedMemoryHandle a, TypedMemoryHandle b)
+        constexpr inline friend Bool operator==(TypedMemoryHandle a, TypedMemoryHandle b)
         {
             return a.m_handle == b.m_handle;
         }
 
-        inline friend Bool operator==(TypedMemoryHandle a, UInt b)
+        constexpr inline friend Bool operator==(TypedMemoryHandle a, UInt b)
         {
             return a.m_handle == b;
         }
 
-        inline friend Bool operator==(UInt a, TypedMemoryHandle b)
+        constexpr inline friend Bool operator==(UInt a, TypedMemoryHandle b)
         {
             return a == b.m_handle;
         }
 
-        inline friend Bool operator!=(TypedMemoryHandle a, TypedMemoryHandle b)
+        constexpr inline friend Bool operator!=(TypedMemoryHandle a, TypedMemoryHandle b)
         {
             return a.m_handle != b.m_handle;
         }
 
-        inline friend Bool operator!=(TypedMemoryHandle a, UInt b)
+        constexpr inline friend Bool operator!=(TypedMemoryHandle a, UInt b)
         {
             return a.m_handle != b;
         }
 
-        inline friend Bool operator!=(UInt a, TypedMemoryHandle b)
+        constexpr inline friend Bool operator!=(UInt a, TypedMemoryHandle b)
         {
             return a != b.m_handle;
         }
 
         // operator </<=
-        inline friend Bool operator<(TypedMemoryHandle a, TypedMemoryHandle b)
+        constexpr inline friend Bool operator<(TypedMemoryHandle a, TypedMemoryHandle b)
         {
             return a.m_handle < b.m_handle;
         }
 
-        inline friend Bool operator<(TypedMemoryHandle a, UInt b)
+        constexpr inline friend Bool operator<(TypedMemoryHandle a, UInt b)
         {
             return a.m_handle < b;
         }
 
-        inline friend Bool operator<(UInt a, TypedMemoryHandle b)
+        constexpr inline friend Bool operator<(UInt a, TypedMemoryHandle b)
         {
             return a < b.m_handle;
         }
 
-        inline friend Bool operator<=(TypedMemoryHandle a, TypedMemoryHandle b)
+        constexpr inline friend Bool operator<=(TypedMemoryHandle a, TypedMemoryHandle b)
         {
             return a.m_handle <= b.m_handle;
         }
 
-        inline friend Bool operator<=(TypedMemoryHandle a, UInt b)
+        constexpr inline friend Bool operator<=(TypedMemoryHandle a, UInt b)
         {
             return a.m_handle <= b;
         }
 
-        inline friend Bool operator<=(UInt a, TypedMemoryHandle b)
+        constexpr inline friend Bool operator<=(UInt a, TypedMemoryHandle b)
         {
             return a <= b.m_handle;
         }
 
         // operator >/>=
-        inline friend Bool operator>(TypedMemoryHandle a, TypedMemoryHandle b)
+        constexpr inline friend Bool operator>(TypedMemoryHandle a, TypedMemoryHandle b)
         {
             return a.m_handle > b.m_handle;
         }
 
-        inline friend Bool operator>(TypedMemoryHandle a, UInt b)
+        constexpr inline friend Bool operator>(TypedMemoryHandle a, UInt b)
         {
             return a.m_handle > b;
         }
 
-        inline friend Bool operator>(UInt a, TypedMemoryHandle b)
+        constexpr inline friend Bool operator>(UInt a, TypedMemoryHandle b)
         {
             return a > b.m_handle;
         }
 
-        inline friend Bool operator>=(TypedMemoryHandle a, TypedMemoryHandle b)
+        constexpr inline friend Bool operator>=(TypedMemoryHandle a, TypedMemoryHandle b)
         {
             return a.m_handle >= b.m_handle;
         }
 
-        inline friend Bool operator>=(TypedMemoryHandle a, UInt b)
+        constexpr inline friend Bool operator>=(TypedMemoryHandle a, UInt b)
         {
             return a.m_handle >= b;
         }
 
-        inline friend Bool operator>=(UInt a, TypedMemoryHandle b)
+        constexpr inline friend Bool operator>=(UInt a, TypedMemoryHandle b)
         {
             return a >= b.m_handle;
         }
 
         // operator +/-
-        inline friend TypedMemoryHandle operator+(TypedMemoryHandle a, UInt32 b)
+        constexpr inline friend TypedMemoryHandle operator+(TypedMemoryHandle a, UInt32 b)
         {
             return TypedMemoryHandle(a.m_handle + b);
         }
 
-        inline friend TypedMemoryHandle operator+(UInt32 a, TypedMemoryHandle b)
+        constexpr inline friend TypedMemoryHandle operator+(UInt32 a, TypedMemoryHandle b)
         {
             return TypedMemoryHandle(a + b.m_handle);
         }
 
-        inline friend TypedMemoryHandle operator-(TypedMemoryHandle a, UInt32 b)
+        constexpr inline friend TypedMemoryHandle operator-(TypedMemoryHandle a, UInt32 b)
         {
             return TypedMemoryHandle(a.m_handle - b);
         }
 
-        inline friend TypedMemoryHandle operator-(UInt32 a, TypedMemoryHandle b)
+        constexpr inline friend TypedMemoryHandle operator-(UInt32 a, TypedMemoryHandle b)
         {
             return TypedMemoryHandle(a - b.m_handle);
         }

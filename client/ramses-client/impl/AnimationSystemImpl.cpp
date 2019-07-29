@@ -63,7 +63,7 @@ namespace ramses
 {
     AnimationSystemImpl::AnimationSystemImpl(SceneImpl& sceneImpl, ERamsesObjectType type, const char* name)
         : SceneObjectImpl(sceneImpl, type, name)
-        , m_animationSystem(NULL)
+        , m_animationSystem(nullptr)
         , m_animationSystemHandle(ramses_internal::AnimationSystemHandle::Invalid())
     {
     }
@@ -92,7 +92,7 @@ namespace ramses
     {
         CHECK_RETURN_ERR(SceneObjectImpl::serialize(outStream, serializationContext));
 
-        assert(m_animationSystem != NULL);
+        assert(m_animationSystem != nullptr);
         outStream << m_animationSystemHandle;
 
         return m_data.serialize(outStream, serializationContext);
@@ -105,7 +105,7 @@ namespace ramses
         inStream >> m_animationSystemHandle;
 
         m_animationSystem = getIScene().getAnimationSystem(m_animationSystemHandle);
-        if (m_animationSystem == NULL)
+        if (m_animationSystem == nullptr)
         {
             return addErrorEntry("AnimationSystem deserialize failed: could not retrieve animation system data!");
         }
@@ -160,14 +160,14 @@ namespace ramses
     status_t AnimationSystemImpl::setTime(globalTimeStamp_t timeStamp)
     {
         m_animationStateCollector.resetCollections();
-        assert(m_animationSystem != NULL);
+        assert(m_animationSystem != nullptr);
         m_animationSystem->setTime(ramses_internal::AnimationTime(timeStamp));
         return StatusOK;
     }
 
     globalTimeStamp_t AnimationSystemImpl::getTime() const
     {
-        assert(m_animationSystem != NULL);
+        assert(m_animationSystem != nullptr);
         return m_animationSystem->getTime().getTimeStamp();
     }
 
@@ -180,7 +180,7 @@ namespace ramses
         }
 
         m_animationStateCollector.resetCollections();
-        assert(m_animationSystem != NULL);
+        assert(m_animationSystem != nullptr);
         ramses_internal::AnimationSystem& nonDistributedAnimationSystem = static_cast<ramses_internal::AnimationSystem&>(*m_animationSystem);
         nonDistributedAnimationSystem.ramses_internal::AnimationSystem::setTime(timeStamp);
 
@@ -318,7 +318,7 @@ namespace ramses
             !containsAnimationObject(spline.impl))
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimationSystem::createAnimation: failed to create Animation, provided property and/or spline belong to another AnimationSystem!");
-            return NULL;
+            return nullptr;
         }
 
         return m_data.createAnimation(animatedProperty.impl, spline, name);
@@ -329,7 +329,7 @@ namespace ramses
         if (!containsAnimationObject(animatedProperty.impl))
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimationSystem::createAnimatedSetter: failed to create AnimatedSetter, provided property belongs to another AnimationSystem!");
-            return NULL;
+            return nullptr;
         }
 
         return m_data.createAnimatedSetter(animatedProperty.impl, name);
@@ -380,14 +380,14 @@ namespace ramses
         if (!propertyOwner.isValid() || propertyOwner.impl.getEffectHash() != appearance.impl.getEffectImpl()->getLowlevelResourceHash())
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimationSystem::createAnimatedProperty:  failed to create AnimatedProperty, uniform input invalid or does not match provided Appearance!");
-            return NULL;
+            return nullptr;
         }
 
         ramses_internal::TDataBindID bindId = 0u;
         if (!GetDataBindIDForDataType(propertyOwner.impl.getDataType(), bindId))
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimationSystem::createAnimatedProperty: failed to create AnimatedProperty, unsupported data type to animate!");
-            return NULL;
+            return nullptr;
         }
 
         return m_data.createAnimatedProperty(propertyOwner.impl, appearance.impl, propertyComponent, bindId, name);
@@ -399,7 +399,7 @@ namespace ramses
         if (!GetDataBindIDForDataType(propertyOwner.impl.getDataType(), bindId))
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimationSystem::createAnimatedProperty: failed to create AnimatedProperty, unsupported data type to animate!");
-            return NULL;
+            return nullptr;
         }
 
         return m_data.createAnimatedProperty(propertyOwner.impl, propertyComponent, bindId, name);
@@ -412,7 +412,7 @@ namespace ramses
 
     ramses_internal::IAnimationSystem& AnimationSystemImpl::getIAnimationSystem()
     {
-        assert(m_animationSystem != NULL);
+        assert(m_animationSystem != nullptr);
         return *m_animationSystem;
     }
 
@@ -455,7 +455,7 @@ namespace ramses
             return findAnimationByHandle(animHandles[index]);
         }
 
-        return NULL;
+        return nullptr;
     }
 
     Animation* AnimationSystemImpl::getFinishedAnimationSincePreviousUpdate(uint32_t index)
@@ -475,7 +475,7 @@ namespace ramses
             }
         }
 
-        return NULL;
+        return nullptr;
     }
 
     bool AnimationSystemImpl::GetDataBindIDForDataType(ramses_internal::EDataType dataType, ramses_internal::TDataBindID& bindId)

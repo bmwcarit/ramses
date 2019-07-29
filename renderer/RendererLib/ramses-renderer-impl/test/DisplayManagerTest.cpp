@@ -14,6 +14,7 @@
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "RendererLib/RendererCommandContainer.h"
 #include "RendererLib/RendererCommands.h"
+#include "RendererLib/RendererCommandTypes.h"
 #include "RamsesRendererImpl.h"
 
 using namespace ramses_display_manager;
@@ -52,6 +53,15 @@ public:
     }
 
 protected:
+    template <typename COMMAND_TYPE>
+    const COMMAND_TYPE& getLastRendererCommand() const
+    {
+        const auto& cmds = renderer.impl.getPendingCommands().getCommands();
+        const auto numCmds = cmds.getTotalCommandCount();
+        EXPECT_TRUE(numCmds > 0);
+        return cmds.getCommandData<COMMAND_TYPE>(numCmds - 1);
+    }
+
     void expectRendererCommands(std::initializer_list<ramses_internal::ERendererCommand> expectedCmds)
     {
         const ramses_internal::RendererCommandContainer& cmds = renderer.impl.getPendingCommands().getCommands();
@@ -1334,4 +1344,332 @@ TEST_F(ADisplayManager, canRecoverFromRepublishBeforeFailedHide)
     displayManagerEventHandler.sceneShown(sceneId, ramses::ERendererEventResult_OK);
 
     doAnotherFullCycleFromUnpublishToState();
+}
+
+/////////
+// OB linking tests
+/////////
+
+TEST_F(ADisplayManager, canMapSceneToOBAndLink)
+{
+    const ramses::sceneId_t consumerSceneId{ sceneId + 1 };
+    const ramses::dataConsumerId_t consumerSamplerId{ 987 };
+    EXPECT_TRUE(displayManager.setSceneOffscreenBufferMapping(sceneId, displayId, 16, 16, consumerSceneId, consumerSamplerId));
+
+    displayManager.setSceneState(sceneId, SceneState::Ready);
+
+    displayManagerEventHandler.scenePublished(sceneId);
+    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
+
+    // map scene first
+    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
+
+    // expect OB creation
+    const auto& obCreateCmd = getLastRendererCommand<ramses_internal::OffscreenBufferCommand>();
+    EXPECT_EQ(displayId, obCreateCmd.displayHandle);
+    EXPECT_EQ(16u, obCreateCmd.bufferWidth);
+    EXPECT_EQ(16u, obCreateCmd.bufferHeight);
+    expectRendererCommand(ramses_internal::ERendererCommand_CreateOffscreenBuffer);
+
+    const ramses::offscreenBufferId_t ob{ 0 }; // actual handle is stored internally, not worth adding getter, therefore assuming 0 here
+    displayManagerEventHandler.offscreenBufferCreated(displayId, ob, ramses::ERendererEventResult_OK);
+
+    // expect assign scene to OB
+    const auto& obAssignCmd = getLastRendererCommand<ramses_internal::OffscreenBufferCommand>();
+    EXPECT_EQ(ob, obAssignCmd.bufferHandle);
+    EXPECT_EQ(sceneId, obAssignCmd.assignedScene.getValue());
+    expectRendererCommand(ramses_internal::ERendererCommand_AssignSceneToOffscreenBuffer);
+
+    displayManagerEventHandler.sceneAssignedToOffscreenBuffer(sceneId, ob, ramses::ERendererEventResult_OK);
+    // waiting for consumer scene to be mapped
+    expectNoRendererCommand();
+
+    // map consumer scene
+    {
+        displayManager.setSceneMapping(consumerSceneId, displayId);
+        displayManager.setSceneState(consumerSceneId, SceneState::Ready);
+        displayManagerEventHandler.scenePublished(consumerSceneId);
+        expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+        displayManagerEventHandler.sceneSubscribed(consumerSceneId, ramses::ERendererEventResult_OK);
+        expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+        displayManagerEventHandler.sceneMapped(consumerSceneId, ramses::ERendererEventResult_OK);
+        EXPECT_EQ(SceneState::Ready, displayManager.getLastReportedSceneState(consumerSceneId));
+    }
+
+    // expect link OB to sampler
+    const auto& obLinkCmd = getLastRendererCommand<ramses_internal::DataLinkCommand>();
+    EXPECT_EQ(ob, obLinkCmd.providerBuffer.asMemoryHandle());
+    EXPECT_EQ(consumerSceneId, obLinkCmd.consumerScene.getValue());
+    EXPECT_EQ(consumerSamplerId, obLinkCmd.consumerData.getValue());
+    expectRendererCommand(ramses_internal::ERendererCommand_LinkBufferToSceneData);
+
+    displayManagerEventHandler.offscreenBufferLinkedToSceneData(ob, consumerSceneId, consumerSamplerId, ramses::ERendererEventResult_OK);
+    EXPECT_EQ(SceneState::Ready, displayManager.getLastReportedSceneState(sceneId));
+    expectNoRendererCommand();
+}
+
+TEST_F(ADisplayManager, whenMappingSceneToOBAndLinkRepeatEveryStepOnFail)
+{
+    const ramses::sceneId_t consumerSceneId{ sceneId + 1 };
+    const ramses::dataConsumerId_t consumerSamplerId{ 987 };
+    EXPECT_TRUE(displayManager.setSceneOffscreenBufferMapping(sceneId, displayId, 16, 16, consumerSceneId, consumerSamplerId));
+
+    displayManager.setSceneState(sceneId, SceneState::Ready);
+
+    displayManagerEventHandler.scenePublished(sceneId);
+    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
+
+    // map scene first
+    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
+
+    // expect OB creation
+    const auto& obCreateCmd = getLastRendererCommand<ramses_internal::OffscreenBufferCommand>();
+    EXPECT_EQ(displayId, obCreateCmd.displayHandle);
+    EXPECT_EQ(16u, obCreateCmd.bufferWidth);
+    EXPECT_EQ(16u, obCreateCmd.bufferHeight);
+    expectRendererCommand(ramses_internal::ERendererCommand_CreateOffscreenBuffer);
+
+    ramses::offscreenBufferId_t ob{ 0 }; // actual handle is stored internally, not worth adding getter, therefore assuming 0 here
+    displayManagerEventHandler.offscreenBufferCreated(displayId, ob, ramses::ERendererEventResult_FAIL);
+    expectRendererCommand(ramses_internal::ERendererCommand_CreateOffscreenBuffer);
+    displayManagerEventHandler.offscreenBufferCreated(displayId, ++ob, ramses::ERendererEventResult_FAIL);
+    expectRendererCommand(ramses_internal::ERendererCommand_CreateOffscreenBuffer);
+    displayManagerEventHandler.offscreenBufferCreated(displayId, ++ob, ramses::ERendererEventResult_OK);
+
+    // expect assign scene to OB
+    const auto& obAssignCmd = getLastRendererCommand<ramses_internal::OffscreenBufferCommand>();
+    EXPECT_EQ(ob, obAssignCmd.bufferHandle);
+    EXPECT_EQ(sceneId, obAssignCmd.assignedScene.getValue());
+    expectRendererCommand(ramses_internal::ERendererCommand_AssignSceneToOffscreenBuffer);
+
+    displayManagerEventHandler.sceneAssignedToOffscreenBuffer(sceneId, ob, ramses::ERendererEventResult_FAIL);
+    expectRendererCommand(ramses_internal::ERendererCommand_AssignSceneToOffscreenBuffer);
+    displayManagerEventHandler.sceneAssignedToOffscreenBuffer(sceneId, ob, ramses::ERendererEventResult_FAIL);
+    expectRendererCommand(ramses_internal::ERendererCommand_AssignSceneToOffscreenBuffer);
+    displayManagerEventHandler.sceneAssignedToOffscreenBuffer(sceneId, ob, ramses::ERendererEventResult_OK);
+
+    // waiting for consumer scene to be mapped
+    expectNoRendererCommand();
+
+    // map consumer scene
+    {
+        displayManager.setSceneMapping(consumerSceneId, displayId);
+        displayManager.setSceneState(consumerSceneId, SceneState::Ready);
+        displayManagerEventHandler.scenePublished(consumerSceneId);
+        expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+        displayManagerEventHandler.sceneSubscribed(consumerSceneId, ramses::ERendererEventResult_OK);
+        expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+        displayManagerEventHandler.sceneMapped(consumerSceneId, ramses::ERendererEventResult_FAIL);
+        expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+        displayManagerEventHandler.sceneMapped(consumerSceneId, ramses::ERendererEventResult_FAIL);
+        expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+        displayManagerEventHandler.sceneMapped(consumerSceneId, ramses::ERendererEventResult_OK);
+        EXPECT_EQ(SceneState::Ready, displayManager.getLastReportedSceneState(consumerSceneId));
+    }
+
+    // expect link OB to sampler
+    const auto& obLinkCmd = getLastRendererCommand<ramses_internal::DataLinkCommand>();
+    EXPECT_EQ(ob, obLinkCmd.providerBuffer.asMemoryHandle());
+    EXPECT_EQ(consumerSceneId, obLinkCmd.consumerScene.getValue());
+    EXPECT_EQ(consumerSamplerId, obLinkCmd.consumerData.getValue());
+    expectRendererCommand(ramses_internal::ERendererCommand_LinkBufferToSceneData);
+
+    displayManagerEventHandler.offscreenBufferLinkedToSceneData(ob, consumerSceneId, consumerSamplerId, ramses::ERendererEventResult_FAIL);
+    expectRendererCommand(ramses_internal::ERendererCommand_LinkBufferToSceneData);
+    displayManagerEventHandler.offscreenBufferLinkedToSceneData(ob, consumerSceneId, consumerSamplerId, ramses::ERendererEventResult_FAIL);
+    expectRendererCommand(ramses_internal::ERendererCommand_LinkBufferToSceneData);
+    displayManagerEventHandler.offscreenBufferLinkedToSceneData(ob, consumerSceneId, consumerSamplerId, ramses::ERendererEventResult_OK);
+    EXPECT_EQ(SceneState::Ready, displayManager.getLastReportedSceneState(sceneId));
+    expectNoRendererCommand();
+}
+
+TEST_F(ADisplayManager, willDestroyOBIfNotUsedAnymore)
+{
+    const ramses::sceneId_t consumerSceneId{ sceneId + 1 };
+    const ramses::dataConsumerId_t consumerSamplerId{ 987 };
+
+    // map consumer scene
+    {
+        displayManager.setSceneMapping(consumerSceneId, displayId);
+        displayManager.setSceneState(consumerSceneId, SceneState::Ready);
+        displayManagerEventHandler.scenePublished(consumerSceneId);
+        expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+        displayManagerEventHandler.sceneSubscribed(consumerSceneId, ramses::ERendererEventResult_OK);
+        expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+        displayManagerEventHandler.sceneMapped(consumerSceneId, ramses::ERendererEventResult_OK);
+        EXPECT_EQ(SceneState::Ready, displayManager.getLastReportedSceneState(consumerSceneId));
+    }
+
+    EXPECT_TRUE(displayManager.setSceneOffscreenBufferMapping(sceneId, displayId, 16, 16, consumerSceneId, consumerSamplerId));
+    displayManager.setSceneState(sceneId, SceneState::Ready);
+    displayManagerEventHandler.scenePublished(sceneId);
+    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
+    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
+    expectRendererCommand(ramses_internal::ERendererCommand_CreateOffscreenBuffer);
+
+    const ramses::offscreenBufferId_t ob1{ 0 }; // actual handle is stored internally, not worth adding getter, therefore assuming 0 here
+    displayManagerEventHandler.offscreenBufferCreated(displayId, ob1, ramses::ERendererEventResult_OK);
+    expectRendererCommand(ramses_internal::ERendererCommand_AssignSceneToOffscreenBuffer);
+    displayManagerEventHandler.sceneAssignedToOffscreenBuffer(sceneId, ob1, ramses::ERendererEventResult_OK);
+    expectRendererCommand(ramses_internal::ERendererCommand_LinkBufferToSceneData);
+    displayManagerEventHandler.offscreenBufferLinkedToSceneData(ob1, consumerSceneId, consumerSamplerId, ramses::ERendererEventResult_OK);
+    EXPECT_EQ(SceneState::Ready, displayManager.getLastReportedSceneState(sceneId));
+    expectNoRendererCommand();
+
+    // unmap scene and expect OB destroyed
+    displayManager.setSceneState(sceneId, SceneState::Available);
+    expectRendererCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
+    displayManagerEventHandler.sceneUnmapped(sceneId, ramses::ERendererEventResult_OK);
+    EXPECT_EQ(SceneState::Available, displayManager.getLastReportedSceneState(sceneId));
+
+    const auto& obCmd = getLastRendererCommand<ramses_internal::OffscreenBufferCommand>();
+    EXPECT_EQ(ob1, obCmd.bufferHandle.asMemoryHandle());
+    expectRendererCommand(ramses_internal::ERendererCommand_DestroyOffscreenBuffer);
+}
+
+TEST_F(ADisplayManager, willRemapToOBAgainInNextMappingCycle)
+{
+    const ramses::sceneId_t consumerSceneId{ sceneId + 1 };
+    const ramses::dataConsumerId_t consumerSamplerId{ 987 };
+
+    // map consumer scene
+    {
+        displayManager.setSceneMapping(consumerSceneId, displayId);
+        displayManager.setSceneState(consumerSceneId, SceneState::Ready);
+        displayManagerEventHandler.scenePublished(consumerSceneId);
+        expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+        displayManagerEventHandler.sceneSubscribed(consumerSceneId, ramses::ERendererEventResult_OK);
+        expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+        displayManagerEventHandler.sceneMapped(consumerSceneId, ramses::ERendererEventResult_OK);
+        EXPECT_EQ(SceneState::Ready, displayManager.getLastReportedSceneState(consumerSceneId));
+    }
+
+    ///////////////////////
+    // 1. map to OB
+    EXPECT_TRUE(displayManager.setSceneOffscreenBufferMapping(sceneId, displayId, 16, 16, consumerSceneId, consumerSamplerId));
+    displayManager.setSceneState(sceneId, SceneState::Ready);
+    displayManagerEventHandler.scenePublished(sceneId);
+    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
+    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
+    expectRendererCommand(ramses_internal::ERendererCommand_CreateOffscreenBuffer);
+
+    const ramses::offscreenBufferId_t ob1{ 0 }; // actual handle is stored internally, not worth adding getter, therefore assuming 0 here
+    displayManagerEventHandler.offscreenBufferCreated(displayId, ob1, ramses::ERendererEventResult_OK);
+    expectRendererCommand(ramses_internal::ERendererCommand_AssignSceneToOffscreenBuffer);
+    displayManagerEventHandler.sceneAssignedToOffscreenBuffer(sceneId, ob1, ramses::ERendererEventResult_OK);
+    expectRendererCommand(ramses_internal::ERendererCommand_LinkBufferToSceneData);
+    displayManagerEventHandler.offscreenBufferLinkedToSceneData(ob1, consumerSceneId, consumerSamplerId, ramses::ERendererEventResult_OK);
+    EXPECT_EQ(SceneState::Ready, displayManager.getLastReportedSceneState(sceneId));
+
+    ///////////////////////
+    // 2. unmap
+    displayManager.setSceneState(sceneId, SceneState::Available);
+    expectRendererCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
+    displayManagerEventHandler.sceneUnmapped(sceneId, ramses::ERendererEventResult_OK);
+    EXPECT_EQ(SceneState::Available, displayManager.getLastReportedSceneState(sceneId));
+    // OB is not used anymore
+    expectRendererCommand(ramses_internal::ERendererCommand_DestroyOffscreenBuffer);
+
+    ///////////////////////
+    // 3. remap will map again to OB - mapping params unmodified
+    displayManager.setSceneState(sceneId, SceneState::Ready);
+    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
+    expectRendererCommand(ramses_internal::ERendererCommand_CreateOffscreenBuffer);
+
+    const ramses::offscreenBufferId_t ob2{ ob1 + 1 }; // new OB handle assumed incremented
+    displayManagerEventHandler.offscreenBufferCreated(displayId, ob2, ramses::ERendererEventResult_OK);
+    expectRendererCommand(ramses_internal::ERendererCommand_AssignSceneToOffscreenBuffer);
+    displayManagerEventHandler.sceneAssignedToOffscreenBuffer(sceneId, ob2, ramses::ERendererEventResult_OK);
+    expectRendererCommand(ramses_internal::ERendererCommand_LinkBufferToSceneData);
+    displayManagerEventHandler.offscreenBufferLinkedToSceneData(ob2, consumerSceneId, consumerSamplerId, ramses::ERendererEventResult_OK);
+    EXPECT_EQ(SceneState::Ready, displayManager.getLastReportedSceneState(sceneId));
+    expectNoRendererCommand();
+}
+
+TEST_F(ADisplayManager, canMapSceneToOBRemapToFBAndMapAgainToAnotherOB)
+{
+    const ramses::sceneId_t consumerSceneId{ sceneId + 1 };
+    const ramses::dataConsumerId_t consumerSamplerId{ 987 };
+
+    // map consumer scene
+    {
+        displayManager.setSceneMapping(consumerSceneId, displayId);
+        displayManager.setSceneState(consumerSceneId, SceneState::Ready);
+        displayManagerEventHandler.scenePublished(consumerSceneId);
+        expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+        displayManagerEventHandler.sceneSubscribed(consumerSceneId, ramses::ERendererEventResult_OK);
+        expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+        displayManagerEventHandler.sceneMapped(consumerSceneId, ramses::ERendererEventResult_OK);
+        EXPECT_EQ(SceneState::Ready, displayManager.getLastReportedSceneState(consumerSceneId));
+    }
+
+    ///////////////////////
+    // 1. map to OB
+    EXPECT_TRUE(displayManager.setSceneOffscreenBufferMapping(sceneId, displayId, 16, 16, consumerSceneId, consumerSamplerId));
+    displayManager.setSceneState(sceneId, SceneState::Ready);
+    displayManagerEventHandler.scenePublished(sceneId);
+    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
+    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
+    expectRendererCommand(ramses_internal::ERendererCommand_CreateOffscreenBuffer);
+
+    const ramses::offscreenBufferId_t ob1{ 0 }; // actual handle is stored internally, not worth adding getter, therefore assuming 0 here
+    displayManagerEventHandler.offscreenBufferCreated(displayId, ob1, ramses::ERendererEventResult_OK);
+    expectRendererCommand(ramses_internal::ERendererCommand_AssignSceneToOffscreenBuffer);
+    displayManagerEventHandler.sceneAssignedToOffscreenBuffer(sceneId, ob1, ramses::ERendererEventResult_OK);
+    expectRendererCommand(ramses_internal::ERendererCommand_LinkBufferToSceneData);
+    displayManagerEventHandler.offscreenBufferLinkedToSceneData(ob1, consumerSceneId, consumerSamplerId, ramses::ERendererEventResult_OK);
+    EXPECT_EQ(SceneState::Ready, displayManager.getLastReportedSceneState(sceneId));
+
+    ///////////////////////
+    // 2. remap to FB
+    displayManager.setSceneState(sceneId, SceneState::Available);
+    expectRendererCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
+    displayManagerEventHandler.sceneUnmapped(sceneId, ramses::ERendererEventResult_OK);
+    EXPECT_EQ(SceneState::Available, displayManager.getLastReportedSceneState(sceneId));
+    // OB is not used anymore
+    expectRendererCommand(ramses_internal::ERendererCommand_DestroyOffscreenBuffer);
+
+    displayManager.setSceneMapping(sceneId, displayId);
+    displayManager.setSceneState(sceneId, SceneState::Ready);
+    const auto& mapCmd = getLastRendererCommand<ramses_internal::SceneMappingCommand>();
+    EXPECT_EQ(displayId, mapCmd.displayHandle.asMemoryHandle());
+    EXPECT_EQ(sceneId, mapCmd.sceneId.getValue());
+    EXPECT_EQ(0, mapCmd.sceneRenderOrder);
+    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
+    EXPECT_EQ(SceneState::Ready, displayManager.getLastReportedSceneState(sceneId));
+    expectNoRendererCommand();
+
+    ///////////////////////
+    // 3. remap to another OB
+    displayManager.setSceneState(sceneId, SceneState::Available);
+    expectRendererCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
+    displayManagerEventHandler.sceneUnmapped(sceneId, ramses::ERendererEventResult_OK);
+    EXPECT_EQ(SceneState::Available, displayManager.getLastReportedSceneState(sceneId));
+
+    EXPECT_TRUE(displayManager.setSceneOffscreenBufferMapping(sceneId, displayId, 16, 16, consumerSceneId, consumerSamplerId));
+    displayManager.setSceneState(sceneId, SceneState::Ready);
+    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
+    expectRendererCommand(ramses_internal::ERendererCommand_CreateOffscreenBuffer);
+
+    const ramses::offscreenBufferId_t ob2{ ob1 + 1 }; // new OB handle assumed incremented
+    displayManagerEventHandler.offscreenBufferCreated(displayId, ob2, ramses::ERendererEventResult_OK);
+    expectRendererCommand(ramses_internal::ERendererCommand_AssignSceneToOffscreenBuffer);
+    displayManagerEventHandler.sceneAssignedToOffscreenBuffer(sceneId, ob2, ramses::ERendererEventResult_OK);
+    expectRendererCommand(ramses_internal::ERendererCommand_LinkBufferToSceneData);
+    displayManagerEventHandler.offscreenBufferLinkedToSceneData(ob2, consumerSceneId, consumerSamplerId, ramses::ERendererEventResult_OK);
+    EXPECT_EQ(SceneState::Ready, displayManager.getLastReportedSceneState(sceneId));
+    expectNoRendererCommand();
 }

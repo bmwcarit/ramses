@@ -67,7 +67,7 @@ namespace ramses_internal
             if (!waitRes)
             {
                 // skip further processing on wait error, cannot use ASSERT_* here
-                return NULL;
+                return nullptr;
             }
 
             ResourceStreamDeserializer deserializer;
@@ -130,7 +130,7 @@ namespace ramses_internal
         fillResourceData(textureres);
 
         const TextureResource* typedResourceToTest = sendAndReceiveResource(textureres);
-        ASSERT_TRUE(0 != typedResourceToTest);
+        ASSERT_TRUE(nullptr != typedResourceToTest);
 
         ASSERT_EQ(EResourceType_Texture2D, typedResourceToTest->getTypeID());
         ASSERT_EQ(16u, typedResourceToTest->getWidth());
@@ -153,7 +153,7 @@ namespace ramses_internal
         fillResourceData(textureres);
 
         const TextureResource* typedResourceToTest = sendAndReceiveResource(textureres);
-        ASSERT_TRUE(0 != typedResourceToTest);
+        ASSERT_TRUE(nullptr != typedResourceToTest);
 
         ASSERT_EQ(EResourceType_Texture3D, typedResourceToTest->getTypeID());
         ASSERT_EQ(16u, typedResourceToTest->getWidth());
@@ -176,7 +176,7 @@ namespace ramses_internal
         fillResourceData(textureres);
 
         const TextureResource* typedResourceToTest = sendAndReceiveResource(textureres);
-        ASSERT_TRUE(0 != typedResourceToTest);
+        ASSERT_TRUE(nullptr != typedResourceToTest);
 
         ASSERT_EQ(EResourceType_TextureCube, typedResourceToTest->getTypeID());
         ASSERT_EQ(16u, typedResourceToTest->getWidth());
@@ -194,11 +194,11 @@ namespace ramses_internal
     TEST_P(AResourceSenderAndReceiverTest, ReceivesTheSameVertexArraySentByTheSender)
     {
         const ResourceCacheFlag flag(15u);
-        ArrayResource vertexArrayRes(EResourceType_VertexArray, 3, EDataType_Vector3F, 0u, flag, "resName");
+        ArrayResource vertexArrayRes(EResourceType_VertexArray, 3, EDataType_Vector3F, nullptr, flag, "resName");
         fillResourceData(vertexArrayRes);
 
         const ArrayResource* typedResourceToTest = sendAndReceiveResource(vertexArrayRes);
-        ASSERT_TRUE(0 != typedResourceToTest);
+        ASSERT_TRUE(nullptr != typedResourceToTest);
 
         ASSERT_EQ(EResourceType_VertexArray, typedResourceToTest->getTypeID());
         ASSERT_EQ(EDataType_Vector3F, typedResourceToTest->getElementType());
@@ -216,7 +216,7 @@ namespace ramses_internal
         EffectResource effectRes("foo", "bar", EffectInputInformationVector(), EffectInputInformationVector(), effectName, flag);
 
         const EffectResource* typedResourceToTest = sendAndReceiveResource(effectRes);
-        ASSERT_TRUE(0 != typedResourceToTest);
+        ASSERT_TRUE(nullptr != typedResourceToTest);
 
         EXPECT_EQ(effectName, typedResourceToTest->getName());
         EXPECT_STREQ(effectRes.getVertexShader(), typedResourceToTest->getVertexShader());
@@ -300,9 +300,9 @@ namespace ramses_internal
 
     TEST_P(AResourceSenderAndReceiverTest, sendingResourceVectorResultsInCorrectNumberOfReceiveCallbacks)
     {
-        ArrayResource res1(EResourceType_VertexArray, 3, EDataType_Vector3F, 0u, ResourceCacheFlag(0u), "resName");
+        ArrayResource res1(EResourceType_VertexArray, 3, EDataType_Vector3F, nullptr, ResourceCacheFlag(0u), "resName");
         fillResourceData(res1);
-        ArrayResource res2(EResourceType_VertexArray, 3, EDataType_Vector3F, 0u, ResourceCacheFlag(0u), "resName");
+        ArrayResource res2(EResourceType_VertexArray, 3, EDataType_Vector3F, nullptr, ResourceCacheFlag(0u), "resName");
         fillResourceData(res2);
 
         ManagedResourceVector managedResources = { ManagedResource(res1, deleterMock), ManagedResource(res2, deleterMock) };
@@ -328,7 +328,7 @@ namespace ramses_internal
 
     TEST_P(AResourceSenderAndReceiverTest, sendingResourceVectorWithDifferenttypeOfResourcesResultsInMultipleReceiveCallbacks)
     {
-        ArrayResource res1(EResourceType_VertexArray, 3, EDataType_Vector3F, 0u, ResourceCacheFlag(0u), "resName");
+        ArrayResource res1(EResourceType_VertexArray, 3, EDataType_Vector3F, nullptr, ResourceCacheFlag(0u), "resName");
         fillResourceData(res1);
         EffectResource res2("foo", "bar", EffectInputInformationVector(), EffectInputInformationVector(), "name", ResourceCacheFlag(0u));
         fillResourceData(res2);

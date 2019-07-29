@@ -21,6 +21,7 @@ namespace ramses_internal
         , m_watchdogNotifier(watchdogConfig.getWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier_Workers), ramses::ERamsesThreadIdentifier_Workers, watchdogConfig.getCallBack())
     {
         m_threadPool.init(threadCount, *this);
+        start();
     }
 
     ThreadedTaskExecutor::~ThreadedTaskExecutor()

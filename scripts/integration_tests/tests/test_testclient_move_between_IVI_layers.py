@@ -13,7 +13,7 @@ from ramses_test_framework import helper
 from ramses_test_framework.ramses_test_extensions import IVI_Control
 from ramses_test_framework.targets.target import DEFAULT_TEST_LAYER
 from ramses_test_framework.targets.target import DEFAULT_TEST_SURFACE
-from ramses_test_framework.ramses_test_extensions import ensureSystemCompositorRoundTrip
+from ramses_test_framework.ramses_test_extensions import ensureSystemCompositorRoundTrip, ensureHasContentOnSurface
 
 class TestMoveBetweenIVILayers(test_classes.OnSelectedTargetsTest):
 
@@ -50,8 +50,6 @@ class TestMoveBetweenIVILayers(test_classes.OnSelectedTargetsTest):
         self.checkThatApplicationWasStarted(self.testClient3Triangles)
         self.addCleanup(self.target.kill_application, self.testClient3Triangles)
 
-        time.sleep(1)
-
     def impl_tearDown(self):
         self.target.ivi_control.cleanup()
         self.target.kill_application(self.testClient3Triangles)
@@ -65,6 +63,9 @@ class TestMoveBetweenIVILayers(test_classes.OnSelectedTargetsTest):
         log.info("output saved")
 
     def impl_test(self):
+        ensureHasContentOnSurface(self.renderer, self.rendererSurfaceIviId)
+        ensureHasContentOnSurface(self.renderer, self.backgroundRendererSurfaceIviId)
+
         self.renderer.showScene(26)
         self.renderer.send_ramsh_command("skipUnmodifiedBuffers 0", waitForRendererConfirmation=True)
 

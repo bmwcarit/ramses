@@ -58,6 +58,6 @@ namespace ramses
         EXPECT_EQ(obj4, iterator.getNext());
         EXPECT_EQ(obj5, iterator.getNext());
         EXPECT_EQ(obj6, iterator.getNext());
-        EXPECT_EQ(0, iterator.getNext());
+        EXPECT_EQ(nullptr, iterator.getNext());
     }
 }

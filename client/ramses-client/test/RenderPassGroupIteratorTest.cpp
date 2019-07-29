@@ -34,7 +34,7 @@ namespace ramses
     TEST_F(ARenderPassGroupIterator, getNextNULLForEmptyRenderGroup)
     {
         RenderPassGroupIterator iterator(renderPass);
-        EXPECT_TRUE(NULL == iterator.getNext());
+        EXPECT_TRUE(nullptr == iterator.getNext());
     }
 
     TEST_F(ARenderPassGroupIterator, canIterateOverAddedMeshNodes)
@@ -45,6 +45,6 @@ namespace ramses
 
         EXPECT_TRUE(&group1 == iterator.getNext());
         EXPECT_TRUE(&group2 == iterator.getNext());
-        EXPECT_TRUE(NULL == iterator.getNext());
+        EXPECT_TRUE(nullptr == iterator.getNext());
     }
 }

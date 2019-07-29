@@ -37,7 +37,7 @@ public:
         val = *&val;
         enum
         {
-            type = ramses_capu::is_CAPU_PRIMITIVE<T>::Value | ramses_capu::is_CAPU_REFERENCE<T>::Value | ramses_capu::is_CAPU_POINTER<T>::Value
+           type = static_cast<uint32_t>(ramses_capu::is_CAPU_PRIMITIVE<T>::Value) | static_cast<uint32_t>(ramses_capu::is_CAPU_REFERENCE<T>::Value) | static_cast<uint32_t>(ramses_capu::is_CAPU_POINTER<T>::Value)
         };
         return type;
     }

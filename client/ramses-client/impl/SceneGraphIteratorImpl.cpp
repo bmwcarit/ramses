@@ -23,12 +23,12 @@ namespace ramses
 
     Node* SceneGraphIteratorImpl::getNext()
     {
-        NodeImpl* next = NULL;
+        NodeImpl* next = nullptr;
 
         do
         {
             next = getNextInternal();
-        } while (next != NULL && !next->isOfType(m_objectFilterType));
+        } while (next != nullptr && !next->isOfType(m_objectFilterType));
         if (nullptr == next)
         {
             return nullptr;
@@ -58,7 +58,7 @@ namespace ramses
     {
         if (m_nodesToExpand.empty())
         {
-            return NULL;
+            return nullptr;
         }
 
         NodeImpl* next = m_nodesToExpand.front();

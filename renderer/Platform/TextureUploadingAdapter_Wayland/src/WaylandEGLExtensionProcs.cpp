@@ -14,11 +14,11 @@ namespace ramses_internal
 {
     WaylandEGLExtensionProcs::WaylandEGLExtensionProcs(wl_display* waylandWindowDisplay)
         : m_eglDisplay(eglGetDisplay(waylandWindowDisplay))
-        , m_eglCreateImageKHR(0)
-        , m_eglDestroyImageKHR(0)
-        , m_glEGLImageTargetTexture2DOES(0)
-        , m_eglBindWaylandDisplayWL(0)
-        , m_eglUnbindWaylandDisplayWL(0)
+        , m_eglCreateImageKHR(nullptr)
+        , m_eglDestroyImageKHR(nullptr)
+        , m_glEGLImageTargetTexture2DOES(nullptr)
+        , m_eglBindWaylandDisplayWL(nullptr)
+        , m_eglUnbindWaylandDisplayWL(nullptr)
         , m_extensionsSupported(false)
     {
         ramses_internal::String eglExtensions(eglQueryString(m_eglDisplay, EGL_EXTENSIONS));
@@ -29,19 +29,19 @@ namespace ramses_internal
             CheckExtensionAvailable(eglExtensions, "EGL_WL_bind_wayland_display"))
         {
             m_glEGLImageTargetTexture2DOES = reinterpret_cast<PFNGLEGLIMAGETARGETTEXTURE2DOESPROC>(eglGetProcAddress("glEGLImageTargetTexture2DOES"));
-            assert(m_glEGLImageTargetTexture2DOES != 0);
+            assert(m_glEGLImageTargetTexture2DOES != nullptr);
 
             m_eglCreateImageKHR = reinterpret_cast<PFNEGLCREATEIMAGEKHRPROC>(eglGetProcAddress("eglCreateImageKHR"));
-            assert(m_eglCreateImageKHR != 0);
+            assert(m_eglCreateImageKHR != nullptr);
 
             m_eglDestroyImageKHR = reinterpret_cast<PFNEGLDESTROYIMAGEKHRPROC>(eglGetProcAddress("eglDestroyImageKHR"));
-            assert(m_eglDestroyImageKHR != 0);
+            assert(m_eglDestroyImageKHR != nullptr);
 
             m_eglBindWaylandDisplayWL = reinterpret_cast<PFNEGLBINDWAYLANDDISPLAYWL>(eglGetProcAddress("eglBindWaylandDisplayWL"));
-            assert(m_eglBindWaylandDisplayWL != 0);
+            assert(m_eglBindWaylandDisplayWL != nullptr);
 
             m_eglUnbindWaylandDisplayWL = reinterpret_cast<PFNEGLBINDWAYLANDDISPLAYWL>(eglGetProcAddress("eglUnbindWaylandDisplayWL"));
-            assert(m_eglUnbindWaylandDisplayWL != 0);
+            assert(m_eglUnbindWaylandDisplayWL != nullptr);
 
             m_extensionsSupported = true;
         }

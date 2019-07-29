@@ -93,8 +93,8 @@ TEST_F(ARendererScenes, canIterateOverScenes)
     for(auto rendScene : rendererScenes)
     {
         EXPECT_TRUE(sceneID1 == rendScene.key || sceneID2 == rendScene.key || sceneID3 == rendScene.key);
-        EXPECT_TRUE(NULL != rendScene.value.scene);
-        EXPECT_TRUE(NULL != rendScene.value.stagingInfo);
+        EXPECT_TRUE(nullptr != rendScene.value.scene);
+        EXPECT_TRUE(nullptr != rendScene.value.stagingInfo);
         ++count;
     }
     EXPECT_EQ(3u, count);

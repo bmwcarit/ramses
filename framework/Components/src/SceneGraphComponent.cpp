@@ -20,8 +20,8 @@
 namespace ramses_internal
 {
     SceneGraphComponent::SceneGraphComponent(const Guid& myID, ICommunicationSystem& communicationSystem, IConnectionStatusUpdateNotifier& connectionStatusUpdateNotifier, PlatformLock& frameworkLock)
-        : m_sceneRendererHandler(0)
-        , m_sceneProviderHandler(0)
+        : m_sceneRendererHandler(nullptr)
+        , m_sceneProviderHandler(nullptr)
         , m_myID(myID)
         , m_communicationSystem(communicationSystem)
         , m_connectionStatusUpdateNotifier(connectionStatusUpdateNotifier)
@@ -45,7 +45,7 @@ namespace ramses_internal
         PlatformGuard guard(m_frameworkLock);
 
         // TODO Tobias Handle properly the case that two renderers are created with the same framework
-        if (NULL != m_sceneRendererHandler && NULL != sceneRendererHandler)
+        if (nullptr != m_sceneRendererHandler && nullptr != sceneRendererHandler)
         {
             LOG_ERROR(CONTEXT_FRAMEWORK, "SceneGraphComponent::setSceneGraphConsumer: SceneGraphComponent already has a scene graph consumer. This probably means that two RamsesRenderer were initialized with the same RamsesFramework. This might cause further issues!");
         }
@@ -233,7 +233,8 @@ namespace ramses_internal
                 scenesToUnpublish.push_back(SceneInfo(p.key, p.value.name));
             }
         }
-        m_communicationSystem.broadcastScenesBecameUnavailable(scenesToUnpublish);
+        if (!scenesToUnpublish.empty())
+            m_communicationSystem.broadcastScenesBecameUnavailable(scenesToUnpublish);
 
         // remove all subscribers from CSL
         for (const auto& p : m_clientSceneLogicMap)
@@ -336,7 +337,7 @@ namespace ramses_internal
     {
         LOG_INFO(CONTEXT_CLIENT, "SceneGraphComponent::handleRemoveScene: " << sceneId.getValue());
         ClientSceneLogicBase* sceneLogic = *m_clientSceneLogicMap.get(sceneId);
-        assert(sceneLogic != NULL);
+        assert(sceneLogic != nullptr);
         m_clientSceneLogicMap.remove(sceneId);
         delete sceneLogic;
     }

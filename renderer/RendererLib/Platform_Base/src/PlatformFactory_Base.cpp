@@ -58,56 +58,56 @@ namespace ramses_internal
         if(m_systemCompositorControllerFailedCreation)
         {
             LOG_ERROR(CONTEXT_RENDERER, "PlatformFactory_Base:createRenderBackend: will not create display because system compositor controller creation failed");
-            return 0;
+            return nullptr;
         }
 
         IWindow* window = createWindow(displayConfig, windowEventHandler);
-        if (0 == window)
+        if (nullptr == window)
         {
             LOG_ERROR(CONTEXT_RENDERER, "PlatformFactory_Base:createRenderBackend:  window creation failed");
-            return 0;
+            return nullptr;
         }
 
         IContext* context = createContext(*window);
-        if (0 == context)
+        if (nullptr == context)
         {
             LOG_ERROR(CONTEXT_RENDERER, "PlatformFactory_Base:createRenderBackend:  context creation failed");
             destroyWindow(*window);
-            return 0;
+            return nullptr;
         }
 
         ISurface* surface = createSurface(*window, *context);
-        if (0 == surface)
+        if (nullptr == surface)
         {
             LOG_ERROR(CONTEXT_RENDERER, "PlatformFactory_Base:createRenderBackend:  window + context creation failed");
             destroyContext(*context);
             destroyWindow(*window);
-            return 0;
+            return nullptr;
         }
 
         // Surface enable is required so that device and texture adapter can load their extrensions
         surface->enable();
 
         IDevice* device = createDevice(*context);
-        if (0 == device)
+        if (nullptr == device)
         {
             LOG_ERROR(CONTEXT_RENDERER, "PlatformFactory_Base:createRenderBackend:  device creation failed");
             destroySurface(*surface);
             destroyContext(*context);
             destroyWindow(*window);
-            return 0;
+            return nullptr;
         }
 
         IEmbeddedCompositor* embeddedCompositor = createEmbeddedCompositor();
 
-        if (0 == embeddedCompositor)
+        if (nullptr == embeddedCompositor)
         {
             LOG_ERROR(CONTEXT_RENDERER, "PlatformFactory_Base:createRenderBackend:  embedded compositor creation failed");
             destroyDevice(*device);
             destroySurface(*surface);
             destroyContext(*context);
             destroyWindow(*window);
-            return 0;
+            return nullptr;
         }
 
         ITextureUploadingAdapter* textureUploadingAdapter = createTextureUploadingAdapter(*device, *embeddedCompositor, *window);

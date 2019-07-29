@@ -341,7 +341,7 @@ namespace ramses
         * @param[in] generateMipChain Auto generate mipmap levels. Cannot be used if custom data for lower mipmap levels provided.
         * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
         * @param[in] name The name of the Texture2D.
-        * @return A pointer to the created Texture2D, null on failure. Will fail with data == NULL and/or width/height == 0.
+        * @return A pointer to the created Texture2D, null on failure. Will fail with data == nullptr and/or width/height == 0.
         */
         Texture2D* createTexture2D(
             uint32_t width,
@@ -368,7 +368,7 @@ namespace ramses
         * @param[in] generateMipChain Auto generate mipmap levels. Cannot be used if custom data for lower mipmap levels provided.
         * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
         * @param[in] name The name of the Texture3D.
-        * @return A pointer to the created Texture3D, null on failure. Will fail with data == NULL and/or width/height/depth == 0.
+        * @return A pointer to the created Texture3D, null on failure. Will fail with data == nullptr and/or width/height/depth == 0.
         */
         Texture3D* createTexture3D(
             uint32_t width,
@@ -394,7 +394,7 @@ namespace ramses
         * @param[in] generateMipChain Auto generate mipmap levels. Cannot be used if custom data for lower mipmap levels provided.
         * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
         * @param[in] name The name of the Cube Texture.
-        * @return A pointer to the created Cube Texture, null on failure. Will fail with any face-data == NULL and/or size == 0.
+        * @return A pointer to the created Cube Texture, null on failure. Will fail with any face-data == nullptr and/or size == 0.
         */
         TextureCube* createTextureCube(
             uint32_t size,
@@ -420,7 +420,7 @@ namespace ramses
         *        Only resource and scene names are searched.
         *
         * @param[in] name The name of the object to get.
-        * @return Pointer to the object if found, NULL otherwise.
+        * @return Pointer to the object if found, nullptr otherwise.
         */
         const RamsesObject* findObjectByName(const char* name) const;
 
@@ -433,7 +433,7 @@ namespace ramses
         * @brief Get a resource from the client by id
         *
         * @param[in] id The resource id of the resource to get.
-        * @return Pointer to the resource if found, NULL otherwise.
+        * @return Pointer to the resource if found, nullptr otherwise.
         */
         const Resource* findResourceById(resourceId_t id) const;
 

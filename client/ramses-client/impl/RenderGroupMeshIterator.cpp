@@ -29,9 +29,9 @@ namespace ramses
     const MeshNode* RenderGroupMeshIterator::getNext()
     {
         const MeshNodeImpl* meshNode = impl->getNext();
-        if (meshNode == NULL)
+        if (meshNode == nullptr)
         {
-            return NULL;
+            return nullptr;
         }
 
         return &RamsesObjectTypeUtils::ConvertTo<MeshNode>(meshNode->getRamsesObject());

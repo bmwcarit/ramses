@@ -13,7 +13,7 @@ from ramses_test_framework import helper
 from ramses_test_framework.ramses_test_extensions import IVI_Control
 from ramses_test_framework.targets.target import DEFAULT_TEST_LAYER
 from ramses_test_framework.targets.target import DEFAULT_TEST_SURFACE
-from ramses_test_framework.ramses_test_extensions import ensureSystemCompositorRoundTrip
+from ramses_test_framework.ramses_test_extensions import ensureSystemCompositorRoundTrip, ensureHasContentOnSurface
 
 # The test creates two different IVI layers on one screen
 # side by side.
@@ -59,8 +59,6 @@ class TestMultipleIVILayers(test_classes.OnSelectedTargetsTest):
             self.checkThatApplicationWasStarted(self.testClientRedTriangles)
             self.addCleanup(self.target.kill_application, self.testClientRedTriangles)
 
-            time.sleep(1)
-
     def impl_tearDown(self):
         if self.target.systemCompositorControllerSupported:
             self.target.ivi_control.cleanup()
@@ -79,6 +77,8 @@ class TestMultipleIVILayers(test_classes.OnSelectedTargetsTest):
 
     def impl_test(self):
         if self.target.systemCompositorControllerSupported:
+            ensureHasContentOnSurface(self.rendererLeft, self.firstSurfaceIviId)
+            ensureHasContentOnSurface(self.rendererRight, self.secondSurfaceIviId)
 
             self.rendererLeft.showScene(25)
             self.rendererRight.showScene(26)

@@ -32,7 +32,7 @@ namespace ramses
         * @brief Constructor based on the underlying type
         * @param value The initial value of the underlying type in the object
         */
-        explicit StronglyTypedValue(BaseType value)
+        explicit constexpr StronglyTypedValue(BaseType value)
             : m_value(value)
         {
         }
@@ -41,7 +41,7 @@ namespace ramses
         * @brief Copy constructor
         * @param other The object to be copied
         */
-        StronglyTypedValue(const StronglyTypedValue<BaseType, _UniqueId>& other)
+        constexpr StronglyTypedValue(const StronglyTypedValue<BaseType, _UniqueId>& other)
             : m_value(other.m_value)
         {
         }

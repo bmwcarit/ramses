@@ -511,6 +511,36 @@ namespace ramses_internal
             context.unindent();
         }
 
+        // gather and report shared client resources
+        uint64_t numSharedResources = 0;
+        uint64_t transferSizeSharedResources = 0;
+        uint64_t savedTransferSizeBySharedResources = 0;
+        for (const auto& managerIt : updater.m_displayResourceManagers)
+        {
+            const RendererResourceManager& resourceManager = static_cast<const RendererResourceManager&>(*managerIt.value);
+            for (const auto& p : resourceManager.m_clientResourceRegistry.m_resources)
+            {
+                const ResourceDescriptor& rd = p.value;
+                if (rd.sceneUsage.size() > 1 &&
+                    (rd.status == EResourceStatus_Provided ||
+                     rd.status == EResourceStatus_Uploaded))
+                {
+                    numSharedResources += 1;
+                    const uint32_t transferSize = (rd.compressedSize > 0) ? rd.compressedSize : rd.decompressedSize;
+                    transferSizeSharedResources += transferSize;
+                    savedTransferSizeBySharedResources += transferSize * (rd.sceneUsage.size() - 1);
+                }
+            }
+        }
+
+        context << RendererLogContext::NewLine;
+        context << "Client resources shared by multiple scenes:" << RendererLogContext::NewLine;
+        context.indent();
+        context << "Number resources: " << numSharedResources << RendererLogContext::NewLine;
+        context << "Est. transfer size: " << transferSizeSharedResources << RendererLogContext::NewLine;
+        context << "Est. transfer size saved by sharing: " << savedTransferSizeBySharedResources << RendererLogContext::NewLine;
+        context.unindent();
+
         EndSection("RENDERER SCENE RESOURCES", context);
     }
 

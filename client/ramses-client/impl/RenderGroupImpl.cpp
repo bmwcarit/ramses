@@ -37,7 +37,7 @@ namespace ramses
         outStream << static_cast<uint32_t>(objects.size());
         for(const auto& object : objects)
         {
-            assert(0 != object);
+            assert(nullptr != object);
             outStream << serializationContext.getIDForObject(object);
         }
     }
@@ -65,7 +65,7 @@ namespace ramses
 
         for (uint32_t i = 0; i < numberOfObjects; ++i)
         {
-            OBJECT* object = 0;
+            OBJECT* object = nullptr;
             serializationContext.ReadDependentPointerAndStoreAsID(inStream, object);
             objects.push_back(object);
         }

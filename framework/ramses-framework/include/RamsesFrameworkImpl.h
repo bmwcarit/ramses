@@ -10,7 +10,7 @@
 #define RAMSES_RAMSESFRAMEWORKIMPL_H
 
 #include "Utils/CommandLineParser.h"
-#include "TaskFramework/ThreadingSystem.h"
+#include "TaskFramework/ThreadedTaskExecutor.h"
 #include "Utils/ScopedPointer.h"
 #include "Ramsh/RamshStandardSetup.h"
 #include "Components/ResourceComponent.h"
@@ -82,7 +82,7 @@ namespace ramses
         ramses_internal::PeriodicLogger m_periodicLogger;
         bool m_connected;
         const ramses_internal::ThreadWatchdogConfig m_threadWatchdogConfig;
-        ramses_internal::ThreadingSystem m_threadStrategy;
+        ramses_internal::ThreadedTaskExecutor m_threadedTaskExecutor;
         ramses_internal::ResourceComponent m_resourceComponent;
         ramses_internal::SceneGraphComponent m_scenegraphComponent;
         ramses_internal::DcsmComponent m_dcsmComponent;
