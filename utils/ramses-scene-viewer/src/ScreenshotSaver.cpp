@@ -43,6 +43,7 @@ namespace ramses
 
                 ramses_internal::Image image(m_width, m_height, pixelData, pixelData + pixelDataSize, true);
                 image.saveToFilePNG(m_filename.c_str());
+                m_screenshotTaken = true;
             }
         }
 

@@ -153,6 +153,10 @@ namespace ramses_internal
         while (displayManager.isRunning())
         {
             displayManager.dispatchAndFlush(nullptr, m_screenshotSaver.get());
+
+            if(m_screenshotSaver && m_screenshotSaver->isScreenshotTaken())
+                break;
+
             ramses_internal::PlatformThread::Sleep(30u);
         }
     }

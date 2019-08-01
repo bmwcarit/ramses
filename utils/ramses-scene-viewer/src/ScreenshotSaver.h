@@ -23,6 +23,11 @@ namespace ramses
     public:
         ScreenshotSaver(ramses::RamsesRenderer& renderer, ramses::displayId_t displayId, uint32_t width, uint32_t height, std::string filename);
 
+        bool isScreenshotTaken() const
+        {
+            return m_screenshotTaken;
+        }
+
         virtual void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, ramses::displayId_t displayId, ramses::ERendererEventResult result) override;
         virtual void sceneShown(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override;
 
@@ -33,6 +38,7 @@ namespace ramses
         uint32_t m_width;
         uint32_t m_height;
         std::string m_filename;
+        bool m_screenshotTaken = false;
     };
 }
 
