@@ -16,10 +16,10 @@ namespace ramses
 {
 
         ScreenshotSaver::ScreenshotSaver(RamsesRenderer& renderer, displayId_t displayId, uint32_t width, uint32_t height, std::string filename)
-            : m_renderer{renderer}
-            , m_displayId{displayId}
-            , m_width{width}
-            , m_height{height}
+            : m_renderer(renderer)
+            , m_displayId(displayId)
+            , m_width(width)
+            , m_height(height)
             , m_filename(filename)
         {
         };

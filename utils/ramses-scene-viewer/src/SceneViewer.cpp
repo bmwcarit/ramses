@@ -39,7 +39,7 @@ namespace ramses_internal
         , m_screenshotFile(m_parser, "x", "screenshot-file", String(), "Screenshot filename. Setting to non-empty enables screenshot capturing after the scene is shown")
         , m_screenshotWidth(m_parser, "xw", "screenshot-width", 800, "The chosen width for the screenshot if selected")
         , m_screenshotHeight(m_parser, "xh", "screenshot-height", 600, "The chosen height for the screenshot if selected")
-        , m_screenshotSaver{nullptr}
+        , m_screenshotSaver(nullptr)
     {
         GetRamsesLogger().initialize(m_parser, String(), String(), false);
 
