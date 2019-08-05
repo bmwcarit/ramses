@@ -21,6 +21,23 @@ namespace ramses_internal
         , m_eglUnbindWaylandDisplayWL(nullptr)
         , m_extensionsSupported(false)
     {
+        Init();
+    }
+
+    WaylandEGLExtensionProcs::WaylandEGLExtensionProcs(EGLDisplay eglDisplay)
+        : m_eglDisplay(eglDisplay)
+        , m_eglCreateImageKHR(nullptr)
+        , m_eglDestroyImageKHR(nullptr)
+        , m_glEGLImageTargetTexture2DOES(nullptr)
+        , m_eglBindWaylandDisplayWL(nullptr)
+        , m_eglUnbindWaylandDisplayWL(nullptr)
+        , m_extensionsSupported(false)
+    {
+        Init();
+    }
+
+    void WaylandEGLExtensionProcs::Init()
+    {
         ramses_internal::String eglExtensions(eglQueryString(m_eglDisplay, EGL_EXTENSIONS));
         ramses_internal::String glExtensions(reinterpret_cast<const ramses_internal::Char*>(glGetString(GL_EXTENSIONS)));
 

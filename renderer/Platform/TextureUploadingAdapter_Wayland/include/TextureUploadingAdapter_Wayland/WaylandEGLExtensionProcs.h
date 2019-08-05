@@ -29,6 +29,7 @@ namespace ramses_internal
     {
     public:
         WaylandEGLExtensionProcs(wl_display* waylandWindowDisplay);
+        WaylandEGLExtensionProcs(EGLDisplay eglDisplay);
 
         EGLImageKHR eglCreateImageKHR(EGLContext context, EGLenum target, EGLClientBuffer buffer, const EGLint* attributeList) const;
         EGLBoolean eglDestroyImageKHR(EGLImageKHR image) const;
@@ -39,6 +40,8 @@ namespace ramses_internal
         bool areExtensionsSupported()const;
 
     private:
+
+        void Init();
 
         static bool CheckExtensionAvailable(const ramses_internal::String& eglExtensions, const ramses_internal::String& extensionName);
 
