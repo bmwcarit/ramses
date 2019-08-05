@@ -49,7 +49,7 @@ namespace ramses_internal
         MOCK_METHOD1(destroyDevice, Bool(IDevice&));
         MOCK_METHOD2(createSurface, ISurface*(IWindow& window, IContext& context));
         MOCK_METHOD1(destroySurface, Bool(ISurface& surface));
-        MOCK_METHOD0(createEmbeddedCompositor, IEmbeddedCompositor*());
+        MOCK_METHOD1(createEmbeddedCompositor, IEmbeddedCompositor*(IContext& context));
         MOCK_METHOD1(destroyEmbeddedCompositor, Bool(IEmbeddedCompositor& compositor));
         MOCK_METHOD3(createTextureUploadingAdapter, ITextureUploadingAdapter*(IDevice& device, IEmbeddedCompositor& embeddedCompositor, IWindow& window));
         MOCK_METHOD1(destroyTextureUploadingAdapter, Bool(ITextureUploadingAdapter& textureUploadingAdapter));

@@ -45,7 +45,7 @@ namespace ramses_internal
         MOCK_METHOD1(createContext, IContext*(IWindow& window));
         MOCK_METHOD1(createDevice, IDevice*(IContext& context));
         MOCK_METHOD2(createSurface, ISurface*(IWindow& window, IContext& context));
-        MOCK_METHOD0(createEmbeddedCompositor, IEmbeddedCompositor*());
+        MOCK_METHOD1(createEmbeddedCompositor, IEmbeddedCompositor*(IContext& context));
         MOCK_METHOD3(createTextureUploadingAdapter, ITextureUploadingAdapter*(IDevice& device, IEmbeddedCompositor& embeddedCompositor, IWindow& window));
 
         WindowMockWithDestructor*                     window                  = nullptr;
@@ -82,7 +82,7 @@ namespace ramses_internal
             return addPlatformSurface(surface);
         }
 
-        IEmbeddedCompositor* createEmbeddedCompositor_fake()
+        IEmbeddedCompositor* createEmbeddedCompositor_fake(IContext& /*context*/)
         {
             return addEmbeddedCompositor(embeddedCompositor);
         }

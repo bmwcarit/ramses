@@ -21,6 +21,7 @@
 namespace ramses_internal
 {
     class RendererConfig;
+    class IContext;
     class IWaylandCompositorConnection;
     class IWaylandSurface;
     class IWaylandBuffer;
@@ -30,7 +31,7 @@ namespace ramses_internal
     class EmbeddedCompositor_Wayland: public IEmbeddedCompositor, public IEmbeddedCompositor_Wayland
     {
     public:
-        EmbeddedCompositor_Wayland(const RendererConfig& config);
+        EmbeddedCompositor_Wayland(const RendererConfig& config, IContext& context);
         virtual ~EmbeddedCompositor_Wayland();
 
         Bool init();
@@ -86,6 +87,7 @@ namespace ramses_internal
         const RendererConfig* m_rendererConfig;
 
         WaylandDisplay              m_serverDisplay;
+        IContext&                   m_context;
 
         WaylandCompositorGlobal     m_compositorGlobal;
         WaylandShellGlobal          m_shellGlobal;

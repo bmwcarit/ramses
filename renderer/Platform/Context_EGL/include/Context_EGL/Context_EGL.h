@@ -58,6 +58,8 @@ namespace ramses_internal
 
         void* getProcAddress(const char* name) const override;
 
+        EGLDisplay getEglDisplay() const;
+
     private:
         EglSurfaceData m_eglSurfaceData;
         EGLNativeDisplayType m_nativeDisplay;

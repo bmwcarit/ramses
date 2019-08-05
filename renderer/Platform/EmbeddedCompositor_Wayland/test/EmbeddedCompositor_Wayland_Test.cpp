@@ -10,6 +10,7 @@
 #include "TestWithWaylandEnvironment.h"
 #include "RendererLib/RendererConfig.h"
 #include "EmbeddedCompositor_Wayland/EmbeddedCompositor_Wayland.h"
+#include "ContextMock.h"
 #include "PlatformFactoryMock.h"
 #include "Platform_Base/PlatformFactory_Base.h"
 #include "Platform_Wayland_IVI_EGL_ES_3_0/Platform_Wayland_IVI_EGL_ES_3_0.h"
@@ -151,7 +152,7 @@ namespace ramses_internal
     public:
         AEmbeddedCompositor_Wayland()
         {
-            embeddedCompositor = new EmbeddedCompositor_Wayland(rendererConfig);
+            embeddedCompositor = new EmbeddedCompositor_Wayland(rendererConfig, context);
         }
 
         void init()
@@ -185,6 +186,7 @@ namespace ramses_internal
 
     protected:
 
+        ContextMock                 context;
         RendererConfig              rendererConfig     = RendererConfig();
         EmbeddedCompositor_Wayland* embeddedCompositor = nullptr;
         UnixDomainSocket            socket             = UnixDomainSocket("testingSocket", m_initialValueOfXdgRuntimeDir);

@@ -36,7 +36,7 @@ namespace ramses_internal
         ON_CALL(*this, createContext(_)).WillByDefault(Return(&renderBackendMock.surfaceMock.contextMock));
         ON_CALL(*this, createDevice(_)).WillByDefault(Return(&renderBackendMock.deviceMock));
         ON_CALL(*this, createSurface(_, _)).WillByDefault(Return(&renderBackendMock.surfaceMock));
-        ON_CALL(*this, createEmbeddedCompositor()).WillByDefault(Return(&renderBackendMock.embeddedCompositorMock));
+        ON_CALL(*this, createEmbeddedCompositor(_)).WillByDefault(Return(&renderBackendMock.embeddedCompositorMock));
         ON_CALL(*this, getSystemCompositorController()).WillByDefault(Return(testPerRendererConponents ? &systemCompositorControllerMock : nullptr));
         ON_CALL(*this, getWindowEventsPollingManager()).WillByDefault(Return(testPerRendererConponents ? &windowEventsPollingManagerMock : nullptr));
         ON_CALL(*this, createRenderBackend(_, _)).WillByDefault(Return(&renderBackendMock));

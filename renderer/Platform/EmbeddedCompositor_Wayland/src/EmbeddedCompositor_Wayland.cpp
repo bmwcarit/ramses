@@ -21,8 +21,9 @@
 
 namespace ramses_internal
 {
-    EmbeddedCompositor_Wayland::EmbeddedCompositor_Wayland(const RendererConfig& config)
+    EmbeddedCompositor_Wayland::EmbeddedCompositor_Wayland(const RendererConfig& config, IContext& context)
         : m_rendererConfig(&config)
+        , m_context(context)
         , m_compositorGlobal(*this)
         , m_iviApplicationGlobal(*this)
     {

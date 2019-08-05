@@ -204,4 +204,9 @@ namespace ramses_internal
     {
         return reinterpret_cast<void*>(eglGetProcAddress(name));
     }
+
+    EGLDisplay Context_EGL::getEglDisplay() const
+    {
+        return m_eglSurfaceData.eglDisplay;
+    }
 }

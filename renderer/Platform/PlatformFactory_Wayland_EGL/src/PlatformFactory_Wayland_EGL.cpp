@@ -99,8 +99,9 @@ namespace ramses_internal
         return areConfigParametersForEmbeddedCompositorSet;
     }
 
-    IEmbeddedCompositor* PlatformFactory_Wayland_EGL::createEmbeddedCompositor()
+    IEmbeddedCompositor* PlatformFactory_Wayland_EGL::createEmbeddedCompositor(IContext& context)
     {
+        UNUSED(context);
         //TODO Mohamed: remove use of EC dummy as soon as it is possible to create multiple displays on wayland
         if (!isCreatingWaylandEmbeddedCompositorRequired())
         {
@@ -110,7 +111,7 @@ namespace ramses_internal
         }
         else
         {
-            EmbeddedCompositor_Wayland* compositor = new EmbeddedCompositor_Wayland(m_rendererConfig);
+            EmbeddedCompositor_Wayland* compositor = new EmbeddedCompositor_Wayland(m_rendererConfig, context);
             return addEmbeddedCompositor(compositor);
         }
     }

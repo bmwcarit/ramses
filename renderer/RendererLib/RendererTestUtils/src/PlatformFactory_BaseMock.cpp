@@ -20,7 +20,7 @@ namespace ramses_internal
         ON_CALL(*this, createContext(_)).WillByDefault(Invoke(this, &PlatformFactory_BaseMock::createContext_fake));
         ON_CALL(*this, createDevice(_)).WillByDefault(Invoke(this, &PlatformFactory_BaseMock::createDevice_fake));
         ON_CALL(*this, createSurface(_, _)).WillByDefault(Invoke(this, &PlatformFactory_BaseMock::createSurface_fake));
-        ON_CALL(*this, createEmbeddedCompositor()).WillByDefault(Invoke(this, &PlatformFactory_BaseMock::createEmbeddedCompositor_fake));
+        ON_CALL(*this, createEmbeddedCompositor(_)).WillByDefault(Invoke(this, &PlatformFactory_BaseMock::createEmbeddedCompositor_fake));
         ON_CALL(*this, createTextureUploadingAdapter(_, _, _)).WillByDefault(Invoke(this, &PlatformFactory_BaseMock::createTextureUploadingAdapter_fake));
     }
 

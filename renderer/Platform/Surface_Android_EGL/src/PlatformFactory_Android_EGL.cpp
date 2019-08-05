@@ -65,8 +65,9 @@ namespace ramses_internal
         return addPlatformSurface(platformSurface);
     }
 
-    IEmbeddedCompositor* PlatformFactory_Android_EGL::createEmbeddedCompositor()
+    IEmbeddedCompositor* PlatformFactory_Android_EGL::createEmbeddedCompositor(IContext& context)
     {
+        UNUSED(context);
         EmbeddedCompositor_Dummy* compositor = new EmbeddedCompositor_Dummy();
         return addEmbeddedCompositor(compositor);
     }

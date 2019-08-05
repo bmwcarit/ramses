@@ -36,7 +36,7 @@ namespace ramses_internal
             EXPECT_CALL(platformFactory, createDevice(Ref(*platformFactory.context)));
             EXPECT_CALL(*platformFactory.device, init()).WillOnce(Return(true));
 
-            EXPECT_CALL(platformFactory, createEmbeddedCompositor());
+            EXPECT_CALL(platformFactory, createEmbeddedCompositor(Ref(*platformFactory.context)));
             EXPECT_CALL(*platformFactory.embeddedCompositor, init()).WillOnce(Return(true));
 
             EXPECT_CALL(platformFactory, createTextureUploadingAdapter(Ref(*platformFactory.device), Ref(*platformFactory.embeddedCompositor), Ref(*platformFactory.window)));
@@ -250,7 +250,7 @@ namespace ramses_internal
             EXPECT_CALL(platformFactory, createDevice(Ref(*platformFactory.context)));
             EXPECT_CALL(*platformFactory.device, init()).WillOnce(Return(true));
 
-            EXPECT_CALL(platformFactory, createEmbeddedCompositor());
+            EXPECT_CALL(platformFactory, createEmbeddedCompositor(Ref(*platformFactory.context)));
             EXPECT_CALL(*platformFactory.embeddedCompositor, init()).WillOnce(Return(false)); //embedded compositor fails init
 
             //destructors gets called
