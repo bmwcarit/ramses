@@ -23,6 +23,12 @@ WARNINGS_POP
 
 #include "Collections/String.h"
 
+#ifndef EGL_WAYLAND_BUFFER_WL
+    #define EGL_WAYLAND_BUFFER_WL 0x31D5
+#endif
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLBINDWAYLANDDISPLAYWL) (EGLDisplay dpy, struct wl_display *display);
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLUNBINDWAYLANDDISPLAYWL) (EGLDisplay dpy, struct wl_display *display);
+
 namespace ramses_internal
 {
     class WaylandEGLExtensionProcs
