@@ -22,6 +22,8 @@ namespace ramses_internal
         AnimationTime(TimeStamp timeStamp = InvalidTimeStamp);
         AnimationTime(const AnimationTime& other);
 
+        AnimationTime& operator=(const AnimationTime& other) = default;
+
         Bool isValid() const;
         Duration getDurationSince(const AnimationTime& other) const;
         TimeStamp getTimeStamp() const;

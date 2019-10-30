@@ -49,6 +49,8 @@ namespace ramses_internal
             return m_value;
         }
 
+        StronglyTypedValue& operator=(const StronglyTypedValue& other) = default;
+
         constexpr bool operator==(const StronglyTypedValue& other) const
         {
             return m_value == other.m_value;
