@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
 #include "ramses-capu/container/HashTable.h"
-#include "ramses-capu/container/HashSet.h"
-#include "ramses-capu/Error.h"
 #include "util/ComplexTestType.h"
+#include "gtest/gtest.h"
 #include <vector>
-#include <container/HashTableTest.h>
 
 namespace {
     template <typename Tag>
@@ -50,6 +47,8 @@ namespace {
             --refCnt;
         }
 
+        RefCntType& operator=(const RefCntType&) = default;  // does not change alive objects
+
         friend bool operator==(const RefCntType& a, const RefCntType& b)
         {
             return a.value == b.value;
@@ -68,10 +67,48 @@ namespace {
     typedef RefCntType<ValueTag> RCValue;
 
     typedef ramses_capu::HashTable<RCKey, RCValue> RCHashTable;
+
+    struct MyStruct
+    {
+        uint32_t a;
+        int16_t  b;
+
+        bool operator== (const MyStruct& other) const
+        {
+            return (a == other.a);
+        }
+    };
+
+    typedef ramses_capu::HashTable<int32_t, int32_t> Int32HashMap;
 }
+
+class HashTableTest: public ::testing::Test
+{
+public:
+    void SetUp() override
+    {
+        RCKey::refCnt = 0;
+        RCValue::refCnt = 0;
+    }
+
+    void expectRefCnt(int32_t refCnt)
+    {
+        EXPECT_EQ(refCnt, RCKey::refCnt);
+        EXPECT_EQ(refCnt, RCValue::refCnt);
+    }
+};
 
 namespace ramses_capu
 {
+    template<>
+    struct Hash<MyStruct>
+    {
+        uint_t operator()(const MyStruct& c)
+        {
+            return HashValue(c.a, c.b);
+        }
+    };
+
     template<typename T>
     struct Hash<RefCntType<T>>
     {
@@ -82,32 +119,17 @@ namespace ramses_capu
     };
 }
 
-void HashTableTest::SetUp()
-{
-    resetRefCnts();
-}
-
-void HashTableTest::TearDown()
-{
-}
-
-void HashTableTest::resetRefCnts()
-{
-    RCKey::refCnt = 0;
-    RCValue::refCnt = 0;
-}
-
-void HashTableTest::expectRefCnt(int32_t refCnt)
-{
-    EXPECT_EQ(refCnt, RCKey::refCnt);
-    EXPECT_EQ(refCnt, RCValue::refCnt);
-}
-
 TEST_F(HashTableTest, TestWithEnum)
 {
+    enum SomeEnumeration
+    {
+        TEST_VALUE1,
+        TEST_VALUE2,
+    };
+
     ramses_capu::HashTable<SomeEnumeration, int32_t> map;
     map.put(TEST_VALUE1, 3);
-    EXPECT_EQ(3, map.at(TEST_VALUE1));
+    EXPECT_EQ(3, map[TEST_VALUE1]);
 }
 
 TEST_F(HashTableTest, TestCopyConstructor)
@@ -231,28 +253,31 @@ TEST_F(HashTableTest, CanInsertWithoutRehashWhenReservedToCapacity)
     }
 }
 
-class SomeClass
+namespace
 {
-public:
-    uint32_t i;
-    SomeClass()
+    class SomeClass
     {
-        i = 0;
-    }
-    SomeClass(int val)
-    {
-        i = val;
-    }
-    SomeClass(const SomeClass& other)
-        : i(other.i)
-    {}
+    public:
+        uint32_t i;
+        SomeClass()
+        {
+            i = 0;
+        }
+        SomeClass(int val)
+        {
+            i = val;
+        }
 
-    bool operator==(const SomeClass& other) const
-    {
-        // will be called to compare keys!
-        return other.i == i;
-    }
-};
+        SomeClass(const SomeClass&) = default;
+        SomeClass& operator=(const SomeClass&) = default;
+
+        bool operator==(const SomeClass& other) const
+        {
+            // will be called to compare keys!
+            return other.i == i;
+        }
+    };
+}
 
 namespace ramses_capu
 {
@@ -279,9 +304,9 @@ TEST_F(HashTableTest, AssignmentOperator)
     table2 = table;
 
     ASSERT_EQ(3u, table2.count());
-    EXPECT_EQ(2u, table2.at(1));
-    EXPECT_EQ(4u, table2.at(3));
-    EXPECT_EQ(6u, table2.at(5));
+    EXPECT_EQ(2u, table2[1]);
+    EXPECT_EQ(4u, table2[3]);
+    EXPECT_EQ(6u, table2[5]);
 }
 
 TEST_F(HashTableTest, TestMapRehashWithObjects)
@@ -298,7 +323,7 @@ TEST_F(HashTableTest, TestMapRehashWithObjects)
     table.put(c4, 4); // rehashing
 
     SomeClass cTest(3); // same i value as c3 -> 3 must get returned
-    EXPECT_EQ(3u, table.at(cTest));
+    EXPECT_EQ(3u, table[cTest]);
 }
 
 TEST_F(HashTableTest, TestClear)
@@ -312,23 +337,19 @@ TEST_F(HashTableTest, TestClear)
     newmap.clear();
     EXPECT_EQ(static_cast<uint32_t>(0), newmap.count());
 
-    ramses_capu::status_t ret = 0;
-    int32_t value = newmap.at(1, &ret);
-    EXPECT_EQ(ramses_capu::CAPU_ENOT_EXIST, ret);
-    EXPECT_EQ(0, value);
+    auto it = newmap.find(1);
+    EXPECT_EQ(newmap.end(), it);
 
-    value = newmap.at(2, &ret);
-    EXPECT_EQ(ramses_capu::CAPU_ENOT_EXIST, ret);
-    EXPECT_EQ(0, value);
+    it = newmap.find(2);
+    EXPECT_EQ(newmap.end(), it);
 
-    value = newmap.at(3, &ret);
-    EXPECT_EQ(ramses_capu::CAPU_ENOT_EXIST, ret);
-    EXPECT_EQ(0, value);
+    it = newmap.find(3);
+    EXPECT_EQ(newmap.end(), it);
 
     newmap.put(1, 10);
-    value = newmap.at(1, &ret);
-    EXPECT_EQ(ramses_capu::CAPU_OK, ret);
-    EXPECT_EQ(10, value);
+    it = newmap.find(1);
+    EXPECT_NE(newmap.end(), it);
+    EXPECT_EQ(10, it->value);
 }
 
 TEST_F(HashTableTest, TestClear2)
@@ -382,18 +403,13 @@ TEST_F(HashTableTest, IteratorRemove)
 
     for (Int32HashMap::Iterator iter = newmap.begin(); iter != newmap.end();)
     {
-        newmap.remove(iter);
+        iter = newmap.remove(iter);
     }
 
     EXPECT_EQ(0u, newmap.count());
-    ramses_capu::status_t ret = 0;
-
-    newmap.at(0, &ret);
-    EXPECT_EQ(ramses_capu::CAPU_ENOT_EXIST, ret);
-    newmap.at(2, &ret);
-    EXPECT_EQ(ramses_capu::CAPU_ENOT_EXIST, ret);
-    newmap.at(3, &ret);
-    EXPECT_EQ(ramses_capu::CAPU_ENOT_EXIST, ret);
+    EXPECT_EQ(newmap.end(), newmap.find(0));
+    EXPECT_EQ(newmap.end(), newmap.find(2));
+    EXPECT_EQ(newmap.end(), newmap.find(3));
 
     newmap.put(0, 12);
     newmap.put(3, 10);
@@ -402,12 +418,12 @@ TEST_F(HashTableTest, IteratorRemove)
     Int32HashMap::Iterator iter2 = newmap.begin();
     int32_t expectedValue = iter2->value;
     int32_t oldValue = 0;
-    newmap.remove(iter2, &oldValue);
+    iter2 = newmap.remove(iter2, &oldValue);
     EXPECT_EQ(expectedValue, oldValue);
 
     while (iter2 != newmap.end())
     {
-        newmap.remove(iter2);
+        iter2 = newmap.remove(iter2);
     }
 
     EXPECT_EQ(0u, newmap.count());
@@ -495,65 +511,68 @@ TEST_F(HashTableTest, TestAddGet)
 
     EXPECT_EQ(0u, newmap.count());
 
-    ramses_capu::status_t returnCode = newmap.put(1, 10);
-    EXPECT_EQ(ramses_capu::CAPU_OK, returnCode);
-
-    returnCode = newmap.put(2, 20);
-    EXPECT_EQ(ramses_capu::CAPU_OK, returnCode);
-
-    returnCode = newmap.put(3, 30);
-    EXPECT_EQ(ramses_capu::CAPU_OK, returnCode);
+    newmap.put(1, 10);
+    newmap.put(2, 20);
+    newmap.put(3, 30);
 
     EXPECT_EQ(3u, newmap.count());
 
-    EXPECT_EQ(10, newConstMap.at(1, &returnCode));
-    EXPECT_EQ(ramses_capu::CAPU_OK, returnCode);
+    auto cit = newConstMap.find(1);
+    EXPECT_NE(newConstMap.end(), cit);
+    EXPECT_EQ(10, cit->value);
 
-    EXPECT_EQ(10, newmap.at(1, &returnCode));
-    EXPECT_EQ(ramses_capu::CAPU_OK, returnCode);
+    auto it = newmap.find(1);
+    EXPECT_NE(newmap.end(), it);
+    EXPECT_EQ(10, it->value);
 
-    EXPECT_EQ(20, newmap.at(2, &returnCode));
-    EXPECT_EQ(ramses_capu::CAPU_OK, returnCode);
+    it = newmap.find(2);
+    EXPECT_NE(newmap.end(), it);
+    EXPECT_EQ(20, it->value);
 
-    EXPECT_EQ(30, newmap.at(3, &returnCode));
-    EXPECT_EQ(ramses_capu::CAPU_OK, returnCode);
+    it = newmap.find(3);
+    EXPECT_NE(newmap.end(), it);
+    EXPECT_EQ(30, it->value);
 
     newmap.remove(1);
 
-    newmap.at(1, &returnCode);
-    EXPECT_EQ(ramses_capu::CAPU_ENOT_EXIST, returnCode);
+    it = newmap.find(1);
+    EXPECT_EQ(newmap.end(), it);
 
-    EXPECT_EQ(20, newmap.at(2, &returnCode));
-    EXPECT_EQ(ramses_capu::CAPU_OK, returnCode);
+    it = newmap.find(2);
+    EXPECT_NE(newmap.end(), it);
+    EXPECT_EQ(20, it->value);
 
-    EXPECT_EQ(30, newmap.at(3, &returnCode));
-    EXPECT_EQ(ramses_capu::CAPU_OK, returnCode);
+    it = newmap.find(3);
+    EXPECT_NE(newmap.end(), it);
+    EXPECT_EQ(30, it->value);
 
     EXPECT_EQ(2u, newmap.count());
 
     newmap.remove(2);
 
-    newmap.at(1, &returnCode);
-    EXPECT_EQ(ramses_capu::CAPU_ENOT_EXIST, returnCode);
+    it = newmap.find(1);
+    EXPECT_EQ(newmap.end(), it);
 
-    newmap.at(2, &returnCode);
-    EXPECT_EQ(ramses_capu::CAPU_ENOT_EXIST, returnCode);
+    it = newmap.find(2);
+    EXPECT_EQ(newmap.end(), it);
 
-    EXPECT_EQ(30, newmap.at(3, &returnCode));
-    EXPECT_EQ(ramses_capu::CAPU_OK, returnCode);
+    it = newmap.find(3);
+    EXPECT_NE(newmap.end(), it);
+    EXPECT_EQ(30, it->value);
 
     EXPECT_EQ(1u, newmap.count());
 
     newmap.remove(3);
 
-    newmap.at(1, &returnCode);
-    EXPECT_EQ(ramses_capu::CAPU_ENOT_EXIST, returnCode);
 
-    newmap.at(2, &returnCode);
-    EXPECT_EQ(ramses_capu::CAPU_ENOT_EXIST, returnCode);
+    it = newmap.find(1);
+    EXPECT_EQ(newmap.end(), it);
 
-    newmap.at(3, &returnCode);
-    EXPECT_EQ(ramses_capu::CAPU_ENOT_EXIST, returnCode);
+    it = newmap.find(2);
+    EXPECT_EQ(newmap.end(), it);
+
+    it = newmap.find(3);
+    EXPECT_EQ(newmap.end(), it);
 
     EXPECT_EQ(0u, newmap.count());
 }
@@ -582,19 +601,16 @@ TEST_F(HashTableTest, TestRemove)
     newmap.put(3, 30);
     EXPECT_EQ(3u, newmap.count());
 
-    ramses_capu::status_t removeResult = newmap.remove(2);
-    EXPECT_EQ(ramses_capu::CAPU_OK, removeResult);
+    EXPECT_TRUE(newmap.remove(2));
     EXPECT_EQ(2u, newmap.count());
-
-    EXPECT_EQ(0, newmap.at(2));
+    EXPECT_EQ(newmap.end(), newmap.find(2));
 
     int32_t value;
-    removeResult = newmap.remove(3, &value);
-    EXPECT_EQ(ramses_capu::CAPU_OK, removeResult);
+    EXPECT_TRUE(newmap.remove(3, &value));
     EXPECT_EQ(1u, newmap.count());
     EXPECT_EQ(30, value);
 
-    EXPECT_EQ(0, newmap.at(2));
+    EXPECT_EQ(newmap.end(), newmap.find(2));
 }
 
 TEST_F(HashTableTest, TestIterator1)
@@ -780,8 +796,8 @@ TEST_F(HashTableTest, IteratorMethodCall)
 
     ramses_capu::HashTable<uint32_t, MyStruct>::Iterator hashTableIter = hashTable.begin();
 
-    EXPECT_EQ(1u, hashTableIter->value.getA());
-    EXPECT_EQ(1u, (*hashTableIter).value.getA());
+    EXPECT_EQ(1u, hashTableIter->value.a);
+    EXPECT_EQ(1u, (*hashTableIter).value.a);
 }
 
 TEST_F(HashTableTest, TestRehasing)
@@ -791,14 +807,13 @@ TEST_F(HashTableTest, TestRehasing)
     newmap.put(1, 10);
     newmap.put(2, 20);
     newmap.put(3, 30);
-    ramses_capu::status_t returnCode = newmap.put(4, 40); // rehashing will occur
-    EXPECT_EQ(ramses_capu::CAPU_OK, returnCode);
-    EXPECT_EQ(static_cast<uint32_t>(4), newmap.count());
+    newmap.put(4, 40);
+    EXPECT_EQ(4u, newmap.count());
 
-    EXPECT_EQ(10, newmap.at(1));
-    EXPECT_EQ(20, newmap.at(2));
-    EXPECT_EQ(30, newmap.at(3));
-    EXPECT_EQ(40, newmap.at(4));
+    EXPECT_EQ(10, newmap[1]);
+    EXPECT_EQ(20, newmap[2]);
+    EXPECT_EQ(30, newmap[3]);
+    EXPECT_EQ(40, newmap[4]);
 }
 
 TEST_F(HashTableTest, TestWildRemoving)
@@ -891,20 +906,17 @@ TEST_F(HashTableTest, swapMemberFunction)
     EXPECT_EQ(2u, second.count());
     EXPECT_EQ(1u, first.count());
 
-    ramses_capu::status_t status = ramses_capu::CAPU_OK;
-    int32_t v = 0;
+    auto it = second.find(1);
+    EXPECT_NE(second.end(), it);
+    EXPECT_EQ(11, it->value);
 
-    v = second.at(1, &status);
-    EXPECT_EQ(ramses_capu::CAPU_OK, status);
-    EXPECT_EQ(11, v);
+    it = second.find(2);
+    EXPECT_NE(second.end(), it);
+    EXPECT_EQ(12, it->value);
 
-    v = second.at(2, &status);
-    EXPECT_EQ(ramses_capu::CAPU_OK, status);
-    EXPECT_EQ(12, v);
-
-    v = first.at(100, &status);
-    EXPECT_EQ(ramses_capu::CAPU_OK, status);
-    EXPECT_EQ(101, v);
+    it = first.find(100);
+    EXPECT_NE(first.end(), it);
+    EXPECT_EQ(101, it->value);
 }
 
 TEST_F(HashTableTest, swapGlobal)
@@ -927,21 +939,21 @@ TEST_F(HashTableTest, basicRefCountLifecycle)
     expectRefCnt(0);
     {
         RCHashTable ht;
-        // default element
-        expectRefCnt(1);
+        expectRefCnt(0);
 
         // add stuff
         ht.put(RCKey(1), RCValue(2));
-        expectRefCnt(2);
+        expectRefCnt(1);
         ht.put(RCKey(2), RCValue(3));
-        expectRefCnt(3);
+        expectRefCnt(2);
 
         // overwrite
         ht.put(RCKey(1), RCValue(4));
-        expectRefCnt(3);
+        expectRefCnt(2);
 
         // get
-        EXPECT_EQ(RCValue(4u), ht.at(RCKey(1)));
+        auto it = ht.find(RCKey(1));
+        EXPECT_EQ(RCValue(4u), it->value);
 
         // remove
         {
@@ -949,7 +961,7 @@ TEST_F(HashTableTest, basicRefCountLifecycle)
             ht.remove(RCKey(2), &v);
             EXPECT_EQ(RCValue(3u), v);
         }
-        expectRefCnt(2);
+        expectRefCnt(1);
     }
     // destructor destructs all
     expectRefCnt(0);
@@ -961,9 +973,9 @@ TEST_F(HashTableTest, clearDestructsAllElements)
     ht.put(RCKey(1), RCValue(2));
     ht.put(RCKey(2), RCValue(3));
     ht.put(RCKey(3), RCValue(4));
-    expectRefCnt(4);
+    expectRefCnt(3);
     ht.clear();
-    expectRefCnt(1);  // default element remaining
+    expectRefCnt(0);
 }
 
 TEST_F(HashTableTest, copyCtorCopyConstructsObjects)
@@ -972,13 +984,13 @@ TEST_F(HashTableTest, copyCtorCopyConstructsObjects)
     ht.put(RCKey(1), RCValue(2));
     ht.put(RCKey(2), RCValue(3));
     ht.put(RCKey(3), RCValue(4));
-    expectRefCnt(4);
+    expectRefCnt(3);
 
     RCHashTable ht2(ht);
-    expectRefCnt(8);
+    expectRefCnt(6);
 
     ht.clear();
-    expectRefCnt(4+1);
+    expectRefCnt(3);
 }
 
 TEST_F(HashTableTest, assignmentCopiesObjects)
@@ -989,30 +1001,30 @@ TEST_F(HashTableTest, assignmentCopiesObjects)
         ht.put(RCKey(1), RCValue(2));
         ht.put(RCKey(2), RCValue(3));
         ht.put(RCKey(3), RCValue(4));
-        expectRefCnt(4 + 1);
+        expectRefCnt(3);
 
         ht2 = ht;
-        expectRefCnt(4 + 4);
+        expectRefCnt(3 + 3);
     }
-    expectRefCnt(4);
+    expectRefCnt(3);
 }
 
 TEST_F(HashTableTest, arrayAccessOperatorConstructsNewElementIfNotExisting)
 {
     RCHashTable ht;
     ht.put(RCKey(1), RCValue(2));
-    expectRefCnt(2);
+    expectRefCnt(1);
     ht[RCKey(2)] = RCValue(3);
-    expectRefCnt(3);
+    expectRefCnt(2);
 }
 
 TEST_F(HashTableTest, arrayAccessOperatorReusesElementIfExisting)
 {
     RCHashTable ht;
     ht.put(RCKey(1), RCValue(2));
-    expectRefCnt(2);
+    expectRefCnt(1);
     ht[RCKey(1)] = RCValue(3);
-    expectRefCnt(2);
+    expectRefCnt(1);
 }
 
 TEST_F(HashTableTest, swapKeepsNumberOfObjectsUnchanged)
@@ -1021,7 +1033,7 @@ TEST_F(HashTableTest, swapKeepsNumberOfObjectsUnchanged)
     first.put(RCKey(1), RCValue(2));
     first.put(RCKey(2), RCValue(3));
     second.put(RCKey(3), RCValue(4));
-    expectRefCnt(5);
+    expectRefCnt(3);
     first.swap(second);
-    expectRefCnt(5);
+    expectRefCnt(3);
 }

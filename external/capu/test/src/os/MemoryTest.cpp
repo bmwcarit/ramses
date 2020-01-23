@@ -54,14 +54,3 @@ TEST(Memory, copy)
     ramses_capu::Memory::Copy(nullptr, string1, 0);
     EXPECT_EQ(0, ramses_capu::Memory::Compare(string1, string2, strlen(string1)));
 }
-
-TEST(Memory, move)
-{
-    char string1[35] = "This is a boring String";
-    ramses_capu::Memory::Move(string1 + 17, string1 + 10, 13);
-    char string2[35] = "This is a boring boring String";
-    EXPECT_EQ(0, ramses_capu::Memory::Compare(string2, string1, 35));
-
-    ramses_capu::Memory::Move(string1 + 17, string1 + 10, 0);
-    EXPECT_EQ(0, ramses_capu::Memory::Compare(string2, string1, 35));
-}

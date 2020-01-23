@@ -41,8 +41,8 @@ namespace ramses_internal
 
         MOCK_METHOD2(sendSubscribeScene, bool(const Guid& to, const SceneId& sceneId));
         MOCK_METHOD2(sendUnsubscribeScene, bool(const Guid& to, const SceneId& sceneId));
-        MOCK_METHOD2(sendSceneNotAvailable, bool(const Guid& to, const SceneId& sceneId));
 
+        MOCK_METHOD2(sendSceneNotAvailable, bool(const Guid& to, const SceneId& sceneId));
         MOCK_METHOD2(sendInitializeScene, bool(const Guid& to, const SceneInfo& sceneInfo));
         MOCK_METHOD4(sendSceneActionList, uint64_t(const Guid& to, const SceneId& sceneId, const SceneActionCollection& actions, const uint64_t& actionListCounter));
 
@@ -52,6 +52,7 @@ namespace ramses_internal
         MOCK_METHOD2(sendDcsmContentFocusRequest, bool(const Guid& to, ContentID contentID));
         MOCK_METHOD1(sendDcsmBroadcastRequestStopOfferContent, bool(ContentID contentID));
         MOCK_METHOD1(sendDcsmBroadcastForceStopOfferContent, bool(ContentID contentID));
+        MOCK_METHOD3(sendDcsmUpdateContentMetadata, bool(const Guid& to, ContentID contentID, const DcsmMetadata& metadata));
         MOCK_METHOD4(sendDcsmCanvasSizeChange, bool(const Guid& to, ContentID contentID, SizeInfo sizeinfo, AnimationInformation));
         MOCK_METHOD5(sendDcsmContentStateChange, bool(const Guid& to, ContentID contentID, EDcsmState status, SizeInfo, AnimationInformation));
 

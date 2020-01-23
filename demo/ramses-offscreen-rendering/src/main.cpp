@@ -19,12 +19,12 @@ uint64_t GetTimestampMsec()
 int main(int argc, char* argv[])
 {
     ramses::RamsesFramework framework(argc, argv);
-    ramses::RamsesClient client("ramses-offscreen-rendering", framework);
+    ramses::RamsesClient& client(*framework.createClient("ramses-offscreen-rendering"));
     OffscreenRenderer renderer(framework, argc, argv);
     framework.connect();
 
-    const ramses::sceneId_t remoteSceneId   = 1u;
-    const ramses::sceneId_t localSceneId    = 2u;
+    const ramses::sceneId_t remoteSceneId(1u);
+    const ramses::sceneId_t localSceneId(2u);
     TriangleScene remoteScene   = CreateTriangleScene(client, remoteSceneId , { 1.0f, 0.0f, 0.3f }, ramses::EScenePublicationMode_LocalAndRemote);
     TriangleScene localScene    = CreateTriangleScene(client, localSceneId  , { 0.0f, 1.0f, 0.3f }, ramses::EScenePublicationMode_LocalOnly);
 

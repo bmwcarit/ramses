@@ -39,7 +39,7 @@ namespace ramses_internal
 
     Bool RendererLimits::isTextureFormatAvailable(ETextureFormat format) const
     {
-        return m_availableTextureFormats.hasElement(format);
+        return m_availableTextureFormats.contains(format);
     }
 
     void RendererLimits::addTextureFormat(ETextureFormat format)

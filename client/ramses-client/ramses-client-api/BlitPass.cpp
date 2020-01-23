@@ -33,7 +33,7 @@ namespace ramses
 
     void BlitPass::getBlittingRegion(uint32_t& sourceX, uint32_t& sourceY, uint32_t& destinationX, uint32_t& destinationY, uint32_t& width, uint32_t& height) const
     {
-        return impl.getBlittingRegion(sourceX, sourceY, destinationX, destinationY, width, height);
+        impl.getBlittingRegion(sourceX, sourceY, destinationX, destinationY, width, height);
     }
 
     const RenderBuffer& BlitPass::getSourceRenderBuffer() const

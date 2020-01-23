@@ -17,7 +17,7 @@ namespace ramses_internal
     {
     public:
         template<typename T>
-        static Bool AreAllBytesZero(const T* elements, UInt32 elementCount)
+        static bool AreAllBytesZero(const T* elements, UInt32 elementCount)
         {
             assert(elementCount > 0u);
 

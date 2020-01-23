@@ -19,7 +19,7 @@ int main(int argc, const char *argv[])
     const Int32 testNumber          = ArgumentInt32 (parser, "tn"       , "test-number"                 , -1);
     const UInt32 displayCountNumber = ArgumentUInt32(parser, "d"        , "display-count"               , 2);
     const UInt32 scenesPerDisplay   = ArgumentUInt32(parser, "sspd"     , "scenes-sets-per-display"     , 1);
-    const bool disableSkipping      = ArgumentBool  (parser, "noskip"   , "never-skip-rendering"        , false);
+    const bool disableSkipping      = ArgumentBool  (parser, "noskip"   , "never-skip-rendering");
     const UInt32 limitClientRes     = ArgumentUInt32(parser, "lc"       , "res-upload-limit"            , 10000);
     const UInt32 limitSceneActions  = ArgumentUInt32(parser, "ls"       , "sceneactions-limit"          , 12000);
     const UInt32 limitRendering     = ArgumentUInt32(parser, "lr"       , "rendering-limit"             , 16000);

@@ -129,6 +129,39 @@ namespace ramses_internal
             verticesPoly = m_client.createConstVector3fArray(5, verticesData);
             break;
         }
+        case VERTEX_ARRAYS_WITH_OFFSET:
+        {
+            static const float verticesData[] =
+            {
+                    //triangle
+                    0.0f, -1.0f,  0.0f,
+                    1.0f, -1.0f,  0.0f,
+                    0.0f,  0.0f,  0.0f,
+
+                    //quad
+                    0.0f,  0.0f,  0.0f,
+                    0.0f, -1.0f,  0.0f,
+                    1.0f, -1.0f,  0.0f,
+                    0.0f,  0.0f,  0.0f,
+                    1.0f, -1.0f,  0.0f,
+                    1.0f,  0.0f,  0.0f,
+
+                    //polygon
+                    0.0f,  0.0f,  0.0f,
+                    0.0f, -1.0f,  0.0f,
+                    1.0f, -1.0f,  0.0f,
+                    0.0f,  0.0f,  0.0f,
+                    1.0f, -1.0f,  0.0f,
+                    1.0f,  0.0f,  0.0f,
+                    0.0f,  0.0f,  0.0f,
+                    1.0f,  0.0f,  0.0f,
+                    0.5f,  0.5f,  0.0f
+            };
+            verticesTri = m_client.createConstVector3fArray(3 + 6 + 9, verticesData);
+            verticesQuad = verticesTri;
+            verticesPoly = verticesTri;
+            break;
+        }
         default:
             assert(false && "Invalid state");
         }
@@ -172,6 +205,19 @@ namespace ramses_internal
             m_meshNode[1]->setIndexCount(4);
             m_meshNode[2]->setIndexCount(5);
             m_meshNode[3]->setIndexCount(5);
+            break;
+        }
+        case VERTEX_ARRAYS_WITH_OFFSET:
+        {
+            m_meshNode[0]->setIndexCount(3);
+            m_meshNode[1]->setIndexCount(6);
+            m_meshNode[2]->setIndexCount(9);
+            m_meshNode[3]->setIndexCount(9);
+
+            m_meshNode[0]->setStartVertex(0);
+            m_meshNode[1]->setStartVertex(3);
+            m_meshNode[2]->setStartVertex(9);
+            m_meshNode[3]->setStartVertex(9);
             break;
         }
         }

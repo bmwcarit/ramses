@@ -18,15 +18,15 @@
 
 namespace ramses_internal
 {
-    template <typename _BaseType, _BaseType _DefaultValue, typename _UniqueId>
+    template <typename _baseType, _baseType _invalid, typename _uniqueId>
     class StronglyTypedValue final
     {
     public:
-        typedef _BaseType BaseType;
+        typedef _baseType BaseType;
 
-        constexpr static StronglyTypedValue DefaultValue()
+        constexpr static StronglyTypedValue Invalid()
         {
-            return StronglyTypedValue(_DefaultValue);
+            return StronglyTypedValue(_invalid);
         }
 
         constexpr explicit StronglyTypedValue(BaseType value)
@@ -35,7 +35,7 @@ namespace ramses_internal
         }
 
         constexpr StronglyTypedValue()
-            : m_value(_DefaultValue)
+            : m_value(_invalid)
         {
         }
 
@@ -59,19 +59,24 @@ namespace ramses_internal
             return m_value != other.m_value;
         }
 
+        constexpr bool isValid() const
+        {
+            return m_value != _invalid;
+        }
+
         static_assert(std::is_arithmetic<BaseType>::value || std::is_pointer<BaseType>::value, "expected arithmetic or pointer basetype");
     private:
         BaseType m_value;
     };
 
-    // StringOutputStream operator
-    template <typename _BaseType, _BaseType _DefaultValue, typename _UniqueId>
-    inline StringOutputStream& operator<<(StringOutputStream& os, const StronglyTypedValue<_BaseType, _DefaultValue, _UniqueId>& value)
-    {
-        os << value.getValue();
-        return os;
-    }
 }
+
+#define DEFINE_STRINGOUTPUTSTREAM_OPERATOR(stronglyType) \
+inline ramses_internal::StringOutputStream& operator<<(ramses_internal::StringOutputStream& os, const stronglyType& value) \
+{ \
+    os << value.getValue(); \
+    return os; \
+} \
 
 namespace std
 {
@@ -86,16 +91,4 @@ namespace std
     };
 }
 
-// make StronglyTypedValue hash correctly
-namespace ramses_capu
-{
-    template<typename _BaseType, _BaseType _DefaultValue, typename _UniqueId>
-    struct Hash<::ramses_internal::StronglyTypedValue<_BaseType, _DefaultValue, _UniqueId>>
-    {
-        uint_t operator()(const ::ramses_internal::StronglyTypedValue<_BaseType, _DefaultValue, _UniqueId>& key)
-        {
-            return Hash<_BaseType>()(key.getValue());
-        }
-    };
-}
 #endif

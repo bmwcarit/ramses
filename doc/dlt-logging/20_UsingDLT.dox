@@ -58,14 +58,8 @@ Logs from the communication/distribution subsystem.
 <b>RPRO</b><br>
 Profiling logs.
 
-<b>RTST</b><br>
-Used for automated tests.
-
 <b>RSMT</b><br>
 Used for automated smoke tests.
-
-<b>RALV</b><br>
-Keep-alive, prints cyclic "alive" messages
 
 # DLT injections
 

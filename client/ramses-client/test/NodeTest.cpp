@@ -10,6 +10,7 @@
 #include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
+#include "ramses-client-api/PickableObject.h"
 #include "ramses-utils.h"
 
 #include "NodeImpl.h"
@@ -22,7 +23,7 @@ using namespace testing;
 namespace ramses
 {
     template <typename NodeType>
-    class NodeTest : public LocalTestClientWithSceneAndAnimationSystem, public testing::Test
+    class NodeTest : public LocalTestClientWithScene, public testing::Test
     {
     public:
         NodeType& createNode(const char* name)
@@ -70,8 +71,8 @@ namespace ramses
 
     TYPED_TEST(NodeTest, shouldNotAddNodeFromOneSceneAsChildToNodeInOtherScene)
     {
-        Scene& otherScene = *this->client.createScene(1234u);
-        CreationHelper otherSceneCreationHelper(&otherScene, nullptr, &this->client);
+        Scene& otherScene = *this->client.createScene(sceneId_t(1234u));
+        CreationHelper otherSceneCreationHelper(&otherScene, &this->client);
         Node& parent = *otherSceneCreationHelper.template createObjectOfType<TypeParam>("parent");
         EXPECT_EQ(0u, parent.getChildCount());
 
@@ -306,9 +307,9 @@ namespace ramses
 
     TYPED_TEST(NodeTest, reportsErrorWhenSettingParaentFromAnotherScene)
     {
-        Scene& anotherScene = *this->client.createScene(12u);
+        Scene& anotherScene = *this->client.createScene(sceneId_t(12u));
 
-        CreationHelper otherSceneCreationHelper(&anotherScene, nullptr, &this->client);
+        CreationHelper otherSceneCreationHelper(&anotherScene, &this->client);
         Node& parent = *otherSceneCreationHelper.template createObjectOfType<TypeParam>("parent");
 
         Node& node = this->createNode("node");
@@ -467,10 +468,16 @@ namespace ramses
         expectMatricesEqual(expectedModelMat.data, modelMat);
     }
 
-    TYPED_TEST(NodeTest, instantiationCreatesExactlyOneLLNode)
+    TYPED_TEST(NodeTest, instantiationDoesNotCreateMultipleLLNodes)
     {
         const Node& node = this->createNode("node");
-        EXPECT_EQ(1u, node.impl.getIScene().getNodeCount());
+
+        // This is to take in account any additional objects(derived from Node) created by helper creation util
+        // that the currently tested node depends on.
+        // E.g. PickableObject depends on Camera which is a node as well and would be wrongly counted here.
+        const size_t additionalAllocatedNodeCount = this->m_creationHelper.getAdditionalAllocatedNodeCount();
+
+        EXPECT_EQ(1u, node.impl.getIScene().getNodeCount() - additionalAllocatedNodeCount);
         EXPECT_TRUE(this->m_internalScene.isNodeAllocated(node.impl.getNodeHandle()));
     }
 

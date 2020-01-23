@@ -23,7 +23,7 @@ namespace ramses_internal
         description = "Commands to set the log level of specific contexts. Usage: setContextLogLevelFilter 0..7:ContextIdPattern,0..7:ContextIdPattern,...";
     }
 
-    Bool RamshCommandSetContextLogLevelFilter::executeInput(const RamshInput& input)
+    bool RamshCommandSetContextLogLevelFilter::executeInput(const RamshInput& input)
     {
         if (input.size() != 2)
         {

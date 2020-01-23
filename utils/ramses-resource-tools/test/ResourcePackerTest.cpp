@@ -26,6 +26,7 @@
 #include "RamsesClientImpl.h"
 #include "FileUtils.h"
 #include "RamsesObjectTypeUtils.h"
+#include "ramses-client-api/EffectDescription.h"
 
 
 namespace ramses
@@ -57,7 +58,7 @@ namespace ramses
         const ramses_internal::String m_outputSceneFile     = "res/ramses-resource-tools-resourcepacker.ramses";
 
 
-        RamsesClient       m_client;
+        RamsesClient&      m_client;
         Scene&             m_scene;
         Effect*            m_effect;
         Texture2D*         m_texture;
@@ -65,8 +66,8 @@ namespace ramses
     };
 
     AResourcePacker::AResourcePacker()
-        : m_client("", m_framework)
-        , m_scene(*m_client.createScene(123u, SceneConfig()))
+        : m_client(*m_framework.createClient(""))
+        , m_scene(*m_client.createScene(ramses::sceneId_t(123u), SceneConfig()))
     {
     }
 
@@ -83,8 +84,39 @@ namespace ramses
 
         // Create a Effect resource
         {
-            UniformInput textColorInput;
-            m_effect = RamsesUtils::CreateStandardTextEffect(m_client, textColorInput);
+            ramses::EffectDescription effectDesc;
+            effectDesc.setVertexShader(
+                "precision highp float;\n"
+                "uniform highp mat4 mvpMatrix;\n"
+                "attribute vec2 a_position; \n"
+                "attribute vec2 a_texcoord; \n"
+                "\n"
+                "varying vec2 v_texcoord; \n"
+                "\n"
+                "void main()\n"
+                "{\n"
+                "  v_texcoord = a_texcoord; \n"
+                "  gl_Position = mvpMatrix * vec4(a_position, 0.0, 1.0); \n"
+                "}\n");
+            effectDesc.setFragmentShader(
+                "precision highp float;\n"
+                "uniform sampler2D u_texture; \n"
+                "uniform vec4 u_color; \n"
+                "varying vec2 v_texcoord; \n"
+                "\n"
+                "void main(void)\n"
+                "{\n"
+                "  float a = texture2D(u_texture, v_texcoord).r; \n"
+                "  gl_FragColor = vec4(u_color.x, u_color.y, u_color.z, a); \n"
+                "}\n");
+
+            effectDesc.setAttributeSemantic("a_position", EEffectAttributeSemantic_TextPositions);
+            effectDesc.setAttributeSemantic("a_texcoord", EEffectAttributeSemantic_TextTextureCoordinates);
+            effectDesc.setUniformSemantic("u_texture", EEffectUniformSemantic_TextTexture);
+            effectDesc.setUniformSemantic("mvpMatrix", EEffectUniformSemantic_ModelViewProjectionMatrix);
+
+            m_effect = m_client.createEffect(effectDesc);
+
             ResourceFileDescription resourceFileDescription(m_outputResourceFile1.c_str());
             resourceFileDescription.add(m_effect);
             resourceFileDescriptionSet.add(resourceFileDescription);
@@ -94,7 +126,7 @@ namespace ramses
         {
             uint8_t      data[4] = {0u};
             MipLevelData mipLevelData(sizeof(data), data);
-            m_texture = m_client.createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, ResourceCacheFlag_DoNotCache, "texture");
+            m_texture = m_client.createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, "texture");
             ResourceFileDescription resourceFileDescription(m_outputResourceFile2.c_str());
             resourceFileDescription.add(m_texture);
             resourceFileDescriptionSet.add(resourceFileDescription);
@@ -165,14 +197,14 @@ namespace ramses
     {
         createResourceFiles();
 
-        const char* argv[] = {"program.exe", "-ir", "res/ramses-resource-tools-resourcepackerinput.filepathesconfig", "-or", m_outputResourceFile.c_str(), NULL};
+        const char* argv[] = {"program.exe", "-ir", "res/ramses-resource-tools-resourcepackerinput.filepathesconfig", "-or", m_outputResourceFile.c_str(), nullptr};
         int         argc   = sizeof(argv) / sizeof(char*) - 1;
 
         RamsesResourcePackerArguments arguments;
         ASSERT_TRUE(arguments.loadArguments(argc, argv));
         ASSERT_TRUE(ResourcePacker::Pack(arguments));
 
-        RamsesClient loadedClient("ramses client", m_framework);
+        RamsesClient& loadedClient(*m_framework.createClient("ramses client"));
 
         ResourceFileDescription resourceFileDesc(m_outputResourceFile.c_str());
         ASSERT_TRUE(StatusOK == loadedClient.loadResources(resourceFileDesc));

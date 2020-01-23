@@ -17,6 +17,7 @@
 namespace ramses
 {
     class TextureSampler;
+    struct TextureSwizzle;
 }
 
 namespace ramses_internal
@@ -27,14 +28,15 @@ namespace ramses_internal
         enum EState
         {
             EState_R8 = 0,
+            EState_Swizzled_Luminance_Alpha,
             EState_RG8,
             EState_RGB8,
             EState_RGB565,
             EState_RGBA8,
             EState_RGBA4,
             EState_RGBA5551,
-            EState_BGR8,
-            EState_BGRA8,
+            EState_Swizzled_BGR8,
+            EState_Swizzled_BGRA8,
             EState_ETC2RGB,
             EState_ETC2RGBA,
             EState_ASTC_RGBA_4x4,
@@ -58,7 +60,7 @@ namespace ramses_internal
         void createOrthoCamera();
         void createQuad(const ramses::TextureSampler& sampler);
 
-        const ramses::MipLevelData& getTextureFormatAndData(EState state, ramses::ETextureFormat &format) const;
+        const ramses::MipLevelData& getTextureFormatAndData(EState state, ramses::ETextureFormat& format, uint32_t& width, uint32_t& height, ramses::TextureSwizzle& swizzle) const;
     };
 }
 

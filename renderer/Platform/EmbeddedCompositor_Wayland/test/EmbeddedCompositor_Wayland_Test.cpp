@@ -24,6 +24,7 @@
 #include "WaylandBufferResourceMock.h"
 #include "EmbeddedCompositor_Wayland/WaylandBuffer.h"
 #include "wayland-client.h"
+#include "Utils/LogMacros.h"
 #include <pwd.h>
 #include <grp.h>
 #include <atomic>
@@ -339,6 +340,7 @@ namespace ramses_internal
         StrictMock<WaylandSurfaceMock> surface;
         embeddedCompositor->addWaylandSurface(surface);
 
+        EXPECT_CALL(surface, getIviSurfaceId()).WillOnce(Return(surfaceIVIId));
         embeddedCompositor->removeWaylandSurface(surface);
         EXPECT_FALSE(embeddedCompositor->hasSurfaceForStreamTexture(surfaceIVIId));
     }
@@ -413,8 +415,8 @@ namespace ramses_internal
         embeddedCompositor->addToUpdatedStreamTextureSourceIds(surfaceIVIId);
 
         StreamTextureSourceIdSet streamTextureSourceIds =  embeddedCompositor->dispatchUpdatedStreamTextureSourceIds();
-        EXPECT_EQ(1u, streamTextureSourceIds.count());
-        EXPECT_TRUE(streamTextureSourceIds.hasElement(surfaceIVIId));
+        EXPECT_EQ(1u, streamTextureSourceIds.size());
+        EXPECT_TRUE(streamTextureSourceIds.contains(surfaceIVIId));
         EXPECT_FALSE(embeddedCompositor->hasUpdatedStreamTextureSources());
     }
 

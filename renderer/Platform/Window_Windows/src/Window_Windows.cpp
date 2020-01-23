@@ -11,6 +11,7 @@
 #include "RendererLib/DisplayConfig.h"
 #include "RendererLib/EKeyModifier.h"
 #include "Utils/LogMacros.h"
+#include "Collections/Guid.h"
 
 #include <WindowsX.h>
 
@@ -157,14 +158,14 @@ namespace ramses_internal
         , m_mousePosY(-1)
         , m_isMouseTracked(false)
         , m_classname("")
-        , m_userProvidedWindowHandle(WindowsWindowHandleToHWND(InvalidWindowsWindowHandle) != m_windowHandle)
+        , m_userProvidedWindowHandle(WindowsWindowHandleToHWND(WindowsWindowHandle::Invalid()) != m_windowHandle)
     {
     }
 
     void Window_Windows::generateUniqueClassname()
     {
-        m_classname = getTitle() + Guid(true).toString().c_str();
-        assert(m_classname.getLength() < 255);
+        m_classname = getTitle() + Guid(true).toString();
+        assert(m_classname.size() < 255);
     }
 
     Bool Window_Windows::init()
@@ -513,6 +514,8 @@ namespace ramses_internal
             {
                 window->m_posX = GET_X_LPARAM(lParam);
                 window->m_posY = GET_Y_LPARAM(lParam);
+
+                window->handleWindowMoveEvent(window->m_posX, window->m_posY);
             }
         }
         break;
@@ -587,4 +590,10 @@ namespace ramses_internal
         memcpy_s(&result, sizeof(result), &handleValue, sizeof(handleValue));
         return result;
     }
+
+    void Window_Windows::handleWindowMoveEvent(Int32 posX, Int32 posY)
+    {
+        m_eventHandler.onWindowMove(posX, posY);
+    }
+
 }

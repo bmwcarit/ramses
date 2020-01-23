@@ -88,7 +88,7 @@ namespace ramses_internal
         virtual DeviceResourceHandle    allocateVertexBuffer        (EDataType dataType, UInt32 sizeInBytes) = 0;
         virtual void                    uploadVertexBufferData      (DeviceResourceHandle handle, const Byte* data, UInt32 dataSize) = 0;
         virtual void                    deleteVertexBuffer          (DeviceResourceHandle handle) = 0;
-        virtual void                    activateVertexBuffer        (DeviceResourceHandle handle, DataFieldHandle field, UInt32 instancingDivisor) = 0;
+        virtual void                    activateVertexBuffer        (DeviceResourceHandle handle, DataFieldHandle field, UInt32 instancingDivisor, UInt32 offset) = 0;
 
         virtual DeviceResourceHandle    allocateIndexBuffer         (EDataType dataType, UInt32 sizeInBytes) = 0;
         virtual void                    uploadIndexBufferData       (DeviceResourceHandle handle, const Byte* data, UInt32 dataSize) = 0;
@@ -96,20 +96,21 @@ namespace ramses_internal
         virtual void                    activateIndexBuffer         (DeviceResourceHandle handle) = 0;
 
         virtual DeviceResourceHandle    uploadShader                (const EffectResource& effect) = 0;
-        virtual DeviceResourceHandle    uploadBinaryShader          (const EffectResource& effect, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, UInt32 binaryShaderFormat) = 0;
-        virtual Bool                    getBinaryShader             (DeviceResourceHandle handle, UInt8Vector& binaryShader, UInt32& binaryShaderFormat) = 0;
+        virtual DeviceResourceHandle    uploadBinaryShader          (const EffectResource& effect, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat) = 0;
+        virtual Bool                    getBinaryShader             (DeviceResourceHandle handle, UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat) = 0;
         virtual void                    deleteShader                (DeviceResourceHandle handle) = 0;
         virtual void                    activateShader              (DeviceResourceHandle handle) = 0;
 
-        virtual DeviceResourceHandle    allocateTexture2D           (UInt32 width, UInt32 height, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes) = 0;
+        virtual DeviceResourceHandle    allocateTexture2D           (UInt32 width, UInt32 height, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes) = 0;
         virtual DeviceResourceHandle    allocateTexture3D           (UInt32 width, UInt32 height, UInt32 depth, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes) = 0;
         virtual DeviceResourceHandle    allocateTextureCube         (UInt32 faceSize, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes) = 0;
         virtual void                    bindTexture                 (DeviceResourceHandle handle) = 0;
         virtual void                    generateMipmaps             (DeviceResourceHandle handle) = 0;
         virtual void                    uploadTextureData           (DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte* data, UInt32 dataSize) = 0;
-        virtual DeviceResourceHandle    uploadStreamTexture2D       (DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data) = 0;
+        virtual DeviceResourceHandle    uploadStreamTexture2D       (DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data, const TextureSwizzleArray& swizzle) = 0;
         virtual void                    deleteTexture               (DeviceResourceHandle handle) = 0;
         virtual void                    activateTexture             (DeviceResourceHandle handle, DataFieldHandle field) = 0;
+        virtual int                     getTextureAddress           (DeviceResourceHandle handle) const = 0;
 
         // Render buffers/targets
         virtual DeviceResourceHandle    uploadRenderBuffer          (const RenderBuffer& renderBuffer) = 0;
@@ -140,8 +141,7 @@ namespace ramses_internal
 
         virtual void    validateDeviceStatusHealthy() const = 0;
         virtual Bool    isDeviceStatusHealthy() const = 0;
-
-        virtual int getTextureAddress(DeviceResourceHandle handle) const = 0;
+        virtual void    getSupportedBinaryProgramFormats(std::vector<BinaryShaderFormatID>& formats) const = 0;
     };
 }
 

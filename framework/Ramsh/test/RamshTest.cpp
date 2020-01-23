@@ -48,7 +48,7 @@ namespace ramses_internal
 
         using RamshCommandArgs<T1, T2, T3, T4>::getArgument;
 
-        Bool execute(T1& arg1, T2& arg2, T3& arg3, T4& arg4) const
+        bool execute(T1& arg1, T2& arg2, T3& arg3, T4& arg4) const
         {
             data->a1 = arg1;
             data->a2 = arg2;
@@ -60,7 +60,7 @@ namespace ramses_internal
 
     class DummyRamshCommand : public RamshCommand
     {
-        virtual Bool executeInput(const RamshInput& /*input*/)
+        virtual bool executeInput(const RamshInput& /*input*/)
         {
             return true;
         }
@@ -171,7 +171,7 @@ namespace ramses_internal
 
     TEST_F(RamshAPI, typedCommand)
     {
-        TypedTestCommand<BoolLiteral, Bool, String, Float> typedCmd;
+        TypedTestCommand<BoolLiteral, bool, String, Float> typedCmd;
 
         typedCmd.registerKeyword("typed");
 
@@ -256,7 +256,7 @@ namespace ramses_internal
 
     TEST_F(RamshAPI, typedCommandWithDefaultValues)
     {
-        TypedTestCommand<BoolLiteral, Bool, String, Float> typedCmd;
+        TypedTestCommand<BoolLiteral, bool, String, Float> typedCmd;
 
         typedCmd.registerKeyword("typed");
 
@@ -330,7 +330,7 @@ namespace ramses_internal
     class MockRamsh : public Ramsh
     {
     public:
-        MOCK_METHOD1(execute, Bool(RamshInput& input));
+        MOCK_METHOD1(execute, bool(RamshInput& input));
     };
 
     class RamshCommunicationChannelConsoleTest : public ::testing::Test
@@ -381,7 +381,7 @@ namespace ramses_internal
 
         EXPECT_CALL(ramsh, execute(Eq(expectedRamshInput))).Times(1);
 
-        for (UInt i = 0; i < input.getLength(); i++)
+        for (UInt i = 0; i < input.size(); i++)
         {
             inputProvider.processInput(input[i]);
         }
@@ -398,7 +398,7 @@ namespace ramses_internal
         thread.start(runnable);
 
         String input = "help\n";
-        for (UInt i = 0; i < input.getLength(); i++)
+        for (UInt i = 0; i < input.size(); i++)
         {
             inputProvider.processInput(input[i]);
         }

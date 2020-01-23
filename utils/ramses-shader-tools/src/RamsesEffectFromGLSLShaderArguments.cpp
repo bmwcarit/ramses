@@ -84,7 +84,7 @@ bool RamsesEffectFromGLSLShaderArguments::parseArguments(int argc, char const*co
         }
     }
 
-    m_outCompression = ramses_internal::ArgumentBool(parser, OUT_COMPRESSION_SHORT, OUT_COMPRESSION, false);
+    m_outCompression = ramses_internal::ArgumentBool(parser, OUT_COMPRESSION_SHORT, OUT_COMPRESSION);
 
     return true;
 }

@@ -47,6 +47,8 @@ namespace ramses
         status_t setOffscreenBufferDoubleBufferingEnabled(bool isDoubleBuffered);
         bool isOffscreenBufferDoubleBufferingEnabled() const;
 
+        status_t setRenderThreadLoopTimingReportingPeriod(std::chrono::milliseconds period);
+        std::chrono::milliseconds getRenderThreadLoopTimingReportingPeriod() const;
 
         //impl methods
         const ramses_internal::RendererConfig& getInternalRendererConfig() const;

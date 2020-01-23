@@ -26,10 +26,7 @@ namespace ramses_capu
         class Console: private ramses_capu::posix::Console
         {
         public:
-            using ramses_capu::posix::Console::IsInputAvailable;
-            using ramses_capu::posix::Console::Print;
             using ramses_capu::posix::Console::ReadChar;
-            using ramses_capu::posix::Console::Flush;
             using ramses_capu::posix::Console::InterruptReadChar;
         };
     }

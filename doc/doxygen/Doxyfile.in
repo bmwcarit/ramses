@@ -24,7 +24,7 @@ OUTPUT_DIRECTORY       = "@RAMSES_DOXYGEN_TARGET_DIR@"
 EXAMPLE_PATH           = "@RAMSES_EXAMPLE_PATH@"
 
 # hide classes in example applications
-EXCLUDE_SYMBOLS        = ColorSwitchingInputHandler RotateInputHandler QuadSceneInfo TriangleSceneInfo
+EXCLUDE_SYMBOLS        = QuadSceneInfo TriangleSceneInfo
 
 @RAMSES_DOXYGEN_INPUT_FILES@
 
@@ -46,3 +46,5 @@ WARN_IF_DOC_ERROR      = YES
 WARN_NO_PARAMDOC       = YES
 ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = YES
+
+WARN_LOGFILE           = DoxygenWarningLog.txt

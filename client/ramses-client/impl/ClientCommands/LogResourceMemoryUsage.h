@@ -19,11 +19,11 @@ namespace ramses
 
 namespace ramses_internal
 {
-    class LogResourceMemoryUsage : public RamshCommandArgs<ramses::sceneId_t>
+    class LogResourceMemoryUsage : public RamshCommandArgs<uint64_t>
     {
     public:
         explicit LogResourceMemoryUsage(ramses::RamsesClientImpl& client);
-        virtual Bool execute(ramses::sceneId_t& sceneId) const override;
+        virtual Bool execute(uint64_t& sceneId) const override;
     private:
         ramses::RamsesClientImpl& m_client;
     };

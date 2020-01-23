@@ -10,6 +10,8 @@
 #define RAMSES_IBINARYSHADERCACHE_H
 
 #include "SceneAPI/ResourceContentHash.h"
+#include "SceneAPI/SceneId.h"
+#include "RendererAPI/Types.h"
 
 namespace ramses_internal
 {
@@ -18,14 +20,16 @@ namespace ramses_internal
     public:
         virtual ~IBinaryShaderCache() {};
 
+        virtual void deviceSupportsBinaryShaderFormats(const std::vector<BinaryShaderFormatID>& supportedFormats) = 0;
+
         virtual Bool hasBinaryShader(ResourceContentHash effectHash) const = 0;
         virtual UInt32 getBinaryShaderSize(ResourceContentHash effectHash) const = 0;
-        virtual UInt32 getBinaryShaderFormat(ResourceContentHash effectHash) const = 0;
+        virtual BinaryShaderFormatID getBinaryShaderFormat(ResourceContentHash effectHash) const = 0;
         virtual void getBinaryShaderData(ResourceContentHash effectHash, UInt8* buffer, UInt32 bufferSize) const = 0;
 
-        virtual bool shouldBinaryShaderBeCached(ResourceContentHash effectHash) const = 0;
+        virtual bool shouldBinaryShaderBeCached(ResourceContentHash effectHash, SceneId sceneId) const = 0;
 
-        virtual void storeBinaryShader(ResourceContentHash effectHash, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, UInt32 binaryShaderFormat) = 0;
+        virtual void storeBinaryShader(ResourceContentHash effectHash, SceneId sceneId, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat) = 0;
         virtual void binaryShaderUploaded(ResourceContentHash effectHash, Bool success) const = 0;
     };
 }

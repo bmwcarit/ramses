@@ -16,6 +16,7 @@
 #include "Collections/IInputStream.h"
 #include "ramses-capu/container/Hash.h"
 #include "ramses-capu/os/StringUtils.h"
+#include "Collections/StringOutputStream.h"
 
 namespace ramses_internal
 {
@@ -34,19 +35,22 @@ namespace ramses_internal
     {
     public:
         explicit Guid(bool valid = false);
-
         explicit Guid(const generic_uuid_t& data);
         explicit Guid(const char* guid);
         explicit Guid(const String& guid);
+        Guid(uint64_t high, uint64_t low);
 
         Guid(const Guid&) = default;
         Guid& operator=(const Guid&) = default;
 
         String toString() const;
 
+        uint64_t getLow64() const;
+
         const generic_uuid_t& getGuidData() const;
 
         bool isInvalid() const;
+        bool isValid() const;
 
         bool operator==(const Guid& other) const;
         bool operator!=(const Guid& other) const;
@@ -54,53 +58,86 @@ namespace ramses_internal
     private:
         void createNew();
         void createFromString(const char* guid, size_t len);
+        void initFromInt64(uint64_t low);
 
         generic_uuid_t m_data;
-
-        friend IInputStream& operator>>(IInputStream& stream, Guid& value);
     };
+
+    static_assert(sizeof(generic_uuid_t) == 2*sizeof(uint64_t), "generic_uuid_t not properly packed");
 
     inline Guid::Guid(bool valid)
     {
         if (valid)
             createNew();
         else
-            PlatformMemory::Set(&m_data, 0, sizeof(generic_uuid_t));
+            initFromInt64(0);
     }
 
     inline Guid::Guid(const generic_uuid_t& data)
         : m_data(data)
     {
+        m_data.Data1 = 0;
+        m_data.Data2 = 0;
+        m_data.Data3 = 0;
     }
 
     inline Guid::Guid(const char* guid)
     {
-        createFromString(guid, ramses_capu::StringUtils::Strlen(guid));
+        createFromString(guid, std::strlen(guid));
     }
 
     inline Guid::Guid(const String& guid)
         : Guid(guid.c_str())
     {
-        createFromString(guid.c_str(), guid.getLength());
+        createFromString(guid.c_str(), guid.size());
+    }
+
+    inline Guid::Guid(uint64_t /*high*/, uint64_t low)
+    {
+        initFromInt64(low);
     }
 
     inline String Guid::toString() const
     {
         String res;
-        res.resize(36);
-        ramses_capu::StringUtils::Sprintf(res.data(), 37, "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-                             m_data.Data1,
-                             m_data.Data2,
-                             m_data.Data3,
-                             m_data.Data4[0],
-                             m_data.Data4[1],
-                             m_data.Data4[2],
-                             m_data.Data4[3],
-                             m_data.Data4[4],
-                             m_data.Data4[5],
-                             m_data.Data4[6],
-                             m_data.Data4[7]);
+        res.resize(17);
+        std::snprintf(res.data(), 18, "%02X%02X-%02X%02X%02X%02X%02X%02X",
+                      m_data.Data4[0],
+                      m_data.Data4[1],
+                      m_data.Data4[2],
+                      m_data.Data4[3],
+                      m_data.Data4[4],
+                      m_data.Data4[5],
+                      m_data.Data4[6],
+                      m_data.Data4[7]);
         return res;
+    }
+
+    inline uint64_t Guid::getLow64() const
+    {
+        return (static_cast<uint64_t>(m_data.Data4[0]) << 56) +
+            (static_cast<uint64_t>(m_data.Data4[1]) << 48) +
+            (static_cast<uint64_t>(m_data.Data4[2]) << 40) +
+            (static_cast<uint64_t>(m_data.Data4[3]) << 32) +
+            (static_cast<uint64_t>(m_data.Data4[4]) << 24) +
+            (static_cast<uint64_t>(m_data.Data4[5]) << 16) +
+            (static_cast<uint64_t>(m_data.Data4[6]) <<  8) +
+            static_cast<uint64_t>(m_data.Data4[7]);
+    }
+
+    inline void Guid::initFromInt64(uint64_t low)
+    {
+        m_data.Data1 = 0u;
+        m_data.Data2 = 0u;
+        m_data.Data3 = 0u;
+        m_data.Data4[0] = (low >> 56) & 0xFF;
+        m_data.Data4[1] = (low >> 48) & 0xFF;
+        m_data.Data4[2] = (low >> 40) & 0xFF;
+        m_data.Data4[3] = (low >> 32) & 0xFF;
+        m_data.Data4[4] = (low >> 24) & 0xFF;
+        m_data.Data4[5] = (low >> 16) & 0xFF;
+        m_data.Data4[6] = (low >>  8) & 0xFF;
+        m_data.Data4[7] = low& 0xFF;
     }
 
     inline const generic_uuid_t& Guid::getGuidData() const
@@ -111,6 +148,11 @@ namespace ramses_internal
     inline bool Guid::isInvalid() const
     {
         return *this == Guid(false);
+    }
+
+    inline bool Guid::isValid() const
+    {
+        return !isInvalid();
     }
 
     inline bool Guid::operator==(const Guid& other) const
@@ -130,23 +172,30 @@ namespace ramses_internal
 
     inline IInputStream& operator>>(IInputStream& stream, Guid& value)
     {
-        return stream.read(reinterpret_cast<char*>(&value.m_data), sizeof(generic_uuid_t));
+        generic_uuid_t uuid;
+        stream.read(reinterpret_cast<char*>(&uuid), sizeof(generic_uuid_t));
+        value = Guid(uuid);
+        return stream;
     }
-}
 
-namespace ramses_capu
-{
-    /**
-     * Hash code generation for a Guid instance. Necessary e. g. for using a Guid as a key in a hash map.
-     */
-    template<>
-    struct Hash<ramses_internal::Guid>
+    inline StringOutputStream& operator<<(StringOutputStream& sos, const Guid& value)
     {
-        uint_t operator()(const ramses_internal::Guid& key)
+        const generic_uuid_t& data = value.getGuidData();
+        char buffer[37] = {0};
+        if (data.Data1 == 0 && data.Data2 == 0 && data.Data3 == 0 &&
+            data.Data4[0] == 0 && data.Data4[1] == 0 && data.Data4[2] == 0 && data.Data4[3] == 0 &&
+            data.Data4[4] == 0 && data.Data4[5] == 0 && data.Data4[6] == 0)
         {
-            return HashMemoryRange(&(key.getGuidData()), sizeof(ramses_internal::generic_uuid_t));
+            std::snprintf(buffer, sizeof(buffer), "00%02X", data.Data4[7]);
         }
-    };
+        else
+        {
+            std::snprintf(buffer, sizeof(buffer), "%02X%02X-%02X%02X%02X%02X%02X%02X",
+                          data.Data4[0], data.Data4[1], data.Data4[2], data.Data4[3],
+                          data.Data4[4], data.Data4[5], data.Data4[6], data.Data4[7]);
+        }
+        return sos << buffer;
+    }
 }
 
 namespace std

@@ -9,7 +9,7 @@
 #include "DisplayManager/ConfirmationEcho.h"
 #include "Ramsh/RamshInput.h"
 
-namespace ramses_display_manager
+namespace ramses_internal
 {
     ConfirmationEcho::ConfirmationEcho(IDisplayManager& displayManager)
         : m_displayManager(displayManager)
@@ -20,7 +20,7 @@ namespace ramses_display_manager
         getArgument<0>().setDescription("text");
     }
 
-    bool ConfirmationEcho::execute(ramses_internal::String& text) const
+    bool ConfirmationEcho::execute(String& text) const
     {
         m_displayManager.processConfirmationEchoCommand(text.c_str());
         return true;

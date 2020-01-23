@@ -83,10 +83,10 @@ namespace ramses_internal
     {
         char buffer[16];
         String value = "Hello World";
-        uint32_t strlen = static_cast<uint32_t>(value.getLength());
+        uint32_t strlen = static_cast<uint32_t>(value.size());
 
         PlatformMemory::Copy(buffer, reinterpret_cast<char*>(&strlen), sizeof(uint32_t));
-        PlatformMemory::Copy(buffer + sizeof(uint32_t), value.c_str(), value.getLength() + 1);
+        PlatformMemory::Copy(buffer + sizeof(uint32_t), value.c_str(), value.size() + 1);
 
         BinaryInputStream inStream(buffer);
 
@@ -99,10 +99,10 @@ namespace ramses_internal
     {
         char buffer[16];
         String value = "";
-        uint32_t strlen = static_cast<uint32_t>(value.getLength());
+        uint32_t strlen = static_cast<uint32_t>(value.size());
 
         PlatformMemory::Copy(buffer, reinterpret_cast<char*>(&strlen), sizeof(uint32_t));
-        PlatformMemory::Copy(buffer + sizeof(uint32_t), value.c_str(), value.getLength() + 1);
+        PlatformMemory::Copy(buffer + sizeof(uint32_t), value.c_str(), value.size() + 1);
 
         BinaryInputStream inStream(buffer);
 
@@ -143,7 +143,7 @@ namespace ramses_internal
         int32_t intVal = 5;
         float floatVal = 4.3f;
         String stringVal = "Hello World";
-        uint32_t strlen = static_cast<uint32_t>(stringVal.getLength());
+        uint32_t strlen = static_cast<uint32_t>(stringVal.size());
         bool boolVal = true;
 
         UInt offset = 0;
@@ -154,8 +154,8 @@ namespace ramses_internal
         offset += sizeof(float);
         PlatformMemory::Copy(buffer + offset, &strlen, sizeof(uint32_t));
         offset += sizeof(uint32_t);
-        PlatformMemory::Copy(buffer + offset , stringVal.c_str(), stringVal.getLength() + 1);
-        offset += stringVal.getLength();
+        PlatformMemory::Copy(buffer + offset , stringVal.c_str(), stringVal.size() + 1);
+        offset += stringVal.size();
         PlatformMemory::Copy(buffer + offset, &boolVal, sizeof(bool));
 
         BinaryInputStream inStream(buffer);
@@ -230,5 +230,37 @@ namespace ramses_internal
         EXPECT_EQ(buffer+1, inStream.readPosition());
         inStream.read(readBuffer, 7);
         EXPECT_EQ(buffer+8, inStream.readPosition());
+    }
+
+    TEST(BinaryInputStreamTest, CanSkipForward)
+    {
+        const char buffer[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        BinaryInputStream inStream(buffer);
+        uint8_t in = 0;
+        inStream.skip(3);
+        inStream >> in;
+        EXPECT_EQ(4u, in);
+        inStream.skip(1);
+        inStream >> in;
+        EXPECT_EQ(6u, in);
+        inStream.skip(3);
+        inStream >> in;
+        EXPECT_EQ(10u, in);
+    }
+
+    TEST(BinaryInputStreamTest, CanSkipBackward)
+    {
+        const char buffer[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        BinaryInputStream inStream(buffer);
+        uint8_t in = 0;
+        inStream >> in;
+        EXPECT_EQ(1u, in);
+        inStream.skip(-1);
+        inStream >> in;
+        EXPECT_EQ(1u, in);
+        inStream.skip(8);
+        inStream.skip(-6);
+        inStream >> in;
+        EXPECT_EQ(4u, in);
     }
 }

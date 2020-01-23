@@ -28,7 +28,7 @@ class EmbeddedCompositorBase(test_classes.OnSelectedTargetsTest):
         self.ramsesDaemon = self.target.start_daemon()
         self.checkThatApplicationWasStarted(self.ramsesDaemon)
         self.addCleanup(self.target.kill_application, self.ramsesDaemon)
-        self.renderer = self.target.start_default_renderer(args="--wayland-socket-embedded wayland-10 --wayland-socket-embedded-groupname wayland -nomap")
+        self.renderer = self.target.start_default_renderer(args="--wayland-socket-embedded wayland-10 --wayland-socket-embedded-groupname wayland")
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
         self.testClient = self.target.start_client("ramses-test-client", "-tn 10 -ts {} -cz 5".format(self._testSceneState))

@@ -26,6 +26,7 @@ namespace ramses_internal
         virtual void onMouseEvent(EMouseEventType event, Int32 posX, Int32 posY) = 0;
         virtual void onClose() = 0;
         virtual void onResize(UInt32 width, UInt32 height) = 0;
+        virtual void onWindowMove(Int32 posX, Int32 posY) = 0;
     };
 }
 

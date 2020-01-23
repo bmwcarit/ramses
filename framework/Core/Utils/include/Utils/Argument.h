@@ -16,6 +16,7 @@
 #include "Collections/StringOutputStream.h"
 #include "Math3d/Vector3.h"
 #include "InplaceStringTokenizer.h"
+#include "Utils/ArgumentBool.h"
 
 namespace ramses_internal
 {
@@ -23,67 +24,107 @@ namespace ramses_internal
     class Argument
     {
     public:
-        Argument<T>(const CommandLineParser& parser, const char* shortName, const char* longName, const T& default_value, const char* description = "");
-        Argument<T>(const char* shortName, const char* longName, const T& default_value, const char* description = "");
+        Argument(const CommandLineParser& parser, const char* shortName, const char* longName, const T& default_value, const char* description = "");
+        Argument(const char* shortName, const char* longName, const T& default_value, const char* description = "");
 
-        Bool wasDefined() const;
-        Bool hasValue() const;
+        bool wasDefined() const;
+        bool hasValue() const;
         T parseValueFromCmdLine(const CommandLineParser& parser);
         String getHelpString() const;
+        bool next();
 
         operator T() const
         {
-            return m_value;
+            return getValue();
         }
 
     private:
-        const String& getUnconvertedString() const;
-        void interpretValue();
+        void interpretValue(const String& valueString);
         void searchToken(const CommandLineParser& parser);
-        Bool canHaveArgument() const;
+        T getValue() const;
 
         const char* m_shortName;
         const char* m_longName;
         const char* m_description;
         T m_defaultValue;
-        T m_value;
+        std::vector<T> m_values;
 
-        String m_unconvertedValueString;
-        Bool m_flagFound;
-        Bool m_valueFound;
+        bool m_flagFound;
+        bool m_valueFound;
+        UInt32 m_currentValueIndex = 0u;
     };
 
     template<typename T>
-    inline Argument<T>::Argument(const CommandLineParser& parser, const char* shortName, const char* longName, const T& default_value, const char* description)
+    T ramses_internal::Argument<T>::getValue() const
+    {
+        if (m_values.empty())
+            return m_defaultValue;
+
+        return m_values[m_currentValueIndex];
+    }
+
+    template<typename T>
+    bool ramses_internal::Argument<T>::next()
+    {
+        if (m_currentValueIndex + 1 < m_values.size())
+        {
+            ++m_currentValueIndex;
+            return true;
+        }
+
+        return false;
+    }
+
+    template<typename T>
+    Argument<T>::Argument(const CommandLineParser& parser, const char* shortName, const char* longName, const T& default_value, const char* description)
         : m_shortName(shortName)
         , m_longName(longName)
         , m_description(description)
         , m_defaultValue(default_value)
-        , m_value(default_value)
         , m_flagFound(false)
         , m_valueFound(false)
     {
+        static_assert(!std::is_same<T, bool>::value, "use ArgumentBool");
         parseValueFromCmdLine(parser);
     }
 
     template<typename T>
-    inline Argument<T>::Argument(const char* shortName, const char* longName, const T& default_value, const char* description)
+    Argument<T>::Argument(const char* shortName, const char* longName, const T& default_value, const char* description)
         : m_shortName(shortName)
         , m_longName(longName)
         , m_description(description)
         , m_defaultValue(default_value)
-        , m_value(default_value)
         , m_flagFound(false)
         , m_valueFound(false)
     {
+        static_assert(!std::is_same<T, bool>::value, "use ArgumentBool");
     }
 
     template<typename T>
     inline T ramses_internal::Argument<T>::parseValueFromCmdLine(const CommandLineParser& parser)
     {
-        searchToken(parser);
-        interpretValue();
-        return m_value;
+        m_currentValueIndex = 0u;
+        m_values.clear();
+
+        const String shortNameDashed(String("-") + m_shortName);
+        const String longNameDashed(String("--") + m_longName);
+
+        UInt32 searchIndex = 0u;
+        const CommandLineArgument* cmdLineArg = parser.getOption(shortNameDashed, longNameDashed, true, &searchIndex);
+        while (nullptr != cmdLineArg)
+        {
+            m_flagFound = true;
+
+            if (cmdLineArg->hasValue())
+            {
+                m_valueFound = true;
+                interpretValue(cmdLineArg->getValue());
+            }
+
+            cmdLineArg = parser.getOption(shortNameDashed, longNameDashed, true, &searchIndex);
+        }
+
+        return getValue();
     }
 
     template<typename T>
@@ -91,157 +132,87 @@ namespace ramses_internal
     {
         StringOutputStream stream;
         stream << "-" << m_shortName << ", --" << m_longName;
-        if (canHaveArgument())
-        {
-            stream << " <value>";
-        }
+        stream << " <value>";
         stream << " \t" << m_description << " (default: " << m_defaultValue << ")\n";
         return stream.c_str();
     }
 
     template<typename T>
-    inline void Argument<T>::searchToken(const CommandLineParser& parser)
-    {
-        const String shortNameDashed(String("-") + m_shortName);
-        const String longNameDashed(String("--") + m_longName);
-
-        const CommandLineArgument* cmdLineArg = parser.getOption(shortNameDashed, longNameDashed, canHaveArgument());
-        if (0 != cmdLineArg)
-        {
-            m_flagFound = true;
-
-            if (cmdLineArg->hasValue())
-            {
-                m_unconvertedValueString = cmdLineArg->getValue();
-                m_valueFound = true;
-            }
-        }
-    }
-
-    template<typename T>
-    inline Bool Argument<T>::wasDefined() const
+    inline bool Argument<T>::wasDefined() const
     {
         return m_flagFound;
     }
 
     template<typename T>
-    inline Bool Argument<T>::hasValue() const
+    inline bool Argument<T>::hasValue() const
     {
         return m_valueFound;
     }
 
-    template<typename T>
-    inline const String& Argument<T>::getUnconvertedString() const
-    {
-        return m_unconvertedValueString;
-    }
-
-    template<typename T>
-    inline Bool Argument<T>::canHaveArgument() const
-    {
-        return true;
-    }
-
-    template<>
-    inline Bool Argument<Bool>::canHaveArgument() const
-    {
-        return false;
-    }
-
-    typedef Argument<Bool>      ArgumentBool;
     typedef Argument<Float>     ArgumentFloat;
     typedef Argument<Int32>     ArgumentInt32;
     typedef Argument<String>    ArgumentString;
     typedef Argument<UInt16>    ArgumentUInt16;
     typedef Argument<UInt32>    ArgumentUInt32;
-    typedef Argument<Vector3>    ArgumentVec3;
+    typedef Argument<Vector3>   ArgumentVec3;
 
     template<>
-    inline void Argument<Float>::interpretValue()
+    inline void Argument<Float>::interpretValue(const String& valueString)
     {
-        if (hasValue())
+        m_values.push_back(static_cast<Float>(atof(valueString.c_str())));
+    }
+
+    template<>
+    inline void Argument<String>::interpretValue(const String& valueString)
+    {
+        m_values.push_back(valueString);
+    }
+
+    template<>
+    inline void Argument<Int32>::interpretValue(const String& valueString)
+    {
+        m_values.push_back(atoi(valueString.c_str()));
+    }
+
+    template<>
+    inline void Argument<UInt16>::interpretValue(const String& valueString)
+    {
+        const int value = atoi(valueString.c_str());
+        if (value >= 0 && static_cast<unsigned int>(value) <= std::numeric_limits<uint16_t>::max())
         {
-            m_value = static_cast<Float>(atof(getUnconvertedString().c_str()));
+            m_values.push_back(static_cast<uint16_t>(value));
         }
     }
 
     template<>
-    inline void Argument<String>::interpretValue()
+    inline void Argument<UInt32>::interpretValue(const String& valueString)
     {
-        if (hasValue())
+        const long long value = atoll(valueString.c_str());
+        if (value >= 0 && static_cast<unsigned long long>(value) <= std::numeric_limits<uint32_t>::max())
         {
-            m_value = getUnconvertedString();
+            m_values.push_back(static_cast<uint32_t>(value));
         }
     }
 
     template<>
-    inline void Argument<Bool>::interpretValue()
+    inline void Argument<Vector3>::interpretValue(const String& valueString)
     {
-        if (wasDefined())
+        if (valueString.startsWith("[") && valueString.endsWith("]"))
         {
-            m_value = !m_defaultValue;
-        }
-    }
+            auto withoutBrackets = valueString.substr(1, valueString.size() - 2);
 
-    template<>
-    inline void Argument<Int32>::interpretValue()
-    {
-        if (hasValue())
-        {
-            m_value = atoi(getUnconvertedString().c_str());
-        }
-    }
+            size_t componentsFound = 0;
+            float components[3];
+            auto putComponentsToVector = [&](const char* vectorComponentAsString) {
+                if(componentsFound < 3)
+                    components[componentsFound] = static_cast<Float>(atof(vectorComponentAsString));
+                ++componentsFound;
+            };
 
-    template<>
-    inline void Argument<UInt16>::interpretValue()
-    {
-        if (hasValue())
-        {
-            const int value = atoi(getUnconvertedString().c_str());
-            if (value >= 0 && static_cast<unsigned int>(value) <= std::numeric_limits<uint16_t>::max())
-            {
-                m_value = static_cast<uint16_t>(value);
-            }
-        }
-    }
+            InplaceStringTokenizer::TokenizeToCStrings(withoutBrackets, withoutBrackets.size(), ',', putComponentsToVector);
 
-    template<>
-    inline void Argument<UInt32>::interpretValue()
-    {
-        if (hasValue())
-        {
-            const long long value = atoll(getUnconvertedString().c_str());
-            if (value >= 0 && static_cast<unsigned long long>(value) <= std::numeric_limits<uint32_t>::max())
-            {
-                m_value = static_cast<uint32_t>(value);
-            }
-        }
-    }
-
-    template<>
-    inline void Argument<Vector3>::interpretValue()
-    {
-        if (hasValue())
-        {
-            const auto& string = getUnconvertedString();
-
-            if (string.startsWith("[") && string.endsWith("]"))
-            {
-                auto withoutBrackets = string.substr(1, string.getLength() - 2);
-
-                size_t componentsFound = 0;
-                float components[3];
-                auto putComponentsToVector = [&](const char* vectorComponentAsString) {
-                    if(componentsFound < 3)
-                        components[componentsFound] = static_cast<Float>(atof(vectorComponentAsString));
-                    ++componentsFound;
-                };
-
-                InplaceStringTokenizer::TokenizeToCStrings(withoutBrackets, withoutBrackets.getLength(), ',', putComponentsToVector);
-
-                if (3 == componentsFound)
-                    memcpy(m_value.data, components, 3 * sizeof(float));
-            }
+            if (3 == componentsFound)
+                m_values.emplace_back(components[0], components[1], components[2]);
         }
     }
 }

@@ -19,7 +19,7 @@ namespace ramses_internal
         description = "print build configuration";
     }
 
-    Bool RamshCommandPrintBuildConfig::executeInput(const RamshInput& input)
+    bool RamshCommandPrintBuildConfig::executeInput(const RamshInput& input)
     {
         UNUSED(input);
         LOG_INFO(CONTEXT_RAMSH, m_configString);

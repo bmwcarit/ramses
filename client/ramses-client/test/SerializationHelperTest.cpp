@@ -12,7 +12,6 @@
 #include "SerializationHelper.h"
 #include "Utils/BinaryOutputStream.h"
 #include "Utils/BinaryInputStream.h"
-#include "Collections/StringOutputStream.h"
 #include "Collections/Vector.h"
 #include "Collections/HashSet.h"
 #include "ClientTestUtils.h"
@@ -31,8 +30,8 @@ namespace ramses
         {
             if(m[i] != n[i])
             {
-                ramses_capu::StringUtils::Sprintf(mHexValue, 5, "0x%02x", m[i]);
-                ramses_capu::StringUtils::Sprintf(nHexValue, 5, "0x%02x", n[i]);
+                std::snprintf(mHexValue, 5, "0x%02x", static_cast<unsigned int>(m[i]));
+                std::snprintf(nHexValue, 5, "0x%02x", static_cast<unsigned int>(n[i]));
                 return ::testing::AssertionFailure()
                     << "Arrays differ at position " << i << ": "
                     << mHexValue << " != " << nHexValue << "\n";

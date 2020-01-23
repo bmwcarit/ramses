@@ -15,7 +15,7 @@
 #include "Collections/String.h"
 #include "Ramsh/RamshCommandPrintBuildConfig.h"
 #include "Ramsh/RamshCommandPrintRamsesVersion.h"
-#include "Ramsh/RamshCommandSetLogLevel.h"
+#include "Ramsh/RamshCommandSetConsoleLogLevel.h"
 #include "Ramsh/RamshCommandSetContextLogLevel.h"
 #include "Ramsh/RamshCommandSetContextLogLevelFilter.h"
 #include "Ramsh/RamshCommandPrintLogLevels.h"
@@ -40,7 +40,7 @@ namespace ramses_internal
         virtual bool start();
         virtual bool stop();
 
-        virtual Bool execute(RamshInput& input);
+        virtual bool execute(RamshInput& input);
 
         const String& getPrompt() const;
 
@@ -52,7 +52,7 @@ namespace ramses_internal
         RamshCommandPrintHelp* m_pCmdPrintHelp;
         RamshCommandPrintBuildConfig m_cmdPrintBuildConfig;
         RamshCommandPrintRamsesVersion m_cmdPrintRamsesVersion;
-        RamshCommandSetLogLevel* m_pCmdSetLogLevel;
+        RamshCommandSetConsoleLogLevel* m_pCmdSetLogLevel;
         RamshCommandSetContextLogLevel* m_pCmdSetContextLogLevel;
         RamshCommandSetContextLogLevelFilter* m_pCmdSetContextLogLevelFilter;
         RamshCommandPrintLogLevels* m_pCmdPrintLogLevels;

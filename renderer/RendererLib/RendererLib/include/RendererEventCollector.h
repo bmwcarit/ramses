@@ -23,8 +23,8 @@
 #include "Utils/LoggingUtils.h"
 #include "Utils/LogMacros.h"
 #include "PlatformAbstraction/PlatformLock.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "Collections/Vector.h"
+#include "SceneAPI/SceneTypes.h"
 
 namespace ramses_internal
 {
@@ -56,10 +56,8 @@ namespace ramses_internal
         ERendererEventType_SceneUnmapped,
         ERendererEventType_SceneUnmappedIndirect,
         ERendererEventType_SceneUnmapFailed,
-        ERendererEventType_SceneAssignedToOffscreenBuffer,
-        ERendererEventType_SceneAssignedToOffscreenBufferFailed,
-        ERendererEventType_SceneAssignedToFramebuffer,
-        ERendererEventType_SceneAssignedToFramebufferFailed,
+        ERendererEventType_SceneAssignedToDisplayBuffer,
+        ERendererEventType_SceneAssignedToDisplayBufferFailed,
         ERendererEventType_SceneShown,
         ERendererEventType_SceneShowFailed,
         ERendererEventType_SceneHidden,
@@ -81,10 +79,12 @@ namespace ramses_internal
         ERendererEventType_WindowClosed,
         ERendererEventType_WindowKeyEvent,
         ERendererEventType_WindowMouseEvent,
+        ERendererEventType_WindowMoveEvent,
         ERendererEventType_WindowResizeEvent,
         ERendererEventType_StreamSurfaceAvailable,
         ERendererEventType_StreamSurfaceUnavailable,
-
+        ERendererEventType_ObjectsPicked,
+        ERendererEventType_RenderThreadPeriodicLoopTimes,
         ERendererEventType_NUMBER_OF_ELEMENTS
     };
 
@@ -116,10 +116,8 @@ namespace ramses_internal
         "ERendererEventType_SceneUnmapped",
         "ERendererEventType_SceneUnmappedAsResultOfUnpublish",
         "ERendererEventType_SceneUnmapFailed",
-        "ERendererEventType_SceneAssignedToOffscreenBuffer",
-        "ERendererEventType_SceneAssignedToOffscreenBufferFailed",
-        "ERendererEventType_SceneAssignedToFramebuffer",
-        "ERendererEventType_SceneAssignedToFramebufferFailed",
+        "ERendererEventType_SceneAssignedToDisplayBuffer",
+        "ERendererEventType_SceneAssignedToDisplayBufferFailed",
         "ERendererEventType_SceneShown",
         "ERendererEventType_SceneShowFailed",
         "ERendererEventType_SceneHidden",
@@ -141,9 +139,12 @@ namespace ramses_internal
         "ERendererEventType_WindowClosed",
         "ERendererEventType_WindowKeyEvent",
         "ERendererEventType_WindowMouseEvent",
+        "ERendererEventType_WindowMoveEvent",
         "ERendererEventType_WindowResizeEvent",
         "ERendererEventType_StreamSurfaceAvailable",
-        "ERendererEventType_StreamSurfaceUnavailable"
+        "ERendererEventType_StreamSurfaceUnavailable",
+        "ERendererEventType_ObjectsPicked",
+        "ERendererEventType_RenderThreadPeriodicLoopTimes",
     };
 
     ENUM_TO_STRING(ERendererEventType, RendererEventTypeNames, ERendererEventType_NUMBER_OF_ELEMENTS);
@@ -152,6 +153,12 @@ namespace ramses_internal
     {
         EMouseEventType type = EMouseEventType_Invalid;
         Vector2i        pos;
+    };
+
+    struct WindowMoveEvent
+    {
+        Int32        posX;
+        Int32        posY;
     };
 
     struct KeyEvent
@@ -165,6 +172,12 @@ namespace ramses_internal
     {
         UInt32 width;
         UInt32 height;
+    };
+
+    struct RenderThreadPeriodicLoopTimes
+    {
+        std::chrono::microseconds maximumLoopTimeWithinPeriod;
+        std::chrono::microseconds averageLoopTimeWithinPeriod;
     };
 
     struct RendererEvent
@@ -189,7 +202,10 @@ namespace ramses_internal
         MouseEvent                  mouseEvent;
         ResizeEvent                 resizeEvent;
         KeyEvent                    keyEvent;
+        WindowMoveEvent             moveEvent;
         StreamTextureSourceId       streamSourceId;
+        PickableObjectIds           pickedObjectIds;
+        RenderThreadPeriodicLoopTimes renderThreadLoopTimes;
     };
 
     using RendererEventVector = std::vector<RendererEvent>;
@@ -203,41 +219,20 @@ namespace ramses_internal
 
         void dispatchEvents(RendererEventVector& resultEvents)
         {
-            ramses_internal::PlatformLightweightGuard guard(m_eventsLock);
+            std::lock_guard<std::mutex> guard(m_eventsLock);
             m_events.swap(resultEvents);
             m_events.clear();
         }
 
         void getEvents(RendererEventVector& resultEvents) const
         {
-            PlatformLightweightGuard guard(m_eventsLock);
+            std::lock_guard<std::mutex> guard(m_eventsLock);
             resultEvents = m_events;
         }
 
-        void addEvent(ERendererEventType eventType, DisplayHandle displayHandle)
+        void addDisplayEvent(ERendererEventType eventType, DisplayHandle displayHandle, const DisplayConfig& config = {})
         {
-            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " display=" << displayHandle.asMemoryHandle());
-
-            RendererEvent event(eventType);
-            event.displayHandle = displayHandle;
-
-            pushEventToQueue(event);
-        }
-
-        void addEvent(ERendererEventType eventType, DisplayHandle displayHandle, UInt8Vector&& pixelData)
-        {
-            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " display=" << displayHandle.asMemoryHandle());
-
-            RendererEvent event(eventType);
-            event.displayHandle = displayHandle;
-            event.pixelData = std::move(pixelData);
-
-            pushEventToQueue(event);
-        }
-
-        void addEvent(ERendererEventType eventType, DisplayHandle displayHandle, const DisplayConfig& config)
-        {
-            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " display=" << displayHandle.asMemoryHandle());
+            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " display=" << displayHandle);
 
             RendererEvent event(eventType);
             event.displayHandle = displayHandle;
@@ -246,7 +241,18 @@ namespace ramses_internal
             pushEventToQueue(event);
         }
 
-        void addEvent(ERendererEventType eventType, SceneId sceneId)
+        void addReadPixelsEvent(ERendererEventType eventType, DisplayHandle displayHandle, UInt8Vector&& pixelData)
+        {
+            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " display=" << displayHandle);
+
+            RendererEvent event(eventType);
+            event.displayHandle = displayHandle;
+            event.pixelData = std::move(pixelData);
+
+            pushEventToQueue(event);
+        }
+
+        void addSceneEvent(ERendererEventType eventType, SceneId sceneId)
         {
             LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " sceneId=" << sceneId.getValue());
 
@@ -256,7 +262,7 @@ namespace ramses_internal
             pushEventToQueue(event);
         }
 
-        void addEvent(ERendererEventType eventType, SceneId providerSceneId, SceneId consumerSceneId, DataSlotId providerdataId, DataSlotId consumerdataId)
+        void addDataLinkEvent(ERendererEventType eventType, SceneId providerSceneId, SceneId consumerSceneId, DataSlotId providerdataId, DataSlotId consumerdataId)
         {
             LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " providerSceneId=" << providerSceneId.getValue() << " providerDataId=" << providerdataId.getValue() << " consumerSceneId=" << consumerSceneId.getValue() << " consumerDataId=" << consumerdataId.getValue());
 
@@ -268,9 +274,9 @@ namespace ramses_internal
             pushEventToQueue(event);
         }
 
-        void addEvent(ERendererEventType eventType, OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId)
+        void addOBLinkEvent(ERendererEventType eventType, OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId)
         {
-            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " consumerSceneId=" << consumerSceneId.getValue() << " consumerDataId=" << consumerdataId.getValue() << " bufferHandle=" << providerBuffer.asMemoryHandle());
+            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " consumerSceneId=" << consumerSceneId.getValue() << " consumerDataId=" << consumerdataId.getValue() << " bufferHandle=" << providerBuffer);
 
             RendererEvent event(eventType);
             event.offscreenBuffer = providerBuffer;
@@ -279,9 +285,9 @@ namespace ramses_internal
             pushEventToQueue(event);
         }
 
-        void addEvent(ERendererEventType eventType, OffscreenBufferHandle buffer, DisplayHandle display)
+        void addOBEvent(ERendererEventType eventType, OffscreenBufferHandle buffer, DisplayHandle display)
         {
-            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " display=" << display.asMemoryHandle() << " bufferHandle=" << buffer.asMemoryHandle());
+            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " display=" << display << " bufferHandle=" << buffer);
 
             RendererEvent event(eventType);
             event.offscreenBuffer = buffer;
@@ -289,17 +295,18 @@ namespace ramses_internal
             pushEventToQueue(event);
         }
 
-        void addEvent(ERendererEventType eventType, OffscreenBufferHandle buffer, SceneId scene)
+        void addSceneAssignEvent(ERendererEventType eventType, OffscreenBufferHandle buffer, DisplayHandle display, SceneId scene)
         {
-            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " sceneId=" << scene.getValue() << " bufferHandle=" << buffer.asMemoryHandle());
+            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " sceneId=" << scene.getValue() << " display=" << display << " bufferHandle=" << buffer);
 
             RendererEvent event(eventType);
+            event.displayHandle = display;
             event.offscreenBuffer = buffer;
             event.sceneId = scene;
             pushEventToQueue(event);
         }
 
-        void addEvent(ERendererEventType eventType, SceneId sceneId, SceneVersionTag sceneVersionTag, EResourceStatus resourceStatus)
+        void addSceneFlushEvent(ERendererEventType eventType, SceneId sceneId, SceneVersionTag sceneVersionTag, EResourceStatus resourceStatus)
         {
             LOG_TRACE(CONTEXT_RENDERER, EnumToString(eventType) << " sceneId=" << sceneId.getValue() << " sceneVersionTag=" << sceneVersionTag.getValue() << " resourceStatus=" << EnumToString(resourceStatus));
 
@@ -310,7 +317,7 @@ namespace ramses_internal
             pushEventToQueue(event);
         }
 
-        void addEvent(ERendererEventType eventType, DisplayHandle display, MouseEvent mouseEvent)
+        void addWindowEvent(ERendererEventType eventType, DisplayHandle display, MouseEvent mouseEvent)
         {
             RendererEvent event(eventType);
             event.displayHandle = display;
@@ -318,7 +325,7 @@ namespace ramses_internal
             pushEventToQueue(event);
         }
 
-        void addEvent(ERendererEventType eventType, DisplayHandle display, KeyEvent keyEvent)
+        void addWindowEvent(ERendererEventType eventType, DisplayHandle display, KeyEvent keyEvent)
         {
             RendererEvent event(eventType);
             event.displayHandle = display;
@@ -326,7 +333,7 @@ namespace ramses_internal
             pushEventToQueue(event);
         }
 
-        void addEvent(ERendererEventType eventType, DisplayHandle display, ResizeEvent resizeEvent)
+        void addWindowEvent(ERendererEventType eventType, DisplayHandle display, ResizeEvent resizeEvent)
         {
             RendererEvent event(eventType);
             event.displayHandle = display;
@@ -334,7 +341,15 @@ namespace ramses_internal
             pushEventToQueue(event);
         }
 
-        void addEvent(ERendererEventType eventType, StreamTextureSourceId streamSourceId)
+        void addWindowEvent(ERendererEventType eventType, DisplayHandle display, WindowMoveEvent moveEvent)
+        {
+            RendererEvent event(eventType);
+            event.displayHandle = display;
+            event.moveEvent = moveEvent;
+            pushEventToQueue(event);
+        }
+
+        void addStreamSourceEvent(ERendererEventType eventType, StreamTextureSourceId streamSourceId)
         {
             LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " streamSourceId=" << streamSourceId.getValue());
 
@@ -343,10 +358,27 @@ namespace ramses_internal
             pushEventToQueue(event);
         }
 
+        void addPickedEvent(ERendererEventType eventType, const SceneId& sceneId, PickableObjectIds&& pickedObjectIds)
+        {
+            RendererEvent event(eventType);
+            event.sceneId = sceneId;
+            event.pickedObjectIds = std::move(pickedObjectIds);
+            pushEventToQueue(event);
+        }
+
+        void addRenderStatsEvent(ERendererEventType eventType, std::chrono::microseconds maximumLoopTimeInPeriod, std::chrono::microseconds renderthreadAverageLooptime)
+        {
+            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " max loop time=" << maximumLoopTimeInPeriod.count() << "microsec, avg loop time=" << renderthreadAverageLooptime.count() << "microsec");
+            RendererEvent event(eventType);
+            event.renderThreadLoopTimes.maximumLoopTimeWithinPeriod = maximumLoopTimeInPeriod;
+            event.renderThreadLoopTimes.averageLoopTimeWithinPeriod = renderthreadAverageLooptime;
+            pushEventToQueue(event);
+        }
+
         private:
             void pushEventToQueue(const RendererEvent& newEvent)
             {
-                ramses_internal::PlatformLightweightGuard guard(m_eventsLock);
+                std::lock_guard<std::mutex> guard(m_eventsLock);
                 m_events.push_back(newEvent);
 
                 // Every 10000 messages, an error is printed to avoid internal buffer overflow of event queue
@@ -356,7 +388,7 @@ namespace ramses_internal
                 }
             }
 
-            mutable PlatformLightweightLock m_eventsLock;
+            mutable std::mutex m_eventsLock;
             RendererEventVector m_events;
     };
 }

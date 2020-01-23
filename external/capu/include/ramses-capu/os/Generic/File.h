@@ -248,8 +248,8 @@ namespace ramses_capu
         inline
         std::string File::getExtension() const
         {
-            int_t position = StringUtils::LastIndexOf(mPath.c_str(), '.');
-            if (position < 0)
+            const auto position = mPath.rfind('.');
+            if (position == std::string::npos)
             {
                 // index not found
                 return std::string();
@@ -260,12 +260,12 @@ namespace ramses_capu
         inline
         std::string File::getFileName() const
         {
-            int_t lastSeparator = StringUtils::LastIndexOf(mPath.c_str(), '/');
-            if (lastSeparator == -1)
+            size_t lastSeparator = mPath.rfind('/');
+            if (lastSeparator == std::string::npos)
             {
-                lastSeparator = StringUtils::LastIndexOf(mPath.c_str(), '\\');
+                lastSeparator = mPath.rfind('\\');
             }
-            if (lastSeparator != -1)
+            if (lastSeparator != std::string::npos)
             {
                 return std::string(mPath, lastSeparator + 1);
             }

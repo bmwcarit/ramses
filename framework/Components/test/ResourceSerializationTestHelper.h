@@ -66,28 +66,28 @@ namespace ramses_internal
 
         ASSERT_TRUE(a.isDeCompressedAvailable());
         ASSERT_TRUE(b.isDeCompressedAvailable());
-        ASSERT_TRUE(a.getResourceData().get() != nullptr);
-        ASSERT_TRUE(b.getResourceData().get() != nullptr);
-        ASSERT_EQ(a.getResourceData()->size(), b.getResourceData()->size());
-        EXPECT_EQ(0, PlatformMemory::Compare(a.getResourceData()->getRawData(), b.getResourceData()->getRawData(), a.getResourceData()->size()));
+        ASSERT_TRUE(a.getResourceData().data());
+        ASSERT_TRUE(b.getResourceData().data());
+        ASSERT_EQ(a.getResourceData().size(), b.getResourceData().size());
+        EXPECT_EQ(0, PlatformMemory::Compare(a.getResourceData().data(), b.getResourceData().data(), a.getResourceData().size()));
     }
 
     inline void ResourceSerializationTestHelper::SetResourceDataRandom(IResource& res, UInt32 blobSize)
     {
         const uint8_t seed = static_cast<UInt8>(TestRandom::Get(0, 256));
-        SceneResourceData data(new MemoryBlob(blobSize));
-        for (UInt32 i = 0; i < data->size(); ++i)
+        ResourceBlob data(blobSize);
+        for (UInt32 i = 0; i < data.size(); ++i)
         {
-            (*data)[i] = static_cast<uint8_t>(i + seed);
+            data.data()[i] = static_cast<uint8_t>(i + seed);
         }
-        res.setResourceData(data);
+        res.setResourceData(std::move(data));
     }
 
     // TextureResource
     template <>
     inline IResource* ResourceSerializationTestHelper::CreateTestResource<TextureResource>(UInt32 blobSize)
     {
-        const TextureMetaInfo texDesc = { 16u, 17u, 1u, ETextureFormat_RGBA16, false, { 18u, 19u} };
+        const TextureMetaInfo texDesc = { 16u, 17u, 1u, ETextureFormat_RGBA16, false, {}, { 18u, 19u} };
         TextureResource* resource = new TextureResource(EResourceType_Texture3D, texDesc, ResourceCacheFlag(15u), "resName");
         SetResourceDataRandom(*resource, blobSize);
         return resource;
@@ -108,7 +108,7 @@ namespace ramses_internal
     template <>
     inline IResource* ResourceSerializationTestHelper::CreateTestResource<ArrayResource>(UInt32 blobSize)
     {
-        ArrayResource* resource = new ArrayResource(EResourceType_VertexArray, 3, EDataType_Vector3F, 0u, ResourceCacheFlag(15u), "resName");
+        ArrayResource* resource = new ArrayResource(EResourceType_VertexArray, 3, EDataType_Vector3F, nullptr, ResourceCacheFlag(15u), "resName");
         SetResourceDataRandom(*resource, blobSize);
         return resource;
     }

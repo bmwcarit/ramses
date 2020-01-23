@@ -6,7 +6,6 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "Utils/ScopedPointer.h"
 #include "TransportCommon/CommunicationSystemFactory.h"
 #include "TransportCommon/IDiscoveryDaemon.h"
 #include "ramses-sdk-build-config.h"
@@ -16,6 +15,7 @@
 #include "Ramsh/RamshCommandExit.h"
 #include "Utils/RamsesLogger.h"
 #include "Utils/StatisticCollection.h"
+#include <memory>
 
 
 int main(int argc, const char* argv[])
@@ -36,7 +36,7 @@ int main(int argc, const char* argv[])
 
     PlatformLock frameworkLock;
     StatisticCollectionFramework statisticCollection;
-    ScopedPointer<IDiscoveryDaemon> discoveryDaemon(CommunicationSystemFactory::ConstructDiscoveryDaemon(config, frameworkLock, statisticCollection, &ramsh));
+    std::unique_ptr<IDiscoveryDaemon> discoveryDaemon(CommunicationSystemFactory::ConstructDiscoveryDaemon(config, frameworkLock, statisticCollection, &ramsh));
     discoveryDaemon->start();
     LOG_INFO(CONTEXT_SMOKETEST, "Ramsh commands registered");
 

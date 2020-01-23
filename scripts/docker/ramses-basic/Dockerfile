@@ -6,7 +6,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-FROM alpine:3.8
+FROM alpine:3.11
 
 RUN apk add --no-cache \
         bash \

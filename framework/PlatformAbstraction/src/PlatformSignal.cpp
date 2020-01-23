@@ -15,17 +15,17 @@ namespace ramses_internal
     namespace {
         struct HandlerInfo
         {
-            Signal::SignalHandlerFunction handler;
-            Signal::SignalHandlerFunction previousHandler;
+            PlatformSignal::SignalHandlerFunction handler;
+            PlatformSignal::SignalHandlerFunction previousHandler;
             bool chainPrevious;
             bool active;
         };
 
-        static HashMap<ramses_capu::ESignal, HandlerInfo> gSignalMap;
+        static HashMap<ESignal, HandlerInfo> gSignalMap;
 
         static void SignalHandlerDispatcher(int sig)
         {
-            ramses_capu::ESignal enumSig = static_cast<ramses_capu::ESignal>(sig);
+            ESignal enumSig = static_cast<ESignal>(sig);
             HandlerInfo info;
             if (EStatus_RAMSES_OK == gSignalMap.get(enumSig, info))
             {
@@ -35,19 +35,30 @@ namespace ramses_internal
                     info.active = true;
                     gSignalMap.put(enumSig, info);
 
-                    signal(sig, info.previousHandler);
-                    raise(sig);
+                    ::signal(sig, info.previousHandler);
+                    ::raise(sig);
 
                     info.active = false;
                     gSignalMap.put(enumSig, info);
                 }
             }
         }
+
+        static PlatformSignal::SignalHandlerFunction InstallSignalHandler(ESignal sig, PlatformSignal::SignalHandlerFunction handler)
+        {
+#ifdef __INTEGRITY
+            UNUSED(sig);
+            UNUSED(handler);
+            return PlatformSignal::SignalHandlerFunction(0);
+#else
+            return ::signal(static_cast<int>(sig), (handler != nullptr) ? handler : SIG_DFL);
+#endif
+        }
     }
 
-    void Signal::SetSignalHandler(ramses_capu::ESignal sig, SignalHandlerFunction handler, bool chainPreviousHandler)
+    void PlatformSignal::SetSignalHandler(ESignal sig, SignalHandlerFunction handler, bool chainPreviousHandler)
     {
-        SignalHandlerFunction previousHandler = signal(sig, SignalHandlerDispatcher);
+        SignalHandlerFunction previousHandler = InstallSignalHandler(sig, SignalHandlerDispatcher);
 
         HandlerInfo info;
         gSignalMap.get(sig, info); // get current state if exists
@@ -66,12 +77,12 @@ namespace ramses_internal
         gSignalMap.put(sig, info);
     }
 
-    void Signal::RestoreSignalHandlers()
+    void PlatformSignal::RestoreSignalHandlers()
     {
         for(auto signalHandler : gSignalMap)
         {
             HandlerInfo& info = signalHandler.value;
-            SignalHandlerFunction previousHandler = signal(signalHandler.key, SignalHandlerDispatcher);
+            SignalHandlerFunction previousHandler = InstallSignalHandler(signalHandler.key, SignalHandlerDispatcher);
             if (previousHandler != SignalHandlerDispatcher)
             {
                 info.previousHandler = previousHandler;
@@ -79,24 +90,17 @@ namespace ramses_internal
         }
     }
 
-    const char* Signal::SignalToString(ramses_capu::ESignal sig)
+    const char* PlatformSignal::SignalToString(ESignal sig)
     {
         switch (sig)
         {
-        case ramses_capu::CAPU_SIGABRT: return "SIGABRT";
-        case ramses_capu::CAPU_SIGFPE:  return "SIGFPE";
-        case ramses_capu::CAPU_SIGILL:  return "SIGILL";
-        case ramses_capu::CAPU_SIGINT:  return "SIGINT";
-        case ramses_capu::CAPU_SIGSEGV: return "SIGSEGV";
-        case ramses_capu::CAPU_SIGTERM: return "SIGTERM";
+        case ESignal::ABRT: return "SIGABRT";
+        case ESignal::FPE:  return "SIGFPE";
+        case ESignal::ILL:  return "SIGILL";
+        case ESignal::INT:  return "SIGINT";
+        case ESignal::SEGV: return "SIGSEGV";
+        case ESignal::TERM: return "SIGTERM";
         default: return "SIG unknown";
         }
-    }
-
-    void Signal::DisableSigPipe()
-    {
-#ifdef __linux__
-        ::signal(SIGPIPE, SIG_IGN);
-#endif
     }
 }

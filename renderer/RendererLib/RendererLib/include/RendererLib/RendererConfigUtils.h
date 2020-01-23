@@ -10,7 +10,6 @@
 #define RAMSES_RENDERERCONFIGUTILS_H
 
 #include "RendererAPI/Types.h"
-#include "Math3d/CameraMatrixHelper.h"
 
 namespace ramses_internal
 {

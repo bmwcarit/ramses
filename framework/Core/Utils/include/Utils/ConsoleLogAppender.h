@@ -10,7 +10,10 @@
 #define RAMSES_CONSOLELOGAPPENDER_H
 
 #include "Utils/LogAppenderBase.h"
+#include "Utils/LogLevel.h"
+#include "Collections/StringOutputStream.h"
 #include <functional>
+#include <atomic>
 
 namespace ramses_internal
 {
@@ -19,7 +22,10 @@ namespace ramses_internal
     public:
         ConsoleLogAppender();
 
-        virtual void logMessage(const LogMessage& logMessage) override;
+        virtual void log(const LogMessage& logMessage) override;
+
+        ELogLevel getLogLevel() const;
+        void setLogLevel(ELogLevel level);
 
         void setAfterLogCallback(const std::function<void()>& callback);
         void removeAfterLogCallback();
@@ -27,7 +33,19 @@ namespace ramses_internal
     private:
         std::function<void()> m_callback;
         const bool m_colorsEnabled;
+        std::atomic<ELogLevel> m_logLevel{ELogLevel::Info};
+        StringOutputStream m_outbuffer;
     };
+
+    inline ELogLevel ConsoleLogAppender::getLogLevel() const
+    {
+        return m_logLevel;
+    }
+
+    inline void ConsoleLogAppender::setLogLevel(ELogLevel level)
+    {
+        m_logLevel = level;
+    }
 }
 
 #endif

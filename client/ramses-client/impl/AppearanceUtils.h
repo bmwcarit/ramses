@@ -375,6 +375,10 @@ namespace ramses
                 return ramses_internal::EDrawMode::Triangles;
             case EDrawMode_TriangleStrip:
                 return ramses_internal::EDrawMode::TriangleStrip;
+            case EDrawMode_TriangleFan:
+                return ramses_internal::EDrawMode::TriangleFan;
+            case EDrawMode_LineStrip:
+                return ramses_internal::EDrawMode::LineStrip;
             default:
                 assert(false);
                 return ramses_internal::EDrawMode::Triangles;
@@ -395,6 +399,10 @@ namespace ramses
                 return EDrawMode_Triangles;
             case ramses_internal::EDrawMode::TriangleStrip:
                 return EDrawMode_TriangleStrip;
+            case ramses_internal::EDrawMode::TriangleFan:
+                return EDrawMode_TriangleFan;
+            case ramses_internal::EDrawMode::LineStrip:
+                return EDrawMode_LineStrip;
             default:
                 assert(false);
                 return EDrawMode_Triangles;

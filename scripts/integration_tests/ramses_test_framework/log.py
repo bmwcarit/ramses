@@ -7,6 +7,7 @@
 #  -------------------------------------------------------------------------
 
 
+from __future__ import print_function
 import platform
 import os
 
@@ -86,9 +87,9 @@ def _internal_print(msg, bold=False, foreground='', background=''):
         b = ""
         if bold:
             b = text.bold
-        print text.endc + b + foreground + background + msg + text.endc
+        print(text.endc + b + foreground + background + msg + text.endc)
     else:
-        print msg
+        print(msg)
 
     if default_file_logger:
         default_file_logger.log(msg)

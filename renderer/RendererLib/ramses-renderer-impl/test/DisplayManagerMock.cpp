@@ -15,8 +15,9 @@ namespace ramses
     DisplayManagerMock::DisplayManagerMock()
     {
         ON_CALL(*this, setSceneState(_, _, _)).WillByDefault(Return(true));
-        ON_CALL(*this, setSceneMapping(_, _, _)).WillByDefault(Return(true));
-        ON_CALL(*this, setSceneOffscreenBufferMapping(_, _, _, _, _, _)).WillByDefault(Return(true));
+        ON_CALL(*this, setSceneMapping(_, _)).WillByDefault(Return(true));
+        ON_CALL(*this, setSceneDisplayBufferAssignment(_, _, _)).WillByDefault(Return(true));
+        ON_CALL(*this, setDisplayBufferClearColor(_, _, _, _, _)).WillByDefault(Return(true));
         EXPECT_CALL(*this, processConfirmationEchoCommand(_)).Times(AnyNumber());
     }
 }

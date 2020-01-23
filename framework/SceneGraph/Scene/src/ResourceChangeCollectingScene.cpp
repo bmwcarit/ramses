@@ -17,10 +17,17 @@ namespace ramses_internal
     {
     }
 
-    void ResourceChangeCollectingScene::releaseRenderable(RenderableHandle renderableHandle)
+    DataLayoutHandle ResourceChangeCollectingScene::allocateDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle)
     {
-        this->handleClientResourceReferenceChange(TransformationCachedScene::getRenderable(renderableHandle).effectResource, ResourceContentHash::Invalid());
-        TransformationCachedScene::releaseRenderable(renderableHandle);
+        this->handleClientResourceReferenceChange(ResourceContentHash::Invalid(), effectHash);
+        DataLayoutHandle handleActual = TransformationCachedScene::allocateDataLayout(dataFields, effectHash, handle);
+        return handleActual;
+    }
+
+    void ResourceChangeCollectingScene::releaseDataLayout(DataLayoutHandle layoutHandle)
+    {
+        this->handleClientResourceReferenceChange(TransformationCachedScene::getDataLayout(layoutHandle).getEffectHash(), ResourceContentHash::Invalid());
+        TransformationCachedScene::releaseDataLayout(layoutHandle);
     }
 
     void ResourceChangeCollectingScene::releaseDataInstance(DataInstanceHandle dataInstanceHandle)
@@ -55,12 +62,6 @@ namespace ramses_internal
     {
         this->handleClientResourceReferenceChange(TransformationCachedScene::getTextureSampler(handle).textureResource, ResourceContentHash::Invalid());
         TransformationCachedScene::releaseTextureSampler(handle);
-    }
-
-    void ResourceChangeCollectingScene::setRenderableEffect(RenderableHandle renderableHandle, const ResourceContentHash& effectHash)
-    {
-        this->handleClientResourceReferenceChange(TransformationCachedScene::getRenderable(renderableHandle).effectResource, effectHash);
-        TransformationCachedScene::setRenderableEffect(renderableHandle, effectHash);
     }
 
     void ResourceChangeCollectingScene::setDataResource(DataInstanceHandle dataInstanceHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor)

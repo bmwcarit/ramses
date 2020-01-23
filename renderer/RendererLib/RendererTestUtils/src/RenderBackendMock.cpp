@@ -18,7 +18,7 @@ namespace ramses_internal
         ON_CALL(*this, getSurface()).WillByDefault(ReturnRef(surfaceMock));
         ON_CALL(*this, getDevice()).WillByDefault(ReturnRef(deviceMock));
         ON_CALL(*this, getEmbeddedCompositor()).WillByDefault(ReturnRef(embeddedCompositorMock));
-        ON_CALL(*this, getTextureUploadingAdapter()).WillByDefault(ReturnRef(textureUploadingAdapterMock));
+        ON_CALL(*this, getTextureUploadingAdapter()).WillByDefault(ReturnRef(textureUploadingAdapter));
 
         EXPECT_CALL(*this, getDevice()).Times(AnyNumber());
         EXPECT_CALL(*this, getSurface()).Times(AnyNumber());

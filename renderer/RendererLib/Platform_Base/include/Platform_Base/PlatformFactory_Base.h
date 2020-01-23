@@ -94,7 +94,7 @@ namespace ramses_internal
             return static_cast<WINDOW*>(&window);
         }
 
-        return 0;
+        return nullptr;
     }
 
     template <typename CONTEXT>
@@ -105,7 +105,7 @@ namespace ramses_internal
             return static_cast<CONTEXT*>(&context);
         }
 
-        return 0;
+        return nullptr;
     }
 
     template <typename DEVICE>
@@ -138,7 +138,7 @@ namespace ramses_internal
             return static_cast<EMBEDDED_COMPOSITOR*>(&compositor);
         }
 
-        return 0;
+        return nullptr;
     }
 
     template <typename TEXTURE_UPLOADING_ADAPTER>
@@ -199,7 +199,7 @@ namespace ramses_internal
         else
         {
             delete context;
-            return 0;
+            return nullptr;
         }
     }
 
@@ -215,7 +215,7 @@ namespace ramses_internal
         else
         {
             delete device;
-            return 0;
+            return nullptr;
         }
     }
 
@@ -238,7 +238,7 @@ namespace ramses_internal
         else
         {
             delete compositor;
-            return 0;
+            return nullptr;
         }
     }
 

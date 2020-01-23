@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 /**
-@mainpage RAMSES Shader Tools
+@page ToolsMain Shader Tools
 
 # Summary
 
@@ -25,5 +25,7 @@ into files, but also other types of RAMSES resources.
 @ref GLSLToEffectResource
 
 @ref ResourcePacker
+
+@ref ExampleUsageAllTools
 
  */

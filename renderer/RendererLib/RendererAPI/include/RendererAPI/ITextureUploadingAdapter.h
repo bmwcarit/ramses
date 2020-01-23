@@ -12,6 +12,7 @@
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "SceneAPI/TextureEnums.h"
 #include "RendererAPI/Types.h"
+#include "Resource/TextureMetaInfo.h"
 
 namespace ramses_internal
 {
@@ -19,7 +20,7 @@ namespace ramses_internal
     {
     public:
         virtual ~ITextureUploadingAdapter() {}
-        virtual void uploadTexture2D(DeviceResourceHandle textureHandle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data) = 0;
+        virtual void uploadTexture2D(DeviceResourceHandle textureHandle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data,  const TextureSwizzleArray& swizzle) = 0;
     };
 }
 

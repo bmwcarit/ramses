@@ -66,9 +66,9 @@ namespace ramses_internal
         Matrix22f(const Vector2& v1, const Vector2& v2);
 
         Matrix22f(const Matrix22f& other) = default;
-        Matrix22f(Matrix22f&& other) = default;
+        Matrix22f(Matrix22f&& other) RNOEXCEPT = default;
         Matrix22f& operator=(const Matrix22f& other) = default;
-        Matrix22f& operator=(Matrix22f&& other) = default;
+        Matrix22f& operator=(Matrix22f&& other) RNOEXCEPT = default;
 
         /**
         * Sets matrix elements to the given values
@@ -112,14 +112,14 @@ namespace ramses_internal
         * @param other Matrix22f to compare with
         * @return true if matrices are equal false otherwise
         */
-        Bool operator==(const Matrix22f& other) const;
+        bool operator==(const Matrix22f& other) const;
 
         /**
         * Check if two matrices are not equal
         * @param other Matrix22f to compare with
         * @return true if matrices are equal false otherwise
         */
-        Bool operator!=(const Matrix22f& other) const;
+        bool operator!=(const Matrix22f& other) const;
 
         /**
         * Multiplies the matrix with the given Vector
@@ -223,8 +223,8 @@ namespace ramses_internal
         return !operator==(other);
     }
 
-    static_assert(std::is_nothrow_move_constructible<Matrix22f>::value &&
-        std::is_nothrow_move_assignable<Matrix22f>::value, "Matrix22f must be movable");
+    static_assert(std::is_nothrow_move_constructible<Matrix22f>::value, "Matrix22f must be movable");
+    static_assert(std::is_nothrow_move_assignable<Matrix22f>::value, "Matrix22f must be movable");
 }
 
 #endif

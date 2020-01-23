@@ -11,6 +11,7 @@
 
 #include "Collections/Guid.h"
 #include "SceneAPI/SceneId.h"
+#include "SceneAPI/SceneTypes.h"
 
 namespace ramses_internal
 {

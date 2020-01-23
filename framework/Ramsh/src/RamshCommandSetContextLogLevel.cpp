@@ -8,34 +8,34 @@
 
 #include "Ramsh/RamshCommandSetContextLogLevel.h"
 #include "Ramsh/Ramsh.h"
-#include "Collections/HashSet.h"
 #include "Utils/LogMacros.h"
 #include "Utils/RamsesLogger.h"
+#include "Utils/LogHelper.h"
 
 namespace ramses_internal
 {
     RamshCommandSetContextLogLevel::RamshCommandSetContextLogLevel(const Ramsh& ramsh) : m_ramsh(ramsh)
     {
-        //commands to set a common log level for all appenders
+        //commands to set a common log level for all contexts
         registerKeyword("setContextLogLevel");
         registerKeyword("cl");
 
         description = "Commands to set the log level of all contexts. Usage: setContextLogLevel <0..7>";
     }
 
-    Bool RamshCommandSetContextLogLevel::executeInput(const RamshInput& input)
+    bool RamshCommandSetContextLogLevel::executeInput(const RamshInput& input)
     {
         if (input.size() != 2)
-        {
-            LOG_ERROR(CONTEXT_RAMSH, "RamshCommandSetContextLogLevel: Wrong usage, usage: setContextLogLevel <0..7>");
             return false;
-        }
 
-        const ELogLevel logLevel = RamsesLogger::GetLoglevelFromInt(static_cast<Int32>(atoi(input[1].c_str())));
+        ELogLevel level;
+        if (!LogHelper::StringToLogLevel(input[1], level))
+            return false;
+
         RamsesLogger& logger = GetRamsesLogger();
+        logger.setLogLevelForContexts(level);
 
-        logger.setLogLevelForContexts(logLevel);
-        for (const auto& info : GetRamsesLogger().getAllContextsInformation())
+        for (const auto& info : logger.getAllContextsInformation())
         {
             LOG_INFO(CONTEXT_RAMSH, info.id << " | " << info.name
                         << " | "

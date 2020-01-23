@@ -25,15 +25,19 @@ namespace ramses_internal
             , dataField(0u)
             , samplerField(1u)
         {
+            // DataLayout triggers marking its effect hash as new resource, in order not to affect all the test cases here
+            // the effect hash used by these default layouts is 'invalid'
             DataFieldInfoVector geometryDataFields(2u);
             geometryDataFields[indicesField.asMemoryHandle()] = DataFieldInfo(EDataType_Indices, 1u, EFixedSemantics_Indices);
             geometryDataFields[vertAttribField.asMemoryHandle()] = DataFieldInfo(EDataType_Vector3Buffer, 1u, EFixedSemantics_VertexPositionAttribute);
-            scene.allocateDataLayout(geometryDataFields, testGeometryLayout);
+            scene.allocateDataLayout(geometryDataFields, ResourceContentHash::Invalid(), testGeometryLayout);
 
             DataFieldInfoVector uniformDataFields(2u);
             uniformDataFields[dataField.asMemoryHandle()] = DataFieldInfo(EDataType_Float);
             uniformDataFields[samplerField.asMemoryHandle()] = DataFieldInfo(EDataType_TextureSampler);
-            scene.allocateDataLayout(uniformDataFields, testUniformLayout);
+            scene.allocateDataLayout(uniformDataFields, ResourceContentHash::Invalid(), testUniformLayout);
+
+            scene.clearResourceChanges();
         }
 
     protected:
@@ -115,6 +119,55 @@ namespace ramses_internal
         EXPECT_EQ(ResourceContentHash(222u, 0), resourceChanges.m_addedClientResourceRefs[1]);
         EXPECT_EQ(0u, resourceChanges.m_removedClientResourceRefs.size()); // old value was invalid!
         expectSameSceneResourceChangesWhenExtractedFromScene();
+
+        scene.clearResourceChanges();
+    }
+
+    TEST_F(AResourceChangeCollectingScene, marksResourceAsAddedAfterUsedByDataLayout)
+    {
+        EXPECT_EQ(0u, resourceChanges.m_addedClientResourceRefs.size());
+        EXPECT_EQ(0u, resourceChanges.m_removedClientResourceRefs.size());
+
+        const ResourceContentHash hash(123u, 0);
+        scene.allocateDataLayout({}, hash);
+
+        ASSERT_EQ(1u, resourceChanges.m_addedClientResourceRefs.size());
+        EXPECT_EQ(hash, resourceChanges.m_addedClientResourceRefs[0]);
+        EXPECT_EQ(0u, resourceChanges.m_removedClientResourceRefs.size());
+        expectSameSceneResourceChangesWhenExtractedFromScene();
+
+        scene.clearResourceChanges();
+    }
+
+    TEST_F(AResourceChangeCollectingScene, marksResourceAsRemovedAfterNotUsedAnymoreByAnyDataLayout)
+    {
+        const ResourceContentHash hash(123u, 0);
+        const auto dataLayout1 = scene.allocateDataLayout({{ EDataType_Indices, 1u, EFixedSemantics_Indices }}, hash);
+        const auto dataLayout2 = scene.allocateDataLayout({{ EDataType_Float, 1u, EFixedSemantics_Invalid }}, hash);
+        scene.clearResourceChanges();
+
+        scene.releaseDataLayout(dataLayout2);
+        EXPECT_EQ(0u, resourceChanges.m_addedClientResourceRefs.size());
+        EXPECT_EQ(0u, resourceChanges.m_removedClientResourceRefs.size());
+
+        scene.releaseDataLayout(dataLayout1);
+        EXPECT_EQ(0u, resourceChanges.m_addedClientResourceRefs.size());
+        ASSERT_EQ(1u, resourceChanges.m_removedClientResourceRefs.size());
+        EXPECT_EQ(hash, resourceChanges.m_removedClientResourceRefs[0]);
+        expectSameSceneResourceChangesWhenExtractedFromScene();
+
+        scene.clearResourceChanges();
+    }
+
+    TEST_F(AResourceChangeCollectingScene, doesNotMarkResourceAsAddedIfAlreadyUsedByAnotherDataLayout)
+    {
+        const ResourceContentHash hash(123u, 0);
+        scene.allocateDataLayout({}, hash);
+        scene.clearResourceChanges();
+
+        scene.allocateDataLayout({}, hash);
+        EXPECT_EQ(0u, resourceChanges.m_addedClientResourceRefs.size());
+        EXPECT_EQ(0u, resourceChanges.m_removedClientResourceRefs.size());
 
         scene.clearResourceChanges();
     }
@@ -242,29 +295,6 @@ namespace ramses_internal
         scene.clearResourceChanges();
 
         scene.releaseDataInstance(dataInstance);
-        EXPECT_EQ(1u, resourceChanges.m_removedClientResourceRefs.size());
-        EXPECT_EQ(hash, resourceChanges.m_removedClientResourceRefs[0]);
-    }
-
-    TEST_F(AResourceChangeCollectingScene, marksEffectNewIfSetOnRenderable)
-    {
-        const RenderableHandle renderable = createRenderable();
-        const ResourceContentHash hash(123u, 0);
-        scene.setRenderableEffect(renderable, hash);
-
-        EXPECT_EQ(1u, resourceChanges.m_addedClientResourceRefs.size());
-        EXPECT_EQ(hash, resourceChanges.m_addedClientResourceRefs[0]);
-    }
-
-    TEST_F(AResourceChangeCollectingScene, marksEffectObsoleteIfRenderableUsingItDeleted)
-    {
-        const RenderableHandle renderable = createRenderable();
-        const ResourceContentHash hash(123u, 0);
-        scene.setRenderableEffect(renderable, hash);
-
-        scene.clearResourceChanges();
-
-        scene.releaseRenderable(renderable);
         EXPECT_EQ(1u, resourceChanges.m_removedClientResourceRefs.size());
         EXPECT_EQ(hash, resourceChanges.m_removedClientResourceRefs[0]);
     }

@@ -53,11 +53,13 @@ namespace ramses_internal
         virtual void cancelResourceRequest(const ResourceContentHash& resourceHash, const RequesterID& requesterID) override;
         virtual ManagedResourceVector popArrivedResources(const RequesterID& requesterID) override;
 
+        // IConnectionStatusListener
         virtual void newParticipantHasConnected(const Guid& guid) override;
         virtual void participantHasDisconnected(const Guid& guid) override;
 
     private:
         bool isSceneActionListCounterValid(const SceneId& sceneId, const uint64_t& counter);
+
         PlatformLock&                 m_frameworkLock;
         IConnectionStatusUpdateNotifier& m_connectionStatusUpdateNotifier;
         ISceneGraphConsumerComponent& m_sceneGraphConsumerComponent;

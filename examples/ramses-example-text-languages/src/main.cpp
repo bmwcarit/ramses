@@ -25,9 +25,9 @@ int main(int argc, char* argv[])
     const uint32_t displayHeight(480);
 
     ramses::RamsesFramework framework(argc, argv);
-    ramses::RamsesClient client("ExampleTextDirections", framework);
+    ramses::RamsesClient& client(*framework.createClient("ExampleTextDirections"));
 
-    ramses::Scene* scene = client.createScene(123u);
+    ramses::Scene* scene = client.createScene(ramses::sceneId_t(123u));
 
     // create font registry to hold font memory and text cache to cache text meshes
     ramses::FontRegistry fontRegistry;

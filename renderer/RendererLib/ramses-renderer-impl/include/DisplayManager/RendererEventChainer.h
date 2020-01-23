@@ -11,7 +11,7 @@
 
 #include "ramses-renderer-api/IRendererEventHandler.h"
 
-namespace ramses_display_manager
+namespace ramses_internal
 {
     class RendererEventChainer final : public ramses::IRendererEventHandler
     {
@@ -76,7 +76,7 @@ namespace ramses_display_manager
             m_handler2.dataLinked(providerScene, providerId, consumerScene, consumerId, result);
         }
 
-        virtual void offscreenBufferLinkedToSceneData(ramses::offscreenBufferId_t providerOffscreenBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId, ramses::ERendererEventResult result) override
+        virtual void offscreenBufferLinkedToSceneData(ramses::displayBufferId_t providerOffscreenBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId, ramses::ERendererEventResult result) override
         {
             m_handler1.offscreenBufferLinkedToSceneData(providerOffscreenBuffer, consumerScene, consumerId, result);
             m_handler2.offscreenBufferLinkedToSceneData(providerOffscreenBuffer, consumerScene, consumerId, result);
@@ -88,28 +88,22 @@ namespace ramses_display_manager
             m_handler2.dataUnlinked(consumerScene, consumerId, result);
         }
 
-        virtual void offscreenBufferCreated(ramses::displayId_t displayId, ramses::offscreenBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
+        virtual void offscreenBufferCreated(ramses::displayId_t displayId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
         {
             m_handler1.offscreenBufferCreated(displayId, offscreenBufferId, result);
             m_handler2.offscreenBufferCreated(displayId, offscreenBufferId, result);
         }
 
-        virtual void offscreenBufferDestroyed(ramses::displayId_t displayId, ramses::offscreenBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
+        virtual void offscreenBufferDestroyed(ramses::displayId_t displayId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
         {
             m_handler1.offscreenBufferDestroyed(displayId, offscreenBufferId, result);
             m_handler2.offscreenBufferDestroyed(displayId, offscreenBufferId, result);
         }
 
-        virtual void sceneAssignedToOffscreenBuffer(ramses::sceneId_t sceneId, ramses::offscreenBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
+        virtual void sceneAssignedToDisplayBuffer(ramses::sceneId_t sceneId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
         {
-            m_handler1.sceneAssignedToOffscreenBuffer(sceneId, offscreenBufferId, result);
-            m_handler2.sceneAssignedToOffscreenBuffer(sceneId, offscreenBufferId, result);
-        }
-
-        virtual void sceneAssignedToFramebuffer(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-        {
-            m_handler1.sceneAssignedToFramebuffer(sceneId, result);
-            m_handler2.sceneAssignedToFramebuffer(sceneId, result);
+            m_handler1.sceneAssignedToDisplayBuffer(sceneId, offscreenBufferId, result);
+            m_handler2.sceneAssignedToDisplayBuffer(sceneId, offscreenBufferId, result);
         }
 
         virtual void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, ramses::displayId_t displayId, ramses::ERendererEventResult result) override
@@ -206,6 +200,24 @@ namespace ramses_display_manager
         {
             m_handler1.windowResized(displayId, width, height);
             m_handler2.windowResized(displayId, width, height);
+        }
+
+        virtual void windowMoved(ramses::displayId_t displayId, int32_t posX, int32_t posY) override
+        {
+            m_handler1.windowMoved(displayId, posX, posY);
+            m_handler2.windowMoved(displayId, posX, posY);
+        }
+
+        virtual void objectsPicked(ramses::sceneId_t sceneId, const ramses::pickableObjectId_t* pickedObjects, uint32_t pickedObjectsCount) override
+        {
+            m_handler1.objectsPicked(sceneId, pickedObjects, pickedObjectsCount);
+            m_handler2.objectsPicked(sceneId, pickedObjects, pickedObjectsCount);
+        }
+
+        virtual void renderThreadLoopTimings(std::chrono::microseconds maximumLoopTime, std::chrono::microseconds averageLooptime) override
+        {
+            m_handler1.renderThreadLoopTimings(maximumLoopTime, averageLooptime);
+            m_handler2.renderThreadLoopTimings(maximumLoopTime, averageLooptime);
         }
 
     private:

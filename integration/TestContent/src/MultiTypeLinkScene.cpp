@@ -11,9 +11,6 @@
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/DataVector4f.h"
-#include "ramses-client-api/AnimationSystem.h"
-#include "ramses-client-api/SplineLinearFloat.h"
-#include "ramses-client-api/AnimationSequence.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/Effect.h"
@@ -77,14 +74,13 @@ namespace ramses_internal
         case TRANSFORMATION_CONSUMER_DATA_AND_TEXTURE_PROVIDER:
         {
             scene.createDataProvider(*colorData, DataProviderId);
-            colorData->setValue(1.f, 0.f, 0.f, 1.f);
-            animateProvidedContent(*colorData);
+            colorData->setValue(1.f, 1.f, 0.f, 1.f);
 
             scene.createTransformationDataConsumer(*groupNode, TransformationConsumerId);
 
             const std::array<uint8_t, 4> pxData{ {0xff, 0x0, 0x0, 0xff} };
             const ramses::MipLevelData mipLevelData(4, pxData.data());
-            const ramses::Texture2D& texture = *m_client.createTexture2D(1u, 1u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache);
+            const ramses::Texture2D& texture = *m_client.createTexture2D(1u, 1u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache);
             const ramses::TextureSampler& sampler = createSampler(texture);
             setSampler(appearance2, sampler);
 
@@ -97,13 +93,12 @@ namespace ramses_internal
             colorData->setValue(0.f, 1.f, 0.f, 1.f);
 
             ramses::Node* providerNode = scene.createNode();
-            providerNode->setTranslation(1.5f, -2.f, 0.f);
+            providerNode->setTranslation(1.5f, -2.f, 5.f);
             scene.createTransformationDataProvider(*providerNode, TransformationProviderId);
-            animateProvidedContent(*providerNode);
 
             const std::array<uint8_t, 4> pxData{ { 0x0, 0xff, 0x0, 0xff } };
             const ramses::MipLevelData mipLevelData(4, pxData.data());
-            const ramses::Texture2D& texture = *m_client.createTexture2D(1u, 1u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache);
+            const ramses::Texture2D& texture = *m_client.createTexture2D(1u, 1u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache);
             const ramses::TextureSampler& sampler = createSampler(texture);
             setSampler(appearance2, sampler);
 
@@ -113,39 +108,6 @@ namespace ramses_internal
         default:
             assert(false && "invalid scene state");
         }
-    }
-
-    void MultiTypeLinkScene::animateProvidedContent(ramses::DataObject& dataObject)
-    {
-        ramses::AnimationSystem* animSystem = m_scene.createAnimationSystem();
-        ramses::AnimatedProperty* animProperty = animSystem->createAnimatedProperty(dataObject, ramses::EAnimatedPropertyComponent_Y);
-        ramses::SplineLinearFloat* spline = animSystem->createSplineLinearFloat();
-        spline->setKey(0u, 0.f);
-        spline->setKey(1000u, 1.f);
-        ramses::Animation* animation = animSystem->createAnimation(*animProperty, *spline);
-        ramses::AnimationSequence* seq = animSystem->createAnimationSequence();
-        seq->addAnimation(*animation);
-        seq->startAt(0u);
-
-        animSystem->setTime(0u);
-        animSystem->setTime(500u);
-        animSystem->setTime(1500u);
-    }
-
-    void MultiTypeLinkScene::animateProvidedContent(ramses::Node& translateNode)
-    {
-        ramses::AnimationSystem* animSystem = m_scene.createAnimationSystem();
-        ramses::AnimatedProperty* animProperty = animSystem->createAnimatedProperty(translateNode, ramses::EAnimatedProperty_Translation, ramses::EAnimatedPropertyComponent_Z);
-        ramses::SplineLinearFloat* spline = animSystem->createSplineLinearFloat();
-        spline->setKey(0u, 0.f);
-        spline->setKey(1000u, 10.f);
-        ramses::Animation* animation = animSystem->createAnimation(*animProperty, *spline);
-        ramses::AnimationSequence* seq = animSystem->createAnimationSequence();
-        seq->addAnimation(*animation);
-
-        animSystem->setTime(0u);
-        seq->startAt(0u);
-        animSystem->setTime(500u);
     }
 
     const ramses::TextureSampler& MultiTypeLinkScene::createSampler(const ramses::Texture2D& texture)

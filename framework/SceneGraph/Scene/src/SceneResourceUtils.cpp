@@ -108,11 +108,11 @@ namespace ramses_internal
                 }
             }
 
-            for (RenderableHandle renderable(0u); renderable < scene.getRenderableCount(); ++renderable)
+            for (DataLayoutHandle layout(0u); layout < scene.getDataLayoutCount(); ++layout)
             {
-                if (scene.isRenderableAllocated(renderable))
+                if (scene.isDataLayoutAllocated(layout))
                 {
-                    resourceSet.put(scene.getRenderable(renderable).effectResource);
+                    resourceSet.put(scene.getDataLayout(layout).getEffectHash());
                 }
             }
 
@@ -141,7 +141,7 @@ namespace ramses_internal
             }
 
             resourceSet.remove(ResourceContentHash::Invalid());
-            resources.reserve(resourceSet.count());
+            resources.reserve(resourceSet.size());
             for (const auto hash : resourceSet)
             {
                 resources.push_back(hash);

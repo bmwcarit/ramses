@@ -16,10 +16,10 @@ namespace ramses_internal
 {
     HierarchicalRedTrianglesScene::HierarchicalRedTrianglesScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
         : IntegrationScene(ramsesClient, scene, cameraPosition)
-        , m_groupNode(0)
-        , m_subGroup1Node(0)
-        , m_subGroup2Node(0)
-        , m_subGroup3Node(0)
+        , m_groupNode(nullptr)
+        , m_subGroup1Node(nullptr)
+        , m_subGroup2Node(nullptr)
+        , m_subGroup3Node(nullptr)
         , m_rotateNode1(*m_scene.createNode())
         , m_rotateNode2(*m_scene.createNode())
         , m_scaleNode1(*m_scene.createNode())
@@ -81,15 +81,15 @@ namespace ramses_internal
         {
         case THREE_ROWS_TRIANGLES:
         case REENABLED_FULL_VISIBILITY:
-            m_groupNode->setVisibility(true);
+            m_groupNode->setVisibility(ramses::EVisibilityMode::Visible);
             break;
         case PARTIAL_VISIBILITY:
-            m_groupNode->setVisibility(true);
-            m_subGroup1Node->setVisibility(false);
-            m_subGroup2Node->setVisibility(false);
+            m_groupNode->setVisibility(ramses::EVisibilityMode::Visible);
+            m_subGroup1Node->setVisibility(ramses::EVisibilityMode::Invisible);
+            m_subGroup2Node->setVisibility(ramses::EVisibilityMode::Invisible);
             break;
         case NO_VISIBILITY:
-            m_groupNode->setVisibility(false);
+            m_groupNode->setVisibility(ramses::EVisibilityMode::Invisible);
             break;
         case ROTATE_AND_SCALE:
             m_scaleNode1.setScaling(0.3f, 1.f, 1.f);
@@ -105,7 +105,7 @@ namespace ramses_internal
 
     void HierarchicalRedTrianglesScene::destroySubTree(ramses::Node* rootNode)
     {
-        if (rootNode != NULL)
+        if (rootNode != nullptr)
         {
             while (rootNode && rootNode->getChildCount() > 0u)
             {

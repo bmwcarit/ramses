@@ -41,7 +41,7 @@ namespace ramses_internal
             // add 0.5 so that floating precision errors do not cause value to fall below the integral part
             // 0.5 is small enough not to affect the log2 result and big enough to avoid the potential precision error
             // see glTexStorage2D OpenGL docs for this formula
-            const float mipCountUnfloored = ramses_internal::PlatformMath::Log2(static_cast<float>(maxDimension) + 0.5f);
+            const float mipCountUnfloored = std::log2(static_cast<float>(maxDimension) + 0.5f);
             return 1u + static_cast<UInt32>(mipCountUnfloored);
         }
 

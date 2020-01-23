@@ -11,6 +11,7 @@
 
 // internal
 #include "NodeImpl.h"
+#include "VisibilityModeUtils.h"
 
 namespace ramses
 {
@@ -159,14 +160,14 @@ namespace ramses
         return impl.getScaling(x, y, z);
     }
 
-    ramses::status_t Node::setVisibility(bool visible)
+    ramses::status_t Node::setVisibility(EVisibilityMode mode)
     {
-        const status_t status = impl.setVisibility(visible);
-        LOG_HL_CLIENT_API1(status, visible);
+        const status_t status = impl.setVisibility(mode);
+        LOG_HL_CLIENT_API1(status, VisibilityModeUtils::ToString(mode));
         return status;
     }
 
-    bool Node::getVisibility() const
+    EVisibilityMode Node::getVisibility() const
     {
         return impl.getVisibility();
     }

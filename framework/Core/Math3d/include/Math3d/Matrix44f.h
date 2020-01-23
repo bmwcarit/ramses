@@ -107,9 +107,9 @@ namespace ramses_internal
         Matrix44f(const Vector4& v1, const Vector4& v2, const Vector4& v3, const Vector4& v4);
 
         Matrix44f(const Matrix44f& other) = default;
-        Matrix44f(Matrix44f&& other) = default;
+        Matrix44f(Matrix44f&& other) RNOEXCEPT = default;
         Matrix44f& operator=(const Matrix44f& other);
-        Matrix44f& operator=(Matrix44f&& other) = default;
+        Matrix44f& operator=(Matrix44f&& other) RNOEXCEPT = default;
 
         /**
          * Constructor to create Matrix44 from other matrix33.
@@ -156,14 +156,14 @@ namespace ramses_internal
          * @param other Matrix44 to compare with
          * @return true if matrices are equal false otherwise
          */
-        Bool operator==(const Matrix44f& other) const;
+        bool operator==(const Matrix44f& other) const;
 
         /**
          * Check if two matrices are not equal
          * @param other Matrix44 to compare with
          * @return true if matrices are equal false otherwise
          */
-        Bool operator!=(const Matrix44f& other) const;
+        bool operator!=(const Matrix44f& other) const;
 
         /**
          * Returns a pointer to the row specified by index
@@ -467,8 +467,8 @@ namespace ramses_internal
         return RotationEulerZYX(Vector3(x, y, z));
     }
 
-    static_assert(std::is_nothrow_move_constructible<Matrix44f>::value &&
-        std::is_nothrow_move_assignable<Matrix44f>::value, "Matrix44f must be movable");
+    static_assert(std::is_nothrow_move_constructible<Matrix44f>::value, "Matrix44f must be movable");
+    static_assert(std::is_nothrow_move_assignable<Matrix44f>::value, "Matrix44f must be movable");
 }
 
 #endif

@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
     ramses_internal::CommandLineParser parser(argc, argv);
 
     ramses_internal::ArgumentUInt32 waylandIviLayerId(parser, "lid", "waylandIviLayerId", 3);
-    ramses_internal::ArgumentBool helpRequested(parser, "help", "help", false);
+    ramses_internal::ArgumentBool helpRequested(parser, "help", "help");
 
     RendererTestUtils::SetWaylandIviLayerID(waylandIviLayerId);
 
@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
         stream << waylandIviLayerId.getHelpString();
         stream << "\n";
 
-        ramses_internal::Console::Print(ramses_internal::Console::GREEN, stream.c_str());
+        ramses_internal::Console::Print(ramses_internal::ConsoleColor::Green, stream.c_str());
     }
 
     return RUN_ALL_TESTS();

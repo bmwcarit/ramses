@@ -12,24 +12,25 @@
 #include "gmock/gmock.h"
 #include "gmock/gmock-matchers.h"
 
-using namespace testing;
-using ::testing::AnyOf;
 
 namespace ramses_internal
 {
+    using namespace testing;
+    using ::testing::AnyOf;
+
     TEST(AStringOutputStream, WriteFloatWithDefaultPrecision)
     {
         StringOutputStream outputStream;
         outputStream << 47.11f;
         EXPECT_STREQ("47.110001", outputStream.c_str());
-        EXPECT_EQ(9U, outputStream.length());
+        EXPECT_EQ(9U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteFloatMaximumNegativeWithDefaultPrecision)
     {
         StringOutputStream outputStream;
         outputStream << -std::numeric_limits<float>::max();
-        EXPECT_EQ(47U, outputStream.length());
+        EXPECT_EQ(47U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteFloatZeroWithMaximumPrecision)
@@ -37,7 +38,7 @@ namespace ramses_internal
         StringOutputStream outputStream;
         outputStream.setDecimalDigits(45);
         outputStream << 0.f;
-        EXPECT_EQ(2U + 45U, outputStream.length()); // '0.' + precision
+        EXPECT_EQ(2U + 45U, outputStream.size()); // '0.' + precision
     }
 
     TEST(AStringOutputStream, WriteFloatZeroWithCappedToMaximumPrecision)
@@ -45,7 +46,7 @@ namespace ramses_internal
         StringOutputStream outputStream;
         outputStream.setDecimalDigits(46);
         outputStream << 0.f;
-        EXPECT_EQ(2U + 45U, outputStream.length()); // '0.' + precision
+        EXPECT_EQ(2U + 45U, outputStream.size()); // '0.' + precision
     }
 
     TEST(AStringOutputStream, WriteFloatSmallestNegativeWithMaximumPrecision)
@@ -53,7 +54,7 @@ namespace ramses_internal
         StringOutputStream outputStream;
         outputStream.setDecimalDigits(45);
         outputStream << (-1.f / (std::numeric_limits<float>::max() - 1));
-        EXPECT_EQ(3U + 45U, outputStream.length()); // '-' + '0.' + precision
+        EXPECT_EQ(3U + 45U, outputStream.size()); // '-' + '0.' + precision
     }
 
     TEST(AStringOutputStream, WriteInt32)
@@ -61,7 +62,7 @@ namespace ramses_internal
         StringOutputStream outputStream;
         outputStream << -1059192060;
         EXPECT_STREQ("-1059192060", outputStream.c_str());
-        EXPECT_EQ(11U, outputStream.length());
+        EXPECT_EQ(11U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteUInt32)
@@ -69,7 +70,7 @@ namespace ramses_internal
         StringOutputStream outputStream;
         outputStream << 4711u;
         EXPECT_STREQ("4711", outputStream.c_str());
-        EXPECT_EQ(4U, outputStream.length());
+        EXPECT_EQ(4U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteInt64)
@@ -78,7 +79,7 @@ namespace ramses_internal
         int64_t value = 0x6464646432323232LL;
         outputStream << value;
         EXPECT_STREQ("7234017282965516850", outputStream.c_str());
-        EXPECT_EQ(19U, outputStream.length());
+        EXPECT_EQ(19U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteUInt64)
@@ -87,7 +88,7 @@ namespace ramses_internal
         uint64_t value = 0x6464646432323232uLL;
         outputStream << value;
         EXPECT_STREQ("7234017282965516850", outputStream.c_str());
-        EXPECT_EQ(19U, outputStream.length());
+        EXPECT_EQ(19U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteString)
@@ -95,7 +96,15 @@ namespace ramses_internal
         StringOutputStream outputStream;
         outputStream << String("Hello World");
         EXPECT_STREQ("Hello World", outputStream.c_str());
-        EXPECT_EQ(11U, outputStream.length());
+        EXPECT_EQ(11U, outputStream.size());
+    }
+
+    TEST(AStringOutputStream, WriteStdString)
+    {
+        StringOutputStream outputStream;
+        outputStream << std::string("Hello World");
+        EXPECT_STREQ("Hello World", outputStream.c_str());
+        EXPECT_EQ(11U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteBoolTrue)
@@ -103,7 +112,7 @@ namespace ramses_internal
         StringOutputStream outputStream;
         outputStream << true;
         EXPECT_STREQ("true", outputStream.c_str());
-        EXPECT_EQ(4U, outputStream.length());
+        EXPECT_EQ(4U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteBoolFalse)
@@ -111,7 +120,7 @@ namespace ramses_internal
         StringOutputStream outputStream;
         outputStream << false;
         EXPECT_STREQ("false", outputStream.c_str());
-        EXPECT_EQ(5U, outputStream.length());
+        EXPECT_EQ(5U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteCharArray)
@@ -119,7 +128,7 @@ namespace ramses_internal
         StringOutputStream outputStream;
         outputStream << "Hello World";
         EXPECT_STREQ("Hello World", outputStream.c_str());
-        EXPECT_EQ(11U, outputStream.length());
+        EXPECT_EQ(11U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteChar)
@@ -128,7 +137,7 @@ namespace ramses_internal
         char c = 'T';
         outputStream << c;
         EXPECT_STREQ("T", outputStream.c_str());
-        EXPECT_EQ(1U, outputStream.length());
+        EXPECT_EQ(1U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteUInt16)
@@ -136,15 +145,7 @@ namespace ramses_internal
         StringOutputStream outputStream;
         outputStream << static_cast<uint16_t>(4711);
         EXPECT_STREQ("4711", outputStream.c_str());
-        EXPECT_EQ(4U, outputStream.length());
-    }
-
-    TEST(AStringOutputStream, WriteGuid)
-    {
-        StringOutputStream outputStream;
-        outputStream << Guid("AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE");
-        EXPECT_STREQ("AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE", outputStream.c_str());
-        EXPECT_EQ(36U, outputStream.length());
+        EXPECT_EQ(4U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteFixed)
@@ -152,12 +153,12 @@ namespace ramses_internal
         StringOutputStream outputStream;
         outputStream << 47.11f;
         EXPECT_STREQ("47.110001", outputStream.c_str());
-        EXPECT_EQ(9u, outputStream.length());
+        EXPECT_EQ(9u, outputStream.size());
         outputStream.clear();
         outputStream.setFloatingPointType(StringOutputStream::EFloatingPointType_Fixed);
         outputStream << 47.11f;
         EXPECT_STREQ("47.1100", outputStream.c_str());
-        EXPECT_EQ(7u, outputStream.length());
+        EXPECT_EQ(7u, outputStream.size());
     }
 
     TEST(AStringOutputStream, Clear)
@@ -166,12 +167,12 @@ namespace ramses_internal
         outputStream << "Some data";
         outputStream.clear();
         EXPECT_STREQ("", outputStream.c_str());
-        EXPECT_EQ(0u, outputStream.length());
+        EXPECT_EQ(0u, outputStream.size());
 
         outputStream << "Some data";
         outputStream.clear();
         EXPECT_STREQ("", outputStream.c_str());
-        EXPECT_EQ(0u, outputStream.length());
+        EXPECT_EQ(0u, outputStream.size());
     }
 
     TEST(AStringOutputStream, AutoFlush)
@@ -179,14 +180,14 @@ namespace ramses_internal
         StringOutputStream outputStream;
         outputStream << "Some data";
         EXPECT_STREQ("Some data", outputStream.c_str());
-        EXPECT_EQ(9u, outputStream.length());
+        EXPECT_EQ(9u, outputStream.size());
     }
 
     TEST(AStringOutputStream, Flush)
     {
         StringOutputStream outputStream;
         outputStream << 4711;
-        EXPECT_EQ(4U, outputStream.length());
+        EXPECT_EQ(4U, outputStream.size());
     }
 
     TEST(AStringOutputStream, MultipleData)
@@ -194,7 +195,7 @@ namespace ramses_internal
         StringOutputStream outputStream;
         outputStream << 4711 << " " << 47.11f << " " << "Hello World" << " " << true;
         EXPECT_STREQ("4711 47.110001 Hello World true", outputStream.c_str());
-        EXPECT_EQ(31U, outputStream.length());
+        EXPECT_EQ(31U, outputStream.size());
     }
 
     TEST(AStringOutputStream, Resize)
@@ -202,7 +203,7 @@ namespace ramses_internal
         StringOutputStream outputStream;
         outputStream << "Exactly 16 chars";
         EXPECT_STREQ("Exactly 16 chars", outputStream.c_str());
-        EXPECT_EQ(16U, outputStream.length());
+        EXPECT_EQ(16U, outputStream.size());
     }
 
     TEST(AStringOutputStream, C_StrIsNullTerminatedForConstStreams)
@@ -219,8 +220,8 @@ namespace ramses_internal
         outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexNoLeadingZeros);
         uint32_t value = 4446222;
         outputStream << value;
-        EXPECT_STREQ("0x43D80E", outputStream.c_str());
-        EXPECT_EQ(8U, outputStream.length());
+        EXPECT_STREQ("43D80E", outputStream.c_str());
+        EXPECT_EQ(6U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteUInt32HexLeadingZero)
@@ -229,8 +230,8 @@ namespace ramses_internal
         outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexLeadingZeros);
         uint32_t value = 4446222;
         outputStream << value;
-        EXPECT_STREQ("0x0043D80E", outputStream.c_str());
-        EXPECT_EQ(10U, outputStream.length());
+        EXPECT_STREQ("0043D80E", outputStream.c_str());
+        EXPECT_EQ(8U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteInt32HexNoLeadingZero)
@@ -239,8 +240,8 @@ namespace ramses_internal
         outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexNoLeadingZeros);
         int32_t value = 4446222;
         outputStream << value;
-        EXPECT_STREQ("0x43D80E", outputStream.c_str());
-        EXPECT_EQ(8U, outputStream.length());
+        EXPECT_STREQ("43D80E", outputStream.c_str());
+        EXPECT_EQ(6U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteInt32HexLeadingZero)
@@ -249,8 +250,8 @@ namespace ramses_internal
         outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexLeadingZeros);
         int32_t value = 4446222;
         outputStream << value;
-        EXPECT_STREQ("0x0043D80E", outputStream.c_str());
-        EXPECT_EQ(10U, outputStream.length());
+        EXPECT_STREQ("0043D80E", outputStream.c_str());
+        EXPECT_EQ(8U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteInt32HexNegativeValue)
@@ -259,8 +260,8 @@ namespace ramses_internal
         outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexLeadingZeros);
         int32_t value = -4446222;
         outputStream << value;
-        EXPECT_STREQ("0xFFBC27F2", outputStream.c_str());//uint32_max - value
-        EXPECT_EQ(10U, outputStream.length());
+        EXPECT_STREQ("FFBC27F2", outputStream.c_str());//uint32_max - value
+        EXPECT_EQ(8U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteUInt64HexNoLeadingZero)
@@ -269,8 +270,8 @@ namespace ramses_internal
         outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexNoLeadingZeros);
         uint64_t value = 353544462511222;
         outputStream << value;
-        EXPECT_STREQ("0x1418BFC19AC76", outputStream.c_str());
-        EXPECT_EQ(15U, outputStream.length());
+        EXPECT_STREQ("1418BFC19AC76", outputStream.c_str());
+        EXPECT_EQ(13U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteUInt64HexLeadingZero)
@@ -279,8 +280,8 @@ namespace ramses_internal
         outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexLeadingZeros);
         uint64_t value = 353544462511222;
         outputStream << value;
-        EXPECT_STREQ("0x0001418BFC19AC76", outputStream.c_str());
-        EXPECT_EQ(18U, outputStream.length());
+        EXPECT_STREQ("0001418BFC19AC76", outputStream.c_str());
+        EXPECT_EQ(16U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteInt64HexNoLeadingZero)
@@ -289,8 +290,8 @@ namespace ramses_internal
         outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexNoLeadingZeros);
         int64_t value = 353544462511222;
         outputStream << value;
-        EXPECT_STREQ("0x1418BFC19AC76", outputStream.c_str());
-        EXPECT_EQ(15U, outputStream.length());
+        EXPECT_STREQ("1418BFC19AC76", outputStream.c_str());
+        EXPECT_EQ(13U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteInt64HexLeadingZero)
@@ -299,8 +300,8 @@ namespace ramses_internal
         outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexLeadingZeros);
         int64_t value = 353544462511222;
         outputStream << value;
-        EXPECT_STREQ("0x0001418BFC19AC76", outputStream.c_str());
-        EXPECT_EQ(18U, outputStream.length());
+        EXPECT_STREQ("0001418BFC19AC76", outputStream.c_str());
+        EXPECT_EQ(16U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteInt64HexNegativeValue)
@@ -309,8 +310,8 @@ namespace ramses_internal
         outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexLeadingZeros);
         int64_t value = -353544462511222;
         outputStream << value;
-        EXPECT_STREQ("0xFFFEBE7403E6538A", outputStream.c_str());//uint64_max - value
-        EXPECT_EQ(18U, outputStream.length());
+        EXPECT_STREQ("FFFEBE7403E6538A", outputStream.c_str());//uint64_max - value
+        EXPECT_EQ(16U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteUInt16HexLeadingZero)
@@ -319,8 +320,8 @@ namespace ramses_internal
         outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexLeadingZeros);
         uint16_t value = 1337;
         outputStream << value;
-        EXPECT_STREQ("0x0539", outputStream.c_str());
-        EXPECT_EQ(6U, outputStream.length());
+        EXPECT_STREQ("0539", outputStream.c_str());
+        EXPECT_EQ(4U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteUInt16HexNoLeadingZero)
@@ -329,8 +330,8 @@ namespace ramses_internal
         outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexNoLeadingZeros);
         uint16_t value = 1337;
         outputStream << value;
-        EXPECT_STREQ("0x539", outputStream.c_str());
-        EXPECT_EQ(5U, outputStream.length());
+        EXPECT_STREQ("539", outputStream.c_str());
+        EXPECT_EQ(3U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteInt16HexLeadingZero)
@@ -339,8 +340,8 @@ namespace ramses_internal
         outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexLeadingZeros);
         uint16_t value = 1337;
         outputStream << value;
-        EXPECT_STREQ("0x0539", outputStream.c_str());
-        EXPECT_EQ(6U, outputStream.length());
+        EXPECT_STREQ("0539", outputStream.c_str());
+        EXPECT_EQ(4U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteInt16HexNoLeadingZero)
@@ -349,8 +350,8 @@ namespace ramses_internal
         outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexNoLeadingZeros);
         uint16_t value = 1337;
         outputStream << value;
-        EXPECT_STREQ("0x539", outputStream.c_str());
-        EXPECT_EQ(5U, outputStream.length());
+        EXPECT_STREQ("539", outputStream.c_str());
+        EXPECT_EQ(3U, outputStream.size());
     }
 
     TEST(AStringOutputStream, WriteInt16HexNegativeValue)
@@ -359,15 +360,15 @@ namespace ramses_internal
         outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexLeadingZeros);
         int16_t value = -1337;
         outputStream << value;
-        EXPECT_STREQ("0xFAC7", outputStream.c_str());//uint16_max - value
-        EXPECT_EQ(6U, outputStream.length());
+        EXPECT_STREQ("FAC7", outputStream.c_str());//uint16_max - value
+        EXPECT_EQ(4U, outputStream.size());
     }
 
     TEST(AStringOutputStream, hasLengthZeroIntially)
     {
         StringOutputStream stream;
 
-        EXPECT_EQ(0u, stream.length());
+        EXPECT_EQ(0u, stream.size());
     }
 
     TEST(AStringOutputStream, returnsCorrectLength)
@@ -376,16 +377,7 @@ namespace ramses_internal
 
         stream << "12345";
 
-        EXPECT_EQ(5u, stream.length());
-    }
-
-    TEST(AStringOutputStream, canWriteGuidIsHumanReadableFormat)
-    {
-        String guidString("38ABDEF8-DBB9-42B7-B834-F8C1E76FBDA0");
-        StringOutputStream stream;
-        Guid guid(guidString);
-        stream << guid;
-        EXPECT_STREQ(guidString.c_str(), stream.c_str());
+        EXPECT_EQ(5u, stream.size());
     }
 
     TEST(AStringOutputStream, PrintsNullVoidPointerAsHex)
@@ -426,10 +418,40 @@ namespace ramses_internal
         String s1(stream.release());
         EXPECT_EQ(String("foo"), s1);
         EXPECT_STREQ("", stream.c_str());
-        EXPECT_EQ(0u, stream.length());
+        EXPECT_EQ(0u, stream.size());
 
         stream << "bar";
         EXPECT_STREQ("bar", stream.c_str());
-        EXPECT_EQ(3u, stream.length());
+        EXPECT_EQ(3u, stream.size());
+    }
+
+    TEST(AStringOutputStream, ToStringWorksForStreamableTypes)
+    {
+        EXPECT_EQ("-123", StringOutputStream::ToString(-123));
+        EXPECT_EQ("true", StringOutputStream::ToString(true));
+        EXPECT_EQ("foobar", StringOutputStream::ToString(std::string("foobar")));
+    }
+
+    TEST(AStringOutputStream, CanGetUnderlayingString)
+    {
+        StringOutputStream stream;
+        stream << "foo";
+        EXPECT_EQ("foo", stream.data());
+        stream << "bar";
+        EXPECT_EQ("foobar", stream.data());
+    }
+
+    TEST(AStringOutputStream, CanConstructWithString)
+    {
+        StringOutputStream stream(String("foo"));
+        stream << "bar";
+        EXPECT_EQ("foobar", stream.data());
+    }
+
+    TEST(AStringOutputStream, CanConstructWithStdString)
+    {
+        StringOutputStream stream(std::string("foo"));
+        stream << "bar";
+        EXPECT_EQ("foobar", stream.data());
     }
 }

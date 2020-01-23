@@ -13,6 +13,7 @@
 #include "Utils/RawBinaryOutputStream.h"
 #include "Math3d/Matrix44f.h"
 #include "SceneAPI/ResourceContentHash.h"
+#include "Collections/Guid.h"
 
 namespace ramses_internal
 {
@@ -35,7 +36,7 @@ namespace ramses_internal
     template<> const Int64          RawBinaryOutputStreamBaseTypesTest<Int64>::m_value        = -4;
     template<> const UInt64         RawBinaryOutputStreamBaseTypesTest<UInt64>::m_value       = 5u;
     template<> const Float          RawBinaryOutputStreamBaseTypesTest<Float>::m_value        = 6.0f;
-    template<> const Bool           RawBinaryOutputStreamBaseTypesTest<Bool>::m_value         = true;
+    template<> const bool           RawBinaryOutputStreamBaseTypesTest<bool>::m_value         = true;
     template<> const Matrix44f      RawBinaryOutputStreamBaseTypesTest<Matrix44f>::m_value    = Matrix44f(
         1.0f, 2.0f, 3.0f, 4.0f,
         5.0f, 6.0f, 7.0f, 8.0f,
@@ -53,7 +54,7 @@ namespace ramses_internal
         Int64,
         UInt64,
         Float,
-        Bool,
+        bool,
         Matrix44f,
         ResourceContentHash> RawBinaryOutputStreamBaseTypesTestTypes;
 
@@ -144,11 +145,11 @@ namespace ramses_internal
         outstr << m_str;
 
         // bytes written equals UInt32 for string length + amount string characters
-        EXPECT_EQ(outstr.getBytesWritten(), m_str.getLength() + sizeof(UInt32));
+        EXPECT_EQ(outstr.getBytesWritten(), m_str.size() + sizeof(UInt32));
         // string length written correctly?
-        EXPECT_EQ(*reinterpret_cast<UInt32*>(&data[0]), m_str.getLength());
+        EXPECT_EQ(*reinterpret_cast<UInt32*>(&data[0]), m_str.size());
         // string written correctly to stream?
-        EXPECT_EQ(PlatformMemory::Compare(&data[0] + sizeof(UInt32), m_str.c_str(), m_str.getLength()), 0);
+        EXPECT_EQ(PlatformMemory::Compare(&data[0] + sizeof(UInt32), m_str.c_str(), m_str.size()), 0);
     }
 
     TEST_F(RawBinaryOutputStreamComplexTypesTest, WriteAndCheckBuffer)

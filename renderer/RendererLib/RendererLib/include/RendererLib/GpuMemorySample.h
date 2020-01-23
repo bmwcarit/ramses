@@ -10,7 +10,7 @@
 #define RAMSES_GPUMEMORYSAMPLE_H
 
 #include "SceneAPI/SceneId.h"
-#include "Resource/EResourceType.h"
+#include "Resource/ResourceTypes.h"
 #include "Collections/HashMap.h"
 #include <array>
 

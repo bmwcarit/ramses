@@ -45,11 +45,11 @@ int main(int argc, char* argv[])
 {
     // register at RAMSES daemon
     ramses::RamsesFramework framework(argc, argv);
-    ramses::RamsesClient ramses("ramses-example-data-buffers-texture", framework);
+    ramses::RamsesClient& ramses(*framework.createClient("ramses-example-data-buffers-texture"));
     framework.connect();
 
     // create a scene for distributing content
-    ramses::Scene* scene = ramses.createScene(123u, ramses::SceneConfig(), "basic texturing scene");
+    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic texturing scene");
 
     // every scene needs a render pass with camera
     ramses::Camera* camera = scene->createRemoteCamera("my camera");

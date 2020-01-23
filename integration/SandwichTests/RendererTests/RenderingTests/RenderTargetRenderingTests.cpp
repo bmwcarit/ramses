@@ -19,6 +19,7 @@ void RenderTargetRenderingTests::setUpTestCases(RendererTestsFramework& testFram
     testFramework.createTestCaseWithDefaultDisplay(RenderTarget_Perspective, *this, "RenderTarget_Perspective");
     testFramework.createTestCaseWithDefaultDisplay(RenderTarget_Orthographic, *this, "RenderTarget_Orthographic");
 
+    testFramework.createTestCaseWithDefaultDisplay(RenderTarget_Format_RGBA4, *this, "RenderTarget_Format_RGBA4");
     testFramework.createTestCaseWithDefaultDisplay(RenderTarget_Format_R8, *this, "RenderTarget_Format_R8");
     testFramework.createTestCaseWithDefaultDisplay(RenderTarget_Format_RG8, *this, "RenderTarget_Format_RG8");
     testFramework.createTestCaseWithDefaultDisplay(RenderTarget_Format_RGB8, *this, "RenderTarget_Format_RGB8");
@@ -33,6 +34,7 @@ void RenderTargetRenderingTests::setUpTestCases(RendererTestsFramework& testFram
 
     testFramework.createTestCaseWithDefaultDisplay(MultipleRenderTarget_TwoColorBuffersCleared, *this, "MultipleRenderTarget_TwoColorBuffersCleared");
     testFramework.createTestCaseWithDefaultDisplay(MultipleRenderTarget_TwoColorBuffersWritten, *this, "MultipleRenderTarget_TwoColorBuffersWritten");
+    testFramework.createTestCaseWithDefaultDisplay(MultipleRenderTarget_TwoColorBuffersWrittenRGBA8_RGBA4, *this, "MultipleRenderTarget_TwoColorBuffersWrittenRGBA8_RGBA4");
     testFramework.createTestCaseWithDefaultDisplay(MultipleRenderTarget_ShaderWritesTwoColorBuffers_RTHasOnlyOne, *this, "MultipleRenderTarget_ShaderWritesTwoColorBuffers_RTHasOnlyOne");
     testFramework.createTestCaseWithDefaultDisplay(MultipleRenderTarget_ReuseSameColorBufferInTwoRTs, *this, "MultipleRenderTarget_ReuseSameColorBufferInTwoRTs");
     testFramework.createTestCaseWithDefaultDisplay(MultipleRenderTarget_ReuseSameDepthBufferInTwoRTs, *this, "MultipleRenderTarget_ReuseSameDepthBufferInTwoRTs");
@@ -53,7 +55,8 @@ bool RenderTargetRenderingTests::run(RendererTestsFramework& testFramework, cons
         return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::PERSPECTIVE_PROJECTION, "RenderTargetScene_PerspectiveProjection");
     case RenderTarget_Orthographic:
         return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::ORTHOGRAPHIC_PROJECTION, "RenderTargetScene_OrthographicProjection");
-
+    case RenderTarget_Format_RGBA4:
+        return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_RGBA4, "RenderTargetScene_RedGreenBlue", 3.0f); // higher threshold needed due to conversion imprecision from 4 to 8 bit
     case RenderTarget_Format_R8:
         return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_R8, "RenderTargetScene_Red");
     case RenderTarget_Format_RG8:
@@ -80,6 +83,8 @@ bool RenderTargetRenderingTests::run(RendererTestsFramework& testFramework, cons
         return runBasicTest<MultipleRenderTargetScene>(testFramework, MultipleRenderTargetScene::CLEAR_MRT, "MultiRenderTarget_ClearTwoColorBuffers");
     case MultipleRenderTarget_TwoColorBuffersWritten:
         return runBasicTest<MultipleRenderTargetScene>(testFramework, MultipleRenderTargetScene::TWO_COLOR_BUFFERS, "MultiRenderTarget_TwoColorBuffers");
+    case MultipleRenderTarget_TwoColorBuffersWrittenRGBA8_RGBA4:
+        return runBasicTest<MultipleRenderTargetScene>(testFramework, MultipleRenderTargetScene::TWO_COLOR_BUFFERS_RGBA8_AND_RGBA4, "MultiRenderTarget_TwoColorBuffers", 0.5f); // higher threshold needed due to conversion imprecision from 4 to 8 bit
     case MultipleRenderTarget_ShaderWritesTwoColorBuffers_RTHasOnlyOne:
         return runBasicTest<MultipleRenderTargetScene>(testFramework, MultipleRenderTargetScene::SHADER_WRITES_TWO_COLOR_BUFFERS_RT_HAS_ONE, "MultiRenderTarget_OneColorBufferWritten");
     case MultipleRenderTarget_ReuseSameColorBufferInTwoRTs:

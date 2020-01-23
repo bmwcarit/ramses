@@ -18,13 +18,13 @@
 
 namespace ramses_internal
 {
-    struct MappedSceneInfo
+    struct AssignedSceneInfo
     {
         SceneId sceneId;
         Int32 globalSceneOrder;
         Bool shown;
     };
-    typedef std::vector<MappedSceneInfo> MappedScenes;
+    typedef std::vector<AssignedSceneInfo> AssignedScenes;
 
     struct DisplayBufferInfo
     {
@@ -32,7 +32,7 @@ namespace ramses_internal
         Bool isInterruptible;
         Viewport viewport;
         Vector4 clearColor;
-        MappedScenes mappedScenes;
+        AssignedScenes scenes;
         Bool needsRerender;
     };
     using DisplayBuffersMap = std::map<DeviceResourceHandle, DisplayBufferInfo>;
@@ -47,9 +47,9 @@ namespace ramses_internal
 
         void setDisplayBufferToBeRerendered(DeviceResourceHandle displayBuffer, Bool rerender);
 
-        void                 mapSceneToDisplayBuffer(SceneId sceneId, DeviceResourceHandle displayBuffer, Int32 sceneOrder);
-        void                 unmapScene(SceneId sceneId);
-        DeviceResourceHandle findDisplayBufferSceneIsMappedTo(SceneId sceneId) const;
+        void                 assignSceneToDisplayBuffer(SceneId sceneId, DeviceResourceHandle displayBuffer, Int32 sceneOrder);
+        void                 unassignScene(SceneId sceneId);
+        DeviceResourceHandle findDisplayBufferSceneIsAssignedTo(SceneId sceneId) const;
         void                 setSceneShown(SceneId sceneId, Bool show);
         void                 setClearColor(DeviceResourceHandle displayBuffer, const Vector4& clearColor);
 
@@ -59,6 +59,7 @@ namespace ramses_internal
         const DisplayBuffersMap& getDisplayBuffers() const;
 
     private:
+        AssignedSceneInfo& findSceneInfo(SceneId sceneId, DeviceResourceHandle displayBuffer);
         DisplayBufferInfo& getDisplayBufferInternal(DeviceResourceHandle displayBuffer);
 
         DisplayBuffersMap m_displayBuffers;

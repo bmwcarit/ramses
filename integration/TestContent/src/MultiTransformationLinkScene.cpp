@@ -43,7 +43,7 @@ namespace ramses_internal
 
         UInt32 meshIndex = 0;
 
-        ramses::Node* lastRowNode = NULL;
+        ramses::Node* lastRowNode = nullptr;
         for (UInt32 row = 0; row < NumRows; ++row)
         {
             ramses::Node* rowNode = m_scene.createNode();
@@ -59,7 +59,7 @@ namespace ramses_internal
             lastRowNode = rowNode;
             m_scene.createTransformationDataProvider(*rowNode, DataIdRowStart + row);
 
-            ramses::Node* lastTransNode = NULL;
+            ramses::Node* lastTransNode = nullptr;
             for (UInt32 column = 0; column < NumRows && meshIndex < NumMeshes; ++column, ++meshIndex)
             {
                 // create a mesh node to define the triangle with chosen appearance
@@ -102,7 +102,7 @@ namespace ramses_internal
             m_scene.createTransformationDataConsumer(*rowGroupNode, DataIdRowStart + row);
             rowNode->setTranslation(m_scaleFactor * 0.2f, m_scaleFactor * 0.2f, m_scaleFactor * 0.2f);
 
-            ramses::Node* lastTransNode = NULL;
+            ramses::Node* lastTransNode = nullptr;
             for (UInt32 column = 0; column < NumRows && meshIndex < NumMeshes; ++column, ++meshIndex)
             {
                 // create a mesh node to define the triangle with chosen appearance

@@ -10,7 +10,6 @@
 #define RAMSES_RENDERERRESOURCECACHEPROXY_H
 
 #include "RendererAPI/IRendererResourceCache.h"
-#include "SceneAPI/SceneResourceData.h"
 #include "SceneAPI/SceneId.h"
 #include "SceneAPI/ResourceContentHash.h"
 #include "ramses-renderer-api/Types.h"

@@ -30,7 +30,7 @@ namespace ramses_internal
     {
         X11WindowData()
             : window(0)
-            , display(0)
+            , display(nullptr)
             , screen(0)
         {
         }

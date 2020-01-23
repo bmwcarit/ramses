@@ -20,7 +20,7 @@ namespace ramses_internal
         Int32 width;
         Int32 height;
 
-        static Bool IsSameSizeAs(const PixelRectangle& first, const PixelRectangle& second)
+        static bool IsSameSizeAs(const PixelRectangle& first, const PixelRectangle& second)
         {
             return first.width == second.width && first.height == second.height;
         }

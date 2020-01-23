@@ -15,7 +15,7 @@
 
 namespace ramses
 {
-    class TriangleStripQuad;
+    class MultiTriangleGeometry;
     class Vector2fArray;
     class Texture2D;
     class Effect;
@@ -34,7 +34,7 @@ namespace ramses_internal
         };
 
     private:
-        void createQuadWithTextureConsumer(ramses::TriangleStripQuad& quad, uint32_t quadId, ramses::dataConsumerId_t textureConsumerId, const ramses::Texture2D& texture, const ramses::Vector2fArray& textureCoords);
+        void createQuadWithTextureConsumer(ramses::MultiTriangleGeometry& quad, uint32_t quadId, ramses::dataConsumerId_t textureConsumerId, const ramses::Texture2D& texture, const ramses::Vector2fArray& textureCoords);
 
         ramses::Effect* m_effectTex;
     };

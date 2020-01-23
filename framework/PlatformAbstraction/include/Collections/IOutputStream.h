@@ -53,6 +53,16 @@ namespace ramses_internal
         return stream.write(&value, sizeof(value));
     }
 
+    inline IOutputStream& operator<<(IOutputStream& stream, int8_t value)
+    {
+        return stream.write(&value, sizeof(value));
+    }
+
+    inline IOutputStream& operator<<(IOutputStream& stream, uint8_t value)
+    {
+        return stream.write(&value, sizeof(value));
+    }
+
     inline IOutputStream& operator<<(IOutputStream& stream, bool  value)
     {
         return stream.write(&value, sizeof(value));

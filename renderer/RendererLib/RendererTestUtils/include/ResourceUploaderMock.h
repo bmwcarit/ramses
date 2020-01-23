@@ -13,6 +13,7 @@
 #include "gmock/gmock.h"
 #include "RendererLib/IResourceUploader.h"
 #include "RendererAPI/IRenderBackend.h"
+#include "RendererLib/ResourceDescriptor.h"
 
 namespace ramses_internal
 {
@@ -21,7 +22,7 @@ namespace ramses_internal
     public:
         ResourceUploaderMock();
 
-        MOCK_METHOD3(uploadResource, DeviceResourceHandle(IRenderBackend&, ManagedResource, UInt32&));
+        MOCK_METHOD3(uploadResource, DeviceResourceHandle(IRenderBackend&, const ResourceDescriptor&, UInt32&));
         MOCK_METHOD4(unloadResource, void(IRenderBackend&, EResourceType, ResourceContentHash, DeviceResourceHandle));
 
         static const DeviceResourceHandle FakeResourceDeviceHandle;

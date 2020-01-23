@@ -11,15 +11,13 @@
 #include "RamsesRendererImpl.h"
 #include "RamsesFrameworkImpl.h"
 #include "DisplayManager/RendererEventChainer.h"
-#include "PlatformAbstraction/PlatformGuard.h"
+#include "RamsesFrameworkTypesImpl.h"
 
-namespace ramses_display_manager
+namespace ramses_internal
 {
-    DisplayManager::DisplayManager(ramses::RamsesRenderer& renderer, ramses::RamsesFramework& framework, bool autoShow)
+    DisplayManager::DisplayManager(ramses::RamsesRenderer& renderer, ramses::RamsesFramework& framework)
         : m_ramsesRenderer(renderer)
-        , m_autoShow(autoShow)
         , m_isRunning(true)
-        , m_lock()
     {
         m_exitCommand.reset(new ramses_internal::RamshCommandExit);
         m_showOnDisplayCommand.reset(new ShowSceneOnDisplay(*this));
@@ -40,19 +38,13 @@ namespace ramses_display_manager
         LOG_INFO(ramses_internal::CONTEXT_SMOKETEST, "Ramsh commands registered from DisplayManager");
     }
 
-    DisplayManager::~DisplayManager()
-    {
-    }
-
     bool DisplayManager::setSceneState(ramses::sceneId_t sceneId, SceneState state, const char* confirmationText)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
-
         LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager::setSceneState: " << SceneStateName(state));
 
         if (state == SceneState::Ready || state == SceneState::Rendered)
         {
-            if (m_scenesInfo[sceneId].mappingInfo.display == ramses::InvalidDisplayId)
+            if (m_scenesInfo[sceneId].mappingInfo.display == ramses::displayId_t::Invalid())
             {
                 LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::setSceneState: cannot get scene to ready/rendered without mapping info, set mapping info via DisplayManager::setSceneMapping first!");
                 return false;
@@ -68,42 +60,17 @@ namespace ramses_display_manager
         return true;
     }
 
-    bool DisplayManager::setSceneMapping(ramses::sceneId_t sceneId, ramses::displayId_t displayId, int32_t sceneRenderOrder)
+    bool DisplayManager::setSceneMapping(ramses::sceneId_t sceneId, ramses::displayId_t displayId)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
-
         MappingInfo mappingInfo;
         mappingInfo.display = displayId;
-        mappingInfo.renderOrder = sceneRenderOrder;
+        // if newly mapping (to a different display potentially) reset buffer assignment
+        mappingInfo.displayBuffer = ramses::displayBufferId_t::Invalid();
+        mappingInfo.renderOrder = 0;
 
-        return setMappingInternal(sceneId, mappingInfo);
-    }
-
-    bool DisplayManager::setSceneOffscreenBufferMapping(ramses::sceneId_t sceneId, ramses::displayId_t displayId, uint32_t width, uint32_t height, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTextureSamplerId)
-    {
-        ramses_internal::PlatformGuard guard(m_lock);
-        if (width == 0 || height == 0)
-        {
-            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::setSceneOffscreenBufferMapping: invalid offscreen buffer dimensions " << width << "x" << height);
-            return false;
-        }
-
-        MappingInfo mappingInfo;
-        mappingInfo.display = displayId;
-        mappingInfo.obWidth = width;
-        mappingInfo.obHeight = height;
-        mappingInfo.consumerScene = consumerScene;
-        mappingInfo.consumerSamplerId = consumerTextureSamplerId;
-
-        return setMappingInternal(sceneId, mappingInfo);
-    }
-
-    bool DisplayManager::setMappingInternal(ramses::sceneId_t sceneId, const MappingInfo& mappingInfo)
-    {
         const auto currState = getCurrentSceneState(sceneId);
         const auto targetState = getTargetSceneState(sceneId);
-        if (currState == ESceneStateInternal::Mapped || currState == ESceneStateInternal::MappedAndAssigned || targetState == ESceneStateInternal::Rendered
-            || targetState == ESceneStateInternal::MappedAndAssigned || targetState == ESceneStateInternal::Rendered)
+        if (currState >= ESceneStateInternal::Mapped || targetState >= ESceneStateInternal::Mapped)
         {
             LOG_ERROR(ramses_internal::CONTEXT_RENDERER,
                 "DisplayManager::setSceneMapping: cannot change mapping properties, scene's current or desired state already set to READY/RENDERED for scene " << sceneId <<
@@ -116,33 +83,76 @@ namespace ramses_display_manager
         return true;
     }
 
+    bool DisplayManager::setSceneDisplayBufferAssignment(ramses::sceneId_t sceneId, ramses::displayBufferId_t displayBuffer, int32_t sceneRenderOrder)
+    {
+        auto& mapInfo = m_scenesInfo[sceneId].mappingInfo;
+
+        if (!mapInfo.display.isValid())
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_RENDERER,
+                "DisplayManager::setSceneDisplayBufferAssignment: scene " << sceneId << " does not have valid mapping information, set its mapping first.");
+            return false;
+        }
+
+        const auto it = std::find_if(m_displays.cbegin(), m_displays.cend(), [displayBuffer](const auto& d) { return d.second.count(displayBuffer) > 0; });
+        if (it == m_displays.cend())
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::setSceneDisplayBufferAssignment: display buffer " << displayBuffer << " was not found in any of the existing displays.");
+            return false;
+        }
+
+        // update mapping info for scene
+        mapInfo.displayBuffer = displayBuffer;
+        mapInfo.renderOrder = sceneRenderOrder;
+
+        // if scene already mapped/assigned and not requested to unmap, execute new assignment right away
+        const auto currState = getCurrentSceneState(sceneId);
+        const auto targetState = getTargetSceneState(sceneId);
+        if (currState >= ESceneStateInternal::MappedAndAssigned && targetState >= ESceneStateInternal::Mapped)
+            return m_ramsesRenderer.assignSceneToDisplayBuffer(sceneId, displayBuffer, sceneRenderOrder) == ramses::StatusOK;
+
+        return true;
+    }
+
+    bool DisplayManager::setDisplayBufferClearColor(ramses::displayBufferId_t displayBuffer, float r, float g, float b, float a)
+    {
+        const auto it = std::find_if(m_displays.cbegin(), m_displays.cend(), [displayBuffer](const auto& d) { return d.second.count(displayBuffer) > 0; });
+        if (it == m_displays.cend())
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::setDisplayBufferClearColor: display buffer " << displayBuffer << " was not found in any of the existing displays.");
+            return false;
+        }
+
+        return m_ramsesRenderer.setBufferClearColor(it->first, displayBuffer, r, g, b, a) == ramses::StatusOK;
+    }
+
     ramses::displayId_t DisplayManager::createDisplay(const ramses::DisplayConfig& config)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
         return m_ramsesRenderer.createDisplay(config);
     }
 
     void DisplayManager::destroyDisplay(ramses::displayId_t displayId)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
         m_ramsesRenderer.destroyDisplay(displayId);
     }
 
     void DisplayManager::processConfirmationEchoCommand(const char* text)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
         m_ramsesRenderer.impl.logConfirmationEcho(text);
+    }
+
+    void DisplayManager::linkOffscreenBuffer(ramses::displayBufferId_t offscreenBufferId, ramses::sceneId_t consumerSceneId, ramses::dataConsumerId_t consumerDataSlotId)
+    {
+        m_ramsesRenderer.linkOffscreenBufferToSceneData(offscreenBufferId, consumerSceneId, consumerDataSlotId);
     }
 
     void DisplayManager::linkData(ramses::sceneId_t providerSceneId, ramses::dataProviderId_t providerId, ramses::sceneId_t consumerSceneId, ramses::dataConsumerId_t consumerId)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
         m_ramsesRenderer.linkData(providerSceneId, providerId, consumerSceneId, consumerId);
     }
 
     void DisplayManager::dispatchAndFlush(IEventHandler* eventHandler, ramses::IRendererEventHandler* customRendererEventHandler)
     {
-        ramses_internal::PlatformGuard guard(m_lock);
         if (customRendererEventHandler)
         {
             RendererEventChainer chainer{ *customRendererEventHandler, *this };
@@ -154,7 +164,23 @@ namespace ramses_display_manager
         if (eventHandler)
         {
             for (const auto& evt : m_pendingEvents)
-                eventHandler->sceneStateChanged(evt.sceneId, evt.state, evt.displaySceneIsMappedTo);
+            {
+                switch (evt.type)
+                {
+                case DisplayManagerEvent::Type::ScenePublished:
+                    eventHandler->scenePublished(evt.sceneId);
+                    break;
+                case DisplayManagerEvent::Type::SceneStateChanged:
+                    eventHandler->sceneStateChanged(evt.sceneId, evt.state, evt.displaySceneIsMappedTo);
+                    break;
+                case DisplayManagerEvent::Type::OffscreenBufferLinked:
+                    eventHandler->offscreenBufferLinked(evt.displayBufferId, evt.consumerSceneId, evt.consumerId, evt.dataLinked);
+                    break;
+                case DisplayManagerEvent::Type::DataLinked:
+                    eventHandler->dataLinked(evt.providerSceneId, evt.providerId, evt.consumerSceneId, evt.consumerId, evt.dataLinked);
+                    break;
+                }
+            }
             m_pendingEvents.clear();
         }
         else if (m_pendingEvents.size() > 10000)
@@ -168,33 +194,29 @@ namespace ramses_display_manager
 
     bool DisplayManager::isRunning() const
     {
-        ramses_internal::PlatformGuard guard(m_lock);
         return m_isRunning && !m_exitCommand->exitRequested();
     }
 
     bool DisplayManager::isDisplayCreated(ramses::displayId_t display) const
     {
-        ramses_internal::PlatformGuard guard(m_lock);
-        return m_createdDisplays.count(display) != 0;
+        return m_displays.count(display) != 0;
     }
 
     SceneState DisplayManager::getLastReportedSceneState(ramses::sceneId_t sceneId) const
     {
-        ramses_internal::PlatformGuard guard(m_lock);
         return GetSceneStateFromInternal(getCurrentSceneState(sceneId));
     }
 
     ramses::displayId_t DisplayManager::getDisplaySceneIsMappedTo(ramses::sceneId_t sceneId) const
     {
-        ramses_internal::PlatformGuard guard(m_lock);
         const auto sceneState = getCurrentSceneState(sceneId);
 
         // last reported display scene is mapped to can only be valid if scene is mapped/rendered
         if (sceneState != ESceneStateInternal::MappedAndAssigned && sceneState != ESceneStateInternal::Rendered)
-            return ramses::InvalidDisplayId;
+            return ramses::displayId_t::Invalid();
 
         const auto it = m_scenesInfo.find(sceneId);
-        return it != m_scenesInfo.end() ? it->second.mappingInfo.display : ramses::InvalidDisplayId;
+        return it != m_scenesInfo.end() ? it->second.mappingInfo.display : ramses::displayId_t::Invalid();
     }
 
     DisplayManager::ESceneStateInternal DisplayManager::getCurrentSceneState(ramses::sceneId_t sceneId) const
@@ -273,7 +295,7 @@ namespace ramses_display_manager
                 if (isDisplayCreated(mapInfo.display))
                 {
                     LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager initiating map of scene with id: " << sceneId);
-                    if (m_ramsesRenderer.mapScene(mapInfo.display, sceneId, mapInfo.renderOrder) == ramses::StatusOK)
+                    if (m_ramsesRenderer.mapScene(mapInfo.display, sceneId) == ramses::StatusOK)
                         sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Map;
                 }
                 else
@@ -356,89 +378,11 @@ namespace ramses_display_manager
         SceneInfo& sceneInfo = m_scenesInfo[sceneId];
         MappingInfo& mapInfo = sceneInfo.mappingInfo;
 
-        // advance OB mapping state if OB mapping needed
-        const bool mapsToOB = sceneInfo.mappingInfo.obWidth > 0;
-        if (mapsToOB)
-            goToOBLinkedState(sceneId);
-
-        // state can advance if either no OB mapping needed or it is fully OB mapped/assigned/linked
-        const bool sceneAssignedAndLinked = (!mapsToOB || (mapInfo.obMappingState == MappingInfo::OBMappingState::Linked));
-        if (sceneAssignedAndLinked)
+        if (m_ramsesRenderer.assignSceneToDisplayBuffer(sceneId, mapInfo.displayBuffer, mapInfo.renderOrder) == ramses::StatusOK)
         {
             setCurrentSceneState(sceneId, ESceneStateInternal::MappedAndAssigned);
-
             goToTargetState(sceneId);
-
-            // additionally trigger scenes consumed by this scene to continue with mapping
-            for (const auto& it : m_scenesInfo)
-            {
-                if (it.second.mappingInfo.consumerScene == sceneId)
-                    goToTargetState(it.first);
-            }
         }
-    }
-
-    void DisplayManager::goToOBLinkedState(ramses::sceneId_t sceneId)
-    {
-        assert(m_scenesInfo.count(sceneId) > 0);
-        assert(getCurrentSceneState(sceneId) == ESceneStateInternal::Mapped);
-        SceneInfo& sceneInfo = m_scenesInfo[sceneId];
-        MappingInfo& mapInfo = sceneInfo.mappingInfo;
-
-        switch (mapInfo.obMappingState)
-        {
-        case MappingInfo::OBMappingState::None:
-            // Create OB
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager initiating creation of offscreen buffer " << mapInfo.obWidth << "x" << mapInfo.obHeight << " to map scene " << sceneId);
-            mapInfo.offscreenBuffer = m_ramsesRenderer.createOffscreenBuffer(mapInfo.display, mapInfo.obWidth, mapInfo.obHeight);
-            if (mapInfo.offscreenBuffer != ramses::InvalidOffscreenBufferId)
-                mapInfo.obMappingState = MappingInfo::OBMappingState::OBCreationRequested;
-            break;
-        case MappingInfo::OBMappingState::OBCreationRequested:
-            break;
-        case MappingInfo::OBMappingState::OBCreated:
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager initiating assignment of scene " << sceneId << " to offscreen buffer " << mapInfo.offscreenBuffer);
-            if (m_ramsesRenderer.assignSceneToOffscreenBuffer(sceneId, mapInfo.offscreenBuffer) == ramses::StatusOK)
-                mapInfo.obMappingState = MappingInfo::OBMappingState::AssignmentRequested;
-            break;
-        case MappingInfo::OBMappingState::AssignmentRequested:
-            break;
-        case MappingInfo::OBMappingState::Assigned:
-            // Check if consumer mapped
-            if (getDisplaySceneIsMappedTo(mapInfo.consumerScene) != mapInfo.display)
-            {
-                LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager cannot advance with linking scene " << sceneId << " via offscreen buffer " << mapInfo.offscreenBuffer
-                    << " to consumer, because consumer scene " << mapInfo.consumerScene << " is not mapped yet or mapped to another display");
-            }
-            else
-            {
-                LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager initiating linking of scene " << sceneId << " via offscreen buffer " << mapInfo.offscreenBuffer
-                    << " to consumer scene " << mapInfo.consumerScene << " sampler consumer " << mapInfo.consumerSamplerId);
-                if (m_ramsesRenderer.linkOffscreenBufferToSceneData(mapInfo.offscreenBuffer, mapInfo.consumerScene, mapInfo.consumerSamplerId) == ramses::StatusOK)
-                    mapInfo.obMappingState = MappingInfo::OBMappingState::LinkRequested;
-            }
-            break;
-        case MappingInfo::OBMappingState::LinkRequested:
-            break;
-        case MappingInfo::OBMappingState::Linked:
-            // Done
-            break;
-        default:
-            assert(false);
-            break;
-        }
-    }
-
-    void DisplayManager::resetMappingState(ramses::sceneId_t sceneId)
-    {
-        auto& mapInfo = m_scenesInfo[sceneId].mappingInfo;
-
-        // destroy no longer used OB
-        if (mapInfo.offscreenBuffer != ramses::InvalidOffscreenBufferId)
-            m_ramsesRenderer.destroyOffscreenBuffer(mapInfo.display, mapInfo.offscreenBuffer);
-
-        mapInfo.obMappingState = MappingInfo::OBMappingState::None;
-        mapInfo.offscreenBuffer = ramses::InvalidOffscreenBufferId;
     }
 
     void DisplayManager::setCurrentSceneState(ramses::sceneId_t sceneId, ESceneStateInternal state)
@@ -457,11 +401,11 @@ namespace ramses_display_manager
                 sos << "DisplayManager generated event: scene state change";
                 sos << " (scene " << sceneId;
                 sos << ", " << SceneStateName(newState);
-                if (displayMappedTo != ramses::InvalidDisplayId)
+                if (displayMappedTo != ramses::displayId_t::Invalid())
                     sos << ", mapped to display " << displayMappedTo;
                 sos << ")";
             }));
-            m_pendingEvents.push_back({ sceneId, newState, displayMappedTo });
+            m_pendingEvents.push_back({ DisplayManagerEvent::Type::SceneStateChanged, sceneId, newState, displayMappedTo });
         }
     }
 
@@ -470,17 +414,9 @@ namespace ramses_display_manager
     {
         assert(m_scenesInfo.count(sceneId) == 0 || getCurrentSceneState(sceneId) == ESceneStateInternal::Unpublished);
 
-        auto& sceneInfo = m_scenesInfo[sceneId];
-        if (m_autoShow)
-        {
-            // in autoshow set target state and mapping if not set already
-            if (sceneInfo.targetState == ESceneStateInternal::Unpublished)
-                sceneInfo.targetState = ESceneStateInternal::Rendered;
-            if (sceneInfo.mappingInfo.display == ramses::InvalidDisplayId)
-                sceneInfo.mappingInfo.display = 0u; // assuming display 0 to use for auto show
-        }
-
         setCurrentSceneState(sceneId, ESceneStateInternal::Published);
+        m_pendingEvents.push_back({ DisplayManagerEvent::Type::ScenePublished, sceneId });
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager generated event: scene published (scene " << sceneId << ")");
 
         goToTargetState(sceneId);
     }
@@ -590,12 +526,10 @@ namespace ramses_display_manager
         switch (result)
         {
         case ramses::ERendererEventResult_OK:
-            resetMappingState(sceneId);
             setCurrentSceneState(sceneId, ESceneStateInternal::Subscribed);
             goToTargetState(sceneId);
             break;
         case ramses::ERendererEventResult_INDIRECT:
-            resetMappingState(sceneId);
             setCurrentSceneState(sceneId, ESceneStateInternal::Subscribed);
             break;
         case ramses::ERendererEventResult_FAIL:
@@ -668,7 +602,7 @@ namespace ramses_display_manager
     {
         if (result == ramses::ERendererEventResult_OK)
         {
-            m_createdDisplays.insert({ displayId, {} });
+            m_displays.insert({ displayId, { m_ramsesRenderer.getDisplayFramebuffer(displayId) } });
             for (const auto& it : m_scenesInfo)
             {
                 if (it.second.mappingInfo.display == displayId)
@@ -680,105 +614,44 @@ namespace ramses_display_manager
     void DisplayManager::displayDestroyed(ramses::displayId_t displayId, ramses::ERendererEventResult result)
     {
         if (result == ramses::ERendererEventResult_OK)
-            m_createdDisplays.erase(displayId);
+            m_displays.erase(displayId);
     }
 
-    void DisplayManager::offscreenBufferCreated(ramses::displayId_t displayId, ramses::offscreenBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
+    void DisplayManager::offscreenBufferCreated(ramses::displayId_t displayId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
     {
         if (result == ramses::ERendererEventResult_OK)
-            m_createdDisplays[displayId].offscreenBuffers.insert(offscreenBufferId);
-
-        for (auto& it : m_scenesInfo)
-        {
-            auto& mapInfo = m_scenesInfo[it.first].mappingInfo;
-            if (mapInfo.offscreenBuffer == offscreenBufferId)
-            {
-                if (mapInfo.obMappingState != MappingInfo::OBMappingState::OBCreationRequested)
-                {
-                    LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::offscreenBufferCreated: scene " << it.first << " mapping to OB " << offscreenBufferId
-                        << " did not request OB creation, but OB creation event received, ignoring event. This is OK if scene was unexpectedly unpublished.");
-                    continue;
-                }
-
-                if (result == ramses::ERendererEventResult_OK)
-                    mapInfo.obMappingState = MappingInfo::OBMappingState::OBCreated;
-                else
-                {
-                    // reset any mapping that points to the OB that failed to create
-                    mapInfo.offscreenBuffer = ramses::InvalidOffscreenBufferId;
-                    mapInfo.obMappingState = MappingInfo::OBMappingState::None; // re-trigger on fail
-                    LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::offscreenBufferCreated: OB " << offscreenBufferId
-                        << " to be used by scene " << it.first << " failed to create, will retry creation in next step");
-                }
-
-                goToTargetState(it.first);
-            }
-        }
+            m_displays[displayId].insert(offscreenBufferId);
     }
 
-    void DisplayManager::offscreenBufferDestroyed(ramses::displayId_t displayId, ramses::offscreenBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
+    void DisplayManager::offscreenBufferDestroyed(ramses::displayId_t displayId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
     {
         if (result == ramses::ERendererEventResult_OK)
-            m_createdDisplays[displayId].offscreenBuffers.erase(offscreenBufferId);
+            m_displays[displayId].erase(offscreenBufferId);
     }
 
-    void DisplayManager::sceneAssignedToOffscreenBuffer(ramses::sceneId_t sceneId, ramses::offscreenBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
+    void DisplayManager::offscreenBufferLinkedToSceneData(ramses::displayBufferId_t providerOffscreenBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId, ramses::ERendererEventResult result)
     {
-        auto& mapInfo = m_scenesInfo[sceneId].mappingInfo;
-        if (mapInfo.obMappingState != MappingInfo::OBMappingState::AssignmentRequested)
-        {
-            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::sceneAssignedToOffscreenBuffer: scene " << sceneId << " was not requested to be assigned to OB " << offscreenBufferId
-                << ", ignoring event. This is OK if scene was unexpectedly unpublished.");
-            return;
-        }
-
-        if (result == ramses::ERendererEventResult_OK)
-            mapInfo.obMappingState = MappingInfo::OBMappingState::Assigned;
-        else
-        {
-            mapInfo.obMappingState = MappingInfo::OBMappingState::OBCreated; // re-trigger on fail
-            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::sceneAssignedToOffscreenBuffer: scene " << sceneId << " failed to be assigned to OB " << offscreenBufferId
-                << ", will retry again.");
-        }
-
-        goToTargetState(sceneId);
+        DisplayManagerEvent evt{ DisplayManagerEvent::Type::OffscreenBufferLinked };
+        evt.displayBufferId = providerOffscreenBuffer;
+        evt.consumerSceneId = consumerScene;
+        evt.consumerId = consumerId;
+        evt.dataLinked = (result == ramses::ERendererEventResult_OK);
+        m_pendingEvents.push_back(evt);
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager generated event: offscreen buffer linked (offscreenBuffer " << providerOffscreenBuffer
+            << " consumerScene " << consumerScene << " consumerId " << consumerId << " status=" << evt.dataLinked << ")");
     }
 
-    void DisplayManager::offscreenBufferLinkedToSceneData(ramses::offscreenBufferId_t providerOffscreenBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId, ramses::ERendererEventResult result)
+    void DisplayManager::dataLinked(ramses::sceneId_t providerScene, ramses::dataProviderId_t providerId, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId, ramses::ERendererEventResult result)
     {
-        for (auto& it : m_scenesInfo)
-        {
-            auto& mapInfo = it.second.mappingInfo;
-            if (mapInfo.offscreenBuffer == providerOffscreenBuffer)
-            {
-                if (mapInfo.obMappingState != MappingInfo::OBMappingState::LinkRequested)
-                {
-                    LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::offscreenBufferLinkedToSceneData: scene " << it.first << " mapping to OB " << providerOffscreenBuffer
-                        << " did not request link to consumer scene " << mapInfo.consumerScene << " sampler consumer " << mapInfo.consumerSamplerId
-                        << ", but link event received, ignoring event. This is OK if scene was unexpectedly unpublished.");
-                    continue;
-                }
-
-                if (mapInfo.consumerScene != consumerScene || mapInfo.consumerSamplerId != consumerId)
-                {
-                    LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::offscreenBufferLinkedToSceneData: scene " << it.first << " mapping to OB " << providerOffscreenBuffer
-                        << " linking to consumer scene " << mapInfo.consumerScene << " sampler consumer " << mapInfo.consumerSamplerId
-                        << " do not match event's consumer scene " << consumerScene << " and/or consumer " << consumerId << ", ignoring event.");
-                    continue;
-                }
-
-                if (result == ramses::ERendererEventResult_OK)
-                    mapInfo.obMappingState = MappingInfo::OBMappingState::Linked;
-                else
-                {
-                    mapInfo.obMappingState = MappingInfo::OBMappingState::Assigned; // re-trigger on fail
-                    LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager::offscreenBufferLinkedToSceneData: OB " << mapInfo.offscreenBuffer << " used by scene " << it.first
-                        << " failed to be linked to consumer scene " << mapInfo.consumerScene << " sampler consumer " << mapInfo.consumerSamplerId);
-                }
-
-                goToTargetState(it.first);
-            }
-        }
+        DisplayManagerEvent evt{ DisplayManagerEvent::Type::DataLinked };
+        evt.providerSceneId = providerScene;
+        evt.providerId = providerId;
+        evt.consumerSceneId = consumerScene;
+        evt.consumerId = consumerId;
+        evt.dataLinked = (result == ramses::ERendererEventResult_OK);
+        m_pendingEvents.push_back(evt);
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager generated event: data linked (providerScene " << providerScene << " providerId " << providerId
+            << " consumerScene " << consumerScene << " consumerId " << consumerId << " status=" << evt.dataLinked << ")");
     }
 
     void DisplayManager::keyEvent(ramses::displayId_t displayId, ramses::EKeyEvent keyEvent, uint32_t keyModifiers, ramses::EKeyCode keyCode)

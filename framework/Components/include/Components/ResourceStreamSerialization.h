@@ -9,7 +9,7 @@
 #ifndef RAMSES_RESOURCESTREAMSERIALIZATION_H
 #define RAMSES_RESOURCESTREAMSERIALIZATION_H
 
-#include "PlatformAbstraction/PlatformTypeInfo.h"
+#include "PlatformAbstraction/PlatformTypes.h"
 #include "Collections/Pair.h"
 #include "SceneAPI/ResourceContentHash.h"
 #include "Components/ManagedResource.h"
@@ -33,7 +33,7 @@ namespace ramses_internal
             ResourceContentHash hash;
             HeapArray<Byte> metadata;
             UInt32 blobSize;
-            Byte* blobData;
+            const Byte* blobData;
         };
 
         struct PacketInfo

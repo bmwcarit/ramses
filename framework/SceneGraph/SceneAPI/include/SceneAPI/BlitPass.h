@@ -16,7 +16,7 @@ namespace ramses_internal
 {
     struct BlitPass
     {
-        Bool               isEnabled = true;
+        bool               isEnabled = true;
         Int32              renderOrder = 0;
         RenderBufferHandle sourceRenderBuffer;
         RenderBufferHandle destinationRenderBuffer;

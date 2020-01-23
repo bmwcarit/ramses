@@ -13,7 +13,7 @@ ACME_MODULE(
     #==========================================================================
     NAME                    platform-wayland-ivi-egl-es-3-0
     TYPE                    STATIC_LIBRARY
-    ENABLE_INSTALL          ${ramses-sdk_INSTALL_STATIC_LIBS}
+    ENABLE_INSTALL          OFF
 
     #==========================================================================
     # files of this module
@@ -61,15 +61,8 @@ ACME_MODULE(
 IF (TARGET EmbeddedCompositor_Wayland_Test)
     # Tests that make connection and an event loop dispatch currently report potential leaks by address sanitizer
     # Wayland library seems to internally allocate some resources associated to the connected client, it is unclear at the moment how those should be freed
-    SET(TEST_FILTER "-AEmbeddedCompositor_Wayland.*_ClientConnectionTest")
-
-    IF (${wayland-server_VERSION} VERSION_LESS "1.13.0")
-        # This tests need wl_display_add_socket_fd(), which is available since version 1.13.0
-        SET(TEST_FILTER "${TEST_FILTER}:-AEmbeddedCompositor_Wayland.InitializeWorksWithSocketFDSet_ClientConnectionTest:AEmbeddedCompositor_Wayland.InitializeWorksWithSocketFDSetEvenWithoutXDGRuntimeDirNotSet_ClientConnectionTest:AWaylandBufferResource.CanGetSharedMemoryWidthHeightAndData:AWaylandCallbackResource.CanSendDone:AWaylandClient.CanPostNoMemory")
-    ENDIF()
-
     ACME_ADD_TEST(EmbeddedCompositor_Wayland_Test
         RNDSANDWICHTEST_SWRAST
-        --gtest_filter=${TEST_FILTER}
+        --gtest_filter=-AEmbeddedCompositor_Wayland.*_ClientConnectionTest
     )
 ENDIF()

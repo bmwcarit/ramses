@@ -11,7 +11,6 @@
 
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
-#include "ramses-client-api/AnimationSystem.h"
 
 #include "CreationHelper.h"
 #include "MockActionCollector.h"
@@ -42,8 +41,8 @@ namespace ramses
     public:
         LocalTestClient()
             : framework(sizeof(clientArgs) / sizeof(char*), clientArgs)
-            , client("localTestClient", framework)
-            , m_creationHelper(NULL, NULL, &client)
+            , client(*framework.createClient("localTestClient"))
+            , m_creationHelper(nullptr, &client)
             , sceneActionsCollector()
         {
             sceneActionsCollector.init(framework.impl.getScenegraphComponent());
@@ -51,7 +50,7 @@ namespace ramses
         }
 
         template <typename ObjectType>
-        ObjectType& createObject(const char* name = NULL)
+        ObjectType& createObject(const char* name = nullptr)
         {
             return *m_creationHelper.createObjectOfType<ObjectType>(name);
         }
@@ -68,7 +67,7 @@ namespace ramses
 
     protected:
         RamsesFramework framework;
-        RamsesClient client;
+        RamsesClient& client;
         CreationHelper m_creationHelper;
         testing::StrictMock<MockActionCollector> sceneActionsCollector;
     };
@@ -78,7 +77,7 @@ namespace ramses
     public:
         LocalTestClientWithScene(SceneConfig sceneConfig = SceneConfig())
             : LocalTestClient()
-            , m_scene(*client.createScene(123u, sceneConfig))
+            , m_scene(*client.createScene(sceneId_t(123u), sceneConfig))
             , m_constRefToScene(m_scene)
             , m_internalScene(m_scene.impl.getIScene())
         {
@@ -106,14 +105,14 @@ namespace ramses
             return createObject<UInt16Array>("indices");
         }
 
-        GeometryBinding& createValidGeometry(Effect* effect = 0, bool useIndices = true)
+        GeometryBinding& createValidGeometry(Effect* effect = nullptr, bool useIndices = true)
         {
-            if (0 == effect)
+            if (nullptr == effect)
             {
                 effect = TestEffects::CreateTestEffect(client);
             }
             GeometryBinding* geometry = m_scene.createGeometryBinding(*effect, "geometry");
-            EXPECT_TRUE(geometry != NULL);
+            EXPECT_TRUE(geometry != nullptr);
             if (useIndices)
             {
                 const UInt16Array& indexArray = createValidIndexArray();
@@ -142,25 +141,6 @@ namespace ramses
         Scene& m_scene;
         const Scene& m_constRefToScene;
         ramses_internal::IScene& m_internalScene;
-    };
-
-    class LocalTestClientWithSceneAndAnimationSystem : public LocalTestClientWithScene
-    {
-    protected:
-        explicit LocalTestClientWithSceneAndAnimationSystem(uint32_t animationSystemCreationFlags = EAnimationSystemFlags_Default)
-            : LocalTestClientWithScene()
-            , animationSystem(*m_scene.createAnimationSystem(animationSystemCreationFlags, "animation system"))
-        {
-            m_creationHelper.setAnimationSystem(&animationSystem);
-        }
-
-        ~LocalTestClientWithSceneAndAnimationSystem()
-        {
-            m_creationHelper.destroyAdditionalAllocatedAnimationSystemObjects();
-            m_scene.destroy(animationSystem);
-        }
-
-        AnimationSystem& animationSystem;
     };
 }
 

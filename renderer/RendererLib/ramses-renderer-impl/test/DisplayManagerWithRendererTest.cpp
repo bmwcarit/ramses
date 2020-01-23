@@ -16,7 +16,7 @@
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "Scene/ClientScene.h"
 
-using namespace ramses_display_manager;
+using namespace ramses_internal;
 using namespace testing;
 
 class SceneRendererStateTracker final : public ramses::RendererEventHandlerEmpty
@@ -116,6 +116,12 @@ public:
     {
     }
 
+    virtual void scenePublished(ramses::sceneId_t sceneId) override
+    {
+        if (sceneId == m_sceneId)
+            m_published = true;
+    }
+
     virtual void sceneStateChanged(ramses::sceneId_t sceneId, SceneState state, ramses::displayId_t displaySceneIsMappedTo) override
     {
         if (sceneId == m_sceneId)
@@ -125,18 +131,22 @@ public:
         }
     }
 
+    virtual void offscreenBufferLinked(ramses::displayBufferId_t, ramses::sceneId_t, ramses::dataConsumerId_t, bool) override {}
+    virtual void dataLinked(ramses::sceneId_t, ramses::dataProviderId_t, ramses::sceneId_t, ramses::dataConsumerId_t, bool) override {}
+
     const ramses::sceneId_t m_sceneId;
     SceneState m_lastState = SceneState::Unavailable;
-    ramses::displayId_t m_displayMappedTo = ramses::InvalidDisplayId;
+    ramses::displayId_t m_displayMappedTo;
+    bool m_published = false;
 };
 
 class RamsesClientAndRendererWithScene
 {
 public:
     RamsesClientAndRendererWithScene()
-        : m_renderer(m_framework, {})
-        , m_client("client", m_framework)
-        , m_displayManager(m_renderer, m_framework, false)
+        : m_renderer(*m_framework.createRenderer({}))
+        , m_client(*m_framework.createClient("client"))
+        , m_displayManager(m_renderer, m_framework)
         , m_sceneId(33u)
         , m_scene(*m_client.createScene(m_sceneId))
     {
@@ -155,8 +165,8 @@ public:
     }
 
     ramses::RamsesFramework m_framework;
-    ramses::RamsesRenderer m_renderer;
-    ramses::RamsesClient m_client;
+    ramses::RamsesRenderer& m_renderer;
+    ramses::RamsesClient& m_client;
     DisplayManager m_displayManager;
 
     ramses::displayId_t m_displayId;
@@ -209,7 +219,7 @@ protected:
         const auto lastDMState = ramsesClientRenderer->m_displayManager.getLastReportedSceneState(ramsesClientRenderer->m_sceneId);
         const auto lastTrackedState = m_sceneStateTracker.m_lastState;
         EXPECT_EQ(lastTrackedState, lastDMState);
-        const auto expectedDisplay = (lastTrackedState == SceneState::Ready || lastTrackedState == SceneState::Rendered) ? ramsesClientRenderer->m_displayId : ramses::InvalidDisplayId;
+        const auto expectedDisplay = (lastTrackedState == SceneState::Ready || lastTrackedState == SceneState::Rendered) ? ramsesClientRenderer->m_displayId : ramses::displayId_t::Invalid();
         EXPECT_EQ(expectedDisplay, m_sceneStateTracker.m_displayMappedTo);
 
         static const std::vector<std::pair<SceneState, SceneRendererStateTracker::RendererSceneState>> ValidStatePairs =
@@ -227,6 +237,11 @@ protected:
             return validPair.first == lastDMState && validPair.second == lastTrackedRendererState;
         });
         EXPECT_TRUE(validIt != ValidStatePairs.cend());
+
+        if (lastTrackedRendererState >= SceneRendererStateTracker::RendererSceneState::Published)
+        {
+            EXPECT_TRUE(m_sceneStateTracker.m_published);
+        }
     }
 
     ramses::IRendererEventHandler& m_displayManagerEventHandler;

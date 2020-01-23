@@ -9,11 +9,11 @@
 #include "gmock/gmock.h"
 #include "SharedSceneState.h"
 
-using namespace testing;
-using namespace ramses_display_manager;
-
 namespace ramses
 {
+    using namespace testing;
+    using namespace ramses_internal;
+
     class ASharedSceneState : public Test
     {
     protected:

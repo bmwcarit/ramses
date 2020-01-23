@@ -54,25 +54,28 @@ namespace ramses_internal
 
     struct StreamTextureSourceIdTag {};
     typedef StronglyTypedValue<UInt32, 0xFFFFFFFF, StreamTextureSourceIdTag> StreamTextureSourceId;
-    static const StreamTextureSourceId InvalidStreamTextureSourceId(0xFFFFFFFF);
+    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(StreamTextureSourceId)
     typedef HashSet<StreamTextureSourceId> StreamTextureSourceIdSet;
     typedef std::vector<StreamTextureSourceId> StreamTextureSourceIdVector;
 
     // TODO Violin this needs removing - no need for two types for stream texture id...
     typedef StreamTextureSourceId WaylandIviSurfaceId;
-    static const WaylandIviSurfaceId InvalidWaylandIviSurfaceId(0xFFFFFFFF);
 
     struct WaylandIviLayerIdTag {};
     typedef StronglyTypedValue<UInt32, 0xFFFFFFFF, WaylandIviLayerIdTag> WaylandIviLayerId;
-    static const WaylandIviLayerId InvalidWaylandIviLayerId(0xFFFFFFFF);
+    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(WaylandIviLayerId)
 
     struct IntegrityEglDisplayIdTag {};
     typedef StronglyTypedValue<UInt32, 0xFFFFFFFF, IntegrityEglDisplayIdTag> IntegrityRGLDeviceUnit;
-    static const IntegrityRGLDeviceUnit InvalidIntegrityRGLDeviceUnit(0xFFFFFFFF);
+    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(IntegrityRGLDeviceUnit)
 
     struct WindowsWindowHandleTag {};
     typedef StronglyTypedValue<void*, nullptr, WindowsWindowHandleTag> WindowsWindowHandle;
-    static const WindowsWindowHandle InvalidWindowsWindowHandle(nullptr);
+    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(WindowsWindowHandle)
+
+    struct AndroidNativeWindowPtrTag {};
+    typedef StronglyTypedValue<void*, nullptr, AndroidNativeWindowPtrTag> AndroidNativeWindowPtr;
+    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(AndroidNativeWindowPtr)
 
     struct ScreenshotInfo
     {
@@ -91,6 +94,9 @@ namespace ramses_internal
         UInt8Vector   pixelData;
     };
     typedef std::vector<ScreenshotInfo> ScreenshotInfoVector;
+
+    using BinaryShaderFormatID = StronglyTypedValue<UInt32, 0, struct BinaryShaderFormatIDTag>;
+    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(BinaryShaderFormatID)
 }
 
 #endif

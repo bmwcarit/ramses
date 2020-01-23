@@ -18,7 +18,7 @@
 
 namespace ramses
 {
-    class ClientPersistation : public ASceneAndAnimationSystemLoadedFromFile
+    class ClientPersistation : public ASceneLoadedFromFile
     {
     public:
         template<typename ResourceType>
@@ -49,7 +49,7 @@ namespace ramses
             }
 
             const ResourceType* specificObject = RamsesUtils::TryConvert<ResourceType>(*objectPerName);
-            EXPECT_TRUE(0 != specificObject);
+            EXPECT_TRUE(nullptr != specificObject);
             return specificObject;
         }
     };

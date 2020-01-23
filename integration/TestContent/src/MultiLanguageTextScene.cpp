@@ -12,14 +12,27 @@
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-utils.h"
+#include "ramses-client-api/RamsesClient.h"
+#include "ramses-client-api/EffectDescription.h"
+#include "ramses-client-api/Effect.h"
 
 namespace ramses_internal
 {
     MultiLanguageTextScene::MultiLanguageTextScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 /*state*/, const Vector3& cameraPosition)
         : TextScene_Base(ramsesClient, scene, cameraPosition)
     {
+        ramses::EffectDescription effectDesc;
+        effectDesc.setVertexShaderFromFile("res/ramses-test-client-text.vert");
+        effectDesc.setFragmentShaderFromFile("res/ramses-test-client-text.frag");
+
+        effectDesc.setAttributeSemantic("a_position", ramses::EEffectAttributeSemantic_TextPositions);
+        effectDesc.setAttributeSemantic("a_texcoord", ramses::EEffectAttributeSemantic_TextTextureCoordinates);
+        effectDesc.setUniformSemantic("u_texture", ramses::EEffectUniformSemantic_TextTexture);
+        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+
+        ramses::Effect* effect = ramsesClient.createEffect(effectDesc);
         ramses::UniformInput colorInput;
-        ramses::Effect* effect = ramses::RamsesUtils::CreateStandardTextEffect(ramsesClient, colorInput);
+        effect->findUniformInput("u_color", colorInput);
 
         /// Create fonts:
         const ramses::FontId font = m_fontRegistry.createFreetype2Font("res/ramses-test-client-Roboto-Bold.ttf");

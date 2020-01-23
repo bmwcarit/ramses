@@ -107,6 +107,17 @@ namespace ramses
         EXPECT_EQ(StatusOK, this->dataBuffer.validate());
     }
 
+    TYPED_TEST(ADataBuffer, IsValidIfNotUsedByAnyMeshButUsedByPickableObject)
+    {
+        VertexDataBuffer* geometryBuffer = this->m_scene.createVertexDataBuffer(36, EDataType_Vector3F, "geometryBuffer");
+        const char data[] = { 0 };
+        geometryBuffer->setData(data, 1u);
+        const pickableObjectId_t id(2);
+        this->m_scene.createPickableObject(*geometryBuffer, id, "PickableObject");
+
+        EXPECT_EQ(StatusOK, geometryBuffer->validate());
+    }
+
     TYPED_TEST(ADataBuffer, ReportsWarningIfNotUsedInGeometry)
     {
         const char data[] = { 0 };
@@ -137,13 +148,16 @@ namespace ramses
     TYPED_TEST(ADataBuffer, CanGetMaximumSize)
     {
         EXPECT_EQ(13 * sizeof(uint32_t), this->dataBuffer.getMaximumSizeInBytes());
+        EXPECT_EQ(13u, this->dataBuffer.impl.getElementCount());
     }
 
     TYPED_TEST(ADataBuffer, CanGetUsedSize)
     {
         EXPECT_EQ(StatusOK, this->dataBuffer.setData(reinterpret_cast<const char*>(std::array<uint32_t, 3>{ {12, 23, 34} }.data()), 3 * sizeof(uint32_t)));
         EXPECT_EQ(13 * sizeof(uint32_t), this->dataBuffer.getMaximumSizeInBytes());
+        EXPECT_EQ(13u, this->dataBuffer.impl.getElementCount());
         EXPECT_EQ(3 * sizeof(uint32_t), this->dataBuffer.getUsedSizeInBytes());
+        EXPECT_EQ(3u, this->dataBuffer.impl.getUsedElementCount());
     }
 
     TYPED_TEST(ADataBuffer, CanGetData)

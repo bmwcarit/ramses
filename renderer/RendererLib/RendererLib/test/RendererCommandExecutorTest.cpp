@@ -41,7 +41,7 @@ public:
         , m_expirationMonitor(m_rendererScenes, m_rendererEventCollector)
         , m_renderer(m_platformFactoryMock, m_rendererScenes, m_rendererEventCollector, m_expirationMonitor, m_rendererStatistics)
         , m_sceneStateExecutor(m_renderer, m_sceneGraphConsumerComponent, m_rendererEventCollector)
-        , m_sceneUpdater(m_renderer, m_rendererScenes, m_sceneStateExecutor, m_rendererEventCollector, m_frameTimer, m_expirationMonitor)
+        , m_sceneUpdater(m_renderer, m_rendererScenes, m_sceneStateExecutor, m_sceneGraphConsumerComponent, m_rendererEventCollector, m_frameTimer, m_expirationMonitor)
         , m_commandExecutor(m_renderer, m_commandBuffer, m_sceneUpdater, m_rendererEventCollector, m_frameTimer)
         , m_resourceUploader(m_renderer.getStatistics())
         , m_renderable(1u)
@@ -129,7 +129,7 @@ public:
         //receive initial flush
         SceneActionCollection sceneActions;
         SceneActionCollectionCreator creator(sceneActions);
-        creator.flush(1u, false, false);
+        creator.flush(1u, false);
         m_commandBuffer.enqueueActionsForScene(sceneId, sceneActions.copy());
 
         EXPECT_CALL(m_sceneGraphConsumerComponent, subscribeScene(clientID, sceneId));
@@ -153,7 +153,7 @@ public:
 
     void mapScene(SceneId sceneId, DisplayHandle display)
     {
-        m_commandBuffer.mapSceneToDisplay(sceneId, display, 0);
+        m_commandBuffer.mapSceneToDisplay(sceneId, display);
         doCommandExecutorLoop();
         updateScenes();
         updateScenes();
@@ -564,15 +564,16 @@ TEST_P(ARendererCommandExecutor, assignsSceneToOffscreenBuffer)
     createScene(sceneId);
     mapScene(sceneId, displayHandle);
 
-    m_commandBuffer.assignSceneToOffscreenBuffer(sceneId, buffer);
+    m_commandBuffer.assignSceneToDisplayBuffer(sceneId, buffer, 11);
     doCommandExecutorLoop();
 
     RendererEventVector events;
     m_rendererEventCollector.dispatchEvents(events);
     ASSERT_EQ(1u, events.size());
-    EXPECT_EQ(ERendererEventType_SceneAssignedToOffscreenBuffer, events.front().eventType);
+    EXPECT_EQ(ERendererEventType_SceneAssignedToDisplayBuffer, events.front().eventType);
     EXPECT_EQ(sceneId, events.front().sceneId);
     EXPECT_EQ(buffer, events.front().offscreenBuffer);
+    EXPECT_EQ(displayHandle, events.front().displayHandle);
 
     unmapScene(sceneId);
     destroyOffscreenBuffer(buffer, displayHandle);
@@ -590,24 +591,26 @@ TEST_P(ARendererCommandExecutor, confidence_reassignsSceneToFramebufferAfterItWa
     createScene(sceneId);
     mapScene(sceneId, displayHandle);
 
-    m_commandBuffer.assignSceneToOffscreenBuffer(sceneId, buffer);
+    m_commandBuffer.assignSceneToDisplayBuffer(sceneId, buffer, 11);
     doCommandExecutorLoop();
 
     RendererEventVector events;
     m_rendererEventCollector.dispatchEvents(events);
     ASSERT_EQ(1u, events.size());
-    EXPECT_EQ(ERendererEventType_SceneAssignedToOffscreenBuffer, events.front().eventType);
+    EXPECT_EQ(ERendererEventType_SceneAssignedToDisplayBuffer, events.front().eventType);
     EXPECT_EQ(sceneId, events.front().sceneId);
     EXPECT_EQ(buffer, events.front().offscreenBuffer);
+    EXPECT_EQ(displayHandle, events.front().displayHandle);
 
-    m_commandBuffer.assignSceneToFramebuffer(sceneId);
+    m_commandBuffer.assignSceneToDisplayBuffer(sceneId, OffscreenBufferHandle::Invalid(), 12);
     doCommandExecutorLoop();
 
     m_rendererEventCollector.dispatchEvents(events);
     ASSERT_EQ(1u, events.size());
-    EXPECT_EQ(ERendererEventType_SceneAssignedToFramebuffer, events.front().eventType);
+    EXPECT_EQ(ERendererEventType_SceneAssignedToDisplayBuffer, events.front().eventType);
     EXPECT_EQ(sceneId, events.front().sceneId);
     EXPECT_EQ(OffscreenBufferHandle::Invalid(), events.front().offscreenBuffer);
+    EXPECT_EQ(displayHandle, events.front().displayHandle);
 
     destroyOffscreenBuffer(buffer, displayHandle);
     unmapScene(sceneId);
@@ -625,15 +628,16 @@ TEST_P(ARendererCommandExecutor, reportsFailEventWhenUnmappedSceneCouldNotBeAssi
     createScene(sceneId);
     // Scene not mapped -> can not be assigned to offscreen buffer
 
-    m_commandBuffer.assignSceneToOffscreenBuffer(sceneId, buffer);
+    m_commandBuffer.assignSceneToDisplayBuffer(sceneId, buffer, 11);
     doCommandExecutorLoop();
 
     RendererEventVector events;
     m_rendererEventCollector.dispatchEvents(events);
     ASSERT_EQ(1u, events.size());
-    EXPECT_EQ(ERendererEventType_SceneAssignedToOffscreenBufferFailed, events.front().eventType);
+    EXPECT_EQ(ERendererEventType_SceneAssignedToDisplayBufferFailed, events.front().eventType);
     EXPECT_EQ(sceneId, events.front().sceneId);
     EXPECT_EQ(buffer, events.front().offscreenBuffer);
+    EXPECT_FALSE(events.front().displayHandle.isValid());
 
     destroyOffscreenBuffer(buffer, displayHandle);
     removeDisplayController(displayHandle);
@@ -648,15 +652,16 @@ TEST_P(ARendererCommandExecutor, reportsFailEventWhenSceneCouldNotBeAssignedToIn
     createScene(sceneId);
     mapScene(sceneId, displayHandle);
 
-    m_commandBuffer.assignSceneToOffscreenBuffer(sceneId, invalidBuffer);
+    m_commandBuffer.assignSceneToDisplayBuffer(sceneId, invalidBuffer, 11);
     doCommandExecutorLoop();
 
     RendererEventVector events;
     m_rendererEventCollector.dispatchEvents(events);
     ASSERT_EQ(1u, events.size());
-    EXPECT_EQ(ERendererEventType_SceneAssignedToOffscreenBufferFailed, events.front().eventType);
+    EXPECT_EQ(ERendererEventType_SceneAssignedToDisplayBufferFailed, events.front().eventType);
     EXPECT_EQ(sceneId, events.front().sceneId);
     EXPECT_EQ(invalidBuffer, events.front().offscreenBuffer);
+    EXPECT_EQ(displayHandle, events.front().displayHandle);
 
     unmapScene(sceneId);
 
@@ -671,13 +676,13 @@ TEST_P(ARendererCommandExecutor, reportsFailEventWhenUnmappedSceneCouldNotBeAssi
     createScene(sceneId);
     // Scene not mapped -> can not be assigned to offscreen buffer
 
-    m_commandBuffer.assignSceneToFramebuffer(sceneId);
+    m_commandBuffer.assignSceneToDisplayBuffer(sceneId, OffscreenBufferHandle::Invalid(), 11);
     doCommandExecutorLoop();
 
     RendererEventVector events;
     m_rendererEventCollector.dispatchEvents(events);
     ASSERT_EQ(1u, events.size());
-    EXPECT_EQ(ERendererEventType_SceneAssignedToFramebufferFailed, events.front().eventType);
+    EXPECT_EQ(ERendererEventType_SceneAssignedToDisplayBufferFailed, events.front().eventType);
     EXPECT_EQ(sceneId, events.front().sceneId);
 
     removeDisplayController(displayHandle);
@@ -739,7 +744,7 @@ TEST_P(ARendererCommandExecutor, linksTransformDataSlots)
     const DataSlotHandle providerSlot(3u);
     providerCreator.allocateNode(0u, providerNode);
     providerCreator.allocateDataSlot({ EDataSlotType_TransformationProvider, providerSlotId, providerNode, DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), TextureSamplerHandle() }, providerSlot);
-    providerCreator.flush(1u, false, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
+    providerCreator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
     m_commandBuffer.enqueueActionsForScene(sceneProviderId, std::move(providerSceneActions));
 
     SceneActionCollection consumerSceneActions;
@@ -749,7 +754,7 @@ TEST_P(ARendererCommandExecutor, linksTransformDataSlots)
     const DataSlotHandle consumerSlot(3u);
     consumerCreator.allocateNode(0u, consumerNode);
     consumerCreator.allocateDataSlot({ EDataSlotType_TransformationConsumer, consumerSlotId, consumerNode, DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), TextureSamplerHandle() }, consumerSlot);
-    consumerCreator.flush(1u, false, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
+    consumerCreator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
     m_commandBuffer.enqueueActionsForScene(sceneConsumerId, std::move(consumerSceneActions));
 
     // handle the previous generated events before the link event
@@ -791,7 +796,7 @@ TEST_P(ARendererCommandExecutor, unlinksTransformDataSlots)
     const DataSlotHandle providerSlot(3u);
     providerCreator.allocateNode(0u, providerNode);
     providerCreator.allocateDataSlot({ EDataSlotType_TransformationProvider, providerSlotId, providerNode, DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), TextureSamplerHandle() }, providerSlot);
-    providerCreator.flush(1u, false, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
+    providerCreator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
     m_commandBuffer.enqueueActionsForScene(sceneProviderId, std::move(providerSceneActions));
 
     SceneActionCollection consumerSceneActions;
@@ -801,7 +806,7 @@ TEST_P(ARendererCommandExecutor, unlinksTransformDataSlots)
     const DataSlotHandle consumerSlot(3u);
     consumerCreator.allocateNode(0u, consumerNode);
     consumerCreator.allocateDataSlot({ EDataSlotType_TransformationConsumer, consumerSlotId, consumerNode, DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), TextureSamplerHandle() }, consumerSlot);
-    consumerCreator.flush(1u, false, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
+    consumerCreator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
     m_commandBuffer.enqueueActionsForScene(sceneConsumerId, std::move(consumerSceneActions));
 
     EXPECT_CALL(m_sceneUpdater, handleSceneActions(sceneConsumerId, _));
@@ -835,11 +840,11 @@ TEST_P(ARendererCommandExecutor, processesSceneActions)
     SceneActionCollection actions;
     SceneActionCollectionCreator creator(actions);
     creator.allocateNode(0u, node);
-    creator.flush(1u, false, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
-    creator.flush(1u, false, false);
-    creator.flush(1u, false, false);
-    creator.flush(1u, false, false);
-    creator.flush(1u, false, false);
+    creator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
+    creator.flush(1u, false);
+    creator.flush(1u, false);
+    creator.flush(1u, false);
+    creator.flush(1u, false);
     m_commandBuffer.enqueueActionsForScene(sceneId, std::move(actions));
 
     EXPECT_CALL(m_sceneUpdater, handleSceneActions(sceneId, _));
@@ -859,7 +864,7 @@ TEST_P(ARendererCommandExecutor, executionClearsSceneActionsRegardlessOfStateOfT
     SceneActionCollection actions;
     SceneActionCollectionCreator creator(actions);
     creator.allocateNode(0u, NodeHandle(1u));
-    creator.flush(1u, false, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
+    creator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
     m_commandBuffer.enqueueActionsForScene(sceneSubscribedId, actions.copy());
     m_commandBuffer.enqueueActionsForScene(sceneNotSubscribedId, std::move(actions));
 
@@ -996,7 +1001,7 @@ TEST_P(ARendererCommandExecutor, setClearColor)
     const DisplayHandle dummyDisplay = addDisplayController();
     const Vector4 clearColor(1.f, 0.f, 0.2f, 0.3f);
 
-    m_commandBuffer.setClearColor(dummyDisplay, clearColor);
+    m_commandBuffer.setClearColor(dummyDisplay, {}, clearColor);
     doCommandExecutorLoop();
 
     auto& displayControllerMock = getDisplayControllerMock(dummyDisplay);
@@ -1023,5 +1028,14 @@ TEST_P(ARendererCommandExecutor, setFrameTimerLimits)
     EXPECT_EQ(std::chrono::microseconds(1u), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::ClientResourcesUpload));
     EXPECT_EQ(std::chrono::microseconds(2u), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneActionsApply));
     EXPECT_EQ(std::chrono::microseconds(3u), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::OffscreenBufferRender));
+}
+
+TEST_P(ARendererCommandExecutor, forwardsPickEventToSceneUpdater)
+{
+    const SceneId sceneId{ 123u };
+    const Vector2 coords{ 0.1f, 0.2f };
+    m_commandBuffer.handlePickEvent(sceneId, coords);
+    EXPECT_CALL(m_sceneUpdater, handlePickEvent(sceneId, coords));
+    doCommandExecutorLoop();
 }
 }

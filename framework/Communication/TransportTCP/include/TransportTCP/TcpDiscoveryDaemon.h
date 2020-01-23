@@ -35,7 +35,7 @@ namespace ramses_internal
 
     private:
         std::unique_ptr<ICommunicationSystem> m_communicationSystem;
-        Bool m_started;
+        bool m_started;
         std::unique_ptr<LogConnectionInfo> m_commandLogConnectionInformation;
     };
 }

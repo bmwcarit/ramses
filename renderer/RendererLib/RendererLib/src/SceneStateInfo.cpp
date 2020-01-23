@@ -61,7 +61,7 @@ namespace ramses_internal
     void SceneStateInfo::getKnownSceneIds(SceneIdVector& knownIds) const
     {
         assert(knownIds.empty());
-        knownIds.reserve(m_scenesInfo.count());
+        knownIds.reserve(m_scenesInfo.size());
         for(const auto& sceneInfo : m_scenesInfo)
         {
             knownIds.push_back(sceneInfo.key);

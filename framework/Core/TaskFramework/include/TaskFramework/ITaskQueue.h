@@ -21,7 +21,7 @@ namespace ramses_internal
     public:
         virtual ~ITaskQueue(){};
 
-        virtual Bool enqueue(ITask& Task) = 0;
+        virtual bool enqueue(ITask& Task) = 0;
         virtual void enableAcceptingTasks() = 0;
         virtual void disableAcceptingTasksAfterExecutingCurrentQueue() = 0;
     };

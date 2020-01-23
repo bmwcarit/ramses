@@ -30,7 +30,7 @@ namespace ramses_internal
 
         const GLuint vertexAttributeLocation = glGetAttribLocation(m_shaderProgramReference, "Vertex");
         glEnableVertexAttribArray(vertexAttributeLocation);
-        glVertexAttribPointer(vertexAttributeLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        glVertexAttribPointer(vertexAttributeLocation, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
         const GLint colorUniformLocation = glGetUniformLocation(m_shaderProgramReference, "u_color");
         switch (triangleColor)
@@ -76,7 +76,7 @@ namespace ramses_internal
         glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
 
-        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, 0);
+        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, nullptr);
     }
 
     void OpenGLTriangleDrawer::loadShaderProgram()
@@ -89,13 +89,13 @@ namespace ramses_internal
         GLuint vertexShaderReferemce;
         vertexShaderReferemce = glCreateShader(GL_VERTEX_SHADER);
         glAttachShader(m_shaderProgramReference, vertexShaderReferemce);
-        glShaderSource(vertexShaderReferemce, 1, static_cast<const char **>(&vertexShaderText), 0);
+        glShaderSource(vertexShaderReferemce, 1, static_cast<const char **>(&vertexShaderText), nullptr);
         glCompileShader(vertexShaderReferemce);
 
         GLuint fragmentShaderReference;
         fragmentShaderReference = glCreateShader(GL_FRAGMENT_SHADER);
         glAttachShader(m_shaderProgramReference, fragmentShaderReference);
-        glShaderSource(fragmentShaderReference, 1, static_cast<const char **>(&fragmentShaderText), 0);
+        glShaderSource(fragmentShaderReference, 1, static_cast<const char **>(&fragmentShaderText), nullptr);
         glCompileShader(fragmentShaderReference);
 
         glLinkProgram(m_shaderProgramReference);

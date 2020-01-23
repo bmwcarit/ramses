@@ -23,7 +23,6 @@
 #include "SceneAPI/PixelRectangle.h"
 #include "RendererAPI/IContext.h"
 #include "SceneAPI/RenderBuffer.h"
-#include "RendererLib/TextureData.h"
 
 #include "Math3d/Vector2.h"
 #include "Math3d/Vector3.h"
@@ -41,6 +40,7 @@
 
 #include "Platform_Base/GpuResource.h"
 #include "SceneAPI/TextureEnums.h"
+#include "PlatformAbstraction/Macros.h"
 
 namespace ramses_internal
 {
@@ -111,9 +111,6 @@ namespace ramses_internal
 
         m_limits.addTextureFormat(ETextureFormat_SRGB8);
         m_limits.addTextureFormat(ETextureFormat_SRGB8_ALPHA8);
-
-        m_limits.addTextureFormat(ETextureFormat_BGR8);
-        m_limits.addTextureFormat(ETextureFormat_BGRA8);
     }
 
     Device_GL::~Device_GL()
@@ -142,7 +139,7 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, "     GLSL version " << tmp);
 
         loadOpenGLExtensions();
-        loadExtensionDependentFeatures();
+        queryDeviceDependentFeatures();
 
         const RenderTargetGPUResource& framebufferRenderTarget = *new RenderTargetGPUResource(0);
         m_framebufferRenderTarget = m_resourceMapper.registerResource(framebufferRenderTarget);
@@ -359,7 +356,7 @@ namespace ramses_internal
 
         const GLHandle texID = generateAndBindTexture(GL_TEXTURE_2D);
         GLTextureInfo texInfo;
-        fillGLInternalTextureInfo(GL_TEXTURE_2D, width, height, 1u, storageFormat, texInfo);
+        fillGLInternalTextureInfo(GL_TEXTURE_2D, width, height, 1u, storageFormat, {ETextureChannelColor::Red, ETextureChannelColor::Green, ETextureChannelColor::Blue, ETextureChannelColor::Alpha}, texInfo);
         allocateTextureStorage(texInfo, 1u);
 
         return texID;
@@ -518,11 +515,11 @@ namespace ramses_internal
         }
     }
 
-    DeviceResourceHandle Device_GL::allocateTexture2D(UInt32 width, UInt32 height, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes)
+    DeviceResourceHandle Device_GL::allocateTexture2D(UInt32 width, UInt32 height, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes)
     {
         const GLHandle texID = generateAndBindTexture(GL_TEXTURE_2D);
         GLTextureInfo texInfo;
-        fillGLInternalTextureInfo(GL_TEXTURE_2D, width, height, 1u, textureFormat, texInfo);
+        fillGLInternalTextureInfo(GL_TEXTURE_2D, width, height, 1u, textureFormat, swizzle, texInfo);
         allocateTextureStorage(texInfo, mipLevelCount);
 
         const GPUResource& gpuResource = *new TextureGPUResource_GL(texInfo, texID, totalSizeInBytes);
@@ -533,7 +530,7 @@ namespace ramses_internal
     {
         const GLHandle texID = generateAndBindTexture(GL_TEXTURE_3D);
         GLTextureInfo texInfo;
-        fillGLInternalTextureInfo(GL_TEXTURE_3D, width, height, depth, textureFormat, texInfo);
+        fillGLInternalTextureInfo(GL_TEXTURE_3D, width, height, depth, textureFormat, DefaultTextureSwizzleArray, texInfo);
         allocateTextureStorage(texInfo, mipLevelCount);
 
         const GPUResource& gpuResource = *new TextureGPUResource_GL(texInfo, texID, totalSizeInBytes);
@@ -544,7 +541,7 @@ namespace ramses_internal
     {
         const GLHandle texID = generateAndBindTexture(GL_TEXTURE_CUBE_MAP);
         GLTextureInfo texInfo;
-        fillGLInternalTextureInfo(GL_TEXTURE_CUBE_MAP, faceSize, faceSize, 1u, textureFormat, texInfo);
+        fillGLInternalTextureInfo(GL_TEXTURE_CUBE_MAP, faceSize, faceSize, 1u, textureFormat, DefaultTextureSwizzleArray, texInfo);
         allocateTextureStorage(texInfo, mipLevelCount);
 
         const GPUResource& gpuResource = *new TextureGPUResource_GL(texInfo, texID, totalSizeInBytes);
@@ -577,7 +574,7 @@ namespace ramses_internal
         uploadTextureMipMapData(mipLevel, x, y, z, width, height, depth, texInfo, data, dataSize);
     }
 
-    DeviceResourceHandle Device_GL::uploadStreamTexture2D(DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data)
+    DeviceResourceHandle Device_GL::uploadStreamTexture2D(DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data, const TextureSwizzleArray& swizzle)
     {
         if (!handle.isValid())
         {
@@ -595,12 +592,18 @@ namespace ramses_internal
             const GLHandle texID = getTextureAddress(handle);
             assert(texID != InvalidGLHandle);
             assert(data != nullptr);
-            LOG_DEBUG(CONTEXT_RENDERER, "Device_GL::uploadStreamTexture2D:  texid: " << texID << " width: " << width << " height: " << height << " format: " << EnumToString(format));
+            LOG_DEBUG(CONTEXT_RENDERER, "Device_GL::uploadStreamTexture2D:  texid: " << texID << " width: " << width << " height: " << height << " format: " << EnumToString(format) << " textureSwizzle: " << EnumToString(swizzle[0]) << "," << EnumToString(swizzle[1]) << "," << EnumToString(swizzle[2]) << "," << EnumToString(swizzle[3]));
 
             glBindTexture(GL_TEXTURE_2D, texID);
 
             GLTextureInfo texInfo;
-            fillGLInternalTextureInfo(GL_TEXTURE_2D, width, height, 1u, format, texInfo);
+            fillGLInternalTextureInfo(GL_TEXTURE_2D, width, height, 1u, format, swizzle, texInfo);
+
+            assert(4 == swizzle.size());
+            glTexParameteri(texInfo.target, GL_TEXTURE_SWIZZLE_R, TypesConversion_GL::GetGlColorFromTextureChannelColor(texInfo.uploadParams.swizzle[0]));
+            glTexParameteri(texInfo.target, GL_TEXTURE_SWIZZLE_G, TypesConversion_GL::GetGlColorFromTextureChannelColor(texInfo.uploadParams.swizzle[1]));
+            glTexParameteri(texInfo.target, GL_TEXTURE_SWIZZLE_B, TypesConversion_GL::GetGlColorFromTextureChannelColor(texInfo.uploadParams.swizzle[2]));
+            glTexParameteri(texInfo.target, GL_TEXTURE_SWIZZLE_A, TypesConversion_GL::GetGlColorFromTextureChannelColor(texInfo.uploadParams.swizzle[3]));
             assert(!texInfo.uploadParams.compressed);
             // For now stream texture upload is using glTexImage2D instead of glStore/glSubimage because its size/format cannot be immutable
             glTexImage2D(texInfo.target, 0, texInfo.uploadParams.sizedInternalFormat, texInfo.width, texInfo.height, 0, texInfo.uploadParams.baseInternalFormat, texInfo.uploadParams.type, data);
@@ -609,7 +612,7 @@ namespace ramses_internal
         }
     }
 
-    void Device_GL::fillGLInternalTextureInfo(GLenum target, UInt32 width, UInt32 height, UInt32 depth, ETextureFormat textureFormat, GLTextureInfo& glTexInfoOut) const
+    void Device_GL::fillGLInternalTextureInfo(GLenum target, UInt32 width, UInt32 height, UInt32 depth, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, GLTextureInfo& glTexInfoOut) const
     {
         glTexInfoOut.target = target;
         glTexInfoOut.width = width;
@@ -621,18 +624,21 @@ namespace ramses_internal
             LOG_ERROR(CONTEXT_RENDERER, "Device_GL::createGLInternalTextureInfo: Unsupported texture format " << EnumToString(textureFormat));
             assert(false && "Device_GL::createGLInternalTextureInfo unsupported texture format");
         }
-        glTexInfoOut.uploadParams = TypesConversion_GL::GetTextureUploadParams(textureFormat);
 
-        if (glTexInfoOut.uploadParams.swizzleBGRXtoRGBX)
-        {
-            glTexParameteri(target, GL_TEXTURE_SWIZZLE_R, GL_BLUE);
-            glTexParameteri(target, GL_TEXTURE_SWIZZLE_B, GL_RED);
-        }
+        glTexInfoOut.uploadParams = TypesConversion_GL::GetTextureUploadParams(textureFormat);
+        glTexInfoOut.uploadParams.swizzle = swizzle;
     }
 
     void Device_GL::allocateTextureStorage(const GLTextureInfo& texInfo, UInt32 mipLevels) const
     {
         glPixelStorei(GL_UNPACK_ALIGNMENT, texInfo.uploadParams.byteAlignment);
+
+        static_assert(decltype(texInfo.uploadParams.swizzle)().size() == 4, "Wrong size of texture swizzle array");
+        // This is NOOP for Cube Map and Texture3D because the swizzle has default values for these types.
+        glTexParameteri(texInfo.target, GL_TEXTURE_SWIZZLE_R, TypesConversion_GL::GetGlColorFromTextureChannelColor(texInfo.uploadParams.swizzle[0]));
+        glTexParameteri(texInfo.target, GL_TEXTURE_SWIZZLE_G, TypesConversion_GL::GetGlColorFromTextureChannelColor(texInfo.uploadParams.swizzle[1]));
+        glTexParameteri(texInfo.target, GL_TEXTURE_SWIZZLE_B, TypesConversion_GL::GetGlColorFromTextureChannelColor(texInfo.uploadParams.swizzle[2]));
+        glTexParameteri(texInfo.target, GL_TEXTURE_SWIZZLE_A, TypesConversion_GL::GetGlColorFromTextureChannelColor(texInfo.uploadParams.swizzle[3]));
 
         switch (texInfo.target)
         {
@@ -1036,7 +1042,7 @@ namespace ramses_internal
         m_resourceMapper.deleteResource(handle);
     }
 
-    void Device_GL::activateVertexBuffer(DeviceResourceHandle handle, DataFieldHandle field, UInt32 instancingDivisor)
+    void Device_GL::activateVertexBuffer(DeviceResourceHandle handle, DataFieldHandle field, UInt32 instancingDivisor, UInt32 offset)
     {
         GLInputLocation vertexInputAddress;
         if (getAttributeLocation(field, vertexInputAddress))
@@ -1044,10 +1050,14 @@ namespace ramses_internal
             assert(m_activeShader != nullptr);
             const VertexBufferGPUResource& arrayResource = m_resourceMapper.getResourceAs<VertexBufferGPUResource>(handle);
 
+            const auto numComponents = arrayResource.getNumComponentsPerElement();
+            const UInt offsetInBytes = offset * numComponents * EnumToSize(EDataType_Float);
+            const void* offsetAsPointer = reinterpret_cast<const void*>(offsetInBytes);
+
             glBindBuffer(GL_ARRAY_BUFFER, arrayResource.getGPUAddress());
             glEnableVertexAttribArray(vertexInputAddress.getValue());
 
-            glVertexAttribPointer(vertexInputAddress.getValue(), arrayResource.getNumComponentsPerElement(), GL_FLOAT, GL_FALSE, 0, nullptr);
+            glVertexAttribPointer(vertexInputAddress.getValue(), numComponents, GL_FLOAT, GL_FALSE, 0, offsetAsPointer);
 
             glVertexAttribDivisor(vertexInputAddress.getValue(), instancingDivisor);
         }
@@ -1107,7 +1117,7 @@ namespace ramses_internal
         }
     }
 
-    DeviceResourceHandle Device_GL::uploadBinaryShader(const EffectResource& effect, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, UInt32 binaryShaderFormat)
+    DeviceResourceHandle Device_GL::uploadBinaryShader(const EffectResource& effect, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat)
     {
         ShaderProgramInfo programInfo;
         String debugErrorLog;
@@ -1126,7 +1136,7 @@ namespace ramses_internal
         }
     }
 
-    Bool Device_GL::getBinaryShader(DeviceResourceHandle handle, UInt8Vector& binaryShader, UInt32& binaryShaderFormat)
+    Bool Device_GL::getBinaryShader(DeviceResourceHandle handle, UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat)
     {
         binaryShader.clear();
 
@@ -1230,7 +1240,7 @@ namespace ramses_internal
 
     Bool Device_GL::isApiExtensionAvailable(const String& extensionName) const
     {
-        return m_apiExtensions.hasElement(extensionName);
+        return m_apiExtensions.contains(extensionName);
     }
 
     void Device_GL::loadOpenGLExtensions()
@@ -1240,11 +1250,11 @@ namespace ramses_internal
         if (numExtensions > 0)
         {
             m_apiExtensions.reserve(numExtensions);
-            uint32_t sumExtensionStringLength = 0;
+            size_t sumExtensionStringLength = 0;
             for (auto i = 0; i < numExtensions; i++)
             {
                 const auto tmp = reinterpret_cast<const Char*>(glGetStringi(GL_EXTENSIONS, i));
-                sumExtensionStringLength += PlatformStringUtils::StrLen(tmp);
+                sumExtensionStringLength += std::strlen(tmp);
                 m_apiExtensions.put(tmp);
             }
 
@@ -1261,7 +1271,7 @@ namespace ramses_internal
         }
     }
 
-    void Device_GL::loadExtensionDependentFeatures()
+    void Device_GL::queryDeviceDependentFeatures()
     {
         GLint max_textures(0);
         glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_textures);
@@ -1281,6 +1291,29 @@ namespace ramses_internal
             }
         }
 
+        GLint maxNumberOfBinaryFormats = 0;
+        // binary shader formats
+        glGetIntegerv(GL_NUM_SHADER_BINARY_FORMATS, &maxNumberOfBinaryFormats);
+        std::vector<GLint> suppportedBinaryShaderFormats(maxNumberOfBinaryFormats);
+        glGetIntegerv(GL_SHADER_BINARY_FORMATS, suppportedBinaryShaderFormats.data());
+        LOG_INFO_F(CONTEXT_RENDERER, ([&](StringOutputStream & sos)
+        {
+            sos << "Device_GL::queryDeviceDependentFeatures: supported binary shader formats (GL_SHADER_BINARY_FORMATS):";
+            for (GLint binaryShaderFormat : suppportedBinaryShaderFormats)
+                sos << "  " << binaryShaderFormat;
+        }));
+
+        // binary program formats
+        glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &maxNumberOfBinaryFormats);
+        m_supportedBinaryProgramFormats.resize(maxNumberOfBinaryFormats);
+        glGetIntegerv(GL_PROGRAM_BINARY_FORMATS, m_supportedBinaryProgramFormats.data());
+        LOG_INFO_F(CONTEXT_RENDERER, ([&](StringOutputStream & sos)
+        {
+            sos << "Device_GL::queryDeviceDependentFeatures: supported binary program formats (GL_PROGRAM_BINARY_FORMATS):";
+            for (GLint binaryProgramFormat : m_supportedBinaryProgramFormats)
+                sos << "  " << binaryProgramFormat;
+        }));
+
         if (isApiExtensionAvailable("GL_EXT_texture_filter_anisotropic"))
         {
             GLint anisotropy = 0;
@@ -1289,7 +1322,7 @@ namespace ramses_internal
         }
         else
         {
-            LOG_WARN(CONTEXT_RENDERER, "Device_GL::loadExtensionDependentFeatures:  anisotropic filtering not available on this device");
+            LOG_WARN(CONTEXT_RENDERER, "Device_GL::queryDeviceDependentFeatures:  anisotropic filtering not available on this device");
         }
     }
 
@@ -1323,6 +1356,12 @@ namespace ramses_internal
     void Device_GL::validateDeviceStatusHealthy() const
     {
         assert(isDeviceStatusHealthy());
+    }
+
+    void Device_GL::getSupportedBinaryProgramFormats(std::vector<BinaryShaderFormatID>& formats) const
+    {
+        formats.resize(m_supportedBinaryProgramFormats.size());
+        std::transform(m_supportedBinaryProgramFormats.cbegin(), m_supportedBinaryProgramFormats.cend(), formats.begin(), [](GLint id) { return BinaryShaderFormatID{ uint32_t(id) }; });
     }
 
     void Device_GL::finish()

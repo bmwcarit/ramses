@@ -87,12 +87,12 @@ namespace ramses_internal
 
         const StressTestConfig  m_testConfig;
         ramses::RamsesFramework m_framework;
-        ramses::RamsesClient    m_client;
+        ramses::RamsesClient&   m_client;
         StressTestRenderer      m_testRenderer;
 
         struct OffscreenBufferData
         {
-            ramses::offscreenBufferId_t bufferId;
+            ramses::displayBufferId_t   bufferId;
             uint32_t                    width;
             uint32_t                    height;
             bool                        isInterruptable;

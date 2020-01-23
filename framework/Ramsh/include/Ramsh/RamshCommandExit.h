@@ -22,9 +22,9 @@ namespace ramses_internal
     {
     public:
         explicit RamshCommandExit();
-        virtual Bool executeInput(const RamshInput& input) override;
+        virtual bool executeInput(const RamshInput& input) override;
 
-        Bool exitRequested();
+        bool exitRequested();
         void waitForExitRequest(UInt32 timeoutMillisec = 0u);
 
     private:

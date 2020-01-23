@@ -44,7 +44,7 @@ namespace ramses_internal
         return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
     }
 
-    inline IInputStream& operator>>(IInputStream& stream, Bool&  value)
+    inline IInputStream& operator>>(IInputStream& stream, bool&  value)
     {
         return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
     }
@@ -55,6 +55,21 @@ namespace ramses_internal
     }
 
     inline IInputStream& operator>>(IInputStream& stream, UInt16& value)
+    {
+        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+    }
+
+    inline IInputStream& operator>>(IInputStream& stream, Int16& value)
+    {
+        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+    }
+
+    inline IInputStream& operator>>(IInputStream& stream, UInt8& value)
+    {
+        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+    }
+
+    inline IInputStream& operator>>(IInputStream& stream, Int8& value)
     {
         return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
     }

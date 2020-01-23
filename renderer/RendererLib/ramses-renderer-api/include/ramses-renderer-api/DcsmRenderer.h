@@ -30,7 +30,8 @@ namespace ramses
     *          to define list of categories that should be managed by it, i.e. it should accept content offers
     *          for those categories.
     *
-    *          Several methods (showContent, hideContent, releaseContent) allow user to give timing information,
+    *          \section TimingInformation
+    *          Several methods (DcsmRenderer::showContent, DcsmRenderer::hideContent, DcsmRenderer::releaseContent, ...) allow user to give timing information,
     *          these timestamps are sent 'as is' via Dcsm to provider and it is assumed that provider and consumer
     *          agreed on how to interpret the values. DcsmRenderer only does less/equal comparison to determine
     *          which one comes first and when to execute scheduled operations, it is therefore mandated to provide
@@ -41,7 +42,30 @@ namespace ramses
     *          Content's scene state change becomes effective at finishTime from given timing for most transitions
     *          except for showContent which uses the startTime instead (this is to allow fade in animation).
     *
-    *          Disclaimer (TODO): DcsmRenderer operates on top of RamsesRenderer, it uses only the part of renderer's API that
+    *          \section RequestTimeout
+    *          Some methods (DcsmRenderer::requestContentReady) have a \c timeOut parameter.
+    *          Requesting content to be ready is potentially a heavy operation that consists of preparing, transferring and uploading
+    *          content data and resources. All these operations are executed asynchronously and many of them do not fail directly,
+    *          but might never finish (e.g. missing resource or some other unresolved dependency of content).
+    *          The \c timeOut parameter can be useful to handle such situations, application can decide if it retries the request
+    *          or take other measures.
+    *          Similar to timing information described above, the timeOut depends on \c timeStampNow passed to
+    *          DcsmRenderer::update. A ready request times out when DcsmRenderer::update is called with \c timeStampNow,
+    *          which is greater than \c requestTimeOutTimeStamp:
+    *               \c requestTimeOutTimeStamp = \c timeStampNowAtRequest + \c timeOut.
+    *
+    *          Example:
+    *               \code{.cpp}
+    *               update(10);
+    *               update(20);
+    *               requestContentReady(myContentID, 30);  // current time is 20, timeOut in 30 time units, requestTimeOutTimeStamp = 20 + 30 = 50
+    *               update(30);
+    *               update(40);
+    *               update(50); // if not reached ready till this point, request timed out
+    *               \endcode
+    *
+    *          \section Disclaimer
+    *          (TODO): DcsmRenderer operates on top of RamsesRenderer, it uses only the part of renderer's API that
     *          controls scene states, nothing else. It also internally dispatches (and consumes) renderer events, all of them,
     *          it is likely that there is part of application logic that needs to control other renderer features
     *          and needs to react on other (non scene state related) events. For that reason the DcsmRenderer::update
@@ -73,44 +97,17 @@ namespace ramses
         *          This call will fail right away (check return status) if transition is not valid (e.g. content is already shown).
         *          When content becomes ready (from both Dcsm and renderer scene perspective) an event/callback is emitted - IDcsmRendererEventHandler::contentReady,
         *          the content can be shown right after.
-        *          (TODO) This call may time out, i.e. not being able to finish the transition in given time, the event/callback's result is DcsmRendererEventResult::TimedOut.
+        *          This call may time out, i.e. not being able to finish the transition in given time, the event/callback's result is DcsmRendererEventResult::TimedOut.
+        *          See \ref RequestTimeout for more details.
+        *          It is valid to call this method more than once to change the \c timeOut value, but only if the ready state was not reached yet.
         *
         * @param contentID Content to request ready.
         * @param timeOut Time out period, state change will be canceled if not reached within this period, 0 to disable time out.
-        *                The time duration units are same as time given to DcsmRenderer::update.
+        *                The timeout period is measured from \c timeStampNow passed to most recent call of DcsmRenderer::update and uses same units.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
         status_t requestContentReady(ContentID contentID, uint64_t timeOut);
-
-        /** @brief Requests that the provided content is ready to show via an offscreen buffer linked to another content's texture sampler.
-        * @details This is an extended version of DcsmRenderer::requestContentReady, it does all that DcsmRenderer::requestContentReady would do
-        *          and in addition:
-        *            - offscreen buffer with given resolution is created on display specified in the category the content is assigned to
-        *            - content is assigned to the offscreen buffer (it will be rendered there when shown)
-        *            - the offscreen buffer is data-linked to another content's texture sampler identified by its data ID (see Scene::createTextureConsumer)
-        *          Only when all those steps are done the IDcsmRendererEventHandler::contentReady event callback is emitted.
-        *
-        *          Requirements for making content ready and linked:
-        *            - content must be available (not ready or shown)
-        *            - the contentToLinkTo must be ready or shown (not necessarily to same category but must be same display)
-        *            - content and contentToLinkTo cannot be same
-        *            - offscreen buffer dimensions must be non-zero
-        *            - texture sampler with given ID must exist in contentToLinkTo's scene
-        *
-        *          When content is released or unavailable the created offscreen buffer will be destroyed and texture sampler unlinked.
-        *
-        * @param contentID Content to request ready and linked.
-        * @param width Width of the offscreen buffer to create.
-        * @param height Height of the offscreen buffer to create.
-        * @param contentIDToLinkTo ID of content containing texture sampler to link the offscreen buffer to.
-        * @param textureSamplerDataIDToLinkTo Data consumer ID (see Scene::createTextureConsumer) of texture sampler to link the offscreen buffer to.
-        * @param timeOut Time out period, state change will be canceled if not reached within this period, 0 to disable time out.
-        *                The time duration units are same as time given to DcsmRenderer::update.
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t requestContentReadyAndLinkedViaOffscreenBuffer(ContentID contentID, uint32_t width, uint32_t height, ContentID contentIDToLinkTo, dataConsumerId_t textureSamplerDataIDToLinkTo, uint64_t timeOut);
 
         /** @brief Shows the content. The content must be ready to be shown - see DcsmRenderer::requestContentReady.
         * @details This involves a corresponding Dcsm message sent to content provider and also starts content's scene rendering.
@@ -120,7 +117,7 @@ namespace ramses
         *          This method is one of those supporting timing of state change, see ramses::DcsmRenderer for general description.
         *          The content's scene will start rendering at AnimationInformation::startTime (IDcsmRendererEventHandler::contentShown
         *          is emitted when rendering is confirmed from RamsesRenderer), AnimationInformation::finishTime sent to DcsmProvider
-        *          to mark the end time of fade in animation if any.
+        *          to mark the end time of fade in animation if any. See \ref TimingInformation for more details.
         *
         * @param contentID Content to show.
         * @param timingInfo Timing information, see above for details.
@@ -138,6 +135,7 @@ namespace ramses
         *          The content's scene will stop rendering at AnimationInformation::finishTime (unlike showContent),
         *          IDcsmRendererEventHandler::contentHidden is emitted when hide is confirmed from RamsesRenderer),
         *          AnimationInformation::startTime sent to DcsmProvider to mark the start time of fade out animation if any.
+        *          See \ref TimingInformation for more details.
         *
         * @param contentID Content to hide.
         * @param timingInfo Timing information, see above for details.
@@ -156,6 +154,7 @@ namespace ramses
         *          If the content was shown its scene will stop rendering at AnimationInformation::finishTime (similar to hideContent),
         *          and it will be unloaded from renderer (IDcsmRendererEventHandler::contentReleased is emitted when unload/unmap is confirmed
         *          from RamsesRenderer), AnimationInformation::startTime sent to DcsmProvider to mark the start time of fade out animation if any.
+        *          See \ref TimingInformation for more details.
         *
         * @param contentID Content to release.
         * @param timingInfo Timing information, see above for details.
@@ -187,6 +186,7 @@ namespace ramses
         *          and cannot be used until offered again (IDcsmRendererEventHandler::contentAvailable).
         *          Any attempt to change state of the content between calling this and finishTime is undefined,
         *          it is however possible to call this method again if timing needs to be adjusted.
+        *          See \ref TimingInformation for more details.
         * @param contentID Content to stop using.
         * @param timingInfo Timing to be sent to provider, see above for details.
         * @return StatusOK for success, otherwise the returned status can be used
@@ -194,13 +194,92 @@ namespace ramses
         */
         status_t acceptStopOffer(ContentID contentID, AnimationInformation timingInfo);
 
+        /**
+        * @brief Redirects rendering output of a content to a display buffer.
+        * @details When content is shown it is by default rendered to a framebuffer that belongs to a display associated with content's category.
+        *          However a content can be assigned to any of the display's offscreen buffers at any point in time after the content became ready.
+        *          Content's ready/shown/hidden state is not affected by this assignment.
+        *
+        *          Assigning content to a framebuffer or an offscreen buffer changes the way its render order is determined.
+        *          The rendering order of following buffer groups is fixed:
+        *            1. Offscreen buffers
+        *            2. Framebuffer
+        *            3. Interruptible offscreen buffers
+        *          The content render order only guarantees the order in scope of the buffer the content is assigned to.
+        *
+        *          The assignment will fail if content unknown or not ready (at least DCSM ready reported by DCSM provider),
+        *          if trying to assign to a display buffer that does not exist or does not belong to the display associated with content's category.
+        *
+        * @param[in] contentID Id of content that should be assigned to the display buffer.
+        * @param[in] displayBuffer Id of display buffer (framebuffer or offscreen buffer) the content should be assigned to.
+        * @param[in] renderOrder Lower value means that a content is rendered before a content with higher value. Default is 0.
+        *                        The render order is guaranteed only in the scope of the buffer it is assigned to (framebuffer or offscreen buffer).
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t assignContentToDisplayBuffer(ContentID contentID, displayBufferId_t displayBuffer, int32_t renderOrder = 0);
+
+        /**
+        * @brief Sets clear color for display's framebuffer or offscreen buffer.
+        *        Clear color is used to clear the whole buffer at the beginning of a rendering cycle (typically every frame).
+        *
+        * @param[in] displayBuffer Id of display buffer to set clear color
+        * @param[in] r Clear color red channel value [0,1]
+        * @param[in] g Clear color green channel value [0,1]
+        * @param[in] b Clear color blue channel value [0,1]
+        * @param[in] a Clear color alpha channel value [0,1]
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setDisplayBufferClearColor(displayBufferId_t displayBuffer, float r, float g, float b, float a);
+
+        /** @brief Creates a data link between offscreen buffer and a consumer data slot defined in Ramses scene.
+        * @details When linked, the offscreen buffer contents can be used as a texture input on the consumer side (see ramses::Scene::createTextureConsumer).
+        *          This way a consumer scene exposes its data slots and \c dataConsumerId_t are then needed to create the link here on renderer side.
+        *          Offscreen buffer can be linked to multiple consumer slots.
+        *          The consumer data slot type must be of type texture consumer (see ramses::Scene::createTextureConsumer)
+        *          in order to successfully link them. Also the consumer content must be ready (DcsmRenderer::requestContentReady).
+        *          This call results in an event which can be dispatched via IDcsmRendererEventHandler::offscreenBufferLinked.
+        *
+        * @param offscreenBufferId Offscreen buffer ID to be linked to consumer.
+        * @param consumerContentID Content with scene containing data consumer with given \c consumerId.
+        * @param consumerId Scene's data consumer ID.
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t linkOffscreenBuffer(displayBufferId_t offscreenBufferId, ContentID consumerContentID, dataConsumerId_t consumerId);
+
+        /** @brief Creates a data link between data slots defined in Ramses scene.
+        * @details The purpose of data linking is to provide data from one content's scene to another content's scene.
+        *          While linked, the data flows from provider to consumer, i.e. a data value set on provider's side
+        *          overwrites the linked data value on consumer's side.
+        *          Various data slots can be marked as data provider/consumer in Ramses scene,
+        *          see ramses::Scene for details (e.g. ramses::Scene::createDataProvider).
+        *          This way a scene exposes its data slots and \c dataProviderId_t and \c dataConsumerId_t are then needed
+        *          to create the link here on renderer side.
+        *          Only data slot marked as provider/consumer can be used as source/destination respectively. A provider slot
+        *          can be linked to multiple consumer slots, a consumer slot can be linked to exactly one provider.
+        *          The data link type and underlying data type must match in order to successfully link them.
+        *          Also both the contents must be known, i.e. it was made ready (DcsmRenderer::requestContentReady) at least once.
+        *          This call results in an event which can be dispatched via IDcsmRendererEventHandler::dataLinked.
+        *
+        * @param providerContentID Content with scene containing data provider with given \c providerId.
+        * @param providerId Scene's data provider ID.
+        * @param consumerContentID Content with scene containing data consumer with given \c consumerId.
+        * @param consumerId Scene's data consumer ID.
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t linkData(ContentID providerContentID, dataProviderId_t providerId, ContentID consumerContentID, dataConsumerId_t consumerId);
+
         /** @brief Do one update cycle which flushes any pending renderer commands, dispatches events from both Dcsm and renderer
         *          and executes any scheduled operations to be done at given time.
         * @details If any of the actions caused a state change or an event to be reported, a corresponding callback will be called
         *          on given handler.
         *          Additionally, renderer events will execute corresponding callbacks on customRendererEventHandler if provided
         *          (see ramses::DcsmRenderer for details).
-        * @param timeStampNow Timestamp which is used to execute any operations scheduled for a time at or before this timestamp (see DcsmRenderer::requestContentState for details).
+        * @param timeStampNow Timestamp which is used to execute any operations scheduled for a time at or before this timestamp (see \ref TimingInformation and \ref RequestTimeout for details).
+        *                     Timestamp provided must be greater than or equal to timestamp from last update call.
         * @param eventHandler Implementation of callback handler interface to react on events. It is allowed to call DcsmRenderer API directly from the callbacks.
         * @param customRendererEventHandler Custom renderer event handler implementation which will receive all the renderer events emitted since last call (see ramses::DcsmRenderer for details).
         * @return StatusOK for success, otherwise the returned status can be used

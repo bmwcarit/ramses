@@ -18,9 +18,9 @@ namespace ramses_internal
         template <typename F>
         void TokenizeToCStrings(String& s, UInt maxStringLength, Char splitToken, F&& fun)
         {
-            const char* tokenStart = s.data();
+            const char* tokenStart = s.c_str();
             UInt curLen = 0;
-            for (UInt idx = 0; idx < s.getLength(); ++idx)
+            for (UInt idx = 0; idx < s.size(); ++idx)
             {
                 if (s[idx] == splitToken || curLen == maxStringLength)
                 {
@@ -29,7 +29,7 @@ namespace ramses_internal
                     fun(tokenStart);
                     s[idx] = c;
 
-                    tokenStart = s.data() + idx;
+                    tokenStart = s.c_str() + idx;
                     if (c == splitToken)
                     {
                         ++tokenStart;

@@ -76,8 +76,8 @@ namespace ramses_internal
         CameraHandle createTestCamera(const Vector3& translation = Vector3(0.0f), ECameraProjectionType camProjType = ECameraProjectionType_Renderer)
         {
             const NodeHandle cameraNode = m_sceneAllocator.allocateNode();
-            const auto vpDataLayout = m_sceneAllocator.allocateDataLayout({ {EDataType_DataReference}, {EDataType_DataReference} });
-            const auto vpDataRefLayout = m_sceneAllocator.allocateDataLayout({ {EDataType_Vector2I} });
+            const auto vpDataLayout = m_sceneAllocator.allocateDataLayout({ {EDataType_DataReference}, {EDataType_DataReference} }, ResourceProviderMock::FakeEffectHash);
+            const auto vpDataRefLayout = m_sceneAllocator.allocateDataLayout({ {EDataType_Vector2I} }, ResourceProviderMock::FakeEffectHash);
             const auto vpDataInstance = m_sceneAllocator.allocateDataInstance(vpDataLayout);
             const auto vpOffsetInstance = m_sceneAllocator.allocateDataInstance(vpDataRefLayout);
             const auto vpSizeInstance = m_sceneAllocator.allocateDataInstance(vpDataRefLayout);
@@ -208,6 +208,7 @@ namespace ramses_internal
 
         const NodeHandle renderableNode = m_sceneAllocator.allocateNode();
         const RenderableHandle renderable = m_sceneAllocator.allocateRenderable(renderableNode);
+
         const TransformHandle renderableTransform = m_sceneAllocator.allocateTransform(renderableNode);
         const RenderPassHandle renderPass = m_sceneAllocator.allocateRenderPass();
         m_scene.setRenderPassCamera(renderPass, camera);

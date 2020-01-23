@@ -11,6 +11,7 @@
 
 #include "Types.h"
 #include "ramses-framework-api/APIExport.h"
+#include <chrono>
 
 namespace ramses
 {
@@ -105,7 +106,7 @@ namespace ramses
         * @param consumerId The id of the data consumer within the consumerScene
         * @param result Can be ERendererEventResult_OK if succeeded or ERendererEventResult_FAIL if failed.
         */
-        virtual void offscreenBufferLinkedToSceneData(offscreenBufferId_t providerOffscreenBuffer, sceneId_t consumerScene, dataConsumerId_t consumerId, ERendererEventResult result) = 0;
+        virtual void offscreenBufferLinkedToSceneData(displayBufferId_t providerOffscreenBuffer, sceneId_t consumerScene, dataConsumerId_t consumerId, ERendererEventResult result) = 0;
 
         /**
         * @brief This method will be called after a data link is removed (or failed to remove) as a result of RamsesRenderer API unlinkData call.
@@ -124,7 +125,7 @@ namespace ramses
         * @param offscreenBufferId The id of the offscreen buffer that was created or failed to be created.
         * @param result Can be ERendererEventResult_OK if succeeded, ERendererEventResult_FAIL if failed.
         */
-        virtual void offscreenBufferCreated(displayId_t displayId, offscreenBufferId_t offscreenBufferId, ERendererEventResult result) = 0;
+        virtual void offscreenBufferCreated(displayId_t displayId, displayBufferId_t offscreenBufferId, ERendererEventResult result) = 0;
 
         /**
         * @brief This method will be called after an offscreen buffer is destroyed (or failed to be destroyed) as a result of RamsesRenderer API \c destroyOffscreenBuffer call.
@@ -133,24 +134,16 @@ namespace ramses
         * @param offscreenBufferId The id of the offscreen buffer that was destroyed or failed to be destroyed.
         * @param result Can be ERendererEventResult_OK if succeeded, ERendererEventResult_FAIL if failed.
         */
-        virtual void offscreenBufferDestroyed(displayId_t displayId, offscreenBufferId_t offscreenBufferId, ERendererEventResult result) = 0;
+        virtual void offscreenBufferDestroyed(displayId_t displayId, displayBufferId_t offscreenBufferId, ERendererEventResult result) = 0;
 
         /**
-        * @brief This method will be called after a scene is assigned to an offscreen buffer (or failed to be assigned) as a result of RamsesRenderer API \c assignSceneToOffscreenBuffer call.
+        * @brief This method will be called after a scene is assigned to a display buffer (or failed to be assigned) as a result of RamsesRenderer API \c assignSceneToDisplayBuffer call.
         *
-        * @param sceneId The id of the scene that was assigned to the offscreen buffer (or failed to be assigned).
-        * @param offscreenBufferId The id of the offscreen buffer that the scene was assigned to (or failed to be assigned to).
+        * @param sceneId The id of the scene that was assigned to the display buffer (or failed to be assigned).
+        * @param displayBufferId The id of the display buffer that the scene was assigned to (or failed to be assigned to).
         * @param result Can be ERendererEventResult_OK if succeeded, ERendererEventResult_FAIL if failed.
         */
-        virtual void sceneAssignedToOffscreenBuffer(sceneId_t sceneId, offscreenBufferId_t offscreenBufferId, ERendererEventResult result) = 0;
-
-        /**
-        * @brief This method will be called after a scene is assigned to display's framebuffer (or failed to be assigned) as a result of RamsesRenderer API \c assignSceneToFramebuffer call.
-        *
-        * @param sceneId The id of the scene that was assigned to the framebuffer (or failed to be assigned).
-        * @param result Can be ERendererEventResult_OK if succeeded, ERendererEventResult_FAIL if failed.
-        */
-        virtual void sceneAssignedToFramebuffer(sceneId_t sceneId, ERendererEventResult result) = 0;
+        virtual void sceneAssignedToDisplayBuffer(sceneId_t sceneId, displayBufferId_t displayBufferId, ERendererEventResult result) = 0;
 
         /**
         * @brief This method will be called when a read back of pixels from framebuffer
@@ -290,10 +283,41 @@ namespace ramses
         virtual void windowResized(displayId_t displayId, uint32_t width, uint32_t height) = 0;
 
         /**
+        * @brief This method will be called when a display's window has been moved,
+        *        if the renderer uses WGL/Windows or X11/Linux as a window system.
+        *
+        * @param displayId The ramses display whose corresponding window was resized
+        * @param windowPosX The new horizontal position of the window's upper left corner
+        * @param windowPosY The new vertical position of the window's upper left corner
+        */
+        virtual void windowMoved(displayId_t displayId, int32_t windowPosX, int32_t windowPosY) = 0;
+
+        /**
         * @brief This method will be called when a display's window has been closed
         * @param displayId The display on which the event occurred
         */
         virtual void windowClosed(displayId_t displayId) = 0;
+
+        /**
+        * @brief This method will be called when there were scene objects picked.
+        *        A ramses::PickableObject can be 'picked' via a pick input event
+        *        which is passed to renderer where the scene is rendered (see ramses::RamsesRenderer::handlePickInput).
+        *
+        * @param[in] sceneId ID of scene to which the picked objects belong.
+        * @param[in] pickedObjects Pointer to first ID of the picked objects array.
+        *                          This array is valid only for the time of calling this method.
+        * @param[in] pickedObjectsCount Number of picked object IDs in the \c pickedObjects array.
+        */
+        virtual void objectsPicked(sceneId_t sceneId, const pickableObjectId_t* pickedObjects, uint32_t pickedObjectsCount) = 0;
+
+        /**
+        * @brief This method will be called in period given to renderer config and provides rough performance indicators.
+        *        It only works when using render thread.
+        *
+        * @param[in] maximumLoopTime The maximum time a loop of the renderthread took since the last event
+        * @param[in] averageLooptime The average time a loop of the renderthread took since the last event
+        */
+        virtual void renderThreadLoopTimings(std::chrono::microseconds maximumLoopTime, std::chrono::microseconds averageLooptime) = 0;
 
         /**
         * @brief Empty destructor
@@ -393,7 +417,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::offscreenBufferLinkedToSceneData
         */
-        virtual void offscreenBufferLinkedToSceneData(offscreenBufferId_t providerOffscreenBuffer, sceneId_t consumerScene, dataConsumerId_t consumerId, ERendererEventResult result) override
+        virtual void offscreenBufferLinkedToSceneData(displayBufferId_t providerOffscreenBuffer, sceneId_t consumerScene, dataConsumerId_t consumerId, ERendererEventResult result) override
         {
             (void)providerOffscreenBuffer;
             (void)consumerScene;
@@ -414,7 +438,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::offscreenBufferCreated
         */
-        virtual void offscreenBufferCreated(displayId_t displayId, offscreenBufferId_t offscreenBufferId, ERendererEventResult result) override
+        virtual void offscreenBufferCreated(displayId_t displayId, displayBufferId_t offscreenBufferId, ERendererEventResult result) override
         {
             (void)displayId;
             (void)offscreenBufferId;
@@ -424,7 +448,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::offscreenBufferDestroyed
         */
-        virtual void offscreenBufferDestroyed(displayId_t displayId, offscreenBufferId_t offscreenBufferId, ERendererEventResult result) override
+        virtual void offscreenBufferDestroyed(displayId_t displayId, displayBufferId_t offscreenBufferId, ERendererEventResult result) override
         {
             (void)displayId;
             (void)offscreenBufferId;
@@ -432,21 +456,12 @@ namespace ramses
         }
 
         /**
-        * @copydoc ramses::IRendererEventHandler::sceneAssignedToOffscreenBuffer
+        * @copydoc ramses::IRendererEventHandler::sceneAssignedToDisplayBuffer
         */
-        virtual void sceneAssignedToOffscreenBuffer(sceneId_t sceneId, offscreenBufferId_t offscreenBufferId, ERendererEventResult result) override
+        virtual void sceneAssignedToDisplayBuffer(sceneId_t sceneId, displayBufferId_t displayBufferId, ERendererEventResult result) override
         {
             (void)sceneId;
-            (void)offscreenBufferId;
-            (void)result;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::sceneAssignedToFramebuffer
-        */
-        virtual void sceneAssignedToFramebuffer(sceneId_t sceneId, ERendererEventResult result) override
-        {
-            (void)sceneId;
+            (void)displayBufferId;
             (void)result;
         }
 
@@ -592,12 +607,42 @@ namespace ramses
         }
 
         /**
+        * @copydoc ramses::IRendererEventHandler::windowMoved
+        */
+        virtual void windowMoved(displayId_t displayId, int32_t windowPosX, int32_t windowPosY) override
+        {
+            (void)displayId;
+            (void)windowPosX;
+            (void)windowPosY;
+        }
+
+        /**
         * @copydoc ramses::IRendererEventHandler::windowClosed
         */
         virtual void windowClosed(displayId_t displayId) override
         {
             (void)displayId;
         }
+
+        /**
+        * @copydoc ramses::IRendererEventHandler::objectsPicked
+        */
+        virtual void objectsPicked(sceneId_t sceneId, const pickableObjectId_t* pickedObjects, uint32_t pickedObjectsCount) override
+        {
+            (void)sceneId;
+            (void)pickedObjects;
+            (void)pickedObjectsCount;
+        }
+
+        /**
+        * @copydoc ramses::IRendererEventHandler::renderThreadLoopTimings
+        */
+        virtual void renderThreadLoopTimings(std::chrono::microseconds maximumLoopTime, std::chrono::microseconds averageLooptime) override
+        {
+            (void)maximumLoopTime;
+            (void)averageLooptime;
+        }
+
     };
 }
 

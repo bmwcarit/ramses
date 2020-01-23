@@ -15,7 +15,8 @@
 #include "Transfer/ResourceTypes.h"
 #include "SceneAPI/SceneTypes.h"
 #include "SceneAPI/TextureSamplerStates.h"
-#include "Resource/EResourceType.h"
+#include "SceneAPI/EDataType.h"
+#include "Resource/ResourceTypes.h"
 
 namespace ramses_internal
 {

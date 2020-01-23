@@ -11,20 +11,21 @@
 
 #include "RendererAPI/Types.h"
 #include "SceneAPI/ResourceContentHash.h"
-#include "Resource/EResourceType.h"
+#include "Resource/ResourceTypes.h"
 #include "Components/ManagedResource.h"
 
 namespace ramses_internal
 {
     class IResource;
     class IRenderBackend;
+    struct ResourceDescriptor;
 
     class IResourceUploader
     {
     public:
         virtual ~IResourceUploader() {}
 
-        virtual DeviceResourceHandle uploadResource(IRenderBackend& renderBackend, ManagedResource resourceObject, UInt32& outVRAMSize) = 0;
+        virtual DeviceResourceHandle uploadResource(IRenderBackend& renderBackend, const ResourceDescriptor& resourceObject, UInt32& outVRAMSize) = 0;
         virtual void                 unloadResource(IRenderBackend& renderBackend, EResourceType type, ResourceContentHash hash, DeviceResourceHandle handle) = 0;
     };
 }

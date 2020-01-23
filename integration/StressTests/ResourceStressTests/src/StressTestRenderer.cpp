@@ -12,9 +12,15 @@
 namespace ramses_internal
 {
     StressTestRenderer::StressTestRenderer(ramses::RamsesFramework& framework, const ramses::RendererConfig& config)
-        : m_renderer(framework, config)
+        : m_framework(framework)
+        , m_renderer(*framework.createRenderer(config))
         , m_eventHandler(m_renderer, 0)
     {
+    }
+
+    StressTestRenderer::~StressTestRenderer()
+    {
+        m_framework.destroyRenderer(m_renderer);
     }
 
     ramses::displayId_t StressTestRenderer::createDisplay(uint32_t offsetX, uint32_t width, uint32_t height, uint32_t displayIndex, int32_t argc, const char* argv[])
@@ -23,9 +29,9 @@ namespace ramses_internal
         displayConfig.setWindowRectangle(offsetX + 50, 50, width, height);
 
         const auto iviSurfaceId = displayConfig.getWaylandIviSurfaceID();
-        displayConfig.setWaylandIviSurfaceID((InvalidWaylandIviSurfaceId.getValue() != iviSurfaceId? iviSurfaceId : 10000)+ displayIndex);
+        displayConfig.setWaylandIviSurfaceID((WaylandIviSurfaceId(iviSurfaceId).isValid() ? iviSurfaceId : 10000) + displayIndex);
 
-        if(InvalidWaylandIviLayerId.getValue() == displayConfig.getWaylandIviLayerID())
+        if(!WaylandIviLayerId(displayConfig.getWaylandIviLayerID()).isValid())
             displayConfig.setWaylandIviLayerID(2);
 
         ramses::displayId_t displayId = m_renderer.createDisplay(displayConfig);
@@ -34,9 +40,9 @@ namespace ramses_internal
         return displayId;
     }
 
-    ramses::offscreenBufferId_t StressTestRenderer::createOffscreenBuffer(ramses::displayId_t displayId, uint32_t width, uint32_t height, bool interruptable)
+    ramses::displayBufferId_t StressTestRenderer::createOffscreenBuffer(ramses::displayId_t displayId, uint32_t width, uint32_t height, bool interruptable)
     {
-        ramses::offscreenBufferId_t offscreenBufferId;
+        ramses::displayBufferId_t offscreenBufferId;
         if (interruptable)
         {
             offscreenBufferId = m_renderer.createInterruptibleOffscreenBuffer(displayId, width, height);
@@ -103,9 +109,9 @@ namespace ramses_internal
         m_eventHandler.waitForShown(sceneId);
     }
 
-    void StressTestRenderer::showSceneOnOffscreenBuffer(ramses::sceneId_t sceneId, ramses::offscreenBufferId_t offscreenBuffer)
+    void StressTestRenderer::showSceneOnOffscreenBuffer(ramses::sceneId_t sceneId, ramses::displayBufferId_t offscreenBuffer)
     {
-        m_renderer.assignSceneToOffscreenBuffer(sceneId, offscreenBuffer);
+        m_renderer.assignSceneToDisplayBuffer(sceneId, offscreenBuffer);
         showScene(sceneId);
     }
 
@@ -125,7 +131,7 @@ namespace ramses_internal
         m_eventHandler.waitForNamedFlush(sceneId, flushName, true);
     }
 
-    void StressTestRenderer::linkOffscreenBufferToSceneTexture(ramses::sceneId_t sceneId, ramses::offscreenBufferId_t offscreenBuffer, ramses::dataConsumerId_t consumerTexture)
+    void StressTestRenderer::linkOffscreenBufferToSceneTexture(ramses::sceneId_t sceneId, ramses::displayBufferId_t offscreenBuffer, ramses::dataConsumerId_t consumerTexture)
     {
         m_renderer.linkOffscreenBufferToSceneData(offscreenBuffer, sceneId, consumerTexture);
         m_renderer.flush();

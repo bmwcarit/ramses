@@ -6,10 +6,12 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "gtest/gtest.h"
 #include "Collections/String.h"
+#include "framework_common_gmock_header.h"
 #include "Collections/HashMap.h"
 #include "ramses-capu/os/Memory.h"
+#include "IOStreamTester.h"
+#include "gtest/gtest.h"
 
 namespace ramses_internal
 {
@@ -17,37 +19,37 @@ namespace ramses_internal
 TEST(String, TestCTor)
 {
     String str;
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("", str.c_str()));
+    EXPECT_EQ(0, std::strcmp("", str.c_str()));
 }
 
 TEST(String, TestCStr)
 {
     String str("asdf");
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("asdf", str.c_str()));
-    EXPECT_EQ(4u, str.getLength());
+    EXPECT_EQ(0, std::strcmp("asdf", str.c_str()));
+    EXPECT_EQ(4u, str.size());
 }
 
 TEST(String, TestCopyConstructor)
 {
     String str("asdf");
     String copy(str);
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("asdf", str.c_str()));
+    EXPECT_EQ(0, std::strcmp("asdf", str.c_str()));
     EXPECT_STREQ("asdf", str.c_str());
-    EXPECT_EQ(str.getLength(), copy.getLength());
+    EXPECT_EQ(str.size(), copy.size());
 }
 
 TEST(String, InitialSizeConstructor)
 {
     String str(5, 'a');
 
-    EXPECT_EQ(5u, str.getLength());
+    EXPECT_EQ(5u, str.size());
     EXPECT_STREQ("aaaaa", str.c_str());
 }
 
 TEST(String, ConstructWithEmptyStringIsEmpty)
 {
     String str("");
-    EXPECT_EQ(0u, str.getLength());
+    EXPECT_EQ(0u, str.size());
     EXPECT_STREQ("", str.c_str());
 }
 
@@ -56,17 +58,17 @@ TEST(String, TestAssignOperator1)
     String str("asdf");
     String other("other");
 
-    EXPECT_EQ(4u, str.getLength());
-    EXPECT_EQ(5u, other.getLength());
+    EXPECT_EQ(4u, str.size());
+    EXPECT_EQ(5u, other.size());
     str = other;
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("other", str.c_str()));
-    EXPECT_EQ(5u, str.getLength());
-    EXPECT_EQ(5u, other.getLength());
+    EXPECT_EQ(0, std::strcmp("other", str.c_str()));
+    EXPECT_EQ(5u, str.size());
+    EXPECT_EQ(5u, other.size());
 
     String str2;
     String other2;
     str2 = other2;
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("", str2.c_str()));
+    EXPECT_EQ(0, std::strcmp("", str2.c_str()));
 
     // one string on stack, one on heap
     String stringStack1;
@@ -76,13 +78,13 @@ TEST(String, TestAssignOperator1)
 
 
     stringStack1 = *stringHeap1;
-    EXPECT_EQ(0u, stringHeap1->getLength());
-    EXPECT_EQ(0u, stringStack1.getLength());
+    EXPECT_EQ(0u, stringHeap1->size());
+    EXPECT_EQ(0u, stringStack1.size());
     delete stringHeap1;
 
     *stringHeap2 = stringStack2;
-    EXPECT_EQ(0u, stringHeap2->getLength());
-    EXPECT_EQ(0u, stringStack2.getLength());
+    EXPECT_EQ(0u, stringHeap2->size());
+    EXPECT_EQ(0u, stringStack2.size());
     delete stringHeap2;
 }
 
@@ -92,7 +94,7 @@ TEST(String, MoveConstructor)
     String b(std::move(a));
 
     EXPECT_EQ(String("abc"), b);
-    EXPECT_EQ(3u, b.getLength());
+    EXPECT_EQ(3u, b.size());
 }
 
 TEST(String, MoveAssignment)
@@ -102,7 +104,7 @@ TEST(String, MoveAssignment)
     b = std::move(a);
 
     EXPECT_EQ(String("abc"), b);
-    EXPECT_EQ(3u, b.getLength());
+    EXPECT_EQ(3u, b.size());
 }
 
 TEST(String, TestToLowerCase1)
@@ -179,16 +181,16 @@ TEST(String, TestAssignOperator2)
 {
     String str("asdf");
     str = "other";
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("other", str.c_str()));
-    EXPECT_EQ(5u, str.getLength());
+    EXPECT_EQ(0, std::strcmp("other", str.c_str()));
+    EXPECT_EQ(5u, str.size());
 }
 
 TEST(String, TestAssignOperator3)
 {
     String str("asdf");
     str = '\0';
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("", str.c_str()));
-    EXPECT_EQ(0u, str.getLength());
+    EXPECT_EQ(0, std::strcmp("", str.c_str()));
+    EXPECT_EQ(0u, str.size());
 }
 
 TEST(String, TestAssignOperator4)
@@ -196,8 +198,8 @@ TEST(String, TestAssignOperator4)
     String str("asdf");
     String other;
     str = other;
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("", str.c_str()));
-    EXPECT_EQ(0u, str.getLength());
+    EXPECT_EQ(0, std::strcmp("", str.c_str()));
+    EXPECT_EQ(0u, str.size());
 }
 
 TEST(String, TestAssignOperator5)
@@ -205,7 +207,7 @@ TEST(String, TestAssignOperator5)
     String str("asdf");
     str = 'z';
     EXPECT_STREQ("z", str.c_str());
-    EXPECT_EQ(1u, str.getLength());
+    EXPECT_EQ(1u, str.size());
 }
 
 TEST(String, TestAssignOperator6)
@@ -213,7 +215,7 @@ TEST(String, TestAssignOperator6)
     String str("asdf");
     str = '\0';
     EXPECT_STREQ("", str.c_str());
-    EXPECT_EQ(0u, str.getLength());
+    EXPECT_EQ(0u, str.size());
 }
 
 TEST(String, TestAppend1)
@@ -221,8 +223,8 @@ TEST(String, TestAppend1)
     String str("hello");
     String other("world");
     str.append(other);
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("helloworld", str.c_str()));
-    EXPECT_EQ(10u, str.getLength());
+    EXPECT_EQ(0, std::strcmp("helloworld", str.c_str()));
+    EXPECT_EQ(10u, str.size());
 }
 
 TEST(String, TestAppend2)
@@ -230,8 +232,8 @@ TEST(String, TestAppend2)
     String str("hello");
     String other;
     str.append(other);
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("hello", str.c_str()));
-    EXPECT_EQ(5u, str.getLength());
+    EXPECT_EQ(0, std::strcmp("hello", str.c_str()));
+    EXPECT_EQ(5u, str.size());
 }
 
 TEST(String, TestAppend3)
@@ -239,16 +241,16 @@ TEST(String, TestAppend3)
     String str;
     String other("world");
     str.append(other);
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("world", str.c_str()));
-    EXPECT_EQ(5u, str.getLength());
+    EXPECT_EQ(0, std::strcmp("world", str.c_str()));
+    EXPECT_EQ(5u, str.size());
 }
 
 TEST(String, TestAppend4)
 {
     String str("hello");
     str.append("world");
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("helloworld", str.c_str()));
-    EXPECT_EQ(10u, str.getLength());
+    EXPECT_EQ(0, std::strcmp("helloworld", str.c_str()));
+    EXPECT_EQ(10u, str.size());
 }
 
 TEST(String, TestAppend5)
@@ -256,7 +258,7 @@ TEST(String, TestAppend5)
     String str;
     String other;
     str.append(other);
-    EXPECT_EQ(0u, str.getLength());
+    EXPECT_EQ(0u, str.size());
 }
 
 TEST(String, TestPlusOperator1)
@@ -264,9 +266,9 @@ TEST(String, TestPlusOperator1)
     String str1("hello");
     String str2("world");
     String str3 = str1 + str2;
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("hello", str1.c_str()));
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("world", str2.c_str()));
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("helloworld", str3.c_str()));
+    EXPECT_EQ(0, std::strcmp("hello", str1.c_str()));
+    EXPECT_EQ(0, std::strcmp("world", str2.c_str()));
+    EXPECT_EQ(0, std::strcmp("helloworld", str3.c_str()));
 }
 
 TEST(String, TestPlusOperator2)
@@ -274,9 +276,9 @@ TEST(String, TestPlusOperator2)
     String str1("hello");
     String str2;
     String str3 = str1 + str2;
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("hello", str1.c_str()));
-    EXPECT_EQ(0u, str2.getLength());
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("hello", str3.c_str()));
+    EXPECT_EQ(0, std::strcmp("hello", str1.c_str()));
+    EXPECT_EQ(0u, str2.size());
+    EXPECT_EQ(0, std::strcmp("hello", str3.c_str()));
 }
 
 TEST(String, TestPlusOperator3)
@@ -284,25 +286,25 @@ TEST(String, TestPlusOperator3)
     String str1;
     String str2("world");
     String str3 = str1 + str2;
-    EXPECT_EQ(0u, str1.getLength());
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("world", str2.c_str()));
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("world", str3.c_str()));
+    EXPECT_EQ(0u, str1.size());
+    EXPECT_EQ(0, std::strcmp("world", str2.c_str()));
+    EXPECT_EQ(0, std::strcmp("world", str3.c_str()));
 }
 
 TEST(String, TestPlusOperator4)
 {
     String str1("hello");
     String str2 = str1 + "world";
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("hello", str1.c_str()));
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("helloworld", str2.c_str()));
+    EXPECT_EQ(0, std::strcmp("hello", str1.c_str()));
+    EXPECT_EQ(0, std::strcmp("helloworld", str2.c_str()));
 }
 
 TEST(String, TestPlusOperator5)
 {
     String str1("world");
     String str2 = "hello" + str1;
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("world", str1.c_str()));
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("helloworld", str2.c_str()));
+    EXPECT_EQ(0, std::strcmp("world", str1.c_str()));
+    EXPECT_EQ(0, std::strcmp("helloworld", str2.c_str()));
 }
 
 TEST(String, TestAddition)
@@ -310,9 +312,9 @@ TEST(String, TestAddition)
     String str1("hello");
     String str2("world");
     String str3 = str1 + str2;
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("hello", str1.c_str()));
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("world", str2.c_str()));
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("helloworld", str3.c_str()));
+    EXPECT_EQ(0, std::strcmp("hello", str1.c_str()));
+    EXPECT_EQ(0, std::strcmp("world", str2.c_str()));
+    EXPECT_EQ(0, std::strcmp("helloworld", str3.c_str()));
 }
 
 TEST(String, TestAddAssignString)
@@ -320,7 +322,7 @@ TEST(String, TestAddAssignString)
     String str ("abc");
     str += "def";
 
-    EXPECT_EQ(6u, str.getLength());
+    EXPECT_EQ(6u, str.size());
     EXPECT_STREQ("abcdef", str.c_str());
 }
 
@@ -329,7 +331,7 @@ TEST(String, TestAddAssignChar)
     String str ("abc");
     str += 'd';
 
-    EXPECT_EQ(4u, str.getLength());
+    EXPECT_EQ(4u, str.size());
     EXPECT_STREQ("abcd", str.c_str());
 }
 
@@ -337,42 +339,28 @@ TEST(String, TestSubStringCTor1)
 {
     String str("0123456789", 4, 6);
     EXPECT_STREQ("456", str.c_str());
-    EXPECT_EQ(3u, str.getLength());
-}
-
-TEST(String, TestSubStringCTor2)
-{
-    String str("0123456789", 4);
-    EXPECT_STREQ("456789", str.c_str());
-    EXPECT_EQ(6u, str.getLength());
-}
-
-TEST(String, TestSubStringCTor3)
-{
-    String str(static_cast<const char*>(nullptr), 4);
-    EXPECT_STREQ("", str.c_str());
-    EXPECT_EQ(0u, str.getLength());
+    EXPECT_EQ(3u, str.size());
 }
 
 TEST(String, TestSubStringCTor4)
 {
     String str(nullptr, 4, 9);
     EXPECT_STREQ("", str.c_str());
-    EXPECT_EQ(0u, str.getLength());
+    EXPECT_EQ(0u, str.size());
 }
 
 TEST(String, TestSubStringCTor5)
 {
     String str(nullptr, 9, 4);
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("", str.c_str()));
-    EXPECT_EQ(0u, str.getLength());
+    EXPECT_EQ(0, std::strcmp("", str.c_str()));
+    EXPECT_EQ(0u, str.size());
 }
 
 TEST(String, TestSubStringCTor6)
 {
     String str("hello", 0, 100);
-    EXPECT_EQ(0, ramses_capu::StringUtils::Strcmp("hello", str.c_str()));
-    EXPECT_EQ(5u, str.getLength());
+    EXPECT_EQ(0, std::strcmp("hello", str.c_str()));
+    EXPECT_EQ(5u, str.size());
 }
 
 TEST(String, TestSubStringCTorWithoutNullTermintor)
@@ -380,7 +368,7 @@ TEST(String, TestSubStringCTorWithoutNullTermintor)
     const char someData[] = { '1', '2', '3', '4' };
     String str(someData, 0, 2);
 
-    EXPECT_EQ(3u, str.getLength());
+    EXPECT_EQ(3u, str.size());
     EXPECT_STREQ("123", str.c_str());
 }
 
@@ -399,7 +387,7 @@ TEST(String, AutoCast)
 {
     String string = "TestString";
     EXPECT_STREQ("TestString", string.c_str());
-    EXPECT_EQ(10u, string.getLength());
+    EXPECT_EQ(10u, string.size());
 }
 
 TEST(String, Equals1)
@@ -558,44 +546,12 @@ TEST(String, RFindChar)
     String str3("");
 
     EXPECT_EQ(-1, str1.rfind('a'));
-    EXPECT_EQ(0, str1.rfind(0)); // indexof(0) = strlen
+    EXPECT_EQ(-1, str1.rfind(0));
     EXPECT_EQ(7, str2.rfind('o'));
-    EXPECT_EQ(11, str2.rfind(0)); // indexof(0) = strlen
+    EXPECT_EQ(-1, str2.rfind(0));
     EXPECT_EQ(-1, str2.rfind('O'));
     EXPECT_EQ(-1, str3.rfind('o'));
-    EXPECT_EQ(0, str3.rfind(0)); // indexof(0) = strlen
-}
-
-TEST(String, Truncate)
-{
-    String str1("hello world");
-    str1.truncate(5);
-    EXPECT_STREQ("hello", str1.c_str());
-    EXPECT_EQ(5u, str1.getLength());
-
-    // test chaining
-    String str2("hello world");
-    str2.truncate(7).truncate(5);
-    EXPECT_STREQ("hello", str2.c_str());
-    EXPECT_EQ(5u, str2.getLength());
-
-    // truncate to size of string
-    String str3("hello");
-    str3.truncate(5);
-    EXPECT_STREQ("hello", str3.c_str());
-    EXPECT_EQ(5u, str3.getLength());
-
-    // truncate to greater size of string
-    String str4("hello");
-    str4.truncate(7);
-    EXPECT_STREQ("hello", str4.c_str());
-    EXPECT_EQ(5u, str4.getLength());
-
-    // truncate with 0 makes empty string
-    String str5("hello");
-    str5.truncate(0);
-    EXPECT_STREQ("", str5.c_str());
-    EXPECT_EQ(0u, str5.getLength());
+    EXPECT_EQ(-1, str3.rfind(0));
 }
 
 TEST(String, FindSubstring)
@@ -631,12 +587,12 @@ TEST(String, GetSubstring)
 {
     String str1("hello c++ world.");
     String substr = str1.substr(0, 5);
-    EXPECT_EQ(5u, substr.getLength());
+    EXPECT_EQ(5u, substr.size());
     EXPECT_STREQ("hello", substr.c_str());
 
     // test when start is out of bounds
     String substr2 = str1.substr(25, 5);
-    EXPECT_EQ(0u, substr2.getLength());
+    EXPECT_EQ(0u, substr2.size());
 
     // test negative length
     String substr3 = str1.substr(6, -1);
@@ -659,7 +615,7 @@ TEST(String, GetSubstring)
     EXPECT_STREQ("", substr7.c_str());
 
     // start is exactly end of string
-    String substr8 = str1.substr(str1.getLength(), 4);
+    String substr8 = str1.substr(str1.size(), 4);
     EXPECT_STREQ("", substr8.c_str());
 }
 
@@ -716,17 +672,17 @@ TEST(String, TestDataGetterOnNonEmptyString)
 TEST(String, ResizeAnEmptyString)
 {
     String s;
-    EXPECT_EQ(0u, s.getLength());
+    EXPECT_EQ(0u, s.size());
 
     s.resize(15);
-    EXPECT_EQ(15u, s.getLength());
+    EXPECT_EQ(15u, s.size());
 }
 
 TEST(String, ResizeToSmaller)
 {
     String s("12345");
     s.resize(3);
-    EXPECT_EQ(3u, s.getLength());
+    EXPECT_EQ(3u, s.size());
 }
 
 TEST(String, IsNullterminatedAlsoAfterResizing)
@@ -788,20 +744,20 @@ TEST(String, reserveOnEmptyStringSetCapacityOnAtLeastThisValue)
 TEST(String, reserveMoreOnNonOnEmptyStringSetCapacityOnAtLeastThisValue)
 {
     String s("foobar");
-    const ramses_capu::uint_t size = s.getLength();
+    const ramses_capu::uint_t size = s.size();
     const ramses_capu::uint_t capacity = s.capacity();
     s.reserve(40);
-    EXPECT_EQ(size, s.getLength());
+    EXPECT_EQ(size, s.size());
     EXPECT_GE(s.capacity(), capacity);
 }
 
 TEST(String, reserveLessThanSizeDoesNothing)
 {
     String s("foobar");
-    const ramses_capu::uint_t size = s.getLength();
+    const ramses_capu::uint_t size = s.size();
     const ramses_capu::uint_t capacity = s.capacity();
     s.reserve(2);
-    EXPECT_EQ(size, s.getLength());
+    EXPECT_EQ(size, s.size());
     EXPECT_EQ(s.capacity(), capacity);
 }
 
@@ -817,7 +773,7 @@ TEST(String, HashMapWithString)
 
     // Test clear
     map.clear();
-    EXPECT_EQ(static_cast<uint32_t>(0), map.count());
+    EXPECT_EQ(static_cast<uint32_t>(0), map.size());
 }
 
 TEST(String, HashMapWithStdString)
@@ -832,8 +788,44 @@ TEST(String, HashMapWithStdString)
 
     // Test clear
     map.clear();
-    EXPECT_EQ(static_cast<uint32_t>(0), map.count());
+    EXPECT_EQ(static_cast<uint32_t>(0), map.size());
 }
 
 
+class AString : public ::testing::Test, public IOStreamTesterBase
+{
+};
+
+TEST_F(AString, serializeDeserializeString)
+{
+    expectSame<ramses_internal::String>("", "");
+    expectSame<ramses_internal::String>("1", "1");
+    expectSame<ramses_internal::String>("fdsfdsfsdfdsfsdfs", "fdsfdsfsdfdsfsdfs");
+    expectSame<ramses_internal::String>(" ", " ");
 }
+
+TEST_F(AString, serializeDeserializeStdString)
+{
+    expectSame<std::string>("", "");
+    expectSame<std::string>("1", "1");
+    expectSame<std::string>("fdsfdsfsdfdsfsdfs", "fdsfdsfsdfdsfsdfs");
+    expectSame<std::string>(" ", " ");
+}
+
+TEST_F(AString, serializeDeserializeRamsesToStdString)
+{
+    expectSame2<ramses_internal::String, std::string>("", "");
+    expectSame2<ramses_internal::String, std::string>("1", "1");
+    expectSame2<ramses_internal::String, std::string>("fdsfdsfsdfdsfsdfs", "fdsfdsfsdfdsfsdfs");
+    expectSame2<ramses_internal::String, std::string>(" ", " ");
+}
+
+TEST_F(AString, serializeDeserializeStdToRamsesString)
+{
+    expectSame2<std::string, ramses_internal::String>("", "");
+    expectSame2<std::string, ramses_internal::String>("1", "1");
+    expectSame2<std::string, ramses_internal::String>("fdsfdsfsdfdsfsdfs", "fdsfdsfsdfdsfsdfs");
+    expectSame2<std::string, ramses_internal::String>(" ", " ");
+}
+
+} // namespace ramses_internal

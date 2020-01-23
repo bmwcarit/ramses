@@ -8,10 +8,11 @@
 
 #include "SceneUtils/DataLayoutCreationHelper.h"
 #include "SceneAPI/IScene.h"
+#include "Scene/DataLayout.h"
 
 namespace ramses_internal
 {
-    DataLayoutHandle DataLayoutCreationHelper::CreateUniformDataLayoutMatchingEffectInputs(IScene& scene, const EffectInputInformationVector& uniformsInputInfo, InputIndexVector& referencedInputs, DataLayoutHandle handle)
+    DataLayoutHandle DataLayoutCreationHelper::CreateUniformDataLayoutMatchingEffectInputs(IScene& scene, const EffectInputInformationVector& uniformsInputInfo, InputIndexVector& referencedInputs, const ResourceContentHash& effectHash, DataLayoutHandle handle)
     {
         assert(referencedInputs.empty());
 
@@ -32,13 +33,13 @@ namespace ramses_internal
             }
         }
 
-        return scene.allocateDataLayout(dataFields, handle);
+        return scene.allocateDataLayout(dataFields, effectHash, handle);
     }
 
     DataInstanceHandle DataLayoutCreationHelper::CreateAndBindDataReference(IScene& scene, DataInstanceHandle dataInstance, DataFieldHandle dataField, EDataType dataType, DataLayoutHandle dataRefLayout, DataInstanceHandle dataRefInstance)
     {
         // create new data instance with single field of given type
-        dataRefLayout = scene.allocateDataLayout({ DataFieldInfo(dataType) }, dataRefLayout);
+        dataRefLayout = scene.allocateDataLayout({ DataFieldInfo(dataType) }, ResourceContentHash::Invalid(), dataRefLayout);
         dataRefInstance = scene.allocateDataInstance(dataRefLayout, dataRefInstance);
         // bind created data instance to given data instance's field
         scene.setDataReference(dataInstance, dataField, dataRefInstance);
@@ -46,7 +47,7 @@ namespace ramses_internal
         return dataRefInstance;
     }
 
-    Bool DataLayoutCreationHelper::IsBindableInput(const EffectInputInformation& inputInfo)
+    bool DataLayoutCreationHelper::IsBindableInput(const EffectInputInformation& inputInfo)
     {
         // Only inputs with plain data type, non-array, with no semantics can be bound to data reference
         return (inputInfo.semantics == EFixedSemantics_Invalid)

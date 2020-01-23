@@ -56,6 +56,13 @@ namespace ramses
         return status;
     }
 
+    status_t MeshNode::setStartVertex(uint32_t startVertex)
+    {
+        const status_t status = impl.setStartVertex(startVertex);
+        LOG_HL_CLIENT_API1(status, startVertex);
+        return status;
+    }
+
     status_t MeshNode::setIndexCount(uint32_t indexCount)
     {
         const status_t status = impl.setIndexCount(indexCount);
@@ -86,6 +93,11 @@ namespace ramses
     uint32_t MeshNode::getStartIndex() const
     {
         return impl.getStartIndex();
+    }
+
+    uint32_t MeshNode::getStartVertex() const
+    {
+        return impl.getStartVertex();
     }
 
     uint32_t MeshNode::getIndexCount() const

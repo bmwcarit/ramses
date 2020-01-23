@@ -66,7 +66,7 @@ namespace ramses
     status_t GeometryBindingImpl::serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const
     {
         CHECK_RETURN_ERR(SceneObjectImpl::serialize(outStream, serializationContext));
-        resourceId_t effectResID = InvalidResourceId;
+        resourceId_t effectResID;
         if (nullptr != m_effectImpl)
         {
             effectResID = m_effectImpl->getResourceId();
@@ -86,7 +86,7 @@ namespace ramses
         resourceId_t effectResID;
         inStream >> effectResID.highPart;
         inStream >> effectResID.lowPart;
-        if (effectResID != InvalidResourceId)
+        if (effectResID.isValid())
         {
             Resource* rImpl = getClientImpl().getHLResource_Threadsafe(effectResID);
             if (rImpl)
@@ -250,7 +250,7 @@ namespace ramses
             dataFields.push_back({ attribInfo.dataType, attribInfo.elementCount, attribInfo.semantics });
         }
 
-        m_attributeLayout = getIScene().allocateDataLayout(dataFields);
+        m_attributeLayout = getIScene().allocateDataLayout(dataFields, m_effectImpl->getLowlevelResourceHash());
         m_attributeInstance = getIScene().allocateDataInstance(m_attributeLayout);
     }
 

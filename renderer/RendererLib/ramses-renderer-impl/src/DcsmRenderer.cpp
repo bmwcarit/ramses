@@ -13,11 +13,12 @@
 #include "DcsmConsumerImpl.h"
 #include "DisplayManager/DisplayManager.h"
 #include "APILoggingMacros.h"
+#include "RamsesFrameworkTypesImpl.h"
 
 namespace ramses
 {
     DcsmRenderer::DcsmRenderer(RamsesRenderer& renderer, RamsesFramework& framework, const DcsmRendererConfig& config)
-        : StatusObject(*new DcsmRendererImpl(config, framework.createDcsmConsumer()->impl, std::make_unique<ramses_display_manager::DisplayManager>(renderer, framework, false)))
+        : StatusObject(*new DcsmRendererImpl(config, framework.createDcsmConsumer()->impl, std::make_unique<ramses_internal::DisplayManager>(renderer, framework)))
         , m_impl(static_cast<DcsmRendererImpl&>(StatusObject::impl))
     {
         LOG_HL_RENDERER_API3(LOG_API_VOID, LOG_API_GENERIC_OBJECT_STRING(renderer), LOG_API_GENERIC_OBJECT_STRING(framework), LOG_API_GENERIC_OBJECT_STRING(config));
@@ -26,49 +27,70 @@ namespace ramses
     status_t DcsmRenderer::requestContentReady(ContentID contentID, uint64_t timeOut)
     {
         const auto status = m_impl.requestContentReady(contentID, timeOut);
-        LOG_HL_RENDERER_API2(status, contentID.getValue(), timeOut);
-        return status;
-    }
-
-    status_t DcsmRenderer::requestContentReadyAndLinkedViaOffscreenBuffer(ContentID contentID, uint32_t width, uint32_t height, ContentID consumerContentID, dataConsumerId_t consumerDataId, uint64_t timeOut)
-    {
-        const auto status = m_impl.requestContentReadyAndLinkedViaOffscreenBuffer(contentID, width, height, consumerContentID, consumerDataId, timeOut);
-        LOG_HL_RENDERER_API6(status, contentID.getValue(), width, height, consumerContentID.getValue(), consumerDataId, timeOut);
+        LOG_HL_RENDERER_API2(status, contentID, timeOut);
         return status;
     }
 
     status_t DcsmRenderer::showContent(ContentID contentID, AnimationInformation timingInfo)
     {
         const auto status = m_impl.showContent(contentID, timingInfo);
-        LOG_HL_RENDERER_API3(status, contentID.getValue(), timingInfo.startTime, timingInfo.finishTime);
+        LOG_HL_RENDERER_API3(status, contentID, timingInfo.startTime, timingInfo.finishTime);
         return status;
     }
 
     status_t DcsmRenderer::hideContent(ContentID contentID, AnimationInformation timingInfo)
     {
         const auto status = m_impl.hideContent(contentID, timingInfo);
-        LOG_HL_RENDERER_API3(status, contentID.getValue(), timingInfo.startTime, timingInfo.finishTime);
+        LOG_HL_RENDERER_API3(status, contentID, timingInfo.startTime, timingInfo.finishTime);
         return status;
     }
 
     status_t DcsmRenderer::releaseContent(ContentID contentID, AnimationInformation timingInfo)
     {
         const auto status = m_impl.releaseContent(contentID, timingInfo);
-        LOG_HL_RENDERER_API3(status, contentID.getValue(), timingInfo.startTime, timingInfo.finishTime);
+        LOG_HL_RENDERER_API3(status, contentID, timingInfo.startTime, timingInfo.finishTime);
         return status;
     }
 
     status_t DcsmRenderer::setCategorySize(Category categoryId, SizeInfo size, AnimationInformation timingInfo)
     {
         const auto status = m_impl.setCategorySize(categoryId, size, timingInfo);
-        LOG_HL_RENDERER_API5(status, categoryId.getValue(), size.width, size.height, timingInfo.startTime, timingInfo.finishTime);
+        LOG_HL_RENDERER_API5(status, categoryId, size.width, size.height, timingInfo.startTime, timingInfo.finishTime);
         return status;
     }
 
     status_t DcsmRenderer::acceptStopOffer(ContentID contentID, AnimationInformation timingInfo)
     {
         const auto status = m_impl.acceptStopOffer(contentID, timingInfo);
-        LOG_HL_RENDERER_API3(status, contentID.getValue(), timingInfo.startTime, timingInfo.finishTime);
+        LOG_HL_RENDERER_API3(status, contentID, timingInfo.startTime, timingInfo.finishTime);
+        return status;
+    }
+
+    status_t DcsmRenderer::assignContentToDisplayBuffer(ContentID contentID, displayBufferId_t displayBuffer, int32_t renderOrder)
+    {
+        const auto status = m_impl.assignContentToDisplayBuffer(contentID, displayBuffer, renderOrder);
+        LOG_HL_RENDERER_API3(status, contentID, displayBuffer, renderOrder);
+        return status;
+    }
+
+    status_t DcsmRenderer::setDisplayBufferClearColor(displayBufferId_t displayBuffer, float r, float g, float b, float a)
+    {
+        const auto status = m_impl.setDisplayBufferClearColor(displayBuffer, r, g, b, a);
+        LOG_HL_RENDERER_API5(status, displayBuffer, r, g, b, a);
+        return status;
+    }
+
+    status_t DcsmRenderer::linkOffscreenBuffer(displayBufferId_t offscreenBufferId, ContentID consumerContentID, dataConsumerId_t consumerId)
+    {
+        const auto status = m_impl.linkOffscreenBuffer(offscreenBufferId, consumerContentID, consumerId);
+        LOG_HL_RENDERER_API3(status, offscreenBufferId, consumerContentID, consumerId);
+        return status;
+    }
+
+    status_t DcsmRenderer::linkData(ContentID providerContentID, dataProviderId_t providerId, ContentID consumerContentID, dataConsumerId_t consumerId)
+    {
+        const auto status = m_impl.linkData(providerContentID, providerId, consumerContentID, consumerId);
+        LOG_HL_RENDERER_API4(status, providerContentID, providerId, consumerContentID, consumerId);
         return status;
     }
 

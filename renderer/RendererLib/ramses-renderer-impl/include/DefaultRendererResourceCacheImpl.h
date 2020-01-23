@@ -10,11 +10,11 @@
 #define RAMSES_RENDERERAPI_DEFAULTRENDERERRESOURCECACHEIMPL_H
 
 #include "Collections/Vector.h"
-#include "PlatformAbstraction/PlatformSharedPointer.h"
 #include "RendererAPI/Types.h"
 #include "ramses-renderer-api/Types.h"
 #include "ramses-renderer-api/IRendererResourceCache.h"
 #include <deque>
+#include <memory>
 
 namespace ramses
 {

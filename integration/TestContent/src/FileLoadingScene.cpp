@@ -22,30 +22,26 @@
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/ResourceFileDescription.h"
 #include "ramses-client-api/ResourceFileDescriptionSet.h"
-#include "ramses-client-api/AnimationSystem.h"
-#include "ramses-client-api/AnimationSequence.h"
-#include "ramses-client-api/SplineLinearFloat.h"
 #include "ramses-client-api/Vector3fArray.h"
 #include "ramses-client-api/Vector2fArray.h"
 #include "ramses-client-api/UInt16Array.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/UniformInput.h"
 #include "RamsesObjectTypeUtils.h"
-#include "TextureUtils.h"
 #include "Math3d/Vector3.h"
 #include "Utils/File.h"
 
 namespace ramses_internal
 {
     FileLoadingScene::FileLoadingScene(ramses::RamsesClient& clientForLoading, UInt32 state, ramses::sceneId_t sceneId, const Vector3& cameraPosition, const String& folder, const ramses::RamsesFrameworkConfig& config)
-        : m_createdScene(NULL)
+        : m_createdScene(nullptr)
     {
         switch (state)
         {
         case CREATE_SAVE_DESTROY_LOAD_USING_SEPARATE_CLIENT:
         {
             ramses::RamsesFramework separateFramework(config);
-            ramses::RamsesClient separateClient("ramses-test-client-fileLoadingScene-createFiles", separateFramework);
+            ramses::RamsesClient& separateClient(*separateFramework.createClient("ramses-test-client-fileLoadingScene-createFiles"));
             createFiles(separateClient, sceneId, cameraPosition, folder);
             loadFromFiles(clientForLoading, folder);
             cleanupFiles(folder);
@@ -92,8 +88,8 @@ namespace ramses_internal
 
         uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
         const ramses::UInt16Array* indices = client.createConstUInt16Array(6, indicesArray);
-        ramses::Texture2D* texture = ramses::TextureUtils::CreateTextureResourceFromPng("res/ramses-test-client-file-loading-texture.png", client);
-        assert(texture != NULL);
+        ramses::Texture2D* texture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-file-loading-texture.png", client);
+        assert(texture != nullptr);
 
         textureAssets.add(indices);
         textureAssets.add(texture);
@@ -137,7 +133,7 @@ namespace ramses_internal
 
         scaleNode->addChild(*meshNode);
 
-        initializeAnimationContent(client, *scene, triangleAssets, *renderGroup);
+        addTriangles(client, *scene, triangleAssets, *renderGroup);
 
         resourceFileInformation.add(textureAssets);
         resourceFileInformation.add(triangleAssets);
@@ -157,7 +153,7 @@ namespace ramses_internal
         }
     }
 
-    void FileLoadingScene::initializeAnimationContent(ramses::RamsesClient& ramses, ramses::Scene& scene, ramses::ResourceFileDescription& resources, ramses::RenderGroup& renderGroup)
+    void FileLoadingScene::addTriangles(ramses::RamsesClient& ramses, ramses::Scene& scene, ramses::ResourceFileDescription& resources, ramses::RenderGroup& renderGroup)
     {
         // prepare triangle geometry: vertex position array and index array
         float vertexPositionsData[] = { -0.3f, 0.f, -0.3f, 0.3f, 0.f, -0.3f, 0.f, 0.3f, -0.3f };
@@ -173,9 +169,9 @@ namespace ramses_internal
         effectDesc.setFragmentShaderFromFile("res/ramses-test-client-file-loading-red.frag");
         effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-        const ramses::Effect* effect = ramses.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader anim");
+        const ramses::Effect* effect = ramses.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
         resources.add(effect);
-        ramses::Appearance* appearance = scene.createAppearance(*effect, "triangle appearance anim");
+        ramses::Appearance* appearance = scene.createAppearance(*effect, "triangle appearance");
 
         // set vertex positions directly in geometry
         ramses::GeometryBinding* geometry = scene.createGeometryBinding(*effect, "triangle geometry");
@@ -208,49 +204,9 @@ namespace ramses_internal
         meshNode2->setParent(*transNode2);
         meshNode3->setParent(*transNode3);
 
-        // create animation system
-        ramses::AnimationSystem* animationSystem = scene.createAnimationSystem(ramses::EAnimationSystemFlags_Default, "animation system");
-
-        // create splines with animation keys
-        ramses::SplineLinearFloat* spline1 = animationSystem->createSplineLinearFloat("spline1");
-        spline1->setKey(0u, 0.f);
-        spline1->setKey(5000u, -1.f);
-        spline1->setKey(10000u, 0.f);
-        ramses::SplineLinearFloat* spline2 = animationSystem->createSplineLinearFloat("spline2");
-        spline2->setKey(0u, 0.f);
-        spline2->setKey(5000u, 1.f);
-        spline2->setKey(10000u, 0.f);
-
-        // create animated property for each translation node with single component animation
-        ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*transNode1, ramses::EAnimatedProperty_Translation, ramses::EAnimatedPropertyComponent_X);
-        ramses::AnimatedProperty* animProperty2 = animationSystem->createAnimatedProperty(*transNode2, ramses::EAnimatedProperty_Translation, ramses::EAnimatedPropertyComponent_X);
-        ramses::AnimatedProperty* animProperty3 = animationSystem->createAnimatedProperty(*transNode3, ramses::EAnimatedProperty_Translation, ramses::EAnimatedPropertyComponent_Y);
-
-        // create three animations
-        ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
-        ramses::Animation* animation2 = animationSystem->createAnimation(*animProperty2, *spline2, "animation2");
-        ramses::Animation* animation3 = animationSystem->createAnimation(*animProperty3, *spline1, "animation3"); // we can reuse spline1 for animating Y component of the third translation node
-
-        // create animation sequence
-        ramses::AnimationSequence* animSequence = animationSystem->createAnimationSequence();
-
-        // add animations to a sequence
-        animSequence->addAnimation(*animation1);
-        animSequence->addAnimation(*animation2);
-        animSequence->addAnimation(*animation3);
-
-        // set animation properties (optional)
-        animSequence->setAnimationLooping(*animation1);
-        animSequence->setAnimationLooping(*animation2);
-        animSequence->setAnimationLooping(*animation3);
-
-        // set playbackSpeed
-        animSequence->setPlaybackSpeed(5.f);
-
-        // start animation sequence
-        animSequence->startAt(0u);
-
-        animationSystem->setTime(20800u);
+        transNode1->setTranslation(-0.133f, 0.f, 0.f);
+        transNode2->setTranslation(0.133f, 0.f, 0.f);
+        transNode3->setTranslation(0.f, -0.133f, 0.f);
     }
 
     void FileLoadingScene::loadFromFiles(ramses::RamsesClient& ramses, const String& folder)
@@ -265,10 +221,6 @@ namespace ramses_internal
         ramses::Node& loadedScaleNode = ramses::RamsesObjectTypeUtils::ConvertTo<ramses::Node>(*loadedScene->findObjectByName("scale node"));
         loadedScaleNode.setScaling(2, 2, 2);
         loadedScene->flush();
-
-        ramses::AnimationSystem& loadedAnimSystem = ramses::RamsesObjectTypeUtils::ConvertTo<ramses::AnimationSystem>(*loadedScene->findObjectByName("animation system"));
-        const ramses::globalTimeStamp_t currTimeState = loadedAnimSystem.getTime();
-        loadedAnimSystem.setTime(currTimeState + 3333u);
 
         loadedScene->flush();
         m_createdScene = loadedScene;

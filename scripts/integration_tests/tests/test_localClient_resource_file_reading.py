@@ -88,7 +88,7 @@ class TestClientResourceFileReading(test_classes.OnSelectedTargetsTest):
             error |= True
             log.warning("no ramses resource file (*.ramres) was opened during the test. Please check your test application.")
         else:
-            for fileName, openCount in openedFileCounter.iteritems():
+            for fileName, openCount in openedFileCounter.items():
                 if openCount > 1:
                     error |= True
                     log.error("file {} was opened/closed {} times (only once is allowed)".format(fileName, openCount))

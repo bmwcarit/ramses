@@ -50,8 +50,6 @@ namespace ramses
     private:
         static const uint32_t InvalidInputIndex = 0xffff;
 
-        status_t inputNotFoundVerboseError(const char* sourceMethod, const char* inputType, const char* inputName) const;
-
         uint32_t getEffectInputIndex(const ramses_internal::EffectInputInformationVector& effectInputVector, const char* inputName) const;
         uint32_t findEffectInputIndex(const ramses_internal::EffectInputInformationVector& effectInputVector, ramses_internal::EFixedSemantics inputSemantics) const;
         void initializeEffectInputData(EffectInputImpl& effectInputImpl, const ramses_internal::EffectInputInformation& effectInputInfo, uint32_t index) const;

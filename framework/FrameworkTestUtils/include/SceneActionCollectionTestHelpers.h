@@ -12,9 +12,6 @@
 #include "gmock/gmock.h"
 #include "Scene/SceneActionCollection.h"
 
-#define INVOKE_SAVE_SCENEACTIONCOLLECTION(location) Invoke([&](const SceneActionCollection& sac){ (location) = sac.copy(); } )
-#define INVOKE_APPEND_SCENEACTIONCOLLECTION(vec) Invoke([&](const SceneActionCollection& sac){ (vec).push_back(sac.copy()); } )
-
 namespace ramses_internal
 {
     class SceneActionCollectionEqMatcher : public MatcherInterface<SceneActionCollection&>

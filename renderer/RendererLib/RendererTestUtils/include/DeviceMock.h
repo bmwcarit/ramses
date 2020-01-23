@@ -68,25 +68,25 @@ namespace ramses_internal
         MOCK_METHOD2(allocateVertexBuffer, DeviceResourceHandle(EDataType, UInt32));
         MOCK_METHOD3(uploadVertexBufferData, void(DeviceResourceHandle, const Byte*, UInt32));
         MOCK_METHOD1(deleteVertexBuffer, void(DeviceResourceHandle));
-        MOCK_METHOD3(activateVertexBuffer, void(DeviceResourceHandle, DataFieldHandle, UInt32));
+        MOCK_METHOD4(activateVertexBuffer, void(DeviceResourceHandle, DataFieldHandle, UInt32, UInt32));
         MOCK_METHOD2(allocateIndexBuffer, DeviceResourceHandle(EDataType, UInt32));
         MOCK_METHOD3(uploadIndexBufferData, void(DeviceResourceHandle, const Byte*, UInt32));
         MOCK_METHOD1(deleteIndexBuffer, void(DeviceResourceHandle));
         MOCK_METHOD1(activateIndexBuffer, void(DeviceResourceHandle));
 
         MOCK_METHOD1(uploadShader, DeviceResourceHandle(const EffectResource&));
-        MOCK_METHOD4(uploadBinaryShader, DeviceResourceHandle(const EffectResource&, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, UInt32 binaryShaderFormat));
-        MOCK_METHOD3(getBinaryShader, Bool(DeviceResourceHandle, UInt8Vector&, UInt32&));
+        MOCK_METHOD4(uploadBinaryShader, DeviceResourceHandle(const EffectResource&, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat));
+        MOCK_METHOD3(getBinaryShader, Bool(DeviceResourceHandle, UInt8Vector&, BinaryShaderFormatID&));
         MOCK_METHOD1(deleteShader, void(DeviceResourceHandle));
         MOCK_METHOD1(activateShader, void(DeviceResourceHandle));
 
-        MOCK_METHOD5(allocateTexture2D, DeviceResourceHandle(UInt32 width, UInt32 height, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes));
+        MOCK_METHOD6(allocateTexture2D, DeviceResourceHandle(UInt32 width, UInt32 height, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes));
         MOCK_METHOD6(allocateTexture3D, DeviceResourceHandle(UInt32 width, UInt32 height, UInt32 depth, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes));
         MOCK_METHOD4(allocateTextureCube, DeviceResourceHandle(UInt32 faceSize, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes));
         MOCK_METHOD1(bindTexture, void(DeviceResourceHandle handle));
         MOCK_METHOD1(generateMipmaps, void(DeviceResourceHandle handle));
         MOCK_METHOD10(uploadTextureData, void(DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte* data, UInt32 dataSize));
-        MOCK_METHOD5(uploadStreamTexture2D, DeviceResourceHandle(DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data));
+        MOCK_METHOD6(uploadStreamTexture2D, DeviceResourceHandle(DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data, const TextureSwizzleArray& swizzle));
         MOCK_METHOD1(deleteTexture, void(DeviceResourceHandle));
         MOCK_METHOD2(activateTexture, void(DeviceResourceHandle, DataFieldHandle));
 
@@ -116,6 +116,7 @@ namespace ramses_internal
 
         MOCK_CONST_METHOD0(validateDeviceStatusHealthy, void());
         MOCK_CONST_METHOD0(isDeviceStatusHealthy, Bool());
+        MOCK_CONST_METHOD1(getSupportedBinaryProgramFormats, void(std::vector<BinaryShaderFormatID>&));
 
         MOCK_METHOD0(finish, void());
 
@@ -130,6 +131,7 @@ namespace ramses_internal
         static const DeviceResourceHandle FakeRenderBufferDeviceHandle           ;
         static const DeviceResourceHandle FakeTextureSamplerDeviceHandle         ;
         static const DeviceResourceHandle FakeBlitPassRenderTargetDeviceHandle   ;
+        static constexpr BinaryShaderFormatID FakeSupportedBinaryShaderFormat{ 63666u };
 
     private:
         void createDefaultMockCalls();

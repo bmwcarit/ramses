@@ -11,6 +11,7 @@
 
 #include "StronglyTypedValue.h"
 #include <functional>
+#include <limits>
 
 namespace ramses
 {
@@ -20,7 +21,7 @@ namespace ramses
     /**
      * @brief Identifier for DCSM content. Must be globally unique.
      */
-    using ContentID = StronglyTypedValue<uint64_t, ContentIDTag>;
+    using ContentID = StronglyTypedValue<uint64_t, 0, ContentIDTag>;
 
     /// Unique type tag for Category
     struct CategoryTag {};
@@ -28,7 +29,7 @@ namespace ramses
     /**
      * @brief Category descriptor for DCSM.
      */
-    typedef StronglyTypedValue<uint64_t, CategoryTag> Category;
+    using Category = StronglyTypedValue<uint64_t, 0, CategoryTag>;
 
     /// Enum describing the possible distribution mechanisms for a specific content
     enum class ETechnicalContentType
@@ -44,13 +45,24 @@ namespace ramses
      *        It allows bindings content IDs to specific distribution mechanism, e.g. ramses scenes
      *        via sceneId_t.
      */
-    typedef StronglyTypedValue<uint64_t, TechnicalContentDescriptorTag> TechnicalContentDescriptor;
+    using TechnicalContentDescriptor = StronglyTypedValue<uint64_t, 0, TechnicalContentDescriptorTag>;
 
     /**
      * @brief Size information for DCSM canvas size change
      */
     struct SizeInfo
     {
+        /**
+        * @brief Constructor requiring size to be specified explicitly
+        * @param[in] w Width
+        * @param[in] h Height
+        */
+        constexpr SizeInfo(uint32_t w, uint32_t h)
+            : width(w)
+            , height(h)
+        {
+        }
+
         /// canvas width in pixels
         uint32_t width;
 
@@ -62,17 +74,17 @@ namespace ramses
          * @param rhs The instance to compare to
          * @return True if same, false otherwise
          */
-        bool operator==(const SizeInfo& rhs) const
+        constexpr bool operator==(const SizeInfo& rhs) const
         {
             return (width == rhs.width && height == rhs.height);
         }
 
         /**
-         * @brief The unequality comparison operator
+         * @brief The inequality comparison operator
          * @param rhs The instance to compare to
          * @return True if not same, false otherwise
          */
-        bool operator!=(const SizeInfo& rhs) const
+        constexpr bool operator!=(const SizeInfo& rhs) const
         {
             return !(*this == rhs);
         }
@@ -94,7 +106,7 @@ namespace ramses
          * @param rhs The instance to compare to
          * @return True if same, false otherwise
          */
-        bool operator==(const AnimationInformation& rhs) const
+        constexpr bool operator==(const AnimationInformation& rhs) const
         {
             return (startTime == rhs.startTime && finishTime == rhs.finishTime);
         }
@@ -104,7 +116,7 @@ namespace ramses
          * @param rhs The instance to compare to
          * @return True if not same, false otherwise
          */
-        bool operator!=(const AnimationInformation& rhs) const
+        constexpr bool operator!=(const AnimationInformation& rhs) const
         {
             return !(*this == rhs);
         }

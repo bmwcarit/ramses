@@ -12,6 +12,7 @@
 #include <ramses-capu/container/HashSet.h>
 #include <PlatformAbstraction/PlatformError.h>
 #include "PlatformAbstraction/PlatformTypes.h"
+#include "PlatformAbstraction/Macros.h"
 #include <cmath>
 
 namespace ramses_internal
@@ -26,25 +27,25 @@ namespace ramses_internal
 
         HashSet();
         HashSet(const HashSet<T>& other);
-        HashSet(HashSet<T>&& other);
+        HashSet(HashSet<T>&& other) RNOEXCEPT;
         explicit HashSet(UInt initialCapacity);
         ~HashSet();
 
         void reserve(UInt requestedCapacity);
         UInt capacity() const;
-        EStatus put(const T& value);
-        EStatus remove(const T& value);
-        EStatus remove(Iterator& value);
-        UInt count() const;
-        EStatus clear();
+        Iterator put(const T& value);
+        bool remove(const T& value);
+        Iterator remove(Iterator value);
+        UInt size() const;
+        void clear();
         ConstIterator begin() const;
         ConstIterator end() const;
         Iterator begin();
         Iterator end();
-        bool hasElement(const T& element) const;
+        bool contains(const T& element) const;
 
         HashSet& operator=(const HashSet& other);
-        HashSet& operator=(HashSet&& other);
+        HashSet& operator=(HashSet&& other) RNOEXCEPT;
 
         void insert(std::initializer_list<value_type> ilist);
         template <typename InputIt>
@@ -61,9 +62,10 @@ namespace ramses_internal
     }
 
     template<class T>
-    HashSet<T>::HashSet(HashSet<T>&& other)
+    HashSet<T>::HashSet(HashSet<T>&& other) RNOEXCEPT
         : mHashSet(std::move(other.mHashSet))
     {
+        static_assert(std::is_nothrow_move_constructible<HashSet>::value, "HashSet must be movable");
     }
 
     template<class T>
@@ -98,37 +100,37 @@ namespace ramses_internal
 
     template<class T>
     inline
-    EStatus HashSet<T>::put(const T& value)
+    typename HashSet<T>::Iterator HashSet<T>::put(const T& value)
     {
-        return static_cast<EStatus>(mHashSet.put(value));
+        return mHashSet.put(value);
     }
 
     template<class T>
     inline
-    EStatus HashSet<T>::remove(const T& value)
+    bool HashSet<T>::remove(const T& value)
     {
-        return static_cast<EStatus>(mHashSet.remove(value));
+        return mHashSet.remove(value);
     }
 
     template<class T>
     inline
-    EStatus HashSet<T>::remove(Iterator& iterator)
+    typename HashSet<T>::Iterator HashSet<T>::remove(Iterator iterator)
     {
-        return static_cast<EStatus>(mHashSet.removeAt(iterator));
+        return mHashSet.removeAt(iterator);
     }
 
     template<class T>
     inline
-    UInt HashSet<T>::count() const
+    UInt HashSet<T>::size() const
     {
         return static_cast<EStatus>(mHashSet.count());
     }
 
     template<class T>
     inline
-    EStatus HashSet<T>::clear()
+    void HashSet<T>::clear()
     {
-        return static_cast<EStatus>(mHashSet.clear());
+        mHashSet.clear();
     }
 
     template<class T>
@@ -161,7 +163,7 @@ namespace ramses_internal
 
     template<class T>
     inline
-    bool HashSet<T>::hasElement(const T& element) const
+    bool HashSet<T>::contains(const T& element) const
     {
         return mHashSet.hasElement(element);
     }
@@ -176,8 +178,10 @@ namespace ramses_internal
 
     template<class T>
     inline
-    HashSet<T>& HashSet<T>::operator=(HashSet&& other)
+    HashSet<T>& HashSet<T>::operator=(HashSet&& other) RNOEXCEPT
     {
+        static_assert(std::is_nothrow_move_assignable<HashSet>::value, "HashSet must be movable");
+
         mHashSet = std::move(other.mHashSet);
         return *this;
     }
@@ -186,7 +190,7 @@ namespace ramses_internal
     inline
     void HashSet<T>::insert(std::initializer_list<value_type> ilist)
     {
-        reserve(count() + ilist.size());
+        reserve(size() + ilist.size());
         for (const auto& v : ilist)
         {
             put(v);
@@ -198,7 +202,7 @@ namespace ramses_internal
     inline
     void HashSet<T>::insert(InputIt first, InputIt last)
     {
-        reserve(count() + std::distance(first, last));
+        reserve(size() + std::distance(first, last));
         for (auto it = first; it != last; ++it)
         {
             put(*it);

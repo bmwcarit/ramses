@@ -42,9 +42,6 @@ namespace ramses_internal
         static const ramses::dataConsumerId_t TextureConsumerId = 31252u;
 
     private:
-        void animateProvidedContent(ramses::DataObject& dataObject);
-        void animateProvidedContent(ramses::Node& translateNode);
-
         const ramses::TextureSampler& createSampler(const ramses::Texture2D& texture);
         void                          setSampler(ramses::Appearance& appearance, const ramses::TextureSampler& sampler);
     };

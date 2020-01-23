@@ -54,6 +54,12 @@
 #    define WARNING_DISABLE_GCC(warning)
 #endif
 
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 9
+#    define WARNING_DISABLE_GCC9(warning) \
+        _Pragma(STRINGIFY(GCC diagnostic ignored #warning))
+#else
+#    define WARNING_DISABLE_GCC9(warning)
+#endif
 
 #if defined(__clang__)
 #    define WARNING_DISABLE_CLANG(warning) \

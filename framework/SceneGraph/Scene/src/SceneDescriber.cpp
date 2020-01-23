@@ -14,9 +14,11 @@
 #include "SceneAPI/PixelRectangle.h"
 #include "SceneAPI/TextureSamplerStates.h"
 #include "SceneAPI/StreamTexture.h"
-#include "Animation/AnimationSystemDescriber.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Utils/MemoryUtils.h"
+#include "Math3d/Vector2.h"
+#include "Math3d/Vector2i.h"
+#include "Math3d/Matrix22f.h"
 
 namespace ramses_internal
 {
@@ -38,10 +40,10 @@ namespace ramses_internal
         RecreateDataLayouts(             source, collector);
         RecreateDataInstances(           source, collector);
         RecreateCameras(                 source, collector);
-        RecreateAnimationSystems(        source, collector);
         RecreateRenderGroups(            source, collector);
         RecreateRenderPasses(            source, collector);
         RecreateBlitPasses(              source, collector);
+        RecreatePickableObjects(         source, collector);
         RecreateDataBuffers(             source, collector);
         RecreateTextureBuffers(          source, collector);
         RecreateTextureSamplers(         source, collector);
@@ -161,7 +163,7 @@ namespace ramses_internal
             if (source.isDataLayoutAllocated(l))
             {
                 const DataLayout& layout = source.getDataLayout(l);
-                collector.allocateDataLayout(layout.getDataFields(), l);
+                collector.allocateDataLayout(layout.getDataFields(), layout.getEffectHash(), l);
             }
         }
     }
@@ -174,12 +176,14 @@ namespace ramses_internal
         {
             if (source.isDataLayoutAllocated(l))
             {
-                const DataFieldInfoVector& layoutFields = source.getDataLayout(l).getDataFields();
+                const DataLayout& layout = source.getDataLayout(l);
+                const DataFieldInfoVector& layoutFields = layout.getDataFields();
+                const ResourceContentHash& effectHash = layout.getEffectHash();
 
                 const UInt32 numRefs = source.getNumDataLayoutReferences(l);
                 for (UInt32 r = 0u; r < numRefs; ++r)
                 {
-                    collector.allocateDataLayout(layoutFields, l);
+                    collector.allocateDataLayout(layoutFields, effectHash, l);
                 }
             }
         }
@@ -337,22 +341,6 @@ namespace ramses_internal
         }
     }
 
-    void SceneDescriber::RecreateAnimationSystems(const IScene& source, SceneActionCollectionCreator& collector)
-    {
-        // send all animation systems
-        for (auto animId = AnimationSystemHandle(0); animId < source.getAnimationSystemCount(); ++animId)
-        {
-            if (source.isAnimationSystemAllocated(animId))
-            {
-                // animation system
-                const IAnimationSystem* animSystem = source.getAnimationSystem(animId);
-                assert(animSystem != nullptr);
-                collector.addAnimationSystem(animId, animSystem->getFlags(), animSystem->getTotalSizeInformation());
-                AnimationSystemDescriber::DescribeAnimationSystem(*animSystem, collector, animId);
-            }
-        }
-    }
-
     void SceneDescriber::RecreateRenderGroups(const IScene& source, SceneActionCollectionCreator& collector)
     {
         const UInt32 renderGroupTotalCount = source.getRenderGroupCount();
@@ -407,6 +395,21 @@ namespace ramses_internal
                 collector.setBlitPassRegions(blitPassHandle, blitPass.sourceRegion, blitPass.destinationRegion);
                 collector.setBlitPassRenderOrder(blitPassHandle, blitPass.renderOrder);
                 collector.setBlitPassEnabled(blitPassHandle, blitPass.isEnabled);
+            }
+        }
+    }
+
+    void SceneDescriber::RecreatePickableObjects(const IScene& source, SceneActionCollectionCreator& collector)
+    {
+        const UInt32 pickableObjectTotalCount = source.getPickableObjectCount();
+        for (PickableObjectHandle handle(0u); handle < pickableObjectTotalCount; ++handle)
+        {
+            if (source.isPickableObjectAllocated(handle))
+            {
+                const PickableObject& pickableObject = source.getPickableObject(handle);
+                collector.allocatePickableObject(pickableObject.geometryHandle, pickableObject.nodeHandle, pickableObject.id, handle);
+                collector.setPickableObjectCamera(handle, pickableObject.cameraHandle);
+                collector.setPickableObjectEnabled(handle, pickableObject.isEnabled);
             }
         }
     }

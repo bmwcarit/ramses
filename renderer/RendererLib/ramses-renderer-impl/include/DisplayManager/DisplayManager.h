@@ -10,6 +10,7 @@
 #define RAMSES_DISPLAYMANAGER_H
 
 #include "DisplayManager/IDisplayManager.h"
+#include "DisplayManager/DisplayManagerEvent.h"
 #include "ramses-renderer-api/IRendererEventHandler.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "DisplayManager/ShowSceneOnDisplay.h"
@@ -21,7 +22,6 @@
 #include "Ramsh/RamshCommandExit.h"
 
 #include "Collections/String.h"
-#include "PlatformAbstraction/PlatformLock.h"
 #include <unordered_map>
 #include <unordered_set>
 #include <memory>
@@ -33,18 +33,19 @@ namespace ramses
     class DisplayConfig;
 }
 
-namespace ramses_display_manager
+namespace ramses_internal
 {
     class DisplayManager final : public IDisplayManager, public ramses::RendererEventHandlerEmpty
     {
     public:
-        DisplayManager(ramses::RamsesRenderer& renderer, ramses::RamsesFramework& framework, bool autoShow);
-        virtual ~DisplayManager();
+        DisplayManager(ramses::RamsesRenderer& renderer, ramses::RamsesFramework& framework);
 
         // IDisplayManager
         virtual bool setSceneState(ramses::sceneId_t sceneId, SceneState state, const char* confirmationText = "") override;
-        virtual bool setSceneMapping(ramses::sceneId_t sceneId, ramses::displayId_t displayId, int32_t sceneRenderOrder = 0) override;
-        virtual bool setSceneOffscreenBufferMapping(ramses::sceneId_t sceneId, ramses::displayId_t displayId, uint32_t width, uint32_t height, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTextureSamplerId) override;
+        virtual bool setSceneMapping(ramses::sceneId_t sceneId, ramses::displayId_t displayId) override;
+        virtual bool setSceneDisplayBufferAssignment(ramses::sceneId_t sceneId, ramses::displayBufferId_t displayBuffer, int32_t sceneRenderOrder = 0) override;
+        virtual bool setDisplayBufferClearColor(ramses::displayBufferId_t displayBuffer, float r, float g, float b, float a) override;
+        virtual void linkOffscreenBuffer(ramses::displayBufferId_t offscreenBufferId, ramses::sceneId_t consumerSceneId, ramses::dataConsumerId_t consumerDataSlotId) override;
         virtual void linkData(ramses::sceneId_t providerSceneId, ramses::dataProviderId_t providerId, ramses::sceneId_t consumerSceneId, ramses::dataConsumerId_t consumerId) override;
         virtual void processConfirmationEchoCommand(const char* text) override;
 
@@ -73,37 +74,18 @@ namespace ramses_display_manager
         virtual void sceneHidden                       (ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override;
         virtual void displayCreated                    (ramses::displayId_t displayId, ramses::ERendererEventResult result) override;
         virtual void displayDestroyed                  (ramses::displayId_t displayId, ramses::ERendererEventResult result) override;
-        virtual void offscreenBufferCreated            (ramses::displayId_t displayId, ramses::offscreenBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override;
-        virtual void offscreenBufferDestroyed          (ramses::displayId_t displayId, ramses::offscreenBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override;
-        virtual void sceneAssignedToOffscreenBuffer    (ramses::sceneId_t sceneId, ramses::offscreenBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override;
-        virtual void offscreenBufferLinkedToSceneData  (ramses::offscreenBufferId_t providerOffscreenBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId, ramses::ERendererEventResult result) override;
+        virtual void offscreenBufferCreated            (ramses::displayId_t displayId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override;
+        virtual void offscreenBufferDestroyed          (ramses::displayId_t displayId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override;
+        virtual void offscreenBufferLinkedToSceneData  (ramses::displayBufferId_t providerOffscreenBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId, ramses::ERendererEventResult result) override;
+        virtual void dataLinked                        (ramses::sceneId_t providerScene, ramses::dataProviderId_t providerId, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId, ramses::ERendererEventResult result) override;
         virtual void keyEvent                          (ramses::displayId_t displayId, ramses::EKeyEvent keyEvent, uint32_t keyModifiers, ramses::EKeyCode keyCode) override;
         virtual void windowClosed                      (ramses::displayId_t displayId) override;
 
         struct MappingInfo
         {
-            ramses::displayId_t display = ramses::InvalidDisplayId;
+            ramses::displayId_t display;
+            ramses::displayBufferId_t displayBuffer;
             int32_t renderOrder = 0;
-
-            // OB mapping
-            ramses::offscreenBufferId_t offscreenBuffer = ramses::InvalidOffscreenBufferId;
-            ramses::sceneId_t consumerScene = 0;
-            ramses::dataConsumerId_t consumerSamplerId = 0;
-            uint32_t obWidth = 0;
-            uint32_t obHeight = 0;
-
-            // states used when OB mapping, sub-states of Mapped scene state before reaching MappedAndAssigned
-            enum class OBMappingState
-            {
-                None,
-                OBCreationRequested,
-                OBCreated,
-                AssignmentRequested,
-                Assigned,
-                LinkRequested,
-                Linked
-            };
-            OBMappingState obMappingState = OBMappingState::None;
         };
 
         enum class ESceneStateCommand
@@ -122,8 +104,8 @@ namespace ramses_display_manager
             Unpublished,
             Published,
             Subscribed,
-            Mapped,            // scene is mapped to display
-            MappedAndAssigned, // scene is mapped and assigned to FB/OB and linked to consumer if any
+            Mapped,            // mapped to display with resources uploaded
+            MappedAndAssigned, // assigned to display's buffer and set render order
             Rendered
         };
 
@@ -141,33 +123,19 @@ namespace ramses_display_manager
         ESceneStateCommand getLastSceneStateCommandWaitingForReply(ramses::sceneId_t sceneId) const;
         void goToTargetState(ramses::sceneId_t sceneId);
         void goToMappedAndAssignedState(ramses::sceneId_t sceneId);
-        void goToOBLinkedState(ramses::sceneId_t sceneId);
         void setCurrentSceneState(ramses::sceneId_t sceneId, ESceneStateInternal state);
-        bool setMappingInternal(ramses::sceneId_t sceneId, const MappingInfo& mappingInfo);
-        void resetMappingState(ramses::sceneId_t sceneId);
 
         static SceneState GetSceneStateFromInternal(ESceneStateInternal internalState);
         static ESceneStateInternal GetInternalSceneState(SceneState state);
 
         ramses::RamsesRenderer& m_ramsesRenderer;
 
-        const bool m_autoShow;
-
         std::unordered_map<ramses::sceneId_t, SceneInfo> m_scenesInfo;
 
-        struct DisplayInfo
-        {
-            std::unordered_set<ramses::offscreenBufferId_t> offscreenBuffers;
-        };
-        std::unordered_map<ramses::displayId_t, DisplayInfo> m_createdDisplays;
+        using DisplayBuffers = std::unordered_set<ramses::displayBufferId_t>;
+        std::unordered_map<ramses::displayId_t, DisplayBuffers> m_displays;
 
-        struct Event
-        {
-            ramses::sceneId_t sceneId;
-            SceneState state;
-            ramses::displayId_t displaySceneIsMappedTo;
-        };
-        std::vector<Event> m_pendingEvents;
+        std::vector<DisplayManagerEvent> m_pendingEvents;
 
         std::unique_ptr<ramses_internal::RamshCommandExit> m_exitCommand;
         std::unique_ptr<ShowSceneOnDisplay>                m_showOnDisplayCommand;
@@ -178,8 +146,6 @@ namespace ramses_display_manager
         std::unique_ptr<ConfirmationEcho>                  m_confirmationEchoCommand;
         bool                                               m_isRunning;
         bool                                               m_keysHandling = false;
-
-        mutable ramses_internal::PlatformLock m_lock;
     };
 }
 

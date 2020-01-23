@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 /**
-@mainpage RAMSES Embedded Compositing
+@page EmbCompMain Embedded Compositing
 
 ## Introduction
 
@@ -123,6 +123,8 @@ will be used.
 
 The following code show the usage of the embedded compositing API in RAMSES. It
 creates a 2D quad which uses StreamTexture as its face.
+
+@ref ramses-example-basic-compositing/src/main.cpp
 @snippet ramses-example-basic-compositing/src/main.cpp Basic Compositing Example
 
 */

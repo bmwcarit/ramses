@@ -25,41 +25,9 @@ MACRO(ACME_INFO)
     MESSAGE(STATUS "${ARGV}")
 ENDMACRO()
 
-MACRO(ACME_DEBUG)
-    IF(${ACME_DEBUG_ENABLED})
-        MESSAGE(STATUS "${ARGV}")
-    ENDIF()
-ENDMACRO()
-
-MACRO(ACME_WARNING)
-    IF(${ACME_WARNING_AS_ERROR})
-        ACME_ERROR("${ARGV}")
-    ELSE()
-        MESSAGE("        ${ARGV}")
-    ENDIF()
-ENDMACRO()
-
 MACRO(ACME_ERROR)
-    ACME_INFO("ERROR: ${ARGV}")
-    MESSAGE(FATAL_ERROR "Cancel Build.")
+    message(FATAL_ERROR "ERROR: ${ARGV}")
 ENDMACRO()
-
-#==============================================================================
-# file list resolver
-#==============================================================================
-MACRO(GET_ALL_FILES var_name directory_list)
-    SET(file_list "")
-    FOREACH(directory ${directory_list})
-        FILE(GLOB directory_content "${directory}")
-        # Only add files to the list, a included folder will cause INSTALL command to produce a cmake error
-        FOREACH(fileOrDir ${directory_content})
-            IF(NOT IS_DIRECTORY "${fileOrDir}/")
-                LIST(APPEND file_list ${fileOrDir})
-            ENDIF()
-        ENDFOREACH()
-    ENDFOREACH()
-    SET(${var_name} ${file_list})
-ENDMACRO(GET_ALL_FILES)
 
 #==============================================================================
 # add_test helper

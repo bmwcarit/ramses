@@ -70,7 +70,7 @@ namespace ramses_internal
          * @param uri the path to the file
          * @param deleteFile delete file afterwards
          */
-        virtual Bool transmitFile(LogContext& ctx, const String& uri, Bool deleteFile) = 0;
+        virtual bool transmitFile(LogContext& ctx, const String& uri, bool deleteFile) = 0;
 
         virtual void registerLogLevelChangeCallback(const std::function<void(const String&, int)>& callback) = 0;
 

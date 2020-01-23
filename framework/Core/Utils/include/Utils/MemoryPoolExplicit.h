@@ -30,7 +30,7 @@ namespace ramses_internal
 
         // Access
         UInt32                          getTotalCount() const;
-        Bool                            isAllocated(HANDLE handle) const;
+        bool                            isAllocated(HANDLE handle) const;
 
         // Access to actual memory
         OBJECTTYPE*                     getMemory(HANDLE handle);
@@ -86,7 +86,7 @@ namespace ramses_internal
     }
 
     template <typename OBJECTTYPE, typename HANDLE>
-    inline Bool MemoryPoolExplicit<OBJECTTYPE, HANDLE>::isAllocated(HANDLE handle) const
+    inline bool MemoryPoolExplicit<OBJECTTYPE, HANDLE>::isAllocated(HANDLE handle) const
     {
         const MemoryHandle memoryHandle = AsMemoryHandle(handle);
         assert(memoryHandle < m_handlePool.size());

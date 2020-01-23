@@ -38,7 +38,7 @@ namespace ramses_internal
         GLInputLocation     getAttributeLocation(DataFieldHandle) const;
         TextureSlotInfo     getTextureSlot(DataFieldHandle) const;
 
-        bool                getBinaryInfo(UInt8Vector& binaryShader, UInt32& binaryShaderFormat) const;
+        bool                getBinaryInfo(UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat) const;
 
     private:
         void                preloadVariableLocations(const EffectResource& effect);
@@ -170,7 +170,7 @@ namespace ramses_internal
         return inputLocation;
     }
 
-    inline bool ShaderGPUResource_GL::getBinaryInfo(UInt8Vector& binaryShader, UInt32& binaryShaderFormat) const
+    inline bool ShaderGPUResource_GL::getBinaryInfo(UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat) const
     {
         GLint length = -1;
         glGetProgramiv(m_shaderProgramInfo.shaderProgramHandle, GL_PROGRAM_BINARY_LENGTH, &length);
@@ -185,7 +185,7 @@ namespace ramses_internal
 
         binaryShader.resize(length);
         glGetProgramBinary(m_shaderProgramInfo.shaderProgramHandle, length, &binarySize, &binaryFormat, &binaryShader.front());
-        binaryShaderFormat = binaryFormat;
+        binaryShaderFormat = BinaryShaderFormatID{ binaryFormat };
         return binarySize == length;
     }
 }

@@ -128,7 +128,7 @@ namespace ramses_internal
         SceneAllocateHelper sceneAllocator(scene);
         const RenderPassHandle pass = sceneAllocator.allocateRenderPass();
         const NodeHandle cameraNode = sceneAllocator.allocateNode();
-        const auto dataLayout = sceneAllocator.allocateDataLayout({ {EDataType_Vector2I}, {EDataType_Vector2I} });
+        const auto dataLayout = sceneAllocator.allocateDataLayout({ {EDataType_Vector2I}, {EDataType_Vector2I} }, ResourceContentHash::Invalid());
         const CameraHandle camera = sceneAllocator.allocateCamera(ECameraProjectionType_Renderer, cameraNode, sceneAllocator.allocateDataInstance(dataLayout));
         sceneAllocator.allocateTransform(cameraNode);
         scene.setRenderPassCamera(pass, camera);

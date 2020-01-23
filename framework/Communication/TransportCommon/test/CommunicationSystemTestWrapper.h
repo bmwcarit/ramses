@@ -11,12 +11,14 @@
 
 #include "MockConnectionStatusListener.h"
 #include "TransportCommon/ICommunicationSystem.h"
-#include "Utils/ScopedPointer.h"
 #include "PlatformAbstraction/PlatformLock.h"
-#include "PlatformAbstraction/PlatformConditionVariable.h"
 #include "RamsesFrameworkConfigImpl.h"
 #include "Common/BitForgeMacro.h"
 #include "Utils/StatisticCollection.h"
+#include "ServiceHandlerMocks.h"
+#include <memory>
+#include <mutex>
+#include <condition_variable>
 
 namespace ramses_internal
 {
@@ -61,8 +63,8 @@ namespace ramses_internal
         testing::AssertionResult waitForEvents(UInt32 numberEventsToWaitFor, UInt32 waitTimeMsOverride = 0);
 
     private:
-        PlatformLightweightLock lock;
-        PlatformConditionVariable cond;
+        std::mutex lock;
+        std::condition_variable cond;
         UInt32 m_eventCounter;
         UInt32 m_waitTimeMs;
     };
@@ -89,23 +91,6 @@ namespace ramses_internal
         std::vector<CommunicationSystemTestWrapper*> knownCommunicationSystems;
     };
 
-    ACTION_P(SendHandlerCalledEvent, pointerToClassWithSendEventMethod)
-    {
-        UNUSED(arg9);
-        UNUSED(arg8);
-        UNUSED(arg7);
-        UNUSED(arg6);
-        UNUSED(arg5);
-        UNUSED(arg4);
-        UNUSED(arg3);
-        UNUSED(arg2);
-        UNUSED(arg1);
-        UNUSED(arg0);
-        UNUSED(args);
-
-        pointerToClassWithSendEventMethod->sendEvent();
-    }
-
     class CommunicationSystemTestWrapper
     {
     public:
@@ -121,11 +106,13 @@ namespace ramses_internal
         Guid id;
         PlatformLock frameworkLock;
         MockConnectionStatusListener statusUpdateListener;
-        ScopedPointer<ICommunicationSystem> commSystem;
+        std::unique_ptr<ICommunicationSystem> commSystem;
         StatisticCollectionFramework statisticCollection;
 
     protected:
         CommunicationSystemTestState& state;
+        testing::NiceMock<DcsmProviderServiceHandlerMock> dcsmProviderMock;
+        testing::NiceMock<DcsmConsumerServiceHandlerMock> dcsmConsumerMock;
     };
 
     class CommunicationSystemDiscoveryDaemonTestWrapper
@@ -137,7 +124,7 @@ namespace ramses_internal
         bool start();
         bool stop();
     private:
-        ScopedPointer<IDiscoveryDaemon> daemon;
+        std::unique_ptr<IDiscoveryDaemon> daemon;
         PlatformLock frameworkLock;
         StatisticCollectionFramework statisticCollection;
     };

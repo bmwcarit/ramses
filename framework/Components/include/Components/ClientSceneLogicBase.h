@@ -10,9 +10,7 @@
 #define RAMSES_CLIENTSCENELOGICBASE_H
 
 #include "Scene/EScenePublicationMode.h"
-#include "Scene/ESceneFlushMode.h"
 #include "Scene/ClientScene.h"
-#include "Animation/AnimationSystemFactory.h"
 #include "Scene/Scene.h"
 
 namespace ramses_internal
@@ -29,20 +27,20 @@ namespace ramses_internal
 
         void publish(EScenePublicationMode publicationMode);
         void unpublish();
-        Bool isPublished() const;
+        bool isPublished() const;
         void addSubscriber(const Guid& newSubscriber);
         void removeSubscriber(const Guid& subscriber);
 
         std::vector<Guid> getWaitingAndActiveSubscribers() const;
 
-        virtual void flushSceneActions(ESceneFlushMode flushMode, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) = 0;
+        virtual void flushSceneActions(const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) = 0;
 
         const char* getSceneStateString() const;
 
     protected:
         virtual void postAddSubscriber() {};
         void sendSceneToWaitingSubscribers(const IScene& scene, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag);
-        void printFlushInfo(StringOutputStream& sos, const char* name, const SceneActionCollection& collection, ESceneFlushMode flushMode) const;
+        void printFlushInfo(StringOutputStream& sos, const char* name, const SceneActionCollection& collection) const;
 
         ISceneGraphSender&     m_scenegraphSender;
         const Guid             m_myID;
@@ -55,7 +53,6 @@ namespace ramses_internal
         EScenePublicationMode m_scenePublicationMode;
 
         UInt64                 m_flushCounter = 0u;
-        AnimationSystemFactory m_animationSystemFactory;
     };
 }
 

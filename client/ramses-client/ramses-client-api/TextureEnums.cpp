@@ -37,8 +37,6 @@ namespace ramses
         "ETextureFormat_RGBA8",
         "ETextureFormat_RGBA4",
         "ETextureFormat_RGBA5551",
-        "ETextureFormat_BGR8",
-        "ETextureFormat_BGRA8",
         "ETextureFormat_ETC2RGB",
         "ETextureFormat_ETC2RGBA",
         "ETextureFormat_R16F",

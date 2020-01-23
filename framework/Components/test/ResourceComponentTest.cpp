@@ -16,12 +16,10 @@
 #include "Utils/BinaryOutputStream.h"
 #include "PlatformAbstraction/PlatformMemory.h"
 #include "PlatformAbstraction/PlatformEvent.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "DummyResource.h"
 #include "Collections/String.h"
 #include "MockConnectionStatusUpdateNotifier.h"
 #include "CommunicationSystemMock.h"
-#include "Utils/ScopedPointer.h"
 #include "TaskFramework/ThreadedTaskExecutor.h"
 #include "ResourceSerializationTestHelper.h"
 #include "Components/SingleResourceSerialization.h"
@@ -30,22 +28,6 @@ using namespace testing;
 
 namespace ramses_internal
 {
-    ACTION_P(ReleaseSyncCall, syncer)
-    {
-        UNUSED(arg9);
-        UNUSED(arg8);
-        UNUSED(arg7);
-        UNUSED(arg6);
-        UNUSED(arg5);
-        UNUSED(arg4);
-        UNUSED(arg3);
-        UNUSED(arg2);
-        UNUSED(arg1);
-        UNUSED(arg0);
-        UNUSED(args);
-        syncer->signal();
-    }
-
     class DelayedSingleTaskExecutor : public ITaskQueue
     {
     public:
@@ -53,7 +35,7 @@ namespace ramses_internal
         {
         }
 
-        virtual Bool enqueue(ITask& Task)
+        virtual bool enqueue(ITask& Task)
         {
             Task.addRef();
             m_scheduledTasks.push_back(&Task);
@@ -815,8 +797,8 @@ namespace ramses_internal
         EXPECT_EQ(hash, managedResource.getResourceObject()->getHash());
         ASSERT_EQ(testResource->getDecompressedDataSize(), managedResource.getResourceObject()->getDecompressedDataSize());
 
-        const UInt8* resourceDataBlob = managedResource.getResourceObject()->getResourceData()->getRawData();
-        EXPECT_TRUE(0 == PlatformMemory::Compare(testResource->getResourceData()->getRawData(), resourceDataBlob, testResource->getDecompressedDataSize()));
+        const UInt8* resourceDataBlob = managedResource.getResourceObject()->getResourceData().data();
+        EXPECT_TRUE(0 == PlatformMemory::Compare(testResource->getResourceData().data(), resourceDataBlob, testResource->getDecompressedDataSize()));
     }
 
     TEST_F(AResourceComponentTest, ResourceFragmentsFromOtherParticipantsAreIgnored)
@@ -1255,12 +1237,15 @@ namespace ramses_internal
         ramses_internal::PlatformEvent syncWaiter;
         {
             ramses_internal::PlatformGuard g(expectLock);
-            EXPECT_CALL(communicationSystem, safe_sendResources(requester, _)).Times(1).WillRepeatedly(DoAll(ReleaseSyncCall(&syncWaiter), Return(true)));
+            EXPECT_CALL(communicationSystem, safe_sendResources(requester, _)) .Times(1) .WillRepeatedly(InvokeWithoutArgs([&]()
+            {
+                syncWaiter.signal();
+                return true;
+            }));
         }
         localResourceComponent.handleRequestResources(requestedResourceHashes, 0u, requester);
 
-        const EStatus status = syncWaiter.wait(60000);
-        EXPECT_EQ(EStatus_RAMSES_OK, status);
+        EXPECT_TRUE(syncWaiter.wait(60000));
     }
 
     class AResourceComponentWithSingleResourceLoadLimitTest : public ResourceComponentTestBase

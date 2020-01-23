@@ -126,17 +126,17 @@ namespace ramses_internal
 
         const UInt32 resourceSize = pResource->getDecompressedDataSize();
         UInt32 vramSize = 0;
-        const DeviceResourceHandle deviceHandle = m_uploader.uploadResource(m_renderBackend, rd.resource, vramSize);
+        const DeviceResourceHandle deviceHandle = m_uploader.uploadResource(m_renderBackend, rd, vramSize);
         if (deviceHandle.isValid())
         {
             m_clientResourceSizes.put(rd.hash, resourceSize);
             m_clientResourceTotalUploadedSize += resourceSize;
             m_clientResources.setResourceStatus(rd.hash, EResourceStatus_Uploaded);
-            m_clientResources.setResourceSize(rd.hash, pResource->getCompressedDataSize(), resourceSize, vramSize);
+            m_clientResources.setResourceVRAMSize(rd.hash, vramSize);
         }
         else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "ResourceUploadingManager::uploadResource failed to upload resource #" << StringUtils::HexFromResourceContentHash(rd.hash) << " (" << EnumToString(rd.type) << ")");
+            LOG_ERROR(CONTEXT_RENDERER, "ResourceUploadingManager::uploadResource failed to upload resource #" << rd.hash << " (" << EnumToString(rd.type) << ")");
             m_clientResources.setResourceStatus(rd.hash, EResourceStatus_Broken);
         }
 

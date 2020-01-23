@@ -36,7 +36,7 @@ int main(int argc, const char *argv[])
     ramses_internal::String defaultGroup = getUserGroupName();
 
     ramses_internal::CommandLineParser parser(argc, argv);
-    ramses_internal::ArgumentBool generateBitmaps(parser, "gb", "generate-bitmaps", false);
+    ramses_internal::ArgumentBool generateBitmaps(parser, "gb", "generate-bitmaps");
     ramses_internal::ArgumentString filterInTest(parser, "fi", "filterIn", "*");
     ramses_internal::ArgumentString filterOutTest(parser, "fo", "filterOut", "");
     ramses_internal::ArgumentUInt32 repeatTestCount(parser, "rc", "repeatCount", 1);

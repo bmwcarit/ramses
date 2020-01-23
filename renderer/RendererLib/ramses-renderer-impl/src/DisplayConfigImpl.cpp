@@ -64,10 +64,24 @@ namespace ramses
         return StatusOK;
     }
 
+    status_t DisplayConfigImpl::getWindowRectangle(int32_t& x, int32_t& y, uint32_t& width, uint32_t& height) const
+    {
+        x = m_internalConfig.getWindowPositionX();
+        y = m_internalConfig.getWindowPositionY();
+        width = m_internalConfig.getDesiredWindowWidth();
+        height = m_internalConfig.getDesiredWindowHeight();
+        return StatusOK;
+    }
+
     status_t DisplayConfigImpl::setFullscreen(bool fullscreen)
     {
         m_internalConfig.setFullscreenState(fullscreen);
         return StatusOK;
+    }
+
+    bool DisplayConfigImpl::isFullscreen() const
+    {
+        return m_internalConfig.getFullscreenState();
     }
 
     status_t DisplayConfigImpl::setBorderless(bool borderless)
@@ -186,6 +200,17 @@ namespace ramses
     uint32_t DisplayConfigImpl::getIntegrityRGLDeviceUnit() const
     {
         return m_internalConfig.getIntegrityRGLDeviceUnit().getValue();
+    }
+
+    void* DisplayConfigImpl::getAndroidNativeWindow() const
+    {
+        return m_internalConfig.getAndroidNativeWindow().getValue();
+    }
+
+    status_t DisplayConfigImpl::setAndroidNativeWindow(void * nativeWindowPtr)
+    {
+        m_internalConfig.setAndroidNativeWindow(ramses_internal::AndroidNativeWindowPtr(nativeWindowPtr));
+        return StatusOK;
     }
 
     status_t DisplayConfigImpl::setWindowIviVisible()

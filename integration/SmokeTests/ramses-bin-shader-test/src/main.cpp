@@ -23,6 +23,7 @@
 #include "RendererAPI/Types.h"
 #include "Math3d/Vector3.h"
 #include "Collections/StringOutputStream.h"
+#include "RamsesFrameworkTypesImpl.h"
 
 #include <sstream>
 
@@ -135,8 +136,7 @@ private:
 
 static ramses_internal::String EffectIdToString(ramses::effectId_t effectId)
 {
-    ramses_internal::ResourceContentHash effectHash(effectId.lowPart, effectId.highPart);
-    return ramses_internal::StringUtils::HexFromResourceContentHash(effectHash);
+    return ramses_internal::StringOutputStream::ToString(ramses_internal::ResourceContentHash(effectId.lowPart, effectId.highPart));
 }
 
 ramses_internal::StringOutputStream& operator<< (ramses_internal::StringOutputStream& outputStream, const ramses::effectId_t& id)
@@ -158,9 +158,8 @@ class TestBinaryShaderCache : public ramses::IBinaryShaderCache
 {
 public:
     TestBinaryShaderCache()
-    : m_binaryShaderRequestStatus(EBinaryShaderRequestStatus_NeverRequested)
+        : m_binaryShaderRequestStatus(EBinaryShaderRequestStatus_NeverRequested)
     {
-
     }
 
     void init(const ramses_internal::String& effectIdFile, const ramses_internal::String& binaryShaderFile)
@@ -222,10 +221,20 @@ public:
         assert(file.exists());
 
         ramses_internal::BinaryFileInputStream inputStream(file);
-        inputStream >> m_binaryShaderFormat;
+        inputStream >> m_binaryShaderFormat.getReference();
 
         file.close();
         LOG_INFO(ramses_internal::CONTEXT_SMOKETEST, "Parsed binary shader format: " << m_binaryShaderFormat);
+    }
+
+    virtual void deviceSupportsBinaryShaderFormats(const ramses::binaryShaderFormatId_t* supportedFormats, uint32_t numSupportedFormats) override
+    {
+        LOG_INFO_F(ramses_internal::CONTEXT_SMOKETEST, ([&](ramses_internal::StringOutputStream & sos)
+        {
+            sos << "Supported formats by device provided:";
+            for (uint32_t i = 0; i < numSupportedFormats; ++i)
+                sos << "  " << supportedFormats[i].getValue();
+        }));
     }
 
     virtual bool hasBinaryShader(ramses::effectId_t effectId) const override
@@ -258,9 +267,9 @@ public:
         return static_cast<uint32_t>(m_binaryShaderData.size());
     }
 
-    virtual uint32_t getBinaryShaderFormat(ramses::effectId_t effectId) const override
+    virtual ramses::binaryShaderFormatId_t getBinaryShaderFormat(ramses::effectId_t effectId) const override
     {
-        LOG_INFO(ramses_internal::CONTEXT_SMOKETEST, "Binary shader format requested: " << effectId);
+        LOG_INFO(ramses_internal::CONTEXT_SMOKETEST, "Binary shader format requested: " << effectId << "  format: " << m_binaryShaderFormat);
         assert(m_effectIDAsString == EffectIdToString(effectId));
         assert(m_binaryShaderRequestStatus == EBinaryShaderRequestStatus_SizeRequested);
         m_binaryShaderRequestStatus = EBinaryShaderRequestStatus_FormatRequested;
@@ -268,7 +277,7 @@ public:
         return m_binaryShaderFormat;
     }
 
-    virtual bool shouldBinaryShaderBeCached(ramses::effectId_t /*effectId*/) const override
+    virtual bool shouldBinaryShaderBeCached(ramses::effectId_t /*effectId*/, ramses::sceneId_t) const override
     {
         return true;
     }
@@ -287,7 +296,7 @@ public:
         ramses_internal::PlatformMemory::Copy(buffer, &m_binaryShaderData.front(), dataSize);
     }
 
-    virtual void storeBinaryShader(ramses::effectId_t effectId, const uint8_t*, uint32_t, uint32_t) override
+    virtual void storeBinaryShader(ramses::effectId_t effectId, ramses::sceneId_t, const uint8_t*, uint32_t, ramses::binaryShaderFormatId_t) override
     {
         LOG_ERROR(ramses_internal::CONTEXT_SMOKETEST, "Trying to store binary shader, should never happen in this test!! Effect id: " << effectId);
         assert(false);
@@ -308,7 +317,7 @@ private:
     mutable EBinaryShaderRequestStatus m_binaryShaderRequestStatus;
     ramses_internal::String m_effectIDAsString;
     ramses_internal::UInt8Vector m_binaryShaderData;
-    uint32_t m_binaryShaderFormat;
+    ramses::binaryShaderFormatId_t m_binaryShaderFormat{ 0 };
 };
 
 bool getInputParameters(int argc, char** argv, ramses_internal::String& effectIdFileValue, ramses_internal::String& binaryShaderFileValue)
@@ -353,13 +362,13 @@ int main(int argc, char* argv[])
     framework.impl.getRamsh().add(commandExit);
 
     // create ramses client
-    ramses::RamsesClient client("ramses-local-client-test", framework);
+    ramses::RamsesClient& client(*framework.createClient("ramses-local-client-test"));
 
     // create ramses renderer
     ramses::RendererConfig rendererConfig(argc, argv);
     TestBinaryShaderCache testBinaryShader;
     rendererConfig.setBinaryShaderCache(testBinaryShader);
-    ramses::RamsesRenderer renderer(framework, rendererConfig);
+    ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
 
     SceneStateEventHandler eventHandler(renderer);
 
@@ -373,7 +382,7 @@ int main(int argc, char* argv[])
     ramses::displayId_t display = renderer.createDisplay(displayConfig);
 
     // create the test scene
-    const ramses::sceneId_t sceneId = 42u;
+    const ramses::sceneId_t sceneId(42u);
     ramses::Scene* clientScene = client.createScene(sceneId);
     ramses_internal::TransformationLinkScene redTriangleScene(client, *clientScene, ramses_internal::TransformationLinkScene::TRANSFORMATION_CONSUMER, ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
     clientScene->flush();

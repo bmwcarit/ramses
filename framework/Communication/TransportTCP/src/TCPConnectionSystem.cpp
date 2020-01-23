@@ -9,12 +9,12 @@
 #include "TransportTCP/TCPConnectionSystem.h"
 
 #include "Components/ResourceStreamSerialization.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "Scene/SceneActionCollection.h"
 #include "TransportCommon/TransportUtilities.h"
 #include "Utils/BinaryInputStream.h"
 #include "Utils/RawBinaryOutputStream.h"
 #include "Utils/StatisticCollection.h"
+#include "Utils/LogMacros.h"
 #include <thread>
 
 namespace ramses_internal
@@ -79,23 +79,24 @@ namespace ramses_internal
                                                    << m_participantAddress.getParticipantId() << "/" << m_participantAddress.getParticipantName()
                                                    << " at " << m_participantAddress.getIp() << ":" << m_participantAddress.getPort()
                                                    << ", type " << EnumToString(m_participantType)
-                                                   << ", aliveInterval " << static_cast<int64_t>(m_aliveInterval.count()) << "ms, aliveTimeout " << static_cast<int64_t>(m_aliveIntervalTimeout.count()) << "ms";
+                                                   << ", aliveInterval " << m_aliveInterval.count() << "ms, aliveTimeout " << m_aliveIntervalTimeout.count() << "ms";
                                                if (m_hasOtherDaemon)
                                                    sos << ", other daemon at " << m_daemonAddress.getIp() << ":" << m_daemonAddress.getPort();
                                            }));
         if (m_aliveIntervalTimeout < m_aliveInterval + std::chrono::milliseconds{100})
         {
             LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << "): Alive timeout very low, expect issues " <<
-                     "(alive " << static_cast<int64_t>(m_aliveInterval.count()) << ", timeout " << static_cast<int64_t>(m_aliveIntervalTimeout.count()) << ")");
+                     "(alive " << m_aliveInterval.count() << ", timeout " << m_aliveIntervalTimeout.count() << ")");
         }
 
+        PlatformGuard guard(m_frameworkLock);
         if (m_runState)
         {
             LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::connectServices: called more than once");
             return false;
         }
 
-        m_runState.reset(new RunState{});
+        m_runState = std::make_unique<RunState>();
         m_thread.start(*this);
 
         return true;
@@ -104,6 +105,8 @@ namespace ramses_internal
     bool TCPConnectionSystem::disconnectServices()
     {
         LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::disconnectServices");
+
+        PlatformGuard guard(m_frameworkLock);
         if (!m_runState)
         {
             LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::disconnectServices: called without being connected");
@@ -112,21 +115,13 @@ namespace ramses_internal
 
         // Signal context to exit run and join thread
         m_runState->m_io.stop();
-        m_thread.join();
-
-        // Clear shared pointer and wait for possible concurrent users to disappear (guarantees that it is really destructed)
-        std::weak_ptr<RunState> weakRunState(m_runState);
+        {
+            // must release lock to let things finish in thread
+            m_frameworkLock.unlock();
+            m_thread.join();
+            m_frameworkLock.lock();
+        }
         m_runState.reset();
-        for (int i = 0; i < 20; ++i)
-        {
-            if (!weakRunState.lock())
-                break;
-            std::this_thread::sleep_for(std::chrono::milliseconds{100});
-        }
-        if (weakRunState.lock())
-        {
-            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::disconnectServices: could not properly delete asio::io_service, may cause further problems");
-        }
 
         LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::disconnectServices: done");
         return true;
@@ -330,7 +325,7 @@ namespace ramses_internal
     void TCPConnectionSystem::initializeNewlyConnectedParticipant(const ParticipantPtr& pp)
     {
         LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::initializeNewlyConnectedParticipant: " << pp->address.getParticipantId());
-        assert(m_connectingParticipants.hasElement(pp));
+        assert(m_connectingParticipants.contains(pp));
 
         // Set send buffer to resource chunk size to allow maximum one resource chunk to use up send buffer. This
         // is needed to allow high prio data to be sent as fast as possible.
@@ -469,14 +464,19 @@ namespace ramses_internal
     {
         pp->lastReceived = std::chrono::steady_clock::now();
         pp->checkReceivedAliveTimer.expires_after(m_aliveIntervalTimeout);
-        pp->checkReceivedAliveTimer.async_wait([this, pp](asio::error_code e) {
+        pp->checkReceivedAliveTimer.async_wait([this, pp, originalLastReceived = pp->lastReceived](asio::error_code e) {
                                                    if (!e)
                                                    {
-                                                       const auto now = std::chrono::steady_clock::now();
-                                                       LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::updateLastReceivedTime: alive message from " <<
-                                                                pp->address.ParticipantIdentifier::getParticipantId() << " too old. lastReceived " <<
-                                                                (std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(now - pp->lastReceived).count()) << "ms ago, expected alive " <<
-                                                                (std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(now - pp->lastReceived - m_aliveInterval).count()) << "ms ago");
+                                                       LOG_WARN_F(CONTEXT_COMMUNICATION, ([&](ramses_internal::StringOutputStream& sos) {
+                                                           const auto now = std::chrono::steady_clock::now();
+                                                           const auto lastRecvMs = std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(now - originalLastReceived).count();
+                                                           const auto expectedMs = std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(now - originalLastReceived - m_aliveInterval).count();
+                                                           const auto expectLatest = std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(now - originalLastReceived - m_aliveIntervalTimeout).count();
+
+                                                           sos << "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::updateLastReceivedTime: alive message from " <<
+                                                               pp->address.ParticipantIdentifier::getParticipantId() << " too old. lastReceived " <<
+                                                               lastRecvMs << "ms ago, expected alive " << expectedMs << "ms ago, latest " << expectLatest << "ms ago";
+                                                       }));
                                                        removeParticipant(pp);
                                                    }
                                                });
@@ -565,14 +565,15 @@ namespace ramses_internal
 
     bool TCPConnectionSystem::postMessageForSending(OutMessage msg, bool hasPrio)
     {
-        // Keep RunState alive between check and use
-        RunStatePtr rs = m_runState;
-        if (!rs)
+        // expect framework lock to be held
+        if (!m_runState)
+        {
+            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::postMessageForSending: called without being connected");
             return false;
+        }
 
         m_statisticCollection.statMessagesSent.incCounter(1);
-
-        asio::post(rs->m_io, [this, msg, hasPrio]() {
+        asio::post(m_runState->m_io, [this, msg, hasPrio]() {
                             const bool broadcast = msg.to.isInvalid();
                             if (broadcast)
                             {
@@ -686,6 +687,9 @@ namespace ramses_internal
             break;
         case EMessageId_DcsmForceUnregisterContent:
             handleDcsmForceStopOfferContent(pp, stream);
+            break;
+        case EMessageId_DcsmUpdateContentMetadata:
+            handleDcsmUpdateContentMetadata(pp, stream);
             break;
         default:
             LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleReceivedMessage: Invalid messagetype " << messageType << " From " << pp->address.getParticipantId());
@@ -1515,77 +1519,108 @@ namespace ramses_internal
         }
     }
 
+    // --
+    bool TCPConnectionSystem::sendDcsmUpdateContentMetadata(const Guid& to, ContentID contentID, const DcsmMetadata& metadata)
+    {
+        OutMessage msg(to, EMessageId_DcsmUpdateContentMetadata);
+        const auto blob = metadata.toBinary();
+        const uint64_t blobSize = blob.size();
+        msg.stream << contentID.getValue()
+                   << blobSize;
+        msg.stream.write(blob.data(), static_cast<uint32_t>(blobSize));
+        return postMessageForSending(std::move(msg), true);
+    }
+
+    void TCPConnectionSystem::handleDcsmUpdateContentMetadata(const ParticipantPtr& pp, BinaryInputStream& stream)
+    {
+        if (m_dcsmConsumerHandler)
+        {
+            ContentID contentID;
+            stream >> contentID.getReference();
+
+            uint64_t blobSize = 0;
+            stream >> blobSize;
+
+            DcsmMetadata metadata(stream.readPositionUchar(), blobSize);
+            stream.skip(blobSize);
+
+            PlatformGuard guard(m_frameworkLock);
+            m_dcsmConsumerHandler->handleUpdateContentMetadata(contentID, std::move(metadata), pp->address.getParticipantId());
+        }
+    }
 
     // --- ramsh command handling ---
     void TCPConnectionSystem::logConnectionInfo()
     {
-        // Keep RunState alive between check and use
-        RunStatePtr rs = m_runState;
-        if (!rs)
-            return;
+        PlatformGuard guard(m_frameworkLock);
+        auto logFunction =
+            [this]() {
+                LOG_INFO_F(CONTEXT_PERIODIC,
+                           ([&](StringOutputStream& sos)
+                            {
+                                // general info
+                                sos << "TCPConnectionSystem:\n";
+                                sos << "  Self: " << m_participantAddress.getParticipantName() << " / " << m_participantAddress.getParticipantId() << "\n";
+                                sos << "  Connected: " << (m_runState ? "Yes" : "No") << "\n";
+                                sos << "  Protocol version: " << m_protocolVersion << "\n";
+                                sos << "  Type: " << EnumToString(m_participantType) << "\n";
+                                if (m_hasOtherDaemon)
+                                    sos << "  Upstram daemon at " << m_daemonAddress.getIp() << ":" << m_daemonAddress.getPort() << "\n";
 
-        asio::post(rs->m_io, [this]() {
-                            LOG_INFO_F(CONTEXT_PERIODIC,
-                                       ([&](StringOutputStream& sos)
-                                        {
-                                            // general info
-                                            sos << "TCPConnectionSystem:\n";
-                                            sos << "  Self: " << m_participantAddress.getParticipantName() << " / " << m_participantAddress.getParticipantId() << "\n";
-                                            sos << "  Protocol version: " << m_protocolVersion << "\n";
-                                            sos << "  Type: " << EnumToString(m_participantType) << "\n";
-                                            if (m_hasOtherDaemon)
-                                                sos << "  Upstram daemon at " << m_daemonAddress.getIp() << ":" << m_daemonAddress.getPort() << "\n";
+                                // established connections
+                                sos << "Established connections:\n";
+                                for (const auto& p : m_establishedParticipants)
+                                {
+                                    const auto& addr = p.value->address;
+                                    sos << "  "  << addr.getParticipantId() << " / " << addr.getParticipantName() << " at " << addr.getIp() << ":" << addr.getPort();
+                                    if (m_hasOtherDaemon && addr.getIp() == m_daemonAddress.getIp() && addr.getPort() == m_daemonAddress.getPort())
+                                        sos << " (daemon)";
+                                    sos << "\n";
+                                }
 
-                                            // established connections
-                                            sos << "Established connections:\n";
-                                            for (const auto& p : m_establishedParticipants)
-                                            {
-                                                const auto& addr = p.value->address;
-                                                sos << "  "  << addr.getParticipantId() << " / " << addr.getParticipantName() << " at " << addr.getIp() << ":" << addr.getPort();
-                                                if (m_hasOtherDaemon && addr.getIp() == m_daemonAddress.getIp() && addr.getPort() == m_daemonAddress.getPort())
-                                                    sos << " (daemon)";
-                                                sos << "\n";
-                                            }
+                                // connection ongoing
+                                sos << "Connection attempts:\n";
+                                for (const auto& p : m_connectingParticipants)
+                                {
+                                    const auto& addr = p->address;
+                                    sos << "  "  << addr.getIp() << ":" << addr.getPort() << " " << EnumToString(p->state);
+                                    if (m_hasOtherDaemon && addr.getIp() == m_daemonAddress.getIp() && addr.getPort() == m_daemonAddress.getPort())
+                                        sos << " (daemon)";
+                                    sos << "\n";
+                                }
+                            }));
+                    };
 
-                                            // connection ongoing
-                                            sos << "Connection attempts:\n";
-                                            for (const auto& p : m_connectingParticipants)
-                                            {
-                                                const auto& addr = p->address;
-                                                sos << "  "  << addr.getIp() << ":" << addr.getPort() << " " << EnumToString(p->state);
-                                                if (m_hasOtherDaemon && addr.getIp() == m_daemonAddress.getIp() && addr.getPort() == m_daemonAddress.getPort())
-                                                    sos << " (daemon)";
-                                                sos << "\n";
-                                            }
-                                        }));
-            });
+        if (m_runState)
+            asio::post(m_runState->m_io, logFunction);
+        else
+            logFunction();
     }
 
     void TCPConnectionSystem::triggerLogMessageForPeriodicLog()
     {
-        // Keep RunState alive between check and use
-        RunStatePtr rs = m_runState;
-        if (!rs)
-            return;
-
-        asio::post(rs->m_io, [this]() {
-                            LOG_INFO_F(CONTEXT_PERIODIC,
-                                       ([&](StringOutputStream& sos)
+        // expect framework lock to be held
+        if (m_runState)
+            asio::post(m_runState->m_io, [this]() {
+                    LOG_INFO_F(CONTEXT_PERIODIC,
+                               ([&](StringOutputStream& sos)
+                                {
+                                    sos << "Connected Participant(s): ";
+                                    if (m_establishedParticipants.size() == 0)
+                                    {
+                                        sos << "None";
+                                    }
+                                    else
+                                    {
+                                        for (const auto& p : m_establishedParticipants)
                                         {
-                                            sos << "Connected Participant(s): ";
-                                            if (m_establishedParticipants.count() == 0)
-                                            {
-                                                sos << "None";
-                                            }
-                                            else
-                                            {
-                                                for (const auto& p : m_establishedParticipants)
-                                                {
-                                                    sos << p.key << "; ";
-                                                }
-                                            }
-                                        }));
-            });
+                                            sos << p.key << "; ";
+                                        }
+                                    }
+                                }));
+                });
+        else
+            LOG_INFO(CONTEXT_PERIODIC, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << "): Not connected");
     }
 
     // --- TCPConnectionSystem::Participant ---

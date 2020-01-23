@@ -37,11 +37,11 @@ int main(int argc, char* argv[])
 {
     // register at RAMSES daemon
     ramses::RamsesFramework framework(argc, argv);
-    ramses::RamsesClient ramses("ramses-example-basic-scenegraph", framework);
+    ramses::RamsesClient& ramses(*framework.createClient("ramses-example-basic-scenegraph"));
     framework.connect();
 
     // create a scene for distributing content
-    ramses::Scene* scene = ramses.createScene(123u, ramses::SceneConfig(), "basic scenegraph scene");
+    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic scenegraph scene");
 
     // every scene needs a render pass with camera
     ramses::Camera* camera = scene->createRemoteCamera("my camera");
@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
     ramses::SceneGraphIterator graphIterator(*group, ramses::ETreeTraversalStyle_DepthFirst);
     ramses::Node* nextNode;
     printf("Scene graph traversed in depth first order: \n");
-    while ((nextNode = graphIterator.getNext()) != 0)
+    while ((nextNode = graphIterator.getNext()) != nullptr)
     {
         printf("Node: %s \n", nextNode->getName());
     }
@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
     //example: how to iterate through objects of scene
     ramses::SceneObjectIterator iter(*scene, ramses::ERamsesObjectType_MeshNode);
     int numberOfMeshes = 0;
-    while (iter.getNext() != 0)
+    while (iter.getNext() != nullptr)
     {
         ++numberOfMeshes;
     }

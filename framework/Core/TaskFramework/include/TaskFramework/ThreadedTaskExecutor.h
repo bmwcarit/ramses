@@ -13,8 +13,6 @@
 #include "ITask.h"
 #include "TaskExecutingThreadPool.h"
 #include "TaskFramework/ProcessingTaskQueue.h"
-#include "PlatformAbstraction/PlatformConditionVariable.h"
-
 #include "ThreadWatchdogConfig.h"
 #include "Watchdog/PlatformWatchdog.h"
 #include "Collections/Vector.h"
@@ -45,7 +43,7 @@ namespace ramses_internal
          * @see ITaskChainComponent
          * @{
          */
-        virtual Bool enqueue(ITask& Task) override;
+        virtual bool enqueue(ITask& Task) override;
 
         /**
          * @}
@@ -82,14 +80,12 @@ namespace ramses_internal
          */
         TaskExecutingThreadPool m_threadPool;
 
-        Bool m_acceptingNewTasks;
-        mutable PlatformLightweightLock m_lock;
-
-        PlatformConditionVariable m_condVarQueueEmpty;
+        bool m_acceptingNewTasks;
+        mutable std::mutex m_lock;
 
         UInt32       m_numberOfThreads;
-        mutable PlatformLightweightLock m_aliveLock;
-        std::vector<Bool> m_aliveThreads;
+        mutable std::mutex m_aliveLock;
+        std::vector<bool> m_aliveThreads;
         PlatformWatchdog m_watchdogNotifier;
     };
 }

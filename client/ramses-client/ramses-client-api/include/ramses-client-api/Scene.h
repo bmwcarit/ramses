@@ -11,7 +11,6 @@
 
 #include "ramses-client-api/ClientObject.h"
 #include "ramses-client-api/TextureEnums.h"
-#include "ramses-client-api/AnimationSystemEnums.h"
 #include "ramses-client-api/EScenePublicationMode.h"
 #include "ramses-client-api/EDataType.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
@@ -28,12 +27,11 @@ namespace ramses
     class GeometryBinding;
     class SceneImpl;
     class RamsesClientImpl;
-    class AnimationSystem;
-    class AnimationSystemRealTime;
     class RenderGroup;
     class RenderPass;
     class RenderBuffer;
     class BlitPass;
+    class PickableObject;
     class RenderTarget;
     class RenderTargetDescription;
     class TextureSampler;
@@ -116,7 +114,7 @@ namespace ramses
         * @param[in] name The optional name of the Remote Camera
         * @return Pointer to the created RemoteCamera, null on failure
         */
-        RemoteCamera* createRemoteCamera(const char* name = 0);
+        RemoteCamera* createRemoteCamera(const char* name = nullptr);
 
         /**
         * @brief Creates a Perspective Camera in this Scene
@@ -124,7 +122,7 @@ namespace ramses
         * @param[in] name The optional name of the Camera
         * @return Pointer to the created Camera, null on failure
         */
-        PerspectiveCamera* createPerspectiveCamera(const char* name = 0);
+        PerspectiveCamera* createPerspectiveCamera(const char* name = nullptr);
 
         /**
         * @brief Creates a Orthographic Camera in this Scene
@@ -132,7 +130,7 @@ namespace ramses
         * @param[in] name The optional name of the Camera
         * @return Pointer to the created Camera, null on failure
         */
-        OrthographicCamera* createOrthographicCamera(const char* name = 0);
+        OrthographicCamera* createOrthographicCamera(const char* name = nullptr);
 
         /**
         * @brief Creates a new Appearance.
@@ -141,7 +139,7 @@ namespace ramses
         * @param[in] name The optional name of the created Appearance.
         * @return A pointer to the created Appearance, null on failure
         */
-        Appearance* createAppearance(const Effect& effect, const char* name = 0);
+        Appearance* createAppearance(const Effect& effect, const char* name = nullptr);
 
         /**
         * @brief Creates a new GeometryBinding.
@@ -150,7 +148,7 @@ namespace ramses
         * @param[in] name The optional name of the created GeometryBinding.
         * @return A pointer to the created GeometryBinding, null on failure
         */
-        GeometryBinding* createGeometryBinding(const Effect& effect, const char* name = 0);
+        GeometryBinding* createGeometryBinding(const Effect& effect, const char* name = nullptr);
 
         /**
         * @brief Create a Stream Texture
@@ -160,7 +158,7 @@ namespace ramses
         * @param[in] name The name of the Stream Texture.
         * @return A pointer to the created Stream Texture, null on failure.
         */
-        StreamTexture* createStreamTexture(const Texture2D& fallbackTexture, streamSource_t source, const char* name = 0);
+        StreamTexture* createStreamTexture(const Texture2D& fallbackTexture, streamSource_t source, const char* name = nullptr);
 
         /**
         * @brief Creates a scene graph node.
@@ -175,7 +173,7 @@ namespace ramses
         * @param[in] name Optional name of the object.
         * @return Pointer to the created Node, nullptr on failure.
         **/
-        Node* createNode(const char* name = 0);
+        Node* createNode(const char* name = nullptr);
 
         /**
          * @brief Creates a scene graph MeshNode.
@@ -185,7 +183,7 @@ namespace ramses
          * @param[in] name The optional name of the MeshNode.
          * @return Pointer to the created MeshNode, null on failure.
         */
-        MeshNode* createMeshNode(const char* name = 0);
+        MeshNode* createMeshNode(const char* name = nullptr);
 
         /**
         * @brief Destroys a previously created object using this scene
@@ -256,7 +254,7 @@ namespace ramses
         * @param[in] name The optional name of the created RenderGroup instance.
         * @return A pointer to the created RenderGroup, null on failure
         **/
-        RenderGroup* createRenderGroup(const char* name = 0);
+        RenderGroup* createRenderGroup(const char* name = nullptr);
 
         /**
         * @brief Create a render pass in the scene.
@@ -264,7 +262,7 @@ namespace ramses
         * @param[in] name The optional name of the created render pass.
         * @return A render pass.
         **/
-        RenderPass* createRenderPass(const char* name = 0);
+        RenderPass* createRenderPass(const char* name = nullptr);
 
         /**
         * @brief Create a blit pass in the scene.
@@ -276,7 +274,7 @@ namespace ramses
         * @param[in] name The optional name of the created blit pass.
         * @return A pointer to a BlitPass if successful or nullptr on failure.
         **/
-        BlitPass* createBlitPass(const RenderBuffer& sourceRenderBuffer, const RenderBuffer& destinationRenderBuffer, const char* name = 0);
+        BlitPass* createBlitPass(const RenderBuffer& sourceRenderBuffer, const RenderBuffer& destinationRenderBuffer, const char* name = nullptr);
 
         /**
         * @brief Create a RenderBuffer to be used with RenderTarget for rendering into and TextureSampler for sampling from.
@@ -292,7 +290,26 @@ namespace ramses
         * @param[in] name Optional name of the object.
         * @return Pointer to the created RenderBuffer, null on failure.
         **/
-        RenderBuffer* createRenderBuffer(uint32_t width, uint32_t height, ERenderBufferType bufferType, ERenderBufferFormat bufferFormat, ERenderBufferAccessMode accessMode, uint32_t sampleCount = 0u, const char* name = 0);
+        RenderBuffer* createRenderBuffer(uint32_t width, uint32_t height, ERenderBufferType bufferType, ERenderBufferFormat bufferFormat, ERenderBufferAccessMode accessMode, uint32_t sampleCount = 0u, const char* name = nullptr);
+
+        /**
+        * @brief Create a PickableObject.
+        * @details PickableObject provides a way to specify a 'pickable' area, when this area is picked (see ramses::RamsesRenderer API)
+        *          a message is sent to RamsesClient with list of picked objects, these can be dispatched and handled using ramses::IRendererEventHandler::objectsPicked.
+        *          Geometry to specify PickableObject has to be of data type ramses::EDataType::EDataType_Vector3F and every 3 elements are vertices forming a triangle.
+        *          Geometry will be interpreted as triangle list (no indices used) - it should be a simplified representation of the actual renderable geometry
+        *          that it is assigned to, typically a bounding box.
+        *          PickableObject is a ramses::Node and as such can be placed in scene transformation topology,
+        *          the vertices should therefore be in local (model) space and transformations will be applied according node topology when calculating picking.
+        *          Geometry is defined in 3D coordinates but does not have to be volumetric, in fact when combined with the right camera (ramses::PickableObject::setCamera)
+        *          it can represent a screen space area.
+        *
+        * @param[in] geometryBuffer Vertex buffer containing triangles defining geometry of PickableObject.
+        * @param[in] id User ID assigned to PickableObject, it will be used in callback ramses::IRendererEventHandler::objectsPicked when this PickableObject is picked.
+        * @param[in] name Name of the PickableObject.
+        * @return Pointer to the created PickableObject, nullptr on failure.
+        **/
+        PickableObject* createPickableObject(const VertexDataBuffer& geometryBuffer, const pickableObjectId_t id, const char* name = nullptr);
 
         /**
         * @brief Create a render target providing a set of RenderBuffers.
@@ -301,7 +318,7 @@ namespace ramses
         * @param[in] name Optional name of the object.
         * @return Pointer to the created RenderTarget, null on failure.
         **/
-        RenderTarget* createRenderTarget(const RenderTargetDescription& rtDesc, const char* name = 0);
+        RenderTarget* createRenderTarget(const RenderTargetDescription& rtDesc, const char* name = nullptr);
 
         /**
         * @brief Creates a texture sampler object.
@@ -323,7 +340,7 @@ namespace ramses
             ETextureSamplingMethod magSamplingMethod,
             const Texture2D& texture,
             uint32_t anisotropyLevel = 1,
-            const char* name = 0);
+            const char* name = nullptr);
 
         /**
         * @brief Creates a texture sampler object.
@@ -343,7 +360,7 @@ namespace ramses
             ETextureSamplingMethod minSamplingMethod,
             ETextureSamplingMethod magSamplingMethod,
             const Texture3D& texture,
-            const char* name = 0);
+            const char* name = nullptr);
 
         /**
         * @brief Creates a texture sampler object.
@@ -365,7 +382,7 @@ namespace ramses
             ETextureSamplingMethod magSamplingMethod,
             const TextureCube& texture,
             uint32_t anisotropyLevel = 1,
-            const char* name = 0);
+            const char* name = nullptr);
 
         /**
         * @brief Creates a texture sampler object.
@@ -387,7 +404,7 @@ namespace ramses
             ETextureSamplingMethod magSamplingMethod,
             const RenderBuffer& renderBuffer,
             uint32_t anisotropyLevel = 1,
-            const char* name = 0);
+            const char* name = nullptr);
 
         /**
         * @brief Creates a texture sampler object for mutable texture.
@@ -409,7 +426,7 @@ namespace ramses
             ETextureSamplingMethod magSamplingMethod,
             const Texture2DBuffer& texture2DBuffer,
             uint32_t anisotropyLevel = 1,
-            const char* name = 0);
+            const char* name = nullptr);
 
         /**
         * @brief Creates a texture sampler object.
@@ -427,84 +444,84 @@ namespace ramses
             ETextureSamplingMethod minSamplingMethod,
             ETextureSamplingMethod magSamplingMethod,
             const StreamTexture& streamTexture,
-            const char* name = 0);
+            const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type float.
         * @param[in] name optional name of the object.
         * @return Pointer to the created DataFloat, null on failure.
         */
-        DataFloat* createDataFloat(const char* name = 0);
+        DataFloat* createDataFloat(const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type Vector2f.
         * @param[in] name optional name of the object.
         * @return Pointer to the created DataVector2f, null on failure.
         */
-        DataVector2f* createDataVector2f(const char* name = 0);
+        DataVector2f* createDataVector2f(const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type Vector3f.
         * @param[in] name optional name of the object.
         * @return Pointer to the created DataVector3f, null on failure.
         */
-        DataVector3f* createDataVector3f(const char* name = 0);
+        DataVector3f* createDataVector3f(const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type Vector4f.
         * @param[in] name optional name of the object.
         * @return Pointer to the created DataVector4f, null on failure.
         */
-        DataVector4f* createDataVector4f(const char* name = 0);
+        DataVector4f* createDataVector4f(const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type Matrix22f.
         * @param[in] name optional name of the object.
         * @return Pointer to the created Matrix22f, null on failure.
         */
-        DataMatrix22f* createDataMatrix22f(const char* name = 0);
+        DataMatrix22f* createDataMatrix22f(const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type Matrix33f.
         * @param[in] name optional name of the object.
         * @return Pointer to the created Matrix33f, null on failure.
         */
-        DataMatrix33f* createDataMatrix33f(const char* name = 0);
+        DataMatrix33f* createDataMatrix33f(const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type Matrix44f.
         * @param[in] name optional name of the object.
         * @return Pointer to the created Matrix44f, null on failure.
         */
-        DataMatrix44f* createDataMatrix44f(const char* name = 0);
+        DataMatrix44f* createDataMatrix44f(const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type int32.
         * @param[in] name optional name of the object.
         * @return Pointer to the created DataInt32, null on failure.
         */
-        DataInt32* createDataInt32(const char* name = 0);
+        DataInt32* createDataInt32(const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type Vector2i.
         * @param[in] name optional name of the object.
         * @return Pointer to the created DataVector2i, null on failure.
         */
-        DataVector2i* createDataVector2i(const char* name = 0);
+        DataVector2i* createDataVector2i(const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type Vector3i.
         * @param[in] name optional name of the object.
         * @return Pointer to the created DataVector3i, null on failure.
         */
-        DataVector3i* createDataVector3i(const char* name = 0);
+        DataVector3i* createDataVector3i(const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type Vector4i.
         * @param[in] name optional name of the object.
         * @return Pointer to the created DataVector4i, null on failure.
         */
-        DataVector4i* createDataVector4i(const char* name = 0);
+        DataVector4i* createDataVector4i(const char* name = nullptr);
 
         /**
         * @brief Annotates a Node as a transformation data provider.
@@ -585,38 +602,6 @@ namespace ramses
         status_t createTextureConsumer(const TextureSampler& sampler, dataConsumerId_t dataId);
 
         /**
-        * @brief Create a new animation system. The animation system will be
-        * updated on renderer side after calls to AnimationSystem::setTime().
-        * The animation system is not automatically updated on client side.
-        * If live updates of animated values are needed on client side, provide
-        * the creation flag EAnimationSystemFlags_ClientSideProcessing. Calls to
-        * AnimationSystem::setTime() then also update the animation systems
-        * client side state.
-        *
-        * @param[in] flags Optional creation flags for the animation system.
-        * @param[in] name The optional name of the created animation system.
-        * @return A reference to the created animation system.
-        */
-        AnimationSystem* createAnimationSystem(uint32_t flags = EAnimationSystemFlags_Default, const char* name = 0);
-
-        /**
-        * @brief Create a new animation system that is designed to work with system
-        * time. The animation system will be updated automatically every frame on
-        * renderer side using its system time. The animation system is not
-        * automatically updated on client side. If live updates of animated values
-        * are needed on client side, provide the creation flag
-        * EAnimationSystemFlags_ClientSideProcessing, and make sure to call
-        * AnimationSystem::updateLocalTime() before accessing any values. Calls
-        * to AnimationSystem::updateLocalTime() are also mandatory before any
-        * client side changes to the state of the animation system.
-        *
-        * @param[in] flags Optional creation flags for the animation system.
-        * @param[in] name The optional name of the created animation system.
-        * @return A reference to the created animation system.
-        */
-        AnimationSystemRealTime* createRealTimeAnimationSystem(uint32_t flags = EAnimationSystemFlags_Default, const char* name = 0);
-
-        /**
         * @brief Create a new IndexDataBuffer. The created object can be used as a mutable resource
         * as index buffer in GeometryBinding. The created resource has mutable contents and immutable size that has to be specified
         * at creation time. Upon creation the contents of the resource data are undefined. The contents of the resource
@@ -627,7 +612,7 @@ namespace ramses
         * @param[in] name The optional name of the created index data buffer.
         * @return A reference to the created index data buffer.
         */
-        IndexDataBuffer* createIndexDataBuffer(uint32_t maximumSizeInBytes, EDataType dataType, const char* name = 0);
+        IndexDataBuffer* createIndexDataBuffer(uint32_t maximumSizeInBytes, EDataType dataType, const char* name = nullptr);
 
         /**
         * @brief Create a new VertexDataBuffer. The created object can be used as a mutable resource
@@ -640,7 +625,7 @@ namespace ramses
         * @param[in] name The optional name of the created vertex data buffer.
         * @return A reference to the created vertex data buffer.
         */
-        VertexDataBuffer* createVertexDataBuffer(uint32_t maximumSizeInBytes, EDataType dataType, const char* name = 0);
+        VertexDataBuffer* createVertexDataBuffer(uint32_t maximumSizeInBytes, EDataType dataType, const char* name = nullptr);
 
         /**
         * @brief Create a new Texture2DBuffer. The created object can be used as a mutable resource
@@ -658,7 +643,7 @@ namespace ramses
         * @param[in] name The optional name of the created Texture2DBuffer.
         * @return A reference to the created Texture2DBuffer.
         */
-        Texture2DBuffer* createTexture2DBuffer(uint32_t mipLevelCount, uint32_t width, uint32_t height, ETextureFormat textureFormat, const char* name = 0);
+        Texture2DBuffer* createTexture2DBuffer(uint32_t mipLevelCount, uint32_t width, uint32_t height, ETextureFormat textureFormat, const char* name = nullptr);
 
     protected:
         /**

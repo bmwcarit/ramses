@@ -12,9 +12,9 @@
 #include "Ramsh/RamshCommandArguments.h"
 #include "DisplayManager/IDisplayManager.h"
 
-namespace ramses_display_manager
+namespace ramses_internal
 {
-    class UnmapScene : public ramses_internal::RamshCommandArgs < uint64_t >
+    class UnmapScene : public RamshCommandArgs < uint64_t >
     {
     public:
         UnmapScene(IDisplayManager& displayManager);

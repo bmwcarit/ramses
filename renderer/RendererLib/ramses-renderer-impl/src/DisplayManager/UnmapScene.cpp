@@ -8,7 +8,7 @@
 
 #include "DisplayManager/UnmapScene.h"
 
-namespace ramses_display_manager
+namespace ramses_internal
 {
     UnmapScene::UnmapScene(IDisplayManager& displayManager)
         : m_displayManager(displayManager)
@@ -23,7 +23,7 @@ namespace ramses_display_manager
 
     bool UnmapScene::execute(uint64_t& sceneId) const
     {
-        m_displayManager.setSceneState(ramses::sceneId_t{ sceneId }, ramses_display_manager::SceneState::Available);
+        m_displayManager.setSceneState(ramses::sceneId_t{ sceneId }, SceneState::Available);
 
         return true;
     }

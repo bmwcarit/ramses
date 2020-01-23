@@ -33,106 +33,78 @@ namespace ramses_internal
             return m_typeID;
         }
 
-        virtual const SceneResourceData& getResourceData() const final override
+        virtual const ResourceBlob& getResourceData() const final override
         {
-            assert(m_data.get() != 0);
+            assert(m_data.data());
             return m_data;
         }
 
-        virtual const CompressedSceneResourceData& getCompressedResourceData() const final override
+        virtual const CompressedResouceBlob& getCompressedResourceData() const final override
         {
-            assert(m_compressedData.get() != 0);
+            assert(m_compressedData.data());
             return m_compressedData;
         }
 
-        virtual void setResourceData(const SceneResourceData& data) final override
+        virtual void setResourceData(ResourceBlob data) final override
         {
-            m_data = data;
-            m_compressedData.reset();
+            assert(data.size() > 0);
+            m_data = std::move(data);
+            m_uncompressedSize = static_cast<uint32_t>(m_data.size());
+            m_compressedData = CompressedResouceBlob();
             m_hash = ResourceContentHash::Invalid();
         }
 
-        virtual void setResourceData(const SceneResourceData& data, const ResourceContentHash& hash) final override
+        virtual void setResourceData(ResourceBlob data, const ResourceContentHash& hash) final override
         {
-            m_data = data;
-            m_compressedData.reset();
+            assert(data.size() > 0);
+            m_data = std::move(data);
+            m_uncompressedSize = static_cast<uint32_t>(m_data.size());
+            m_compressedData = CompressedResouceBlob();
             m_hash = hash;
         }
 
-        virtual void setCompressedResourceData(const CompressedSceneResourceData& compressedData, const ResourceContentHash& hash) final override
+        virtual void setCompressedResourceData(CompressedResouceBlob compressedData, uint32_t uncompressedSize, const ResourceContentHash& hash) final override
         {
-            m_data.reset();
-            m_compressedData = compressedData;
+            assert(compressedData.size() > 0);
+            assert(uncompressedSize > 0);
+            m_data = ResourceBlob();
+            m_compressedData = std::move(compressedData);
+            m_uncompressedSize = uncompressedSize;
             m_hash = hash;
         }
 
         virtual UInt32 getDecompressedDataSize() const override
         {
-            if (isCompressedAvailable())
-            {
-                return getCompressedResourceData()->getDecompressedSize();
-            }
-            else
-            {
-                return getResourceData()->size();
-            }
+            return m_uncompressedSize;
         }
 
         virtual UInt32 getCompressedDataSize() const override
         {
-            if (isCompressedAvailable())
-            {
-                return getCompressedResourceData()->size();
-            }
-            else
-            {
-                // 0 == not compressed
-                return 0u;
-            }
+            if (m_compressedData.data())
+                return static_cast<uint32_t>(m_compressedData.size());
+            // 0 == not compressed
+            return 0;
         }
 
         virtual const ResourceContentHash& getHash() const override
         {
             if (!m_hash.isValid())
-            {
                 updateHash();
-            }
             return m_hash;
         }
 
-        void compress(CompressionLevel level) const final override
+        void compress(CompressionLevel level) const final override;
+
+        void decompress() const final override;
+
+        bool isCompressedAvailable() const final override
         {
-            if (level != CompressionLevel::NONE &&
-                isCompressable() &&
-                !isCompressedAvailable() &&
-                m_data->size() > 1000) // only compress if it pays off
-            {
-                assert(m_data.get() != 0);
-                getHash(); // try calculate before uncompressed data is lost
-                const auto lz4Level = (level == CompressionLevel::REALTIME) ?
-                    LZ4CompressionUtils::CompressionLevel::Fast :
-                    LZ4CompressionUtils::CompressionLevel::High;
-                m_compressedData = CompressedSceneResourceData(new CompressedMemoryBlob(*m_data.get(), lz4Level));
-            }
+            return m_compressedData.data();
         }
 
-        void decompress() const final override
+        bool isDeCompressedAvailable() const final override
         {
-            if (m_data.get() == 0)
-            {
-                assert(m_compressedData.get() != 0);
-                m_data = SceneResourceData(new MemoryBlob(*m_compressedData.get()));
-            }
-        }
-
-        Bool isCompressedAvailable() const final override
-        {
-            return m_compressedData.get() != 0;
-        }
-
-        Bool isDeCompressedAvailable() const final override
-        {
-            return m_data.get() != 0;
+            return m_data.data();
         }
 
         ResourceCacheFlag getCacheFlag() const final override
@@ -160,9 +132,10 @@ namespace ramses_internal
 
     private:
         const EResourceType m_typeID;
-        mutable SceneResourceData m_data;
-        mutable CompressedSceneResourceData m_compressedData;
+        mutable ResourceBlob m_data;
+        mutable CompressedResouceBlob m_compressedData;
         mutable ResourceContentHash m_hash;
+        uint32_t m_uncompressedSize;
         ResourceCacheFlag m_cacheFlag;
         String m_name;
     };

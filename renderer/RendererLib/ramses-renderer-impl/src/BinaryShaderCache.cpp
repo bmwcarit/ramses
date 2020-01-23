@@ -9,6 +9,7 @@
 #include "ramses-renderer-api/BinaryShaderCache.h"
 #include "BinaryShaderCacheImpl.h"
 #include "SceneAPI/ResourceContentHash.h"
+#include "ramses-framework-api/RamsesFrameworkTypes.h"
 
 namespace ramses
 {
@@ -28,6 +29,11 @@ namespace ramses
         delete &impl;
     }
 
+    void BinaryShaderCache::deviceSupportsBinaryShaderFormats(const binaryShaderFormatId_t* supportedFormats, uint32_t numSupportedFormats)
+    {
+        impl.deviceSupportsBinaryShaderFormats(supportedFormats, numSupportedFormats);
+    }
+
     bool BinaryShaderCache::hasBinaryShader(effectId_t effectId) const
     {
         return impl.hasBinaryShader(EffectIdToResourceContentHash(effectId));
@@ -38,14 +44,14 @@ namespace ramses
         return impl.getBinaryShaderSize(EffectIdToResourceContentHash(effectId));
     }
 
-    uint32_t BinaryShaderCache::getBinaryShaderFormat(effectId_t effectId) const
+    binaryShaderFormatId_t BinaryShaderCache::getBinaryShaderFormat(effectId_t effectId) const
     {
         return impl.getBinaryShaderFormat(EffectIdToResourceContentHash(effectId));
     }
 
-    bool BinaryShaderCache::shouldBinaryShaderBeCached(effectId_t effectId) const
+    bool BinaryShaderCache::shouldBinaryShaderBeCached(effectId_t effectId, sceneId_t sceneId) const
     {
-        return impl.shouldBinaryShaderBeCached(EffectIdToResourceContentHash(effectId));
+        return impl.shouldBinaryShaderBeCached(EffectIdToResourceContentHash(effectId), ramses_internal::SceneId{ sceneId.getValue() });
     }
 
     void BinaryShaderCache::getBinaryShaderData(effectId_t effectId, uint8_t* buffer, uint32_t bufferSize) const
@@ -53,9 +59,9 @@ namespace ramses
         impl.getBinaryShaderData(EffectIdToResourceContentHash(effectId), buffer, bufferSize);
     }
 
-    void BinaryShaderCache::storeBinaryShader(effectId_t effectId, const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, uint32_t binaryShaderFormat)
+    void BinaryShaderCache::storeBinaryShader(effectId_t effectId, sceneId_t sceneId, const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, binaryShaderFormatId_t binaryShaderFormat)
     {
-        impl.storeBinaryShader(EffectIdToResourceContentHash(effectId), binaryShaderData, binaryShaderDataSize, binaryShaderFormat);
+        impl.storeBinaryShader(EffectIdToResourceContentHash(effectId), ramses_internal::SceneId{ sceneId.getValue() }, binaryShaderData, binaryShaderDataSize, binaryShaderFormat);
     }
 
     void BinaryShaderCache::saveToFile(const char* filePath) const

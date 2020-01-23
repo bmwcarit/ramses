@@ -19,13 +19,13 @@ namespace ramses_internal
         : ResourceBase(EResourceType_Effect, cacheFlag, name)
         , m_uniformInputs(uniformInputs)
         , m_attributeInputs(attributeInputs)
-        , m_fragmentShaderOffset(static_cast<UInt32>(vertexShader.getLength() + 1))
+        , m_fragmentShaderOffset(static_cast<UInt32>(vertexShader.size() + 1))
     {
-        const UInt32 dataLength = static_cast<UInt32>(vertexShader.getLength() + 1 + fragmentShader.getLength() + 1); // including 2x terminating '0'
-        MemoryBlob* blob = new MemoryBlob(dataLength);
-        PlatformMemory::Copy(blob->getRawData(), vertexShader.c_str(), vertexShader.getLength() + 1);
-        PlatformMemory::Copy(blob->getRawData() + m_fragmentShaderOffset, fragmentShader.c_str(), fragmentShader.getLength() + 1);
-        setResourceData(SceneResourceData(blob));
+        const UInt32 dataLength = static_cast<UInt32>(vertexShader.size() + 1 + fragmentShader.size() + 1); // including 2x terminating '0'
+        ResourceBlob blob(dataLength);
+        std::memcpy(blob.data(), vertexShader.c_str(), vertexShader.size() + 1);
+        std::memcpy(blob.data() + m_fragmentShaderOffset, fragmentShader.c_str(), fragmentShader.size() + 1);
+        setResourceData(std::move(blob));
     }
 
     EffectResource::EffectResource(const EffectInputInformationVector& uniformInputs, const EffectInputInformationVector& attributeInputs, const String& name, UInt32 fragmentShaderOffset, ResourceCacheFlag cacheFlag)
@@ -38,13 +38,13 @@ namespace ramses_internal
 
     const char* EffectResource::getVertexShader() const
     {
-        const char* data = reinterpret_cast<const char*>(getResourceData()->getRawData());
+        const char* data = reinterpret_cast<const char*>(getResourceData().data());
         return data;
     }
 
     const char* EffectResource::getFragmentShader() const
     {
-        const char* data = reinterpret_cast<const char*>(getResourceData()->getRawData());
+        const char* data = reinterpret_cast<const char*>(getResourceData().data());
         return data + m_fragmentShaderOffset;
     }
 

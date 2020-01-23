@@ -23,13 +23,10 @@ namespace ramses_internal
         void                                clearResourceChanges();
 
         // Renderable allocation
-        virtual void                        releaseRenderable(RenderableHandle renderableHandle) override;
         virtual void                        releaseDataInstance(DataInstanceHandle dataInstanceHandle) override;
         virtual void                        releaseTextureSampler(TextureSamplerHandle handle) override;
 
         // Renderable data (stuff required for rendering)
-        virtual void                        setRenderableEffect(RenderableHandle renderableHandle, const ResourceContentHash& effectHash) override;
-
         virtual void                        setDataSlotTexture(DataSlotHandle providerId, const ResourceContentHash& texture) override;
         virtual void                        setDataResource(DataInstanceHandle dataInstanceHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor) override;
         virtual TextureSamplerHandle        allocateTextureSampler(const TextureSampler& sampler, TextureSamplerHandle handle = TextureSamplerHandle::Invalid()) override;
@@ -45,6 +42,9 @@ namespace ramses_internal
 
         virtual DataSlotHandle              allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle = DataSlotHandle::Invalid()) override;
         virtual void                        releaseDataSlot(DataSlotHandle handle) override;
+
+        virtual DataLayoutHandle            allocateDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid()) override;
+        virtual void                        releaseDataLayout(DataLayoutHandle layoutHandle) override;
 
         virtual BlitPassHandle              allocateBlitPass(RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle = BlitPassHandle::Invalid()) override;
         virtual void                        releaseBlitPass(BlitPassHandle handle) override;

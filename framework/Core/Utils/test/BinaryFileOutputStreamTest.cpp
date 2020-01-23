@@ -80,9 +80,9 @@ namespace ramses_internal
         EXPECT_EQ(20.0f, floatConvert.floatVal);
 
         EXPECT_EQ(EStatus_RAMSES_OK, m_file.read(buffer, sizeof(uint32_t), numBytes));
-        EXPECT_EQ(EStatus_RAMSES_OK, m_file.read(buffer, sizeof(char) * m_testString.getLength(), numBytes));
-        buffer[m_testString.getLength()] = 0;
-        EXPECT_EQ(sizeof(char) * m_testString.getLength(), numBytes);
+        EXPECT_EQ(EStatus_RAMSES_OK, m_file.read(buffer, sizeof(char) * m_testString.size(), numBytes));
+        buffer[m_testString.size()] = 0;
+        EXPECT_EQ(sizeof(char) * m_testString.size(), numBytes);
         EXPECT_STREQ("Dies ist ein Text", buffer);
     }
 

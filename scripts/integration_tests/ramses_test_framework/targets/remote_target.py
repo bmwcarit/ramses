@@ -6,11 +6,11 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
+from __future__ import print_function
 import time
 import paramiko
 import socket
 import os
-import subprocess
 import posixpath
 import glob
 
@@ -91,9 +91,9 @@ class RemoteTarget(Target):
         else:
             return ""
 
-    def start_renderer(self, applicationName, args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}, dltAppID='REND', waitForDisplayManagerRamsh=True):
+    def start_renderer(self, applicationName, args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}, dltAppID='REND', waitForDisplayManagerRamsh=True, automap=False):
         extendedArgs = args + self._get_daemon_args(ramsesDaemonTarget)
-        return Target.start_renderer(self, applicationName, extendedArgs, workingDirectory, ramsesDaemonTarget, nameExtension, env, dltAppID, waitForDisplayManagerRamsh)
+        return Target.start_renderer(self, applicationName, extendedArgs, workingDirectory, ramsesDaemonTarget, nameExtension, env, dltAppID, waitForDisplayManagerRamsh, automap=automap)
 
     def start_client(self, applicationName, args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}, dltAppID=None):
         extendedArgs = args + self._get_daemon_args(ramsesDaemonTarget)

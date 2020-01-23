@@ -174,14 +174,14 @@ namespace ramses_internal
          * @param other Vector2i to compare to
          * @return true if both vectors are equal false otherwise
          */
-        Bool operator==(const Vector2i& other) const;
+        bool operator==(const Vector2i& other) const;
 
         /**
          * Compares each element to check if two vectors are not equal
          * @param other Vector2i to compare to
          * @return false if both vectors are equal true otherwise
          */
-        Bool operator!=(const Vector2i& other) const;
+        bool operator!=(const Vector2i& other) const;
 
         /**
          * Returns the element of the given index
@@ -257,7 +257,7 @@ namespace ramses_internal
 
     inline Float Vector2i::length() const
     {
-        return PlatformMath::Sqrt(static_cast<Float>(x*x + y*y));
+        return std::sqrt(static_cast<Float>(x*x + y*y));
     }
 
     inline Vector2i& Vector2i::operator=(const Vector2i& other)
@@ -290,12 +290,12 @@ namespace ramses_internal
         y -= other.y;
     }
 
-    inline Bool Vector2i::operator==(const Vector2i& other) const
+    inline bool Vector2i::operator==(const Vector2i& other) const
     {
         return PlatformMemory::Compare(data, other.data, sizeof(data)) == 0;
     }
 
-    inline Bool Vector2i::operator!=(const Vector2i& other) const
+    inline bool Vector2i::operator!=(const Vector2i& other) const
     {
         return !operator==(other);
     }
@@ -336,7 +336,7 @@ namespace ramses_internal
 
     inline Float Vector2i::angle(const Vector2i& other) const
     {
-        return PlatformMath::ArcCos(dot(other) / (length() * other.length()));
+        return std::acos(dot(other) / (length() * other.length()));
     }
 
     inline

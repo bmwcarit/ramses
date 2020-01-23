@@ -36,7 +36,7 @@ bool RamsesResourcePackerArguments::parseArguments(int argc, char const*const* a
         return false;
     }
 
-    m_outCompression = ramses_internal::ArgumentBool(parser, OUT_COMPRESSION_SHORT, OUT_COMPRESSION, false);
+    m_outCompression = ramses_internal::ArgumentBool(parser, OUT_COMPRESSION_SHORT, OUT_COMPRESSION);
 
     return true;
 }

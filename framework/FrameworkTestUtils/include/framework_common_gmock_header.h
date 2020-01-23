@@ -24,6 +24,7 @@ namespace ramses_internal
     class SceneActionCollection;
     class String;
     class RamshInput;
+    class Guid;
     struct SceneInfo;
 
     void PrintTo(const Matrix44f& matrix, ::std::ostream* os);

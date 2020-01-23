@@ -17,7 +17,7 @@ namespace ramses_internal
 
     RendererScenes::~RendererScenes()
     {
-        while (count() != 0u)
+        while (size() != 0u)
         {
             destroyScene(begin()->key);
         }

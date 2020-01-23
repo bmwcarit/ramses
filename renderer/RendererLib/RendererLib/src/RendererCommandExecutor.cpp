@@ -114,7 +114,7 @@ namespace ramses_internal
             {
                 const SceneMappingCommand& command = m_executedCommands.getCommandData<SceneMappingCommand>(i);
                 LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneId " << command.sceneId << " displayId " << command.displayHandle);
-                m_rendererSceneUpdater.handleSceneMappingRequest(command.sceneId, command.displayHandle, command.sceneRenderOrder);
+                m_rendererSceneUpdater.handleSceneMappingRequest(command.sceneId, command.displayHandle);
                 break;
             }
             case ERendererCommand_UnmapSceneFromDisplays:
@@ -146,11 +146,11 @@ namespace ramses_internal
                 {
                     m_renderer.getDisplayController(command.displayHandle).enableContext();
                     m_renderer.setWarpingMeshData(command.displayHandle, command.warpingData);
-                    m_rendererEventCollector.addEvent(ERendererEventType_WarpingDataUpdated, command.displayHandle);
+                    m_rendererEventCollector.addDisplayEvent(ERendererEventType_WarpingDataUpdated, command.displayHandle);
                 }
                 else
                 {
-                    m_rendererEventCollector.addEvent(ERendererEventType_WarpingDataUpdateFailed, command.displayHandle);
+                    m_rendererEventCollector.addDisplayEvent(ERendererEventType_WarpingDataUpdateFailed, command.displayHandle);
                 }
                 break;
             }
@@ -177,10 +177,10 @@ namespace ramses_internal
                 }
                 else
                 {
-                    if (command.filename.getLength() == 0u)
+                    if (command.filename.size() == 0u)
                     {
                         // only generate event when not saving pixels to file!
-                        m_rendererEventCollector.addEvent(ERendererEventType_ReadPixelsFromFramebufferFailed, command.displayHandle);
+                        m_rendererEventCollector.addReadPixelsEvent(ERendererEventType_ReadPixelsFromFramebufferFailed, command.displayHandle, {});
                     }
                     LOG_ERROR(CONTEXT_RENDERER, "RendererCommandExecutor::readPixels failed, unknown display " << command.displayHandle.asMemoryHandle());
                 }
@@ -190,15 +190,8 @@ namespace ramses_internal
             case ERendererCommand_SetClearColor:
             {
                 const auto& command = m_executedCommands.getCommandData<SetClearColorCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " displayId " << command.displayHandle);
-                if (m_renderer.hasDisplayController(command.displayHandle))
-                {
-                    m_renderer.setClearColor(command.displayHandle, command.clearColor);
-                }
-                else
-                {
-                    LOG_ERROR(CONTEXT_RENDERER, "RendererCommandExecutor::setClearColor failed, unknown display " << command.displayHandle.asMemoryHandle());
-                }
+                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " displayId " << command.displayHandle << " obHandle " << command.obHandle);
+                m_rendererSceneUpdater.handleSetClearColor(command.displayHandle, command.obHandle, command.clearColor);
                 break;
             }
             case ERendererCommand_RelativeTranslation:
@@ -281,7 +274,7 @@ namespace ramses_internal
                 const OffscreenBufferCommand& command = m_executedCommands.getCommandData<OffscreenBufferCommand>(i);
                 LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " displayId " << command.displayHandle << " bufferHandle " << command.bufferHandle);
                 const Bool succeeded = m_rendererSceneUpdater.handleBufferCreateRequest(command.bufferHandle, command.displayHandle, command.bufferWidth, command.bufferHeight, command.interruptible);
-                m_rendererEventCollector.addEvent((succeeded ? ERendererEventType_OffscreenBufferCreated : ERendererEventType_OffscreenBufferCreateFailed), command.bufferHandle, command.displayHandle);
+                m_rendererEventCollector.addOBEvent((succeeded ? ERendererEventType_OffscreenBufferCreated : ERendererEventType_OffscreenBufferCreateFailed), command.bufferHandle, command.displayHandle);
                 break;
             }
             case ERendererCommand_DestroyOffscreenBuffer:
@@ -289,23 +282,16 @@ namespace ramses_internal
                 const OffscreenBufferCommand& command = m_executedCommands.getCommandData<OffscreenBufferCommand>(i);
                 LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " displayId " << command.displayHandle << " bufferHandle " << command.bufferHandle);
                 const Bool succeeded = m_rendererSceneUpdater.handleBufferDestroyRequest(command.bufferHandle, command.displayHandle);
-                m_rendererEventCollector.addEvent((succeeded ? ERendererEventType_OffscreenBufferDestroyed : ERendererEventType_OffscreenBufferDestroyFailed), command.bufferHandle, command.displayHandle);
+                m_rendererEventCollector.addOBEvent((succeeded ? ERendererEventType_OffscreenBufferDestroyed : ERendererEventType_OffscreenBufferDestroyFailed), command.bufferHandle, command.displayHandle);
                 break;
             }
-            case ERendererCommand_AssignSceneToOffscreenBuffer:
+            case ERendererCommand_AssignSceneToDisplayBuffer:
             {
-                const OffscreenBufferCommand& command = m_executedCommands.getCommandData<OffscreenBufferCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneId " << command.assignedScene << " bufferHandle " << command.bufferHandle);
-                const Bool succeeded = m_rendererSceneUpdater.handleSceneOffscreenBufferAssignmentRequest(command.assignedScene, command.bufferHandle);
-                m_rendererEventCollector.addEvent((succeeded ? ERendererEventType_SceneAssignedToOffscreenBuffer : ERendererEventType_SceneAssignedToOffscreenBufferFailed), command.bufferHandle, command.assignedScene);
-                break;
-            }
-            case ERendererCommand_AssignSceneToFramebuffer:
-            {
-                const OffscreenBufferCommand& command = m_executedCommands.getCommandData<OffscreenBufferCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneId " << command.assignedScene);
-                const Bool succeeded = m_rendererSceneUpdater.handleSceneFramebufferAssignmentRequest(command.assignedScene);
-                m_rendererEventCollector.addEvent((succeeded ? ERendererEventType_SceneAssignedToFramebuffer : ERendererEventType_SceneAssignedToFramebufferFailed), command.assignedScene);
+                const auto& command = m_executedCommands.getCommandData<SceneMappingCommand>(i);
+                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneId " << command.sceneId << " bufferHandle " << command.offscreenBuffer);
+                const Bool succeeded = m_rendererSceneUpdater.handleSceneDisplayBufferAssignmentRequest(command.sceneId, command.offscreenBuffer, command.sceneRenderOrder);
+                m_rendererEventCollector.addSceneAssignEvent((succeeded ? ERendererEventType_SceneAssignedToDisplayBuffer : ERendererEventType_SceneAssignedToDisplayBufferFailed), command.offscreenBuffer,
+                    m_renderer.getDisplaySceneIsAssignedTo(command.sceneId), command.sceneId);
                 break;
             }
             case ERendererCommand_LogRendererInfo:
@@ -470,6 +456,13 @@ namespace ramses_internal
                 const SetFeatureCommand& command = m_executedCommands.getCommandData<SetFeatureCommand>(i);
                 LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " enable=" << command.enable);
                 m_renderer.setSkippingOfUnmodifiedBuffers(command.enable);
+                break;
+            }
+            case ERendererCommand_PickEvent:
+            {
+                const PickingCommand& command = m_executedCommands.getCommandData<PickingCommand>(i);
+                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " xCoordNormalizedToBufferSize=" << command.coordsNormalizedToBufferSize.x << " yCoordNormalizedToBufferSize=" << command.coordsNormalizedToBufferSize.y);
+                m_rendererSceneUpdater.handlePickEvent(command.sceneId, command.coordsNormalizedToBufferSize);
                 break;
             }
             default:

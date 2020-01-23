@@ -15,8 +15,6 @@
 
 namespace ramses_internal
 {
-    class Effect;
-
     enum EEffectInputTextureType
     {
         EEffectInputTextureType_Texture2D = 0,

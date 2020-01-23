@@ -26,13 +26,14 @@ void TextureRenderingTests::setUpTestCases(RendererTestsFramework& testFramework
 {
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_R8, *this, "TextureTest_Texture2D_Format_R8");
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_RG8, *this, "TextureTest_Texture2D_Format_RG8");
+    testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_Swizzled_Luminance_Alpha, *this, "TextureTest_Texture2D_Format_Swizzled_Luminance_Alpha");
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_RGB8, *this, "TextureTest_Texture2D_Format_RGB8");
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_RGB565, *this, "TextureTest_Texture2D_Format_RGB565");
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_RGBA8, *this, "TextureTest_Texture2D_Format_RGBA8");
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_RGBA4, *this, "TextureTest_Texture2D_Format_RGBA4");
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_RGBA5551, *this, "TextureTest_Texture2D_Format_RGBA5551");
-    testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_BGR8, *this, "TextureTest_Texture2D_Format_BGR8");
-    testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_BGRA8, *this, "TextureTest_Texture2D_Format_BGRA8");
+    testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_Swizzled_BGR8, *this, "TextureTest_Texture2D_Format_Swizzled_BGR8");
+    testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_Swizzled_BGRA8, *this, "TextureTest_Texture2D_Format_Swizzled_BGRA8");
 
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_R16F, *this, "TextureTest_Texture2D_Format_R16F");
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_R32F, *this, "TextureTest_Texture2D_Format_R32F");
@@ -98,6 +99,8 @@ bool TextureRenderingTests::run(RendererTestsFramework& testFramework, const Ren
         return runBasicTest<Texture2DFormatScene>(testFramework, Texture2DFormatScene::EState_R8, "Texture2DFormatScene_R8");
     case TextureTest_Texture2D_Format_RG8:
         return runBasicTest<Texture2DFormatScene>(testFramework, Texture2DFormatScene::EState_RG8, "Texture2DFormatScene_RG8");
+    case TextureTest_Texture2D_Format_Swizzled_Luminance_Alpha:
+        return runBasicTest<Texture2DFormatScene>(testFramework, Texture2DFormatScene::EState_Swizzled_Luminance_Alpha, "Texture2DFormatScene_Swizzled_Luminance_Alpha");
     case TextureTest_Texture2D_Format_RGB8:
         return runBasicTest<Texture2DFormatScene>(testFramework, Texture2DFormatScene::EState_RGB8, "Texture2DFormatScene_RGB8");
     case TextureTest_Texture2D_Format_RGB565:
@@ -134,10 +137,10 @@ bool TextureRenderingTests::run(RendererTestsFramework& testFramework, const Ren
     case TextureTest_Texture2D_Format_ASTC_SRGB_ALPHA_4x4:
         return runBasicTest<Texture2DFormatScene>(testFramework, Texture2DFormatScene::EState_ASTC_SRGB_ALPHA_4x4, "Texture2DFormatScene_ASTC_SRGB_ALPHA_4x4");
 
-    case TextureTest_Texture2D_Format_BGR8:
-        return runBasicTest<Texture2DFormatScene>(testFramework, Texture2DFormatScene::EState_BGR8, "Texture2DFormatScene_BGR8");
-    case TextureTest_Texture2D_Format_BGRA8:
-        return runBasicTest<Texture2DFormatScene>(testFramework, Texture2DFormatScene::EState_BGRA8, "Texture2DFormatScene_BGRA8");
+    case TextureTest_Texture2D_Format_Swizzled_BGR8:
+        return runBasicTest<Texture2DFormatScene>(testFramework, Texture2DFormatScene::EState_Swizzled_BGR8, "Texture2DFormatScene_Swizzled_BGR8");
+    case TextureTest_Texture2D_Format_Swizzled_BGRA8:
+        return runBasicTest<Texture2DFormatScene>(testFramework, Texture2DFormatScene::EState_Swizzled_BGRA8, "Texture2DFormatScene_Swizzled_BGRA8");
     case TextureTest_Texture2D_Format_ETC2RGB:
         return runBasicTest<Texture2DFormatScene>(testFramework, Texture2DFormatScene::EState_ETC2RGB, "Texture2DFormatScene_ETC2RGB");
     case TextureTest_Texture2D_Format_ETC2RGBA:

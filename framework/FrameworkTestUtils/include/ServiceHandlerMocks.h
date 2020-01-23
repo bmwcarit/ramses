@@ -19,7 +19,7 @@ namespace ramses_internal
     {
     public:
         ResourceConsumerServiceHandlerMock();
-        ~ResourceConsumerServiceHandlerMock() override;
+        virtual ~ResourceConsumerServiceHandlerMock() override;
 
         MOCK_METHOD2(handleSendResource, void(const ByteArrayView& data, const Guid& providerID));
         MOCK_METHOD2(handleResourcesNotAvailable, void(const ResourceContentHashVector& resources, const Guid& providerID));
@@ -29,7 +29,7 @@ namespace ramses_internal
     {
     public:
         ResourceProviderServiceHandlerMock();
-        ~ResourceProviderServiceHandlerMock() override;
+        virtual ~ResourceProviderServiceHandlerMock() override;
 
         MOCK_METHOD3(handleRequestResources, void(const ResourceContentHashVector& resources, UInt32 chunkSize, const Guid& requesterId));
     };
@@ -38,7 +38,7 @@ namespace ramses_internal
     {
     public:
         SceneProviderServiceHandlerMock();
-        ~SceneProviderServiceHandlerMock() override;
+        virtual ~SceneProviderServiceHandlerMock() override;
 
         MOCK_METHOD2(handleSubscribeScene, void(const SceneId& sceneId, const Guid& consumerID));
         MOCK_METHOD2(handleUnsubscribeScene, void(const SceneId& sceneId, const Guid& consumerID));
@@ -48,7 +48,7 @@ namespace ramses_internal
     {
     public:
         SceneRendererServiceHandlerMock();
-        ~SceneRendererServiceHandlerMock() override;
+        virtual ~SceneRendererServiceHandlerMock() override;
 
         MOCK_METHOD3(handleNewScenesAvailable, void(const SceneInfoVector& newScenes, const Guid& providerID, EScenePublicationMode publicationMode));
         MOCK_METHOD2(handleScenesBecameUnavailable, void(const SceneInfoVector& unavailableScenes, const Guid& providerID));
@@ -67,7 +67,7 @@ namespace ramses_internal
     {
     public:
         DcsmProviderServiceHandlerMock();
-        ~DcsmProviderServiceHandlerMock() override;
+        virtual ~DcsmProviderServiceHandlerMock() override;
 
         MOCK_METHOD4(handleCanvasSizeChange, void(ContentID contentID, SizeInfo sizeinfo, AnimationInformation, const Guid& consumerID));
         MOCK_METHOD5(handleContentStateChange, void(ContentID contentID, EDcsmState status, SizeInfo, AnimationInformation, const Guid& consumerID));
@@ -77,13 +77,14 @@ namespace ramses_internal
     {
     public:
         DcsmConsumerServiceHandlerMock();
-        ~DcsmConsumerServiceHandlerMock() override;
+        virtual ~DcsmConsumerServiceHandlerMock() override;
 
         MOCK_METHOD3(handleOfferContent, void(ContentID contentID, Category, const Guid& providerID));
         MOCK_METHOD4(handleContentReady, void(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID));
         MOCK_METHOD2(handleContentFocusRequest, void(ContentID contentID, const Guid& providerID));
         MOCK_METHOD2(handleRequestStopOfferContent, void(ContentID contentID, const Guid& providerID));
         MOCK_METHOD2(handleForceStopOfferContent, void(ContentID contentID, const Guid& providerID));
+        MOCK_METHOD3(handleUpdateContentMetadata, void(ContentID contentID, DcsmMetadata metadata, const Guid& providerID));
     };
 }
 

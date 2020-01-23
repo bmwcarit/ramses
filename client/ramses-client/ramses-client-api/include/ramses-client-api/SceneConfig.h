@@ -11,6 +11,7 @@
 
 #include "ramses-framework-api/StatusObject.h"
 #include "ramses-client-api/EScenePublicationMode.h"
+#include "ramses-client-api/EVisibilityMode.h"
 
 namespace ramses
 {

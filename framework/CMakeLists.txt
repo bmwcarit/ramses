@@ -18,6 +18,8 @@ target_include_directories(ramses-framework-api INTERFACE ${RAMSES_FRAMEWORK_API
 
 IF (ramses-sdk_ENABLE_TCP_SUPPORT)
     SET(ramses-framework-TCP_MIXIN
+        DEPENDENCIES            asio
+
         INCLUDE_BASE            Communication/TransportTCP/include
         FILES_PRIVATE_HEADER    Communication/TransportTCP/include/TransportTCP/*.h
         FILES_SOURCE            Communication/TransportTCP/src/*.cpp)
@@ -54,7 +56,7 @@ ACME_MODULE(
     #==========================================================================
     NAME                    ramses-framework
     TYPE                    STATIC_LIBRARY
-    ENABLE_INSTALL          ${ramses-sdk_INSTALL_STATIC_LIBS}
+    ENABLE_INSTALL          OFF
 
     #==========================================================================
     # files of this module
@@ -74,11 +76,11 @@ ACME_MODULE(
     FILES_PRIVATE_HEADER    PlatformAbstraction/include/*.h
                             PlatformAbstraction/include/Collections/*.h
                             PlatformAbstraction/include/PlatformAbstraction/*.h
-                            PlatformAbstraction/include/PlatformAbstraction/arch/*/*.h
+                            PlatformAbstraction/include/PlatformAbstraction/internal/*.h
     FILES_SOURCE            PlatformAbstraction/src/*.cpp
     DEPENDENCIES            ramses-capu
                             lz4
-                            asio
+                            fmt::fmt
 
     INCLUDE_BASE            Core/Math3d/include
     FILES_PRIVATE_HEADER    Core/Math3d/include/Math3d/*.h
@@ -105,6 +107,7 @@ ACME_MODULE(
 
     INCLUDE_BASE            SceneGraph/SceneAPI/include
     FILES_PRIVATE_HEADER    SceneGraph/SceneAPI/include/SceneAPI/*.h
+    FILES_SOURCE            SceneGraph/SceneAPI/src/*.cpp
 
     INCLUDE_BASE            SceneGraph/Scene/include
     FILES_PRIVATE_HEADER    SceneGraph/Scene/include/Scene/*.h
@@ -123,13 +126,6 @@ ACME_MODULE(
     INCLUDE_BASE            Collision/include
     FILES_PRIVATE_HEADER    Collision/include/Collision/*.h
     FILES_SOURCE            Collision/src/*.cpp
-
-    INCLUDE_BASE            Animation/Animation/include
-    FILES_PRIVATE_HEADER    Animation/Animation/include/Animation/*.h
-    FILES_SOURCE            Animation/Animation/src/*.cpp
-
-    INCLUDE_BASE            Animation/AnimationAPI/include
-    FILES_PRIVATE_HEADER    Animation/AnimationAPI/include/AnimationAPI/*.h
 
     INCLUDE_BASE            Communication/TransportCommon/include
     FILES_PRIVATE_HEADER    Communication/TransportCommon/include/TransportCommon/*.h
@@ -276,13 +272,13 @@ ACME_MODULE(
     FILES_PRIVATE_HEADER    SceneGraph/Resource/test/*.h
     FILES_SOURCE            SceneGraph/Resource/test/*.cpp
 
+    INCLUDE_BASE            SceneGraph/SceneAPI/test
+    FILES_PRIVATE_HEADER    SceneGraph/SceneAPI/test/*.h
+    FILES_SOURCE            SceneGraph/SceneAPI/test/*.cpp
+
     INCLUDE_BASE            Effect/test
     FILES_PRIVATE_HEADER    Effect/test/*.h
     FILES_SOURCE            Effect/test/*.cpp
-
-    INCLUDE_BASE            Animation/Animation/test
-    FILES_PRIVATE_HEADER    Animation/Animation/test/*.h
-    FILES_SOURCE            Animation/Animation/test/*.cpp
 
     INCLUDE_BASE            Communication/TransportCommon/test
     FILES_PRIVATE_HEADER    Communication/TransportCommon/test/*.h

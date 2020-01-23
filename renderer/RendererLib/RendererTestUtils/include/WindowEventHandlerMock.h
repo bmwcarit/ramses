@@ -27,6 +27,7 @@ namespace ramses_internal
         MOCK_METHOD3(onKeyEvent, void(EKeyEventType event, UInt32 modifiers, EKeyCode keyCode));
         MOCK_METHOD3(onMouseEvent, void(EMouseEventType event, Int32 posX, Int32 posY));
         MOCK_METHOD0(onClose, void());
+        MOCK_METHOD2(onWindowMove, void(Int32 posX, Int32 posY));
     };
 }
 

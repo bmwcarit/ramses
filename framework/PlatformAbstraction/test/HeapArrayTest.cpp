@@ -75,4 +75,19 @@ namespace ramses_internal
         ASSERT_EQ(4u, b.size());
         EXPECT_EQ(0, PlatformMemory::Compare(b.data(), data, 4));
     }
+
+    TEST(AHeapArray, canBeStronglyTyped)
+    {
+        using STHeapArray = HeapArray<Byte, struct SomeTag>;
+        STHeapArray a(10);
+        STHeapArray b;
+        b = std::move(a);
+    }
+
+    TEST(AHeapArray, canBeReconstructedWithOtherSize)
+    {
+        HeapArray<Byte> a(4);
+        HeapArray<Byte> b(2, std::move(a));
+        EXPECT_EQ(2u, b.size());
+    }
 }

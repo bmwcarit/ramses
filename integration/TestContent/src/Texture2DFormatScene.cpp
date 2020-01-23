@@ -18,6 +18,8 @@
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/OrthographicCamera.h"
+#include "ramses-client-api/TextureSwizzle.h"
+#include "ramses-client-api/TextureEnums.h"
 
 
 /*
@@ -107,7 +109,7 @@ const ramses::MipLevelData mipLevelData_bgra8(sizeof(bgra8Data), reinterpret_cas
 
 const uint64_t ETC2RGB[] =
 {
-    0xefee0f00efcaf004
+    0xefee1f11fd7fbb7b
 };
 const ramses::MipLevelData mipLevelData_etc2rgb(sizeof(ETC2RGB), reinterpret_cast<const uint8_t*>(ETC2RGB));
 
@@ -232,14 +234,20 @@ namespace ramses_internal
         createOrthoCamera();
 
         ramses::ETextureFormat format(ramses::ETextureFormat_R8);
-        const ramses::MipLevelData& mipLevelData = getTextureFormatAndData(static_cast<EState>(state), format);
+        uint32_t width = 0u;
+        uint32_t height = 0u;
+
+        ramses::TextureSwizzle swizzle = {};
+        const ramses::MipLevelData& mipLevelData = getTextureFormatAndData(static_cast<EState>(state), format, width, height, swizzle);
 
         ramses::Texture2D* texture = m_client.createTexture2D(
-            2, 2,
+            width,
+            height,
             format,
             1,
             &mipLevelData,
-            false);
+            false,
+            swizzle);
 
         ramses::TextureSampler* sampler = m_scene.createTextureSampler(
             ramses::ETextureAddressMode_Repeat,
@@ -282,7 +290,7 @@ namespace ramses_internal
         const ramses::Vector2fArray* textureCoords = m_client.createConstVector2fArray(4, textureCoordsArray);
 
         ramses::Effect* effect = getTestEffect("ramses-test-client-textured");
-        assert(effect != 0);
+        assert(effect != nullptr);
 
         ramses::AttributeInput positionsInput;
         ramses::AttributeInput texCoordsInput;
@@ -307,14 +315,21 @@ namespace ramses_internal
         mesh->setGeometryBinding(*geometry);
     }
 
-    const ramses::MipLevelData& Texture2DFormatScene::getTextureFormatAndData(EState state, ramses::ETextureFormat &format) const
+    const ramses::MipLevelData& Texture2DFormatScene::getTextureFormatAndData(EState state, ramses::ETextureFormat& format, uint32_t& width, uint32_t& height, ramses::TextureSwizzle& swizzle) const
     {
+        width = 2u;
+        height = 2u;
+
         switch (state)
         {
         case EState_R8:
             format = ramses::ETextureFormat_R8;
             return mipLevelData_r8;
         case EState_RG8:
+            format = ramses::ETextureFormat_RG8;
+            return mipLevelData_rg8;
+        case EState_Swizzled_Luminance_Alpha:
+            swizzle = { ramses::ETextureChannelColor::Red, ramses::ETextureChannelColor::Red, ramses::ETextureChannelColor::Red, ramses::ETextureChannelColor::Green };
             format = ramses::ETextureFormat_RG8;
             return mipLevelData_rg8;
         case EState_RGB8:
@@ -332,17 +347,23 @@ namespace ramses_internal
         case EState_RGBA5551:
             format = ramses::ETextureFormat_RGBA5551;
             return mipLevelData_rgba5551;
-        case EState_BGR8:
-            format = ramses::ETextureFormat_BGR8;
+        case EState_Swizzled_BGR8:
+            swizzle = { ramses::ETextureChannelColor::Blue, ramses::ETextureChannelColor::Green, ramses::ETextureChannelColor::Red, ramses::ETextureChannelColor::Alpha };
+            format = ramses::ETextureFormat_RGB8;
             return mipLevelData_bgr8;
-        case EState_BGRA8:
-            format = ramses::ETextureFormat_BGRA8;
+        case EState_Swizzled_BGRA8:
+            swizzle = { ramses::ETextureChannelColor::Blue, ramses::ETextureChannelColor::Green, ramses::ETextureChannelColor::Red, ramses::ETextureChannelColor::Alpha };
+            format = ramses::ETextureFormat_RGBA8;
             return mipLevelData_bgra8;
         case EState_ETC2RGB:
             format = ramses::ETextureFormat_ETC2RGB;
+            width = 4u;
+            height = 4u;
             return mipLevelData_etc2rgb;
         case EState_ETC2RGBA:
             format = ramses::ETextureFormat_ETC2RGBA;
+            width = 4u;
+            height = 4u;
             return mipLevelData_etc2rgba;
 
         case EState_R16F:
@@ -379,9 +400,13 @@ namespace ramses_internal
 
         case EState_ASTC_RGBA_4x4:
             format = ramses::ETextureFormat_ASTC_RGBA_4x4;
+            width = 4u;
+            height = 4u;
             return mipLevelData_astcRGBA4x4Data;
         case EState_ASTC_SRGB_ALPHA_4x4:
             format = ramses::ETextureFormat_ASTC_SRGBA_4x4;
+            width = 4u;
+            height = 4u;
             return mipLevelData_astcSRGB_Alpha_4x4Data;
 
         default:

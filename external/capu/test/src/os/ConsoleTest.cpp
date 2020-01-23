@@ -14,54 +14,34 @@
  * limitations under the License.
  */
 
-#include "ConsoleTest.h"
-#include "ramses-capu/util/Runnable.h"
-#include "ramses-capu/os/Thread.h"
+#include "ramses-capu/os/Console.h"
+#include "gmock/gmock.h"
+#include <thread>
 
 namespace ramses_capu
 {
-    ConsoleTest::ConsoleTest()
+    class ConsoleTest : public testing::Test
     {
-    }
-
-    ConsoleTest::~ConsoleTest()
-    {
-    }
-
-    TEST_F(ConsoleTest, Print)
-    {
-        Console::Print("The Message\n");
-    }
-
-    TEST_F(ConsoleTest, PrintColor)
-    {
-        Console::Print(Console::GREEN, "The Message\n");
-    }
-
-    // Console must be tested manually
-    TEST_F(ConsoleTest, DISABLED_CheckForInput)
-    {
-        EXPECT_FALSE(Console::IsInputAvailable());
-    }
+    };
 
     // Disabled tests can be forcefully enabled from commandline to test this
     TEST_F(ConsoleTest, DISABLED_ReadChar)
     {
         char readChar = '\0';
         status_t status = Console::ReadChar(readChar);
-        Console::Print("I have read: %c\n",readChar);
+        printf("I have read: %c\n",readChar);
         EXPECT_EQ(CAPU_OK, status);
         status = Console::ReadChar(readChar);
-        Console::Print("I have read: %c\n", readChar);
+        printf("I have read: %c\n", readChar);
         EXPECT_EQ(CAPU_OK, status);
         status = Console::ReadChar(readChar);
-        Console::Print("I have read: %c\n", readChar);
+        printf("I have read: %c\n", readChar);
         EXPECT_EQ(CAPU_OK, status);
         status = Console::ReadChar(readChar);
-        Console::Print("I have read: %c\n", readChar);
+        printf("I have read: %c\n", readChar);
         EXPECT_EQ(CAPU_OK, status);
         status = Console::ReadChar(readChar);
-        Console::Print("I have read: %c\n", readChar);
+        printf("I have read: %c\n", readChar);
         EXPECT_EQ(CAPU_OK, status);
     }
 
@@ -74,25 +54,17 @@ namespace ramses_capu
             EXPECT_NE(CAPU_OK, status);
     }
 
-    class CallInteruptAfter1Second : public Runnable
-    {
-    public:
-        virtual void run()
-        {
-            Thread::Sleep(1000);
-            Console::InterruptReadChar();
-        }
-    };
-
     // Disabled tests can be forcefully enabled from commandline to test this
     TEST_F(ConsoleTest, DISABLED_ReadChar_Interupt)
     {
-        CallInteruptAfter1Second interupter;
-        Thread t;
-        t.start(interupter);
+        std::thread t([]() {
+                          std::this_thread::sleep_for(std::chrono::seconds(1));
+                          Console::InterruptReadChar();
+                      });
         char buffer;
         status_t status = Console::ReadChar(buffer);
         EXPECT_EQ(CAPU_INTERRUPTED, status);
+        t.join();
     }
 
 }

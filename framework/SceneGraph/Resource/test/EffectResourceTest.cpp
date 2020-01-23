@@ -11,7 +11,7 @@
 #include "Resource/EffectResource.h"
 #include "Utils/BinaryOutputStream.h"
 #include "Utils/BinaryInputStream.h"
-#include "Utils/ScopedPointer.h"
+#include <memory>
 
 namespace ramses_internal
 {
@@ -42,7 +42,8 @@ namespace ramses_internal
             {
                 return nullptr;
             }
-            resource->setResourceData(effectResource.getResourceData());
+            const auto& resourceData = effectResource.getResourceData();
+            resource->setResourceData(ResourceBlob(resourceData.size(), resourceData.data()));
             return resource->convertTo<EffectResource>();
         }
 
@@ -126,8 +127,8 @@ namespace ramses_internal
     TEST_F(AEffectResource, hasCorrectTypeAfterSerializeAndDeserialize)
     {
         EffectResource effectBefore("asd", "def", uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
-        ScopedPointer<EffectResource> effectAfter(serializeDeserialize(effectBefore, ""));
-        ASSERT_TRUE(effectAfter.get() != nullptr);
+        std::unique_ptr<EffectResource> effectAfter(serializeDeserialize(effectBefore, ""));
+        ASSERT_TRUE(effectAfter);
 
         EXPECT_EQ(EResourceType_Effect, effectAfter->getTypeID());
     }
@@ -135,8 +136,8 @@ namespace ramses_internal
     TEST_F(AEffectResource, isEqualAfterSerializeAndDeserialize)
     {
         EffectResource effectBefore("asd", "def", uniformInputs, attributeInputs, "", ResourceCacheFlag(15u));
-        ScopedPointer<EffectResource> effectAfter(serializeDeserialize(effectBefore, ""));
-        ASSERT_TRUE(effectAfter.get() != nullptr);
+        std::unique_ptr<EffectResource> effectAfter(serializeDeserialize(effectBefore, ""));
+        ASSERT_TRUE(effectAfter);
 
         EXPECT_EQ(effectBefore.getHash(), effectAfter->getHash());
         EXPECT_STREQ(effectBefore.getVertexShader(), effectAfter->getVertexShader());
@@ -149,8 +150,8 @@ namespace ramses_internal
     TEST_F(AEffectResource, hasNameProvidedToSerializeAfterSerializeAndDeserialize)
     {
         EffectResource effectBefore("asd", "def", uniformInputs, attributeInputs, "some name", ResourceCacheFlag(0u));
-        ScopedPointer<EffectResource> effectAfter(serializeDeserialize(effectBefore, "different name"));
-        ASSERT_TRUE(effectAfter.get() != nullptr);
+        std::unique_ptr<EffectResource> effectAfter(serializeDeserialize(effectBefore, "different name"));
+        ASSERT_TRUE(effectAfter);
 
         EXPECT_EQ(String("different name"), effectAfter->getName());
     }

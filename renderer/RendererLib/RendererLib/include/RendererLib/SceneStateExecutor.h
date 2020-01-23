@@ -54,6 +54,7 @@ namespace ramses_internal
 
         ESceneState getSceneState(SceneId sceneId) const;
         EScenePublicationMode getScenePublicationMode(SceneId sceneId) const;
+        Guid getSceneClientGuid(SceneId sceneId) const;
 
     private:
         void rollBackToUnsubscribedAndTriggerIndirectEvents(ESceneState sceneState, SceneId sceneId);

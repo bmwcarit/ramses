@@ -189,7 +189,7 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
         {
             ramses::Scene& scene = testFramework.getScenesRegistry().getScene(providerSceneId);
             ramses::RamsesObject* provider = scene.findObjectByName("transform provider");
-            assert(provider != NULL);
+            assert(provider != nullptr);
 
             scene.destroy(ramses::RamsesObjectTypeUtils::ConvertTo<ramses::SceneObject>(*provider));
             scene.flush();
@@ -198,7 +198,7 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
         {
             ramses::Scene& scene = testFramework.getScenesRegistry().getScene(consumerSceneId);
             ramses::RamsesObject* consumer = scene.findObjectByName("transform consumer");
-            assert(consumer != NULL);
+            assert(consumer != nullptr);
 
             scene.destroy(ramses::RamsesObjectTypeUtils::ConvertTo<ramses::SceneObject>(*consumer));
             scene.flush();

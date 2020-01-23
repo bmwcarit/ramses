@@ -13,7 +13,6 @@
 #include "Scene/SceneActionApplier.h"
 #include "Scene/SceneActionCollectionCreator.h"
 #include "Scene/SceneResourceUtils.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "Utils/LogMacros.h"
 #include "Utils/StatisticCollection.h"
@@ -27,7 +26,7 @@ namespace ramses_internal
     {
     }
 
-    void ClientSceneLogicDirect::flushSceneActions(ESceneFlushMode flushMode, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag)
+    void ClientSceneLogicDirect::flushSceneActions(const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag)
     {
         const SceneSizeInformation sceneSizes(m_scene.getSceneSizeInformation());
 
@@ -59,7 +58,6 @@ namespace ramses_internal
             SceneActionCollectionCreator creator(collection);
             creator.flush(
                 m_flushCounter,
-                flushMode == ESceneFlushMode_Synchronous,
                 sceneSizes > m_previousSceneSizes,
                 sceneSizes,
                 m_scene.getResourceChanges(),
@@ -78,7 +76,7 @@ namespace ramses_internal
             m_scene.getStatisticCollection().statSceneActionsGeneratedSize.incCounter(static_cast<UInt32>(collection.collectionData().size()));
         }
 
-        LOG_DEBUG_F(CONTEXT_CLIENT, ([&](StringOutputStream& sos) { printFlushInfo(sos, "ClientSceneLogicDirect::flushSceneActions", collection, flushMode); }));
+        LOG_DEBUG_F(CONTEXT_CLIENT, ([&](StringOutputStream& sos) { printFlushInfo(sos, "ClientSceneLogicDirect::flushSceneActions", collection); }));
 
         if (isPublished() && !m_subscribersActive.empty())
         {

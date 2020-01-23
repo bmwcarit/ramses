@@ -13,7 +13,6 @@
 #include "Utils/BinaryFileOutputStream.h"
 #include "Utils/Adler32Checksum.h"
 #include "PlatformAbstraction/PlatformMemory.h"
-#include "SceneAPI/SceneResourceData.h"
 #include "TransportCommon/RamsesTransportProtocolVersion.h"
 
 namespace ramses
@@ -124,7 +123,7 @@ namespace ramses
             return false;
         }
 
-        return cacheFlag.getValue() != ramses_internal::ResourceCacheFlag_DoNotCache.getValue();
+        return cacheFlag.getValue() != ResourceCacheFlag_DoNotCache.getValue();
     }
 
     void DefaultRendererResourceCacheImpl::storeResource(rendererResourceId_t resourceId, const uint8_t* resourceData, uint32_t resourceDataSize, resourceCacheFlag_t cacheFlag, sceneId_t sceneId)

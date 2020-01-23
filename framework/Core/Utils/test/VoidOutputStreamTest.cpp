@@ -37,9 +37,9 @@ namespace ramses_internal
 
     TEST_F(VoidOutputStreamTest, InsertBool)
     {
-        const Bool value = true;
+        const bool value = true;
         stream << value;
-        EXPECT_EQ( sizeof(Bool),  stream.getSize());
+        EXPECT_EQ( sizeof(bool),  stream.getSize());
     }
 
     TEST_F(VoidOutputStreamTest, InsertInt32)
@@ -87,7 +87,7 @@ namespace ramses_internal
     TEST_F(VoidOutputStreamTest, InsertString)
     {
         const String value("Hello World with a lot of characters");
-        const UInt32 expectedSize = sizeof(UInt32) + static_cast<UInt32>(value.getLength()); // length info + string
+        const UInt32 expectedSize = sizeof(UInt32) + static_cast<UInt32>(value.size()); // length info + string
         stream << value;
         EXPECT_EQ( expectedSize,  stream.getSize());
     }

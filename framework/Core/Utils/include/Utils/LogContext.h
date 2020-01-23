@@ -43,7 +43,7 @@ namespace ramses_internal
     inline LogContext::LogContext(const char* name, const char* id)
         : m_contextName(name)
         , m_contextId(id)
-        , m_logLevel(ELogLevel::Error)
+        , m_logLevel(ELogLevel::Info)
         , m_data(nullptr)
     {
     }

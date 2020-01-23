@@ -7,6 +7,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
+from __future__ import print_function
 from ramses_test_framework.cores import core
 from configuration.base_remote_config import BaseRemoteConfig
 from ramses_test_framework import log

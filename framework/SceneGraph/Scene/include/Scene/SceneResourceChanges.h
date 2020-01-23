@@ -54,13 +54,13 @@ namespace ramses_internal
         {
         }
 
-        Bool operator!=(const SceneResourceAction& other) const
+        bool operator!=(const SceneResourceAction& other) const
         {
             return handle != other.handle
                 || action != other.action;
         }
 
-        Bool operator==(const SceneResourceAction& other) const
+        bool operator==(const SceneResourceAction& other) const
         {
             return !(*this != other);
         }
@@ -74,7 +74,7 @@ namespace ramses_internal
     struct SceneResourceChanges
     {
         void   clear();
-        Bool   empty() const;
+        bool   empty() const;
         void   putToSceneAction(SceneActionCollection& action) const;
         void   getFromSceneAction(SceneActionCollection::SceneActionReader& action);
         String asString() const;

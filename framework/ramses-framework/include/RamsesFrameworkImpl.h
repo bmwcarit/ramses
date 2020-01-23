@@ -11,7 +11,6 @@
 
 #include "Utils/CommandLineParser.h"
 #include "TaskFramework/ThreadedTaskExecutor.h"
-#include "Utils/ScopedPointer.h"
 #include "Ramsh/RamshStandardSetup.h"
 #include "Components/ResourceComponent.h"
 #include "Components/SceneGraphComponent.h"
@@ -24,6 +23,9 @@
 #include "Ramsh/RamshDLT.h"
 #include "Components/DcsmComponent.h"
 #include "Components/LogDcsmInfo.h"
+#include "RamsesObjectFactoryInterfaces.h"
+#include <unordered_map>
+#include <memory>
 
 namespace ramses_internal
 {
@@ -36,6 +38,9 @@ namespace ramses
     class RamsesFrameworkConfigImpl;
     class DcsmProvider;
     class DcsmConsumer;
+    class RamsesClient;
+    class RamsesRenderer;
+    class RendererConfig;
 
     class RamsesFrameworkImpl : public StatusObjectImpl
     {
@@ -44,6 +49,12 @@ namespace ramses
 
         static RamsesFrameworkImpl& createImpl(const RamsesFrameworkConfig& config);
         static RamsesFrameworkImpl& createImpl(int32_t argc, const char * argv[]);
+
+        RamsesRenderer* createRenderer(const RendererConfig& config);
+        RamsesClient* createClient(const char* applicationName);
+
+        status_t destroyRenderer(RamsesRenderer& renderer);
+        status_t destroyClient(RamsesClient& client);
 
         status_t connect();
         bool isConnected() const;
@@ -68,17 +79,19 @@ namespace ramses
     private:
         RamsesFrameworkImpl(const RamsesFrameworkConfigImpl& config, const ramses_internal::ParticipantIdentifier& participantAddress);
         static ramses_internal::String GetParticipantName(const RamsesFrameworkConfig& config);
-        static void logEnvironmentVariableIfSet(const ramses_internal::String& envVarName);
+        static void LogEnvironmentVariableIfSet(const ramses_internal::String& envVarName);
+        static void LogAvailableCommunicationStacks();
+        static void LogBuildInformation();
 
         static constexpr uint32_t PeriodicLogIntervalInSeconds = 2;
         // the framework-wide mutex that is used by all framework-base classes to synchronize access to shared resource
         // has to be used by all logic, component, etc classes
         ramses_internal::PlatformLock m_frameworkLock;
-        ramses_internal::ScopedPointer<ramses_internal::Ramsh> m_ramsh;
+        std::unique_ptr<ramses_internal::Ramsh> m_ramsh;
         ramses_internal::StatisticCollectionFramework m_statisticCollection;
         ramses_internal::ParticipantIdentifier m_participantAddress;
         ramses_internal::EConnectionProtocol m_connectionProtocol;
-        ramses_internal::ScopedPointer<ramses_internal::ICommunicationSystem> m_communicationSystem;
+        std::unique_ptr<ramses_internal::ICommunicationSystem> m_communicationSystem;
         ramses_internal::PeriodicLogger m_periodicLogger;
         bool m_connected;
         const ramses_internal::ThreadWatchdogConfig m_threadWatchdogConfig;
@@ -90,6 +103,9 @@ namespace ramses
         ramses_internal::LogDcsmInfo m_ramshCommandLogDcsmInformation;
         std::unique_ptr<DcsmProvider> m_dcsmProvider;
         std::unique_ptr<DcsmConsumer> m_dcsmConsumer;
+
+        std::unordered_map<RamsesClient*, ClientUniquePtr> m_ramsesClients;
+        RendererUniquePtr m_ramsesRenderer;
     };
 }
 

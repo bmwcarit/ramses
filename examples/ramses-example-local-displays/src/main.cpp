@@ -7,6 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "ramses-client.h"
+#include "ramses-utils.h"
 
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/DisplayConfig.h"
@@ -157,34 +158,7 @@ ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t scen
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
 
-    ramses::AnimationSystemRealTime* animationSystem = clientScene->createRealTimeAnimationSystem(ramses::EAnimationSystemFlags_Default, "animation system");
-
-    // create splines with animation keys
-    ramses::SplineLinearFloat* spline1 = animationSystem->createSplineLinearFloat("spline1");
-    spline1->setKey(0u, 0.f);
-    spline1->setKey(5000u, 500.f);
-    spline1->setKey(10000u, 1000.f);
-
-    // create animated property for each translation node with single component animation
-    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode, ramses::EAnimatedProperty_Rotation, ramses::EAnimatedPropertyComponent_Z);
-
-    // create three animations
-    ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
-
-    // create animation sequence and add animation
-    ramses::AnimationSequence* sequence = animationSystem->createAnimationSequence();
-    sequence->addAnimation(*animation1);
-
-    // set animation properties (optional)
-    sequence->setAnimationLooping(*animation1);
-    sequence->setPlaybackSpeed(5.f);
-
-    // start animation sequence
-    animationSystem->updateLocalTime(nowMs());
-    sequence->start();
-
     appearance->setInputValueVector4f(colorInput, 1.0f, 1.0f, 0.3f, 1.0f);
-
 
     return clientScene;
 }
@@ -235,34 +209,7 @@ ramses::Scene* createScene2(ramses::RamsesClient& client, ramses::sceneId_t scen
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
 
-    ramses::AnimationSystemRealTime* animationSystem = clientScene->createRealTimeAnimationSystem(ramses::EAnimationSystemFlags_Default, "animation system");
-
-    // create splines with animation keys
-    ramses::SplineLinearFloat* spline1 = animationSystem->createSplineLinearFloat("spline1");
-    spline1->setKey(0u, 0.f);
-    spline1->setKey(5000u, -500.f);
-    spline1->setKey(10000u, -1000.f);
-
-    // create animated property for each translation node with single component animation
-    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode, ramses::EAnimatedProperty_Rotation, ramses::EAnimatedPropertyComponent_Z);
-
-    // create three animations
-    ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
-
-    // create animation sequence and add animation
-    ramses::AnimationSequence* sequence = animationSystem->createAnimationSequence();
-    sequence->addAnimation(*animation1);
-
-    // set animation properties (optional)
-    sequence->setAnimationLooping(*animation1);
-    sequence->setPlaybackSpeed(5.f);
-
-    // start animation sequence
-    animationSystem->updateLocalTime(nowMs());
-    sequence->start();
-
     appearance->setInputValueVector4f(colorInput, 1.0f, 0.0f, 0.5f, 1.0f);
-
 
     return clientScene;
 }
@@ -273,19 +220,19 @@ int main(int argc, char* argv[])
     ramses::RamsesFrameworkConfig config(argc, argv);
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);  //needed for automated test of examples
     ramses::RamsesFramework framework(config);
-    ramses::RamsesClient client("ramses-local-client-test", framework);
+    ramses::RamsesClient& client(*framework.createClient("ramses-local-client-test"));
 
     // Ramses renderer
     ramses::RendererConfig rendererConfig(argc, argv);
-    ramses::RamsesRenderer renderer(framework, rendererConfig);
+    ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
     framework.connect();
 
-    ramses::sceneId_t sceneId1 = 1u;
+    ramses::sceneId_t sceneId1(1u);
     ramses::Scene* scene1 = createScene1(client, sceneId1);
     scene1->flush();
     scene1->publish();
 
-    ramses::sceneId_t sceneId2 = 2u;
+    ramses::sceneId_t sceneId2(2u);
     ramses::Scene* scene2 = createScene2(client, sceneId2);
     scene2->flush();
     scene2->publish();
@@ -332,8 +279,14 @@ int main(int argc, char* argv[])
 
     renderer.flush();
 
+    ramses::MeshNode* meshScene1 = ramses::RamsesUtils::TryConvert<ramses::MeshNode>(*scene1->findObjectByName("triangle mesh node"));
+    ramses::MeshNode* meshScene2 = ramses::RamsesUtils::TryConvert<ramses::MeshNode>(*scene2->findObjectByName("triangle mesh node"));
     for (;;)
     {
         renderer.doOneLoop();
+        meshScene1->rotate(0.f, 0.f, 15.f);
+        scene1->flush();
+        meshScene2->rotate(0.f, 0.f, -15.f);
+        scene2->flush();
     }
 }

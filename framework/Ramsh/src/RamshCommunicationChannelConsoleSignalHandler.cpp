@@ -10,6 +10,7 @@
 
 #include "Ramsh/RamshCommunicationChannelConsole.h"
 #include "PlatformAbstraction/PlatformSignal.h"
+#include "Utils/LogMacros.h"
 
 namespace ramses_internal
 {
@@ -20,10 +21,10 @@ namespace ramses_internal
 
     RamshCommunicationChannelConsoleSignalHandler::RamshCommunicationChannelConsoleSignalHandler()
     {
-        Signal::SetSignalHandler(ramses_capu::CAPU_SIGABRT, handleSignalCallback, true);
-        Signal::SetSignalHandler(ramses_capu::CAPU_SIGFPE, handleSignalCallback, true);
-        Signal::SetSignalHandler(ramses_capu::CAPU_SIGINT, handleSignalCallback, true);
-        Signal::SetSignalHandler(ramses_capu::CAPU_SIGTERM, handleSignalCallback, true);
+        PlatformSignal::SetSignalHandler(ESignal::ABRT, handleSignalCallback, true);
+        PlatformSignal::SetSignalHandler(ESignal::FPE, handleSignalCallback, true);
+        PlatformSignal::SetSignalHandler(ESignal::INT, handleSignalCallback, true);
+        PlatformSignal::SetSignalHandler(ESignal::TERM, handleSignalCallback, true);
     }
 
     RamshCommunicationChannelConsoleSignalHandler& RamshCommunicationChannelConsoleSignalHandler::getInstance()
@@ -49,7 +50,7 @@ namespace ramses_internal
     void RamshCommunicationChannelConsoleSignalHandler::handleSignal(int sig)
     {
         ESignal enumSignal = static_cast<ESignal>(sig);
-        String signal = Signal::SignalToString(enumSignal);
+        String signal = PlatformSignal::SignalToString(enumSignal);
 
         LOG_WARN(CONTEXT_RAMSH, "Received signal " + signal);
         for (auto c : m_consoles)

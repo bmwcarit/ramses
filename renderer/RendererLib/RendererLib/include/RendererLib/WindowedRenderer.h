@@ -20,6 +20,7 @@
 #include "RendererCommands/Screenshot.h"
 #include "RendererCommands/LogRendererInfo.h"
 #include "RendererCommands/PrintStatistics.h"
+#include "RendererCommands/TriggerPickEvent.h"
 #include "RendererCommands/SetClearColor.h"
 #include "RendererCommands/SetSkippingOfUnmodifiedBuffers.h"
 #include "RendererCommands/ShowFrameProfiler.h"
@@ -67,6 +68,7 @@ namespace ramses_internal
 
         RendererCommandBuffer& getRendererCommandBuffer();
         const SceneStateExecutor& getSceneStateExecutor() const;
+        void fireLoopTimingReportRendererEvent(std::chrono::microseconds maximumLoopTimeInPeriod, std::chrono::microseconds renderthreadAverageLooptime);
 
         void registerRamshCommands(Ramsh& ramsh);
         void dispatchRendererEvents(RendererEventVector& events);
@@ -89,11 +91,12 @@ namespace ramses_internal
         LogRendererInfo                                   m_cmdLogRendererInfo;
         ShowFrameProfiler                                 m_cmdShowFrameProfiler;
         PrintStatistics                                   m_cmdPrintStatistics;
+        TriggerPickEvent                                  m_cmdTriggerPickEvent;
         SetClearColor                                     m_cmdSetClearColor;
         SetSkippingOfUnmodifiedBuffers                    m_cmdSkippingOfUnmodifiedBuffers;
         LinkSceneData                                     m_cmdLinkSceneData;
         UnlinkSceneData                                   m_cmdUnlinkSceneData;
-        ScopedPointer<ShowSceneCommand>                   m_cmdShowSceneOnDisplayInternal;
+        std::unique_ptr<ShowSceneCommand>                 m_cmdShowSceneOnDisplayInternal;
         SystemCompositorControllerListIviSurfaces         m_cmdSystemCompositorControllerListIviSurfaces;
         SystemCompositorControllerSetLayerVisibility      m_cmdSystemCompositorControllerSetLayerVisibility;
         SystemCompositorControllerSetSurfaceVisibility    m_cmdSystemCompositorControllerSetSurfaceVisibility;

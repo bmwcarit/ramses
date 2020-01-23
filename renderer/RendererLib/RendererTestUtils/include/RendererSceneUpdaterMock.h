@@ -19,19 +19,20 @@ namespace ramses_internal
     class RendererSceneUpdaterMock : public RendererSceneUpdater
     {
     public:
-        RendererSceneUpdaterMock(const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor, const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor)
-            : RendererSceneUpdater(const_cast<Renderer&>(renderer), const_cast<RendererScenes&>(rendererScenes), const_cast<SceneStateExecutor&>(sceneStateExecutor), const_cast<RendererEventCollector&>(rendererEventCollector), const_cast<FrameTimer&>(frameTimer), const_cast<SceneExpirationMonitor&>(expirationMonitor))
+        RendererSceneUpdaterMock(const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor, const ISceneGraphConsumerComponent& sceneGraphComponent, const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor)
+            : RendererSceneUpdater(const_cast<Renderer&>(renderer), const_cast<RendererScenes&>(rendererScenes), const_cast<SceneStateExecutor&>(sceneStateExecutor), const_cast<ISceneGraphConsumerComponent&>(sceneGraphComponent), const_cast<RendererEventCollector&>(rendererEventCollector), const_cast<FrameTimer&>(frameTimer), const_cast<SceneExpirationMonitor&>(expirationMonitor))
         {
         }
 
         MOCK_METHOD2(handleSceneActions, void(SceneId sceneId, SceneActionCollection& actionsForScene));
+        MOCK_METHOD2(handlePickEvent, void(SceneId sceneId, Vector2 coords));
     };
 
     class RendererSceneUpdaterFacade : public RendererSceneUpdaterMock
     {
     public:
-        RendererSceneUpdaterFacade(const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor, const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor)
-            : RendererSceneUpdaterMock(renderer, rendererScenes, sceneStateExecutor, rendererEventCollector, frameTimer, expirationMonitor)
+        RendererSceneUpdaterFacade(const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor, const ISceneGraphConsumerComponent& sceneGraphComponent, const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor)
+            : RendererSceneUpdaterMock(renderer, rendererScenes, sceneStateExecutor, sceneGraphComponent, rendererEventCollector, frameTimer, expirationMonitor)
         {
         }
 

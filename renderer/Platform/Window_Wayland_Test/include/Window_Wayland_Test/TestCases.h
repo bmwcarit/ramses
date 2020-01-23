@@ -161,7 +161,7 @@ namespace ramses_internal
 
         WaylandEnvironmentUtils::UnsetVariable(WaylandEnvironmentVariable::XDGRuntimeDir);
 
-        String fileDescriptor = StringUtils::IToA(socket.createConnectedFileDescriptor(true));
+        String fileDescriptor = StringOutputStream::ToString(socket.createConnectedFileDescriptor(true));
         WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, fileDescriptor.c_str());
 
         EXPECT_TRUE(this->m_window->init());
@@ -177,7 +177,7 @@ namespace ramses_internal
     {
         UnixDomainSocket socket = UnixDomainSocket("wayland-0", WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir));
 
-        String fileDescriptor = StringUtils::IToA(socket.createConnectedFileDescriptor(true));
+        String fileDescriptor = StringOutputStream::ToString(socket.createConnectedFileDescriptor(true));
         WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, fileDescriptor.c_str());
 
         EXPECT_TRUE(this->m_window->init());
@@ -200,7 +200,7 @@ namespace ramses_internal
     {
         UnixDomainSocket socket = UnixDomainSocket("wayland-0", WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir));
 
-        String fileDescriptor = StringUtils::IToA(socket.createConnectedFileDescriptor(false));
+        String fileDescriptor = StringOutputStream::ToString(socket.createConnectedFileDescriptor(false));
         WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, fileDescriptor.c_str());
         WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandDisplay, "wayland-0");
 

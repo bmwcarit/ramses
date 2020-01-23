@@ -13,6 +13,8 @@
 #include "DcsmEventHandlerMocks.h"
 #include "gmock/gmock.h"
 #include "DcsmGmockPrinter.h"
+#include "DcsmMetadataUpdateImpl.h"
+#include "TestPngHeader.h"
 
 #include <array>
 #include "Utils/CommandLineParser.h"
@@ -25,7 +27,7 @@ namespace ramses_internal
     class ADcsmComponent : public ::testing::Test
     {
     public:
-        ADcsmComponent()
+        ADcsmComponent(bool startConnected = true)
             : localId(true)
             , remoteId(true)
             , otherRemoteId(true)
@@ -39,6 +41,20 @@ namespace ramses_internal
                 GetRamsesLogger().initialize(
                     CommandLineParser{static_cast<Int>(args.size()), args.data()}, "TEST", "TEST", true);
             }
+            if (startConnected)
+            {
+                EXPECT_TRUE(comp.connect());
+            }
+
+            std::vector<unsigned char> pngHeader = TestPngHeader::GetValidHeader();
+            EXPECT_TRUE(metadata.setPreviewImagePng(pngHeader.data(), pngHeader.size()));
+            EXPECT_TRUE(metadata.setPreviewDescription(U"abc"));
+            EXPECT_TRUE(metadata.setWidgetOrder(123));
+            EXPECT_TRUE(metadata.setWidgetBackgroundID(456));
+            EXPECT_TRUE(metadata.setWidgetHUDLineID(678));
+            EXPECT_TRUE(metadata.setCarModel(1234));
+            EXPECT_TRUE(metadata.setCarModelView({1,2,3,4,5,6}));
+            EXPECT_TRUE(metadata.setCarModelVisibility(true));
         }
 
         using CS = DcsmComponent::ContentState;
@@ -283,6 +299,7 @@ namespace ramses_internal
         StrictMock<DcsmConsumerEventHandlerMock> consumer;
         DcsmComponent comp;
         bool ensureNoPendingEventsOnTearDown = true;
+        DcsmMetadata metadata;
     };
 
     TEST_F(ADcsmComponent, registeresAndUnregistersForConnectionUpdates)
@@ -675,6 +692,7 @@ namespace ramses_internal
         EXPECT_EQ(CS::Offered, comp.getContentState(ContentID(2)));
         EXPECT_EQ(localId, comp.getContentProviderID(ContentID(2)));
         EXPECT_EQ(Guid(false), comp.getContentConsumerID(ContentID(2)));
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(2), metadata));
 
         EXPECT_CALL(comm, sendDcsmBroadcastRequestStopOfferContent(ContentID(2)));
         EXPECT_TRUE(comp.sendRequestStopOfferContent(ContentID(2)));
@@ -693,11 +711,16 @@ namespace ramses_internal
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
         getContentToState_LPLC(2, CS::Offered);
 
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(2), metadata));
+        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+
         EXPECT_TRUE(comp.sendContentStateChange(ContentID(2), EDcsmState::Assigned, SizeInfo{2, 3}, AnimationInformation{1, 2}));
         EXPECT_EQ(CS::Assigned, comp.getContentState(ContentID(2)));
         EXPECT_EQ(localId, comp.getContentProviderID(ContentID(2)));
         EXPECT_EQ(localId, comp.getContentConsumerID(ContentID(2)));
 
+        EXPECT_CALL(consumer, contentMetadataUpdated(ramses::ContentID(2), _)). WillOnce(Invoke([&](auto, auto& mdp) { EXPECT_EQ(metadata, mdp.impl.getMetadata()); }));
+        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
         EXPECT_CALL(provider, contentStateChange(ramses::ContentID(2), EDcsmState::Assigned, ramses::SizeInfo{2, 3}, ramses::AnimationInformation{1, 2}));
         EXPECT_TRUE(comp.dispatchProviderEvents(provider));
     }
@@ -961,6 +984,7 @@ namespace ramses_internal
         EXPECT_FALSE(comp.sendContentStateChange(ContentID(2), EDcsmState::Shown, SizeInfo{0, 0}, AnimationInformation{4, 5}));
         EXPECT_FALSE(comp.sendContentStateChange(ContentID(2), EDcsmState::AcceptStopOffer, SizeInfo{0, 0}, AnimationInformation{4, 5}));
         EXPECT_FALSE(comp.sendCanvasSizeChange(ContentID(2), SizeInfo{1, 2}, AnimationInformation{0, 0}));
+        EXPECT_FALSE(comp.sendUpdateContentMetadata(ContentID(2), metadata));
         // EXPECT_FALSE(comp.sendOfferContent(ContentID(2), Category(3)));
         EXPECT_FALSE(comp.sendContentReady(ContentID(2), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(1)));
         EXPECT_FALSE(comp.sendContentFocusRequest(ContentID(2)));
@@ -974,8 +998,6 @@ namespace ramses_internal
         getContentToState_LPLC(2, CS::Offered);
 
         EXPECT_FALSE(comp.sendContentStateChange(ContentID(2), EDcsmState::Offered, SizeInfo{0, 0}, AnimationInformation{4, 5}));
-        // EXPECT_FALSE(comp.sendContentStateChange(ContentID(2), EDcsmState::Assigned, SizeInfo{1, 2}, AnimationInformation{4, 5}));
-        EXPECT_FALSE(comp.sendContentStateChange(ContentID(2), EDcsmState::Assigned, SizeInfo{0, 0}, AnimationInformation{4, 5}));
         EXPECT_FALSE(comp.sendContentStateChange(ContentID(2), EDcsmState::Ready, SizeInfo{0, 0}, AnimationInformation{4, 5}));
         EXPECT_FALSE(comp.sendContentStateChange(ContentID(2), EDcsmState::Shown, SizeInfo{0, 0}, AnimationInformation{4, 5}));
         EXPECT_FALSE(comp.sendContentStateChange(ContentID(2), EDcsmState::AcceptStopOffer, SizeInfo{0, 0}, AnimationInformation{4, 5}));
@@ -983,7 +1005,7 @@ namespace ramses_internal
         EXPECT_FALSE(comp.sendOfferContent(ContentID(2), Category(3)));
         EXPECT_FALSE(comp.sendContentReady(ContentID(2), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(1)));
         EXPECT_FALSE(comp.sendContentFocusRequest(ContentID(2)));
-        // EXPECT_FALSE(comp.sendRequestStopOfferContent(ContentID(2)));
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(2), metadata));
     }
 
     TEST_F(ADcsmComponent, localProvider_nonTransitions_Assigned)
@@ -1003,8 +1025,10 @@ namespace ramses_internal
         EXPECT_FALSE(comp.sendContentReady(ContentID(2), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(1)));
         EXPECT_TRUE(comp.sendContentFocusRequest(ContentID(2)));
         // EXPECT_FALSE(comp.sendRequestStopOfferContent(ContentID(2)));
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(2), metadata));
 
         EXPECT_CALL(consumer, contentFocusRequest(ramses::ContentID(2)));
+        EXPECT_CALL(consumer, contentMetadataUpdated(ramses::ContentID(2), _)). WillOnce(Invoke([&](auto, auto& mdp) { EXPECT_EQ(metadata, mdp.impl.getMetadata()); }));
         EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
         EXPECT_CALL(provider, contentSizeChange(ramses::ContentID(2), ramses::SizeInfo{1, 2}, ramses::AnimationInformation{5, 6}));
         EXPECT_TRUE(comp.dispatchProviderEvents(provider));
@@ -1027,8 +1051,10 @@ namespace ramses_internal
         // EXPECT_FALSE(comp.sendContentReady(ContentID(2), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(1)));
         EXPECT_TRUE(comp.sendContentFocusRequest(ContentID(2)));
         // EXPECT_FALSE(comp.sendRequestStopOfferContent(ContentID(2)));
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(2), metadata));
 
         EXPECT_CALL(consumer, contentFocusRequest(ramses::ContentID(2)));
+        EXPECT_CALL(consumer, contentMetadataUpdated(ramses::ContentID(2), _)). WillOnce(Invoke([&](auto, auto& mdp) { EXPECT_EQ(metadata, mdp.impl.getMetadata()); }));
         EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
         EXPECT_CALL(provider, contentSizeChange(ramses::ContentID(2), ramses::SizeInfo{1, 2}, ramses::AnimationInformation{5, 6}));
         EXPECT_TRUE(comp.dispatchProviderEvents(provider));
@@ -1051,8 +1077,10 @@ namespace ramses_internal
         EXPECT_FALSE(comp.sendContentReady(ContentID(2), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(1)));
         EXPECT_TRUE(comp.sendContentFocusRequest(ContentID(2)));
         // EXPECT_FALSE(comp.sendRequestStopOfferContent(ContentID(2)));
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(2), metadata));
 
         EXPECT_CALL(consumer, contentFocusRequest(ramses::ContentID(2)));
+        EXPECT_CALL(consumer, contentMetadataUpdated(ramses::ContentID(2), _)). WillOnce(Invoke([&](auto, auto& mdp) { EXPECT_EQ(metadata, mdp.impl.getMetadata()); }));
         EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
         EXPECT_CALL(provider, contentSizeChange(ramses::ContentID(2), ramses::SizeInfo{1, 2}, ramses::AnimationInformation{5, 6}));
         EXPECT_TRUE(comp.dispatchProviderEvents(provider));
@@ -1075,8 +1103,10 @@ namespace ramses_internal
         EXPECT_FALSE(comp.sendContentReady(ContentID(2), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(1)));
         EXPECT_TRUE(comp.sendContentFocusRequest(ContentID(2)));
         // EXPECT_FALSE(comp.sendRequestStopOfferContent(ContentID(2)));
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(2), metadata));
 
         EXPECT_CALL(consumer, contentFocusRequest(ramses::ContentID(2)));
+        EXPECT_CALL(consumer, contentMetadataUpdated(ramses::ContentID(2), _)). WillOnce(Invoke([&](auto, auto& mdp) { EXPECT_EQ(metadata, mdp.impl.getMetadata()); }));
         EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
         EXPECT_CALL(provider, contentSizeChange(ramses::ContentID(2), ramses::SizeInfo{1, 2}, ramses::AnimationInformation{5, 6}));
         EXPECT_TRUE(comp.dispatchProviderEvents(provider));
@@ -1099,7 +1129,10 @@ namespace ramses_internal
         EXPECT_FALSE(comp.sendContentReady(ContentID(2), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(1)));
         EXPECT_FALSE(comp.sendContentFocusRequest(ContentID(2)));
         EXPECT_FALSE(comp.sendRequestStopOfferContent(ContentID(2)));
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(2), metadata));
 
+        EXPECT_CALL(consumer, contentMetadataUpdated(ramses::ContentID(2), _)). WillOnce(Invoke([&](auto, auto& mdp) { EXPECT_EQ(metadata, mdp.impl.getMetadata()); }));
+        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
         EXPECT_CALL(provider, contentSizeChange(ramses::ContentID(2), ramses::SizeInfo{1, 2}, ramses::AnimationInformation{5, 6}));
         EXPECT_TRUE(comp.dispatchProviderEvents(provider));
     }
@@ -1117,6 +1150,10 @@ namespace ramses_internal
         EXPECT_EQ(localId, comp.getContentProviderID(ContentID(2)));
         EXPECT_EQ(Guid(false), comp.getContentConsumerID(ContentID(2)));
 
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(2), metadata));
+        ensureNoEventsPending();
+
+        EXPECT_CALL(comm, sendDcsmUpdateContentMetadata(remoteId, ContentID(2), metadata));
         comp.handleContentStateChange(ContentID(2), EDcsmState::Assigned, SizeInfo{2, 3}, AnimationInformation{1, 2}, remoteId);
         EXPECT_EQ(CS::Assigned, comp.getContentState(ContentID(2)));
         EXPECT_CALL(provider, contentStateChange(ramses::ContentID(2), EDcsmState::Assigned, ramses::SizeInfo{2, 3}, ramses::AnimationInformation{1, 2}));
@@ -1189,6 +1226,7 @@ namespace ramses_internal
         EXPECT_EQ(CS::Assigned, comp.getContentState(ContentID(2)));
         EXPECT_EQ(remoteId, comp.getContentProviderID(ContentID(2)));
         EXPECT_EQ(localId, comp.getContentConsumerID(ContentID(2)));
+
     }
 
     TEST_F(ADcsmComponent, stateFlow_RemoteProviderLocalConsumer_Assigned_Offered)
@@ -1418,6 +1456,7 @@ namespace ramses_internal
         comp.handleContentReady(ContentID(3), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(11), remoteId);
         comp.handleContentFocusRequest(ContentID(4), remoteId);
         comp.handleRequestStopOfferContent(ContentID(5), remoteId);
+        comp.handleUpdateContentMetadata(ContentID(8), metadata, remoteId);
     }
 
     TEST_F(ADcsmComponent, remoteProviderDisconnectRemovesAllContent)
@@ -1475,6 +1514,7 @@ namespace ramses_internal
         EXPECT_FALSE(comp.sendContentReady(ContentID(2), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(5)));
         EXPECT_FALSE(comp.sendContentFocusRequest(ContentID(2)));
         EXPECT_FALSE(comp.sendRequestStopOfferContent(ContentID(2)));
+        EXPECT_FALSE(comp.sendUpdateContentMetadata(ContentID(2), metadata));
     }
 
     TEST_F(ADcsmComponent, sendFailsWithoutActiveConsumer)
@@ -1840,875 +1880,212 @@ namespace ramses_internal
         ignorePendingEvents();
     }
 
-#if 0
-
-    TEST_F(ADcsmComponent, informsLocalProviderWhenConsumerGoneForConsumedReadyContent)
-    {
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        doRegisterContent({34}, {}, true);
-
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(34), EDcsmStatus::ContentRequested, AnimationInformation{3,4}));
-
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(34), ramses::EDcsmStatus::Ready, ramses::AnimationInformation{3, 4}, localId));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
-
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(34), ramses::EDcsmStatus::Registered, ramses::AnimationInformation{0, 0}, localId));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
-    }
-
-    TEST_F(ADcsmComponent, informsRemoteProviderWhenConsumerGoneForConsumedReadyContent)
+    TEST_F(ADcsmComponent, forceStopOfferForLocalContentOnDisconnect)
     {
         comp.newParticipantHasConnected(remoteId);
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        doRegisterContent({}, {34}, true);
+        comp.handleOfferContent(ContentID(1), Category(2), remoteId);
 
-        EXPECT_CALL(comm, sendDcsmContentStatusChange(remoteId, ContentID(34), EDcsmStatus::ContentRequested, AnimationInformation{3, 4}));
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(34), EDcsmStatus::ContentRequested, AnimationInformation{3,4}));
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3)));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3)));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(5), Category(3)));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(5), Category(3)));
 
-        EXPECT_CALL(comm, sendDcsmContentStatusChange(remoteId, ContentID(34), EDcsmStatus::Registered, AnimationInformation{0, 0}));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
+        EXPECT_CALL(comm, sendDcsmBroadcastForceStopOfferContent(ContentID(4)));
+        EXPECT_CALL(comm, sendDcsmBroadcastForceStopOfferContent(ContentID(5)));
+        EXPECT_TRUE(comp.disconnect());
     }
 
-    TEST_F(ADcsmComponent, informsLocalProviderWhenConsumerGoneForConsumedShownContent)
+    TEST_F(ADcsmComponent, canSendMetadataUpdateWithoutConsumer)
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        doRegisterContent({34}, {}, true);
-
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(34), EDcsmStatus::Shown, AnimationInformation{3,4}));
-
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(34), ramses::EDcsmStatus::Shown, ramses::AnimationInformation{3, 4}, localId));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
-
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(34), ramses::EDcsmStatus::Registered, ramses::AnimationInformation{0, 0}, localId));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3)));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3)));
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(4), metadata));
     }
 
-    TEST_F(ADcsmComponent, informsRemoteProviderWhenConsumerGoneForConsumedShownContent)
-    {
-        comp.newParticipantHasConnected(remoteId);
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        doRegisterContent({}, {34}, true);
-
-        EXPECT_CALL(comm, sendDcsmContentStatusChange(remoteId, ContentID(34), EDcsmStatus::Shown, AnimationInformation{3, 4}));
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(34), EDcsmStatus::Shown, AnimationInformation{3,4}));
-
-        EXPECT_CALL(comm, sendDcsmContentStatusChange(remoteId, ContentID(34), EDcsmStatus::Registered, AnimationInformation{0, 0}));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
-    }
-
-    TEST_F(ADcsmComponent, doesNotInformLocalProviderWhenConsumerGoneForRegisteredContent)
+    TEST_F(ADcsmComponent, cannotSendMetadataUpdateForUnknownContent)
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        doRegisterContent({34}, {}, true);
-
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(34), EDcsmStatus::Registered, AnimationInformation{3,4}));
-
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(34), ramses::EDcsmStatus::Registered, ramses::AnimationInformation{3, 4}, localId));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
+        EXPECT_FALSE(comp.sendUpdateContentMetadata(ContentID(2), metadata));
     }
 
-    TEST_F(ADcsmComponent, doesNotInformRemoteProviderWhenConsumerGoneForRegisteredContent)
-    {
-        comp.newParticipantHasConnected(remoteId);
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        doRegisterContent({}, {34}, true);
 
-        EXPECT_CALL(comm, sendDcsmContentStatusChange(remoteId, ContentID(34), EDcsmStatus::Registered, AnimationInformation{3, 4}));
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(34), EDcsmStatus::Registered, AnimationInformation{3,4}));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
-    }
-
-    TEST_F(ADcsmComponent, informsLocalProviderWhenConsumerGoneForUnregisteredContent)
+    TEST_F(ADcsmComponent, storesMetadataUpdateForLateLocalConsumerAndSendsUpdatesAfterwards)
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        doRegisterContent({34}, {}, true);
+        getContentToState_LPLC(2, CS::Offered, false);
 
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(34), EDcsmStatus::Unregistered, AnimationInformation{3,4}));
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(2), metadata));
 
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(34), ramses::EDcsmStatus::Unregistered, ramses::AnimationInformation{3, 4}, localId));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
+        DcsmMetadata updateDm;
+        updateDm.setPreviewDescription(U"foobar");
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(2), updateDm));
+        ensureNoEventsPending();
 
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(34), ramses::EDcsmStatus::Registered, ramses::AnimationInformation{0, 0}, localId));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
-    }
-
-    TEST_F(ADcsmComponent, informsRemoteProviderWhenConsumerGoneForUnregisteredContent)
-    {
-        comp.newParticipantHasConnected(remoteId);
+        DcsmMetadata mergedDm(metadata);
+        mergedDm.setPreviewDescription(U"foobar");
 
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        doRegisterContent({}, {34}, true);
+        EXPECT_CALL(consumer, contentOffered(ramses::ContentID(2), ramses::Category(3)));
+        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
 
-        EXPECT_CALL(comm, sendDcsmContentStatusChange(remoteId, ContentID(34), EDcsmStatus::Unregistered, AnimationInformation{3, 4}));
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(34), EDcsmStatus::Unregistered, AnimationInformation{3,4}));
+        EXPECT_TRUE(comp.sendContentStateChange(ContentID(2), EDcsmState::Assigned, SizeInfo{2, 3}, AnimationInformation{1, 2}));
 
-        EXPECT_CALL(comm, sendDcsmContentStatusChange(remoteId, ContentID(34), EDcsmStatus::Registered, AnimationInformation{0, 0}));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
-    }
-
-    TEST_F(ADcsmComponent, doesNotInformLocalProviderWhenConsumerGoneForPreviouslyConsumedContent)
-    {
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        doRegisterContent({34}, {}, true);
-
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(34), EDcsmStatus::Shown, AnimationInformation{3,4}));
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(34), EDcsmStatus::Registered, AnimationInformation{3,4}));
-
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(34), ramses::EDcsmStatus::Shown, ramses::AnimationInformation{3, 4}, localId));
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(34), ramses::EDcsmStatus::Registered, ramses::AnimationInformation{3, 4}, localId));
+        EXPECT_CALL(provider, contentStateChange(ramses::ContentID(2), EDcsmState::Assigned, ramses::SizeInfo{2, 3}, ramses::AnimationInformation{1, 2}));
         EXPECT_TRUE(comp.dispatchProviderEvents(provider));
-        Mock::VerifyAndClearExpectations(&provider);
 
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
-    }
+        EXPECT_CALL(consumer, contentMetadataUpdated(ramses::ContentID(2), _)). WillOnce(Invoke([&](auto, auto& mdp) { EXPECT_EQ(mergedDm, mdp.impl.getMetadata()); }));
+        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
 
-    TEST_F(ADcsmComponent, doesNotInformRemoteProviderWhenConsumerGoneForPreviouslyConsumedContent)
-    {
-        comp.newParticipantHasConnected(remoteId);
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        doRegisterContent({}, {34}, true);
-
-        EXPECT_CALL(comm, sendDcsmContentStatusChange(remoteId, ContentID(34), EDcsmStatus::Shown, AnimationInformation{3, 4}));
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(34), EDcsmStatus::Shown, AnimationInformation{3,4}));
-        EXPECT_CALL(comm, sendDcsmContentStatusChange(remoteId, ContentID(34), EDcsmStatus::Registered, AnimationInformation{3, 4}));
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(34), EDcsmStatus::Registered, AnimationInformation{3,4}));
-
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
-    }
-
-    TEST_F(ADcsmComponent, informsLocalProviderWhenConsumerGoneForPreviouslyToggledConsumedContent)
-    {
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        doRegisterContent({34}, {}, true);
-
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(34), EDcsmStatus::Shown, AnimationInformation{3,4}));
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(34), EDcsmStatus::Registered, AnimationInformation{3,4}));
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(34), EDcsmStatus::ContentRequested, AnimationInformation{3,4}));
-
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(34), ramses::EDcsmStatus::Shown, ramses::AnimationInformation{3, 4}, localId));
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(34), ramses::EDcsmStatus::Registered, ramses::AnimationInformation{3, 4}, localId));
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(34), ramses::EDcsmStatus::Ready, ramses::AnimationInformation{3, 4}, localId));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
-        Mock::VerifyAndClearExpectations(&provider);
-
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(34), ramses::EDcsmStatus::Registered, ramses::AnimationInformation{0, 0}, localId));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
-    }
-
-    TEST_F(ADcsmComponent, doesNotDispatchFromUnknownParticipant)
-    {
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        comp.newParticipantHasConnected(remoteId);
-        doRegisterContent({6, 7, 1, 3}, {8}, true);
-
-        comp.handleCanvasSizeChange(ContentID(6), SizeInfo{1, 2}, AnimationInformation{3, 4}, remoteId);
-        comp.handleCanvasSizeChange(ContentID(7), SizeInfo{1, 2}, AnimationInformation{3, 4}, otherRemoteId);
-        comp.handleRequestStopOfferContent(ContentID(8), remoteId);
-        comp.handleRequestStopOfferContent(ContentID(9), otherRemoteId);
-        comp.handleContentStateChange(ContentID(1), EDcsmStatus::Registered, AnimationInformation{7, 8}, otherRemoteId);
-        comp.handleOfferContent(ContentID(2), Category(10), otherRemoteId);
-        comp.handleContentFocusRequest(ContentID(4), otherRemoteId);
-        comp.handleContentReady(ContentID(3), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(11), otherRemoteId);
-
-        EXPECT_CALL(provider, canvasSizeChange(ramses::ContentID(6), ramses::SizeInfo{1, 2}, ramses::AnimationInformation{3, 4}, remoteId));
-        EXPECT_CALL(consumer, requestUnregisterContent(ramses::ContentID(8)));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+        // delta update
+        DcsmMetadata deltaDm;
+        deltaDm.setPreviewDescription(U"testtext");
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(2), deltaDm));
+        EXPECT_CALL(consumer, contentMetadataUpdated(ramses::ContentID(2), _)). WillOnce(Invoke([&](auto, auto& mdp) { EXPECT_EQ(deltaDm, mdp.impl.getMetadata()); }));
         EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
     }
 
-    TEST_F(ADcsmComponent, doesNotDispatchFromDisconnectedParticipant)
+    TEST_F(ADcsmComponent, storesMetadataUpdateForLateRemoteConsumerAndSendsUpdatesAfterwards)
     {
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
         comp.newParticipantHasConnected(remoteId);
-        comp.participantHasDisconnected(remoteId);
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        getContentToState_LPRC(2, CS::Offered);
 
-        comp.handleCanvasSizeChange(ContentID(6), SizeInfo{1, 2}, AnimationInformation{3, 4}, remoteId);
-        comp.handleRequestStopOfferContent(ContentID(8), remoteId);
-        comp.handleContentStateChange(ContentID(1), EDcsmStatus::Registered, AnimationInformation{7, 8}, remoteId);
-        comp.handleOfferContent(ContentID(2), Category(10), remoteId);
-        comp.handleContentFocusRequest(ContentID(4), remoteId);
-        comp.handleContentReady(ContentID(3), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(11), remoteId);
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(2), metadata));
 
+        DcsmMetadata updateDm;
+        updateDm.setPreviewDescription(U"foobar");
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(2), updateDm));
+        ensureNoEventsPending();
+
+        DcsmMetadata mergedDm(metadata);
+        mergedDm.setPreviewDescription(U"foobar");
+
+        EXPECT_CALL(comm, sendDcsmUpdateContentMetadata(remoteId, ContentID(2), mergedDm)).WillOnce(Return(true));
+        comp.handleContentStateChange(ContentID(2), EDcsmState::Assigned, SizeInfo{2, 3}, AnimationInformation{1, 2}, remoteId);
+
+        EXPECT_CALL(provider, contentStateChange(ramses::ContentID(2), EDcsmState::Assigned, ramses::SizeInfo{2, 3}, ramses::AnimationInformation{1, 2}));
         EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+
+        // delta update
+        DcsmMetadata deltaDm;
+        deltaDm.setPreviewDescription(U"testtext");
+        EXPECT_CALL(comm, sendDcsmUpdateContentMetadata(remoteId, ContentID(2), deltaDm)).WillOnce(Return(true));
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(2), deltaDm));
+    }
+
+    TEST_F(ADcsmComponent, canHandleMetadataUpdateFromRemote)
+    {
+        comp.newParticipantHasConnected(remoteId);
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        getContentToState_RPLC(2, CS::Assigned);
+
+        comp.handleUpdateContentMetadata(ContentID(2), metadata, remoteId);
+        EXPECT_CALL(consumer, contentMetadataUpdated(ramses::ContentID(2), _)). WillOnce(Invoke([&](auto, auto& mdp) { EXPECT_EQ(metadata, mdp.impl.getMetadata()); }));
         EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
     }
 
-    TEST_F(ADcsmComponent, doesNotSendInvalidEnumValues)
+    TEST_F(ADcsmComponent, ignoredMetadataUpdateInOfferedFromRemote)
     {
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        EXPECT_FALSE(comp.sendContentAvailable(localId, ContentID(3), static_cast<ETechnicalContentType>(100), TechnicalContentDescriptor(11)));
-        EXPECT_FALSE(comp.sendContentStatusChange(ContentID(1), static_cast<EDcsmStatus>(12), AnimationInformation{7, 8}));
-    }
-
-    TEST_F(ADcsmComponent, doesNotHandleInvalidEnumValues)
-    {
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
         comp.newParticipantHasConnected(remoteId);
-        comp.handleContentStateChange(ContentID(1), static_cast<EDcsmStatus>(12), AnimationInformation{7, 8}, remoteId);
-        comp.handleContentReady(ContentID(3), static_cast<ETechnicalContentType>(100), TechnicalContentDescriptor(11), remoteId);
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        getContentToState_RPLC(2, CS::Offered);
+        comp.handleUpdateContentMetadata(ContentID(2), metadata, remoteId);
     }
 
-    TEST_F(ADcsmComponent, doesNotSendToInvalidParticipantAsProvider)
-    {
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_FALSE(comp.sendContentAvailable(localId, ContentID(1), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(5)));
-        EXPECT_FALSE(comp.sendCategoryContentSwitchRequest(localId, ContentID(9)));
-
-        EXPECT_FALSE(comp.sendContentAvailable(remoteId, ContentID(1), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(5)));
-        EXPECT_FALSE(comp.sendCategoryContentSwitchRequest(remoteId, ContentID(9)));
-
-        comp.newParticipantHasConnected(remoteId);
-        EXPECT_FALSE(comp.sendContentAvailable(Guid(false), ContentID(1), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(5)));
-        EXPECT_FALSE(comp.sendCategoryContentSwitchRequest(Guid(false), ContentID(9)));
-    }
-
-    TEST_F(ADcsmComponent, doesNotSendToInvalidParticipantAsConsumer)
+    TEST_F(ADcsmComponent, ignoresMetadataUpdateFromUnknownRemote)
     {
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        EXPECT_FALSE(comp.sendCanvasSizeChange(ContentID(12), SizeInfo{11, 10}, AnimationInformation{200, 100}));
-        EXPECT_FALSE(comp.sendContentStatusChange(ContentID(34), EDcsmStatus::ContentRequested, AnimationInformation{3,4}));
-
-        EXPECT_FALSE(comp.sendCanvasSizeChange(ContentID(12), SizeInfo{11, 10}, AnimationInformation{200, 100}));
-        EXPECT_FALSE(comp.sendContentStatusChange(ContentID(34), EDcsmStatus::ContentRequested, AnimationInformation{3,4}));
-
-        comp.newParticipantHasConnected(remoteId);
-        EXPECT_FALSE(comp.sendCanvasSizeChange(ContentID(12), SizeInfo{11, 10}, AnimationInformation{200, 100}));
-        EXPECT_FALSE(comp.sendContentStatusChange(ContentID(34), EDcsmStatus::ContentRequested, AnimationInformation{3,4}));
+        comp.handleUpdateContentMetadata(ContentID(2), metadata, remoteId);
     }
 
-    TEST_F(ADcsmComponent, doesNotHandleFromInvalidParticipant)
+    TEST_F(ADcsmComponent, ignoresMetadataUpdateForUnknownContentFromRemote)
     {
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        comp.newParticipantHasConnected(remoteId);
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-
-        comp.handleCanvasSizeChange(ContentID(6), SizeInfo{1, 2}, AnimationInformation{3, 4}, localId);
-        comp.handleRequestStopOfferContent(ContentID(8), localId);
-        comp.handleContentStateChange(ContentID(1), EDcsmStatus::Registered, AnimationInformation{7, 8}, localId);
-        comp.handleOfferContent(ContentID(2), Category(10), localId);
-        comp.handleContentFocusRequest(ContentID(4), localId);
-        comp.handleContentReady(ContentID(3), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(11), localId);
-
-        comp.handleCanvasSizeChange(ContentID(6), SizeInfo{1, 2}, AnimationInformation{3, 4}, remoteId);
-        comp.handleRequestStopOfferContent(ContentID(8), remoteId);
-        comp.handleContentStateChange(ContentID(1), EDcsmStatus::Registered, AnimationInformation{7, 8}, remoteId);
-        comp.handleOfferContent(ContentID(2), Category(10), remoteId);
-        comp.handleContentFocusRequest(ContentID(4), remoteId);
-        comp.handleContentReady(ContentID(3), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(11), remoteId);
-
-        comp.newParticipantHasConnected(remoteId);
-        comp.handleCanvasSizeChange(ContentID(6), SizeInfo{1, 2}, AnimationInformation{3, 4}, Guid(false));
-        comp.handleRequestStopOfferContent(ContentID(8), Guid(false));
-        comp.handleContentStateChange(ContentID(1), EDcsmStatus::Registered, AnimationInformation{7, 8}, Guid(false));
-        comp.handleOfferContent(ContentID(2), Category(10), Guid(false));
-        comp.handleContentFocusRequest(ContentID(4), Guid(false));
-        comp.handleContentReady(ContentID(3), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(11), Guid(false));
+        comp.handleUpdateContentMetadata(ContentID(2), metadata, remoteId);
     }
 
-    TEST_F(ADcsmComponent, doesNotSendAsProviderWithoutEnablingFirst)
+    TEST_F(ADcsmComponent, ignoresMetadataUpdateFromWrongRemote)
     {
-        comp.setLocalProviderAvailability(false);
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-
-        EXPECT_FALSE(comp.sendOfferContent(ContentID(1), Category(3)));
-        EXPECT_FALSE(comp.sendContentAvailable(localId, ContentID(1), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(5)));
-        EXPECT_FALSE(comp.sendCategoryContentSwitchRequest(localId, ContentID(9)));
-        EXPECT_FALSE(comp.sendRequestStopOfferContent(ContentID(8)));
-    }
-
-    TEST_F(ADcsmComponent, doesNotSendAsProviderAfterDisabling)
-    {
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        EXPECT_TRUE(comp.setLocalProviderAvailability(false));
-
-        EXPECT_FALSE(comp.sendOfferContent(ContentID(1), Category(3)));
-        EXPECT_FALSE(comp.sendContentAvailable(localId, ContentID(1), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(5)));
-        EXPECT_FALSE(comp.sendCategoryContentSwitchRequest(localId, ContentID(9)));
-        EXPECT_FALSE(comp.sendRequestStopOfferContent(ContentID(8)));
-    }
-
-    TEST_F(ADcsmComponent, doesNotSendAsConsumerWithoutEnablingFirst)
-    {
-        comp.setLocalConsumerAvailability(false);
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-
-        EXPECT_FALSE(comp.sendCanvasSizeChange(ContentID(12), SizeInfo{11, 10}, AnimationInformation{200, 100}));
-        EXPECT_FALSE(comp.sendContentStatusChange(ContentID(34), EDcsmStatus::ContentRequested, AnimationInformation{3,4}));
-    }
-
-    TEST_F(ADcsmComponent, doesNotSendAsConsumerAfterDisabling)
-    {
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
-
-        EXPECT_FALSE(comp.sendCanvasSizeChange(ContentID(12), SizeInfo{11, 10}, AnimationInformation{200, 100}));
-        EXPECT_FALSE(comp.sendContentStatusChange(ContentID(34), EDcsmStatus::ContentRequested, AnimationInformation{3,4}));
-    }
-
-    TEST_F(ADcsmComponent, doesNotDispatchWhenNotEnabled)
-    {
-        EXPECT_FALSE(comp.dispatchProviderEvents(provider));
-        EXPECT_FALSE(comp.dispatchConsumerEvents(consumer));
-
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        EXPECT_FALSE(comp.dispatchProviderEvents(provider));
-        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
-
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
-        EXPECT_FALSE(comp.dispatchConsumerEvents(consumer));
-
-        EXPECT_TRUE(comp.setLocalProviderAvailability(false));
-        EXPECT_FALSE(comp.dispatchProviderEvents(provider));
-    }
-
-    TEST_F(ADcsmComponent, canDispatchProviderEventsAfterSenderDisconnected)
-    {
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        doRegisterContent({7}, {}, false);
-
-        EXPECT_CALL(comm, sendDcsmRegisterContent(remoteId, ContentID(7), Category(3)));
-        comp.newParticipantHasConnected(remoteId);
-        comp.handleCanvasSizeChange(ContentID(7), SizeInfo{1, 2}, AnimationInformation{3, 4}, remoteId);
-        comp.participantHasDisconnected(remoteId);
-
-        EXPECT_CALL(provider, canvasSizeChange(ramses::ContentID(7), ramses::SizeInfo{1, 2}, ramses::AnimationInformation{3, 4}, remoteId));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
-    }
-
-    TEST_F(ADcsmComponent, canDispatchConsumerEventsAfterSenderDisconnected)
-    {
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-
-        comp.newParticipantHasConnected(remoteId);
-        comp.handleOfferContent(ContentID(2), Category(10), remoteId);
-        comp.participantHasDisconnected(remoteId);
-
-        EXPECT_CALL(consumer, contentOffered(ramses::ContentID(2), ramses::Category(10)));
-        EXPECT_CALL(consumer, forceUnregisterContent(ramses::ContentID(2)));
-        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
-    }
-
-    TEST_F(ADcsmComponent, ignoresParticipantStateChangeWhenRemoteIdEqualsLocal)
-    {
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        doRegisterContent({2}, {}, true);
-
-        comp.newParticipantHasConnected(localId);
-        comp.handleContentFocusRequest(ContentID{2}, localId);
-
-        EXPECT_TRUE(comp.sendCategoryContentSwitchRequest(localId, ContentID{2}));
-        EXPECT_CALL(consumer, categoryContentSwitchRequest(ramses::ContentID(2)));
-        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
-
-        comp.participantHasDisconnected(localId);
-
-        EXPECT_TRUE(comp.sendCategoryContentSwitchRequest(localId, ContentID{2}));
-        EXPECT_CALL(consumer, categoryContentSwitchRequest(ramses::ContentID(2)));
-        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
-    }
-
-    TEST_F(ADcsmComponent, cannotSendAsProviderWhenNotProvidingContent)
-    {
-        comp.setLocalProviderAvailability(true);
-        comp.setLocalConsumerAvailability(true);
-        comp.newParticipantHasConnected(remoteId);
-        doRegisterContent({}, {3}, true);
-
-        EXPECT_FALSE(comp.sendContentAvailable(localId, ContentID{3}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{1}));
-        EXPECT_FALSE(comp.sendCategoryContentSwitchRequest(localId, ContentID{3}));
-        EXPECT_FALSE(comp.sendRequestStopOfferContent(ContentID{3}));
-    }
-
-    TEST_F(ADcsmComponent, cannotSendToLocalWhenNoExistingLocalConsumer)
-    {
-        comp.setLocalProviderAvailability(true);
-        doRegisterContent({3}, {}, false);
-
-        EXPECT_FALSE(comp.sendContentAvailable(localId, ContentID{3}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{1}));
-        EXPECT_FALSE(comp.sendCategoryContentSwitchRequest(localId, ContentID{3}));
-    }
-
-    TEST_F(ADcsmComponent, cannotRegisterContentLocallyTwice)
-    {
-        comp.setLocalProviderAvailability(true);
-        comp.setLocalConsumerAvailability(true);
-
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(1), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(1), Category(3)));
-        EXPECT_FALSE(comp.sendOfferContent(ContentID(1), Category(4)));
-
-        EXPECT_CALL(consumer, contentOffered(ramses::ContentID(1), ramses::Category(3)));
-        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
-    }
-
-    TEST_F(ADcsmComponent, cannotRegisterContentRemotelyTwice)
-    {
-        comp.newParticipantHasConnected(remoteId);
-        comp.setLocalConsumerAvailability(true);
-
-        comp.handleOfferContent(ContentID(1), Category(3), remoteId);
-        comp.handleOfferContent(ContentID(1), Category(3), remoteId);
-
-        EXPECT_CALL(consumer, contentOffered(ramses::ContentID(1), ramses::Category(3)));
-        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
-    }
-
-    TEST_F(ADcsmComponent, cannotRegisterContentRemotelyWhenAlreadyRegisteredLocal)
-    {
-        comp.newParticipantHasConnected(remoteId);
-        comp.setLocalConsumerAvailability(true);
-        comp.setLocalProviderAvailability(true);
-
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(1), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(1), Category(3)));
-        comp.handleOfferContent(ContentID(1), Category(3), remoteId);
-
-        EXPECT_CALL(consumer, contentOffered(ramses::ContentID(1), ramses::Category(3)));
-        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
-    }
-
-    TEST_F(ADcsmComponent, cannotRegisterContentLocallyWhenAlreadyRegisteredRemote)
-    {
-        comp.newParticipantHasConnected(remoteId);
-        comp.setLocalConsumerAvailability(true);
-        comp.setLocalProviderAvailability(true);
-
-        comp.handleOfferContent(ContentID(1), Category(3), remoteId);
-        EXPECT_FALSE(comp.sendOfferContent(ContentID(1), Category(3)));
-
-        EXPECT_CALL(consumer, contentOffered(ramses::ContentID(1), ramses::Category(3)));
-        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
-    }
-
-    TEST_F(ADcsmComponent, canRegisterContentLocallyWhenUnregisteredBefore)
-    {
-        comp.setLocalConsumerAvailability(true);
-        comp.setLocalProviderAvailability(true);
-
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(1), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(1), Category(3)));
-        EXPECT_CALL(comm, sendDcsmBroadcastRequestStopOfferContent(ContentID(1)));
-        EXPECT_TRUE(comp.sendRequestStopOfferContent(ContentID(1)));
-
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(1), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(1), Category(3)));
-
-        InSequence seq;
-        EXPECT_CALL(consumer, contentOffered(ramses::ContentID(1), ramses::Category(3)));
-        EXPECT_CALL(consumer, requestUnregisterContent(ramses::ContentID(1)));
-        EXPECT_CALL(consumer, contentOffered(ramses::ContentID(1), ramses::Category(3)));
-        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
-    }
-
-    TEST_F(ADcsmComponent, canRegisterContentRemotelyWhenUnregisteredBefore)
-    {
-        comp.setLocalConsumerAvailability(true);
-        comp.setLocalProviderAvailability(true);
-        comp.newParticipantHasConnected(remoteId);
-
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(1), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(1), Category(3)));
-        EXPECT_CALL(comm, sendDcsmBroadcastRequestStopOfferContent(ContentID(1)));
-        EXPECT_TRUE(comp.sendRequestStopOfferContent(ContentID(1)));
-
-        comp.handleOfferContent(ContentID(1), Category(3), remoteId);
-
-        InSequence seq;
-        EXPECT_CALL(consumer, contentOffered(ramses::ContentID(1), ramses::Category(3)));
-        EXPECT_CALL(consumer, requestUnregisterContent(ramses::ContentID(1)));
-        EXPECT_CALL(consumer, contentOffered(ramses::ContentID(1), ramses::Category(3)));
-        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
-    }
-
-    TEST_F(ADcsmComponent, cannotUnregisterRemoteContentFromLocal)
-    {
-        comp.setLocalConsumerAvailability(true);
-        comp.setLocalProviderAvailability(true);
-        comp.newParticipantHasConnected(remoteId);
-
-        comp.handleOfferContent(ContentID(1), Category(3), remoteId);
-        EXPECT_FALSE(comp.sendRequestStopOfferContent(ContentID(1)));
-
-        EXPECT_CALL(consumer, contentOffered(ramses::ContentID(1), ramses::Category(3)));
-        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
-    }
-
-    TEST_F(ADcsmComponent, cannotUnregisterLocalContentFromRemote)
-    {
-        comp.setLocalConsumerAvailability(true);
-        comp.setLocalProviderAvailability(true);
-        comp.newParticipantHasConnected(remoteId);
-
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(1), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(1), Category(3)));
-        comp.handleRequestStopOfferContent(ContentID(1), remoteId);
-
-        EXPECT_CALL(consumer, contentOffered(ramses::ContentID(1), ramses::Category(3)));
-        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
-    }
-
-    TEST_F(ADcsmComponent, cannotControlNonExistingContentAsRemote)
-    {
-        comp.setLocalConsumerAvailability(true);
-        comp.setLocalProviderAvailability(true);
-        comp.newParticipantHasConnected(remoteId);
-
-        comp.handleCanvasSizeChange(ContentID(1), SizeInfo{1, 2}, AnimationInformation{3, 4}, remoteId);
-        comp.handleContentStateChange(ContentID(1), EDcsmStatus::Registered, AnimationInformation{7, 8}, remoteId);
-        comp.handleContentReady(ContentID(1), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(11), remoteId);
-        comp.handleContentFocusRequest(ContentID(1), remoteId);
-        comp.handleRequestStopOfferContent(ContentID(1), remoteId);
-    }
-
-    TEST_F(ADcsmComponent, cannotControlContentFromOtherAsRemoteProvider)
-    {
-        comp.setLocalConsumerAvailability(true);
-        comp.setLocalProviderAvailability(true);
-        comp.newParticipantHasConnected(remoteId);
-        doRegisterContent({1}, {}, true);
-
-        comp.handleContentReady(ContentID(1), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(11), remoteId);
-        comp.handleContentFocusRequest(ContentID(1), remoteId);
-        comp.handleRequestStopOfferContent(ContentID(1), remoteId);
-    }
-
-    TEST_F(ADcsmComponent, remoteProviderDisconnectRemovesAllContent)
-    {
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
         comp.newParticipantHasConnected(remoteId);
         comp.newParticipantHasConnected(otherRemoteId);
-        doRegisterContent({1, 3}, {2, 5}, false, {8});
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        getContentToState_RPLC(2, CS::Assigned);
 
-        comp.participantHasDisconnected(remoteId);
-        EXPECT_EQ(localId, comp.getContentProviderID(ContentID(1)));
-        EXPECT_EQ(localId, comp.getContentProviderID(ContentID(3)));
-        EXPECT_EQ(otherRemoteId, comp.getContentProviderID(ContentID(8)));
-        EXPECT_EQ(Guid(false), comp.getContentProviderID(ContentID(2)));
-        EXPECT_EQ(Guid(false), comp.getContentProviderID(ContentID(5)));
+        comp.handleUpdateContentMetadata(ContentID(2), metadata, otherRemoteId);
     }
 
-    TEST_F(ADcsmComponent, localProviderDisconnectRemovesAllContent)
+    TEST_F(ADcsmComponent, metadataClearedWhenLocalProviderGone)
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        comp.newParticipantHasConnected(remoteId);
-        doRegisterContent({1, 3}, {2, 5}, false);
+        getContentToState_LPLC(2, CS::Offered, false);
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(2), metadata));
 
-        EXPECT_CALL(comm, sendDcsmBroadcastRequestStopOfferContent(ContentID(1)));
-        EXPECT_CALL(comm, sendDcsmBroadcastRequestStopOfferContent(ContentID(3)));
+        EXPECT_CALL(comm, sendDcsmBroadcastForceStopOfferContent(ContentID(2)));
         EXPECT_TRUE(comp.setLocalProviderAvailability(false));
 
-        EXPECT_EQ(Guid(false), comp.getContentProviderID(ContentID(1)));
-        EXPECT_EQ(Guid(false), comp.getContentProviderID(ContentID(3)));
-        EXPECT_EQ(remoteId, comp.getContentProviderID(ContentID(2)));
-        EXPECT_EQ(remoteId, comp.getContentProviderID(ContentID(5)));
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        getContentToState_LPLC(2, CS::Assigned, true);
     }
 
-    TEST_F(ADcsmComponent, localProviderCannotUnregisterTwiceWhileUnregisterStillPending)
+    TEST_F(ADcsmComponent, metadataClearedWhenLocalProviderUnoffers)
     {
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        doRegisterContent({1}, {}, true);
+        getContentToState_LPLC(2, CS::Offered, false);
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(2), metadata));
 
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(1), EDcsmStatus::Shown, AnimationInformation{200, 100}));
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(1), ramses::EDcsmStatus::Shown, ramses::AnimationInformation{200, 100}, localId));
+        EXPECT_CALL(comm, sendDcsmBroadcastRequestStopOfferContent(ContentID(2)));
+        EXPECT_TRUE(comp.sendRequestStopOfferContent(ContentID(2)));
+        EXPECT_CALL(provider, contentStateChange(ramses::ContentID(2), EDcsmState::AcceptStopOffer, ramses::SizeInfo{0, 0}, ramses::AnimationInformation{0, 0}));
         EXPECT_TRUE(comp.dispatchProviderEvents(provider));
 
-        EXPECT_CALL(comm, sendDcsmBroadcastRequestStopOfferContent(ContentID(1)));
-        EXPECT_TRUE(comp.sendRequestStopOfferContent(ContentID(1)));
-
-        EXPECT_CALL(consumer, requestUnregisterContent(ramses::ContentID(1)));
-        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
-
-        EXPECT_EQ(localId, comp.getContentProviderID(ContentID(1)));
-        EXPECT_FALSE(comp.sendRequestStopOfferContent(ContentID(1)));
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        getContentToState_LPLC(2, CS::Assigned, true);
     }
 
-    TEST_F(ADcsmComponent, remoteProviderCannotUnregisterTwiceWhileUnregisterStillPending)
+
+    class ADcsmComponentNotConnected : public ADcsmComponent
     {
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        comp.newParticipantHasConnected(remoteId);
-        doRegisterContent({}, {1}, true);
+    public:
+        ADcsmComponentNotConnected()
+            : ADcsmComponent(false)
+        {}
+    };
 
-        EXPECT_CALL(comm, sendDcsmContentStatusChange(remoteId, ContentID(1), EDcsmStatus::Shown, AnimationInformation{200, 100}));
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(1), EDcsmStatus::Shown, AnimationInformation{200, 100}));
-        comp.handleRequestStopOfferContent(ContentID(1), remoteId);
-
-        EXPECT_CALL(consumer, requestUnregisterContent(ramses::ContentID(1)));
-        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
-
-        EXPECT_EQ(remoteId, comp.getContentProviderID(ContentID(1)));
-        comp.handleRequestStopOfferContent(ContentID(1), remoteId);
+    TEST_F(ADcsmComponentNotConnected, hasProperConnectDisconnectChecking)
+    {
+        EXPECT_FALSE(comp.disconnect());
+        EXPECT_TRUE(comp.connect());
+        EXPECT_FALSE(comp.connect());
+        EXPECT_TRUE(comp.disconnect());
+        EXPECT_FALSE(comp.disconnect());
     }
 
-    TEST_F(ADcsmComponent, localConsumerDisableDoesNotTouchContentFromOtherConsumer)
+    TEST_F(ADcsmComponentNotConnected, doesNotSendBroadcastsBeforeConnected)
     {
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        comp.newParticipantHasConnected(remoteId);
-        doRegisterContent({1}, {}, true);
-
-        comp.handleContentStateChange(ContentID(1), EDcsmStatus::Shown, AnimationInformation{7, 8}, remoteId);
-        EXPECT_CALL(comm, sendDcsmBroadcastRequestStopOfferContent(ContentID(1)));
-        EXPECT_TRUE(comp.sendRequestStopOfferContent(ContentID(1)));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
-
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(1), ramses::EDcsmStatus::Shown, ramses::AnimationInformation{7, 8}, remoteId));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
-        EXPECT_EQ(localId, comp.getContentProviderID(ContentID(1)));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3)));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(5), Category(3)));
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(4), metadata));
+        EXPECT_TRUE(comp.sendRequestStopOfferContent(ContentID(4)));
+        EXPECT_TRUE(comp.setLocalProviderAvailability(false));
     }
 
-    TEST_F(ADcsmComponent, remoteConsumerDisconnectDoesNotTouchContentFromLocalConsumer)
+    TEST_F(ADcsmComponentNotConnected, doesNotSendBroadcastsAfterDisconnect)
     {
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        EXPECT_TRUE(comp.connect());
+        EXPECT_TRUE(comp.disconnect());
+
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        comp.newParticipantHasConnected(remoteId);
-        doRegisterContent({1}, {}, true);
-
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(1), EDcsmStatus::Shown, AnimationInformation{200, 100}));
-        EXPECT_CALL(comm, sendDcsmBroadcastRequestStopOfferContent(ContentID(1)));
-        EXPECT_TRUE(comp.sendRequestStopOfferContent(ContentID(1)));
-
-        comp.participantHasDisconnected(remoteId);
-
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(1), ramses::EDcsmStatus::Shown, ramses::AnimationInformation{200, 100}, localId));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
-        EXPECT_EQ(localId, comp.getContentProviderID(ContentID(1)));
-
-        EXPECT_CALL(consumer, requestUnregisterContent(ramses::ContentID(1)));
-        comp.dispatchConsumerEvents(consumer);
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3)));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(5), Category(3)));
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(4), metadata));
+        EXPECT_TRUE(comp.sendRequestStopOfferContent(ContentID(4)));
+        EXPECT_TRUE(comp.setLocalProviderAvailability(false));
     }
 
-    TEST_F(ADcsmComponent, removesUnregisterRequestedContentFromLocalProviderWhenLocalConsumerSendStateUnregister)
-    {
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        doRegisterContent({1}, {}, true);
-
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(1), EDcsmStatus::ContentRequested, AnimationInformation{0, 0}));
-        EXPECT_CALL(comm, sendDcsmBroadcastRequestStopOfferContent(ContentID(1)));
-        EXPECT_TRUE(comp.sendRequestStopOfferContent(ContentID(1)));
-        EXPECT_EQ(localId, comp.getContentProviderID(ContentID(1)));
-
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(1), EDcsmStatus::Unregistered, AnimationInformation{0, 0}));
-        EXPECT_EQ(Guid(false), comp.getContentProviderID(ContentID(1)));
-
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(1), ramses::EDcsmStatus::Ready, ramses::AnimationInformation{0, 0}, localId));
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(1), ramses::EDcsmStatus::Unregistered, ramses::AnimationInformation{0, 0}, localId));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
-
-        EXPECT_CALL(consumer, requestUnregisterContent(ramses::ContentID(1)));
-        comp.dispatchConsumerEvents(consumer);
-    }
-
-    TEST_F(ADcsmComponent, removesUnregisterRequestedContentFromRemoteProviderWhenLocalConsumerSendStateUnregister)
-    {
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        comp.newParticipantHasConnected(remoteId);
-        doRegisterContent({}, {1}, true);
-
-        EXPECT_CALL(comm, sendDcsmContentStatusChange(remoteId, ContentID(1), EDcsmStatus::ContentRequested, AnimationInformation{0, 0}));
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(1), EDcsmStatus::ContentRequested, AnimationInformation{0, 0}));
-        comp.handleRequestStopOfferContent(ContentID(1), remoteId);
-        EXPECT_EQ(remoteId, comp.getContentProviderID(ContentID(1)));
-
-        EXPECT_CALL(comm, sendDcsmContentStatusChange(remoteId, ContentID(1), EDcsmStatus::Unregistered, AnimationInformation{0, 0}));
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(1), EDcsmStatus::Unregistered, AnimationInformation{0, 0}));
-        EXPECT_EQ(Guid(false), comp.getContentProviderID(ContentID(1)));
-
-        EXPECT_CALL(consumer, requestUnregisterContent(ramses::ContentID(1)));
-        comp.dispatchConsumerEvents(consumer);
-    }
-
-    TEST_F(ADcsmComponent, keepLocallyProvidedContentWhenNoActiveConsumer)
-    {
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        doRegisterContent({1}, {}, true);
-
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(1), EDcsmStatus::ContentRequested, AnimationInformation{0, 0}));
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(1), EDcsmStatus::Registered, AnimationInformation{0, 0}));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
-        EXPECT_EQ(localId, comp.getContentProviderID(ContentID(1)));
-
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(1), ramses::EDcsmStatus::Ready, ramses::AnimationInformation{0, 0}, localId));
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(1), ramses::EDcsmStatus::Registered, ramses::AnimationInformation{0, 0}, localId));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
-    }
-
-    TEST_F(ADcsmComponent, keepRemotelyProvidedContentWhenNoActiveConsumer)
-    {
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        comp.newParticipantHasConnected(remoteId);
-        doRegisterContent({}, {1}, true);
-
-        EXPECT_CALL(comm, sendDcsmContentStatusChange(remoteId, ContentID(1), EDcsmStatus::ContentRequested, AnimationInformation{0, 0}));
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(1), EDcsmStatus::ContentRequested, AnimationInformation{0, 0}));
-        EXPECT_CALL(comm, sendDcsmContentStatusChange(remoteId, ContentID(1), EDcsmStatus::Registered, AnimationInformation{0, 0}));
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(1), EDcsmStatus::Registered, AnimationInformation{0, 0}));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
-        EXPECT_EQ(remoteId, comp.getContentProviderID(ContentID(1)));
-    }
-
-    TEST_F(ADcsmComponent, localProviderGoesBackToRegisteredWhenLocalConsumerGoneAfterContentRequested)
-    {
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        doRegisterContent({1}, {}, true);
-
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(1), EDcsmStatus::ContentRequested, AnimationInformation{0, 0}));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
-        EXPECT_EQ(localId, comp.getContentProviderID(ContentID(1)));
-
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(1), ramses::EDcsmStatus::Ready, ramses::AnimationInformation{0, 0}, localId));
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(1), ramses::EDcsmStatus::Registered, ramses::AnimationInformation{0, 0}, localId));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
-    }
-
-    TEST_F(ADcsmComponent, localProviderGoesBackToRegisteredWhenLocalConsumerGoneAfterShown)
-    {
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        doRegisterContent({1}, {}, true);
-
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(1), EDcsmStatus::Shown, AnimationInformation{0, 0}));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
-        EXPECT_EQ(localId, comp.getContentProviderID(ContentID(1)));
-
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(1), ramses::EDcsmStatus::Shown, ramses::AnimationInformation{0, 0}, localId));
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(1), ramses::EDcsmStatus::Registered, ramses::AnimationInformation{0, 0}, localId));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
-    }
-
-    TEST_F(ADcsmComponent, remoteProviderGoesBackToRegisteredWhenLocalConsumerGoneAfterContentRequested)
-    {
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        comp.newParticipantHasConnected(remoteId);
-        doRegisterContent({}, {1}, true);
-
-        EXPECT_CALL(comm, sendDcsmContentStatusChange(remoteId, ContentID(1), EDcsmStatus::ContentRequested, AnimationInformation{0, 0}));
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(1), EDcsmStatus::ContentRequested, AnimationInformation{0, 0}));
-        EXPECT_CALL(comm, sendDcsmContentStatusChange(remoteId, ContentID(1), EDcsmStatus::Registered, AnimationInformation{0, 0}));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
-        EXPECT_EQ(remoteId, comp.getContentProviderID(ContentID(1)));
-    }
-
-    TEST_F(ADcsmComponent, remoteProviderGoesBackToRegisteredWhenLocalConsumerGoneAfterShown)
-    {
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        comp.newParticipantHasConnected(remoteId);
-        doRegisterContent({}, {1}, true);
-
-        EXPECT_CALL(comm, sendDcsmContentStatusChange(remoteId, ContentID(1), EDcsmStatus::Shown, AnimationInformation{0, 0}));
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(1), EDcsmStatus::Shown, AnimationInformation{0, 0}));
-        EXPECT_CALL(comm, sendDcsmContentStatusChange(remoteId, ContentID(1), EDcsmStatus::Registered, AnimationInformation{0, 0}));
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
-        EXPECT_EQ(remoteId, comp.getContentProviderID(ContentID(1)));
-    }
-
-    TEST_F(ADcsmComponent, remoteConsumerCannotControlLocallyConsumedContentInStateContentRequested)
-    {
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        comp.newParticipantHasConnected(remoteId);
-        doRegisterContent({1}, {}, true);
-
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(1), EDcsmStatus::ContentRequested, AnimationInformation{0, 0}));
-        comp.handleContentStateChange(ContentID(1), EDcsmStatus::Shown, AnimationInformation{0, 0}, remoteId);
-        EXPECT_EQ(localId, comp.getContentProviderID(ContentID(1)));
-
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(1), ramses::EDcsmStatus::Ready, ramses::AnimationInformation{0, 0}, localId));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
-    }
-
-    TEST_F(ADcsmComponent, remoteConsumerCannotControlLocallyConsumedContentInStateShown)
-    {
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        comp.newParticipantHasConnected(remoteId);
-        doRegisterContent({1}, {}, true);
-
-        EXPECT_TRUE(comp.sendContentStatusChange(ContentID(1), EDcsmStatus::Shown, AnimationInformation{0, 0}));
-        comp.handleContentStateChange(ContentID(1), EDcsmStatus::Shown, AnimationInformation{0, 0}, remoteId);
-        EXPECT_EQ(localId, comp.getContentProviderID(ContentID(1)));
-
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(1), ramses::EDcsmStatus::Shown, ramses::AnimationInformation{0, 0}, localId));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
-    }
-
-    TEST_F(ADcsmComponent, localConsumerCannotControlRemotelyConsumedContentInStateContentRequested)
-    {
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        comp.newParticipantHasConnected(remoteId);
-        doRegisterContent({1}, {}, true);
-
-        comp.handleContentStateChange(ContentID(1), EDcsmStatus::ContentRequested, AnimationInformation{0, 0}, remoteId);
-        EXPECT_FALSE(comp.sendContentStatusChange(ContentID(1), EDcsmStatus::Shown, AnimationInformation{0, 0}));
-
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(1), ramses::EDcsmStatus::Ready, ramses::AnimationInformation{0, 0}, remoteId));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
-    }
-
-    TEST_F(ADcsmComponent, localConsumerCannotControlRemotelyConsumedContentInStateShown)
-    {
-        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        comp.newParticipantHasConnected(remoteId);
-        doRegisterContent({1}, {}, true);
-
-        comp.handleContentStateChange(ContentID(1), EDcsmStatus::Shown, AnimationInformation{0, 0}, remoteId);
-        EXPECT_FALSE(comp.sendContentStatusChange(ContentID(1), EDcsmStatus::ContentRequested, AnimationInformation{0, 0}));
-
-        EXPECT_CALL(provider, contentStatusChange(ramses::ContentID(1), ramses::EDcsmStatus::Shown, ramses::AnimationInformation{0, 0}, remoteId));
-        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
-    }
-
-
-    /*
-      - can reregister content after local provider is gone
-
-      - remote consumer disconnect, local provider
-        - unregister req pendidng -> state unregistered (local) + remove
-        - state registered: nothing happens
-        - state != registred -> send register to local
-
-      - local provider, unreg req content + state change
-        - unreq req + unreg or reg -> remoev
-        - > ready, shown -> keep
-        - no unreg req -> keep
-
-      - local provider, remote consumer, handle state chnage
-        - unreq req + unreg or reg -> remoev
-        - > ready, shown -> keep
-        - no unreg req -> keep
-
-      - disallow canvas size change (local, remote) when not active consumer (??)
-
-      - TODO: stop offer requested -> offer
-
-    TEST_F(ADcsmComponent, )
-    {
-    }
-
-     */
-#endif
+    // TODO: test everything force stop offer on disconnect(?)
 }

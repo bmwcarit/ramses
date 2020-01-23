@@ -13,7 +13,6 @@
 
 #include "Scene/EScenePublicationMode.h"
 #include "ramses-client-api/EScenePublicationMode.h"
-#include "Scene/ESceneFlushMode.h"
 
 namespace ramses
 {

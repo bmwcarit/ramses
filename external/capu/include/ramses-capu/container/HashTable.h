@@ -62,11 +62,9 @@ namespace ramses_capu
         {
         public:
             HashTableEntry()
-                : next(0)
-                , previous(0)
-                , keyValuePairPtr(0)
+                : next(nullptr)
+                , previous(nullptr)
                 , isChainElement(false)
-
             {
                 // 'preconnect' free entries
                 next = this + 1;
@@ -75,38 +73,35 @@ namespace ramses_capu
             void constructKeyValue(const Key& key, const T& value)
             {
                 // placement new
-                keyValuePairPtr = new (keyValuePairMemory) Pair(key, value);
+                new (keyValuePairMemory) Pair(key, value);
             }
 
             void destructKeyValue()
             {
                 // inplace destruction of typed value
-                keyValuePairPtr->~Pair();
-                keyValuePairPtr = 0;
+                reinterpret_cast<Pair*>(keyValuePairMemory)->~Pair();
             }
 
             Pair& getKeyValuePair()
             {
-                return *keyValuePairPtr;
+                return *reinterpret_cast<Pair*>(keyValuePairMemory);
             }
 
             const Pair& getKeyValuePair() const
             {
-                return *keyValuePairPtr;
+                return *reinterpret_cast<const Pair*>(keyValuePairMemory);
             }
+
+            HashTableEntry(const HashTableEntry& other)  = delete;
+            HashTableEntry& operator=(const HashTableEntry& other) = delete;
 
         private:
             HashTableEntry* next; // pointer to the next entry (chaining)
             HashTableEntry* previous; // pointer to the previous entry (chaining)
-            char keyValuePairMemory[sizeof(Pair)];  // memory for key and value, keep right after pointer member for proper alignment
-            Pair* keyValuePairPtr; // currently needed in pre c++11 to prevent UB by ugly struct aliasing violations
+            alignas(Pair) char keyValuePairMemory[sizeof(Pair)];  // properly aligned memory for key and value
             bool isChainElement; // true if the element is not the first element in a chain
 
             friend class HashTable<Key, T, C, H>;
-
-            // delete copy ctor, assign operator
-            HashTableEntry(const HashTableEntry& other);
-            HashTableEntry& operator=(const HashTableEntry& other);
         };
 
     public:
@@ -136,11 +131,13 @@ namespace ramses_capu
             {
             }
 
+            ConstIterator& operator=(const ConstIterator&) = default;
+
             /**
              * Indirection
              * @return the current value referenced by the iterator
              */
-            const Pair& operator*()
+            const Pair& operator*() const
             {
                 return mCurrentHashMapEntry->getKeyValuePair();
             }
@@ -149,7 +146,7 @@ namespace ramses_capu
              * Dereference
              * @return a pointer to the current object the iterator points to
              */
-            const Pair* operator->()
+            const Pair* operator->() const
             {
                 return &mCurrentHashMapEntry->getKeyValuePair();
             }
@@ -186,7 +183,7 @@ namespace ramses_capu
              * Step the iterator forward to the next element (postfix operator)
              * @return the next iterator
              */
-            ConstIterator operator++(int32_t)
+            const ConstIterator operator++(int32_t)
             {
                 ConstIterator oldValue(*this);
                 ++(*this);
@@ -233,6 +230,8 @@ namespace ramses_capu
             {
             }
 
+            Iterator& operator=(const Iterator&) = default;
+
             /**
              * Indirection
              * @return the current value referenced by the iterator
@@ -242,11 +241,21 @@ namespace ramses_capu
                 return mCurrentHashMapEntry->getKeyValuePair();
             }
 
+            const Pair& operator*() const
+            {
+                return mCurrentHashMapEntry->getKeyValuePair();
+            }
+
             /**
              * Dereference
              * @return a pointer to the current object the iterator points to
              */
             Pair* operator->()
+            {
+                return &mCurrentHashMapEntry->getKeyValuePair();
+            }
+
+            const Pair* operator->() const
             {
                 return &mCurrentHashMapEntry->getKeyValuePair();
             }
@@ -283,7 +292,7 @@ namespace ramses_capu
              * Step the iterator forward to the next element (postfix operator)
              * @return the next iterator
              */
-            Iterator operator++(int32_t)
+            const Iterator operator++(int32_t)
             {
                 Iterator oldValue(*this);
                 ++(*this);
@@ -335,34 +344,9 @@ namespace ramses_capu
          * @param key               Key value
          * @param value             new value that will be put to hash table
          * @return CAPU_OK if put is successful
-         *         CAPU_ENO_MEMORY if allocation of element is failed
          *
          */
-        status_t put(const Key& key, const T& value, T* oldValue = nullptr);
-
-        /**
-         * Get const value associated with key in the hashtable.
-         * @param key        Key
-         * @param returnCode parameter to retrieve status code. Optional.
-         *       Possible status codes:
-         *       CAPU_OK if the key is contained in the hash table and the element has been retrieved successfully
-         *       CAPU_ENOT_EXIST if there is no element in hash table with specified key
-         *
-         * @return element
-         */
-        const T& at(const Key& key, status_t* returnCode = 0) const;
-
-        /**
-         * Get value associated with key in the hashtable.
-         * @param key        Key
-         * @param returnCode parameter to retrieve status code. Optional.
-         *       Possible status codes:
-         *       CAPU_OK if the key is contained in the hash table and the element has been retrieved successfully
-         *       CAPU_ENOT_EXIST if there is no element in hash table with specified key
-         *
-         * @return element
-         */
-        T& at(const Key& key, status_t* returnCode = 0);
+        Iterator put(const Key& key, const T& value);
 
         /**
          * Tries to find an element in the Hash Table.
@@ -403,21 +387,20 @@ namespace ramses_capu
          *
          * @param key               Key value.
          * @param value_old         Buffer which will be used to store value of removed element.
-         *                          Default value is 0 to indicate that it should be discarded.
+         *                          Default value is nullptr to indicate that it should be discarded.
          *
-         * @return CAPU_OK if remove is successful
-         *         CAPU_ENOT_EXIST if the key was not found in the map.
+         * @return true if remove is successful
+         *         false if the key was not found in the map.
          */
-        status_t remove(const Key& key, T* value_old = 0);
+        bool remove(const Key& key, T* value_old = nullptr);
 
         /**
          * Remove the element where the iterator is pointing to
          * @param the iterator to the element to remove
          * @param out parameter to the removed element
-         * @return   CAPU_OK if remove is successful
-         *           CAPU_ENOT_EXISTS if the key was not found in the map
+         * @return iterator after removed element
          */
-        status_t remove(Iterator& iter, T* value_old = 0);
+        Iterator remove(Iterator iter, T* value_old = nullptr);
 
         /**
          * Returns count of the hashtable.
@@ -496,7 +479,7 @@ namespace ramses_capu
         uint_t calcHashValue(const Key& key) const;
         HashTableEntry* internalGet(const Key& key) const;
         void internalPut(HashTableEntry* entry, uint_t hashValue);
-        void internalRemove(HashTableEntry* entry, const uint_t hashValue, T* value_old = 0);
+        void internalRemove(HashTableEntry* entry, const uint_t hashValue, T* value_old = nullptr);
     };
 
     /**
@@ -565,7 +548,6 @@ namespace ramses_capu
         // poor mans move because must HashTable cannot work with nullptr data
         : HashTable()
     {
-
         swap(other);
         other.clear();
     }
@@ -651,7 +633,7 @@ namespace ramses_capu
     template <class Key, class T, class C, class H>
     inline bool HashTable<Key, T, C, H>::contains(const Key& key) const
     {
-        return internalGet(key) != 0;
+        return internalGet(key) != nullptr;
     }
 
     template <class Key, class T, class C, class H>
@@ -664,19 +646,14 @@ namespace ramses_capu
     template <class Key, class T, class C, class H>
     inline T& HashTable<Key, T, C, H>::operator[](const Key& key)
     {
-        status_t returnCode = CAPU_OK;
-        T& value = at(key, &returnCode);
-        if (returnCode == CAPU_OK)
-        {
-            return value;
-        }
+        if (HashTableEntry* entry = internalGet(key))
+            return entry->getKeyValuePair().value;
         //if key is not in hash table, add default constructed value to it
-        put(key, T());
-        return at(key);
+        return put(key, T())->value;
     }
 
     template <class Key, class T, class C, class H>
-    inline status_t HashTable<Key, T, C, H>::put(const Key& key, const T& value, T* oldValue)
+    inline typename HashTable<Key, T, C, H>::Iterator HashTable<Key, T, C, H>::put(const Key& key, const T& value)
     {
         uint_t hashValue = calcHashValue(key);
 
@@ -688,12 +665,8 @@ namespace ramses_capu
             {
                 if (mComparator(current->getKeyValuePair().key, key))
                 {
-                    if (oldValue)
-                    {
-                        *oldValue = current->getKeyValuePair().value;
-                    }
                     current->getKeyValuePair().value = value;
-                    return CAPU_OK;
+                    return Iterator(current);
                 }
                 current = current->next;
             }
@@ -717,50 +690,7 @@ namespace ramses_capu
 
         internalPut(newentry, hashValue);
 
-        // done
-        return CAPU_OK;
-    }
-
-    template <class Key, class T, class C, class H>
-    const T& HashTable<Key, T, C, H>::at(const Key& key, status_t* returnCode) const
-    {
-        HashTableEntry* entry = internalGet(key);
-        if (entry)
-        {
-            if (returnCode)
-            {
-                *returnCode = CAPU_OK;
-            }
-            return entry->getKeyValuePair().value;
-        }
-
-        if (returnCode)
-        {
-            *returnCode = CAPU_ENOT_EXIST;
-        }
-
-        return mLastHashMapEntry->getKeyValuePair().value;
-    }
-
-    template <class Key, class T, class C, class H>
-    T& HashTable<Key, T, C, H>::at(const Key& key, status_t* returnCode)
-    {
-        HashTableEntry* entry = internalGet(key);
-        if (entry)
-        {
-            if (returnCode)
-            {
-                *returnCode = CAPU_OK;
-            }
-            return entry->getKeyValuePair().value;
-        }
-
-        if (returnCode)
-        {
-            *returnCode = CAPU_ENOT_EXIST;
-        }
-
-        return mLastHashMapEntry->getKeyValuePair().value;
+        return Iterator(newentry);
     }
 
     template <class Key, class T, class C, class H>
@@ -792,7 +722,7 @@ namespace ramses_capu
     }
 
     template <class Key, class T, class C, class H>
-    inline status_t HashTable<Key, T, C, H>::remove(const Key& key, T* value_old)
+    inline bool HashTable<Key, T, C, H>::remove(const Key& key, T* value_old)
     {
         const uint_t hashValue = calcHashValue(key);
         HashTableEntry* current = mBuckets[hashValue];
@@ -805,7 +735,7 @@ namespace ramses_capu
                     internalRemove(current, hashValue, value_old);
 
                     // done
-                    return CAPU_OK;
+                    return true;
                 }
                 current = current->next;
             }
@@ -813,21 +743,19 @@ namespace ramses_capu
         }
 
         // element was not found
-        return CAPU_ERANGE;
+        return false;
     }
 
     template <class Key, class T, class C, class H>
-    inline status_t HashTable<Key, T, C, H>::remove(Iterator& iter, T* value_old)
+    inline
+    typename HashTable<Key, T, C, H>::Iterator HashTable<Key, T, C, H>::remove(Iterator iter, T* value_old)
     {
         HashTableEntry* current = iter.mCurrentHashMapEntry;
         uint_t hashValue = calcHashValue(current->getKeyValuePair().key);
 
-        iter.mCurrentHashMapEntry = current->next;
-
+        auto result = current->next;
         internalRemove(current, hashValue, value_old);
-
-        // done
-        return CAPU_OK;
+        return result;
     }
 
     template <class Key, class T, class C, class H>
@@ -848,7 +776,7 @@ namespace ramses_capu
         entry->next->previous = entry->previous;
         if (mBuckets[hashValue] == entry)
         {
-            mBuckets[hashValue] = entry->next->isChainElement ? entry->next : 0;
+            mBuckets[hashValue] = entry->next->isChainElement ? entry->next : nullptr;
             entry->next->isChainElement = false;
         }
 
@@ -874,7 +802,7 @@ namespace ramses_capu
         HashTableEntry* entry = mData;
         for (uint32_t i = 0; i < mThreshold + 1; ++i)
         {
-            entry->previous = 0;
+            entry->previous = nullptr;
             entry->next = entry + 1;
             entry->isChainElement = false;
             ++entry;
@@ -928,7 +856,7 @@ namespace ramses_capu
             while (current->isChainElement);
         }
 
-        return 0;
+        return nullptr;
     }
 
     template <class Key, class T, class C, class H>
@@ -989,21 +917,17 @@ namespace ramses_capu
     {
         mLastHashMapEntry->previous = mLastHashMapEntry;
         mLastHashMapEntry->next = mLastHashMapEntry;
-        mLastHashMapEntry->constructKeyValue(Key(), T()); // last dummy has default value
     }
 
     template <class Key, class T, class C, class H>
         inline void HashTable<Key, T, C, H>::destructAll()
     {
-        // destruct regular values and default value at last
-        HashTableEntry* entry = mLastHashMapEntry;
-        if (entry)
+        // destruct regular values
+        HashTableEntry* entry = mLastHashMapEntry->next;
+        while (entry != mLastHashMapEntry)
         {
-            do
-            {
-                entry->destructKeyValue();
-                entry = entry->next;
-            } while (entry != mLastHashMapEntry);
+            entry->destructKeyValue();
+            entry = entry->next;
         }
     }
 

@@ -20,6 +20,7 @@
 #include "DeviceMock.h"
 #include "ResourceProviderMock.h"
 #include "SceneAllocateHelper.h"
+#include "Scene/DataLayout.h"
 
 namespace ramses_internal
 {
@@ -40,12 +41,12 @@ namespace ramses_internal
             DataFieldInfoVector geometryDataFields(2u);
             geometryDataFields[indicesField.asMemoryHandle()] = DataFieldInfo(EDataType_Indices, 1u, EFixedSemantics_Indices);
             geometryDataFields[vertAttribField.asMemoryHandle()] = DataFieldInfo(EDataType_Vector3Buffer, 1u, EFixedSemantics_VertexPositionAttribute);
-            m_sceneAllocator.allocateDataLayout(geometryDataFields, testGeometryLayout);
+            m_sceneAllocator.allocateDataLayout(geometryDataFields, ResourceProviderMock::FakeEffectHash, testGeometryLayout);
 
             DataFieldInfoVector uniformDataFields(2u);
             uniformDataFields[dataField.asMemoryHandle()] = DataFieldInfo(EDataType_Float);
             uniformDataFields[samplerField.asMemoryHandle()] = DataFieldInfo(EDataType_TextureSampler);
-            m_sceneAllocator.allocateDataLayout(uniformDataFields, testUniformLayout);
+            m_sceneAllocator.allocateDataLayout(uniformDataFields, ResourceProviderMock::FakeEffectHash, testUniformLayout);
         }
 
         RenderGroupHandle createRenderGroup(RenderPassHandle pass1 = RenderPassHandle::Invalid(), RenderPassHandle pass2 = RenderPassHandle::Invalid())
@@ -96,7 +97,7 @@ namespace ramses_internal
         RenderPassHandle createRenderPassWithCamera()
         {
             const RenderPassHandle pass = m_sceneAllocator.allocateRenderPass();
-            const auto dataLayout = m_sceneAllocator.allocateDataLayout({{EDataType_Vector2I}, {EDataType_Vector2I}});
+            const auto dataLayout = m_sceneAllocator.allocateDataLayout({{EDataType_Vector2I}, {EDataType_Vector2I}}, ResourceContentHash::Invalid());
             const CameraHandle camera = m_sceneAllocator.allocateCamera(ECameraProjectionType_Renderer, m_sceneAllocator.allocateNode(), m_sceneAllocator.allocateDataInstance(dataLayout));
             m_scene.setRenderPassCamera(pass, camera);
             return pass;
@@ -148,14 +149,10 @@ namespace ramses_internal
 
         void setResourcesToRenderable(
             RenderableHandle renderable,
-            bool setEffect = true,
             bool setVertices = true,
             bool setIndices = true)
         {
-            const auto vertexData = m_scene.getRenderable(renderable).dataInstances[ERenderableDataSlotType_Geometry];
-
-            if (setEffect)
-                m_scene.setRenderableEffect(renderable, ResourceProviderMock::FakeEffectHash);
+            auto vertexData = m_scene.getRenderable(renderable).dataInstances[ERenderableDataSlotType_Geometry];
             if (setVertices)
                 m_scene.setDataResource(vertexData, vertAttribField, ResourceProviderMock::FakeVertArrayHash, DataBufferHandle::Invalid(), 0u);
             if (setIndices)

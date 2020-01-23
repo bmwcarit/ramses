@@ -24,23 +24,11 @@ namespace ramses
     * @brief RamsesRenderer is the main renderer component
     *        which provides API to configure and control the way
     *        content will be rendered on display(s).
+    * @details RamsesRenderer API is not thread-safe.
     */
     class RAMSES_API RamsesRenderer : public StatusObject
     {
     public:
-        /**
-        * @brief Constructor of RamsesRenderer
-        *
-        * @param[in] framework Reference to shared ramses framework components (potentially shared with ramses client)
-        * @param[in] config Set of configuration flags and attributes
-        */
-        RamsesRenderer(RamsesFramework& framework, const RendererConfig& config);
-
-        /**
-        * @brief Destructor of RamsesRenderer
-        */
-        virtual ~RamsesRenderer() override;
-
         /**
         * @brief Prepare content to be rendered in next frame and render next frame.
         *        This function can not be used in combination with startThread, stopThread and setMaximumFramerate.
@@ -195,7 +183,7 @@ namespace ramses
          *
          * @param config The display config to create and configure the new display.
          * @return Display id that can be used to refer to the created display.
-         *         InvalidDisplayId in case of error. Display creation can still fail even
+         *         displayId_t::Invalid() in case of error. Display creation can still fail even
          *         if a valid display id is returned, the result of the actual creation
          *         can be retrieved via dispatchEvents.
          */
@@ -213,6 +201,16 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t destroyDisplay(displayId_t displayId);
+
+        /**
+        * @brief Get display's framebuffer ID.
+        *        Every display upon creation has one framebuffer which can be referenced by a display buffer ID
+        *        to be used in various API methods that work with either a framebuffer or an offscreen buffer (e.g. RamsesRenderer::setBufferClearColor).
+        *
+        * @param displayId The ID of display for which the framebuffer ID is being queried.
+        * @return Display's framebuffer ID or invalid ID if display does not exist.
+        */
+        displayBufferId_t getDisplayFramebuffer(displayId_t displayId) const;
 
         /**
         * @brief Subscribes to receiving scene actions from a scene.
@@ -249,6 +247,31 @@ namespace ramses
         status_t linkData(sceneId_t providerScene, dataProviderId_t providerId, sceneId_t consumerScene, dataConsumerId_t consumerId);
 
         /**
+        * @brief Trigger renderer to test if given pick event with coordinates intersects with any instances
+        *        of ramses::PickableObject contained in given scene. If so, the intersected PickableObjects are
+        *        reported to client (see ramses::IRendererEventHandler::objectsPicked) using their user IDs
+        *        given at creation time (see ramses::Scene::createPickableObject).
+        *
+        * @details \section Coordinates
+        *          Coordinates normalized to range <-1, 1> where (-1, -1) is bottom left corner of the buffer where scene is mapped to
+        *          and (1, 1) is top right corner.
+        *          If the scene to test is rendered directly to framebuffer then display size should be used,
+        *          i.e. (-1, -1) is bottom left corner of the display and (1, 1) top right corner of display.
+        *          If the scene is mapped to an offscreen buffer and rendered as a texture mapped
+        *          on a mesh in another scene, the given coordinates need to be mapped to the offscreen buffer
+        *          dimensions in the same way.
+        *          For example if the scene's offscreen buffer is mapped on a 2D quad placed somewhere on screen
+        *          then the coordinates provided need to be within the region of the 2D quad, i.e. (-1, -1) at bottom left corner of the quad and (1, 1) at top right corner.
+        *
+        * @param sceneId Id of scene to check for intersected PickableObjects.
+        * @param bufferNormalizedCoordX Normalized X pick coordinate within buffer size (see \ref Coordinates).
+        * @param bufferNormalizedCoordY Normalized Y pick coordinate within buffer size (see \ref Coordinates).
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t handlePickEvent(sceneId_t sceneId, float bufferNormalizedCoordX, float bufferNormalizedCoordY);
+
+        /**
         * @brief Links an offscreen buffer to a data consumer.
         *        Same as texture linking where an offscreen buffer acts as texture provider.
         *        Offscreen buffer can be used as texture input in one or more scene's texture sampler(s).
@@ -261,7 +284,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t linkOffscreenBufferToSceneData(offscreenBufferId_t offscreenBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId);
+        status_t linkOffscreenBufferToSceneData(displayBufferId_t offscreenBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId);
 
         /**
         * @brief Removes an existing link between two scenes (see RamsesRenderer::linkData()).
@@ -278,16 +301,16 @@ namespace ramses
         * @brief Triggers an asynchronous map of scene with given scene id to a display with given display id.
         * @details Scene and display ids must refer to valid and existing instances.
         *          The result of the asynchronous operation can be retrieved via dispatchEvents.
+        *          The scene will be assigned to display's framebuffer by default (IRendererEventHandler::sceneAssignedToDisplayBuffer
+        *          will not be called), this assignment and render order can be changed at any time using RamsesRenderer::assignSceneToDisplayBuffer.
         *
         * @param[in] displayId id of display to map scene to
         * @param[in] sceneId id of scene to map
-        * @param[in] sceneRenderOrder Lower value means that a scene is rendered before a scene with higher value. Default is 0.
-        *                             The render order is guaranteed only in the scope of the buffer it is mapped to (framebuffer or offscreen buffer).
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         *         StatusOK does not guarantee successful map, the result event has its own status.
         */
-        status_t mapScene(displayId_t displayId, sceneId_t sceneId, int32_t sceneRenderOrder = 0);
+        status_t mapScene(displayId_t displayId, sceneId_t sceneId);
 
         /**
         * @brief Triggers an asynchronous unmap of scene with given scene id from any display it is mapped to.
@@ -327,17 +350,17 @@ namespace ramses
         status_t hideScene(sceneId_t sceneId);
 
         /**
-        * @brief Will create an offscreen buffer that can be used to render scenes into (see RamsesRenderer::assignSceneToOffscreenBuffer)
+        * @brief Will create an offscreen buffer that can be used to render scenes into (see RamsesRenderer::assignSceneToDisplayBuffer)
         *        and can be linked as input to a consumer texture sampler (see RamsesRenderer::linkOffscreenBufferToConsumer).
         *
         * @param[in] display id of display for which the buffer should be created
         * @param[in] width width of the buffer to be created (has to be higher than 0 and lower than 4096)
         * @param[in] height height of the buffer to be created (has to be higher than 0 and lower than 4096)
         * @return Identifier of the created offscreen buffer.
-        *         In case of unsupported resolution \c InvalidOffscreenBufferId will be returned with no renderer event generated.
+        *         In case of unsupported resolution \c displayBufferId_t::Invalid() will be returned with no renderer event generated.
         *         Note that the buffer will be created asynchronously and there will be a renderer event once the operation is finished.
         */
-        offscreenBufferId_t createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height);
+        displayBufferId_t createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height);
 
         /**
         * @brief     Additional API to create an offscreen buffer as interruptible.
@@ -358,10 +381,10 @@ namespace ramses
         * @param[in] width    Width of the buffer to be created (has to be higher than 0 and lower than 4096)
         * @param[in] height   Height of the buffer to be created (has to be higher than 0 and lower than 4096)
         * @return Identifier of the created offscreen buffer.
-        *         In case of unsupported resolution \c InvalidOffscreenBufferId will be returned with no renderer event generated.
+        *         In case of unsupported resolution \c displayBufferId_t::Invalid() will be returned with no renderer event generated.
         *         Note that the buffer will be created asynchronously and there will be a renderer event once the operation is finished.
         */
-        offscreenBufferId_t createInterruptibleOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height);
+        displayBufferId_t createInterruptibleOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height);
 
         /**
         * @brief Will destroy a previously created offscreen buffer.
@@ -373,55 +396,50 @@ namespace ramses
         * @param[in] offscreenBuffer id of buffer to destroy
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
-        *         StatusOK does not guarantee successful hide, the result event has its own status.
         */
-        status_t destroyOffscreenBuffer(displayId_t display, offscreenBufferId_t offscreenBuffer);
+        status_t destroyOffscreenBuffer(displayId_t display, displayBufferId_t offscreenBuffer);
 
         /**
         * @brief When a scene is mapped and shown it is by default rendered directly to display's framebuffer.
-        *        Assigning scene to an offscreen buffer means that scene will not be rendered to framebuffer but
-        *        to the offscreen buffer instead.
-        *        Offscreen buffer can be then used as texture input in a consumer texture sampler of another scene (see \c linkOffscreenBufferToSceneData).
-        *        In order to assign a scene to offscreen buffer the scene has to be mapped to the same display where the offscreen buffer was created.
-        *        Other properties like scene's shown or hidden state are not affected by this assignment.
+        *        However scene can be assigned to any of the display's offscreen buffers at any point in time while mapped or shown.
+        *        Scene's shown/hidden state is not affected by this assignment.
         *
         *        Assigning a scene to framebuffer or offscreen buffer changes the way its render order is determined.
         *        The rendering order of following buffer groups is fixed:
         *          1. Offscreen buffers
         *          2. Framebuffer
         *          3. Interruptible offscreen buffers
-        *        The render order given as part of mapping command only guarantees the order in scope of the buffer the scene is mapped to.
+        *        The scene render order only guarantees the order in scope of the buffer the scene is assigned to.
         *
-        * @param[in] sceneId Id of scene that should be assigned to the offscreen buffer.
-        * @param[in] offscreenBuffer Id of offscreen buffer that the scene should be assigned to.
-        *                            The display that the buffer belongs to is determined by where the scene is mapped.
+        *        The assignment will fail if scene not in mapped or shown state, if trying to assign to a display buffer
+        *        that does not exist or does not belong to the display the scene is mapped to.
+        *
+        * @param[in] sceneId Id of scene that should be assigned to the display buffer.
+        * @param[in] displayBuffer Id of display buffer (framebuffer or offscreen buffer) the scene should be assigned to.
+        *                          If provided buffer Id is invalid, framebuffer of display where scene is mapped is used.
+        * @param[in] sceneRenderOrder Lower value means that a scene is rendered before a scene with higher value. Default is 0.
+        *                             The render order is guaranteed only in the scope of the buffer it is mapped to (framebuffer or offscreen buffer).
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
-        *         StatusOK does not guarantee successful hide, the result event has its own status.
+        *         StatusOK does not guarantee successful assignment, the renderer event dispatched via callback has its own status.
         */
-        status_t assignSceneToOffscreenBuffer(sceneId_t sceneId, offscreenBufferId_t offscreenBuffer);
+        status_t assignSceneToDisplayBuffer(sceneId_t sceneId, displayBufferId_t displayBuffer, int32_t sceneRenderOrder = 0);
 
         /**
-        * @brief When a scene is assigned to an offscreen buffer using \c assignSceneToOffscreenBuffer it can be
-        *        assigned back to display's framebuffer using this method.
-        *        In order to assign a scene to framebuffer buffer the scene has to be mapped.
-        *        Which display's framebuffer to map the scene to is determined by where the scene is mapped.
-        *        Other properties like scene's shown or hidden state are not affected by this assignment.
-        *        When a scene is mapped to display it is by default assigned to the display's framebuffer.
+        * @brief Sets clear color for display's framebuffer or offscreen buffer.
+        *        Clear color is used to clear the whole buffer at the beginning of a rendering cycle (typically every frame).
         *
-        *        Assigning a scene to framebuffer or offscreen buffer changes the way its render order is determined.
-        *        The rendering order of following buffer groups is fixed:
-        *          1. Offscreen buffers
-        *          2. Framebuffer
-        *          3. Interruptible offscreen buffers
-        *        The render order given as part of mapping command only guarantees the order in scope of the buffer the scene is mapped to.
-        *
-        * @param[in] sceneId Id of scene that should be assigned to the framebuffer.
+        * @param[in] display Id of display that the buffer to set clear color belongs to.
+        * @param[in] displayBuffer Id of display buffer to set clear color,
+        *                          if ramses::displayBufferId_t::Invalid() is passed then the clear color is set for display's framebuffer.
+        * @param[in] r Clear color red channel value [0,1]
+        * @param[in] g Clear color green channel value [0,1]
+        * @param[in] b Clear color blue channel value [0,1]
+        * @param[in] a Clear color alpha channel value [0,1]
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
-        *         StatusOK does not guarantee successful hide, the result event has its own status.
         */
-        status_t assignSceneToFramebuffer(sceneId_t sceneId);
+        status_t setBufferClearColor(displayId_t display, displayBufferId_t displayBuffer = displayBufferId_t::Invalid(), float r = 0.f, float g = 0.f, float b = 0.f, float a = 1.f);
 
         /**
         * @brief Triggers an asynchronous read back of framebuffer memory from GPU to system memory.
@@ -550,6 +568,16 @@ namespace ramses
         class RamsesRendererImpl& impl;
 
         /**
+         * @brief Constructor of RamsesRenderer
+         */
+        RamsesRenderer(RamsesRendererImpl&);
+
+        /**
+         * @brief Deleted default constructor
+         */
+        RamsesRenderer() = delete;
+
+        /**
          * @brief Deleted copy constructor
          * @param other unused
          */
@@ -561,6 +589,17 @@ namespace ramses
          * @return unused
          */
         RamsesRenderer& operator=(const RamsesRenderer& other) = delete;
+
+    private:
+        /**
+        * @brief RendererFactory is the factory for RamsesRenderer
+        */
+        friend class RendererFactory;
+
+        /**
+        * @brief Destructor of RamsesRenderer
+        */
+        virtual ~RamsesRenderer();
     };
 }
 

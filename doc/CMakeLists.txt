@@ -7,11 +7,8 @@
 #  -------------------------------------------------------------------------
 
 # test system for doxygen
-
 IF(NOT DOXYGEN_FOUND)
     INCLUDE(FindDoxygen)
-    SET(DOXYGEN_FOUND ${DOXYGEN_FOUND} CACHE INTERNAL "")
-    SET(DOXYGEN_DOT_FOUND ${DOXYGEN_DOT_FOUND} CACHE INTERNAL "")
     IF(NOT DOXYGEN_FOUND)
         ACME_INFO("Doxygen was not found on this system. Documentation generation was disabled.")
         RETURN()
@@ -19,7 +16,7 @@ IF(NOT DOXYGEN_FOUND)
 ENDIF()
 
 
-FUNCTION(GENERATE_DOCUMENT documentname documentversion description inputfilelist imagepathlist)
+FUNCTION(GENERATE_DOCUMENT documentname documentversion description inputfilelist imagepathlist targetname)
 
     # prepare internal data
     SET(INPUT_STRING_FOR_DOXYGEN "")
@@ -49,102 +46,58 @@ FUNCTION(GENERATE_DOCUMENT documentname documentversion description inputfilelis
     # generate doxygen config file
     CONFIGURE_FILE("${DOXYGEN_TEMPLATE}" ${DOXYGEN_CONFIG_FILE} @ONLY)
 
+    file(WRITE "${CMAKE_BINARY_DIR}/check-doxygen-errors.cmake"
+        "file(READ \"DoxygenWarningLog.txt\" INP)\n"
+        "if (NOT \"\${INP}\" STREQUAL \"\")\n"
+        "  message(FATAL_ERROR \"Encountered doxygen warnings:\\n\${INP}\")\n"
+        "endif()\n")
+
     # run doxygen to generate latex output
     ADD_CUSTOM_COMMAND(OUTPUT ${documentname-no-spaces}
         COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_CONFIG_FILE}
+        COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/check-doxygen-errors.cmake"
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMENT "Generating documentation in: ${DOXYGEN_TARGET_DIR}" VERBATIM
         DEPENDS ${DOC_FILE_LIST}
     )
 
     # add target to create document
-    ADD_CUSTOM_TARGET(doc-${documentname-no-spaces}
+    ADD_CUSTOM_TARGET(${targetname}
         COMMENT "Generated documentation in: ${DOXYGEN_TARGET_DIR}" VERBATIM
         DEPENDS ${documentname-no-spaces}
         SOURCES ${DOC_FILE_LIST}
     )
 
-    ACME_INFO("+ doc-${documentname-no-spaces}")
+    ACME_INFO("+ ${targetname}")
 
-    SET_PROPERTY(TARGET doc-${documentname-no-spaces} PROPERTY FOLDER "doc")
+    SET_PROPERTY(TARGET ${targetname} PROPERTY FOLDER "doc")
 
 ENDFUNCTION()
 
 
-# define the generated documents
+# all in one docs
 
-SET(DEVELOPER_DOCUMENTS
-    ${CMAKE_CURRENT_SOURCE_DIR}/developer/*.dox
-)
-
-GENERATE_DOCUMENT(
-    "RAMSES Developer Information"
-    "${RAMSES_VERSION}"
-    "Developer information for people working with the RAMSES code base"
-    "${DEVELOPER_DOCUMENTS}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/developer/images;"
-)
-
-# get all header from client, framework & renderer api
 file(GLOB_RECURSE
-    RAMSES_API_ALL_HEADERS
+    RAMSES_DOX_INPUT
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    ../framework/ramses-framework-api/include/ramses-framework-api/*.h
-    ../client/ramses-client/ramses-client-api/include/ramses-client-api/*.h
-    ../client/ramses-text/ramses-text-api/include/ramses-text-api/*.h
+    ../framework/ramses-framework-api/include/*.h
     ../client/ramses-client/ramses-client-api/include/*.h
-    ../renderer/RendererLib/ramses-renderer-api/include/ramses-renderer-api/*.h)
+    ../client/ramses-client/ramses-text-api/include/*.h
+    ../renderer/RendererLib/ramses-renderer-api/include/*.h
+    ../examples/ramses-example-*/*.h
+    ../examples/ramses-example-*/*.cpp
+    *.dox)
 
-FILE(GLOB RAMSES_API_DOCUMENTS_ALL
-    general/*.dox
-    ${RAMSES_API_ALL_HEADERS}
-    ../examples/ramses-example-*/*/*.h
-    ../examples/ramses-example-*/*/*.cpp
-    )
+set(RAMSES_DOX_IMAGE_PATHS
+    ${CMAKE_CURRENT_SOURCE_DIR}/developer/images
+    ${CMAKE_CURRENT_SOURCE_DIR}/dlt-logging/images
+    ${CMAKE_CURRENT_SOURCE_DIR}/general/images
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools/images)
 
-GENERATE_DOCUMENT(
-    "RAMSES General"
-    "${RAMSES_VERSION}"
-    "RAMSES General Overview"
-    "${RAMSES_API_DOCUMENTS_ALL}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/general/images"
-)
-
-SET(DLT_DOCUMENTS
-    ${CMAKE_CURRENT_SOURCE_DIR}/dlt-logging/*.dox
-)
-
-GENERATE_DOCUMENT(
-    "RAMSES DLT Logging"
-    "${RAMSES_VERSION}"
-    "Architecture of RAMSES Framework"
-    "${DLT_DOCUMENTS}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/dlt-logging/images"
-)
-
-SET(EMBEDDED_COMPOSITING_DOCUMENTS
-    ${CMAKE_CURRENT_SOURCE_DIR}/embedded-compositing/*.dox
-    ${RAMSES_API_ALL_HEADERS}
-    ../examples/ramses-example-basic-compositing/*/*.cpp
-)
-
-GENERATE_DOCUMENT(
-    "RAMSES Embedded Compositing Support"
-    "${RAMSES_VERSION}"
-    "Embedded Compositing Support"
-    "${EMBEDDED_COMPOSITING_DOCUMENTS}"
-    ""
-)
-
-SET(RAMSES_TOOLS_DOCUMENTS
-    ${CMAKE_CURRENT_SOURCE_DIR}/tools/*.dox
-    ${RAMSES_API_ALL_HEADERS}
-)
-
-GENERATE_DOCUMENT(
-    "RAMSES Tools"
-    "${RAMSES_VERSION}"
-    "Ramses Tools Support"
-    "${RAMSES_TOOLS_DOCUMENTS}"
-    ""
-)
+ GENERATE_DOCUMENT(
+     "RAMSES Documentation"
+     "${RAMSES_VERSION}"
+     "Information for RAMSES users and developers"
+     "${RAMSES_DOX_INPUT}"
+     "${RAMSES_DOX_IMAGE_PATHS}"
+     "doc")

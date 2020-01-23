@@ -9,7 +9,7 @@
 #include "EffectConfig.h"
 #include "FileUtils.h"
 #include "ConsoleUtils.h"
-#include "StringUtils.h"
+#include "Utils/StringUtils.h"
 
 #include "PlatformAbstraction/PlatformStringUtils.h"
 #include "Utils/File.h"
@@ -62,13 +62,13 @@ bool EffectConfig::loadFromFile(const char* filePath)
 
 bool EffectConfig::parseConfigLine(int lineNumber, const ramses_internal::String& line)
 {
-    if (0 == line.getLength())
+    if (0 == line.size())
     {
         return true;
     }
 
     std::vector<ramses_internal::String> tokens;
-    StringUtils::GetLineTokens(line, ' ', tokens);
+    ramses_internal::StringUtils::GetLineTokens(line, ' ', tokens);
     if (tokens.empty())
     {
         return true;
@@ -199,7 +199,7 @@ void EffectConfig::fillEffectDescription(ramses::EffectDescription& description)
 
 bool EffectConfig::addCompilerDefine(const ramses_internal::String& define)
 {
-    if (m_compilerDefines.hasElement(define))
+    if (m_compilerDefines.contains(define))
     {
         return false;
     }

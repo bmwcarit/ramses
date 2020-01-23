@@ -41,13 +41,6 @@ namespace ramses_internal
     template <template<typename, typename> class MEMORYPOOL>
     SceneT<MEMORYPOOL>::~SceneT()
     {
-        for (auto i = AnimationSystemHandle(0); i < getAnimationSystemCount(); ++i)
-        {
-            if (isAnimationSystemAllocated(i))
-            {
-                removeAnimationSystem(i);
-            }
-        }
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -101,13 +94,13 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setRenderPassEnabled(RenderPassHandle passHandle, Bool isEnabled)
+    void SceneT<MEMORYPOOL>::setRenderPassEnabled(RenderPassHandle passHandle, bool isEnabled)
     {
         m_renderPasses.getMemory(passHandle)->isEnabled = isEnabled;
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setRenderPassRenderOnce(RenderPassHandle passHandle, Bool enable)
+    void SceneT<MEMORYPOOL>::setRenderPassRenderOnce(RenderPassHandle passHandle, bool enable)
     {
         m_renderPasses.getMemory(passHandle)->isRenderOnce = enable;
     }
@@ -235,7 +228,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setForceFallbackImage(StreamTextureHandle streamTextureHandle, Bool forceFallbackImage)
+    void SceneT<MEMORYPOOL>::setForceFallbackImage(StreamTextureHandle streamTextureHandle, bool forceFallbackImage)
     {
         m_streamTextures.getMemory(streamTextureHandle)->forceFallbackTexture = forceFallbackImage;
     }
@@ -403,6 +396,56 @@ namespace ramses_internal
         return *m_dataSlots.getMemory(handle);
     }
 
+    template <template <typename, typename> class MEMORYPOOL>
+    PickableObjectHandle SceneT<MEMORYPOOL>::allocatePickableObject(DataBufferHandle     geometryHandle,
+                                                                    NodeHandle           nodeHandle,
+                                                                    PickableObjectId     id,
+                                                                    PickableObjectHandle pickableHandle)
+    {
+        const PickableObjectHandle pickableObjectHandle = m_pickableObjects.allocate(pickableHandle);
+        PickableObject&            pickableObject       = *m_pickableObjects.getMemory(pickableObjectHandle);
+        pickableObject.geometryHandle                   = geometryHandle;
+        pickableObject.nodeHandle                       = nodeHandle;
+        pickableObject.id                               = id;
+        return pickableObjectHandle;
+    }
+
+    template <template <typename, typename> class MEMORYPOOL>
+    void SceneT<MEMORYPOOL>::releasePickableObject(PickableObjectHandle pickableHandle)
+    {
+        m_pickableObjects.release(pickableHandle);
+    }
+
+    template <template <typename, typename> class MEMORYPOOL>
+    ramses_internal::UInt32 SceneT<MEMORYPOOL>::getPickableObjectCount() const
+    {
+        return m_pickableObjects.getTotalCount();
+    }
+
+    template <template <typename, typename> class MEMORYPOOL>
+    void SceneT<MEMORYPOOL>::setPickableObjectId(PickableObjectHandle pickableHandle, PickableObjectId id)
+    {
+        m_pickableObjects.getMemory(pickableHandle)->id = id;
+    }
+
+    template <template <typename, typename> class MEMORYPOOL>
+    void SceneT<MEMORYPOOL>::setPickableObjectCamera(PickableObjectHandle pickableHandle, CameraHandle cameraHandle)
+    {
+        m_pickableObjects.getMemory(pickableHandle)->cameraHandle = cameraHandle;
+    }
+
+    template <template <typename, typename> class MEMORYPOOL>
+    void SceneT<MEMORYPOOL>::setPickableObjectEnabled(PickableObjectHandle pickableHandle, bool isEnabled)
+    {
+        m_pickableObjects.getMemory(pickableHandle)->isEnabled = isEnabled;
+    }
+
+    template <template <typename, typename> class MEMORYPOOL>
+    const PickableObject& SceneT<MEMORYPOOL>::getPickableObject(PickableObjectHandle pickableHandle) const
+    {
+        return *m_pickableObjects.getMemory(pickableHandle);
+    }
+
     template <template<typename, typename> class MEMORYPOOL>
     BlitPassHandle SceneT<MEMORYPOOL>::allocateBlitPass(RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle /*= BlitPassHandle::Invalid()*/)
     {
@@ -432,7 +475,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setBlitPassEnabled(BlitPassHandle passHandle, Bool isEnabled)
+    void SceneT<MEMORYPOOL>::setBlitPassEnabled(BlitPassHandle passHandle, bool isEnabled)
     {
         m_blitPasses.getMemory(passHandle)->isEnabled = isEnabled;
     }
@@ -449,42 +492,6 @@ namespace ramses_internal
     const BlitPass& SceneT<MEMORYPOOL>::getBlitPass(BlitPassHandle passHandle) const
     {
         return *m_blitPasses.getMemory(passHandle);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    AnimationSystemHandle SceneT<MEMORYPOOL>::addAnimationSystem(IAnimationSystem* animationSystem, AnimationSystemHandle externalHandle)
-    {
-        assert(nullptr != animationSystem);
-        const auto handle = m_animationSystems.allocate(externalHandle);
-        *m_animationSystems.getMemory(handle) = animationSystem;
-        animationSystem->setHandle(handle);
-        return handle;
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::removeAnimationSystem(AnimationSystemHandle handle)
-    {
-        delete getAnimationSystem(handle);
-        m_animationSystems.release(handle);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    IAnimationSystem* SceneT<MEMORYPOOL>::getAnimationSystem(AnimationSystemHandle handle)
-    {
-        // Non-const version of getAnimationSystem cast to its const version to avoid duplicating code
-        return const_cast<IAnimationSystem*>((const_cast<const SceneT&>(*this)).getAnimationSystem(handle));
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    const IAnimationSystem* SceneT<MEMORYPOOL>::getAnimationSystem(AnimationSystemHandle handle) const
-    {
-        return m_animationSystems.isAllocated(handle) ? *m_animationSystems.getMemory(handle) : nullptr;
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    UInt32 SceneT<MEMORYPOOL>::getAnimationSystemCount() const
-    {
-        return m_animationSystems.getTotalCount();
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -642,15 +649,21 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setRenderableVisibility(RenderableHandle renderableHandle, Bool visible)
+    void SceneT<MEMORYPOOL>::setRenderableVisibility(RenderableHandle renderableHandle, EVisibilityMode visible)
     {
-        m_renderables.getMemory(renderableHandle)->isVisible = visible;
+        m_renderables.getMemory(renderableHandle)->visibilityMode = visible;
     }
 
     template <template<typename, typename> class MEMORYPOOL>
     void SceneT<MEMORYPOOL>::setRenderableInstanceCount(RenderableHandle renderableHandle, UInt32 instanceCount)
     {
         m_renderables.getMemory(renderableHandle)->instanceCount = instanceCount;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    void SceneT<MEMORYPOOL>::setRenderableStartVertex(RenderableHandle renderableHandle, UInt32 startVertex)
+    {
+        m_renderables.getMemory(renderableHandle)->startVertex = startVertex;
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -725,12 +738,6 @@ namespace ramses_internal
     void SceneT<MEMORYPOOL>::setRenderableDataInstance(RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance)
     {
         m_renderables.getMemory(renderableHandle)->dataInstances[slot] = newDataInstance;
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setRenderableEffect(RenderableHandle renderableHandle, const ResourceContentHash& effectHash)
-    {
-        m_renderables.getMemory(renderableHandle)->effectResource = effectHash;
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -1046,12 +1053,13 @@ namespace ramses_internal
 
 
     template <template<typename, typename> class MEMORYPOOL>
-    DataLayoutHandle SceneT<MEMORYPOOL>::allocateDataLayout(const DataFieldInfoVector& dataFields, DataLayoutHandle handle)
+    DataLayoutHandle SceneT<MEMORYPOOL>::allocateDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle)
     {
         const DataLayoutHandle actualHandle = m_dataLayoutMemory.allocate(handle);
 
         DataLayout& dataLayout = *m_dataLayoutMemory.getMemory(actualHandle);
         dataLayout.setDataFields(dataFields);
+        dataLayout.setEffectHash(effectHash);
 
         return actualHandle;
     }
@@ -1126,8 +1134,8 @@ namespace ramses_internal
         m_streamTextures.preallocateSize(sizeInfo.streamTextureCount);
         m_dataSlots.preallocateSize(sizeInfo.dataSlotCount);
         m_dataBuffers.preallocateSize(sizeInfo.dataBufferCount);
-        m_animationSystems.preallocateSize(sizeInfo.animationSystemCount);
         m_textureBuffers.preallocateSize(sizeInfo.textureBufferCount);
+        m_pickableObjects.preallocateSize(sizeInfo.pickableObjectCount);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -1219,25 +1227,24 @@ namespace ramses_internal
     SceneSizeInformation SceneT<MEMORYPOOL>::getSceneSizeInformation() const
     {
         SceneSizeInformation sizeInfo;
-        sizeInfo.nodeCount = getNodeCount();
-        sizeInfo.cameraCount = getCameraCount();
-        sizeInfo.transformCount = getTransformCount();
-        sizeInfo.renderableCount = getRenderableCount();
-        sizeInfo.renderStateCount = getRenderStateCount();
-        sizeInfo.datalayoutCount = getDataLayoutCount();
-        sizeInfo.datainstanceCount = getDataInstanceCount();
-        sizeInfo.renderGroupCount = getRenderGroupCount();
-        sizeInfo.renderPassCount = getRenderPassCount();
-        sizeInfo.blitPassCount = getBlitPassCount();
-        sizeInfo.renderTargetCount = getRenderTargetCount();
-        sizeInfo.renderBufferCount = getRenderBufferCount();
-        sizeInfo.textureSamplerCount = getTextureSamplerCount();
-        sizeInfo.streamTextureCount = getStreamTextureCount();
-        sizeInfo.dataSlotCount = getDataSlotCount();
-        sizeInfo.dataBufferCount = getDataBufferCount();
-        sizeInfo.animationSystemCount = getAnimationSystemCount();
-        sizeInfo.textureBufferCount = getTextureBufferCount();
-
+        sizeInfo.nodeCount = m_nodes.getTotalCount();
+        sizeInfo.cameraCount = m_cameras.getTotalCount();
+        sizeInfo.transformCount = m_transforms.getTotalCount();
+        sizeInfo.renderableCount = m_renderables.getTotalCount();
+        sizeInfo.renderStateCount = m_states.getTotalCount();
+        sizeInfo.datalayoutCount = m_dataLayoutMemory.getTotalCount();
+        sizeInfo.datainstanceCount = m_dataInstanceMemory.getTotalCount();
+        sizeInfo.renderGroupCount = m_renderGroups.getTotalCount();
+        sizeInfo.renderPassCount = m_renderPasses.getTotalCount();
+        sizeInfo.blitPassCount = m_blitPasses.getTotalCount();
+        sizeInfo.renderTargetCount = m_renderTargets.getTotalCount();
+        sizeInfo.renderBufferCount = m_renderBuffers.getTotalCount();
+        sizeInfo.textureSamplerCount = m_textureSamplers.getTotalCount();
+        sizeInfo.streamTextureCount = m_streamTextures.getTotalCount();
+        sizeInfo.dataSlotCount = m_dataSlots.getTotalCount();
+        sizeInfo.dataBufferCount = m_dataBuffers.getTotalCount();
+        sizeInfo.textureBufferCount = m_textureBuffers.getTotalCount();
+        sizeInfo.pickableObjectCount = m_pickableObjects.getTotalCount();
         return sizeInfo;
     }
 

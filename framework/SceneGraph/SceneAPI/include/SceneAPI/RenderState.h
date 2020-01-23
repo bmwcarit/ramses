@@ -111,6 +111,8 @@ namespace ramses_internal
         LineLoop,
         Triangles,
         TriangleStrip,
+        TriangleFan,
+        LineStrip,
         NUMBER_OF_ELEMENTS
     };
 
@@ -220,7 +222,9 @@ namespace ramses_internal
         "Lines",
         "LineLoop",
         "Triangles",
-        "TriangleStrip"
+        "TriangleStrip",
+        "TriangleFan",
+        "LineStrip",
     };
 
     ENUM_TO_STRING(EBlendOperation, BlendOperationNames, EBlendOperation::NUMBER_OF_ELEMENTS);

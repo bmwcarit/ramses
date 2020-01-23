@@ -27,12 +27,27 @@ namespace ramses_internal
             {
                 const Renderable& renderable1 = m_scene.getRenderable(renderableOrder1.renderable);
                 const Renderable& renderable2 = m_scene.getRenderable(renderableOrder2.renderable);
-                if (renderable1.effectResource == renderable2.effectResource)
+
+                ResourceContentHash effectHash1 = ResourceContentHash::Invalid();
+                if (renderable1.dataInstances[ERenderableDataSlotType_Geometry].isValid())
+                {
+                    const DataLayoutHandle geometry1DataLayoutHandle = m_scene.getLayoutOfDataInstance(renderable1.dataInstances[ERenderableDataSlotType_Geometry]);
+                    effectHash1 = m_scene.getDataLayout(geometry1DataLayoutHandle).getEffectHash();
+                }
+
+                ResourceContentHash effectHash2 = ResourceContentHash::Invalid();
+                if (renderable2.dataInstances[ERenderableDataSlotType_Geometry].isValid())
+                {
+                    const DataLayoutHandle geometry2DataLayoutHandle = m_scene.getLayoutOfDataInstance(renderable2.dataInstances[ERenderableDataSlotType_Geometry]);
+                    effectHash2 = m_scene.getDataLayout(geometry2DataLayoutHandle).getEffectHash();
+                }
+
+                if (effectHash1 == effectHash2)
                 {
                     return renderable1.dataInstances[ERenderableDataSlotType_Geometry] < renderable2.dataInstances[ERenderableDataSlotType_Geometry];
                 }
 
-                return renderable1.effectResource < renderable2.effectResource;
+                return effectHash1 < effectHash2;
             }
 
             return renderableOrder1.order < renderableOrder2.order;

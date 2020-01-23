@@ -8,8 +8,6 @@
 
 IF(ramses-sdk_BUILD_EXAMPLES)
     ADD_SUBDIRECTORY(ramses-example-minimal)
-    ADD_SUBDIRECTORY(ramses-example-basic-animation)
-    ADD_SUBDIRECTORY(ramses-example-basic-animation-realtime)
     ADD_SUBDIRECTORY(ramses-example-basic-blending)
     ADD_SUBDIRECTORY(ramses-example-basic-effect-from-glsl)
     ADD_SUBDIRECTORY(ramses-example-basic-geometry)
@@ -29,8 +27,9 @@ IF(ramses-sdk_BUILD_EXAMPLES)
     ADD_SUBDIRECTORY(ramses-example-local-datalink)
     ADD_SUBDIRECTORY(ramses-example-local-offscreenbuffer)
     ADD_SUBDIRECTORY(ramses-example-local-viewport-link)
+    ADD_SUBDIRECTORY(ramses-example-local-pick-handling)
     ADD_SUBDIRECTORY(ramses-example-text-basic)
     ADD_SUBDIRECTORY(ramses-example-text-languages)
-
+    ADD_SUBDIRECTORY(ramses-example-dcsm-provider)
 ENDIF()
 

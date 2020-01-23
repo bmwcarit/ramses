@@ -10,11 +10,9 @@
 #define RAMSES_SCENEAPI_SCENETYPES_H
 
 #include "SceneAPI/Handles.h"
-#include "SceneAPI/EFixedSemantics.h"
 #include "SceneAPI/RenderState.h"
-#include "SceneAPI/EDataType.h"
-
-#include "Collections/Vector.h"
+#include "Common/StronglyTypedValue.h"
+#include <vector>
 
 namespace ramses_internal
 {
@@ -23,7 +21,7 @@ namespace ramses_internal
         RenderGroupHandle renderGroup;
         Int32             order;
 
-        Bool operator<(const RenderGroupOrderEntry& other) const
+        bool operator<(const RenderGroupOrderEntry& other) const
         {
             return order < other.order;
         }
@@ -38,9 +36,14 @@ namespace ramses_internal
     using StreamTextureHandleVector  =  std::vector<StreamTextureHandle>;
     using RenderGroupOrderVector     =  std::vector<RenderGroupOrderEntry>;
     using BlitPassHandleVector       =  std::vector<BlitPassHandle>;
+    using PickableObjectHandleVector =  std::vector<PickableObjectHandle>;
     using DataBufferHandleVector     =  std::vector<DataBufferHandle>;
     using TextureBufferHandleVector  =  std::vector<TextureBufferHandle>;
     using TextureSamplerHandleVector =  std::vector<TextureSamplerHandle>;
+
+    struct PickableObjectIdTag {};
+    typedef StronglyTypedValue<UInt32, std::numeric_limits<uint32_t>::max(), PickableObjectIdTag> PickableObjectId;
+    using PickableObjectIds = std::vector<PickableObjectId>;
 }
 
 #endif

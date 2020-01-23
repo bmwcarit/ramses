@@ -8,7 +8,7 @@
 
 #include "DisplayManager/ShowSceneOnDisplay.h"
 
-namespace ramses_display_manager
+namespace ramses_internal
 {
     ShowSceneOnDisplay::ShowSceneOnDisplay(IDisplayManager& displayManager)
         : m_displayManager(displayManager)
@@ -17,27 +17,27 @@ namespace ramses_display_manager
         registerKeyword("showSceneOnDisplay");
     }
 
-    uint32_t parseIntArg(const ramses_internal::RamshInput& input, uint32_t idx)
+    uint32_t parseIntArg(const RamshInput& input, uint32_t idx)
     {
-        const ramses_internal::String argVal(input[idx]);
+        const String argVal(input[idx]);
         return atoi(argVal.c_str());
     }
 
-    float parseFloatArg(const ramses_internal::RamshInput& input, uint32_t idx)
+    float parseFloatArg(const RamshInput& input, uint32_t idx)
     {
-        const ramses_internal::String argVal(input[idx]);
+        const String argVal(input[idx]);
         return static_cast<float>(atof(argVal.c_str()));
     }
 
-    std::string parseStringArg(const ramses_internal::RamshInput& input, uint32_t idx)
+    std::string parseStringArg(const RamshInput& input, uint32_t idx)
     {
         return input[idx].stdRef();
     }
 
-    bool ShowSceneOnDisplay::executeInput(const ramses_internal::RamshInput& input)
+    bool ShowSceneOnDisplay::executeInput(const RamshInput& input)
     {
-        ramses::sceneId_t sceneId = 0xffff;
-        ramses::displayId_t displayId = 0xffff;
+        ramses::sceneId_t sceneId(0xffff);
+        ramses::displayId_t displayId{ 0xffff };
         std::string confirmationText = "";
         int sceneRenderOrder = 0;
 
@@ -55,7 +55,7 @@ namespace ramses_display_manager
             }
             else if (argStr == std::string("-displayId"))
             {
-                displayId = parseIntArg(input, ++argStrIdx);
+                displayId.getReference() = parseIntArg(input, ++argStrIdx);
                 displayDefined = true;
             }
             else if (argStr == std::string("-order"))
@@ -73,8 +73,9 @@ namespace ramses_display_manager
             return false;
         }
 
-        m_displayManager.setSceneMapping(sceneId, displayId, sceneRenderOrder);
-        m_displayManager.setSceneState(sceneId, ramses_display_manager::SceneState::Rendered, confirmationText.c_str());
+        m_displayManager.setSceneMapping(sceneId, displayId);
+        m_displayManager.setSceneDisplayBufferAssignment(sceneId, {}, sceneRenderOrder);
+        m_displayManager.setSceneState(sceneId, SceneState::Rendered, confirmationText.c_str());
 
         return true;
     }

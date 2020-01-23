@@ -29,6 +29,7 @@ namespace ramses_internal
             PERSPECTIVE_PROJECTION = 0,
             ORTHOGRAPHIC_PROJECTION,
 
+            RENDERBUFFER_FORMAT_RGBA4,
             RENDERBUFFER_FORMAT_R8,
             RENDERBUFFER_FORMAT_RG8,
             RENDERBUFFER_FORMAT_RGB8,

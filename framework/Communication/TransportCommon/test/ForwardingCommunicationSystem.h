@@ -19,7 +19,7 @@ namespace ramses_internal
     {
     public:
         ForwardingCommunicationSystem(const Guid& id);
-        ~ForwardingCommunicationSystem() override;
+        virtual ~ForwardingCommunicationSystem() override;
 
         void setForwardingTarget(ForwardingCommunicationSystem* target);
 
@@ -41,8 +41,8 @@ namespace ramses_internal
 
         virtual bool sendSubscribeScene(const Guid& to, const SceneId& sceneId) override;
         virtual bool sendUnsubscribeScene(const Guid& to, const SceneId& sceneId) override;
-        virtual bool sendSceneNotAvailable(const Guid& to, const SceneId& sceneId) override;
 
+        virtual bool sendSceneNotAvailable(const Guid& to, const SceneId& sceneId) override;
         virtual bool sendInitializeScene(const Guid& to, const SceneInfo& sceneInfo) override;
         virtual uint64_t sendSceneActionList(const Guid& to, const SceneId& sceneId, const SceneActionCollection& actions, const uint64_t& actionListCounter) override;
 
@@ -53,6 +53,7 @@ namespace ramses_internal
         virtual bool sendDcsmContentFocusRequest(const Guid& to, ContentID contentID) override;
         virtual bool sendDcsmBroadcastRequestStopOfferContent(ContentID contentID) override;
         virtual bool sendDcsmBroadcastForceStopOfferContent(ContentID contentID) override;
+        virtual bool sendDcsmUpdateContentMetadata(const Guid& to, ContentID contentID, const DcsmMetadata& metadata) override;
 
         // dcsm renderer -> client
         virtual bool sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, SizeInfo sizeinfo, AnimationInformation) override;

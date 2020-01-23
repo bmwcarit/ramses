@@ -104,7 +104,7 @@ def check_curly_braces_alone_on_line(filename, file_contents, clean_file_content
                 #if the right curly brace does not mark the end of type declaration:
                 #the line must begin with the right curly brace, can possibly have a while expression and ends by semicolon
                 #this has to be the end of line ($) to avoid having a second statement on the same line
-                if re.match(r"(\s*)\}(\s*)((while((?!;).)*)?)(;?)(\s*)(\\?)(\s*)$", line) == None and re.search(inside_expression_close_re, line) == None:
+                if re.match(r"(\s*)\}(\s*)((while((?!;).)*)?)(;?)(\s*)(\\?)(\s*)$", line) == None and re.search(inside_expression_close_re, line) == None and not re.search(r'^\s+(?:,|:) \w+', line):
                     log_warning("check_curly_braces_alone_on_line", filename, i + 1, "other code on same line with closing curly brace", file_lines[i].strip(" "))
 
         if line.strip(" \t\n\f\r"):

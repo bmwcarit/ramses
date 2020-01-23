@@ -34,8 +34,8 @@ TEST_F(AInternalDisplayConfig, hasDefaultValues)
     EXPECT_FALSE(m_config.isWarpingEnabled());
     EXPECT_TRUE(m_config.getKeepEffectsUploaded());
     EXPECT_FALSE(m_config.isStereoDisplay());
-    EXPECT_TRUE(ramses_internal::InvalidWaylandIviLayerId == m_config.getWaylandIviLayerID());
-    EXPECT_TRUE(ramses_internal::InvalidIntegrityRGLDeviceUnit == m_config.getIntegrityRGLDeviceUnit());
+    EXPECT_TRUE(!m_config.getWaylandIviLayerID().isValid());
+    EXPECT_TRUE(!m_config.getIntegrityRGLDeviceUnit().isValid());
     EXPECT_FALSE(m_config.getStartVisibleIvi());
     EXPECT_FALSE(m_config.isResizable());
     EXPECT_EQ(ramses_internal::ProjectionParams::Perspective(19.0f, 1280.f / 480.f, 0.1f, 1500.f), m_config.getProjectionParams());
@@ -45,7 +45,7 @@ TEST_F(AInternalDisplayConfig, hasDefaultValues)
     EXPECT_STREQ("", m_config.getWaylandDisplay().c_str());
 
     // this value is used in HL API, so test that value does not change unnoticed
-    EXPECT_TRUE(ramses_internal::InvalidIntegrityRGLDeviceUnit.getValue() == 0xFFFFFFFF);
+    EXPECT_TRUE(ramses_internal::IntegrityRGLDeviceUnit::Invalid().getValue() == 0xFFFFFFFF);
 }
 
 TEST_F(AInternalDisplayConfig, setAndGetValues)

@@ -11,6 +11,7 @@
 
 #include "DcsmProviderImpl.h"
 #include "RamsesFrameworkImpl.h"
+#include "RamsesFrameworkTypesImpl.h"
 
 #include "APILoggingMacros.h"
 
@@ -30,28 +31,42 @@ namespace ramses
     status_t DcsmProvider::offerContent(ContentID contentID, Category category, sceneId_t scene)
     {
         auto status = impl.offerContent(contentID, category, scene);
-        LOG_HL_CLIENT_API3(status, contentID.getValue(), category.getValue(), scene);
+        LOG_HL_CLIENT_API3(status, contentID, category, scene);
+        return status;
+    }
+
+    status_t DcsmProvider::offerContentWithMetadata(ContentID contentID, Category category, sceneId_t scene, const DcsmMetadataCreator& metadata)
+    {
+        const auto status = impl.offerContentWithMetadata(contentID, category, scene, metadata);
+        LOG_HL_CLIENT_API4(status, contentID, category, scene, LOG_API_GENERIC_OBJECT_STRING(metadata));
+        return status;
+    }
+
+    status_t DcsmProvider::updateContentMetadata(ContentID contentID, const DcsmMetadataCreator& metadata)
+    {
+        const auto status = impl.updateContentMetadata(contentID, metadata);
+        LOG_HL_CLIENT_API1(status, contentID);
         return status;
     }
 
     status_t DcsmProvider::requestStopOfferContent(ContentID contentID)
     {
         auto status = impl.requestStopOfferContent(contentID);
-        LOG_HL_CLIENT_API1(status, contentID.getValue());
+        LOG_HL_CLIENT_API1(status, contentID);
         return status;
     }
 
     status_t DcsmProvider::markContentReady(ContentID contentID)
     {
         auto status = impl.markContentReady(contentID);
-        LOG_HL_CLIENT_API1(status, contentID.getValue());
+        LOG_HL_CLIENT_API1(status, contentID);
         return status;
     }
 
     status_t DcsmProvider::requestContentFocus(ContentID contentID)
     {
         auto status = impl.requestContentFocus(contentID);
-        LOG_HL_CLIENT_API1(status, contentID.getValue());
+        LOG_HL_CLIENT_API1(status, contentID);
         return status;
     }
 

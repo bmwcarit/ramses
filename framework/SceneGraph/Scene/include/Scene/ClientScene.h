@@ -10,7 +10,6 @@
 #define RAMSES_CLIENTSCENE_H
 
 #include "Scene/DataLayoutCachedScene.h"
-#include "Utils/MemoryPoolExplicit.h"
 #include "Utils/StatisticCollection.h"
 
 namespace ramses_internal

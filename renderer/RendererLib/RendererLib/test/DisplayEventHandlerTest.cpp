@@ -133,3 +133,14 @@ TEST_F(ADisplayEventHandler, createsRendererEventOnWindowResizeEvent)
     EXPECT_EQ(1280u, event.resizeEvent.width);
     EXPECT_EQ(480u, event.resizeEvent.height);
 }
+
+TEST_F(ADisplayEventHandler, createsRendererEventOnWindowMoveEvent)
+{
+    m_displayEventHandler.onWindowMove(1280, 480);
+
+    const RendererEvent event = getRendererEvent(0u);
+    EXPECT_EQ(ERendererEventType_WindowMoveEvent, event.eventType);
+    EXPECT_EQ(m_displayHandle, event.displayHandle);
+    EXPECT_EQ(1280, event.moveEvent.posX);
+    EXPECT_EQ(480, event.moveEvent.posY);
+}

@@ -13,7 +13,7 @@ ACME_MODULE(
     #==========================================================================
     NAME                    Surface_Integrity_RGL_EGL
     TYPE                    STATIC_LIBRARY
-    ENABLE_INSTALL          ${ramses-sdk_INSTALL_STATIC_LIBS}
+    ENABLE_INSTALL          OFF
 
     #==========================================================================
     # files of this module

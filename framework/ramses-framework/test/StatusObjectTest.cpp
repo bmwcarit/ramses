@@ -31,13 +31,13 @@ TEST(AStatusObject, allValidationLevelsContainObjectNames)
     dummy.addObjectNameToValidationReport();
 
     const String infoReportAsString(dummy.getValidationReport(EValidationSeverity_Info));
-    EXPECT_NE(0u, infoReportAsString.getLength());
+    EXPECT_NE(0u, infoReportAsString.size());
 
     const String warningReportAsString(dummy.getValidationReport(EValidationSeverity_Warning));
-    EXPECT_NE(0u, warningReportAsString.getLength());
+    EXPECT_NE(0u, warningReportAsString.size());
 
     const String errorReportAsString(dummy.getValidationReport(EValidationSeverity_Error));
-    EXPECT_NE(0u, errorReportAsString.getLength());
+    EXPECT_NE(0u, errorReportAsString.size());
 }
 
 TEST(AStatusObject, filteresValidationInfosCorrectly)
@@ -46,13 +46,13 @@ TEST(AStatusObject, filteresValidationInfosCorrectly)
     dummy.addValidationMessageForTesting(EValidationSeverity_Info);
 
     const String infoReportAsString(dummy.getValidationReport(EValidationSeverity_Info));
-    EXPECT_LT(0u, infoReportAsString.getLength());
+    EXPECT_LT(0u, infoReportAsString.size());
 
     const String warningReportAsString(dummy.getValidationReport(EValidationSeverity_Warning));
-    EXPECT_EQ(0u, warningReportAsString.getLength());
+    EXPECT_EQ(0u, warningReportAsString.size());
 
     const String errorReportAsString(dummy.getValidationReport(EValidationSeverity_Error));
-    EXPECT_EQ(0u, errorReportAsString.getLength());
+    EXPECT_EQ(0u, errorReportAsString.size());
 }
 
 TEST(AStatusObject, filteresValidationWarningsCorrectly)
@@ -61,13 +61,13 @@ TEST(AStatusObject, filteresValidationWarningsCorrectly)
     dummy.addValidationMessageForTesting(EValidationSeverity_Warning);
 
     const String infoReportAsString(dummy.getValidationReport(EValidationSeverity_Info));
-    EXPECT_LT(0u, infoReportAsString.getLength());
+    EXPECT_LT(0u, infoReportAsString.size());
 
     const String warningReportAsString(dummy.getValidationReport(EValidationSeverity_Warning));
-    EXPECT_LT(0u, warningReportAsString.getLength());
+    EXPECT_LT(0u, warningReportAsString.size());
 
     const String errorReportAsString(dummy.getValidationReport(EValidationSeverity_Error));
-    EXPECT_EQ(0u, errorReportAsString.getLength());
+    EXPECT_EQ(0u, errorReportAsString.size());
 }
 
 TEST(AStatusObject, filteresValidationErrorsCorrectly)
@@ -76,11 +76,11 @@ TEST(AStatusObject, filteresValidationErrorsCorrectly)
     dummy.addValidationMessageForTesting(EValidationSeverity_Error);
 
     const String infoReportAsString(dummy.getValidationReport(EValidationSeverity_Info));
-    EXPECT_LT(0u, infoReportAsString.getLength());
+    EXPECT_LT(0u, infoReportAsString.size());
 
     const String warningReportAsString(dummy.getValidationReport(EValidationSeverity_Warning));
-    EXPECT_LT(0u, warningReportAsString.getLength());
+    EXPECT_LT(0u, warningReportAsString.size());
 
     const String errorReportAsString(dummy.getValidationReport(EValidationSeverity_Error));
-    EXPECT_LT(0u, errorReportAsString.getLength());
+    EXPECT_LT(0u, errorReportAsString.size());
 }

@@ -24,7 +24,7 @@ namespace ramses_internal
         m_pCmdPrintHelp = new RamshCommandPrintHelp(*this);
         add(*m_pCmdPrintHelp);
 
-        m_pCmdSetLogLevel = new RamshCommandSetLogLevel(*this);
+        m_pCmdSetLogLevel = new RamshCommandSetConsoleLogLevel(*this);
         add(*m_pCmdSetLogLevel);
 
         m_pCmdSetContextLogLevel = new RamshCommandSetContextLogLevel(*this);
@@ -69,7 +69,7 @@ namespace ramses_internal
         return m_prompt;
     }
 
-    Bool Ramsh::execute(RamshInput& input)
+    bool Ramsh::execute(RamshInput& input)
     {
         if (!input.isValid())
         {
@@ -95,7 +95,7 @@ namespace ramses_internal
         }
 
         LOG_DEBUG(CONTEXT_RAMSH, String("triggering cmd '").append(commandString).append("'"));
-        const Bool cmdResult = cmd->executeInput(input);
+        const bool cmdResult = cmd->executeInput(input);
         if (!cmdResult)
         {
             LOG_WARN(CONTEXT_RAMSH, "cmd '" << commandString << "' returned false");

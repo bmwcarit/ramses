@@ -30,14 +30,6 @@ This code creates a simple geometry.
 This code creates a simple scene graph with multiple nodes.
 @snippet ramses-example-basic-scenegraph/src/main.cpp Basic Scene Graph Example
 
-## Basic Animation
-This code creates a simple animation of a color of an appearance.
-@snippet ramses-example-basic-animation/src/main.cpp Basic Animation Example
-
-## Basic Realtime Animation
-This code creates a simple realtime animation sequence with three triangles.
-@snippet ramses-example-basic-animation-realtime/src/main.cpp Basic Realtime Animation Example
-
 ## Basic Blending
 This code creates a simple scene consisting of three triangles with alpha blending.
 @snippet ramses-example-basic-blending/src/main.cpp Basic Blending Example
@@ -152,8 +144,20 @@ This code creates a scene with a triangle and a texture consumer, then creates a
 The offscreen buffer is then linked to the first scene so that it is used as a texture on the triangle.
 @snippet ramses-example-local-offscreenbuffer/src/main.cpp Offscreen Buffer Example
 
+## Pick Handling
+This code creates a scene with two triangles and two pickable objects exactly covering these two triangles.
+The pickable objects use the scenes camera. This is needed for the intersection algorithm to unproject the pick ray in the same space as
+the object in the scene, that should be picked.
+When the user clicks on either of the two triangles in the renderer window the triangles change color.
+@snippet ramses-example-local-pick-handling/src/main.cpp Pick Handling Example
+
 ## Basic Text
 This code creates a basic text using a text API.
 @snippet ramses-example-text-basic/src/main.cpp Basic Text Example
+
+## DCSM Provider
+This code offers a small scene via DCSM and is able to resize it and run a hide/show animation. A renderer side application which
+is supposed to work with this example properly needs to understand the DCSM protocol. For the standalone renderer this can be enabled
+with the "-dcsm" command line parameter.
 
 */

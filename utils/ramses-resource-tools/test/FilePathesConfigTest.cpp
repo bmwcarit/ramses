@@ -24,10 +24,10 @@ TEST(AFilePathsConfig, canLoadCorrectlyWhenAllLinesAreValid)
     EXPECT_TRUE(config.loadFromFile("res/ramses-resource-tools-test.filepathesconfig"));
 
     const FilePaths& filePaths = config.getFilePaths();
-    EXPECT_TRUE(filePaths.hasElement("res/ramses-resource-tools-test1.res"));
-    EXPECT_TRUE(filePaths.hasElement("res/ramses-resource-tools-test2.res"));
-    EXPECT_TRUE(filePaths.hasElement("res/ramses-resource-tools-test3.res"));
-    EXPECT_TRUE(filePaths.hasElement("res/ramses-resource-tools-test4.res"));
+    EXPECT_TRUE(filePaths.contains("res/ramses-resource-tools-test1.res"));
+    EXPECT_TRUE(filePaths.contains("res/ramses-resource-tools-test2.res"));
+    EXPECT_TRUE(filePaths.contains("res/ramses-resource-tools-test3.res"));
+    EXPECT_TRUE(filePaths.contains("res/ramses-resource-tools-test4.res"));
 }
 
 TEST(AFilePathsConfig, isFineToLoadValidFiles)

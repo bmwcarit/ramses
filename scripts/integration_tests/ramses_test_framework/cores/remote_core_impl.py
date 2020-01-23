@@ -96,7 +96,7 @@ class RemoteCoreImpl(CoreImpl):
         paramiko.util.log_to_file(os.path.join(self.fullResultsDirPath, 'paramiko.log'))
         self.createTargets()
         log.info("turning on all power outlets...")
-        for target in itertools.chain(self.bridgeTargets.itervalues(), self.targets.itervalues()):
+        for target in itertools.chain(self.bridgeTargets.values(), self.targets.values()):
             if target.powerDevice is not None:
                 if not target.powerDevice.switch(target.powerOutletNr, True):
                     log.info("Could not turn on power outlet for target {0} because the power outlet is not available".format(target.name))
@@ -105,10 +105,10 @@ class RemoteCoreImpl(CoreImpl):
         return self.setupTargets(transfer_binaries and (not self.noTransfer))
 
     def reconnectTargets(self):
-        for target in self.bridgeTargets.itervalues():
+        for target in self.bridgeTargets.values():
             log.info("reconnect bridge target {}".format(target.name))
             target.connect(error_on_fail=False)
-        for target in self.targets.itervalues():
+        for target in self.targets.values():
             if isinstance(target, BridgedTarget) and not target.bridgeTarget.isConnected:
                 log.info("skip target {} because bridge not connected".format(target.name))
             else:
@@ -133,7 +133,7 @@ class RemoteCoreImpl(CoreImpl):
                     expandedSuite.addTest(testForOneTarget)
 
         elif isinstance(test, test_classes.MultipleConnectionsTest) or isinstance(test, test_classes.OnSelectedTargetsTest):
-            if self.config.testToTargetConfig.has_key(type(test).__name__):
+            if type(test).__name__ in self.config.testToTargetConfig:
                 for targetInfoSet in self.config.testToTargetConfig[type(test).__name__]:
                     targetSet = [self.targets[i] for i in targetInfoSet]
                     if self._checkIfAllTargetsReady(targetSet) and self._checkIfValidConfig(test, targetSet):

@@ -110,6 +110,9 @@ namespace ramses_internal
             }
 
             m_logContext << RendererLogContext::NewLine;
+            executeRenderTarget(rp.renderTarget);
+            executeCamera(rp.camera);
+            m_logContext << RendererLogContext::NewLine;
 
             for (const auto renderable : orderedRenderables)
             {

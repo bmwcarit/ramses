@@ -13,6 +13,7 @@
 #include "gmock/gmock.h"
 #include "DcsmGmockPrinter.h"
 #include "Utils/ThreadBarrier.h"
+#include "ScopedConsoleLogDisable.h"
 #include <thread>
 #include <random>
 #include <atomic>
@@ -44,6 +45,7 @@ namespace ramses_internal
             EXPECT_CALL(comm, sendDcsmBroadcastForceStopOfferContent(_)).Times(AnyNumber());
             EXPECT_CALL(comm, sendDcsmCanvasSizeChange(_, _, _, _)).Times(AnyNumber());
             EXPECT_CALL(comm, sendDcsmContentStateChange(_, _, _, _, _)).Times(AnyNumber());
+            EXPECT_CALL(comm, sendDcsmUpdateContentMetadata(_, _, _)).Times(AnyNumber());
 
             EXPECT_CALL(provider, contentSizeChange(_, _, _)).Times(AnyNumber());
             EXPECT_CALL(provider, contentStateChange(_, _, _, _)).Times(AnyNumber());
@@ -53,6 +55,19 @@ namespace ramses_internal
             EXPECT_CALL(consumer, contentFocusRequest(_)).Times(AnyNumber());
             EXPECT_CALL(consumer, contentStopOfferRequest(_)).Times(AnyNumber());
             EXPECT_CALL(consumer, forceContentOfferStopped(_)).Times(AnyNumber());
+            EXPECT_CALL(consumer, contentMetadataUpdated(_, _)).Times(AnyNumber());
+        }
+
+        template <typename T>
+        DcsmMetadata randomMetadata(T& rnd)
+        {
+            std::u32string desc;
+            desc.reserve(10);
+            for (int i = 0; i < 10; ++i)
+                desc.push_back(rnd());
+            DcsmMetadata dm;
+            dm.setPreviewDescription(desc);
+            return dm;
         }
 
         void commThread(unsigned int seed)
@@ -96,6 +111,10 @@ namespace ramses_internal
                         comp.handleRequestStopOfferContent(ContentID{rnd()%5}, localId);
                     if (rnd() < 10)
                         comp.handleRequestStopOfferContent(ContentID{rnd()%5}, Guid(true));
+                    if (rnd() < 40)
+                        comp.handleUpdateContentMetadata(ContentID{rnd()%5}, randomMetadata(rnd), localId);
+                    if (rnd() < 40)
+                        comp.handleUpdateContentMetadata(ContentID{rnd()%5}, randomMetadata(rnd), Guid(true));
                     if (rnd() < 50)
                         comp.handleCanvasSizeChange(ContentID{rnd()%5}, SizeInfo{1, 1}, AnimationInformation{20, 100}, localId);
                     if (rnd() < 10)
@@ -138,6 +157,8 @@ namespace ramses_internal
                     comp.sendContentFocusRequest(ContentID{rnd()%5});
                 if (rnd() < 30)
                     comp.sendRequestStopOfferContent(ContentID{rnd()%5});
+                if (rnd() < 40)
+                    comp.sendUpdateContentMetadata(ContentID{rnd()%5}, randomMetadata(rnd));
                 if (rnd() < 10)
                     comp.setLocalProviderAvailability(false);
                 if (rnd() < 90)
@@ -193,6 +214,8 @@ namespace ramses_internal
 
     TEST_F(ADcsmComponentThreadTest, run)
     {
+        ScopedConsoleLogDisable consoleDisabler;
+
         unsigned int seedBase = randomSource();
         SCOPED_TRACE(seedBase);
 

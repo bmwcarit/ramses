@@ -11,7 +11,7 @@
 #include "RendererLib/EmbeddedCompositingManager.h"
 #include "DeviceMock.h"
 #include "EmbeddedCompositorMock.h"
-#include "TextureUploadingAdapterMock.h"
+#include "Platform_Base/TextureUploadingAdapter_Base.h"
 
 using namespace testing;
 using namespace ramses_internal;
@@ -27,7 +27,7 @@ public:
     {
         if (expectTextureUpload)
         {
-            EXPECT_CALL(deviceMock, uploadStreamTexture2D(_, _, _, _, _)).WillOnce(Return(textureDeviceHandle));
+            EXPECT_CALL(deviceMock, uploadStreamTexture2D(_, _, _, _, _, _)).WillOnce(Return(textureDeviceHandle));
             EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(sourceId)).WillOnce(Return(false));
         }
         embeddedCompositingManager.uploadStreamTexture(streamTextureHandle, sourceId, scene);
@@ -67,8 +67,8 @@ public:
 protected:
     StrictMock<DeviceMock> deviceMock;
     StrictMock<EmbeddedCompositorMock> embeddedCompositorMock;
-    StrictMock<TextureUploadingAdapterMock> textureUploadingAdapterMock;
-    EmbeddedCompositingManager embeddedCompositingManager       = EmbeddedCompositingManager(deviceMock, embeddedCompositorMock, textureUploadingAdapterMock);
+    TextureUploadingAdapter_Base textureUploadingAdapter = TextureUploadingAdapter_Base(deviceMock);
+    EmbeddedCompositingManager embeddedCompositingManager       = EmbeddedCompositingManager(deviceMock, embeddedCompositorMock, textureUploadingAdapter);
     const StreamTextureSourceId streamTextureSourceId           = StreamTextureSourceId(11u);
     const StreamTextureSourceId streamTextureSourceId2          = StreamTextureSourceId(12u);
     const DeviceResourceHandle compositedTextureDeviceHandle    = DeviceResourceHandle(111u);
@@ -133,7 +133,7 @@ TEST_F(AnEmbeddedCompositingManager, CanUpdateCompositingResources)
     EXPECT_CALL(embeddedCompositorMock, uploadCompositingContentForStreamTexture(streamTextureSourceId, _, _));
     StreamTextureBufferUpdates updates;
     embeddedCompositingManager.uploadResourcesAndGetUpdates(updatedScenes, updates);
-    ASSERT_EQ(1u, updatedScenes.count());
+    ASSERT_EQ(1u, updatedScenes.size());
     EXPECT_EQ(sceneId, *updatedScenes.begin());
 }
 
@@ -189,7 +189,7 @@ TEST_F(AnEmbeddedCompositingManager, DeletesCompositedTextureThatHadSeveralRefer
 
 TEST_F(AnEmbeddedCompositingManager, CanUploadAndDeleteStreamTextureWithAvailableContent)
 {
-    EXPECT_CALL(deviceMock, uploadStreamTexture2D(_, _, _, _, _)).WillOnce(Return(compositedTextureDeviceHandle));
+    EXPECT_CALL(deviceMock, uploadStreamTexture2D(_, _, _, _, _, _)).WillOnce(Return(compositedTextureDeviceHandle));
     EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(streamTextureSourceId)).WillOnce(Return(true));
     EXPECT_CALL(embeddedCompositorMock, uploadCompositingContentForStreamTexture(streamTextureSourceId, _, _));
 
@@ -264,7 +264,7 @@ TEST_F(AnEmbeddedCompositingManager, CanDispatchrStreamTexturesStateChange_Multi
     StreamTextureSourceIdVector obsoleteStreamsResult;
     embeddedCompositingManager.dispatchStateChangesOfStreamTexturesAndSources(updatedStreamTexturesPerScene, newStreamsResult, obsoleteStreamsResult);
 
-    ASSERT_EQ(1u, updatedStreamTexturesPerScene.count());
+    ASSERT_EQ(1u, updatedStreamTexturesPerScene.size());
     ASSERT_TRUE(updatedStreamTexturesPerScene.contains(sceneId));
     EXPECT_EQ(streamTexture, (*updatedStreamTexturesPerScene.get(sceneId))[0]);
     EXPECT_EQ(streamTexture2, (*updatedStreamTexturesPerScene.get(sceneId))[1]);
@@ -297,7 +297,7 @@ TEST_F(AnEmbeddedCompositingManager, CanDispatchrStreamTexturesStateChange_Multi
     StreamTextureSourceIdVector obsoleteStreamsResult;
     embeddedCompositingManager.dispatchStateChangesOfStreamTexturesAndSources(updatedStreamTexturesPerScene, newStreamsResult, obsoleteStreamsResult);
 
-    ASSERT_EQ(2u, updatedStreamTexturesPerScene.count());
+    ASSERT_EQ(2u, updatedStreamTexturesPerScene.size());
     ASSERT_TRUE(updatedStreamTexturesPerScene.contains(sceneId));
     EXPECT_EQ(streamTexture, (*updatedStreamTexturesPerScene.get(sceneId))[0]);
 

@@ -9,8 +9,7 @@
 #ifndef RAMSES_ITERATORIMPL_H
 #define RAMSES_ITERATORIMPL_H
 
-#include "ramses-client-api/RamsesObjectTypes.h"
-#include "Collections/Vector.h"
+#include <vector>
 
 namespace ramses
 {

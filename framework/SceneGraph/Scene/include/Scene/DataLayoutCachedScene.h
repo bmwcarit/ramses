@@ -20,7 +20,7 @@ namespace ramses_internal
     public:
         explicit DataLayoutCachedScene(const SceneInfo& sceneInfo = SceneInfo());
 
-        virtual DataLayoutHandle            allocateDataLayout(const DataFieldInfoVector& dataFields, DataLayoutHandle handle = DataLayoutHandle::Invalid()) override;
+        virtual DataLayoutHandle            allocateDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid()) override;
         virtual void                        releaseDataLayout(DataLayoutHandle handle) override;
 
         UInt32                              getNumDataLayoutReferences(DataLayoutHandle handle) const;
@@ -28,12 +28,13 @@ namespace ramses_internal
     private:
         struct DataLayoutCacheEntry
         {
+            ResourceContentHash m_effectHash;
             DataFieldInfoVector m_dataFields;
             UInt32              m_usageCount = 0u;
         };
 
-        DataLayoutHandle allocateAndCacheDataLayout(const DataFieldInfoVector& dataFields, DataLayoutHandle handle);
-        DataLayoutHandle findDataLayoutEntry(const DataFieldInfoVector& dataFields, DataLayoutCacheEntry*& entryOut);
+        DataLayoutHandle allocateAndCacheDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle);
+        DataLayoutHandle findDataLayoutEntry(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutCacheEntry*& entryOut);
 
         // Cache entries are stored in groups, each group has data layouts with same number of fields to speed up searching
         typedef HashMap<DataLayoutHandle, DataLayoutCacheEntry> DataLayoutCacheGroup;

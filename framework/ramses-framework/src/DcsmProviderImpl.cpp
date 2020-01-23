@@ -7,10 +7,14 @@
 //  -------------------------------------------------------------------------
 
 #include "DcsmProviderImpl.h"
+#include "DcsmMetadataCreatorImpl.h"
 
 #include "ramses-framework-api/IDcsmProviderEventHandler.h"
+#include "ramses-framework-api/DcsmMetadataCreator.h"
 
 #include "Utils/LogMacros.h"
+#include "RamsesFrameworkTypesImpl.h"
+#include "PlatformAbstraction/Macros.h"
 
 namespace ramses
 {
@@ -28,37 +32,72 @@ namespace ramses
 
     status_t DcsmProviderImpl::offerContent(ContentID contentID, Category category, sceneId_t scene)
     {
-        LOG_INFO(ramses_internal::CONTEXT_DCSM, "DcsmProvider::requestStopOfferContent: contentID " << contentID.getValue()
-            << ", category " << category.getValue() << ", scene " << scene);
+        LOG_INFO(ramses_internal::CONTEXT_DCSM, "DcsmProvider::offerContent: contentID " << contentID
+            << ", category " << category << ", scene " << scene);
+        return commonOfferContent("offerContent", contentID, category, scene);
+    }
 
+    status_t DcsmProviderImpl::offerContentWithMetadata(ContentID contentID, Category category, sceneId_t scene, const DcsmMetadataCreator& metadata)
+    {
+        const ramses_internal::DcsmMetadata riMetadata = metadata.impl.getMetadata();
+        LOG_INFO(ramses_internal::CONTEXT_DCSM, "DcsmProvider::offerContentWithMetadata: contentID " << contentID
+                 << ", category " << category << ", scene " << scene << ", metadata " << riMetadata);
+
+         auto res = commonOfferContent("offerContentWithMetadata", contentID, category, scene);
+         if (res != StatusOK)
+             return res;
+
+        if (!m_dcsm.sendUpdateContentMetadata(ramses_internal::ContentID(contentID.getValue()), std::move(riMetadata)))
+            return addErrorEntry("DcsmProvider::offerContentWithMetadata failed, failure to send sendUpdateContentMetadata message.");
+
+        return StatusOK;
+    }
+
+    status_t DcsmProviderImpl::commonOfferContent(const char* callerMethod, ContentID contentID, Category category, sceneId_t scene)
+    {
         const auto contentIt = m_contents.find(contentID);
         if (contentIt != m_contents.end() && contentIt->second.status != ramses_internal::EDcsmState::AcceptStopOffer)
-            return addErrorEntry("DcsmProvider::registerRamsesContent failed, ContentID is already registered.");
+            return addErrorEntry((ramses_internal::StringOutputStream() << "DcsmProvider::" << callerMethod << " failed, ContentID is already registered.").c_str());
 
         m_contents[contentID] = { scene, category };
         if (!m_dcsm.sendOfferContent(ramses_internal::ContentID(contentID.getValue()), ramses_internal::Category(category.getValue())))
-            return addErrorEntry("DcsmProvider::registerRamsesContent failed, failure to send sendRegisterContent message.");
+            return addErrorEntry((ramses_internal::StringOutputStream() << "DcsmProvider::" << callerMethod << " failed, failure to send sendRegisterContent message.").c_str());
+
+        return StatusOK;
+    }
+
+    status_t DcsmProviderImpl::updateContentMetadata(ContentID contentID, const DcsmMetadataCreator& metadata)
+    {
+        const ramses_internal::DcsmMetadata riMetadata = metadata.impl.getMetadata();
+        LOG_INFO(ramses_internal::CONTEXT_DCSM, "DcsmProvider::updateContentMetadata: contentID " << contentID << ", metadata " << riMetadata);
+
+        const auto contentIt = m_contents.find(contentID);
+        if (contentIt == m_contents.end())
+            return addErrorEntry("DcsmProvider::updateContentMetadata failed, ContentID is unknown");
+
+        if (!m_dcsm.sendUpdateContentMetadata(ramses_internal::ContentID(contentID.getValue()), riMetadata))
+            return addErrorEntry("DcsmProvider::updateContentMetadata failed, failure to send sendUpdateContentMetadata message.");
 
         return StatusOK;
     }
 
     status_t DcsmProviderImpl::requestStopOfferContent(ContentID contentID)
     {
-        LOG_INFO(ramses_internal::CONTEXT_DCSM, "DcsmProvider::requestStopOfferContent: contentID " << contentID.getValue());
+        LOG_INFO(ramses_internal::CONTEXT_DCSM, "DcsmProvider::requestStopOfferContent: contentID " << contentID);
 
         const auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.end())
-            return addErrorEntry("DcsmProvider::unregisterRamsesContent failed, ContentID is unknown");
+            return addErrorEntry("DcsmProvider::requestStopOfferContent failed, ContentID is unknown");
 
         if  (!m_dcsm.sendRequestStopOfferContent(ramses_internal::ContentID(contentID.getValue())))
-            return addErrorEntry("DcsmProvider::unregisterRamsesContent failed, failure to send unregisterRamsesContent message.");
+            return addErrorEntry("DcsmProvider::requestStopOfferContent failed, failure to send unregisterRamsesContent message.");
 
         return StatusOK;
     }
 
     status_t DcsmProviderImpl::markContentReady(ContentID contentID)
     {
-        LOG_INFO(ramses_internal::CONTEXT_DCSM, "DcsmProvider::markContentReady: contentID " << contentID.getValue());
+        LOG_INFO(ramses_internal::CONTEXT_DCSM, "DcsmProvider::markContentReady: contentID " << contentID);
 
         const auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.end())
@@ -72,7 +111,8 @@ namespace ramses
         {
             if (!m_dcsm.sendContentReady(ramses_internal::ContentID(contentID.getValue()),
                                          ramses_internal::ETechnicalContentType::RamsesSceneID,
-                                         ramses_internal::TechnicalContentDescriptor(content.scene)))
+                                         // SceneID is the TechnicalContentDescriptor when using type RamsesSceneID
+                                         ramses_internal::TechnicalContentDescriptor(content.scene.getValue())))
                 return addErrorEntry("DcsmProvider::markContentReady failed, failure to send sendContentAvailable message.");
         }
 
@@ -81,7 +121,7 @@ namespace ramses
 
     status_t DcsmProviderImpl::requestContentFocus(ContentID contentID)
     {
-        LOG_INFO(ramses_internal::CONTEXT_DCSM, "DcsmProvider::requestContentFocus: contentID " << contentID.getValue());
+        LOG_INFO(ramses_internal::CONTEXT_DCSM, "DcsmProvider::requestContentFocus: contentID " << contentID);
 
         const auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.end())
@@ -105,13 +145,13 @@ namespace ramses
 
     void DcsmProviderImpl::contentSizeChange(ContentID contentID, SizeInfo sizeInfo, AnimationInformation anim)
     {
-        LOG_INFO(ramses_internal::CONTEXT_DCSM, "DcsmProvider::contentSizeChange: contentID " << contentID.getValue() << ", SizeInfo "
+        LOG_INFO(ramses_internal::CONTEXT_DCSM, "DcsmProvider::contentSizeChange: contentID " << contentID << ", SizeInfo "
             << sizeInfo.width << "x" << sizeInfo.height << ", ai[" << anim.startTime << ", " << anim.finishTime << "]");
 
         const auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.end())
         {
-            LOG_WARN(ramses_internal::CONTEXT_DCSM, "DcsmProvider::canvasSizeChange: received for unknown contentID " << contentID.getValue() << ", ignoring.");
+            LOG_WARN(ramses_internal::CONTEXT_DCSM, "DcsmProvider::canvasSizeChange: received for unknown contentID " << contentID << ", ignoring.");
             return;
         }
 
@@ -120,21 +160,21 @@ namespace ramses
 
     void DcsmProviderImpl::contentStateChange(ContentID contentID, ramses_internal::EDcsmState status, SizeInfo sizeInfo, AnimationInformation anim)
     {
-        LOG_INFO(ramses_internal::CONTEXT_DCSM, "DcsmProvider::contentStateChange: contentID " << contentID.getValue()
+        LOG_INFO(ramses_internal::CONTEXT_DCSM, "DcsmProvider::contentStateChange: contentID " << contentID
             << ", status " << EnumToString(status) << ", SizeInfo " << sizeInfo.width << "x" << sizeInfo.height
             << ", ai[" << anim.startTime << ", " << anim.finishTime << "]");
 
         const auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.end())
         {
-            LOG_ERROR(ramses_internal::CONTEXT_DCSM, "DcsmProvider::contentStateChange: received for unknown contentID " << contentID.getValue() << ", ignoring.");
+            LOG_ERROR(ramses_internal::CONTEXT_DCSM, "DcsmProvider::contentStateChange: received for unknown contentID " << contentID << ", ignoring.");
             return;
         }
 
         auto& content = contentIt->second;
         if (status == content.status)
         {
-            LOG_WARN(ramses_internal::CONTEXT_DCSM, "DcsmProvider::contentStateChange: received for contentID " << contentID.getValue() << " ignored because no status change");
+            LOG_WARN(ramses_internal::CONTEXT_DCSM, "DcsmProvider::contentStateChange: received for contentID " << contentID << " ignored because no status change");
             return;
         }
 
@@ -151,7 +191,7 @@ namespace ramses
                 m_handler->contentSizeChange(contentID, sizeInfo, anim);
                 break;
             }
-            // else fall through to Offered
+            RFALLTHROUGH;
         case ramses_internal::EDcsmState::Offered:
             content.ready = false;
             content.contentRequested = false;
@@ -168,7 +208,8 @@ namespace ramses
             {
                 if (!m_dcsm.sendContentReady(ramses_internal::ContentID(contentID.getValue()),
                     ramses_internal::ETechnicalContentType::RamsesSceneID,
-                    ramses_internal::TechnicalContentDescriptor(content.scene)))
+                    // SceneID is the TechnicalContentDescriptor when using type RamsesSceneID
+                    ramses_internal::TechnicalContentDescriptor(content.scene.getValue())))
                     LOG_ERROR(ramses_internal::CONTEXT_DCSM, "DcsmProvider::contentStateChange: failed, failure to send sendContentAvailable message.");
             }
             break;

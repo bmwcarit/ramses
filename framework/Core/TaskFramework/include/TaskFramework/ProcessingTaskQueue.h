@@ -10,8 +10,6 @@
 #define RAMSES_PROCESSINGTASKQUEUE_H
 
 #include "Collections/BlockingQueue.h"
-#include "TaskFramework/IBlockingTaskQueue.h"
-#include "PlatformAbstraction/PlatformThread.h"
 #include "ITask.h"
 
 
@@ -20,50 +18,16 @@ namespace ramses_internal
     /**
      * The processing task queue stores task which should be executed according with their execution observer.
      */
-class ProcessingTaskQueue : public IBlockingTaskQueue
-{
+    class ProcessingTaskQueue
+    {
     public:
-        /**
-         * Default constructor.
-         */
-        ProcessingTaskQueue();
-        /**
-         * Virtual destructor.
-         */
-        virtual ~ProcessingTaskQueue();
-
-        /**
-         * @name    IBlockingTaskQueue implementation.
-         * @see IBlockingTaskQueue
-         * @{
-         */
-        virtual void addTask(ITask* taskToAdd) override;
-
-        virtual ITask* popTask(UInt32 timeoutMillis = 0) override;
-
-        virtual Bool isEmpty() /*const*/ override;
-        /**
-         * @}
-         */
+        void addTask(ITask* taskToAdd);
+        ITask* popTask(std::chrono::milliseconds timeout = std::chrono::milliseconds{0});
+        bool isEmpty() const;
 
     private:
-        /**
-         * Definition for the queue type.
-         */
-        typedef BlockingQueue<ITask*> TaskQueue;
-        /**
-         * The instance of the blocking queue for storing the tasks to execute.
-         */
-        TaskQueue m_taskQueue;
+        BlockingQueue<ITask*> m_taskQueue;
     };
-
-    inline ProcessingTaskQueue::ProcessingTaskQueue()
-    {
-    }
-
-    inline ProcessingTaskQueue::~ProcessingTaskQueue()
-    {
-    }
 
     inline void ProcessingTaskQueue::addTask(ITask* taskToAdd)
     {
@@ -74,31 +38,16 @@ class ProcessingTaskQueue : public IBlockingTaskQueue
         m_taskQueue.push(taskToAdd);
     }
 
-    inline ITask* ProcessingTaskQueue::popTask(UInt32 timeoutMillis)
+    inline ITask* ProcessingTaskQueue::popTask(std::chrono::milliseconds timeout)
     {
-        ITask* task = 0;
-        EStatus status = m_taskQueue.pop(&task, timeoutMillis);
-        switch (status)
-        {
-            case EStatus_RAMSES_OK:
-                return task;
-            case EStatus_RAMSES_TIMEOUT:
-                return 0;
-            default:
-            {
-                //some other error occurred, which may prevented the task queue to wait for the given amount of milliseconds.
-                //In order to avoid having a busy looping, we sleep here again
-                PlatformThread::Sleep(timeoutMillis);
-                LOG_FATAL(CONTEXT_FRAMEWORK, "Error " << status << "while requesting task from TaskQueue. This should not happen.");
-            }
-        }
-
-        return 0;
+        ITask* task = nullptr;
+        m_taskQueue.pop(&task, timeout);
+        return task;
     }
 
-    inline Bool ProcessingTaskQueue::isEmpty() /*const*/
+    inline bool ProcessingTaskQueue::isEmpty() const
     {
-        return (m_taskQueue.empty());
+        return m_taskQueue.empty();
     }
 }
 

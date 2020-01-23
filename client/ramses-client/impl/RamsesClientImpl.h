@@ -15,6 +15,7 @@
 #include "ramses-client-api/TextureEnums.h"
 #include "ramses-client-api/MipLevelData.h"
 #include "ramses-client-api/IClientEventHandler.h"
+#include "ramses-client-api/TextureSwizzle.h"
 
 // RAMSES framework
 #include "Utils/LogContext.h"
@@ -31,13 +32,12 @@
 #include "ClientCommands/DumpSceneToFile.h"
 #include "ClientCommands/LogResourceMemoryUsage.h"
 #include "PlatformAbstraction/PlatformLock.h"
-#include "Utils/ScopedPointer.h"
 #include "TaskFramework/ITask.h"
 #include "TaskFramework/EnqueueOnlyOneAtATimeQueue.h"
 #include "TaskFramework/TaskForwardingQueue.h"
 #include "Collections/HashMap.h"
-#include "city.h"
 #include "RamsesFrameworkTypesImpl.h"
+#include <memory>
 #include <chrono>
 
 
@@ -111,7 +111,7 @@ namespace ramses
         const Vector4fArray* createConstVector4fArray(uint32_t count, const float* arrayData, resourceCacheFlag_t cacheFlag, const char* name);
         const UInt16Array* createConstUInt16Array(uint32_t count, const uint16_t *arrayData, resourceCacheFlag_t cacheFlag, const char* name);
         const UInt32Array* createConstUInt32Array(uint32_t count, const uint32_t *arrayData, resourceCacheFlag_t cacheFlag, const char* name);
-        Texture2D* createTexture2D(uint32_t width, uint32_t height, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name);
+        Texture2D* createTexture2D(uint32_t width, uint32_t height, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name);
         Texture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name);
         TextureCube* createTextureCube(uint32_t, ETextureFormat format, resourceCacheFlag_t cacheFlag, const char* name, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain);
         status_t destroy(const Resource& resource);
@@ -142,6 +142,7 @@ namespace ramses
 
         Effect* createEffect(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag, const char* name);
         Effect* createEffectFromResource(const ramses_internal::EffectResource* res, const ramses_internal::String& name);
+        std::string getLastEffectErrorMessages() const;
 
         RamsesFrameworkImpl& getFramework();
         static RamsesClientImpl& createImpl(const char* name, RamsesFrameworkImpl& components);
@@ -234,7 +235,7 @@ namespace ramses
         void writeResourcesInfoToValidationMessage(uint32_t indent) const;
 
         template <typename MipDataStorageType>
-        const ramses_internal::TextureResource* createTextureResource(ramses_internal::EResourceType textureType, uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipMapCount, const MipDataStorageType mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name) const;
+        const ramses_internal::TextureResource* createTextureResource(ramses_internal::EResourceType textureType, uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipMapCount, const MipDataStorageType mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name) const;
 
         ramses_internal::ManagedResource manageResource(const ramses_internal::IResource* res);
 
@@ -251,12 +252,12 @@ namespace ramses
         HLResourceHashMap    m_resourcesById;
         SceneVector          m_scenes;
 
-        ramses_internal::ScopedPointer<ramses_internal::PrintSceneList> m_cmdPrintSceneList;
-        ramses_internal::ScopedPointer<ramses_internal::ValidateCommand> m_cmdPrintValidation;
-        ramses_internal::ScopedPointer<ramses_internal::ForceFallbackImage> m_cmdForceFallbackImage;
-        ramses_internal::ScopedPointer<ramses_internal::FlushSceneVersion> m_cmdFlushSceneVersion;
-        ramses_internal::ScopedPointer<ramses_internal::DumpSceneToFile> m_cmdDumpSceneToFile;
-        ramses_internal::ScopedPointer<ramses_internal::LogResourceMemoryUsage> m_cmdLogResourceMemoryUsage;
+        std::unique_ptr<ramses_internal::PrintSceneList> m_cmdPrintSceneList;
+        std::unique_ptr<ramses_internal::ValidateCommand> m_cmdPrintValidation;
+        std::unique_ptr<ramses_internal::ForceFallbackImage> m_cmdForceFallbackImage;
+        std::unique_ptr<ramses_internal::FlushSceneVersion> m_cmdFlushSceneVersion;
+        std::unique_ptr<ramses_internal::DumpSceneToFile> m_cmdDumpSceneToFile;
+        std::unique_ptr<ramses_internal::LogResourceMemoryUsage> m_cmdLogResourceMemoryUsage;
 
         RamsesFrameworkImpl& m_framework;
         mutable ramses_internal::PlatformLock m_clientLock;
@@ -269,6 +270,7 @@ namespace ramses
         ramses_internal::HashSet<ramses_internal::SceneId> m_scenesMarkedForLoadAsLocalOnly;
 
         std::chrono::milliseconds m_clientResourceCacheTimeout;
+        std::string               m_effectErrorMessages;
         using ClientResourceCache = std::deque<std::pair<std::chrono::time_point<std::chrono::steady_clock>, ramses_internal::ResourceHashUsage>>;
         ClientResourceCache m_clientResourceCache;
     };

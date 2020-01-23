@@ -20,12 +20,12 @@ namespace ramses_internal
         UInt32 integer;
         ComparableObject* pointer;
 
-        Bool operator==(const ComparableObject& other) const
+        bool operator==(const ComparableObject& other) const
         {
             return integer == other.integer && pointer == other.pointer;
         }
 
-        Bool operator!=(const ComparableObject& other) const
+        bool operator!=(const ComparableObject& other) const
         {
             return integer != other.integer || pointer != other.pointer;
         }

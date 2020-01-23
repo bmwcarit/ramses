@@ -12,13 +12,11 @@
 #include "ramses-client-api/TextureEnums.h"
 
 // internal
-#include "Resource/TextureMetaInfo.h"
 #include "SceneObjectImpl.h"
 
 // ramses framework
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/ResourceContentHash.h"
-#include "SceneAPI/TextureSamplerStates.h"
 #include "SceneAPI/TextureSampler.h"
 
 namespace ramses

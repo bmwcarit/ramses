@@ -11,12 +11,21 @@
 
 #include "Common/StronglyTypedValue.h"
 #include "Utils/LoggingUtils.h"
+#include "Utils/StringOutputSpecialWrapper.h"
 
 namespace ramses_internal
 {
-    using ContentID = StronglyTypedValue<uint64_t, 0, struct ContentIDTag>;
-    using Category = StronglyTypedValue<uint64_t, 0, struct CategoryTag> ;
-    using ProviderID = StronglyTypedValue<uint64_t, 0, struct ProviderIDTag> ;
+    struct ContentIDTag;
+    using ContentID = StronglyTypedValue<uint64_t, 0, ContentIDTag>;
+    DEFINE_SPECIAL_STRINGOUTPUTSTREAM_OPERATOR(ContentID, ramses::ContentID)
+
+    struct CategoryTag;
+    using Category = StronglyTypedValue<uint64_t, 0, CategoryTag>;
+    DEFINE_SPECIAL_STRINGOUTPUTSTREAM_OPERATOR(Category, ramses::Category)
+
+    struct ProviderIDTag;
+    using ProviderID = StronglyTypedValue<uint64_t, 0, ProviderIDTag>;
+    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(ProviderID)
 
     enum class ETechnicalContentType : uint32_t
     {
@@ -32,7 +41,9 @@ namespace ramses_internal
         return "ETechnicalContentType::<UNKNOWN>";
     }
 
-    using TechnicalContentDescriptor = StronglyTypedValue<uint64_t, 0, struct TechnicalContentDescriptorTag>;
+    struct TechnicalContentDescriptorTag;
+    using TechnicalContentDescriptor = StronglyTypedValue<uint64_t, 0, TechnicalContentDescriptorTag>;
+    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(TechnicalContentDescriptor)
 
     struct SizeInfo
     {
@@ -50,7 +61,7 @@ namespace ramses_internal
         }
     };
 
-    enum class EDcsmState : uint32_t
+    enum class EDcsmState : uint64_t
     {
         Offered,
         Assigned,

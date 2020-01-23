@@ -16,14 +16,14 @@
 
 #include <sstream>
 #include <cmath>
-#include <map>
+#include <unordered_map>
 #include <assert.h>
 
 class OffscreenRenderer : public ramses::RendererEventHandlerEmpty
 {
 public:
     OffscreenRenderer(ramses::RamsesFramework& framework, int argc, char* argv[])
-        : m_renderer(framework, ramses::RendererConfig(argc, argv))
+        : m_renderer(*framework.createRenderer(ramses::RendererConfig(argc, argv)))
     {
         ramses::DisplayConfig displayConfig(argc, argv);
         displayConfig.setWindowRectangle(0, 0, ScreenWidth, ScreenHeight);
@@ -192,15 +192,15 @@ private:
         }
     }
 
-    ramses::RamsesRenderer m_renderer;
+    ramses::RamsesRenderer& m_renderer;
     const uint32_t ScreenWidth = 1280;
     const uint32_t ScreenHeight = 640;
     ramses::displayId_t m_display;
 
-    typedef std::map<ramses::sceneId_t, ESceneState> SceneStates;
+    typedef std::unordered_map<ramses::sceneId_t, ESceneState> SceneStates;
     SceneStates m_sceneStates;
 
-    typedef std::map<ramses::sceneId_t, ramses::sceneVersionTag_t> SceneVersions;
+    typedef std::unordered_map<ramses::sceneId_t, ramses::sceneVersionTag_t> SceneVersions;
     SceneVersions m_sceneVersions;
 
     ramses::sceneVersionTag_t m_sceneVersionForScreenshot;

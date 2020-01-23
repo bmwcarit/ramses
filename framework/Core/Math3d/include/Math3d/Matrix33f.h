@@ -83,9 +83,9 @@ namespace ramses_internal
         Matrix33f(const Vector3& v1, const Vector3& v2, const Vector3& v3);
 
         Matrix33f(const Matrix33f& other) = default;
-        Matrix33f(Matrix33f&& other) = default;
+        Matrix33f(Matrix33f&& other) RNOEXCEPT = default;
         Matrix33f& operator=(const Matrix33f& other) = default;
-        Matrix33f& operator=(Matrix33f&& other) = default;
+        Matrix33f& operator=(Matrix33f&& other) RNOEXCEPT = default;
 
         /**
          * Sets matrix elements to the given values
@@ -131,14 +131,14 @@ namespace ramses_internal
          * @param other Matrix33f to compare with
          * @return true if matrices are equal false otherwise
          */
-        Bool operator==(const Matrix33f& other) const;
+        bool operator==(const Matrix33f& other) const;
 
         /**
          * Check if two matrices are not equal
          * @param other Matrix33f to compare with
          * @return true if matrices are equal false otherwise
          */
-        Bool operator!=(const Matrix33f& other) const;
+        bool operator!=(const Matrix33f& other) const;
 
         /**
          * Multiplies the matrix with the given Vector
@@ -152,7 +152,7 @@ namespace ramses_internal
          * @param rotationXYZ vector to store angles
          * @return true if there is a unique solution
          */
-        Bool toRotationEulerXYZ(Vector3& rotationXYZ) const;
+        bool toRotationEulerXYZ(Vector3& rotationXYZ) const;
 
         /**
          * Extract XYZ-order Euler angles
@@ -161,7 +161,7 @@ namespace ramses_internal
          * @param z angle
          * @return true if there is a unique solution
          */
-        Bool toRotationEulerXYZ(Float& x, Float& y, Float& z) const;
+        bool toRotationEulerXYZ(Float& x, Float& y, Float& z) const;
 
         /**
          * Generate Matrix33f from Euler XYZ-order angles
@@ -175,7 +175,7 @@ namespace ramses_internal
         * @param rotationXYZ vector to store angles
         * @return true if there is a unique solution
         */
-        Bool toRotationEulerZYX(Vector3& rotationXYZ) const;
+        bool toRotationEulerZYX(Vector3& rotationXYZ) const;
 
         /**
         * Extract ZYX-order Euler angles
@@ -184,7 +184,7 @@ namespace ramses_internal
         * @param z angle
         * @return true if there is a unique solution
         */
-        Bool toRotationEulerZYX(Float& x, Float& y, Float& z) const;
+        bool toRotationEulerZYX(Float& x, Float& y, Float& z) const;
 
         /**
         * Generate Matrix33f from Euler ZYX-order angles
@@ -340,8 +340,8 @@ namespace ramses_internal
         return !operator==(other);
     }
 
-    static_assert(std::is_nothrow_move_constructible<Matrix33f>::value &&
-        std::is_nothrow_move_assignable<Matrix33f>::value, "Matrix33f must be movable");
+    static_assert(std::is_nothrow_move_constructible<Matrix33f>::value, "Matrix33f must be movable");
+    static_assert(std::is_nothrow_move_assignable<Matrix33f>::value, "Matrix33f must be movable");
 }
 
 #endif

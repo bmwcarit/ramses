@@ -30,10 +30,11 @@ namespace ramses
 
         status_t setData(const ramses_internal::Byte* data, uint32_t dataSizeInBytes, uint32_t offsetInBytes);
 
-        uint32_t getMaximumSizeInBytes() const;
-        uint32_t getUsedSizeInBytes() const;
         ramses_internal::DataBufferHandle getDataBufferHandle() const;
+        uint32_t getMaximumSizeInBytes() const;
         uint32_t getElementCount() const;
+        uint32_t getUsedSizeInBytes() const;
+        uint32_t getUsedElementCount() const;
         EDataType getDataType() const;
         status_t getData(ramses_internal::Byte* buffer, uint32_t bufferSize) const;
 

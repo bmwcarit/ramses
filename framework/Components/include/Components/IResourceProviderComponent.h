@@ -24,7 +24,7 @@ namespace ramses_internal
     public:
         virtual ~IResourceProviderComponent() {}
 
-        virtual ManagedResource manageResource(const IResource& resource, Bool deletionAllowed = false) = 0;
+        virtual ManagedResource manageResource(const IResource& resource, bool deletionAllowed = false) = 0;
         virtual ManagedResourceVector getResources() = 0;
         virtual ManagedResource getResource(ResourceContentHash hash) = 0;
         virtual ManagedResource forceLoadResource(const ResourceContentHash& hash) = 0;

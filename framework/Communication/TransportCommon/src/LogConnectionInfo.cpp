@@ -20,7 +20,7 @@ namespace ramses_internal
         registerKeyword("printConnectionInfo");
     }
 
-    Bool LogConnectionInfo::executeInput(const RamshInput& /*input*/)
+    bool LogConnectionInfo::executeInput(const RamshInput& /*input*/)
     {
         m_communicationSystem.logConnectionInfo();
         return true;

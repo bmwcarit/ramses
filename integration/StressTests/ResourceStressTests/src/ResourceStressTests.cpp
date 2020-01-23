@@ -30,7 +30,7 @@ namespace ramses_internal
     ResourceStressTests::ResourceStressTests(const StressTestConfig& config)
         : m_testConfig(config)
         , m_framework(config.argc, config.argv)
-        , m_client("resource-stress-tests", m_framework)
+        , m_client(*m_framework.createClient("resource-stress-tests"))
         , m_testRenderer(m_framework, ramses::RendererConfig(config.argc, config.argv))
         , m_displays(config.displayCount)
         , m_sceneSetsPerDisplay(config.sceneSetsPerDisplay)
@@ -135,14 +135,15 @@ namespace ramses_internal
         const uint32_t topLevelSceneCount = m_sceneSetsPerDisplay * displayCount;
 
         ramses::dataConsumerId_t textureConsumerId = 0;
-        ramses::sceneId_t sceneId(0);
+        ramses::sceneId_t sceneId(1);
 
         SceneArrayConfig sceneArrayConfig;
         for (uint32_t topLevelScene = 0; topLevelScene < topLevelSceneCount; ++topLevelScene)
         {
             const auto& display = m_displays[topLevelScene % m_displays.size()];
             const uint32_t topLevelSceneIndexWithinDisplay = topLevelScene / displayCount;
-            const ramses::sceneId_t topLevelSceneId(sceneId++);
+            const ramses::sceneId_t topLevelSceneId(sceneId);
+            sceneId.getReference()++;
 
             const TextureConsumerDataIds topLevelSceneConsumerIds = {
                 textureConsumerId++,
@@ -163,7 +164,7 @@ namespace ramses_internal
             sceneArrayConfig.push_back({
                 topLevelSceneId,
                 display.displayId,
-                ramses::InvalidOffscreenBufferId, // show on framebuffer
+                ramses::displayBufferId_t::Invalid(), // show on framebuffer
                 topLevelSceneQuad,
                 topLevelSceneConsumerIds,
                 ramses::sceneId_t(0xffffffff),          // invalid consumer scene, because this is the consumer scene
@@ -182,7 +183,8 @@ namespace ramses_internal
                     const float bufferFractionStart = static_cast<float>(i) / scenesPerBuffer;
                     const float bufferFractionEnd = bufferFractionStart + 1.0f / scenesPerBuffer;
                     const ScreenspaceQuad obSceneQuad = ScreenspaceQuad(offscreenBuffer.width, offscreenBuffer.height, { bufferFractionStart, 0.0f, bufferFractionEnd, 1.0f });
-                    const ramses::sceneId_t obSceneId(sceneId++);
+                    const ramses::sceneId_t obSceneId(sceneId);
+                    sceneId.getReference()++;
                     sceneArrayConfig.push_back({
                         obSceneId,
                         display.displayId,

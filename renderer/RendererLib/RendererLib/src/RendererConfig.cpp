@@ -80,4 +80,14 @@ namespace ramses_internal
     {
         return m_waylandDisplayForSystemCompositorController;
     }
+
+    void RendererConfig::setRenderthreadLooptimingReportingPeriod(std::chrono::milliseconds period)
+    {
+        m_renderThreadLoopTimingReportingPeriod = period;
+    }
+
+    std::chrono::milliseconds RendererConfig::getRenderThreadLoopTimingReportingPeriod() const
+    {
+        return m_renderThreadLoopTimingReportingPeriod;
+    }
 }

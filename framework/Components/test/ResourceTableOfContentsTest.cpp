@@ -38,7 +38,7 @@ namespace ramses_internal
         EXPECT_TRUE(toc.containsResource(hash));
 
         const TableOfContentsMap& fileContents = toc.getFileContents();
-        EXPECT_EQ(1u, fileContents.count());
+        EXPECT_EQ(1u, fileContents.size());
         ResourceFileEntry* savedEntry = fileContents.get(hash);
         EXPECT_EQ(resourceInfo, savedEntry->resourceInfo);
         EXPECT_EQ(offsetWithinFile, savedEntry->offsetInBytes);
@@ -91,7 +91,7 @@ namespace ramses_internal
         BinaryFileInputStream instream(tempFile);
 
         ResourceTableOfContents loadedTOC;
-        const Bool returnValue = loadedTOC.readTOCPosAndTOCFromStream(instream);
+        const bool returnValue = loadedTOC.readTOCPosAndTOCFromStream(instream);
         ASSERT_FALSE(returnValue);
     }
 

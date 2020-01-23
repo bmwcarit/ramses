@@ -18,11 +18,11 @@ namespace ramses_internal
     {
     public:
         TaskHelper()
-            : m_Task(0)
+            : m_Task(nullptr)
         {
         }
 
-        Bool enqueue(ITask& Task)
+        bool enqueue(ITask& Task)
         {
             m_Task = &Task;
             m_Task->addRef();

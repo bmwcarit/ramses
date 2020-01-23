@@ -37,12 +37,12 @@ namespace ramses_internal
         void createDisplay(const DisplayConfig& displayConfig, IResourceProvider& resourceProvider, IResourceUploader& resourceUploader, DisplayHandle handle);
         void destroyDisplay(DisplayHandle handle);
 
-        void mapSceneToDisplay(SceneId sceneId, DisplayHandle displayHandle, Int32 sceneRenderOrder);
+        void mapSceneToDisplay(SceneId sceneId, DisplayHandle displayHandle);
         void unmapScene(SceneId sceneId);
 
         void updateWarpingData(DisplayHandle displayHandle, const WarpingMeshData& warpingData);
         void readPixels(DisplayHandle displayHandle, const String& filename, Bool fullScreen, UInt32 x, UInt32 y, UInt32 width, UInt32 height, Bool sendViaDLT = false);
-        void setClearColor(DisplayHandle displayHandle, const Vector4& color);
+        void setClearColor(DisplayHandle displayHandle, OffscreenBufferHandle obHandle, const Vector4& color);
 
         void linkSceneData(SceneId providerSceneId, DataSlotId providerDataSlotId, SceneId consumerSceneId, DataSlotId consumerDataSlotId);
         void unlinkSceneData(SceneId consumerSceneId, DataSlotId consumerDataSlotId);
@@ -77,6 +77,7 @@ namespace ramses_internal
         void setLimitsFlushesForceApply(UInt limitFlushesForceApply);
         void setLimitsFlushesForceUnsubscribe(UInt limitFlushesForceUnsubscribe);
         void setSkippingOfUnmodifiedBuffers(Bool enable);
+        void handlePickEvent(SceneId sceneId, Vector2 sceneViewportCoords);
 
         // own functions
         void lock();

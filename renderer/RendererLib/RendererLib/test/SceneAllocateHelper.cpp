@@ -87,13 +87,13 @@ namespace ramses_internal
     {
         return sizeInfo.dataBufferCount;
     }
-    template <> UInt32& getObjectCount<AnimationSystemHandle>(SceneSizeInformation& sizeInfo)
-    {
-        return sizeInfo.animationSystemCount;
-    }
     template <> UInt32& getObjectCount<TextureBufferHandle>(SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.textureBufferCount;
+    }
+    template <> UInt32& getObjectCount<PickableObjectHandle>(SceneSizeInformation& sizeInfo)
+    {
+        return sizeInfo.pickableObjectCount;
     }
 
     template <typename HANDLE>
@@ -142,9 +142,9 @@ namespace ramses_internal
         return m_scene.allocateTransform(nodeHandle, preallocateHandle(handle));
     }
 
-    DataLayoutHandle SceneAllocateHelper::allocateDataLayout(const DataFieldInfoVector& dataFields, DataLayoutHandle handle)
+    DataLayoutHandle SceneAllocateHelper::allocateDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle)
     {
-        return m_scene.allocateDataLayout(dataFields, preallocateHandle(handle));
+        return m_scene.allocateDataLayout(dataFields, effectHash, preallocateHandle(handle));
     }
 
     DataInstanceHandle SceneAllocateHelper::allocateDataInstance(DataLayoutHandle finishedLayoutHandle, DataInstanceHandle handle)
@@ -200,5 +200,10 @@ namespace ramses_internal
     TextureBufferHandle SceneAllocateHelper::allocateTextureBuffer(ETextureFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle /*= TextureBufferHandle::Invalid()*/)
     {
         return m_scene.allocateTextureBuffer(textureFormat, mipMapDimensions, preallocateHandle(handle));
+    }
+
+    PickableObjectHandle SceneAllocateHelper::allocatePickableObject(DataBufferHandle geometryHandle, NodeHandle nodeHandle, PickableObjectId id, PickableObjectHandle pickableHandle)
+    {
+        return m_scene.allocatePickableObject(geometryHandle, nodeHandle, id, preallocateHandle(pickableHandle));
     }
 }

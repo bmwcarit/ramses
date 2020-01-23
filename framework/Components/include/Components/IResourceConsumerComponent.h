@@ -14,6 +14,8 @@
 
 namespace ramses_internal
 {
+    class Guid;
+
     class IResourceConsumerComponent
     {
     public:

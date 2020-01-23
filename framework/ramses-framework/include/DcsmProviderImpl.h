@@ -23,6 +23,7 @@ namespace ramses
 {
     class DcsmClientImpl;
     class IDcsmProviderEventHandler;
+    class DcsmMetadataCreator;
 
     class DcsmProviderImpl : public ramses_internal::IDcsmProviderEventHandler, public StatusObjectImpl
     {
@@ -31,7 +32,10 @@ namespace ramses
         ~DcsmProviderImpl() override;
 
         status_t offerContent(ContentID contentID, Category category, sceneId_t scene);
+        status_t offerContentWithMetadata(ContentID contentID, Category category, sceneId_t scene, const DcsmMetadataCreator& metadata);
         status_t requestStopOfferContent(ContentID contentID);
+
+        status_t updateContentMetadata(ContentID contentID, const DcsmMetadataCreator& metadata);
 
         status_t markContentReady(ContentID contentID);
 
@@ -51,6 +55,8 @@ namespace ramses
             bool                            ready = false;
             bool                            contentRequested = false;
         };
+
+        status_t commonOfferContent(const char* callerMethod, ContentID contentID, Category category, sceneId_t scene);
 
         ramses_internal::IDcsmComponent& m_dcsm;
         ramses::IDcsmProviderEventHandler* m_handler = nullptr;

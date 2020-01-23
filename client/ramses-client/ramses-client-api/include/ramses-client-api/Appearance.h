@@ -797,12 +797,20 @@ namespace ramses
         status_t unbindInput(const UniformInput& input);
 
         /**
-        * @brief Check whether an uniform input has any DataObject bound to it.
+        * @brief Check whether a uniform input has any DataObject bound to it.
         *
         * @param[in] input The effect uniform input to check
         * @return \c true if there is any DataObject bound to the input, false otherwise
         */
         bool isInputBound(const UniformInput& input) const;
+
+        /**
+        * @brief Gets the data object bound to a uniform input.
+        *
+        * @param[in] input The effect uniform input to get the bound data object for
+        * @return \c The data object bound the uniform input if existing, otherwise returns nullptr
+        */
+        const DataObject* getDataObjectBoundToInput(const UniformInput& input) const;
 
         /**
         * @brief Gets the effect used to create this appearance

@@ -21,11 +21,11 @@
 #include "Math3d/Matrix33f.h"
 #include "Math3d/Matrix44f.h"
 #include "Resource/EffectResource.h"
-#include "Utils/MemoryBlob.h"
-#include "Utils/ScopedPointer.h"
+#include "Resource/ResourceTypes.h"
 #include "RendererAPI/IRenderBackend.h"
 #include "Platform_Base/Device_Base.h"
 #include "Platform_Base/PlatformFactory_Base.h"
+#include <memory>
 
 using namespace testing;
 
@@ -128,9 +128,9 @@ namespace ramses_internal
 
     TEST_F(ADevice, CreatesShaderFromEffect)
     {
-        ASSERT_TRUE(testDevice != 0);
+        ASSERT_TRUE(testDevice != nullptr);
 
-        const ScopedPointer<EffectResource> testEffect(CreateTestEffectResource());
+        const std::unique_ptr<EffectResource> testEffect(CreateTestEffectResource());
         const DeviceResourceHandle handle = testDevice->uploadShader(*testEffect);
         EXPECT_TRUE(handle.isValid());
 
@@ -139,7 +139,7 @@ namespace ramses_internal
 
     TEST_F(ADevice, RefusesToUploadEffectWithInvalidVertexShader)
     {
-        const ScopedPointer<EffectResource> templateEffect(CreateTestEffectResource());
+        const std::unique_ptr<EffectResource> templateEffect(CreateTestEffectResource());
         const EffectResource invalidEffect(
             "--this is some invalide shader source code--",
             templateEffect->getFragmentShader(),
@@ -152,7 +152,7 @@ namespace ramses_internal
 
     TEST_F(ADevice, RefusesToUploadEffectWithInvalidFragmentShader)
     {
-        const ScopedPointer<EffectResource> templateEffect(CreateTestEffectResource());
+        const std::unique_ptr<EffectResource> templateEffect(CreateTestEffectResource());
         const EffectResource invalidEffect(
             templateEffect->getVertexShader(),
             "--this is some invalide shader source code--",
@@ -165,7 +165,7 @@ namespace ramses_internal
 
     TEST_F(ADevice, RefusesToUploadEffectWithUnlinkableShaders)
     {
-        const ScopedPointer<EffectResource> templateEffect(CreateTestEffectResource());
+        const std::unique_ptr<EffectResource> templateEffect(CreateTestEffectResource());
         const String fragmentShader(
             "#version 100                                                     \n"
             "                                                                 \n"
@@ -191,9 +191,9 @@ namespace ramses_internal
 
     TEST_F(ADevice, SetsConstantsForAllPossibleDataTypesOnShader)
     {
-        ASSERT_TRUE(testDevice != 0);
+        ASSERT_TRUE(testDevice != nullptr);
 
-        const ScopedPointer<EffectResource> templateEffect(CreateTestEffectResource());
+        const std::unique_ptr<EffectResource> templateEffect(CreateTestEffectResource());
         const String fragmentShader(
             "#version 100                                                     \n"
             "                                                                 \n"
@@ -287,7 +287,7 @@ namespace ramses_internal
 
     TEST_F(ADevice, IsHealthyAfterSettingNonExistingUniformOnShader)
     {
-        const ScopedPointer<EffectResource> templateEffect(CreateTestEffectResource());
+        const std::unique_ptr<EffectResource> templateEffect(CreateTestEffectResource());
 
         EffectInputInformationVector uniformInputs = templateEffect->getUniformInputs();
         uniformInputs.push_back(EffectInputInformation("u_NonExistingFloat", 1, EDataType_Float, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid));
@@ -324,30 +324,30 @@ namespace ramses_internal
 
     TEST_F(ADeviceSupportingBinaryShaders, DownloadsBinaryDataForUploadedShader)
     {
-        const ScopedPointer<EffectResource> testEffect(CreateTestEffectResource());
+        const std::unique_ptr<EffectResource> testEffect(CreateTestEffectResource());
         const DeviceResourceHandle handle = testDevice->uploadShader(*testEffect);
         EXPECT_TRUE(handle.isValid());
 
         UInt8Vector binaryShader;
-        UInt32 binaryShaderFormat = 0;
+        BinaryShaderFormatID binaryShaderFormat;
         EXPECT_TRUE(testDevice->getBinaryShader(handle, binaryShader, binaryShaderFormat));
         EXPECT_TRUE(binaryShader.size() != 0);
-        EXPECT_TRUE(binaryShaderFormat != 0);
+        EXPECT_TRUE(binaryShaderFormat != BinaryShaderFormatID::Invalid());
 
         testDevice->deleteShader(handle);
     }
 
     TEST_F(ADeviceSupportingBinaryShaders, UploadsShaderFromBinaryData)
     {
-        const ScopedPointer<EffectResource> testEffect(CreateTestEffectResource());
+        const std::unique_ptr<EffectResource> testEffect(CreateTestEffectResource());
         const DeviceResourceHandle handle = testDevice->uploadShader(*testEffect);
         EXPECT_TRUE(handle.isValid());
 
         UInt8Vector binaryShader;
-        UInt32 binaryShaderFormat = 0;
+        BinaryShaderFormatID binaryShaderFormat;
         EXPECT_TRUE(testDevice->getBinaryShader(handle, binaryShader, binaryShaderFormat));
         EXPECT_TRUE(binaryShader.size() != 0);
-        EXPECT_TRUE(binaryShaderFormat != 0);
+        EXPECT_TRUE(binaryShaderFormat != BinaryShaderFormatID::Invalid());
 
         const DeviceResourceHandle handleBinary = testDevice->uploadBinaryShader(*testEffect, &binaryShader.front(), static_cast<UInt32>(binaryShader.size()), binaryShaderFormat);
         EXPECT_TRUE(handle != handleBinary);
@@ -358,26 +358,26 @@ namespace ramses_internal
 
     TEST_F(ADeviceSupportingBinaryShaders, RefusesToCreateShaderFromEffectWhenPassingInvalidBinaryData)
     {
-        MemoryBlob data(0);
-        UInt32 binaryShaderFormat = 0;
+        ResourceBlob data(0);
+        BinaryShaderFormatID binaryShaderFormat;
 
-        const ScopedPointer<EffectResource> testEffect(CreateTestEffectResource());
-        const DeviceResourceHandle handle = testDevice->uploadBinaryShader(*testEffect, data.getRawData(), data.size(), binaryShaderFormat);
+        const std::unique_ptr<EffectResource> testEffect(CreateTestEffectResource());
+        const DeviceResourceHandle handle = testDevice->uploadBinaryShader(*testEffect, data.data(), static_cast<uint32_t>(data.size()), binaryShaderFormat);
 
         EXPECT_FALSE(handle.isValid());
     }
 
     TEST_F(ADeviceSupportingBinaryShaders, Confidence_SetsDataOnBinaryShader)
     {
-        const ScopedPointer<EffectResource> testEffect(CreateTestEffectResource());
+        const std::unique_ptr<EffectResource> testEffect(CreateTestEffectResource());
         const DeviceResourceHandle handle = testDevice->uploadShader(*testEffect);
         ASSERT_TRUE(handle.isValid());
 
         UInt8Vector binaryShader;
-        UInt32 binaryShaderFormat = 0;
+        BinaryShaderFormatID binaryShaderFormat;
         EXPECT_TRUE(testDevice->getBinaryShader(handle, binaryShader, binaryShaderFormat));
         EXPECT_TRUE(binaryShader.size() != 0);
-        EXPECT_TRUE(binaryShaderFormat != 0);
+        EXPECT_TRUE(binaryShaderFormat != BinaryShaderFormatID::Invalid());
 
         const DeviceResourceHandle handleBinary = testDevice->uploadBinaryShader(*testEffect, &binaryShader.front(), static_cast<UInt32>(binaryShader.size()), binaryShaderFormat);
         EXPECT_TRUE(handle != handleBinary);

@@ -511,7 +511,33 @@ namespace ramses_internal
         const RenderableHandle rend2 = sceneHelper.createRenderable(group1, group2);
         const RenderableHandle rend3 = sceneHelper.createRenderable(group1);
 
-        scene.setRenderableVisibility(rend2, false);
+        scene.setRenderableVisibility(rend2, EVisibilityMode::Invisible);
+
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+
+        const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
+        EXPECT_EQ(2u, renderables1.size());
+        EXPECT_TRUE(contains_c(renderables1, rend1));
+        EXPECT_FALSE(contains_c(renderables1, rend2));
+        EXPECT_TRUE(contains_c(renderables1, rend3));
+        const RenderableVector& renderables2 = scene.getOrderedRenderablesForPass(pass2);
+        EXPECT_EQ(1u, renderables2.size());
+        EXPECT_TRUE(contains_c(renderables2, rend1));
+        EXPECT_FALSE(contains_c(renderables2, rend2));
+        EXPECT_FALSE(contains_c(renderables2, rend3));
+    }
+
+    TEST_F(ARendererCachedScene, RemovesRenderableFromCacheWhenSetOffAndContainedInTwoPasses)
+    {
+        const RenderPassHandle pass1 = sceneHelper.createRenderPassWithCamera();
+        const RenderPassHandle pass2 = sceneHelper.createRenderPassWithCamera();
+        const RenderGroupHandle group1 = sceneHelper.createRenderGroup(pass1);
+        const RenderGroupHandle group2 = sceneHelper.createRenderGroup(pass2);
+        const RenderableHandle rend1 = sceneHelper.createRenderable(group1, group2);
+        const RenderableHandle rend2 = sceneHelper.createRenderable(group1, group2);
+        const RenderableHandle rend3 = sceneHelper.createRenderable(group1);
+
+        scene.setRenderableVisibility(rend2, EVisibilityMode::Off);
 
         scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
 
@@ -547,7 +573,43 @@ namespace ramses_internal
 
         scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
 
-        scene.setRenderableVisibility(rend2, false);
+        scene.setRenderableVisibility(rend2, EVisibilityMode::Invisible);
+
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+
+        const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
+        EXPECT_EQ(2u, renderables1.size());
+        EXPECT_TRUE(contains_c(renderables1, rend1));
+        EXPECT_FALSE(contains_c(renderables1, rend2));
+        EXPECT_TRUE(contains_c(renderables1, rend3));
+        const RenderableVector& renderables2 = scene.getOrderedRenderablesForPass(pass2);
+        EXPECT_EQ(1u, renderables2.size());
+        EXPECT_TRUE(contains_c(renderables2, rend1));
+        EXPECT_FALSE(contains_c(renderables2, rend2));
+        EXPECT_FALSE(contains_c(renderables2, rend3));
+    }
+
+    TEST_F(ARendererCachedScene, RemovesRenderableFromCacheWhenSetOffAndContainedInTwoRenderGroups)
+    {
+        const RenderPassHandle pass1 = sceneHelper.createRenderPassWithCamera();
+        const RenderPassHandle pass2 = sceneHelper.createRenderPassWithCamera();
+        const RenderableHandle rend1 = sceneHelper.createRenderable();
+        const RenderableHandle rend2 = sceneHelper.createRenderable();
+        const RenderableHandle rend3 = sceneHelper.createRenderable();
+        const RenderGroupHandle group1 = sceneAllocator.allocateRenderGroup();
+        const RenderGroupHandle group2 = sceneAllocator.allocateRenderGroup();
+
+        scene.addRenderableToRenderGroup(group1, rend1, 0);
+        scene.addRenderableToRenderGroup(group1, rend2, 0);
+        scene.addRenderableToRenderGroup(group1, rend3, 0);
+        scene.addRenderableToRenderGroup(group2, rend1, 0);
+        scene.addRenderableToRenderGroup(group2, rend2, 0);
+        scene.addRenderGroupToRenderPass(pass1, group1, 0);
+        scene.addRenderGroupToRenderPass(pass2, group2, 0);
+
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+
+        scene.setRenderableVisibility(rend2, EVisibilityMode::Off);
 
         scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
 
@@ -580,7 +642,40 @@ namespace ramses_internal
 
         scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
 
-        scene.setRenderableVisibility(rend2, false);
+        scene.setRenderableVisibility(rend2, EVisibilityMode::Invisible);
+
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+
+        const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
+        EXPECT_EQ(2u, renderables1.size());
+        EXPECT_TRUE(contains_c(renderables1, rend1));
+        EXPECT_FALSE(contains_c(renderables1, rend2));
+        EXPECT_TRUE(contains_c(renderables1, rend3));
+        const RenderableVector& renderables2 = scene.getOrderedRenderablesForPass(pass2);
+        EXPECT_EQ(2u, renderables2.size());
+        EXPECT_TRUE(contains_c(renderables2, rend1));
+        EXPECT_FALSE(contains_c(renderables2, rend2));
+        EXPECT_TRUE(contains_c(renderables2, rend3));
+    }
+
+    TEST_F(ARendererCachedScene, RemovesRenderableFromCacheWhenSetOffAndContainedInRenderGroupSharedByTwoPasses)
+    {
+        const RenderPassHandle pass1 = sceneHelper.createRenderPassWithCamera();
+        const RenderPassHandle pass2 = sceneHelper.createRenderPassWithCamera();
+        const RenderableHandle rend1 = sceneHelper.createRenderable();
+        const RenderableHandle rend2 = sceneHelper.createRenderable();
+        const RenderableHandle rend3 = sceneHelper.createRenderable();
+        const RenderGroupHandle group = sceneAllocator.allocateRenderGroup();
+
+        scene.addRenderableToRenderGroup(group, rend1, 0);
+        scene.addRenderableToRenderGroup(group, rend2, 0);
+        scene.addRenderableToRenderGroup(group, rend3, 0);
+        scene.addRenderGroupToRenderPass(pass1, group, 0);
+        scene.addRenderGroupToRenderPass(pass2, group, 0);
+
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+
+        scene.setRenderableVisibility(rend2, EVisibilityMode::Off);
 
         scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
 
@@ -814,12 +909,26 @@ namespace ramses_internal
         ON_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(effect2)).WillByDefault(Return(DeviceResourceHandle(2)));
         ON_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(effect3)).WillByDefault(Return(DeviceResourceHandle(3)));
 
-        scene.setRenderableEffect(rend1, effect3);
-        scene.setRenderableEffect(rend2, effect1);
-        scene.setRenderableEffect(rend3, effect2);
-        scene.setRenderableEffect(rend4, effect3);
-        scene.setRenderableEffect(rend5, effect1);
-        scene.setRenderableEffect(rend6, effect2);
+        const DataLayoutHandle layout1 = sceneAllocator.allocateDataLayout({}, effect3);
+        const DataInstanceHandle dataInstance1 = sceneAllocator.allocateDataInstance(layout1);
+        scene.setRenderableDataInstance(rend1, ERenderableDataSlotType_Geometry, dataInstance1);
+
+        const DataLayoutHandle layout2 = sceneAllocator.allocateDataLayout({}, effect1);
+        const DataInstanceHandle dataInstance2 = sceneAllocator.allocateDataInstance(layout2);
+        scene.setRenderableDataInstance(rend2, ERenderableDataSlotType_Geometry, dataInstance2);
+
+        const DataLayoutHandle layout3 = sceneAllocator.allocateDataLayout({}, effect2);
+        const DataInstanceHandle dataInstance3 = sceneAllocator.allocateDataInstance(layout3);
+        scene.setRenderableDataInstance(rend3, ERenderableDataSlotType_Geometry, dataInstance3);
+
+        const DataInstanceHandle dataInstance4 = sceneAllocator.allocateDataInstance(layout1);
+        scene.setRenderableDataInstance(rend4, ERenderableDataSlotType_Geometry, dataInstance4);
+
+        const DataInstanceHandle dataInstance5 = sceneAllocator.allocateDataInstance(layout2);
+        scene.setRenderableDataInstance(rend5, ERenderableDataSlotType_Geometry, dataInstance5);
+
+        const DataInstanceHandle dataInstance6 = sceneAllocator.allocateDataInstance(layout3);
+        scene.setRenderableDataInstance(rend6, ERenderableDataSlotType_Geometry, dataInstance6);
 
         scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
 
@@ -847,12 +956,26 @@ namespace ramses_internal
         ON_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(effect2)).WillByDefault(Return(DeviceResourceHandle(2)));
         ON_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(effect3)).WillByDefault(Return(DeviceResourceHandle(3)));
 
-        scene.setRenderableEffect(rend1, effect3);
-        scene.setRenderableEffect(rend2, effect1);
-        scene.setRenderableEffect(rend3, effect2);
-        scene.setRenderableEffect(rend4, effect3);
-        scene.setRenderableEffect(rend5, effect1);
-        scene.setRenderableEffect(rend6, effect2);
+        const DataLayoutHandle layout1 = sceneAllocator.allocateDataLayout({}, effect3);
+        const DataInstanceHandle dataInstance1 = sceneAllocator.allocateDataInstance(layout1);
+        scene.setRenderableDataInstance(rend1, ERenderableDataSlotType_Geometry, dataInstance1);
+
+        const DataLayoutHandle layout2 = sceneAllocator.allocateDataLayout({}, effect1);
+        const DataInstanceHandle dataInstance2 = sceneAllocator.allocateDataInstance(layout2);
+        scene.setRenderableDataInstance(rend2, ERenderableDataSlotType_Geometry, dataInstance2);
+
+        const DataLayoutHandle layout3 = sceneAllocator.allocateDataLayout({}, effect2);
+        const DataInstanceHandle dataInstance3 = sceneAllocator.allocateDataInstance(layout3);
+        scene.setRenderableDataInstance(rend3, ERenderableDataSlotType_Geometry, dataInstance3);
+
+        const DataInstanceHandle dataInstance4 = sceneAllocator.allocateDataInstance(layout1);
+        scene.setRenderableDataInstance(rend4, ERenderableDataSlotType_Geometry, dataInstance4);
+
+        const DataInstanceHandle dataInstance5 = sceneAllocator.allocateDataInstance(layout2);
+        scene.setRenderableDataInstance(rend5, ERenderableDataSlotType_Geometry, dataInstance5);
+
+        const DataInstanceHandle dataInstance6 = sceneAllocator.allocateDataInstance(layout3);
+        scene.setRenderableDataInstance(rend6, ERenderableDataSlotType_Geometry, dataInstance6);
 
         scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
 
@@ -875,9 +998,16 @@ namespace ramses_internal
         ON_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(effect2)).WillByDefault(Return(DeviceResourceHandle(2)));
 
         // rend1 and rend3 have same effect
-        scene.setRenderableEffect(rend1, effect1);
-        scene.setRenderableEffect(rend2, effect2);
-        scene.setRenderableEffect(rend3, effect1);
+        const DataLayoutHandle layout1 = sceneAllocator.allocateDataLayout({}, effect1);
+        const DataInstanceHandle dataInstance1 = sceneAllocator.allocateDataInstance(layout1);
+        scene.setRenderableDataInstance(rend1, ERenderableDataSlotType_Geometry, dataInstance1);
+
+        const DataLayoutHandle layout2 = sceneAllocator.allocateDataLayout({}, effect2);
+        const DataInstanceHandle dataInstance2 = sceneAllocator.allocateDataInstance(layout2);
+        scene.setRenderableDataInstance(rend2, ERenderableDataSlotType_Geometry, dataInstance2);
+
+        const DataInstanceHandle dataInstance3 = sceneAllocator.allocateDataInstance(layout1);
+        scene.setRenderableDataInstance(rend3, ERenderableDataSlotType_Geometry, dataInstance3);
 
         scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
 
@@ -902,28 +1032,28 @@ namespace ramses_internal
         ON_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(effect1)).WillByDefault(Return(DeviceResourceHandle(1)));
         ON_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(effect2)).WillByDefault(Return(DeviceResourceHandle(2)));
 
-        scene.setRenderableEffect(rend1, effect2);
-        scene.setRenderableEffect(rend2, effect1);
-        scene.setRenderableEffect(rend3, effect2);
-        scene.setRenderableEffect(rend4, effect1);
-        scene.setRenderableEffect(rend5, effect2);
-        scene.setRenderableEffect(rend6, effect2);
+        const DataLayoutHandle effect1layout = sceneAllocator.allocateDataLayout({}, effect1);
+        const DataLayoutHandle effect2layout = sceneAllocator.allocateDataLayout({}, effect2);
 
-        // assign different geometries
-        const DataInstanceHandle geometry1 = sceneAllocator.allocateDataInstance(sceneHelper.testGeometryLayout);
-        const DataInstanceHandle geometry2 = sceneAllocator.allocateDataInstance(sceneHelper.testGeometryLayout);
-        // within effect1
-        scene.setRenderableDataInstance(rend4, ERenderableDataSlotType_Geometry, geometry1);
-        scene.setRenderableDataInstance(rend2, ERenderableDataSlotType_Geometry, geometry2);
-        // within effect2
-        scene.setRenderableDataInstance(rend5, ERenderableDataSlotType_Geometry, geometry1);
-        scene.setRenderableDataInstance(rend6, ERenderableDataSlotType_Geometry, geometry1);
-        scene.setRenderableDataInstance(rend1, ERenderableDataSlotType_Geometry, geometry2);
-        scene.setRenderableDataInstance(rend3, ERenderableDataSlotType_Geometry, geometry2);
+        // 4 geometry data instances in effect1 group
+        const DataInstanceHandle effect1geometry1 = sceneAllocator.allocateDataInstance(effect1layout);
+        const DataInstanceHandle effect1geometry2 = sceneAllocator.allocateDataInstance(effect1layout);
+        const DataInstanceHandle effect1geometry3 = sceneAllocator.allocateDataInstance(effect1layout);
+        const DataInstanceHandle effect1geometry4 = sceneAllocator.allocateDataInstance(effect1layout);
+        // 2 geometry data instances in effect2 group
+        const DataInstanceHandle effect2geometry1 = sceneAllocator.allocateDataInstance(effect2layout);
+        const DataInstanceHandle effect2geometry2 = sceneAllocator.allocateDataInstance(effect2layout);
+
+        scene.setRenderableDataInstance(rend6, ERenderableDataSlotType_Geometry, effect1geometry4);
+        scene.setRenderableDataInstance(rend5, ERenderableDataSlotType_Geometry, effect1geometry3);
+        scene.setRenderableDataInstance(rend4, ERenderableDataSlotType_Geometry, effect2geometry2);
+        scene.setRenderableDataInstance(rend3, ERenderableDataSlotType_Geometry, effect1geometry2);
+        scene.setRenderableDataInstance(rend2, ERenderableDataSlotType_Geometry, effect2geometry1);
+        scene.setRenderableDataInstance(rend1, ERenderableDataSlotType_Geometry, effect1geometry1);
 
         // group by effect and geometry within effect groups
         scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
-        expectOrderedRenderablesInPass(pass, { rend4, rend2, rend5, rend6, rend1, rend3 });
+        expectOrderedRenderablesInPass(pass, { rend1, rend3, rend5, rend6, rend2, rend4 });
     }
 
     TEST_F(ARendererCachedScene, updatesWorldMatrixCacheForRenderable)

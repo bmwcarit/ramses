@@ -14,6 +14,8 @@
 
 namespace ramses
 {
+    class DcsmMetadataUpdate;
+
     /**
     * @brief Callback interface for recived DCSM consumer side events. Used with DcsmConsumer::dispatchEvents().
     */
@@ -63,6 +65,17 @@ namespace ramses
          * @param contentID which content id affected
          */
         virtual void forceContentOfferStopped(ramses::ContentID contentID) = 0;
+
+        /**
+         * @brief Update metadata for given content. This callback provides metadata given to DcsmProvider::offerContentWithMetadata()
+         *        and DcsmProvider::updateContentMetadata(). A consumer will get the combined state of all past metadata updates
+         *        from the whole lifecycle of the content as first event after it assigned to content to itself. Later events only contain
+         *        delta updates. When the provider never attached metadata to this content, this callback will never be called.
+         *
+         * @param contentID which content is affected
+         * @param metadataUpdate object to get metadata update from. valid for the lifetime of the callback.
+         */
+        virtual void contentMetadataUpdated(ramses::ContentID contentID, const DcsmMetadataUpdate& metadataUpdate) = 0;
     };
 }
 

@@ -378,7 +378,7 @@ TEST_F(ARendererResourceManager, canUploadAndUpdateAndUnloadTextureBuffer_WithOn
     InSequence seq;
     const TextureBufferHandle textureBuffer(1u);
     const UInt32 expectedSize = (10u * 20u) * 4u;
-    EXPECT_CALL(renderer.deviceMock, allocateTexture2D(10u, 20u, ETextureFormat_RGBA8, 1u, expectedSize));
+    EXPECT_CALL(renderer.deviceMock, allocateTexture2D(10u, 20u, ETextureFormat_RGBA8, DefaultTextureSwizzleArray, 1u, expectedSize));
     resourceManager.uploadTextureBuffer(textureBuffer, 10u, 20u, ETextureFormat_RGBA8, 1u, fakeSceneId);
 
     EXPECT_EQ(DeviceMock::FakeTextureDeviceHandle, resourceManager.getTextureBufferDeviceHandle(textureBuffer, fakeSceneId));
@@ -397,7 +397,7 @@ TEST_F(ARendererResourceManager, canUploadAndUpdateAndUnloadTextureBuffer_WithSe
     InSequence seq;
     const TextureBufferHandle textureBuffer(1u);
     const UInt32 expectedSize = (10u * 20u + 5u * 10u)* 4u;
-    EXPECT_CALL(renderer.deviceMock, allocateTexture2D(10u, 20u, ETextureFormat_RGBA8, 2u, expectedSize));
+    EXPECT_CALL(renderer.deviceMock, allocateTexture2D(10u, 20u, ETextureFormat_RGBA8, DefaultTextureSwizzleArray, 2u, expectedSize));
     resourceManager.uploadTextureBuffer(textureBuffer, 10u, 20u, ETextureFormat_RGBA8, 2u, fakeSceneId);
 
     EXPECT_EQ(DeviceMock::FakeTextureDeviceHandle, resourceManager.getTextureBufferDeviceHandle(textureBuffer, fakeSceneId));
@@ -867,7 +867,7 @@ TEST_F(ARendererResourceManager, unloadsAllSceneResources)
 
     //upload texture buffer
     const TextureBufferHandle textureBufferHandle(666u);
-    EXPECT_CALL(renderer.deviceMock, allocateTexture2D(_, _, _, _, _));
+    EXPECT_CALL(renderer.deviceMock, allocateTexture2D(_, _, _, _, _, _));
     resourceManager.uploadTextureBuffer(textureBufferHandle, 1u, 2u, ETextureFormat_RGBA8, 1u, fakeSceneId);
 
     // unload all scene resources

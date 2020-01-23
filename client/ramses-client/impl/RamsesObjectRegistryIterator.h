@@ -40,7 +40,7 @@ namespace ramses
                 }
             }
 
-            return 0;
+            return nullptr;
         }
 
         template <typename T = RamsesObject>

@@ -33,7 +33,8 @@ namespace ramses_internal
             EState_FORCE_AUTO_HINTING,
             EState_FONT_CASCADE,
             EState_FONT_CASCADE_WITH_VERTICAL_OFFSET,
-            EState_SHAPING
+            EState_SHAPING,
+            EState_SMOKE_TEST
         };
 
         TextScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
@@ -41,24 +42,24 @@ namespace ramses_internal
         void setState(UInt32 state);
 
     private:
-        ramses::FontInstanceId m_font{ ramses::InvalidFontInstanceId };
-        ramses::FontInstanceId m_chineseFont{ ramses::InvalidFontInstanceId };
-        ramses::FontInstanceId m_lightFont{ ramses::InvalidFontInstanceId };
-        ramses::FontInstanceId m_lightAutoHintFont{ ramses::InvalidFontInstanceId };
-        ramses::FontInstanceId m_lightAutoHintAndReshapeFont{ ramses::InvalidFontInstanceId };
-        ramses::FontInstanceId m_shapingArabicFont{ ramses::InvalidFontInstanceId };
-        ramses::FontInstanceId m_shapingArabicAutoHintFont{ ramses::InvalidFontInstanceId };
+        ramses::FontInstanceId m_font;
+        ramses::FontInstanceId m_chineseFont;
+        ramses::FontInstanceId m_lightFont;
+        ramses::FontInstanceId m_lightAutoHintFont;
+        ramses::FontInstanceId m_lightAutoHintAndReshapeFont;
+        ramses::FontInstanceId m_shapingArabicFont;
+        ramses::FontInstanceId m_shapingArabicAutoHintFont;
 
-        ramses::TextLineId m_textUTF{ ramses::InvalidTextLineId };
-        ramses::TextLineId m_textASCII{ ramses::InvalidTextLineId };
-        ramses::TextLineId m_textDigits{ ramses::InvalidTextLineId };
-        ramses::TextLineId m_textChinese{ ramses::InvalidTextLineId };
-        ramses::TextLineId m_textLight{ ramses::InvalidTextLineId };
-        ramses::TextLineId m_textLightAutoHinting{ ramses::InvalidTextLineId };
-        ramses::TextLineId m_textFontCascade{ ramses::InvalidTextLineId };
-        ramses::TextLineId m_textFontCascadeWithVerticalOffset{ ramses::InvalidTextLineId };
-        ramses::TextLineId m_textShaping{ ramses::InvalidTextLineId };
-        ramses::TextLineId m_textShapingAutoHint{ ramses::InvalidTextLineId };
+        ramses::TextLineId m_textUTF;
+        ramses::TextLineId m_textASCII;
+        ramses::TextLineId m_textDigits;
+        ramses::TextLineId m_textChinese;
+        ramses::TextLineId m_textLight;
+        ramses::TextLineId m_textLightAutoHinting;
+        ramses::TextLineId m_textFontCascade;
+        ramses::TextLineId m_textFontCascadeWithVerticalOffset;
+        ramses::TextLineId m_textShaping;
+        ramses::TextLineId m_textShapingAutoHint;
 
         ramses::MeshNode* m_meshUTF = nullptr;
         ramses::MeshNode* m_meshASCII = nullptr;

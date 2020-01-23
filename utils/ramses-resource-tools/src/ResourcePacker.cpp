@@ -21,18 +21,23 @@
 bool ResourcePacker::Pack(const RamsesResourcePackerArguments& arguments)
 {
     const FilePaths& inputFiles = arguments.getInputResourceFiles().getFilePaths();
-    if (0 == inputFiles.count())
+    if (0 == inputFiles.size())
     {
         return true;
     }
 
     ramses::RamsesFramework framework;
-    ramses::RamsesClient ramsesClient("ramses client", framework);
+    ramses::RamsesClient* ramsesClient(framework.createClient("ramses client"));
+    if (!ramsesClient)
+    {
+        PRINT_ERROR("failed to create ramses client.\n");
+        return false;
+    }
 
     for(const auto& file : inputFiles)
     {
         ramses::ResourceFileDescription fileDescription(file.c_str());
-        if (ramses::StatusOK != ramsesClient.loadResources(fileDescription))
+        if (ramses::StatusOK != ramsesClient->loadResources(fileDescription))
         {
             PRINT_ERROR("ramses fail to load input resource file:\"%s\".\n", file.c_str());
             return false;
@@ -40,14 +45,14 @@ bool ResourcePacker::Pack(const RamsesResourcePackerArguments& arguments)
     }
 
     ramses::ResourceFileDescription outputFile(arguments.getOutputResourceFile().c_str());
-    const ramses::RamsesObjectVector resourceObjects = ramsesClient.impl.getListOfResourceObjects();
+    const ramses::RamsesObjectVector resourceObjects = ramsesClient->impl.getListOfResourceObjects();
     for(const auto& resObj : resourceObjects)
     {
         const ramses::Resource& resource = ramses::RamsesObjectTypeUtils::ConvertTo<ramses::Resource>(*resObj);
         outputFile.impl->m_resources.push_back(&resource);
     }
 
-    const ramses::status_t savingStatus = ramsesClient.saveResources(outputFile, arguments.getUseCompression());
+    const ramses::status_t savingStatus = ramsesClient->saveResources(outputFile, arguments.getUseCompression());
     if (ramses::StatusOK != savingStatus)
     {
         PRINT_ERROR("ramses fail to save to output resource file.\n");

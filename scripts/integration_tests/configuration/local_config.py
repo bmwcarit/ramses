@@ -10,7 +10,7 @@ import platform
 
 from ramses_test_framework.targets.local_target import LocalTarget
 from ramses_test_framework.targets.targetInfo import TargetInfo
-from common_config import Config
+from configuration.common_config import Config
 
 class LocalConfig(Config):
     def __init__(self):

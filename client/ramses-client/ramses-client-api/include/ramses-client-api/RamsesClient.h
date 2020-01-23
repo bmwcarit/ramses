@@ -13,7 +13,9 @@
 #include "ramses-client-api/TextureEnums.h"
 #include "ramses-client-api/SceneConfig.h"
 #include "ramses-client-api/MipLevelData.h"
+#include "ramses-client-api/TextureSwizzle.h"
 #include "ramses-framework-api/RamsesFramework.h"
+#include <string>
 
 /**
 * ramses namespace
@@ -50,19 +52,6 @@ namespace ramses
     {
     public:
         /**
-        * @brief Creates an instance of the RAMSES client API
-        *
-        * @param name Name of RAMSES application
-        * @param framework The ramses framework object to be used with this client
-        */
-        explicit RamsesClient(const char* name, RamsesFramework& framework);
-
-        /**
-        * @brief Destructor of RamsesClient
-        */
-        virtual ~RamsesClient();
-
-        /**
         * @brief Create a new empty Scene.
         *
         * @param[in] sceneId The scene id for global identification of the Scene (is used for scene mapping on renderer side).
@@ -70,7 +59,7 @@ namespace ramses
         * @param[in] name The optional name of the created Scene.
         * @return A pointer to the created Scene, null on failure
         */
-        Scene* createScene(sceneId_t sceneId, const SceneConfig& sceneConfig = SceneConfig(), const char* name = 0);
+        Scene* createScene(sceneId_t sceneId, const SceneConfig& sceneConfig = SceneConfig(), const char* name = nullptr);
 
         /**
         * @brief Create a new FloatArray
@@ -81,7 +70,7 @@ namespace ramses
         * @param[in] name The optional name of the FloatArray.
         * @return A pointer to the created FloatArray, null on failure
         */
-        const FloatArray* createConstFloatArray(uint32_t numberOfFloats, const float* arrayData, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = 0);
+        const FloatArray* createConstFloatArray(uint32_t numberOfFloats, const float* arrayData, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = nullptr);
 
         /**
         * @brief Create a new Vector2fArray
@@ -92,7 +81,7 @@ namespace ramses
         * @param[in] name The optional name of the Vector2fArray.
         * @return A pointer to the created Vector2fArray, null on failure
         */
-        const Vector2fArray* createConstVector2fArray(uint32_t numberOfVectors, const float* arrayData, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = 0);
+        const Vector2fArray* createConstVector2fArray(uint32_t numberOfVectors, const float* arrayData, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = nullptr);
 
         /**
         * @brief Create a new Vector3fArray
@@ -103,7 +92,7 @@ namespace ramses
         * @param[in] name The optional name of the Vector3fArray.
         * @return A pointer to the created Vector3fArray, null on failure
         */
-        const Vector3fArray* createConstVector3fArray(uint32_t numberOfVectors, const float* arrayData, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = 0);
+        const Vector3fArray* createConstVector3fArray(uint32_t numberOfVectors, const float* arrayData, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = nullptr);
 
         /**
         * @brief Create a new Vector4fArray
@@ -114,7 +103,7 @@ namespace ramses
         * @param[in] name The optional name of the Vector4fArray.
         * @return A pointer to the created Vector4fArray, null on failure
         */
-        const Vector4fArray* createConstVector4fArray(uint32_t numberOfVectors, const float* arrayData, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = 0);
+        const Vector4fArray* createConstVector4fArray(uint32_t numberOfVectors, const float* arrayData, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = nullptr);
 
         /**
         * @brief Create a new UInt16Array
@@ -125,7 +114,7 @@ namespace ramses
         * @param[in] name The optional name of the UInt16Array
         * @return A pointer to the created UInt16Array, null on failure
         */
-        const UInt16Array* createConstUInt16Array(uint32_t numberOfIndices, const uint16_t* arrayData, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = 0);
+        const UInt16Array* createConstUInt16Array(uint32_t numberOfIndices, const uint16_t* arrayData, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = nullptr);
 
         /**
         * @brief Create a new UInt32Array
@@ -136,7 +125,7 @@ namespace ramses
         * @param[in] name The optional name of the UInt32Array
         * @return A pointer to the created UInt32Array, null on failure
         */
-        const UInt32Array* createConstUInt32Array(uint32_t numberOfIndices, const uint32_t* arrayData, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = 0);
+        const UInt32Array* createConstUInt32Array(uint32_t numberOfIndices, const uint32_t* arrayData, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = nullptr);
 
         /**
         * @brief Saves all scene contents (including all client resources) to a file.
@@ -211,11 +200,6 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t destroy(const Resource& resource);
-
-        /**
-        * Stores internal data for implementation specifics of the API.
-        */
-        class RamsesClientImpl& impl;
 
         /**
         *  @brief Saves selected resources to a file.
@@ -338,6 +322,8 @@ namespace ramses
         *                         to use. Amount and sizes of supplied mipmap levels have to
         *                         conform to GL specification. Order is lowest level (biggest
         *                         resolution) to highest level (smallest resolution).
+        * @param[in] swizzle Describes how RGBA channels of the texture are swizzled,
+        *          where each member of the struct represents one destination channel that the source channel should get sampled from.
         * @param[in] generateMipChain Auto generate mipmap levels. Cannot be used if custom data for lower mipmap levels provided.
         * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
         * @param[in] name The name of the Texture2D.
@@ -350,8 +336,9 @@ namespace ramses
             uint32_t mipMapCount,
             const MipLevelData mipLevelData[],
             bool generateMipChain = false,
+            const TextureSwizzle& swizzle = {},
             resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache,
-            const char* name = 0);
+            const char* name = nullptr);
 
         /**
         * @brief Create a new Texture3D
@@ -379,7 +366,7 @@ namespace ramses
             const MipLevelData mipLevelData[],
             bool generateMipChain = false,
             resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache,
-            const char* name = 0);
+            const char* name = nullptr);
 
         /**
         * @brief Create a new Cube Texture. All texel values are initially initialized to 0.
@@ -403,17 +390,26 @@ namespace ramses
             const CubeMipLevelData mipLevelData[],
             bool generateMipChain = false,
             resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache,
-            const char* name = 0);
+            const char* name = nullptr);
 
         /**
         * @brief Create a new Effect by parsing a GLSL shader described by an EffectDescription instance.
+        *        Refer to RamsesClient::getLastEffectErrorMessages in case of parsing error.
         *
         * @param[in] effectDesc Effect description.
         * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
         * @param[in] name The name of the created Effect.
         * @return A pointer to the created Effect, null on failure
         */
-        Effect* createEffect(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = 0);
+        Effect* createEffect(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = nullptr);
+
+        /**
+         * @brief Get the GLSL error messages that were produced at the creation of the last Effect
+         *
+         * @return A string containing the GLSL error messages of the last effect
+         */
+        std::string getLastEffectErrorMessages() const;
+
 
         /**
         * @brief Get an object from the client by name.
@@ -457,6 +453,44 @@ namespace ramses
         */
         status_t dispatchEvents(IClientEventHandler& clientEventHandler);
 
+        /**
+        * Stores internal data for implementation specifics of the API.
+        */
+        class RamsesClientImpl& impl;
+
+        /**
+         * @brief Constructor of RamsesClient
+         */
+        RamsesClient(RamsesClientImpl&);
+
+        /**
+         * @brief Deleted default constructor
+         */
+        RamsesClient() = delete;
+
+        /**
+         * @brief Deleted copy constructor
+         * @param other unused
+         */
+        RamsesClient(const RamsesClient& other) = delete;
+
+        /**
+         * @brief Deleted copy assignment
+         * @param other unused
+         * @return unused
+         */
+        RamsesClient& operator=(const RamsesClient& other) = delete;
+
+    private:
+        /**
+        * @brief ClientFactory is the factory for RamsesClient
+        */
+        friend class ClientFactory;
+
+        /**
+        * @brief Destructor of RamsesClient
+        */
+        virtual ~RamsesClient();
     };
 }
 

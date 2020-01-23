@@ -17,18 +17,13 @@
 #
 ############################################################################
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.3)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
-OPTION(ACME_DEBUG_ENABLED            "enable debug output of acme"                        OFF)
-OPTION(ACME_WARNING_AS_ERROR         "treat warnings as errors"                           OFF)
 OPTION(ACME_CREATE_PACKAGE           "include CPack in order to create a 'package' target" ON)
 
 SET(ACME2_BASE_DIR   ${CMAKE_CURRENT_LIST_DIR})
-SET(ACME2_PLUGIN_DIR ${ACME2_PROJECT_PLUGIN_DIR} ${ACME2_BASE_DIR}/plugins)
-MESSAGE(STATUS "Using ${ACME2_PLUGIN_DIR} as plugin dirs")
 
 INCLUDE(${ACME2_BASE_DIR}/internal/tools.cmake)
-INCLUDE(${ACME2_BASE_DIR}/internal/plugins.cmake)
 INCLUDE(${ACME2_BASE_DIR}/internal/api.cmake)
 
 ENABLE_TESTING()    # use CTest
@@ -36,11 +31,7 @@ ENABLE_TESTING()    # use CTest
 CMAKE_POLICY(SET CMP0054 NEW)
 CMAKE_POLICY(SET CMP0022 NEW)
 
-ACME_DEBUG("Using ${ACME2_BASE_DIR}/acme2.cmake")
-ACME_DEBUG("CMAKE_TOOLCHAIN_FILE='${CMAKE_TOOLCHAIN_FILE}'")
-
 MACRO(ACME2_PROJECT)
-
     SET(PROJECT_SETTINGS "${ARGV}")
 
     SET(SUPER_PROJECT_NAME ${PROJECT_NAME})
@@ -49,14 +40,26 @@ MACRO(ACME2_PROJECT)
     set_property(DIRECTORY "${PROJECT_BASE_DIR}" APPEND PROPERTY ACME_COPIED_RESOURCE_NAMES_TO_DIRECTORY "")
     set_property(DIRECTORY "${PROJECT_BASE_DIR}" APPEND PROPERTY ACME_COPIED_RESOURCE_PATHS_TO_DIRECTORY "")
 
-    INCLUDE(${ACME2_BASE_DIR}/internal/init_project_settings.cmake)
+    # reset PROJECT_<value>
+    FOREACH(PROPERTY ${ACME2_API})
+        SET(PROJECT_${PROPERTY} "")
+    ENDFOREACH()
 
-    # setup project
-    CMAKE_POLICY(SET CMP0048 NEW)
-    SET(version_string ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH})
-    PROJECT(${PROJECT_NAME} VERSION ${version_string})
+    # values provided by ACME_PROJECT call are in PROJECT_<value>
+    cmake_parse_arguments(PROJECT "" "" "${ACME2_API}" ${PROJECT_SETTINGS})
 
-    ACME_CALL_PLUGIN_HOOK(init)
+    # apply project settings or use externally provided values or use default values
+    FOREACH(PROPERTY ${ACME2_API})
+        IF("${PROJECT_${PROPERTY}}" STREQUAL "")
+            IF ("${${PROJECT_NAME}_${PROPERTY}}" STREQUAL "")
+                SET(PROJECT_${PROPERTY} ${DEFAULT_${PROPERTY}})
+            ELSE()
+                SET(PROJECT_${PROPERTY} ${${PROJECT_NAME}_${PROPERTY}})
+            ENDIF()
+        ENDIF()
+    ENDFOREACH()
+
+    include(${ACME2_BASE_DIR}/internal/create_build_config.cmake)
 
     OPTION(${PROJECT_NAME}_BUILD_TESTS "build unit tests for project '${PROJECT_NAME}'" ON)
 
@@ -93,20 +96,57 @@ MACRO(ACME2_PROJECT)
         INCLUDE(${ACME2_BASE_DIR}/internal/create_package.cmake)
     ENDIF()
 
-    ACME_CALL_PLUGIN_HOOK(on_project_setup_complete)
+    if (ACME_ENABLE_TESTCOVERAGE)
+        include(${ACME2_BASE_DIR}/internal/create_coverage_targets.cmake)
+    endif()
 
 ENDMACRO(ACME2_PROJECT)
 
 MACRO(ACME_MODULE)
 
+    CMAKE_POLICY(SET CMP0054 NEW)
+
     SET(MODULE_SETTINGS "${ARGV}")
     SET(BUILD_ENABLED TRUE)
 
-    INCLUDE(${ACME2_BASE_DIR}/internal/init_module_settings.cmake)
-    INCLUDE(${ACME2_BASE_DIR}/internal/init_acme_settings.cmake)
+    # translate all MODULE_* provided by ACME2 module
+    # to checked and preprocessed ACME_* variables
+
+    # reset MODULE_<value>
+    FOREACH(PROPERTY ${ACME2_API})
+        SET(MODULE_${PROPERTY} "")
+    ENDFOREACH()
+
+    # values provided by ACME_MODULE call are in MOUDLE_<value>
+    cmake_parse_arguments(MODULE "" "" "${ACME2_API}" ${MODULE_SETTINGS})
+
+    # apply module settings or use project values,
+    # if property was was not provided
+    FOREACH(PROPERTY ${ACME2_API})
+        IF("${MODULE_${PROPERTY}}" STREQUAL "")
+            SET(MODULE_${PROPERTY} ${PROJECT_${PROPERTY}})
+        ENDIF()
+    ENDFOREACH()
+
+    # do not use CONTENT, this is project specific
+    SET(MODULE_CONTENT "")
+
+    # init acme settings with module settings
+    FOREACH(PROPERTY ${ACME2_API})
+        SET(ACME_${PROPERTY} ${MODULE_${PROPERTY}})
+    ENDFOREACH()
+
+    # resolve file wildcards
+    file(GLOB ACME_FILES_SOURCE LIST_DIRECTORIES false ${MODULE_FILES_SOURCE} ${MODULE_FILES_PRIVATE_HEADER})
+    file(GLOB ACME_FILES_RESOURCE LIST_DIRECTORIES false ${MODULE_FILES_RESOURCE})
+
+    # use glob to make directories absolute
+    file(GLOB ACME_INCLUDE_BASE ${MODULE_INCLUDE_BASE})
+
+    SET(ACME_PACKAGE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
 
     # check, if module contains files
-    IF ("${ACME_FILES_SOURCE}${ACME_FILES_PRIVATE_HEADER}${ACME_FILES_RESOURCE}" STREQUAL "")
+    IF ("${ACME_FILES_SOURCE}${ACME_FILES_RESOURCE}" STREQUAL "")
         message(FATAL_ERROR "${ACME_NAME} does not have any files")
     ENDIF()
 
@@ -130,8 +170,6 @@ MACRO(ACME_MODULE)
         ENDIF()
     ENDFOREACH()
 
-    CMAKE_POLICY(SET CMP0054 NEW)
-
     # check if module is test and disable, if tests are disabled
     IF("${ACME_TYPE}" STREQUAL "TEST" AND NOT ${PROJECT_NAME}_BUILD_TESTS)
         SET(MSG "tests disabled") # overwrite missing dependencies
@@ -143,9 +181,9 @@ MACRO(ACME_MODULE)
         SET(${PROJECT_NAME}_WILL_NOT_FIND "${ACME_NAME};${${PROJECT_NAME}_WILL_NOT_FIND}" CACHE INTERNAL "")
     ELSE()
         IF(NOT "${MSG}" STREQUAL "")
-            ACME_WARNING("build enabled, but")
+            message("        build enabled, but")
             FOREACH(M ${MSG})
-                ACME_WARNING("- ${M}")
+                message("        - ${M}")
             ENDFOREACH()
             ACME_ERROR("aborting configuration")
         ENDIF()
@@ -154,8 +192,6 @@ MACRO(ACME_MODULE)
 
         # build module
         INCLUDE(${ACME2_BASE_DIR}/internal/module_template.cmake)
-
-        ACME_CALL_PLUGIN_HOOK(on_target_created)
     ENDIF()
 
 ENDMACRO(ACME_MODULE)

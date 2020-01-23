@@ -80,8 +80,8 @@ namespace ramses_internal
          */
         Vector2(const Float _x, const Float _y);
 
-        Vector2(Vector2&& other) = default;
-        Vector2& operator=(Vector2&& other) = default;
+        Vector2(Vector2&& other) RNOEXCEPT = default;
+        Vector2& operator=(Vector2&& other) RNOEXCEPT = default;
 
         /**
         *  Constructor to initialize the vector with one value
@@ -177,14 +177,14 @@ namespace ramses_internal
          * @param other Vector2 to compare to
          * @return true if both vectors are equal false otherwise
          */
-        Bool operator==(const Vector2& other) const;
+        bool operator==(const Vector2& other) const;
 
         /**
          * Compares each element to check if two vectors are not equal
          * @param other Vector2 to compare to
          * @return false if both vectors are equal true otherwise
          */
-        Bool operator!=(const Vector2& other) const;
+        bool operator!=(const Vector2& other) const;
 
         /**
          * Returns the element of the given index
@@ -261,7 +261,7 @@ namespace ramses_internal
 
     inline Float Vector2::length() const
     {
-        return PlatformMath::Sqrt(PlatformMath::Pow2(x) + PlatformMath::Pow2(y));
+        return std::sqrt(x*x + y*y);
     }
 
     inline Vector2& Vector2::operator=(const Vector2& other)
@@ -294,12 +294,12 @@ namespace ramses_internal
         y -= other.y;
     }
 
-    inline Bool Vector2::operator==(const Vector2& other) const
+    inline bool Vector2::operator==(const Vector2& other) const
     {
         return PlatformMemory::Compare(data, other.data, sizeof(data)) == 0;
     }
 
-    inline Bool Vector2::operator!=(const Vector2& other) const
+    inline bool Vector2::operator!=(const Vector2& other) const
     {
         return !operator==(other);
     }
@@ -340,7 +340,7 @@ namespace ramses_internal
 
     inline Float Vector2::angle(const Vector2& other) const
     {
-        return PlatformMath::ArcCos(dot(other) / (length() * other.length()));
+        return std::acos(dot(other) / (length() * other.length()));
     }
 
     inline
@@ -394,8 +394,8 @@ namespace ramses_internal
         return Vector2(vec.x * scalar, vec.y * scalar);
     }
 
-    static_assert(std::is_nothrow_move_constructible<Vector2>::value &&
-        std::is_nothrow_move_assignable<Vector2>::value, "Vector2 must be movable");
+    static_assert(std::is_nothrow_move_constructible<Vector2>::value, "Vector2 must be movable");
+    static_assert(std::is_nothrow_move_assignable<Vector2>::value, "Vector2 must be movable");
 }
 
 #endif

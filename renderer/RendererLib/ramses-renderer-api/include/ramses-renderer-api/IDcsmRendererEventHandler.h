@@ -14,6 +14,8 @@
 
 namespace ramses
 {
+    class DcsmMetadataUpdate;
+
     /// DcsmRenderer event result used in some event handler callbacks
     enum class DcsmRendererEventResult
     {
@@ -90,6 +92,43 @@ namespace ramses
         * @param contentID Unique ID of content that became unavailable.
         */
         virtual void contentNotAvailable(ContentID contentID) = 0;
+
+        /**
+         * @brief Update metadata for given content. This callback provides metadata given to by DcsmProvider::offerContentWithMetadata()
+         *        and DcsmProvider::updateContentMetadata(). A consumer will get the combined state of all past metadata updates
+         *        from the whole lifecycle of the content as first event after it successfully acquired control over content (state Assigned).
+         *        Later events only contain delta updates.
+         *        When the provider never attached metadata to this content, this callback will never be called.
+         *
+         * @param contentID which content is affected
+         * @param metadataUpdate object to get metadata update from. valid for the lifetime of the callback.
+         */
+        virtual void contentMetadataUpdated(ContentID contentID, const DcsmMetadataUpdate& metadataUpdate) = 0;
+
+        /** @brief Offscreen buffer and consumer were linked (or failed to be linked) as result of calling DcsmRenderer::linkOffscreenBuffer.
+        * @details Note that there is a possibility that given consumerContent ID is different from the one passed when calling
+        *          DcsmRenderer::linkOffscreenBuffer. This can happen if the Ramses scene involved in this data linking is used
+        *          by multiple contents, in that case simply one of the contents using the scene will be given here.
+        *
+        * @param offscreenBufferId ID of offscreen buffer which was linked to consumer.
+        * @param consumerContent ID of content using scene that consumes the linked offscreen buffer.
+        * @param consumerId ID of data consumer in the consumer scene.
+        * @param success True if offscreen buffer successfully linked, false otherwise.
+        */
+        virtual void offscreenBufferLinked(displayBufferId_t offscreenBufferId, ContentID consumerContent, dataConsumerId_t consumerId, bool success) = 0;
+
+        /** @brief Data provider and consumer were linked (or failed to be linked) as result of calling DcsmRenderer::linkData.
+        * @details Note that there is a possibility that given consumerContent ID or providerContent ID is different from the one passed
+        * when calling DcsmRenderer::linkOffscreenBuffer. This can happen if the Ramses scene involved in this data linking is used
+        * by multiple contents, in that case simply one of the contents using the scene will be given here.
+        *
+        * @param providerContent ID of content using scene that provides the linked data.
+        * @param providerId ID of data provider in the provider scene.
+        * @param consumerContent ID of content using scene that consumes the linked data.
+        * @param consumerId ID of data consumer in the consumer scene.
+        * @param success True if data successfully linked, false otherwise.
+        */
+        virtual void dataLinked(ContentID providerContent, dataProviderId_t providerId, ContentID consumerContent, dataConsumerId_t consumerId, bool success) = 0;
     };
 }
 

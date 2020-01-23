@@ -18,6 +18,7 @@ SET(DISABLED_COMPILER_FLAGS
     -Winconsistent-missing-override
     -Wformat-signedness
     -Wmissing-include-dirs
+    -Wimplicit-fallthrough
     /W1
     /W2
     /W3
@@ -52,6 +53,10 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     SET(ADDITIONAL_COMPILER_FLAGS "${ADDITIONAL_COMPILER_FLAGS} -Wno-switch-bool")
     SET(ADDITIONAL_COMPILER_FLAGS "${ADDITIONAL_COMPILER_FLAGS} -Wno-deprecated-declarations")
     SET(ADDITIONAL_CXX_COMPILER_FLAGS "${ADDITIONAL_CXX_COMPILER_FLAGS} -Wno-reorder")
+
+    IF(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 9)
+        SET(ADDITIONAL_CXX_COMPILER_FLAGS "${ADDITIONAL_CXX_COMPILER_FLAGS} -Wno-deprecated-copy")
+    ENDIF()
 
 ELSEIF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 

@@ -31,7 +31,7 @@ namespace ramses_internal
             ResourceContentHash* hash;
             const IResource* resource;
             ResourceInfo resourceInfo;
-            Bool deletionAllowed;
+            bool deletionAllowed;
         };
     public:
         ResourceStorage(PlatformLock& lockToUse);
@@ -39,7 +39,7 @@ namespace ramses_internal
 
         void setListener(IResourceStorageChangeListener& listener);
         ResourceInfoVector getAllResourceInfo() const;
-        ManagedResource manageResource(const IResource& resource, Bool deletionAllowed = false);
+        ManagedResource manageResource(const IResource& resource, bool deletionAllowed = false);
         ManagedResourceVector getResources();
         ManagedResource getResource(ResourceContentHash hash);
         ResourceHashUsage getResourceHashUsage(const ResourceContentHash& hash);

@@ -67,13 +67,13 @@ public:
         createdDisplays.erase(display);
     }
 
-    void expectOffscreenBufferRendered(DisplayHandle display, std::initializer_list<DeviceResourceHandle> buffers, bool withContextEnable = false)
+    void expectOffscreenBufferRendered(DisplayHandle display, std::initializer_list<DeviceResourceHandle> buffers, bool withContextEnable = false, const Vector4& clearColor = Renderer::DefaultClearColor)
     {
         DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(display);
         if (withContextEnable)
             EXPECT_CALL(*displayMock.m_displayController, enableContext()).InSequence(SeqRender);
         for (auto buffer : buffers)
-            EXPECT_CALL(*displayMock.m_displayController, clearBuffer(buffer, Renderer::DefaultClearColor)).InSequence(SeqRender);
+            EXPECT_CALL(*displayMock.m_displayController, clearBuffer(buffer, clearColor)).InSequence(SeqRender);
     }
 
     void expectInterruptibleOffscreenBufferRendered(DisplayHandle display, std::initializer_list<DeviceResourceHandle> buffers, const std::vector< std::pair<bool, bool> >& expectClearAndSwapFlags = {}, bool withContextEnable = false)
@@ -158,22 +158,22 @@ public:
         return rendererScenes.getScene(sceneId);
     }
 
-    void mapSceneToDisplayBuffer(SceneId sceneId, DisplayHandle displayHandle, Int32 sceneRenderOrder, DeviceResourceHandle displayBuffer = DisplayControllerMock::FakeFrameBufferHandle)
+    void assignSceneToDisplayBuffer(SceneId sceneId, DisplayHandle displayHandle, Int32 sceneRenderOrder, DeviceResourceHandle displayBuffer = DisplayControllerMock::FakeFrameBufferHandle)
     {
-        renderer.mapSceneToDisplayBuffer(sceneId, displayHandle, displayBuffer, sceneRenderOrder);
-        EXPECT_EQ(displayHandle, renderer.getDisplaySceneIsMappedTo(sceneId));
+        renderer.assignSceneToDisplayBuffer(sceneId, displayHandle, displayBuffer, sceneRenderOrder);
+        EXPECT_EQ(displayHandle, renderer.getDisplaySceneIsAssignedTo(sceneId));
         DisplayHandle displayMapped;
-        EXPECT_EQ(displayBuffer, renderer.getBufferSceneIsMappedTo(sceneId, &displayMapped));
+        EXPECT_EQ(displayBuffer, renderer.getBufferSceneIsAssignedTo(sceneId, &displayMapped));
         EXPECT_EQ(displayHandle, displayMapped);
         EXPECT_EQ(sceneRenderOrder, renderer.getSceneGlobalOrder(sceneId));
     }
 
-    void unmapScene(SceneId sceneId)
+    void unassignScene(SceneId sceneId)
     {
-        renderer.unmapScene(sceneId);
-        EXPECT_FALSE(renderer.getDisplaySceneIsMappedTo(sceneId).isValid());
+        renderer.unassignScene(sceneId);
+        EXPECT_FALSE(renderer.getDisplaySceneIsAssignedTo(sceneId).isValid());
         DisplayHandle displayMapped;
-        EXPECT_FALSE(renderer.getBufferSceneIsMappedTo(sceneId, &displayMapped).isValid());
+        EXPECT_FALSE(renderer.getBufferSceneIsAssignedTo(sceneId, &displayMapped).isValid());
         EXPECT_FALSE(displayMapped.isValid());
     }
 
@@ -296,14 +296,14 @@ TEST_P(ARenderer, rendersOneLoopWithTwoDisplayControllers)
 
 TEST_P(ARenderer, unregisteredSceneIsNotMapped)
 {
-    EXPECT_FALSE(renderer.getDisplaySceneIsMappedTo(SceneId(0u)).isValid());
+    EXPECT_FALSE(renderer.getDisplaySceneIsAssignedTo(SceneId(0u)).isValid());
 }
 
 TEST_P(ARenderer, doesNotMapCreatedScene)
 {
     const SceneId sceneId(12u);
     createScene(sceneId);
-    EXPECT_FALSE(renderer.getDisplaySceneIsMappedTo(sceneId).isValid());
+    EXPECT_FALSE(renderer.getDisplaySceneIsAssignedTo(sceneId).isValid());
 }
 
 TEST_P(ARenderer, canMapSceneOnDisplay)
@@ -312,8 +312,8 @@ TEST_P(ARenderer, canMapSceneOnDisplay)
 
     const SceneId sceneId(12u);
     createScene(sceneId);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0);
-    unmapScene(sceneId);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, assignsSceneToNativeFramebufferOfDisplayWhenMappingScene)
@@ -322,10 +322,10 @@ TEST_P(ARenderer, assignsSceneToNativeFramebufferOfDisplayWhenMappingScene)
 
     const SceneId sceneId(12u);
     createScene(sceneId);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0);
 
-    EXPECT_EQ(DisplayControllerMock::FakeFrameBufferHandle, renderer.getBufferSceneIsMappedTo(sceneId));
-    unmapScene(sceneId);
+    EXPECT_EQ(DisplayControllerMock::FakeFrameBufferHandle, renderer.getBufferSceneIsAssignedTo(sceneId));
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, assignsSceneToOffscreenBuffer)
@@ -336,11 +336,11 @@ TEST_P(ARenderer, assignsSceneToOffscreenBuffer)
     createScene(sceneId);
     const DeviceResourceHandle fakeOffscreenBuffer(313u);
     renderer.registerOffscreenBuffer(displayHandle, fakeOffscreenBuffer, 1u, 1u, false);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
-    EXPECT_EQ(fakeOffscreenBuffer, renderer.getBufferSceneIsMappedTo(sceneId));
-    EXPECT_FALSE(renderer.isSceneMappedToInterruptibleOffscreenBuffer(sceneId));
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
+    EXPECT_EQ(fakeOffscreenBuffer, renderer.getBufferSceneIsAssignedTo(sceneId));
+    EXPECT_FALSE(renderer.isSceneAssignedToInterruptibleOffscreenBuffer(sceneId));
 
-    unmapScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, assignsSceneToInterruptibleOffscreenBuffer)
@@ -351,11 +351,11 @@ TEST_P(ARenderer, assignsSceneToInterruptibleOffscreenBuffer)
     createScene(sceneId);
     const DeviceResourceHandle fakeOffscreenBuffer(313u);
     renderer.registerOffscreenBuffer(displayHandle, fakeOffscreenBuffer, 1u, 1u, true);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
-    EXPECT_EQ(fakeOffscreenBuffer, renderer.getBufferSceneIsMappedTo(sceneId));
-    EXPECT_TRUE(renderer.isSceneMappedToInterruptibleOffscreenBuffer(sceneId));
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
+    EXPECT_EQ(fakeOffscreenBuffer, renderer.getBufferSceneIsAssignedTo(sceneId));
+    EXPECT_TRUE(renderer.isSceneAssignedToInterruptibleOffscreenBuffer(sceneId));
 
-    unmapScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, assignsSceneFromInterruptibleOffscreenBufferToNormalOB)
@@ -369,15 +369,15 @@ TEST_P(ARenderer, assignsSceneFromInterruptibleOffscreenBufferToNormalOB)
     renderer.registerOffscreenBuffer(displayHandle, ob, 1u, 1u, false);
     renderer.registerOffscreenBuffer(displayHandle, obInterruptible, 1u, 1u, true);
 
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0, obInterruptible);
-    EXPECT_EQ(obInterruptible, renderer.getBufferSceneIsMappedTo(sceneId));
-    EXPECT_TRUE(renderer.isSceneMappedToInterruptibleOffscreenBuffer(sceneId));
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0, obInterruptible);
+    EXPECT_EQ(obInterruptible, renderer.getBufferSceneIsAssignedTo(sceneId));
+    EXPECT_TRUE(renderer.isSceneAssignedToInterruptibleOffscreenBuffer(sceneId));
 
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0, ob);
-    EXPECT_EQ(ob, renderer.getBufferSceneIsMappedTo(sceneId));
-    EXPECT_FALSE(renderer.isSceneMappedToInterruptibleOffscreenBuffer(sceneId));
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0, ob);
+    EXPECT_EQ(ob, renderer.getBufferSceneIsAssignedTo(sceneId));
+    EXPECT_FALSE(renderer.isSceneAssignedToInterruptibleOffscreenBuffer(sceneId));
 
-    unmapScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, clearsOffscreenBufferIfThereIsSceneAssignedToIt)
@@ -389,7 +389,7 @@ TEST_P(ARenderer, clearsOffscreenBufferIfThereIsSceneAssignedToIt)
 
     const DeviceResourceHandle fakeOffscreenBuffer(313u);
     renderer.registerOffscreenBuffer(displayHandle, fakeOffscreenBuffer, 1u, 2u, false);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
     showScene(sceneId);
 
     expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
@@ -400,7 +400,7 @@ TEST_P(ARenderer, clearsOffscreenBufferIfThereIsSceneAssignedToIt)
     doOneRendererLoop();
 
     hideScene(sceneId);
-    unmapScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, SetsLayerVisibilityInSystemCompositorController)
@@ -437,45 +437,91 @@ TEST_P(ARenderer, clearsOffscreenBufferIfThereIsSceneAssignedToItAndNotShown)
 
     const DeviceResourceHandle fakeOffscreenBuffer(313u);
     renderer.registerOffscreenBuffer(displayHandle, fakeOffscreenBuffer, 1u, 2u, false);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
 
     expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
     expectFrameBufferRendered(displayHandle, false);
     expectSwapBuffers();
     doOneRendererLoop();
 
-    unmapScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, clearsOffscreenBufferAndFramebufferWithRelatedColors)
 {
     const Vector4 displayClearColor(.1f, .2f, .3f, .4f);
     const DisplayHandle displayHandle = addDisplayController();
-    renderer.setClearColor(displayHandle, displayClearColor);
+    renderer.setClearColor(displayHandle, DisplayControllerMock::FakeFrameBufferHandle, displayClearColor);
 
     const SceneId sceneId(12u);
     createScene(sceneId);
 
     const DeviceResourceHandle fakeOffscreenBuffer(313u);
     renderer.registerOffscreenBuffer(displayHandle, fakeOffscreenBuffer, 1u, 2u, false);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
 
     expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
     expectFrameBufferRendered(displayHandle, false, true, displayClearColor);
     expectSwapBuffers();
     doOneRendererLoop();
 
-    unmapScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, clearsFramebufferWithCustomClearColor)
 {
     const Vector4 displayClearColor(.1f, .2f, .3f, .4f);
     const DisplayHandle displayHandle = addDisplayController();
-    renderer.setClearColor(displayHandle, displayClearColor);
+    renderer.setClearColor(displayHandle, DisplayControllerMock::FakeFrameBufferHandle, displayClearColor);
     expectFrameBufferRendered(displayHandle, true, true, displayClearColor);
     expectSwapBuffers();
     doOneRendererLoop();
+}
+
+TEST_P(ARenderer, clearsOffscreenBufferWithCustomClearColor)
+{
+    const DisplayHandle displayHandle = addDisplayController();
+
+    const Vector4 obClearColor(.1f, .2f, .3f, .4f);
+    const SceneId sceneId(12u);
+    createScene(sceneId);
+
+    const DeviceResourceHandle fakeOffscreenBuffer(313u);
+    renderer.registerOffscreenBuffer(displayHandle, fakeOffscreenBuffer, 1u, 2u, false);
+    renderer.setClearColor(displayHandle, fakeOffscreenBuffer, obClearColor);
+
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
+
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true, obClearColor);
+    expectFrameBufferRendered(displayHandle, false);
+    expectSwapBuffers();
+    doOneRendererLoop();
+
+    unassignScene(sceneId);
+}
+
+TEST_P(ARenderer, clearsBothFramebufferAndOffscreenBufferWithDifferentClearColors)
+{
+    const DisplayHandle displayHandle = addDisplayController();
+    const Vector4 displayClearColor(.4f, .3f, .2f, .1f);
+    renderer.setClearColor(displayHandle, DisplayControllerMock::FakeFrameBufferHandle, displayClearColor);
+
+    const Vector4 obClearColor(.1f, .2f, .3f, .4f);
+    const SceneId sceneId(12u);
+    createScene(sceneId);
+
+    const DeviceResourceHandle fakeOffscreenBuffer(313u);
+    renderer.registerOffscreenBuffer(displayHandle, fakeOffscreenBuffer, 1u, 2u, false);
+    renderer.setClearColor(displayHandle, fakeOffscreenBuffer, obClearColor);
+
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
+
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true, obClearColor);
+    expectFrameBufferRendered(displayHandle, false, true, displayClearColor);
+    expectSwapBuffers();
+    doOneRendererLoop();
+
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, twoDisplaysAndTwoOffscreenBuffersWithContentCauseCorrectNumberOfEnableContexts)
@@ -492,8 +538,8 @@ TEST_P(ARenderer, twoDisplaysAndTwoOffscreenBuffersWithContentCauseCorrectNumber
     const SceneId sceneId2(13u);
     createScene(sceneId1);
     createScene(sceneId2);
-    mapSceneToDisplayBuffer(sceneId1, displayHandle1, 0, fakeOffscreenBuffer1);
-    mapSceneToDisplayBuffer(sceneId2, displayHandle2, 0, fakeOffscreenBuffer2);
+    assignSceneToDisplayBuffer(sceneId1, displayHandle1, 0, fakeOffscreenBuffer1);
+    assignSceneToDisplayBuffer(sceneId2, displayHandle2, 0, fakeOffscreenBuffer2);
     showScene(sceneId1);
     showScene(sceneId2);
 
@@ -511,8 +557,8 @@ TEST_P(ARenderer, twoDisplaysAndTwoOffscreenBuffersWithContentCauseCorrectNumber
 
     hideScene(sceneId1);
     hideScene(sceneId2);
-    unmapScene(sceneId1);
-    unmapScene(sceneId2);
+    unassignScene(sceneId1);
+    unassignScene(sceneId2);
 }
 
 TEST_P(ARenderer, confidenceTest_clearsOffscreenBufferIfThereIsSceneAssignedToIt_MultipleDisplaysAndBuffers)
@@ -534,8 +580,8 @@ TEST_P(ARenderer, confidenceTest_clearsOffscreenBufferIfThereIsSceneAssignedToIt
     createScene(sceneId1);
     createScene(sceneId2);
 
-    mapSceneToDisplayBuffer(sceneId2, displayHandle2, 0, fakeOffscreenBuffer3);
-    mapSceneToDisplayBuffer(sceneId1, displayHandle1, 0, fakeOffscreenBuffer2);
+    assignSceneToDisplayBuffer(sceneId2, displayHandle2, 0, fakeOffscreenBuffer3);
+    assignSceneToDisplayBuffer(sceneId1, displayHandle1, 0, fakeOffscreenBuffer2);
     showScene(sceneId1);
     showScene(sceneId2);
 
@@ -553,8 +599,8 @@ TEST_P(ARenderer, confidenceTest_clearsOffscreenBufferIfThereIsSceneAssignedToIt
 
     hideScene(sceneId1);
     hideScene(sceneId2);
-    unmapScene(sceneId1);
-    unmapScene(sceneId2);
+    unassignScene(sceneId1);
+    unassignScene(sceneId2);
 }
 
 TEST_P(ARenderer, sceneGetsAssignedToFramebufferIfPreviouslyAssignedToOffscreenBufferAndRemapped)
@@ -566,7 +612,7 @@ TEST_P(ARenderer, sceneGetsAssignedToFramebufferIfPreviouslyAssignedToOffscreenB
 
     const DeviceResourceHandle fakeOffscreenBuffer(313u);
     renderer.registerOffscreenBuffer(displayHandle, fakeOffscreenBuffer, 1u, 2u, false);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
     showScene(sceneId);
 
     expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
@@ -578,7 +624,7 @@ TEST_P(ARenderer, sceneGetsAssignedToFramebufferIfPreviouslyAssignedToOffscreenB
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
 
     hideScene(sceneId);
-    unmapScene(sceneId);
+    unassignScene(sceneId);
     expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
     expectFrameBufferRendered(displayHandle, false, false);
     doOneRendererLoop();
@@ -586,9 +632,9 @@ TEST_P(ARenderer, sceneGetsAssignedToFramebufferIfPreviouslyAssignedToOffscreenB
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
 
     const DeviceResourceHandle framebuffer = DisplayControllerMock::FakeFrameBufferHandle;
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0, framebuffer);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0, framebuffer);
     showScene(sceneId);
-    EXPECT_EQ(framebuffer, renderer.getBufferSceneIsMappedTo(sceneId));
+    EXPECT_EQ(framebuffer, renderer.getBufferSceneIsAssignedTo(sceneId));
     expectFrameBufferRendered();
     expectSceneRendered(displayHandle, sceneId);
     expectSwapBuffers();
@@ -597,7 +643,7 @@ TEST_P(ARenderer, sceneGetsAssignedToFramebufferIfPreviouslyAssignedToOffscreenB
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
 
     hideScene(sceneId);
-    unmapScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, rendersScenesInOrderAccordingToLocalOrderWithinDisplayBuffer)
@@ -617,10 +663,10 @@ TEST_P(ARenderer, rendersScenesInOrderAccordingToLocalOrderWithinDisplayBuffer)
     createScene(sceneId2);
     createScene(sceneId3);
     createScene(sceneId4);
-    mapSceneToDisplayBuffer(sceneId1, displayHandle, 0, fakeOffscreenBuffer1);
-    mapSceneToDisplayBuffer(sceneId2, displayHandle, 1, fakeOffscreenBuffer2);
-    mapSceneToDisplayBuffer(sceneId3, displayHandle, 2, fakeOffscreenBuffer1);
-    mapSceneToDisplayBuffer(sceneId4, displayHandle, 3, fakeOffscreenBuffer2);
+    assignSceneToDisplayBuffer(sceneId1, displayHandle, 0, fakeOffscreenBuffer1);
+    assignSceneToDisplayBuffer(sceneId2, displayHandle, 1, fakeOffscreenBuffer2);
+    assignSceneToDisplayBuffer(sceneId3, displayHandle, 2, fakeOffscreenBuffer1);
+    assignSceneToDisplayBuffer(sceneId4, displayHandle, 3, fakeOffscreenBuffer2);
     showScene(sceneId1);
     showScene(sceneId2);
     showScene(sceneId3);
@@ -645,10 +691,10 @@ TEST_P(ARenderer, rendersScenesInOrderAccordingToLocalOrderWithinDisplayBuffer)
     hideScene(sceneId2);
     hideScene(sceneId3);
     hideScene(sceneId4);
-    unmapScene(sceneId1);
-    unmapScene(sceneId2);
-    unmapScene(sceneId3);
-    unmapScene(sceneId4);
+    unassignScene(sceneId1);
+    unassignScene(sceneId2);
+    unassignScene(sceneId3);
+    unassignScene(sceneId4);
 }
 
 TEST_P(ARenderer, confidence_assignsSceneToOffscreenBufferAndReassignsToFramebuffer)
@@ -660,16 +706,16 @@ TEST_P(ARenderer, confidence_assignsSceneToOffscreenBufferAndReassignsToFramebuf
 
     const DeviceResourceHandle fakeOffscreenBuffer(313u);
     renderer.registerOffscreenBuffer(displayHandle, fakeOffscreenBuffer, 1u, 1u, false);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
-    EXPECT_EQ(fakeOffscreenBuffer, renderer.getBufferSceneIsMappedTo(sceneId));
-    EXPECT_FALSE(renderer.isSceneMappedToInterruptibleOffscreenBuffer(sceneId));
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
+    EXPECT_EQ(fakeOffscreenBuffer, renderer.getBufferSceneIsAssignedTo(sceneId));
+    EXPECT_FALSE(renderer.isSceneAssignedToInterruptibleOffscreenBuffer(sceneId));
 
     const DeviceResourceHandle framebuffer = DisplayControllerMock::FakeFrameBufferHandle;
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0, framebuffer);
-    EXPECT_EQ(framebuffer, renderer.getBufferSceneIsMappedTo(sceneId));
-    EXPECT_FALSE(renderer.isSceneMappedToInterruptibleOffscreenBuffer(sceneId));
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0, framebuffer);
+    EXPECT_EQ(framebuffer, renderer.getBufferSceneIsAssignedTo(sceneId));
+    EXPECT_FALSE(renderer.isSceneAssignedToInterruptibleOffscreenBuffer(sceneId));
 
-    unmapScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, returnsInvalidDisplayWhenQueryingLocationOfUnmappedScene)
@@ -678,9 +724,9 @@ TEST_P(ARenderer, returnsInvalidDisplayWhenQueryingLocationOfUnmappedScene)
 
     const SceneId sceneId(12u);
     createScene(sceneId);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0);
-    unmapScene(sceneId);
-    EXPECT_FALSE(renderer.getDisplaySceneIsMappedTo(sceneId).isValid());
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0);
+    unassignScene(sceneId);
+    EXPECT_FALSE(renderer.getDisplaySceneIsAssignedTo(sceneId).isValid());
 }
 
 TEST_P(ARenderer, doesNotRenderAMappedScene)
@@ -689,13 +735,13 @@ TEST_P(ARenderer, doesNotRenderAMappedScene)
 
     const SceneId sceneId(12u);
     createScene(sceneId);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0);
 
     expectFrameBufferRendered();
     expectSwapBuffers();
     doOneRendererLoop();
 
-    unmapScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, rendersMappedAndShownScene)
@@ -704,7 +750,7 @@ TEST_P(ARenderer, rendersMappedAndShownScene)
 
     const SceneId sceneId(12u);
     createScene(sceneId);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0);
     showScene(sceneId);
 
     expectSceneRendered(displayHandle, sceneId);
@@ -713,7 +759,7 @@ TEST_P(ARenderer, rendersMappedAndShownScene)
     doOneRendererLoop();
 
     hideScene(sceneId);
-    unmapScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, rendersTwoMappedAndShownScenes)
@@ -722,12 +768,12 @@ TEST_P(ARenderer, rendersTwoMappedAndShownScenes)
 
     const SceneId sceneId1(12u);
     createScene(sceneId1);
-    mapSceneToDisplayBuffer(sceneId1, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneId1, displayHandle, 0);
     showScene(sceneId1);
 
     const SceneId sceneId2(13u);
     createScene(sceneId2);
-    mapSceneToDisplayBuffer(sceneId2, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneId2, displayHandle, 0);
     showScene(sceneId2);
 
     expectSceneRendered(displayHandle, sceneId1);
@@ -738,8 +784,8 @@ TEST_P(ARenderer, rendersTwoMappedAndShownScenes)
 
     hideScene(sceneId1);
     hideScene(sceneId2);
-    unmapScene(sceneId1);
-    unmapScene(sceneId2);
+    unassignScene(sceneId1);
+    unassignScene(sceneId2);
 }
 
 TEST_P(ARenderer, rendersTwoMappedAndShownScenesWithAscendingRenderOrder)
@@ -748,12 +794,12 @@ TEST_P(ARenderer, rendersTwoMappedAndShownScenesWithAscendingRenderOrder)
 
     const SceneId sceneId1(12u);
     createScene(sceneId1);
-    mapSceneToDisplayBuffer(sceneId1, displayHandle, 1);
+    assignSceneToDisplayBuffer(sceneId1, displayHandle, 1);
     showScene(sceneId1);
 
     const SceneId sceneId2(13u);
     createScene(sceneId2);
-    mapSceneToDisplayBuffer(sceneId2, displayHandle, 2);
+    assignSceneToDisplayBuffer(sceneId2, displayHandle, 2);
     showScene(sceneId2);
 
     {
@@ -767,8 +813,8 @@ TEST_P(ARenderer, rendersTwoMappedAndShownScenesWithAscendingRenderOrder)
 
     hideScene(sceneId1);
     hideScene(sceneId2);
-    unmapScene(sceneId1);
-    unmapScene(sceneId2);
+    unassignScene(sceneId1);
+    unassignScene(sceneId2);
 }
 
 TEST_P(ARenderer, rendersTwoMappedAndShownScenesWithDescendingRenderOrder)
@@ -777,13 +823,13 @@ TEST_P(ARenderer, rendersTwoMappedAndShownScenesWithDescendingRenderOrder)
 
     const SceneId sceneId1(12u);
     createScene(sceneId1);
-    mapSceneToDisplayBuffer(sceneId1, displayHandle, 2);
+    assignSceneToDisplayBuffer(sceneId1, displayHandle, 2);
     showScene(sceneId1);
 
 
     const SceneId sceneId2(13u);
     createScene(sceneId2);
-    mapSceneToDisplayBuffer(sceneId2, displayHandle, 1);
+    assignSceneToDisplayBuffer(sceneId2, displayHandle, 1);
     showScene(sceneId2);
 
     {
@@ -797,8 +843,8 @@ TEST_P(ARenderer, rendersTwoMappedAndShownScenesWithDescendingRenderOrder)
 
     hideScene(sceneId1);
     hideScene(sceneId2);
-    unmapScene(sceneId1);
-    unmapScene(sceneId2);
+    unassignScene(sceneId1);
+    unassignScene(sceneId2);
 }
 
 
@@ -809,12 +855,12 @@ TEST_P(ARenderer, rendersTwoMappedAndShownScenesEachADifferentDisplay)
 
     const SceneId sceneId1(12u);
     createScene(sceneId1);
-    mapSceneToDisplayBuffer(sceneId1, displayHandle1, 0);
+    assignSceneToDisplayBuffer(sceneId1, displayHandle1, 0);
     showScene(sceneId1);
 
     const SceneId sceneId2(13u);
     createScene(sceneId2);
-    mapSceneToDisplayBuffer(sceneId2, displayHandle2, 0);
+    assignSceneToDisplayBuffer(sceneId2, displayHandle2, 0);
     showScene(sceneId2);
 
     expectSceneRendered(displayHandle1, sceneId1);
@@ -827,8 +873,8 @@ TEST_P(ARenderer, rendersTwoMappedAndShownScenesEachADifferentDisplay)
 
     hideScene(sceneId1);
     hideScene(sceneId2);
-    unmapScene(sceneId1);
-    unmapScene(sceneId2);
+    unassignScene(sceneId1);
+    unassignScene(sceneId2);
 }
 
 TEST_P(ARenderer, doesNotRenderSceneThatWasNotMapped)
@@ -846,8 +892,8 @@ TEST_P(ARenderer, doesNotRenderUnmappedScene)
 
     const SceneId sceneId(12u);
     createScene(sceneId);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0);
-    unmapScene(sceneId);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0);
+    unassignScene(sceneId);
 
     expectFrameBufferRendered();
     expectSwapBuffers();
@@ -861,7 +907,7 @@ TEST_P(ARenderer, remappingAndReshowingSceneResultsInRenderingOnAnotherDisplayOn
 
     const SceneId sceneId(12u);
     createScene(sceneId);
-    mapSceneToDisplayBuffer(sceneId, displayHandle1, 0);
+    assignSceneToDisplayBuffer(sceneId, displayHandle1, 0);
     showScene(sceneId);
 
     expectSceneRendered(displayHandle1, sceneId);
@@ -872,8 +918,8 @@ TEST_P(ARenderer, remappingAndReshowingSceneResultsInRenderingOnAnotherDisplayOn
     doOneRendererLoop();
 
     hideScene(sceneId);
-    unmapScene(sceneId);
-    mapSceneToDisplayBuffer(sceneId, displayHandle2, 0);
+    unassignScene(sceneId);
+    assignSceneToDisplayBuffer(sceneId, displayHandle2, 0);
     showScene(sceneId);
 
     expectSceneRendered(displayHandle2, sceneId);
@@ -884,7 +930,7 @@ TEST_P(ARenderer, remappingAndReshowingSceneResultsInRenderingOnAnotherDisplayOn
     doOneRendererLoop();
 
     hideScene(sceneId);
-    unmapScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, confidenceTest_mapAndShowTwoScenesOnTwoDisplaysAndSwapTheirMapping)
@@ -894,12 +940,12 @@ TEST_P(ARenderer, confidenceTest_mapAndShowTwoScenesOnTwoDisplaysAndSwapTheirMap
 
     const SceneId sceneId1(12u);
     createScene(sceneId1);
-    mapSceneToDisplayBuffer(sceneId1, displayHandle1, 0);
+    assignSceneToDisplayBuffer(sceneId1, displayHandle1, 0);
     showScene(sceneId1);
 
     const SceneId sceneId2(13u);
     createScene(sceneId2);
-    mapSceneToDisplayBuffer(sceneId2, displayHandle2, 0);
+    assignSceneToDisplayBuffer(sceneId2, displayHandle2, 0);
     showScene(sceneId2);
 
     expectSceneRendered(displayHandle1, sceneId1);
@@ -913,10 +959,10 @@ TEST_P(ARenderer, confidenceTest_mapAndShowTwoScenesOnTwoDisplaysAndSwapTheirMap
     // exchange their mapping
     hideScene(sceneId1);
     hideScene(sceneId2);
-    unmapScene(sceneId1);
-    unmapScene(sceneId2);
-    mapSceneToDisplayBuffer(sceneId1, displayHandle2, 0);
-    mapSceneToDisplayBuffer(sceneId2, displayHandle1, 0);
+    unassignScene(sceneId1);
+    unassignScene(sceneId2);
+    assignSceneToDisplayBuffer(sceneId1, displayHandle2, 0);
+    assignSceneToDisplayBuffer(sceneId2, displayHandle1, 0);
     showScene(sceneId1);
     showScene(sceneId2);
 
@@ -930,8 +976,8 @@ TEST_P(ARenderer, confidenceTest_mapAndShowTwoScenesOnTwoDisplaysAndSwapTheirMap
 
     hideScene(sceneId1);
     hideScene(sceneId2);
-    unmapScene(sceneId1);
-    unmapScene(sceneId2);
+    unassignScene(sceneId1);
+    unassignScene(sceneId2);
 }
 
 TEST_P(ARenderer, skipsFrameIfDisplayControllerCanNotRenderNewFrame)
@@ -1121,12 +1167,12 @@ TEST_P(ARenderer, marksRenderOncePassesAsRenderedAfterRenderingScene)
 
     const SceneId sceneId(12u);
     createScene(sceneId);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0);
     showScene(sceneId);
 
     auto& scene = rendererScenes.getScene(sceneId);
     TestSceneHelper sceneHelper(scene);
-    const auto dataLayout = sceneHelper.m_sceneAllocator.allocateDataLayout({ {EDataType_Vector2I}, {EDataType_Vector2I} });
+    const auto dataLayout = sceneHelper.m_sceneAllocator.allocateDataLayout({ {EDataType_Vector2I}, {EDataType_Vector2I} }, ResourceContentHash::Invalid());
     const CameraHandle camera = sceneHelper.m_sceneAllocator.allocateCamera(ECameraProjectionType_Orthographic, sceneHelper.m_sceneAllocator.allocateNode(), sceneHelper.m_sceneAllocator.allocateDataInstance(dataLayout));
     const RenderPassHandle pass = sceneHelper.m_sceneAllocator.allocateRenderPass();
     scene.setRenderPassCamera(pass, camera);
@@ -1150,7 +1196,7 @@ TEST_P(ARenderer, marksRenderOncePassesAsRenderedAfterRenderingScene)
     // render
     scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
     expectSceneRendered(displayHandle, sceneId);
-    renderer.markBufferWithMappedSceneAsModified(sceneId);
+    renderer.markBufferWithSceneAsModified(sceneId);
     expectFrameBufferRendered();
     expectSwapBuffers();
     doOneRendererLoop();
@@ -1162,7 +1208,7 @@ TEST_P(ARenderer, marksRenderOncePassesAsRenderedAfterRenderingScene)
     // render
     scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
     expectSceneRendered(displayHandle, sceneId);
-    renderer.markBufferWithMappedSceneAsModified(sceneId);
+    renderer.markBufferWithSceneAsModified(sceneId);
     expectFrameBufferRendered();
     expectSwapBuffers();
     doOneRendererLoop();
@@ -1171,7 +1217,7 @@ TEST_P(ARenderer, marksRenderOncePassesAsRenderedAfterRenderingScene)
     EXPECT_TRUE(passesToRender.empty());
 
     hideScene(sceneId);
-    unmapScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, doesNotClearAndRerenderIfNoChangeToScene)
@@ -1180,7 +1226,7 @@ TEST_P(ARenderer, doesNotClearAndRerenderIfNoChangeToScene)
 
     const SceneId sceneId(12u);
     createScene(sceneId);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0);
     showScene(sceneId);
 
     expectSceneRendered(displayHandle, sceneId);
@@ -1195,7 +1241,7 @@ TEST_P(ARenderer, doesNotClearAndRerenderIfNoChangeToScene)
     doOneRendererLoop();
 
     hideScene(sceneId);
-    unmapScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, doesNotSkipClearAndRerenderIfNoChangeToSceneButSkippingUnmodifiedBuffersDisabled)
@@ -1204,7 +1250,7 @@ TEST_P(ARenderer, doesNotSkipClearAndRerenderIfNoChangeToSceneButSkippingUnmodif
 
     const SceneId sceneId(12u);
     createScene(sceneId);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0);
     showScene(sceneId);
 
     renderer.setSkippingOfUnmodifiedBuffers(false);
@@ -1225,7 +1271,7 @@ TEST_P(ARenderer, doesNotSkipClearAndRerenderIfNoChangeToSceneButSkippingUnmodif
     doOneRendererLoop();
 
     hideScene(sceneId);
-    unmapScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, doesNotClearAndRerenderOffscreenBufferIfNoChangeToScene)
@@ -1237,7 +1283,7 @@ TEST_P(ARenderer, doesNotClearAndRerenderOffscreenBufferIfNoChangeToScene)
 
     const DeviceResourceHandle fakeOffscreenBuffer(313u);
     renderer.registerOffscreenBuffer(displayHandle, fakeOffscreenBuffer, 1u, 2u, false);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
     showScene(sceneId);
 
     expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
@@ -1253,7 +1299,7 @@ TEST_P(ARenderer, doesNotClearAndRerenderOffscreenBufferIfNoChangeToScene)
     doOneRendererLoop();
 
     hideScene(sceneId);
-    unmapScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, doesNotSkipClearAndRerenderOffscreenBufferIfNoChangeToSceneButSkippingUnmodifiedBuffersDisabled)
@@ -1265,7 +1311,7 @@ TEST_P(ARenderer, doesNotSkipClearAndRerenderOffscreenBufferIfNoChangeToSceneBut
 
     const DeviceResourceHandle fakeOffscreenBuffer(313u);
     renderer.registerOffscreenBuffer(displayHandle, fakeOffscreenBuffer, 1u, 2u, false);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
     showScene(sceneId);
 
     renderer.setSkippingOfUnmodifiedBuffers(false);
@@ -1290,7 +1336,7 @@ TEST_P(ARenderer, doesNotSkipClearAndRerenderOffscreenBufferIfNoChangeToSceneBut
     doOneRendererLoop();
 
     hideScene(sceneId);
-    unmapScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, clearAndRerenderIfSceneMarkedAsChanged)
@@ -1299,7 +1345,7 @@ TEST_P(ARenderer, clearAndRerenderIfSceneMarkedAsChanged)
 
     const SceneId sceneId(12u);
     createScene(sceneId);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0);
     showScene(sceneId);
 
     expectSceneRendered(displayHandle, sceneId);
@@ -1311,7 +1357,7 @@ TEST_P(ARenderer, clearAndRerenderIfSceneMarkedAsChanged)
     expectFrameBufferRendered(displayHandle, false, false);
     doOneRendererLoop();
     // mark change
-    renderer.markBufferWithMappedSceneAsModified(sceneId);
+    renderer.markBufferWithSceneAsModified(sceneId);
     expectSceneRendered(displayHandle, sceneId);
     expectFrameBufferRendered();
     expectSwapBuffers();
@@ -1320,14 +1366,14 @@ TEST_P(ARenderer, clearAndRerenderIfSceneMarkedAsChanged)
     expectFrameBufferRendered(displayHandle, false, false);
     doOneRendererLoop();
     // mark change
-    renderer.markBufferWithMappedSceneAsModified(sceneId);
+    renderer.markBufferWithSceneAsModified(sceneId);
     expectSceneRendered(displayHandle, sceneId);
     expectFrameBufferRendered();
     expectSwapBuffers();
     doOneRendererLoop();
 
     hideScene(sceneId);
-    unmapScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, clearAndRerenderOffscreenBufferIfSceneMarkedAsChanged)
@@ -1339,7 +1385,7 @@ TEST_P(ARenderer, clearAndRerenderOffscreenBufferIfSceneMarkedAsChanged)
 
     const DeviceResourceHandle fakeOffscreenBuffer(313u);
     renderer.registerOffscreenBuffer(displayHandle, fakeOffscreenBuffer, 1u, 2u, false);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
     showScene(sceneId);
 
     expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
@@ -1352,7 +1398,7 @@ TEST_P(ARenderer, clearAndRerenderOffscreenBufferIfSceneMarkedAsChanged)
     expectFrameBufferRendered(displayHandle, false, false);
     doOneRendererLoop();
     // mark change
-    renderer.markBufferWithMappedSceneAsModified(sceneId);
+    renderer.markBufferWithSceneAsModified(sceneId);
     expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
     expectSceneRendered(displayHandle, sceneId, fakeOffscreenBuffer);
     expectFrameBufferRendered(displayHandle, false, false);
@@ -1361,14 +1407,14 @@ TEST_P(ARenderer, clearAndRerenderOffscreenBufferIfSceneMarkedAsChanged)
     expectFrameBufferRendered(displayHandle, false, false);
     doOneRendererLoop();
     // mark change
-    renderer.markBufferWithMappedSceneAsModified(sceneId);
+    renderer.markBufferWithSceneAsModified(sceneId);
     expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
     expectSceneRendered(displayHandle, sceneId, fakeOffscreenBuffer);
     expectFrameBufferRendered(displayHandle, false, false);
     doOneRendererLoop(); // framebuffer not cleared/swapped as there is no scene assigned
 
     hideScene(sceneId);
-    unmapScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, clearAndRerenderBothFramebufferAndOffscreenBufferIfSceneAssignedFromOneToTheOther)
@@ -1380,7 +1426,7 @@ TEST_P(ARenderer, clearAndRerenderBothFramebufferAndOffscreenBufferIfSceneAssign
 
     const DeviceResourceHandle fakeOffscreenBuffer(313u);
     renderer.registerOffscreenBuffer(displayHandle, fakeOffscreenBuffer, 1u, 2u, false);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
     showScene(sceneId);
 
     expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
@@ -1396,7 +1442,7 @@ TEST_P(ARenderer, clearAndRerenderBothFramebufferAndOffscreenBufferIfSceneAssign
     doOneRendererLoop();
 
     // assign back to FB causes clear/render of both buffers
-    renderer.mapSceneToDisplayBuffer(sceneId, displayHandle, DisplayControllerMock::FakeFrameBufferHandle, 0);
+    renderer.assignSceneToDisplayBuffer(sceneId, displayHandle, DisplayControllerMock::FakeFrameBufferHandle, 0);
     expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
     expectFrameBufferRendered(displayHandle, false, true);
     expectSceneRendered(displayHandle, sceneId, DisplayControllerMock::FakeFrameBufferHandle);
@@ -1408,7 +1454,7 @@ TEST_P(ARenderer, clearAndRerenderBothFramebufferAndOffscreenBufferIfSceneAssign
     doOneRendererLoop();
 
     // assign back to offscreen buffer causes clear/render of both buffers
-    renderer.mapSceneToDisplayBuffer(sceneId, displayHandle, fakeOffscreenBuffer, 0);
+    renderer.assignSceneToDisplayBuffer(sceneId, displayHandle, fakeOffscreenBuffer, 0);
     expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
     expectSceneRendered(displayHandle, sceneId, fakeOffscreenBuffer);
     expectFrameBufferRendered(displayHandle, false, true); // framebuffer cleared/swapped
@@ -1416,7 +1462,7 @@ TEST_P(ARenderer, clearAndRerenderBothFramebufferAndOffscreenBufferIfSceneAssign
     doOneRendererLoop();
 
     hideScene(sceneId);
-    unmapScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, clearAndRerenderBufferIfSceneHidden)
@@ -1425,7 +1471,7 @@ TEST_P(ARenderer, clearAndRerenderBufferIfSceneHidden)
 
     const SceneId sceneId(12u);
     createScene(sceneId);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0);
     showScene(sceneId);
 
     expectSceneRendered(displayHandle, sceneId);
@@ -1447,7 +1493,7 @@ TEST_P(ARenderer, clearAndRerenderBufferIfSceneHidden)
     expectFrameBufferRendered(displayHandle, false, false);
     doOneRendererLoop();
 
-    unmapScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, clearAndRerenderBufferIfClearColorChanged)
@@ -1456,7 +1502,7 @@ TEST_P(ARenderer, clearAndRerenderBufferIfClearColorChanged)
 
     const SceneId sceneId(12u);
     createScene(sceneId);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0);
     showScene(sceneId);
 
     expectSceneRendered(displayHandle, sceneId);
@@ -1469,7 +1515,7 @@ TEST_P(ARenderer, clearAndRerenderBufferIfClearColorChanged)
     doOneRendererLoop();
 
     // setting clear color causes clear/render
-    renderer.setClearColor(displayHandle, { 1, 2, 3, 4 });
+    renderer.setClearColor(displayHandle, DisplayControllerMock::FakeFrameBufferHandle, { 1, 2, 3, 4 });
     expectSceneRendered(displayHandle, sceneId);
     expectFrameBufferRendered(displayHandle, true, true, { 1, 2, 3, 4 });
     expectSwapBuffers();
@@ -1480,7 +1526,50 @@ TEST_P(ARenderer, clearAndRerenderBufferIfClearColorChanged)
     doOneRendererLoop();
 
     hideScene(sceneId);
-    unmapScene(sceneId);
+    unassignScene(sceneId);
+}
+
+TEST_P(ARenderer, clearAndRerenderBothFramebufferAndOffscreenBufferIfOBClearColorChanges)
+{
+    const DisplayHandle displayHandle = addDisplayController();
+
+    const SceneId sceneId(12u);
+    createScene(sceneId);
+
+    const Vector4 obClearColor1(.1f, .2f, .3f, .4f);
+    const DeviceResourceHandle fakeOffscreenBuffer(313u);
+    renderer.registerOffscreenBuffer(displayHandle, fakeOffscreenBuffer, 1u, 2u, false);
+    renderer.setClearColor(displayHandle, fakeOffscreenBuffer, obClearColor1);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
+    showScene(sceneId);
+
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true, obClearColor1);
+    expectSceneRendered(displayHandle, sceneId, fakeOffscreenBuffer);
+    expectFrameBufferRendered(displayHandle, false);
+    expectSwapBuffers();
+    doOneRendererLoop();
+
+    // no change
+    expectFrameBufferRendered(displayHandle, false, false);
+    doOneRendererLoop();
+    expectFrameBufferRendered(displayHandle, false, false);
+    doOneRendererLoop();
+
+    // change clear color
+    const Vector4 obClearColor2(.2f, .3f, .4f, .5f);
+    renderer.setClearColor(displayHandle, fakeOffscreenBuffer, obClearColor2);
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true, obClearColor2);
+    expectFrameBufferRendered(displayHandle, false, true);
+    expectSceneRendered(displayHandle, sceneId, fakeOffscreenBuffer);
+    expectSwapBuffers();
+    doOneRendererLoop();
+
+    // no change
+    expectFrameBufferRendered(displayHandle, false, false);
+    doOneRendererLoop();
+
+    hideScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, clearAndSwapInterruptibleOBOnlyOnceIfNoMoreShownScenes)
@@ -1492,7 +1581,7 @@ TEST_P(ARenderer, clearAndSwapInterruptibleOBOnlyOnceIfNoMoreShownScenes)
 
     const SceneId sceneId(12u);
     createScene(sceneId);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
     showScene(sceneId);
 
     expectFrameBufferRendered();
@@ -1523,7 +1612,7 @@ TEST_P(ARenderer, clearAndSwapInterruptibleOBOnlyOnceIfNoMoreShownScenes)
     expectFrameBufferRendered(displayHandle, false, false);
     doOneRendererLoop();
 
-    unmapScene(sceneId);
+    unassignScene(sceneId);
 }
 
 TEST_P(ARenderer, clearAndSwapInterruptibleOBOnlyOnceIfNoMoreMappedScenes)
@@ -1535,7 +1624,7 @@ TEST_P(ARenderer, clearAndSwapInterruptibleOBOnlyOnceIfNoMoreMappedScenes)
 
     const SceneId sceneId(12u);
     createScene(sceneId);
-    mapSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
     showScene(sceneId);
 
     expectFrameBufferRendered();
@@ -1551,7 +1640,7 @@ TEST_P(ARenderer, clearAndSwapInterruptibleOBOnlyOnceIfNoMoreMappedScenes)
 
     // hide scene will trigger re-render of OB
     hideScene(sceneId);
-    unmapScene(sceneId);
+    unassignScene(sceneId);
     expectFrameBufferRendered(displayHandle, false, false);
     expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, { { true, true } }, true);
     doOneRendererLoop();
@@ -1603,8 +1692,8 @@ TEST_P(ARenderer, rendersScenesToFBAndOBWithNoInterruption)
     const SceneId sceneIdOB(13u);
     createScene(sceneIdFB);
     createScene(sceneIdOB);
-    mapSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
-    mapSceneToDisplayBuffer(sceneIdOB, displayHandle, 0, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneIdOB, displayHandle, 0, fakeOffscreenBuffer);
 
     showScene(sceneIdFB);
     showScene(sceneIdOB);
@@ -1618,8 +1707,8 @@ TEST_P(ARenderer, rendersScenesToFBAndOBWithNoInterruption)
 
     hideScene(sceneIdOB);
     hideScene(sceneIdFB);
-    unmapScene(sceneIdOB);
-    unmapScene(sceneIdFB);
+    unassignScene(sceneIdOB);
+    unassignScene(sceneIdFB);
 }
 
 TEST_P(ARenderer, doesNotSwapOffscreenBufferIfRenderingIntoItInterrupted)
@@ -1630,7 +1719,7 @@ TEST_P(ARenderer, doesNotSwapOffscreenBufferIfRenderingIntoItInterrupted)
 
     const SceneId sceneIdOB(13u);
     createScene(sceneIdOB);
-    mapSceneToDisplayBuffer(sceneIdOB, displayHandle, 0, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneIdOB, displayHandle, 0, fakeOffscreenBuffer);
     showScene(sceneIdOB);
 
     expectSceneRenderedWithInterruptionEnabled(displayHandle, sceneIdOB, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderInterrupted);
@@ -1642,7 +1731,7 @@ TEST_P(ARenderer, doesNotSwapOffscreenBufferIfRenderingIntoItInterrupted)
 
     renderer.resetRenderInterruptState();
     hideScene(sceneIdOB);
-    unmapScene(sceneIdOB);
+    unassignScene(sceneIdOB);
 }
 
 TEST_P(ARenderer, doesNotClearAndPassesPreviousStateWhenInterruptedAndSwapsAfterFinishing)
@@ -1653,7 +1742,7 @@ TEST_P(ARenderer, doesNotClearAndPassesPreviousStateWhenInterruptedAndSwapsAfter
 
     const SceneId sceneIdOB(13u);
     createScene(sceneIdOB);
-    mapSceneToDisplayBuffer(sceneIdOB, displayHandle, 0, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneIdOB, displayHandle, 0, fakeOffscreenBuffer);
     showScene(sceneIdOB);
 
     // start rendering and interrupt
@@ -1689,7 +1778,7 @@ TEST_P(ARenderer, doesNotClearAndPassesPreviousStateWhenInterruptedAndSwapsAfter
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
 
     hideScene(sceneIdOB);
-    unmapScene(sceneIdOB);
+    unassignScene(sceneIdOB);
 }
 
 TEST_P(ARenderer, rendersScenesToFBEvenIfOBInterrupted)
@@ -1702,8 +1791,8 @@ TEST_P(ARenderer, rendersScenesToFBEvenIfOBInterrupted)
     const SceneId sceneIdOB(13u);
     createScene(sceneIdFB);
     createScene(sceneIdOB);
-    mapSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
-    mapSceneToDisplayBuffer(sceneIdOB, displayHandle, 0, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneIdOB, displayHandle, 0, fakeOffscreenBuffer);
 
     showScene(sceneIdFB);
     showScene(sceneIdOB);
@@ -1728,8 +1817,8 @@ TEST_P(ARenderer, rendersScenesToFBEvenIfOBInterrupted)
 
     hideScene(sceneIdOB);
     hideScene(sceneIdFB);
-    unmapScene(sceneIdOB);
-    unmapScene(sceneIdFB);
+    unassignScene(sceneIdOB);
+    unassignScene(sceneIdFB);
 }
 
 TEST_P(ARenderer, alwaysRendersScenesToFBWhenModifiedEvenIfOBInterrupted)
@@ -1742,8 +1831,8 @@ TEST_P(ARenderer, alwaysRendersScenesToFBWhenModifiedEvenIfOBInterrupted)
     const SceneId sceneIdOB(13u);
     createScene(sceneIdFB);
     createScene(sceneIdOB);
-    mapSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
-    mapSceneToDisplayBuffer(sceneIdOB, displayHandle, 0, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneIdOB, displayHandle, 0, fakeOffscreenBuffer);
 
     showScene(sceneIdFB);
     showScene(sceneIdOB);
@@ -1757,7 +1846,7 @@ TEST_P(ARenderer, alwaysRendersScenesToFBWhenModifiedEvenIfOBInterrupted)
     doOneRendererLoop();
 
     //modify FB scene
-    renderer.markBufferWithMappedSceneAsModified(sceneIdFB);
+    renderer.markBufferWithSceneAsModified(sceneIdFB);
     //FB rendered, OB interrupted
     expectSceneRendered(displayHandle, sceneIdFB);
     expectSceneRenderedWithInterruptionEnabled(displayHandle, sceneIdOB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderInterrupted2);
@@ -1767,7 +1856,7 @@ TEST_P(ARenderer, alwaysRendersScenesToFBWhenModifiedEvenIfOBInterrupted)
     doOneRendererLoop();
 
     //modify FB scene
-    renderer.markBufferWithMappedSceneAsModified(sceneIdFB);
+    renderer.markBufferWithSceneAsModified(sceneIdFB);
     //FB rendered, OB finished
     expectSceneRendered(displayHandle, sceneIdFB);
     expectSceneRenderedWithInterruptionEnabled(displayHandle, sceneIdOB, fakeOffscreenBuffer, sceneRenderInterrupted2, sceneRenderBegin);
@@ -1784,8 +1873,8 @@ TEST_P(ARenderer, alwaysRendersScenesToFBWhenModifiedEvenIfOBInterrupted)
 
     hideScene(sceneIdOB);
     hideScene(sceneIdFB);
-    unmapScene(sceneIdOB);
-    unmapScene(sceneIdFB);
+    unassignScene(sceneIdOB);
+    unassignScene(sceneIdFB);
 }
 
 TEST_P(ARenderer, doesNotSkipFramesTillAllInterruptionsFinishedAndRendered)
@@ -1800,8 +1889,8 @@ TEST_P(ARenderer, doesNotSkipFramesTillAllInterruptionsFinishedAndRendered)
     const SceneId sceneIdOB(13u);
     createScene(sceneIdFB);
     createScene(sceneIdOB);
-    mapSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
-    mapSceneToDisplayBuffer(sceneIdOB, displayHandle, 0, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneIdOB, displayHandle, 0, fakeOffscreenBuffer);
 
     showScene(sceneIdFB);
     showScene(sceneIdOB);
@@ -1832,8 +1921,8 @@ TEST_P(ARenderer, doesNotSkipFramesTillAllInterruptionsFinishedAndRendered)
 
     hideScene(sceneIdOB);
     hideScene(sceneIdFB);
-    unmapScene(sceneIdOB);
-    unmapScene(sceneIdFB);
+    unassignScene(sceneIdOB);
+    unassignScene(sceneIdFB);
 }
 
 TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleScenes)
@@ -1850,9 +1939,9 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleScene
     createScene(sceneIdFB);
     createScene(sceneId1OB);
     createScene(sceneId2OB);
-    mapSceneToDisplayBuffer(sceneId2OB, displayHandle, 1, fakeOffscreenBuffer);
-    mapSceneToDisplayBuffer(sceneId1OB, displayHandle, 0, fakeOffscreenBuffer);
-    mapSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneId2OB, displayHandle, 1, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneId1OB, displayHandle, 0, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
 
     showScene(sceneIdFB);
     showScene(sceneId1OB);
@@ -1902,9 +1991,9 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleScene
     hideScene(sceneId2OB);
     hideScene(sceneId1OB);
     hideScene(sceneIdFB);
-    unmapScene(sceneId2OB);
-    unmapScene(sceneId1OB);
-    unmapScene(sceneIdFB);
+    unassignScene(sceneId2OB);
+    unassignScene(sceneId1OB);
+    unassignScene(sceneIdFB);
 }
 
 TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleScenes_FirstSceneNeverInterrupted)
@@ -1921,9 +2010,9 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleScene
     createScene(sceneIdFB);
     createScene(sceneId1OB);
     createScene(sceneId2OB);
-    mapSceneToDisplayBuffer(sceneId2OB, displayHandle, 1, fakeOffscreenBuffer);
-    mapSceneToDisplayBuffer(sceneId1OB, displayHandle, 0, fakeOffscreenBuffer);
-    mapSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneId2OB, displayHandle, 1, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneId1OB, displayHandle, 0, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
 
     showScene(sceneIdFB);
     showScene(sceneId1OB);
@@ -1965,9 +2054,9 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleScene
     hideScene(sceneId2OB);
     hideScene(sceneId1OB);
     hideScene(sceneIdFB);
-    unmapScene(sceneId2OB);
-    unmapScene(sceneId1OB);
-    unmapScene(sceneIdFB);
+    unassignScene(sceneId2OB);
+    unassignScene(sceneId1OB);
+    unassignScene(sceneIdFB);
 }
 
 TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleOffscreenBuffers)
@@ -1986,9 +2075,9 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleOffsc
     createScene(sceneIdFB);
     createScene(sceneIdOB1);
     createScene(sceneIdOB2);
-    mapSceneToDisplayBuffer(sceneIdOB2, displayHandle, 0, fakeOffscreenBuffer2);
-    mapSceneToDisplayBuffer(sceneIdOB1, displayHandle, 0, fakeOffscreenBuffer1);
-    mapSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneIdOB2, displayHandle, 0, fakeOffscreenBuffer2);
+    assignSceneToDisplayBuffer(sceneIdOB1, displayHandle, 0, fakeOffscreenBuffer1);
+    assignSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
 
     showScene(sceneIdFB);
     showScene(sceneIdOB1);
@@ -2040,9 +2129,9 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleOffsc
     hideScene(sceneIdOB2);
     hideScene(sceneIdOB1);
     hideScene(sceneIdFB);
-    unmapScene(sceneIdOB2);
-    unmapScene(sceneIdOB1);
-    unmapScene(sceneIdFB);
+    unassignScene(sceneIdOB2);
+    unassignScene(sceneIdOB1);
+    unassignScene(sceneIdFB);
 }
 
 TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleOffscreenBuffersAndScenes)
@@ -2065,11 +2154,11 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleOffsc
     createScene(sceneId2OB1);
     createScene(sceneId1OB2);
     createScene(sceneId2OB2);
-    mapSceneToDisplayBuffer(sceneId1OB2, displayHandle, 0, fakeOffscreenBuffer2);
-    mapSceneToDisplayBuffer(sceneId2OB2, displayHandle, 1, fakeOffscreenBuffer2);
-    mapSceneToDisplayBuffer(sceneId1OB1, displayHandle, 0, fakeOffscreenBuffer1);
-    mapSceneToDisplayBuffer(sceneId2OB1, displayHandle, 1, fakeOffscreenBuffer1);
-    mapSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneId1OB2, displayHandle, 0, fakeOffscreenBuffer2);
+    assignSceneToDisplayBuffer(sceneId2OB2, displayHandle, 1, fakeOffscreenBuffer2);
+    assignSceneToDisplayBuffer(sceneId1OB1, displayHandle, 0, fakeOffscreenBuffer1);
+    assignSceneToDisplayBuffer(sceneId2OB1, displayHandle, 1, fakeOffscreenBuffer1);
+    assignSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
 
     showScene(sceneIdFB);
     showScene(sceneId1OB1);
@@ -2141,11 +2230,11 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleOffsc
     hideScene(sceneId2OB1);
     hideScene(sceneId1OB1);
     hideScene(sceneIdFB);
-    unmapScene(sceneId2OB2);
-    unmapScene(sceneId1OB2);
-    unmapScene(sceneId2OB1);
-    unmapScene(sceneId1OB1);
-    unmapScene(sceneIdFB);
+    unassignScene(sceneId2OB2);
+    unassignScene(sceneId1OB2);
+    unassignScene(sceneId2OB1);
+    unassignScene(sceneId1OB1);
+    unassignScene(sceneIdFB);
 }
 
 TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDisplays)
@@ -2167,10 +2256,10 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
     createScene(sceneIdDisp1OB);
     createScene(sceneIdDisp2OB);
     createScene(sceneIdDisp2FB);
-    mapSceneToDisplayBuffer(sceneIdDisp1FB, displayHandle1, 0);
-    mapSceneToDisplayBuffer(sceneIdDisp1OB, displayHandle1, 0, disp1OB);
-    mapSceneToDisplayBuffer(sceneIdDisp2FB, displayHandle2, 0);
-    mapSceneToDisplayBuffer(sceneIdDisp2OB, displayHandle2, 0, disp2OB);
+    assignSceneToDisplayBuffer(sceneIdDisp1FB, displayHandle1, 0);
+    assignSceneToDisplayBuffer(sceneIdDisp1OB, displayHandle1, 0, disp1OB);
+    assignSceneToDisplayBuffer(sceneIdDisp2FB, displayHandle2, 0);
+    assignSceneToDisplayBuffer(sceneIdDisp2OB, displayHandle2, 0, disp2OB);
 
     showScene(sceneIdDisp1FB);
     showScene(sceneIdDisp1OB);
@@ -2238,10 +2327,10 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
     hideScene(sceneIdDisp2OB);
     hideScene(sceneIdDisp2FB);
 
-    unmapScene(sceneIdDisp1FB);
-    unmapScene(sceneIdDisp1OB);
-    unmapScene(sceneIdDisp2OB);
-    unmapScene(sceneIdDisp2FB);
+    unassignScene(sceneIdDisp1FB);
+    unassignScene(sceneIdDisp1OB);
+    unassignScene(sceneIdDisp2OB);
+    unassignScene(sceneIdDisp2FB);
 }
 
 TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDisplaysMultipleOBMulitpleScenes)
@@ -2281,16 +2370,16 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
     createScene(sceneIdDisp2OB2scene1);
     createScene(sceneIdDisp2OB2scene2);
 
-    mapSceneToDisplayBuffer(sceneIdDisp1FB, displayHandle1, 0);
-    mapSceneToDisplayBuffer(sceneIdDisp2FB, displayHandle2, 0);
-    mapSceneToDisplayBuffer(sceneIdDisp1OB2scene1, displayHandle1, 0, disp1OB2);
-    mapSceneToDisplayBuffer(sceneIdDisp1OB2scene2, displayHandle1, 1, disp1OB2);
-    mapSceneToDisplayBuffer(sceneIdDisp1OB1scene1, displayHandle1, 0, disp1OB1);
-    mapSceneToDisplayBuffer(sceneIdDisp1OB1scene2, displayHandle1, 1, disp1OB1);
-    mapSceneToDisplayBuffer(sceneIdDisp2OB2scene1, displayHandle2, 0, disp2OB2);
-    mapSceneToDisplayBuffer(sceneIdDisp2OB2scene2, displayHandle2, 1, disp2OB2);
-    mapSceneToDisplayBuffer(sceneIdDisp2OB1scene1, displayHandle2, 0, disp2OB1);
-    mapSceneToDisplayBuffer(sceneIdDisp2OB1scene2, displayHandle2, 1, disp2OB1);
+    assignSceneToDisplayBuffer(sceneIdDisp1FB, displayHandle1, 0);
+    assignSceneToDisplayBuffer(sceneIdDisp2FB, displayHandle2, 0);
+    assignSceneToDisplayBuffer(sceneIdDisp1OB2scene1, displayHandle1, 0, disp1OB2);
+    assignSceneToDisplayBuffer(sceneIdDisp1OB2scene2, displayHandle1, 1, disp1OB2);
+    assignSceneToDisplayBuffer(sceneIdDisp1OB1scene1, displayHandle1, 0, disp1OB1);
+    assignSceneToDisplayBuffer(sceneIdDisp1OB1scene2, displayHandle1, 1, disp1OB1);
+    assignSceneToDisplayBuffer(sceneIdDisp2OB2scene1, displayHandle2, 0, disp2OB2);
+    assignSceneToDisplayBuffer(sceneIdDisp2OB2scene2, displayHandle2, 1, disp2OB2);
+    assignSceneToDisplayBuffer(sceneIdDisp2OB1scene1, displayHandle2, 0, disp2OB1);
+    assignSceneToDisplayBuffer(sceneIdDisp2OB1scene2, displayHandle2, 1, disp2OB1);
 
     showScene(sceneIdDisp1FB);
     showScene(sceneIdDisp2FB);
@@ -2440,16 +2529,16 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
     hideScene(sceneIdDisp2OB2scene1);
     hideScene(sceneIdDisp2OB2scene2);
 
-    unmapScene(sceneIdDisp1FB);
-    unmapScene(sceneIdDisp2FB);
-    unmapScene(sceneIdDisp1OB1scene1);
-    unmapScene(sceneIdDisp1OB1scene2);
-    unmapScene(sceneIdDisp1OB2scene1);
-    unmapScene(sceneIdDisp1OB2scene2);
-    unmapScene(sceneIdDisp2OB1scene1);
-    unmapScene(sceneIdDisp2OB1scene2);
-    unmapScene(sceneIdDisp2OB2scene1);
-    unmapScene(sceneIdDisp2OB2scene2);
+    unassignScene(sceneIdDisp1FB);
+    unassignScene(sceneIdDisp2FB);
+    unassignScene(sceneIdDisp1OB1scene1);
+    unassignScene(sceneIdDisp1OB1scene2);
+    unassignScene(sceneIdDisp1OB2scene1);
+    unassignScene(sceneIdDisp1OB2scene2);
+    unassignScene(sceneIdDisp2OB1scene1);
+    unassignScene(sceneIdDisp2OB1scene2);
+    unassignScene(sceneIdDisp2OB2scene1);
+    unassignScene(sceneIdDisp2OB2scene2);
 }
 
 TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDisplaysWithNormalOBAndInterruptibleOB)
@@ -2481,12 +2570,12 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
     createScene(sceneIdDisp2OBnonScene);
     createScene(sceneIdDisp2OBintScene);
 
-    mapSceneToDisplayBuffer(sceneIdDisp1FB, displayHandle1, 0);
-    mapSceneToDisplayBuffer(sceneIdDisp2FB, displayHandle2, 0);
-    mapSceneToDisplayBuffer(sceneIdDisp1OBnonScene, displayHandle1, 0, disp1OBnon);
-    mapSceneToDisplayBuffer(sceneIdDisp1OBintScene, displayHandle1, 0, disp1OBint);
-    mapSceneToDisplayBuffer(sceneIdDisp2OBintScene, displayHandle2, 0, disp2OBint);
-    mapSceneToDisplayBuffer(sceneIdDisp2OBnonScene, displayHandle2, 0, disp2OBnon);
+    assignSceneToDisplayBuffer(sceneIdDisp1FB, displayHandle1, 0);
+    assignSceneToDisplayBuffer(sceneIdDisp2FB, displayHandle2, 0);
+    assignSceneToDisplayBuffer(sceneIdDisp1OBnonScene, displayHandle1, 0, disp1OBnon);
+    assignSceneToDisplayBuffer(sceneIdDisp1OBintScene, displayHandle1, 0, disp1OBint);
+    assignSceneToDisplayBuffer(sceneIdDisp2OBintScene, displayHandle2, 0, disp2OBint);
+    assignSceneToDisplayBuffer(sceneIdDisp2OBnonScene, displayHandle2, 0, disp2OBnon);
 
     showScene(sceneIdDisp1FB);
     showScene(sceneIdDisp2FB);
@@ -2565,12 +2654,12 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
     hideScene(sceneIdDisp2OBnonScene);
     hideScene(sceneIdDisp2OBintScene);
 
-    unmapScene(sceneIdDisp1FB);
-    unmapScene(sceneIdDisp2FB);
-    unmapScene(sceneIdDisp1OBintScene);
-    unmapScene(sceneIdDisp1OBnonScene);
-    unmapScene(sceneIdDisp2OBnonScene);
-    unmapScene(sceneIdDisp2OBintScene);
+    unassignScene(sceneIdDisp1FB);
+    unassignScene(sceneIdDisp2FB);
+    unassignScene(sceneIdDisp1OBintScene);
+    unassignScene(sceneIdDisp1OBnonScene);
+    unassignScene(sceneIdDisp2OBnonScene);
+    unassignScene(sceneIdDisp2OBintScene);
 }
 
 TEST_P(ARenderer, willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneInterrupted)
@@ -2585,9 +2674,9 @@ TEST_P(ARenderer, willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneInte
     createScene(sceneIdFB);
     createScene(sceneId1OB);
     createScene(sceneId2OB);
-    mapSceneToDisplayBuffer(sceneId2OB, displayHandle, 1, fakeOffscreenBuffer);
-    mapSceneToDisplayBuffer(sceneId1OB, displayHandle, 0, fakeOffscreenBuffer);
-    mapSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneId2OB, displayHandle, 1, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneId1OB, displayHandle, 0, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
 
     showScene(sceneIdFB);
     showScene(sceneId1OB);
@@ -2605,7 +2694,7 @@ TEST_P(ARenderer, willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneInte
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
 
     // modify OB scene1
-    renderer.markBufferWithMappedSceneAsModified(sceneId1OB);
+    renderer.markBufferWithSceneAsModified(sceneId1OB);
 
     // FB skipped, OB scene1 skipped, OB scene2 finished
     expectSceneRenderedWithInterruptionEnabled(displayHandle, sceneId2OB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderBegin);
@@ -2644,9 +2733,9 @@ TEST_P(ARenderer, willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneInte
     hideScene(sceneId2OB);
     hideScene(sceneId1OB);
     hideScene(sceneIdFB);
-    unmapScene(sceneId2OB);
-    unmapScene(sceneId1OB);
-    unmapScene(sceneIdFB);
+    unassignScene(sceneId2OB);
+    unassignScene(sceneId1OB);
+    unassignScene(sceneIdFB);
 }
 
 TEST_P(ARenderer, willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneOnAnotherInterruptibleOBInterrupted)
@@ -2663,9 +2752,9 @@ TEST_P(ARenderer, willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneOnAn
     createScene(sceneIdFB);
     createScene(sceneId1OB);
     createScene(sceneId2OB);
-    mapSceneToDisplayBuffer(sceneId2OB, displayHandle, 0, fakeOffscreenBuffer2);
-    mapSceneToDisplayBuffer(sceneId1OB, displayHandle, 1, fakeOffscreenBuffer1);
-    mapSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneId2OB, displayHandle, 0, fakeOffscreenBuffer2);
+    assignSceneToDisplayBuffer(sceneId1OB, displayHandle, 1, fakeOffscreenBuffer1);
+    assignSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
 
     showScene(sceneIdFB);
     showScene(sceneId1OB);
@@ -2683,7 +2772,7 @@ TEST_P(ARenderer, willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneOnAn
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
 
     // modify OB1 scene
-    renderer.markBufferWithMappedSceneAsModified(sceneId1OB);
+    renderer.markBufferWithSceneAsModified(sceneId1OB);
 
     // FB re-rendered to reflect finished OB1, OB1 scene skipped due to interruption, OB2 scene finished
     expectSceneRendered(displayHandle, sceneIdFB);
@@ -2722,9 +2811,9 @@ TEST_P(ARenderer, willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneOnAn
     hideScene(sceneId2OB);
     hideScene(sceneId1OB);
     hideScene(sceneIdFB);
-    unmapScene(sceneId2OB);
-    unmapScene(sceneId1OB);
-    unmapScene(sceneIdFB);
+    unassignScene(sceneId2OB);
+    unassignScene(sceneId1OB);
+    unassignScene(sceneIdFB);
 }
 
 TEST_P(ARenderer, willRenderAllScenesFromAllDisplaysAndBuffersInOneFrameIfWithinBudget)
@@ -2772,18 +2861,18 @@ TEST_P(ARenderer, willRenderAllScenesFromAllDisplaysAndBuffersInOneFrameIfWithin
     createScene(sceneIdDisp2OBint2scene1);
     createScene(sceneIdDisp2OBint2scene2);
 
-    mapSceneToDisplayBuffer(sceneIdDisp1FB, displayHandle1, 0);
-    mapSceneToDisplayBuffer(sceneIdDisp2FB, displayHandle2, 0);
-    mapSceneToDisplayBuffer(sceneIdDisp1OBscene, displayHandle1, 0, disp1OB);
-    mapSceneToDisplayBuffer(sceneIdDisp2OBscene, displayHandle2, 0, disp2OB);
-    mapSceneToDisplayBuffer(sceneIdDisp1OBint2scene1, displayHandle1, 0, disp1OBint2);
-    mapSceneToDisplayBuffer(sceneIdDisp1OBint2scene2, displayHandle1, 1, disp1OBint2);
-    mapSceneToDisplayBuffer(sceneIdDisp1OBint1scene1, displayHandle1, 0, disp1OBint1);
-    mapSceneToDisplayBuffer(sceneIdDisp1OBint1scene2, displayHandle1, 1, disp1OBint1);
-    mapSceneToDisplayBuffer(sceneIdDisp2OBint2scene1, displayHandle2, 0, disp2OBint2);
-    mapSceneToDisplayBuffer(sceneIdDisp2OBint2scene2, displayHandle2, 1, disp2OBint2);
-    mapSceneToDisplayBuffer(sceneIdDisp2OBint1scene1, displayHandle2, 0, disp2OBint1);
-    mapSceneToDisplayBuffer(sceneIdDisp2OBint1scene2, displayHandle2, 1, disp2OBint1);
+    assignSceneToDisplayBuffer(sceneIdDisp1FB, displayHandle1, 0);
+    assignSceneToDisplayBuffer(sceneIdDisp2FB, displayHandle2, 0);
+    assignSceneToDisplayBuffer(sceneIdDisp1OBscene, displayHandle1, 0, disp1OB);
+    assignSceneToDisplayBuffer(sceneIdDisp2OBscene, displayHandle2, 0, disp2OB);
+    assignSceneToDisplayBuffer(sceneIdDisp1OBint2scene1, displayHandle1, 0, disp1OBint2);
+    assignSceneToDisplayBuffer(sceneIdDisp1OBint2scene2, displayHandle1, 1, disp1OBint2);
+    assignSceneToDisplayBuffer(sceneIdDisp1OBint1scene1, displayHandle1, 0, disp1OBint1);
+    assignSceneToDisplayBuffer(sceneIdDisp1OBint1scene2, displayHandle1, 1, disp1OBint1);
+    assignSceneToDisplayBuffer(sceneIdDisp2OBint2scene1, displayHandle2, 0, disp2OBint2);
+    assignSceneToDisplayBuffer(sceneIdDisp2OBint2scene2, displayHandle2, 1, disp2OBint2);
+    assignSceneToDisplayBuffer(sceneIdDisp2OBint1scene1, displayHandle2, 0, disp2OBint1);
+    assignSceneToDisplayBuffer(sceneIdDisp2OBint1scene2, displayHandle2, 1, disp2OBint1);
 
     showScene(sceneIdDisp1FB);
     showScene(sceneIdDisp2FB);
@@ -2865,18 +2954,18 @@ TEST_P(ARenderer, willRenderAllScenesFromAllDisplaysAndBuffersInOneFrameIfWithin
     hideScene(sceneIdDisp2OBint2scene1);
     hideScene(sceneIdDisp2OBint2scene2);
 
-    unmapScene(sceneIdDisp1FB);
-    unmapScene(sceneIdDisp2FB);
-    unmapScene(sceneIdDisp1OBscene);
-    unmapScene(sceneIdDisp2OBscene);
-    unmapScene(sceneIdDisp1OBint1scene1);
-    unmapScene(sceneIdDisp1OBint1scene2);
-    unmapScene(sceneIdDisp1OBint2scene1);
-    unmapScene(sceneIdDisp1OBint2scene2);
-    unmapScene(sceneIdDisp2OBint1scene1);
-    unmapScene(sceneIdDisp2OBint1scene2);
-    unmapScene(sceneIdDisp2OBint2scene1);
-    unmapScene(sceneIdDisp2OBint2scene2);
+    unassignScene(sceneIdDisp1FB);
+    unassignScene(sceneIdDisp2FB);
+    unassignScene(sceneIdDisp1OBscene);
+    unassignScene(sceneIdDisp2OBscene);
+    unassignScene(sceneIdDisp1OBint1scene1);
+    unassignScene(sceneIdDisp1OBint1scene2);
+    unassignScene(sceneIdDisp1OBint2scene1);
+    unassignScene(sceneIdDisp1OBint2scene2);
+    unassignScene(sceneIdDisp2OBint1scene1);
+    unassignScene(sceneIdDisp2OBint1scene2);
+    unassignScene(sceneIdDisp2OBint2scene1);
+    unassignScene(sceneIdDisp2OBint2scene2);
 }
 
 TEST_P(ARenderer, confidenceTest_combinationOfMultipleScenesAndOBsWhereScenesAreModifiedAtDifferentStatesOfInterruptionsAndExpectedToBeReRendered)
@@ -2918,16 +3007,16 @@ TEST_P(ARenderer, confidenceTest_combinationOfMultipleScenesAndOBsWhereScenesAre
     createScene(sceneIdDisp2OB2scene1);
     createScene(sceneIdDisp2OB2scene2);
 
-    mapSceneToDisplayBuffer(sceneIdDisp1FB, displayHandle1, 0);
-    mapSceneToDisplayBuffer(sceneIdDisp2FB, displayHandle2, 0);
-    mapSceneToDisplayBuffer(sceneIdDisp1OB2scene1, displayHandle1, 0, disp1OB2);
-    mapSceneToDisplayBuffer(sceneIdDisp1OB2scene2, displayHandle1, 1, disp1OB2);
-    mapSceneToDisplayBuffer(sceneIdDisp1OB1scene1, displayHandle1, 0, disp1OB1);
-    mapSceneToDisplayBuffer(sceneIdDisp1OB1scene2, displayHandle1, 1, disp1OB1);
-    mapSceneToDisplayBuffer(sceneIdDisp2OB2scene1, displayHandle2, 0, disp2OB2);
-    mapSceneToDisplayBuffer(sceneIdDisp2OB2scene2, displayHandle2, 1, disp2OB2);
-    mapSceneToDisplayBuffer(sceneIdDisp2OB1scene1, displayHandle2, 0, disp2OB1);
-    mapSceneToDisplayBuffer(sceneIdDisp2OB1scene2, displayHandle2, 1, disp2OB1);
+    assignSceneToDisplayBuffer(sceneIdDisp1FB, displayHandle1, 0);
+    assignSceneToDisplayBuffer(sceneIdDisp2FB, displayHandle2, 0);
+    assignSceneToDisplayBuffer(sceneIdDisp1OB2scene1, displayHandle1, 0, disp1OB2);
+    assignSceneToDisplayBuffer(sceneIdDisp1OB2scene2, displayHandle1, 1, disp1OB2);
+    assignSceneToDisplayBuffer(sceneIdDisp1OB1scene1, displayHandle1, 0, disp1OB1);
+    assignSceneToDisplayBuffer(sceneIdDisp1OB1scene2, displayHandle1, 1, disp1OB1);
+    assignSceneToDisplayBuffer(sceneIdDisp2OB2scene1, displayHandle2, 0, disp2OB2);
+    assignSceneToDisplayBuffer(sceneIdDisp2OB2scene2, displayHandle2, 1, disp2OB2);
+    assignSceneToDisplayBuffer(sceneIdDisp2OB1scene1, displayHandle2, 0, disp2OB1);
+    assignSceneToDisplayBuffer(sceneIdDisp2OB1scene2, displayHandle2, 1, disp2OB1);
 
     showScene(sceneIdDisp1FB);
     showScene(sceneIdDisp2FB);
@@ -2972,8 +3061,8 @@ TEST_P(ARenderer, confidenceTest_combinationOfMultipleScenesAndOBsWhereScenesAre
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
 
     // modify some scenes
-    renderer.markBufferWithMappedSceneAsModified(sceneIdDisp1OB1scene2);
-    renderer.markBufferWithMappedSceneAsModified(sceneIdDisp1OB2scene1);
+    renderer.markBufferWithSceneAsModified(sceneIdDisp1OB1scene2);
+    renderer.markBufferWithSceneAsModified(sceneIdDisp1OB2scene1);
 
     // FB1 rendered to reflect disp1 OB2 rendered, disp1 OBs skipped due to interruption, disp2 OB1 scene1 finished, disp2 OB1 scene2 interrupted, rest skipped
     expectSceneRendered(displayHandle1, sceneIdDisp1FB);
@@ -2989,7 +3078,7 @@ TEST_P(ARenderer, confidenceTest_combinationOfMultipleScenesAndOBsWhereScenesAre
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
 
     // modify just finished scene on still interrupted OB
-    renderer.markBufferWithMappedSceneAsModified(sceneIdDisp2OB1scene1);
+    renderer.markBufferWithSceneAsModified(sceneIdDisp2OB1scene1);
 
     // FBs skipped due to no change, disp1 skipped due to interruption, disp2 OB1 scene2 finished, disp2 OB2 scene1 interrupted, rest skipped
     expectFrameBufferRendered(displayHandle1, false, false);
@@ -3003,7 +3092,7 @@ TEST_P(ARenderer, confidenceTest_combinationOfMultipleScenesAndOBsWhereScenesAre
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
 
     // modify just started and unfinished scene on newly interrupted OB
-    renderer.markBufferWithMappedSceneAsModified(sceneIdDisp2OB2scene1);
+    renderer.markBufferWithSceneAsModified(sceneIdDisp2OB2scene1);
 
     // FB1 skipped due to no change, FB2 re-rendered to reflect disp2 OB1 rendered, disp2 OB2 scene1 finished, disp2 OB2 scene2 interrupted, rest skipped
     expectFrameBufferRendered(displayHandle1, false, false);
@@ -3083,16 +3172,16 @@ TEST_P(ARenderer, confidenceTest_combinationOfMultipleScenesAndOBsWhereScenesAre
     hideScene(sceneIdDisp2OB2scene1);
     hideScene(sceneIdDisp2OB2scene2);
 
-    unmapScene(sceneIdDisp1FB);
-    unmapScene(sceneIdDisp2FB);
-    unmapScene(sceneIdDisp1OB1scene1);
-    unmapScene(sceneIdDisp1OB1scene2);
-    unmapScene(sceneIdDisp1OB2scene1);
-    unmapScene(sceneIdDisp1OB2scene2);
-    unmapScene(sceneIdDisp2OB1scene1);
-    unmapScene(sceneIdDisp2OB1scene2);
-    unmapScene(sceneIdDisp2OB2scene1);
-    unmapScene(sceneIdDisp2OB2scene2);
+    unassignScene(sceneIdDisp1FB);
+    unassignScene(sceneIdDisp2FB);
+    unassignScene(sceneIdDisp1OB1scene1);
+    unassignScene(sceneIdDisp1OB1scene2);
+    unassignScene(sceneIdDisp1OB2scene1);
+    unassignScene(sceneIdDisp1OB2scene2);
+    unassignScene(sceneIdDisp2OB1scene1);
+    unassignScene(sceneIdDisp2OB1scene2);
+    unassignScene(sceneIdDisp2OB2scene1);
+    unassignScene(sceneIdDisp2OB2scene2);
 }
 
 TEST_P(ARenderer, canMapSceneWhileThereIsInterruption)
@@ -3107,8 +3196,8 @@ TEST_P(ARenderer, canMapSceneWhileThereIsInterruption)
     createScene(sceneIdFB);
     createScene(sceneIdOB);
     createScene(sceneId2);
-    mapSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
-    mapSceneToDisplayBuffer(sceneIdOB, displayHandle, 0, fakeOffscreenBuffer);
+    assignSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneIdOB, displayHandle, 0, fakeOffscreenBuffer);
 
     showScene(sceneIdFB);
     showScene(sceneIdOB);
@@ -3122,7 +3211,7 @@ TEST_P(ARenderer, canMapSceneWhileThereIsInterruption)
     doOneRendererLoop();
 
     // map other scene to FB while interrupted
-    mapSceneToDisplayBuffer(sceneId2, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneId2, displayHandle, 0);
 
     // FB rendered because of new scene mapped, OB finished
     expectFrameBufferRendered();
@@ -3144,9 +3233,9 @@ TEST_P(ARenderer, canMapSceneWhileThereIsInterruption)
 
     hideScene(sceneIdOB);
     hideScene(sceneIdFB);
-    unmapScene(sceneIdOB);
-    unmapScene(sceneIdFB);
-    unmapScene(sceneId2);
+    unassignScene(sceneIdOB);
+    unassignScene(sceneIdFB);
+    unassignScene(sceneId2);
 }
 
 TEST_P(ARenderer, doesNotReportSceneIfNotRenderedToExpirationMonitor)
@@ -3166,9 +3255,9 @@ TEST_P(ARenderer, doesNotReportSceneIfNotRenderedToExpirationMonitor)
     renderer.registerOffscreenBuffer(displayHandle, ob, 1u, 1u, false);
     renderer.registerOffscreenBuffer(displayHandle, obInt, 1u, 1u, true);
 
-    mapSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
-    mapSceneToDisplayBuffer(sceneIdOB, displayHandle, 0, ob);
-    mapSceneToDisplayBuffer(sceneIdOBint, displayHandle, 0, obInt);
+    assignSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneIdOB, displayHandle, 0, ob);
+    assignSceneToDisplayBuffer(sceneIdOBint, displayHandle, 0, obInt);
 
     expectOffscreenBufferRendered(displayHandle, { ob }, true);
     expectFrameBufferRendered(displayHandle, false);
@@ -3178,9 +3267,9 @@ TEST_P(ARenderer, doesNotReportSceneIfNotRenderedToExpirationMonitor)
 
     expectScenesReportedToExpirationMonitorAsRendered({});
 
-    unmapScene(sceneIdFB);
-    unmapScene(sceneIdOB);
-    unmapScene(sceneIdOBint);
+    unassignScene(sceneIdFB);
+    unassignScene(sceneIdOB);
+    unassignScene(sceneIdOBint);
     expirationMonitor.stopMonitoringScene(sceneIdFB);
     expirationMonitor.stopMonitoringScene(sceneIdOB);
     expirationMonitor.stopMonitoringScene(sceneIdOBint);
@@ -3203,9 +3292,9 @@ TEST_P(ARenderer, reportsSceneAsRenderedToExpirationMonitor)
     renderer.registerOffscreenBuffer(displayHandle, ob, 1u, 1u, false);
     renderer.registerOffscreenBuffer(displayHandle, obInt, 1u, 1u, true);
 
-    mapSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
-    mapSceneToDisplayBuffer(sceneIdOB, displayHandle, 0, ob);
-    mapSceneToDisplayBuffer(sceneIdOBint, displayHandle, 0, obInt);
+    assignSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneIdOB, displayHandle, 0, ob);
+    assignSceneToDisplayBuffer(sceneIdOBint, displayHandle, 0, obInt);
 
     showScene(sceneIdFB);
     showScene(sceneIdOB);
@@ -3225,9 +3314,9 @@ TEST_P(ARenderer, reportsSceneAsRenderedToExpirationMonitor)
     hideScene(sceneIdFB);
     hideScene(sceneIdOB);
     hideScene(sceneIdOBint);
-    unmapScene(sceneIdFB);
-    unmapScene(sceneIdOB);
-    unmapScene(sceneIdOBint);
+    unassignScene(sceneIdFB);
+    unassignScene(sceneIdOB);
+    unassignScene(sceneIdOBint);
     expirationMonitor.stopMonitoringScene(sceneIdFB);
     expirationMonitor.stopMonitoringScene(sceneIdOB);
     expirationMonitor.stopMonitoringScene(sceneIdOBint);
@@ -3246,8 +3335,8 @@ TEST_P(ARenderer, reportsSceneAsRenderedToExpirationMonitorOnlyAfterFullyRendere
     DeviceResourceHandle obInt(317u);
     renderer.registerOffscreenBuffer(displayHandle, obInt, 1u, 1u, true);
 
-    mapSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
-    mapSceneToDisplayBuffer(sceneIdOBint, displayHandle, 0, obInt);
+    assignSceneToDisplayBuffer(sceneIdFB, displayHandle, 0);
+    assignSceneToDisplayBuffer(sceneIdOBint, displayHandle, 0, obInt);
 
     showScene(sceneIdFB);
     showScene(sceneIdOBint);
@@ -3272,8 +3361,8 @@ TEST_P(ARenderer, reportsSceneAsRenderedToExpirationMonitorOnlyAfterFullyRendere
 
     hideScene(sceneIdFB);
     hideScene(sceneIdOBint);
-    unmapScene(sceneIdFB);
-    unmapScene(sceneIdOBint);
+    unassignScene(sceneIdFB);
+    unassignScene(sceneIdOBint);
     expirationMonitor.stopMonitoringScene(sceneIdFB);
     expirationMonitor.stopMonitoringScene(sceneIdOBint);
 }

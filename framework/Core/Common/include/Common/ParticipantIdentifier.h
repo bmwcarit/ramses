@@ -25,7 +25,7 @@ namespace ramses_internal
         const Guid& getParticipantId() const;
         const String& getParticipantName() const;
 
-        Bool operator==(const ParticipantIdentifier& other) const;
+        bool operator==(const ParticipantIdentifier& other) const;
 
     private:
         Guid m_participantId;
@@ -42,7 +42,7 @@ namespace ramses_internal
         return m_participantName;
     }
 
-    inline Bool ParticipantIdentifier::operator==(const ParticipantIdentifier& other) const
+    inline bool ParticipantIdentifier::operator==(const ParticipantIdentifier& other) const
     {
         return m_participantId == other.m_participantId;
     }

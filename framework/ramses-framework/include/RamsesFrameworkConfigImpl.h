@@ -15,6 +15,7 @@
 #include "ramses-framework-api/IThreadWatchdogNotification.h"
 #include "ThreadWatchdogConfig.h"
 #include "TransportCommon/EConnectionProtocol.h"
+#include "Collections/Guid.h"
 
 namespace ramses
 {
@@ -54,6 +55,7 @@ namespace ramses
         ERamsesShellType m_shellType;
         ramses_internal::ThreadWatchdogConfig m_watchdogConfig;
         bool m_periodicLogsEnabled;
+
     private:
         RamsesFrameworkConfigImpl();
 

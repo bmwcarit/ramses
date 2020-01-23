@@ -123,13 +123,15 @@ class Target:
         daemon.initialisation_message_to_look_for("Ramsh commands registered")
         return daemon
 
-    def start_renderer(self, applicationName, args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}, dltAppID='REND', waitForDisplayManagerRamsh=True):
+    def start_renderer(self, applicationName, args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}, dltAppID='REND', waitForDisplayManagerRamsh=True, automap=False):
         extendedArgs = "--startVisible -scc " + args
         if "--waylandIviLayerId" not in args and "-lid" not in args:
                 extendedArgs += " -lid {}".format(DEFAULT_TEST_LAYER)
 
         if "--waylandIviSurfaceID" not in args and "-sid" not in args:
                 extendedArgs += " -sid {}".format(DEFAULT_TEST_SURFACE)
+        if not automap:
+            extendedArgs += " -nomap"
 
         renderer = self._start_ramses_application(applicationName, extendedArgs, workingDirectory, nameExtension, env, dltAppID)
         if (waitForDisplayManagerRamsh):

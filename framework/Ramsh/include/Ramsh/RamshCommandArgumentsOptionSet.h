@@ -12,7 +12,7 @@
 #include "Collections/Vector.h"
 #include "Collections/String.h"
 #include "Ramsh/RamshCommandArgumentsConverter.h"
-#include "PlatformAbstraction/PlatformTypeInfo.h"
+#include "Ramsh/RamshTypeInfo.h"
 
 #define DEF_EXT_LITERAL(str) \
     extern const Char EXT_LITERAL_##str[];
@@ -64,7 +64,7 @@ namespace ramses_internal
     protected:
         virtual inline UInt32 parseInternal(const Char* data, UInt32 level) const
         {
-            return 0 == ramses_capu::StringUtils::Strcmp(option1,data) ?
+            return 0 == std::strcmp(option1,data) ?
                 level :
                 OptionSetBase<option2,option3,option4,option5,ARGUMENT_OPTION_NONE>::parseInternal(data,level+1);
         }
@@ -84,12 +84,12 @@ namespace ramses_internal
             return m_value;
         }
 
-        inline operator Bool() const
+        inline operator bool() const
         {
             return m_value > 0;
         }
 
-        inline Bool parse(const Char* data)
+        inline bool parse(const Char* data)
         {
             m_value = OptionSetBase<option1,option2,option3,option4,option5>::parseInternal(data,0);
             return m_value != static_cast<UInt32>(-1);
@@ -102,7 +102,7 @@ namespace ramses_internal
     template<const Char* option1,const Char* option2,const Char* option3,const Char* option4,const Char* option5>
     struct ArgumentConverter< OptionSet<option1,option2,option3,option4,option5> >
     {
-        static inline Bool tryConvert(const RamshArgumentData& data, OptionSet<option1,option2,option3,option4,option5>& value)
+        static inline bool tryConvert(const RamshArgumentData& data, OptionSet<option1,option2,option3,option4,option5>& value)
         {
             return value.parse(data.c_str());
         }

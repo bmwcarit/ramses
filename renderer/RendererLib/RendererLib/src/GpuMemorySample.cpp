@@ -94,7 +94,7 @@ namespace ramses_internal
     SceneIdVector GpuMemorySample::getSampledScenes() const
     {
         SceneIdVector sampledScenes;
-        sampledScenes.reserve(m_memUsedPerScene.count());
+        sampledScenes.reserve(m_memUsedPerScene.size());
         for (const auto& scene : m_memUsedPerScene)
         {
             sampledScenes.push_back(scene.key);

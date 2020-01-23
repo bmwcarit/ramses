@@ -8,7 +8,7 @@
 
 #include "DisplayManager/HideScene.h"
 
-namespace ramses_display_manager
+namespace ramses_internal
 {
     HideScene::HideScene(IDisplayManager& displayManager)
         : m_displayManager(displayManager)
@@ -23,7 +23,7 @@ namespace ramses_display_manager
 
     bool HideScene::execute(uint64_t& sceneId) const
     {
-        m_displayManager.setSceneState(ramses::sceneId_t{ sceneId }, ramses_display_manager::SceneState::Ready);
+        m_displayManager.setSceneState(ramses::sceneId_t{ sceneId }, SceneState::Ready);
 
         return true;
     }

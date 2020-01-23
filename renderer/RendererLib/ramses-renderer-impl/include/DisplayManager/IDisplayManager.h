@@ -17,7 +17,7 @@ namespace ramses
     class IRendererEventHandler;
 }
 
-namespace ramses_display_manager
+namespace ramses_internal
 {
     enum class SceneState
     {
@@ -35,8 +35,10 @@ namespace ramses_display_manager
         virtual ~IDisplayManager() = default;
 
         virtual bool setSceneState(ramses::sceneId_t sceneId, SceneState state, const char* confirmationText = "") = 0;
-        virtual bool setSceneMapping(ramses::sceneId_t sceneId, ramses::displayId_t displayId, int32_t sceneRenderOrder = 0) = 0;
-        virtual bool setSceneOffscreenBufferMapping(ramses::sceneId_t sceneId, ramses::displayId_t displayId, uint32_t width, uint32_t height, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTextureSamplerId) = 0;
+        virtual bool setSceneMapping(ramses::sceneId_t sceneId, ramses::displayId_t displayId) = 0;
+        virtual bool setSceneDisplayBufferAssignment(ramses::sceneId_t sceneId, ramses::displayBufferId_t displayBuffer, int32_t sceneRenderOrder = 0) = 0;
+        virtual bool setDisplayBufferClearColor(ramses::displayBufferId_t displayBuffer, float r, float g, float b, float a) = 0;
+        virtual void linkOffscreenBuffer(ramses::displayBufferId_t offscreenBufferId, ramses::sceneId_t consumerSceneId, ramses::dataConsumerId_t consumerDataSlotId) = 0;
         virtual void linkData(ramses::sceneId_t providerSceneId, ramses::dataProviderId_t providerId, ramses::sceneId_t consumerSceneId, ramses::dataConsumerId_t consumerId) = 0;
         virtual void processConfirmationEchoCommand(const char* text) = 0;
         virtual void dispatchAndFlush(IEventHandler* eventHandler = nullptr, ramses::IRendererEventHandler* customRendererEventHandler = nullptr) = 0;
@@ -66,7 +68,10 @@ namespace ramses_display_manager
     public:
         virtual ~IEventHandler() = default;
 
+        virtual void scenePublished(ramses::sceneId_t sceneId) = 0;
         virtual void sceneStateChanged(ramses::sceneId_t sceneId, SceneState state, ramses::displayId_t displaySceneIsMappedTo) = 0;
+        virtual void offscreenBufferLinked(ramses::displayBufferId_t offscreenBufferId, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId, bool success) = 0;
+        virtual void dataLinked(ramses::sceneId_t providerScene, ramses::dataProviderId_t providerId, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId, bool success) = 0;
     };
 }
 

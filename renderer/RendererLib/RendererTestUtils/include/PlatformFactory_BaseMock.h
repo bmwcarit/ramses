@@ -20,8 +20,8 @@
 #include "EmbeddedCompositorMock.h"
 #include "SystemCompositorControllerMock.h"
 #include "DeviceMock.h"
-#include "TextureUploadingAdapterMock.h"
 #include "WindowEventsPollingManagerMock.h"
+#include "Platform_Base/TextureUploadingAdapter_Base.h"
 
 namespace ramses_internal
 {
@@ -53,7 +53,8 @@ namespace ramses_internal
         SurfaceMockWithDestructor*                    surface                 = nullptr;
         DeviceMockWithDestructor*                     device                  = nullptr;
         EmbeddedCompositorMockWithDestructor*         embeddedCompositor      = nullptr;
-        TextureUploadingAdapterMockWithDestructor*    textureUploadingAdapter = nullptr;
+        ::testing::StrictMock<DeviceMock>             deviceMock;
+        TextureUploadingAdapter_Base                  textureUploadingAdapter = TextureUploadingAdapter_Base(deviceMock);
         SystemCompositorControllerMockWithDestructor* systemCompositorController = nullptr;
 
     private:
@@ -89,7 +90,7 @@ namespace ramses_internal
 
         ITextureUploadingAdapter* createTextureUploadingAdapter_fake(IDevice& /*device*/, IEmbeddedCompositor& /*embeddedCompositor*/, IWindow& /*window*/)
         {
-            return addTextureUploadingAdapter(textureUploadingAdapter);
+            return &textureUploadingAdapter;
         }
     };
 }

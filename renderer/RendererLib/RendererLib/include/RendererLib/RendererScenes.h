@@ -12,7 +12,7 @@
 #include "RendererLib/StagingInfo.h"
 #include "RendererLib/RendererCachedScene.h"
 #include "RendererLib/SceneLinksManager.h"
-#include "Utils/ScopedPointer.h"
+#include <memory>
 
 namespace ramses_internal
 {
@@ -46,11 +46,11 @@ namespace ramses_internal
 
         using RendererSceneInfoMap::begin;
         using RendererSceneInfoMap::end;
-        using RendererSceneInfoMap::count;
+        using RendererSceneInfoMap::size;
 
     private:
         // Scoped ptr due to dependency on *this which cannot be passed in member initialization list
-        ScopedPointer<SceneLinksManager> m_sceneLinksManager;
+        std::unique_ptr<SceneLinksManager> m_sceneLinksManager;
     };
 }
 

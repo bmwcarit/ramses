@@ -11,6 +11,7 @@
 
 #include "ramses-renderer-api/Types.h"
 #include "ramses-framework-api/StatusObject.h"
+#include <chrono>
 
 namespace ramses
 {
@@ -30,7 +31,7 @@ namespace ramses
         * @param[in] argc Number of arguments in arguments array parameter
         * @param[in] argv Array of arguments as strings
         */
-        RendererConfig(int32_t argc = 0, char const* const* argv = 0);
+        RendererConfig(int32_t argc = 0, char const* const* argv = nullptr);
 
         /**
         * @brief Constructor of RendererConfig that takes command line parameters
@@ -185,6 +186,24 @@ namespace ramses
         * @return Wayland display name to use for connection, empty means default
         */
         const char* getSystemCompositorWaylandDisplay() const;
+
+        /**
+        * @brief Set the desired reporting period for renderThread loop timings
+        *        The values are reported via the renderer event 'RenderThreadPeriodicLoopTimes'
+        *        A value of zero disables reporting and is the default.
+        *
+        * @param[in] period Cyclic time period after which timing information should be reported
+        * @return StatusOK on success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setRenderThreadLoopTimingReportingPeriod(std::chrono::milliseconds period);
+
+        /**
+        * @brief Get the current reporting period for renderThread loop timings
+        *
+        * @return Reporting period for renderThread loop timings
+        */
+        std::chrono::milliseconds getRenderThreadLoopTimingReportingPeriod() const;
 
         /**
         * Stores internal data for implementation specifics of RendererConfig.

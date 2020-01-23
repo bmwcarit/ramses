@@ -24,7 +24,7 @@ namespace ramses_internal
     TextureAddressScene::TextureAddressScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 /*state*/, const Vector3& cameraPosition)
         : IntegrationScene(ramsesClient, scene, cameraPosition)
         , m_groupNode()
-        , m_indices(0)
+        , m_indices(nullptr)
         , m_effect(getTestEffect("ramses-test-client-textured"))
     {
         uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };

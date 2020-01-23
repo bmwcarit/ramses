@@ -30,7 +30,7 @@ namespace ramses_internal
 
         UInt32      addMessage(const Char* message);
         const Char* getMessage(UInt32 id) const;
-        Bool        isMessageCached(UInt32 id) const;
+        bool        isMessageCached(UInt32 id) const;
 
         static const Char* getSuccessText();
         static const Char* getUnknownText();
@@ -79,7 +79,7 @@ namespace ramses_internal
     }
 
     template <UInt32 MaxEntries, UInt32 SuccessMessageEntryID>
-    Bool MessagePool<MaxEntries, SuccessMessageEntryID>::isMessageCached(UInt32 id) const
+    bool MessagePool<MaxEntries, SuccessMessageEntryID>::isMessageCached(UInt32 id) const
     {
         const UInt32 oldestCachedIndex = (m_nextIndex < MaxEntries ? 0u : m_nextIndex - MaxEntries);
         return (id >= oldestCachedIndex && id < m_nextIndex);

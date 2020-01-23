@@ -16,7 +16,9 @@
 
 enum ERendererEventTestType
 {
-    ERendererEventTestType_ScenePublished = 0,
+    ERendererEventTestType_Undefined = 0,
+
+    ERendererEventTestType_ScenePublished,
     ERendererEventTestType_SceneSubscribed,
     ERendererEventTestType_SceneMapped,
     ERendererEventTestType_SceneShown,
@@ -29,8 +31,7 @@ enum ERendererEventTestType
     ERendererEventTestType_DataUnlinked,
     ERendererEventTestType_OffscreenBufferCreated,
     ERendererEventTestType_OffscreenBufferDestroyed,
-    ERendererEventTestType_SceneAssignedToOffscreenBuffer,
-    ERendererEventTestType_SceneAssignedToFramebuffer,
+    ERendererEventTestType_SceneAssignedToDisplayBuffer,
     ERendererEventTestType_PixelsRead,
     ERendererEventTestType_WarpingUpdated,
     ERendererEventTestType_DisplayCreated,
@@ -52,15 +53,18 @@ enum ERendererEventTestType
     ERendererEventTestType_SceneRecoveredAfterExpiration,
     ERendererEventTestType_WindowClosed,
     ERendererEventTestType_WindowResized,
+    ERendererEventTestType_WindowMoved,
     ERendererEventTestType_KeyEvent,
-    ERendererEventTestType_MouseEvent
+    ERendererEventTestType_MouseEvent,
+    ERendererEventTestType_StreamAvailabilityChanged,
+    ERendererEventTestType_ObjectsPicked,
+    ERendererEventTestType_RenderThreadPeriodicLoopTimes,
 };
 
 struct RendererTestEvent
 {
     RendererTestEvent()
     {
-        ramses_internal::PlatformMemory::Set(this, 0, sizeof(*this));
     }
 
     bool operator==(const RendererTestEvent& other) const
@@ -83,33 +87,41 @@ struct RendererTestEvent
             && mousePosX == other.mousePosX
             && mousePosY == other.mousePosY
             && windowWidth == other.windowWidth
-            && windowHeight == other.windowHeight;
+            && windowHeight == other.windowHeight
+            && pickedObjects == other.pickedObjects;
     }
 
-    ERendererEventTestType eventType;
-    ramses::ERendererEventResult result;
+    ERendererEventTestType eventType            = ERendererEventTestType_Undefined;
+    ramses::ERendererEventResult result         = ramses::ERendererEventResult_FAIL;
 
-    ramses::sceneId_t sceneId;
+    ramses::sceneId_t sceneId                   { 0u };
     ramses::displayId_t displayId;
-    ramses::offscreenBufferId_t bufferId;
+    ramses::displayBufferId_t bufferId;
 
-    ramses::sceneId_t providerScene;
-    ramses::sceneId_t consumerScene;
-    ramses::dataProviderId_t dataProviderId;
-    ramses::dataConsumerId_t dataConsumerId;
+    ramses::sceneId_t providerScene             { 0u };
+    ramses::sceneId_t consumerScene             { 0u };
+    ramses::dataProviderId_t dataProviderId     { 0u };
+    ramses::dataConsumerId_t dataConsumerId     { 0u };
 
-    ramses::sceneVersionTag_t sceneVersionTag;
-    ramses::ESceneResourceStatus resourceStatus;
+    ramses::sceneVersionTag_t sceneVersionTag   = ramses::InvalidSceneVersionTag;
+    ramses::ESceneResourceStatus resourceStatus = ramses::ESceneResourceStatus_Pending;
 
-    ramses::EKeyEvent keyEvent;
-    uint32_t keyModifiers;
-    ramses::EKeyCode keyCode;
+    ramses::EKeyEvent keyEvent                  = ramses::EKeyEvent_Invalid;
+    uint32_t keyModifiers                       = 0u;
+    ramses::EKeyCode keyCode                    = ramses::EKeyCode_Unknown;
 
-    ramses::EMouseEvent mouseEvent;
-    int32_t mousePosX;
-    int32_t mousePosY;
-    uint32_t windowWidth;
-    uint32_t windowHeight;
+    ramses::EMouseEvent mouseEvent              = ramses::EMouseEvent_Invalid;
+    int32_t mousePosX                           = 0;
+    int32_t mousePosY                           = 0;
+    uint32_t windowWidth                        = 0u;
+    uint32_t windowHeight                       = 0u;
+    int32_t windowPosX                          = 0;
+    int32_t windowPosY                          = 0;
+
+    std::chrono::microseconds renderthread_maximumLoopTime;
+    std::chrono::microseconds renderthread_avg_looptime;
+
+    std::vector<ramses::pickableObjectId_t> pickedObjects;
 };
 
 class RendererEventTestHandler : public ramses::IRendererEventHandler
@@ -206,7 +218,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void offscreenBufferLinkedToSceneData(ramses::offscreenBufferId_t providerOffscreenBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t dataConsumerId, ramses::ERendererEventResult result)
+    virtual void offscreenBufferLinkedToSceneData(ramses::displayBufferId_t providerOffscreenBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t dataConsumerId, ramses::ERendererEventResult result)
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_BufferLinked;
@@ -227,7 +239,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void offscreenBufferCreated(ramses::displayId_t displayId, ramses::offscreenBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
+    virtual void offscreenBufferCreated(ramses::displayId_t displayId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_OffscreenBufferCreated;
@@ -237,7 +249,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void offscreenBufferDestroyed(ramses::displayId_t displayId, ramses::offscreenBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
+    virtual void offscreenBufferDestroyed(ramses::displayId_t displayId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_OffscreenBufferDestroyed;
@@ -247,21 +259,12 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void sceneAssignedToOffscreenBuffer(ramses::sceneId_t sceneId, ramses::offscreenBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
+    virtual void sceneAssignedToDisplayBuffer(ramses::sceneId_t sceneId, ramses::displayBufferId_t displayBufferId, ramses::ERendererEventResult result)
     {
         RendererTestEvent event;
-        event.eventType = ERendererEventTestType_SceneAssignedToOffscreenBuffer;
+        event.eventType = ERendererEventTestType_SceneAssignedToDisplayBuffer;
         event.sceneId = sceneId;
-        event.bufferId = offscreenBufferId;
-        event.result = result;
-        m_events.push_back(event);
-    }
-
-    virtual void sceneAssignedToFramebuffer(ramses::sceneId_t sceneId, ramses::ERendererEventResult result)
-    {
-        RendererTestEvent event;
-        event.eventType = ERendererEventTestType_SceneAssignedToOffscreenBuffer;
-        event.sceneId = sceneId;
+        event.bufferId = displayBufferId;
         event.result = result;
         m_events.push_back(event);
     }
@@ -382,9 +385,22 @@ public:
         m_events.push_back(event);
     }
 
+    virtual void windowMoved(ramses::displayId_t displayId, int32_t posX, int32_t posY)
+    {
+        RendererTestEvent event;
+        event.eventType = ERendererEventTestType_WindowMoved;
+        event.displayId = displayId;
+        event.windowPosX = posX;
+        event.windowPosY = posY;
+        m_events.push_back(event);
+    }
+
     virtual void streamAvailabilityChanged(ramses::streamSource_t /*streamId*/, bool /*available*/)
     {
-        // Tested elsewhere, no need to test here too
+        // only add event, content tested elsewhere, no need to test here too
+        RendererTestEvent event;
+        event.eventType = ERendererEventTestType_StreamAvailabilityChanged;
+        m_events.push_back(event);
     }
 
     virtual void keyEvent(ramses::displayId_t displayId, ramses::EKeyEvent keyEvent, uint32_t keyModifiers, ramses::EKeyCode keyCode)
@@ -406,6 +422,14 @@ public:
         event.displayId = displayId;
         event.mousePosX = mousePosX;
         event.mousePosY = mousePosY;
+        m_events.push_back(event);
+    }
+
+    virtual void objectsPicked(ramses::sceneId_t sceneId, const ramses::pickableObjectId_t* pickedObjects, uint32_t pickedObjectsCount) override
+    {
+        RendererTestEvent event;
+        event.sceneId = sceneId;
+        event.pickedObjects.insert(event.pickedObjects.begin(), pickedObjects, pickedObjects + pickedObjectsCount);
         m_events.push_back(event);
     }
 
@@ -491,7 +515,7 @@ public:
         expectEvent(event);
     }
 
-    void expectOffscreenBufferLinkedToSceneData(ramses::offscreenBufferId_t providerOffscreenBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t dataConsumerId, ramses::ERendererEventResult result)
+    void expectOffscreenBufferLinkedToSceneData(ramses::displayBufferId_t providerOffscreenBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t dataConsumerId, ramses::ERendererEventResult result)
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_BufferLinked;
@@ -512,7 +536,7 @@ public:
         expectEvent(event);
     }
 
-    void expectOffscreenBufferCreated(ramses::displayId_t displayId, ramses::offscreenBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
+    void expectOffscreenBufferCreated(ramses::displayId_t displayId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_OffscreenBufferCreated;
@@ -522,7 +546,7 @@ public:
         expectEvent(event);
     }
 
-    void expectOffscreenBufferDestroyed(ramses::displayId_t displayId, ramses::offscreenBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
+    void expectOffscreenBufferDestroyed(ramses::displayId_t displayId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_OffscreenBufferDestroyed;
@@ -532,21 +556,12 @@ public:
         expectEvent(event);
     }
 
-    void expectSceneAssignedToOffscreenBuffer(ramses::sceneId_t sceneId, ramses::offscreenBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
+    void expectSceneAssignedToDisplayBuffer(ramses::sceneId_t sceneId, ramses::displayBufferId_t displayBufferId, ramses::ERendererEventResult result)
     {
         RendererTestEvent event;
-        event.eventType = ERendererEventTestType_SceneAssignedToOffscreenBuffer;
+        event.eventType = ERendererEventTestType_SceneAssignedToDisplayBuffer;
         event.sceneId = sceneId;
-        event.bufferId = offscreenBufferId;
-        event.result = result;
-        expectEvent(event);
-    }
-
-    void expectSceneAssignedToFramebuffer(ramses::sceneId_t sceneId, ramses::ERendererEventResult result)
-    {
-        RendererTestEvent event;
-        event.eventType = ERendererEventTestType_SceneAssignedToOffscreenBuffer;
-        event.sceneId = sceneId;
+        event.bufferId = displayBufferId;
         event.result = result;
         expectEvent(event);
     }
@@ -667,6 +682,16 @@ public:
         expectEvent(event);
     }
 
+    void expectWindowMoved(ramses::displayId_t displayId, int32_t posX, int32_t posY)
+    {
+        RendererTestEvent event;
+        event.eventType = ERendererEventTestType_WindowMoved;
+        event.displayId = displayId;
+        event.windowPosX = posX;
+        event.windowPosY = posY;
+        expectEvent(event);
+    }
+
     void expectKeyEvent(ramses::displayId_t displayId, ramses::EKeyEvent keyEvent, uint32_t keyModifiers, ramses::EKeyCode keyCode)
     {
         RendererTestEvent event;
@@ -686,6 +711,23 @@ public:
         event.mouseEvent = mouseEvent;
         event.mousePosX = mousePosX;
         event.mousePosY = mousePosY;
+        expectEvent(event);
+    }
+
+    void expectObjectsPicked(ramses::sceneId_t sceneId, std::initializer_list<ramses::pickableObjectId_t> pickedObjects)
+    {
+        RendererTestEvent event;
+        event.sceneId = sceneId;
+        event.pickedObjects.insert(event.pickedObjects.begin(), pickedObjects.begin(), pickedObjects.end());
+        expectEvent(event);
+    }
+
+    virtual void renderThreadLoopTimings(std::chrono::microseconds maximumLoopTimeMilliseconds, std::chrono::microseconds averageLooptimeMilliseconds) override
+    {
+        RendererTestEvent event;
+        event.eventType = ERendererEventTestType_RenderThreadPeriodicLoopTimes;
+        event.renderthread_maximumLoopTime = maximumLoopTimeMilliseconds;
+        event.renderthread_avg_looptime = averageLooptimeMilliseconds;
         expectEvent(event);
     }
 

@@ -10,6 +10,7 @@
 #define RAMSES_ICLIENTEVENTHANDLER_H
 
 #include "ramses-framework-api/APIExport.h"
+#include "ramses-framework-api/RamsesFrameworkTypes.h"
 
 namespace ramses
 {

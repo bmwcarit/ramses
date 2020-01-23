@@ -13,7 +13,7 @@ class WindowsCygwinTarget(RemoteTarget):
 
     def setup(self, transfer_binaries=True):
         self.defaultPlatform = "windows-wgl-es-3-0"
-        self.defaultEnvironment = {"PATH" : "${HOME}/" + self.ramsesInstallDir + "/lib:${PATH}"}
+        self.defaultEnvironment = {"PATH" : "${HOME}/" + self.ramsesInstallDir + "/bin:${PATH}"}
 
         # base implementation that includes setup of connection and transfer of binaries
         baseSetupSuccessful = RemoteTarget.setup(self, transfer_binaries)
@@ -24,7 +24,7 @@ class WindowsCygwinTarget(RemoteTarget):
         # must set dll executable to prevent error when running executables using these dlls. cmake/cpack
         # is not able to do this on windows. without you get following errors:
         # return code 127 (file not found) on cygwin. error code 0xc000022 in gui mode
-        self.execute_on_target("cd '" + self.ramsesInstallDir + "/lib/'; chmod +x *.dll")
+        self.execute_on_target("cd '" + self.ramsesInstallDir + "/bin/'; chmod +x *.dll")
 
         # Path conversion to windows-style (/c/folder -> C:/folder)
         # Conversion is needed because screenshopts in RAMSES are using Capu files, which use Windows APIs directly

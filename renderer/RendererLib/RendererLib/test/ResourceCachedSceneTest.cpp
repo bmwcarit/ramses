@@ -152,15 +152,10 @@ namespace ramses_internal
         expectRenderableResourcesClean(renderable);
     }
 
-    TEST_F(AResourceCachedScene, RenderableWithNoEffectMarkedAsDirty)
+    TEST_F(AResourceCachedScene, RenderableWithNoGeometryAndNoUniformsMarkedAsDirty)
     {
         const RenderableHandle renderable = sceneHelper.createRenderable();
-        sceneHelper.createAndAssignUniformDataInstance(renderable, sceneHelper.createTextureSamplerWithFakeClientTexture());
-        sceneHelper.createAndAssignVertexDataInstance(renderable);
-        sceneHelper.setResourcesToRenderable(renderable, false);
-
         scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
-
         expectRenderableResourcesDirty(renderable);
     }
 
@@ -169,7 +164,7 @@ namespace ramses_internal
         const RenderableHandle renderable = sceneHelper.createRenderable();
         sceneHelper.createAndAssignUniformDataInstance(renderable, sceneHelper.createTextureSamplerWithFakeClientTexture());
         sceneHelper.createAndAssignVertexDataInstance(renderable);
-        sceneHelper.setResourcesToRenderable(renderable, true, false);
+        sceneHelper.setResourcesToRenderable(renderable, false, true);
 
         scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
 
@@ -193,7 +188,7 @@ namespace ramses_internal
         const RenderableHandle renderable = sceneHelper.createRenderable();
         sceneHelper.createAndAssignUniformDataInstance(renderable, sceneHelper.createTextureSamplerWithFakeClientTexture());
         sceneHelper.createAndAssignVertexDataInstance(renderable);
-        sceneHelper.setResourcesToRenderable(renderable, true, true, false);
+        sceneHelper.setResourcesToRenderable(renderable, true, false);
 
         scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
 
@@ -278,12 +273,12 @@ namespace ramses_internal
         const RenderableHandle renderable = sceneHelper.createRenderable();
         sceneHelper.createAndAssignUniformDataInstance(renderable, sceneHelper.createTextureSamplerWithFakeClientTexture());
         sceneHelper.createAndAssignVertexDataInstance(renderable);
-        sceneHelper.setResourcesToRenderable(renderable, false, false, false);
+        sceneHelper.setResourcesToRenderable(renderable, false, false);
 
         scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
         expectRenderableResourcesDirty(renderable);
 
-        sceneHelper.setResourcesToRenderable(renderable, true, true, true);
+        sceneHelper.setResourcesToRenderable(renderable, true, true);
 
         scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
         expectRenderableResourcesClean(renderable);
@@ -294,7 +289,7 @@ namespace ramses_internal
         const RenderableHandle renderable = sceneHelper.createRenderable();
         sceneHelper.createAndAssignUniformDataInstance(renderable, sceneHelper.createTextureSampler(resourceNotUploadedToDevice));
         sceneHelper.createAndAssignVertexDataInstance(renderable);
-        sceneHelper.setResourcesToRenderable(renderable, true, true, true);
+        sceneHelper.setResourcesToRenderable(renderable);
 
         scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
         expectRenderableResourcesDirty(renderable);
@@ -308,7 +303,6 @@ namespace ramses_internal
     {
         const RenderableHandle renderable = sceneHelper.createRenderable();
         sceneHelper.createAndAssignUniformDataInstance(renderable, sceneHelper.createTextureSamplerWithFakeClientTexture());
-        sceneHelper.setResourcesToRenderable(renderable, true, false, false); // set only effect
 
         scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
         expectRenderableResourcesDirty(renderable);
@@ -318,7 +312,6 @@ namespace ramses_internal
     {
         const RenderableHandle renderable = sceneHelper.createRenderable();
         sceneHelper.createAndAssignVertexDataInstance(renderable);
-        sceneHelper.setResourcesToRenderable(renderable, true, false, false); // set only effect
 
         scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
         expectRenderableResourcesDirty(renderable);
@@ -796,7 +789,7 @@ namespace ramses_internal
         const RenderableHandle renderable = sceneHelper.createRenderable();
         sceneHelper.createAndAssignUniformDataInstance(renderable, sceneHelper.createTextureSamplerWithFakeClientTexture());
         const DataInstanceHandle vertexDataInstance = sceneHelper.createAndAssignVertexDataInstance(renderable);
-        sceneHelper.setResourcesToRenderable(renderable, true, false, true);
+        sceneHelper.setResourcesToRenderable(renderable, false, true);
         scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
         expectRenderableResourcesDirty(renderable);
 
@@ -830,7 +823,7 @@ namespace ramses_internal
         const RenderableHandle renderable = sceneHelper.createRenderable();
         sceneHelper.createAndAssignUniformDataInstance(renderable, sceneHelper.createTextureSamplerWithFakeClientTexture());
         const DataInstanceHandle vertexDataInstance = sceneHelper.createAndAssignVertexDataInstance(renderable);
-        sceneHelper.setResourcesToRenderable(renderable, true, false, true);
+        sceneHelper.setResourcesToRenderable(renderable, false, true);
         scene.setDataResource(vertexDataInstance, sceneHelper.vertAttribField, ResourceContentHash::Invalid(), verticesDataBuffer, 0u);
         scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
         EXPECT_FALSE(scene.renderableResourcesDirty(renderable));
@@ -847,7 +840,7 @@ namespace ramses_internal
         const RenderableHandle renderable = sceneHelper.createRenderable();
         sceneHelper.createAndAssignUniformDataInstance(renderable, sceneHelper.createTextureSamplerWithFakeClientTexture());
         const DataInstanceHandle vertexDataInstance = sceneHelper.createAndAssignVertexDataInstance(renderable);
-        sceneHelper.setResourcesToRenderable(renderable, true, false, true);
+        sceneHelper.setResourcesToRenderable(renderable, false, true);
         scene.setDataResource(vertexDataInstance, sceneHelper.vertAttribField, ResourceContentHash::Invalid(), verticesDataBuffer, 0u);
         scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
         EXPECT_FALSE(scene.renderableResourcesDirty(renderable));
@@ -865,7 +858,7 @@ namespace ramses_internal
         const RenderableHandle renderable = sceneHelper.createRenderable();
         sceneHelper.createAndAssignUniformDataInstance(renderable, sceneHelper.createTextureSamplerWithFakeClientTexture());
         const DataInstanceHandle vertexDataInstance = sceneHelper.createAndAssignVertexDataInstance(renderable);
-        sceneHelper.setResourcesToRenderable(renderable, true, false, true);
+        sceneHelper.setResourcesToRenderable(renderable, false, true);
         scene.setDataResource(vertexDataInstance, sceneHelper.vertAttribField, ResourceContentHash::Invalid(), verticesDataBuffer, 0u);
         scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
         EXPECT_FALSE(scene.renderableResourcesDirty(renderable));
@@ -880,7 +873,7 @@ namespace ramses_internal
         const RenderableHandle renderable = sceneHelper.createRenderable();
         sceneHelper.createAndAssignUniformDataInstance(renderable, sceneHelper.createTextureSamplerWithFakeClientTexture());
         const DataInstanceHandle vertexDataInstance = sceneHelper.createAndAssignVertexDataInstance(renderable);
-        sceneHelper.setResourcesToRenderable(renderable, true, false, true);
+        sceneHelper.setResourcesToRenderable(renderable, false, true);
         scene.setDataResource(vertexDataInstance, sceneHelper.vertAttribField, ResourceContentHash::Invalid(), verticesDataBuffer, 0u);
         scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
         EXPECT_FALSE(scene.renderableResourcesDirty(renderable));
@@ -1015,5 +1008,65 @@ namespace ramses_internal
         expectRenderableResourcesClean(renderable);
         const DeviceResourceHandle deviceHandle = scene.getCachedHandlesForTextureSamplers()[samplerRes.asMemoryHandle()];
         EXPECT_EQ(DeviceMock::FakeTextureDeviceHandle, deviceHandle);
+    }
+
+    TEST_F(AResourceCachedScene, willForceUpdateCacheIfDataInstanceAssignedToAnotherRenderable)
+    {
+        const auto renderable = sceneHelper.createRenderable();
+        const auto sampler = sceneHelper.createTextureSamplerWithFakeClientTexture();
+        const auto uniforms = sceneHelper.createAndAssignUniformDataInstance(renderable, sampler);
+        const auto geom = sceneHelper.createAndAssignVertexDataInstance(renderable);
+        sceneHelper.setResourcesToRenderable(renderable);
+        scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        expectRenderableResourcesClean(renderable);
+        scene.releaseRenderable(renderable);
+
+        // Resource cache is currently not used by any renderable and the resources can potentially be unloaded.
+        // Cache must be updated if another renderable starts using the same resources.
+
+        const auto renderable2 = sceneHelper.createRenderable();
+        scene.setRenderableDataInstance(renderable2, ERenderableDataSlotType_Geometry, geom);
+        scene.setRenderableDataInstance(renderable2, ERenderableDataSlotType_Uniforms, uniforms);
+        expectRenderableResourcesDirty(renderable2);
+
+        // test upcoming calls explicitly
+        Mock::VerifyAndClearExpectations(&sceneHelper.resourceManager);
+        EXPECT_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeEffectHash));
+        EXPECT_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeTextureHash));
+        EXPECT_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeIndexArrayHash));
+        EXPECT_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeVertArrayHash));
+        scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        expectRenderableResourcesClean(renderable2);
+    }
+
+    TEST_F(AResourceCachedScene, willForceUpdateCacheIfRenderableVisibilityModeChangesToVisible)
+    {
+        const auto renderable = sceneHelper.createRenderable();
+        const auto sampler = sceneHelper.createTextureSamplerWithFakeClientTexture();
+        sceneHelper.createAndAssignUniformDataInstance(renderable, sampler);
+        sceneHelper.createAndAssignVertexDataInstance(renderable);
+        sceneHelper.setResourcesToRenderable(renderable);
+        scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        expectRenderableResourcesClean(renderable);
+
+        // set off, no change
+        scene.setRenderableVisibility(renderable, EVisibilityMode::Off);
+        expectRenderableResourcesClean(renderable);
+
+        // Resource cache is currently not used by any active renderable and the resources can potentially be unloaded.
+        // Cache must be updated if renderable using the same resources gets visible again.
+
+        // set invisible will trigger update of resources
+        scene.setRenderableVisibility(renderable, EVisibilityMode::Visible);
+        expectRenderableResourcesDirty(renderable);
+
+        // test upcoming calls explicitly
+        Mock::VerifyAndClearExpectations(&sceneHelper.resourceManager);
+        EXPECT_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeEffectHash));
+        EXPECT_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeTextureHash));
+        EXPECT_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeIndexArrayHash));
+        EXPECT_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeVertArrayHash));
+        scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        expectRenderableResourcesClean(renderable);
     }
 }

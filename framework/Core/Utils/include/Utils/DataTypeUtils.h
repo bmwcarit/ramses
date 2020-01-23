@@ -48,7 +48,7 @@ namespace ramses_internal
     };
 
     template <>
-    struct DataTypeToDataIDSelector < Bool >
+    struct DataTypeToDataIDSelector < bool >
     {
         static const EDataTypeID DataTypeID = EDataTypeID_Boolean;
     };

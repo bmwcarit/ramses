@@ -11,6 +11,7 @@
 
 #include "Components/DcsmTypes.h"
 #include "Components/IDcsmProviderEventHandler.h"
+#include "Components/DcsmMetadata.h"
 #include "ramses-framework-api/IDcsmConsumerEventHandler.h"
 
 namespace ramses_internal
@@ -27,6 +28,8 @@ namespace ramses_internal
         virtual bool sendContentReady(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) = 0;
         virtual bool sendContentFocusRequest(ContentID contentID) = 0;
         virtual bool sendRequestStopOfferContent(ContentID contentID) = 0;
+
+        virtual bool sendUpdateContentMetadata(ContentID contentID, const DcsmMetadata& metadata) = 0;
 
         virtual bool sendCanvasSizeChange(ContentID contentID, SizeInfo sizeInfo, AnimationInformation ai) = 0;
         virtual bool sendContentStateChange(ContentID contentID, EDcsmState status, SizeInfo sizeInfo, AnimationInformation ai) = 0;

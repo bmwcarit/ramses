@@ -25,7 +25,7 @@ namespace ramses_internal
         ~RamshDLT();
 
     protected:
-        Bool m_started;
+        bool m_started;
 
     private:
         bool internalStop();

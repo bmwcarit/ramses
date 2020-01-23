@@ -11,6 +11,7 @@
 #include "Utils/BinaryOutputStream.h"
 #include "Utils/BinaryInputStream.h"
 #include "Math3d/Matrix44f.h"
+#include "Collections/Guid.h"
 
 namespace ramses_internal
 {
@@ -161,10 +162,10 @@ namespace ramses_internal
         EXPECT_EQ(5, *reinterpret_cast<const int32_t*>(data));
         data += sizeof(int32_t);
         const uint32_t len = *reinterpret_cast<const uint32_t*>(data);
-        EXPECT_EQ(len, static_cast<uint32_t>(testString.getLength()));
+        EXPECT_EQ(len, static_cast<uint32_t>(testString.size()));
         data += sizeof(int32_t);
         EXPECT_STREQ(testString.c_str(), data);
-        data += testString.getLength() * sizeof(char);
+        data += testString.size() * sizeof(char);
         EXPECT_EQ(7.0f, *reinterpret_cast<const float*>(data));
     }
 

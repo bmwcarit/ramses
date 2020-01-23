@@ -13,36 +13,8 @@
 
 namespace ramses_internal
 {
-    template<class Mutex>
-    class PlatformLockTemplate
-    {
-        friend class PlatformConditionVariable;
-
-    public:
-        void lock()
-        {
-            m_mutex.lock();
-        }
-
-        void unlock()
-        {
-            m_mutex.unlock();
-        }
-
-        bool trylock()
-        {
-            return m_mutex.trylock();
-        }
-
-    private:
-        Mutex m_mutex;
-    };
-
-    class PlatformLock : public PlatformLockTemplate<std::recursive_mutex>
-    {};
-
-    class PlatformLightweightLock : public PlatformLockTemplate<std::mutex>
-    {};
+    using PlatformLock = std::recursive_mutex;
+    using PlatformGuard = std::lock_guard<std::recursive_mutex>;
 }
 
 #endif

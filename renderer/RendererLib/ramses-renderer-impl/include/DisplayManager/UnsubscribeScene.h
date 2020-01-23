@@ -12,9 +12,9 @@
 #include "Ramsh/RamshCommandArguments.h"
 #include "DisplayManager/IDisplayManager.h"
 
-namespace ramses_display_manager
+namespace ramses_internal
 {
-    class UnsubscribeScene : public ramses_internal::RamshCommandArgs < uint64_t >
+    class UnsubscribeScene : public RamshCommandArgs < uint64_t >
     {
     public:
         UnsubscribeScene(IDisplayManager& displayManager);

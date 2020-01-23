@@ -27,7 +27,7 @@ namespace ramses
         {
             uint8_t data[4] = { num };
             MipLevelData mipLevelData(sizeof(data), data);
-            Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, ResourceCacheFlag_DoNotCache);
+            Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache);
             EXPECT_TRUE(texture != nullptr);
             return texture;
         }
@@ -35,13 +35,13 @@ namespace ramses
         static void SaveSceneAndResourcesToFiles()
         {
             RamsesFramework frameworkForSaving;
-            RamsesClient clientForSaving("clientForSaving", frameworkForSaving);
+            RamsesClient& clientForSaving(*frameworkForSaving.createClient("clientForSaving"));
 
             Texture2D* texture1 = CreateTestTexture(clientForSaving, 1u);
             Texture2D* texture2 = CreateTestTexture(clientForSaving, 2u);
             Texture2D* texture3 = CreateTestTexture(clientForSaving, 3u);
 
-            Scene* scene = clientForSaving.createScene(1);
+            Scene* scene = clientForSaving.createScene(sceneId_t(1));
             scene->createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, *texture1, 1, "sampler1");
             scene->createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, *texture2, 1, "sampler2");
 
@@ -59,12 +59,12 @@ namespace ramses
 
         ARamsesHmiUtils()
             : framework()
-            , client("client", framework)
+            , client(*framework.createClient("client"))
         {
         }
 
         RamsesFramework framework;
-        RamsesClient client;
+        RamsesClient& client;
     };
 
     TEST_F(ARamsesHmiUtils, notAllResourcesKnownWhenLoadingNoResources)

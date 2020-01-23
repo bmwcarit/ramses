@@ -14,17 +14,19 @@
 
 namespace ramses
 {
-    class DisplayManagerMock : public ramses_display_manager::IDisplayManager
+    class DisplayManagerMock : public ramses_internal::IDisplayManager
     {
     public:
         DisplayManagerMock();
 
-        MOCK_METHOD3(setSceneState, bool(sceneId_t, ramses_display_manager::SceneState, const char*));
-        MOCK_METHOD3(setSceneMapping, bool(sceneId_t, displayId_t, int32_t));
-        MOCK_METHOD6(setSceneOffscreenBufferMapping, bool(ramses::sceneId_t, ramses::displayId_t, uint32_t, uint32_t, ramses::sceneId_t, ramses::dataConsumerId_t));
+        MOCK_METHOD3(setSceneState, bool(sceneId_t, ramses_internal::SceneState, const char*));
+        MOCK_METHOD2(setSceneMapping, bool(sceneId_t, displayId_t));
+        MOCK_METHOD3(setSceneDisplayBufferAssignment, bool(sceneId_t, displayBufferId_t, int32_t));
+        MOCK_METHOD5(setDisplayBufferClearColor, bool(ramses::displayBufferId_t, float, float, float, float));
+        MOCK_METHOD3(linkOffscreenBuffer, void(displayBufferId_t, sceneId_t, dataConsumerId_t));
         MOCK_METHOD4(linkData, void(sceneId_t, dataProviderId_t, sceneId_t, dataConsumerId_t));
         MOCK_METHOD1(processConfirmationEchoCommand, void(const char*));
-        MOCK_METHOD2(dispatchAndFlush, void(ramses_display_manager::IEventHandler*, IRendererEventHandler*));
+        MOCK_METHOD2(dispatchAndFlush, void(ramses_internal::IEventHandler*, IRendererEventHandler*));
     };
 }
 

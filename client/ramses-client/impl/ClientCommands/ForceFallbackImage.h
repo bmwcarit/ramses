@@ -20,13 +20,11 @@ namespace ramses
 
 namespace ramses_internal
 {
-    class RamsesObject;
-
-    class ForceFallbackImage : public RamshCommandArgs<UInt32, ramses::sceneId_t, String>
+    class ForceFallbackImage : public RamshCommandArgs<UInt32, uint64_t, String>
     {
     public:
         explicit ForceFallbackImage(ramses::RamsesClientImpl& client);
-        virtual Bool execute(UInt32& forceFallback, ramses::sceneId_t& sceneId, String& streamTextureName) const override;
+        virtual Bool execute(UInt32& forceFallback, uint64_t& sceneId, String& streamTextureName) const override;
 
     private:
         ramses::RamsesClientImpl& m_client;

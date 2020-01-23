@@ -9,10 +9,9 @@
 #ifndef RAMSES_IRESOURCE_H
 #define RAMSES_IRESOURCE_H
 
-#include "SceneAPI/SceneResourceData.h"
 #include "SceneAPI/ResourceContentHash.h"
 #include "Collections/String.h"
-#include "EResourceType.h"
+#include "Resource/ResourceTypes.h"
 
 namespace ramses_internal
 {
@@ -36,19 +35,19 @@ namespace ramses_internal
         IResource& operator=(IResource&&) = delete;
 
         virtual ~IResource(){};
-        virtual const SceneResourceData& getResourceData() const = 0;
-        virtual const CompressedSceneResourceData& getCompressedResourceData() const = 0;
+        virtual const ResourceBlob& getResourceData() const = 0;
+        virtual const CompressedResouceBlob& getCompressedResourceData() const = 0;
         virtual UInt32 getDecompressedDataSize() const = 0;
         virtual UInt32 getCompressedDataSize() const = 0;
-        virtual void setResourceData(const SceneResourceData& data) = 0;
-        virtual void setResourceData(const SceneResourceData& data, const ResourceContentHash& hash) = 0;
-        virtual void setCompressedResourceData(const CompressedSceneResourceData& compressedData, const ResourceContentHash& hash) = 0;
+        virtual void setResourceData(ResourceBlob data) = 0;
+        virtual void setResourceData(ResourceBlob data, const ResourceContentHash& hash) = 0;
+        virtual void setCompressedResourceData(CompressedResouceBlob compressedData, uint32_t uncompressedSize, const ResourceContentHash& hash) = 0;
         virtual EResourceType getTypeID() const = 0;
         virtual const ResourceContentHash& getHash() const = 0;
         virtual void compress(CompressionLevel level) const = 0;
         virtual void decompress() const = 0;
-        virtual Bool isCompressedAvailable() const = 0;
-        virtual Bool isDeCompressedAvailable() const = 0;
+        virtual bool isCompressedAvailable() const = 0;
+        virtual bool isDeCompressedAvailable() const = 0;
         virtual ResourceCacheFlag getCacheFlag() const = 0;
         virtual const String& getName() const = 0;
 

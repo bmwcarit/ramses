@@ -60,7 +60,7 @@ namespace ramses
     status_t EffectDescriptionImpl::addCompilerDefine(const char* define)
     {
         const ramses_internal::String defineStr(define);
-        if (defineStr.getLength() == 0u)
+        if (defineStr.size() == 0u)
         {
             return addErrorEntry("EffectDescription::addCompilerDefine cannot add empty define!");
         }
@@ -72,7 +72,7 @@ namespace ramses
     status_t EffectDescriptionImpl::setSemantic(const char* semanticName, ramses_internal::EFixedSemantics semanticType)
     {
         const ramses_internal::String semanticNameStr(semanticName);
-        if (semanticNameStr.getLength() == 0u)
+        if (semanticNameStr.size() == 0u)
         {
             return addErrorEntry("EffectDescription::setSemantic cannot set empty semantic name!");
         }

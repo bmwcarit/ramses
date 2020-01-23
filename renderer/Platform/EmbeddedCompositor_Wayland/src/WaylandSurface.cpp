@@ -136,7 +136,7 @@ namespace ramses_internal
         }
         else
         {
-            return InvalidWaylandIviSurfaceId;
+            return {};
         }
     }
 

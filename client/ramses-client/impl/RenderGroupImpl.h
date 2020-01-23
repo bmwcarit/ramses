@@ -11,7 +11,7 @@
 
 #include "SceneObjectImpl.h"
 #include "SceneAPI/Handles.h"
-#include "Collections/Vector.h"
+#include <vector>
 
 namespace ramses
 {

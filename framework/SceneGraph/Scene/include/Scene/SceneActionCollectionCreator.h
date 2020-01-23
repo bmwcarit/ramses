@@ -11,7 +11,6 @@
 
 #include "TransformPropertyType.h"
 #include "Scene/SceneActionCollection.h"
-#include "AnimationAPI/IAnimationSystem.h"
 #include "SceneAPI/ERenderableDataSlotType.h"
 #include "SceneAPI/RenderState.h"
 #include "SceneAPI/EDataType.h"
@@ -24,6 +23,8 @@
 #include "SceneAPI/SceneSizeInformation.h"
 #include "SceneAPI/DataFieldInfo.h"
 #include "SceneAPI/MipMapSize.h"
+#include "SceneAPI/PickableObject.h"
+#include "SceneAPI/Renderable.h"
 #include "Scene/SceneResourceChanges.h"
 #include "Resource/TextureMetaInfo.h"
 #include "Components/FlushTimeInformation.h"
@@ -37,7 +38,6 @@ namespace ramses_internal
     struct FlushTimeInformation;
     struct Viewport;
     struct Frustum;
-    struct Renderable;
     struct TextureSampler;
     struct RenderBuffer;
 
@@ -53,13 +53,13 @@ namespace ramses_internal
         void releaseRenderable(RenderableHandle renderableHandle);
 
         // Renderable data (stuff required for rendering)
-        void setRenderableEffect(RenderableHandle renderableHandle, const ResourceContentHash& effectHash);
         void setRenderableDataInstance(RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance);
         void setRenderableStartIndex(RenderableHandle renderableHandle, UInt32 startIndex);
         void setRenderableIndexCount(RenderableHandle renderableHandle, UInt32 indexCount);
         void setRenderableRenderState(RenderableHandle renderableHandle, RenderStateHandle stateHandle);
-        void setRenderableVisibility(RenderableHandle renderableHandle, Bool visible);
+        void setRenderableVisibility(RenderableHandle renderableHandle, EVisibilityMode visible);
         void setRenderableInstanceCount(RenderableHandle renderableHandle, UInt32 instanceCount);
+        void setRenderableStartVertex(RenderableHandle renderableHandle, UInt32 startVertex);
 
         // Render state allocation
         void allocateRenderState(RenderStateHandle stateHandle);
@@ -97,7 +97,7 @@ namespace ramses_internal
         // Transformation
         void setTransformComponent(ETransformPropertyType propertyChanged, TransformHandle node, const Vector3& newValue);
 
-        void allocateDataLayout(const DataFieldInfoVector& dataFields, DataLayoutHandle handle);
+        void allocateDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle);
         void releaseDataLayout(DataLayoutHandle layoutHandle);
 
         void allocateDataInstance(DataLayoutHandle finishedLayoutHandle, DataInstanceHandle instanceHandle);
@@ -138,8 +138,8 @@ namespace ramses_internal
         void setRenderPassCamera(RenderPassHandle passHandle, CameraHandle cameraHandle);
         void setRenderPassRenderTarget(RenderPassHandle passHandle, RenderTargetHandle targetHandle);
         void setRenderPassRenderOrder(RenderPassHandle passHandle, Int32 renderOrder);
-        void setRenderPassEnabled(RenderPassHandle passHandle, Bool isEnabled);
-        void setRenderPassRenderOnce(RenderPassHandle pass, Bool enabled);
+        void setRenderPassEnabled(RenderPassHandle passHandle, bool isEnabled);
+        void setRenderPassRenderOnce(RenderPassHandle pass, bool enabled);
         void retriggerRenderPassRenderOnce(RenderPassHandle pass);
         void addRenderGroupToRenderPass(RenderPassHandle passHandle, RenderGroupHandle groupHandle, Int32 order);
         void removeRenderGroupFromRenderPass(RenderPassHandle passHandle, RenderGroupHandle groupHandle);
@@ -148,8 +148,15 @@ namespace ramses_internal
         void allocateBlitPass(RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle);
         void releaseBlitPass(BlitPassHandle passHandle);
         void setBlitPassRenderOrder(BlitPassHandle passHandle, Int32 renderOrder);
-        void setBlitPassEnabled(BlitPassHandle passHandle, Bool isEnabled);
+        void setBlitPassEnabled(BlitPassHandle passHandle, bool isEnabled);
         void setBlitPassRegions(BlitPassHandle passHandle, const PixelRectangle& sourceRegion, const PixelRectangle& destinationRegion);
+
+        // Pickable object
+        void allocatePickableObject(DataBufferHandle geometryHandle, NodeHandle nodeHandle, PickableObjectId id, PickableObjectHandle pickableHandle);
+        void releasePickableObject(PickableObjectHandle pickableHandle);
+        void setPickableObjectId(PickableObjectHandle pickableHandle, PickableObjectId id);
+        void setPickableObjectCamera(PickableObjectHandle pickableHandle, CameraHandle cameraHandle);
+        void setPickableObjectEnabled(PickableObjectHandle pickableHandle, bool isEnabled);
 
         // Render targets
         void allocateRenderTarget(RenderTargetHandle targetHandle);
@@ -163,7 +170,7 @@ namespace ramses_internal
         // Stream textures
         void allocateStreamTexture(uint32_t streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle);
         void releaseStreamTexture(StreamTextureHandle streamTextureHandle);
-        void setStreamTextureForceFallback(StreamTextureHandle streamTextureHandle, Bool forceFallbackImage);
+        void setStreamTextureForceFallback(StreamTextureHandle streamTextureHandle, bool forceFallbackImage);
 
         // Data buffers
         void allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle);
@@ -179,60 +186,21 @@ namespace ramses_internal
         void setDataSlotTexture(DataSlotHandle handle, const ResourceContentHash& texture);
         void releaseDataSlot(DataSlotHandle handle);
 
-        void addAnimationSystem(AnimationSystemHandle animSystemhandle, UInt32 flags, const AnimationSystemSizeInformation& sizeInfo);
-        void removeAnimationSystem(AnimationSystemHandle animSystemHandle);
-
-        void animationSystemSetTime(AnimationSystemHandle animSystemHandle, const AnimationTime& globalTime);
-        void animationSystemAllocateSpline(AnimationSystemHandle animSystemHandle, ESplineKeyType keyType, EDataTypeID dataTypeID, SplineHandle handle);
-        void animationSystemAllocateDataBinding(AnimationSystemHandle animSystemHandle, TDataBindID dataBindID, MemoryHandle handle1, MemoryHandle handle2, DataBindHandle dataBindHandle);
-        void animationSystemAllocateAnimationInstance(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, EInterpolationType interpolationType, EVectorComponent vectorComponent, AnimationInstanceHandle handle);
-        void animationSystemAllocateAnimation(AnimationSystemHandle animSystemHandle, AnimationInstanceHandle animInstHandle, AnimationHandle handle);
-        void animationSystemAddDataBindingToAnimationInstance(AnimationSystemHandle animSystemHandle, AnimationInstanceHandle handle, DataBindHandle dataBindHandle);
-        void animationSystemSetSplineKeyBasicBool(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, Bool value);
-        void animationSystemSetSplineKeyBasicInt32(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, Int32 value);
-        void animationSystemSetSplineKeyBasicFloat(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, Float value);
-        void animationSystemSetSplineKeyBasicVector2f(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector2& value);
-        void animationSystemSetSplineKeyBasicVector3f(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector3& value);
-        void animationSystemSetSplineKeyBasicVector4f(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector4& value);
-        void animationSystemSetSplineKeyBasicVector2i(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector2i& value);
-        void animationSystemSetSplineKeyBasicVector3i(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector3i& value);
-        void animationSystemSetSplineKeyBasicVector4i(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector4i& value);
-        void animationSystemSetSplineKeyTangentsInt32(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, Int32 value, const Vector2& tanIn, const Vector2& tanOut);
-        void animationSystemSetSplineKeyTangentsFloat(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, Float value, const Vector2& tanIn, const Vector2& tanOut);
-        void animationSystemSetSplineKeyTangentsVector2f(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector2& value, const Vector2& tanIn, const Vector2& tanOut);
-        void animationSystemSetSplineKeyTangentsVector3f(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector3& value, const Vector2& tanIn, const Vector2& tanOut);
-        void animationSystemSetSplineKeyTangentsVector4f(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector4& value, const Vector2& tanIn, const Vector2& tanOut);
-        void animationSystemSetSplineKeyTangentsVector2i(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector2i& value, const Vector2& tanIn, const Vector2& tanOut);
-        void animationSystemSetSplineKeyTangentsVector3i(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector3i& value, const Vector2& tanIn, const Vector2& tanOut);
-        void animationSystemSetSplineKeyTangentsVector4i(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector4i& value, const Vector2& tanIn, const Vector2& tanOut);
-        void animationSystemRemoveSplineKey(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineKeyIndex keyIndex);
-        void animationSystemSetAnimationStartTime(AnimationSystemHandle animSystemHandle, AnimationHandle handle, const AnimationTime& timeStamp);
-        void animationSystemSetAnimationStopTime(AnimationSystemHandle animSystemHandle, AnimationHandle handle, const AnimationTime& timeStamp);
-        void animationSystemSetAnimationProperties(AnimationSystemHandle animSystemHandle, AnimationHandle handle, Float playbackSpeed, UInt32 flags, AnimationTime::Duration loopDuration, const AnimationTime& timeStamp);
-        void animationSystemStopAnimationAndRollback(AnimationSystemHandle animSystemHandle, AnimationHandle handle);
-        void animationSystemRemoveSpline(AnimationSystemHandle animSystemHandle, SplineHandle handle);
-        void animationSystemRemoveDataBinding(AnimationSystemHandle animSystemHandle, DataBindHandle handle);
-        void animationSystemRemoveAnimationInstance(AnimationSystemHandle animSystemHandle, AnimationInstanceHandle handle);
-        void animationSystemRemoveAnimation(AnimationSystemHandle animSystemHandle, AnimationHandle handle);
-
         void pushResource(const IResource& resource);
 
         void setAckFlushState(bool state);
         void flush(
             UInt64 flushIndex,
-            Bool synchronous,
-            Bool addSizeInfo,
+            bool addSizeInfo,
             const SceneSizeInformation& sizeInfo = SceneSizeInformation(),
             const SceneResourceChanges& resourceChanges = SceneResourceChanges(),
             const FlushTimeInformation& flushTimeInfo = {},
-            SceneVersionTag versionTag = InvalidSceneVersionTag,
-            std::initializer_list<UInt64> additionalTimestamps = {});
+            SceneVersionTag versionTag = SceneVersionTag::Invalid());
 
         // compound actions
-        void compoundRenderableEffectData(RenderableHandle renderableHandle
+        void compoundRenderableData(RenderableHandle renderableHandle
                                             , DataInstanceHandle uniformInstanceHandle
-                                            , RenderStateHandle stateHandle
-                                            , const ResourceContentHash& effectHash);
+                                            , RenderStateHandle stateHandle);
 
         void compoundRenderable(RenderableHandle renderableHandle, const Renderable& renderable);
 

@@ -13,6 +13,7 @@
 #include "ramses-framework-api/RamsesFramework.h"
 #include "ramses-framework-api/IDcsmProviderEventHandler.h"
 #include "ramses-framework-api/StatusObject.h"
+#include "ramses-framework-api/DcsmMetadataCreator.h"
 
 namespace ramses
 {
@@ -38,6 +39,39 @@ namespace ramses
          *         to resolve error message using getStatusMessage().
          */
         status_t offerContent(ContentID contentID, Category category, sceneId_t scene);
+
+        /**
+         * @brief Same behavior as offerContent() but additionally send provided
+         *        metadata to consumers that assigned content to themselves.
+         *
+         * This method should be used to attach metadata immediatly on offer to a
+         * content but is no prerequisite for later calls to updateContentMetadata().
+         *
+         * @param contentID The ID of the content to be offered
+         * @param category The category the content is made for
+         * @param scene The ramses scene ID containing the content.
+         * @param metadata metadata creator filled with metadata
+         * @return StatusOK for success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        status_t offerContentWithMetadata(ContentID contentID, Category category, sceneId_t scene, const DcsmMetadataCreator& metadata);
+
+        /**
+         * @brief Send metadata updates to consumers content is assigned to. The content is earliest
+         *        sent to consumer on change change offered to assigned.
+         *
+         * contentID must belong to a content currently offered by this provider. A consumer initially gets
+         * the last combined state of all metadata updates (later updated values overwrite earlier values)
+         * when they become assigned. The initial state is given by offerContentWithMetadata() or
+         * empty if offerContent() is used.
+         * After the initial send updates are directly provided to the assigned consumer.
+         *
+         * @param contentID The ID of the content for which metadata should be updated
+         * @param metadata metadata creator filled with metadata
+         * @return StatusOK for success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        status_t updateContentMetadata(ContentID contentID, const DcsmMetadataCreator& metadata);
 
         /**
          * @brief Request to stop offering a content. A successful request

@@ -1,0 +1,138 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2019 BMW AG
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+/**
+@page PTX2RamsesMain PTX2Ramses Tool
+
+# Summary
+
+
+This tool can convert a PTX asset (consisting of ptx file, bitmaps, meshes, shaders) to a ramses scene and resource file.
+By default the tool fails the conversion if there are protobuf PTX parsing warnings or errors.
+It can be configured to ignore warnings to allow conversion of malformed ptx.
+
+# Usage
+
+The PTX2Ramses Tool accepts a number of arguments to influence the desired resulting scene and resource file.
+
+These are:
+
+1.Path (absolute or relative) to the input asset folder that should be converted.
+
+\code
+-pad <path/to/asset> or --ptx-asset-dir <path/to/asset>
+\endcode
+
+2.Name of the PTX file in the specified asset directory (e.g. "scene.ptx").
+
+\code
+-psf <sceneFileName> or --ptx-scene-file <sceneFileName>
+\endcode
+
+3.Verbose Scene Name, that the resulting ramses scene will have (e.g. "sceneCar")
+
+\code
+-sn <sceneName> or --scene-name <sceneName>
+\endcode
+
+4.Ramses Scene ID of resulting ramses scene.
+
+\code
+-sid <ID> or --scene-id <scene-id>
+\endcode
+
+5.Path (absolute or relative) to scene file to export the scene to.
+
+\code
+-sfo <path/to/scene/file/out> or --scene-file-out <path/to/scene/file/out>
+\endcode
+
+6.Path (absolute or relative) to resource file to export the resources to.
+
+\code
+-rfo <path/to/resource/file/out> or --resource-file-out <path/to/resource/file/out>
+\endcode
+
+7.Path (absolute or relative) to file to export effect ids and info as CSV.
+
+\code
+-eifo <path/to/effect/info/file/out> or --effect-info-file-out <path/to/effect/info/file/out>
+\endcode
+
+The tool can collect information for every effect of the asset and save it to a csv file.
+The fields (columns) in the generated file are separated by commas and entries for the different effects (rows) are separated by linefeed (\\n).
+
+Effect information fields:
+- Low significant part of effect ID
+- High significant part of effect ID
+- Effect name
+- Vertex shader file path relative to scene file path dir (e.g., shaders/shader.vert)
+- Fragment shader file path relative to scene file path dir
+
+8.Properties of camera used to render the scene.
+
+-Viewport Width in pxl
+\code
+-vpw <value> or --viewport-width <value>
+\endcode
+-Viewport Height in pxl
+\code
+-vph <value> or --viewport-height <value>
+\endcode
+-Camera vertical field of view
+\code
+-cfov <value> or --vcamera-vfov <value>
+\endcode
+-Camera near plane
+\code
+-cnp <value> or --camera-np <value>
+\endcode
+-Camera far plane
+\code
+-cfp <value> or --camera-fp <value>
+\endcode
+-Camera position(translation)
+\code
+-ct <value> or --camera-translate <value>
+\endcode
+-Camera rotation
+\code
+-cr <value> or --camera-rotate <value>
+\endcode
+-(Compatibility option) Use remote camera instead of explicit viewport settings
+\code
+-urc or --use-remote-camera
+\endcode
+
+9.Allow protobuf PTX parsing warnings - using deprecated content, missing data, etc.
+
+\code
+-amc or --allow-malformed-ptx
+\endcode
+
+10.Enable ramses logging.
+\code
+-rl or --ramses-logs
+\endcode
+
+11.Enable verbose ramses logs.
+
+\code
+-rlv or --verbose-logs
+\endcode
+
+This option sets the ramses logger to verbose mode. Additionaly the whole ramses scene tree with extra info like transformations is printed to the console.
+
+12.Disable LZ4 compression of resources.
+\code
+-dlz4 or --disable-lz4
+\endcode
+*/
+
+
+

@@ -16,7 +16,7 @@ namespace ramses_internal
     class AndroidLogAppender : public LogAppenderBase
     {
     public:
-        void logMessage(const LogMessage& logMessage) override;
+        void log(const LogMessage& logMessage) override;
     };
 }
 

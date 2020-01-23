@@ -8,7 +8,7 @@
 
 #include "FilePathsConfig.h"
 #include "FileUtils.h"
-#include "StringUtils.h"
+#include "Utils/StringUtils.h"
 #include "ConsoleUtils.h"
 
 bool FilePathsConfig::loadFromFile(const char* filePath)
@@ -51,13 +51,13 @@ const FilePaths& FilePathsConfig::getFilePaths() const
 
 bool FilePathsConfig::parseConfigLine(int lineNumber, const ramses_internal::String& line)
 {
-    if (0 == line.getLength())
+    if (0 == line.size())
     {
         return true;
     }
 
     std::vector<ramses_internal::String> tokens;
-    StringUtils::GetLineTokens(line, ' ', tokens);
+    ramses_internal::StringUtils::GetLineTokens(line, ' ', tokens);
     if (tokens.empty())
     {
         return true;
@@ -78,7 +78,7 @@ bool FilePathsConfig::parseConfigLine(int lineNumber, const ramses_internal::Str
         return false;
     }
 
-    if (m_filePaths.hasElement(filePath))
+    if (m_filePaths.contains(filePath))
     {
         printErrorInLine(lineNumber, line);
         PRINT_INFO("file with path \"%s\" is duplicate in config file.\n\n", filePath.c_str());

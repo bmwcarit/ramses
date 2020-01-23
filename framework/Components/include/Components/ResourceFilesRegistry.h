@@ -102,7 +102,7 @@ namespace ramses_internal
         {
             const FileContentsMap& fileContents = iter.value;
             ResourceRegistryEntry* entry = fileContents.get(hash);
-            if (entry != 0)
+            if (entry != nullptr)
             {
                 resourceStream = &iter.key->resourceStream;
                 fileEntry = entry->fileEntry;

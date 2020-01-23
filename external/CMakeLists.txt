@@ -10,24 +10,17 @@ find_package(PkgConfig)
 #project specific setup for gtest/gmock
 set(gtest_force_shared_crt true CACHE BOOL "Must be enabled for linking our unit tests" FORCE)
 IF(ramses-sdk_BUILD_TESTS AND NOT TARGET gmock)
-    pkg_check_modules(gmock_main gmock)
-    pkg_check_modules(gmock gmock)
+    set(INSTALL_GTEST OFF CACHE INTERNAL "")
+    set(INSTALL_GMOCK OFF CACHE INTERNAL "")
 
-    IF (gmock_FOUND AND gmock_main_FOUND)
-        ACME_INFO("+ googletest (platform)")
-    ELSE()
-        set(INSTALL_GTEST OFF CACHE INTERNAL "")
-        set(INSTALL_GMOCK OFF CACHE INTERNAL "")
+    ADD_SUBDIRECTORY(googletest)
+    target_include_directories(gmock INTERFACE "googletest/googletest/include")
+    target_include_directories(gmock_main INTERFACE "googletest/googletest/include")
+    target_compile_options(gtest PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-field-initializers>)
+    target_compile_options(gmock PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-field-initializers>)
 
-        ADD_SUBDIRECTORY(googletest)
-        target_include_directories(gmock INTERFACE "googletest/googletest/include")
-        target_include_directories(gmock_main INTERFACE "googletest/googletest/include")
-        target_compile_options(gtest PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-field-initializers>)
-        target_compile_options(gmock PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-field-initializers>)
-
-        ACME_FOLDERIZE_TARGETS(gmock gmock_main gtest gtest_main)
-        ACME_INFO("+ googletest (custom)")
-    ENDIF()
+    ACME_FOLDERIZE_TARGETS(gmock gmock_main gtest gtest_main)
+    ACME_INFO("+ googletest (custom)")
 ELSE()
     ACME_INFO("+ googletest (external)")
 ENDIF()
@@ -37,12 +30,22 @@ add_library(ramses-gmock-main INTERFACE)
 target_link_libraries(ramses-gmock INTERFACE gmock gtest)
 target_link_libraries(ramses-gmock-main INTERFACE gmock_main gtest)
 
-ADD_SUBDIRECTORY(capu)
 
-include(../cmake/ramses/adaptCompilerFlagsForExternals.cmake)
+# fmt string formatting library
+add_subdirectory("fmt")
+target_compile_definitions(fmt PUBLIC "-DFMT_EXCEPTIONS=0")
+if (CMAKE_SYSTEM_NAME STREQUAL "Integrity")
+    # work around bug that integrity fails on noexcept when exceptions are disabled
+    target_compile_definitions(fmt PUBLIC "-DFMT_USE_NOEXCEPT=0")
+endif()
+ACME_INFO("+ fmt")
+
+# capu
+ADD_SUBDIRECTORY(capu)
 
 # these directories will be built with
 # modified compiler flags
+include(../cmake/ramses/adaptCompilerFlagsForExternals.cmake)
 
 #==========================================================================
 # glslang
@@ -54,7 +57,7 @@ ACME_MODULE(
     #==========================================================================
     NAME                    ramses-glslang
     TYPE                    STATIC_LIBRARY
-    ENABLE_INSTALL          ${ramses-sdk_INSTALL_STATIC_LIBS}
+    ENABLE_INSTALL          OFF
 
     #==========================================================================
     # files of this module
@@ -116,6 +119,7 @@ IF (ramses-sdk_ALLOW_CUSTOM_FREETYPE AND NOT freetype_FOUND)
     set(HAVE_FT_GET_VAR_BLEND_COORDINATES OFF CACHE BOOL "" FORCE)
     set(HAVE_FT_SET_VAR_BLEND_COORDINATES OFF CACHE BOOL "" FORCE)
     set(HAVE_FT_DONE_MM_VAR OFF CACHE BOOL "" FORCE)
+    set(HB_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 
     ADD_SUBDIRECTORY(harfbuzz)
     ACME_INFO("+ harfbuzz")
@@ -127,23 +131,20 @@ IF (ramses-sdk_ALLOW_CUSTOM_FREETYPE AND NOT freetype_FOUND)
 
     # remove find script again
     file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/FindFreetype.cmake")
-    set(CMAKE_MODULE_PATH ${OLD_CMAKE_MODULE_PATH})
+
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/FindHarfbuzz.cmake"
+        "set(HARFBUZZ_INCLUDE_DIRS \"${CMAKE_CURRENT_SOURCE_DIR}/harfbuzz\" \"${CMAKE_CURRENT_SOURCE_DIR}/harfbuzz/include\")\n"
+        "set(HARFBUZZ_LIBRARIES harfbuzz)\n"
+        "set(HARFBUZZ_FOUND TRUE)\n")
 
     # config and include freetype
-    target_include_directories(harfbuzz INTERFACE "harfbuzz/src" "${CMAKE_CURRENT_BINARY_DIR}/harfbuzz")
+    target_include_directories(harfbuzz INTERFACE "harfbuzz/src" "${CMAKE_CURRENT_BINARY_DIR}/harfbuzz" "${CMAKE_CURRENT_BINARY_DIR}/harfbuzz/src")
     ADD_SUBDIRECTORY(freetype)
+    set(CMAKE_MODULE_PATH ${OLD_CMAKE_MODULE_PATH})
+
+    file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/FindHarfbuzz.cmake")
 
     target_include_directories(freetype INTERFACE "freetype/include")
-
-    # Manually install only static libs for static RAMSES builds
-    # Not possible to use CMake targets because of complicated CMake scripts of each lib
-    # TODO(tobias/violin): try with newer versions of FT/HB to use CMake install targets
-    if(${ramses-sdk_INSTALL_STATIC_LIBS})
-        install(FILES
-            $<TARGET_FILE:freetype>
-            $<TARGET_FILE:harfbuzz>
-            DESTINATION ${PROJECT_INSTALL_STATIC_LIB})
-    endif()
 
     # restore c/cxx flags
     set(CMAKE_CXX_FLAGS "${OLD_CMAKE_CXX_FLAGS}")
@@ -173,19 +174,21 @@ ELSEIF()
 ENDIF()
 
 
+# try find wayland libs for following targets
+FIND_PACKAGE(wayland-client QUIET)
+FIND_PACKAGE(wayland-server QUIET)
+
 # wayland ivi extension library
 IF (NOT ramses-sdk_DISABLE_WAYLAND_IVI_EXTENSION)
     FIND_PACKAGE(wayland-ivi-extension QUIET)
     IF (wayland-ivi-extension_FOUND)
         ACME_INFO("+ wayland-ivi-extension (system)")
     ELSE()
-        FIND_PACKAGE(wayland-client QUIET)
-        FIND_PACKAGE(wayland-server QUIET)
         IF (wayland-client_FOUND AND wayland-server_FOUND)
             ACME_MODULE(
                 NAME                    wayland-ivi-extension
                 TYPE                    STATIC_LIBRARY
-                ENABLE_INSTALL          ${ramses-sdk_INSTALL_STATIC_LIBS}
+                ENABLE_INSTALL          OFF
 
                 INCLUDE_BASE            wayland-ivi-extension/ivi-extension-protocol
                 FILES_PRIVATE_HEADER    wayland-ivi-extension/ivi-extension-protocol/*.h
@@ -195,7 +198,8 @@ IF (NOT ramses-sdk_DISABLE_WAYLAND_IVI_EXTENSION)
     ENDIF()
 ENDIF()
 
-if (wayland-ivi-extension_FOUND OR TARGET wayland-ivi-extension)
+option(ramses-sdk_BUILD_IVI_TEST_APPS "Enable build of ivi test applications" ON)
+if (ramses-sdk_BUILD_IVI_TEST_APPS AND (wayland-ivi-extension_FOUND OR TARGET wayland-ivi-extension))
     # wayland ivi example/test application
     ACME_MODULE(
         #==========================================================================
@@ -239,7 +243,7 @@ ELSE()
     #==========================================================================
     NAME                    lz4
     TYPE                    STATIC_LIBRARY
-    ENABLE_INSTALL          ${ramses-sdk_INSTALL_STATIC_LIBS}
+    ENABLE_INSTALL          OFF
 
     #==========================================================================
     # files of this module
@@ -250,7 +254,10 @@ ELSE()
     )
 ENDIF()
 
-
-add_library(asio INTERFACE)
-target_include_directories(asio INTERFACE asio/asio/include)
-ACME_INFO("+ asio")
+if (ramses-sdk_ENABLE_TCP_SUPPORT)
+    add_library(asio INTERFACE)
+    target_include_directories(asio INTERFACE asio/asio/include)
+    ACME_INFO("+ asio")
+else()
+    ACME_INFO("- asio")
+endif()

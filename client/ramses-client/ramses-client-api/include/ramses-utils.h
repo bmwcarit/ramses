@@ -12,6 +12,8 @@
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "ramses-client-api/TextureEnums.h"
 #include "ramses-framework-api/APIExport.h"
+#include <vector>
+#include "ramses-client-api/TextureSwizzle.h"
 
 namespace ramses
 {
@@ -52,20 +54,24 @@ namespace ramses
         /**
         * @brief Creates a Texture from the given png file.
         *
-        * @param[in] pngFilePath The path to the png file to load
-        * @param[in] ramsesClient The client the texture object is to be created in
-        * @param[in] name the name for the created texture
-        * @return the created texture object
+        * @param[in] pngFilePath Path to the png file to load
+        * @param[in] ramsesClient Client the texture object is to be created in
+        * @param[in] swizzle Swizzling of texture color channels
+        * @param[in] name Name for the created texture
+        * @return Created texture object or nullptr on error
         */
-        static Texture2D*  CreateTextureResourceFromPng(const char* pngFilePath, RamsesClient& ramsesClient, const char* name = 0);
+        static Texture2D*  CreateTextureResourceFromPng(const char* pngFilePath, RamsesClient& ramsesClient, const TextureSwizzle& swizzle = {}, const char* name = nullptr);
 
         /**
-        * @brief Create an instance of text rendering standard effect. You obtain ownership of the effect.
-        * @param client Reference to a client object to use for effect creation
-        * @param colorInput the color uniform input in the created effect, you can use this to change the color of appearances created from the Effect.
-        * @return the text effect created.
+        * @brief Creates a Texture from the given png memory buffer.
+        *
+        * @param[in] pngData Buffer with PNG data to load
+        * @param[in] ramsesClient Client the texture object is to be created in
+        * @param[in] swizzle Swizzling of texture color channels
+        * @param[in] name Name for the created texture
+        * @return Created texture object or nullptr on error
         */
-        static Effect* CreateStandardTextEffect(RamsesClient& client, UniformInput& colorInput);
+        static Texture2D*  CreateTextureResourceFromPngBuffer(const std::vector<unsigned char>& pngData, RamsesClient& ramsesClient, const TextureSwizzle& swizzle = {}, const char* name = nullptr);
 
         /**
         * @brief Generate mip maps from original texture 2D data. You obtain ownership of all the

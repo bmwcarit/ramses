@@ -52,15 +52,15 @@ namespace ramses_internal
 
         void                        doOneRenderLoop();
 
-        void                        mapSceneToDisplayBuffer     (SceneId sceneId, DisplayHandle displayHandle, DeviceResourceHandle buffer, Int32 globalSceneOrder);
-        void                        unmapScene                  (SceneId sceneId);
-        DisplayHandle               getDisplaySceneIsMappedTo   (SceneId sceneId) const;
-        DeviceResourceHandle        getBufferSceneIsMappedTo    (SceneId sceneId, DisplayHandle* displayHandleOut = nullptr) const;
-        Bool                        isSceneMappedToInterruptibleOffscreenBuffer(SceneId sceneId) const;
+        void                        assignSceneToDisplayBuffer  (SceneId sceneId, DisplayHandle displayHandle, DeviceResourceHandle buffer, Int32 globalSceneOrder);
+        void                        unassignScene               (SceneId sceneId);
+        DisplayHandle               getDisplaySceneIsAssignedTo (SceneId sceneId) const;
+        DeviceResourceHandle        getBufferSceneIsAssignedTo  (SceneId sceneId, DisplayHandle* displayHandleOut = nullptr) const;
+        Bool                        isSceneAssignedToInterruptibleOffscreenBuffer(SceneId sceneId) const;
         Int32                       getSceneGlobalOrder         (SceneId sceneId) const;
         void                        setSceneShown               (SceneId sceneId, Bool show);
 
-        void                        markBufferWithMappedSceneAsModified(SceneId sceneId);
+        virtual void                markBufferWithSceneAsModified(SceneId sceneId);
         void                        setSkippingOfUnmodifiedBuffers(Bool enable);
 
         virtual void                createDisplayContext(const DisplayConfig& displayConfig, DisplayHandle display);
@@ -69,11 +69,12 @@ namespace ramses_internal
         IDisplayController&         getDisplayController(DisplayHandle display);
         UInt32                      getDisplayControllerCount() const;
         Bool                        hasDisplayController(DisplayHandle display) const;
+        const DisplaySetup&         getDisplaySetup(DisplayHandle displayHandle) const;
 
         DisplayEventHandler&        getDisplayEventHandler(DisplayHandle display);
         void                        setWarpingMeshData(DisplayHandle display, const WarpingMeshData& meshData);
 
-        void                        setClearColor(DisplayHandle displayHandle, const Vector4& clearColor);
+        virtual void                setClearColor(DisplayHandle displayHandle, DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor);
         void                        scheduleScreenshot(const ScreenshotInfo& screenshot);
         void                        dispatchProcessedScreenshots(ScreenshotInfoVector& screenshots);
 
@@ -143,7 +144,7 @@ namespace ramses_internal
         Bool                                   m_skipUnmodifiedBuffers = true;
         RendererInterruptState                 m_rendererInterruptState;
         const FrameTimer&                      m_frameTimer;
-        SceneExpirationMonitor&                        m_expirationMonitor;
+        SceneExpirationMonitor&                m_expirationMonitor;
 
         HashMap<DisplayHandle, ScreenshotInfoVector> m_scheduledScreenshots;
         ScreenshotInfoVector m_processedScreenshots;

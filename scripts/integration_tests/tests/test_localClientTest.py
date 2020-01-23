@@ -18,7 +18,7 @@ class TestClass(test_classes.OnAllDefaultTargetsTest):
     @with_ramses_process_check
     def impl_setUp(self):
         applicationName = "ramses-local-client-test-{}".format(self.target.defaultPlatform)
-        self.app = self.target.start_renderer(applicationName, dltAppID="LCLT", args="-nomap")
+        self.app = self.target.start_renderer(applicationName, dltAppID="LCLT")
         self.checkThatApplicationWasStarted(self.app)
         self.addCleanup(self.target.kill_application, self.app)
 

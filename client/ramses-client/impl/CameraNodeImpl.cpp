@@ -13,6 +13,7 @@
 #include "Scene/ClientScene.h"
 #include "Math3d/CameraMatrixHelper.h"
 #include "Math3d/Vector2i.h"
+#include "SceneAPI/ResourceContentHash.h"
 
 namespace ramses
 {
@@ -67,9 +68,9 @@ namespace ramses
             projType = ramses_internal::ECameraProjectionType_Orthographic;
         }
 
-        m_viewportDataLayout = getIScene().allocateDataLayout({ {ramses_internal::EDataType_DataReference}, {ramses_internal::EDataType_DataReference} });
+        m_viewportDataLayout = getIScene().allocateDataLayout({ {ramses_internal::EDataType_DataReference}, {ramses_internal::EDataType_DataReference} }, ramses_internal::ResourceContentHash::Invalid());
         m_viewportDataInstance = getIScene().allocateDataInstance(m_viewportDataLayout);
-        m_viewportDataReferenceLayout = getIScene().allocateDataLayout({ {ramses_internal::EDataType_Vector2I} });
+        m_viewportDataReferenceLayout = getIScene().allocateDataLayout({ {ramses_internal::EDataType_Vector2I} }, ramses_internal::ResourceContentHash::Invalid());
         m_viewportOffsetDataReference = getIScene().allocateDataInstance(m_viewportDataReferenceLayout);
         m_viewportSizeDataReference = getIScene().allocateDataInstance(m_viewportDataReferenceLayout);
         m_cameraHandle = getIScene().allocateCamera(projType, getNodeHandle(), m_viewportDataInstance, ramses_internal::CameraHandle::Invalid());

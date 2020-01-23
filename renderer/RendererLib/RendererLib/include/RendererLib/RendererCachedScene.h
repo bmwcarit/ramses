@@ -28,7 +28,7 @@ namespace ramses_internal
         void retriggerAllRenderOncePasses();
         void markAllRenderOncePassesAsRendered() const;
 
-        virtual void                        setRenderableVisibility         (RenderableHandle renderableHandle, Bool visible) override;
+        virtual void                        setRenderableVisibility         (RenderableHandle renderableHandle, EVisibilityMode visible) override;
 
         virtual void                        releaseRenderGroup              (RenderGroupHandle groupHandle) override;
         virtual void                        addRenderableToRenderGroup      (RenderGroupHandle groupHandle, RenderableHandle renderableHandle, Int32 order) override;

@@ -36,6 +36,7 @@ private:
         OffscreenBufferLinkTest_OneOfTwoSourceScenesUnmapped,
         OffscreenBufferLinkTest_ProviderSceneUsesDepthTest,
         OffscreenBufferLinkTest_ProviderSceneUsesStencilTest,
+        OffscreenBufferLinkTest_SetClearColor,
     };
 
     ramses::sceneId_t m_sceneIdProvider;

@@ -31,38 +31,6 @@ namespace ramses_capu
     class Console
     {
     public:
-
-        enum ConsoleColor
-        {
-            RED = 0,
-            BLUE,
-            GREEN,
-            YELLOW,
-            WHITE,
-            AQUA
-        };
-
-        /**
-         * Prints a message on the console
-         * @param format of the message (like printf)
-         * @param parameters for the format (like prints)
-         */
-        static void Print(const char* format, ...);
-
-        /**
-        * Prints a message on the console with the given color
-        * @param color for the message
-        * @param format of the message (like printf)
-        * @param parameters for the format (like prints)
-        */
-        static void Print(ConsoleColor color, const char* format, ...);
-
-        /**
-         * Checks whether there is input on stdin available or not
-         * @return true if input on stdin is available, false otherwise
-         */
-        static bool IsInputAvailable();
-
         /**
          * Reads a single char from stdin
          * @param buffer on success a character is read into provided variable
@@ -74,11 +42,6 @@ namespace ramses_capu
         static status_t ReadChar(char& buffer);
 
         /**
-         * Flush the contents of stdout and stderr.
-         */
-        static void Flush();
-
-        /**
          * Interrupts a console read (call to Console::ReadChar)
          *
          * Calling InterruptReadChar before ReadChar will cause the next call to ReadChar not to block.
@@ -87,13 +50,6 @@ namespace ramses_capu
          */
         static void InterruptReadChar();
     };
-
-    inline
-    bool
-    Console::IsInputAvailable()
-    {
-        return ramses_capu::os::Console::IsInputAvailable();
-    }
 
     inline
     status_t
@@ -107,33 +63,6 @@ namespace ramses_capu
     Console::InterruptReadChar()
     {
         ramses_capu::os::Console::InterruptReadChar();
-    }
-
-    inline
-    void
-    Console::Print(const char* format, ...)
-    {
-        va_list argptr;
-        va_start(argptr, format);
-        ramses_capu::os::Console::Print(format, argptr);
-        va_end(argptr);
-    }
-
-    inline
-    void
-    Console::Print(ConsoleColor color, const char* format, ...)
-    {
-        va_list argptr;
-        va_start(argptr, format);
-        ramses_capu::os::Console::Print(color, format, argptr);
-        va_end(argptr);
-    }
-
-    inline
-    void
-    Console::Flush()
-    {
-        ramses_capu::os::Console::Flush();
     }
 }
 

@@ -11,18 +11,26 @@
 
 #include "SceneAPI/ResourceContentHash.h"
 #include "SceneAPI/Handles.h"
+#include "SceneAPI/ERenderableDataSlotType.h"
 
 namespace ramses_internal
 {
+    enum class EVisibilityMode : int8_t
+    {
+        Off = 0,
+        Invisible,
+        Visible
+    };
+
     struct Renderable
     {
-        ResourceContentHash effectResource;
         NodeHandle node;
-        Bool isVisible = true;
+        EVisibilityMode visibilityMode = EVisibilityMode::Visible;
 
         UInt32 startIndex = 0u;
         UInt32 indexCount = 0u;
         UInt32 instanceCount = 1u;
+        UInt32 startVertex = 0u;
 
         DataInstanceHandle dataInstances[ERenderableDataSlotType_MAX_SLOTS];
         RenderStateHandle renderState;

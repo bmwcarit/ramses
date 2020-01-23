@@ -36,12 +36,8 @@ namespace ramses_internal
 
         Bool setFullscreen(Bool fullscreen) override final;
 
-        static void SetNativeWindow(ANativeWindow* window)
-        {
-            m_nativeWindow = window;
-        }
     private:
-        static ANativeWindow* m_nativeWindow;
+        ANativeWindow* m_nativeWindow;
     };
 }
 

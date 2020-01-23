@@ -45,10 +45,12 @@ namespace ramses
         uint32_t getStartIndex() const;
         status_t setIndexCount(uint32_t indexCount);
         uint32_t getIndexCount() const;
-        status_t setFlattenedVisibility(bool visible);
-        bool     getFlattenedVisibility() const;
+        status_t setFlattenedVisibility(EVisibilityMode mode);
+        EVisibilityMode getFlattenedVisibility() const;
         status_t setInstanceCount(uint32_t instanceCount);
         uint32_t getInstanceCount() const;
+        status_t setStartVertex(uint32_t startVertex);
+        uint32_t getStartVertex() const;
 
         ramses_internal::RenderableHandle   getRenderableHandle() const;
 

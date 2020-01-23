@@ -12,14 +12,14 @@
 #include "Ramsh/RamshCommand.h"
 #include "DisplayManager/IDisplayManager.h"
 
-namespace ramses_display_manager
+namespace ramses_internal
 {
-    class ShowSceneOnDisplay : public ramses_internal::RamshCommand
+    class ShowSceneOnDisplay : public RamshCommand
     {
     public:
         ShowSceneOnDisplay(IDisplayManager& displayManager);
 
-        virtual bool executeInput(const ramses_internal::RamshInput& input) override;
+        virtual bool executeInput(const RamshInput& input) override;
 
     private:
         IDisplayManager& m_displayManager;

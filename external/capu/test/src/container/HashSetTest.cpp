@@ -23,8 +23,8 @@
 
 TEST(HashSet, Constructor_Default)
 {
-    ramses_capu::HashSet<int32_t>* list = new ramses_capu::HashSet<int32_t > ();
-    delete list;
+    ramses_capu::HashSet<int32_t> list;
+    (void)list;
 }
 
 TEST(HashSet, copyConstructor)
@@ -48,42 +48,26 @@ TEST(HashSet, put)
     int32_t value2 = 10;
     int32_t value = 5;
 
-    ramses_capu::HashSet<int32_t>* h1 = new ramses_capu::HashSet<int32_t > ();
+    ramses_capu::HashSet<int32_t>h1;
 
-    // add new key
-    EXPECT_EQ(ramses_capu::CAPU_OK,  h1->put(value));
-
-    // add new key
-    EXPECT_EQ(ramses_capu::CAPU_OK, h1->put(value2));
-
-    // add existing key
-    EXPECT_EQ(ramses_capu::CAPU_ERROR, h1->put(value2));
-
-    delete h1;
+    h1.put(value);
+    h1.put(value2);
+    h1.put(value2);
 }
 
 TEST(HashSet, count)
 {
     int32_t value2 = 10;
     int32_t value = 5;
-    ramses_capu::HashSet<int32_t>* h1 = new ramses_capu::HashSet<int32_t > ();
+    ramses_capu::HashSet<int32_t>h1;
 
-    //check count
-    EXPECT_EQ(0u, h1->count());
+    EXPECT_EQ(0u, h1.count());
+    h1.put(value);
+    h1.put(value2);
 
-    // add new value
-    EXPECT_EQ(ramses_capu::CAPU_OK, h1->put(value));
-
-    // add new value
-    EXPECT_EQ(ramses_capu::CAPU_OK, h1->put(value2));
-
-    EXPECT_EQ(2u, h1->count());
-
-    EXPECT_EQ(ramses_capu::CAPU_OK, h1->remove(value2));
-
-    EXPECT_EQ(1u, h1->count());
-
-    delete h1;
+    EXPECT_EQ(2u, h1.count());
+    EXPECT_TRUE(h1.remove(value2));
+    EXPECT_EQ(1u, h1.count());
 }
 
 TEST(HashSet, clear)
@@ -91,23 +75,13 @@ TEST(HashSet, clear)
     int32_t value = 5;
     int32_t value2 = 6;
 
-    ramses_capu::HashSet<int32_t>* h1 = new ramses_capu::HashSet<int32_t > ();
-    // add new keys
-    EXPECT_EQ(ramses_capu::CAPU_OK, h1->put(value));
+    ramses_capu::HashSet<int32_t>h1;
+    h1.put(value);
+    h1.put(value2);
 
-    //add new keys
-    EXPECT_EQ(ramses_capu::CAPU_OK, h1->put(value2));
-
-    // check count
-    EXPECT_EQ(2u, h1->count());
-
-    //remove all
-    EXPECT_EQ(ramses_capu::CAPU_OK, h1->clear());
-
-    //check count
-    EXPECT_EQ(0u, h1->count());
-
-    delete h1;
+    EXPECT_EQ(2u, h1.count());
+    h1.clear();
+    EXPECT_EQ(0u, h1.count());
 }
 
 TEST(HashSet, remove)
@@ -115,27 +89,16 @@ TEST(HashSet, remove)
     int32_t value = 5;
     int32_t value2 = 6;
 
-    ramses_capu::HashSet<int32_t>* h1 = new ramses_capu::HashSet<int32_t > ();
+    ramses_capu::HashSet<int32_t> h1;
 
-    // add new keys
-    EXPECT_EQ(ramses_capu::CAPU_OK, h1->put(value));
+    h1.put(value);
+    EXPECT_FALSE(h1.remove(value2));
 
-    //delete a non existing value
-    EXPECT_EQ(ramses_capu::CAPU_ERANGE, h1->remove(value2));
+    h1.put(value2);
+    EXPECT_EQ(2u, h1.count());
 
-    //add new value
-    EXPECT_EQ(ramses_capu::CAPU_OK, h1->put(value2));
-
-    // check count
-    EXPECT_EQ(2u, h1->count());
-
-    //delete existing value
-    EXPECT_EQ(ramses_capu::CAPU_OK, h1->remove(value2));
-
-    //check count
-    EXPECT_EQ(1u, h1->count());
-
-    delete h1;
+    EXPECT_TRUE(h1.remove(value2));
+    EXPECT_EQ(1u, h1.count());
 }
 
 TEST(HashSet, hasElement)
@@ -143,20 +106,53 @@ TEST(HashSet, hasElement)
     int32_t value = 5;
     int32_t value2 = 6;
 
-    ramses_capu::HashSet<int32_t>* h1 = new ramses_capu::HashSet<int32_t > ();
+    ramses_capu::HashSet<int32_t> h1;
 
-    // add new keys
-    EXPECT_EQ(ramses_capu::CAPU_OK, h1->put(value));
+    h1.put(value);
+    EXPECT_FALSE(h1.hasElement(value2));
 
-    EXPECT_FALSE(h1->hasElement(value2));
+    h1.put(value2);
+    EXPECT_TRUE(h1.hasElement(value2));
+}
 
-    //add new value
-    EXPECT_EQ(ramses_capu::CAPU_OK, h1->put(value2));
+TEST(HashSet, findsContainedElement)
+{
+    ramses_capu::HashSet<int> container;
+    container.put(5);
+    container.put(6);
+    container.put(7);
 
-    //delete existing value
-    EXPECT_TRUE(h1->hasElement(value2));
+    ASSERT_NE(container.end(), container.find(5));
+    ASSERT_NE(container.end(), container.find(6));
+    ASSERT_NE(container.end(), container.find(7));
+    EXPECT_EQ(5, *container.find(5));
+    EXPECT_EQ(6, *container.find(6));
+    EXPECT_EQ(7, *container.find(7));
 
-    delete h1;
+    // const access
+    const ramses_capu::HashSet<int>& ccontainer = container;
+    ASSERT_NE(ccontainer.end(), ccontainer.find(5));
+    ASSERT_NE(ccontainer.end(), ccontainer.find(6));
+    ASSERT_NE(ccontainer.end(), ccontainer.find(7));
+    EXPECT_EQ(5, *ccontainer.find(5));
+    EXPECT_EQ(6, *ccontainer.find(6));
+    EXPECT_EQ(7, *ccontainer.find(7));
+}
+
+TEST(HashSet, doesNotFindElementNotContained)
+{
+    ramses_capu::HashSet<int> container;
+    container.put(5);
+    container.put(6);
+    container.put(7);
+
+    EXPECT_EQ(container.end(), container.find(55));
+    EXPECT_EQ(container.end(), container.find(99));
+
+    // const access
+    const ramses_capu::HashSet<int>& ccontainer = container;
+    EXPECT_EQ(ccontainer.end(), ccontainer.find(55));
+    EXPECT_EQ(ccontainer.end(), ccontainer.find(99));
 }
 
 TEST(HashSetIterator, hasNext)
@@ -164,24 +160,16 @@ TEST(HashSetIterator, hasNext)
     int32_t value = 10;
     int32_t value2 = 12;
 
-    ramses_capu::HashSet<int32_t>* h1 = new ramses_capu::HashSet<int32_t > ();
+    ramses_capu::HashSet<int32_t> h1;
+    ramses_capu::HashSet<int32_t>::Iterator it = h1.begin();
 
-    //create iterator
-    ramses_capu::HashSet<int32_t>::Iterator it = h1->begin();
+    EXPECT_EQ(it, h1.end());
 
-    //check hasNext
-    EXPECT_EQ(it, h1->end());
+    h1.put(value);
+    h1.put(value2);
 
-    // add new values
-    EXPECT_EQ(ramses_capu::CAPU_OK, h1->put(value));
-
-    //add new value
-    EXPECT_EQ(ramses_capu::CAPU_OK, h1->put(value2));
-
-    it = h1->begin();
-    EXPECT_NE(it, h1->end());
-
-    delete h1;
+    it = h1.begin();
+    EXPECT_NE(it, h1.end());
 }
 
 TEST(HashSetIterator, next)
@@ -189,24 +177,18 @@ TEST(HashSetIterator, next)
     int32_t value = 10;
     int32_t value2 = 12;
 
-    ramses_capu::HashSet<int32_t>* h1 = new ramses_capu::HashSet<int32_t > ();
+    ramses_capu::HashSet<int32_t> h1;
 
     int32_t check_value = 0;
     int32_t check_value2 = 0;
 
-    //create iterator
-    ramses_capu::HashSet<int32_t>::Iterator it = h1->begin();
+    ramses_capu::HashSet<int32_t>::Iterator it = h1.begin();
 
-    //check hasNext
-    EXPECT_TRUE(it == h1->end());
+    EXPECT_TRUE(it == h1.end());
+    h1.put(value);
+    h1.put(value2);
 
-    // add new keys
-    EXPECT_EQ(ramses_capu::CAPU_OK, h1->put(value));
-
-    //add new value
-    EXPECT_EQ(ramses_capu::CAPU_OK, h1->put(value2));
-    it = h1->begin();
-
+    it = h1.begin();
     check_value = *it;
     EXPECT_TRUE(check_value == value || check_value == value2);
 
@@ -215,7 +197,6 @@ TEST(HashSetIterator, next)
     EXPECT_TRUE(check_value == value || check_value == value2);
 
     EXPECT_NE(check_value, check_value2);
-    delete h1;
 }
 
 TEST(HashSetIterator, ForEach)
@@ -238,56 +219,7 @@ TEST(HashSetIterator, ForEach)
 
 }
 
-
-class HashSetPerformance : public ::testing::Test
-{
-public:
-    HashSetPerformance()
-        : count(500000)
-    {}
-
-    static ramses_capu::HashSet<uint32_t> set;
-    uint32_t count;
-};
-
-ramses_capu::HashSet<uint32_t> HashSetPerformance::set;
-
-TEST_F(HashSetPerformance, performancePut)
-{
-    for (uint32_t i = 0; i < count; i++)
-    {
-        set.put(i);
-    }
-}
-
-TEST_F(HashSetPerformance, performanceIterate)
-{
-    ramses_capu::HashSet<uint32_t>::Iterator iter = set.begin();
-    while (iter != set.end())
-    {
-        iter++;
-    }
-}
-
-TEST_F(HashSetPerformance, performanceConstIterate)
-{
-    const ramses_capu::HashSet<uint32_t>& setConstRef = set;
-    ramses_capu::HashSet<uint32_t>::ConstIterator iter = setConstRef.begin();
-    while (iter != setConstRef.end())
-    {
-        iter++;
-    }
-}
-
-TEST_F(HashSetPerformance, performanceRemove)
-{
-    for (uint32_t i = 0; i < count; i++)
-    {
-        set.remove(i);
-    }
-}
-
-TEST(HashSet, iteratorPointsToNextElementAfterDeletion)
+TEST(HashSet, returnedIteratorPointsToNextElementAfterDeletion)
 {
     ramses_capu::HashSet<uint32_t> set;
 
@@ -306,12 +238,12 @@ TEST(HashSet, iteratorPointsToNextElementAfterDeletion)
     ASSERT_NE(*i2, *i3);
     ASSERT_NE(*i1, *i3);
 
-    set.removeAt(i2);
+    i2 = set.remove(i2);
 
     // i2 now points at next element -> i3
     EXPECT_EQ(i2, i3);
 
-    set.removeAt(i1);
+    i1 = set.remove(i1);
     EXPECT_EQ(i1, i3);
 }
 
@@ -326,7 +258,7 @@ TEST(HashSet, canRemoveElementsDuringCycle)
     ramses_capu::HashSet<uint32_t>::Iterator iter = set.begin();
     while (iter != set.end())
     {
-        set.removeAt(iter);
+        iter = set.remove(iter);
     }
 
     EXPECT_EQ(0u, set.count());

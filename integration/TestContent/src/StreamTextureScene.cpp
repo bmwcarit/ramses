@@ -25,7 +25,7 @@ namespace ramses_internal
 {
     StreamTextureScene::StreamTextureScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
         : IntegrationScene(ramsesClient, scene, cameraPosition)
-        , m_effect(0)
+        , m_effect(nullptr)
     {
         m_effect = getTestEffect("ramses-test-client-textured");
         m_root = m_scene.createNode();
@@ -93,12 +93,12 @@ namespace ramses_internal
             }
             case FORCE_FALLBACK_ON_SOME_TEXTURES:
             {
-                addPngQuad("res/ramses-test-client-embedded-compositing-1.png", verts1.front().data(), ramses::streamSource_t(2), NULL, "stream1", true);
-                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts2.front().data(), ramses::streamSource_t(2), NULL, "stream2", true);
-                addPngQuad("res/ramses-test-client-embedded-compositing-3.png", verts3.front().data(), ramses::streamSource_t(2), NULL, "stream3", true);
-                addPngQuad("res/ramses-test-client-embedded-compositing-4.png", verts4.front().data(), ramses::streamSource_t(2), NULL, "stream4", false);
-                addPngQuad("res/ramses-test-client-embedded-compositing-5.png", verts5.front().data(), ramses::streamSource_t(2), NULL, "stream5", true);
-                addPngQuad("res/ramses-test-client-embedded-compositing-6.png", verts6.front().data(), ramses::streamSource_t(2), NULL, "stream6", false);
+                addPngQuad("res/ramses-test-client-embedded-compositing-1.png", verts1.front().data(), ramses::streamSource_t(2), nullptr, "stream1", true);
+                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts2.front().data(), ramses::streamSource_t(2), nullptr, "stream2", true);
+                addPngQuad("res/ramses-test-client-embedded-compositing-3.png", verts3.front().data(), ramses::streamSource_t(2), nullptr, "stream3", true);
+                addPngQuad("res/ramses-test-client-embedded-compositing-4.png", verts4.front().data(), ramses::streamSource_t(2), nullptr, "stream4", false);
+                addPngQuad("res/ramses-test-client-embedded-compositing-5.png", verts5.front().data(), ramses::streamSource_t(2), nullptr, "stream5", true);
+                addPngQuad("res/ramses-test-client-embedded-compositing-6.png", verts6.front().data(), ramses::streamSource_t(2), nullptr, "stream6", false);
                 break;
             }
             case INITIAL_STATE:

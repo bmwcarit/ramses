@@ -39,7 +39,7 @@ namespace ramses_internal
 
         virtual bool registerApplication(const String& id, const String& desc) override
         {
-            if (id.getLength() < 1 || id.getLength() > 4)
+            if (id.size() < 1 || id.size() > 4)
             {
                 return false;
             }
@@ -51,13 +51,13 @@ namespace ramses_internal
 
         virtual void unregisterApplication() override
         {
-            m_appName.truncate(0);
-            m_appDesc.truncate(0);
+            m_appName.clear();
+            m_appDesc.clear();
         };
 
         virtual void registerInjectionCallback(LogContext*, uint32_t, int(*)(uint32_t, void*, uint32_t)) override {};
 
-        virtual Bool transmitFile(LogContext&, const String&, Bool) override
+        virtual bool transmitFile(LogContext&, const String&, bool) override
         {
             return true;
         }

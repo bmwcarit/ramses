@@ -7,8 +7,8 @@
 //  -------------------------------------------------------------------------
 
 #include "Monitoring/Monitor.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "PlatformAbstraction/PlatformTime.h"
+#include "Utils/LogMacros.h"
 
 namespace ramses_internal
 {
@@ -40,7 +40,7 @@ namespace ramses_internal
 
     void Monitor::recordFrameInfo(const FrameInfo& frameInfo)
     {
-        PlatformLightweightGuard g(m_runner.lock);
+        std::lock_guard<std::mutex> g(m_runner.lock);
         m_runner.queue.push_back(frameInfo);
     }
 
@@ -55,7 +55,7 @@ namespace ramses_internal
         {
             std::vector<FrameInfo> local;
             {
-                PlatformLightweightGuard g(lock);
+                std::lock_guard<std::mutex> g(lock);
                 local.swap(queue);
             }
 
@@ -67,7 +67,7 @@ namespace ramses_internal
                     << entry.avgDrawCalls << ", "
                     << entry.gpuMemoryUsed << "\n";
             }
-            file.write(stream.c_str(), stream.length());
+            file.write(stream.c_str(), stream.size());
             file.flush();
 
             PlatformThread::Sleep(100);

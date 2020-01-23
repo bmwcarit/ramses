@@ -20,7 +20,6 @@
 // internal
 #include "SceneImpl.h"
 #include "MeshNodeImpl.h"
-#include "BoundingSphereCollectionImpl.h"
 #include "Scene/SceneResourceUtils.h"
 #include "Scene/ClientScene.h"
 #include "RamsesClientImpl.h"
@@ -46,37 +45,6 @@ namespace ramses
         out << output.release().c_str();
     }
 
-
-    BoundingSphereCollection::BoundingSphereCollection(const Scene& scene) :
-        impl(*new BoundingSphereCollectionImpl(scene.impl))
-    {
-    }
-
-    BoundingSphereCollection::~BoundingSphereCollection()
-    {
-        delete &impl;
-    }
-
-    void BoundingSphereCollection::setBoundingSphere(const Node& node, const BoundingSphere sphere)
-    {
-        impl.setBoundingSphere(node.impl, sphere);
-    }
-
-    void BoundingSphereCollection::removeBoundingSphere(const Node& node)
-    {
-        impl.removeBoundingSphere(node.impl);
-    }
-
-    BoundingSphere BoundingSphereCollection::computeBoundingSphereInWorldSpace(const Node& startNode) const
-    {
-        return impl.computeBoundingSphereInWorldSpace(startNode.impl);
-    }
-
-    BoundingSphere BoundingSphereCollection::ComputeBoundingSphereForVertices(const Vector3fArray& vertices)
-    {
-        return BoundingSphereCollectionImpl::ComputeBoundingSphereForVertices(vertices.impl);
-    }
-
     bool RamsesHMIUtils::AllResourcesForSceneKnown(const Scene& scene)
     {
         const SceneImpl& sceneImpl = scene.impl;
@@ -94,7 +62,7 @@ namespace ramses
         ramses_internal::SceneResourceUtils::GetAllClientResourcesFromScene(resourcesUsedInScene, scene.impl.getIScene());
         for (const auto hash : resourcesUsedInScene)
         {
-            if (!knownHashes.hasElement(hash))
+            if (!knownHashes.contains(hash))
             {
                 return false;
             }

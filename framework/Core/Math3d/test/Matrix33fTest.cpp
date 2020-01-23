@@ -159,7 +159,7 @@ namespace ramses_internal
                     ,  4.0f,  5.0f,  6.0f
                     ,  7.0f, 8.0f, 9.0f);
 
-        Bool equal = mat1 == mat2;
+        bool equal = mat1 == mat2;
         EXPECT_EQ(true, equal);
     }
 
@@ -169,7 +169,7 @@ namespace ramses_internal
                     ,  4.0f,  5.0f,  6.0f
                     ,  8.0f, 8.0f, 9.0f);
 
-        Bool unequal = mat1 != mat2;
+        bool unequal = mat1 != mat2;
         EXPECT_EQ(true, unequal);
     }
 

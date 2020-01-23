@@ -169,6 +169,8 @@ namespace ramses
         EDrawMode_Triangles,
         EDrawMode_TriangleStrip,
         EDrawMode_LineLoop,
+        EDrawMode_TriangleFan,
+        EDrawMode_LineStrip,
         EDrawMode_NUMBER_OF_ELEMENTS
     };
 

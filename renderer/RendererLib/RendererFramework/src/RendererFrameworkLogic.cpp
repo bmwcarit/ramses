@@ -11,7 +11,6 @@
 #include "Components/IResourceConsumerComponent.h"
 #include "RendererLib/RendererCommandBuffer.h"
 #include "Math3d/CameraMatrixHelper.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "Utils/LogMacros.h"
 #include "TransportCommon/IConnectionStatusUpdateNotifier.h"
 #include "Components/ManagedResource.h"

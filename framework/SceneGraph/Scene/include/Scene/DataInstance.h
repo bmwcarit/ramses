@@ -28,8 +28,8 @@ namespace ramses_internal
 
         DataInstance(const DataInstance&) = default;
         DataInstance& operator=(const  DataInstance&) = default;
-        DataInstance(DataInstance&&) = default;
-        DataInstance& operator=(DataInstance&&) = default;
+        DataInstance(DataInstance&&) RNOEXCEPT = default;
+        DataInstance& operator=(DataInstance&&) RNOEXCEPT = default;
 
         template <typename DATATYPE>
         const DATATYPE* getTypedDataPointer(UInt32 fieldOffset) const
@@ -58,6 +58,9 @@ namespace ramses_internal
         DataLayoutHandle m_dataLayoutHandle;
         std::vector<Byte> m_data;
     };
+
+    static_assert(std::is_nothrow_move_constructible<DataInstance>::value, "DataInstance must be movable");
+    static_assert(std::is_nothrow_move_assignable<DataInstance>::value, "DataInstance must be movable");
 }
 
 #endif

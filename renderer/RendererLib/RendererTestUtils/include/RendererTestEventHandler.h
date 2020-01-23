@@ -118,7 +118,7 @@ public:
         }
     }
 
-    virtual void offscreenBufferCreated(ramses::displayId_t, ramses::offscreenBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
+    virtual void offscreenBufferCreated(ramses::displayId_t, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
     {
         if (ramses::ERendererEventResult_OK == result)
         {
@@ -126,7 +126,7 @@ public:
         }
     }
 
-    virtual void offscreenBufferDestroyed(ramses::displayId_t, ramses::offscreenBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
+    virtual void offscreenBufferDestroyed(ramses::displayId_t, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
     {
         if (ramses::ERendererEventResult_OK == result)
         {
@@ -134,7 +134,7 @@ public:
         }
     }
 
-    virtual void offscreenBufferLinkedToSceneData(ramses::offscreenBufferId_t providerOffscreenBuffer, ramses::sceneId_t /*consumerScene*/, ramses::dataConsumerId_t /*consumerId*/, ramses::ERendererEventResult result) override
+    virtual void offscreenBufferLinkedToSceneData(ramses::displayBufferId_t providerOffscreenBuffer, ramses::sceneId_t /*consumerScene*/, ramses::dataConsumerId_t /*consumerId*/, ramses::ERendererEventResult result) override
     {
         if (ramses::ERendererEventResult_OK == result)
         {
@@ -146,11 +146,11 @@ public:
     {
         if(available)
         {
-            m_availableStreamSurfaces.put(streamId.getValue());
+            m_availableStreamSurfaces.put(streamId);
         }
         else
         {
-            m_unavailableStreamSurfaces.put(streamId.getValue());
+            m_unavailableStreamSurfaces.put(streamId);
         }
     }
 
@@ -204,17 +204,17 @@ public:
         return waitAndConsumeId(m_destroyedDisplays, displayId);
     }
 
-    bool waitForOffscreenBufferCreation(ramses::offscreenBufferId_t offscreenBufferId)
+    bool waitForOffscreenBufferCreation(ramses::displayBufferId_t offscreenBufferId)
     {
         return waitAndConsumeId(m_createdOffscreenBuffers, offscreenBufferId);
     }
 
-    bool waitForOffscreenBufferDestruction(ramses::offscreenBufferId_t offscreenBufferId)
+    bool waitForOffscreenBufferDestruction(ramses::displayBufferId_t offscreenBufferId)
     {
         return waitAndConsumeId(m_destroyedOffscreenBuffers, offscreenBufferId);
     }
 
-    bool waitForOffscreenBufferLink(ramses::offscreenBufferId_t offscreenBufferId)
+    bool waitForOffscreenBufferLink(ramses::displayBufferId_t offscreenBufferId)
     {
         return waitAndConsumeId(m_linkedOffscreenBuffers, offscreenBufferId);
     }
@@ -246,7 +246,7 @@ public:
     bool checkAndConsumeExpiredScenesEvents(ramses::sceneId_t sceneId)
     {
         m_renderer.dispatchEvents(*this);
-        const bool hasEvent = m_expiredScenes.hasElement(sceneId);
+        const bool hasEvent = m_expiredScenes.contains(sceneId);
         m_expiredScenes.remove(sceneId);
         return hasEvent;
     }
@@ -254,7 +254,7 @@ public:
     bool checkAndConsumeRecoveredScenesEvents(ramses::sceneId_t sceneId)
     {
         m_renderer.dispatchEvents(*this);
-        const bool hasEvent = m_recoveredScenes.hasElement(sceneId);
+        const bool hasEvent = m_recoveredScenes.contains(sceneId);
         m_recoveredScenes.remove(sceneId);
         return hasEvent;
     }
@@ -268,20 +268,20 @@ public:
     {
         if(available)
         {
-            return waitAndConsumeId(m_availableStreamSurfaces, streamSource.getValue());
+            return waitAndConsumeId(m_availableStreamSurfaces, streamSource);
         }
         else
         {
-            return waitAndConsumeId(m_unavailableStreamSurfaces, streamSource.getValue());
+            return waitAndConsumeId(m_unavailableStreamSurfaces, streamSource);
         }
     }
 
 private:
-    typedef ramses_internal::HashSet<uint64_t> IdSet;
 
-    bool waitAndConsumeId(IdSet& idSet, const uint64_t id)
+    template <typename T>
+    bool waitAndConsumeId(ramses_internal::HashSet<T>& idSet, const T id)
     {
-        const bool success = waitUntilConditionFulfilledOrTimeout([&idSet, id] {return idSet.hasElement(id); });
+        const bool success = waitUntilConditionFulfilledOrTimeout([&idSet, id] {return idSet.contains(id); });
         assert(success && "Waiting for event timed out!");
         idSet.remove(id);
         return success;
@@ -294,8 +294,9 @@ private:
             std::numeric_limits<uint64_t>::max();
         while (ramses_internal::PlatformTime::GetMillisecondsMonotonic() < timeoutTime && !conditionFunction())
         {
-            ramses_internal::PlatformThread::Sleep(5u); // will give the renderer time to process changes
-            if (!m_renderer.impl.isThreaded())
+            if (m_renderer.impl.isThreaded())
+                std::this_thread::sleep_for(std::chrono::milliseconds{5});  // will give the renderer time to process changes
+            else
                 ramses::RamsesRendererUtils::DoOneLoop(m_renderer.impl.getRenderer(), ramses_internal::ELoopMode_UpdateOnly, std::chrono::microseconds{ 0u });
             m_renderer.dispatchEvents(*this);
         }
@@ -303,27 +304,27 @@ private:
         return conditionFunction();
     }
 
-    IdSet m_publishedScenes;
-    IdSet m_unpublishedScenes;
-    IdSet m_subscribedScenes;
-    IdSet m_unsubscribedScenes;
-    IdSet m_mappedScenes;
-    IdSet m_unmappedScenes;
-    IdSet m_shownScenes;
-    IdSet m_hiddenScenes;
+    ramses_internal::HashSet<ramses::sceneId_t> m_publishedScenes;
+    ramses_internal::HashSet<ramses::sceneId_t> m_unpublishedScenes;
+    ramses_internal::HashSet<ramses::sceneId_t> m_subscribedScenes;
+    ramses_internal::HashSet<ramses::sceneId_t> m_unsubscribedScenes;
+    ramses_internal::HashSet<ramses::sceneId_t> m_mappedScenes;
+    ramses_internal::HashSet<ramses::sceneId_t> m_unmappedScenes;
+    ramses_internal::HashSet<ramses::sceneId_t> m_shownScenes;
+    ramses_internal::HashSet<ramses::sceneId_t> m_hiddenScenes;
     // also store the state of resources
     using SceneFlushSet = ramses_internal::HashMap<ramses::sceneVersionTag_t, bool>;
     using SceneFlushesOfScenes = ramses_internal::HashMap<ramses::sceneId_t, SceneFlushSet>;
     SceneFlushesOfScenes m_sceneFlushes;
-    IdSet m_createdDisplays;
-    IdSet m_destroyedDisplays;
-    IdSet m_createdOffscreenBuffers;
-    IdSet m_destroyedOffscreenBuffers;
-    IdSet m_linkedOffscreenBuffers;
-    IdSet m_availableStreamSurfaces;
-    IdSet m_unavailableStreamSurfaces;
-    IdSet m_expiredScenes;
-    IdSet m_recoveredScenes;
+    ramses_internal::HashSet<ramses::displayId_t> m_createdDisplays;
+    ramses_internal::HashSet<ramses::displayId_t> m_destroyedDisplays;
+    ramses_internal::HashSet<ramses::displayBufferId_t> m_createdOffscreenBuffers;
+    ramses_internal::HashSet<ramses::displayBufferId_t> m_destroyedOffscreenBuffers;
+    ramses_internal::HashSet<ramses::displayBufferId_t> m_linkedOffscreenBuffers;
+    ramses_internal::HashSet<ramses::streamSource_t> m_availableStreamSurfaces;
+    ramses_internal::HashSet<ramses::streamSource_t> m_unavailableStreamSurfaces;
+    ramses_internal::HashSet<ramses::sceneId_t> m_expiredScenes;
+    ramses_internal::HashSet<ramses::sceneId_t> m_recoveredScenes;
 
     ramses::RamsesRenderer& m_renderer;
     const uint64_t m_timeoutMs;

@@ -13,15 +13,9 @@ namespace ramses_internal
     DltLogAppender::DltLogAppender()
         : m_dltAdapter(DltAdapter::getDltAdapter())
     {
-
     }
 
-    DltLogAppender::~DltLogAppender()
-    {
-
-    }
-
-    void DltLogAppender::logMessage(const LogMessage& message)
+    void DltLogAppender::log(const LogMessage& message)
     {
         m_dltAdapter->logMessage(message);
     }

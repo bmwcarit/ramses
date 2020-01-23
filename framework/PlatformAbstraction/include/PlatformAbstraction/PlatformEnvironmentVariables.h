@@ -17,7 +17,7 @@ namespace ramses_internal
     class PlatformEnvironmentVariables
     {
     public:
-        static Bool get(const String& key, String& value);
+        static bool get(const String& key, String& value);
         static bool HasEnvVar(const String& key);
 
         static void SetEnvVar(const String& key, const String& value);
@@ -25,7 +25,7 @@ namespace ramses_internal
     };
 
     inline
-    Bool PlatformEnvironmentVariables::get(const String& key, String& value)
+    bool PlatformEnvironmentVariables::get(const String& key, String& value)
     {
 #ifdef _MSC_VER
         char* envValue = 0;
@@ -37,7 +37,7 @@ namespace ramses_internal
 #else
         char * env = getenv(key.c_str());
         value = env;
-        return (0 != env);
+        return (nullptr != env);
 #endif
     }
 

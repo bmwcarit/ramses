@@ -12,9 +12,9 @@
 #include "Ramsh/RamshCommandArguments.h"
 #include "DisplayManager/IDisplayManager.h"
 
-namespace ramses_display_manager
+namespace ramses_internal
 {
-    class HideScene : public ramses_internal::RamshCommandArgs < uint64_t >
+    class HideScene : public RamshCommandArgs < uint64_t >
     {
     public:
         HideScene(IDisplayManager& displayManager);

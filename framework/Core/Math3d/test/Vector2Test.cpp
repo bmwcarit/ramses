@@ -148,7 +148,7 @@ TEST_F(Vector2Test, Angle)
 TEST_F(Vector2Test, Equality)
 {
     ramses_internal::Vector2 vec2(1.f, 2.f);
-    ramses_internal::Bool equal = vec1 == vec2;
+    bool equal = vec1 == vec2;
 
     EXPECT_EQ(true, equal);
 }
@@ -156,7 +156,7 @@ TEST_F(Vector2Test, Equality)
 TEST_F(Vector2Test, UnEquality)
 {
     ramses_internal::Vector2 vec2(0.f, 2.f);
-    ramses_internal::Bool unequal = vec1 != vec2;
+    bool unequal = vec1 != vec2;
 
     EXPECT_EQ(true, unequal);
 }

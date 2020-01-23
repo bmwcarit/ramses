@@ -13,11 +13,11 @@ namespace ramses_internal
 {
     UInt RamshTools::delimiterPosition(const String& msg, const String& delimiter)
     {
-        const UInt inputLength = msg.getLength();
+        const UInt inputLength = msg.size();
 
         UInt delimPos = 0;
-        UInt pos = inputLength >= delimiter.getLength() ?
-            inputLength - delimiter.getLength()
+        UInt pos = inputLength >= delimiter.size() ?
+            inputLength - delimiter.size()
             : 0;
 
         for(; pos != inputLength; pos++)
@@ -50,7 +50,7 @@ namespace ramses_internal
         UInt pos = offset;
 
         for(;
-            pos < msg.getLength()
+            pos < msg.size()
             && ' ' == msg.at(pos);
             pos++)
         {
@@ -64,7 +64,7 @@ namespace ramses_internal
         RamshInput input;
 
         const String delim = "\r\n";
-        const UInt delimPos = msg.getLength() - delimiterPosition(msg, delim);
+        const UInt delimPos = msg.size() - delimiterPosition(msg, delim);
         const UInt inputLength = delimPos > 0 ? trailingSpacesPosition(msg, delimPos - 1) + 1 : 0;
 
         String message(msg.c_str(), 0, inputLength - 1);
@@ -82,7 +82,7 @@ namespace ramses_internal
                 endpos = message.find(String(1,c).append(" "), pos+1); // look for next special separator inside the string
                 if(-1 == endpos)
                 {
-                    endpos = message.lastIndexOf(c); // if no separator found inside, look for special separator on message end
+                    endpos = message.rfind(c); // if no separator found inside, look for special separator on message end
                     if(static_cast<Int>(inputLength) - 1 != endpos)
                     {
                         endpos = message.find(String(1,' '), pos+1); // if no ending separator found, treat as normal

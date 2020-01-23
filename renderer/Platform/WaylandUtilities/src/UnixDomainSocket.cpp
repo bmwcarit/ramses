@@ -250,7 +250,7 @@ namespace ramses_internal
 
         // write the socket file path to addr and check whether we have no overflow
         PlatformStringUtils::Copy(addrToFill.sun_path, sizeof(addrToFill.sun_path), m_socketFilename.c_str());
-        const size_t sizeOfSocketFilePath = PlatformStringUtils::StrLen(addrToFill.sun_path) + 1;
+        const size_t sizeOfSocketFilePath = std::strlen(addrToFill.sun_path) + 1;
         assert(sizeOfSocketFilePath > 1);
         if (sizeOfSocketFilePath > sizeof(addrToFill.sun_path))
         {

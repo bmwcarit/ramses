@@ -53,7 +53,11 @@ namespace ramses_internal
         Window_Integrity_RGL* platformWindow = getPlatformWindow<Window_Integrity_RGL>(window);
         assert(0 != platformWindow);
 
-        Context_EGL* platformContext = new Context_EGL(platformWindow->getNativeDisplayHandle(), platformWindow->getNativeWindowHandle(), getContextAttributes(), platformWindow->getSurfaceAttributes(), nullptr, 1, 0);
+        Context_EGL* platformContext = new Context_EGL(static_cast<Context_EGL::Generic_EGLNativeDisplayType>(platformWindow->getNativeDisplayHandle()),
+                                                       platformWindow->getNativeWindowHandle(),
+                                                       getContextAttributes(),
+                                                       platformWindow->getSurfaceAttributes(),
+                                                       nullptr, 1, 0);
         return addPlatformContext(platformContext);
     }
 

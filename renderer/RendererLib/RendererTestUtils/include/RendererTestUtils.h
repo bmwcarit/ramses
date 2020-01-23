@@ -50,6 +50,14 @@ public:
         float maxAveragePercentErrorPerPixel = DefaultMaxAveragePercentPerPixel
     );
 
+    static ramses_internal::Image ReadPixelData(
+        ramses::RamsesRenderer& renderer,
+        ramses::displayId_t displayId,
+        ramses_internal::UInt32 x,
+        ramses_internal::UInt32 y,
+        ramses_internal::UInt32 width,
+        ramses_internal::UInt32 height);
+
     static ramses::displayId_t  CreateDisplayImmediate(ramses::RamsesRenderer& renderer, const ramses::DisplayConfig& displayConfig);
     static void                 DestroyDisplayImmediate(ramses::RamsesRenderer& renderer, ramses::displayId_t displayId);
 
@@ -68,14 +76,6 @@ public:
     static const float DefaultMaxAveragePercentPerPixel;
 
 private:
-    static ramses_internal::Image ReadPixelData(
-        ramses::RamsesRenderer& renderer,
-        ramses::displayId_t displayId,
-        ramses_internal::UInt32 x,
-        ramses_internal::UInt32 y,
-        ramses_internal::UInt32 width,
-        ramses_internal::UInt32 height);
-
     static bool CompareBitmapToImageInFile(const ramses_internal::Image& actualBitmap,
                                             const ramses_internal::String& expectedScreenshotFileName,
                                             float maxAveragePercentErrorPerPixel);

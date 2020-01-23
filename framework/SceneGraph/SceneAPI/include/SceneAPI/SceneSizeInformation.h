@@ -33,8 +33,8 @@ namespace ramses_internal
             UInt32 streamTextures,
             UInt32 dataSlots,
             UInt32 dataBuffers,
-            UInt32 animationSystems,
-            UInt32 textureBuffers)
+            UInt32 textureBuffers,
+            UInt32 pickableObjects)
             : nodeCount(nodes)
             , cameraCount(cameras)
             , transformCount(transforms)
@@ -51,8 +51,8 @@ namespace ramses_internal
             , streamTextureCount(streamTextures)
             , dataSlotCount(dataSlots)
             , dataBufferCount(dataBuffers)
-            , animationSystemCount(animationSystems)
             , textureBufferCount(textureBuffers)
+            , pickableObjectCount(pickableObjects)
         {
         }
 
@@ -72,13 +72,13 @@ namespace ramses_internal
                 && (renderGroupCount == other.renderGroupCount)
                 && (renderPassCount == other.renderPassCount)
                 && (blitPassCount == other.blitPassCount)
+                && (pickableObjectCount == other.pickableObjectCount)
                 && (renderTargetCount == other.renderTargetCount)
                 && (renderBufferCount == other.renderBufferCount)
                 && (textureSamplerCount == other.textureSamplerCount)
                 && (streamTextureCount == other.streamTextureCount)
                 && (dataSlotCount == other.dataSlotCount)
                 && (dataBufferCount == other.dataBufferCount)
-                && (animationSystemCount == other.animationSystemCount)
                 && (textureBufferCount == other.textureBufferCount);
         }
 
@@ -94,13 +94,13 @@ namespace ramses_internal
                 || (renderGroupCount > other.renderGroupCount)
                 || (renderPassCount > other.renderPassCount)
                 || (blitPassCount > other.blitPassCount)
+                || (pickableObjectCount > other.pickableObjectCount)
                 || (renderTargetCount > other.renderTargetCount)
                 || (renderBufferCount > other.renderBufferCount)
                 || (textureSamplerCount > other.textureSamplerCount)
                 || (streamTextureCount > other.streamTextureCount)
                 || (dataSlotCount > other.dataSlotCount)
                 || (dataBufferCount > other.dataBufferCount)
-                || (animationSystemCount > other.animationSystemCount)
                 || (textureBufferCount > other.textureBufferCount);
         }
 
@@ -118,13 +118,13 @@ namespace ramses_internal
             str << " renderGroup=" << renderGroupCount;
             str << " renderPass=" << renderPassCount;
             str << " blitPass=" << blitPassCount;
+            str << " pickableObject=" << pickableObjectCount;
             str << " renderTarget=" << renderTargetCount;
             str << " renderBuffer=" << renderBufferCount;
             str << " textureSampler=" << textureSamplerCount;
             str << " streamTexture=" << streamTextureCount;
             str << " dataSlot=" << dataSlotCount;
             str << " dataBuffer=" << dataBufferCount;
-            str << " animationSystem=" << animationSystemCount;
             str << " textureBuffer=" << textureBufferCount;
             str << " ]";
 
@@ -135,7 +135,7 @@ namespace ramses_internal
         UInt32 cameraCount          = 0u;
         UInt32 transformCount       = 0u;
         UInt32 renderableCount      = 0u;
-        UInt32 renderStateCount           = 0u;
+        UInt32 renderStateCount     = 0u;
         UInt32 datalayoutCount      = 0u;
         UInt32 datainstanceCount    = 0u;
         UInt32 renderGroupCount     = 0u;
@@ -147,8 +147,8 @@ namespace ramses_internal
         UInt32 streamTextureCount   = 0u;
         UInt32 dataSlotCount        = 0u;
         UInt32 dataBufferCount      = 0u;
-        UInt32 animationSystemCount = 0u;
         UInt32 textureBufferCount   = 0u;
+        UInt32 pickableObjectCount =  0u;
     };
 }
 

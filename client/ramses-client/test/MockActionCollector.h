@@ -22,7 +22,7 @@ namespace ramses
     public:
         MockActionCollector()
             : m_numReceivedActionLists(0)
-            , m_sceneGraphConsumer(NULL)
+            , m_sceneGraphConsumer(nullptr)
         {
         }
 
@@ -65,7 +65,7 @@ namespace ramses
 
         virtual void handleSceneActionList(const ramses_internal::SceneId& sceneId, ramses_internal::SceneActionCollection&& actions, const uint64_t& counter, const ramses_internal::Guid& providerID) override
         {
-            ramses_internal::SceneRendererServiceHandlerMock::handleSceneActionList(sceneId, std::move(actions), counter, providerID);
+            ramses_internal::SceneRendererServiceHandlerMock::handleSceneActionList(sceneId, actions.copy(), counter, providerID);
             m_collectedActions.append(actions);
             ++m_numReceivedActionLists;
         }
@@ -73,7 +73,7 @@ namespace ramses
         virtual void handleNewScenesAvailable(const ramses_internal::SceneInfoVector& newScenes, const ramses_internal::Guid& providerID, ramses_internal::EScenePublicationMode publicationMode) override
         {
             ramses_internal::SceneRendererServiceHandlerMock::handleNewScenesAvailable(newScenes, providerID, publicationMode);
-            if (m_sceneGraphConsumer != NULL)
+            if (m_sceneGraphConsumer != nullptr)
             {
                 for(const auto& newScene : newScenes)
                 {

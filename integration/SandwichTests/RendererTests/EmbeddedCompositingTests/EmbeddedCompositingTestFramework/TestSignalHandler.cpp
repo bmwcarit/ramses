@@ -18,12 +18,12 @@ namespace ramses_internal
     {
         ProcessName = processName;
 
-        Signal::SetSignalHandler(ramses_capu::CAPU_SIGABRT, HandleSignalCallback, true);
-        Signal::SetSignalHandler(ramses_capu::CAPU_SIGFPE, HandleSignalCallback, true);
-        Signal::SetSignalHandler(ramses_capu::CAPU_SIGILL, HandleSignalCallback, true);
-        Signal::SetSignalHandler(ramses_capu::CAPU_SIGINT, HandleSignalCallback, true);
-        Signal::SetSignalHandler(ramses_capu::CAPU_SIGSEGV, HandleSignalCallback, true);
-        Signal::SetSignalHandler(ramses_capu::CAPU_SIGTERM, HandleSignalCallback, true);
+        PlatformSignal::SetSignalHandler(ESignal::ABRT, HandleSignalCallback, true);
+        PlatformSignal::SetSignalHandler(ESignal::FPE, HandleSignalCallback, true);
+        PlatformSignal::SetSignalHandler(ESignal::ILL, HandleSignalCallback, true);
+        PlatformSignal::SetSignalHandler(ESignal::INT, HandleSignalCallback, true);
+        PlatformSignal::SetSignalHandler(ESignal::SEGV, HandleSignalCallback, true);
+        PlatformSignal::SetSignalHandler(ESignal::TERM, HandleSignalCallback, true);
     }
 
     TestSignalHandler::TestSignalHandler()
@@ -32,7 +32,7 @@ namespace ramses_internal
 
     void TestSignalHandler::HandleSignalCallback(int32_t signal)
     {
-        LOG_ERROR(CONTEXT_RENDERER, "SignalHandler::HandleSignalCallback() Received signal " << Signal::SignalToString(static_cast<ramses_capu::ESignal>(signal)) << " In Process :[" << ProcessName << "]! Sending signal to process group ...");
+        LOG_ERROR(CONTEXT_RENDERER, "SignalHandler::HandleSignalCallback() Received signal " << PlatformSignal::SignalToString(static_cast<ESignal>(signal)) << " In Process :[" << ProcessName << "]! Sending signal to process group ...");
         //send same signal to process group
         kill(0, signal);
     }

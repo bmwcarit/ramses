@@ -11,7 +11,6 @@
 
 #include "SceneCommandContainer.h"
 #include "PlatformAbstraction/PlatformLock.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "Utils/LogMacros.h"
 
 
@@ -26,14 +25,14 @@ namespace ramses_internal
         template< typename COMMAND_TYPE >
         void enqueueCommandInternal(const COMMAND_TYPE& command);
 
-        PlatformLightweightLock m_lock;
+        std::mutex m_lock;
         SceneCommandContainer m_container;
     };
 
     template< typename COMMAND_TYPE >
     void SceneCommandBuffer::enqueueCommandInternal(const COMMAND_TYPE& command)
     {
-        PlatformLightweightGuard guard(m_lock);
+        std::lock_guard<std::mutex> guard(m_lock);
         m_container.addCommand(command.commandType, command);
     }
 }

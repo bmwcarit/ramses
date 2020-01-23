@@ -99,3 +99,10 @@ TEST(ARendererConfig, setsAndGetsWaylandDisplay)
     EXPECT_STREQ("xxx", config.getSystemCompositorWaylandDisplay());
     EXPECT_STREQ("xxx", config.impl.getInternalRendererConfig().getWaylandDisplayForSystemCompositorController().c_str());
 }
+
+TEST(ARendererConfig, setsAndGetsLoopCountPeriod)
+{
+    ramses::RendererConfig config;
+    EXPECT_EQ(ramses::StatusOK, config.setRenderThreadLoopTimingReportingPeriod(std::chrono::milliseconds(1234)));
+    EXPECT_EQ(std::chrono::milliseconds(1234), config.getRenderThreadLoopTimingReportingPeriod());
+}

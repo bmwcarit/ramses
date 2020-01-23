@@ -16,13 +16,31 @@
 namespace ramses_internal {
 using namespace testing;
 
-template <template<typename> class MOCK_TYPE>
-RendererMockWithMockDisplay<MOCK_TYPE>::RendererMockWithMockDisplay(const IPlatformFactory& platformFactory, const RendererScenes& rendererScenes,
+const FrameTimer RendererMock::FrameTimerInstance;
+
+RendererMock::RendererMock(const IPlatformFactory& platformFactory, const RendererScenes& rendererScenes,
     const RendererEventCollector& eventCollector, const SceneExpirationMonitor& expirationMonitor, const RendererStatistics& statistics)
     : Renderer(const_cast<IPlatformFactory&>(platformFactory), const_cast<RendererScenes&>(rendererScenes),
         const_cast<RendererEventCollector&>(eventCollector), FrameTimerInstance, const_cast<SceneExpirationMonitor&>(expirationMonitor), const_cast<RendererStatistics&>(statistics))
 {
+    // by default do not track modified scenes, concrete tests will override
+    EXPECT_CALL(*this, markBufferWithSceneAsModified(_)).Times(AnyNumber());
+    // by default do not track set clear color, concrete tests will override
+    EXPECT_CALL(*this, setClearColor(_, _, _)).Times(AnyNumber());
 }
+
+RendererMock::~RendererMock() = default;
+
+template <template<typename> class MOCK_TYPE>
+RendererMockWithMockDisplay<MOCK_TYPE>::RendererMockWithMockDisplay(const IPlatformFactory& platformFactory, const RendererScenes& rendererScenes,
+    const RendererEventCollector& eventCollector, const SceneExpirationMonitor& expirationMonitor, const RendererStatistics& statistics)
+    : RendererMock(const_cast<IPlatformFactory&>(platformFactory), const_cast<RendererScenes&>(rendererScenes),
+        const_cast<RendererEventCollector&>(eventCollector), const_cast<SceneExpirationMonitor&>(expirationMonitor), const_cast<RendererStatistics&>(statistics))
+{
+}
+
+template <template<typename> class MOCK_TYPE>
+RendererMockWithMockDisplay<MOCK_TYPE>::~RendererMockWithMockDisplay() = default;
 
 template <template<typename> class MOCK_TYPE>
 void RendererMockWithMockDisplay<MOCK_TYPE>::createDisplayContext(const DisplayConfig& displayConfig, DisplayHandle displayHandle)
@@ -31,8 +49,8 @@ void RendererMockWithMockDisplay<MOCK_TYPE>::createDisplayContext(const DisplayC
     MOCK_TYPE< RenderBackendMock<MOCK_TYPE> >* renderBackend = new MOCK_TYPE < RenderBackendMock<MOCK_TYPE> > ;
     MOCK_TYPE< EmbeddedCompositingManagerMock >* embeddedCompositingManager = new MOCK_TYPE< EmbeddedCompositingManagerMock >;
     MOCK_TYPE< DisplayControllerMock >* displayController = new MOCK_TYPE < DisplayControllerMock >;
-    EXPECT_CALL(*displayController, getDisplayWidth()).Times(AnyNumber());
-    EXPECT_CALL(*displayController, getDisplayHeight()).Times(AnyNumber());
+    EXPECT_CALL(*displayController, getDisplayWidth()).Times(AnyNumber()).WillRepeatedly(Return(displayConfig.getDesiredWindowWidth()));
+    EXPECT_CALL(*displayController, getDisplayHeight()).Times(AnyNumber()).WillRepeatedly(Return(displayConfig.getDesiredWindowHeight()));
     EXPECT_CALL(*displayController, getDisplayBuffer()).Times(AnyNumber());
     EXPECT_CALL(*displayController, getRenderBackend()).Times(AnyNumber());
     EXPECT_CALL(*displayController, getEmbeddedCompositingManager()).Times(AnyNumber());
@@ -60,6 +78,20 @@ void RendererMockWithMockDisplay<MOCK_TYPE>::destroyDisplayContext(DisplayHandle
     delete &displayController;
     delete displayMock.m_renderBackend;
     delete displayMock.m_embeddedCompositingManager;
+}
+
+template <template<typename> class MOCK_TYPE>
+void RendererMockWithMockDisplay<MOCK_TYPE>::markBufferWithSceneAsModified(SceneId sceneId)
+{
+    Renderer::markBufferWithSceneAsModified(sceneId);
+    RendererMock::markBufferWithSceneAsModified(sceneId);
+}
+
+template <template<typename> class MOCK_TYPE>
+void ramses_internal::RendererMockWithMockDisplay<MOCK_TYPE>::setClearColor(DisplayHandle displayHandle, DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor)
+{
+    Renderer::setClearColor(displayHandle, bufferDeviceHandle, clearColor);
+    RendererMock::setClearColor(displayHandle, bufferDeviceHandle, clearColor);
 }
 
 template <template<typename> class MOCK_TYPE>

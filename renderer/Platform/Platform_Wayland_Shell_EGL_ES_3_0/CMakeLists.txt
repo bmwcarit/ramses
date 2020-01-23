@@ -13,7 +13,7 @@ ACME_MODULE(
     #==========================================================================
     NAME                    platform-wayland-shell-egl-es-3-0
     TYPE                    STATIC_LIBRARY
-    ENABLE_INSTALL          ${ramses-sdk_INSTALL_STATIC_LIBS}
+    ENABLE_INSTALL          OFF
 
     #==========================================================================
     # files of this module

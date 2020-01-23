@@ -34,11 +34,6 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
                                   "wlClient3":          DEFAULT_TEST_SURFACE + 4,
                                   "wlClient4":          DEFAULT_TEST_SURFACE + 5}
 
-        # Destroy maybe exisiting old ivi-surfaces, needed to reset stored state for visibility, opacity and position in the compositor
-        for surface, iviId in self.testSurfaceIVIIds.items():
-            self.target.ivi_control.destroySurface(iviId)
-        self.target.ivi_control.flush()
-
         # The surfaces of this tests (ivi-gears + renderer) are put on layer DEFAULT_TEST_LAYER + 1.
         # For having a black background, a second renderer is started on layer DEFAULT_TEST_LAYER, which just shows
         # black content without any scene. Needed to cover the HMI, which runs in the background.
@@ -49,7 +44,7 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         self.expectedSurfaceIds = set(self.target.ivi_control.getSurfaceIds())
 
         # Start black background renderer
-        self.rendererbackground = self.target.start_default_renderer("--waylandIviLayerId {0} --waylandIviSurfaceID {1} --wayland-socket-embedded wayland-12 --disableAutoMapping".format(DEFAULT_TEST_LAYER, self.testSurfaceIVIIds["rendererbackground"]))
+        self.rendererbackground = self.target.start_default_renderer("--waylandIviLayerId {0} --waylandIviSurfaceID {1} --wayland-socket-embedded wayland-12".format(DEFAULT_TEST_LAYER, self.testSurfaceIVIIds["rendererbackground"]))
         self.checkThatApplicationWasStarted(self.rendererbackground)
         self.addCleanup(self.target.kill_application, self.rendererbackground)
         self.expectedSurfaceIds.add("{0}".format(self.testSurfaceIVIIds["rendererbackground"]))
@@ -86,7 +81,7 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         self.addCleanup(self.target.kill_application, self.ramsesDaemon)
 
         # Start renderer
-        self.renderer = self.target.start_default_renderer("--waylandIviLayerId {0} --waylandIviSurfaceID {1} --wayland-socket-embedded wayland-11 --disableAutoMapping".format(self.testLayer, self.testSurfaceIVIIds["renderer"]))
+        self.renderer = self.target.start_default_renderer("--waylandIviLayerId {0} --waylandIviSurfaceID {1} --wayland-socket-embedded wayland-11".format(self.testLayer, self.testSurfaceIVIIds["renderer"]))
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.save_application_output, self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)

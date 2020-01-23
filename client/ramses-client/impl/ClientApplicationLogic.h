@@ -16,8 +16,9 @@
 
 #include "SceneAPI/SceneVersionTag.h"
 #include "Scene/EScenePublicationMode.h"
-#include "Scene/ESceneFlushMode.h"
 #include "Collections/HashSet.h"
+#include "Collections/Guid.h"
+#include "PlatformAbstraction/PlatformLock.h"
 
 namespace ramses
 {
@@ -29,17 +30,15 @@ namespace ramses_internal
     class ClientScene;
     class ResourceTableOfContents;
     class IResource;
-    class IObjectTouchHandler;
     class IResourceProviderComponent;
     class ISceneGraphProviderComponent;
-    class PlatformLock;
     struct FlushTimeInformation;
 
     class ClientApplicationLogic : public ISceneProviderServiceHandler
     {
     public:
         explicit ClientApplicationLogic(const Guid& myId, PlatformLock& frameworkLock);
-        virtual ~ClientApplicationLogic();
+        virtual ~ClientApplicationLogic() override;
 
         void init(IResourceProviderComponent& resources, ISceneGraphProviderComponent& scenegraph);
         void deinit();
@@ -50,7 +49,7 @@ namespace ramses_internal
         void unpublishScene(SceneId sceneId);
         Bool isScenePublished(SceneId sceneId) const;
 
-        void flush(SceneId sceneId, ESceneFlushMode flushMode, const FlushTimeInformation& timeInfo, SceneVersionTag versionTag);
+        void flush(SceneId sceneId, const FlushTimeInformation& timeInfo, SceneVersionTag versionTag);
         void removeScene(SceneId sceneId);
 
         virtual void handleSubscribeScene(const SceneId& sceneId, const Guid& consumerID) override;
@@ -65,8 +64,8 @@ namespace ramses_internal
         void                    addResourceFile(ResourceFileInputStreamSPtr resourceFileInputStream, const ResourceTableOfContents& toc);
         void                    removeResourceFile(const String& resourceFileName);
         bool                    hasResourceFile(const String& resourceFileName) const;
+        void                    reserveResourceCount(uint32_t totalCount);
 
-        void reserveResourceCount(uint32_t totalCount);
     private:
         PlatformLock&                 m_frameworkLock;
         IResourceProviderComponent*   m_resourceComponent;
@@ -74,7 +73,6 @@ namespace ramses_internal
 
         const Guid                    m_myId;
 
-        HashSet<IObjectTouchHandler*> m_pTouchHandlers;
         HashSet<SceneId> m_publishedScenes;
     };
 }

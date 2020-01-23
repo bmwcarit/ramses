@@ -25,11 +25,9 @@ namespace ramses_internal
     {
         SceneActionCollection sceneActions;
         UInt                  sceneActionsIt = 0u;
-        Bool                  isSynchronous = false;
         UInt64                flushIndex = 0u;
         FlushTimeInformation  timeInfo;
         SceneVersionTag       versionTag;
-        TimeStampVector       additionalTimestamps;
 
         // Resource lists below are consolidated for this flush and all previous pending flushes.
         // When a subset of flushes is to be applied, only the lists of the last one in that set need to be checked/processed.

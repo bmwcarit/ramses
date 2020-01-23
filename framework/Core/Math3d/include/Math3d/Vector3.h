@@ -86,8 +86,8 @@ namespace ramses_internal
          */
         Vector3(const Float _x, const Float _y, const Float _z);
 
-        Vector3(Vector3&& other) = default;
-        Vector3& operator=(Vector3&& other) = default;
+        Vector3(Vector3&& other) RNOEXCEPT = default;
+        Vector3& operator=(Vector3&& other) RNOEXCEPT = default;
 
         /**
          *  Constructor to initialize the vector with one value
@@ -190,14 +190,14 @@ namespace ramses_internal
          * @param other Vector3 to compare to
          * @return true if both vectors are equal false otherwise
          */
-        Bool operator==(const Vector3& other) const;
+        bool operator==(const Vector3& other) const;
 
         /**
          * Compares each element to check if two vectors are not equal
          * @param other Vector3 to compare to
          * @return false if both vectors are equal true otherwise
          */
-        Bool operator!=(const Vector3& other) const;
+        bool operator!=(const Vector3& other) const;
 
         /**
          * Returns the element of the given index
@@ -299,7 +299,7 @@ namespace ramses_internal
 
     inline Float Vector3::length() const
     {
-        return PlatformMath::Sqrt(PlatformMath::Pow2(x) + PlatformMath::Pow2(y) + PlatformMath::Pow2(z));
+        return std::sqrt(x*x + y*y + z*z);
     }
 
     inline Vector3& Vector3::operator=(const Vector3& other)
@@ -336,12 +336,12 @@ namespace ramses_internal
         z -= other.z;
     }
 
-    inline Bool Vector3::operator==(const Vector3& other) const
+    inline bool Vector3::operator==(const Vector3& other) const
     {
         return PlatformMemory::Compare(data, other.data, sizeof(data)) == 0;
     }
 
-    inline Bool Vector3::operator!=(const Vector3& other) const
+    inline bool Vector3::operator!=(const Vector3& other) const
     {
         return !operator==(other);
     }
@@ -398,7 +398,7 @@ namespace ramses_internal
 
     inline Float Vector3::angle(const Vector3& other) const
     {
-        return PlatformMath::ArcCos(dot(other) / (length() * other.length()));
+        return std::acos(dot(other) / (length() * other.length()));
     }
 
     inline
@@ -463,8 +463,8 @@ namespace ramses_internal
             , vec.z * scalar);
     }
 
-    static_assert(std::is_nothrow_move_constructible<Vector3>::value &&
-        std::is_nothrow_move_assignable<Vector3>::value, "Vector3 must be movable");
+    static_assert(std::is_nothrow_move_constructible<Vector3>::value, "Vector3 must be movable");
+    static_assert(std::is_nothrow_move_assignable<Vector3>::value, "Vector3 must be movable");
 }
 
 #endif

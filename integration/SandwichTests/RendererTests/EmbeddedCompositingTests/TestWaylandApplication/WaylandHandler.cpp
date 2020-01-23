@@ -143,7 +143,7 @@ void WaylandHandler::attachBuffer(ramses_internal::TestApplicationSurfaceId surf
 void WaylandHandler::detachBuffer(ramses_internal::TestApplicationSurfaceId surfaceId)
 {
     WaylandWindow& window = getWindow(surfaceId);
-    wl_surface_attach(window.surface, 0, 0, 0);
+    wl_surface_attach(window.surface, nullptr, 0, 0);
     wl_surface_damage(window.surface, 0, 0, window.width, window.height);
     wl_surface_commit(window.surface);
     //make roundtrip to wait for buffer release event:
@@ -276,7 +276,7 @@ bool WaylandHandler::setupWayland()
     LOG_INFO(ramses_internal::CONTEXT_RENDERER, "WaylandHandler::setupWayland(): will connect to display");
 
     assert(ramses_internal::WaylandEnvironmentUtils::IsEnvironmentInProperState());
-    wayland.display = wl_display_connect(NULL);
+    wayland.display = wl_display_connect(nullptr);
     if (wayland.display == nullptr)
     {
         LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "WaylandHandler::setupWayland(): wl_display_connect() failed");
@@ -385,7 +385,7 @@ bool WaylandHandler::createSurface(WaylandWindow& window)
 bool WaylandHandler::createEGLWindow(WaylandWindow& window)
 {
     window.native = wl_egl_window_create(window.surface, window.width, window.height);
-    window.eglsurface = eglCreateWindowSurface(egldisplay, eglconfig, static_cast<NativeWindowType>(window.native), NULL);
+    window.eglsurface = eglCreateWindowSurface(egldisplay, eglconfig, static_cast<NativeWindowType>(window.native), nullptr);
     if (window.eglsurface == EGL_NO_SURFACE)
     {
         LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "WaylandHandler::createEGLWindow eglCreateWindowSurface failed !");
@@ -535,7 +535,7 @@ void WaylandHandler::disableContextForSurface()
 void WaylandHandler::resizeWindow(ramses_internal::TestApplicationSurfaceId surfaceId, uint32_t width, uint32_t height)
 {
     WaylandWindow& window = getWindow(surfaceId);
-    if (0 != window.surface)
+    if (nullptr != window.surface)
     {
         wl_egl_window_resize(window.native, width, height, 0, 0);
     }
@@ -552,7 +552,7 @@ void WaylandHandler::frameCallback(wl_callback* callback)
         WaylandWindow* window = i.value;
         if (window->frameCallback == callback)
         {
-            window->frameCallback = 0;
+            window->frameCallback = nullptr;
         }
     }
 

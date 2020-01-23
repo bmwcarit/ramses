@@ -11,11 +11,13 @@
 
 #include "Components/DcsmTypes.h"
 #include "Components/IDcsmComponent.h"
+#include "Components/DcsmMetadata.h"
 #include "TransportCommon/IConnectionStatusListener.h"
 #include "TransportCommon/ServiceHandlerInterfaces.h"
 #include "PlatformAbstraction/PlatformLock.h"
 #include "ramses-framework-api/DcsmApiTypes.h"
 #include "Collections/HashMap.h"
+#include "Collections/Guid.h"
 #include "Utils/IPeriodicLogSupplier.h"
 #include <unordered_map>
 
@@ -30,13 +32,15 @@ namespace ramses_internal
     class ICommunicationSystem;
     class IConnectionStatusUpdateNotifier;
     class IDcsmProviderEventHandler;
-    class IDcsmConsumerEventHandler;
 
     class DcsmComponent final : public IDcsmComponent, public IConnectionStatusListener, public IDcsmProviderServiceHandler, public IDcsmConsumerServiceHandler, public IPeriodicLogSupplier
     {
     public:
         DcsmComponent(const Guid& myID, ICommunicationSystem& communicationSystem, IConnectionStatusUpdateNotifier& connectionStatusUpdateNotifier, PlatformLock& frameworkLock);
         virtual ~DcsmComponent() override;
+
+        bool connect();
+        bool disconnect();
 
         virtual bool setLocalConsumerAvailability(bool available) override;
         virtual bool setLocalProviderAvailability(bool available) override;
@@ -53,6 +57,7 @@ namespace ramses_internal
         virtual bool sendContentReady(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) override;
         virtual bool sendContentFocusRequest(ContentID contentID) override;
         virtual bool sendRequestStopOfferContent(ContentID contentID) override;
+        virtual bool sendUpdateContentMetadata(ContentID contentID, const DcsmMetadata& metadata) override;
 
         // IDcsmProviderServiceHandler implementation
         virtual void handleCanvasSizeChange(ContentID contentID, SizeInfo sizeinfo, AnimationInformation, const Guid& consumerID) override;
@@ -64,6 +69,7 @@ namespace ramses_internal
         virtual void handleContentFocusRequest(ContentID contentID, const Guid& providerID) override;
         virtual void handleRequestStopOfferContent(ContentID contentID, const Guid& providerID) override;
         virtual void handleForceStopOfferContent(ContentID contentID, const Guid& providerID) override;
+        virtual void handleUpdateContentMetadata(ContentID contentID, DcsmMetadata metadata, const Guid& providerID) override;
 
         virtual bool dispatchProviderEvents(IDcsmProviderEventHandler& handler) override;
         virtual bool dispatchConsumerEvents(ramses::IDcsmConsumerEventHandler& handler) override;
@@ -96,6 +102,7 @@ namespace ramses_internal
             ContentState state;
             Guid providerID;
             Guid consumerID;
+            DcsmMetadata metadata;
             // TODO(tobias): add more infos (tech etc) for periodic/ramsh logging
         };
 
@@ -107,6 +114,7 @@ namespace ramses_internal
             ContentFocusRequest,
             StopOfferContentRequest,
             ForceStopOfferContent,
+            UpdateContentMetadata,
         };
 
         struct DcsmEvent
@@ -119,6 +127,7 @@ namespace ramses_internal
             EDcsmState                 state;
             SizeInfo                   size;
             AnimationInformation       animation;
+            DcsmMetadata               metadata;
             Guid                       from;
         };
 
@@ -129,6 +138,7 @@ namespace ramses_internal
         void addConsumerEvent_ContentFocusRequest(ContentID contentID, const Guid& providerID);
         void addConsumerEvent_RequestStopOfferContent(ContentID contentID, const Guid& providerID);
         void addConsumerEvent_ForceStopOfferContent(ContentID contentID, const Guid& providerID);
+        void addConsumerEvent_UpdateContentMetadata(ContentID contentID,  DcsmMetadata metadata, const Guid& providerID);
 
         const char* EnumToString(EDcsmCommandType cmd) const;
         const char* EnumToString(ContentState val) const;
@@ -146,6 +156,7 @@ namespace ramses_internal
         IConnectionStatusUpdateNotifier& m_connectionStatusUpdateNotifier;
         PlatformLock& m_frameworkLock;
 
+        bool m_connected = false;
         bool m_localConsumerAvailable = false;
         bool m_localProviderAvailable = false;
 

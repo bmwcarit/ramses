@@ -35,12 +35,7 @@ namespace ramses_capu
         class Console
         {
         public:
-            static bool IsInputAvailable();
-            static void Print(const char* format, va_list values);
-            static void Print(uint32_t color, const char* format, va_list values);
             static status_t ReadChar(char& buffer);
-            static const char Colors[6][8];
-            static void Flush();
             static void InterruptReadChar();
         private:
             static int32_t GetReadEndOfPipe();
@@ -63,30 +58,6 @@ namespace ramses_capu
                 return ret;
             }
             return 0;
-        }
-
-        inline
-        void
-        Console::Print(const char* format, va_list values)
-        {
-            vprintf(format, values);
-        }
-
-        inline
-        void
-        Console::Print(uint32_t color, const char* format, va_list values)
-        {
-            if (color < 6)
-            {
-                fputs(ramses_capu::posix::Console::Colors[color], stdout);
-                vprintf(format, values);
-                const char ca_end[] = { 0x1b, 0x5b, 0x30, 0x6d, 0x00 }; // hex representation of ansi codes for "\e[0m"
-                fputs(ca_end, stdout);
-            }
-            else
-            {
-                vprintf(format, values);
-            }
         }
 
         inline
@@ -228,36 +199,6 @@ namespace ramses_capu
                 UNUSED(result);
             }
         }
-
-        inline
-        bool
-        Console::IsInputAvailable()
-        {
-            fd_set fds;
-            FD_ZERO(&fds);
-            FD_SET(STDIN_FILENO, &fds);
-
-            struct timeval tv;
-            tv.tv_sec = 0;
-            tv.tv_usec = 0;
-
-            int ret = select(STDIN_FILENO + 1, &fds, 0, 0, &tv);
-            if (-1 == ret)
-            {
-                return false;
-            }
-
-            return FD_ISSET(STDIN_FILENO, &fds) != 0;
-        }
-
-        inline
-        void
-        Console::Flush()
-        {
-            fflush(stdout);
-            fflush(stderr);
-        }
-
     }
 }
 

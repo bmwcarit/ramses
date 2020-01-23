@@ -122,7 +122,7 @@ namespace ramses_internal
     void Texture2DSamplingScene::createMesh(const ramses::TextureSampler& sampler, EState state)
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-textured");
-        assert(effect != 0);
+        assert(effect != nullptr);
 
         ramses::AttributeInput positionsInput;
         ramses::AttributeInput texCoordsInput;

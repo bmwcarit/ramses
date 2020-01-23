@@ -54,6 +54,7 @@ class LocalTarget(Target):
         my_env.update(self.defaultEnvironment)
         my_env.update(env)
 
+        log.info('Execute: ' + command)
         popenApp = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                     cwd=applicationDirectory, shell=True, env=my_env)
         application = LocalApplication(popenApp, applicationName, applicationDirectory, nameExtension=nameExtension)
@@ -85,7 +86,7 @@ class LocalTarget(Target):
         popenApp = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, cwd=cwd)
         if block:
             (stdoutdata, stderrdata) = popenApp.communicate() #block till call is finished
-            return stdoutdata.splitlines(), stderrdata.splitlines(), popenApp.returncode
+            return stdoutdata.decode('utf-8').splitlines(), stderrdata.decode('utf-8').splitlines(), popenApp.returncode
         return None
 
     def copy_file_from_target(self, targetFileName, destFile, targetWorkingDirectory=None):

@@ -37,7 +37,8 @@ namespace ramses_internal
 
         std::chrono::microseconds getFrameCallbackMaxPollTime() const;
         void setFrameCallbackMaxPollTime(std::chrono::microseconds pollTime);
-
+        void setRenderthreadLooptimingReportingPeriod(std::chrono::milliseconds period);
+        std::chrono::milliseconds getRenderThreadLoopTimingReportingPeriod() const;
     private:
         String m_waylandSocketEmbedded;
         String m_waylandSocketEmbeddedGroupName;
@@ -46,6 +47,7 @@ namespace ramses_internal
         Bool m_systemCompositorEnabled = false;
         String m_kpiFilename;
         std::chrono::microseconds m_frameCallbackMaxPollTime{10000u};
+        std::chrono::milliseconds m_renderThreadLoopTimingReportingPeriod { 0 }; // zero deactivates reporting
     };
 }
 

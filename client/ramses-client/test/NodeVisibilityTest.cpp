@@ -12,11 +12,13 @@
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/RemoteCamera.h"
+#include "ramses-client-api/PickableObject.h"
 #include "ClientTestUtils.h"
 #include "RamsesObjectTestTypes.h"
 #include "NodeImpl.h"
 #include "MeshNodeImpl.h"
 #include "CameraNodeImpl.h"
+#include "PickableObjectImpl.h"
 
 using namespace testing;
 using namespace ramses_internal;
@@ -36,9 +38,9 @@ namespace ramses
             m_childMesh->setParent(*m_visibilityNode);
         }
 
-        void testFlattenedVisibility(bool flag)
+        void testFlattenedVisibility(EVisibilityMode mode)
         {
-            EXPECT_EQ(this->m_childMesh->impl.getFlattenedVisibility(), flag);
+            EXPECT_EQ(this->m_childMesh->impl.getFlattenedVisibility(), mode);
         }
 
         T* m_parentVisNode;
@@ -50,74 +52,110 @@ namespace ramses
 
     TYPED_TEST(ANodeVisibilityTest, isVisibleInitially)
     {
-        EXPECT_TRUE(this->m_visibilityNode->impl.getVisibility());
+        EXPECT_EQ(this->m_visibilityNode->impl.getVisibility(), EVisibilityMode::Visible);
     }
 
     TYPED_TEST(ANodeVisibilityTest, canChangeVisibility)
     {
-        this->m_visibilityNode->setVisibility(false);
-        EXPECT_FALSE(this->m_visibilityNode->impl.getVisibility());
+        this->m_visibilityNode->setVisibility(EVisibilityMode::Invisible);
+        EXPECT_EQ(this->m_visibilityNode->impl.getVisibility(), EVisibilityMode::Invisible);
+        this->m_visibilityNode->setVisibility(EVisibilityMode::Off);
+        EXPECT_EQ(this->m_visibilityNode->impl.getVisibility(), EVisibilityMode::Off);
     }
 
     TYPED_TEST(ANodeVisibilityTest, isMarkedDirtyWhenChangingVisibility)
     {
-        this->m_visibilityNode->setVisibility(false);
+        this->m_visibilityNode->setVisibility(EVisibilityMode::Invisible);
         EXPECT_TRUE(this->m_visibilityNode->impl.isDirty());
     }
 
     TYPED_TEST(ANodeVisibilityTest, staysCleanWhenSettingTheSameVisibility)
     {
-        this->m_visibilityNode->setVisibility(false);
+        this->m_visibilityNode->setVisibility(EVisibilityMode::Invisible);
         EXPECT_TRUE(this->m_visibilityNode->impl.isDirty());
         this->m_scene.flush(); // to clear dirty state
 
-        this->m_visibilityNode->setVisibility(false);
+        this->m_visibilityNode->setVisibility(EVisibilityMode::Invisible);
         EXPECT_FALSE(this->m_visibilityNode->impl.isDirty());
     }
 
     TYPED_TEST(ANodeVisibilityTest, confidenceTest_isMarkedDirtyWhenChangingVisibilityMultipleTimes)
     {
-        this->m_visibilityNode->setVisibility(false);
+        this->m_visibilityNode->setVisibility(EVisibilityMode::Invisible);
         EXPECT_TRUE(this->m_visibilityNode->impl.isDirty());
         this->m_scene.flush(); // to clear dirty state
 
-        this->m_visibilityNode->setVisibility(true);
+        this->m_visibilityNode->setVisibility(EVisibilityMode::Visible);
         EXPECT_TRUE(this->m_visibilityNode->impl.isDirty());
         this->m_scene.flush(); // to clear dirty state
 
-        this->m_visibilityNode->setVisibility(false);
+        this->m_visibilityNode->setVisibility(EVisibilityMode::Off);
         EXPECT_TRUE(this->m_visibilityNode->impl.isDirty());
     }
 
     TYPED_TEST(ANodeVisibilityTest, hasFlattenedVisibilitySetInitially)
     {
-        this->testFlattenedVisibility(true);
+        this->testFlattenedVisibility(EVisibilityMode::Visible);
         this->m_scene.flush();
-        this->testFlattenedVisibility(true);
+        this->testFlattenedVisibility(EVisibilityMode::Visible);
     }
 
     TYPED_TEST(ANodeVisibilityTest, visibilityPropagatesFromParentToChildrenOnFlush)
     {
-        this->m_visibilityNode->setVisibility(false);
+        this->m_visibilityNode->setVisibility(EVisibilityMode::Invisible);
         EXPECT_TRUE(this->m_visibilityNode->impl.isDirty());
 
         this->m_scene.flush();
-        this->testFlattenedVisibility(false);
+        this->testFlattenedVisibility(EVisibilityMode::Invisible);
+    }
+
+    TYPED_TEST(ANodeVisibilityTest, offVisibilityPropagatesFromParentToChildrenOnFlush)
+    {
+        this->m_visibilityNode->setVisibility(EVisibilityMode::Off);
+        EXPECT_TRUE(this->m_visibilityNode->impl.isDirty());
+
+        this->m_scene.flush();
+        this->testFlattenedVisibility(EVisibilityMode::Off);
     }
 
     TYPED_TEST(ANodeVisibilityTest, visibilityPropagatesFromGrandParentToChildrenOnFlush)
     {
-        this->m_parentVisNode->setVisibility(false);
+        this->m_parentVisNode->setVisibility(EVisibilityMode::Invisible);
         EXPECT_TRUE(this->m_visibilityNode->impl.isDirty());
 
         this->m_scene.flush();
-        this->testFlattenedVisibility(false);
+        this->testFlattenedVisibility(EVisibilityMode::Invisible);
+    }
+
+    TYPED_TEST(ANodeVisibilityTest, offVisibilityPropagatesFromGrandParentToChildrenOnFlush)
+    {
+        this->m_parentVisNode->setVisibility(EVisibilityMode::Off);
+        EXPECT_TRUE(this->m_visibilityNode->impl.isDirty());
+
+        this->m_scene.flush();
+        this->testFlattenedVisibility(EVisibilityMode::Off);
+    }
+
+    TYPED_TEST(ANodeVisibilityTest, offWinsAgainstInvisibleWhenPropagatingDownwards)
+    {
+        this->m_parentVisNode->setVisibility(EVisibilityMode::Off);
+        this->m_visibilityNode->setVisibility(EVisibilityMode::Invisible);
+        this->m_scene.flush();
+        this->testFlattenedVisibility(EVisibilityMode::Off);
+
+        this->m_parentVisNode->setVisibility(EVisibilityMode::Invisible);
+        this->m_visibilityNode->setVisibility(EVisibilityMode::Off);
+        this->m_scene.flush();
+        this->testFlattenedVisibility(EVisibilityMode::Off);
     }
 
     TYPED_TEST(ANodeVisibilityTest, visibilityIsFlattenedToMeshNodeItself)
     {
-        this->m_childMesh->setVisibility(false);
+        this->m_childMesh->setVisibility(EVisibilityMode::Invisible);
         this->m_scene.flush();
-        EXPECT_FALSE(this->m_childMesh->impl.getFlattenedVisibility());
+        EXPECT_EQ(this->m_childMesh->impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        this->m_childMesh->setVisibility(EVisibilityMode::Off);
+        this->m_scene.flush();
+        EXPECT_EQ(this->m_childMesh->impl.getFlattenedVisibility(), EVisibilityMode::Off);
     }
 }

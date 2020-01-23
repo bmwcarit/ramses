@@ -18,7 +18,6 @@
 ############################################################################
 
 SET(TARGET_CONTENT
-    ${ACME_FILES_PRIVATE_HEADER}
     ${ACME_FILES_SOURCE}
     ${ACME_FILES_RESOURCE}
 )
@@ -35,13 +34,6 @@ ENDIF()
 IF("${ACME_TYPE}" STREQUAL "STATIC_LIBRARY")
     #==============================================================================================
     ADD_LIBRARY(${ACME_NAME} STATIC ${TARGET_CONTENT})
-    IF(ACME_ENABLE_INSTALL)
-        INSTALL(TARGETS ${ACME_NAME} DESTINATION ${ACME_INSTALL_STATIC_LIB} COMPONENT "${ACME_PACKAGE_NAME}-devel")
-        if (MSVC)
-            SET_TARGET_PROPERTIES(${ACME_NAME} PROPERTIES COMPILE_PDB_NAME ${ACME_NAME})
-            INSTALL(FILES $<TARGET_FILE_DIR:${ACME_NAME}>/${ACME_NAME}.pdb DESTINATION ${ACME_INSTALL_STATIC_LIB} CONFIGURATIONS Debug RelWithDebInfo)
-        endif()
-    ENDIF()
 
     #==============================================================================================
 ELSEIF("${ACME_TYPE}" STREQUAL "BINARY")
@@ -83,9 +75,11 @@ ELSEIF("${ACME_TYPE}" STREQUAL "SHARED_LIBRARY")
     #==============================================================================================
     ADD_LIBRARY(${ACME_NAME} SHARED ${TARGET_CONTENT})
     IF(ACME_ENABLE_INSTALL)
-        INSTALL(TARGETS ${ACME_NAME} DESTINATION ${ACME_INSTALL_SHARED_LIB} COMPONENT "${ACME_PACKAGE_NAME}")
         if (MSVC)
-            INSTALL(FILES $<TARGET_PDB_FILE:${ACME_NAME}> DESTINATION ${ACME_INSTALL_SHARED_LIB} CONFIGURATIONS Debug RelWithDebInfo)
+            INSTALL(TARGETS ${ACME_NAME} DESTINATION ${ACME_INSTALL_BINARY} COMPONENT "${ACME_PACKAGE_NAME}")
+            INSTALL(FILES $<TARGET_PDB_FILE:${ACME_NAME}> DESTINATION ${ACME_INSTALL_BINARY} CONFIGURATIONS Debug RelWithDebInfo)
+        else()
+            INSTALL(TARGETS ${ACME_NAME} DESTINATION ${ACME_INSTALL_SHARED_LIB} COMPONENT "${ACME_PACKAGE_NAME}")
         endif()
     ENDIF()
 

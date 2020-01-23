@@ -10,6 +10,7 @@
 #include "Utils/LogMacros.h"
 #include "RendererLib/RendererCommandTypes.h"
 #include "RendererLib/EKeyModifier.h"
+#include "Math3d/Vector2i.h"
 
 namespace ramses_internal
 {
@@ -80,12 +81,11 @@ namespace ramses_internal
         m_commands.addCommand(ERendererCommand_DestroyDisplay, cmd);
     }
 
-    void RendererCommands::mapSceneToDisplay(SceneId sceneId, DisplayHandle displayHandle, const Int32 sceneRenderOrder)
+    void RendererCommands::mapSceneToDisplay(SceneId sceneId, DisplayHandle displayHandle)
     {
         SceneMappingCommand cmd;
         cmd.sceneId = sceneId;
         cmd.displayHandle = displayHandle;
-        cmd.sceneRenderOrder = sceneRenderOrder;
         m_commands.addCommand(ERendererCommand_MapSceneToDisplay, cmd);
     }
 
@@ -93,8 +93,6 @@ namespace ramses_internal
     {
         SceneMappingCommand cmd;
         cmd.sceneId = sceneId;
-        cmd.displayHandle = DisplayHandle::Invalid();
-        cmd.sceneRenderOrder = 0;
         m_commands.addCommand(ERendererCommand_UnmapSceneFromDisplays, cmd);
     }
 
@@ -134,10 +132,11 @@ namespace ramses_internal
         m_commands.addCommand(ERendererCommand_ReadPixels, cmd);
     }
 
-    void RendererCommands::setClearColor(DisplayHandle displayHandle, const Vector4& color)
+    void RendererCommands::setClearColor(DisplayHandle displayHandle, OffscreenBufferHandle obHandle, const Vector4& color)
     {
         SetClearColorCommand cmd;
         cmd.displayHandle = displayHandle;
+        cmd.obHandle = obHandle;
         cmd.clearColor = color;
         m_commands.addCommand(ERendererCommand_SetClearColor, cmd);
     }
@@ -190,19 +189,13 @@ namespace ramses_internal
         m_commands.addCommand(ERendererCommand_DestroyOffscreenBuffer, cmd);
     }
 
-    void RendererCommands::assignSceneToOffscreenBuffer(SceneId sceneId, OffscreenBufferHandle buffer)
+    void RendererCommands::assignSceneToDisplayBuffer(SceneId sceneId, OffscreenBufferHandle buffer, Int32 sceneRenderOrder)
     {
-        OffscreenBufferCommand cmd;
-        cmd.bufferHandle = buffer;
-        cmd.assignedScene = sceneId;
-        m_commands.addCommand(ERendererCommand_AssignSceneToOffscreenBuffer, cmd);
-    }
-
-    void RendererCommands::assignSceneToFramebuffer(SceneId sceneId)
-    {
-        OffscreenBufferCommand cmd;
-        cmd.assignedScene = sceneId;
-        m_commands.addCommand(ERendererCommand_AssignSceneToFramebuffer, cmd);
+        SceneMappingCommand cmd;
+        cmd.sceneId = sceneId;
+        cmd.sceneRenderOrder = sceneRenderOrder;
+        cmd.offscreenBuffer = buffer;
+        m_commands.addCommand(ERendererCommand_AssignSceneToDisplayBuffer, cmd);
     }
 
     void RendererCommands::moveView(const Vector3& offset)
@@ -393,6 +386,14 @@ namespace ramses_internal
         SetFeatureCommand cmd;
         cmd.enable = enable;
         m_commands.addCommand(ERendererCommand_SetSkippingOfUnmodifiedBuffers, cmd);
+    }
+
+    void RendererCommands::handlePickEvent(SceneId sceneId, Vector2 coordsNormalizedToBufferSize)
+    {
+        PickingCommand cmd;
+        cmd.sceneId = sceneId;
+        cmd.coordsNormalizedToBufferSize = coordsNormalizedToBufferSize;
+        m_commands.addCommand(ERendererCommand_PickEvent, std::move(cmd));
     }
 
     const RendererCommandContainer& RendererCommands::getCommands() const

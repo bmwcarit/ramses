@@ -19,7 +19,7 @@ namespace ramses_internal
         : m_started(false)
     {
         // own address
-        const Bool isDaemon = true;
+        const bool isDaemon = true;
         const NetworkParticipantAddress participantNetworkAddress(TCPConnectionSystem::GetDaemonId(), "SM", config.m_tcpConfig.getIPAddress(), config.m_tcpConfig.getPort(isDaemon));
 
         LOG_DEBUG(CONTEXT_COMMUNICATION, "TcpDiscoveryDaemon::TcpDiscoveryDaemon: My Address: " << participantNetworkAddress.getIp() << ":" << participantNetworkAddress.getPort());

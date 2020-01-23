@@ -10,21 +10,6 @@
 
 namespace ramses_internal {
 
-ACTION_P(resourceCall, requestedResources)
-{
-    UNUSED(arg9);
-    UNUSED(arg8);
-    UNUSED(arg7);
-    UNUSED(arg6);
-    UNUSED(arg5);
-    UNUSED(arg4);
-    UNUSED(arg3);
-    UNUSED(arg2);
-    UNUSED(arg1);
-    UNUSED(args);
-    requestedResources->insert(requestedResources->end(), arg0.begin(), arg0.end());
-}
-
 const ResourceContentHash ResourceProviderMock::FakeVertArrayHash(123u, 0);
 const ResourceContentHash ResourceProviderMock::FakeVertArrayHash2(124u, 0);
 const ResourceContentHash ResourceProviderMock::FakeIndexArrayHash(125u, 0);
@@ -40,19 +25,22 @@ ResourceProviderMock::ResourceProviderMock()
     , vertArrayResource2(EResourceType_VertexArray, 0, EDataType_Float, nullptr, ResourceCacheFlag_DoNotCache, String())
     , indexArrayResource(EResourceType_IndexArray, 0, EDataType_UInt16, nullptr, ResourceCacheFlag_DoNotCache, String())
     , indexArrayResource2(EResourceType_IndexArray, 0, EDataType_UInt16, nullptr, ResourceCacheFlag_DoNotCache, String())
-    , textureResource(EResourceType_Texture2D, TextureMetaInfo(1u, 1u, 1u, ETextureFormat_R8, false, { 1u }), ResourceCacheFlag_DoNotCache, String())
-    , textureResource2(EResourceType_Texture2D, TextureMetaInfo(2u, 2u, 1u, ETextureFormat_R8, true, { 4u }), ResourceCacheFlag_DoNotCache, String())
+    , textureResource(EResourceType_Texture2D, TextureMetaInfo(1u, 1u, 1u, ETextureFormat_R8, false, {}, { 1u }), ResourceCacheFlag_DoNotCache, String())
+    , textureResource2(EResourceType_Texture2D, TextureMetaInfo(2u, 2u, 1u, ETextureFormat_R8, true, {}, { 4u }), ResourceCacheFlag_DoNotCache, String())
     , indexArrayIsAvailable(true)
     , deleterMock(mock)
 {
-    vertArrayResource.setResourceData(SceneResourceData(new MemoryBlob(1)), FakeVertArrayHash);
-    vertArrayResource2.setResourceData(SceneResourceData(new MemoryBlob(1)), FakeVertArrayHash2);
-    indexArrayResource.setResourceData(SceneResourceData(new MemoryBlob(1)), FakeIndexArrayHash);
-    indexArrayResource2.setResourceData(SceneResourceData(new MemoryBlob(1)), FakeIndexArrayHash2);
-    textureResource.setResourceData(SceneResourceData(new MemoryBlob(1)), FakeTextureHash);
-    textureResource2.setResourceData(SceneResourceData(new MemoryBlob(1)), FakeTextureHash2);
+    vertArrayResource.setResourceData(ResourceBlob(1), FakeVertArrayHash);
+    vertArrayResource2.setResourceData(ResourceBlob(1), FakeVertArrayHash2);
+    indexArrayResource.setResourceData(ResourceBlob(1), FakeIndexArrayHash);
+    indexArrayResource2.setResourceData(ResourceBlob(1), FakeIndexArrayHash2);
+    textureResource.setResourceData(ResourceBlob(1), FakeTextureHash);
+    textureResource2.setResourceData(ResourceBlob(1), FakeTextureHash2);
 
-    ON_CALL(*this, requestResourceAsyncronouslyFromFramework(_,_,_)).WillByDefault(resourceCall(&requestedResources));
+    ON_CALL(*this, requestResourceAsyncronouslyFromFramework(_, _, _))
+        .WillByDefault(Invoke([&](const auto& ids, auto, auto) {
+                                  requestedResources.insert(requestedResources.end(), ids.begin(), ids.end());
+                              }));
     EXPECT_CALL(*this, popArrivedResources(_)).Times(AnyNumber()).WillRepeatedly(Invoke(this, &ResourceProviderMock::fakePopArrivedResources));
 }
 

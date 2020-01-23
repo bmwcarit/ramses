@@ -7,13 +7,12 @@
 //  -------------------------------------------------------------------------
 
 #include "TaskFramework/TaskExecutingThread.h"
-
 #include "TaskFramework/ITask.h"
-#include "PlatformAbstraction/PlatformGuard.h"
+#include "TaskFramework/ProcessingTaskQueue.h"
+#include "Utils/LogMacros.h"
 
 namespace ramses_internal
 {
-
     TaskExecutingThread::TaskExecutingThread(UInt16 workerIndex, IThreadAliveNotifier& aliveHandler)
             : m_pBlockingTaskQueue(nullptr)
             , m_thread("R_Taskpool_Thrd")
@@ -29,9 +28,9 @@ namespace ramses_internal
     }
 
 
-    void TaskExecutingThread::start(IBlockingTaskQueue& blockingTaskQueue)
+    void TaskExecutingThread::start(ProcessingTaskQueue& blockingTaskQueue)
     {
-        PlatformLightweightGuard g(m_startStopLock);
+        std::lock_guard<std::mutex> g(m_startStopLock);
         if (!m_bThreadStarted)
         {
             m_bThreadStarted = true;
@@ -46,7 +45,7 @@ namespace ramses_internal
 
     void TaskExecutingThread::stop()
     {
-        PlatformLightweightGuard g(m_startStopLock);
+        std::lock_guard<std::mutex> g(m_startStopLock);
         if (m_bThreadStarted)
         {
             // Signal the runnable the cancel request.
@@ -61,7 +60,7 @@ namespace ramses_internal
 
     void TaskExecutingThread::cancelThread()
     {
-        PlatformLightweightGuard g(m_startStopLock);
+        std::lock_guard<std::mutex> g(m_startStopLock);
         if (m_bThreadStarted)
         {
             // Signal the runnable the cancel request.
@@ -76,7 +75,7 @@ namespace ramses_internal
 
     void TaskExecutingThread::joinThread()
     {
-        PlatformLightweightGuard g(m_startStopLock);
+        std::lock_guard<std::mutex> g(m_startStopLock);
         if (m_bThreadStarted && isCancelRequested())
         {
             m_thread.join();
@@ -92,7 +91,7 @@ namespace ramses_internal
             m_aliveHandler.notifyAlive(m_workerIndex);
             while (!isCancelRequested())
             {
-                ITask* const pTaskToExecute = m_pBlockingTaskQueue->popTask(m_aliveHandler.calculateTimeout());
+                ITask* const pTaskToExecute = m_pBlockingTaskQueue->popTask(std::chrono::milliseconds{m_aliveHandler.calculateTimeout()});
                 m_aliveHandler.notifyAlive(m_workerIndex);
                 if (nullptr != pTaskToExecute)
                 {

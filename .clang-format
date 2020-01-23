@@ -33,7 +33,7 @@ BraceWrapping: {
 }
 BinPackParameters: false
 BinPackArguments: false
-ColumnLimit: 120
+ColumnLimit: 180
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
 ConstructorInitializerIndentWidth: 4
 ExperimentalAutoDetectBinPacking: false

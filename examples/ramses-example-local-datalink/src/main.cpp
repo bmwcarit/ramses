@@ -18,6 +18,11 @@
 #include <chrono>
 #include <thread>
 
+/**
+ * @example ramses-example-local-datalink/src/main.cpp
+ * @brief Local Data Link Example
+ */
+
 /** \cond HIDDEN_SYMBOLS */
 class SceneStateEventHandler : public ramses::RendererEventHandlerEmpty
 {
@@ -287,10 +292,10 @@ int main(int argc, char* argv[])
     ramses::RamsesFrameworkConfig config(argc, argv);
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);  //needed for automated test of examples
     ramses::RamsesFramework framework(config);
-    ramses::RamsesClient client("ramses-local-datalink-example", framework);
+    ramses::RamsesClient& client(*framework.createClient("ramses-local-datalink-example"));
 
     ramses::RendererConfig rendererConfig(argc, argv);
-    ramses::RamsesRenderer renderer(framework, rendererConfig);
+    ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
 
     ramses::DisplayConfig displayConfig;
     displayConfig.setIntegrityRGLDeviceUnit(0);
@@ -299,9 +304,9 @@ int main(int argc, char* argv[])
     displayConfig.setWindowIviVisible();
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
 
-    const ramses::sceneId_t triangleSceneId = 1u;
-    const ramses::sceneId_t quadSceneId = 2u;
-    const ramses::sceneId_t quadSceneId2 = 3u;
+    const ramses::sceneId_t triangleSceneId{1u};
+    const ramses::sceneId_t quadSceneId{2u};
+    const ramses::sceneId_t quadSceneId2{3u};
     TriangleSceneInfo* triangleInfo = createTriangleSceneContent(client, triangleSceneId);
     QuadSceneInfo* quadInfo = createQuadSceneContent(client, quadSceneId);
     QuadSceneInfo* quadInfo2 = createQuadSceneContent(client, quadSceneId2);
@@ -364,14 +369,18 @@ int main(int argc, char* argv[])
     eventHandler.waitForSubscription(quadSceneId);
     eventHandler.waitForSubscription(quadSceneId2);
 
-    renderer.mapScene(display, triangleSceneId, 0);
-    renderer.mapScene(display, quadSceneId, 1);
-    renderer.mapScene(display, quadSceneId2, 2);
+    renderer.mapScene(display, triangleSceneId);
+    renderer.mapScene(display, quadSceneId);
+    renderer.mapScene(display, quadSceneId2);
     renderer.flush();
     eventHandler.waitForMapped(triangleSceneId);
     eventHandler.waitForMapped(quadSceneId);
     eventHandler.waitForMapped(quadSceneId2);
 
+    const auto fbId = renderer.getDisplayFramebuffer(display);
+    renderer.assignSceneToDisplayBuffer(triangleSceneId, fbId, 0);
+    renderer.assignSceneToDisplayBuffer(quadSceneId, fbId, 1);
+    renderer.assignSceneToDisplayBuffer(quadSceneId2, fbId, 2);
     renderer.showScene(triangleSceneId);
     renderer.showScene(quadSceneId);
     renderer.showScene(quadSceneId2);

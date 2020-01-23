@@ -10,7 +10,6 @@
 #include "Utils/LogMacros.h"
 #include "ramses-sdk-build-config.h"
 #include "PlatformAbstraction/PlatformLock.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "PlatformAbstraction/PlatformTime.h"
 
 namespace ramses_internal
@@ -145,6 +144,10 @@ namespace ramses_internal
                     UInt32 numberTimeIntervals = m_statisticCollection.getNumberTimeIntervalsSinceLastSummaryReset();
                     output << "msgIn ";
                     logStatisticSummaryEntry(output, m_statisticCollection.statMessagesReceived.getSummary(), numberTimeIntervals);
+                    output << "srMsgIn ";
+                    logStatisticSummaryEntry(output, m_statisticCollection.statSendResourceMessagesReceived.getSummary(), numberTimeIntervals);
+                    output << "rrMsgIn ";
+                    logStatisticSummaryEntry(output, m_statisticCollection.statRequestResourceMessagesReceived.getSummary(), numberTimeIntervals);
                     output << " msgO ";
                     logStatisticSummaryEntry(output, m_statisticCollection.statMessagesSent.getSummary(), numberTimeIntervals);
                     output << " res+ ";
@@ -155,6 +158,10 @@ namespace ramses_internal
                     logStatisticSummaryEntry(output, m_statisticCollection.statResourcesNumber.getSummary(), numberTimeIntervals);
                     output << " resOS ";
                     logStatisticSummaryEntry(output, m_statisticCollection.statResourcesSentSize.getSummary(), numberTimeIntervals);
+                    output << " resONr ";
+                    logStatisticSummaryEntry(output, m_statisticCollection.statResourcesSentNumber.getSummary(), numberTimeIntervals);
+                    output << " resINr ";
+                    logStatisticSummaryEntry(output, m_statisticCollection.statResourcesReceivedNumber.getSummary(), numberTimeIntervals);
                     output << " resF ";
                     logStatisticSummaryEntry(output, m_statisticCollection.statResourcesLoadedFromFileNumber.getSummary(), numberTimeIntervals);
                     output << " resFS ";
@@ -163,7 +170,7 @@ namespace ramses_internal
 
         m_statisticCollection.resetSummaries();
 
-        if (m_statisticCollectionScenes.count() > 0)
+        if (m_statisticCollectionScenes.size() > 0)
         {
             LOG_INFO_F(CONTEXT_PERIODIC, ([&](ramses_internal::StringOutputStream& output) {
                         for (auto entry : m_statisticCollectionScenes)

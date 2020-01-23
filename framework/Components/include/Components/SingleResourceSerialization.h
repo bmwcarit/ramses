@@ -9,7 +9,7 @@
 #ifndef RAMSES_SINGLERESOURCESERIALIZATION_H
 #define RAMSES_SINGLERESOURCESERIALIZATION_H
 
-#include "PlatformAbstraction/PlatformTypeInfo.h"
+#include "PlatformAbstraction/PlatformTypes.h"
 #include "SceneAPI/ResourceContentHash.h"
 
 namespace ramses_internal

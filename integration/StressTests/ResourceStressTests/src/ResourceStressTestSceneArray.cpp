@@ -39,7 +39,7 @@ namespace ramses_internal
         for (const auto& sceneConfig : m_sceneConfigs)
         {
             m_renderer.mapScene(sceneConfig.displayId, sceneConfig.sceneId);
-            if (sceneConfig.offscreenBufferId == ramses::InvalidOffscreenBufferId)
+            if (sceneConfig.offscreenBufferId == ramses::displayBufferId_t::Invalid())
             {
                 m_renderer.showScene(sceneConfig.sceneId);
             }
@@ -48,7 +48,7 @@ namespace ramses_internal
                 m_renderer.showSceneOnOffscreenBuffer(sceneConfig.sceneId, sceneConfig.offscreenBufferId);
 
                 // If two OB scenes are in the same OB, should link the OB to the scene consumer only once
-                if (!linkedTextureConsumers.hasElement(sceneConfig.consumerSceneDataId))
+                if (!linkedTextureConsumers.contains(sceneConfig.consumerSceneDataId))
                 {
                     m_renderer.linkOffscreenBufferToSceneTexture(sceneConfig.consumerSceneId, sceneConfig.offscreenBufferId, sceneConfig.consumerSceneDataId);
                     linkedTextureConsumers.put(sceneConfig.consumerSceneDataId);

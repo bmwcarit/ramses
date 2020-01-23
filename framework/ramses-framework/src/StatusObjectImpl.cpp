@@ -9,7 +9,6 @@
 #include "StatusObjectImpl.h"
 #include "Utils/LogMacros.h"
 #include "Collections/StringOutputStream.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 
 namespace ramses_internal
 {
@@ -28,7 +27,7 @@ namespace ramses_internal
 namespace ramses
 {
     StatusObjectImpl::StatusCache StatusObjectImpl::m_statusCache;
-    ramses_internal::PlatformLightweightLock StatusObjectImpl::m_statusCacheLock;
+    std::mutex StatusObjectImpl::m_statusCacheLock;
 
     StatusObjectImpl::StatusObjectImpl()
         : m_hasErrorMessages(false)
@@ -39,23 +38,17 @@ namespace ramses
     {
     }
 
-    status_t StatusObjectImpl::addStatusEntry(const char* message) const
-    {
-        ramses_internal::PlatformLightweightGuard g(m_statusCacheLock);
-        return m_statusCache.addMessage(message);
-    }
-
     status_t StatusObjectImpl::addErrorEntry(const char* message) const
     {
         LOG_ERROR(ramses_internal::CONTEXT_CLIENT, message);
-        ramses_internal::PlatformLightweightGuard g(m_statusCacheLock);
+        std::lock_guard<std::mutex> g(m_statusCacheLock);
         m_hasErrorMessages = true;
         return m_statusCache.addMessage(message);
     }
 
     const char* StatusObjectImpl::getStatusMessage(status_t status) const
     {
-        ramses_internal::PlatformLightweightGuard g(m_statusCacheLock);
+        std::lock_guard<std::mutex> g(m_statusCacheLock);
         return m_statusCache.getMessage(status);
     }
 
@@ -63,7 +56,7 @@ namespace ramses
     {
         status_t status = StatusOK;
 
-        ramses_internal::PlatformLightweightGuard g(m_statusCacheLock);
+        std::lock_guard<std::mutex> g(m_statusCacheLock);
         m_validationMessages.clear();
         if (m_hasErrorMessages)
         {
@@ -146,7 +139,7 @@ namespace ramses
 
     status_t StatusObjectImpl::getValidationErrorStatus() const
     {
-        ramses_internal::PlatformLightweightGuard g(m_statusCacheLock);
+        std::lock_guard<std::mutex> g(m_statusCacheLock);
         return getValidationErrorStatusUnsafe();
     }
 

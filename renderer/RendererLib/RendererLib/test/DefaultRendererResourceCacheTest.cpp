@@ -154,7 +154,7 @@ TEST_F(ADefaultRendererResourceCache, canStoreAndGetResource)
         resData[i] = i % 9;
     }
 
-    cache.storeResource(resId, resData, sizeof(resData), ramses::resourceCacheFlag_t(1), 7);
+    cache.storeResource(resId, resData, sizeof(resData), ramses::resourceCacheFlag_t(1), ramses::sceneId_t(7));
 
     uint32_t loadedSize;
     EXPECT_TRUE(cache.hasResource(resId, loadedSize));
@@ -172,7 +172,7 @@ TEST_F(ADefaultRendererResourceCache, canStoreAndGetResource)
 TEST_F(ADefaultRendererResourceCache, doesNotAttempToStoreItemsTooLargeForCache)
 {
     ramses::DefaultRendererResourceCache cache(100);
-    EXPECT_FALSE(cache.shouldResourceBeCached(ramses::rendererResourceId_t(123, 123), 200, ramses::resourceCacheFlag_t(1), 7));
+    EXPECT_FALSE(cache.shouldResourceBeCached(ramses::rendererResourceId_t(123, 123), 200, ramses::resourceCacheFlag_t(1), ramses::sceneId_t(7)));
 }
 
 TEST_F(ADefaultRendererResourceCache, canReturnFalseIfResourceNotInCache)
@@ -188,25 +188,25 @@ TEST_F(ADefaultRendererResourceCache, unloadsOldestAddedItemWhenOutOfSpace)
     uint32_t size;
     ramses::DefaultRendererResourceCache cache(100);
 
-    cache.storeResource(ramses::rendererResourceId_t(1, 0), inputBuffer, 40, ramses::resourceCacheFlag_t(1), 7);
-    cache.storeResource(ramses::rendererResourceId_t(2, 0), inputBuffer, 40, ramses::resourceCacheFlag_t(1), 7);
+    cache.storeResource(ramses::rendererResourceId_t(1, 0), inputBuffer, 40, ramses::resourceCacheFlag_t(1), ramses::sceneId_t(7));
+    cache.storeResource(ramses::rendererResourceId_t(2, 0), inputBuffer, 40, ramses::resourceCacheFlag_t(1), ramses::sceneId_t(7));
     EXPECT_TRUE(cache.hasResource(ramses::rendererResourceId_t(1, 0), size));
     EXPECT_TRUE(cache.hasResource(ramses::rendererResourceId_t(2, 0), size));
 
     // Add an item which will exceed the maximum capacity of the cache
-    cache.storeResource(ramses::rendererResourceId_t(3, 0), inputBuffer, 40, ramses::resourceCacheFlag_t(1), 7);
+    cache.storeResource(ramses::rendererResourceId_t(3, 0), inputBuffer, 40, ramses::resourceCacheFlag_t(1), ramses::sceneId_t(7));
     EXPECT_FALSE(cache.hasResource(ramses::rendererResourceId_t(1, 0), size)); // Now gone
     EXPECT_TRUE(cache.hasResource(ramses::rendererResourceId_t(2, 0), size));
     EXPECT_TRUE(cache.hasResource(ramses::rendererResourceId_t(3, 0), size));
 
     // Same story again
-    cache.storeResource(ramses::rendererResourceId_t(4, 0), inputBuffer, 40, ramses::resourceCacheFlag_t(1), 7);
+    cache.storeResource(ramses::rendererResourceId_t(4, 0), inputBuffer, 40, ramses::resourceCacheFlag_t(1), ramses::sceneId_t(7));
     EXPECT_FALSE(cache.hasResource(ramses::rendererResourceId_t(2, 0), size)); // Now gone
     EXPECT_TRUE(cache.hasResource(ramses::rendererResourceId_t(3, 0), size));
     EXPECT_TRUE(cache.hasResource(ramses::rendererResourceId_t(4, 0), size));
 
     // Finally add one item which takes up all space
-    cache.storeResource(ramses::rendererResourceId_t(5, 0), inputBuffer, 100, ramses::resourceCacheFlag_t(1), 7);
+    cache.storeResource(ramses::rendererResourceId_t(5, 0), inputBuffer, 100, ramses::resourceCacheFlag_t(1), ramses::sceneId_t(7));
     EXPECT_FALSE(cache.hasResource(ramses::rendererResourceId_t(3, 0), size));
     EXPECT_FALSE(cache.hasResource(ramses::rendererResourceId_t(4, 0), size));
     EXPECT_TRUE(cache.hasResource(ramses::rendererResourceId_t(5, 0), size));

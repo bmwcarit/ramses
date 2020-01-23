@@ -27,8 +27,8 @@ namespace ramses_internal
     CubeTextureScene::CubeTextureScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
         : IntegrationScene(ramsesClient, scene, cameraPosition)
         , m_effect(getTestEffect("ramses-test-client-cubeSphere"))
-        , m_sphereMesh(0)
-        , m_transformNode(0)
+        , m_sphereMesh(nullptr)
+        , m_transformNode(nullptr)
     {
         init(static_cast<EState>(state));
     }
@@ -167,7 +167,7 @@ namespace ramses_internal
         }
         default:
             assert(!"Invalid texture type");
-            return 0;
+            return nullptr;
         }
     }
 }

@@ -6,6 +6,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
+import sys
 from ramses_test_framework.asynchronousreader import AsynchronousPipeReader
 from ramses_test_framework.buffer import Buffer, BufferWatcher
 from ramses_test_framework import log
@@ -97,7 +98,10 @@ class Application:
             self.send_ramsh_command(ramshCommand, waitForRendererConfirmation=True, timeout=timeout)
 
     def _internal_send_ramsh_command(self, command):
-        self.stdin.write(command+"\n")
+        command = command + "\n"
+        if sys.version_info >= (3, 0):
+            command = bytes(command, 'utf-8')
+        self.stdin.write(command)
         #just to be sure
         self.stdin.flush()
 

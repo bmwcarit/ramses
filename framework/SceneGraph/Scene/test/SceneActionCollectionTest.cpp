@@ -561,7 +561,7 @@ namespace ramses_internal
         c.beginWriteSceneAction(ESceneActionId_AllocateRenderable);
         c.write(Guid());
         c.write(str);
-        UInt32 size_3 = sizeof(generic_uuid_t) + sizeof(UInt32) + static_cast<UInt32>(str.getLength());
+        UInt32 size_3 = sizeof(generic_uuid_t) + sizeof(UInt32) + static_cast<UInt32>(str.size());
 
         ASSERT_EQ(3u, c.numberOfActions());
         EXPECT_EQ(size_1 + size_2 + size_3, c.collectionData().size());

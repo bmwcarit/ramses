@@ -35,10 +35,10 @@ int main(int argc, char* argv[])
 
     ramses::RamsesFrameworkConfig frameworkConfig(argc, argv);
     ramses::RamsesFramework framework(frameworkConfig);
-    ramses::RamsesClient    client("ramses-example-text-shadow", framework);
+    ramses::RamsesClient& client(*framework.createClient("ramses-example-text-shadow"));
     framework.connect();
 
-    ramses::Scene& scene = *client.createScene(123u, ramses::SceneConfig());
+    ramses::Scene& scene = *client.createScene(ramses::sceneId_t(123u), ramses::SceneConfig());
     ramses::FontRegistry fontRegistry;
     ramses::TextCache textCache(scene, fontRegistry, 2048, 2048);
 

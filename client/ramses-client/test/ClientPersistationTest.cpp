@@ -30,7 +30,6 @@
 #include "Utils/BinaryFileInputStream.h"
 #include "ramses-sdk-build-config.h"
 #include "PlatformAbstraction/PlatformMath.h"
-#include "AnimationSystemImpl.h"
 
 #include "ramses-client.h"
 #include "ramses-utils.h"
@@ -138,6 +137,32 @@ namespace ramses
         EXPECT_EQ(resource->impl.getHeight(), loadedResource->impl.getHeight());
         EXPECT_EQ(resource->impl.getWidth(), loadedResource->impl.getWidth());
         EXPECT_EQ(resource->impl.getTextureFormat(), loadedResource->impl.getTextureFormat());
+        EXPECT_EQ(resource->impl.getTextureSwizzle().channelRed, loadedResource->impl.getTextureSwizzle().channelRed);
+        EXPECT_EQ(resource->impl.getTextureSwizzle().channelGreen, loadedResource->impl.getTextureSwizzle().channelGreen);
+        EXPECT_EQ(resource->impl.getTextureSwizzle().channelBlue, loadedResource->impl.getTextureSwizzle().channelBlue);
+        EXPECT_EQ(resource->impl.getTextureSwizzle().channelAlpha, loadedResource->impl.getTextureSwizzle().channelAlpha);
+    }
+
+    TEST_F(ClientPersistation, canReadWriteTexture2DwithNonDefaultSwizzle)
+    {
+        TextureSwizzle swizzle = {ETextureChannelColor::Alpha, ETextureChannelColor::Red, ETextureChannelColor::Green, ETextureChannelColor::Blue};
+        uint8_t data[4] = { 0u };
+        MipLevelData mipLevelData(sizeof(data), data);
+        Texture2D* resource = client.createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, swizzle, ResourceCacheFlag_DoNotCache, "resourceName");
+
+        ResourceFileDescription fileDescription("someTempararyFile.ram");
+        fileDescription.add(resource);
+
+        this->doWriteReadCycle(fileDescription);
+
+        const Texture2D* loadedResource = this->getObjectForTesting<Texture2D>("resourceName");
+        EXPECT_EQ(resource->impl.getHeight(), loadedResource->impl.getHeight());
+        EXPECT_EQ(resource->impl.getWidth(), loadedResource->impl.getWidth());
+        EXPECT_EQ(resource->impl.getTextureFormat(), loadedResource->impl.getTextureFormat());
+        EXPECT_EQ(resource->impl.getTextureSwizzle().channelRed, loadedResource->impl.getTextureSwizzle().channelRed);
+        EXPECT_EQ(resource->impl.getTextureSwizzle().channelGreen, loadedResource->impl.getTextureSwizzle().channelGreen);
+        EXPECT_EQ(resource->impl.getTextureSwizzle().channelBlue, loadedResource->impl.getTextureSwizzle().channelBlue);
+        EXPECT_EQ(resource->impl.getTextureSwizzle().channelAlpha, loadedResource->impl.getTextureSwizzle().channelAlpha);
     }
 
     TEST_F(ClientPersistation, canReadWriteTexture3D)
@@ -195,7 +220,7 @@ namespace ramses
 
         // load created effect resource in another client
         ramses::RamsesFramework anotherFramework;
-        ramses::RamsesClient anotherClient("ramses client", anotherFramework);
+        ramses::RamsesClient& anotherClient(*anotherFramework.createClient("ramses client"));
         EXPECT_EQ(StatusOK, anotherClient.loadResources(fileDescription));
 
         // write out the loaded resource immediately
@@ -276,7 +301,7 @@ namespace ramses
             ramses_internal::String(::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH) +
             ramses_internal::String("]\n");
 
-        const ramses_internal::UInt32 stringSize = static_cast<ramses_internal::UInt32>(expectedVersionString.getLength());
+        const ramses_internal::UInt32 stringSize = static_cast<ramses_internal::UInt32>(expectedVersionString.size());
 
         ramses_internal::Char* versionStringInFile = new ramses_internal::Char[stringSize + 1];
         stream.read(versionStringInFile, stringSize);
@@ -291,7 +316,7 @@ namespace ramses
     {
         // Save empty scene and empty resources
         {
-            ramses::Scene* emptyScene = client.createScene(15);
+            ramses::Scene* emptyScene = client.createScene(sceneId_t(15u));
             ramses::ResourceFileDescriptionSet emptyResourceFileInformation;
             ramses::ResourceFileDescription emptyAsset("emptyResourceAsset.ramres");
             emptyResourceFileInformation.add(emptyAsset);
@@ -332,7 +357,7 @@ namespace ramses
         Effect* effect2 = TestEffects::CreateTestEffect(client, "effect2"); // only used by big scene, important: use different name to create different resource ids
 
         // create small scene with a single appearance/effect
-        Scene* smallScene = client.createScene(1);
+        Scene* smallScene = client.createScene(sceneId_t(1));
         Appearance* appearance = smallScene->createAppearance(*effect1, "appearance1");
 
         ResourceFileDescription resourcesSmall("smallSceneResources.ramres");
@@ -342,7 +367,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, client.saveSceneToFile(*smallScene, "smallScene.ramscene", resourceSetSmall, false));
 
         // create big scene with two appearances, also using the effect from small scene
-        Scene* bigScene = client.createScene(2);
+        Scene* bigScene = client.createScene(sceneId_t(2));
         Appearance* appearance1 = bigScene->createAppearance(*effect1, "appearance1");
         Appearance* appearance2 = bigScene->createAppearance(*effect2, "appearance2");
 
@@ -399,7 +424,7 @@ namespace ramses
 
     TEST_F(ClientPersistation, compressedFileIsSmallerThanUncompressedWhenUsingSaveSceneToFile)
     {
-        Scene* scene = client.createScene(1);
+        Scene* scene = client.createScene(sceneId_t(1));
         const std::vector<uint16_t> data(1000u, 0u);
         const UInt16Array* resource = this->client.createConstUInt16Array(static_cast<uint32_t>(data.size()), data.data());
 
@@ -469,7 +494,7 @@ namespace ramses
     {
         for (ramses_internal::String name : { "ts1.ram", "ts2.ram", "ts3.ram", "ts4.ram", "ts5.ram", "ts6.ram" })
         {
-            Scene* scene = client.createScene(1u);
+            Scene* scene = client.createScene(sceneId_t(1u));
             Effect* resourceEffect1 = this->createResource<Effect>("resourceName1");
             Effect* resourceEffect2 = this->createResource<Effect>("resourceName2");
             TextureCube* resourceTex = this->createResource<TextureCube>("resourceTex");

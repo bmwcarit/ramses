@@ -17,20 +17,14 @@ namespace ramses_internal
 {
     struct GeometryDataBuffer
     {
-        GeometryDataBuffer() = default;
-        GeometryDataBuffer(const GeometryDataBuffer&) = default;
-        GeometryDataBuffer& operator=(const  GeometryDataBuffer&) = default;
-        GeometryDataBuffer(GeometryDataBuffer&&) = default;
-        GeometryDataBuffer& operator=(GeometryDataBuffer&&) = default;
-
         EDataBufferType bufferType = EDataBufferType::Invalid;
         EDataType       dataType = EDataType_Invalid;
         UInt32          usedSize = 0u;
         std::vector<Byte>    data;
     };
 
-    static_assert(std::is_nothrow_move_constructible<GeometryDataBuffer>::value &&
-        std::is_nothrow_move_assignable<GeometryDataBuffer>::value, "GeometryDataBuffer must be movable");
+    static_assert(std::is_nothrow_move_constructible<GeometryDataBuffer>::value, "GeometryDataBuffer must be movable");
+    static_assert(std::is_nothrow_move_assignable<GeometryDataBuffer>::value, "GeometryDataBuffer must be movable");
 }
 
 #endif

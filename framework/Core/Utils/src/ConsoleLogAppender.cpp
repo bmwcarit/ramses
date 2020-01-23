@@ -11,7 +11,9 @@
 #include "Utils/LogContext.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "PlatformAbstraction/PlatformEnvironmentVariables.h"
-#include "ramses-capu/os/Console.h"
+#include "PlatformAbstraction/PlatformConsole.h"
+#include "fmt/format.h"
+#include "fmt/chrono.h"
 #include <time.h>
 
 namespace ramses_internal
@@ -22,68 +24,69 @@ namespace ramses_internal
     {
     }
 
-    void ConsoleLogAppender::logMessage(const LogMessage& logMessage)
+    void ConsoleLogAppender::log(const LogMessage& logMessage)
     {
+        if(static_cast<int>(logMessage.getLogLevel()) > static_cast<int>(m_logLevel.load()))
+            return;
+
+        // TODO(tobias) make static initializer
+        Console::EnsureConsoleInitialized();
+
         const uint64_t now = PlatformTime::GetMillisecondsAbsolute();
-        ramses_capu::Console::ConsoleColor logLevelColor;
+        const char* logLevelColor = nullptr;
         const char* logLevelStr = nullptr;
 
         switch(logMessage.getLogLevel())
         {
         case ELogLevel::Trace:
-            logLevelColor = ramses_capu::Console::WHITE;
+            logLevelColor = Console::White();
             logLevelStr = "Trace";
             break;
         case ELogLevel::Debug:
-            logLevelColor = ramses_capu::Console::WHITE;
+            logLevelColor = Console::White();
             logLevelStr = "Debug";
             break;
         case ELogLevel::Info:
-            logLevelColor = ramses_capu::Console::GREEN;
+            logLevelColor = Console::Green();
             logLevelStr = "Info ";
             break;
         case ELogLevel::Warn:
-            logLevelColor = ramses_capu::Console::YELLOW;
+            logLevelColor = Console::Yellow();
             logLevelStr = "Warn ";
             break;
         case ELogLevel::Error:
-            logLevelColor = ramses_capu::Console::RED;
+            logLevelColor = Console::Red();
             logLevelStr = "Error";
             break;
         case ELogLevel::Fatal:
-            logLevelColor = ramses_capu::Console::RED;
+            logLevelColor = Console::Red();
             logLevelStr = "Fatal";
             break;
         default:
-            logLevelColor = ramses_capu::Console::RED;
+            logLevelColor = Console::Red();
             logLevelStr = "?????";
             break;
         }
 
         struct tm posix_tm;
         time_t posix_time = static_cast<time_t>(now / 1000);
+        // use thread-safe localtime instead of std::localtime that returns internal shared buffer
 #ifdef _MSC_VER
         localtime_s(&posix_tm, &posix_time);
 #else
         localtime_r(&posix_time, &posix_tm);
 #endif
-        char time_buffer[25] = {0};
-        strftime(time_buffer, sizeof(time_buffer), "%Y%m%d-%H:%M:%S", &posix_tm);
 
         if (m_colorsEnabled)
-        {
-            ramses_capu::Console::Print(ramses_capu::Console::WHITE, "%s.%03d ", time_buffer, now % 1000);
-            ramses_capu::Console::Print("| ");
-            ramses_capu::Console::Print(logLevelColor, logLevelStr);
-            ramses_capu::Console::Print(" | ");
-            ramses_capu::Console::Print(ramses_capu::Console::AQUA, logMessage.getContext().getContextId());
-            ramses_capu::Console::Print(" | %s\n", logMessage.getStream().c_str());
-        }
+            fmt::print("{}{:%Y%m%d-%H:%M:%S}.{:03}{} | {}{}{} | {}{}{} | {}\n",
+                       Console::White(), posix_tm, now % 1000, Console::Default(),
+                       logLevelColor, logLevelStr, Console::Default(),
+                       Console::Cyan(), logMessage.getContext().getContextId(), Console::Default(),
+                       logMessage.getStream().data().stdRef());
         else
-        {
-            ramses_capu::Console::Print("%s.%03d | %s | %s | %s\n", time_buffer, now % 1000, logLevelStr,logMessage.getContext().getContextId(), logMessage.getStream().c_str());
-        }
-        ramses_capu::Console::Flush();
+            fmt::print("{:%Y%m%d-%H:%M:%S}.{:03} | {} | {} | {}\n",
+                       posix_tm, now % 1000, logLevelStr,logMessage.getContext().getContextId(), logMessage.getStream().data().stdRef());
+        std::fflush(stdout);
 
         m_callback();
     }

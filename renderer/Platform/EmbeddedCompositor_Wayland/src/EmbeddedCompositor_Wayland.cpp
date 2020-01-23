@@ -81,12 +81,12 @@ namespace ramses_internal
 
     Bool EmbeddedCompositor_Wayland::hasUpdatedStreamTextureSources() const
     {
-        return 0u != m_updatedStreamTextureSourceIds.count();
+        return 0u != m_updatedStreamTextureSourceIds.size();
     }
 
     StreamTextureSourceIdSet EmbeddedCompositor_Wayland::dispatchUpdatedStreamTextureSourceIds()
     {
-        LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::dispatchUpdatedStreamTextureSourceIds(): count of pending updates for dispatching :" << m_updatedStreamTextureSourceIds.count());
+        LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::dispatchUpdatedStreamTextureSourceIds(): count of pending updates for dispatching :" << m_updatedStreamTextureSourceIds.size());
         StreamTextureSourceIdSet result = m_updatedStreamTextureSourceIds;
         m_updatedStreamTextureSourceIds.clear();
         return result;
@@ -178,7 +178,7 @@ namespace ramses_internal
 
     UInt32 EmbeddedCompositor_Wayland::uploadCompositingContentForStreamTexture(StreamTextureSourceId streamTextureSourceId, DeviceResourceHandle textureHandle, ITextureUploadingAdapter& textureUploadingAdapter)
     {
-        assert(InvalidStreamTextureSourceId != streamTextureSourceId);
+        assert(streamTextureSourceId.isValid());
         IWaylandSurface* waylandClientSurface = findWaylandSurfaceByIviSurfaceId(streamTextureSourceId);
         assert(nullptr != waylandClientSurface);
 
@@ -200,7 +200,8 @@ namespace ramses_internal
 
         if (nullptr != sharedMemoryBufferData)
         {
-            textureUploadingAdapter.uploadTexture2D(textureHandle, waylandBufferResource.bufferGetSharedMemoryWidth(), waylandBufferResource.bufferGetSharedMemoryHeight(), ETextureFormat_BGRA8, sharedMemoryBufferData);
+            const TextureSwizzleArray swizzle = {ETextureChannelColor::Blue, ETextureChannelColor::Green, ETextureChannelColor::Red, ETextureChannelColor::Alpha};
+            textureUploadingAdapter.uploadTexture2D(textureHandle, waylandBufferResource.bufferGetSharedMemoryWidth(), waylandBufferResource.bufferGetSharedMemoryHeight(), ETextureFormat_RGBA8, sharedMemoryBufferData, swizzle);
         }
         else
         {
@@ -247,7 +248,7 @@ namespace ramses_internal
 
     UInt32 EmbeddedCompositor_Wayland::getNumberOfCompositorConnections() const
     {
-        return m_compositorConnections.count();
+        return m_compositorConnections.size();
     }
 
     Bool EmbeddedCompositor_Wayland::hasSurfaceForStreamTexture(StreamTextureSourceId streamTextureSourceId) const
@@ -306,7 +307,7 @@ namespace ramses_internal
 
     void EmbeddedCompositor_Wayland::handleBufferDestroyed(IWaylandBuffer& buffer)
     {
-        if (m_waylandBuffers.remove(&buffer) != EStatus_RAMSES_OK)
+        if (!m_waylandBuffers.remove(&buffer))
         {
             LOG_ERROR(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::handleBufferDestroyed m_waylandBuffers.remove failed");
             assert(false);
@@ -320,18 +321,18 @@ namespace ramses_internal
 
     void EmbeddedCompositor_Wayland::removeWaylandCompositorConnection(IWaylandCompositorConnection& waylandCompositorConnection)
     {
-        EStatus status = m_compositorConnections.remove(&waylandCompositorConnection);
-        UNUSED(status)
-        assert(status == EStatus_RAMSES_OK);
+        const bool removed = m_compositorConnections.remove(&waylandCompositorConnection);
+        UNUSED(removed)
+        assert(removed);
     }
 
     void EmbeddedCompositor_Wayland::removeFromUpdatedStreamTextureSourceIds(WaylandIviSurfaceId id)
     {
-        if(m_newStreamTextureSourceIds.hasElement(id))
+        if(m_newStreamTextureSourceIds.contains(id))
         {
             m_newStreamTextureSourceIds.remove(id);
         }
-        else if (m_knownStreamTextureSoruceIds.hasElement(id))
+        else if (m_knownStreamTextureSoruceIds.contains(id))
         {
             m_obsoleteStreamTextureSourceIds.put(id);
         }
@@ -345,7 +346,7 @@ namespace ramses_internal
         LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::addToUpdatedStreamTextureSourceIds: new texture data for stream texture with source id " << id.getValue());
         m_updatedStreamTextureSourceIds.put(id);
 
-        if(!m_knownStreamTextureSoruceIds.hasElement(id))
+        if(!m_knownStreamTextureSoruceIds.contains(id))
         {
             m_newStreamTextureSourceIds.put(id);
             m_knownStreamTextureSoruceIds.put(id);
@@ -359,8 +360,8 @@ namespace ramses_internal
 
     void EmbeddedCompositor_Wayland::removeWaylandRegion(IWaylandRegion& waylandRegion)
     {
-        EStatus status = m_regions.remove(&waylandRegion);
-        UNUSED(status)
-        assert(status == EStatus_RAMSES_OK);
+        const bool removed = m_regions.remove(&waylandRegion);
+        UNUSED(removed)
+        assert(removed);
     }
 }

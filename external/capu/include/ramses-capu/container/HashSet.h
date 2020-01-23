@@ -107,7 +107,7 @@ namespace ramses_capu
              * Step the iterator forward to the next element (postfix operator)
              * @return the next iterator
              */
-            HashSetIterator<HashTableIteratorType> operator++(int32_t)
+            const HashSetIterator<HashTableIteratorType> operator++(int32_t)
             {
                 HashSetIterator<HashTableIteratorType> oldValue(*this);
                 ++(*this);
@@ -166,33 +166,29 @@ namespace ramses_capu
          *
          * @param value             new value that will be put to hash set
          *
-         * @return CAPU_OK if remove is successful
-         *         CAPU_ERROR if value already exists in the set
+         * @return iterator to element
          *
          */
-        status_t put(const T& value);
+        Iterator put(const T& value);
 
         /**
          * Remove value associated with key in the hash set.
          *
          * @param value             value that will be removed
          *
-         * @return CAPU_OK if remove is successful
-         *         CAPU_ERANGE if specified value does not exist in hash set
+         * @return true if remove is successful
+         *         false if specified value does not exist in hash set
          *
          */
-        status_t remove(const T& value);
+        bool remove(const T& value);
 
         /**
          * Remove iterator associated with key in the hash set.
          *
          * @param iterator iterator pointing to value that will be removed
          *
-         * @return CAPU_OK if removal was successful
-         *         CAPU_ENOT_EXISTS if the key was not found in the set
-         *
          */
-        status_t removeAt(Iterator& iterator);
+        Iterator remove(Iterator iterator);
 
         /**
          * Checks if the provided value is already contained in the hash set.
@@ -213,10 +209,8 @@ namespace ramses_capu
 
         /**
          * Clear all values of the hash set.
-         *
-         * @return CAPU_OK if all elements in list have been deleted
          */
-        status_t clear();
+        void clear();
 
         /**
          * Return iterator for iterating key value tuples.
@@ -241,6 +235,18 @@ namespace ramses_capu
          * @return ConstIterator
          */
         ConstIterator end() const;
+
+        /**
+        * returns an iterator pointing to given element in set, if not contained pass-the-end iterator (end) is returned
+        * @return iterator
+        */
+        Iterator find(const T& value);
+
+        /**
+        * returns a const iterator pointing to given element in set, if not contained pass-the-end iterator (end) is returned
+        * @return ConstIterator
+        */
+        ConstIterator find(const T& value) const;
 
         /**
          * Reserve space for given number of bits elements. Does nothing if the
@@ -305,23 +311,22 @@ namespace ramses_capu
     }
 
     template <class T, class C, class H>
-    status_t HashSet<T, C, H>::put(const T& value)
+    typename HashSet<T, C, H>::Iterator HashSet<T, C, H>::put(const T& value)
     {
-        if (m_table.contains(value))
-        {
-            return CAPU_ERROR;
-        }
+        const auto it = m_table.find(value);
+        if (it != m_table.end())
+            return it;
         return m_table.put(value, 0);
     }
 
     template <class T, class C, class H>
-    status_t HashSet<T, C, H>::remove(const T& value)
+    bool HashSet<T, C, H>::remove(const T& value)
     {
         return m_table.remove(value);
     }
 
     template <class T, class C, class H>
-    status_t HashSet<T, C, H>::removeAt(Iterator& it)
+    typename HashSet<T, C, H>::Iterator HashSet<T, C, H>::remove(Iterator it)
     {
         return m_table.remove(it.m_iter);
     }
@@ -339,10 +344,9 @@ namespace ramses_capu
     }
 
     template <class T, class C, class H>
-    status_t HashSet<T, C, H>::clear()
+    void HashSet<T, C, H>::clear()
     {
         m_table.clear();
-        return CAPU_OK;
     }
 
     template <class T, class C, class H>
@@ -367,6 +371,18 @@ namespace ramses_capu
     typename HashSet<T, C, H>::ConstIterator HashSet<T, C, H>::end() const
     {
         return ConstIterator(m_table.end());
+    }
+
+    template <class T, class C, class H>
+    typename HashSet<T, C, H>::Iterator HashSet<T, C, H>::find(const T& value)
+    {
+        return m_table.find(value);
+    }
+
+    template <class T, class C, class H>
+    typename HashSet<T, C, H>::ConstIterator HashSet<T, C, H>::find(const T& value) const
+    {
+        return m_table.find(value);
     }
 
     template <class T, class C, class H>

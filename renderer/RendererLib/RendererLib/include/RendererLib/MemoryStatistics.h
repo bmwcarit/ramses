@@ -11,7 +11,7 @@
 
 #include "Collections/Vector.h"
 #include "SceneAPI/SceneId.h"
-#include "Resource/EResourceType.h"
+#include "Resource/ResourceTypes.h"
 #include "Collections/HashMap.h"
 #include "GpuMemorySample.h"
 

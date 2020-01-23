@@ -21,6 +21,7 @@
 #include "ramses-capu/util/Traits.h"
 #include <type_traits>
 #include <assert.h>
+#include <memory>
 
 namespace ramses_capu
 {
@@ -228,7 +229,13 @@ namespace ramses_capu
 
         // Hasher
         template<typename T, int TYPE>
-        struct Hasher;
+        struct Hasher
+        {
+            static uint_t Hash(const T& key)
+            {
+                return std::hash<T>()(key);
+            }
+        };
 
         template<typename T>
         struct Hasher<T, CAPU_TYPE_PRIMITIVE>

@@ -44,6 +44,11 @@ namespace ramses_internal
     {
         *os << "ri:" << EnumToString(state);
     }
+
+    inline void PrintTo(const DcsmMetadata& metadata, ::std::ostream* os)
+    {
+        *os << "ri:DcsmMetadata" << StringOutputStream::ToString(metadata).stdRef();
+    }
 }
 
 namespace ramses

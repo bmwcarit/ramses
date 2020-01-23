@@ -6,7 +6,6 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "Animation/AnimationSystemFactory.h"
 #include "Scene/SceneActionApplier.h"
 #include "Scene/SceneResourceChanges.h"
 #include "Scene/SceneResourceUtils.h"
@@ -31,34 +30,37 @@
 #include "RendererLib/RendererLogger.h"
 #include "RendererEventCollector.h"
 #include "Components/FlushTimeInformation.h"
+#include "Components/ISceneGraphConsumerComponent.h"
 #include "Utils/LogMacros.h"
 #include "PlatformAbstraction/PlatformTime.h"
+#include "PlatformAbstraction/Macros.h"
+#include "RendererLib/IntersectionUtils.h"
 
 namespace ramses_internal
 {
-    RendererSceneUpdater::RendererSceneUpdater(Renderer& renderer, RendererScenes& rendererScenes, SceneStateExecutor& sceneStateExecutor, RendererEventCollector& eventCollector, FrameTimer& frameTimer, SceneExpirationMonitor& expirationMonitor, IRendererResourceCache* rendererResourceCache)
+    RendererSceneUpdater::RendererSceneUpdater(Renderer& renderer, RendererScenes& rendererScenes, SceneStateExecutor& sceneStateExecutor, ISceneGraphConsumerComponent& sceneGraphConsumerComponent, RendererEventCollector& eventCollector, FrameTimer& frameTimer, SceneExpirationMonitor& expirationMonitor, IRendererResourceCache* rendererResourceCache)
         : m_renderer(renderer)
         , m_rendererScenes(rendererScenes)
         , m_sceneStateExecutor(sceneStateExecutor)
+        , m_sceneGraphConsumerComponent(sceneGraphConsumerComponent)
         , m_rendererEventCollector(eventCollector)
         , m_frameTimer(frameTimer)
         , m_expirationMonitor(expirationMonitor)
         , m_rendererResourceCache(rendererResourceCache)
-        , m_animationSystemFactory(EAnimationSystemOwner_Renderer)
     {
     }
 
     RendererSceneUpdater::~RendererSceneUpdater()
     {
-        while (0u != m_rendererScenes.count())
+        while (0u != m_rendererScenes.size())
         {
             const SceneId sceneId = m_rendererScenes.begin()->key;
             destroyScene(sceneId);
         }
-        assert(m_scenesToBeMapped.count() == 0u);
+        assert(m_scenesToBeMapped.size() == 0u);
         assert(m_pendingSceneActions.empty());
 
-        while (0u != m_displayResourceManagers.count())
+        while (0u != m_displayResourceManagers.size())
         {
             const DisplayHandle display = m_displayResourceManagers.begin()->key;
             destroyDisplayContext(display);
@@ -113,14 +115,14 @@ namespace ramses_internal
             // ownership of uploadStrategy is transferred into RendererResourceManager
             RendererResourceManager* resourceManager = new RendererResourceManager(resourceProvider, resourceUploader, renderBackend, embeddedCompositingManager, RequesterID(handle.asMemoryHandle()), displayConfig.getKeepEffectsUploaded(), m_frameTimer, m_renderer.getStatistics(), displayConfig.getGPUMemoryCacheSize());
             m_displayResourceManagers.put(handle, resourceManager);
-            m_rendererEventCollector.addEvent(ERendererEventType_DisplayCreated, handle);
+            m_rendererEventCollector.addDisplayEvent(ERendererEventType_DisplayCreated, handle);
 
             LOG_INFO(CONTEXT_RENDERER, "Created display " << handle.asMemoryHandle() << ": " << displayController.getDisplayWidth() << "x" << displayController.getDisplayHeight()
                 << (displayConfig.getFullscreenState() ? " fullscreen" : "") << (displayConfig.isWarpingEnabled() ? " warped" : "") << " MSAA" << displayConfig.getAntialiasingSampleCount());
         }
         else
         {
-            m_rendererEventCollector.addEvent(ERendererEventType_DisplayCreateFailed, handle);
+            m_rendererEventCollector.addDisplayEvent(ERendererEventType_DisplayCreateFailed, handle);
         }
     }
 
@@ -129,7 +131,7 @@ namespace ramses_internal
         if (!m_renderer.hasDisplayController(display))
         {
             LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::destroyDisplayContext cannot destroy display " << display << " which does not exist");
-            m_rendererEventCollector.addEvent(ERendererEventType_DisplayDestroyFailed, display);
+            m_rendererEventCollector.addDisplayEvent(ERendererEventType_DisplayDestroyFailed, display);
             return;
         }
         assert(m_displayResourceManagers.contains(display));
@@ -149,7 +151,7 @@ namespace ramses_internal
             for (const auto& it : m_rendererScenes)
             {
                 const SceneId sceneId = it.key;
-                if (m_renderer.getDisplaySceneIsMappedTo(sceneId) == display)
+                if (m_renderer.getDisplaySceneIsAssignedTo(sceneId) == display)
                 {
                     displayHasMappedScene = true;
                     break;
@@ -160,7 +162,7 @@ namespace ramses_internal
         if (displayHasMappedScene)
         {
             LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::destroyDisplayContext cannot destroy display " << display << ", there is one or more scenes mapped (or being mapped) to it, unmap all scenes from it first.");
-            m_rendererEventCollector.addEvent(ERendererEventType_DisplayDestroyFailed, display);
+            m_rendererEventCollector.addDisplayEvent(ERendererEventType_DisplayDestroyFailed, display);
             return;
         }
 
@@ -175,15 +177,13 @@ namespace ramses_internal
         m_renderer.resetRenderInterruptState();
         m_renderer.destroyDisplayContext(display);
         assert(!m_renderer.hasDisplayController(display));
-        m_rendererEventCollector.addEvent(ERendererEventType_DisplayDestroyed, display);
+        m_rendererEventCollector.addDisplayEvent(ERendererEventType_DisplayDestroyed, display);
     }
 
     void RendererSceneUpdater::updateScenes()
     {
         // Display context is activated on demand, assuming that normally at most one scene/display needs resources uploading
         DisplayHandle activeDisplay;
-
-        m_modifiedScenesToRerender.clear();
 
         {
             LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes add and consolidate pending scene actions that arrived since last update loop");
@@ -234,12 +234,6 @@ namespace ramses_internal
         }
 
         {
-            LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes update scenes real-time animation systems");
-            FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::UpdateAnimations);
-            updateScenesRealTimeAnimationSystems();
-        }
-
-        {
             LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes update scenes transformation cache and transformation links");
             FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::UpdateTransformations);
             updateScenesTransformationCache();
@@ -254,8 +248,9 @@ namespace ramses_internal
         for (const auto scene : m_modifiedScenesToRerender)
         {
             if (m_sceneStateExecutor.getSceneState(scene) == ESceneState::Rendered)
-                m_renderer.markBufferWithMappedSceneAsModified(scene);
+                m_renderer.markBufferWithSceneAsModified(scene);
         }
+        m_modifiedScenesToRerender.clear();
     }
 
     void RendererSceneUpdater::consolidatePendingSceneActions()
@@ -314,25 +309,19 @@ namespace ramses_internal
         assert(numActions > 0);
         Bool hasSizeInfo = false;
         SceneResourceChanges resourceChanges;
-        TimeStampVector* timestamps = nullptr;
-        if (CONTEXT_PROFILING.getLogLevel() == ELogLevel::Trace)
-        {
-            // TODO(tobias) only read timestamps when they are really needed, remove when small vector optimization available
-            timestamps = &flushInfo.additionalTimestamps;
-        }
-        SceneActionApplier::ReadParameterForFlushAction(actionsForScene.back(), flushInfo.flushIndex, flushInfo.isSynchronous, hasSizeInfo, stagingInfo.sizeInformation, resourceChanges, flushInfo.timeInfo, flushInfo.versionTag, timestamps);
+        SceneActionApplier::ReadParameterForFlushAction(actionsForScene.back(), flushInfo.flushIndex, hasSizeInfo, stagingInfo.sizeInformation, resourceChanges, flushInfo.timeInfo, flushInfo.versionTag);
 
         m_renderer.getStatistics().trackArrivedFlush(sceneID, numActions, resourceChanges.m_addedClientResourceRefs.size(), resourceChanges.m_removedClientResourceRefs.size(), resourceChanges.m_sceneResourceActions.size());
         LOG_TRACE_F(CONTEXT_RENDERER, ([&](StringOutputStream& logStream) {
-            logStream << "Flush " << flushInfo.flushIndex << " for scene " << sceneID.getValue() << " arrived " << (flushInfo.isSynchronous ? "synchronous " : "asynchronous");
+            logStream << "Flush " << flushInfo.flushIndex << " for scene " << sceneID.getValue() << " arrived ";
             logStream << "[actions:" << numActions << "(" << actionsForScene.collectionData().size() << " bytes)]";
             logStream << "[addRefs res (" << resourceChanges.m_addedClientResourceRefs.size() << "):";
             for (const auto& hash : resourceChanges.m_addedClientResourceRefs)
-                logStream << " " << StringUtils::HexFromResourceContentHash(hash);
+                logStream << " " << hash;
             logStream << "]";
             logStream << "[removeRefs res (" << resourceChanges.m_removedClientResourceRefs.size() << "):";
             for (const auto& hash : resourceChanges.m_removedClientResourceRefs)
-                logStream << " " << StringUtils::HexFromResourceContentHash(hash);
+                logStream << " " << hash;
             logStream << "]";
             logStream << "[scene res actions:" << resourceChanges.m_sceneResourceActions.size() << "]";
             if (hasSizeInfo)
@@ -351,7 +340,7 @@ namespace ramses_internal
         // add references to newly needed client resources right away
         if (!newlyNeededClientResources.empty())
         {
-            const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsMappedTo(sceneID);
+            const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsAssignedTo(sceneID);
             if (displayHandle.isValid())
             {
                 IRendererResourceManager& resourceManager = **m_displayResourceManagers.get(displayHandle);
@@ -461,11 +450,6 @@ namespace ramses_internal
     UInt32 RendererSceneUpdater::updateScenePendingFlushes(SceneId sceneID, StagingInfo& stagingInfo)
     {
         const PendingFlushes& pendingFlushes = stagingInfo.pendingFlushes;
-        Bool noSyncPendingFlush = true;
-        for(const auto& pendingFlush : pendingFlushes)
-        {
-            noSyncPendingFlush &= !pendingFlush.isSynchronous;
-        }
 
         const ESceneState sceneState = m_sceneStateExecutor.getSceneState(sceneID);
         const Bool sceneIsRenderedOrRequested = (sceneState == ESceneState::Rendered || sceneState == ESceneState::RenderRequested); // requested can become rendered still in this frame
@@ -473,10 +457,10 @@ namespace ramses_internal
         const Bool sceneIsMappedOrMapping = (sceneState == ESceneState::MappingAndUploading) || sceneIsMapped;
         const Bool resourcesReady = sceneIsMappedOrMapping && willApplyingChangesMakeAllResourcesAvailable(sceneID);
 
-        Bool canApplyFlushes = noSyncPendingFlush || !sceneIsMappedOrMapping || resourcesReady;
+        Bool canApplyFlushes = !sceneIsMappedOrMapping || resourcesReady;
 
         if (sceneIsRenderedOrRequested && m_renderer.hasAnyBufferWithInterruptedRendering())
-            canApplyFlushes &= !m_renderer.isSceneMappedToInterruptibleOffscreenBuffer(sceneID);
+            canApplyFlushes &= !m_renderer.isSceneAssignedToInterruptibleOffscreenBuffer(sceneID);
 
         if (!canApplyFlushes && sceneIsMapped && pendingFlushes.size() > m_maximumPendingFlushes)
         {
@@ -492,7 +476,7 @@ namespace ramses_internal
             // Partial flush apply is allowed only if scene is not rendered and there is more than one scene.
             // Even 'rendered requested' allows partial flush apply and if flush is interrupted it delays the switch to fully rendered state.
             // It does not make sense to do partial updates if there is no other scene that can be blocked by it.
-            const Bool canApplyFlushPartially = (sceneState != ESceneState::Rendered) && (m_rendererScenes.count() > 1u);
+            const Bool canApplyFlushPartially = (sceneState != ESceneState::Rendered) && (m_rendererScenes.size() > 1u);
             const EResourceStatus resourcesStatus = (resourcesReady ? EResourceStatus_Uploaded : EResourceStatus_Unknown);
             return applyPendingFlushes(sceneID, stagingInfo, resourcesStatus, canApplyFlushPartially);
         }
@@ -526,11 +510,11 @@ namespace ramses_internal
                 break;
             }
 
-            if (pendingFlush.versionTag != InvalidSceneVersionTag)
+            if (pendingFlush.versionTag.isValid())
             {
                 LOG_INFO(CONTEXT_SMOKETEST, "Named flush applied on scene " << rendererScene.getSceneId() <<
                     " with sceneVersionTag " << pendingFlush.versionTag);
-                m_rendererEventCollector.addEvent(ERendererEventType_SceneFlushed, sceneID, pendingFlush.versionTag, resourcesStatus);
+                m_rendererEventCollector.addSceneFlushEvent(ERendererEventType_SceneFlushed, sceneID, pendingFlush.versionTag, resourcesStatus);
             }
 
             m_expirationMonitor.onFlushApplied(sceneID, pendingFlush.timeInfo.expirationTimestamp, pendingFlush.versionTag, pendingFlush.flushIndex);
@@ -560,17 +544,6 @@ namespace ramses_internal
             }
             sos << "]";
             sos << "total scene actions applied:" << numActionsApplied;
-        }));
-
-        // log timestamps
-        LOG_TRACE_F(CONTEXT_PROFILING, ([&](StringOutputStream& sos) {
-            for (UInt i = 0u; i < numFlushesApplied; ++i)
-            {
-                const auto& pendingFlush = pendingFlushes[i];
-                sos << "\n Flush " << pendingFlush.flushIndex << " timestamps(us):";
-                for (const auto& timeStamp : pendingFlush.additionalTimestamps)
-                    sos << ' ' << timeStamp;
-            }
         }));
 
         return static_cast<UInt32>(numActionsApplied);
@@ -613,7 +586,7 @@ namespace ramses_internal
 
         // if scene is mapped unreference client resources that are no longer needed
         // and execute collected scene resource actions
-        const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsMappedTo(sceneID);
+        const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsAssignedTo(sceneID);
         if (displayHandle.isValid())
         {
             IRendererResourceManager& resourceManager = **m_displayResourceManagers.get(displayHandle);
@@ -651,11 +624,11 @@ namespace ramses_internal
 
                 for (const auto stream : newStreams)
                 {
-                    m_rendererEventCollector.addEvent(ERendererEventType_StreamSurfaceAvailable, stream);
+                    m_rendererEventCollector.addStreamSourceEvent(ERendererEventType_StreamSurfaceAvailable, stream);
                 }
                 for (const auto stream : obsoleteStreams)
                 {
-                    m_rendererEventCollector.addEvent(ERendererEventType_StreamSurfaceUnavailable, stream);
+                    m_rendererEventCollector.addStreamSourceEvent(ERendererEventType_StreamSurfaceUnavailable, stream);
                     m_renderer.getStatistics().untrackStreamTexture(stream);
                 }
 
@@ -685,7 +658,7 @@ namespace ramses_internal
             // update resource cache only if scene is actually rendered
             if (m_sceneStateExecutor.getSceneState(sceneId) == ESceneState::Rendered)
             {
-                const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsMappedTo(sceneId);
+                const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsAssignedTo(sceneId);
                 assert(displayHandle.isValid());
                 const IRendererResourceManager& resourceManager = **m_displayResourceManagers.get(displayHandle);
                 const IEmbeddedCompositingManager& embeddedCompositingManager = m_renderer.getDisplayController(displayHandle).getEmbeddedCompositingManager();
@@ -714,12 +687,12 @@ namespace ramses_internal
                 if (stagingInfo.pendingFlushes.empty())
                 {
                     const IDisplayController& displayController = m_renderer.getDisplayController(mapRequest.display);
-                    m_renderer.mapSceneToDisplayBuffer(sceneId, mapRequest.display, displayController.getDisplayBuffer(), mapRequest.sceneRenderOrder);
+                    m_renderer.assignSceneToDisplayBuffer(sceneId, mapRequest.display, displayController.getDisplayBuffer(), 0);
                     m_sceneStateExecutor.setMappingAndUploading(sceneId);
                     // mapping a scene needs re-request of all its resources at the new resource manager
                     if (!markClientAndSceneResourcesForReupload(sceneId))
                     {
-                        LOG_ERROR(CONTEXT_RENDERER, "Failed to upload all scene resources within time budget (" << static_cast<uint64_t>(m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneResourcesUpload).count()) << " us)."
+                        LOG_ERROR(CONTEXT_RENDERER, "Failed to upload all scene resources within time budget (" << m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneResourcesUpload).count() << " us)."
                             << " Reduce amount of scene resources or use client resources instead! Scene " << sceneId << " will be force unsubscribed!");
                         scenesToForceUnsubscribe.push_back(sceneId);
                     }
@@ -728,7 +701,7 @@ namespace ramses_internal
                 break;
             case ESceneState::MappingAndUploading:
             {
-                assert(m_renderer.getDisplaySceneIsMappedTo(sceneId) == mapRequest.display);
+                assert(m_renderer.getDisplaySceneIsAssignedTo(sceneId) == mapRequest.display);
 
                 const IRendererResourceManager& resourceManager = **m_displayResourceManagers.get(mapRequest.display);
                 const StagingInfo& stagingInfo = m_rendererScenes.getStagingInfo(sceneId);
@@ -803,7 +776,7 @@ namespace ramses_internal
                     const IRendererResourceManager& resourceManager = **m_displayResourceManagers.get(mapRequest.display);
                     const StagingInfo& stagingInfo = m_rendererScenes.getStagingInfo(sceneMapReq.key);
 
-                    logger << "Scene " << sceneMapReq.key << " waiting " << static_cast<int64_t>(totalWaitingTime.count()) << " ms for resources in order to be mapped: ";
+                    logger << "Scene " << sceneMapReq.key << " waiting " << totalWaitingTime.count() << " ms for resources in order to be mapped: ";
                     size_t numResourcesLogged = 0u;
                     for (const auto& res : stagingInfo.clientResourcesInUse)
                     {
@@ -853,7 +826,7 @@ namespace ramses_internal
         LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::applySceneActions start applying scene actions [count:" << numActions << "] for scene with id " << scene.getSceneId().getValue());
 
         SceneActionApplier::ResourceVector possiblePushResources;
-        SceneActionApplier::ApplyActionRangeOnScene(scene, actionsForScene, flushInfo.sceneActionsIt, numActions, &m_animationSystemFactory, &possiblePushResources);
+        SceneActionApplier::ApplyActionRangeOnScene(scene, actionsForScene, flushInfo.sceneActionsIt, numActions, &possiblePushResources);
         flushInfo.sceneActionsIt = numActions;
 
         LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::applySceneActions finished applying scene actions for scene with id " << scene.getSceneId().getValue());
@@ -872,7 +845,7 @@ namespace ramses_internal
             // apply one chunk of scene actions
             const UInt chunkEnd = min(flushInfo.sceneActionsIt + SceneActionsPerChunkToApply, sceneActionsCount);
             SceneActionApplier::ResourceVector possiblePushResources;
-            SceneActionApplier::ApplyActionRangeOnScene(scene, flushInfo.sceneActions, flushInfo.sceneActionsIt, chunkEnd, &m_animationSystemFactory, &possiblePushResources);
+            SceneActionApplier::ApplyActionRangeOnScene(scene, flushInfo.sceneActions, flushInfo.sceneActionsIt, chunkEnd, &possiblePushResources);
             flushInfo.sceneActionsIt = chunkEnd;
             firstChunk = false;
         }
@@ -896,16 +869,19 @@ namespace ramses_internal
         {
         case ESceneState::Rendered:
             m_renderer.setSceneShown(sceneID, false);
+            RFALLTHROUGH;
         case ESceneState::RenderRequested:
         case ESceneState::Mapped:
         case ESceneState::MappingAndUploading:
             unloadSceneResourcesAndUnrefSceneResources(sceneID);
-            m_renderer.unmapScene(sceneID);
+            m_renderer.unassignScene(sceneID);
+            RFALLTHROUGH;
         case ESceneState::MapRequested:
         case ESceneState::Subscribed:
         case ESceneState::SubscriptionPending:
             m_rendererScenes.destroyScene(sceneID);
             m_renderer.getStatistics().untrackScene(sceneID);
+            RFALLTHROUGH;
         default:
             break;
         }
@@ -924,7 +900,7 @@ namespace ramses_internal
     {
         assert(m_rendererScenes.hasScene(sceneId));
         assert(SceneStateIsAtLeast(m_sceneStateExecutor.getSceneState(sceneId), ESceneState::MappingAndUploading));
-        const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsMappedTo(sceneId);
+        const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsAssignedTo(sceneId);
         assert(displayHandle.isValid());
         IRendererResourceManager& resourceManager = **m_displayResourceManagers.get(displayHandle);
 
@@ -942,7 +918,7 @@ namespace ramses_internal
         assert(m_rendererScenes.hasScene(sceneId));
         assert(ESceneState::MappingAndUploading == m_sceneStateExecutor.getSceneState(sceneId));
 
-        const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsMappedTo(sceneId);
+        const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsAssignedTo(sceneId);
         assert(displayHandle.isValid());
         IRendererResourceManager& resourceManager = **m_displayResourceManagers.get(displayHandle);
 
@@ -1011,13 +987,13 @@ namespace ramses_internal
         m_sceneStateExecutor.setUnsubscribed(sceneId, indirect);
     }
 
-    void RendererSceneUpdater::handleSceneMappingRequest(SceneId sceneId, DisplayHandle handle, Int32 sceneRenderOrder)
+    void RendererSceneUpdater::handleSceneMappingRequest(SceneId sceneId, DisplayHandle handle)
     {
         if (m_sceneStateExecutor.checkIfCanBeMapRequested(sceneId, handle))
         {
             m_sceneStateExecutor.setMapRequested(sceneId, handle);
             assert(!m_scenesToBeMapped.contains(sceneId));
-            m_scenesToBeMapped.put(sceneId, { handle, sceneRenderOrder, m_frameTimer.getFrameStartTime(), m_frameTimer.getFrameStartTime() });
+            m_scenesToBeMapped.put(sceneId, { handle, m_frameTimer.getFrameStartTime(), m_frameTimer.getFrameStartTime() });
         }
     }
 
@@ -1029,7 +1005,7 @@ namespace ramses_internal
             if (sceneState == ESceneState::MappingAndUploading || sceneState == ESceneState::MapRequested)
             {
                 // scene unmap requested before reaching mapped state (cancel mapping), emit map failed event
-                m_rendererEventCollector.addEvent(ERendererEventType_SceneMapFailed, sceneId);
+                m_rendererEventCollector.addSceneEvent(ERendererEventType_SceneMapFailed, sceneId);
                 m_scenesToBeMapped.remove(sceneId);
             }
 
@@ -1037,10 +1013,12 @@ namespace ramses_internal
             {
             case ESceneState::Mapped:
                 m_rendererScenes.getSceneLinksManager().handleSceneUnmapped(sceneId);
+                RFALLTHROUGH;
             case ESceneState::MappingAndUploading:
                 // scene was already internally mapped and needs unload/unreference of all its resources from its resource manager
                 unloadSceneResourcesAndUnrefSceneResources(sceneId);
-                m_renderer.unmapScene(sceneId);
+                m_renderer.unassignScene(sceneId);
+                RFALLTHROUGH;
             case ESceneState::MapRequested:
                 m_sceneStateExecutor.setUnmapped(sceneId);
                 break;
@@ -1065,7 +1043,7 @@ namespace ramses_internal
         if (sceneState == ESceneState::RenderRequested)
         {
             // this essentially cancels the previous (not yet executed) show command
-            m_rendererEventCollector.addEvent(ERendererEventType_SceneShowFailed, sceneId);
+            m_rendererEventCollector.addSceneEvent(ERendererEventType_SceneShowFailed, sceneId);
             m_sceneStateExecutor.setHidden(sceneId);
         }
         else if (m_sceneStateExecutor.checkIfCanBeHidden(sceneId))
@@ -1135,7 +1113,7 @@ namespace ramses_internal
         {
             const SceneId sceneId = rendererScene.key;
             DisplayHandle sceneDisplay;
-            const auto sceneDisplayBuffer = m_renderer.getBufferSceneIsMappedTo(sceneId, &sceneDisplay);
+            const auto sceneDisplayBuffer = m_renderer.getBufferSceneIsAssignedTo(sceneId, &sceneDisplay);
             if (sceneDisplay.isValid())
             {
                 assert(SceneStateIsAtLeast(m_sceneStateExecutor.getSceneState(sceneId), ESceneState::MappingAndUploading));
@@ -1159,43 +1137,51 @@ namespace ramses_internal
         return true;
     }
 
-    Bool RendererSceneUpdater::handleSceneOffscreenBufferAssignmentRequest(SceneId sceneId, OffscreenBufferHandle buffer)
+    void RendererSceneUpdater::handleSetClearColor(DisplayHandle display, OffscreenBufferHandle buffer, const Vector4& clearColor)
     {
-        const DisplayHandle display = m_renderer.getDisplaySceneIsMappedTo(sceneId);
+        if (!m_renderer.hasDisplayController(display))
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSetClearColor failed, unknown display " << display);
+            return;
+        }
+
+        DeviceResourceHandle bufferDeviceHandle;
+        if (buffer.isValid())
+        {
+            bufferDeviceHandle = m_displayResourceManagers.find(display)->value->getOffscreenBufferDeviceHandle(buffer);
+            if (!bufferDeviceHandle.isValid())
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSetClearColor cannot set clear color for unknown offscreen buffer " << buffer);
+                return;
+            }
+        }
+        else
+            bufferDeviceHandle = m_renderer.getDisplayController(display).getDisplayBuffer();
+
+        assert(bufferDeviceHandle.isValid());
+        m_renderer.setClearColor(display, bufferDeviceHandle, clearColor);
+    }
+
+    Bool RendererSceneUpdater::handleSceneDisplayBufferAssignmentRequest(SceneId sceneId, OffscreenBufferHandle buffer, Int32 sceneRenderOrder)
+    {
+        const DisplayHandle display = m_renderer.getDisplaySceneIsAssignedTo(sceneId);
         if (!display.isValid())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneOffscreenBufferAssignmentRequest cannot assign scene " << sceneId.getValue() << " to an offscreen buffer; It must be mapped to a display first!");
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneDisplayBufferAssignmentRequest cannot assign scene " << sceneId.getValue() << " to an offscreen buffer; It must be mapped to a display first!");
             return false;
         }
 
         const IRendererResourceManager& resourceManager = **m_displayResourceManagers.get(display);
-        const DeviceResourceHandle bufferDeviceHandle = resourceManager.getOffscreenBufferDeviceHandle(buffer);
+        // determine if assigning to display's framebuffer or an offscreen buffer
+        const DeviceResourceHandle bufferDeviceHandle = (buffer.isValid() ? resourceManager.getOffscreenBufferDeviceHandle(buffer) : m_renderer.getDisplayController(display).getDisplayBuffer());
         if (!bufferDeviceHandle.isValid())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneBufferAssignmentRequest could not find buffer " << buffer << " on display " << display << " where scene " << sceneId << " is currently mapped");
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneDisplayBufferAssignmentRequest could not find buffer " << buffer << " on display " << display << " where scene " << sceneId << " is currently mapped");
             return false;
         }
 
         m_renderer.resetRenderInterruptState();
-        // TODO vaclav merge map/assign on HL API and make it clear that order is scoped to a buffer, remove order getter
-        m_renderer.mapSceneToDisplayBuffer(sceneId, display, bufferDeviceHandle, m_renderer.getSceneGlobalOrder(sceneId));
-
-        return true;
-    }
-
-    Bool RendererSceneUpdater::handleSceneFramebufferAssignmentRequest(SceneId sceneId)
-    {
-        const DisplayHandle display = m_renderer.getDisplaySceneIsMappedTo(sceneId);
-        if (!display.isValid())
-        {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneFramebufferAssignmentRequest cannot assign scene " << sceneId.getValue() << " to framebuffer if it is not mapped to a display first!");
-            return false;
-        }
-
-        m_renderer.resetRenderInterruptState();
-        const IDisplayController& displayController = m_renderer.getDisplayController(display);
-        // TODO vaclav merge map/assign on HL API and make it clear that order is scoped to a buffer, remove order getter
-        m_renderer.mapSceneToDisplayBuffer(sceneId, display, displayController.getDisplayBuffer(), m_renderer.getSceneGlobalOrder(sceneId));
+        m_renderer.assignSceneToDisplayBuffer(sceneId, display, bufferDeviceHandle, sceneRenderOrder);
 
         return true;
     }
@@ -1214,13 +1200,13 @@ namespace ramses_internal
 
                 if (providerSlotType == EDataSlotType_TextureProvider && consumerSlotType == EDataSlotType_TextureConsumer)
                 {
-                    const DisplayHandle providerDisplay = m_renderer.getDisplaySceneIsMappedTo(providerSceneId);
-                    const DisplayHandle consumerDisplay = m_renderer.getDisplaySceneIsMappedTo(consumerSceneId);
+                    const DisplayHandle providerDisplay = m_renderer.getDisplaySceneIsAssignedTo(providerSceneId);
+                    const DisplayHandle consumerDisplay = m_renderer.getDisplaySceneIsAssignedTo(consumerSceneId);
                     if (!providerDisplay.isValid() || !consumerDisplay.isValid()
                         || providerDisplay != consumerDisplay)
                     {
                         LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: both provider and consumer scenes have to be mapped to same display when using texture linking!  (Provider scene: " << providerSceneId << ") (Consumer scene: " << consumerSceneId << ")");
-                        m_rendererEventCollector.addEvent(ERendererEventType_SceneDataLinkFailed, providerSceneId, consumerSceneId, providerId, consumerId);
+                        m_rendererEventCollector.addDataLinkEvent(ERendererEventType_SceneDataLinkFailed, providerSceneId, consumerSceneId, providerId, consumerId);
                         return;
                     }
                 }
@@ -1234,11 +1220,11 @@ namespace ramses_internal
 
     void RendererSceneUpdater::handleBufferToSceneDataLinkRequest(OffscreenBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId)
     {
-        const DisplayHandle display = m_renderer.getDisplaySceneIsMappedTo(consumerSceneId);
+        const DisplayHandle display = m_renderer.getDisplaySceneIsAssignedTo(consumerSceneId);
         if (!display.isValid())
         {
             LOG_ERROR(CONTEXT_RENDERER, "Renderer::createBufferLink failed: consumer scene (Scene: " << consumerSceneId << ") has to be mapped!");
-            m_rendererEventCollector.addEvent(ERendererEventType_SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
+            m_rendererEventCollector.addOBLinkEvent(ERendererEventType_SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
             return;
         }
 
@@ -1246,7 +1232,7 @@ namespace ramses_internal
         if (!resourceManager.getOffscreenBufferDeviceHandle(buffer).isValid())
         {
             LOG_ERROR(CONTEXT_RENDERER, "Renderer::createBufferLink failed: offscreen buffer " << buffer << " has to exist on the same display where the consumer scene " << consumerSceneId << " is mapped!");
-            m_rendererEventCollector.addEvent(ERendererEventType_SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
+            m_rendererEventCollector.addOBLinkEvent(ERendererEventType_SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
             return;
         }
 
@@ -1262,14 +1248,39 @@ namespace ramses_internal
         m_renderer.resetRenderInterruptState();
     }
 
+    void RendererSceneUpdater::handlePickEvent(SceneId sceneId, Vector2 coordsNormalizedToBufferSize)
+    {
+        if (!m_rendererScenes.hasScene(sceneId))
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handlePickEvent could not process pick event for scene " << sceneId << " which is not known to renderer.");
+            return;
+        }
+
+        auto display = DisplayHandle::Invalid();
+        const auto bufferHandle = m_renderer.getBufferSceneIsAssignedTo(sceneId, &display);
+        if (!display.isValid())
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handlePickEvent could not process pick event for scene " << sceneId << " because it is not mapped to any display.");
+            return;
+        }
+        assert(bufferHandle.isValid());
+
+        const auto& buffer = m_renderer.getDisplaySetup(display).getDisplayBuffer(bufferHandle);
+        const Vector2i coordsInBufferSpace = { static_cast<Int32>(std::lroundf((coordsNormalizedToBufferSize.x + 1.f) * buffer.viewport.width / 2.f)) ,
+                                                static_cast<Int32>(std::lroundf((coordsNormalizedToBufferSize.y + 1.f) * buffer.viewport.height / 2.f)) };
+
+        PickableObjectIds pickedObjects;
+        const TransformationLinkCachedScene& scene = m_rendererScenes.getScene(sceneId);
+
+
+        IntersectionUtils::CheckSceneForIntersectedPickableObjects(scene, coordsInBufferSpace, pickedObjects);
+        if (!pickedObjects.empty())
+            m_rendererEventCollector.addPickedEvent(ERendererEventType_ObjectsPicked, sceneId, std::move(pickedObjects));
+    }
+
     Bool RendererSceneUpdater::hasPendingFlushes(SceneId sceneId) const
     {
         return m_rendererScenes.hasScene(sceneId) && !m_rendererScenes.getStagingInfo(sceneId).pendingFlushes.empty();
-    }
-
-    const HashSet<SceneId>& RendererSceneUpdater::getModifiedScenes() const
-    {
-        return m_modifiedScenesToRerender;
     }
 
     void RendererSceneUpdater::setLimitFlushesForceApply(UInt limitForPendingFlushesForceApply)
@@ -1284,7 +1295,7 @@ namespace ramses_internal
 
     Bool RendererSceneUpdater::willApplyingChangesMakeAllResourcesAvailable(SceneId sceneId) const
     {
-        const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsMappedTo(sceneId);
+        const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsAssignedTo(sceneId);
         const IRendererResourceManager& resourceManager = **m_displayResourceManagers.get(displayHandle);
 
         assert(!m_rendererScenes.getStagingInfo(sceneId).pendingFlushes.empty());
@@ -1298,34 +1309,6 @@ namespace ramses_internal
         }
 
         return true;
-    }
-
-    void RendererSceneUpdater::updateScenesRealTimeAnimationSystems()
-    {
-        const UInt64 systemTime = PlatformTime::GetMillisecondsAbsolute();
-
-        for (const auto& scene : m_rendererScenes)
-        {
-            const SceneId sceneID = scene.key;
-            if (m_sceneStateExecutor.getSceneState(sceneID) == ESceneState::Rendered)
-            {
-                RendererCachedScene& renderScene = m_rendererScenes.getScene(sceneID);
-                for (auto handle = AnimationSystemHandle(0); handle < renderScene.getAnimationSystemCount(); ++handle)
-                {
-                    if (renderScene.isAnimationSystemAllocated(handle))
-                    {
-                        IAnimationSystem* animationSystem = renderScene.getAnimationSystem(handle);
-                        if (animationSystem->isRealTime())
-                        {
-                            animationSystem->setTime(systemTime);
-
-                            if (animationSystem->hasActiveAnimations())
-                                m_modifiedScenesToRerender.put(sceneID);
-                        }
-                    }
-                }
-            }
-        }
     }
 
     void RendererSceneUpdater::updateScenesTransformationCache()
@@ -1343,7 +1326,7 @@ namespace ramses_internal
         const SceneIdVector& dependencyOrderedScenes = m_rendererScenes.getSceneLinksManager().getTransformationLinkManager().getDependencyChecker().getDependentScenesInOrder();
         for(const auto sceneId : dependencyOrderedScenes)
         {
-            if (m_scenesNeedingTransformationCacheUpdate.hasElement(sceneId))
+            if (m_scenesNeedingTransformationCacheUpdate.contains(sceneId))
             {
                 RendererCachedScene& renderScene = m_rendererScenes.getScene(sceneId);
                 renderScene.updateRenderableWorldMatricesWithLinks();
@@ -1390,7 +1373,7 @@ namespace ramses_internal
     {
         auto findFirstOfModifiedScenes = [this](const SceneIdVector& v)
         {
-            return std::find_if(v.cbegin(), v.cend(), [this](SceneId a) {return m_modifiedScenesToRerender.hasElement(a); });
+            return std::find_if(v.cbegin(), v.cend(), [this](SceneId a) {return m_modifiedScenesToRerender.contains(a); });
         };
 
         const auto& transDependencyOrderedScenes = transfLinkManager.getDependencyChecker().getDependentScenesInOrder();
@@ -1411,14 +1394,14 @@ namespace ramses_internal
         auto findOffscreenBufferSceneIsMappedTo = [this](SceneId sceneId)
         {
             DisplayHandle displayHandle;
-            const auto displayBuffer = m_renderer.getBufferSceneIsMappedTo(sceneId, &displayHandle);
+            const auto displayBuffer = m_renderer.getBufferSceneIsAssignedTo(sceneId, &displayHandle);
             const IResourceDeviceHandleAccessor& resMgr = *m_displayResourceManagers[displayHandle];
             return resMgr.getOffscreenBufferHandle(displayBuffer);
         };
 
         //initially mark all modified scenes as to be visited
         assert(m_offscreeenBufferModifiedScenesVisitingCache.empty());
-        m_offscreeenBufferModifiedScenesVisitingCache.reserve(m_modifiedScenesToRerender.count());
+        m_offscreeenBufferModifiedScenesVisitingCache.reserve(m_modifiedScenesToRerender.size());
         for (const auto& s : m_modifiedScenesToRerender)
             m_offscreeenBufferModifiedScenesVisitingCache.push_back(s);
 
@@ -1439,7 +1422,7 @@ namespace ramses_internal
                     texLinkManager.getOffscreenBufferLinks().getLinkedConsumers(bufferHandle, m_offscreenBufferConsumerSceneLinksCache);
 
                     for (const auto& link : m_offscreenBufferConsumerSceneLinksCache)
-                        if (!m_modifiedScenesToRerender.hasElement(link.consumerSceneId))
+                        if (!m_modifiedScenesToRerender.contains(link.consumerSceneId))
                             m_offscreeenBufferModifiedScenesVisitingCache.push_back(link.consumerSceneId);
                 }
             }
@@ -1448,7 +1431,7 @@ namespace ramses_internal
 
     void RendererSceneUpdater::logMissingResources(const ResourceContentHashVector& resourceVector, SceneId sceneId) const
     {
-        const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsMappedTo(sceneId);
+        const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsAssignedTo(sceneId);
         assert(displayHandle.isValid());
         const IRendererResourceManager& resourceManager = **m_displayResourceManagers.get(displayHandle);
 

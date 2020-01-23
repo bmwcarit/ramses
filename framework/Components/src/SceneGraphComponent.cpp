@@ -13,7 +13,6 @@
 #include "Scene/SceneActionUtils.h"
 #include "TransportCommon/IConnectionStatusUpdateNotifier.h"
 #include "TransportCommon/ICommunicationSystem.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "Utils/LogMacros.h"
 #include "Scene/SceneActionCollection.h"
 
@@ -53,7 +52,7 @@ namespace ramses_internal
         m_sceneRendererHandler = sceneRendererHandler;
         m_communicationSystem.setSceneRendererServiceHandler(sceneRendererHandler);
 
-        if (m_sceneRendererHandler && m_publishedScenes.count() > 0)
+        if (m_sceneRendererHandler && m_publishedScenes.size() > 0)
         {
             SceneInfoVector newLocalScenes;
             SceneInfoVector newRemoteScenes;
@@ -259,7 +258,7 @@ namespace ramses_internal
     void SceneGraphComponent::newParticipantHasConnected(const Guid& to)
     {
         PlatformGuard guard(m_frameworkLock);
-        if (m_publishedScenes.count() > 0)
+        if (m_publishedScenes.size() > 0)
         {
             SceneInfoVector availableScenes;
             for(const auto& publishedScene : m_publishedScenes)
@@ -284,7 +283,13 @@ namespace ramses_internal
         PlatformGuard guard(m_frameworkLock);
         for(const auto& publishedScene : m_publishedScenes)
         {
-            handleSceneUnsubscription(publishedScene.key, disconnnectedParticipant);
+            if (ClientSceneLogicBase** sceneLogic = m_clientSceneLogicMap.get(publishedScene.key))
+                (*sceneLogic)->removeSubscriber(disconnnectedParticipant);
+            if (m_subscriptions.get(Subscription(disconnnectedParticipant, publishedScene.key)) != nullptr)
+            {
+                LOG_INFO(CONTEXT_CLIENT, "SceneGraphComponent::participantHasDisconnected: unsubscribing " << disconnnectedParticipant << " from scene " << publishedScene.key);
+                m_subscriptions.remove(Subscription(disconnnectedParticipant, publishedScene.key));
+            }
         }
     }
 
@@ -324,13 +329,13 @@ namespace ramses_internal
         sceneLogic.unpublish();
     }
 
-    void SceneGraphComponent::handleFlush(SceneId sceneId, ESceneFlushMode flushMode, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag)
+    void SceneGraphComponent::handleFlush(SceneId sceneId, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag)
     {
         assert(m_clientSceneLogicMap.contains(sceneId));
 
         ClientSceneLogicBase& sceneLogic = **m_clientSceneLogicMap.get(sceneId);
 
-        sceneLogic.flushSceneActions(flushMode, flushTimeInfo, versionTag);
+        sceneLogic.flushSceneActions(flushTimeInfo, versionTag);
     }
 
     void SceneGraphComponent::handleRemoveScene(SceneId sceneId)
@@ -376,8 +381,8 @@ namespace ramses_internal
     {
         PlatformGuard guard(m_frameworkLock);
         LOG_INFO_F(CONTEXT_PERIODIC, ([&](StringOutputStream& sos) {
-                    sos << "Client: " << m_clientSceneLogicMap.count() << " scene(s):";
-                    Bool first = true;
+                    sos << "Client: " << m_clientSceneLogicMap.size() << " scene(s):";
+                    bool first = true;
                     for (const auto& m_clientScenesIter : m_clientSceneLogicMap)
                     {
                         if (first)

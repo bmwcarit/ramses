@@ -23,13 +23,13 @@ namespace ramses_internal
         getArgument<2>().setDefaultValue("");
     }
 
-    Bool DumpSceneToFile::execute(ramses::sceneId_t& sceneId, String& fileName, String& sendViaDLT) const
+    Bool DumpSceneToFile::execute(uint64_t& sceneId, String& fileName, String& sendViaDLT) const
     {
         DumpSceneToFileCommand command;
         command.fileName = fileName;
         command.sendViaDLT = sendViaDLT == String("-sendViaDLT");
 
-        m_client.enqueueSceneCommand(sceneId, command);
+        m_client.enqueueSceneCommand(ramses::sceneId_t(sceneId), command);
         return true;
     }
 }

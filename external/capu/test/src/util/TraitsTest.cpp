@@ -19,60 +19,64 @@
 #include "ramses-capu/container/Hash.h"
 #include "ramses-capu/Config.h"
 
-class SomeClass
-{};
-
-enum SomeEnum
+namespace
 {
-    SOME_ENUM_MEMBER
-};
+    class SomeClass
+    {};
 
-class Tester
-{
-public:
-
-    template <typename T>
-    static uint32_t type(T val)
+    enum SomeEnum
     {
-        val = *&val;
-        enum
+        SOME_ENUM_MEMBER
+    };
+
+    class Tester
+    {
+    public:
+
+        template <typename T>
+        static uint32_t type(T val)
         {
-           type = static_cast<uint32_t>(ramses_capu::is_CAPU_PRIMITIVE<T>::Value) | static_cast<uint32_t>(ramses_capu::is_CAPU_REFERENCE<T>::Value) | static_cast<uint32_t>(ramses_capu::is_CAPU_POINTER<T>::Value)
+            val = *&val;
+            enum
+            {
+                type = static_cast<uint32_t>(ramses_capu::is_CAPU_PRIMITIVE<T>::Value) | static_cast<uint32_t>(ramses_capu::is_CAPU_REFERENCE<T>::Value) | static_cast<uint32_t>(ramses_capu::is_CAPU_POINTER<T>::Value)
+            };
+            return type;
+        }
+    };
+
+    class SomeClassWithEnumSize
+    {
+        uint32_t myValue;
+
+        SomeClassWithEnumSize()
+        {
+            UNUSED(myValue);
+        }
+    };
+
+    union SomeUnion
+    {
+        uint32_t intVal1;
+        uint32_t intVal2;
+        struct shortStruct
+        {
+            uint16_t shortVal1;
+            uint16_t shortVal2;
+            uint16_t shortVal3;
+            uint16_t shortVal4;
         };
-        return type;
-    }
-};
-
-class SomeClassWithEnumSize
-{
-    uint32_t myValue;
-
-    SomeClassWithEnumSize(){
-        UNUSED(myValue);
-    }
-};
-
-union SomeUnion
-{
-    uint32_t intVal1;
-    uint32_t intVal2;
-    struct shortStruct
-    {
-        uint16_t shortVal1;
-        uint16_t shortVal2;
-        uint16_t shortVal3;
-        uint16_t shortVal4;
     };
-};
 
-union SomeUnionWithEnumSize
-{
-    char data[sizeof(SomeEnum)];
-    struct data2Struct
+    union SomeUnionWithEnumSize
     {
-        char data2[sizeof(SomeEnum)];
+        char data[sizeof(SomeEnum)];
+        struct data2Struct
+        {
+            char data2[sizeof(SomeEnum)];
+        };
     };
-};
+}
 
 TEST(Traits, TestTypeIdentifier)
 {

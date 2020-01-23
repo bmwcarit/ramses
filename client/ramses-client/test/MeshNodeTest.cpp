@@ -25,7 +25,7 @@ using namespace ramses_internal;
 
 namespace ramses
 {
-    class MeshNodeTest : public LocalTestClientWithSceneAndAnimationSystem, public testing::Test
+    class MeshNodeTest : public LocalTestClientWithScene, public testing::Test
     {
     protected:
         virtual void SetUp()
@@ -51,9 +51,11 @@ namespace ramses
         AssertionResult effectResourceIsSetInScene(const Appearance& appearance)
         {
             const EffectImpl* effect = appearance.impl.getEffectImpl();
-            const RenderableHandle renderableHandle = m_meshNode->impl.getRenderableHandle();
+            const Renderable renderable = m_internalScene.getRenderable(m_meshNode->impl.getRenderableHandle());
+            const DataLayoutHandle& dataLayout = m_internalScene.getLayoutOfDataInstance(renderable.dataInstances[ERenderableDataSlotType_Geometry]);
+            const ResourceContentHash& effectHash = m_internalScene.getDataLayout(dataLayout).getEffectHash();
 
-            EXPECT_EQ(effect->getLowlevelResourceHash(), m_internalScene.getRenderable(renderableHandle).effectResource);
+            EXPECT_EQ(effect->getLowlevelResourceHash(), effectHash);
 
             return AssertionSuccess();
         }
@@ -162,7 +164,7 @@ namespace ramses
 
     TEST_F(MeshNodeTest, reportsErrorWhenSetAppearanceFromAnotherScene)
     {
-        Scene& anotherScene = *client.createScene(12u);
+        Scene& anotherScene = *client.createScene(sceneId_t(12u));
 
         Appearance* appearance = anotherScene.createAppearance(*TestEffects::CreateTestEffect(client), "appearance");
         ASSERT_TRUE(appearance != nullptr);
@@ -184,7 +186,7 @@ namespace ramses
 
     TEST_F(MeshNodeTest, reportsErrorWhenSetGeometryFromAnotherScene)
     {
-        Scene& anotherScene = *client.createScene(12u);
+        Scene& anotherScene = *client.createScene(sceneId_t(12u));
 
         GeometryBinding* geometry = anotherScene.createGeometryBinding(*TestEffects::CreateTestEffect(client), "geometry");
         ASSERT_TRUE(geometry != nullptr);
@@ -282,7 +284,6 @@ namespace ramses
         const RenderableHandle renderableHandle = m_meshNode->impl.getRenderableHandle();
         EXPECT_FALSE(this->m_internalScene.getRenderable(renderableHandle).dataInstances[ERenderableDataSlotType_Uniforms].isValid());
         EXPECT_FALSE(this->m_internalScene.getRenderable(renderableHandle).dataInstances[ERenderableDataSlotType_Geometry].isValid());
-        EXPECT_FALSE(this->m_internalScene.getRenderable(renderableHandle).effectResource.isValid());
         EXPECT_FALSE(this->m_internalScene.getRenderable(renderableHandle).renderState.isValid());
     }
 
@@ -311,7 +312,7 @@ namespace ramses
 
     TEST_F(MeshNodeTest, checksIfMeshNodeIsInitiallyVisible)
     {
-        EXPECT_TRUE(m_meshNode->impl.getFlattenedVisibility());
+        EXPECT_EQ(m_meshNode->impl.getFlattenedVisibility(), EVisibilityMode::Visible);
     }
 
     TEST_F(MeshNodeTest, setsAndGetsSameStartIndex)
@@ -320,6 +321,14 @@ namespace ramses
         EXPECT_EQ(StatusOK, m_meshNode->setStartIndex(startIndex));
 
         EXPECT_EQ(startIndex, m_meshNode->getStartIndex());
+    }
+
+    TEST_F(MeshNodeTest, setsAndGetsSameStartVertex)
+    {
+        uint32_t startVertex = 231u;
+        EXPECT_EQ(StatusOK, m_meshNode->setStartVertex(startVertex));
+
+        EXPECT_EQ(startVertex, m_meshNode->getStartVertex());
     }
 
     TEST_F(MeshNodeTest, setsAndGetsSameIndexCount)

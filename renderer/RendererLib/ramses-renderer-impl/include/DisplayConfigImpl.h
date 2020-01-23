@@ -25,7 +25,9 @@ namespace ramses
         status_t setViewRotation(float x, float y, float z);
         status_t getViewRotation(float& x, float& y, float& z) const;
         status_t setWindowRectangle(int32_t x, int32_t y, uint32_t width, uint32_t height);
+        status_t getWindowRectangle(int32_t& x, int32_t& y, uint32_t& width, uint32_t& height) const;
         status_t setFullscreen(bool fullscreen);
+        bool     isFullscreen() const;
         status_t setBorderless(bool borderless);
         status_t setPerspectiveProjection(float fieldOfViewY, float aspectRatio, float nearPlane, float farPlane);
         status_t setProjection(float leftPlane, float rightPlane, float bottomPlane, float topPlane, float nearPlane, float farPlane, bool isOrthographic);
@@ -41,6 +43,8 @@ namespace ramses
         const char* getWaylandDisplay() const;
         status_t setIntegrityRGLDeviceUnit(uint32_t rglDeviceUnit);
         uint32_t getIntegrityRGLDeviceUnit() const;
+        void* getAndroidNativeWindow() const;
+        status_t setAndroidNativeWindow(void * nativeWindowPtr);
         status_t setWindowIviVisible();
         status_t setResizable(bool resizable);
         status_t keepEffectsUploaded(bool enable);

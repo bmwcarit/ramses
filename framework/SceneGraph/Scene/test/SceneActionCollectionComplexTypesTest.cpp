@@ -67,7 +67,7 @@ namespace ramses_internal
         collection.write(str);
 
         const UInt32 expectedSize =
-            sizeof(UInt32) + static_cast<UInt32>(str.getLength());
+            sizeof(UInt32) + static_cast<UInt32>(str.size());
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
     }
@@ -142,11 +142,11 @@ namespace ramses_internal
         reader.read(readString);
         EXPECT_TRUE(reader.isFullyRead());
 
-        const UInt32 expectedSize = static_cast<UInt32>(str.getLength()) + sizeof(UInt32);
+        const UInt32 expectedSize = static_cast<UInt32>(str.size()) + sizeof(UInt32);
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
 
-        EXPECT_EQ(str.getLength(), readString.getLength());
+        EXPECT_EQ(str.size(), readString.size());
         EXPECT_EQ(str, readString);
     }
 
@@ -164,7 +164,7 @@ namespace ramses_internal
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
 
-        EXPECT_EQ(0u, readString.getLength());
+        EXPECT_EQ(0u, readString.size());
         EXPECT_EQ(strEmpty, readString);
     }
 
@@ -183,7 +183,7 @@ namespace ramses_internal
         EXPECT_EQ(expectedSize, collection[0].size());
 
         EXPECT_EQ(strLong.substr(0, SceneActionCollection::MaxStringLength), readString);
-        EXPECT_EQ(SceneActionCollection::MaxStringLength, readString.getLength());
+        EXPECT_EQ(SceneActionCollection::MaxStringLength, readString.size());
     }
 
     TEST_F(ASceneActionCollectionComplexTypes, WriteAndGetStaticArray)

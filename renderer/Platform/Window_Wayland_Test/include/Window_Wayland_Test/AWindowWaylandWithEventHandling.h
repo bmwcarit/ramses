@@ -104,10 +104,10 @@ namespace ramses_internal
             ASSERT_TRUE(num_config == 1);
 
 
-            eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, this->m_window->getNativeWindowHandle(), NULL);
+            eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, this->m_window->getNativeWindowHandle(), nullptr);
             ASSERT_TRUE(eglSurface != EGL_NO_SURFACE);
 
-            eglContext = eglCreateContext(eglDisplay, eglConfig, EGL_NO_CONTEXT, 0);
+            eglContext = eglCreateContext(eglDisplay, eglConfig, EGL_NO_CONTEXT, nullptr);
             ASSERT_TRUE(eglContext != EGL_NO_CONTEXT);
 
             ASSERT_TRUE(eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext) == EGL_TRUE);

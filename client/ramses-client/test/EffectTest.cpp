@@ -278,6 +278,69 @@ namespace ramses
         EXPECT_EQ(static_cast<Effect*>(nullptr), sharedTestState->getClient().impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, ""));
     }
 
+    TEST_F(AnEffect, canRetrieveGLSLErrorMessageFromClient)
+    {
+
+        EffectDescription effectDesc;
+
+        effectDesc.setVertexShader("#version 100\n"
+                                   "attribute float inp;\n"
+                                   "void main(void)\n"
+                                   "{\n"
+                                   "    gl_Position = vec4(0.0)\n"
+                                   "}\n");
+        effectDesc.setFragmentShader("precision highp float;"
+                                     "void main(void)\n"
+                                     "{"
+                                     "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);"
+                                     "}");
+        const Effect* effect = sharedTestState->getClient().createEffect(effectDesc, ResourceCacheFlag_DoNotCache);
+        EXPECT_EQ(nullptr, effect);
+        const ramses_internal::String errorMessages(sharedTestState->getClient().getLastEffectErrorMessages());
+        const ramses_internal::String expectedErrorMessages =
+            "[GLSL Compiler] vertex shader Shader Parsing Error:\n"
+            "ERROR: 2:5: '' :  syntax error, unexpected RIGHT_BRACE, expecting COMMA or SEMICOLON\n"
+            "ERROR: 1 compilation errors.  No code generated.\n\n\n";
+        EXPECT_EQ(errorMessages, expectedErrorMessages);
+    }
+
+    TEST_F(AnEffect, clientDeletesEffectErrorMessagesOfLastEffect)
+    {
+        EffectDescription effectDesc;
+
+        effectDesc.setVertexShader("#version 100\n"
+                                   "attribute float inp;\n"
+                                   "void main(void)\n"
+                                   "{\n"
+                                   "    gl_Position = vec4(0.0)\n"
+                                   "}\n");
+        effectDesc.setFragmentShader("precision highp float;"
+                                     "void main(void)\n"
+                                     "{"
+                                     "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);"
+                                     "}");
+        const Effect* effect1 = sharedTestState->getClient().createEffect(effectDesc, ResourceCacheFlag_DoNotCache);
+        EXPECT_EQ(nullptr, effect1);
+        ramses_internal::String errorMessages(sharedTestState->getClient().getLastEffectErrorMessages());
+        const ramses_internal::String expectedErrorMessages =
+            "[GLSL Compiler] vertex shader Shader Parsing Error:\n"
+            "ERROR: 2:5: '' :  syntax error, unexpected RIGHT_BRACE, expecting COMMA or SEMICOLON\n"
+            "ERROR: 1 compilation errors.  No code generated.\n\n\n";
+        EXPECT_EQ(errorMessages, expectedErrorMessages);
+
+        effectDesc.setVertexShader("#version 100\n"
+                                   "attribute float inp;\n"
+                                   "void main(void)\n"
+                                   "{\n"
+                                   "    gl_Position = vec4(0.0)\n;"
+                                   "}\n");
+
+        const Effect* effect2 = sharedTestState->getClient().createEffect(effectDesc, ResourceCacheFlag_DoNotCache);
+        EXPECT_NE(nullptr, effect2);
+        errorMessages = sharedTestState->getClient().getLastEffectErrorMessages();
+        EXPECT_EQ("", errorMessages);
+    }
+
     TEST_F(AnEffect, canNotCreateEffectWhenTextTextureCoordinatesSemanticsHasWrongType)
     {
         EffectDescription effectDesc;

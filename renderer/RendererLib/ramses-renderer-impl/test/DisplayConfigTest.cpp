@@ -85,9 +85,11 @@ TEST_F(ADisplayConfig, setsFullscreenState)
 {
     EXPECT_EQ(ramses::StatusOK, config.setWindowFullscreen(true));
     EXPECT_TRUE(config.impl.getInternalDisplayConfig().getFullscreenState());
+    EXPECT_TRUE(config.isWindowFullscreen());
 
     EXPECT_EQ(ramses::StatusOK, config.setWindowFullscreen(false));
     EXPECT_FALSE(config.impl.getInternalDisplayConfig().getFullscreenState());
+    EXPECT_FALSE(config.isWindowFullscreen());
 }
 
 TEST_F(ADisplayConfig, setsBorderlessState)
@@ -102,10 +104,15 @@ TEST_F(ADisplayConfig, setsBorderlessState)
 TEST_F(ADisplayConfig, setsWindowRect)
 {
     EXPECT_EQ(ramses::StatusOK, config.setWindowRectangle(15, 16, 123u, 345u));
-    EXPECT_EQ(15, config.impl.getInternalDisplayConfig().getWindowPositionX());
-    EXPECT_EQ(16, config.impl.getInternalDisplayConfig().getWindowPositionY());
-    EXPECT_EQ(123u, config.impl.getInternalDisplayConfig().getDesiredWindowWidth());
-    EXPECT_EQ(345u, config.impl.getInternalDisplayConfig().getDesiredWindowHeight());
+    int32_t x;
+    int32_t y;
+    uint32_t width;
+    uint32_t height;
+    config.getWindowRectangle(x, y, width, height);
+    EXPECT_EQ(15, x);
+    EXPECT_EQ(16, y);
+    EXPECT_EQ(123u, width);
+    EXPECT_EQ(345u, height);
 }
 
 TEST_F(ADisplayConfig, failsToSetInvalidWindowRect)

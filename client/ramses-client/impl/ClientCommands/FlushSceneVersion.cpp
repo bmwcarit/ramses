@@ -21,12 +21,12 @@ namespace ramses_internal
         getArgument<1>().setDescription("scene id");
     }
 
-    Bool FlushSceneVersion::execute(ramses::sceneVersionTag_t& sceneVersion, ramses::sceneId_t& sceneId) const
+    Bool FlushSceneVersion::execute(ramses::sceneVersionTag_t& sceneVersion, uint64_t& sceneId) const
     {
         FlushSceneVersionCommand command;
         command.sceneVersion = sceneVersion;
 
-        m_client.enqueueSceneCommand(sceneId, command);
+        m_client.enqueueSceneCommand(ramses::sceneId_t(sceneId), command);
         return true;
     }
 }

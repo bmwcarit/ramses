@@ -87,7 +87,7 @@ namespace ramses_internal
         }
 
         ramses::MipLevelData textureData(textureWidth * textureHeight * 3, rawData.get());
-        resources.texture = m_client.createTexture2D(textureWidth, textureHeight, ramses::ETextureFormat_RGB8, 1, &textureData, false, ramses::ResourceCacheFlag_DoNotCache);
+        resources.texture = m_client.createTexture2D(textureWidth, textureHeight, ramses::ETextureFormat_RGB8, 1, &textureData, false, {}, ramses::ResourceCacheFlag_DoNotCache);
 
         resources.textureSampler = m_scene.createTextureSampler(
             ramses::ETextureAddressMode_Repeat,

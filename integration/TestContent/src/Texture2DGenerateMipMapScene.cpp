@@ -64,7 +64,7 @@ namespace ramses_internal
     void Texture2DGenerateMipMapScene::createMesh(const ramses::TextureSampler& sampler, float translateXY, float scale)
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-textured");
-        assert(effect != 0);
+        assert(effect != nullptr);
 
         ramses::AttributeInput positionsInput;
         ramses::AttributeInput texCoordsInput;

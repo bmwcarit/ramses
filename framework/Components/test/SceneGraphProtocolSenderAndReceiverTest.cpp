@@ -8,7 +8,7 @@
 
 #include "AbstractSenderAndReceiverTest.h"
 #include "ServiceHandlerMocks.h"
-#include "SenderAndReceiverTestUtils.h"
+#include "SceneAPI/SceneTypes.h"
 #include "Scene/SceneActionCollectionCreator.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "SceneActionCollectionTestHelpers.h"
@@ -36,9 +36,6 @@ namespace ramses_internal
 
     TEST_P(ASceneGraphProtocolSenderAndReceiverTest, broadcastNewScenesAvailable)
     {
-        uint32_t numberMessagesSent = m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue();
-        uint32_t numberMessagesReceived = m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue();
-
         const SceneId sceneId(55u);
         const String name("sceneName");
         SceneInfoVector newScenes;
@@ -46,165 +43,115 @@ namespace ramses_internal
 
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleNewScenesAvailable(newScenes, senderId, EScenePublicationMode_LocalAndRemote)).WillOnce(SendHandlerCalledEvent(this));
+            EXPECT_CALL(consumerHandler, handleNewScenesAvailable(newScenes, senderId, EScenePublicationMode_LocalAndRemote)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
         EXPECT_TRUE(sender.broadcastNewScenesAvailable(newScenes));
         ASSERT_TRUE(waitForEvent());
-
-        EXPECT_LE(numberMessagesSent + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
-        EXPECT_LE(numberMessagesReceived + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
     }
 
     TEST_P(ASceneGraphProtocolSenderAndReceiverTest, sendInitializeScene)
     {
-        uint32_t numberMessagesSent = m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue();
-        uint32_t numberMessagesReceived = m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue();
-
         const String name("test");
         const SceneId sceneId(1ull << 63);
         SceneInfo sceneInfo(sceneId, name);
 
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleInitializeScene(sceneInfo, senderId)).WillOnce(SendHandlerCalledEvent(this));
+            EXPECT_CALL(consumerHandler, handleInitializeScene(sceneInfo, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
         EXPECT_TRUE(sender.sendInitializeScene(receiverId, sceneInfo));
         ASSERT_TRUE(waitForEvent());
-
-        EXPECT_LE(numberMessagesSent + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
-        EXPECT_LE(numberMessagesReceived + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
     }
 
     TEST_P(ASceneGraphProtocolSenderAndReceiverTest, DISABLED_broadcastScenesBecameUnavailable)
     {
-        uint32_t numberMessagesSent = m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue();
-        uint32_t numberMessagesReceived = m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue();
-
         const SceneId sceneId(1ull << 63);
         SceneInfoVector unavailableScenes;
         unavailableScenes.push_back(SceneInfo(sceneId));
 
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleScenesBecameUnavailable(unavailableScenes, senderId)).WillRepeatedly(SendHandlerCalledEvent(this));
+            EXPECT_CALL(consumerHandler, handleScenesBecameUnavailable(unavailableScenes, senderId)).WillRepeatedly(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
 
-        // TODO(tobias) work around gtest versions that don't allow copying of AssertionResult
-        int i = 15;
-        do {
+        AssertionResult result{AssertionFailure()};
+        for (int i = 0; i < 15; ++i)
+        {
             EXPECT_TRUE(sender.broadcastScenesBecameUnavailable(unavailableScenes));
-            testing::AssertionResult result{waitForEvent(1, 200)};
+            result = waitForEvent(1, 200);
             if (result)
-            {
                 break;
-            }
-            --i;
-            if (i == 0)
-            {
-                ASSERT_TRUE(result);
-            }
-        } while (i > 0);
-
-        EXPECT_LE(numberMessagesSent + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
-        EXPECT_LE(numberMessagesReceived + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
+        }
+        ASSERT_TRUE(result);
     }
 
     TEST_P(ASceneGraphProtocolSenderAndReceiverTest, sendSceneActionList)
     {
-        uint32_t numberMessagesSent = m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue();
-        uint32_t numberMessagesReceived = m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue();
-
         const SceneId sceneId(1ull << 63);
         SceneActionCollection actions;
         SceneActionCollectionCreator creator(actions);
         creator.allocateNode(0u, NodeHandle(123u));
         creator.allocateRenderable(NodeHandle(123u), RenderableHandle(456u));
 
-        SceneActionCollection receivedActions;
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleSceneActionList_rvr(sceneId, _, _, senderId)).WillOnce(DoAll(WithArgs<1>(INVOKE_SAVE_SCENEACTIONCOLLECTION(receivedActions)), SendHandlerCalledEvent(this)));
+            EXPECT_CALL(consumerHandler, handleSceneActionList_rvr(sceneId, _, _, senderId)).WillOnce([&](auto, const auto& receivedActions, auto, auto)
+            {
+                ASSERT_EQ(2u, receivedActions.numberOfActions());
+                EXPECT_EQ(ESceneActionId_AllocateNode, receivedActions[0].type());
+                EXPECT_EQ(ESceneActionId_AllocateRenderable, receivedActions[1].type());
+                sendEvent();
+            });
         }
         const uint64_t numberOfChunksSent = sender.sendSceneActionList(receiverId, sceneId, actions, 0u);
         EXPECT_EQ(1u, numberOfChunksSent);
         ASSERT_TRUE(waitForEvent());
-
-        ASSERT_EQ(2u, receivedActions.numberOfActions());
-        EXPECT_EQ(ESceneActionId_AllocateNode, receivedActions[0].type());
-        EXPECT_EQ(ESceneActionId_AllocateRenderable, receivedActions[1].type());
-
-        EXPECT_LE(numberMessagesSent + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
-        EXPECT_LE(numberMessagesReceived + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
     }
 
     TEST_P(ASceneGraphProtocolSenderAndReceiverTest, sendScenesAvailable)
     {
-        uint32_t numberMessagesSent = m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue();
-        uint32_t numberMessagesReceived = m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue();
-
         SceneInfoVector newScenes;
         newScenes.push_back(SceneInfo(SceneId(55u), "sceneName"));
 
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleNewScenesAvailable(newScenes, senderId, EScenePublicationMode_LocalAndRemote)).WillOnce(SendHandlerCalledEvent(this));
+            EXPECT_CALL(consumerHandler, handleNewScenesAvailable(newScenes, senderId, EScenePublicationMode_LocalAndRemote)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
         EXPECT_TRUE(sender.sendScenesAvailable(receiverId, newScenes));
         ASSERT_TRUE(waitForEvent());
-
-        EXPECT_LE(numberMessagesSent + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
-        EXPECT_LE(numberMessagesReceived + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
     }
 
     TEST_P(ASceneGraphProtocolSenderAndReceiverTest, sendSubscribeScene)
     {
-        uint32_t numberMessagesSent = m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue();
-        uint32_t numberMessagesReceived = m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue();
-
         SceneId sceneId;
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(providerHandler, handleSubscribeScene(sceneId, senderId)).WillOnce(SendHandlerCalledEvent(this));
+            EXPECT_CALL(providerHandler, handleSubscribeScene(sceneId, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
         EXPECT_TRUE(sender.sendSubscribeScene(receiverId, sceneId));
         ASSERT_TRUE(waitForEvent());
-
-        EXPECT_LE(numberMessagesSent + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
-        EXPECT_LE(numberMessagesReceived + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
     }
 
     TEST_P(ASceneGraphProtocolSenderAndReceiverTest, sendUnsubscribeScene)
     {
-        uint32_t numberMessagesSent = m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue();
-        uint32_t numberMessagesReceived = m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue();
-
         SceneId sceneId;
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(providerHandler, handleUnsubscribeScene(sceneId, senderId)).WillOnce(SendHandlerCalledEvent(this));
+            EXPECT_CALL(providerHandler, handleUnsubscribeScene(sceneId, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
         EXPECT_TRUE(sender.sendUnsubscribeScene(receiverId, sceneId));
         ASSERT_TRUE(waitForEvent());
-
-        EXPECT_LE(numberMessagesSent + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
-        EXPECT_LE(numberMessagesReceived + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
     }
 
     TEST_P(ASceneGraphProtocolSenderAndReceiverTest, sendSceneNotAvailable)
     {
-        uint32_t numberMessagesSent = m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue();
-        uint32_t numberMessagesReceived = m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue();
-
         SceneId sceneId;
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleSceneNotAvailable(sceneId, senderId)).WillOnce(SendHandlerCalledEvent(this));
+            EXPECT_CALL(consumerHandler, handleSceneNotAvailable(sceneId, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
         EXPECT_TRUE(sender.sendSceneNotAvailable(receiverId, sceneId));
         ASSERT_TRUE(waitForEvent());
-
-        EXPECT_LE(numberMessagesSent + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
-        EXPECT_LE(numberMessagesReceived + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
     }
 
     TEST_P(ASceneGraphProtocolSenderAndReceiverTest, sendSceneActionListIsSplitUpIfMaxNumberIsExceeded)
@@ -225,7 +172,12 @@ namespace ramses_internal
         std::vector<SceneActionCollection> receivedActionVectors;
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleSceneActionList_rvr(sceneId, _, _, senderId)).Times(expectedNumberOfMessages).WillRepeatedly(DoAll(WithArgs<1>(INVOKE_APPEND_SCENEACTIONCOLLECTION(receivedActionVectors)), SendHandlerCalledEvent(this)));
+            EXPECT_CALL(consumerHandler, handleSceneActionList_rvr(sceneId, _, _, senderId))
+                .Times(expectedNumberOfMessages)
+                .WillRepeatedly(Invoke([&](auto, const auto& receivedActions, auto, auto) {
+                                           receivedActionVectors.push_back(receivedActions.copy());
+                                           sendEvent();
+                                       }));
         }
         const uint64_t numberOfChunksSent = sender.sendSceneActionList(receiverId, sceneId, actions, 0u);
         EXPECT_EQ(expectedNumberOfMessages, numberOfChunksSent);
@@ -272,7 +224,12 @@ namespace ramses_internal
         std::vector<SceneActionCollection> receivedActionVectors;
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleSceneActionList_rvr(sceneId, _, _, senderId)).Times(expectedNumberOfMessages).WillRepeatedly(DoAll(WithArgs<1>(INVOKE_APPEND_SCENEACTIONCOLLECTION(receivedActionVectors)), SendHandlerCalledEvent(this)));
+            EXPECT_CALL(consumerHandler, handleSceneActionList_rvr(sceneId, _, _, senderId))
+                .Times(expectedNumberOfMessages)
+                .WillRepeatedly(Invoke([&](auto, const auto& receivedActions, auto, auto) {
+                                           receivedActionVectors.push_back(receivedActions.copy());
+                                           sendEvent();
+                                       }));
         }
         const uint64_t numberOfChunksSent = sender.sendSceneActionList(receiverId, sceneId, actions, 0u);
         EXPECT_EQ(expectedNumberOfMessages, numberOfChunksSent);
@@ -298,7 +255,7 @@ namespace ramses_internal
 
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleSceneActionList_rvr(sceneId, _, 15u, senderId)).WillOnce(SendHandlerCalledEvent(this));
+            EXPECT_CALL(consumerHandler, handleSceneActionList_rvr(sceneId, _, 15u, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
         EXPECT_TRUE(sender.sendSceneActionList(receiverId, sceneId, actions, 15u) > 0);
         ASSERT_TRUE(waitForEvent());
@@ -306,7 +263,7 @@ namespace ramses_internal
 
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleSceneActionList_rvr(sceneId, _, 59u, senderId)).WillOnce(SendHandlerCalledEvent(this));
+            EXPECT_CALL(consumerHandler, handleSceneActionList_rvr(sceneId, _, 59u, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
         sender.sendSceneActionList(receiverId, sceneId, actions, 59);
         ASSERT_TRUE(waitForEvent());

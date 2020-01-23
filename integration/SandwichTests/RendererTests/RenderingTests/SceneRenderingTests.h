@@ -70,6 +70,7 @@ private:
         GeometryTest_InstancingAndNotInstancing,
         GeometryTest_TriangleListWithoutIndexArray,
         GeometryTest_TriangleStripWithoutIndexArray,
+        GeometryTest_VertexArraysWithOffset,
 
         RenderPassTest_MeshesNotInPassNotRendered,
         RenderPassTest_DifferentCameras,

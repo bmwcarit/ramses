@@ -45,6 +45,9 @@ namespace ramses_internal
         case ORTHOGRAPHIC_PROJECTION:
             bufferFormat = ramses::ERenderBufferFormat_RGBA8;
             break;
+        case RENDERBUFFER_FORMAT_RGBA4:
+            bufferFormat = ramses::ERenderBufferFormat_RGBA4;
+            break;
         case RENDERBUFFER_FORMAT_R8:
             bufferFormat = ramses::ERenderBufferFormat_R8;
             break;
@@ -85,7 +88,7 @@ namespace ramses_internal
         }
 
         const ramses::RenderBuffer* renderBuffer = m_scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Color, bufferFormat, ramses::ERenderBufferAccessMode_ReadWrite);
-        assert(renderBuffer != NULL);
+        assert(renderBuffer != nullptr);
         return *renderBuffer;
     }
 
@@ -102,6 +105,7 @@ namespace ramses_internal
             return camera;
         }
         case ORTHOGRAPHIC_PROJECTION:
+        case RENDERBUFFER_FORMAT_RGBA4:
         case RENDERBUFFER_FORMAT_R8:
         case RENDERBUFFER_FORMAT_RG8:
         case RENDERBUFFER_FORMAT_RGB8:
@@ -123,7 +127,7 @@ namespace ramses_internal
         }
         default:
             assert(false);
-            return 0;
+            return nullptr;
         }
     }
 

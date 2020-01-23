@@ -20,7 +20,7 @@ class TestClass(test_classes.OnAllDefaultTargetsTest):
         self.ramsesDaemon = self.target.start_daemon()
         self.checkThatApplicationWasStarted(self.ramsesDaemon)
         self.addCleanup(self.target.kill_application, self.ramsesDaemon)
-        self.renderer = self.target.start_default_renderer(args="-nomap")
+        self.renderer = self.target.start_default_renderer()
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
         self.testClient1 = self.target.start_client("ramses-test-client", "-tn 5 -ts 0 -cx 2 -cz 5", nameExtension='1')

@@ -18,6 +18,8 @@
 #include "Collections/Vector.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "PlatformAbstraction/PlatformMemory.h"
+#include "PlatformAbstraction/Macros.h"
+#include <type_traits>
 #include <algorithm>
 #include <iterator>
 
@@ -32,8 +34,8 @@ namespace ramses_internal
         SceneActionCollection(const SceneActionCollection&) = delete;
         SceneActionCollection& operator=(const SceneActionCollection&) = delete;
 
-        SceneActionCollection(SceneActionCollection&&) = default;
-        SceneActionCollection& operator=(SceneActionCollection&&) = default;
+        SceneActionCollection(SceneActionCollection&&) RNOEXCEPT = default;
+        SceneActionCollection& operator=(SceneActionCollection&&) RNOEXCEPT = default;
 
         SceneActionCollection copy() const;
 
@@ -43,8 +45,8 @@ namespace ramses_internal
 
         void append(const SceneActionCollection& other);
 
-        Bool operator==(const SceneActionCollection& rhs) const;
-        Bool operator!=(const SceneActionCollection& rhs) const;
+        bool operator==(const SceneActionCollection& rhs) const;
+        bool operator!=(const SceneActionCollection& rhs) const;
 
         void swap(SceneActionCollection& second);
         friend void swap(SceneActionCollection& first, SceneActionCollection& second);
@@ -191,8 +193,8 @@ namespace ramses_internal
         std::vector<ActionInfo> m_actionInfo;
     };
 
-    static_assert(std::is_nothrow_move_constructible<SceneActionCollection>::value &&
-                  std::is_nothrow_move_assignable<SceneActionCollection>::value, "SceneActionCollection must be movable");
+    static_assert(std::is_nothrow_move_constructible<SceneActionCollection>::value, "SceneActionCollection must be movable");
+    static_assert(std::is_nothrow_move_assignable<SceneActionCollection>::value, "SceneActionCollection must be movable");
 
     inline SceneActionCollection::SceneActionCollection()
     {
@@ -268,12 +270,12 @@ namespace ramses_internal
         m_data.insert(m_data.end(), other.m_data.begin(), other.m_data.end());
     }
 
-    inline Bool SceneActionCollection::operator==(const SceneActionCollection& rhs) const
+    inline bool SceneActionCollection::operator==(const SceneActionCollection& rhs) const
     {
         return m_data == rhs.m_data && m_actionInfo == rhs.m_actionInfo;
     }
 
-    inline Bool SceneActionCollection::operator!=(const SceneActionCollection& rhs) const
+    inline bool SceneActionCollection::operator!=(const SceneActionCollection& rhs) const
     {
         return m_data != rhs.m_data || m_actionInfo != rhs.m_actionInfo;
     }
@@ -299,7 +301,7 @@ namespace ramses_internal
     inline void SceneActionCollection::write(const String& str)
     {
         // check for MaxStringLength
-        const UInt32 truncatedLength = std::min(MaxStringLength, static_cast<UInt32>(str.getLength()));
+        const UInt32 truncatedLength = std::min(MaxStringLength, static_cast<UInt32>(str.size()));
 
         reserveAdditionalDataCapacity(sizeof(UInt32) + truncatedLength);
         writeAsByteBlob(static_cast<UInt32>(truncatedLength));

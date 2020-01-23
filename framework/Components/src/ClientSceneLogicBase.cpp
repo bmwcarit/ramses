@@ -13,7 +13,6 @@
 #include "Scene/SceneActionApplier.h"
 #include "Scene/SceneActionCollectionCreator.h"
 #include "Scene/SceneResourceUtils.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "Utils/LogMacros.h"
 #include "Utils/StatisticCollection.h"
@@ -26,7 +25,6 @@ namespace ramses_internal
         , m_sceneId(scene.getSceneId())
         , m_scene(scene)
         , m_scenePublicationMode(EScenePublicationMode_Unpublished)
-        , m_animationSystemFactory(ramses_internal::EAnimationSystemOwner_Scenemanager)
     {
     }
 
@@ -58,7 +56,7 @@ namespace ramses_internal
         m_subscribersWaitingForScene.clear();
     }
 
-    Bool ClientSceneLogicBase::isPublished() const
+    bool ClientSceneLogicBase::isPublished() const
     {
         return m_scenePublicationMode != EScenePublicationMode_Unpublished;
     }
@@ -121,7 +119,6 @@ namespace ramses_internal
         // flush asynchronously & check if there already was a named flush
         creator.flush(
             m_flushCounter,
-            false,
             true,
             scene.getSceneSizeInformation(),
             resourceChanges,
@@ -144,9 +141,9 @@ namespace ramses_internal
         m_subscribersWaitingForScene.clear();
     }
 
-    void ClientSceneLogicBase::printFlushInfo(StringOutputStream& sos, const char* name, const SceneActionCollection& collection, ESceneFlushMode flushMode) const
+    void ClientSceneLogicBase::printFlushInfo(StringOutputStream& sos, const char* name, const SceneActionCollection& collection) const
     {
-        sos << name << ": SceneID " << m_sceneId.getValue() << ", flushIdx " << m_flushCounter << ", mode " << EnumToString(flushMode)
+        sos << name << ": SceneID " << m_sceneId.getValue() << ", flushIdx " << m_flushCounter
             << ", numActions " << collection.numberOfActions() << ", sizeActions " << collection.collectionData().size() << "; ActionCountPerType:\n";
 
         struct ActionInfo {

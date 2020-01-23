@@ -32,6 +32,7 @@ namespace ramses_internal
         {
             CLEAR_MRT = 0,
             TWO_COLOR_BUFFERS,
+            TWO_COLOR_BUFFERS_RGBA8_AND_RGBA4,
             SHADER_WRITES_TWO_COLOR_BUFFERS_RT_HAS_ONE,
             SHADER_WRITES_ONE_COLOR_BUFFER_RT_HAS_TWO,
             COLOR_WRITTEN_BY_TWO_DIFFERENT_RTS,
@@ -42,6 +43,7 @@ namespace ramses_internal
     private:
         const ramses::Effect& getMRTEffect(UInt32 state);
         ramses::RenderTarget& createMRTRenderTarget(UInt32 state);
+        ramses::RenderBuffer& initRenderBuffer(ramses::Scene& scene, UInt32 state);
         const ramses::MeshNode& createQuadWithTexture(const ramses::RenderBuffer& renderBuffer, const Vector3& translation, const Vector4& modulateColor = Vector4(1.f, 1.f, 1.f, 1.f));
 
         void initClearPass();

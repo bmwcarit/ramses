@@ -37,7 +37,7 @@ namespace ramses_internal
 
     void SceneCommandBuffer::exchangeContainerData(SceneCommandContainer& container)
     {
-        PlatformLightweightGuard guard(m_lock);
+        std::lock_guard<std::mutex> guard(m_lock);
         m_container.swap(container);
     }
 }

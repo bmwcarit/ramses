@@ -111,10 +111,10 @@ namespace ramses
 
     void RamsesFrameworkConfigImpl::parseCommandLine()
     {
-        const ArgumentBool useFakeConnection( m_parser, "fakeConnection", "fakeConnection", false);
-        const ArgumentBool isRamshEnabled(    m_parser, "ramsh", "ramsh", false);
-        const ArgumentBool enableOffsetPlatformProtocolVersion(m_parser, "pvo", "protocolVersionOffset", false);
-        const ArgumentBool disablePeriodicLogs(m_parser, "disablePeriodicLogs", "disablePeriodicLogs", false);
+        const ArgumentBool useFakeConnection( m_parser, "fakeConnection", "fakeConnection");
+        const ArgumentBool isRamshEnabled(m_parser, "ramsh", "ramsh");
+        const ArgumentBool enableOffsetPlatformProtocolVersion(m_parser, "pvo", "protocolVersionOffset");
+        const ArgumentBool disablePeriodicLogs(m_parser, "disablePeriodicLogs", "disablePeriodicLogs");
         const ArgumentString userProvidedGuid(m_parser, "guid", "guid", "");
 
         if (enableOffsetPlatformProtocolVersion)

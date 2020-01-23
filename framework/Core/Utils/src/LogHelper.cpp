@@ -13,9 +13,11 @@ namespace ramses_internal
 {
     namespace LogHelper
     {
-        Bool StringToLogLevel(ramses_internal::String str, ELogLevel& logLevel)
+        bool StringToLogLevel(ramses_internal::String str, ELogLevel& logLevel)
         {
             str.toLowerCase();
+            // Trim string because envvar on windows may have space(s) appended
+            str = StringUtils::Trim(str.c_str());
             if (str == ramses_internal::String("trace") || str == ramses_internal::String("6"))
             {
                 logLevel = ELogLevel::Trace;
@@ -61,13 +63,13 @@ namespace ramses_internal
             UInt currentCommandStart = 0;
             do
             {
-                Int currentCommandEnd = filterCommand.indexOf(',', currentCommandStart);
+                Int currentCommandEnd = filterCommand.find(',', currentCommandStart);
                 if (currentCommandEnd <= 0)
                 {
                     // no more ',', so command goes until end of string
-                    currentCommandEnd = static_cast<int32_t>(filterCommand.getLength());
+                    currentCommandEnd = static_cast<int32_t>(filterCommand.size());
                 }
-                const Int positionOfColon = filterCommand.indexOf(':', currentCommandStart);
+                const Int positionOfColon = filterCommand.find(':', currentCommandStart);
                 const Int lengthOfLogLevelString = positionOfColon - currentCommandStart;
                 if (lengthOfLogLevelString > 0)
                 {
@@ -77,7 +79,7 @@ namespace ramses_internal
                     {
                         const Int offsetOfLogContextPattern = lengthOfLogLevelString + 1;
                         const String contextPattern = filterCommand.substr(currentCommandStart + offsetOfLogContextPattern, currentCommandEnd - currentCommandStart - offsetOfLogContextPattern);
-                        if (contextPattern.getLength() > 0)
+                        if (contextPattern.size() > 0)
                         {
                             returnValue.push_back(ContextFilter(logLevel, contextPattern));
                         }
@@ -88,7 +90,7 @@ namespace ramses_internal
                     }
                 }
                 currentCommandStart = currentCommandEnd + 1;
-            } while (currentCommandStart <= filterCommand.getLength());
+            } while (currentCommandStart <= filterCommand.size());
             return returnValue;
         }
 

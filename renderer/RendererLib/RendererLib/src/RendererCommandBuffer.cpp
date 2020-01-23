@@ -8,7 +8,6 @@
 
 #include "RendererLib/RendererCommandBuffer.h"
 #include "Utils/LogMacros.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "RendererLib/EMouseEventType.h"
 #include "Scene/EScenePublicationMode.h"
 
@@ -66,10 +65,10 @@ namespace ramses_internal
         RendererCommands::destroyDisplay(handle);
     }
 
-    void RendererCommandBuffer::mapSceneToDisplay(SceneId sceneId, DisplayHandle displayHandle, const Int32 sceneRenderOrder)
+    void RendererCommandBuffer::mapSceneToDisplay(SceneId sceneId, DisplayHandle displayHandle)
     {
         PlatformGuard guard(m_lock);
-        RendererCommands::mapSceneToDisplay(sceneId, displayHandle, sceneRenderOrder);
+        RendererCommands::mapSceneToDisplay(sceneId, displayHandle);
     }
 
     void RendererCommandBuffer::unmapScene(SceneId sceneId)
@@ -90,10 +89,10 @@ namespace ramses_internal
         RendererCommands::readPixels(displayHandle, filename, fullScreen, x, y, width, height, sendViaDLT);
     }
 
-    void RendererCommandBuffer::setClearColor(DisplayHandle displayHandle, const Vector4& color)
+    void RendererCommandBuffer::setClearColor(DisplayHandle displayHandle, OffscreenBufferHandle obHandle, const Vector4& color)
     {
         PlatformGuard guard(m_lock);
-        RendererCommands::setClearColor(displayHandle, color);
+        RendererCommands::setClearColor(displayHandle, obHandle, color);
     }
 
     void RendererCommandBuffer::linkSceneData(SceneId providerSceneId, DataSlotId providerDataSlotId, SceneId consumerSceneId, DataSlotId consumerDataSlotId)
@@ -258,6 +257,12 @@ namespace ramses_internal
         RendererCommands::setSkippingOfUnmodifiedBuffers(enable);
     }
 
+    void RendererCommandBuffer::handlePickEvent(SceneId sceneId, Vector2 sceneViewportCoords)
+    {
+        PlatformGuard guard(m_lock);
+        RendererCommands::handlePickEvent(sceneId, sceneViewportCoords);
+    }
+
     void RendererCommandBuffer::lock()
     {
         m_lock.lock();
@@ -322,7 +327,7 @@ namespace ramses_internal
             case ERendererCommand_MapSceneToDisplay:
             {
                 const SceneMappingCommand& cmd = commands.getCommandData<SceneMappingCommand>(i);
-                mapSceneToDisplay(cmd.sceneId, cmd.displayHandle, cmd.sceneRenderOrder);
+                mapSceneToDisplay(cmd.sceneId, cmd.displayHandle);
             }
             break;
             case ERendererCommand_UnmapSceneFromDisplays:
@@ -414,16 +419,10 @@ namespace ramses_internal
                 destroyOffscreenBuffer(cmd.bufferHandle, cmd.displayHandle);
             }
             break;
-            case ERendererCommand_AssignSceneToOffscreenBuffer:
+            case ERendererCommand_AssignSceneToDisplayBuffer:
             {
-                const OffscreenBufferCommand& cmd = commands.getCommandData<OffscreenBufferCommand>(i);
-                assignSceneToOffscreenBuffer(cmd.assignedScene, cmd.bufferHandle);
-            }
-            break;
-            case ERendererCommand_AssignSceneToFramebuffer:
-            {
-                const OffscreenBufferCommand& cmd = commands.getCommandData<OffscreenBufferCommand>(i);
-                assignSceneToFramebuffer(cmd.assignedScene);
+                const auto& cmd = commands.getCommandData<SceneMappingCommand>(i);
+                assignSceneToDisplayBuffer(cmd.sceneId, cmd.offscreenBuffer, cmd.sceneRenderOrder);
             }
             break;
             case ERendererCommand_LogRendererStatistics:
@@ -523,7 +522,7 @@ namespace ramses_internal
             case ERendererCommand_SetClearColor:
             {
                 const auto& cmd = commands.getCommandData<SetClearColorCommand>(i);
-                setClearColor(cmd.displayHandle, cmd.clearColor);
+                setClearColor(cmd.displayHandle, cmd.obHandle, cmd.clearColor);
             }
             break;
             case ERendererCommand_SetFrameTimerLimits:
@@ -548,6 +547,12 @@ namespace ramses_internal
             {
                 const auto& cmd = commands.getCommandData<SetFeatureCommand>(i);
                 setSkippingOfUnmodifiedBuffers(cmd.enable);
+            }
+            break;
+            case ERendererCommand_PickEvent:
+            {
+                const auto& cmd = commands.getCommandData<PickingCommand>(i);
+                handlePickEvent(cmd.sceneId, cmd.coordsNormalizedToBufferSize);
             }
             break;
             default:

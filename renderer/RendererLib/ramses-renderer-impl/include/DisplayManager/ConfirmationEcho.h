@@ -13,13 +13,13 @@
 #include "Collections/String.h"
 #include "DisplayManager/IDisplayManager.h"
 
-namespace ramses_display_manager
+namespace ramses_internal
 {
-    class ConfirmationEcho : public ramses_internal::RamshCommandArgs<ramses_internal::String>
+    class ConfirmationEcho : public RamshCommandArgs<String>
     {
     public:
         ConfirmationEcho(IDisplayManager& displayManager);
-        virtual bool execute(ramses_internal::String& text) const override;
+        virtual bool execute(String& text) const override;
 
     private:
         IDisplayManager& m_displayManager;

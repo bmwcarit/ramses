@@ -9,7 +9,7 @@
 #ifndef RAMSES_RESOURCEINFO_H
 #define RAMSES_RESOURCEINFO_H
 
-#include "EResourceType.h"
+#include "Resource/ResourceTypes.h"
 #include "SceneAPI/ResourceContentHash.h"
 #include "IResource.h"
 

@@ -34,6 +34,34 @@ namespace ramses
         LOG_HL_CLIENT_API1(LOG_API_VOID, LOG_API_GENERIC_OBJECT_STRING(config));
     }
 
+    ramses::RamsesRenderer* RamsesFramework::createRenderer(const RendererConfig& config)
+    {
+        auto result = impl.createRenderer(config);
+        LOG_HL_CLIENT_API1(LOG_API_GENERIC_PTR_STRING(result), LOG_API_GENERIC_PTR_STRING(&config));
+        return result;
+    }
+
+    ramses::RamsesClient* RamsesFramework::createClient(const char* applicationName)
+    {
+        auto result = impl.createClient(applicationName);
+        LOG_HL_CLIENT_API1(LOG_API_GENERIC_PTR_STRING(result), applicationName);
+        return result;
+    }
+
+    status_t RamsesFramework::destroyRenderer(RamsesRenderer& renderer)
+    {
+        const status_t result = impl.destroyRenderer(renderer);
+        LOG_HL_CLIENT_API1(result, LOG_API_GENERIC_OBJECT_STRING(renderer));
+        return result;
+    }
+
+    status_t RamsesFramework::destroyClient(RamsesClient& client)
+    {
+        const status_t result = impl.destroyClient(client);
+        LOG_HL_CLIENT_API1(result, LOG_API_GENERIC_OBJECT_STRING(client));
+        return result;
+    }
+
     RamsesFramework::~RamsesFramework()
     {
         LOG_HL_CLIENT_API_NOARG(LOG_API_VOID);

@@ -40,7 +40,7 @@ namespace ramses_internal
         {
             Float m_floatData[16];
             Int32 m_int32Data[4];
-            Bool m_boolData;
+            bool m_boolData;
         } m_data;
 
         EDataTypeID m_dataTypeID;
@@ -59,7 +59,7 @@ namespace ramses_internal
         return T();
     }
     template <>
-    inline Bool Variant::getValue<Bool>() const
+    inline bool Variant::getValue<bool>() const
     {
         assert(m_dataTypeID == EDataTypeID_Boolean);
         return m_data.m_boolData;
@@ -145,7 +145,7 @@ namespace ramses_internal
         assert(false);
     }
     template <>
-    inline void Variant::setValue(const Bool& data)
+    inline void Variant::setValue(const bool& data)
     {
         m_data.m_boolData = data;
         m_dataTypeID = EDataTypeID_Boolean;

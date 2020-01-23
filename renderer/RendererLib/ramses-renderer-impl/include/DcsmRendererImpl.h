@@ -13,7 +13,9 @@
 #include "ramses-framework-api/IDcsmConsumerEventHandler.h"
 #include "ramses-renderer-api/DcsmRenderer.h"
 #include "ramses-renderer-api/DcsmRendererConfig.h"
+#include "ramses-renderer-api/IDcsmRendererEventHandler.h"
 #include "DisplayManager/IDisplayManager.h"
+#include "Components/DcsmMetadata.h"
 #include "ContentStates.h"
 #include "SharedSceneState.h"
 #include <unordered_set>
@@ -26,20 +28,22 @@ namespace ramses
     class RamsesFramework;
     class IDcsmConsumerImpl;
     class IRendererEventHandler;
-    class IDcsmRendererEventHandler;
 
-    class DcsmRendererImpl : public StatusObjectImpl, public IDcsmConsumerEventHandler, public ramses_display_manager::IEventHandler
+    class DcsmRendererImpl final : public StatusObjectImpl, public IDcsmConsumerEventHandler, public ramses_internal::IEventHandler
     {
     public:
-        DcsmRendererImpl(const DcsmRendererConfig& config, IDcsmConsumerImpl& dcsmConsumer, std::unique_ptr<ramses_display_manager::IDisplayManager> displayManager);
+        DcsmRendererImpl(const DcsmRendererConfig& config, IDcsmConsumerImpl& dcsmConsumer, std::unique_ptr<ramses_internal::IDisplayManager> displayManager);
 
         status_t requestContentReady(ContentID contentID, uint64_t timeOut);
-        status_t requestContentReadyAndLinkedViaOffscreenBuffer(ContentID contentID, uint32_t width, uint32_t height, ContentID consumerContentID, dataConsumerId_t consumerDataId, uint64_t timeOut);
         status_t showContent(ContentID contentID, AnimationInformation timingInfo);
         status_t hideContent(ContentID contentID, AnimationInformation timingInfo);
         status_t releaseContent(ContentID contentID, AnimationInformation timingInfo);
         status_t setCategorySize(Category categoryId, SizeInfo size, AnimationInformation timingInfo);
         status_t acceptStopOffer(ContentID contentID, AnimationInformation timingInfo);
+        status_t assignContentToDisplayBuffer(ContentID contentID, displayBufferId_t displayBuffer, int32_t renderOrder);
+        status_t setDisplayBufferClearColor(displayBufferId_t displayBuffer, float r, float g, float b, float a);
+        status_t linkOffscreenBuffer(displayBufferId_t offscreenBufferId, ContentID consumerContentID, dataConsumerId_t consumerId);
+        status_t linkData(ContentID providerContentID, dataProviderId_t providerId, ContentID consumerContentID, dataConsumerId_t consumerId);
         status_t update(uint64_t timeStampNow, IDcsmRendererEventHandler& eventHandler, IRendererEventHandler* customRendererEventHandler);
 
     private:
@@ -49,26 +53,35 @@ namespace ramses
         virtual void contentFocusRequest(ramses::ContentID contentID) override;
         virtual void contentStopOfferRequest(ramses::ContentID contentID) override;
         virtual void forceContentOfferStopped(ramses::ContentID contentID) override;
+        virtual void contentMetadataUpdated(ramses::ContentID contentID, const DcsmMetadataUpdate& metadataUpdate) override;
 
-        // ramses_display_manager::IEventHandler
-        virtual void sceneStateChanged(ramses::sceneId_t sceneId, ramses_display_manager::SceneState state, ramses::displayId_t displaySceneIsMappedTo) override;
+        // ramses_internal::IEventHandler
+        virtual void scenePublished(ramses::sceneId_t sceneId) override;
+        virtual void sceneStateChanged(ramses::sceneId_t sceneId, ramses_internal::SceneState state, ramses::displayId_t displaySceneIsMappedTo) override;
+        virtual void offscreenBufferLinked(ramses::displayBufferId_t offscreenBufferId, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId, bool success) override;
+        virtual void dataLinked(ramses::sceneId_t providerScene, ramses::dataProviderId_t providerId, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId, bool success) override;
 
-        void executePendingCommands(uint64_t timeStampNow);
+        void executePendingCommands();
         void dispatchPendingEvents(IDcsmRendererEventHandler& eventHandler);
 
-        void requestSceneState(ContentID contentID, ramses_display_manager::SceneState state);
+        void requestSceneState(ContentID contentID, ramses_internal::SceneState state);
         void handleContentStateChange(ContentID contentID, ContentState lastState);
         void removeContent(ContentID contentID);
-        void scheduleSceneStateChange(ContentID contentThatTrigerredChange, ramses_display_manager::SceneState sceneState, uint64_t ts);
+        void scheduleSceneStateChange(ContentID contentThatTrigerredChange, ramses_internal::SceneState sceneState, uint64_t ts);
         ContentState getCurrentState(ContentID contentID) const;
+        void processTimedOutRequests();
 
-        std::unique_ptr<ramses_display_manager::IDisplayManager> m_displayManager;
+        const sceneId_t* findContentScene(ContentID contentID) const;
+
+        std::unique_ptr<ramses_internal::IDisplayManager> m_displayManager;
         IDcsmConsumerImpl& m_dcsmConsumer;
+
+        uint64_t m_timeStampNow = 0;
 
         struct CategoryInfo
         {
             SizeInfo size;
-            displayId_t display = InvalidDisplayId;
+            displayId_t display;
             std::unordered_set<ContentID> assignedContentIds;
         };
         std::unordered_map<Category, CategoryInfo> m_categories;
@@ -79,11 +92,7 @@ namespace ramses
 
             bool readyRequested = false;
             bool dcsmReady = false;
-
-            uint32_t obWidth = 0;
-            uint32_t obHeight = 0;
-            sceneId_t consumerSceneID{ 0 };
-            dataConsumerId_t consumerDataID{ 0 };
+            uint64_t readyRequestTimeOut = std::numeric_limits<uint64_t>::max();
         };
         std::unordered_map<ContentID, ContentInfo> m_contents;
 
@@ -106,7 +115,7 @@ namespace ramses
             uint64_t timePoint;
 
             ContentID contentId{ 0 };
-            ramses_display_manager::SceneState sceneState = ramses_display_manager::SceneState::Unavailable;
+            ramses_internal::SceneState sceneState = ramses_internal::SceneState::Unavailable;
         };
         std::vector<Command> m_pendingCommands;
 
@@ -115,16 +124,27 @@ namespace ramses
             ContentStateChanged,
             ContentFocusRequested,
             ContentStopOfferRequested,
-            ContentNotAvailable
+            ContentNotAvailable,
+            ContentMetadataUpdate,
+            OffscreenBufferLinked,
+            DataLinked
         };
 
         struct Event
         {
             EventType type;
-            ContentID contentID;
-            Category category;
-            ContentState contentState;
-            ContentState previousState;
+            ContentID contentID{};
+            Category category{};
+            ContentState contentState = ContentState::Invalid;
+            ContentState previousState = ContentState::Invalid;
+            DcsmRendererEventResult result = DcsmRendererEventResult::TimedOut;
+            ramses_internal::DcsmMetadata metadata{};
+
+            ContentID providerContentID{};
+            ContentID consumerContentID{};
+            dataProviderId_t providerID{ 0 };
+            dataConsumerId_t consumerID{ 0 };
+            displayBufferId_t displayBuffer{};
         };
         std::vector<Event> m_pendingEvents;
         std::vector<Event> m_pendingEventsTmp; // to avoid allocs

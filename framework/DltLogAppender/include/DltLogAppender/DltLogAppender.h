@@ -14,35 +14,16 @@
 
 namespace ramses_internal
 {
-    class LogMessage;
-
     /**
      * Logs messages via dlt
      */
     class DltLogAppender: public LogAppenderBase
     {
     public:
-
-        /**
-         * Constructor
-         */
         DltLogAppender();
-
-        /**
-         * Destructor
-         */
-        virtual ~DltLogAppender();
-
-        /**
-         * @param message log message passed to dlt adapter
-         * @see LogAppenderBase
-         */
-        virtual void logMessage(const LogMessage& message) override;
+        virtual void log(const LogMessage& message) override;
 
     private:
-        /**
-         * The dlt adapter singleton
-         */
         DltAdapter* m_dltAdapter;
     };
 }

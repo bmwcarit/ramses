@@ -24,13 +24,18 @@
 bool EffectResourceCreator::Create(const RamsesEffectFromGLSLShaderArguments& arguments)
 {
     ramses::RamsesFramework framework;
-    ramses::RamsesClient ramsesClient("ramses client", framework);
+    ramses::RamsesClient* ramsesClient(framework.createClient("ramses client"));
+    if (!ramsesClient)
+    {
+        PRINT_ERROR("Failed to create ramses client.\n");
+        return false;
+    }
 
     ramses::EffectDescription effectDesc;
     SetEffectDescription(arguments, effectDesc);
 
     const ramses_internal::String& effectName = arguments.getOutEffectName();
-    ramses::Effect* effect = ramsesClient.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, effectName.c_str());
+    ramses::Effect* effect = ramsesClient->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, effectName.c_str());
     if (!effect)
     {
         PRINT_ERROR("ramses can not create effect from given files.\n");
@@ -40,14 +45,14 @@ bool EffectResourceCreator::Create(const RamsesEffectFromGLSLShaderArguments& ar
     ramses::ResourceFileDescription resourceFileDesc(arguments.getOutResourceFile().c_str());
     resourceFileDesc.impl->m_resources.push_back(effect);
 
-    ramses::status_t status = ramsesClient.impl.saveResources(resourceFileDesc, arguments.getUseCompression());
+    ramses::status_t status = ramsesClient->impl.saveResources(resourceFileDesc, arguments.getUseCompression());
     if (ramses::StatusOK != status)
     {
         PRINT_ERROR("ramses fails to save effect to resource file.\n");
         return false;
     }
 
-    if (arguments.getOutEffectIDFile().getLength() > 0)
+    if (arguments.getOutEffectIDFile().size() > 0)
     {
         WriteoutRamsesEffectHash(arguments, *effect);
     }

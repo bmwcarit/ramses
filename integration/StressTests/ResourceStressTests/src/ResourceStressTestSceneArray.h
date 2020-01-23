@@ -21,7 +21,7 @@ namespace ramses_internal
     {
         ramses::sceneId_t sceneId;
         ramses::displayId_t displayId;
-        ramses::offscreenBufferId_t offscreenBufferId;
+        ramses::displayBufferId_t offscreenBufferId;
         ScreenspaceQuad targetScreenQuad;
         TextureConsumerDataIds textureConsumerIds;
         ramses::sceneId_t consumerSceneId;

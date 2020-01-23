@@ -14,11 +14,13 @@
 #include "Collections/Vector.h"
 #include "Collections/String.h"
 #include "Scene/EScenePublicationMode.h"
+#include "Utils/StringOutputSpecialWrapper.h"
 
 namespace ramses_internal
 {
     struct SceneIdTag {};
     typedef StronglyTypedValue<UInt64, 0, SceneIdTag> SceneId;
+    DEFINE_SPECIAL_STRINGOUTPUTSTREAM_OPERATOR(SceneId, ramses::sceneId_t)
 
     typedef std::vector<SceneId> SceneIdVector;
 

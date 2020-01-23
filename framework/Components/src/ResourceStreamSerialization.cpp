@@ -92,13 +92,13 @@ namespace ramses_internal
             const IResource& resource = *mResource.getResourceObject();
             if (resource.isCompressedAvailable())
             {
-                const CompressedSceneResourceData& compressedData = resource.getCompressedResourceData();
-                serInfos.push_back({ resource.getHash(), GetSerializedMetadata(resource), compressedData->size(), compressedData->getRawData() });
+                const CompressedResouceBlob& compressedData = resource.getCompressedResourceData();
+                serInfos.push_back({ resource.getHash(), GetSerializedMetadata(resource), static_cast<uint32_t>(compressedData.size()), compressedData.data() });
             }
             else
             {
-                const SceneResourceData& data = resource.getResourceData();
-                serInfos.push_back({ resource.getHash(), GetSerializedMetadata(resource), data->size(), data->getRawData() });
+                const ResourceBlob& data = resource.getResourceData();
+                serInfos.push_back({ resource.getHash(), GetSerializedMetadata(resource), static_cast<uint32_t>(data.size()), data.data() });
             }
 
             overallSize += static_cast<UInt32>(serInfos.back().metadata.size()) + static_cast<UInt32>(serInfos.back().blobSize) + FrameSize;
@@ -220,17 +220,9 @@ namespace ramses_internal
                         m_currentResource.reset(header.resource);
 
                         if (header.compressionStatus == EResourceCompressionStatus_Compressed)
-                        {
-                            CompressedSceneResourceData compressedData;
-                            compressedData.reset(new CompressedMemoryBlob(header.compressedSize, header.decompressedSize));
-                            header.resource->setCompressedResourceData(compressedData, m_currentHash);
-                        }
+                            header.resource->setCompressedResourceData(CompressedResouceBlob(header.compressedSize), header.decompressedSize, m_currentHash);
                         else
-                        {
-                            SceneResourceData uncompressedData;
-                            uncompressedData.reset(new MemoryBlob(header.decompressedSize));
-                            header.resource->setResourceData(uncompressedData, m_currentHash);
-                        }
+                            header.resource->setResourceData(ResourceBlob(header.decompressedSize), m_currentHash);
 
                         m_currentMetadata.clear();
 
@@ -258,8 +250,9 @@ namespace ramses_internal
                 const UInt32 blobMissing = m_currentBlobSize - m_blobRead;
                 const UInt32 remainingData = static_cast<UInt32>(data.end() - it);
                 const UInt32 dataToCopy = std::min(blobMissing, remainingData);
-                Byte* blobBase = (m_currentResource->isCompressedAvailable() ?
-                    m_currentResource->getCompressedResourceData()->getRawData() : m_currentResource->getResourceData()->getRawData());
+                // TODO(tobias) refactor to remove const_cast
+                Byte* blobBase = const_cast<Byte*>(m_currentResource->isCompressedAvailable() ?
+                    m_currentResource->getCompressedResourceData().data() : m_currentResource->getResourceData().data());
 
                 PlatformMemory::Copy(blobBase + m_blobRead, it.get(), dataToCopy);
                 m_blobRead += dataToCopy;

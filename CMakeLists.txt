@@ -8,6 +8,15 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
+SET(RAMSES_VERSION_MAJOR 0)
+SET(RAMSES_VERSION_MINOR 0)
+SET(RAMSES_VERSION_PATCH 0)
+SET(RAMSES_VERSION_POSTFIX "-devMaster")
+
+CMAKE_POLICY(SET CMP0048 NEW)
+PROJECT(ramses-sdk VERSION ${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAMSES_VERSION_PATCH})
+
+
 SET(ramses-sdk_ROOT_CMAKE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
 # TODO(tobias) must be here because used inside platformConfig, rework order of all options to solve properly
@@ -18,6 +27,8 @@ include(cmake/ramses/removeFromFlags.cmake)
 include(cmake/ramses/platformDetection.cmake)
 include(cmake/ramses/platformConfig.cmake)
 include(cmake/ramses/getGitInformation.cmake)
+include(cmake/ramses/externaltools.cmake)
+
 
 SET(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -50,7 +61,8 @@ OPTION(ramses-sdk_ALLOW_CUSTOM_FREETYPE "Allow usage of custom freetype and harf
 OPTION(ramses-sdk_BUILD_EXAMPLES "Build Example targets: ON, OFF" ON)
 OPTION(ramses-sdk_BUILD_SMOKE_TESTS "Build smoke test targets: ON, OFF" ON)
 OPTION(ramses-sdk_BUILD_DEMOS "Build demo targets: ON, OFF" ON)
-OPTION(ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB "Build client only shared library instead of per renderer libraries" OFF)
+OPTION(ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB "Build client only shared library" OFF)
+OPTION(ramses-sdk_BUILD_FULL_SHARED_LIB "Build per renderer shared libraries" ON)
 OPTION(ramses-sdk_ENABLE_WAYLAND_SHELL "Build a version of ramses renderer which uses wayland shell surfaces instead of IVI surfaces" ON)
 OPTION(ramses-sdk_ENABLE_TCP_SUPPORT "Enable use of TCP communication" ON)
 OPTION(ramses-sdk_ENABLE_DLT "Enable dlt support" ON)
@@ -60,16 +72,9 @@ OPTION(ramses-sdk_BUILD_WITH_LTO "Build all targets with link time optimization 
 SET(ramses-sdk_CONSOLE_LOGLEVEL "" CACHE STRING "Console log level.")
 SET_PROPERTY(CACHE ramses-sdk_CONSOLE_LOGLEVEL PROPERTY STRINGS "off" "fatal" "error" "warn" "info" "debug" "trace" "")
 
-#install options
-OPTION(ramses-sdk_INSTALL_STATIC_LIBS "Install static libraries: ON, OFF" ON)
-
 # enable default ACME2 plugins
 OPTION(ACME_ENABLE_PLUGIN_PROJECT_CONFIG_HEADER "ACME2 plugin for build config header generation" ON)
 
-SET(RAMSES_VERSION_MAJOR 0)
-SET(RAMSES_VERSION_MINOR 0)
-SET(RAMSES_VERSION_PATCH 0)
-SET(RAMSES_VERSION_POSTFIX "-devMaster")
 SET(RAMSES_VERSION "${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAMSES_VERSION_PATCH}${RAMSES_VERSION_POSTFIX}")
 IF (BUILD_ENV_VERSION_INFO_FULL)
     string(REPLACE "\\" "\\\\" BUILD_ENV_VERSION_INFO_FULL_ESCAPED ${BUILD_ENV_VERSION_INFO_FULL})
@@ -97,8 +102,8 @@ if (NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY AND NOT DEFINED CMAKE_RUNTIME_OUT
 endif()
 set(CMAKE_DEBUG_POSTFIX "") # no debug suffix in this project
 
-set(ramses-sdk_CMAKE_CONFIG_INCLUDES_FOR_STATIC CACHE INTERNAL "")
 set(ramses-shared-lib-MIXIN CACHE INTERNAL "")
+set(ramses-shared-lib-renderer-MIXIN CACHE INTERNAL "")
 
 ACME2_PROJECT(
     #==========================================================================
@@ -137,7 +142,6 @@ ACME2_PROJECT(
                                 ON   framework
 
                                 ON   client/ramses-client
-                                ON   client/ramses-text
 
                                 ON   ramses-daemon
 
@@ -166,7 +170,6 @@ ACME2_PROJECT(
                                 AUTO renderer/Platform/TextureUploadingAdapter_Wayland
                                 AUTO renderer/Platform/EmbeddedCompositor_Dummy
                                 AUTO renderer/Platform/EmbeddedCompositor_Wayland
-                                AUTO renderer/Platform/Logger_Wayland
                                 AUTO renderer/Platform/Window_Wayland_Test
                                 AUTO renderer/Platform/Window_Wayland_IVI
                                 AUTO renderer/Platform/Window_Wayland_Shell
@@ -231,12 +234,15 @@ SET(configmodules) # initially empty
 
 IF (ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB)
     LIST(APPEND configmodules ramses-shared-lib-client-only)
-ELSE()
-    LIST(APPEND configmodules ramses-shared-lib)
 ENDIF()
-
-IF (ramses-sdk_INSTALL_STATIC_LIBS)
-    LIST(APPEND configmodules ramses-static-lib)
+IF (ramses-sdk_BUILD_FULL_SHARED_LIB)
+    # only install full shared lib cmake find script if built at least one
+    foreach (PLATFORM_NAME ${RENDERER_CONFIG_LIST})
+        if (TARGET ramses-shared-lib-${PLATFORM_NAME})
+            LIST(APPEND configmodules ramses-shared-lib)
+            break()
+        endif()
+    endforeach()
 ENDIF()
 
 FOREACH(configmodule ${configmodules})
@@ -251,32 +257,12 @@ FOREACH(configmodule ${configmodules})
         SET(ramses-sdk_FIND_SCRIPT_INSTALL_DIR "lib/cmake/${configmodule-VERSION_DIR}")
     ENDIF()
 
-    # generate and install helper files
-    if (configmodule MATCHES "ramses-static")
-        foreach(optionalmodule IN LISTS ramses-sdk_CMAKE_CONFIG_INCLUDES_FOR_STATIC)
-            get_filename_component(fname "${optionalmodule}" NAME_WE)
-            set(fname "${fname}.cmake")
-            CONFIGURE_PACKAGE_CONFIG_FILE(
-                "${optionalmodule}"
-                "${CMAKE_CURRENT_BINARY_DIR}/cmake-config-${configmodule}/ramses-optional-${fname}"
-                INSTALL_DESTINATION "${ramses-sdk_FIND_SCRIPT_INSTALL_DIR}"
-                PATH_VARS PROJECT_INSTALL_HEADER PROJECT_INSTALL_STATIC_LIB PROJECT_INSTALL_SHARED_LIB
-                NO_SET_AND_CHECK_MACRO
-                NO_CHECK_REQUIRED_COMPONENTS_MACRO)
-            INSTALL(
-                FILES       ${CMAKE_CURRENT_BINARY_DIR}/cmake-config-${configmodule}/ramses-optional-${fname}
-                DESTINATION ${ramses-sdk_FIND_SCRIPT_INSTALL_DIR}
-                )
-            ACME_INFO("G ${fname} (${configmodule})")
-        endforeach()
-    endif()
-
     # generate CMake config file (use ${configmodule}Template.cmake.in as base)
     CONFIGURE_PACKAGE_CONFIG_FILE(
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/templates/${configmodule}Template.cmake.in"
         "${CMAKE_CURRENT_BINARY_DIR}/${configmodule}Config.cmake"
         INSTALL_DESTINATION "${ramses-sdk_FIND_SCRIPT_INSTALL_DIR}"
-        PATH_VARS PROJECT_INSTALL_HEADER PROJECT_INSTALL_STATIC_LIB PROJECT_INSTALL_SHARED_LIB
+        PATH_VARS PROJECT_INSTALL_HEADER PROJECT_INSTALL_SHARED_LIB PROJECT_INSTALL_BINARY
         NO_SET_AND_CHECK_MACRO
         NO_CHECK_REQUIRED_COMPONENTS_MACRO
     )

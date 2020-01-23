@@ -32,7 +32,7 @@ namespace ramses_internal
         TCPConnectionSystem(const NetworkParticipantAddress& participantAddress, UInt32 protocolVersion, const NetworkParticipantAddress& daemonAddress, bool pureDaemon,
                             PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection,
                             std::chrono::milliseconds aliveInterval, std::chrono::milliseconds aliveTimeout);
-        ~TCPConnectionSystem();
+        virtual ~TCPConnectionSystem() override;
 
         static Guid GetDaemonId();
 
@@ -70,6 +70,7 @@ namespace ramses_internal
         virtual bool sendDcsmContentFocusRequest(const Guid& to, ContentID contentID) override;
         virtual bool sendDcsmBroadcastRequestStopOfferContent(ContentID contentID) override;
         virtual bool sendDcsmBroadcastForceStopOfferContent(ContentID contentID) override;
+        virtual bool sendDcsmUpdateContentMetadata(const Guid& to, ContentID contentID, const DcsmMetadata& metadata) override;
 
         // dcsm renderer -> client
         virtual bool sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, SizeInfo sizeinfo, AnimationInformation ai) override;
@@ -119,7 +120,7 @@ namespace ramses_internal
             }
 
             // TODO(tobias) make move only in c++14
-            OutMessage(OutMessage&&) = default;
+            OutMessage(OutMessage&&) RNOEXCEPT = default;
             OutMessage(const OutMessage&) = default;
             OutMessage& operator=(const OutMessage&) = default;
 
@@ -163,7 +164,6 @@ namespace ramses_internal
             asio::ip::tcp::acceptor m_acceptor;
             asio::ip::tcp::socket   m_acceptorSocket;
         };
-        using RunStatePtr = std::shared_ptr<RunState>;
 
         virtual void run() override;
 
@@ -207,6 +207,7 @@ namespace ramses_internal
         void handleDcsmCategoryContentSwitchRequest(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmRequestUnregisterContent(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmForceStopOfferContent(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleDcsmUpdateContentMetadata(const ParticipantPtr& pp, BinaryInputStream& stream);
 
         static const char* EnumToString(EParticipantState e);
         static const char* EnumToString(EParticipantType e);
@@ -236,7 +237,7 @@ namespace ramses_internal
         IDcsmProviderServiceHandler* m_dcsmProviderHandler;
         IDcsmConsumerServiceHandler* m_dcsmConsumerHandler;
 
-        RunStatePtr m_runState;
+        std::unique_ptr<RunState>     m_runState;
         HashSet<ParticipantPtr>       m_connectingParticipants;
         HashMap<Guid, ParticipantPtr> m_establishedParticipants;
     };

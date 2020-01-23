@@ -14,7 +14,6 @@
 #include "RamsesFrameworkImpl.h"
 #include "Utils/LogMacros.h"
 #include "PlatformAbstraction/PlatformLock.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 
 namespace ramses_internal
 {
@@ -71,13 +70,13 @@ namespace ramses_internal
 
     Bool ClientApplicationLogic::isScenePublished(SceneId sceneId) const
     {
-        return m_publishedScenes.hasElement(sceneId);
+        return m_publishedScenes.contains(sceneId);
     }
 
-    void ClientApplicationLogic::flush(SceneId sceneId, ESceneFlushMode flushMode, const FlushTimeInformation& timeInfo, SceneVersionTag versionTag)
+    void ClientApplicationLogic::flush(SceneId sceneId, const FlushTimeInformation& timeInfo, SceneVersionTag versionTag)
     {
         PlatformGuard guard(m_frameworkLock);
-        m_scenegraphProviderComponent->handleFlush(sceneId, flushMode, timeInfo, versionTag);
+        m_scenegraphProviderComponent->handleFlush(sceneId, timeInfo, versionTag);
     }
 
     void ClientApplicationLogic::removeScene(SceneId sceneId)

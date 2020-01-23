@@ -13,14 +13,21 @@
 #include "ramses-renderer-api/WarpingMeshData.h"
 #include "ramses-renderer-api/IRendererEventHandler.h"
 #include "ramses-framework-api/RamsesFrameworkConfig.h"
+#include "ramses-framework-api/RamsesFramework.h"
 
 #include "RendererLib/RendererCommands.h"
 #include "RamsesRendererImpl.h"
 #include "PlatformAbstraction/PlatformThread.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "PlatformAbstraction/PlatformEvent.h"
 
 using namespace testing;
+
+class RenderThreadLoopTimingsNotificationMock : public ramses::RendererEventHandlerEmpty
+{
+public:
+    MOCK_METHOD2(renderThreadLoopTimings, void(std::chrono::microseconds maximumLoopTimeMilliseconds, std::chrono::microseconds average));
+
+};
 
 class SafeThreadWatchdogNotificationMock : public ramses::IThreadWatchdogNotification
 {
@@ -56,28 +63,13 @@ private:
     ramses_internal::PlatformLock& m_lock;
 };
 
-ACTION_P(ReleaseSyncCall, syncer)
-{
-    UNUSED(arg9);
-    UNUSED(arg8);
-    UNUSED(arg7);
-    UNUSED(arg6);
-    UNUSED(arg5);
-    UNUSED(arg4);
-    UNUSED(arg3);
-    UNUSED(arg2);
-    UNUSED(arg1);
-    UNUSED(arg0);
-    UNUSED(args);
-    syncer->signal();
-}
 
 class ARamsesRenderer : public ::testing::Test
 {
 protected:
     ARamsesRenderer(ramses::RendererConfig rendererConfig = ramses::RendererConfig())
     : framework()
-    , renderer(framework, rendererConfig)
+    , renderer(*framework.createRenderer(rendererConfig))
     , commandBuffer(renderer.impl.getPendingCommands())
     {
     }
@@ -105,133 +97,20 @@ protected:
         EXPECT_EQ(count, commandBuffer.getCommands().getTotalCommandCount());
     }
 
-    static void callAllApiCoreFunctions(ramses::RamsesRenderer& renderer)
-    {
-        const ramses::DisplayConfig displayConfig;
-        ramses::WarpingMeshData warpingMeshData(0, nullptr, 0, nullptr, nullptr);
-        ramses::RendererEventHandlerEmpty rendererEventHandler;
-
-        renderer.getStatusMessage(ramses::StatusOK);
-        renderer.createDisplay(displayConfig);
-        renderer.destroyDisplay(0u);
-        renderer.subscribeScene(0u);
-        renderer.unsubscribeScene(0u);
-        renderer.linkData(0u, 1u, 2u, 3u);
-        renderer.unlinkData(0u, 1u);
-        renderer.mapScene(0u, 1u);
-        renderer.unmapScene(0u);
-        renderer.showScene(0u);
-        renderer.hideScene(0u);
-        renderer.readPixels(0u, 1u, 2u, 3u, 4u);
-        renderer.updateWarpingMeshData(0u,warpingMeshData);
-        renderer.createOffscreenBuffer(0u, 1u, 1u);
-        renderer.destroyOffscreenBuffer(0u, 0u);
-        renderer.assignSceneToOffscreenBuffer(0u, 0u);
-        renderer.assignSceneToFramebuffer(0u);
-        renderer.linkOffscreenBufferToSceneData(0u, 0u, 0u);
-
-        renderer.setSurfaceVisibility(0u , true);
-        renderer.setSurfaceOpacity(0u, 1.0f);
-        renderer.setSurfaceRectangle(0u, 0, 0, 0, 0);
-        renderer.takeSystemCompositorScreenshot("", -1);
-        renderer.setFrameTimerLimits(10001u, 10000u, 10000u, 10000u);
-        renderer.setLayerVisibility(0u, true);
-
-        renderer.flush();
-        renderer.dispatchEvents(rendererEventHandler);
-    }
-
-    static void callAllApiFunctionsAndDoOneLoop(ramses::RamsesRenderer& renderer)
-    {
-        callAllApiCoreFunctions(renderer);
-        renderer.doOneLoop();
-    }
-
-    static void callAllApiFunctionsInRendererThread(ramses::RamsesRenderer& renderer)
-    {
-        renderer.startThread();
-
-        EXPECT_NE(ramses::StatusOK, renderer.setMaximumFramerate(0.0f));
-        EXPECT_NE(ramses::StatusOK, renderer.setMaximumFramerate(-5.0f));
-        EXPECT_EQ(ramses::StatusOK, renderer.setMaximumFramerate(60.0f));
-
-        callAllApiCoreFunctions(renderer);
-        renderer.stopThread();
-    }
-
-    void runThreadSanitizerConfidenceTest(ramses_internal::Runnable& runnable)
-    {
-        ramses_internal::PlatformThread thread1("RendThrdConf_t1");
-        thread1.start(runnable);
-
-        ramses_internal::PlatformThread thread2("RendThrdConf_t2");
-        thread2.start(runnable);
-
-        ramses_internal::PlatformThread thread3("RendThrdConf_t3");
-        thread3.start(runnable);
-
-        thread1.join();
-        thread2.join();
-        thread3.join();
-    }
-
-    class CallAllApiFunctionsRunnableUsingDoOneLoop: public ramses_internal::Runnable
-    {
-    public:
-        CallAllApiFunctionsRunnableUsingDoOneLoop(ramses::RamsesRenderer& rendererToCall, ramses_internal::UInt32 callCount = 1u)
-            : m_renderer(rendererToCall)
-            , m_callCount(callCount)
-        {
-        }
-
-        virtual void run()
-        {
-            for(ramses_internal::UInt32 i = 0u; i < m_callCount; ++i)
-            {
-                callAllApiFunctionsAndDoOneLoop(m_renderer);
-            }
-        }
-    private:
-        ramses::RamsesRenderer& m_renderer;
-        ramses_internal::UInt32 m_callCount;
-    };
-
-    class CallAllApiFunctionsRunnableUsingRendererThread: public ramses_internal::Runnable
-    {
-    public:
-        CallAllApiFunctionsRunnableUsingRendererThread(ramses::RamsesRenderer& rendererToCall, ramses_internal::UInt32 callCount = 1u)
-            : m_renderer(rendererToCall)
-            , m_callCount(callCount)
-        {
-        }
-
-        virtual void run()
-        {
-            for(ramses_internal::UInt32 i = 0u; i < m_callCount; ++i)
-            {
-                callAllApiFunctionsInRendererThread(m_renderer);
-            }
-        }
-    private:
-        ramses::RamsesRenderer& m_renderer;
-        ramses_internal::UInt32 m_callCount;
-    };
-
 protected:
     ramses::RamsesFramework framework;
-    ramses::RamsesRenderer renderer;
+    ramses::RamsesRenderer& renderer;
     const ramses_internal::RendererCommands& commandBuffer;
 };
 
 class ARamsesRendererWithDisplay : public ARamsesRenderer
 {
-
     void SetUp() override
     {
         displayId = addDisplay();
         warpingDisplayId = addDisplay(true);
-        EXPECT_NE(ramses::InvalidDisplayId, displayId);
-        EXPECT_NE(ramses::InvalidDisplayId, warpingDisplayId);
+        EXPECT_NE(ramses::displayId_t::Invalid(), displayId);
+        EXPECT_NE(ramses::displayId_t::Invalid(), warpingDisplayId);
         renderer.flush();
     }
 
@@ -275,7 +154,7 @@ TEST_F(ARamsesRenderer, createsACommandForDisplayCreation)
 {
     ramses::displayId_t displayId = addDisplay();
 
-    EXPECT_NE(ramses::InvalidDisplayId, displayId);
+    EXPECT_NE(ramses::displayId_t::Invalid(), displayId);
     checkForRendererCommand(0u, ramses_internal::ERendererCommand_CreateDisplay);
     checkForRendererCommandCount(1u);
 }
@@ -288,16 +167,16 @@ TEST_F(ARamsesRenderer, createsNoCommandForDisplayCreationWithInvalidConfig)
     EXPECT_NE(ramses::StatusOK, config.validate());
     ramses::displayId_t displayId = renderer.createDisplay(config);
 
-    EXPECT_EQ(ramses::InvalidDisplayId, displayId);
+    EXPECT_EQ(ramses::displayId_t::Invalid(), displayId);
     checkForRendererCommandCount(0u);
 }
 
 TEST_F(ARamsesRenderer, createsMultipleCommandsForMultipleDisplayCreation)
 {
     checkForRendererCommandCount(0u);
-    EXPECT_NE(ramses::InvalidDisplayId, addDisplay());
-    EXPECT_NE(ramses::InvalidDisplayId, addDisplay());
-    EXPECT_NE(ramses::InvalidDisplayId, addDisplay());
+    EXPECT_NE(ramses::displayId_t::Invalid(), addDisplay());
+    EXPECT_NE(ramses::displayId_t::Invalid(), addDisplay());
+    EXPECT_NE(ramses::displayId_t::Invalid(), addDisplay());
 
     checkForRendererCommandCount(3u);
     checkForRendererCommand(0u, ramses_internal::ERendererCommand_CreateDisplay);
@@ -310,6 +189,71 @@ TEST_F(ARamsesRendererWithDisplay, createsCommandForDisplayDestruction)
     EXPECT_EQ(ramses::StatusOK, renderer.destroyDisplay(displayId));
     checkForRendererCommandCount(1u);
     checkForRendererCommand(0u, ramses_internal::ERendererCommand_DestroyDisplay);
+}
+
+TEST_F(ARamsesRenderer, canQueryDisplayFramebufferIDs)
+{
+    const ramses::displayId_t displayId1 = addDisplay();
+    const auto fbId1 = renderer.getDisplayFramebuffer(displayId1);
+    EXPECT_TRUE(fbId1.isValid());
+}
+
+TEST_F(ARamsesRenderer, displayFramebufferIDsAreUnique)
+{
+    EXPECT_FALSE(renderer.getDisplayFramebuffer(ramses::displayId_t::Invalid()).isValid());
+
+    const ramses::displayId_t displayId1 = addDisplay();
+    const ramses::displayId_t displayId2 = addDisplay();
+    const ramses::displayId_t displayId3 = addDisplay();
+    const auto fbId1 = renderer.getDisplayFramebuffer(displayId1);
+    const auto fbId2 = renderer.getDisplayFramebuffer(displayId2);
+    const auto fbId3 = renderer.getDisplayFramebuffer(displayId3);
+    EXPECT_TRUE(fbId1.isValid());
+    EXPECT_TRUE(fbId2.isValid());
+    EXPECT_TRUE(fbId3.isValid());
+    EXPECT_NE(fbId1, fbId2);
+    EXPECT_NE(fbId1, fbId3);
+    EXPECT_NE(fbId2, fbId3);
+}
+
+TEST_F(ARamsesRenderer, displayFramebufferIsInvalidIfDisplayDestroyed)
+{
+    const ramses::displayId_t displayId = addDisplay();
+    EXPECT_TRUE(renderer.getDisplayFramebuffer(displayId).isValid());
+    renderer.destroyDisplay(displayId);
+    EXPECT_FALSE(renderer.getDisplayFramebuffer(displayId).isValid());
+}
+
+TEST_F(ARamsesRendererWithDisplay, createsCommandForBufferClearColorSet)
+{
+    const ramses::displayBufferId_t ob{ 123u };
+    EXPECT_EQ(ramses::StatusOK, renderer.setBufferClearColor(displayId, ob, 0.1f, 0.2f, 0.3f, 0.4f));
+    checkForRendererCommandCount(1u);
+    checkForRendererCommand(0u, ramses_internal::ERendererCommand_SetClearColor);
+    const auto& cmd = commandBuffer.getCommands().getCommandData<ramses_internal::SetClearColorCommand>(0u);
+    EXPECT_EQ(ob.getValue(), cmd.obHandle.asMemoryHandle());
+    EXPECT_EQ(ramses_internal::Vector4(0.1f, 0.2f, 0.3f, 0.4f), cmd.clearColor);
+}
+
+TEST_F(ARamsesRendererWithDisplay, createsCommandForFramebufferClearColorSetUsingDisplayBufferId)
+{
+    EXPECT_EQ(ramses::StatusOK, renderer.setBufferClearColor(displayId, renderer.getDisplayFramebuffer(displayId), 0.1f, 0.2f, 0.3f, 0.4f));
+    checkForRendererCommandCount(1u);
+    checkForRendererCommand(0u, ramses_internal::ERendererCommand_SetClearColor);
+
+    const auto& cmd = commandBuffer.getCommands().getCommandData<ramses_internal::SetClearColorCommand>(0u);
+    EXPECT_FALSE(cmd.obHandle.isValid());
+    EXPECT_EQ(ramses_internal::Vector4(0.1f, 0.2f, 0.3f, 0.4f), cmd.clearColor);
+}
+
+TEST_F(ARamsesRendererWithDisplay, createsCommandForFramebufferClearColorSetUsingDefaultArg)
+{
+    EXPECT_EQ(ramses::StatusOK, renderer.setBufferClearColor(displayId));
+    checkForRendererCommandCount(1u);
+    checkForRendererCommand(0u, ramses_internal::ERendererCommand_SetClearColor);
+
+    const auto& cmd = commandBuffer.getCommands().getCommandData<ramses_internal::SetClearColorCommand>(0u);
+    EXPECT_FALSE(cmd.obHandle.isValid());
 }
 
 /*
@@ -402,6 +346,14 @@ TEST_F(ARamsesRenderer, createsCommandForTransformDataLinkingBetweenDifferentSce
     checkForRendererCommand(0u, ramses_internal::ERendererCommand_LinkSceneData);
 }
 
+TEST_F(ARamsesRenderer, createsCommandForHandlePickEvent)
+{
+    ramses::sceneId_t scene(0u);
+    EXPECT_EQ(ramses::StatusOK, renderer.handlePickEvent(scene, 1, 2));
+    checkForRendererCommandCount(1u);
+    checkForRendererCommand(0u, ramses_internal::ERendererCommand_PickEvent);
+}
+
 TEST_F(ARamsesRenderer, createsComandForUnlinkTransformDataLink)
 {
     ramses::sceneId_t scene(1u);
@@ -464,14 +416,14 @@ TEST_F(ARamsesRendererWithDisplay, createsCommandForValidWarpingDataUpdateOnWarp
 */
 TEST_F(ARamsesRendererWithDisplay, createsCommandForOffscreenBufferCreate)
 {
-    EXPECT_NE(ramses::InvalidOffscreenBufferId, renderer.createOffscreenBuffer(displayId, 40u, 40u));
+    EXPECT_NE(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 40u, 40u));
     checkForRendererCommandCount(1u);
     checkForRendererCommand(0u, ramses_internal::ERendererCommand_CreateOffscreenBuffer);
 }
 
 TEST_F(ARamsesRendererWithDisplay, createsCommandForOffscreenBufferDestroy)
 {
-    const ramses::offscreenBufferId_t bufferId(0u);
+    const ramses::displayBufferId_t bufferId(0u);
     EXPECT_EQ(ramses::StatusOK, renderer.destroyOffscreenBuffer(displayId, bufferId));
     checkForRendererCommandCount(1u);
     checkForRendererCommand(0u, ramses_internal::ERendererCommand_DestroyOffscreenBuffer);
@@ -479,36 +431,54 @@ TEST_F(ARamsesRendererWithDisplay, createsCommandForOffscreenBufferDestroy)
 
 TEST_F(ARamsesRendererWithDisplay, failsToCreateOffscreenBufferWithUnsupportedResolution)
 {
-    EXPECT_EQ(ramses::InvalidOffscreenBufferId, renderer.createOffscreenBuffer(displayId, 0u, 1u));
-    EXPECT_EQ(ramses::InvalidOffscreenBufferId, renderer.createOffscreenBuffer(displayId, 1u, 0u));
-    EXPECT_EQ(ramses::InvalidOffscreenBufferId, renderer.createOffscreenBuffer(displayId, 0u, 0u));
-    EXPECT_EQ(ramses::InvalidOffscreenBufferId, renderer.createOffscreenBuffer(displayId, 5000u, 1u));
-    EXPECT_EQ(ramses::InvalidOffscreenBufferId, renderer.createOffscreenBuffer(displayId, 1u, 5000u));
-    EXPECT_EQ(ramses::InvalidOffscreenBufferId, renderer.createOffscreenBuffer(displayId, 5000u, 5000u));
+    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 0u, 1u));
+    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 1u, 0u));
+    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 0u, 0u));
+    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 5000u, 1u));
+    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 1u, 5000u));
+    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 5000u, 5000u));
 }
 
 TEST_F(ARamsesRendererWithDisplay, createsCommandForAssignSceneToOffscreenBuffer)
 {
     const ramses::sceneId_t scene(1u);
-    const ramses::offscreenBufferId_t bufferId(0u);
-    EXPECT_EQ(ramses::StatusOK, renderer.assignSceneToOffscreenBuffer(scene, bufferId));
+    const ramses::displayBufferId_t bufferId(123u);
+    EXPECT_EQ(ramses::StatusOK, renderer.assignSceneToDisplayBuffer(scene, bufferId, 11));
 
     checkForRendererCommandCount(1u);
-    checkForRendererCommand(0u, ramses_internal::ERendererCommand_AssignSceneToOffscreenBuffer);
+    checkForRendererCommand(0u, ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
+    const auto& cmd = commandBuffer.getCommands().getCommandData<ramses_internal::SceneMappingCommand>(0u);
+    EXPECT_EQ(bufferId.getValue(), cmd.offscreenBuffer.asMemoryHandle());
+    EXPECT_EQ(11, cmd.sceneRenderOrder);
 }
 
-TEST_F(ARamsesRendererWithDisplay, createsCommandForAssignSceneToFramebuffer)
+TEST_F(ARamsesRendererWithDisplay, createsCommandForAssignSceneToFramebufferUsingDisplayBufferId)
 {
     const ramses::sceneId_t scene(1u);
-    EXPECT_EQ(ramses::StatusOK, renderer.assignSceneToFramebuffer(scene));
+    EXPECT_EQ(ramses::StatusOK, renderer.assignSceneToDisplayBuffer(scene, renderer.getDisplayFramebuffer(displayId), 11));
 
     checkForRendererCommandCount(1u);
-    checkForRendererCommand(0u, ramses_internal::ERendererCommand_AssignSceneToFramebuffer);
+    checkForRendererCommand(0u, ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
+    const auto& cmd = commandBuffer.getCommands().getCommandData<ramses_internal::SceneMappingCommand>(0u);
+    EXPECT_FALSE(cmd.offscreenBuffer.isValid());
+    EXPECT_EQ(11, cmd.sceneRenderOrder);
+}
+
+TEST_F(ARamsesRendererWithDisplay, createsCommandForAssignSceneToFramebufferUsingInvalidBufferID)
+{
+    const ramses::sceneId_t scene(1u);
+    EXPECT_EQ(ramses::StatusOK, renderer.assignSceneToDisplayBuffer(scene, ramses::displayBufferId_t::Invalid(), 11));
+
+    checkForRendererCommandCount(1u);
+    checkForRendererCommand(0u, ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
+    const auto& cmd = commandBuffer.getCommands().getCommandData<ramses_internal::SceneMappingCommand>(0u);
+    EXPECT_FALSE(cmd.offscreenBuffer.isValid());
+    EXPECT_EQ(11, cmd.sceneRenderOrder);
 }
 
 TEST_F(ARamsesRendererWithDisplay, createsCommandForOffscreenBufferLink)
 {
-    const ramses::offscreenBufferId_t bufferId(0u);
+    const ramses::displayBufferId_t bufferId(0u);
     const ramses::sceneId_t consumerScene(1u);
     const ramses::dataConsumerId_t dataConsumer(2u);
 
@@ -585,43 +555,6 @@ TEST_F(ARamsesRendererWithSystemCompositorController, createsCommandForSystemCom
 /*
  * Threading and thread sanitizer tests
  */
-TEST_F(ARamsesRenderer, doesNotHaveRaceConditionsOrDeadlocks_UsingDoOneLoop)
-{
-    callAllApiFunctionsAndDoOneLoop(renderer);
-
-    CallAllApiFunctionsRunnableUsingDoOneLoop runnable(renderer);
-    ramses_internal::PlatformThread thread("RendThrdSanitiz");
-    thread.start(runnable);
-    thread.join();
-}
-
-TEST_F(ARamsesRenderer, doesNotHaveRaceConditionsOrDeadlocks_UsingDoOneLoop_confidenceTest)
-{
-    const ramses_internal::UInt32 callCount = 5;
-    CallAllApiFunctionsRunnableUsingDoOneLoop runnable(renderer, callCount);
-
-    runThreadSanitizerConfidenceTest(runnable);
-}
-
-TEST_F(ARamsesRenderer, doesNotHaveRaceConditionsOrDeadlocks_UsingRendererThread)
-{
-    callAllApiFunctionsInRendererThread(renderer);
-
-    CallAllApiFunctionsRunnableUsingRendererThread runnable(renderer);
-    ramses_internal::PlatformThread thread("RendThrdSanitiz");
-    thread.start(runnable);
-
-    thread.join();
-}
-
-TEST_F(ARamsesRenderer, doesNotHaveRaceConditionsOrDeadlocks_UsingRendererThread_confidenceTest)
-{
-    const ramses_internal::UInt32 callCount = 5;
-    CallAllApiFunctionsRunnableUsingRendererThread runnable(renderer, callCount);
-
-    runThreadSanitizerConfidenceTest(runnable);
-}
-
 TEST_F(ARamsesRenderer, canRunRendererInItsOwnThread)
 {
     class SceneStateEventHandler : public ramses::RendererEventHandlerEmpty
@@ -652,12 +585,80 @@ TEST_F(ARamsesRenderer, canRunRendererInItsOwnThread)
 
     const ramses::displayId_t displayId = addDisplay();
     renderer.flush();
-    ASSERT_FALSE(renderer.impl.getRenderer().getRenderer().hasDisplayController(ramses_internal::DisplayHandle(displayId)));
+    ASSERT_FALSE(renderer.impl.getRenderer().getRenderer().hasDisplayController(ramses_internal::DisplayHandle(displayId.getValue())));
     EXPECT_EQ(ramses::StatusOK, renderer.startThread());
     SceneStateEventHandler eventHandler(renderer);
     eventHandler.waitForDisplayCreationEvent();
 
-    EXPECT_TRUE(renderer.impl.getRenderer().getRenderer().hasDisplayController(ramses_internal::DisplayHandle(displayId)));
+    EXPECT_TRUE(renderer.impl.getRenderer().getRenderer().hasDisplayController(ramses_internal::DisplayHandle(displayId.getValue())));
+    EXPECT_EQ(ramses::StatusOK, renderer.stopThread());
+}
+
+TEST_F(ARamsesRenderer, canRunRendererInItsOwnThreadAndCallAPIMethods)
+{
+    class SceneStateEventHandler : public ramses::RendererEventHandlerEmpty
+    {
+    public:
+        SceneStateEventHandler(ramses::RamsesRenderer& renderer)
+            : m_renderer(renderer)
+            , m_displayCreationEventFired(false)
+        {
+        }
+
+        virtual void displayCreated(ramses::displayId_t /*displayId*/, ramses::ERendererEventResult /*result*/)
+        {
+            m_displayCreationEventFired = true;
+        }
+
+        void waitForDisplayCreationEvent()
+        {
+            do {
+                m_renderer.dispatchEvents(*this);
+            } while (!m_displayCreationEventFired);
+        }
+
+    private:
+        ramses::RamsesRenderer& m_renderer;
+        ramses_internal::Bool m_displayCreationEventFired;
+    };
+
+    const ramses::displayId_t displayId = addDisplay();
+    renderer.flush();
+    ASSERT_FALSE(renderer.impl.getRenderer().getRenderer().hasDisplayController(ramses_internal::DisplayHandle(displayId.getValue())));
+    EXPECT_EQ(ramses::StatusOK, renderer.startThread());
+    SceneStateEventHandler eventHandler(renderer);
+    eventHandler.waitForDisplayCreationEvent();
+    EXPECT_TRUE(renderer.impl.getRenderer().getRenderer().hasDisplayController(ramses_internal::DisplayHandle(displayId.getValue())));
+
+    // most of these will fail but the purpose is to create and submit renderer commands for renderer running in another thread
+    // thread sanitizer or other analyzer would catch race conditions when running this test
+    renderer.subscribeScene(ramses::sceneId_t(0u));
+    renderer.linkData(ramses::sceneId_t(0u), 1u, ramses::sceneId_t(2u), 3u);
+    renderer.unlinkData(ramses::sceneId_t(0u), 1u);
+    renderer.handlePickEvent(ramses::sceneId_t(0u), 1u, 2u);
+    renderer.mapScene(displayId, ramses::sceneId_t(1u));
+    renderer.unmapScene(ramses::sceneId_t(0u));
+    renderer.showScene(ramses::sceneId_t(0u));
+    renderer.hideScene(ramses::sceneId_t(0u));
+    renderer.flush();
+
+    renderer.readPixels(displayId, 1u, 2u, 3u, 4u);
+    const auto ob = renderer.createOffscreenBuffer(displayId, 1u, 1u);
+    renderer.destroyOffscreenBuffer(displayId, ob);
+    renderer.assignSceneToDisplayBuffer(ramses::sceneId_t(0u), ob, 11);
+    renderer.linkOffscreenBufferToSceneData(ob, ramses::sceneId_t(0u), 0u);
+    renderer.setBufferClearColor(displayId, ob);
+    renderer.flush();
+
+    renderer.setSurfaceVisibility(0u, true);
+    renderer.setSurfaceOpacity(0u, 1.0f);
+    renderer.setSurfaceRectangle(0u, 0, 0, 0, 0);
+    renderer.takeSystemCompositorScreenshot("", -1);
+    renderer.setFrameTimerLimits(10001u, 10000u, 10000u, 10000u);
+    renderer.setLayerVisibility(0u, true);
+    renderer.flush();
+
+    renderer.dispatchEvents(eventHandler);
     EXPECT_EQ(ramses::StatusOK, renderer.stopThread());
 }
 
@@ -684,15 +685,16 @@ TEST(ARamsesRendererWithSeparateRendererThread, canNotifyPerWatchdog)
     // syncWaiter must outlive renderer because renderer calls syncWaiter
     // via mock until its dtor has run (only then thread gets really stopped!)
     ramses_internal::PlatformEvent syncWaiter;
-    ramses::RamsesRenderer renderer(framework, ramses::RendererConfig());
+    ramses::RamsesRenderer& renderer(*framework.createRenderer(ramses::RendererConfig()));
     {
         ramses_internal::PlatformGuard g(expectLock);
-        EXPECT_CALL(notificationMock, safe_notifyThread(ramses::ERamsesThreadIdentifier_Renderer)).Times(AtLeast(1)).WillRepeatedly(ReleaseSyncCall(&syncWaiter));
+        EXPECT_CALL(notificationMock, safe_notifyThread(ramses::ERamsesThreadIdentifier_Renderer))
+            .Times(AtLeast(1))
+            .WillRepeatedly(InvokeWithoutArgs([&]() { syncWaiter.signal(); }));
     }
     EXPECT_EQ(ramses::StatusOK, renderer.startThread());
 
-    const ramses_internal::EStatus status = syncWaiter.wait(60000);
-    EXPECT_EQ(ramses_internal::EStatus_RAMSES_OK, status);
+    EXPECT_TRUE(syncWaiter.wait(60000));
 
     {
         ramses_internal::PlatformGuard g(expectLock);
@@ -700,6 +702,38 @@ TEST(ARamsesRendererWithSeparateRendererThread, canNotifyPerWatchdog)
         EXPECT_CALL(notificationMock, safe_unregisterThread(ramses::ERamsesThreadIdentifier_Renderer)).Times(1);
     }
     EXPECT_EQ(ramses::StatusOK, renderer.stopThread());
+    framework.destroyRenderer(renderer);
+}
+
+TEST(ARamsesRendererWithSeparateRendererThread, firesRenderThreadPeriodTimingsEvent)
+{
+    RenderThreadLoopTimingsNotificationMock notificationMock;
+
+    ramses::RamsesFramework framework;
+    ramses::RendererConfig rConfig;
+    std::chrono::milliseconds period{ 50 };
+    rConfig.setRenderThreadLoopTimingReportingPeriod(period);
+    ramses::RamsesRenderer& renderer(*framework.createRenderer(rConfig));
+    // syncWaiter must outlive renderer because renderer calls syncWaiter
+        // via mock until its dtor has run (only then thread gets really stopped!)
+    ramses_internal::PlatformEvent syncWaiter;
+
+    EXPECT_CALL(notificationMock, renderThreadLoopTimings(_, _)).Times(AtLeast(1)).WillRepeatedly(InvokeWithoutArgs([&]() { syncWaiter.signal(); }));
+    EXPECT_EQ(ramses::StatusOK, renderer.startThread());
+
+    bool eventReceived = false;
+    // wait for either 60 seconds or until event was received (signalled)
+    int i = 0;
+    const auto timesToRunToWaitFor60Seconds = 60 * 1000 / period.count();
+    while (i < timesToRunToWaitFor60Seconds && !eventReceived)
+    {
+        renderer.dispatchEvents(notificationMock);
+        eventReceived = syncWaiter.wait(1);
+        i++;
+    }
+
+    EXPECT_EQ(ramses::StatusOK, renderer.stopThread());
+    framework.destroyRenderer(renderer);
 }
 
 TEST_F(ARamsesRendererWithDisplay, createsCommandForSettingFrameTimerLimits)
@@ -716,4 +750,61 @@ TEST_F(ARamsesRendererWithDisplay, createsCommandForSettingSkippingUnmodifiedBuf
 
     checkForRendererCommandCount(1u);
     checkForRendererCommand(0u, ramses_internal::ERendererCommand_SetSkippingOfUnmodifiedBuffers);
+}
+
+TEST(ARamsesFrameworkInARendererLib, canCreateARenderer)
+{
+    ramses::RamsesFramework fw;
+
+    auto renderer = fw.createRenderer(ramses::RendererConfig());
+    EXPECT_NE(nullptr, renderer);
+}
+
+TEST(ARamsesFrameworkInARendererLib, canNotCreateMultipleRenderer)
+{
+    ramses::RamsesFramework fw;
+
+    auto renderer1 = fw.createRenderer(ramses::RendererConfig());
+    auto renderer2 = fw.createRenderer(ramses::RendererConfig());
+    EXPECT_NE(nullptr, renderer1);
+    EXPECT_EQ(nullptr, renderer2);
+}
+
+TEST(ARamsesFrameworkInARendererLib, acceptsLocallyCreatedRendererForDestruction)
+{
+    ramses::RamsesFramework fw;
+
+    auto renderer = fw.createRenderer(ramses::RendererConfig());
+    EXPECT_EQ(ramses::StatusOK, fw.destroyRenderer(*renderer));
+}
+
+TEST(ARamsesFrameworkInARendererLib, doesNotAcceptForeignCreatedRendererForDestruction)
+{
+    ramses::RamsesFramework fw1;
+    ramses::RamsesFramework fw2;
+
+    auto renderer1 = fw1.createRenderer(ramses::RendererConfig());
+    auto renderer2 = fw2.createRenderer(ramses::RendererConfig());
+    EXPECT_NE(ramses::StatusOK, fw2.destroyRenderer(*renderer1));
+    EXPECT_NE(ramses::StatusOK, fw1.destroyRenderer(*renderer2));
+}
+
+TEST(ARamsesFrameworkInARendererLib, doesNotAcceptSameRendererTwiceForDestruction)
+{
+    ramses::RamsesFramework fw;
+
+    auto renderer = fw.createRenderer(ramses::RendererConfig());
+    EXPECT_EQ(ramses::StatusOK, fw.destroyRenderer(*renderer));
+    EXPECT_NE(ramses::StatusOK, fw.destroyRenderer(*renderer));
+}
+
+TEST(ARamsesFrameworkInARendererLib, canCreateDestroyAndRecreateARenderer)
+{
+    ramses::RamsesFramework fw;
+
+    auto renderer = fw.createRenderer(ramses::RendererConfig());
+    EXPECT_NE(nullptr, renderer);
+    EXPECT_EQ(fw.destroyRenderer(*renderer), ramses::StatusOK);
+    renderer = fw.createRenderer(ramses::RendererConfig());
+    EXPECT_NE(nullptr, renderer);
 }

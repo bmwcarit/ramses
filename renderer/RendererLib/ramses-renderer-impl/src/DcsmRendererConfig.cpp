@@ -9,6 +9,7 @@
 #include "ramses-renderer-api/DcsmRendererConfig.h"
 #include "DcsmRendererConfigImpl.h"
 #include "APILoggingMacros.h"
+#include "RamsesFrameworkTypesImpl.h"
 
 namespace ramses
 {
@@ -24,14 +25,14 @@ namespace ramses
     {
         for (const auto& c : categories)
         {
-            LOG_HL_RENDERER_API4(LOG_API_VOID, c.first.getValue(), c.second.size.width, c.second.size.height, c.second.display);
+            LOG_HL_RENDERER_API4(LOG_API_VOID, c.first, c.second.size.width, c.second.size.height, c.second.display);
         }
     }
 
     status_t DcsmRendererConfig::addCategory(Category categoryId, const CategoryInfo& categoryInfo)
     {
         const auto status = m_impl.addCategory(categoryId, categoryInfo);
-        LOG_HL_RENDERER_API4(status, categoryId.getValue(), categoryInfo.size.width, categoryInfo.size.height, categoryInfo.display);
+        LOG_HL_RENDERER_API4(status, categoryId, categoryInfo.size.width, categoryInfo.size.height, categoryInfo.display);
         return status;
     }
 

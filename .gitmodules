@@ -1,7 +1,7 @@
 [submodule "external/harfbuzz"]
 	url = https://github.com/harfbuzz/harfbuzz.git
 	path = external/harfbuzz
-	branch = refs/heads/1.9.0
+	branch = refs/heads/1.7.5
 [submodule "external/googletest"]
 	url = https://github.com/google/googletest.git
 	path = external/googletest
@@ -9,11 +9,11 @@
 [submodule "external/glslang"]
 	url = https://github.com/KhronosGroup/glslang.git
 	path = external/glslang
-	branch = refs/heads/7.8.2853
+	branch = refs/heads/6.2.2596
 [submodule "external/freetype"]
 	url = https://git.sv.nongnu.org/r/freetype/freetype2.git
 	path = external/freetype
-	branch = refs/heads/VER-2-6
+	branch = refs/heads/VER-2-9
 [submodule "external/asio"]
 	url = https://github.com/chriskohlhoff/asio.git
 	path = external/asio
@@ -22,3 +22,7 @@
 	url = https://github.com/lz4/lz4.git
 	path = external/lz4
 	branch = refs/heads/v1.7.5
+[submodule "external/fmt"]
+	url = https://github.com/fmtlib/fmt.git
+	path = external/fmt
+	branch = refs/heads/6.1.2

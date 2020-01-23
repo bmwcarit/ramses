@@ -46,10 +46,6 @@ namespace ramses
             case ETextureFormat_RGBA5551:
                 return ramses_internal::ETextureFormat_RGBA5551;
 
-            case ETextureFormat_BGR8:
-                return ramses_internal::ETextureFormat_BGR8;
-            case ETextureFormat_BGRA8:
-                return ramses_internal::ETextureFormat_BGRA8;
             case ETextureFormat_ETC2RGB:
                 return ramses_internal::ETextureFormat_ETC2RGB;
             case ETextureFormat_ETC2RGBA:
@@ -160,11 +156,6 @@ namespace ramses
             case ramses_internal::ETextureFormat_RGBA5551:
                 return ETextureFormat_RGBA5551;
 
-            case ramses_internal::ETextureFormat_BGR8:
-                return ETextureFormat_BGR8;
-            case ramses_internal::ETextureFormat_BGRA8:
-                return ETextureFormat_BGRA8;
-
             case ramses_internal::ETextureFormat_ETC2RGB:
                 return ETextureFormat_ETC2RGB;
             case ramses_internal::ETextureFormat_ETC2RGBA:
@@ -253,6 +244,152 @@ namespace ramses
                 assert(false);
                 return ETextureFormat_RGBA8;
             }
+        }
+
+        static ETextureChannelColor GetTextureChannelColorFromInternal(ramses_internal::ETextureChannelColor textureChannelColor)
+        {
+            switch (textureChannelColor)
+            {
+            case ramses_internal::ETextureChannelColor::Red:
+                return ETextureChannelColor::Red;
+            case ramses_internal::ETextureChannelColor::Green:
+                return ETextureChannelColor::Green;
+            case ramses_internal::ETextureChannelColor::Blue:
+                return ETextureChannelColor::Blue;
+            case ramses_internal::ETextureChannelColor::Alpha:
+                return ETextureChannelColor::Alpha;
+            case ramses_internal::ETextureChannelColor::One:
+                return ETextureChannelColor::One;
+            case ramses_internal::ETextureChannelColor::Zero:
+                return ETextureChannelColor::Zero;
+            case ramses_internal::ETextureChannelColor::NUMBER_OF_ELEMENTS:
+                break;
+            }
+            assert(false);
+            return ETextureChannelColor::Red;
+        }
+
+        static ramses_internal::ETextureChannelColor GetTextureChannelColorInternal(ETextureChannelColor textureChannelColor)
+        {
+            switch (textureChannelColor)
+            {
+            case ETextureChannelColor::Red:
+                return ramses_internal::ETextureChannelColor::Red;
+            case ETextureChannelColor::Green:
+                return ramses_internal::ETextureChannelColor::Green;
+            case ETextureChannelColor::Blue:
+                return ramses_internal::ETextureChannelColor::Blue;
+            case ETextureChannelColor::Alpha:
+                return ramses_internal::ETextureChannelColor::Alpha;
+            case ETextureChannelColor::One:
+                return ramses_internal::ETextureChannelColor::One;
+            case ETextureChannelColor::Zero:
+                return ramses_internal::ETextureChannelColor::Zero;
+            }
+            assert(false);
+            return ramses_internal::ETextureChannelColor::Red;
+        }
+
+        static ramses_internal::TextureSwizzleArray GetTextureSwizzleInternal(const TextureSwizzle& swizzle)
+        {
+            return ramses_internal::TextureSwizzleArray{
+                GetTextureChannelColorInternal(swizzle.channelRed),
+                GetTextureChannelColorInternal(swizzle.channelGreen),
+                GetTextureChannelColorInternal(swizzle.channelBlue),
+                GetTextureChannelColorInternal(swizzle.channelAlpha)
+            };
+        }
+
+        static bool IsTextureSizeSupportedByFormat(uint32_t width, uint32_t height, ETextureFormat textureformat)
+        {
+            switch (textureformat)
+            {
+            case ETextureFormat_R8:
+            case ETextureFormat_RG8:
+            case ETextureFormat_RGB8:
+            case ETextureFormat_RGB565:
+            case ETextureFormat_RGBA8:
+            case ETextureFormat_RGBA4:
+            case ETextureFormat_RGBA5551:
+            case ETextureFormat_R16F:
+            case ETextureFormat_R32F:
+            case ETextureFormat_RG16F:
+            case ETextureFormat_RG32F:
+            case ETextureFormat_RGB16F:
+            case ETextureFormat_RGB32F:
+            case ETextureFormat_RGBA16F:
+            case ETextureFormat_RGBA32F:
+            case ETextureFormat_SRGB8:
+            case ETextureFormat_SRGB8_ALPHA8:
+                // no special requirements
+                return true;
+
+            case ETextureFormat_ETC2RGB:
+            case ETextureFormat_ETC2RGBA:
+            case ETextureFormat_ASTC_RGBA_4x4:
+            case ETextureFormat_ASTC_SRGBA_4x4:
+                return (width % 4 == 0) && (height % 4 == 0);
+
+            case ETextureFormat_ASTC_RGBA_5x4:
+            case ETextureFormat_ASTC_SRGBA_5x4:
+                return (width % 5 == 0) && (height % 4 == 0);
+
+            case ETextureFormat_ASTC_RGBA_5x5:
+            case ETextureFormat_ASTC_SRGBA_5x5:
+                return (width % 5 == 0) && (height % 5 == 0);
+
+            case ETextureFormat_ASTC_RGBA_6x5:
+            case ETextureFormat_ASTC_SRGBA_6x5:
+                return (width % 6 == 0) && (height % 5 == 0);
+
+            case ETextureFormat_ASTC_RGBA_6x6:
+            case ETextureFormat_ASTC_SRGBA_6x6:
+                return (width % 6 == 0) && (height % 6 == 0);
+
+            case ETextureFormat_ASTC_RGBA_8x5:
+            case ETextureFormat_ASTC_SRGBA_8x5:
+                return (width % 8 == 0) && (height % 5 == 0);
+
+            case ETextureFormat_ASTC_RGBA_8x6:
+            case ETextureFormat_ASTC_SRGBA_8x6:
+                return (width % 8 == 0) && (height % 6 == 0);
+
+            case ETextureFormat_ASTC_RGBA_8x8:
+            case ETextureFormat_ASTC_SRGBA_8x8:
+                return (width % 8 == 0) && (height % 8 == 0);
+
+            case ETextureFormat_ASTC_RGBA_10x5:
+            case ETextureFormat_ASTC_SRGBA_10x5:
+                return (width % 10 == 0) && (height % 5 == 0);
+
+            case ETextureFormat_ASTC_RGBA_10x6:
+            case ETextureFormat_ASTC_SRGBA_10x6:
+                return (width % 10 == 0) && (height % 6 == 0);
+
+            case ETextureFormat_ASTC_RGBA_10x8:
+            case ETextureFormat_ASTC_SRGBA_10x8:
+                return (width % 10 == 0) && (height % 8 == 0);
+
+            case ETextureFormat_ASTC_RGBA_10x10:
+            case ETextureFormat_ASTC_SRGBA_10x10:
+                return (width % 10 == 0) && (height % 10 == 0);
+
+            case ETextureFormat_ASTC_RGBA_12x10:
+            case ETextureFormat_ASTC_SRGBA_12x10:
+                return (width % 12 == 0) && (height % 10 == 0);
+
+            case ETextureFormat_ASTC_RGBA_12x12:
+            case ETextureFormat_ASTC_SRGBA_12x12:
+                return (width % 12 == 0) && (height % 12 == 0);
+
+            case ETextureFormat_Invalid:
+            case ETextureFormat_NUMBER_OF_ELEMENTS:
+                assert(false);
+                return false;
+            }
+
+            assert(false);
+            return false;
         }
 
         static ramses_internal::EWrapMethod GetTextureAddressModeInternal(ETextureAddressMode addressMode)
@@ -389,6 +526,8 @@ namespace ramses
         {
             switch (bufferFormat)
             {
+            case ramses::ERenderBufferFormat_RGBA4:
+                return ramses_internal::ETextureFormat_RGBA4;
             case ramses::ERenderBufferFormat_R8:
                 return ramses_internal::ETextureFormat_R8;
             case ramses::ERenderBufferFormat_RG8:
@@ -441,6 +580,8 @@ namespace ramses
         {
             switch (bufferFormat)
             {
+            case ramses_internal::ETextureFormat_RGBA4:
+                return ERenderBufferFormat_RGBA4;
             case ramses_internal::ETextureFormat_R8:
                 return ERenderBufferFormat_R8;
             case ramses_internal::ETextureFormat_RG8:
@@ -496,6 +637,7 @@ namespace ramses
             {
             case ERenderBufferType_Color:
                 return
+                    bufferFormat == ERenderBufferFormat_RGBA4 ||
                     bufferFormat == ERenderBufferFormat_R8 ||
                     bufferFormat == ERenderBufferFormat_RG8 ||
                     bufferFormat == ERenderBufferFormat_RGB8 ||
@@ -526,7 +668,6 @@ namespace ramses
         static bool MipDataValid(uint32_t width, uint32_t height, uint32_t depth, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], ETextureFormat format);
         static bool MipDataValid(uint32_t size, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], ETextureFormat format);
         static bool TextureParametersValid(uint32_t width, uint32_t height, uint32_t depth, uint32_t mipMapCount);
-        static Texture2D* CreateTextureResourceFromPng(const char* filePath, RamsesClient& client, const char* name = nullptr);
     };
 }
 

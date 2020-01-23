@@ -33,7 +33,7 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, InitializesDataInstanceFieldsWithZero)
     {
-        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType_Float), DataFieldInfo(EDataType_Float) });
+        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType_Float), DataFieldInfo(EDataType_Float) }, ResourceContentHash(123u, 0u));
         const DataInstanceHandle containerHandle = this->m_scene.allocateDataInstance(dataLayout);
 
         EXPECT_EQ(0.0f, this->m_scene.getDataSingleFloat(containerHandle, DataFieldHandle(0u)));
@@ -42,19 +42,19 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, InitializesDataInstanceBufferFieldsWithInvalidHashAndDataBufferAndZeroDivisor)
     {
-        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType_UInt16Buffer), DataFieldInfo(EDataType_FloatBuffer) });
+        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType_UInt16Buffer), DataFieldInfo(EDataType_FloatBuffer) }, ResourceContentHash(123u, 0u));
         const DataInstanceHandle containerHandle = this->m_scene.allocateDataInstance(dataLayout);
 
         {
             const ResourceField& dataResource = this->m_scene.getDataResource(containerHandle, DataFieldHandle(0u));
-            EXPECT_EQ(ResourceContentHash::Invalid(), dataResource.hash);
+            EXPECT_FALSE(dataResource.hash.isValid());
             EXPECT_FALSE(dataResource.dataBuffer.isValid());
             EXPECT_EQ(0u, dataResource.instancingDivisor);
         }
 
         {
             const ResourceField& dataResource = this->m_scene.getDataResource(containerHandle, DataFieldHandle(1u));
-            EXPECT_EQ(ResourceContentHash::Invalid(), dataResource.hash);
+            EXPECT_FALSE(dataResource.hash.isValid());
             EXPECT_FALSE(dataResource.dataBuffer.isValid());
             EXPECT_EQ(0u, dataResource.instancingDivisor);
         }
@@ -79,7 +79,7 @@ namespace ramses_internal
             DataFieldInfo(EDataType_Matrix44F),
             DataFieldInfo(EDataType_DataReference)
         };
-        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout(dataFields);
+        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout(dataFields, ResourceContentHash(123u, 0u));
         const DataInstanceHandle containerHandle = this->m_scene.allocateDataInstance(dataLayout);
 
         const Matrix22f zeroMatrix22 = Matrix22f::Empty;
@@ -157,7 +157,7 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, CreatingDataInstanceIncreasesDataInstanceCount)
     {
-        DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({});
+        DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({}, ResourceContentHash(123u, 0u));
         this->m_scene.allocateDataInstance(dataLayout);
 
         EXPECT_EQ(1u, this->m_scene.getDataInstanceCount());
@@ -165,7 +165,7 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, DataInstanceWithFieldWithElementCountGreaterOneReturnsSameValue)
     {
-        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType_Int32, 4u) });
+        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType_Int32, 4u) }, ResourceContentHash(123u, 0u));
         const DataFieldHandle field(0u);
 
         const DataInstanceHandle instance = this->m_scene.allocateDataInstance(dataLayout);
@@ -181,7 +181,7 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, DataInstanceFieldsWithElementCountGreaterOneDoesNotInfluenceOtherField)
     {
-        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType_Float, 3u), DataFieldInfo(EDataType_Vector4Buffer) });
+        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType_Float, 3u), DataFieldInfo(EDataType_Vector4Buffer) }, ResourceContentHash::Invalid());
 
         const DataInstanceHandle instance = this->m_scene.allocateDataInstance(dataLayout);
         const Float inValues0[3] = { 0.f, 0.f, 0.f };

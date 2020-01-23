@@ -138,6 +138,11 @@ namespace ramses_internal
             return true;
         }
 
+        virtual bool sendDcsmUpdateContentMetadata(const Guid& /*to*/, ContentID /*contentID*/, const DcsmMetadata& /*metadata*/) override
+        {
+            return true;
+        }
+
         virtual void setResourceProviderServiceHandler(IResourceProviderServiceHandler* /*handler*/) override
         {
         }

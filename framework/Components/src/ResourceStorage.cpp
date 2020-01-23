@@ -8,7 +8,6 @@
 
 #include "Components/ResourceStorage.h"
 #include "Components/ResourceDeleterCallingCallback.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "Components/IResourceStorageChangeListener.h"
 #include "Utils/StringUtils.h"
 #include "Utils/LogMacros.h"
@@ -24,7 +23,7 @@ namespace ramses_internal
 
     ResourceStorage::~ResourceStorage()
     {
-        assert(m_resourceMap.count() == 0);  //all ManagedResources have be destructed before ResourceStorage is destructed
+        assert(m_resourceMap.size() == 0);  //all ManagedResources have be destructed before ResourceStorage is destructed
     }
 
     void ResourceStorage::setListener(IResourceStorageChangeListener& listener)
@@ -147,12 +146,12 @@ namespace ramses_internal
         return entry->resourceInfo;
     }
 
-    ramses_internal::ManagedResource ResourceStorage::manageResource(const IResource& resource, Bool deletionAllowed)
+    ramses_internal::ManagedResource ResourceStorage::manageResource(const IResource& resource, bool deletionAllowed)
     {
         ResourceDeleterCallingCallback deleter(*this);
 
         const ResourceContentHash hash = resource.getHash();
-        LOG_TRACE(CONTEXT_FRAMEWORK, "Adding resource:" << StringUtils::HexFromResourceContentHash(hash));
+        LOG_TRACE(CONTEXT_FRAMEWORK, "Adding resource:" << hash);
         const IResource* resourceToReturn = nullptr;
         m_resourceMapLock.lock();
         RefCntResource* entry = m_resourceMap.get(hash);
@@ -202,7 +201,7 @@ namespace ramses_internal
 
     void ResourceStorage::resourceHashUsageZero(const ResourceContentHash& hash)
     {
-        LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceStorage::resourceHashUsageZero resource:" << StringUtils::HexFromResourceContentHash(hash));
+        LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceStorage::resourceHashUsageZero resource:" << hash);
         m_resourceMapLock.lock();
         RefCntResource* entry = m_resourceMap.get(hash);
         assert(entry && entry->hashUsages > 0);
@@ -219,7 +218,7 @@ namespace ramses_internal
     void ResourceStorage::managedResourceDeleted(const IResource& resourceToRemove)
     {
         const ResourceContentHash hashToRemove = resourceToRemove.getHash();
-        LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceStorage::managedResourceDeleted unreference resource:" << StringUtils::HexFromResourceContentHash(hashToRemove));
+        LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceStorage::managedResourceDeleted unreference resource:" << hashToRemove);
         m_resourceMapLock.lock();
         RefCntResource* entry = m_resourceMap.get(hashToRemove);
         assert(entry && entry->refCount > 0);
@@ -260,7 +259,7 @@ namespace ramses_internal
 
                 if (entry.hashUsages == 0)
                 {
-                    LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceStorage::checkForDeletion hashusages is zero, really delete:" << StringUtils::HexFromResourceContentHash(hash));
+                    LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceStorage::checkForDeletion hashusages is zero, really delete:" << hash);
                     ResourceContentHash* hashObject = entry.hash;
                     m_resourceMap.remove(hash);
                     delete hashObject;

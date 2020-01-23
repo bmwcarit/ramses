@@ -18,7 +18,7 @@ namespace ramses
     class TestEffects
     {
     public:
-        static Effect* CreateTestEffect(RamsesClient& client, const char* name = NULL, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache)
+        static Effect* CreateTestEffect(RamsesClient& client, const char* name = nullptr, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache)
         {
             EffectDescription effectDesc;
             effectDesc.setVertexShader(
@@ -27,16 +27,19 @@ namespace ramses
                 "  gl_Position = vec4(0.0); \n"
                 "}\n");
             effectDesc.setFragmentShader(
+                "precision highp float;"
+                "uniform float u_FragColorR;"
+                "uniform float u_FragColorG;"
                 "void main(void)\n"
                 "{\n"
-                "  gl_FragColor = vec4(0.0); \n"
+                "  gl_FragColor = vec4(u_FragColorR, u_FragColorG, 0.0, 0.0); \n"
                 "}\n");
             Effect* effect = client.impl.createEffect(effectDesc, cacheFlag, name);
-            assert(effect != NULL);
+            assert(effect != nullptr);
             return effect;
         }
 
-        static Effect* CreateDifferentTestEffect(RamsesClient& client, const char* name = NULL, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache)
+        static Effect* CreateDifferentTestEffect(RamsesClient& client, const char* name = nullptr, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache)
         {
             EffectDescription effectDesc;
             effectDesc.setVertexShader(
@@ -50,11 +53,11 @@ namespace ramses
                 "  gl_FragColor = vec4(1.0); \n"
                 "}\n");
             Effect* effect = client.impl.createEffect(effectDesc, cacheFlag, name);
-            assert(effect != NULL);
+            assert(effect != nullptr);
             return effect;
         }
 
-        static Effect* CreateTestEffectWithAttribute(RamsesClient& client, const char* name = NULL, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache)
+        static Effect* CreateTestEffectWithAttribute(RamsesClient& client, const char* name = nullptr, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache)
         {
             EffectDescription effectDesc;
             effectDesc.setVertexShader(
@@ -69,7 +72,7 @@ namespace ramses
                 "  gl_FragColor = vec4(0.0); \n"
                 "}\n");
             Effect* effect = client.impl.createEffect(effectDesc, cacheFlag, name);
-            assert(effect != NULL);
+            assert(effect != nullptr);
             return effect;
         }
     };

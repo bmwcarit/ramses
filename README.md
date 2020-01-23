@@ -11,7 +11,9 @@ RAMSES is an abbreviation for "Rendering Architecture for Multi-Screen
 EnvironmentS". It implements a distributed system for rendering 3D content
 with focus on bandwidth and resource efficiency.
 
-For more details, see the Wiki pages.
+For more details, see the Wiki pages or this showcase video:
+
+[![RAMSES Distributed Rendering Engine Showcase](https://img.youtube.com/vi/tyzvEI25BMg/0.jpg)](https://www.youtube.com/watch?v=tyzvEI25BMg)
 
 ## Obtaining the source code
 RAMSES can be cloned from its Genivi repository using git:
@@ -89,9 +91,9 @@ You can also check the docker container setup scripts for a reference how to bui
 ```
 
 ## License
-RAMSES original code is copyright BMW Car IT
+RAMSES original code is copyright BMW Car IT or BMW AG
 
-```Copyright (C) 2018 BMW Car IT GmbH```
+```Copyright (C) 2018 BMW Car IT GmbH``` or ```Copyright (C) 2019 BMW AG```
 
 The source code is licensed under the Mozilla Public License 2.0, please find a
 copy of that license in the [LICENSE.txt](https://github.com/GENIVI/ramses/blob/master/LICENSE.txt) file.

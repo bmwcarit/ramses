@@ -36,7 +36,7 @@ namespace ramses_internal
     struct ResourceLoadInfo
     {
         ResourceLoadInfo()
-            : resourceStream(0)
+            : resourceStream(nullptr)
             , requesterId(false)
         {}
 
@@ -44,7 +44,7 @@ namespace ramses_internal
         ResourceFileEntry fileEntry;
         Guid requesterId;
 
-        Bool operator <(const ResourceLoadInfo& r) const
+        bool operator <(const ResourceLoadInfo& r) const
         {
             return fileEntry.offsetInBytes < r.fileEntry.offsetInBytes;
         }
@@ -64,7 +64,7 @@ namespace ramses_internal
         virtual ~ResourceComponent() override;
 
         // implement IResourceProviderComponent
-        virtual ManagedResource manageResource(const IResource& resource, Bool deletionAllowed = false) override;
+        virtual ManagedResource manageResource(const IResource& resource, bool deletionAllowed = false) override;
         virtual ManagedResourceVector getResources() override;
         virtual ManagedResource getResource(ResourceContentHash hash) override;
         virtual ManagedResource forceLoadResource(const ResourceContentHash& hash) override;
@@ -142,6 +142,7 @@ namespace ramses_internal
         HashMap<Guid, ResourceStreamDeserializer*>              m_resourceDeserializers;
         RequestsMap                                             m_requestedResources;
         std::unordered_map<RequesterID, ManagedResourceVector>  m_arrivedResources;
+        std::vector<ResourceContentHash>                        m_unrequestedResources;
 
         StatisticCollectionFramework&                           m_statistics;
     };

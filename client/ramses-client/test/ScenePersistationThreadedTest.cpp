@@ -25,8 +25,9 @@
 #include "ramses-client-api/ResourceFileDescriptionSet.h"
 #include "ramses-utils.h"
 
-#include "PlatformAbstraction/PlatformThread.h"
+#include "ClientEventHandlerMock.h"
 #include "TestEffects.h"
+#include "PlatformAbstraction/PlatformThread.h"
 
 namespace ramses
 {
@@ -35,22 +36,13 @@ namespace ramses
 
     namespace
     {
-        class MockClientEventHandler : public IClientEventHandler
-        {
-        public:
-            MOCK_METHOD1(resourceFileLoadFailed, void(const char* filename));
-            MOCK_METHOD1(resourceFileLoadSucceeded, void(const char* filename));
-            MOCK_METHOD1(sceneFileLoadFailed, void(const char* filename));
-            MOCK_METHOD2(sceneFileLoadSucceeded, void(const char* filename, Scene* loadedScene));
-        };
-
         class RamsesFileCreator
         {
         public:
             static void SaveSceneToFile(sceneId_t sceneId, const ramses_internal::String& sceneFilename, const ramses_internal::String& resourceFilename)
             {
                 RamsesFramework framework;
-                RamsesClient client("RamsesFileCreator", framework);
+                RamsesClient& client(*framework.createClient("RamsesFileCreator"));
 
                 ResourceFileDescription resources(resourceFilename.c_str());
                 Scene* scene = CreateScene(client, resources, sceneId);
@@ -76,7 +68,7 @@ namespace ramses
                 // stream texture
                 uint8_t data[4] = { 0u };
                 MipLevelData mipLevelData(sizeof(data), data);
-                Texture2D* fallbackTexture   = client.createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, "fallbackTexture");
+                Texture2D* fallbackTexture = client.createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "fallbackTexture");
                 scene->createStreamTexture(*fallbackTexture, streamSource_t(3), "resourceName");
                 resourcesDescription.add(fallbackTexture);
 
@@ -115,7 +107,7 @@ namespace ramses
     public:
         ARamsesFileLoadedInSeveralThread()
             : framework()
-            , client("ARamsesFileLoadedInSeveralThread", framework)
+            , client(*framework.createClient("ARamsesFileLoadedInSeveralThread"))
             , numClientEvents(0)
             , loadedScene(nullptr)
         {
@@ -146,15 +138,15 @@ namespace ramses
         }
 
         RamsesFramework framework;
-        RamsesClient client;
-        StrictMock<MockClientEventHandler> eventHandler;
+        RamsesClient& client;
+        StrictMock<ClientEventHandlerMock> eventHandler;
         int numClientEvents;
         Scene* loadedScene;
 
         static void SetUpTestCase()
         {
-            RamsesFileCreator::SaveSceneToFile(123u, sceneFile, resFile);
-            RamsesFileCreator::SaveSceneToFile(124u, otherSceneFile, otherResFile);
+            RamsesFileCreator::SaveSceneToFile(sceneId_t(123u), sceneFile, resFile);
+            RamsesFileCreator::SaveSceneToFile(sceneId_t(124u), otherSceneFile, otherResFile);
         }
 
         static void TearDownTestCase()
@@ -241,7 +233,7 @@ namespace ramses
         ASSERT_TRUE(waitForNumClientEvents(2));
 
         ASSERT_TRUE(loadedScene != nullptr);
-        EXPECT_EQ(123u, loadedScene->getSceneId());
+        EXPECT_EQ(sceneId_t(123u), loadedScene->getSceneId());
     }
 
     TEST_F(ARamsesFileLoadedInSeveralThread, canAsyncLoadSceneParallelToSynchronousResourceLoad)
@@ -258,7 +250,7 @@ namespace ramses
         ASSERT_TRUE(waitForNumClientEvents(2));
 
         ASSERT_TRUE(loadedScene != nullptr);
-        EXPECT_EQ(123u, loadedScene->getSceneId());
+        EXPECT_EQ(sceneId_t(123u), loadedScene->getSceneId());
     }
 
 
@@ -277,12 +269,12 @@ namespace ramses
 
         Scene* syncScene = client.loadSceneFromFile(otherSceneFile, resourcesForSync);
         ASSERT_TRUE(syncScene != nullptr);
-        EXPECT_EQ(124u, syncScene->getSceneId());
+        EXPECT_EQ(sceneId_t(124u), syncScene->getSceneId());
 
         ASSERT_TRUE(waitForNumClientEvents(2));
 
         ASSERT_TRUE(loadedScene != nullptr);
-        EXPECT_EQ(123u, loadedScene->getSceneId());
+        EXPECT_EQ(sceneId_t(123u), loadedScene->getSceneId());
     }
 
     TEST_F(ARamsesFileLoadedInSeveralThread, asyncLoadSceneFileWithoutEverCallingDispatchDoesNotLeakMemory)

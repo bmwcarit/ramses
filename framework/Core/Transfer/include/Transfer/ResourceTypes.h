@@ -18,6 +18,7 @@ namespace ramses_internal
 {
     typedef std::vector<ResourceContentHash> ResourceContentHashVector;
     typedef StronglyTypedValue<UInt32, static_cast<UInt32>(-1), struct RequesterIDTag> RequesterID;
+    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(RequesterID)
     typedef std::vector<RenderTargetHandle> RenderTargetHandleVector;
 }
 

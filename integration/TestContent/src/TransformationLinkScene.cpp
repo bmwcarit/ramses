@@ -32,7 +32,7 @@ namespace ramses_internal
         scene.createTransformationDataProvider(*rightProviderNode, transformProviderDataId_Right);
 
         ramses::TriangleAppearance::EColor color = ramses::TriangleAppearance::EColor_Red;
-        ramses::MeshNode* mesh = NULL;
+        ramses::MeshNode* mesh = nullptr;
         switch (state)
         {
         case TRANSFORMATION_CONSUMER:

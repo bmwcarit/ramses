@@ -121,7 +121,7 @@ namespace ramses_internal
         }
     }
 
-    inline Bool IsSemanticCompatibleWithDataType(EFixedSemantics semantics, EDataType dataType)
+    inline bool IsSemanticCompatibleWithDataType(EFixedSemantics semantics, EDataType dataType)
     {
         switch (semantics)
         {

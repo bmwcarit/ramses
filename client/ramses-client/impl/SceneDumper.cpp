@@ -91,14 +91,11 @@ namespace ramses
     void SceneDumper::dumpUnrequiredObjects(ramses_internal::StringOutputStream& output)
     {
         setupMaps();
-        markAllObjectsOfTypeAsRequired(ERamsesObjectType_AnimationObject);
-        markAllObjectsOfTypeAsRequired(ERamsesObjectType_AnimationSystem);
-        markAllObjectsOfTypeAsRequired(ERamsesObjectType_AnimationSystemRealTime);
 
         RenderPassSet requiredRenderPasses = markRequiredScreenRenderPasses();
-        while (requiredRenderPasses.count() > 0)
+        while (requiredRenderPasses.size() > 0)
         {
-            output << "SceneDumper::dumpUnrequiredObject number of render passes: " << requiredRenderPasses.count() << "\n";
+            output << "SceneDumper::dumpUnrequiredObject number of render passes: " << requiredRenderPasses.size() << "\n";
 
             RenderGroupSet requiredRenderGroups = markRequiredRenderGroups(requiredRenderPasses);
             MeshNodeSet    requiredMeshNodes    = markRequiredMeshNodes(requiredRenderGroups);
@@ -198,19 +195,9 @@ namespace ramses
         }
     }
 
-    void SceneDumper::markAllObjectsOfTypeAsRequired(ERamsesObjectType objectType)
-    {
-        RamsesObjectVector objects;
-        m_objectRegistry.getObjectsOfType(objects, objectType);
-        for (auto object : objects)
-        {
-            m_requiredObjects.put(&object->impl);
-        }
-    }
-
     bool SceneDumper::addToRequiredObjects(const RamsesObjectImpl& object)
     {
-        if (!m_requiredObjects.hasElement(&object))
+        if (!m_requiredObjects.contains(&object))
         {
             m_requiredObjects.put(&object);
             return true;
@@ -661,7 +648,7 @@ namespace ramses
         {
             const RamsesObjectImpl* objectImpl = &object->impl;
             ERamsesObjectType type = object->getType();
-            if (false == m_requiredObjects.hasElement(objectImpl))
+            if (false == m_requiredObjects.contains(objectImpl))
             {
                 outputNotRequiredObject(*object, output);
                 typeStatistic[type].unrequired++;
@@ -708,7 +695,7 @@ namespace ramses
             string << stringToAppend;
         }
 
-        const int32_t n = static_cast<int32_t>(width) - static_cast<int32_t>(stringToAppend.getLength());
+        const int32_t n = static_cast<int32_t>(width) - static_cast<int32_t>(stringToAppend.size());
         for (int32_t i = 0; i < n; i++)
         {
             string << " ";

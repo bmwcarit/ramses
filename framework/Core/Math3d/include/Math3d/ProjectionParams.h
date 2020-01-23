@@ -56,8 +56,8 @@ namespace ramses_internal
          */
         static Float GetAspectRatio(const ProjectionParams& projectionParams);
 
-        Bool operator==(const ProjectionParams& other) const;
-        Bool operator!=(const ProjectionParams& other) const;
+        bool operator==(const ProjectionParams& other) const;
+        bool operator!=(const ProjectionParams& other) const;
 
         ECameraProjectionType getProjectionType() const;
 

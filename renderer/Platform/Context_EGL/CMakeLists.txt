@@ -13,7 +13,7 @@ ACME_MODULE(
     #==========================================================================
     NAME                    Context_EGL
     TYPE                    STATIC_LIBRARY
-    ENABLE_INSTALL          ${ramses-sdk_INSTALL_STATIC_LIBS}
+    ENABLE_INSTALL          OFF
 
     #==========================================================================
     # files of this module

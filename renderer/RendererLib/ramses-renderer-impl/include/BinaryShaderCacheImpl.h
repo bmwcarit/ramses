@@ -13,6 +13,7 @@
 #include "RendererAPI/Types.h"
 #include "ramses-renderer-api/Types.h"
 #include "SceneAPI/ResourceContentHash.h"
+#include "SceneAPI/SceneId.h"
 
 namespace ramses_internal
 {
@@ -25,15 +26,13 @@ namespace ramses
     class BinaryShaderCacheImpl
     {
     public:
-        BinaryShaderCacheImpl();
-        virtual ~BinaryShaderCacheImpl();
-
+        void deviceSupportsBinaryShaderFormats(const binaryShaderFormatId_t* supportedFormats, uint32_t numSupportedFormats);
         bool hasBinaryShader(const ramses_internal::ResourceContentHash& effectId) const;
         uint32_t getBinaryShaderSize(const ramses_internal::ResourceContentHash& effectId) const;
-        uint32_t getBinaryShaderFormat(const ramses_internal::ResourceContentHash& effectId) const;
-        bool shouldBinaryShaderBeCached(const ramses_internal::ResourceContentHash& effectId) const;
+        binaryShaderFormatId_t getBinaryShaderFormat(const ramses_internal::ResourceContentHash& effectId) const;
+        bool shouldBinaryShaderBeCached(const ramses_internal::ResourceContentHash& effectId, ramses_internal::SceneId sceneId) const;
         void getBinaryShaderData(const ramses_internal::ResourceContentHash& effectId, uint8_t* buffer, uint32_t bufferSize) const;
-        void storeBinaryShader(const ramses_internal::ResourceContentHash& effectId, const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, uint32_t binaryShaderFormat);
+        void storeBinaryShader(const ramses_internal::ResourceContentHash& effectId, ramses_internal::SceneId sceneId, const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, binaryShaderFormatId_t binaryShaderFormat);
         void binaryShaderUploaded(ramses_internal::ResourceContentHash effectHash, bool success) const;
 
         void saveToFile(const char* filePath) const;
@@ -47,21 +46,18 @@ namespace ramses
         };
 
     private:
-        static void serializeBinaryShader(ramses_internal::IOutputStream& outputStream, const ramses_internal::ResourceContentHash& effectId, const ramses_internal::UInt8Vector& binaryShaderData, uint32_t binaryShaderFormat);
-        static bool deserializeBinaryShader(ramses_internal::IInputStream& outputStream, ramses_internal::ResourceContentHash& effectId, ramses_internal::UInt8Vector& binaryShaderData, uint32_t& binaryShaderFormat);
-        void clear();
+        static void serializeBinaryShader(ramses_internal::IOutputStream& outputStream, const ramses_internal::ResourceContentHash& effectId, const ramses_internal::UInt8Vector& binaryShaderData, ramses_internal::BinaryShaderFormatID binaryShaderFormat);
+        static bool deserializeBinaryShader(ramses_internal::IInputStream& outputStream, ramses_internal::ResourceContentHash& effectId, ramses_internal::UInt8Vector& binaryShaderData, ramses_internal::BinaryShaderFormatID& binaryShaderFormat);
 
         struct BinaryShader
         {
             ramses_internal::UInt8Vector data;
-            uint32_t format;
-
-            BinaryShader();
-            BinaryShader(const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, uint32_t binaryShaderFormat);
+            ramses_internal::BinaryShaderFormatID format;
         };
-        typedef ramses_internal::HashMap<ramses_internal::ResourceContentHash, const BinaryShader*> BinaryShaderTable;
+        typedef ramses_internal::HashMap<ramses_internal::ResourceContentHash, BinaryShader> BinaryShaderTable;
 
         BinaryShaderTable m_binaryShaders;
+        std::vector<binaryShaderFormatId_t> m_supportedFormats;
     };
 }
 

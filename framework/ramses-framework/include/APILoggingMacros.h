@@ -14,7 +14,6 @@
 
 //utils
 #include "Utils/LogMacros.h"
-#include "Utils/StringUtils.h"
 
 #define _LOG_API_LOGLEVEL LOG_TRACE
 
@@ -27,7 +26,7 @@
 #define LOG_API_VOID "void"
 
 #define LOG_API_GENERIC_PTR_STRING(PTR) \
-        ramses_internal::StringUtils::HexFromNumber(reinterpret_cast<ramses_internal::UInt>(PTR)).c_str()
+        static_cast<const void*>(PTR)
 #define LOG_API_GENERIC_OBJECT_STRING(OBJ) \
         LOG_API_GENERIC_PTR_STRING(&(OBJ))
 
@@ -38,7 +37,7 @@
         LOG_API_RAMSESOBJECT_PTR_STRING(&(OBJ))
 
 #define LOG_API_RESOURCE_PTR_STRING(PTR) \
-        LOG_API_RAMSESOBJECT_PTR_STRING(PTR) << " with resID " << ((PTR) ? ramses_internal::StringUtils::HexFromResourceContentHash(ramses_internal::ResourceContentHash((PTR)->getResourceId().lowPart, (PTR)->getResourceId().highPart)) : "<invalid>")
+    LOG_API_RAMSESOBJECT_PTR_STRING(PTR) << " with resID " << ((PTR) ? ramses_internal::StringOutputStream::ToString(ramses_internal::ResourceContentHash((PTR)->getResourceId().lowPart, (PTR)->getResourceId().highPart)) : "<invalid>")
 
 #define _LOG_API_SEPERATOR << " ; " <<
 

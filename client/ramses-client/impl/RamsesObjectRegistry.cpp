@@ -53,7 +53,7 @@ namespace ramses
     {
         // not every object has a name. this might reserve more than needed but never more than
         // num of current objects with name + additionalCapacity
-        m_objectsByName.reserve(m_objectsByName.count() + additionalCount);
+        m_objectsByName.reserve(m_objectsByName.size() + additionalCount);
     }
 
     void RamsesObjectRegistry::reserveAdditionalObjectCapacity(ERamsesObjectType type, uint32_t additionalCount)
@@ -84,7 +84,7 @@ namespace ramses
         {
             m_objectsByName.remove(oldName);
         }
-        if (name.getLength()> 0)
+        if (name.size()> 0)
         {
             m_objectsByName.put(name, &object);
         }
@@ -151,7 +151,7 @@ namespace ramses
     bool RamsesObjectRegistry::isNodeDirty(const NodeImpl& node) const
     {
         NodeImpl* nodeImplPtr = &const_cast<NodeImpl&>(node);
-        return m_dirtyNodes.hasElement(nodeImplPtr);
+        return m_dirtyNodes.contains(nodeImplPtr);
     }
 
     const NodeImplSet& RamsesObjectRegistry::getDirtyNodes() const

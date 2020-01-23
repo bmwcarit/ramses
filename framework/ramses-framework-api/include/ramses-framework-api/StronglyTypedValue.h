@@ -15,18 +15,26 @@
 
 namespace ramses
 {
-
     /**
     * @brief Helper class to create strongly typed values out of various types.
     */
-    template <typename _BaseType, typename _UniqueId>
+    template <typename _baseType, _baseType _invalid, typename _uniqueId>
     class StronglyTypedValue
     {
     public:
         /**
         * @brief The underlying type of the class
         */
-        typedef _BaseType BaseType;
+        typedef _baseType BaseType;
+
+        /**
+        * @brief Static Getter for Invalid
+        * @returns Invalid Value of the underlying type
+        */
+        static constexpr StronglyTypedValue Invalid()
+        {
+            return StronglyTypedValue(_invalid);
+        }
 
         /**
         * @brief Constructor based on the underlying type
@@ -38,30 +46,31 @@ namespace ramses
         }
 
         /**
+        * @brief Default constructor with invalid value
+        */
+        constexpr StronglyTypedValue()
+            : m_value(_invalid)
+        {
+        }
+
+        /**
         * @brief Copy constructor
         * @param other The object to be copied
         */
-        constexpr StronglyTypedValue(const StronglyTypedValue<BaseType, _UniqueId>& other)
-            : m_value(other.m_value)
-        {
-        }
+        constexpr StronglyTypedValue(const StronglyTypedValue& other) = default;
 
         /**
         * @brief Assignment operator
         * @param other The object to copy the value from
         * @returns A reference to this object.
         */
-        StronglyTypedValue<BaseType, _UniqueId>& operator=(const StronglyTypedValue<BaseType, _UniqueId>& other)
-        {
-            m_value = other.m_value;
-            return *this;
-        }
+        StronglyTypedValue& operator=(const StronglyTypedValue& other) = default;
 
         /**
         * @brief Getter for retrieving the underlying value
         * @returns The underlying value of the object
         */
-        BaseType getValue() const
+        constexpr BaseType getValue() const
         {
             return m_value;
         }
@@ -76,11 +85,20 @@ namespace ramses
         }
 
         /**
+        * @brief Predicate to check value is unequal to Invalid() value
+        * @returns true when valid (i.e. not Invalid()), false otherwise
+        */
+        constexpr bool isValid() const
+        {
+            return m_value != _invalid;
+        }
+
+        /**
         * @brief Equals operator, compares the object to another
         * @param other The object to compare to
         * @returns True if the underlying value of the object equals to the underlying value of the other.
         */
-        bool operator==(const StronglyTypedValue<BaseType, _UniqueId>& other) const
+        constexpr bool operator==(const StronglyTypedValue& other) const
         {
             return m_value == other.m_value;
         }
@@ -90,7 +108,7 @@ namespace ramses
         * @param other The object to compare to
         * @returns False if the underlying value of the object equals to the underlying value of the other.
         */
-        bool operator!=(const StronglyTypedValue<BaseType, _UniqueId>& other) const
+        constexpr bool operator!=(const StronglyTypedValue& other) const
         {
             return m_value != other.m_value;
         }
@@ -105,8 +123,8 @@ namespace ramses
 namespace std
 {
     /// Hasher for StronglyTypedValue for use in STL hash maps
-    template <typename _BaseType, typename _UniqueId>
-    struct hash<ramses::StronglyTypedValue<_BaseType, _UniqueId>>
+    template <typename _baseType, _baseType _invalid, typename _uniqueId>
+    struct hash<ramses::StronglyTypedValue<_baseType, _invalid, _uniqueId>>
     {
     public:
         /**
@@ -114,9 +132,9 @@ namespace std
         * @param v Value to be hashed
         * @returns Hash usable in STL hash maps.
         */
-        size_t operator()(const ramses::StronglyTypedValue<_BaseType, _UniqueId>& v) const
+        size_t operator()(const ramses::StronglyTypedValue<_baseType, _invalid, _uniqueId>& v) const
         {
-            return static_cast<size_t>(hash<_BaseType>()(v.getValue()));
+            return static_cast<size_t>(hash<_baseType>()(v.getValue()));
         }
     };
 }

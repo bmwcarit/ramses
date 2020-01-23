@@ -19,16 +19,11 @@ namespace ramses_internal
         BufferResource(EResourceType typeID, UInt32 dataSize, const Byte* data, ResourceCacheFlag cacheFlag, const String& name)
             : ResourceBase(typeID, cacheFlag, name)
         {
-            if (data != 0)
-            {
-                SceneResourceData emptyResourceData(new MemoryBlob(data, dataSize));
-                setResourceData(emptyResourceData);
-            }
-            else
-            {
-                setResourceData(SceneResourceData(new MemoryBlob(dataSize)), ResourceContentHash::Invalid());
-            }
-        };
+            // TODO(tobias) this might create an empty resource blob that will be thrown away later.
+            // needs more refactoring to solve properly
+            if (dataSize)
+                setResourceData(ResourceBlob(dataSize, data));
+        }
 
         virtual ~BufferResource()
         {
@@ -36,7 +31,7 @@ namespace ramses_internal
 
         const void* getData() const
         {
-            return getResourceData().get()->getRawData();
+            return getResourceData().data();
         }
     };
 }

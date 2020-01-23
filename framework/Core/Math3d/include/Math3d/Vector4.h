@@ -93,8 +93,8 @@ namespace ramses_internal
         */
         Vector4(Float _x, Float _y, Float _z, Float _w);
 
-        Vector4(Vector4&& other) = default;
-        Vector4& operator=(Vector4&& other) = default;
+        Vector4(Vector4&& other) RNOEXCEPT = default;
+        Vector4& operator=(Vector4&& other) RNOEXCEPT = default;
 
         /**
          * Constructor to initialize the vector one value
@@ -162,7 +162,26 @@ namespace ramses_internal
         */
         Vector4 operator*(const Float scalar) const;
 
-        Vector4 operator/(const Vector4& scalar) const;
+        /**
+        *   Operator to divide the vector elements by scalar
+        * @param the scalar for division
+        * @return Vector4 with the multiplied result
+        */
+        Vector4 operator/(const Float scalar) const;
+
+        /**
+        *   Operator to divide vector by another vector
+        * @param vec Vector4 to divide by
+        * @return Vector4 with the divided result
+        */
+        Vector4 operator/(const Vector4& vec) const;
+
+        /**
+        *   Operator to divide each element of a vector by a scalar value
+        * @param the scalar for division
+        * @return Vector4 with the divided result
+        */
+        void operator/=(const Float scalar);
 
         /**
         *   Operator to multiply a scalar and assign the result to the local vector elements
@@ -188,14 +207,14 @@ namespace ramses_internal
          * @param other Vector3 to compare to
          * @return true if both vectors are equal false otherwise
          */
-        Bool operator==(const Vector4& other) const;
+        bool operator==(const Vector4& other) const;
 
         /**
          * Compares each element to check if two vectors are not equal
          * @param other Vector3 to compare to
          * @return false if both vectors are equal true otherwise
          */
-        Bool operator!=(const Vector4& other) const;
+        bool operator!=(const Vector4& other) const;
 
         /**
         *   Computes the dot product of two Vector4
@@ -286,7 +305,7 @@ namespace ramses_internal
 
     inline Float Vector4::length() const
     {
-        return PlatformMath::Sqrt(PlatformMath::Pow2(x) + PlatformMath::Pow2(y) + PlatformMath::Pow2(z) + PlatformMath::Pow2(w));
+        return std::sqrt(x*x + y*y + z*z + w*w);
     }
 
     inline Vector4& Vector4::operator=(const Vector4& other)
@@ -343,12 +362,12 @@ namespace ramses_internal
         w *= vec.w;
     }
 
-    inline Bool Vector4::operator==(const Vector4& other) const
+    inline bool Vector4::operator==(const Vector4& other) const
     {
         return PlatformMemory::Compare(data, other.data, sizeof(data)) == 0;
     }
 
-    inline Bool Vector4::operator!=(const Vector4& other) const
+    inline bool Vector4::operator!=(const Vector4& other) const
     {
         return !operator==(other);
     }
@@ -383,6 +402,14 @@ namespace ramses_internal
             , w * scalar);
     }
 
+    inline Vector4 Vector4::operator/(const Float scalar) const
+    {
+        return Vector4(x / scalar
+            , y / scalar
+            , z / scalar
+            , w / scalar);
+    }
+
     inline Vector4 Vector4::operator/(const Vector4& other) const
     {
         return Vector4(x / other.x
@@ -391,9 +418,17 @@ namespace ramses_internal
             , w / other.w);
     }
 
+    inline void Vector4::operator/=(const Float scalar)
+    {
+        x /= scalar;
+        y /= scalar;
+        z /= scalar;
+        w /= scalar;
+    }
+
     inline Float Vector4::angle(const Vector4& other) const
     {
-        return PlatformMath::ArcCos(dot(other) / (length() * other.length()));
+        return std::acos(dot(other) / (length() * other.length()));
     }
 
     inline
@@ -437,8 +472,8 @@ namespace ramses_internal
             , vec.w * scalar);
     }
 
-    static_assert(std::is_nothrow_move_constructible<Vector4>::value &&
-        std::is_nothrow_move_assignable<Vector4>::value, "Vector4 must be movable");
+    static_assert(std::is_nothrow_move_constructible<Vector4>::value, "Vector4 must be movable");
+    static_assert(std::is_nothrow_move_assignable<Vector4>::value, "Vector4 must be movable");
 }
 
 #endif

@@ -19,12 +19,12 @@ class TestClass(test_classes.OnAllDefaultTargetsTest):
     @with_ramses_process_check
     def impl_setUp(self):
         standAloneRendererIviSurfaceId = DEFAULT_TEST_SURFACE + 1
-        self.standAloneRenderer = self.target.start_default_renderer(args='-sid {0} -nomap'.format(standAloneRendererIviSurfaceId))
+        self.standAloneRenderer = self.target.start_default_renderer(args='-sid {0}'.format(standAloneRendererIviSurfaceId))
         self.checkThatApplicationWasStarted(self.standAloneRenderer)
         self.addCleanup(self.target.kill_application, self.standAloneRenderer)
 
         applicationName = "ramses-local-client-test-{}".format(self.target.defaultPlatform)
-        self.combinedLocalClientRenderer = self.target.start_renderer(applicationName, dltAppID="LCLT", args="-nomap")
+        self.combinedLocalClientRenderer = self.target.start_renderer(applicationName, dltAppID="LCLT")
         self.checkThatApplicationWasStarted(self.combinedLocalClientRenderer)
         self.addCleanup(self.target.kill_application, self.combinedLocalClientRenderer)
 

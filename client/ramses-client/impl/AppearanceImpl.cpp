@@ -223,11 +223,21 @@ namespace ramses
         return StatusOK;
     }
 
+    status_t AppearanceImpl::resolveDeserializationDependencies(DeserializationContext& serializationContext)
+    {
+        CHECK_RETURN_ERR(SceneObjectImpl::resolveDeserializationDependencies(serializationContext));
+
+        for (auto& bindableInput : m_bindableInputs)
+            serializationContext.resolveDependencyIDImplAndStoreAsPointer(bindableInput.value.externallyBoundDataObject);
+
+        return StatusOK;
+    }
+
     status_t AppearanceImpl::serializeInternal(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const
     {
         CHECK_RETURN_ERR(SceneObjectImpl::serialize(outStream, serializationContext));
 
-        resourceId_t resID = InvalidResourceId;
+        resourceId_t resID;
         if (nullptr != m_effectImpl)
         {
             resID = m_effectImpl->getResourceId();
@@ -238,11 +248,11 @@ namespace ramses
         outStream << m_uniformLayout;
         outStream << m_uniformInstance;
 
-        outStream << static_cast<uint32_t>(m_bindableInputs.count());
+        outStream << static_cast<uint32_t>(m_bindableInputs.size());
         for(const auto& bindableInput : m_bindableInputs)
         {
             outStream << bindableInput.key;
-            outStream << bindableInput.value.externallyBound;
+            outStream << (bindableInput.value.externallyBoundDataObject ? serializationContext.getIDForObject(bindableInput.value.externallyBoundDataObject) : serializationContext.GetObjectIDNull());
             outStream << bindableInput.value.dataReference;
         }
 
@@ -256,7 +266,7 @@ namespace ramses
         resourceId_t resID;
         inStream >> resID.highPart;
         inStream >> resID.lowPart;
-        if (resID != InvalidResourceId)
+        if (resID.isValid())
         {
             Resource* rImpl = getClientImpl().getHLResource_Threadsafe(resID);
             if (rImpl)
@@ -277,7 +287,7 @@ namespace ramses
         uint32_t bindableInputCount = 0u;
         inStream >> bindableInputCount;
 
-        assert(m_bindableInputs.count() == 0u);
+        assert(m_bindableInputs.size() == 0u);
         m_bindableInputs.reserve(bindableInputCount);
         for (uint32_t i = 0u; i < bindableInputCount; ++i)
         {
@@ -285,11 +295,13 @@ namespace ramses
             inStream >> inputIndex;
 
             BindableInput bindableInput;
-            inStream >> bindableInput.externallyBound;
+            serializationContext.ReadDependentPointerAndStoreAsID(inStream, bindableInput.externallyBoundDataObject);
             inStream >> bindableInput.dataReference;
 
             m_bindableInputs.put(inputIndex, bindableInput);
         }
+
+        serializationContext.addForDependencyResolve(this);
 
         return StatusOK;
     }
@@ -370,7 +382,7 @@ namespace ramses
 
         for (const auto& bindableInput : m_bindableInputs)
         {
-            if (bindableInput.value.externallyBound)
+            if (bindableInput.value.externallyBoundDataObject)
             {
                 const ramses_internal::DataInstanceHandle boundInstance = getIScene().getDataReference(m_uniformInstance, ramses_internal::DataFieldHandle(bindableInput.key));
                 if (!getIScene().isDataInstanceAllocated(boundInstance))
@@ -403,22 +415,21 @@ namespace ramses
     void AppearanceImpl::cloneReferencedData(ramses_internal::IScene& scene, const AppearanceImpl& srcAppearance, AppearanceImpl& dstAppearance)
     {
         const ramses_internal::DataFieldHandle dataReferenceField(0u);
-        dstAppearance.m_bindableInputs.reserve(srcAppearance.m_bindableInputs.count());
+        dstAppearance.m_bindableInputs.reserve(srcAppearance.m_bindableInputs.size());
         for (const auto& srcBindableInput : srcAppearance.m_bindableInputs)
         {
             const ramses_internal::DataFieldHandle dataField(srcBindableInput.key);
             const ramses_internal::DataInstanceHandle srcDataRef = srcBindableInput.value.dataReference;
             const ramses_internal::DataLayoutHandle dataLayoutHandle = scene.getLayoutOfDataInstance(srcDataRef);
             const ramses_internal::EDataType dataType = scene.getDataLayout(dataLayoutHandle).getField(dataReferenceField).dataType;
-            const bool isBound = srcBindableInput.value.externallyBound;
 
             // create internal data reference
             BindableInput bindableInput;
-            bindableInput.externallyBound = isBound;
+            bindableInput.externallyBoundDataObject = srcBindableInput.value.externallyBoundDataObject;
             bindableInput.dataReference = ramses_internal::DataLayoutCreationHelper::CreateAndBindDataReference(scene, dstAppearance.m_uniformInstance, dataField, dataType);
             dstAppearance.m_bindableInputs.put(srcBindableInput.key, bindableInput);
 
-            if (isBound)
+            if (bindableInput.externallyBoundDataObject)
             {
                 // set data reference in case it is externally bound in source appearance
                 scene.setDataReference(dstAppearance.m_uniformInstance, dataField, scene.getDataReference(srcAppearance.m_uniformInstance, dataField));
@@ -484,16 +495,17 @@ namespace ramses
     {
         ramses_internal::InputIndexVector referencedInputs;
         const ramses_internal::EffectInputInformationVector& uniformsInputInfo = effect.getUniformInputInformation();
-        m_uniformLayout = ramses_internal::DataLayoutCreationHelper::CreateUniformDataLayoutMatchingEffectInputs(getIScene(), uniformsInputInfo, referencedInputs);
+        m_uniformLayout = ramses_internal::DataLayoutCreationHelper::CreateUniformDataLayoutMatchingEffectInputs(getIScene(), uniformsInputInfo, referencedInputs, effect.getLowlevelResourceHash());
+
         m_uniformInstance = getIScene().allocateDataInstance(m_uniformLayout);
 
-        m_bindableInputs.reserve(m_bindableInputs.count() + referencedInputs.size());
+        m_bindableInputs.reserve(m_bindableInputs.size() + referencedInputs.size());
         for (const auto& refInput : referencedInputs)
         {
             const ramses_internal::DataFieldHandle dataField(refInput);
 
             BindableInput bindableInput;
-            bindableInput.externallyBound = false;
+            bindableInput.externallyBoundDataObject = nullptr;
             bindableInput.dataReference = ramses_internal::DataLayoutCreationHelper::CreateAndBindDataReference(getIScene(), m_uniformInstance, dataField, uniformsInputInfo[refInput].dataType);
             m_bindableInputs.put(refInput, bindableInput);
         }
@@ -562,7 +574,7 @@ namespace ramses
 
         const BindableInput* bindableInput = m_bindableInputs.get(input.getInputIndex());
         const bool isBindable = (bindableInput != nullptr);
-        if (isBindable && bindableInput->externallyBound)
+        if (isBindable && bindableInput->externallyBoundDataObject)
         {
             return addErrorEntry("Appearance::set failed, given uniform input is currently bound to a DataObject. Either unbind it from input first or set value on the DataObject itself.");
         }
@@ -601,7 +613,7 @@ namespace ramses
 
         const BindableInput* bindableInput = m_bindableInputs.get(input.getInputIndex());
         const bool isBindable = (bindableInput != nullptr);
-        if (isBindable && bindableInput->externallyBound)
+        if (isBindable && bindableInput->externallyBoundDataObject)
         {
             return addErrorEntry("Appearance::get failed, given uniform input is currently bound to a DataObject. Either unbind it from input first or get value from the DataObject itself.");
         }
@@ -676,7 +688,7 @@ namespace ramses
     {
         const uint32_t inputIndex = input.getInputIndex();
         BindableInput* bindableInput = m_bindableInputs.get(inputIndex);
-        if (bindableInput == nullptr || !bindableInput->externallyBound)
+        if (bindableInput == nullptr || !bindableInput->externallyBoundDataObject)
         {
             return addErrorEntry("Appearance::unbindInput failed, given uniform input is not bound to a DataObject.");
         }
@@ -687,8 +699,8 @@ namespace ramses
     bool AppearanceImpl::isInputBound(const EffectInputImpl& input) const
     {
         const uint32_t inputIndex = input.getInputIndex();
-        BindableInput* bindableInput = m_bindableInputs.get(inputIndex);
-        return (bindableInput != nullptr) && bindableInput->externallyBound;
+        const BindableInput* bindableInput = m_bindableInputs.get(inputIndex);
+        return (bindableInput != nullptr) && bindableInput->externallyBoundDataObject;
     }
 
     status_t AppearanceImpl::setInputTextureInternal(const EffectInputImpl& input, const TextureSamplerImpl& textureSampler)
@@ -709,7 +721,7 @@ namespace ramses
 
         BindableInput* bindableInput = m_bindableInputs.get(inputIndex);
         assert(bindableInput != nullptr);
-        bindableInput->externallyBound = true;
+        bindableInput->externallyBoundDataObject = &dataObject;
 
         return StatusOK;
     }
@@ -720,7 +732,7 @@ namespace ramses
         BindableInput* bindableInput = m_bindableInputs.get(inputIndex);
         const ramses_internal::DataFieldHandle dataField(inputIndex);
         getIScene().setDataReference(m_uniformInstance, dataField, bindableInput->dataReference);
-        bindableInput->externallyBound = false;
+        bindableInput->externallyBoundDataObject = nullptr;
 
         return StatusOK;
     }
@@ -728,6 +740,16 @@ namespace ramses
     ramses_internal::DataLayoutHandle AppearanceImpl::getUniformDataLayout() const
     {
         return m_uniformLayout;
+    }
+
+    const ramses::DataObject* AppearanceImpl::getBoundDataObject(const EffectInputImpl& input) const
+    {
+        const uint32_t inputIndex = input.getInputIndex();
+        const BindableInput* bindableInput = m_bindableInputs.get(inputIndex);
+        if (bindableInput && bindableInput->externallyBoundDataObject)
+            return &RamsesObjectTypeUtils::ConvertTo<DataObject>(bindableInput->externallyBoundDataObject->getRamsesObject());
+
+        return nullptr;
     }
 
     template status_t AppearanceImpl::setInputValue<int32_t>(const EffectInputImpl&, uint32_t, const int32_t*);

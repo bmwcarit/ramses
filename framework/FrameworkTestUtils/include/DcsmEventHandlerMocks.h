@@ -12,6 +12,7 @@
 #include "Components/IDcsmProviderEventHandler.h"
 #include "ramses-framework-api/IDcsmConsumerEventHandler.h"
 #include "ramses-framework-api/IDcsmProviderEventHandler.h"
+#include "ramses-framework-api/DcsmMetadataUpdate.h"
 #include "framework_common_gmock_header.h"
 #include "DcsmGmockPrinter.h"
 #include "gmock/gmock.h"
@@ -39,6 +40,7 @@ namespace ramses_internal
         MOCK_METHOD1(contentFocusRequest, void(ramses::ContentID));
         MOCK_METHOD1(contentStopOfferRequest, void(ramses::ContentID));
         MOCK_METHOD1(forceContentOfferStopped, void(ramses::ContentID));
+        MOCK_METHOD2(contentMetadataUpdated, void (ramses::ContentID contentID, const ramses::DcsmMetadataUpdate& metadataUpdate));
     };
 }
 

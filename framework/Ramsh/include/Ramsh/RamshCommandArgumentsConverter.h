@@ -24,10 +24,10 @@ namespace ramses_internal
     template<> \
     struct ArgumentConverter<TYPE> \
     { \
-        static inline Bool tryConvert(const RamshArgumentData& data, TYPE& value) \
+        static inline bool tryConvert(const RamshArgumentData& data, TYPE& value) \
         { \
             Int64 val = 0; \
-            Bool result = ArgumentConverter<Int64>::tryConvert(data,val); \
+            bool result = ArgumentConverter<Int64>::tryConvert(data,val); \
             value = static_cast<TYPE>(val); \
             return result; \
         } \
@@ -62,9 +62,9 @@ namespace ramses_internal
     template<typename T>
     struct ArgumentConverter
     {
-        static inline Bool tryConvert(const RamshArgumentData& data, T& value)
+        static inline bool tryConvert(const RamshArgumentData& data, T& value)
         {
-            if(data.getLength() < sizeof(T))
+            if(data.size() < sizeof(T))
             {
                 return false;
             }
@@ -78,13 +78,13 @@ namespace ramses_internal
     template<typename T>
     struct ArgumentConverter< std::vector<T> >
     {
-        static inline Bool tryConvert(const RamshArgumentData& data, std::vector<T>& value)
+        static inline bool tryConvert(const RamshArgumentData& data, std::vector<T>& value)
         {
             String curr;
 
-            Bool result = true;
+            bool result = true;
 
-            for(UInt i = 0; i < data.getLength(); i++)
+            for(UInt i = 0; i < data.size(); i++)
             {
                 if(',' == data.at(i))
                 {
@@ -92,7 +92,7 @@ namespace ramses_internal
                     result = result && ArgumentConverter<T>::tryConvert(curr,val);
                     value.push_back(val);
 
-                    curr.truncate(0);
+                    curr.clear();
                 }
                 else
                 {
@@ -112,19 +112,19 @@ namespace ramses_internal
     template<typename T1, typename T2>
     struct ArgumentConverter< std::pair<T1,T2> >
     {
-        static inline Bool tryConvert(const RamshArgumentData& data, std::pair<T1,T2>& value)
+        static inline bool tryConvert(const RamshArgumentData& data, std::pair<T1,T2>& value)
         {
             std::pair<T1,T2> val;
 
-            Bool result = false;
+            bool result = false;
 
             String curr;
-            for(UInt i = 0; i < data.getLength(); i++)
+            for(UInt i = 0; i < data.size(); i++)
             {
                 if(';' == data.at(i))
                 {
                     result = ArgumentConverter<T1>::tryConvert(curr,val.first);
-                    curr.truncate(0);
+                    curr.clear();
                 }
                 else
                 {
@@ -142,7 +142,7 @@ namespace ramses_internal
     template<>
     struct ArgumentConverter<Int64>
     {
-        static inline Bool tryConvert(const RamshArgumentData& data, Int64& value)
+        static inline bool tryConvert(const RamshArgumentData& data, Int64& value)
         {
             Char* endptr;
             value = static_cast<Int64>(strtol(data.c_str(),&endptr,10));
@@ -161,7 +161,7 @@ namespace ramses_internal
     template<>
     struct ArgumentConverter<Double>
     {
-        static inline Bool tryConvert(const RamshArgumentData& data, Double& value)
+        static inline bool tryConvert(const RamshArgumentData& data, Double& value)
         {
             Char* endptr;
             value = static_cast<Double>(strtod(data.c_str(),&endptr));
@@ -173,11 +173,11 @@ namespace ramses_internal
     template<>
     struct ArgumentConverter<Float>
     {
-        static inline Bool tryConvert(const RamshArgumentData& data, Float& value)
+        static inline bool tryConvert(const RamshArgumentData& data, Float& value)
         {
             Double val = 0.0;
             // reuse the Double converter
-            Bool result = ArgumentConverter<Double>::tryConvert(data,val);
+            bool result = ArgumentConverter<Double>::tryConvert(data,val);
             value = static_cast<Float>(val);
             return result;
         }
@@ -187,7 +187,7 @@ namespace ramses_internal
     template<>
     struct ArgumentConverter<String>
     {
-        static inline Bool tryConvert(const RamshArgumentData& data, String& value)
+        static inline bool tryConvert(const RamshArgumentData& data, String& value)
         {
             value = data;
             return true;

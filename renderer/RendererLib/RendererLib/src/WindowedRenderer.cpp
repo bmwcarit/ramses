@@ -40,12 +40,13 @@ namespace ramses_internal
         , m_expirationMonitor(m_rendererScenes, m_rendererEventCollector)
         , m_renderer(platformFactory, m_rendererScenes, m_rendererEventCollector, m_frameTimer, m_expirationMonitor, rendererStatistics)
         , m_sceneStateExecutor(m_renderer, sceneGraphConsumerComponent, m_rendererEventCollector)
-        , m_rendererSceneUpdater(m_renderer, m_rendererScenes, m_sceneStateExecutor, m_rendererEventCollector, m_frameTimer, m_expirationMonitor)
+        , m_rendererSceneUpdater(m_renderer, m_rendererScenes, m_sceneStateExecutor, sceneGraphConsumerComponent, m_rendererEventCollector, m_frameTimer, m_expirationMonitor)
         , m_rendererCommandExecutor(m_renderer, m_rendererCommandBuffer, m_rendererSceneUpdater, m_rendererEventCollector, m_frameTimer)
         , m_cmdScreenshot                                  (m_rendererCommandBuffer)
         , m_cmdLogRendererInfo                             (m_rendererCommandBuffer)
         , m_cmdShowFrameProfiler                           (m_rendererCommandBuffer)
         , m_cmdPrintStatistics                             (m_rendererCommandBuffer)
+        , m_cmdTriggerPickEvent                            (m_rendererCommandBuffer)
         , m_cmdSetClearColor                               (m_rendererCommandBuffer)
         , m_cmdSkippingOfUnmodifiedBuffers                 (m_rendererCommandBuffer)
         , m_cmdLinkSceneData                               (m_rendererCommandBuffer)
@@ -164,6 +165,7 @@ namespace ramses_internal
     void WindowedRenderer::registerRamshCommands(Ramsh& ramsh)
     {
         ramsh.add(m_cmdPrintStatistics);
+        ramsh.add(m_cmdTriggerPickEvent);
         ramsh.add(m_cmdSetClearColor);
         ramsh.add(m_cmdSkippingOfUnmodifiedBuffers);
         ramsh.add(m_cmdScreenshot);
@@ -230,7 +232,7 @@ namespace ramses_internal
 
         for(auto& screenshot : screenshots)
         {
-            if (screenshot.filename.getLength() > 0u)
+            if (screenshot.filename.size() > 0u)
             {
                 if (screenshot.success)
                 {
@@ -259,14 +261,16 @@ namespace ramses_internal
             else
             {
                 if (screenshot.success)
-                {
-                    m_rendererEventCollector.addEvent(ERendererEventType_ReadPixelsFromFramebuffer, screenshot.display, std::move(screenshot.pixelData));
-                }
+                    m_rendererEventCollector.addReadPixelsEvent(ERendererEventType_ReadPixelsFromFramebuffer, screenshot.display, std::move(screenshot.pixelData));
                 else
-                {
-                    m_rendererEventCollector.addEvent(ERendererEventType_ReadPixelsFromFramebufferFailed, screenshot.display);
-                }
+                    m_rendererEventCollector.addReadPixelsEvent(ERendererEventType_ReadPixelsFromFramebufferFailed, screenshot.display, {});
             }
         }
     }
+
+    void WindowedRenderer::fireLoopTimingReportRendererEvent(std::chrono::microseconds maximumLoopTimeInPeriod, std::chrono::microseconds renderthreadAverageLooptime)
+    {
+        m_rendererEventCollector.addRenderStatsEvent(ERendererEventType_RenderThreadPeriodicLoopTimes, maximumLoopTimeInPeriod, renderthreadAverageLooptime);
+    }
+
 }

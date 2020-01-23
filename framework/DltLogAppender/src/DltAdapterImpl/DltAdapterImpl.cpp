@@ -120,7 +120,7 @@ namespace ramses_internal
         maxLineCapacity -= 30u; //30 subtracted to have some buffer
 
         const char* msgData = msg.getStream().c_str();
-        uint32_t msgLength = msg.getStream().length();
+        uint32_t msgLength = msg.getStream().size();
         const char* msgDataEnd = msgData + msgLength;
 
         // check if shortcut is possible: short enough line and no linebreaks
@@ -150,7 +150,7 @@ namespace ramses_internal
 
     bool DltAdapterImpl::registerApplication(const String& id,const String& description)
     {
-        if (m_dltInitialized || id.getLength() < 1 || id.getLength() > 4)
+        if (m_dltInitialized || id.size() < 1 || id.size() > 4)
         {
             return false;
         }
@@ -188,8 +188,8 @@ namespace ramses_internal
 
         m_dltInitialized = false;
 
-        m_appName.truncate(0);
-        m_appDesc.truncate(0);
+        m_appName.clear();
+        m_appDesc.clear();
     }
 
     void* DltAdapterImpl::registerContext(LogContext* ctx, bool pushLogLevel, ELogLevel logLevel)
@@ -259,9 +259,9 @@ namespace ramses_internal
 #endif
     }
 
-    Bool DltAdapterImpl::transmitFile(LogContext& ctx, const String& uri, Bool deleteFile)
+    bool DltAdapterImpl::transmitFile(LogContext& ctx, const String& uri, bool deleteFile)
     {
-        if(!m_dltInitialized || uri.getLength() == 0 || ctx.getUserData() == nullptr)
+        if(!m_dltInitialized || uri.size() == 0 || ctx.getUserData() == nullptr)
         {
             return false;
         }

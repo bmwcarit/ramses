@@ -21,6 +21,7 @@ namespace ramses_internal
             m_texDesc.m_height = 2u;
             m_texDesc.m_depth = 3u;
             m_texDesc.m_format = ETextureFormat_RGB8;
+            m_texDesc.m_swizzle = {ETextureChannelColor::Green, ETextureChannelColor::Blue, ETextureChannelColor::Red, ETextureChannelColor::Alpha};
             m_texDesc.m_dataSizes = m_mipLevelSizes;
             m_texDesc.m_generateMipChain = false;
         }
@@ -39,9 +40,10 @@ namespace ramses_internal
         EXPECT_EQ(texRes.getHeight(), this->m_texDesc.m_height);
         EXPECT_EQ(texRes.getDepth(), this->m_texDesc.m_depth);
         EXPECT_EQ(texRes.getTextureFormat(), this->m_texDesc.m_format);
+        EXPECT_EQ(texRes.getTextureSwizzle(), this->m_texDesc.m_swizzle);
         EXPECT_EQ(texRes.getTypeID(), EResourceType_Texture3D);
         EXPECT_EQ(texRes.getMipDataSizes(), this->m_mipLevelSizes);
-        EXPECT_EQ(texRes.getResourceData()->size(), std::accumulate(this->m_mipLevelSizes.begin(), this->m_mipLevelSizes.end(), 0u));
+        EXPECT_EQ(texRes.getResourceData().size(), std::accumulate(this->m_mipLevelSizes.begin(), this->m_mipLevelSizes.end(), 0u));
         EXPECT_EQ(texRes.getGenerateMipChainFlag(), this->m_texDesc.m_generateMipChain);
         EXPECT_EQ(texRes.getCacheFlag(), flag);
     }
@@ -56,9 +58,10 @@ namespace ramses_internal
         EXPECT_EQ(texRes.getHeight(), this->m_texDesc.m_height);
         EXPECT_EQ(texRes.getDepth(), this->m_texDesc.m_depth);
         EXPECT_EQ(texRes.getTextureFormat(), this->m_texDesc.m_format);
+        EXPECT_EQ(texRes.getTextureSwizzle(), this->m_texDesc.m_swizzle);
         EXPECT_EQ(texRes.getTypeID(), EResourceType_TextureCube);
         EXPECT_EQ(texRes.getMipDataSizes(), this->m_mipLevelSizes);
-        EXPECT_EQ(texRes.getResourceData()->size(), 6u * std::accumulate(this->m_mipLevelSizes.begin(), this->m_mipLevelSizes.end(), 0u));
+        EXPECT_EQ(texRes.getResourceData().size(), 6u * std::accumulate(this->m_mipLevelSizes.begin(), this->m_mipLevelSizes.end(), 0u));
         EXPECT_EQ(texRes.getGenerateMipChainFlag(), this->m_texDesc.m_generateMipChain);
         EXPECT_EQ(texRes.getCacheFlag(), flag);
     }

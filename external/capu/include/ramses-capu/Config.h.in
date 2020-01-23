@@ -37,14 +37,9 @@
 #    error "Unknown CAPU_ARCH, expected CAPU_ARCH_32 or CAPU_ARCH_64"
 #endif
 
-/**
- * os specific defines
- */
-#include <stdio.h>
-#include <stdlib.h>
-#include <cstdint>
-
 #define UNUSED(x) {(void)(x);}
+
+#include <cstdint>
 
 namespace ramses_capu
 {

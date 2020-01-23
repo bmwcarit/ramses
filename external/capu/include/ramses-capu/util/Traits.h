@@ -124,11 +124,11 @@ namespace ramses_capu
         enum id
         {
             Identifier =
-                ramses_capu::is_CAPU_PRIMITIVE<T>::Value
-                | ramses_capu::is_CAPU_POINTER<T>::Value
-                | ramses_capu::is_CAPU_REFERENCE<T>::Value
-                | ramses_capu::is_CAPU_ENUM<T>::Value
-                | ramses_capu::is_CAPU_CLASS<T>::Value
+                static_cast<int>(ramses_capu::is_CAPU_PRIMITIVE<T>::Value)
+                | static_cast<int>(ramses_capu::is_CAPU_POINTER<T>::Value)
+                | static_cast<int>(ramses_capu::is_CAPU_REFERENCE<T>::Value)
+                | static_cast<int>(ramses_capu::is_CAPU_ENUM<T>::Value)
+                | static_cast<int>(ramses_capu::is_CAPU_CLASS<T>::Value)
         };
     };
 

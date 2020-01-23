@@ -108,9 +108,6 @@ namespace ramses_internal
         ETextureFormat_RGBA4,
         ETextureFormat_RGBA5551,
 
-        ETextureFormat_BGR8,
-        ETextureFormat_BGRA8,
-
         ETextureFormat_ETC2RGB, // ericsson texture compression 2
         ETextureFormat_ETC2RGBA, // ericsson texture compression 2 with alpha
         ETextureFormat_DXT1RGB, // S3 texture compression 1
@@ -178,6 +175,29 @@ namespace ramses_internal
         ETextureCubeFace_NegativeZ
     };
 
+    enum class ETextureChannelColor : uint8_t
+    {
+        Red,
+        Green,
+        Blue,
+        Alpha,
+        One,
+        Zero,
+
+        NUMBER_OF_ELEMENTS,
+    };
+
+    static const char* TextureChannelColorNames[] =
+    {
+        "Red",
+        "Green",
+        "Blue",
+        "Alpha",
+        "One",
+        "Zero"
+    };
+    ENUM_TO_STRING(ETextureChannelColor, TextureChannelColorNames, ETextureChannelColor::NUMBER_OF_ELEMENTS);
+
     static inline bool IsFormatCompressed(ramses_internal::ETextureFormat textureformat)
     {
         switch (textureformat)
@@ -235,14 +255,12 @@ namespace ramses_internal
         case ETextureFormat_RGBA5551:
         case ETextureFormat_Depth16:
             return 2u;
-        case ETextureFormat_BGR8:
         case ETextureFormat_RGB8:
         case ETextureFormat_Depth24:
         case ETextureFormat_SRGB8:
             return 3u;
         case ETextureFormat_RG16:
         case ETextureFormat_RG16F:
-        case ETextureFormat_BGRA8:
         case ETextureFormat_RGBA8:
         case ETextureFormat_Depth24_Stencil8:
         case ETextureFormat_R32F:
@@ -279,8 +297,6 @@ namespace ramses_internal
         "ETextureFormat_RGBA8",
         "ETextureFormat_RGBA4",
         "ETextureFormat_RGBA5551",
-        "ETextureFormat_BGR8",
-        "ETextureFormat_BGRA8",
         "ETextureFormat_ETC2RGB",
         "ETextureFormat_ETC2RGBA",
         "ETextureFormat_DXT1RGB",

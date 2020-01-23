@@ -85,6 +85,7 @@ TEST_F(ARendererCommandBuffer, canFetchAllTypesOfRendererCommands)
     const WarpingMeshData warpingData;
     const DisplayHandle displayHandle(1u);
     const DisplayConfig displayConfig;
+    const OffscreenBufferHandle obHandle{ 6u };
     ResourceProviderMock resourceProvider;
     NiceMock<ResourceUploaderMock> resourceUploader;
 
@@ -105,7 +106,8 @@ TEST_F(ARendererCommandBuffer, canFetchAllTypesOfRendererCommands)
     queueToFetch.unsubscribeScene(sceneId, false);
     queueToFetch.createDisplay(displayConfig, resourceProvider, resourceUploader, displayHandle);
     queueToFetch.destroyDisplay(displayHandle);
-    queueToFetch.mapSceneToDisplay(sceneId, displayHandle, 0);
+    queueToFetch.mapSceneToDisplay(sceneId, displayHandle);
+    queueToFetch.assignSceneToDisplayBuffer(sceneId, obHandle, 11);
     queueToFetch.unmapScene(sceneId);
     queueToFetch.showScene(sceneId);
     queueToFetch.hideScene(sceneId);
@@ -130,16 +132,16 @@ TEST_F(ARendererCommandBuffer, canFetchAllTypesOfRendererCommands)
     queueToFetch.systemCompositorControllerDestroyIviSurface(WaylandIviSurfaceId(51u));
     queueToFetch.confirmationEcho("testEcho");
     queueToFetch.logRendererInfo(ERendererLogTopic_All, true, NodeHandle::Invalid());
-    queueToFetch.setClearColor(displayHandle, clearColor);
+    queueToFetch.setClearColor(displayHandle, obHandle, clearColor);
     queueToFetch.setFrameTimerLimits(4u, 1u, 2u, 3u);
 
-    EXPECT_EQ(34u, queueToFetch.getCommands().getTotalCommandCount());
+    EXPECT_EQ(35u, queueToFetch.getCommands().getTotalCommandCount());
 
     queue.addCommands(queueToFetch); //fetchRendererCommands
     queueToFetch.clear(); //clear fetched command queue
 
     EXPECT_EQ(0u, queueToFetch.getCommands().getTotalCommandCount());
-    EXPECT_EQ(34u, queue.getCommands().getTotalCommandCount());
+    EXPECT_EQ(35u, queue.getCommands().getTotalCommandCount());
 
     //check some details of the fetched commands
     EXPECT_EQ(ERendererCommand_PublishedScene, queue.getCommands().getCommandType(0));
@@ -154,12 +156,20 @@ TEST_F(ARendererCommandBuffer, canFetchAllTypesOfRendererCommands)
     EXPECT_EQ(static_cast<IResourceProvider*>(&resourceProvider), dispCmd.resourceProvider);
     EXPECT_EQ(static_cast<IResourceUploader*>(&resourceUploader), dispCmd.resourceUploader);
 
-    EXPECT_EQ(ERendererCommand_ConfirmationEcho, queue.getCommands().getCommandType(30));
-    const ConfirmationEchoCommand& echoCmd = queue.getCommands().getCommandData<ConfirmationEchoCommand>(30);
+    EXPECT_EQ(ERendererCommand_AssignSceneToDisplayBuffer, queue.getCommands().getCommandType(8));
+    const auto& assignCmd = queue.getCommands().getCommandData<SceneMappingCommand>(8);
+    EXPECT_EQ(sceneId, assignCmd.sceneId);
+    EXPECT_EQ(obHandle, assignCmd.offscreenBuffer);
+    EXPECT_EQ(11, assignCmd.sceneRenderOrder);
+
+    EXPECT_EQ(ERendererCommand_ConfirmationEcho, queue.getCommands().getCommandType(31));
+    const ConfirmationEchoCommand& echoCmd = queue.getCommands().getCommandData<ConfirmationEchoCommand>(31);
     EXPECT_TRUE(echoCmd.text == ramses_internal::String("testEcho"));
 
-    EXPECT_EQ(ERendererCommand_SetClearColor, queue.getCommands().getCommandType(32));
-    const auto& clearColorCmd = queue.getCommands().getCommandData<SetClearColorCommand>(32);
-    EXPECT_TRUE(clearColorCmd.clearColor == clearColor);
+    EXPECT_EQ(ERendererCommand_SetClearColor, queue.getCommands().getCommandType(33));
+    const auto& clearColorCmd = queue.getCommands().getCommandData<SetClearColorCommand>(33);
+    EXPECT_EQ(displayHandle, clearColorCmd.displayHandle);
+    EXPECT_EQ(obHandle, clearColorCmd.obHandle);
+    EXPECT_EQ(clearColor, clearColorCmd.clearColor);
 }
 }

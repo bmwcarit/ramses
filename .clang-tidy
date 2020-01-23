@@ -18,6 +18,7 @@ Checks: >
         misc-macro-*,
         readability-redundant-*,
         cert-*,
+        modernize-use-nullptr,
         -clang-analyzer-optin.cplusplus.VirtualCall,
         -clang-analyzer-security.FloatLoopCounter,
         -clang-analyzer-cplusplus.NewDelete,
@@ -37,7 +38,7 @@ Checks: >
 WarningsAsErrors: '*'
 
 # ignore headers in external because we cannot fix them
-HeaderFilterRegex: '^external/.*|^proprietary/external/.*'
+HeaderFilterRegex: '/git/(client|demo|examples|external/capu|framework|integration|renderer|utils|proprietary/(android|client|demo|framework|utils))/'
 
 AnalyzeTemporaryDtors: false
 FormatStyle:     none

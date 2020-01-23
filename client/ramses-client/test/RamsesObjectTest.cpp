@@ -10,37 +10,6 @@
 #include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
-#include "ramses-client-api/AnimationSystem.h"
-#include "ramses-client-api/AnimationSystemRealTime.h"
-#include "ramses-client-api/Spline.h"
-#include "ramses-client-api/Animation.h"
-#include "ramses-client-api/AnimatedSetter.h"
-#include "ramses-client-api/AnimationSequence.h"
-#include "ramses-client-api/SplineStepBool.h"
-#include "ramses-client-api/SplineStepInt32.h"
-#include "ramses-client-api/SplineStepFloat.h"
-#include "ramses-client-api/SplineStepVector2f.h"
-#include "ramses-client-api/SplineStepVector3f.h"
-#include "ramses-client-api/SplineStepVector4f.h"
-#include "ramses-client-api/SplineStepVector2i.h"
-#include "ramses-client-api/SplineStepVector3i.h"
-#include "ramses-client-api/SplineStepVector4i.h"
-#include "ramses-client-api/SplineLinearInt32.h"
-#include "ramses-client-api/SplineLinearFloat.h"
-#include "ramses-client-api/SplineLinearVector2f.h"
-#include "ramses-client-api/SplineLinearVector3f.h"
-#include "ramses-client-api/SplineLinearVector4f.h"
-#include "ramses-client-api/SplineLinearVector2i.h"
-#include "ramses-client-api/SplineLinearVector3i.h"
-#include "ramses-client-api/SplineLinearVector4i.h"
-#include "ramses-client-api/SplineBezierInt32.h"
-#include "ramses-client-api/SplineBezierFloat.h"
-#include "ramses-client-api/SplineBezierVector2f.h"
-#include "ramses-client-api/SplineBezierVector3f.h"
-#include "ramses-client-api/SplineBezierVector4f.h"
-#include "ramses-client-api/SplineBezierVector2i.h"
-#include "ramses-client-api/SplineBezierVector3i.h"
-#include "ramses-client-api/SplineBezierVector4i.h"
 #include "ramses-client-api/TextureSampler.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderTarget.h"
@@ -73,6 +42,7 @@
 #include "ramses-client-api/IndexDataBuffer.h"
 #include "ramses-client-api/VertexDataBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
+#include "ramses-client-api/PickableObject.h"
 #include "ramses-utils.h"
 
 #include "ClientTestUtils.h"
@@ -85,10 +55,10 @@ using namespace testing;
 namespace ramses
 {
     template <typename ObjectType>
-    class RamsesObjectTest : public LocalTestClientWithSceneAndAnimationSystem, public testing::Test
+    class RamsesObjectTest : public LocalTestClientWithScene, public testing::Test
     {
     public:
-    RamsesObjectTest() : LocalTestClientWithSceneAndAnimationSystem()
+    RamsesObjectTest() : LocalTestClientWithScene()
     {
     }
     };
@@ -191,7 +161,7 @@ namespace ramses
     {
         const RamsesObject& obj = this->template createObject<TypeParam>("object");
 
-        obj.impl.addErrorEntry("dummy");
+        EXPECT_NE(StatusOK, obj.impl.addErrorEntry("dummy"));
         obj.validate();
         const ramses_internal::String validationReport = obj.getValidationReport(EValidationSeverity_Info);
 
@@ -203,7 +173,7 @@ namespace ramses
     {
         RamsesObject& obj = this->template createObject<TypeParam>("object");
 
-        obj.impl.addErrorEntry("dummy error msg");
+        EXPECT_NE(StatusOK, obj.impl.addErrorEntry("dummy error msg"));
         EXPECT_NE(StatusOK, obj.validate());
     }
 
@@ -214,7 +184,7 @@ namespace ramses
         // some objects are not valid initially
         const bool originalStatusOK = (obj.validate() == StatusOK);
 
-        obj.impl.addErrorEntry("dummy error msg");
+        EXPECT_NE(StatusOK, obj.impl.addErrorEntry("dummy error msg"));
         EXPECT_NE(StatusOK, obj.validate());
 
         // subsequent validation expected to return to original state
@@ -226,15 +196,15 @@ namespace ramses
         RamsesObject& obj = this->template createObject<TypeParam>("object");
         const RamsesObject& constObj = obj;
 
-        if (constObj.getType() != ERamsesObjectType_SplineStepBool)
+        if (constObj.getType() != ERamsesObjectType_RenderPass)
         {
-            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<SplineStepBool>(obj));
-            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<SplineStepBool>(constObj));
+            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<RenderPass>(obj));
+            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<RenderPass>(constObj));
         }
         else
         {
-            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<SplineStepInt32>(obj));
-            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<SplineStepInt32>(constObj));
+            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<BlitPass>(obj));
+            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<BlitPass>(constObj));
         }
     }
 

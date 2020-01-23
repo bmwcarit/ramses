@@ -1,5 +1,6 @@
 //  -------------------------------------------------------------------------
 //  Copyright (C) 2017 BMW Car IT GmbH
+//  Copyright (C) 2019 Daniel Werner Lima Souza de Almeida (dwlsalmeida@gmail.com)
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,28 +26,71 @@
 #include "ramses-hmi-utils.h"
 #include <fstream>
 #include "ramses-capu/os/StringUtils.h"
-#include <ramses-capu/os/PlatformInclude.h>
-#include "ScreenshotSaver.h"
+#include "Utils/Image.h"
+#include "ramses-capu/os/File.h"
+
+class ScreenshotRendererEventHandler final : public ramses::RendererEventHandlerEmpty
+{
+public:
+    ScreenshotRendererEventHandler(ramses::RamsesRenderer& renderer, ramses::displayId_t displayId, uint32_t width, uint32_t height, std::string filename)
+        : m_renderer(renderer)
+        , m_displayId(displayId)
+        , m_width(width)
+        , m_height(height)
+        , m_filename(std::move(filename))
+    {}
+
+    virtual void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, ramses::displayId_t /*displayId*/, ramses::ERendererEventResult result) override
+    {
+        if (result == ramses::ERendererEventResult_OK)
+        {
+            assert(pixelDataSize == m_width * m_height * 4);
+            ramses_internal::Image image(m_width, m_height, pixelData, pixelData + pixelDataSize, true);
+            image.saveToFilePNG(m_filename.c_str());
+            m_screenshotTaken = true;
+        }
+    }
+
+    virtual void sceneShown(ramses::sceneId_t /*sceneId*/, ramses::ERendererEventResult result) override
+    {
+        if (result == ramses::ERendererEventResult_OK)
+        {
+            m_renderer.readPixels(m_displayId, 0, 0, m_width, m_height);
+            m_renderer.flush();
+        }
+    }
+
+    bool isScreenshotTaken() const
+    {
+        return m_screenshotTaken;
+    }
+
+private:
+    ramses::RamsesRenderer& m_renderer;
+    ramses::displayId_t m_displayId;
+
+    uint32_t m_width;
+    uint32_t m_height;
+    std::string m_filename;
+    bool m_screenshotTaken = false;
+};
 
 namespace ramses_internal
 {
     SceneViewer::SceneViewer(int argc, char* argv[])
         : m_parser(argc, argv)
-        , m_helpArgument(m_parser, "help", "help", false, "Print this help")
+        , m_helpArgument(m_parser, "help", "help", "Print this help")
         , m_scenePathAndFileArgument(m_parser, "s", "scene", String(), "Scene path+file")
         , m_optionalResFileArgument(m_parser, "r", "res", String(), "Resource file")
         , m_validationUnrequiredObjectsDirectoryArgument(m_parser, "vd", "validation-output-directory", String(), "Directory Path were validation output should be saved")
-        , m_screenshotFile(m_parser, "x", "screenshot-file", String(), "Screenshot filename. Setting to non-empty enables screenshot capturing after the scene is shown")
-        , m_screenshotWidth(m_parser, "xw", "screenshot-width", 800, "The chosen width for the screenshot if selected")
-        , m_screenshotHeight(m_parser, "xh", "screenshot-height", 600, "The chosen height for the screenshot if selected")
-        , m_screenshotSaver{nullptr}
+        , m_screenshotFile(m_parser, "x", "screenshot-file", {}, "Screenshot filename. Setting to non-empty enables screenshot capturing after the scene is shown")
     {
         GetRamsesLogger().initialize(m_parser, String(), String(), false);
 
         const bool   helpRequested    = m_helpArgument;
         const String scenePathAndFile = m_scenePathAndFileArgument;
         const String optionalResFile  = m_optionalResFileArgument;
-        m_sceneName = getFileName(scenePathAndFile.c_str());
+        m_sceneName = ramses_capu::File(scenePathAndFile.stdRef()).getFileName();
 
         if (helpRequested)
         {
@@ -75,8 +119,7 @@ namespace ramses_internal
 
     void SceneViewer::printUsage() const
     {
-        String argumentHelpString = m_helpArgument.getHelpString() + m_scenePathAndFileArgument.getHelpString() + m_optionalResFileArgument.getHelpString() + m_validationUnrequiredObjectsDirectoryArgument.getHelpString() + m_screenshotWidth.getHelpString() + m_screenshotHeight.getHelpString() + m_screenshotFile.getHelpString();
-
+        const String argumentHelpString = m_helpArgument.getHelpString() + m_scenePathAndFileArgument.getHelpString() + m_optionalResFileArgument.getHelpString() + m_validationUnrequiredObjectsDirectoryArgument.getHelpString() + m_screenshotFile.getHelpString();
         const String& programName = m_parser.getProgramName();
         LOG_INFO(CONTEXT_CLIENT,
                 "\nUsage: " << programName << " [options] -s <sceneFileName>\n"
@@ -84,7 +127,6 @@ namespace ramses_internal
                 "Arguments:\n" << argumentHelpString);
 
         ramses_internal::RendererConfigUtils::PrintCommandLineOptions();
-
     }
 
     void SceneViewer::loadAndRenderScene(int argc, char* argv[], const String& sceneFile, const String& resFile)
@@ -94,33 +136,32 @@ namespace ramses_internal
         ramses::RamsesFramework framework(frameworkConfig);
 
         const ramses::RendererConfig rendererConfig(argc, argv);
-        ramses::RamsesRenderer renderer(framework, rendererConfig);
-        renderer.startThread();
-        ramses_display_manager::DisplayManager displayManager(renderer, framework, false);
+        auto renderer = framework.createRenderer(rendererConfig);
+        if (!renderer)
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Creation of renderer failed");
+            return;
+        }
+
+        renderer->startThread();
+        ramses_internal::DisplayManager displayManager(*renderer, framework);
         // allow camera free move
         displayManager.enableKeysHandling();
 
-        ramses::DisplayConfig displayConfig(argc, argv);
-        // TODO add a getter for screen width/height in DisplayConfig and remove m_screenshotWidth and m_screenshotHeight and this error check
-        const String screenshotFile = m_screenshotFile;
-        if (screenshotFile != "")
-        {
-            const auto result = displayConfig.setWindowRectangle(0, 0, m_screenshotWidth, m_screenshotHeight);
-
-            if (ramses::StatusOK != result)
-            {
-                LOG_ERROR(CONTEXT_CLIENT, "Failed setting window rectangle, did you enable screenshot capturing but forgot to set width and height of it?");
-                return;
-            }
-        }
-
+        const ramses::DisplayConfig displayConfig(argc, argv);
         const ramses::displayId_t displayId = displayManager.createDisplay(displayConfig);
         displayManager.dispatchAndFlush();
 
-        ramses::RamsesClient client("client-scene-reader", framework);
+        auto client = framework.createClient("client-scene-reader");
+        if (!client)
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Creation of client failed");
+            return;
+        }
+
         framework.connect();
 
-        auto loadedScene = loadSceneWithResources(client, sceneFile, resFile);
+        auto loadedScene = loadSceneWithResources(*client, sceneFile, resFile);
         if (loadedScene == nullptr)
         {
             LOG_ERROR(CONTEXT_CLIENT, "Loading scene failed!");
@@ -130,7 +171,7 @@ namespace ramses_internal
 
         loadedScene->publish();
         loadedScene->flush();
-        validateContent(client, *loadedScene);
+        validateContent(*client, *loadedScene);
         if (m_validationUnrequiredObjectsDirectoryArgument.wasDefined() && m_validationUnrequiredObjectsDirectoryArgument.hasValue())
         {
             std::string unrequiredObjectsReportFilePath = ramses_internal::String(m_validationUnrequiredObjectsDirectoryArgument).c_str();
@@ -143,18 +184,30 @@ namespace ramses_internal
         ramses::RamsesHMIUtils::DumpUnrequiredSceneObjects(*loadedScene);
 
         displayManager.setSceneMapping(loadedScene->getSceneId(), displayId);
-        displayManager.setSceneState(loadedScene->getSceneId(), ramses_display_manager::SceneState::Rendered);
+        displayManager.setSceneState(loadedScene->getSceneId(), ramses_internal::SceneState::Rendered);
 
-        if(screenshotFile != "")
+
+        std::unique_ptr<ScreenshotRendererEventHandler> eventHandler;
+        const String screenshotFile = m_screenshotFile;
+        if (!screenshotFile.empty())
         {
-            m_screenshotSaver = std::make_unique<ramses::ScreenshotSaver>(ramses::ScreenshotSaver(renderer, displayId, m_screenshotWidth, m_screenshotHeight, screenshotFile.c_str()));
+            if (!displayConfig.isWindowFullscreen())
+            {
+                int32_t x;
+                int32_t y;
+                uint32_t w;
+                uint32_t h;
+                displayConfig.getWindowRectangle(x, y, w, h);
+                eventHandler = std::make_unique<ScreenshotRendererEventHandler>(*renderer, displayId, w, h, screenshotFile.c_str());
+            }
+            else
+                LOG_ERROR(CONTEXT_CLIENT, "Screenshot in fullscreen mode is not supported");
         }
 
         while (displayManager.isRunning())
         {
-            displayManager.dispatchAndFlush(nullptr, m_screenshotSaver.get());
-
-            if(m_screenshotSaver && m_screenshotSaver->isScreenshotTaken())
+            displayManager.dispatchAndFlush(nullptr, eventHandler.get());
+            if(eventHandler && eventHandler->isScreenshotTaken())
                 break;
 
             ramses_internal::PlatformThread::Sleep(30u);
@@ -193,23 +246,6 @@ namespace ramses_internal
             validationFilePath.append(m_sceneName + "_validationReport.txt");
             std::ofstream validationFile(validationFilePath);
             validationFile << client.getValidationReport(ramses::EValidationSeverity_Info) << std::endl;
-        }
-    }
-
-    std::string SceneViewer::getFileName(std::string path)
-    {
-        ramses_capu::int_t lastSeparator = ramses_capu::StringUtils::LastIndexOf(path.c_str(), '/');
-        if (lastSeparator == -1)
-        {
-            lastSeparator = ramses_capu::StringUtils::LastIndexOf(path.c_str(), '\\');
-        }
-        if (lastSeparator != -1)
-        {
-            return std::string(path, lastSeparator + 1);
-        }
-        else
-        {
-            return path;
         }
     }
 }

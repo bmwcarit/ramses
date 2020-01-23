@@ -12,9 +12,9 @@
 #include "Ramsh/RamshCommandArguments.h"
 #include "DisplayManager/IDisplayManager.h"
 
-namespace ramses_display_manager
+namespace ramses_internal
 {
-    class LinkData : public ramses_internal::RamshCommandArgs < uint64_t, uint32_t, uint64_t, uint32_t >
+    class LinkData : public RamshCommandArgs < uint64_t, uint32_t, uint64_t, uint32_t >
     {
     public:
         LinkData(IDisplayManager& displayManager);

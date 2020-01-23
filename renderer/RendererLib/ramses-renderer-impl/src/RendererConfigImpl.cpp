@@ -98,6 +98,17 @@ namespace ramses
         return m_rendererResourceCache;
     }
 
+    status_t RendererConfigImpl::setRenderThreadLoopTimingReportingPeriod(std::chrono::milliseconds period)
+    {
+        m_internalConfig.setRenderthreadLooptimingReportingPeriod(period);
+        return StatusOK;
+    }
+
+    std::chrono::milliseconds RendererConfigImpl::getRenderThreadLoopTimingReportingPeriod() const
+    {
+        return m_internalConfig.getRenderThreadLoopTimingReportingPeriod();
+    }
+
     const ramses_internal::RendererConfig& RendererConfigImpl::getInternalRendererConfig() const
     {
         return m_internalConfig;
@@ -111,12 +122,12 @@ namespace ramses
         const ramses_internal::String& embeddedCompositorFilename = m_internalConfig.getWaylandSocketEmbedded();
         int embeddedCompositorFileDescriptor                      = m_internalConfig.getWaylandSocketEmbeddedFD();
 
-        if(embeddedCompositorFilename.getLength() == 0u && embeddedCompositorFileDescriptor < 0)
+        if(embeddedCompositorFilename.size() == 0u && embeddedCompositorFileDescriptor < 0)
         {
             addValidationMessage(EValidationSeverity_Warning, indent, "no socket information for EmbeddedCompositor set (neither file descriptor nor file name). No embedded compositor available.");
             status = getValidationErrorStatus();
         }
-        else if(embeddedCompositorFilename.getLength() > 0u && embeddedCompositorFileDescriptor >= 0)
+        else if(embeddedCompositorFilename.size() > 0u && embeddedCompositorFileDescriptor >= 0)
         {
             addValidationMessage(EValidationSeverity_Warning, indent, "Competing settings for EmbeddedCompositor are set (file descriptor and file name). File descriptor setting will be preferred.");
             status = getValidationErrorStatus();
@@ -124,4 +135,5 @@ namespace ramses
 
         return status;
     }
+
 }

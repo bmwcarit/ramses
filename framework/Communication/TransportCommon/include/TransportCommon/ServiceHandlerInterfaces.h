@@ -12,8 +12,10 @@
 #include "Transfer/ResourceTypes.h"
 #include "Resource/ResourceInfo.h"
 #include "SceneAPI/SceneId.h"
+#include "SceneAPI/SceneTypes.h"
 #include "Collections/ArrayView.h"
 #include "Components/DcsmTypes.h"
+#include "Components/DcsmMetadata.h"
 
 namespace ramses_internal
 {
@@ -77,6 +79,7 @@ namespace ramses_internal
         virtual void handleContentFocusRequest(ContentID contentID, const Guid& providerID) = 0;
         virtual void handleRequestStopOfferContent(ContentID contentID, const Guid& providerID) = 0;
         virtual void handleForceStopOfferContent(ContentID contentID, const Guid& providerID) = 0;
+        virtual void handleUpdateContentMetadata(ContentID contentID, DcsmMetadata metadata, const Guid& providerID) = 0;
     };
 }
 

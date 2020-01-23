@@ -9,7 +9,6 @@
 #ifndef RAMSES_SCENEAPI_HANDLES_H
 #define RAMSES_SCENEAPI_HANDLES_H
 
-#include "Common/MemoryHandle.h"
 #include "Common/TypedMemoryHandle.h"
 
 namespace ramses_internal
@@ -48,6 +47,9 @@ namespace ramses_internal
     struct BlitPassHandleTag {};
     typedef TypedMemoryHandle<BlitPassHandleTag> BlitPassHandle;
 
+    struct PickableObjectTag {};
+    typedef TypedMemoryHandle<PickableObjectTag> PickableObjectHandle;
+
     struct RenderTargetHandleTag {};
     typedef TypedMemoryHandle<RenderTargetHandleTag> RenderTargetHandle;
 
@@ -62,9 +64,6 @@ namespace ramses_internal
 
     struct DataBufferHandleTag {};
     typedef TypedMemoryHandle<DataBufferHandleTag> DataBufferHandle;
-
-    struct AnimationSystemHandleTag {};
-    typedef TypedMemoryHandle<AnimationSystemHandleTag> AnimationSystemHandle;
 
     struct TextureBufferHandleTag {};
     typedef TypedMemoryHandle<TextureBufferHandleTag> TextureBufferHandle;

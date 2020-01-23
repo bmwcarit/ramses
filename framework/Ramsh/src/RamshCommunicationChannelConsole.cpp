@@ -10,10 +10,10 @@
 #include "Ramsh/RamshCommunicationChannelConsoleSignalHandler.h"
 #include "Ramsh/Ramsh.h"
 #include "Ramsh/RamshTools.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "Utils/RamsesLogger.h"
 #include "PlatformAbstraction/PlatformEnvironmentVariables.h"
-
+#include "Utils/LogMacros.h"
+#include "PlatformAbstraction/PlatformConsole.h"
 #include "ramses-capu/os/Console.h"
 
 namespace ramses_internal
@@ -30,8 +30,8 @@ namespace ramses_internal
         {
             // register callback to output prompt and unfinished command after each log message
             GetRamsesLogger().setAfterConsoleLogCallback([this]() { afterSendCallback(); });
-            ramses_capu::Console::Print("%s", promptString().c_str());
-            ramses_capu::Console::Flush();
+            fmt::print("{}", promptString());
+            std::fflush(stdout);
         }
     }
 
@@ -63,8 +63,8 @@ namespace ramses_internal
         if (!m_pausePrompt)
         {
             //new prompt
-            ramses_capu::Console::Print("%s", promptString().c_str());
-            ramses_capu::Console::Flush();
+            fmt::print("{}", promptString());
+            std::fflush(stdout);
         }
     }
 
@@ -78,13 +78,13 @@ namespace ramses_internal
                 m_lock.lock();
                 if (m_interactiveMode)
                 {
-                    ramses_capu::Console::Print("\n");
+                    fmt::print("\n");
                 }
                 else
                 {
                     // Print command once when in non-interactive mode, allows easier correlation
                     // between and command and reaction
-                    ramses_capu::Console::Print("%s\n", promptString().c_str());
+                    fmt::print("{}\n", promptString());
                 }
                 if(nullptr != m_ramsh)
                 {
@@ -92,7 +92,7 @@ namespace ramses_internal
 
                     RamshInput input = RamshTools::parseCommandString(m_input);
                     m_commandHistory.insert(m_commandHistory.begin(), m_input);
-                    m_input.truncate(0);
+                    m_input.clear();
 
                     // Another thread calling RamsesLogger::log(), locks RamsesLogger::m_appenderLock and then
                     // RamshCommunicationChannelConsole::m_lock from afterSendCallback.
@@ -112,8 +112,8 @@ namespace ramses_internal
                 if (m_interactiveMode)
                 {
                     //new prompt
-                    ramses_capu::Console::Print("%s", promptString().c_str());
-                    ramses_capu::Console::Flush();
+                    fmt::print("{}", promptString());
+                    std::fflush(stdout);
                 }
 
                 m_lock.unlock();
@@ -126,19 +126,19 @@ namespace ramses_internal
                 bool inputEmpty = true;
                 {
                     PlatformGuard g(m_lock);
-                    inputEmpty = m_input.getLength() == 0;
+                    inputEmpty = m_input.size() == 0;
 
                     if(!inputEmpty)
                     {
-                        m_input.truncate(m_input.getLength()-1);
+                        m_input.resize(m_input.size()-1);
                     }
                 }
 
                 // only delete characters when there is something to delete (prevent messing up other output)
                 if(m_interactiveMode && !inputEmpty)
                 {
-                    ramses_capu::Console::Print("\b \b");
-                    ramses_capu::Console::Flush();
+                    fmt::print("\b \b");
+                    std::fflush(stdout);
                 }
             }
             m_nextCommandFromHistory = 0;
@@ -147,18 +147,18 @@ namespace ramses_internal
         case '#': // get youngest/next oldest history command
         {
             PlatformGuard g(m_lock);
-            UInt inputLength = m_input.getLength();
+            UInt inputLength = m_input.size();
             for (UInt i = 0u; i < inputLength; i++)
             {
-                ramses_capu::Console::Print("\b \b");
-                ramses_capu::Console::Flush();
+                fmt::print("\b \b");
+                std::fflush(stdout);
             }
-            m_input.truncate(0);
+            m_input.clear();
             if (m_nextCommandFromHistory < m_commandHistory.size())
             {
                 m_input = m_commandHistory[m_nextCommandFromHistory];
-                ramses_capu::Console::Print("%s", m_input.c_str());
-                ramses_capu::Console::Flush();
+                fmt::print("{}", m_input);
+                std::fflush(stdout);
                 ++m_nextCommandFromHistory;
             }
             else
@@ -171,8 +171,8 @@ namespace ramses_internal
             if (m_interactiveMode)
             {
                 //echo input
-                ramses_capu::Console::Print("%c",c);
-                ramses_capu::Console::Flush();
+                fmt::print("{}", c);
+                std::fflush(stdout);
             }
             m_lock.lock();
             m_input.append(String(1,c));

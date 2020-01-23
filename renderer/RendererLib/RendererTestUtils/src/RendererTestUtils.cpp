@@ -24,7 +24,7 @@
 using namespace ramses_internal;
 
 const float RendererTestUtils::DefaultMaxAveragePercentPerPixel = 0.2f;
-UInt32 RendererTestUtils::WaylandIviLayerIdForTestDisplayConfig = ramses_internal::InvalidWaylandIviLayerId.getValue();
+UInt32 RendererTestUtils::WaylandIviLayerIdForTestDisplayConfig = ramses_internal::WaylandIviLayerId::Invalid().getValue();
 ramses_internal::String RendererTestUtils::WaylandSocketEmbedded;
 int RendererTestUtils::WaylandSocketEmbeddedFileDescriptor = -1;
 ramses_internal::String RendererTestUtils::WaylandSocketEmbeddedGroup;
@@ -111,7 +111,7 @@ ramses::displayId_t RendererTestUtils::CreateDisplayImmediate(ramses::RamsesRend
     }
 
     assert(false && "Display construction failed or timed out!");
-    return ramses::InvalidDisplayId;
+    return ramses::displayId_t::Invalid();
 }
 
 void RendererTestUtils::DestroyDisplayImmediate(ramses::RamsesRenderer& renderer, ramses::displayId_t displayId)
@@ -133,17 +133,17 @@ ramses::RendererConfig RendererTestUtils::CreateTestRendererConfig()
     {
         internalRendererConfig.setWaylandSocketEmbeddedFD(WaylandSocketEmbeddedFileDescriptor);
     }
-    else if (WaylandSocketEmbedded.getLength() > 0)
+    else if (WaylandSocketEmbedded.size() > 0)
     {
         internalRendererConfig.setWaylandSocketEmbedded(WaylandSocketEmbedded);
     }
 
-    if (WaylandSocketEmbeddedGroup.getLength() > 0)
+    if (WaylandSocketEmbeddedGroup.size() > 0)
     {
         internalRendererConfig.setWaylandSocketEmbeddedGroup(WaylandSocketEmbeddedGroup);
     }
 
-    if(WaylandDisplayForSystemCompositorController.getLength() > 0)
+    if(WaylandDisplayForSystemCompositorController.size() > 0)
     {
         internalRendererConfig.setWaylandDisplayForSystemCompositorController(WaylandDisplayForSystemCompositorController);
     }
@@ -243,10 +243,10 @@ Image RendererTestUtils::ReadPixelData(
     ReadPixelCallbackHandler callbackHandler;
     while (!callbackHandler.m_pixelDataRead)
     {
-        if (!renderer.impl.isThreaded())
-        {
+        if (renderer.impl.isThreaded())
+            std::this_thread::sleep_for(std::chrono::milliseconds{10});
+        else
             renderer.doOneLoop();
-        }
         renderer.dispatchEvents(callbackHandler);
     }
 

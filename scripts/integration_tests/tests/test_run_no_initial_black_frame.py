@@ -29,12 +29,12 @@ class TestNoInitialBlackFrame(test_classes.OnSelectedTargetsTest):
         self.testLayer = DEFAULT_TEST_LAYER + 1
 
         # Start black background renderer
-        self.rendererbackground = self.target.start_default_renderer("--wayland-socket-embedded wayland-12 --disableAutoMapping")
+        self.rendererbackground = self.target.start_default_renderer("--wayland-socket-embedded wayland-12")
         self.checkThatApplicationWasStarted(self.rendererbackground)
         self.addCleanup(self.target.kill_application, self.rendererbackground)
 
         applicationName = "ramses-local-client-test-{}".format(self.target.defaultPlatform)
-        self.application = self.target.start_renderer(applicationName, "-sid 101 -tn 4")
+        self.application = self.target.start_renderer(applicationName, args="-sid 101 -tn 4", automap=True)
 
         self.checkThatApplicationWasStarted(self.application)
         self.addCleanup(self.target.kill_application, self.application)

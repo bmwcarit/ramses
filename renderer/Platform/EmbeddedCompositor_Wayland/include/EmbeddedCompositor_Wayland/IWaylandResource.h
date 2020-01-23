@@ -8,8 +8,6 @@
 #ifndef RAMSES_IWAYLANDRESOURCE_H
 #define RAMSES_IWAYLANDRESOURCE_H
 
-#include "PlatformAbstraction/PlatformSharedPointer.h"
-
 typedef void(*IWaylandResourceDestroyFuncT) (struct wl_resource *resource);
 typedef struct wl_listener WaylandListener;
 typedef void* WaylandNativeResource;

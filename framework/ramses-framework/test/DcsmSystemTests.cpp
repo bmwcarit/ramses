@@ -102,7 +102,7 @@ namespace ramses
             EXPECT_CALL(provHandler, contentReadyRequested(id_));
             EXPECT_EQ(consumer.contentStateChange(id_, EDcsmState::Ready, AnimationInformation()), StatusOK);
             dispatch();
-            EXPECT_CALL(consHandler, contentReady(id_, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(sceneId_)));
+            EXPECT_CALL(consHandler, contentReady(id_, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(sceneId_.getValue())));
             EXPECT_EQ(provider.markContentReady(id_), StatusOK);
             dispatch();
         }
@@ -181,5 +181,33 @@ namespace ramses
             showContent(id, AnimationInformation{ 200, 300 });
         }
         stopOfferByProvider(id, AnimationInformation{ 200, 300 });
+    }
+
+    TEST_F(ADcsmSystem, canDoOfferWithMetadata)
+    {
+        DcsmMetadataCreator mdf;
+        mdf.setPreviewDescription(U"asdf");
+        EXPECT_CALL(consHandler, contentOffered(id, Category(123)));
+        EXPECT_EQ(provider.offerContentWithMetadata(id, Category(123), sceneId_t(18), mdf), StatusOK);
+
+        EXPECT_CALL(consHandler, contentMetadataUpdated(id, _)).
+            WillOnce(Invoke([](auto, auto& prov) { EXPECT_EQ(U"asdf", prov.getPreviewDescription()); }));
+        assignContentToConsumer(id, size, AnimationInformation());
+
+        dispatch();
+    }
+
+    TEST_F(ADcsmSystem, canUpdateMetadataAfterOffer)
+    {
+        offerContent(id, Category(111), sceneId_t(18));
+        DcsmMetadataCreator mdf;
+        mdf.setPreviewDescription(U"00asdf");
+        EXPECT_EQ(provider.updateContentMetadata(id, mdf), StatusOK);
+
+        EXPECT_CALL(consHandler, contentMetadataUpdated(id, _)).
+            WillOnce(Invoke([](auto, auto& prov) { EXPECT_EQ(U"00asdf", prov.getPreviewDescription()); }));
+        assignContentToConsumer(id, size, AnimationInformation());
+
+        dispatch();
     }
 }

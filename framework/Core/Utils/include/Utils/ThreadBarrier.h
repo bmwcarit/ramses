@@ -9,8 +9,8 @@
 #ifndef RAMSES_THREADBARRIER_H
 #define RAMSES_THREADBARRIER_H
 
-#include "PlatformAbstraction/PlatformConditionVariable.h"
-#include "PlatformAbstraction/PlatformGuard.h"
+#include <mutex>
+#include <condition_variable>
 
 namespace ramses_internal
 {
@@ -24,8 +24,8 @@ namespace ramses_internal
         void wait();
 
     private:
-        PlatformLightweightLock m_lock;
-        PlatformConditionVariable m_condVar;
+        std::mutex m_lock;
+        std::condition_variable m_condVar;
         int m_requiredWaiters;
         int m_currentWaiters;
     };
@@ -39,25 +39,18 @@ namespace ramses_internal
 
     inline void ThreadBarrier::init_wait_for_num(int num)
     {
-        PlatformLightweightGuard g(m_lock);
+        std::lock_guard<std::mutex> g(m_lock);
         m_requiredWaiters = num;
         m_currentWaiters = 0;
     }
 
     inline void ThreadBarrier::wait()
     {
-        PlatformLightweightGuard g(m_lock);
+        std::unique_lock<std::mutex> l(m_lock);
         if (++m_currentWaiters == m_requiredWaiters)
-        {
-            m_condVar.broadcast();
-        }
+            m_condVar.notify_all();
         else
-        {
-            while (m_currentWaiters < m_requiredWaiters)
-            {
-                m_condVar.wait(&m_lock);
-            }
-        }
+            m_condVar.wait(l, [&](){ return m_currentWaiters >= m_requiredWaiters; });
     }
 }
 

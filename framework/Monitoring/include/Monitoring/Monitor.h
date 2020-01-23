@@ -42,7 +42,7 @@ namespace ramses_internal
             void run() override;
 
             File file;
-            PlatformLightweightLock lock;
+            std::mutex lock;
             std::vector<FrameInfo> queue;
         };
 

@@ -29,11 +29,7 @@ namespace ramses_capu
         class Console
         {
         public:
-            static bool IsInputAvailable();
-            static void Print(const char* format, va_list values);
-            static void Print(uint32_t color, const char* format, va_list values);
             static status_t ReadChar(char& buffer);
-            static void Flush();
             static void InterruptReadChar();
 
         private:
@@ -43,53 +39,8 @@ namespace ramses_capu
             static HANDLE GetInterruptEventHandle();
 
             static HANDLE m_event;
-            static const uint8_t Colors[];
             static std::mutex interruptMutex;
         };
-
-        inline
-        bool
-        Console::IsInputAvailable()
-        {
-            HANDLE inHandle = GetStdHandle(STD_INPUT_HANDLE);
-            switch (GetFileType(inHandle))
-            {
-                case FILE_TYPE_CHAR:
-                {
-                    return _kbhit() != 0;
-                }
-                case FILE_TYPE_DISK:
-                case FILE_TYPE_PIPE:
-                {
-                    const uint32_t zeroTimeOut = 0u;
-                    DWORD ret = WaitForSingleObject(inHandle, zeroTimeOut);
-                    return (WAIT_OBJECT_0 == ret);
-                }
-            };
-            return false;
-        }
-
-        inline
-        void Console::Print(const char* format, va_list values)
-        {
-            vprintf(format, values);
-        }
-
-        inline
-        void Console::Print(uint32_t color,  const char* format, va_list values)
-        {
-            uint8_t colorCode = Colors[color];
-
-            HANDLE hstdout = GetStdHandle( STD_OUTPUT_HANDLE );
-
-            CONSOLE_SCREEN_BUFFER_INFO csbi;
-            GetConsoleScreenBufferInfo( hstdout, &csbi );
-            SetConsoleTextAttribute( hstdout, colorCode );
-
-            Console::Print(format, values);
-
-            SetConsoleTextAttribute( hstdout, csbi.wAttributes);
-        }
 
         inline
         status_t Console::ReadChar(char& buffer)
@@ -216,13 +167,6 @@ namespace ramses_capu
                 }
             }
             return status;
-        }
-
-        inline
-        void Console::Flush()
-        {
-            fflush(stdout);
-            fflush(stderr);
         }
 
         inline

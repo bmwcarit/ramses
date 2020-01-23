@@ -22,8 +22,6 @@ namespace ramses_internal
 
         static void* Copy(void* dst, const void* src, UInt size);
 
-        static void* Move(void* dst, const void* src, UInt size);
-
         static Int32 Compare(const void* mem1, const void* mem2, UInt num);
     };
 
@@ -38,13 +36,6 @@ namespace ramses_internal
     void* PlatformMemory::Copy(void* dst, const void* src, UInt size)
     {
         ramses_capu::Memory::Copy(dst, src, size);
-        return dst;
-    }
-
-    inline
-    void* PlatformMemory::Move(void* dst, const void* src, UInt size)
-    {
-        ramses_capu::Memory::Move(dst, src, size);
         return dst;
     }
 

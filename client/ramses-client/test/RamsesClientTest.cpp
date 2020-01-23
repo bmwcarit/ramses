@@ -21,10 +21,13 @@
 #include "ClientApplicationLogic.h"
 #include "SceneAPI/SceneId.h"
 #include "Collections/String.h"
+#include "ClientEventHandlerMock.h"
 
 namespace ramses
 {
-    class ALocalRamsesClient : public LocalTestClient, public ::testing::Test
+    using namespace testing;
+
+    class ALocalRamsesClient : public LocalTestClient, public Test
     {
     public:
         ALocalRamsesClient()
@@ -37,13 +40,7 @@ namespace ramses
         ramses::EffectDescription effectDescriptionEmpty;
     };
 
-    class MockRamsh : public ramses_internal::Ramsh
-    {
-    public:
-        MOCK_METHOD1(execute, bool(ramses_internal::RamshInput& input));
-    };
-
-    class ARamsesClient : public ::testing::Test
+    class ARamsesClient : public Test
     {
     public:
         ARamsesClient()
@@ -63,7 +60,7 @@ namespace ramses
 
     TEST_F(ARamsesClient, failsValidationWhenContainsSceneWithInvalidRenderPass)
     {
-        ramses::Scene* scene = m_client.createScene(1, ramses::SceneConfigImpl(), "");
+        ramses::Scene* scene = m_client.createScene(sceneId_t(1), ramses::SceneConfigImpl(), "");
         ASSERT_TRUE(nullptr != scene);
 
         RenderPass* passWithoutCamera = scene->createRenderPass();
@@ -75,7 +72,7 @@ namespace ramses
 
     TEST_F(ARamsesClient, failsValidationWhenContainsSceneWithInvalidCamera)
     {
-        ramses::Scene* scene = m_client.createScene(1, ramses::SceneConfigImpl(), "");
+        ramses::Scene* scene = m_client.createScene(sceneId_t(1), ramses::SceneConfigImpl(), "");
         ASSERT_TRUE(nullptr != scene);
 
         Camera* cameraWithoutValidValues = scene->createPerspectiveCamera();
@@ -116,6 +113,12 @@ namespace ramses
         m_framework.connect();
         EXPECT_EQ(StatusOK, m_framework.disconnect());
         EXPECT_NE(StatusOK, m_framework.disconnect());
+    }
+
+    TEST_F(ARamsesClient, noEventHandlerCallbacksIfNoEvents)
+    {
+        StrictMock<ClientEventHandlerMock> eventHandlerMock;
+        m_client.dispatchEvents(eventHandlerMock);
     }
 
     // Not really useful and behavior is not defined, but should not crash at least
@@ -192,28 +195,33 @@ namespace ramses
     TEST(RamsesClient, canCreateClientWithNULLNameAndCmdLineArguments)
     {
         ramses::RamsesFramework framework(0, static_cast<const char**>(nullptr));
-        ramses::RamsesClient client(nullptr, framework);
+        EXPECT_NE(framework.createClient(nullptr), nullptr);
         EXPECT_FALSE(framework.isConnected());
     }
 
     TEST(RamsesClient, canCreateClientWithoutCmdLineArguments)
     {
         ramses::RamsesFramework framework;
-        ramses::RamsesClient client(nullptr, framework);
+        EXPECT_NE(framework.createClient(nullptr), nullptr);
         EXPECT_FALSE(framework.isConnected());
     }
 
     TEST_F(ALocalRamsesClient, createsSceneWithGivenId)
     {
-        const sceneId_t sceneId = 33u;
+        const sceneId_t sceneId(33u);
         ramses::Scene* scene = client.createScene(sceneId);
         ASSERT_TRUE(scene != nullptr);
         EXPECT_EQ(sceneId, scene->getSceneId());
     }
 
+    TEST_F(ALocalRamsesClient, createsSceneFailsWithInvalidId)
+    {
+        EXPECT_EQ(nullptr, client.createScene(sceneId_t{}));
+    }
+
     TEST_F(ALocalRamsesClient, simpleSceneGetsDestroyedProperlyWithoutExplicitDestroyCall)
     {
-        ramses::Scene* scene = client.createScene(1u);
+        ramses::Scene* scene = client.createScene(sceneId_t(1u));
         EXPECT_TRUE(scene != nullptr);
         ramses::Node* node = scene->createNode("node");
         EXPECT_TRUE(node != nullptr);
@@ -370,16 +378,16 @@ namespace ramses
 
     TEST_F(ALocalRamsesClient, isUnpublishedOnDestroy)
     {
-        const sceneId_t sceneId = 45u;
+        const sceneId_t sceneId(45u);
         ramses::Scene* scene = client.createScene(sceneId);
 
         using ramses_internal::SceneInfoVector;
         using ramses_internal::SceneInfo;
-        ramses_internal::SceneId internalSceneId(sceneId);
+        ramses_internal::SceneId internalSceneId(sceneId.getValue());
 
         EXPECT_CALL(sceneActionsCollector, handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(internalSceneId, ramses_internal::String(scene->getName()))), testing::_, testing::_));
         EXPECT_CALL(sceneActionsCollector, handleInitializeScene(testing::_, testing::_));
-        EXPECT_CALL(sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(sceneId), testing::_, testing::_, testing::_));
+        EXPECT_CALL(sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(sceneId.getValue()), testing::_, testing::_, testing::_));
         EXPECT_CALL(sceneActionsCollector, handleScenesBecameUnavailable(SceneInfoVector(1, SceneInfo(internalSceneId)), testing::_));
 
         scene->publish(ramses::EScenePublicationMode_LocalOnly);
@@ -390,4 +398,62 @@ namespace ramses
         EXPECT_FALSE(client.impl.getClientApplication().isScenePublished(internalSceneId));
     }
 
+    TEST(ARamsesFrameworkImplInAClientLib, canCreateAClient)
+    {
+        ramses::RamsesFramework fw;
+
+        auto client = fw.createClient("client");
+        EXPECT_NE(client, nullptr);
+    }
+
+    TEST(ARamsesFrameworkImplInAClientLib, canCreateMultipleClients)
+    {
+        ramses::RamsesFramework fw;
+
+        auto client1 = fw.createClient("first client");
+        auto client2 = fw.createClient("second client");
+        EXPECT_NE(nullptr, client1);
+        EXPECT_NE(nullptr, client2);
+    }
+
+    TEST(ARamsesFrameworkImplInAClientLib, acceptsLocallyCreatedClientsForDestruction)
+    {
+        ramses::RamsesFramework fw;
+
+        auto client1 = fw.createClient("first client");
+        auto client2 = fw.createClient("second client");
+        EXPECT_EQ(StatusOK, fw.destroyClient(*client1));
+        EXPECT_EQ(StatusOK, fw.destroyClient(*client2));
+    }
+
+    TEST(ARamsesFrameworkImplInAClientLib, doesNotAcceptForeignCreatedClientsForDestruction)
+    {
+        ramses::RamsesFramework fw1;
+        ramses::RamsesFramework fw2;
+
+        auto client1 = fw1.createClient("first client");
+        auto client2 = fw2.createClient("second client");
+        EXPECT_NE(StatusOK, fw2.destroyClient(*client1));
+        EXPECT_NE(StatusOK, fw1.destroyClient(*client2));
+    }
+
+    TEST(ARamsesFrameworkImplInAClientLib, doesNotAcceptSameClientTwiceForDestruction)
+    {
+        ramses::RamsesFramework fw;
+
+        auto client = fw.createClient("client");
+        EXPECT_EQ(StatusOK, fw.destroyClient(*client));
+        EXPECT_NE(StatusOK, fw.destroyClient(*client));
+    }
+
+    TEST(ARamsesFrameworkImplInAClientLib, canCreateDestroyAndRecreateAClient)
+    {
+        ramses::RamsesFramework fw;
+
+        auto client = fw.createClient("client");
+        EXPECT_NE(nullptr, client);
+        EXPECT_EQ(fw.destroyClient(*client), StatusOK);
+        client = fw.createClient("client");
+        EXPECT_NE(nullptr, client);
+    }
 }

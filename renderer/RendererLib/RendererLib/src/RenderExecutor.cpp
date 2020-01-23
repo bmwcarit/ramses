@@ -193,7 +193,7 @@ namespace ramses_internal
             const DeviceResourceHandle geometryBufferHandle = geometryDeviceHandles[attributeField.asMemoryHandle() + 1u];
             assert(geometryBufferHandle.isValid());
             const UInt32 instancingDivisor = renderScene.getDataResource(vertexData, attributeField + 1u).instancingDivisor;
-            device.activateVertexBuffer(geometryBufferHandle, attributeField, instancingDivisor);
+            device.activateVertexBuffer(geometryBufferHandle, attributeField, instancingDivisor, renderable.startVertex);
         }
 
         const DataLayoutHandle dataLayoutHandle = renderScene.getLayoutOfDataInstance(uniformData);

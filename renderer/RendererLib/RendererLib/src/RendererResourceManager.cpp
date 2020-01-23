@@ -47,7 +47,7 @@ namespace ramses_internal
 
     RendererResourceManager::~RendererResourceManager()
     {
-        assert(m_sceneResourceRegistryMap.count() == 0u);
+        assert(m_sceneResourceRegistryMap.size() == 0u);
 
         LOG_TRACE(CONTEXT_RENDERER, "RendererResourceManager[" << m_id << "]::~RendererResourceManager Destroying offscreen buffers");
         for (OffscreenBufferHandle handle(0u); handle < m_offscreenBuffers.getTotalCount(); ++handle)
@@ -148,7 +148,7 @@ namespace ramses_internal
                 if (newResource.getResourceObject() == nullptr)
                 {
                     assert(false);
-                    LOG_ERROR(CONTEXT_RENDERER, "RendererResourceManager::getRequestedResourcesAlreadyInCache. Failed to deserialize data from cache: #" << StringUtils::HexFromResourceContentHash(res));
+                    LOG_ERROR(CONTEXT_RENDERER, "RendererResourceManager::getRequestedResourcesAlreadyInCache. Failed to deserialize data from cache: #" << res);
                     return;
                 }
 
@@ -204,12 +204,12 @@ namespace ramses_internal
 
             if (rd.status == EResourceStatus_Requested)
             {
-                LOG_TRACE(CONTEXT_RENDERER, "RendererResourceManager[" << m_id << "]::requestAndUnrequestPendingResources Canceling request for resource" << StringUtils::HexFromResourceContentHash(hash));
+                LOG_TRACE(CONTEXT_RENDERER, "RendererResourceManager[" << m_id << "]::requestAndUnrequestPendingResources Canceling request for resource" << hash);
                 m_resourceProvider.cancelResourceRequest(hash, m_id);
             }
 
             assert(rd.status != EResourceStatus_Uploaded);
-            LOG_TRACE(CONTEXT_RENDERER, "RendererResourceManager[" << m_id << "]::requestAndUnrequestPendingResources Removing resource descriptor for resource #" << StringUtils::HexFromResourceContentHash(hash));
+            LOG_TRACE(CONTEXT_RENDERER, "RendererResourceManager[" << m_id << "]::requestAndUnrequestPendingResources Removing resource descriptor for resource #" << hash);
             m_clientResourceRegistry.unregisterResource(hash);
         }
     }
@@ -294,6 +294,7 @@ namespace ramses_internal
                 {
                     m_clientResourceRegistry.setResourceData(resHash, current, DeviceResourceHandle::Invalid(), resourceObject->getTypeID());
                     m_clientResourceRegistry.setResourceStatus(resHash, EResourceStatus_Provided);
+                    m_clientResourceRegistry.setResourceSize(resHash, resourceObject->getCompressedDataSize(), resourceObject->getDecompressedDataSize());
 
                     // Update local resource cache with the received resource
                     if (cache)
@@ -316,7 +317,7 @@ namespace ramses_internal
                     m_sizeOfArrivedResourcesInWrongStatus += resSize;
 
                     // This might indicate that the resource status is messed up - indicates a logic error
-                    LOG_WARN(CONTEXT_RENDERER, "RendererResourceManager[" << m_id << "]::checkForArrivedResources Wrong status of arrived resource #" << StringUtils::HexFromResourceContentHash(resHash) <<
+                    LOG_WARN(CONTEXT_RENDERER, "RendererResourceManager[" << m_id << "]::checkForArrivedResources Wrong status of arrived resource #" << resHash <<
                              "; Status: " << EnumToString(m_clientResourceRegistry.getResourceStatus(resHash)) << "; resourceSize: " << resSize <<
                              "; numberWrongStatus: " << m_numberOfArrivedResourcesInWrongStatus << "; sumSizeWrongStatus: " << m_sizeOfArrivedResourcesInWrongStatus);
                 }
@@ -330,7 +331,7 @@ namespace ramses_internal
 
                 // This indicates error - resource either arrived before the scene itself (or was prefetches)
                 // OR resource was unrequested, but still arrived from network
-                LOG_ERROR(CONTEXT_RENDERER, "RendererResourceManager[" << m_id << "]::checkForArrivedResources Descriptor for arrived resource " << StringUtils::HexFromResourceContentHash(resHash) << " does not exist");
+                LOG_ERROR(CONTEXT_RENDERER, "RendererResourceManager[" << m_id << "]::checkForArrivedResources Descriptor for arrived resource " << resHash << " does not exist");
             }
         }
     }
@@ -347,12 +348,24 @@ namespace ramses_internal
 
     EResourceStatus RendererResourceManager::getClientResourceStatus(const ResourceContentHash& hash) const
     {
-        return m_clientResourceRegistry.getResourceStatus(hash);
+        if (m_clientResourceRegistry.containsResource(hash))
+            return m_clientResourceRegistry.getResourceStatus(hash);
+        else
+        {
+            LOG_FATAL(CONTEXT_RENDERER, "RendererResourceManager::getClientResourceStatus: resource with hash " << hash << " is not registered");
+            return EResourceStatus::EResourceStatus_Unknown;
+        }
     }
 
     EResourceType RendererResourceManager::getClientResourceType(const ResourceContentHash& hash) const
     {
-        return m_clientResourceRegistry.getResourceDescriptor(hash).type;
+        if (m_clientResourceRegistry.containsResource(hash))
+            return m_clientResourceRegistry.getResourceDescriptor(hash).type;
+        else
+        {
+            LOG_FATAL(CONTEXT_RENDERER, "RendererResourceManager::getClientResourceType: resource with hash " << hash << " is not registered");
+            return EResourceType::EResourceType_Invalid;
+        }
     }
 
     DeviceResourceHandle RendererResourceManager::getClientResourceDeviceHandle(const ResourceContentHash& hash) const
@@ -688,7 +701,7 @@ namespace ramses_internal
         const UInt32 totalSizeInBytes = TextureMathUtils::GetTotalMemoryUsedByMipmappedTexture(GetTexelSizeFromFormat(textureFormat), width, height, 1u, mipLevelCount);
 
         IDevice& device = m_renderBackend.getDevice();
-        DeviceResourceHandle deviceHandle = device.allocateTexture2D(width, height, textureFormat, mipLevelCount, totalSizeInBytes);
+        DeviceResourceHandle deviceHandle = device.allocateTexture2D(width, height, textureFormat, DefaultTextureSwizzleArray, mipLevelCount, totalSizeInBytes);
         assert(deviceHandle.isValid());
 
         sceneResources.addTextureBuffer(textureBufferHandle, deviceHandle, textureFormat, totalSizeInBytes);

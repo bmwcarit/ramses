@@ -26,10 +26,9 @@
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/GeometryBinding.h"
-#include "ramses-client-api/AnimationSystem.h"
-#include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/BlitPass.h"
+#include "ramses-client-api/PickableObject.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/DataFloat.h"
 #include "ramses-client-api/DataVector2f.h"
@@ -51,6 +50,7 @@
 #include "EffectImpl.h"
 #include "TextureSamplerImpl.h"
 #include "Utils/StringUtils.h"
+#include "RamsesFrameworkTypesImpl.h"
 
 namespace ramses
 {
@@ -102,7 +102,7 @@ namespace ramses
     StreamTexture* Scene::createStreamTexture(const Texture2D& fallbackTexture, streamSource_t source, const char* name)
     {
         StreamTexture* tex = impl.createStreamTexture(fallbackTexture, source, name);
-        LOG_HL_CLIENT_API3(LOG_API_RAMSESOBJECT_PTR_STRING(tex), LOG_API_RAMSESOBJECT_STRING(fallbackTexture), source.getValue(), name);
+        LOG_HL_CLIENT_API3(LOG_API_RAMSESOBJECT_PTR_STRING(tex), LOG_API_RAMSESOBJECT_STRING(fallbackTexture), source, name);
         return tex;
     }
 
@@ -165,20 +165,6 @@ namespace ramses
         return status;
     }
 
-    AnimationSystem* Scene::createAnimationSystem(uint32_t flags, const char* name)
-    {
-        AnimationSystem* animationSystem = impl.createAnimationSystem(flags, name);
-        LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(animationSystem), flags, name);
-        return animationSystem;
-    }
-
-    AnimationSystemRealTime* Scene::createRealTimeAnimationSystem(uint32_t flags, const char* name)
-    {
-        AnimationSystemRealTime* animationSystemRealtime = impl.createRealTimeAnimationSystem(flags, name);
-        LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(animationSystemRealtime), flags, name);
-        return animationSystemRealtime;
-    }
-
     IndexDataBuffer* Scene::createIndexDataBuffer(uint32_t maximumSizeInBytes, EDataType dataType, const char* name /*= 0*/)
     {
         IndexDataBuffer* indexDataBuffer = impl.createIndexDataBuffer(maximumSizeInBytes, dataType, name);
@@ -229,6 +215,13 @@ namespace ramses
         BlitPass* blitPass = impl.createBlitPass(sourceRenderBuffer, destinationRenderBuffer, name);
         LOG_HL_CLIENT_API3(LOG_API_RAMSESOBJECT_PTR_STRING(blitPass), LOG_API_RAMSESOBJECT_STRING(sourceRenderBuffer), LOG_API_RAMSESOBJECT_STRING(destinationRenderBuffer), name);
         return blitPass;
+    }
+
+    PickableObject* Scene::createPickableObject(const VertexDataBuffer& geometryBuffer, const pickableObjectId_t id, const char* name /* = nullptr */)
+    {
+        PickableObject* pickableObject = impl.createPickableObject(geometryBuffer, id, name);
+        LOG_HL_CLIENT_API3(LOG_API_RAMSESOBJECT_PTR_STRING(pickableObject), LOG_API_RAMSESOBJECT_STRING(geometryBuffer), id, name);
+        return pickableObject;
     }
 
     RenderBuffer* Scene::createRenderBuffer(uint32_t width, uint32_t height, ERenderBufferType bufferType, ERenderBufferFormat bufferFormat, ERenderBufferAccessMode accessMode, uint32_t sampleCount, const char* name)

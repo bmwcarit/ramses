@@ -32,13 +32,13 @@ namespace ramses
         template< typename T >
         static uint32_t GetContainerSize(const ramses_internal::HashSet<T>& container)
         {
-            return static_cast<uint32_t>(container.count());
+            return static_cast<uint32_t>(container.size());
         }
 
         template< typename S, typename T >
         static uint32_t GetContainerSize(const ramses_internal::HashMap<S, T>& container)
         {
-            return static_cast<uint32_t>(container.count());
+            return static_cast<uint32_t>(container.size());
         }
 
         template< typename T>
@@ -108,7 +108,7 @@ namespace ramses
             container.reserve(containerCount);
             for (uint32_t i = 0; i < containerCount; ++i)
             {
-                typename T::value_type valuePtrId = 0;
+                typename T::value_type valuePtrId = nullptr;
                 DeserializationContext::ReadDependentPointerAndStoreAsID(inStream, valuePtrId);
                 AddElement(container, valuePtrId);
             }

@@ -24,7 +24,7 @@ namespace ramses_internal
     public:
         explicit EnqueueOnlyOneAtATimeQueue(ITaskQueue& nextQueue);
         virtual ~EnqueueOnlyOneAtATimeQueue();
-        virtual Bool enqueue(ITask& Task) override;
+        virtual bool enqueue(ITask& Task) override;
         virtual void TaskFinished(ITask& Task) override;
         virtual void enableAcceptingTasks() override;
         virtual void disableAcceptingTasksAfterExecutingCurrentQueue() override;
@@ -32,9 +32,9 @@ namespace ramses_internal
     protected:
         ITaskQueue& m_nextQueue;
         std::deque<ITask*> m_waitingTasks;
-        Bool m_hasOutstandingTask;
+        bool m_hasOutstandingTask;
         PlatformLock mlock;
-        Bool m_acceptingTasks;
+        bool m_acceptingTasks;
 
     private:
         explicit EnqueueOnlyOneAtATimeQueue(const EnqueueOnlyOneAtATimeQueue&);

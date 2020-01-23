@@ -53,7 +53,6 @@ namespace ramses_internal
             return std::make_unique<TCPConnectionSystem>(participantNetworkAddress, config.getProtocolVersion(), daemonNetworkAddress, false, frameworkLock, statisticCollection, config.m_tcpConfig.getAliveInterval(), config.m_tcpConfig.getAliveTimeout());
         }
 #endif
-
     }
 
     IDiscoveryDaemon* CommunicationSystemFactory::ConstructDiscoveryDaemon(const ramses::RamsesFrameworkConfigImpl& config, PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection, Ramsh* optionalRamsh)
@@ -105,8 +104,8 @@ namespace ramses_internal
             return std::make_unique<FakeConnectionSystem>();
         }
         default:
-            assert(false && "Unable to construct connection system for given protocol");
             LOG_FATAL(CONTEXT_COMMUNICATION, "Unable to construct connection system for given protocol: " << config.getUsedProtocol());
+            assert(false && "Unable to construct connection system for given protocol");
             return nullptr;
         }
     }

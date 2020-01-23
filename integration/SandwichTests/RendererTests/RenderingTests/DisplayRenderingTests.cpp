@@ -194,8 +194,10 @@ bool DisplayRenderingTests::runSceneRenderOrderTest(RendererTestsFramework& test
     testFramework.publishAndFlushScene(otherId);
     testFramework.subscribeScene(sceneId);
     testFramework.subscribeScene(otherId);
-    testFramework.mapScene(sceneId, 0u, 1);
-    testFramework.mapScene(otherId, 0u, 2);
+    testFramework.mapScene(sceneId, 0u);
+    testFramework.mapScene(otherId, 0u);
+    testFramework.assignSceneToDisplayBuffer(sceneId, testFramework.getDisplayFramebufferId(0u), 1);
+    testFramework.assignSceneToDisplayBuffer(otherId, testFramework.getDisplayFramebufferId(0u), 2);
     testFramework.showScene(sceneId);
     testFramework.showScene(otherId);
 
@@ -213,8 +215,10 @@ bool DisplayRenderingTests::runSceneRenderOrderInversedTest(RendererTestsFramewo
     testFramework.publishAndFlushScene(otherId);
     testFramework.subscribeScene(sceneId);
     testFramework.subscribeScene(otherId);
-    testFramework.mapScene(sceneId, 0u, 2);
-    testFramework.mapScene(otherId, 0u, 1);
+    testFramework.mapScene(sceneId, 0u);
+    testFramework.mapScene(otherId, 0u);
+    testFramework.assignSceneToDisplayBuffer(sceneId, testFramework.getDisplayFramebufferId(0u), 2);
+    testFramework.assignSceneToDisplayBuffer(otherId, testFramework.getDisplayFramebufferId(0u), 1);
     testFramework.showScene(sceneId);
     testFramework.showScene(otherId);
 

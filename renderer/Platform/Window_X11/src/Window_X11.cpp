@@ -405,6 +405,7 @@ namespace ramses_internal
                 {
                     m_posX = event.xconfigure.x;
                     m_posY = event.xconfigure.y;
+                    m_eventHandler.onWindowMove(m_posX, m_posY);
                 }
                 if (static_cast<UInt32>(event.xconfigure.width) != m_width || static_cast<UInt32>(event.xconfigure.height) != m_height)
                 {

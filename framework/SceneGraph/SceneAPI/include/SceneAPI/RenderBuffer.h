@@ -26,7 +26,7 @@ namespace ramses_internal
         {
         }
 
-        Bool operator==(const RenderBuffer& other) const
+        bool operator==(const RenderBuffer& other) const
         {
             return type == other.type
                 && format == other.format
@@ -36,7 +36,7 @@ namespace ramses_internal
                 && sampleCount == other.sampleCount;
         }
 
-        Bool operator!=(const RenderBuffer& other) const
+        bool operator!=(const RenderBuffer& other) const
         {
             return !this->operator==(other);
         }

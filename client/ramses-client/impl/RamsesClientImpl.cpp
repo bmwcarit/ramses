@@ -29,8 +29,6 @@
 #include "SceneConfigImpl.h"
 #include "ArrayResourceImpl.h"
 #include "ResourceImpl.h"
-#include "AnimationSystemImpl.h"
-#include "AnimatedPropertyImpl.h"
 #include "Texture2DImpl.h"
 #include "Texture3DImpl.h"
 #include "TextureCubeImpl.h"
@@ -54,7 +52,6 @@
 #include "Components/ResourcePersistation.h"
 #include "Components/ManagedResource.h"
 #include "Components/ResourceTableOfContents.h"
-#include "Animation/AnimationSystemFactory.h"
 #include "Resource/ArrayResource.h"
 #include "Resource/EffectResource.h"
 #include "Resource/IResource.h"
@@ -70,15 +67,18 @@
 #include "Collections/String.h"
 #include "Collections/HashMap.h"
 #include "PlatformAbstraction/PlatformTime.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "Utils/LogMacros.h"
 #include "Utils/RamsesLogger.h"
+#include "ClientFactory.h"
+#include "FrameworkFactoryRegistry.h"
 
 #include "PlatformAbstraction/PlatformTypes.h"
 #include <array>
 
 namespace ramses
 {
+    static const bool clientRegisterSuccess = ClientFactory::RegisterClientFactory();
+
     RamsesClientImpl::RamsesClientImpl(RamsesFrameworkImpl& framework,  const char* applicationName)
         : RamsesObjectImpl(ERamsesObjectType_Client, applicationName)
         , m_appLogic(framework.getParticipantAddress().getParticipantId(), framework.getFrameworkLock())
@@ -87,6 +87,7 @@ namespace ramses
         , m_loadFromFileTaskQueue(framework.getTaskQueue())
         , m_deleteSceneQueue(framework.getTaskQueue())
         , m_clientResourceCacheTimeout(5000)
+        , m_effectErrorMessages()
     {
         if (framework.isConnected())
         {
@@ -151,10 +152,16 @@ namespace ramses
 
     Scene* RamsesClientImpl::createScene(sceneId_t sceneId, const SceneConfigImpl& sceneConfig, const char* name)
     {
+        if (!sceneId.isValid())
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::createScene: invalid sceneId");
+            return nullptr;
+        }
+
         ramses_internal::PlatformGuard g(m_clientLock);
         ramses_internal::SceneInfo sceneInfo;
         sceneInfo.friendlyName = name;
-        sceneInfo.sceneID = ramses_internal::SceneId(sceneId);
+        sceneInfo.sceneID = ramses_internal::SceneId(sceneId.getValue());
 
         ramses_internal::ClientScene* internalScene = m_sceneFactory.createScene(sceneInfo);
         if (nullptr == internalScene)
@@ -190,7 +197,7 @@ namespace ramses
         {
             m_scenes.erase(iter);
 
-            const ramses_internal::SceneId sceneID(scene.impl.getSceneId());
+            const ramses_internal::SceneId sceneID(scene.impl.getSceneId().getValue());
             auto llscene = m_sceneFactory.releaseScene(sceneID);
 
             getClientApplication().removeScene(sceneID);
@@ -236,7 +243,7 @@ namespace ramses
     }
 
     template <typename MipDataStorageType>
-    const ramses_internal::TextureResource* RamsesClientImpl::createTextureResource(ramses_internal::EResourceType textureType, uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipMapCount, const MipDataStorageType mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name) const
+    const ramses_internal::TextureResource* RamsesClientImpl::createTextureResource(ramses_internal::EResourceType textureType, uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipMapCount, const MipDataStorageType mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name) const
     {
         if (!TextureUtils::TextureParametersValid(width, height, depth, mipMapCount) || !TextureUtils::MipDataValid(width, height, depth, mipMapCount, mipLevelData, format))
         {
@@ -256,6 +263,7 @@ namespace ramses
         texDesc.m_depth = depth;
         texDesc.m_format = TextureUtils::GetTextureFormatInternal(format);
         texDesc.m_generateMipChain = generateMipChain;
+        texDesc.m_swizzle = TextureUtils::GetTextureSwizzleInternal(swizzle);
         TextureUtils::FillMipDataSizes(texDesc.m_dataSizes, mipMapCount, mipLevelData);
 
         ramses_internal::TextureResource* resource = new ramses_internal::TextureResource(textureType, texDesc, ramses_internal::ResourceCacheFlag(cacheFlag.getValue()), name);
@@ -264,17 +272,17 @@ namespace ramses
         return resource;
     }
 
-    Texture2D* RamsesClientImpl::createTexture2D(uint32_t width, uint32_t height, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name)
+    Texture2D* RamsesClientImpl::createTexture2D(uint32_t width, uint32_t height, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name)
     {
         LOG_TRACE(ramses_internal::CONTEXT_CLIENT, "RamsesClient::createTexture2D:");
 
-        const ramses_internal::TextureResource* resource = createTextureResource(ramses_internal::EResourceType_Texture2D, width, height, 1u, format, mipMapCount, mipLevelData, generateMipChain, cacheFlag, name);
+        const ramses_internal::TextureResource* resource = createTextureResource(ramses_internal::EResourceType_Texture2D, width, height, 1u, format, mipMapCount, mipLevelData, generateMipChain, swizzle, cacheFlag, name);
         if (resource != nullptr)
         {
             ramses_internal::ManagedResource res = manageResource(resource);
             ramses_internal::ResourceHashUsage hashUsage = m_appLogic.getHashUsage(res.getResourceObject()->getHash());
             Texture2DImpl& pimpl = *new Texture2DImpl(hashUsage, *this, name);
-            pimpl.initializeFromFrameworkData(width, height, format);
+            pimpl.initializeFromFrameworkData(width, height, format, swizzle);
             Texture2D* texture = new Texture2D(pimpl);
 
             addResourceObjectToRegistry_ThreadSafe(*texture);
@@ -289,7 +297,7 @@ namespace ramses
     {
         LOG_TRACE(ramses_internal::CONTEXT_CLIENT, "RamsesClient::createTexture3D:");
 
-        const ramses_internal::TextureResource* resource = createTextureResource(ramses_internal::EResourceType_Texture3D, width, height, depth, format, mipMapCount, mipLevelData, generateMipChain, cacheFlag, name);
+        const ramses_internal::TextureResource* resource = createTextureResource(ramses_internal::EResourceType_Texture3D, width, height, depth, format, mipMapCount, mipLevelData, generateMipChain, {}, cacheFlag, name);
         if (resource != nullptr)
         {
             ramses_internal::ManagedResource res = manageResource(resource);
@@ -310,7 +318,7 @@ namespace ramses
     {
         LOG_TRACE(ramses_internal::CONTEXT_CLIENT, "RamsesClient::createTextureCube:");
 
-        const ramses_internal::TextureResource* resource = createTextureResource(ramses_internal::EResourceType_TextureCube, size, 1u, 1u, format, mipMapCount, mipLevelData, generateMipChain, cacheFlag, name);
+        const ramses_internal::TextureResource* resource = createTextureResource(ramses_internal::EResourceType_TextureCube, size, 1u, 1u, format, mipMapCount, mipLevelData, generateMipChain, {}, cacheFlag, name);
         if (resource != nullptr)
         {
             ramses_internal::ManagedResource res = manageResource(resource);
@@ -493,7 +501,7 @@ namespace ramses
         }
 
         resourceOutputStream << static_cast<uint32_t>(resources.size());
-        resourceOutputStream << static_cast<uint32_t>(typesToSerialize.count());
+        resourceOutputStream << static_cast<uint32_t>(typesToSerialize.size());
 
         SerializationContext serializationContext;
         for (const auto& p : typesToSerialize)
@@ -777,13 +785,11 @@ namespace ramses
         }
         internalScene->preallocateSceneSize(sizeInformation);
 
-        ramses_internal::AnimationSystemFactory animSystemFactory(ramses_internal::EAnimationSystemOwner_Client, &internalScene->getSceneActionCollection());
-
         // need first to create the pimpl, so that internal framework components know the new scene
         SceneConfigImpl sceneConfig;
         ramses_internal::PlatformGuard g(m_clientLock);
         {
-            if (m_scenesMarkedForLoadAsLocalOnly.hasElement(createInfo.m_id))
+            if (m_scenesMarkedForLoadAsLocalOnly.contains(createInfo.m_id))
             {
                 LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesClient::" << caller << ": Mark file loaded from " << filename << " with sceneId " << createInfo.m_id << " as local only");
                 sceneConfig.setPublicationMode(EScenePublicationMode_LocalOnly);
@@ -794,7 +800,7 @@ namespace ramses
 
         // now the scene is registered, so it's possible to load the low level content into the scene
         LOG_TRACE(ramses_internal::CONTEXT_CLIENT, "    Reading low level scene from stream");
-        ramses_internal::ScenePersistation::ReadSceneFromStream(inputStream, *internalScene, &animSystemFactory);
+        ramses_internal::ScenePersistation::ReadSceneFromStream(inputStream, *internalScene);
 
         LOG_TRACE(ramses_internal::CONTEXT_CLIENT, "    Deserializing high level scene objects from stream");
         DeserializationContext deserializationContext;
@@ -983,9 +989,11 @@ namespace ramses
     status_t RamsesClientImpl::markSceneIdForLoadingAsLocalOnly(sceneId_t sceneId)
     {
         LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesClient::markSceneIdForLoadingAsLocalOnly: Add sceneId " << sceneId);
+        if (!sceneId.isValid())
+            return addErrorEntry("RamsesClient::markSceneIdForLoadingAsLocalOnly: invalid sceneId");
 
         ramses_internal::PlatformGuard g(m_clientLock);
-        m_scenesMarkedForLoadAsLocalOnly.put(ramses_internal::SceneId(sceneId));
+        m_scenesMarkedForLoadAsLocalOnly.put(ramses_internal::SceneId(sceneId.getValue()));
         return StatusOK;
     }
 
@@ -1109,12 +1117,8 @@ namespace ramses
             return object;
 
         for(const auto& scene : m_scenes)
-        {
-            if (ramses_internal::PlatformStringUtils::StrEqual(name, (scene->getName())))
-            {
+            if (scene->impl.getName() == name)
                 return scene;
-            }
-        }
 
         return nullptr;
     }
@@ -1163,10 +1167,12 @@ namespace ramses
         ramses_internal::String effectName(name);
         ramses_internal::GlslEffect effectBlock(effectDesc.getVertexShader(), effectDesc.getFragmentShader(), effectDesc.impl.getCompilerDefines(),
             effectDesc.impl.getSemanticsMap(), effectName);
+        m_effectErrorMessages.clear();
         ramses_internal::EffectResource* effectResource = effectBlock.createEffectResource(ramses_internal::ResourceCacheFlag(cacheFlag.getValue()));
         if (!effectResource)
         {
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::createEffect  Failed to create effect resource (name: '" << effectName << "') :\n    " << effectBlock.getErrorMessages());
+            m_effectErrorMessages = effectBlock.getEffectErrorMessages().stdRef();
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::createEffect  Failed to create effect resource (name: '" << effectName << "') :\n    " << effectBlock.getEffectErrorMessages());
             return nullptr;
         }
 
@@ -1192,10 +1198,15 @@ namespace ramses
         return effect;
     }
 
+    std::string RamsesClientImpl::getLastEffectErrorMessages() const
+    {
+        return m_effectErrorMessages;
+    }
+
     ramses_internal::ManagedResource RamsesClientImpl::manageResource(const ramses_internal::IResource* res)
     {
         ramses_internal::ManagedResource managedRes = m_appLogic.addResource(res);
-        _LOG_HL_CLIENT_API_STR("Created resource with internal hash " << ramses_internal::StringUtils::HexFromResourceContentHash(managedRes.getResourceObject()->getHash()) << ", name: " << managedRes.getResourceObject()->getName());
+        _LOG_HL_CLIENT_API_STR("Created resource with internal hash " << managedRes.getResourceObject()->getHash() << ", name: " << managedRes.getResourceObject()->getName());
 
         return managedRes;
     }
@@ -1274,8 +1285,8 @@ namespace ramses
                     const ramses_internal::ResourceContentHash resourceHash = resource->impl.getLowlevelResourceHash();
 
                     ramses_internal::StringOutputStream msg;
-                    msg << "Resource ID: " << ramses_internal::StringUtils::HexFromResourceContentHash({ resourceId.lowPart, resourceId.highPart });
-                    msg << "  Resource Hash: " << ramses_internal::StringUtils::HexFromResourceContentHash(resourceHash);
+                    msg << "Resource ID: " << ramses_internal::ResourceContentHash(resourceId.lowPart, resourceId.highPart);
+                    msg << "  Resource Hash: " << resourceHash;
                     msg << "  Name: " << resourceName;
                     addValidationMessage(EValidationSeverity_Info, indent + IndentationStep, msg.c_str());
                 }
@@ -1376,5 +1387,4 @@ namespace ramses
         }
         return StatusOK;
     }
-
 }

@@ -54,7 +54,7 @@ namespace ramses_internal
 
     bool WaylandDisplay::addSocketToDisplay(const String& socketName, const String& socketGroupName, int socketFD)
     {
-        const Bool socketNameProvided = socketName.getLength() > 0u;
+        const Bool socketNameProvided = socketName.size() > 0u;
         const Bool socketFDProvided   = socketFD >= 0;
 
         if (socketFDProvided && !socketNameProvided)
@@ -84,7 +84,6 @@ namespace ramses_internal
 
     bool WaylandDisplay::addSocketToDisplayWithFD(int socketFD)
     {
-#if (WAYLAND_VERSION_MAJOR >= 1 && WAYLAND_VERSION_MINOR >= 13)
         const int result = wl_display_add_socket_fd(m_display, socketFD);
 
         constexpr int failureCode = -1;
@@ -103,14 +102,6 @@ namespace ramses_internal
                       "provided by RendererConfig::setWaylandSocketEmbeddedFD()");
             return false;
         }
-#else
-        UNUSED(socketFD)
-        LOG_ERROR(CONTEXT_RENDERER,
-                  "WaylandDisplay::addSocketToDisplayWithFD(): Wayland version is less than 1.13, "
-                  "wl_display_add_socket_fd not supported!");
-
-        return false;
-#endif
     }
 
     bool WaylandDisplay::addSocketToDisplayWithName(const String& socketName, const String& socketGroupName)
@@ -141,7 +132,7 @@ namespace ramses_internal
 
     bool WaylandDisplay::applyPermissionsGroupToEmbeddedCompositingSocket(const String& socketName, const String& socketGroupName)
     {
-        if (socketGroupName.getLength() > 0u)
+        if (socketGroupName.size() > 0u)
         {
             group  permissionGroup;
             group* permissionGroupResult = nullptr;

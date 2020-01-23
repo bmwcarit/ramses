@@ -7,11 +7,11 @@
 //  -------------------------------------------------------------------------
 
 #include "PlatformFactory_Wayland_EGL/PlatformFactory_Wayland_EGL.h"
+#include "PlatformFactory_Wayland_EGL/Logger_Wayland.h"
 #include "Surface_Wayland_EGL/Surface_Wayland_EGL.h"
 #include "Surface_EGL_Offscreen/Surface_EGL_Offscreen.h"
 #include "RendererLib/DisplayConfig.h"
 #include "RendererLib/RendererConfig.h"
-#include "Logger_Wayland/Logger_Wayland.h"
 #include "Window_Wayland/Window_Wayland.h"
 #include "EmbeddedCompositor_Dummy/EmbeddedCompositor_Dummy.h"
 #include "EmbeddedCompositor_Wayland/EmbeddedCompositor_Wayland.h"
@@ -29,12 +29,11 @@ namespace ramses_internal
         : PlatformFactory_Base(rendererConfig)
         , m_windowEventsPollingManager(m_rendererConfig.getFrameCallbackMaxPollTime())
     {
-        Logger_Wayland::Init();
+        Logger_Wayland::RedirectToRamsesLogger();
     }
 
     PlatformFactory_Wayland_EGL::~PlatformFactory_Wayland_EGL()
     {
-        Logger_Wayland::Deinit();
     }
 
     IContext* PlatformFactory_Wayland_EGL::createContext(IWindow& window)

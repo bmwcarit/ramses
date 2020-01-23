@@ -31,19 +31,36 @@ struct DisplayMockInfo
     MOCK_TYPE< EmbeddedCompositingManagerMock >*                m_embeddedCompositingManager;
 };
 
+class RendererMock : public ramses_internal::Renderer
+{
+public:
+    RendererMock(const ramses_internal::IPlatformFactory& platformFactory, const RendererScenes& rendererScenes,
+        const RendererEventCollector& eventCollector, const SceneExpirationMonitor& expirationMonitor, const RendererStatistics& statistics);
+    virtual ~RendererMock() override;
+
+    MOCK_METHOD1(markBufferWithSceneAsModified, void(SceneId));
+    MOCK_METHOD3(setClearColor, void(DisplayHandle, DeviceResourceHandle, const Vector4&));
+
+    static const FrameTimer FrameTimerInstance;
+};
+
 template <template<typename> class MOCK_TYPE>
-class RendererMockWithMockDisplay : public ramses_internal::Renderer
+class RendererMockWithMockDisplay : public RendererMock
 {
 public:
     RendererMockWithMockDisplay(const ramses_internal::IPlatformFactory& platformFactory, const RendererScenes& rendererScenes,
         const RendererEventCollector& eventCollector, const SceneExpirationMonitor& expirationMonitor, const RendererStatistics& statistics);
+    virtual ~RendererMockWithMockDisplay() override;
 
     virtual void createDisplayContext(const ramses_internal::DisplayConfig& displayConfig, ramses_internal::DisplayHandle displayHandle) override;
     virtual void destroyDisplayContext(ramses_internal::DisplayHandle handle) override;
 
+    virtual void markBufferWithSceneAsModified(SceneId sceneId) override;
+    virtual void setClearColor(DisplayHandle displayHandle, DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor) override;
+
     DisplayMockInfo<MOCK_TYPE>& getDisplayMock(ramses_internal::DisplayHandle handle);
 
-    static const FrameTimer FrameTimerInstance;
+    using ramses_internal::Renderer::getDisplaySetup;
 
 private:
     HashMap< DisplayHandle, DisplayMockInfo<MOCK_TYPE> > m_displayControllers;
@@ -54,8 +71,5 @@ typedef RendererMockWithMockDisplay< ::testing::StrictMock > RendererMockWithStr
 
 typedef DisplayMockInfo< ::testing::NiceMock >   DisplayNiceMockInfo;
 typedef DisplayMockInfo< ::testing::StrictMock > DisplayStrictMockInfo;
-
-template <template<typename> class MOCK_TYPE>
-const FrameTimer RendererMockWithMockDisplay<MOCK_TYPE>::FrameTimerInstance;
 }
 #endif

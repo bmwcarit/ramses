@@ -42,7 +42,7 @@ ACME_MODULE(
     #==========================================================================
     NAME                    ramses-capu
     TYPE                    STATIC_LIBRARY
-    ENABLE_INSTALL          ${ramses-sdk_INSTALL_STATIC_LIBS}
+    ENABLE_INSTALL          OFF
 
     #==========================================================================
     # files of this module
@@ -76,10 +76,6 @@ endif()
 # conditionally link libs
 if ("${TARGET_OS}" STREQUAL "Windows")
     TARGET_LINK_LIBRARIES(ramses-capu PUBLIC psapi)
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        # add windows sockets in mingw case
-        TARGET_LINK_LIBRARIES(ramses-capu PUBLIC ws2_32 wsock32)
-    endif()
 elseif ("${TARGET_OS}" STREQUAL "Linux")
     TARGET_LINK_LIBRARIES(ramses-capu PUBLIC rt)
 endif()

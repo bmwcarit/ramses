@@ -157,7 +157,7 @@ TEST_F(Vector4iTest, MulAssignVector)
 TEST_F(Vector4iTest, Equality)
 {
     ramses_internal::Vector4i vec2(1, 2, 3, 4);
-    ramses_internal::Bool equal = vec1 == vec2;
+    bool equal = vec1 == vec2;
 
     EXPECT_EQ(true, equal);
 }
@@ -165,7 +165,7 @@ TEST_F(Vector4iTest, Equality)
 TEST_F(Vector4iTest, UnEquality)
 {
     ramses_internal::Vector4i vec2(0, 2, 3, 4);
-    ramses_internal::Bool unequal = vec1 != vec2;
+    bool unequal = vec1 != vec2;
 
     EXPECT_EQ(true, unequal);
 }

@@ -633,7 +633,7 @@ namespace ramses_internal
             TestApplicationSurfaceId surfaceId  = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
             testFramework.sendRenderOneFrameToTestApplication(surfaceId);
 
-            testResultValue = testFramework.waitUntilNumberOfCommitedFramesForIviSurface(InvalidWaylandIviSurfaceId, 1);
+            testResultValue = testFramework.waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId::Invalid(), 1);
 
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
 

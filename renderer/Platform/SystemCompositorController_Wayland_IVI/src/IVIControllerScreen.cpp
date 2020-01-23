@@ -8,6 +8,7 @@
 
 #include "SystemCompositorController_Wayland_IVI/IVIControllerScreen.h"
 #include "Utils/LogMacros.h"
+#include "Utils/Warnings.h"
 
 PUSH_DISABLE_C_STYLE_CAST_WARNING
 #include "ivi-controller-client-protocol.h"

@@ -22,7 +22,7 @@ namespace ramses_internal
         static BinaryOutputStream CreateOutputStreamFromString(const String& str)
         {
             BinaryOutputStream out;
-            out.write(str.data(), static_cast<UInt32>(str.getLength()));
+            out.write(str.data(), static_cast<UInt32>(str.size()));
             return out;
         }
 

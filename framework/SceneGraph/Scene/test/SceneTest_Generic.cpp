@@ -40,7 +40,7 @@ namespace ramses_internal
         EXPECT_EQ(sizeInfo.streamTextureCount, preallocatedScene.getStreamTextureCount());
         EXPECT_EQ(sizeInfo.dataSlotCount, preallocatedScene.getDataSlotCount());
         EXPECT_EQ(sizeInfo.dataBufferCount, preallocatedScene.getDataBufferCount());
-        EXPECT_EQ(sizeInfo.animationSystemCount, preallocatedScene.getAnimationSystemCount());
+        EXPECT_EQ(sizeInfo.pickableObjectCount, preallocatedScene.getPickableObjectCount());
     }
 
     TYPED_TEST(AScene, MemoryPoolSizesInUseStayZeroUponCreation)

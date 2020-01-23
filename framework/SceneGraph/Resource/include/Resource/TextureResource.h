@@ -25,6 +25,7 @@ namespace ramses_internal
             , m_depth(texDesc.m_depth)
             , m_mipDataSizes(texDesc.m_dataSizes)
             , m_format(texDesc.m_format)
+            , m_swizzle(texDesc.m_swizzle)
             , m_generateMipChain(texDesc.m_generateMipChain)
         {
             assert(m_width != 0u);
@@ -62,7 +63,12 @@ namespace ramses_internal
             return m_format;
         }
 
-        Bool getGenerateMipChainFlag() const
+        const TextureSwizzleArray& getTextureSwizzle() const
+        {
+            return m_swizzle;
+        }
+
+        bool getGenerateMipChainFlag() const
         {
             return m_generateMipChain;
         }
@@ -88,6 +94,10 @@ namespace ramses_internal
             }
 
             output << static_cast<UInt32>(m_format);
+            for (const auto swizzle : m_swizzle)
+            {
+                output << swizzle;
+            }
             output << static_cast<UInt32>(m_mipDataSizes.size());
             for (const auto mipSize : m_mipDataSizes)
             {
@@ -123,6 +133,11 @@ namespace ramses_internal
 
             input >> texelFormat;
             texDesc.m_format = static_cast<ETextureFormat>(texelFormat);
+            static_assert(texDesc.m_swizzle.size() == 4, "Wrong size of texture swizzle array");
+            for (UInt32 ii = 0; ii < 4; ++ii)
+            {
+                input >> texDesc.m_swizzle[ii];
+            }
             input >> mipLevelCount;
             texDesc.m_dataSizes.reserve(mipLevelCount);
             for (UInt32 ii = 0; ii < mipLevelCount; ++ii)
@@ -130,6 +145,7 @@ namespace ramses_internal
                 input >> mipLevelSize;
                 texDesc.m_dataSizes.push_back(mipLevelSize);
             }
+
             input >> texDesc.m_generateMipChain;
 
             return new TextureResource(typeID, texDesc, cacheFlag, name);
@@ -147,12 +163,13 @@ namespace ramses_internal
             return (typeID == EResourceType_TextureCube ? 6u * totalMipChainDataSize : totalMipChainDataSize);
         }
 
-        UInt32            m_width;
-        UInt32            m_height;
-        UInt32            m_depth;
-        MipDataSizeVector m_mipDataSizes;
-        ETextureFormat    m_format;
-        Bool              m_generateMipChain;
+        UInt32                      m_width;
+        UInt32                      m_height;
+        UInt32                      m_depth;
+        MipDataSizeVector           m_mipDataSizes;
+        ETextureFormat              m_format;
+        TextureSwizzleArray         m_swizzle;
+        bool                        m_generateMipChain;
     };
 }
 

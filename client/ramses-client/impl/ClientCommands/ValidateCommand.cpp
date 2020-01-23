@@ -28,7 +28,7 @@ namespace ramses_internal
         getArgument<2>().setDefaultValue("");
     }
 
-    Bool ValidateCommand::execute(ramses::sceneId_t& sceneId, String& severity, String& objectName) const
+    Bool ValidateCommand::execute(uint64_t& sceneId, String& severity, String& objectName) const
     {
         ValidationRequestCommand command;
 
@@ -52,7 +52,7 @@ namespace ramses_internal
 
         command.optionalObjectName = objectName;
 
-        m_client.enqueueSceneCommand(sceneId, command);
+        m_client.enqueueSceneCommand(ramses::sceneId_t(sceneId), command);
         return true;
     }
 }

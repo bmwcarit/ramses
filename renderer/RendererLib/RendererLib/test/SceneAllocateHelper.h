@@ -34,7 +34,7 @@ namespace ramses_internal
         CameraHandle                allocateCamera(ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle viewportDataInstance, CameraHandle handle = CameraHandle::Invalid());
         NodeHandle                  allocateNode(UInt32 childrenCount = 0u, NodeHandle handle = NodeHandle::Invalid());
         TransformHandle             allocateTransform(NodeHandle nodeHandle, TransformHandle handle = TransformHandle::Invalid());
-        DataLayoutHandle            allocateDataLayout(const DataFieldInfoVector& dataFields, DataLayoutHandle handle = DataLayoutHandle::Invalid());
+        DataLayoutHandle            allocateDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid());
         DataInstanceHandle          allocateDataInstance(DataLayoutHandle finishedLayoutHandle, DataInstanceHandle handle = DataInstanceHandle::Invalid());
         TextureSamplerHandle        allocateTextureSampler(const TextureSampler& sampler, TextureSamplerHandle handle = TextureSamplerHandle::Invalid());
         RenderGroupHandle           allocateRenderGroup(RenderGroupHandle handle = RenderGroupHandle::Invalid());
@@ -46,6 +46,7 @@ namespace ramses_internal
         DataSlotHandle              allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle = DataSlotHandle::Invalid());
         DataBufferHandle            allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle = DataBufferHandle::Invalid());
         TextureBufferHandle         allocateTextureBuffer(ETextureFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle = TextureBufferHandle::Invalid());
+        PickableObjectHandle        allocatePickableObject(DataBufferHandle geometryHandle, NodeHandle nodeHandle, PickableObjectId id, PickableObjectHandle pickableHandle = PickableObjectHandle::Invalid());
 
         IScene& getScene()
         {

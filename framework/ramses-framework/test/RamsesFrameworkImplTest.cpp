@@ -28,7 +28,7 @@ TEST(ARamsesFrameworkImpl, defaultConfigGeneratesGuidNotStartingWithZeros)
     RamsesFrameworkImpl& impl = RamsesFrameworkImpl::createImpl(config);
 
     EXPECT_FALSE(impl.getParticipantAddress().getParticipantId().isInvalid());
-    EXPECT_NE(0u, impl.getParticipantAddress().getParticipantId().getGuidData().Data1);
+    EXPECT_GT(impl.getParticipantAddress().getParticipantId().getLow64(), 0xFF);
 
     delete &impl;
 }

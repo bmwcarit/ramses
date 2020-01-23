@@ -19,6 +19,7 @@
 #include "Math3d/Matrix22f.h"
 #include "Math3d/Matrix33f.h"
 #include "Math3d/Matrix44f.h"
+#include "SceneAPI/ResourceContentHash.h"
 
 namespace ramses
 {
@@ -38,7 +39,7 @@ namespace ramses
         ramses_internal::ClientScene& scene = getIScene();
 
         // create data layout on scene
-        m_layoutHandle = scene.allocateDataLayout({ ramses_internal::DataFieldInfo(m_dataType) });
+        m_layoutHandle = scene.allocateDataLayout({ ramses_internal::DataFieldInfo(m_dataType) }, ramses_internal::ResourceContentHash::Invalid());
 
         // allocate data instance based on created layout
         m_dataReference = scene.allocateDataInstance(m_layoutHandle);

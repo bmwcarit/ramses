@@ -26,6 +26,7 @@ private:
         RenderTarget_Perspective,
         RenderTarget_Orthographic,
 
+        RenderTarget_Format_RGBA4,
         RenderTarget_Format_R8,
         RenderTarget_Format_RG8,
         RenderTarget_Format_RGB8,
@@ -40,6 +41,7 @@ private:
 
         MultipleRenderTarget_TwoColorBuffersCleared,
         MultipleRenderTarget_TwoColorBuffersWritten,
+        MultipleRenderTarget_TwoColorBuffersWrittenRGBA8_RGBA4,
         MultipleRenderTarget_ShaderWritesTwoColorBuffers_RTHasOnlyOne,
         MultipleRenderTarget_ReuseSameColorBufferInTwoRTs,
         MultipleRenderTarget_ReuseSameDepthBufferInTwoRTs,

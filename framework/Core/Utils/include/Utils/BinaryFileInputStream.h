@@ -9,12 +9,14 @@
 #ifndef RAMSES_BINARYFILEINPUTSTREAM_H
 #define RAMSES_BINARYFILEINPUTSTREAM_H
 
-#include "Utils/BinaryInputStream.h"
+#include "Collections/IInputStream.h"
+#include "PlatformAbstraction/PlatformTypes.h"
+#include "PlatformAbstraction/PlatformError.h"
 #include "Utils/File.h"
 
 namespace ramses_internal
 {
-    class BinaryFileInputStream: public BinaryInputStream
+    class BinaryFileInputStream: public IInputStream
     {
     public:
         explicit BinaryFileInputStream(File& file);
@@ -37,8 +39,7 @@ namespace ramses_internal
 
     inline
     BinaryFileInputStream::BinaryFileInputStream(File& file)
-        : BinaryInputStream(static_cast<const Char*>(nullptr))
-        , m_file(file)
+        : m_file(file)
         , m_state(m_file.open(EFileMode_ReadOnlyBinary))
     {
     }

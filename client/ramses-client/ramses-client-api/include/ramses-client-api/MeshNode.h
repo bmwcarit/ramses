@@ -65,6 +65,22 @@ namespace ramses
         uint32_t getStartIndex() const;
 
         /**
+        * @brief Sets the offset of the first vertex to use from each vertex array
+        *        that will be used for rendering the mesh.
+        *
+        * @param[in] startVertex First vertex of vertex arrays to be used.
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setStartVertex(uint32_t startVertex);
+
+        /**
+        * @brief Gets the first vertex of vertex arrays that will be used for rendering.
+        * @return the first index of indices array that will be used for rendering.
+        */
+        uint32_t getStartVertex() const;
+
+        /**
         * @brief Sets the number of indices that will be used for rendering.
         *
         * @param[in] indexCount Number of indices to be used.

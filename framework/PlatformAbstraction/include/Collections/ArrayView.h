@@ -63,7 +63,7 @@ namespace ramses_internal
                 return *this;
             }
 
-            inline InternalIterator operator++(int)
+            inline const InternalIterator operator++(int)
             {
                 InternalIterator ret(m_ptr);
                 ++(*this);

@@ -10,18 +10,14 @@
 #define RAMSES_TASKEXECUTINGTHREADPOOL_H
 
 #include "PlatformAbstraction/PlatformTypes.h"
-
 #include "Collections/Vector.h"
-#include "PlatformAbstraction/PlatformLock.h"
-#include "IBlockingTaskQueue.h"
-#include "TaskExecutingThread.h"
+#include "TaskFramework/TaskExecutingThread.h"
+#include <mutex>
 #include <memory>
 
 namespace ramses_internal
 {
-    // class forward declarations
-    class IBlockingTaskQueue;
-    class TaskExecutingThread;
+    class ProcessingTaskQueue;
 
     /**
      * Pool for task executing threads.
@@ -55,7 +51,7 @@ namespace ramses_internal
          * ProcessingTaskQueue to each thread so it can block on it.
          * @param   blockingTaskQueue   Reference to the blocking task queue.
          */
-        void start(IBlockingTaskQueue& blockingTaskQueue);
+        void start(ProcessingTaskQueue& blockingTaskQueue);
         /**
          * Stop all threads of the thread pool.
          */
@@ -70,16 +66,16 @@ namespace ramses_internal
         /**
          * Mutex for protection the thread containers.
          */
-        PlatformLightweightLock m_mutex;
+        std::mutex m_mutex;
 
         /**
          * Flag whether the pool is initialized.
          */
-        Bool m_bInitialized;
+        bool m_bInitialized;
         /**
          * Flag whether the threads within the pool are started.
          */
-        Bool m_bStarted;
+        bool m_bStarted;
 
         /**
          * Anonymous enumeration for defining constants.

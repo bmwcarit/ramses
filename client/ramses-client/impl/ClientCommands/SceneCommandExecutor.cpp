@@ -92,7 +92,7 @@ namespace ramses_internal
             case ESceneCommand_ValidationRequest:
             {
                 const ValidationRequestCommand& validationRequestCommand = commands.getCommandData<ValidationRequestCommand>(i);
-                if (0 == validationRequestCommand.optionalObjectName.getLength())
+                if (0 == validationRequestCommand.optionalObjectName.size())
                 {
                     // no object, validate whole scene
                     scene.validate(0u);

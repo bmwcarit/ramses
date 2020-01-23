@@ -127,10 +127,10 @@ namespace ramses_internal
         m_creator.releaseDataLayout(layoutHandle);
     }
 
-    DataLayoutHandle ActionCollectingScene::allocateDataLayout(const DataFieldInfoVector& dataFields, DataLayoutHandle handle)
+    DataLayoutHandle ActionCollectingScene::allocateDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle)
     {
-        DataLayoutHandle handleActual = ResourceChangeCollectingScene::allocateDataLayout(dataFields, handle);
-        m_creator.allocateDataLayout(dataFields, handleActual);
+        DataLayoutHandle handleActual = ResourceChangeCollectingScene::allocateDataLayout(dataFields, effectHash, handle);
+        m_creator.allocateDataLayout(dataFields, effectHash, handleActual);
 
         return handleActual;
     }
@@ -328,9 +328,9 @@ namespace ramses_internal
         }
     }
 
-    void ActionCollectingScene::setRenderableVisibility(RenderableHandle renderableHandle, Bool visibility)
+    void ActionCollectingScene::setRenderableVisibility(RenderableHandle renderableHandle, EVisibilityMode visibility)
     {
-        if (ResourceChangeCollectingScene::getRenderable(renderableHandle).isVisible != visibility)
+        if (ResourceChangeCollectingScene::getRenderable(renderableHandle).visibilityMode != visibility)
         {
             ResourceChangeCollectingScene::setRenderableVisibility(renderableHandle, visibility);
             m_creator.setRenderableVisibility(renderableHandle, visibility);
@@ -343,24 +343,24 @@ namespace ramses_internal
         m_creator.setRenderableInstanceCount(renderableHandle, instanceCount);
     }
 
-    void ActionCollectingScene::setRenderableDataInstanceAndStateAndEffect(RenderableHandle renderableHandle, DataInstanceHandle newDataInstance, RenderStateHandle stateHandle, const ResourceContentHash& effectHash)
+    void ActionCollectingScene::setRenderableStartVertex(RenderableHandle renderableHandle, UInt32 startVertex)
+    {
+        ResourceChangeCollectingScene::setRenderableStartVertex(renderableHandle, startVertex);
+        m_creator.setRenderableStartVertex(renderableHandle, startVertex);
+    }
+
+    void ActionCollectingScene::setRenderableUniformsDataInstanceAndState(RenderableHandle renderableHandle, DataInstanceHandle newDataInstance, RenderStateHandle stateHandle)
     {
         ResourceChangeCollectingScene::setRenderableDataInstance(renderableHandle, ERenderableDataSlotType_Uniforms, newDataInstance);
         ResourceChangeCollectingScene::setRenderableRenderState(renderableHandle, stateHandle);
-        ResourceChangeCollectingScene::setRenderableEffect(renderableHandle, effectHash);
-        m_creator.compoundRenderableEffectData(renderableHandle, newDataInstance, stateHandle, effectHash);
+
+        m_creator.compoundRenderableData(renderableHandle, newDataInstance, stateHandle);
     }
 
     void ActionCollectingScene::setRenderableDataInstance(RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance)
     {
         ResourceChangeCollectingScene::setRenderableDataInstance(renderableHandle, slot, newDataInstance);
         m_creator.setRenderableDataInstance(renderableHandle, slot, newDataInstance);
-    }
-
-    void ActionCollectingScene::setRenderableEffect(RenderableHandle renderableHandle, const ResourceContentHash& effectHash)
-    {
-        ResourceChangeCollectingScene::setRenderableEffect(renderableHandle, effectHash);
-        m_creator.setRenderableEffect(renderableHandle, effectHash);
     }
 
     void ActionCollectingScene::releaseRenderable(RenderableHandle renderableHandle)
@@ -415,20 +415,6 @@ namespace ramses_internal
         m_creator.removeRenderGroupFromRenderGroup(groupHandleParent, groupHandleChild);
     }
 
-    AnimationSystemHandle ActionCollectingScene::addAnimationSystem(IAnimationSystem* animationSystem, AnimationSystemHandle externalHandle)
-    {
-        auto handle = ResourceChangeCollectingScene::addAnimationSystem(animationSystem, externalHandle);
-        m_creator.addAnimationSystem(handle, animationSystem->getFlags(), animationSystem->getTotalSizeInformation());
-        return handle;
-    }
-
-    void ActionCollectingScene::removeAnimationSystem(AnimationSystemHandle animSystemHandle)
-    {
-        // SceneAction must be created first because animationSystemID is deleted with next call!
-        m_creator.removeAnimationSystem(animSystemHandle);
-        ResourceChangeCollectingScene::removeAnimationSystem(animSystemHandle);
-    }
-
     ramses_internal::RenderPassHandle ActionCollectingScene::allocateRenderPass(UInt32 renderGroupCount, RenderPassHandle handle /*= InvalidRenderPassHandle*/)
     {
         const RenderPassHandle handleActual = ResourceChangeCollectingScene::allocateRenderPass(renderGroupCount, handle);
@@ -460,13 +446,13 @@ namespace ramses_internal
         m_creator.setRenderPassRenderOrder(passHandle, renderOrder);
     }
 
-    void ActionCollectingScene::setRenderPassEnabled(RenderPassHandle passHandle, Bool isEnabled)
+    void ActionCollectingScene::setRenderPassEnabled(RenderPassHandle passHandle, bool isEnabled)
     {
         ResourceChangeCollectingScene::setRenderPassEnabled(passHandle, isEnabled);
         m_creator.setRenderPassEnabled(passHandle, isEnabled);
     }
 
-    void ActionCollectingScene::setRenderPassRenderOnce(RenderPassHandle passHandle, Bool enable)
+    void ActionCollectingScene::setRenderPassRenderOnce(RenderPassHandle passHandle, bool enable)
     {
         ResourceChangeCollectingScene::setRenderPassRenderOnce(passHandle, enable);
         m_creator.setRenderPassRenderOnce(passHandle, enable);
@@ -509,7 +495,7 @@ namespace ramses_internal
         m_creator.setBlitPassRenderOrder(passHandle, renderOrder);
     }
 
-    void ActionCollectingScene::setBlitPassEnabled(BlitPassHandle passHandle, Bool isEnabled)
+    void ActionCollectingScene::setBlitPassEnabled(BlitPassHandle passHandle, bool isEnabled)
     {
         ResourceChangeCollectingScene::setBlitPassEnabled(passHandle, isEnabled);
         m_creator.setBlitPassEnabled(passHandle, isEnabled);
@@ -519,6 +505,37 @@ namespace ramses_internal
     {
         ResourceChangeCollectingScene::setBlitPassRegions(passHandle, sourceRegion, destinationRegion);
         m_creator.setBlitPassRegions(passHandle, sourceRegion, destinationRegion);
+    }
+
+    PickableObjectHandle ActionCollectingScene::allocatePickableObject(DataBufferHandle geometryHandle, NodeHandle nodeHandle, PickableObjectId id, PickableObjectHandle pickableHandle)
+    {
+        const PickableObjectHandle handleActual = ResourceChangeCollectingScene::allocatePickableObject(geometryHandle, nodeHandle, id, pickableHandle);
+        m_creator.allocatePickableObject(geometryHandle, nodeHandle, id, handleActual);
+        return handleActual;
+    }
+
+    void ActionCollectingScene::releasePickableObject(PickableObjectHandle pickableHandle)
+    {
+        ResourceChangeCollectingScene::releasePickableObject(pickableHandle);
+        m_creator.releasePickableObject(pickableHandle);
+    }
+
+    void ActionCollectingScene::setPickableObjectId(PickableObjectHandle pickableHandle, PickableObjectId id)
+    {
+        ResourceChangeCollectingScene::setPickableObjectId(pickableHandle, id);
+        m_creator.setPickableObjectId(pickableHandle, id);
+    }
+
+    void ActionCollectingScene::setPickableObjectCamera(PickableObjectHandle pickableHandle, CameraHandle cameraHandle)
+    {
+        ResourceChangeCollectingScene::setPickableObjectCamera(pickableHandle, cameraHandle);
+        m_creator.setPickableObjectCamera(pickableHandle, cameraHandle);
+    }
+
+    void ActionCollectingScene::setPickableObjectEnabled(PickableObjectHandle pickableHandle, bool isEnabled)
+    {
+        ResourceChangeCollectingScene::setPickableObjectEnabled(pickableHandle, isEnabled);
+        m_creator.setPickableObjectEnabled(pickableHandle, isEnabled);
     }
 
     DataSlotHandle ActionCollectingScene::allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle /*= DataSlotHandle::Invalid()*/)
@@ -611,7 +628,7 @@ namespace ramses_internal
         m_creator.releaseStreamTexture(streamTextureHandle);
     }
 
-    void ActionCollectingScene::setForceFallbackImage(StreamTextureHandle streamTextureHandle, Bool forceFallbackImage)
+    void ActionCollectingScene::setForceFallbackImage(StreamTextureHandle streamTextureHandle, bool forceFallbackImage)
     {
         ResourceChangeCollectingScene::setForceFallbackImage(streamTextureHandle, forceFallbackImage);
         m_creator.setStreamTextureForceFallback(streamTextureHandle, forceFallbackImage);

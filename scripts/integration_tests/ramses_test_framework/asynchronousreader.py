@@ -35,6 +35,8 @@ class AsynchronousPipeReader(threading.Thread):
                     return
 
             line = self._pipe.readline()
+            if not isinstance(line, str):
+                line = line.decode('utf-8')
 
             if line == "":
                 if doStop:

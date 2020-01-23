@@ -26,10 +26,8 @@ namespace ramses_internal
         }
 
         inline std::unique_ptr<CommunicationSystemTestWrapper> ConstructTestWrapper(CommunicationSystemTestState& state_, const String& name = String(), const Guid& id_ = Guid(true),
-            ECommunicationSystemTestConfiguration commSysConfig_ = ECommunicationSystemTestConfiguration_Default,
-            bool allowObjectDestructionICOnly = true)
+            ECommunicationSystemTestConfiguration commSysConfig_ = ECommunicationSystemTestConfiguration_Default)
         {
-            UNUSED(allowObjectDestructionICOnly);
             return std::unique_ptr<CommunicationSystemTestWrapper>{new CommunicationSystemTestWrapper(state_, name, id_, commSysConfig_)};
         }
     }

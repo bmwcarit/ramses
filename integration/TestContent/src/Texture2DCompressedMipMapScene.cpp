@@ -31,7 +31,6 @@ namespace ramses_internal
                                                                    uint32_t              state,
                                                                    const Vector3&        cameraPosition)
         : IntegrationScene(ramsesClient, scene, cameraPosition)
-        , m_numMipMaps(4)
         , m_textureWidth(8)
         , m_textureHeight(8)
     {
@@ -44,29 +43,11 @@ namespace ramses_internal
         const uint8_t dataLevel1[] = {0x7e, 0x80, 0x4, 0x7f, 0x0, 0x7, 0xe0, 0x0};
         // 4x4: red
 
-        const uint8_t dataLevel2[] = {0x7f, 0x7e, 0x4, 0x7f, 0xfe, 0x7, 0xff, 0xc0};
-        // 2x2: yelllow
-
-        const uint8_t dataLevel3[] = {0x7e, 0x81, 0xfb, 0xff, 0x1, 0xff, 0xe0, 0x3f};
-        // 1x1: magenta
-
-        ramses::MipLevelData* mipLevelData = new ramses::MipLevelData[m_numMipMaps];
-        mipLevelData[0].m_data = dataLevel0;
-        mipLevelData[0].m_size = 32;
-
-        mipLevelData[1].m_data = dataLevel1;
-        mipLevelData[1].m_size = 8;
-
-        mipLevelData[2].m_data = dataLevel2;
-        mipLevelData[2].m_size = 8;
-
-        mipLevelData[3].m_data = dataLevel3;
-        mipLevelData[3].m_size = 8;
-
-        ramses::Texture2D* texture = m_client.createTexture2D(
+        const ramses::MipLevelData mipLevelData[NumMipMaps] = { { 32u, dataLevel0 }, { 8u, dataLevel1 } };
+        const ramses::Texture2D* texture = m_client.createTexture2D(
             m_textureWidth, m_textureHeight,
             ramses::ETextureFormat_ETC2RGB,
-            m_numMipMaps,
+            NumMipMaps,
             mipLevelData,
             false);
 
@@ -76,8 +57,6 @@ namespace ramses_internal
             ramses::ETextureSamplingMethod_Nearest_MipMapNearest,
             ramses::ETextureSamplingMethod_Nearest,
             *texture);
-
-        delete[] mipLevelData;
 
         createMesh(*sampler);
     }
@@ -93,7 +72,7 @@ namespace ramses_internal
     void Texture2DCompressedMipMapScene::createMesh(const ramses::TextureSampler& sampler)
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-textured");
-        assert(effect != 0);
+        assert(effect != nullptr);
 
         ramses::AttributeInput positionsInput;
         ramses::AttributeInput texCoordsInput;
@@ -121,7 +100,7 @@ namespace ramses_internal
 
     void Texture2DCompressedMipMapScene::createGeometry()
     {
-        const uint32_t numberStripes = m_numMipMaps;
+        const uint32_t numberStripes = NumMipMaps;
 
         const float z = -1.0f;
 

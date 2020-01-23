@@ -10,39 +10,39 @@
 
 namespace ramses
 {
-    void SharedSceneState::setActualState(ramses_display_manager::SceneState state)
+    void SharedSceneState::setActualState(ramses_internal::SceneState state)
     {
         m_actualState = state;
 
         updateLastHighestStateAndOwner();
     }
 
-    ramses_display_manager::SceneState SharedSceneState::getActualState() const
+    ramses_internal::SceneState SharedSceneState::getActualState() const
     {
         return m_actualState;
     }
 
-    void SharedSceneState::setDesiredState(ContentID contentID, ramses_display_manager::SceneState state)
+    void SharedSceneState::setDesiredState(ContentID contentID, ramses_internal::SceneState state)
     {
         m_desiredStates[contentID] = state;
 
         updateLastHighestStateAndOwner();
     }
 
-    ramses_display_manager::SceneState SharedSceneState::getConsolidatedDesiredState() const
+    ramses_internal::SceneState SharedSceneState::getConsolidatedDesiredState() const
     {
-        ramses_display_manager::SceneState state = ramses_display_manager::SceneState::Unavailable;
+        ramses_internal::SceneState state = ramses_internal::SceneState::Unavailable;
         for (const auto& desiredStateIt : m_desiredStates)
             state = std::max(state, desiredStateIt.second);
 
         return state;
     }
 
-    ramses_display_manager::SceneState SharedSceneState::getCurrentStateForContent(ContentID contentID) const
+    ramses_internal::SceneState SharedSceneState::getCurrentStateForContent(ContentID contentID) const
     {
         const auto desiredStateIt = m_desiredStates.find(contentID);
         if (desiredStateIt == m_desiredStates.cend())
-            return ramses_display_manager::SceneState::Unavailable;
+            return ramses_internal::SceneState::Unavailable;
 
         // content is owner of last highest state, report actual scene state
         if (contentID == m_lastHighestStateOwner)
@@ -60,7 +60,7 @@ namespace ramses
         // (or the actual state drops to a desired state of another content).
 
         // find last highest state and its owner
-        ramses_display_manager::SceneState maxCurrentlyDesiredState = ramses_display_manager::SceneState::Unavailable;
+        ramses_internal::SceneState maxCurrentlyDesiredState = ramses_internal::SceneState::Unavailable;
         ContentID maxCurrentlyDesiredStateOwner = InvalidContentID;
         for (const auto& it : m_desiredStates)
         {

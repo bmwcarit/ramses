@@ -51,9 +51,6 @@ namespace ramses
         ETextureFormat_RGBA4,
         ETextureFormat_RGBA5551,
 
-        ETextureFormat_BGR8,
-        ETextureFormat_BGRA8,
-
         ETextureFormat_ETC2RGB,
         ETextureFormat_ETC2RGBA,
 
@@ -137,7 +134,8 @@ namespace ramses
     /// Enum for format of a RenderBuffer
     enum ERenderBufferFormat
     {
-        ERenderBufferFormat_R8 = 0,
+        ERenderBufferFormat_RGBA4 = 0,
+        ERenderBufferFormat_R8,
         ERenderBufferFormat_RG8,
         ERenderBufferFormat_RGB8,
         ERenderBufferFormat_RGBA8,
@@ -153,6 +151,18 @@ namespace ramses
         ERenderBufferFormat_Depth24,
         ERenderBufferFormat_Depth24_Stencil8
     };
+
+    ///Enum for color of texture channel
+    enum class ETextureChannelColor : uint8_t
+    {
+        Red,
+        Green,
+        Blue,
+        Alpha,
+        One,
+        Zero,
+    };
+
 
     /// Enum for access mode of a RenderBuffer
     enum ERenderBufferAccessMode

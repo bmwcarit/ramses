@@ -10,9 +10,20 @@
 #include "Components/IDcsmProviderEventHandler.h"
 #include "TransportCommon/IConnectionStatusUpdateNotifier.h"
 #include "TransportCommon/ICommunicationSystem.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "Utils/LogMacros.h"
 #include "ramses-framework-api/IDcsmConsumerEventHandler.h"
+#include "ramses-framework-api/DcsmMetadataUpdate.h"
+#include "DcsmMetadataUpdateImpl.h"
+
+// ensure internal and api types match
+static_assert(std::is_same<ramses::ContentID::BaseType, ramses_internal::ContentID::BaseType>::value, "ContentID type mismatch");
+static_assert(std::is_same<ramses::Category::BaseType, ramses_internal::Category::BaseType>::value, "Category type mismatch");
+static_assert(std::is_same<ramses::TechnicalContentDescriptor::BaseType, ramses_internal::TechnicalContentDescriptor::BaseType>::value, "TechnicalContentDescriptor type mismatch");
+
+static_assert(ramses::ContentID::Invalid().getValue() == ramses_internal::ContentID::Invalid().getValue(), "ContentID default mismatch");
+static_assert(ramses::Category::Invalid().getValue() == ramses_internal::Category::Invalid().getValue(), "Category default mismatch");
+static_assert(ramses::TechnicalContentDescriptor::Invalid().getValue() == ramses_internal::TechnicalContentDescriptor::Invalid().getValue(), "TechnicalContentDescriptor default mismatch");
+
 
 namespace ramses_internal
 {
@@ -32,6 +43,44 @@ namespace ramses_internal
     DcsmComponent::~DcsmComponent()
     {
         m_connectionStatusUpdateNotifier.unregisterForConnectionUpdates(this);
+    }
+
+    bool DcsmComponent::connect()
+    {
+        PlatformGuard guard(m_frameworkLock);
+        if (m_connected)
+        {
+            LOG_ERROR(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::connect: Already connected");
+            return false;
+        }
+
+        m_connected = true;
+        return true;
+    }
+
+    bool DcsmComponent::disconnect()
+    {
+        PlatformGuard guard(m_frameworkLock);
+        if (!m_connected)
+        {
+            LOG_ERROR(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::disconnect: Not connected");
+            return false;
+        }
+
+        // network broadcast force stop offer for all contents offered locally
+        for (auto& ci : m_contentRegistry)
+        {
+            if (ci.value.providerID == m_myID)
+            {
+                LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::disconnect: network ForceStopOfferContent for local content " << ci.value.content << ", consumer " <<
+                         ci.value.consumerID << ", state " << EnumToString(ci.value.state));
+
+                m_communicationSystem.sendDcsmBroadcastForceStopOfferContent(ci.value.content);
+            }
+        }
+
+        m_connected = false;
+        return true;
     }
 
     bool DcsmComponent::setLocalConsumerAvailability(bool available)
@@ -83,6 +132,7 @@ namespace ramses_internal
                             m_communicationSystem.sendDcsmContentStateChange(ci.value.providerID, ci.value.content, EDcsmState::AcceptStopOffer, SizeInfo{0, 0}, AnimationInformation{0, 0});
                         }
                         ci.value.state = ContentState::Unknown;
+                        ci.value.metadata = DcsmMetadata{};
                     }
                     else if (ci.value.state != ContentState::Offered && ci.value.state != ContentState::Unknown)
                     {
@@ -131,11 +181,13 @@ namespace ramses_internal
                     LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::setLocalProviderAvailability: ForceStopOfferContent for local content " << ci.value.content << ", consumer " <<
                              ci.value.consumerID << ", state " << EnumToString(ci.value.state));
 
-                    m_communicationSystem.sendDcsmBroadcastForceStopOfferContent(ci.value.content);
+                    if (m_connected)
+                        m_communicationSystem.sendDcsmBroadcastForceStopOfferContent(ci.value.content);
                     if (m_localConsumerAvailable)
                         addConsumerEvent_ForceStopOfferContent(ci.value.content, m_myID);
 
                     ci.value.state = ContentState::Unknown;
+                    ci.value.metadata = DcsmMetadata{};
                 }
             }
         }
@@ -153,7 +205,7 @@ namespace ramses_internal
             return;
         }
 
-        if (m_connectedParticipants.hasElement(newParticipant))
+        if (m_connectedParticipants.contains(newParticipant))
         {
             LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::newParticipantHasConnected: duplicate connect from " << newParticipant
                      << ", send offer anyway");
@@ -176,7 +228,7 @@ namespace ramses_internal
             return;
         }
 
-        if (!m_connectedParticipants.hasElement(from))
+        if (!m_connectedParticipants.contains(from))
         {
             LOG_INFO(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::participantHasDisconnected: ignore from unknown participant " << from);
             return;
@@ -206,6 +258,7 @@ namespace ramses_internal
                         LOG_INFO(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::participantHasDisconnected: Queue AcceptStopOffer and remove locally provided content " << ci.key << " because was requested and consumer now gone");
                         addProviderEvent_ContentStateChange(ci.value.content, EDcsmState::AcceptStopOffer, SizeInfo{0, 0}, AnimationInformation{0, 0}, m_myID);
                         ci.value.state = ContentState::Unknown;
+                        ci.value.metadata = DcsmMetadata{};
                     }
                     else if (ci.value.state != ContentState::Offered && ci.value.state != ContentState::Unknown)
                     {
@@ -224,7 +277,10 @@ namespace ramses_internal
         for (auto& ci : m_contentRegistry)
         {
             if (ci.value.providerID == from)
+            {
                 ci.value.state = ContentState::Unknown;
+                ci.value.metadata = DcsmMetadata{};
+            }
         }
 
         m_connectedParticipants.remove(from);
@@ -260,12 +316,11 @@ namespace ramses_internal
         }
 
         if (m_localConsumerAvailable)
-        {
             addConsumerEvent_OfferContent(contentID, category, m_myID);
-        }
-        m_communicationSystem.sendDcsmBroadcastOfferContent(contentID, category);
+        if (m_connected)
+            m_communicationSystem.sendDcsmBroadcastOfferContent(contentID, category);
 
-        m_contentRegistry.put(contentID, ContentInfo{contentID, category, ContentState::Offered, m_myID, Guid(false)});
+        m_contentRegistry.put(contentID, ContentInfo{contentID, category, ContentState::Offered, m_myID, Guid(false), DcsmMetadata()});
         return true;
     }
 
@@ -336,7 +391,7 @@ namespace ramses_internal
             ci.state != ContentState::Ready &&
             ci.state != ContentState::Shown)
         {
-            LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::sendContentReady: called on content " << contentID << " in invalid state " << EnumToString(ci.state));
+            LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::sendContentFocusRequest: called on content " << contentID << " in invalid state " << EnumToString(ci.state));
             return false;
         }
 
@@ -375,10 +430,9 @@ namespace ramses_internal
         }
 
         if (m_localConsumerAvailable)
-        {
             addConsumerEvent_RequestStopOfferContent(contentID, m_myID);
-        }
-        m_communicationSystem.sendDcsmBroadcastRequestStopOfferContent(contentID);
+        if (m_connected)
+            m_communicationSystem.sendDcsmBroadcastRequestStopOfferContent(contentID);
 
         if (ci.state == ContentState::Offered)
         {
@@ -386,6 +440,7 @@ namespace ramses_internal
                      " state Unknown because no active consumer");
             assert(ci.consumerID == Guid(false));
             ci.state = ContentState::Unknown;
+            ci.metadata = DcsmMetadata{};
             addProviderEvent_ContentStateChange(contentID, EDcsmState::AcceptStopOffer, SizeInfo{0, 0}, AnimationInformation{0, 0}, Guid(false));
         }
         else
@@ -395,6 +450,45 @@ namespace ramses_internal
             ci.state = ContentState::StopOfferRequested;
         }
 
+        return true;
+    }
+
+    bool DcsmComponent::sendUpdateContentMetadata(ContentID contentID, const DcsmMetadata& metadata)
+    {
+        PlatformGuard guard(m_frameworkLock);
+
+        LOG_INFO(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::sendUpdateContentMetadata: metadata " << metadata);
+
+        if (!m_localProviderAvailable)
+        {
+            LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::sendUpdateContentMetadata: called without local provider active");
+            return false;
+        }
+        const char* methodName = "sendUpdateContentMetadata";
+        if (!isLocallyProvidingContent(methodName, contentID))
+            return false;
+
+        // send out update only but store merged state for later consumers
+        ContentInfo& ci = m_contentRegistry[contentID];
+        ci.metadata.updateFromOther(metadata);
+
+        if (ci.state == ContentState::Assigned ||
+            ci.state == ContentState::ReadyRequested ||
+            ci.state == ContentState::Ready ||
+            ci.state == ContentState::Shown ||
+            ci.state == ContentState::StopOfferRequested)
+        {
+            const Guid& to = getContentConsumerID(contentID);
+            assert(to.isValid());
+
+            if (m_myID == to)
+            {
+                assert(m_localConsumerAvailable && "Logic error on consumer disable");
+                addConsumerEvent_UpdateContentMetadata(contentID, metadata, m_myID);
+            }
+            else
+                m_communicationSystem.sendDcsmUpdateContentMetadata(to, contentID, metadata);
+        }
         return true;
     }
 
@@ -471,21 +565,24 @@ namespace ramses_internal
             return false;
         }
 
-        if (ci.state == ContentState::Offered && state == EDcsmState::Assigned && sizeInfo == SizeInfo{0, 0})
+        if ((ci.state != ContentState::Offered || state != EDcsmState::Assigned) && sizeInfo != SizeInfo{0, 0})
         {
-            LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::sendContentStateChange: needs valid SizeInfo for Offered -> Assigned transition");
-            return false;
-        }
-        else if ((ci.state != ContentState::Offered || state != EDcsmState::Assigned) && sizeInfo != SizeInfo{0, 0})
-        {
-            LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::sendContentStateChange: needs zero SizeInfo for " << EnumToString(ci.state) << " -> " << ramses_internal::EnumToString(state) << " transition");
+            LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::sendContentStateChange: unexpected non-zero SizeInfo for " << EnumToString(ci.state) << " -> " << ramses_internal::EnumToString(state) << " transition");
             return false;
         }
 
         ContentState newState = ContentState::Unknown;
         if (!isValidStateTransition(methodName, ci, state, newState))
             return false;
-        LOG_INFO(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::sendContentStateChange: state change " << EnumToString(ci.state) << " -> " << ramses_internal::EnumToString(state) << " -> " << EnumToString(newState));
+        const bool mustSendMetadataLocally = (ci.state == ContentState::Offered && newState == ContentState::Assigned &&
+                                              !ci.metadata.empty() &&
+                                              m_myID == to);
+
+        LOG_INFO_F(CONTEXT_DCSM, ([&](ramses_internal::StringOutputStream& sos) {
+            sos << "DcsmComponent(" << m_myID << ")::sendContentStateChange: state change " << EnumToString(ci.state) << " -> " << ramses_internal::EnumToString(state) << " -> " << EnumToString(newState);
+            if (mustSendMetadataLocally)
+                sos << ", will send metadata to local consumer " << ci.metadata;
+        }));
         ci.state = newState;
 
         if (ci.state == ContentState::Offered)
@@ -495,6 +592,9 @@ namespace ramses_internal
 
         if (m_myID == to)
         {
+            if (mustSendMetadataLocally)
+                addConsumerEvent_UpdateContentMetadata(contentID, ci.metadata, m_myID);
+
             assert(m_localProviderAvailable && "Logic error in provider disable");
             addProviderEvent_ContentStateChange(contentID, state, sizeInfo, ai, m_myID);
         }
@@ -576,6 +676,16 @@ namespace ramses_internal
         m_consumerEvents.push_back(event);
     }
 
+    void DcsmComponent::addConsumerEvent_UpdateContentMetadata(ContentID contentID, DcsmMetadata metadata, const Guid& providerID)
+    {
+        DcsmEvent event;
+        event.cmdType   = EDcsmCommandType::UpdateContentMetadata;
+        event.contentID = contentID;
+        event.metadata  = std::move(metadata);
+        event.from      = providerID;
+        m_consumerEvents.push_back(event);
+    }
+
     const char* DcsmComponent::EnumToString(EDcsmCommandType cmd) const
     {
         switch (cmd)
@@ -594,6 +704,8 @@ namespace ramses_internal
             return "EDcsmCommandType::StopOfferContentRequest";
         case EDcsmCommandType::ForceStopOfferContent:
             return "EDcsmCommandType::ForceStopOfferContent";
+        case EDcsmCommandType::UpdateContentMetadata:
+            return "EDcsmCommandType::UpdateContentMetadata";
         }
         return "<Invalid EDcsmCommandType>";
     }
@@ -702,13 +814,25 @@ namespace ramses_internal
         ContentState newState = ContentState::Unknown;
         if (!isValidStateTransition(methodName, *ci, state, newState))
             return;
-        LOG_INFO(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::handleContentStateChange: state change " << EnumToString(ci->state) << " -> " << ramses_internal::EnumToString(state) << " -> " << EnumToString(newState));
+
+        const bool mustSendMetadata = (ci->state == ContentState::Offered && newState == ContentState::Assigned && !ci->metadata.empty());
+        LOG_INFO_F(CONTEXT_DCSM, ([&](ramses_internal::StringOutputStream& sos) {
+            sos << "DcsmComponent(" << m_myID << ")::handleContentStateChange: state change " << EnumToString(ci->state) << " -> " << ramses_internal::EnumToString(state) << " -> " << EnumToString(newState);
+            if (mustSendMetadata)
+                sos << ", will send metadata " << ci->metadata;
+        }));
         ci->state = newState;
 
         if (ci->state == ContentState::Offered)
             ci->consumerID = Guid(false);
         if (ci->state == ContentState::Assigned)
             ci->consumerID = consumerID;
+
+        if (mustSendMetadata)
+        {
+            assert(m_connected);
+            m_communicationSystem.sendDcsmUpdateContentMetadata(consumerID, contentID, ci->metadata);
+        }
 
         addProviderEvent_ContentStateChange(contentID, state, si, ai, consumerID);
     }
@@ -744,7 +868,7 @@ namespace ramses_internal
             addConsumerEvent_OfferContent(contentID, category, providerID);
         }
 
-        m_contentRegistry.put(contentID, ContentInfo{contentID, category, ContentState::Offered, providerID, Guid(false)});
+        m_contentRegistry.put(contentID, ContentInfo{contentID, category, ContentState::Offered, providerID, Guid(false), DcsmMetadata{}});
     }
 
     void DcsmComponent::handleContentReady(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID)
@@ -813,7 +937,7 @@ namespace ramses_internal
             ci->state != ContentState::Ready &&
             ci->state != ContentState::Shown)
         {
-            LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::handleContentReady: received from " << providerID << " for content " << contentID << " in invalid state " << EnumToString(ci->state));
+            LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::handleContentFocusRequest: received from " << providerID << " for content " << contentID << " in invalid state " << EnumToString(ci->state));
             return;
         }
         if (!m_localConsumerAvailable)
@@ -866,6 +990,7 @@ namespace ramses_internal
                      " state Unknown because no active consumer");
             assert(ci->consumerID == Guid(false));
             ci->state = ContentState::Unknown;
+            ci->metadata = DcsmMetadata{};
         }
         else
         {
@@ -906,6 +1031,40 @@ namespace ramses_internal
         }
 
         ci->state = ContentState::Unknown;
+        ci->metadata = DcsmMetadata{};
+    }
+
+    void DcsmComponent::handleUpdateContentMetadata(ContentID contentID, DcsmMetadata metadata, const Guid& providerID)
+    {
+        LOG_INFO(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::handleUpdateContentMetadata: from " << providerID << ", ContentID " << contentID << ", metadata " << metadata);
+
+        const char* methodName = "handleUpdateContentMetadata";
+        if (!isAllowedToReceiveFrom(methodName, providerID))
+            return;
+
+        ContentInfo* ci = m_contentRegistry.get(contentID);
+        if (!ci)
+        {
+            LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::handleUpdateContentMetadata: received from " << providerID << " for unknown content " << contentID);
+            return;
+        }
+        if (ci->providerID != providerID)
+        {
+            LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::handleUpdateContentMetadata: received from " << providerID << " for content " << contentID << " but registered by remote " << ci->providerID);
+            return;
+        }
+        if (ci->state != ContentState::Assigned &&
+            ci->state != ContentState::ReadyRequested &&
+            ci->state != ContentState::Ready &&
+            ci->state != ContentState::Shown &&
+            ci->state != ContentState::StopOfferRequested)
+        {
+            LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::handleUpdateContentMetadata: invalid for content " << contentID << " in state " << EnumToString(ci->state));
+            return;
+        }
+
+        assert(m_localConsumerAvailable && "Logic error in consumer disable");
+        addConsumerEvent_UpdateContentMetadata(contentID, std::move(metadata), providerID);
     }
 
     bool DcsmComponent::dispatchProviderEvents(IDcsmProviderEventHandler& handler)
@@ -991,6 +1150,14 @@ namespace ramses_internal
                 handler.forceContentOfferStopped(ramses::ContentID(ev.contentID.getValue()));
                 break;
 
+            case EDcsmCommandType::UpdateContentMetadata:
+                {
+                    ramses::DcsmMetadataUpdate metadataUpdate(*new ramses::DcsmMetadataUpdateImpl);
+                    metadataUpdate.impl.setMetadata(std::move(ev.metadata));
+                    handler.contentMetadataUpdated(ramses::ContentID(ev.contentID.getValue()), metadataUpdate);
+                    break;
+                }
+
             default:
                 assert(false && "Wrong DcsmCommandType");
             }
@@ -1033,7 +1200,7 @@ namespace ramses_internal
         {
             return true;
         }
-        if (!m_connectedParticipants.hasElement(id))
+        if (!m_connectedParticipants.contains(id))
         {
             LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::" << callerMethod << ": Tried to send to disconnected participant " << id);
             return false;
@@ -1053,7 +1220,7 @@ namespace ramses_internal
             LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::" << callerMethod << ": Received over network from self");
             return false;
         }
-        if (!m_connectedParticipants.hasElement(id))
+        if (!m_connectedParticipants.contains(id))
         {
             LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::" << callerMethod << ": Received from disconnected participant " << id);
             return false;
@@ -1215,6 +1382,7 @@ namespace ramses_internal
             sos << "DcsmComponent(" << m_myID << ")::logInfo:\n"
                 << "  LocalProvider " << m_localProviderAvailable << " (events pending " << m_consumerEvents.size() << ")\n"
                 << "  LocalConsumer " << m_localConsumerAvailable << " (events pending " << m_providerEvents.size() << ")\n"
+                << "  Connected to network " << m_connected << "\n"
                 << "  Connected participants:\n";
             for (const auto& p : m_connectedParticipants)
                 sos << "  - " << p << "\n";
@@ -1235,7 +1403,7 @@ namespace ramses_internal
     {
         PlatformGuard guard(m_frameworkLock);
         LOG_INFO_F(CONTEXT_DCSM, ([&](StringOutputStream& sos) {
-            sos << "Dcsm(" << m_myID << ") LP:" << m_localProviderAvailable << " LC:" << m_localConsumerAvailable
+            sos << "Dcsm(" << m_myID << ") " << (m_connected ? "C" : "NC") << " LP:" << m_localProviderAvailable << " LC:" << m_localConsumerAvailable
                 << " CP[";
             for (const auto& p : m_connectedParticipants)
                 sos << p << ";";

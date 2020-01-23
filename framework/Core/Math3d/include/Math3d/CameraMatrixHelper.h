@@ -25,9 +25,9 @@ namespace ramses_internal
             const Float n = params.nearPlane;
             const Float f = params.farPlane;
 
-            assert(PlatformMath::Abs(r - l) > std::numeric_limits<Float>::epsilon());
-            assert(PlatformMath::Abs(t - b) > std::numeric_limits<Float>::epsilon());
-            assert(PlatformMath::Abs(f - n) > std::numeric_limits<Float>::epsilon());
+            assert(std::abs(r - l) > std::numeric_limits<Float>::epsilon());
+            assert(std::abs(t - b) > std::numeric_limits<Float>::epsilon());
+            assert(std::abs(f - n) > std::numeric_limits<Float>::epsilon());
 
             switch (params.getProjectionType())
             {

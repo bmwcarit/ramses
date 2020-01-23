@@ -24,14 +24,14 @@ namespace ramses_internal
         {
         }
 
-        Bool operator==(const DataFieldInfo& other) const
+        bool operator==(const DataFieldInfo& other) const
         {
             return dataType == other.dataType
                 && elementCount == other.elementCount
                 && semantics == other.semantics;
         }
 
-        Bool operator!=(const DataFieldInfo& other) const
+        bool operator!=(const DataFieldInfo& other) const
         {
             return !operator==(other);
         }

@@ -44,7 +44,7 @@ namespace ramses_internal
         virtual bool registerApplication(const String& id, const String& desc) override;
         virtual void unregisterApplication() override;
         virtual void registerInjectionCallback(LogContext* ctx,uint32_t sid,int (*dltInjectionCallback)(uint32_t service_id, void *data, uint32_t length)) override;
-        virtual Bool transmitFile(LogContext& ctx, const String& uri, Bool deleteFile) override;
+        virtual bool transmitFile(LogContext& ctx, const String& uri, bool deleteFile) override;
 
         virtual void registerLogLevelChangeCallback(const std::function<void(const String&, int)>& callback) override;
 
@@ -95,7 +95,7 @@ namespace ramses_internal
         String m_appDesc;
 
         /**
-         * Bool to check if DLT was initialized correctly
+         * bool to check if DLT was initialized correctly
          * if dlt libs are not there applications will not start due to linker failure
          * if dlt libs are there but dlt-daemon is not running dlt_init return negative
          * values, in which case this variable stays false

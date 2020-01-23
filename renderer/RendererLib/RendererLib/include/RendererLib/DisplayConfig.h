@@ -68,6 +68,9 @@ namespace ramses_internal
         void setWindowsWindowHandle(WindowsWindowHandle hwnd);
         WindowsWindowHandle getWindowsWindowHandle() const;
 
+        AndroidNativeWindowPtr getAndroidNativeWindow() const;
+        void setAndroidNativeWindow(AndroidNativeWindowPtr nativeWindowPtr);
+
         Bool getStartVisibleIvi() const;
         void setStartVisibleIvi(bool startVisible);
 
@@ -110,10 +113,11 @@ namespace ramses_internal
         Vector3 m_cameraRotation{ 0.f, 0.f, 0.f };
         ProjectionParams m_projectionParams{ ProjectionParams::Perspective(19.f, 1280.f / 480.f, 0.1f, 1500.f) };
 
-        WaylandIviLayerId m_waylandIviLayerID = InvalidWaylandIviLayerId;
-        WaylandIviSurfaceId m_waylandIviSurfaceID = InvalidWaylandIviSurfaceId;
-        IntegrityRGLDeviceUnit m_integrityRGLDeviceUnit = InvalidIntegrityRGLDeviceUnit;
-        WindowsWindowHandle m_windowsWindowHandle = InvalidWindowsWindowHandle;
+        WaylandIviLayerId m_waylandIviLayerID;
+        WaylandIviSurfaceId m_waylandIviSurfaceID;
+        IntegrityRGLDeviceUnit m_integrityRGLDeviceUnit;
+        WindowsWindowHandle m_windowsWindowHandle;
+        AndroidNativeWindowPtr m_androidNativeWindowPtr;
         Bool m_startVisibleIvi = false;
         String m_waylandDisplay;
 

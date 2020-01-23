@@ -16,7 +16,6 @@
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "ramses-renderer-api/IRendererEventHandler.h"
 #include "ramses-renderer-api/RamsesRenderer.h"
-#include "ScreenshotSaver.h"
 
 namespace ramses
 {
@@ -38,7 +37,6 @@ namespace ramses_internal
         ramses::Scene* loadSceneWithResources(ramses::RamsesClient& client, const String& sceneFile, const String& resFile);
         void validateContent(const ramses::RamsesClient& client, const ramses::Scene& scene) const;
 
-        static std::string getFileName(std::string path);
         std::string m_sceneName;
         CommandLineParser m_parser;
         ArgumentBool   m_helpArgument;
@@ -46,10 +44,6 @@ namespace ramses_internal
         ArgumentString m_optionalResFileArgument;
         ArgumentString m_validationUnrequiredObjectsDirectoryArgument;
         ArgumentString m_screenshotFile;
-        ArgumentUInt32 m_screenshotWidth;
-        ArgumentUInt32 m_screenshotHeight;
-
-        std::unique_ptr<ramses::ScreenshotSaver> m_screenshotSaver;
     };
 }
 

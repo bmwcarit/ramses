@@ -67,11 +67,21 @@ namespace ramses
         return status;
     }
 
+    status_t DisplayConfig::getWindowRectangle(int32_t& x, int32_t& y, uint32_t& width, uint32_t& height) const
+    {
+        return impl.getWindowRectangle(x, y, width, height);
+    }
+
     status_t DisplayConfig::setWindowFullscreen(bool fullscreen)
     {
         const status_t status = impl.setFullscreen(fullscreen);
         LOG_HL_RENDERER_API1(status, fullscreen);
         return status;
+    }
+
+    bool DisplayConfig::isWindowFullscreen() const
+    {
+        return impl.isFullscreen();
     }
 
     status_t DisplayConfig::setWindowBorderless(bool borderless)
@@ -172,6 +182,16 @@ namespace ramses
     uint32_t DisplayConfig::getIntegrityRGLDeviceUnit() const
     {
         return impl.getIntegrityRGLDeviceUnit();
+    }
+
+    void* DisplayConfig::getAndroidNativeWindow() const
+    {
+        return impl.getAndroidNativeWindow();
+    }
+
+    status_t DisplayConfig::setAndroidNativeWindow(void* nativeWindowPtr)
+    {
+        return impl.setAndroidNativeWindow(nativeWindowPtr);
     }
 
     status_t DisplayConfig::setWindowIviVisible()

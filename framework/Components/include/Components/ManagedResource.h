@@ -10,9 +10,9 @@
 #define RAMSES_MANAGEDRESOURCE_H
 
 #include "Resource/IResource.h"
-#include "PlatformAbstraction/PlatformSharedPointer.h"
 #include "Components/ResourceDeleterCallingCallback.h"
 #include "Collections/Vector.h"
+#include <memory>
 
 namespace ramses_internal
 {
@@ -42,7 +42,7 @@ namespace ramses_internal
         }
 
     private:
-        PlatformSharedPointer<const IResource> m_resource;
+        std::shared_ptr<const IResource> m_resource;
     };
 
     typedef std::vector<ManagedResource> ManagedResourceVector;

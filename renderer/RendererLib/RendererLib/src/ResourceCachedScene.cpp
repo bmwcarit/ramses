@@ -44,7 +44,7 @@ namespace ramses_internal
         resizeContainerIfSmaller(m_blitPassCache, sizeInfo.blitPassCount * 2u);
     }
 
-    RenderableHandle ResourceCachedScene::allocateRenderable(NodeHandle nodeHandle, RenderableHandle handle /*= RenderableHandle::Invalid()*/)
+    RenderableHandle ResourceCachedScene::allocateRenderable(NodeHandle nodeHandle, RenderableHandle handle)
     {
         const RenderableHandle renderable = DataReferenceLinkCachedScene::allocateRenderable(nodeHandle, handle);
 
@@ -61,7 +61,15 @@ namespace ramses_internal
         setRenderableResourcesDirtyFlag(renderableHandle, false);
     }
 
-    DataInstanceHandle ResourceCachedScene::allocateDataInstance(DataLayoutHandle handle, DataInstanceHandle instanceHandle /*= DataInstanceHandle::Invalid()*/)
+    void ResourceCachedScene::setRenderableVisibility(RenderableHandle renderableHandle, EVisibilityMode visibility)
+    {
+        // make sure resources get updated if switching from off to other state
+        if (getRenderable(renderableHandle).visibilityMode == EVisibilityMode::Off && visibility != EVisibilityMode::Off)
+            setRenderableResourcesDirtyFlag(renderableHandle, true);
+        DataReferenceLinkCachedScene::setRenderableVisibility(renderableHandle, visibility);
+    }
+
+    DataInstanceHandle ResourceCachedScene::allocateDataInstance(DataLayoutHandle handle, DataInstanceHandle instanceHandle)
     {
         const DataInstanceHandle dataInstance = DataReferenceLinkCachedScene::allocateDataInstance(handle, instanceHandle);
         const DataLayout& layout = getDataLayout(handle);
@@ -70,11 +78,9 @@ namespace ramses_internal
         {
             const UInt32 indexIntoCache = dataInstance.asMemoryHandle();
             assert(indexIntoCache < m_deviceHandleCacheForVertexAttributes.size());
-            m_deviceHandleCacheForVertexAttributes[indexIntoCache].resize(fieldCount);
-            for (UInt32 i = 0; i < fieldCount; ++i)
-            {
-                m_deviceHandleCacheForVertexAttributes[indexIntoCache][i] = DeviceResourceHandle::Invalid();
-            }
+            auto& vtxCache = m_deviceHandleCacheForVertexAttributes[indexIntoCache];
+            vtxCache.resize(fieldCount);
+            std::fill(vtxCache.begin(), vtxCache.end(), DeviceResourceHandle::Invalid());
         }
 
         setDataInstanceDirtyFlag(dataInstance, true);
@@ -112,20 +118,14 @@ namespace ramses_internal
         DataReferenceLinkCachedScene::releaseStreamTexture(handle);
     }
 
-    void ResourceCachedScene::setRenderableEffect(RenderableHandle renderableHandle, const ResourceContentHash& effectHash)
+    void ResourceCachedScene::setRenderableDataInstance(RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance)
     {
-        DataReferenceLinkCachedScene::setRenderableEffect(renderableHandle, effectHash);
+        DataReferenceLinkCachedScene::setRenderableDataInstance(renderableHandle, slot, newDataInstance);
 
         const UInt32 indexIntoCache = renderableHandle.asMemoryHandle();
         assert(indexIntoCache < m_effectDeviceHandleCache.size());
         m_effectDeviceHandleCache[indexIntoCache] = DeviceResourceHandle::Invalid();
 
-        setRenderableResourcesDirtyFlag(renderableHandle, true);
-    }
-
-    void ResourceCachedScene::setRenderableDataInstance(RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance)
-    {
-        DataReferenceLinkCachedScene::setRenderableDataInstance(renderableHandle, slot, newDataInstance);
         setRenderableResourcesDirtyFlag(renderableHandle, true);
     }
 
@@ -229,49 +229,35 @@ namespace ramses_internal
 
     Bool ResourceCachedScene::CheckAndUpdateDeviceHandle(const IResourceDeviceHandleAccessor& resourceAccessor, DeviceResourceHandle& deviceHandleInOut, const ResourceContentHash& resourceHash)
     {
-        if (!deviceHandleInOut.isValid())
-        {
-            if (!resourceHash.isValid())
-            {
-                return false;
-            }
+        deviceHandleInOut = DeviceResourceHandle::Invalid();
+        if (resourceHash.isValid())
+            deviceHandleInOut = resourceAccessor.getClientResourceDeviceHandle(resourceHash);
 
-            const DeviceResourceHandle deviceHandle = resourceAccessor.getClientResourceDeviceHandle(resourceHash);
-
-            if (!deviceHandle.isValid())
-            {
-                return false;
-            }
-
-            deviceHandleInOut = deviceHandle;
-        }
-
-        return true;
+        return deviceHandleInOut.isValid();
     }
 
     Bool ResourceCachedScene::CheckAndUpdateBufferDeviceHandle(const IResourceDeviceHandleAccessor& resourceAccessor, DeviceResourceHandle& deviceHandleInOut, const ResourceContentHash& resourceHash, SceneId sceneId, DataBufferHandle dataBufferHandle)
     {
-        if (deviceHandleInOut.isValid())
-        {
-            return true;
-        }
-
+        deviceHandleInOut = DeviceResourceHandle::Invalid();
         if (resourceHash.isValid())
-        {
             deviceHandleInOut = resourceAccessor.getClientResourceDeviceHandle(resourceHash);
-        }
         else if (dataBufferHandle.isValid())
-        {
             deviceHandleInOut = resourceAccessor.getDataBufferDeviceHandle(dataBufferHandle, sceneId);
-        }
 
         return deviceHandleInOut.isValid();
     }
 
     Bool ResourceCachedScene::checkAndUpdateRenderableResources(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable)
     {
-        const ResourceContentHash& hash = getRenderable(renderable).effectResource;
-        return CheckAndUpdateDeviceHandle(resourceAccessor, m_effectDeviceHandleCache[renderable.asMemoryHandle()], hash);
+        const DataInstanceHandle dataInstance = getRenderable(renderable).dataInstances[ERenderableDataSlotType_Geometry];
+        ResourceContentHash effectHash = ResourceContentHash::Invalid();
+        if (dataInstance.isValid())
+        {
+            const DataLayoutHandle layoutHandle = getLayoutOfDataInstance(dataInstance);
+            effectHash = getDataLayout(layoutHandle).getEffectHash();
+        }
+
+        return CheckAndUpdateDeviceHandle(resourceAccessor, m_effectDeviceHandleCache[renderable.asMemoryHandle()], effectHash);
     }
 
     Bool ResourceCachedScene::checkAndUpdateTextureResources(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager, RenderableHandle renderable)

@@ -10,9 +10,10 @@
 #define RAMSES_ISCENEGRAPHPROVIDERCOMPONENT_H
 
 #include "Scene/EScenePublicationMode.h"
-#include "Scene/ESceneFlushMode.h"
 #include "SceneAPI/SceneId.h"
 #include "SceneAPI/SceneVersionTag.h"
+#include "SceneAPI/Handles.h"
+#include "SceneAPI/SceneTypes.h"
 
 namespace ramses_internal
 {
@@ -29,7 +30,7 @@ namespace ramses_internal
         virtual void handleCreateScene(ClientScene& scene, bool enableLocalOnlyOptimization) = 0;
         virtual void handlePublishScene(SceneId sceneId, EScenePublicationMode publicationMode) = 0;
         virtual void handleUnpublishScene(SceneId sceneId) = 0;
-        virtual void handleFlush(SceneId sceneId, ESceneFlushMode flushMode, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) = 0;
+        virtual void handleFlush(SceneId sceneId, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) = 0;
         virtual void handleRemoveScene(SceneId sceneId) = 0;
         virtual void handleSceneSubscription(SceneId sceneId, const Guid& subscriber) = 0;
         virtual void handleSceneUnsubscription(SceneId sceneId, const Guid& subscriber) = 0;

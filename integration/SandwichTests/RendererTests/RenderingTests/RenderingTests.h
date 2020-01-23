@@ -19,7 +19,6 @@
 #include "DataLinkingTests.h"
 #include "OffscreenBufferLinkTests.h"
 #include "Utils/LogMacros.h"
-#include "Utils/FileUtils.h"
 #include "InterruptibleOffscreenBufferLinkTests.h"
 
 class RenderingTests

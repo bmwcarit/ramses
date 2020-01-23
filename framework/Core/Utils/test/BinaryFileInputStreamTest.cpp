@@ -24,12 +24,12 @@ namespace ramses_internal
             int32_t intVal = 10;
             float floatVal = 20.f;
             String  stringVal = "Dies ist ein Text";
-            uint32_t strlen = static_cast<uint32_t>(stringVal.getLength());
+            uint32_t strlen = static_cast<uint32_t>(stringVal.size());
 
             m_file.write(reinterpret_cast<char*>(&intVal), sizeof(int32_t));
             m_file.write(reinterpret_cast<char*>(&floatVal), sizeof(float));
             m_file.write(reinterpret_cast<char*>(&strlen), sizeof(uint32_t));
-            m_file.write(stringVal.c_str(), stringVal.getLength());
+            m_file.write(stringVal.c_str(), stringVal.size());
 
             m_file.close();
         }

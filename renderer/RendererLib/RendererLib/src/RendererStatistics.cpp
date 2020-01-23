@@ -75,10 +75,16 @@ namespace ramses_internal
         strTexStat.maxUpdatesPerFrame = std::max(strTexStat.maxUpdatesPerFrame, numUpdates);
     }
 
-    void RendererStatistics::shaderCompiled(int64_t microsecondsUsed)
+    void RendererStatistics::shaderCompiled(std::chrono::microseconds microsecondsUsed, const String& name, SceneId sceneid)
     {
         m_shadersCompiled++;
-        m_microsecondsForShaderCompilation += microsecondsUsed;
+        m_microsecondsForShaderCompilation += microsecondsUsed.count();
+        if (microsecondsUsed > m_maximumDurationShaderTime)
+        {
+            m_maximumDurationShaderTime = microsecondsUsed;
+            m_maximumDurationShaderName = name;
+            m_maximumDurationShaderScene = sceneid;
+        }
     }
 
     void RendererStatistics::trackArrivedFlush(SceneId sceneId, UInt numSceneActions, UInt numAddedClientResources, UInt numRemovedClientResources, UInt numSceneResourceActions)
@@ -182,6 +188,9 @@ namespace ramses_internal
         m_clientResourcesBytesUploaded = 0u;
         m_shadersCompiled = 0u;
         m_microsecondsForShaderCompilation = 0u;
+        m_maximumDurationShaderName = "";
+        m_maximumDurationShaderTime = std::chrono::microseconds(0u);
+        m_maximumDurationShaderScene = SceneId::Invalid();
 
         for (auto& sceneStatIt : m_sceneStatistics)
         {
@@ -239,7 +248,11 @@ namespace ramses_internal
         if (m_clientResourcesUploaded > 0u)
             str << ", clientResUploaded " << m_clientResourcesUploaded << " (" << m_clientResourcesBytesUploaded << " B)";
         if (m_shadersCompiled > 0u)
-            str << ", shadersCompiled " << m_shadersCompiled << " for total ms:" << m_microsecondsForShaderCompilation/1000 ;
+        {
+            str << ", shadersCompiled " << m_shadersCompiled << " for total ms:" << m_microsecondsForShaderCompilation / 1000;
+            str << ", avg microsec " << m_microsecondsForShaderCompilation / m_shadersCompiled;
+            str << "; longest: " << m_maximumDurationShaderName << " from scene:" << m_maximumDurationShaderScene << " ms:" << m_maximumDurationShaderTime.count() / 1000;
+        }
         str << "\n";
 
         for (const auto& dbStat : m_displayStatistics)

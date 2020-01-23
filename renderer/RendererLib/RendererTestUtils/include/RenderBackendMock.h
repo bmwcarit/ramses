@@ -16,7 +16,7 @@
 #include "EmbeddedCompositorMock.h"
 #include "DeviceMock.h"
 #include "SurfaceMock.h"
-#include "TextureUploadingAdapterMock.h"
+#include "Platform_Base/TextureUploadingAdapter_Base.h"
 
 namespace ramses_internal
 {
@@ -36,7 +36,7 @@ namespace ramses_internal
         MOCK_TYPE< DeviceMock >              deviceMock;
         MOCK_TYPE< SurfaceMock<MOCK_TYPE> >  surfaceMock;
         MOCK_TYPE< EmbeddedCompositorMock >  embeddedCompositorMock;
-        MOCK_TYPE< TextureUploadingAdapterMock >  textureUploadingAdapterMock;
+        TextureUploadingAdapter_Base                  textureUploadingAdapter = TextureUploadingAdapter_Base(deviceMock);
     };
 
     typedef RenderBackendMock< ::testing::NiceMock>   RenderBackendNiceMock;

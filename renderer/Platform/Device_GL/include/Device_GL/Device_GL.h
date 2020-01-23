@@ -70,7 +70,7 @@ namespace ramses_internal
         virtual DeviceResourceHandle    allocateVertexBuffer  (EDataType dataType, UInt32 sizeInBytes) override;
         virtual void                    uploadVertexBufferData(DeviceResourceHandle handle, const Byte* data, UInt32 dataSize) override;
         virtual void                    deleteVertexBuffer    (DeviceResourceHandle handle) override;
-        virtual void                    activateVertexBuffer  (DeviceResourceHandle handle, DataFieldHandle field, UInt32 instancingDivisor) override;
+        virtual void                    activateVertexBuffer  (DeviceResourceHandle handle, DataFieldHandle field, UInt32 instancingDivisor, UInt32 offset) override;
 
         virtual DeviceResourceHandle    allocateIndexBuffer   (EDataType dataType, UInt32 sizeInBytes) override;
         virtual void                    uploadIndexBufferData (DeviceResourceHandle handle, const Byte* data, UInt32 dataSize) override;
@@ -78,18 +78,18 @@ namespace ramses_internal
         virtual void                    activateIndexBuffer   (DeviceResourceHandle handle) override;
 
         virtual DeviceResourceHandle    uploadShader        (const EffectResource& shader) override;
-        virtual DeviceResourceHandle    uploadBinaryShader  (const EffectResource& shader, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, UInt32 binaryShaderFormat) override;
-        virtual Bool                    getBinaryShader     (DeviceResourceHandle handleconst, UInt8Vector& binaryShader, UInt32& binaryShaderFormat) override;
+        virtual DeviceResourceHandle    uploadBinaryShader  (const EffectResource& shader, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat) override;
+        virtual Bool                    getBinaryShader     (DeviceResourceHandle handleconst, UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat) override;
         virtual void                    deleteShader        (DeviceResourceHandle handle) override;
         virtual void                    activateShader      (DeviceResourceHandle handle) override;
 
-        virtual DeviceResourceHandle    allocateTexture2D   (UInt32 width, UInt32 height, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes) override;
+        virtual DeviceResourceHandle    allocateTexture2D   (UInt32 width, UInt32 height, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes) override;
         virtual DeviceResourceHandle    allocateTexture3D   (UInt32 width, UInt32 height, UInt32 depth, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes) override;
         virtual DeviceResourceHandle    allocateTextureCube (UInt32 faceSize, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes) override;
         virtual void                    bindTexture         (DeviceResourceHandle handle) override;
         virtual void                    generateMipmaps     (DeviceResourceHandle handle) override;
         virtual void                    uploadTextureData   (DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte* data, UInt32 dataSize) override;
-        virtual DeviceResourceHandle    uploadStreamTexture2D(DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data) override;
+        virtual DeviceResourceHandle    uploadStreamTexture2D(DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data, const TextureSwizzleArray& swizzle) override;
         virtual void                    deleteTexture       (DeviceResourceHandle handle) override;
         virtual void                    activateTexture     (DeviceResourceHandle handle, DataFieldHandle field) override;
         virtual int                     getTextureAddress   (DeviceResourceHandle handle) const override;
@@ -114,6 +114,7 @@ namespace ramses_internal
 
         virtual void                    validateDeviceStatusHealthy() const override;
         virtual Bool                    isDeviceStatusHealthy() const override;
+        virtual void                    getSupportedBinaryProgramFormats(std::vector<BinaryShaderFormatID>& formats) const override;
 
         virtual UInt32                  getTotalGpuMemoryUsageInKB() const override;
 
@@ -143,6 +144,7 @@ namespace ramses_internal
         const bool                  m_isEmbedded;
         DebugOutput                 m_debugOutput;
         StringSet                   m_apiExtensions;
+        std::vector<GLint>          m_supportedBinaryProgramFormats;
 
         Bool getUniformLocation(DataFieldHandle field, GLInputLocation& location) const;
         Bool getAttributeLocation(DataFieldHandle field, GLInputLocation& location) const;
@@ -158,13 +160,13 @@ namespace ramses_internal
         GLHandle generateAndBindTexture(GLenum target) const;
         void setTextureFiltering(GLenum target, EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod minSampling, ESamplingMethod magSampling, UInt32 anisotropyLevel);
 
-        void fillGLInternalTextureInfo(GLenum target, UInt32 width, UInt32 height, UInt32 depth, ETextureFormat textureFormat, GLTextureInfo& texInfoOut) const;
+        void fillGLInternalTextureInfo(GLenum target, UInt32 width, UInt32 height, UInt32 depth, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, GLTextureInfo& texInfoOut) const;
 
         void allocateTextureStorage(const GLTextureInfo& texInfo, UInt32 mipLevels) const;
         void uploadTextureMipMapData(UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const GLTextureInfo& texInfo, const UInt8 *pData, UInt32 dataSize) const;
 
         Bool isApiExtensionAvailable(const String& extensionName) const;
-        void loadExtensionDependentFeatures();
+        void queryDeviceDependentFeatures();
         void loadOpenGLExtensions();
     };
 }

@@ -19,7 +19,7 @@ namespace ramses_internal
         description = "print RAMSES version";
     }
 
-    Bool RamshCommandPrintRamsesVersion::executeInput(const RamshInput& input)
+    bool RamshCommandPrintRamsesVersion::executeInput(const RamshInput& input)
     {
         UNUSED(input);
         LOG_INFO(CONTEXT_RAMSH, m_versionString);

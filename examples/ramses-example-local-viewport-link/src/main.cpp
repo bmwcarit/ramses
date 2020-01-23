@@ -186,27 +186,13 @@ ramses::Scene* createContentProviderScene(ramses::RamsesClient& client, ramses::
     meshNode->setGeometryBinding(*geometry);
     renderGroup->addMeshNode(*meshNode);
 
-    ramses::MeshNode*   meshNode2   = clientScene->createMeshNode("triangle mesh node");
+    ramses::MeshNode*   meshNode2   = clientScene->createMeshNode("triangle mesh node 2");
     ramses::Appearance* appearance2 = clientScene->createAppearance(*effect, "triangle appearance");
     meshNode2->setAppearance(*appearance2);
     meshNode2->setGeometryBinding(*geometry);
     renderGroup->addMeshNode(*meshNode2);
     meshNode2->setTranslation(0, -10, -5);
     meshNode2->setScaling(100, 100, 1);
-
-    ramses::AnimationSystemRealTime* animationSystem = clientScene->createRealTimeAnimationSystem(ramses::EAnimationSystemFlags_Default, "animation system");
-    ramses::SplineLinearFloat* spline1 = animationSystem->createSplineLinearFloat("spline1");
-    spline1->setKey(0u, 0.f);
-    spline1->setKey(5000u, 500.f);
-    spline1->setKey(10000u, 1000.f);
-    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode, ramses::EAnimatedProperty_Rotation, ramses::EAnimatedPropertyComponent_Z);
-    ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
-    ramses::AnimationSequence* sequence = animationSystem->createAnimationSequence();
-    sequence->addAnimation(*animation1);
-    sequence->setAnimationLooping(*animation1);
-    sequence->setPlaybackSpeed(1.f);
-    animationSystem->updateLocalTime(nowMs());
-    sequence->start();
 
     ramses::UniformInput colorInput;
     effect->findUniformInput("color", colorInput);
@@ -271,16 +257,16 @@ int main(int argc, char* argv[])
     ramses::RamsesFrameworkConfig config(argc, argv);
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);  //needed for automated test of examples
     ramses::RamsesFramework framework(config);
-    ramses::RamsesClient client("ramses-local-client-test", framework);
+    ramses::RamsesClient& client(*framework.createClient("ramses-local-client-test"));
 
     // Ramses renderer
     ramses::RendererConfig rendererConfig(argc, argv);
-    ramses::RamsesRenderer renderer(framework, rendererConfig);
+    ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
     framework.connect();
 
-    const ramses::sceneId_t sceneId1 = 1u;
-    const ramses::sceneId_t sceneId2 = 2u;
-    const ramses::sceneId_t sceneIdMaster = 3u;
+    const ramses::sceneId_t sceneId1(1u);
+    const ramses::sceneId_t sceneId2(2u);
+    const ramses::sceneId_t sceneIdMaster(3u);
 
     ramses::Scene* scene1 = createContentProviderScene(client, sceneId1);
     ramses::Scene* scene2 = createContentProviderScene(client, sceneId2);
@@ -355,8 +341,11 @@ int main(int argc, char* argv[])
     int animParam = 0;
     bool animInc = true;
 
+    ramses::MeshNode* meshScene1 = ramses::RamsesUtils::TryConvert<ramses::MeshNode>(*scene1->findObjectByName("triangle mesh node"));
+    ramses::MeshNode* meshScene2 = ramses::RamsesUtils::TryConvert<ramses::MeshNode>(*scene2->findObjectByName("triangle mesh node"));
     for (;;)
     {
+        // animate master scene
         scene1vpOffset->setValue(VPWidth/8 + VPWidth/2 * animParam/100, VPHeight/8 + VPHeight/4 * animParam/100);
         scene1vpSize->setValue(VPWidth/4 + VPWidth/2 * animParam/100, VPHeight/4 + VPHeight/4 * animParam/100);
         const auto invAnimParam = 100 - animParam;
@@ -364,11 +353,17 @@ int main(int argc, char* argv[])
         scene2vpSize->setValue(VPWidth/2 + VPWidth/2 * invAnimParam/100, VPHeight/4 + VPHeight/4 * invAnimParam/100);
         sceneMaster->flush();
 
-        renderer.doOneLoop();
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
         animParam = (animInc ? animParam + 1 : animParam - 1);
         if (animParam == 0 || animParam == 100)
             animInc = !animInc;
+
+        // animate content inside provider scenes
+        meshScene1->rotate(0.f, 0.f, 2.f);
+        scene1->flush();
+        meshScene2->rotate(0.f, 0.f, 4.f);
+        scene2->flush();
+
+        renderer.doOneLoop();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }

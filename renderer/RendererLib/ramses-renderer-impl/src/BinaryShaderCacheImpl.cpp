@@ -24,59 +24,36 @@ namespace
 
 namespace ramses
 {
-    BinaryShaderCacheImpl::BinaryShader::BinaryShader()
-    : format(0)
+    void BinaryShaderCacheImpl::deviceSupportsBinaryShaderFormats(const binaryShaderFormatId_t* supportedFormats, uint32_t numSupportedFormats)
     {
-
-    }
-
-    BinaryShaderCacheImpl::BinaryShader::BinaryShader(const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, uint32_t binaryShaderFormat)
-    : data(binaryShaderDataSize)
-    , format(binaryShaderFormat)
-    {
-        ramses_internal::PlatformMemory::Copy(&data.front(), binaryShaderData, binaryShaderDataSize);
-    }
-
-    BinaryShaderCacheImpl::BinaryShaderCacheImpl()
-    {
-
-    }
-
-    BinaryShaderCacheImpl::~BinaryShaderCacheImpl()
-    {
-        clear();
+        m_supportedFormats = {supportedFormats, supportedFormats + numSupportedFormats };
     }
 
     bool BinaryShaderCacheImpl::hasBinaryShader(const ramses_internal::ResourceContentHash& effectId) const
     {
-        return m_binaryShaders.contains(effectId);
+        if (!m_binaryShaders.contains(effectId))
+            return false;
+
+        // do not report shader as available if not matching any supported format by device
+        return ramses_internal::contains_c(m_supportedFormats, getBinaryShaderFormat(effectId));
     }
 
     uint32_t BinaryShaderCacheImpl::getBinaryShaderSize(const ramses_internal::ResourceContentHash& effectId) const
     {
-        BinaryShaderTable::Iterator iter = m_binaryShaders.find(effectId);
-        if (iter == m_binaryShaders.end())
-        {
-            return 0;
-        }
-
-        return static_cast<uint32_t>(iter->value->data.size());
+        const auto iter = m_binaryShaders.find(effectId);
+        return (iter != m_binaryShaders.end() ? uint32_t(iter->value.data.size()) : 0u);
     }
 
-    uint32_t BinaryShaderCacheImpl::getBinaryShaderFormat(const ramses_internal::ResourceContentHash& effectId) const
+    binaryShaderFormatId_t BinaryShaderCacheImpl::getBinaryShaderFormat(const ramses_internal::ResourceContentHash& effectId) const
     {
-        BinaryShaderTable::Iterator iter = m_binaryShaders.find(effectId);
-        if (iter == m_binaryShaders.end())
-        {
-            return 0;
-        }
-
-        return iter->value->format;
+        const auto iter = m_binaryShaders.find(effectId);
+        return (iter != m_binaryShaders.end() ? binaryShaderFormatId_t{ iter->value.format.getValue() } : binaryShaderFormatId_t{ 0 });
     }
 
-    bool BinaryShaderCacheImpl::shouldBinaryShaderBeCached(const ramses_internal::ResourceContentHash& effectId) const
+    bool BinaryShaderCacheImpl::shouldBinaryShaderBeCached(const ramses_internal::ResourceContentHash& effectId, ramses_internal::SceneId sceneId) const
     {
         UNUSED(effectId);
+        UNUSED(sceneId);
         return true;
     }
 
@@ -93,13 +70,14 @@ namespace ramses
             return;
         }
 
-        const uint32_t dataSize = static_cast<uint32_t>(iter->value->data.size());
+        const uint32_t dataSize = static_cast<uint32_t>(iter->value.data.size());
         assert(bufferSize >= dataSize);
-        ramses_internal::PlatformMemory::Copy(buffer, &iter->value->data.front(), dataSize);
+        ramses_internal::PlatformMemory::Copy(buffer, iter->value.data.data(), dataSize);
     }
 
-    void BinaryShaderCacheImpl::storeBinaryShader(const ramses_internal::ResourceContentHash& effectId, const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, uint32_t binaryShaderFormat)
+    void BinaryShaderCacheImpl::storeBinaryShader(const ramses_internal::ResourceContentHash& effectId, ramses_internal::SceneId sceneId, const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, binaryShaderFormatId_t binaryShaderFormat)
     {
+        UNUSED(sceneId);
         assert(nullptr != binaryShaderData);
         assert(binaryShaderDataSize > 0);
 
@@ -109,19 +87,8 @@ namespace ramses
             return;
         }
 
-        BinaryShader* binaryShader = new BinaryShader(binaryShaderData, binaryShaderDataSize, binaryShaderFormat);
-        m_binaryShaders.put(effectId, binaryShader);
-    }
-
-    void BinaryShaderCacheImpl::clear()
-    {
-        for(const auto& binaryShader : m_binaryShaders)
-        {
-            const BinaryShader* shader = binaryShader.value;
-            delete shader;
-        }
-
-        m_binaryShaders.clear();
+        BinaryShader binaryShader = { {binaryShaderData, binaryShaderData + binaryShaderDataSize}, ramses_internal::BinaryShaderFormatID{ binaryShaderFormat.getValue() } };
+        m_binaryShaders.put(effectId, std::move(binaryShader));
     }
 
     bool BinaryShaderCacheImpl::loadFromFile(const char* filePath)
@@ -193,16 +160,12 @@ namespace ramses
 
         for (uint32_t index = 0; index < numBinaryShaders; index++)
         {
-            BinaryShader* binaryShader = new BinaryShader();
-
+            BinaryShader binaryShader;
             ramses_internal::ResourceContentHash effectId;
-            if (!deserializeBinaryShader(inputStream, effectId, binaryShader->data, binaryShader->format))
-            {
-                delete binaryShader;
+            if (!deserializeBinaryShader(inputStream, effectId, binaryShader.data, binaryShader.format))
                 return false;
-            };
 
-            m_binaryShaders.put(effectId, binaryShader);
+            m_binaryShaders.put(effectId, std::move(binaryShader));
         }
 
         return true;
@@ -212,14 +175,10 @@ namespace ramses
     {
         ramses_internal::BinaryOutputStream outputStream;
 
-        outputStream << static_cast<uint32_t>(m_binaryShaders.count());
+        outputStream << static_cast<uint32_t>(m_binaryShaders.size());
 
         for (const auto& binaryShader : m_binaryShaders)
-        {
-            const ramses_internal::ResourceContentHash& effectId    = binaryShader.key;
-            const BinaryShader*                         shader      = binaryShader.value;
-            serializeBinaryShader(outputStream, effectId, shader->data, shader->format);
-        }
+            serializeBinaryShader(outputStream, binaryShader.key, binaryShader.value.data, binaryShader.value.format);
 
         const uint32_t contentSize = outputStream.getSize();
         const uint64_t checksum = cityhash::CityHash64(outputStream.getData(), contentSize);
@@ -252,10 +211,10 @@ namespace ramses
         }
     }
 
-    bool BinaryShaderCacheImpl::deserializeBinaryShader(ramses_internal::IInputStream& inputStream, ramses_internal::ResourceContentHash& effectId, ramses_internal::UInt8Vector& binaryShaderData, uint32_t& binaryShaderFormat)
+    bool BinaryShaderCacheImpl::deserializeBinaryShader(ramses_internal::IInputStream& inputStream, ramses_internal::ResourceContentHash& effectId, ramses_internal::UInt8Vector& binaryShaderData, ramses_internal::BinaryShaderFormatID& binaryShaderFormat)
     {
         binaryShaderData.clear();
-        binaryShaderFormat = 0;
+        binaryShaderFormat = {};
 
         inputStream >> effectId;
 
@@ -266,7 +225,7 @@ namespace ramses
             return false;
         }
 
-        inputStream >> binaryShaderFormat;
+        inputStream >> binaryShaderFormat.getReference();
 
         uint32_t reservedField = 0;
         for (uint32_t byteIndex = 0; byteIndex < NUM_RESERVED_BYTES / sizeof(uint32_t); byteIndex++)
@@ -279,13 +238,13 @@ namespace ramses
         return true;
     }
 
-    void BinaryShaderCacheImpl::serializeBinaryShader(ramses_internal::IOutputStream& outputStream, const ramses_internal::ResourceContentHash& effectId, const ramses_internal::UInt8Vector& binaryShaderData, uint32_t binaryShaderFormat)
+    void BinaryShaderCacheImpl::serializeBinaryShader(ramses_internal::IOutputStream& outputStream, const ramses_internal::ResourceContentHash& effectId, const ramses_internal::UInt8Vector& binaryShaderData, ramses_internal::BinaryShaderFormatID binaryShaderFormat)
     {
         outputStream << effectId;
 
         const uint32_t binaryShaderDataSize = static_cast<uint32_t>(binaryShaderData.size());
         outputStream << binaryShaderDataSize;
-        outputStream << binaryShaderFormat;
+        outputStream << binaryShaderFormat.getValue();
 
         uint32_t reservedField = 0;
         for (uint32_t byteIndex = 0; byteIndex < NUM_RESERVED_BYTES / sizeof(uint32_t); byteIndex++)

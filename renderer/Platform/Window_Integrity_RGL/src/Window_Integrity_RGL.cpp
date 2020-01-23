@@ -24,7 +24,7 @@ namespace ramses_internal
     {
         LOG_INFO(CONTEXT_RENDERER, "Window_Integrity_RGL::~Window_Integrity_RGL(): Destroying Integrity RGL window");
 
-        if(InvalidIntegrityRGLDeviceUnit.getValue() == m_deviceUnit)
+        if(IntegrityRGLDeviceUnit::Invalid().getValue() == m_deviceUnit)
         {
             LOG_WARN(CONTEXT_RENDERER, "Window_Integrity_RGL::~Window_Integrity_RGL(): nothing to do because device unit was not set");
             return;
@@ -61,7 +61,7 @@ namespace ramses_internal
     {
         LOG_INFO(CONTEXT_RENDERER, "Window_Integrity_RGL::init(): Constructing Window Integrity RGL");
 
-        if(InvalidIntegrityRGLDeviceUnit.getValue() == m_deviceUnit)
+        if(IntegrityRGLDeviceUnit::Invalid().getValue() == m_deviceUnit)
         {
             LOG_ERROR(CONTEXT_RENDERER, "Window_Integrity_RGL::init(): RGL device unit is not set in display config!");
             return false;
@@ -104,6 +104,16 @@ namespace ramses_internal
         {
             LOG_ERROR(CONTEXT_RENDERER, "Window_Integrity_RGL::init(): R_WM_WindowCreate failed with error status : " << windowCreateErrorStatus);
             return false;
+        }
+
+        // null buffer contents before showing/enabling it
+        r_mmgr_MemBlock_t *pstMemBlock = *(m_rglWindow.Surface.Buffer);
+        if(nullptr != pstMemBlock)
+        {
+            // pstMemBlock->VmrStartAddr has type ExtendedAddress that might be unsigned long, uint64_t or even a pointer depending on integrity headers
+            void* VmrStartAddr = reinterpret_cast<void*>(pstMemBlock->VmrStartAddr);
+            if (nullptr != VmrStartAddr)
+                memset(VmrStartAddr, 0, pstMemBlock->Size);
         }
 
         const auto deviceEventRegisterErrorStatus = R_WM_DevEventRegister(m_deviceUnit, R_WM_EVENT_VBLANK, 0);

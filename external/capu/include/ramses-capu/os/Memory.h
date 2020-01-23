@@ -38,14 +38,6 @@ namespace ramses_capu
         static void Set(void* dst, int32_t val, uint_t size);
 
         /**
-         * Move size number of bytes from src to dst
-         * @param dst Pointer where the data should be moved to
-         * @param src Pointer where the data comes from
-         * @param size number of bytes to set
-         */
-        static void Move(void* dst, const void* src, uint_t size);
-
-        /**
          * Compare num bytes from ptr1 with ptr2
          * @param ptr1 Data to compare
          * @param ptr2 Other data to compare with
@@ -69,16 +61,6 @@ namespace ramses_capu
         if(size > 0)
         {
             std::memset(dst, val, size);
-        }
-    }
-
-    inline
-    void
-    Memory::Move(void* dst, const void* src, uint_t size)
-    {
-        if(size > 0)
-        {
-            std::memmove(dst, src, size);
         }
     }
 

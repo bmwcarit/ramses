@@ -11,11 +11,11 @@
 
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Resource/EResourceCompressionStatus.h"
-#include "SceneAPI/SceneResourceData.h"
+#include "Resource/IResource.h"
+
 
 namespace ramses_internal
 {
-    class IResource;
     class IOutputStream;
     class IInputStream;
     class String;

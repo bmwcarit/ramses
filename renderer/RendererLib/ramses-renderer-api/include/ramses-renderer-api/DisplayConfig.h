@@ -27,7 +27,7 @@ namespace ramses
         * @param[in] argc Number of arguments in arguments array parameter
         * @param[in] argv Array of arguments as strings
         */
-        DisplayConfig(int32_t argc = 0, char const* const* argv = 0);
+        DisplayConfig(int32_t argc = 0, char const* const* argv = nullptr);
 
         /**
         * @brief Constructor of DisplayConfig that takes command line parameters
@@ -108,6 +108,19 @@ namespace ramses
         status_t setWindowRectangle(int32_t x, int32_t y, uint32_t width, uint32_t height);
 
         /**
+        * @brief Get the window size and position in display pixel space, as it was specified by setWindowRectangle() or command line options
+        * These values have no relevance if window is set fullscreen.
+        *
+        * @param[out] x Horizontal offset (distance from left border of the display)
+        * @param[out] y Vertical offset (distance from top border of the display)
+        * @param[out] width Width of the window
+        * @param[out] height Height of the window
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t getWindowRectangle(int32_t& x, int32_t& y, uint32_t& width, uint32_t& height) const;
+
+        /**
         * @brief Automatically sets the window size so that it fills the entire display.
         * Overrides DisplayConfig::setWindowRectangle() when set to true.
         *
@@ -116,6 +129,13 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t setWindowFullscreen(bool fullscreen);
+
+        /**
+        * @brief Gets the currently set fullscreen state, which was set
+        *        either via DisplayConfig::setWindowFullscreen or parsed from command line arguments.
+        * @return True if this DisplayConfig is set to use fullscreen window, false otherwise.
+        */
+        bool isWindowFullscreen() const;
 
         /**
         * @brief Sets window hints/properties to tell the window manager to disable window borders
@@ -230,7 +250,7 @@ namespace ramses
 
 
         /**
-        * @brief [Mandatory on Waylannd] Set IVI surface ID to use when creating the display window on Wayland.
+        * @brief [Mandatory on Wayland] Set IVI surface ID to use when creating the display window on Wayland.
         *
         * - This is the Wayland IVI surface ID, i.e. the ID that the display reports to Wayland so that the surface (=window)
         *   can be controlled over the system compositor controller
@@ -265,6 +285,25 @@ namespace ramses
         * @return the current setting of RGL device unit, returns 0xFFFFFFFF if no value has been set yet
         */
         uint32_t getIntegrityRGLDeviceUnit() const;
+
+        /**
+        * @brief Get the current setting of Android native window
+        *
+        * @return the current setting of Android native window, returns nullptr if no value has been set yet
+        */
+        void* getAndroidNativeWindow() const;
+
+        /**
+        * @brief [Mandatory on Android] Set native window to use for rendering on Android.
+        *
+        * @param[in] nativeWindowPtr ANativeWindow* which can be obtained with ANativeWindow_fromSurface() from a Java Surface object
+        *
+        * No ownership is transferred, the user is responsible to call ANativeWindow_release after destroying the RAMSES Renderer.
+        *
+        * @return StatusOK on success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setAndroidNativeWindow(void* nativeWindowPtr);
 
         /**
         * @brief Set IVI window to be visible right after window creation

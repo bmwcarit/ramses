@@ -31,13 +31,13 @@ namespace ramses_internal
 
     IWindow* PlatformFactory_Wayland_IVI_EGL::createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler)
     {
-        if(InvalidWaylandIviLayerId == displayConfig.getWaylandIviLayerID())
+        if(!displayConfig.getWaylandIviLayerID().isValid())
         {
             LOG_ERROR(CONTEXT_RENDERER, "Can not create Wayland IVI window because IVI layer ID was not set in display config!");
             return nullptr;
         }
 
-        if(InvalidWaylandIviSurfaceId == displayConfig.getWaylandIviSurfaceID())
+        if(!displayConfig.getWaylandIviSurfaceID().isValid())
         {
             LOG_ERROR(CONTEXT_RENDERER, "Can not create Wayland IVI window because IVI surface ID was not set in display config!");
             return nullptr;

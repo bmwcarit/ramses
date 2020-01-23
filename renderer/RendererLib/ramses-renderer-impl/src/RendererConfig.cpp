@@ -13,6 +13,7 @@
 #include "RendererConfigImpl.h"
 #include "APILoggingMacros.h"
 #include "ramses-renderer-api/IRendererResourceCache.h"
+#include <chrono>
 
 namespace ramses
 {
@@ -96,4 +97,17 @@ namespace ramses
     {
         return impl.getSystemCompositorWaylandDisplay();
     }
+
+    status_t RendererConfig::setRenderThreadLoopTimingReportingPeriod(std::chrono::milliseconds period)
+    {
+        const status_t status = impl.setRenderThreadLoopTimingReportingPeriod(period);
+        LOG_HL_RENDERER_API1(status, period.count());
+        return status;
+    }
+
+    std::chrono::milliseconds RendererConfig::getRenderThreadLoopTimingReportingPeriod() const
+    {
+        return impl.getRenderThreadLoopTimingReportingPeriod();
+    }
+
 }

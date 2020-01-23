@@ -57,7 +57,7 @@ namespace ramses_internal
         }
         case SINGLE_STREAM_TEXTURE_ON_THE_LEFT:
         {
-            ramses::Texture2D* leftSceneFallbackTexture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-embedded-compositing-1.png", ramsesClient, "leftSceneFallbackTexture");
+            ramses::Texture2D* leftSceneFallbackTexture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-embedded-compositing-1.png", ramsesClient, {}, "leftSceneFallbackTexture");
             createQuadWithStreamTexture(-2.0f, -1.0f, 2.0f, 2.0f, streamSource1, *leftSceneFallbackTexture);
             break;
         }
@@ -188,7 +188,7 @@ namespace ramses_internal
         effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
         const ramses::Effect* effect = m_client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
-        assert(NULL != effect);
+        assert(nullptr != effect);
 
         return *effect;
     }

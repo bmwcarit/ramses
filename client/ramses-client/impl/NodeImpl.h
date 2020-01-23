@@ -11,7 +11,7 @@
 
 // internal
 #include "SceneObjectImpl.h"
-
+#include "ramses-client-api/EVisibilityMode.h"
 // ramses framework
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/SceneId.h"
@@ -67,8 +67,8 @@ namespace ramses
         status_t setScaling(float x, float y, float z);
         status_t getScaling(float& x, float& y, float& z) const;
 
-        status_t setVisibility(bool visible);
-        bool     getVisibility() const;
+        status_t setVisibility(EVisibilityMode mode);
+        EVisibilityMode getVisibility() const;
 
         void initializeTransform();
         ramses_internal::TransformHandle getTransformHandle() const;
@@ -92,7 +92,7 @@ namespace ramses
         ramses_internal::TransformHandle m_transformHandle;
 
         //The actual visibility
-        bool m_visibility;
+        EVisibilityMode m_visibilityMode;
     };
 }
 

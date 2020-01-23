@@ -28,7 +28,7 @@ namespace ramses
         * @param[in] argc Number of strings in argv array
         * @param[in] argv Command line parameters as array of string
         */
-        explicit RamsesFrameworkConfig(int32_t argc = 0, char const* const* argv = 0);
+        explicit RamsesFrameworkConfig(int32_t argc = 0, char const* const* argv = nullptr);
 
         /**
         * @brief Constructor of RamsesFrameworkConfig using command line parameters

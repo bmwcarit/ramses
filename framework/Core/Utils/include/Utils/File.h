@@ -42,11 +42,11 @@ namespace ramses_internal
         EStatus open(const EFileMode& mode);
         EStatus createFile();
         EStatus createDirectory();
-        Bool exists() const;
+        bool exists() const;
         EStatus remove();
-        Bool isOpen();
-        Bool isEof();
-        Bool isDirectory() const;
+        bool isOpen();
+        bool isEof();
+        bool isDirectory() const;
         EStatus getSizeInBytes(UInt& size) const;
         EStatus read(Char* buffer, UInt length, UInt& numBytes);
         EStatus write(const Char* buffer, UInt length);

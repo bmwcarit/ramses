@@ -26,7 +26,7 @@ ACME_MODULE(
     #==========================================================================
     NAME                    ramses-renderer-lib
     TYPE                    STATIC_LIBRARY
-    ENABLE_INSTALL          ${ramses-sdk_INSTALL_STATIC_LIBS}
+    ENABLE_INSTALL          OFF
 
     #==========================================================================
     # files of this module
@@ -77,14 +77,12 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     target_compile_options(ramses-renderer-lib PRIVATE "-Wsuggest-override")
 endif()
 
-IF (NOT ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB)
-    set(ramses-shared-lib-MIXIN
-        ${ramses-shared-lib-MIXIN}
-        INCLUDE_BASE ${RAMSES_RENDERER_API_INCLUDE_BASE}
-        FILES_SOURCE ${RAMSES_RENDERER_FILES_SOURCE}
-        DEPENDENCIES  ramses-renderer-lib
-        CACHE INTERNAL "")
-endif()
+set(ramses-shared-lib-renderer-MIXIN
+    ${ramses-shared-lib-renderer-MIXIN}
+    INCLUDE_BASE ${RAMSES_RENDERER_API_INCLUDE_BASE}
+    FILES_SOURCE ${RAMSES_RENDERER_FILES_SOURCE}
+    DEPENDENCIES  ramses-renderer-lib
+    CACHE INTERNAL "")
 
 
 IF (${ramses-sdk_BUILD_TESTS})

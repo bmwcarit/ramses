@@ -118,8 +118,8 @@ namespace ramses_internal
         String nameEXT = "WGL_EXT_" + extensionName;
         String nameARB = "WGL_ARB_" + extensionName;
 
-        return  m_extensionNames.hasElement(nameEXT) ||
-            m_extensionNames.hasElement(nameARB);
+        return  m_extensionNames.contains(nameEXT) ||
+            m_extensionNames.contains(nameARB);
     }
 
 }

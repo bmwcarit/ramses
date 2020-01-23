@@ -13,7 +13,7 @@
 #include "Collections/Vector.h"
 #include "Collections/HashMap.h"
 #include "SceneAPI/EFixedSemantics.h"
-#include "SceneAPI/SceneResourceData.h"
+#include "Resource/IResource.h"
 
 struct TBuiltInResource;
 namespace glslang
@@ -45,7 +45,7 @@ namespace ramses_internal
         // must be called after createEffectResource
         UInt32 getFragmentShaderVersion() const;
 
-        String getErrorMessages() const;
+        String getEffectErrorMessages() const;
 
     private:
         struct ShaderParts

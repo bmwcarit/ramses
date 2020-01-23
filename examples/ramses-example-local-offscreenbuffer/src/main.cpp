@@ -15,6 +15,11 @@
 #include <unordered_set>
 #include <thread>
 
+/**
+ * @example ramses-example-local-offscreenbuffer/src/main.cpp
+ * @brief Offscreen Buffer Example
+ */
+
 /** \cond HIDDEN_SYMBOLS */
 class SceneStateEventHandler : public ramses::RendererEventHandlerEmpty
 {
@@ -71,7 +76,7 @@ public:
         m_dataConsumers.insert(dataConsumerId);
     }
 
-    virtual void offscreenBufferCreated(ramses::displayId_t, ramses::offscreenBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
+    virtual void offscreenBufferCreated(ramses::displayId_t, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
     {
         if (ramses::ERendererEventResult_FAIL != result)
         {
@@ -79,7 +84,7 @@ public:
         }
     }
 
-    virtual void sceneAssignedToOffscreenBuffer(ramses::sceneId_t sceneId, ramses::offscreenBufferId_t, ramses::ERendererEventResult result) override
+    virtual void sceneAssignedToDisplayBuffer(ramses::sceneId_t sceneId, ramses::displayBufferId_t, ramses::ERendererEventResult result) override
     {
         if (ramses::ERendererEventResult_FAIL != result)
         {
@@ -87,7 +92,7 @@ public:
         }
     }
 
-    virtual void offscreenBufferLinkedToSceneData(ramses::offscreenBufferId_t, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t, ramses::ERendererEventResult result) override
+    virtual void offscreenBufferLinkedToSceneData(ramses::displayBufferId_t, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t, ramses::ERendererEventResult result) override
     {
         if (ramses::ERendererEventResult_FAIL != result)
         {
@@ -115,7 +120,7 @@ public:
         waitForElementInSet(dataConsumer, m_dataConsumers);
     }
 
-    void waitForOffscreenBufferCreated(const ramses::offscreenBufferId_t offscreenBufferId)
+    void waitForOffscreenBufferCreated(const ramses::displayBufferId_t offscreenBufferId)
     {
         waitForElementInSet(offscreenBufferId, m_createdOffscreenBuffers);
     }
@@ -133,7 +138,7 @@ public:
 private:
     typedef std::unordered_set<ramses::sceneId_t> SceneSet;
     typedef std::unordered_set<ramses::dataProviderId_t> DataProviderSet;
-    typedef std::unordered_set<ramses::offscreenBufferId_t> OffscreenBufferSet;
+    typedef std::unordered_set<ramses::displayBufferId_t> OffscreenBufferSet;
 
     template <typename T>
     void waitForElementInSet(const T element, const std::unordered_set<T>& set)
@@ -213,30 +218,6 @@ ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t scen
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
 
-    ramses::AnimationSystemRealTime* animationSystem = clientScene->createRealTimeAnimationSystem(ramses::EAnimationSystemFlags_Default, "animation system");
-
-    // create splines with animation keys
-    ramses::SplineLinearFloat* spline1 = animationSystem->createSplineLinearFloat("spline1");
-    spline1->setKey(0u, 0.f);
-    spline1->setKey(5000u, 360.f);
-
-    // create animated property for each translation node with single component animation
-    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode, ramses::EAnimatedProperty_Rotation, ramses::EAnimatedPropertyComponent_Z);
-
-    // create three animations
-    ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
-
-    // create animation sequence and add animation
-    ramses::AnimationSequence* sequence = animationSystem->createAnimationSequence();
-    sequence->addAnimation(*animation1);
-
-    // set animation properties (optional)
-    sequence->setAnimationLooping(*animation1);
-
-    // start animation sequence
-    animationSystem->updateLocalTime(nowMs());
-    sequence->start();
-
     ramses::UniformInput textureUnif;
     effect->findUniformInput ( "textureSampler", textureUnif );
 
@@ -296,30 +277,6 @@ ramses::Scene* createScene2(ramses::RamsesClient& client, ramses::sceneId_t scen
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
 
-    ramses::AnimationSystemRealTime* animationSystem = clientScene->createRealTimeAnimationSystem(ramses::EAnimationSystemFlags_Default, "animation system");
-
-    // create splines with animation keys
-    ramses::SplineLinearFloat* spline1 = animationSystem->createSplineLinearFloat("spline1");
-    spline1->setKey(0u, 0.f);
-    spline1->setKey(2000u, -360.f);
-
-    // create animated property for each translation node with single component animation
-    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode, ramses::EAnimatedProperty_Rotation, ramses::EAnimatedPropertyComponent_Z);
-
-    // create three animations
-    ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
-
-    // create animation sequence and add animation
-    ramses::AnimationSequence* sequence = animationSystem->createAnimationSequence();
-    sequence->addAnimation(*animation1);
-
-    // set animation properties (optional)
-    sequence->setAnimationLooping(*animation1);
-
-    // start animation sequence
-    animationSystem->updateLocalTime(nowMs());
-    sequence->start();
-
     appearance->setInputValueVector4f(colorInput, 1.0f, 0.3f, 0.5f, 1.0f);
 
     return clientScene;
@@ -331,22 +288,22 @@ int main(int argc, char* argv[])
     ramses::RamsesFrameworkConfig config(argc, argv);
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);  //needed for automated test of examples
     ramses::RamsesFramework framework(config);
-    ramses::RamsesClient client("ramses-local-client-test", framework);
+    ramses::RamsesClient& client(*framework.createClient("ramses-local-client-test"));
 
     // Ramses renderer
     ramses::RendererConfig rendererConfig(argc, argv);
-    ramses::RamsesRenderer renderer(framework, rendererConfig);
+    ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
     framework.connect();
 
     renderer.setMaximumFramerate(60.0f);
     renderer.startThread();
 
-    ramses::sceneId_t sceneId1 = 1u;
+    ramses::sceneId_t sceneId1{1u};
     ramses::Scene* scene1 = createScene1(client, sceneId1);
     scene1->flush();
     scene1->publish();
 
-    ramses::sceneId_t sceneId2 = 2u;
+    ramses::sceneId_t sceneId2{2u};
     ramses::Scene* scene2 = createScene2(client, sceneId2);
     scene2->flush();
     scene2->publish();
@@ -376,11 +333,12 @@ int main(int argc, char* argv[])
     renderer.flush();
     eventHandler.waitForMapped(sceneId1);
 
-    // When mapping a scene that is going to be rendered to an offscreen buffer
-    // we need to make sure that it is rendered before the scene that uses that
-    // offscreen buffer to read from it.
-    // This is a content dependency and Ramses does not make any implicit ordering.
-    renderer.mapScene(display, sceneId2, -1);
+    // Ramses renders all scenes mapped to offscreen buffers (except for interruptible offscreen buffers)
+    // always before rendering scenes mapped to framebuffer.
+    // If consumer scene is rendered into framebuffer, then there does not have to be any explicit render order set.
+    // However should the consumer scene be rendered into offscreen buffer as well, it is recommended to set
+    // explicit render order - provided content before consumer content.
+    renderer.mapScene(display, sceneId2);
     renderer.flush();
     eventHandler.waitForMapped(sceneId2);
 
@@ -397,13 +355,13 @@ int main(int argc, char* argv[])
     eventHandler.waitForDataConsumer(samplerConsumerId);
 
     // Create an offscreen buffer - has to be on the same display where both the scene to be rendered into it is mapped and the scene to consume it is mapped
-    const ramses::offscreenBufferId_t offscreenBuffer = renderer.createOffscreenBuffer(display, 200u, 200u);
+    const ramses::displayBufferId_t offscreenBuffer = renderer.createOffscreenBuffer(display, 200u, 200u);
     renderer.flush();
     eventHandler.waitForOffscreenBufferCreated(offscreenBuffer);
 
     // Assign the second scene to the offscreen buffer
     // This means scene is not going to be rendered on the display but to the offscreen buffer instead
-    renderer.assignSceneToOffscreenBuffer(sceneId2, offscreenBuffer);
+    renderer.assignSceneToDisplayBuffer(sceneId2, offscreenBuffer);
     renderer.flush();
     eventHandler.waitForSceneAssignedToOffscreenBuffer(sceneId2);
 
@@ -416,6 +374,17 @@ int main(int argc, char* argv[])
     renderer.showScene(sceneId2);
     renderer.flush();
     /// [Offscreen Buffer Example]
-    std::this_thread::sleep_for(std::chrono::seconds(100u));
+
+    ramses::MeshNode* meshScene1 = ramses::RamsesUtils::TryConvert<ramses::MeshNode>(*scene1->findObjectByName("triangle mesh node"));
+    ramses::MeshNode* meshScene2 = ramses::RamsesUtils::TryConvert<ramses::MeshNode>(*scene2->findObjectByName("triangle mesh node"));
+    for (size_t i = 0; i < 5000; ++i)
+    {
+        meshScene1->rotate(0.f, 0.f, 1.4f);
+        scene1->flush();
+        meshScene2->rotate(0.f, 0.f, 3.5f);
+        scene2->flush();
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    }
     renderer.stopThread();
 }

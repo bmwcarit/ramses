@@ -24,17 +24,17 @@ namespace ramses_internal
         ResourceMock(ResourceContentHash hash, EResourceType typeId);
         virtual ~ResourceMock();
 
-        MOCK_CONST_METHOD0(getResourceData, const SceneResourceData&());
-        MOCK_CONST_METHOD0(getCompressedResourceData, const CompressedSceneResourceData&());
+        MOCK_CONST_METHOD0(getResourceData, const ResourceBlob&());
+        MOCK_CONST_METHOD0(getCompressedResourceData, const CompressedResouceBlob&());
         MOCK_CONST_METHOD0(getDecompressedDataSize, UInt32());
         MOCK_CONST_METHOD0(getCompressedDataSize, UInt32());
-        MOCK_CONST_METHOD0(isCompressedAvailable, ramses_internal::Bool());
-        MOCK_CONST_METHOD0(isDeCompressedAvailable, ramses_internal::Bool());
+        MOCK_CONST_METHOD0(isCompressedAvailable, bool());
+        MOCK_CONST_METHOD0(isDeCompressedAvailable, bool());
         MOCK_CONST_METHOD1(compress, void(CompressionLevel));
         MOCK_CONST_METHOD0(decompress, void());
-        MOCK_METHOD2(setResourceData, void(const SceneResourceData&, const ResourceContentHash&));
-        MOCK_METHOD1(setResourceData, void(const SceneResourceData&));
-        MOCK_METHOD2(setCompressedResourceData, void(const CompressedSceneResourceData&, const ResourceContentHash&));
+        MOCK_METHOD2(setResourceData, void(ResourceBlob, const ResourceContentHash&));
+        MOCK_METHOD1(setResourceData, void(ResourceBlob));
+        MOCK_METHOD3(setCompressedResourceData, void(CompressedResouceBlob, uint32_t uncompressedSize, const ResourceContentHash&));
         MOCK_CONST_METHOD1(serializeResourceMetadataToStream, void(IOutputStream& output));
         MOCK_CONST_METHOD0(getCacheFlag, ResourceCacheFlag());
         MOCK_CONST_METHOD0(getName, const String&());

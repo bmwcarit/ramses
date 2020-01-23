@@ -10,6 +10,7 @@
 #define RAMSES_LINE_H
 
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
+#include "ramses-client-api/AppearanceEnums.h"
 
 namespace ramses
 {
@@ -34,7 +35,7 @@ namespace ramses
             EColor_Yellow
         };
 
-        Line(RamsesClient& client, Scene& scene, Effect& effect, enum EColor color, float alpha = 1.f);
+        Line(RamsesClient& client, Scene& scene, Effect& effect, enum EColor color, EDrawMode desiredDrawMode, float alpha = 1.f);
 
         Appearance& GetAppearance()
         {
@@ -48,7 +49,7 @@ namespace ramses
     protected:
         static Appearance&        createAppearance(Effect& effect, Scene& scene);
         static GeometryBinding&   createGeometry(RamsesClient& client, Scene& scene, const Effect& effect, const UInt16Array& indices);
-        static const UInt16Array& createIndices(RamsesClient& client);
+        static const UInt16Array& createIndices(RamsesClient& client, EDrawMode desiredDrawMode);
 
         void setColor(const UniformInput& colorInput, enum EColor color, float alpha);
 

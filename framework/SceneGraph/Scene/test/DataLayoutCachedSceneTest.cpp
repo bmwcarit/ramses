@@ -28,42 +28,57 @@ namespace ramses_internal
 
     TEST_F(ADataLayoutCachedScene, canAllocateDataLayout)
     {
-        const DataLayoutHandle dataLayout = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float) });
+        const DataLayoutHandle dataLayout = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash(123u, 0u));
         EXPECT_TRUE(dataLayout.isValid());
         EXPECT_EQ(1u, scene.getNumDataLayoutReferences(dataLayout));
     }
 
     TEST_F(ADataLayoutCachedScene, canAllocateEmptyDataLayout)
     {
-        const DataLayoutHandle dataLayout = scene.allocateDataLayout({});
+        const DataLayoutHandle dataLayout = scene.allocateDataLayout({}, ResourceContentHash(123u, 0u));
         EXPECT_TRUE(dataLayout.isValid());
         EXPECT_EQ(1u, scene.getNumDataLayoutReferences(dataLayout));
     }
 
     TEST_F(ADataLayoutCachedScene, willGiveSameHandleForExistingLayout)
     {
-        const DataLayoutHandle dataLayout1 = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float) });
-        const DataLayoutHandle dataLayout2 = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float) });
+        const DataLayoutHandle dataLayout1 = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float, 2u, EFixedSemantics_ModelMatrix) }, ResourceContentHash(123u, 0u));
+        const DataLayoutHandle dataLayout2 = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float, 2u, EFixedSemantics_ModelMatrix) }, ResourceContentHash(123u, 0u));
         EXPECT_EQ(dataLayout1, dataLayout2);
         EXPECT_EQ(2u, scene.getNumDataLayoutReferences(dataLayout1));
     }
 
-    TEST_F(ADataLayoutCachedScene, willAllocateNewHandleForNonMatchingExistingLayout)
+    TEST_F(ADataLayoutCachedScene, willAllocateNewHandleForNonMatchingDataFieldTypes)
     {
-        DataLayoutHandle dataLayout1 = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float) });
-        DataLayoutHandle dataLayout2 = scene.allocateDataLayout({ DataFieldInfo(EDataType_Int32) });
+        DataLayoutHandle dataLayout1 = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, {});
+        DataLayoutHandle dataLayout2 = scene.allocateDataLayout({ DataFieldInfo(EDataType_Int32) }, {});
         EXPECT_NE(dataLayout1, dataLayout2);
         EXPECT_EQ(1u, scene.getNumDataLayoutReferences(dataLayout1));
         EXPECT_EQ(1u, scene.getNumDataLayoutReferences(dataLayout2));
+    }
 
-        dataLayout1 = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float, 2u) });
-        dataLayout2 = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float, 3u) });
+    TEST_F(ADataLayoutCachedScene, willAllocateNewHandleForNonMatchingDataFieldElementCounts)
+    {
+        DataLayoutHandle dataLayout1 = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float, 2u) }, {});
+        DataLayoutHandle dataLayout2 = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float, 3u) }, {});
         EXPECT_NE(dataLayout1, dataLayout2);
         EXPECT_EQ(1u, scene.getNumDataLayoutReferences(dataLayout1));
         EXPECT_EQ(1u, scene.getNumDataLayoutReferences(dataLayout2));
+    }
 
-        dataLayout1 = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float, 1u, EFixedSemantics_CameraViewMatrix) });
-        dataLayout2 = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float, 1u, EFixedSemantics_ModelMatrix) });
+    TEST_F(ADataLayoutCachedScene, willAllocateNewHandleForNonMatchingDataFieldSemantics)
+    {
+        const auto dataLayout1 = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float, 1u, EFixedSemantics_CameraViewMatrix) }, {});
+        const auto dataLayout2 = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float, 1u, EFixedSemantics_ModelMatrix) }, {});
+        EXPECT_NE(dataLayout1, dataLayout2);
+        EXPECT_EQ(1u, scene.getNumDataLayoutReferences(dataLayout1));
+        EXPECT_EQ(1u, scene.getNumDataLayoutReferences(dataLayout2));
+    }
+
+    TEST_F(ADataLayoutCachedScene, willAllocateNewHandleForNonMatchingEffectHash)
+    {
+        const auto dataLayout1 = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash{123u, 0u});
+        const auto dataLayout2 = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash{124u, 0u});
         EXPECT_NE(dataLayout1, dataLayout2);
         EXPECT_EQ(1u, scene.getNumDataLayoutReferences(dataLayout1));
         EXPECT_EQ(1u, scene.getNumDataLayoutReferences(dataLayout2));
@@ -71,9 +86,9 @@ namespace ramses_internal
 
     TEST_F(ADataLayoutCachedScene, keepsDataLayoutUntilItsUsageCountDropsToZero)
     {
-        const DataLayoutHandle dataLayout = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float) });
-        EXPECT_EQ(dataLayout, scene.allocateDataLayout({ DataFieldInfo(EDataType_Float) }));
-        EXPECT_EQ(dataLayout, scene.allocateDataLayout({ DataFieldInfo(EDataType_Float) }));
+        const DataLayoutHandle dataLayout = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash(123u, 0u));
+        EXPECT_EQ(dataLayout, scene.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash(123u, 0u)));
+        EXPECT_EQ(dataLayout, scene.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash(123u, 0u)));
         EXPECT_EQ(3u, scene.getNumDataLayoutReferences(dataLayout));
 
         scene.releaseDataLayout(dataLayout);
@@ -90,18 +105,18 @@ namespace ramses_internal
 
     TEST_F(ADataLayoutCachedScene, confidenceTest_canHandleCreationAndCacheLargeDataLayout)
     {
-        const DataLayoutHandle dataLayoutPrevious = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float) });
+        const DataLayoutHandle dataLayoutPrevious = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash(123u, 0u));
 
         const DataFieldInfoVector dataFields(100u, DataFieldInfo(EDataType_Int32));
-        const DataLayoutHandle dataLayout1 = scene.allocateDataLayout(dataFields);
-        const DataLayoutHandle dataLayout2 = scene.allocateDataLayout(dataFields);
+        const DataLayoutHandle dataLayout1 = scene.allocateDataLayout(dataFields, ResourceContentHash(123u, 0u));
+        const DataLayoutHandle dataLayout2 = scene.allocateDataLayout(dataFields, ResourceContentHash(123u, 0u));
         EXPECT_TRUE(dataLayout1.isValid());
         EXPECT_EQ(dataLayout1, dataLayout2);
         EXPECT_EQ(2u, scene.getNumDataLayoutReferences(dataLayout1));
 
         // check that previous data layout exists and is cached
         EXPECT_TRUE(scene.isDataLayoutAllocated(dataLayoutPrevious));
-        EXPECT_EQ(dataLayoutPrevious, scene.allocateDataLayout({ DataFieldInfo(EDataType_Float) }));
+        EXPECT_EQ(dataLayoutPrevious, scene.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash(123u, 0u)));
         EXPECT_EQ(2u, scene.getNumDataLayoutReferences(dataLayout1));
     }
 }

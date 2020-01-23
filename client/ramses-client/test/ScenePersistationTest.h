@@ -19,21 +19,16 @@
 
 namespace ramses
 {
-    class ASceneAndAnimationSystemLoadedFromFile : public LocalTestClientWithSceneAndAnimationSystem, public ::testing::Test
+    class ASceneLoadedFromFile : public LocalTestClientWithScene, public ::testing::Test
     {
     public:
-        explicit ASceneAndAnimationSystemLoadedFromFile(uint32_t animationSystemCreationFlags = EAnimationSystemFlags_Default)
-            : LocalTestClientWithSceneAndAnimationSystem(animationSystemCreationFlags)
-            , m_clientForLoading("client", m_frameworkForLoader)
-            , m_sceneLoaded(0)
-            , m_animationSystemLoaded(0)
+        ASceneLoadedFromFile()
+            : LocalTestClientWithScene()
+            , m_clientForLoading(*m_frameworkForLoader.createClient("client"))
+            , m_sceneLoaded(nullptr)
             , m_resources("someTemporaryResources.ramres")
         {
             m_frameworkForLoader.impl.getScenegraphComponent().setSceneRendererServiceHandler(&sceneActionsCollector);
-        }
-
-        ~ASceneAndAnimationSystemLoadedFromFile()
-        {
         }
 
         typedef ramses_internal::HashMap< ERamsesObjectType, uint32_t > ObjectTypeHistogram;
@@ -75,10 +70,10 @@ namespace ramses
             ::testing::AssertionResult wrongHistogramCount = ::testing::AssertionFailure();
             wrongHistogramCount << "Histogram differs\n";
 
-            if( m.count() != n.count() )
+            if( m.size() != n.size() )
             {
                 wrongHistogramCount << m_expr << " and " << n_expr
-                                    << " have different sizes " << m.count() << " and " << n.count() << "\n";
+                                    << " have different sizes " << m.size() << " and " << n.size() << "\n";
 
                 wrongHistogramCount << m_expr << ":\n";
                 for(ObjectTypeHistogram::ConstIterator iter = m.begin(); iter != m.end(); ++iter)
@@ -137,7 +132,7 @@ namespace ramses
             EXPECT_EQ(StatusOK, status);
 
             m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTemporaryFile.ram", resourceVector);
-            ASSERT_TRUE(0 != m_sceneLoaded);
+            ASSERT_TRUE(nullptr != m_sceneLoaded);
 
             if (expectSameTypeHistogram)
             {
@@ -159,64 +154,36 @@ namespace ramses
 
                 EXPECT_EQ(origSceneSizeInfo, loadedSceneSizeInfo);
             }
-
-            m_animationSystemLoaded = RamsesUtils::TryConvert<AnimationSystem>(*m_sceneLoaded->findObjectByName("animation system"));
-            ASSERT_TRUE(0 != m_animationSystemLoaded);
         }
 
         template<typename T>
         T* getObjectForTesting(const char* name)
         {
             RamsesObject* objectPerName = this->m_sceneLoaded->findObjectByName(name);
-            EXPECT_TRUE(objectPerName != NULL);
+            EXPECT_TRUE(objectPerName != nullptr);
             if (!objectPerName)
                 return nullptr;
             EXPECT_STREQ(name, objectPerName->getName());
 
             T* specificObject = RamsesUtils::TryConvert<T>(*objectPerName);
-            EXPECT_TRUE(0 != specificObject);
-            return specificObject;
-        }
-
-        template<typename T>
-        T* getAnimationObjectForTesting(const char* name)
-        {
-            RamsesObject* objectPerName = this->m_animationSystemLoaded->findObjectByName(name);
-            EXPECT_TRUE(objectPerName != NULL);
-            if (!objectPerName)
-                return nullptr;
-            EXPECT_STREQ(name, objectPerName->getName());
-
-            T* specificObject = RamsesUtils::TryConvert<T>(*objectPerName);
-            EXPECT_TRUE(0 != specificObject);
+            EXPECT_TRUE(nullptr != specificObject);
             return specificObject;
         }
 
         ramses::RamsesFramework m_frameworkForLoader;
-        ramses::RamsesClient m_clientForLoading;
+        ramses::RamsesClient& m_clientForLoading;
         ramses::Scene* m_sceneLoaded;
-        ramses::AnimationSystem* m_animationSystemLoaded;
         ramses::ResourceFileDescription m_resources;
         ramses::ResourceFileDescriptionSet m_resourceVector;
     };
 
-    class ASceneAndAnimationSystemLoadedFromFileWithDefaultRenderPass : public ASceneAndAnimationSystemLoadedFromFile
+    class ASceneLoadedFromFileWithDefaultRenderPass : public ASceneLoadedFromFile
     {
-    public:
-        ASceneAndAnimationSystemLoadedFromFileWithDefaultRenderPass()
-            : ASceneAndAnimationSystemLoadedFromFile(0)
-        {
-        }
     };
 
     template <typename T>
-    class ASceneAndAnimationSystemLoadedFromFileTemplated : public ASceneAndAnimationSystemLoadedFromFile
+    class ASceneLoadedFromFileTemplated : public ASceneLoadedFromFile
     {
-    public:
-        ASceneAndAnimationSystemLoadedFromFileTemplated()
-            : ASceneAndAnimationSystemLoadedFromFile(0)
-        {
-        }
     };
 
 }

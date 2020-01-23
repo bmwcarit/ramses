@@ -10,18 +10,14 @@
 #define RAMSES_TASKEXECUTINGTHREAD_H
 
 #include "PlatformAbstraction/PlatformThread.h"
-#include "PlatformAbstraction/PlatformLock.h"
-#include "IBlockingTaskQueue.h"
-
+#include <mutex>
 
 namespace ramses_internal
 {
-
-
     // class forward declarations
     class ITask;
     class ITaskExecutionObserver;
-    class IBlockingTaskQueue;
+    class ProcessingTaskQueue;
 
     class IThreadAliveNotifier
     {
@@ -48,7 +44,7 @@ namespace ramses_internal
          * Start the thread and use the provided processing task queue to pop the next task for execution.
          * @param   blockingTaskQueue   Reference to the blocking task queue.
          */
-        void start(IBlockingTaskQueue& blockingTaskQueue);
+        void start(ProcessingTaskQueue& blockingTaskQueue);
 
         /**
          * Stop and join the thread when tasks are finished.
@@ -88,14 +84,14 @@ namespace ramses_internal
         /**
          * Pointer to the blocking task queue.
          */
-        IBlockingTaskQueue* m_pBlockingTaskQueue;
+        ProcessingTaskQueue* m_pBlockingTaskQueue;
 
         /**
          * The thread which calls our run function.
          */
         PlatformThread m_thread;
 
-        PlatformLightweightLock m_startStopLock;
+        std::mutex m_startStopLock;
 
         UInt16 m_workerIndex;
 
@@ -103,7 +99,7 @@ namespace ramses_internal
         /**
          * Flag whether the thread is started.
          */
-        Bool m_bThreadStarted;
+        bool m_bThreadStarted;
     };
 
 

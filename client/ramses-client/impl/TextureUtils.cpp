@@ -100,12 +100,12 @@ namespace ramses
                 return false;
             }
 
+            const uint32_t mipWidth = ramses_internal::TextureMathUtils::GetMipSize(i, width);
+            const uint32_t mipHeight = ramses_internal::TextureMathUtils::GetMipSize(i, height);
+            const uint32_t mipDepth = ramses_internal::TextureMathUtils::GetMipSize(i, depth);
             const ramses_internal::ETextureFormat internalFormat = TextureUtils::GetTextureFormatInternal(format);
             if (!ramses_internal::IsFormatCompressed(internalFormat))
             {
-                const uint32_t mipWidth = ramses_internal::TextureMathUtils::GetMipSize(i, width);
-                const uint32_t mipHeight = ramses_internal::TextureMathUtils::GetMipSize(i, height);
-                const uint32_t mipDepth = ramses_internal::TextureMathUtils::GetMipSize(i, depth);
                 const uint32_t expectedMipDataSize = mipWidth * mipHeight * mipDepth * ramses_internal::GetTexelSizeFromFormat(internalFormat);
                 if (mipLevelData[i].m_size < expectedMipDataSize)
                 {
@@ -115,6 +115,12 @@ namespace ramses
                 {
                     LOG_WARN(ramses_internal::CONTEXT_CLIENT, "Provided texture mip data does not match expected size, texture might not be as expected");
                 }
+            }
+
+            if (!TextureUtils::IsTextureSizeSupportedByFormat(mipWidth, mipHeight, format))
+            {
+                LOG_WARN(ramses_internal::CONTEXT_CLIENT, "Provided texture mip " << i << " might fail to be uploaded due to its size "
+                    << mipWidth << "x" << mipHeight << " not supported by used format " << format);
             }
         }
 
@@ -149,10 +155,10 @@ namespace ramses
                 return false;
             }
 
+            const uint32_t mipSize = ramses_internal::TextureMathUtils::GetMipSize(i, size);
             const ramses_internal::ETextureFormat internalFormat = TextureUtils::GetTextureFormatInternal(format);
             if (!ramses_internal::IsFormatCompressed(internalFormat))
             {
-                const uint32_t mipSize = ramses_internal::TextureMathUtils::GetMipSize(i, size);
                 const uint32_t expectedMipDataSize = mipSize * mipSize * ramses_internal::GetTexelSizeFromFormat(internalFormat);
                 if (mipLevelData[i].m_faceDataSize < expectedMipDataSize)
                 {
@@ -163,6 +169,12 @@ namespace ramses
                     LOG_WARN(ramses_internal::CONTEXT_CLIENT, "Provided texture mip data does not match expected size, texture might not be as expected");
                 }
             }
+
+            if (!TextureUtils::IsTextureSizeSupportedByFormat(mipSize, mipSize, format))
+            {
+                LOG_WARN(ramses_internal::CONTEXT_CLIENT, "Provided texture mip " << i << " might fail to be uploaded due to its size "
+                    << mipSize << "x" << mipSize << " not supported by used format " << format);
+            }
         }
 
         return true;
@@ -172,30 +184,17 @@ namespace ramses
     {
         if (width == 0u || height == 0u || depth == 0u)
         {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "TextureParametersValid: texture size cannot be 0.");
             return false;
         }
 
         const uint32_t fullChainMipMapCount = ramses_internal::TextureMathUtils::GetMipLevelCount(width, height, depth);
         if (mipMapCount > fullChainMipMapCount)
         {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "TextureParametersValid: too many mip levels provided.");
             return false;
         }
 
         return true;
-    }
-
-    Texture2D* TextureUtils::CreateTextureResourceFromPng(const char* filePath, RamsesClient& client, const char* name)
-    {
-        ramses_internal::Image image;
-        image.loadFromFilePNG(filePath);
-
-        if (image.getNumberOfPixels() == 0u)
-        {
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "CreateTextureResourceFromPNG:  Could not load PNG. File not found or format not supported: " << filePath);
-            return nullptr;
-        }
-
-        const MipLevelData mipLevelData(static_cast<uint32_t>(image.getData().size()), image.getData().data());
-        return client.createTexture2D(image.getWidth(), image.getHeight(), ETextureFormat_RGBA8, 1, &mipLevelData, false, ResourceCacheFlag_DoNotCache, name);
     }
 }

@@ -28,7 +28,7 @@ namespace ramses_internal
         UInt32 width;
         UInt32 height;
 
-        Bool operator==(const Viewport& other) const
+        bool operator==(const Viewport& other) const
         {
             return  posX == other.posX &&
                     posY == other.posY &&
@@ -36,7 +36,7 @@ namespace ramses_internal
                     height == other.height;
         }
 
-        Bool operator!=(const Viewport& other) const
+        bool operator!=(const Viewport& other) const
         {
             return !operator==(other);
         }

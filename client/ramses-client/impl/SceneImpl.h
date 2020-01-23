@@ -10,6 +10,7 @@
 #define RAMSES_SCENEIMPL_H
 
 #include "ramses-client-api/EScenePublicationMode.h"
+#include "ramses-client-api/EVisibilityMode.h"
 #include "ramses-client-api/EDataType.h"
 #include "ramses-client-api/TextureEnums.h"
 
@@ -26,7 +27,6 @@
 #include "SceneAPI/DataSlot.h"
 #include "SceneAPI/EDataSlotType.h"
 #include "SceneAPI/TextureSampler.h"
-#include "AnimationAPI/IAnimationSystem.h"
 
 #include "Collections/Pair.h"
 #include "Utils/StatisticCollection.h"
@@ -50,10 +50,7 @@ namespace ramses
     class Node;
     class Effect;
     class MeshNode;
-    class AnimationSystem;
-    class AnimationSystemRealTime;
     class GeometryBinding;
-    class AnimationSystemImpl;
     class AttributeInput;
     class NodeImpl;
     class RenderGroup;
@@ -74,6 +71,7 @@ namespace ramses
     class SceneConfigImpl;
     class RenderTargetDescriptionImpl;
     class BlitPass;
+    class PickableObject;
     class TextureSampler;
     class StreamTexture;
     class Texture2D;
@@ -120,6 +118,8 @@ namespace ramses
         ramses::RenderGroup*  createRenderGroup(const char* name);
         ramses::RenderPass*   createRenderPass(const char* name);
         ramses::BlitPass*     createBlitPass(const RenderBuffer& sourceRenderBuffer, const RenderBuffer& destinationRenderBuffer, const char* name);
+
+        ramses::PickableObject* createPickableObject(const VertexDataBuffer& geometryBuffer, const pickableObjectId_t id, const char* name);
 
         ramses::RenderBuffer* createRenderBuffer(uint32_t width, uint32_t height, ERenderBufferType bufferType, ERenderBufferFormat bufferFormat, ERenderBufferAccessMode accessMode, uint32_t sampleCount, const char* name);
         ramses::RenderTarget* createRenderTarget(const RenderTargetDescriptionImpl& rtDesc, const char* name);
@@ -210,9 +210,6 @@ namespace ramses
         status_t updateTextureProvider(const Texture2D& texture, dataProviderId_t id);
         status_t createTextureConsumer(const TextureSampler& sampler, dataConsumerId_t id);
 
-        AnimationSystem*         createAnimationSystem(uint32_t flags, const char* name);
-        AnimationSystemRealTime* createRealTimeAnimationSystem(uint32_t flags, const char* name);
-
         IndexDataBuffer*        createIndexDataBuffer(uint32_t maximumSizeInBytes, EDataType dataType, const char* name);
         IndexDataBufferImpl*    createIndexDataBufferImpl(uint32_t maximumSizeInBytes, EDataType dataType, const char* name);
 
@@ -246,7 +243,6 @@ namespace ramses
     private:
         RenderPass* createRenderPassInternal(const char* name);
         void registerCreatedObject(SceneObject& object);
-        AnimationSystemImpl& createAnimationSystemImpl(uint32_t flags, ERamsesObjectType type, const char* name);
         template <typename ObjectType, typename ObjectImplType>
         status_t createAndDeserializeObjectImpls(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext, uint32_t count);
 
@@ -263,19 +259,17 @@ namespace ramses
         status_t destroyCamera(Camera& camera);
         status_t destroyRenderGroup(RenderGroup& group);
         status_t destroyMeshNode(MeshNode& mesh);
-        status_t destroyAnimationSystem(AnimationSystem& animationSystem);
         status_t destroyNode(Node& node);
         status_t destroyDataObject(DataObject& dataObject);
         status_t destroyTextureSampler(TextureSampler& sampler);
         status_t destroyObject(SceneObject& object);
 
-        typedef std::pair<NodeImpl*, bool> NodeVisibilityPair;
+        typedef std::pair<NodeImpl*, EVisibilityMode> NodeVisibilityPair;
         typedef std::vector<NodeVisibilityPair> NodeVisibilityInfoVector;
 
-        void applyVisibilityToSubtree(NodeImpl& node, bool visibilityToApply);
+        void applyVisibilityToSubtree(NodeImpl& node, EVisibilityMode visibilityToApply);
         void prepareListOfDirtyNodesForHierarchicalVisibility(NodeVisibilityInfoVector& nodesToProcess);
         void applyHierarchicalVisibility();
-
         ramses_internal::ClientScene&           m_scene;
         ramses_internal::SceneCommandBuffer     m_commandBuffer;
         sceneVersionTag_t                       m_nextSceneVersion;

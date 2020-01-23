@@ -9,8 +9,8 @@
 #include "GlslEffect.h"
 #include "Resource/EffectResource.h"
 #include "glslEffectBlock/GlslToEffectConverter.h"
-#include "Utils/ScopedPointer.h"
 #include "GlslLimits.h"
+#include <memory>
 
 namespace ramses_internal
 {
@@ -69,8 +69,8 @@ namespace ramses_internal
 
         ShaderParts vertexShaderParts;
         ShaderParts fragmentShaderParts;
-        ScopedPointer<glslang::TShader> glslVertexShader(new glslang::TShader(EShLangVertex));
-        ScopedPointer<glslang::TShader> glslFragmentShader(new glslang::TShader(EShLangFragment));
+        std::unique_ptr<glslang::TShader> glslVertexShader(new glslang::TShader(EShLangVertex));
+        std::unique_ptr<glslang::TShader> glslFragmentShader(new glslang::TShader(EShLangFragment));
 
         if (!createShaderParts(vertexShaderParts, defineString, m_vertexShader) ||
             !createShaderParts(fragmentShaderParts, defineString, m_fragmentShader))
@@ -89,7 +89,7 @@ namespace ramses_internal
             return nullptr;
         }
 
-        ScopedPointer<glslang::TProgram> program(linkProgram(glslVertexShader.get(), glslFragmentShader.get()));
+        std::unique_ptr<glslang::TProgram> program(linkProgram(glslVertexShader.get(), glslFragmentShader.get()));
         if (!program.get())
         {
             return nullptr;
@@ -135,7 +135,7 @@ namespace ramses_internal
         String versionString;
         if ((versionStringStart = userShader.find("#version")) != -1)
         {
-            Int versionStringEnd = userShader.indexOf('\n', versionStringStart);
+            Int versionStringEnd = userShader.find('\n', versionStringStart);
             if (versionStringEnd == -1)
             {
                 m_errorMessages << "[GLSL Compiler] " << m_name << " Shader contains #version without newline \n";
@@ -143,7 +143,7 @@ namespace ramses_internal
             }
 
             outParts.version  = userShader.substr(versionStringStart, versionStringEnd + 1 - versionStringStart);
-            outParts.userCode = userShader.substr(versionStringEnd + 1, userShader.getLength() - versionStringEnd - 1);
+            outParts.userCode = userShader.substr(versionStringEnd + 1, userShader.size() - versionStringEnd - 1);
         }
         else
         {
@@ -177,7 +177,7 @@ namespace ramses_internal
 
     glslang::TProgram* GlslEffect::linkProgram(glslang::TShader* vertexShader, glslang::TShader* fragmentShader) const
     {
-        ScopedPointer<glslang::TProgram> program(new glslang::TProgram());
+        std::unique_ptr<glslang::TProgram> program(new glslang::TProgram());
         program->addShader(vertexShader);
         program->addShader(fragmentShader);
 
@@ -269,7 +269,7 @@ namespace ramses_internal
         return m_fragmentShaderVersion;
     }
 
-    ramses_internal::String GlslEffect::getErrorMessages() const
+    ramses_internal::String GlslEffect::getEffectErrorMessages() const
     {
         return ramses_internal::String(m_errorMessages.c_str());
     }

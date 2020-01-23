@@ -15,7 +15,7 @@
 
 namespace ramses_internal
 {
-    void AndroidLogAppender::logMessage(const LogMessage& logMessage)
+    void AndroidLogAppender::log(const LogMessage& logMessage)
     {
         android_LogPriority logLevel;
 

@@ -10,8 +10,8 @@
 #define RAMSES_RESOURCEHASHUSAGE_H
 
 #include "Resource/IResource.h"
-#include "PlatformAbstraction/PlatformSharedPointer.h"
 #include "ResourceHashUsageCallback.h"
+#include <memory>
 
 namespace ramses_internal
 {
@@ -46,7 +46,7 @@ namespace ramses_internal
         }
 
     private:
-        PlatformSharedPointer<const ResourceContentHash> m_resource;
+        std::shared_ptr<const ResourceContentHash> m_resource;
     };
 }
 

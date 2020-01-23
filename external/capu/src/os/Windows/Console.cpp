@@ -18,15 +18,6 @@
 
 namespace ramses_capu
 {
-    const uint8_t ramses_capu::os::Console::Colors[] = {
-        0x0C, // RED
-        0x01, // BLUE
-        0x0A, // GREEN
-        0x0E, // YELLOW
-        0x0F, // WHITE
-        0x0B, // AQUA
-    };
-
     HANDLE os::Console::m_event = INVALID_HANDLE_VALUE;
     std::mutex os::Console::interruptMutex;
 

@@ -34,7 +34,7 @@ class AnEffectResourceCreator : public testing::Test
 protected:
     AnEffectResourceCreator()
     : framework()
-    , ramsesClient("ramses client", framework)
+    , ramsesClient(*framework.createClient("ramses client"))
     {
         cleanupOutputFile();
     }
@@ -53,14 +53,14 @@ protected:
         ASSERT_EQ(1u, resources.size());
 
         ramses::RamsesObject* ramsesObject = resources[0];
-        ASSERT_TRUE(NULL != ramsesObject);
+        ASSERT_TRUE(nullptr != ramsesObject);
 
         effectRead = &ramses::RamsesObjectTypeUtils::ConvertTo<ramses::Effect>(*ramsesObject);
-        ASSERT_TRUE(NULL != effectRead);
+        ASSERT_TRUE(nullptr != effectRead);
     }
 
     ramses::RamsesFramework framework;
-    ramses::RamsesClient ramsesClient;
+    ramses::RamsesClient& ramsesClient;
 
 private:
     void cleanupOutputFile()
@@ -74,7 +74,7 @@ private:
 
 TEST_F(AnEffectResourceCreator, canCreateEffectResourceFromGlslShaders)
 {
-    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-test.config", "-or", OUTPUT_RESOURCE_FILE, "-on", "testOutputEffectName", NULL };
+    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-test.config", "-or", OUTPUT_RESOURCE_FILE, "-on", "testOutputEffectName", nullptr };
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesEffectFromGLSLShaderArguments arguments;
@@ -83,7 +83,7 @@ TEST_F(AnEffectResourceCreator, canCreateEffectResourceFromGlslShaders)
     checkExistanceOfOutputFile(true);
     EXPECT_FALSE(FileUtils::FileExists(OUTPUT_EFFECT_ID_NAME));
 
-    ramses::Effect* effectRead = NULL;
+    ramses::Effect* effectRead = nullptr;
     loadEffectFromFile(OUTPUT_RESOURCE_FILE, effectRead);
     ASSERT_TRUE(effectRead != nullptr);
     EXPECT_STREQ(effectRead->getName(), OUTPUT_EFFECT_NAME);
@@ -103,7 +103,7 @@ TEST_F(AnEffectResourceCreator, canCreateEffectResourceFromGlslShaders)
 
 TEST_F(AnEffectResourceCreator, canCreateEffectWithCorrectNameWhenEffectNameIsNotProvided)
 {
-    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-test.config", "-or", OUTPUT_RESOURCE_FILE, NULL };
+    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-test.config", "-or", OUTPUT_RESOURCE_FILE, nullptr };
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesEffectFromGLSLShaderArguments arguments;
@@ -111,7 +111,7 @@ TEST_F(AnEffectResourceCreator, canCreateEffectWithCorrectNameWhenEffectNameIsNo
     EXPECT_TRUE(EffectResourceCreator::Create(arguments));
     checkExistanceOfOutputFile(true);
 
-    ramses::Effect* effectRead = NULL;
+    ramses::Effect* effectRead = nullptr;
     loadEffectFromFile(OUTPUT_RESOURCE_FILE, effectRead);
     ASSERT_TRUE(effectRead != nullptr);
     EXPECT_STREQ(effectRead->getName(), "ramses-shader-tools-test.vertexshader_ramses-shader-tools-test.fragmentshader");
@@ -119,7 +119,7 @@ TEST_F(AnEffectResourceCreator, canCreateEffectWithCorrectNameWhenEffectNameIsNo
 
 TEST_F(AnEffectResourceCreator, reportsErrorWhenCreatingFromInvalidShader)
 {
-    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-invalid-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-test_without_compiler_defines.config", "-or", OUTPUT_RESOURCE_FILE, NULL };
+    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-invalid-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-test_without_compiler_defines.config", "-or", OUTPUT_RESOURCE_FILE, nullptr };
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesEffectFromGLSLShaderArguments arguments;
@@ -130,7 +130,7 @@ TEST_F(AnEffectResourceCreator, reportsErrorWhenCreatingFromInvalidShader)
 
 TEST_F(AnEffectResourceCreator, canWriteEffectIdWithHighLevelResourceHash)
 {
-    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-test.config", "-or", OUTPUT_RESOURCE_FILE, "-on", "testOutputEffectName", "-oe", OUTPUT_EFFECT_ID_NAME, "-ot", "client", NULL };
+    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-test.config", "-or", OUTPUT_RESOURCE_FILE, "-on", "testOutputEffectName", "-oe", OUTPUT_EFFECT_ID_NAME, "-ot", "client", nullptr };
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesEffectFromGLSLShaderArguments arguments;
@@ -139,7 +139,7 @@ TEST_F(AnEffectResourceCreator, canWriteEffectIdWithHighLevelResourceHash)
     checkExistanceOfOutputFile(true);
     EXPECT_TRUE(FileUtils::FileExists(OUTPUT_EFFECT_ID_NAME));
 
-    ramses::Effect* effectRead = NULL;
+    ramses::Effect* effectRead = nullptr;
     loadEffectFromFile(OUTPUT_RESOURCE_FILE, effectRead);
 
     ramses_internal::String hashFileContent;
@@ -155,7 +155,7 @@ TEST_F(AnEffectResourceCreator, canWriteEffectIdWithHighLevelResourceHash)
 
 TEST_F(AnEffectResourceCreator, canWriteEffectIdWithLowLevelResourceHash)
 {
-    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-test.config", "-or", OUTPUT_RESOURCE_FILE, "-on", "testOutputEffectName", "-oe", OUTPUT_EFFECT_ID_NAME, "-ot", "renderer", NULL };
+    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-test.config", "-or", OUTPUT_RESOURCE_FILE, "-on", "testOutputEffectName", "-oe", OUTPUT_EFFECT_ID_NAME, "-ot", "renderer", nullptr };
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesEffectFromGLSLShaderArguments arguments;
@@ -164,7 +164,7 @@ TEST_F(AnEffectResourceCreator, canWriteEffectIdWithLowLevelResourceHash)
     checkExistanceOfOutputFile(true);
     EXPECT_TRUE(FileUtils::FileExists(OUTPUT_EFFECT_ID_NAME));
 
-    ramses::Effect* effectRead = NULL;
+    ramses::Effect* effectRead = nullptr;
     loadEffectFromFile(OUTPUT_RESOURCE_FILE, effectRead);
 
     ramses_internal::String hashFileContent;

@@ -39,7 +39,7 @@ void FileUtils::WriteTextToFile(const ramses_internal::String& text, const char*
     ramses_internal::File file(filePath);
     file.open(ramses_internal::EFileMode_WriteNew);
 
-    file.write(text.c_str(), text.getLength());
+    file.write(text.c_str(), text.size());
     file.flush();
 
     file.close();
@@ -52,7 +52,7 @@ void FileUtils::WriteHashToFile(ramses_internal::ResourceContentHash hash, const
 
     ramses_internal::StringOutputStream stringStream;
     stringStream << hash << "\n";
-    file.write(stringStream.c_str(), stringStream.length());
+    file.write(stringStream.c_str(), stringStream.size());
     file.flush();
 
     file.close();

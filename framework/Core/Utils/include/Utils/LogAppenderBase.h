@@ -9,9 +9,6 @@
 #ifndef RAMSES_LOGAPPENDERBASE_H
 #define RAMSES_LOGAPPENDERBASE_H
 
-#include "Utils/LogLevel.h"
-#include <atomic>
-
 namespace ramses_internal
 {
     class LogMessage;
@@ -19,33 +16,9 @@ namespace ramses_internal
     class LogAppenderBase
     {
     public:
-        LogAppenderBase();
-        virtual ~LogAppenderBase() {}
-
-        virtual void logMessage(const LogMessage& logMessage) = 0;
-        void log(const LogMessage& logMessage);
-
-        ELogLevel getLogLevel() const;
-        void setLogLevel(ELogLevel level);
-
-    protected:
-        std::atomic<ELogLevel> m_logLevel;
+        virtual ~LogAppenderBase() = default;
+        virtual void log(const LogMessage& logMessage) = 0;
     };
-
-    inline LogAppenderBase::LogAppenderBase()
-        : m_logLevel(ELogLevel::Info)
-    {
-    }
-
-    inline ELogLevel LogAppenderBase::getLogLevel() const
-    {
-        return m_logLevel;
-    }
-
-    inline void LogAppenderBase::setLogLevel(ELogLevel level)
-    {
-        m_logLevel = level;
-    }
 }
 
 #endif
