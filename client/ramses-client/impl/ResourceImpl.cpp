@@ -89,9 +89,9 @@ namespace ramses
         return m_hashUsage.getHash();
     }
 
-    status_t ResourceImpl::validate(uint32_t indent) const
+    status_t ResourceImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        const status_t status = ClientObjectImpl::validate(indent);
+        const status_t status = ClientObjectImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
         ramses_internal::StringOutputStream stringStream;
         stringStream << "Resource ID: " << ramses_internal::ResourceContentHash({ m_resourceId.lowPart, m_resourceId.highPart });

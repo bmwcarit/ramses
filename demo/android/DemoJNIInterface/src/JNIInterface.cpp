@@ -7,6 +7,8 @@
 //  -------------------------------------------------------------------------
 
 #include <jni.h>
+#include <android/native_window.h>
+#include <android/native_window_jni.h>
 
 #include "RendererBundle.h"
 #include "SceneViewerBundle.h"
@@ -16,13 +18,14 @@
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_com_bmwgroup_ramses_RamsesRenderer_createRendererNative(JNIEnv *env, jobject instance,
+Java_com_bmwgroup_ramses_RamsesRenderer_createRendererNative(JNIEnv *env, jobject /*instance*/,
                                                        jobject javaSurface, jint width, jint height,
                                                        jstring interfaceSelectionIP_, jstring daemonIP_) {
     const char *interfaceSelectionIP = env->GetStringUTFChars(interfaceSelectionIP_, 0);
     const char *daemonIP = env->GetStringUTFChars(daemonIP_, 0);
+    ANativeWindow* nativeWindowHandle = ANativeWindow_fromSurface(env, javaSurface);
 
-    RendererBundle* bundle = new RendererBundle(env, instance, javaSurface, width, height,
+    RendererBundle* bundle = new RendererBundle(nativeWindowHandle, width, height,
                                                 interfaceSelectionIP, daemonIP);
     bundle->connect();
     bundle->run();
@@ -37,20 +40,23 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_bmwgroup_ramses_RamsesRenderer_disposeRamsesRendererNative(JNIEnv* /*env*/, jobject /*instance*/,
                                                               jlong handle) {
-    delete reinterpret_cast<RendererBundle*>(handle);
+    RendererBundle* bundle = reinterpret_cast<RendererBundle*>(handle);
+    ANativeWindow* nativeWindowHandle = bundle->getNativeWindow();
+    delete bundle;
+    ANativeWindow_release(nativeWindowHandle);
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_com_bmwgroup_ramses_RamsesSceneViewer_createSceneViewerNative(JNIEnv *env, jobject instance,
+Java_com_bmwgroup_ramses_RamsesSceneViewer_createSceneViewerNative(JNIEnv *env, jobject /*instance*/,
                                                              jobject surface, jint width,
                                                              jint height, jstring sceneFile_,
                                                              jstring resFile_) {
     const char *sceneFile = env->GetStringUTFChars(sceneFile_, 0);
     const char *resFile = env->GetStringUTFChars(resFile_, 0);
+    ANativeWindow* nativeWindowHandle = ANativeWindow_fromSurface(env, surface);
 
-    SceneViewerBundle* bundle = new SceneViewerBundle(
-            env, instance, surface, width, height, sceneFile, resFile);
+    SceneViewerBundle* bundle = new SceneViewerBundle(nativeWindowHandle, width, height, sceneFile, resFile);
 
     env->ReleaseStringUTFChars(sceneFile_, sceneFile);
     env->ReleaseStringUTFChars(resFile_, resFile);
@@ -64,7 +70,10 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_bmwgroup_ramses_RamsesSceneViewer_disposeSceneViewerNative(JNIEnv* /*env*/, jobject /*instance*/,
                                                               jlong handle) {
-    delete reinterpret_cast<SceneViewerBundle*>(handle);
+    SceneViewerBundle* bundle = reinterpret_cast<SceneViewerBundle*>(handle);
+    ANativeWindow* nativeWindowHandle = bundle->getNativeWindow();
+    delete bundle;
+    ANativeWindow_release(nativeWindowHandle);
 }
 
 extern "C"

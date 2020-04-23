@@ -19,7 +19,6 @@ namespace ramses_internal
     {
         ClientResourcesUpload = 0,
         SceneResourcesUpload,
-        SceneActionsApply,
         OffscreenBufferRender,
 
         COUNT

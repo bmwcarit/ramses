@@ -235,7 +235,7 @@ protected:
     const FlushTime::Clock::time_point currentFakeTime{ std::chrono::milliseconds(1000) };
 };
 
-INSTANTIATE_TEST_CASE_P(, ARenderer, ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(, ARenderer, ::testing::Values(false, true));
 
 TEST_P(ARenderer, ListIviSurfacesInSystemCompositorController)
 {
@@ -1078,7 +1078,7 @@ TEST_P(ARenderer, canTakeMultipleScreenshotsForMultipleDisplays)
     ScreenshotInfoVector screenshots;
     renderer.dispatchProcessedScreenshots(screenshots);
     ASSERT_EQ(5u, screenshots.size());
-    for (UInt32 i =0; i < screenshots.size(); i++)
+    for (size_t i = 0; i < screenshots.size(); i++)
     {
         EXPECT_TRUE(screenshots[i].success);
         EXPECT_TRUE(screenshots[i].display == displayHandle1 || screenshots[i].display == displayHandle2);

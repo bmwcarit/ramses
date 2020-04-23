@@ -57,6 +57,7 @@ namespace ramses
         * @brief Finds a substring represented by a range of GlyphMetrics that can fit into given width in pixels (in its font glyph bitmap space)
         * @param[in] first Beginning of range of GlyphMetrics
         * @param[in] last End of range of GlyphMetrics, glyph pointed to by last is not included
+        * @param[in] maxWidth width limit in pixels
         * @return Iterator to the first GlyphMetrics within given range that does not fit.
         *         If the whole range fits then last is returned.
         */

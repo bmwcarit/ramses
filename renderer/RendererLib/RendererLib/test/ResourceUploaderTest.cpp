@@ -219,7 +219,7 @@ TEST_F(AResourceUploader, uploadsTextureCubeResource)
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(_)).Times(1);
 
     InSequence seq;
-    EXPECT_CALL(renderer.deviceMock, allocateTextureCube(2u, ETextureFormat_R8, mipCount, 6 * 5)).WillOnce(Return(DeviceResourceHandle(123)));
+    EXPECT_CALL(renderer.deviceMock, allocateTextureCube(2u, ETextureFormat_R8, DefaultTextureSwizzleArray, mipCount, 6 * 5)).WillOnce(Return(DeviceResourceHandle(123)));
     for (UInt32 i = 0u; i < 6u; ++i)
     {
         EXPECT_CALL(renderer.deviceMock, uploadTextureData(DeviceResourceHandle(123), 0u, 0u, 0u, i, 2u, 2u, 1u, _, _));
@@ -239,7 +239,7 @@ TEST_F(AResourceUploader, uploadsTextureCubeResourceWithMipGen)
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(_)).Times(1);
 
     InSequence seq;
-    EXPECT_CALL(renderer.deviceMock, allocateTextureCube(4u, ETextureFormat_R8, 3u, 6 * (16 + 4 + 1))).WillOnce(Return(DeviceResourceHandle(123)));
+    EXPECT_CALL(renderer.deviceMock, allocateTextureCube(4u, ETextureFormat_R8, DefaultTextureSwizzleArray, 3u, 6 * (16 + 4 + 1))).WillOnce(Return(DeviceResourceHandle(123)));
     for (UInt32 i = 0u; i < 6u; ++i)
     {
         EXPECT_CALL(renderer.deviceMock, uploadTextureData(DeviceResourceHandle(123), 0u, 0u, 0u, i, 4u, 4u, 1u, _, _));

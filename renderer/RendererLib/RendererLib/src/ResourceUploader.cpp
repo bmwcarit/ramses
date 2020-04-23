@@ -111,7 +111,7 @@ namespace ramses_internal
             textureDeviceHandle = device.allocateTexture3D(texture.getWidth(), texture.getHeight(), texture.getDepth(), texture.getTextureFormat(), numMipLevelsToAllocate, vramSize);
             break;
         case EResourceType_TextureCube:
-            textureDeviceHandle = device.allocateTextureCube(texture.getWidth(), texture.getTextureFormat(), numMipLevelsToAllocate, vramSize);
+            textureDeviceHandle = device.allocateTextureCube(texture.getWidth(), texture.getTextureFormat(), texture.getTextureSwizzle(), numMipLevelsToAllocate, vramSize);
             break;
         default:
             assert(false);
@@ -124,7 +124,7 @@ namespace ramses_internal
         {
         case EResourceType_Texture2D:
         case EResourceType_Texture3D:
-            for (UInt32 mipLevel = 0u; mipLevel < mipDataSizes.size(); ++mipLevel)
+            for (UInt32 mipLevel = 0u; mipLevel < static_cast<uint32_t>(mipDataSizes.size()); ++mipLevel)
             {
                 const UInt32 width = TextureMathUtils::GetMipSize(mipLevel, texture.getWidth());
                 const UInt32 height = TextureMathUtils::GetMipSize(mipLevel, texture.getHeight());
@@ -137,7 +137,7 @@ namespace ramses_internal
             for (UInt32 i = 0; i < 6u; ++i)
             {
                 const ETextureCubeFace faceId = static_cast<ETextureCubeFace>(i);
-                for (UInt32 mipLevel = 0u; mipLevel < mipDataSizes.size(); ++mipLevel)
+                for (UInt32 mipLevel = 0u; mipLevel < static_cast<uint32_t>(mipDataSizes.size()); ++mipLevel)
                 {
                     const UInt32 faceSize = TextureMathUtils::GetMipSize(mipLevel, texture.getWidth());
                     // texture faceID is encoded in Z offset

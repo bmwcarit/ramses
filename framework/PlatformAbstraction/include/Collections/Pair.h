@@ -9,22 +9,16 @@
 #ifndef RAMSES_PAIR_H
 #define RAMSES_PAIR_H
 
-#include "ramses-capu/container/Hash.h"
+#include "PlatformAbstraction/Hash.h"
 #include <utility>
 
-namespace ramses_capu
+template<typename A, typename B>
+struct std::hash<std::pair<A, B>>
 {
-    /**
-     * Hash code generation for a std::pair instance. Necessary e. g. for using a std::pair as a key in a hash map.
-     */
-    template<typename A, typename B>
-    struct Hash<std::pair<A, B>>
+    size_t operator()(const std::pair<A, B>& data)
     {
-        uint_t operator()(const std::pair<A, B>& data)
-        {
-            return HashValue(data.first, data.second);
-        }
-    };
-}
+        return ramses_internal::HashValue(data.first, data.second);
+    }
+};
 
 #endif

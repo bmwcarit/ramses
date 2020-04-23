@@ -20,7 +20,7 @@
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/TextureSwizzle.h"
 #include "ramses-client-api/TextureEnums.h"
-
+#include <cassert>
 
 /*
 To test the texture data format and the sampling we use a simple 2x2 texture.

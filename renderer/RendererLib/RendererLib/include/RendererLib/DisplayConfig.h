@@ -80,9 +80,6 @@ namespace ramses_internal
         Bool getKeepEffectsUploaded() const;
         void setKeepEffectsUploaded(Bool enable);
 
-        Bool isStereoDisplay() const;
-        void setStereoDisplay(Bool enabled);
-
         Bool isResizable() const;
         void setResizable(Bool resizable);
 
@@ -92,9 +89,6 @@ namespace ramses_internal
         void setClearColor(const Vector4& clearColor);
         const Vector4& getClearColor() const;
 
-        void setOffscreen(Bool offscreenFlag);
-        Bool getOffscreen() const;
-
         Bool operator==(const DisplayConfig& other) const;
         Bool operator!=(const DisplayConfig& other) const;
 
@@ -103,7 +97,6 @@ namespace ramses_internal
         Bool m_borderless = false;
         Bool m_warpingEnabled = false;
         Bool m_resizable = false;
-        Bool m_stereoDisplay = false;
 
         UInt32 m_desiredWindowWidth = 1280;
         UInt32 m_desiredWindowHeight = 480;
@@ -127,8 +120,6 @@ namespace ramses_internal
         Bool m_keepEffectsUploaded = true;
         UInt64 m_gpuMemoryCacheSize = 0u;
         Vector4 m_clearColor{ 0.f, 0.f, 0.f, 1.0f };
-
-        Bool m_offscreen = false;
     };
 }
 

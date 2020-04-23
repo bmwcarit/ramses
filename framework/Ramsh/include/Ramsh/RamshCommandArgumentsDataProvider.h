@@ -28,7 +28,7 @@ namespace ramses_internal
 
     template<typename T> struct ArgumentConverterProxy;
 
-    class RamshArgumentBase : private StringSet
+    class RamshArgumentBase
     {
     public:
         // returns the description of the argument
@@ -69,10 +69,12 @@ namespace ramses_internal
 
         template<typename T> inline void cleanup()
         {
-            if(m_defaultValue) delete static_cast<T*>(m_defaultValue);
+            if(m_defaultValue)
+                delete static_cast<T*>(m_defaultValue);
         }
 
     private:
+        HashSet<String> m_keywords;
         String m_description;
         void* m_defaultValue;
         const RamshTypeInfo m_typeInfo;
@@ -211,8 +213,8 @@ namespace ramses_internal
 
     inline String RamshArgumentBase::keywords() const
     {
-        StringSet::ConstIterator it = StringSet::begin();
-        const StringSet::ConstIterator end = StringSet::end();
+        StringSet::ConstIterator it = m_keywords.begin();
+        const StringSet::ConstIterator end = m_keywords.end();
 
         String s;
         for(;it!=end;++it)
@@ -224,7 +226,7 @@ namespace ramses_internal
 
     inline const RamshArgumentData* RamshArgumentBase::set(const String& keyword, const String& data) const
     {
-        if(StringSet::contains(keyword))
+        if(m_keywords.contains(keyword))
         {
             return &data;
         }
@@ -251,7 +253,8 @@ namespace ramses_internal
         }
         else
         {
-            LOG_ERROR(CONTEXT_RAMSH,"Trying to set default value of argument of type " << typeString() << " with value of wrong type " << TypeName<T>());
+            LOG_ERROR(CONTEXT_RAMSH,"Trying to set default value of argument of type " << typeString() <<
+                      " with value of wrong type " << static_cast<String>(TypeName<T>()));
         }
     }
 
@@ -296,7 +299,7 @@ namespace ramses_internal
 
     inline void RamshArgumentBase::registerKeywordInternal(const String& keyword)
     {
-        StringSet::put(keyword);
+        m_keywords.put(keyword);
     }
 
     inline void RamshArgumentBase::setDescriptionInternal(const String& description)
@@ -434,7 +437,8 @@ namespace ramses_internal
                     {
                         // if an argument value was found, remove the consumed data
                         in.erase(in.begin() + pos);
-                        if(m_args[j]->amountConsumed() > 1) in.erase(in.begin() + pos);
+                        if(m_args[j]->amountConsumed() > 1)
+                            in.erase(in.begin() + pos);
 
                         break;
                     }
@@ -443,7 +447,7 @@ namespace ramses_internal
         }
 
         // try to set positional values for each unset argument (data without a flag)
-        for(UInt32 j = 0; j < m_args.size(); j++)
+        for(size_t j = 0; j < m_args.size(); j++)
         {
             // only set the data if an argument has no previously found value, if any data is left and if the argument actually consumes any data
             if(!m_data[j] && in.size() > 0 && m_args[j]->amountConsumed() > 1)

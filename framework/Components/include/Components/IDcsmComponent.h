@@ -24,8 +24,9 @@ namespace ramses_internal
         virtual bool setLocalConsumerAvailability(bool available) = 0;
         virtual bool setLocalProviderAvailability(bool available) = 0;
 
-        virtual bool sendOfferContent(ContentID contentID, Category) = 0;
-        virtual bool sendContentReady(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) = 0;
+        virtual bool sendOfferContent(ContentID contentID, Category category, bool localOnly) = 0;
+        virtual bool sendContentDescription(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) = 0;
+        virtual bool sendContentReady(ContentID contentID) = 0;
         virtual bool sendContentFocusRequest(ContentID contentID) = 0;
         virtual bool sendRequestStopOfferContent(ContentID contentID) = 0;
 

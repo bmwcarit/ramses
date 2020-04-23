@@ -33,6 +33,7 @@ namespace ramses
     : RamsesObject(impl_)
     , impl(impl_)
     {
+        impl.setHLObject(this);
     }
 
     RamsesClient::~RamsesClient()
@@ -129,10 +130,10 @@ namespace ramses
         return tex;
     }
 
-    TextureCube* RamsesClient::createTextureCube(uint32_t size, ETextureFormat format, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name /* = 0 */)
+    TextureCube* RamsesClient::createTextureCube(uint32_t size, ETextureFormat format, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name /* = 0 */)
     {
-        TextureCube* tex = impl.createTextureCube(size, format, cacheFlag, name, mipMapCount, mipLevelData, generateMipChain);
-        LOG_HL_CLIENT_API7(LOG_API_RESOURCE_PTR_STRING(tex), size, format, mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, cacheFlag, name);
+        TextureCube* tex = impl.createTextureCube(size, format, cacheFlag, name, mipMapCount, mipLevelData, generateMipChain, swizzle);
+        LOG_HL_CLIENT_API8(LOG_API_RESOURCE_PTR_STRING(tex), size, format, mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, swizzle, cacheFlag, name);
         return tex;
     }
 

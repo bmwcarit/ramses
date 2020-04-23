@@ -19,20 +19,6 @@ namespace ramses
     {
     }
 
-    status_t RamsesRenderer::subscribeScene(sceneId_t sceneId)
-    {
-        const status_t status = impl.subscribeScene(sceneId);
-        LOG_HL_RENDERER_API1(status, sceneId);
-        return status;
-    }
-
-    status_t RamsesRenderer::unsubscribeScene(sceneId_t sceneId)
-    {
-        const status_t status = impl.unsubscribeScene(sceneId);
-        LOG_HL_RENDERER_API1(status, sceneId);
-        return status;
-    }
-
     RamsesRenderer::~RamsesRenderer()
     {
         LOG_HL_RENDERER_API_NOARG(LOG_API_VOID);
@@ -107,11 +93,21 @@ namespace ramses
         return impl.getDisplayFramebuffer(displayId);
     }
 
-    status_t RamsesRenderer::linkData(sceneId_t providerScene, dataProviderId_t providerId, sceneId_t consumerScene, dataConsumerId_t consumerId)
+    RendererSceneControl* RamsesRenderer::getSceneControlAPI()
     {
-        const status_t status = impl.linkData(providerScene, providerId, consumerScene, consumerId);
-        LOG_HL_RENDERER_API4(status, providerScene, providerId, consumerScene, consumerId);
-        return status;
+        return impl.getSceneControlAPI();
+    }
+
+    RendererSceneControl_legacy* RamsesRenderer::getSceneControlAPI_legacy()
+    {
+        return impl.getSceneControlAPI_legacy();
+    }
+
+    DcsmContentControl* RamsesRenderer::createDcsmContentControl(const DcsmContentControlConfig& config)
+    {
+        auto ret = impl.createDcsmContentControl(config);
+        LOG_HL_RENDERER_API1(LOG_API_GENERIC_PTR_STRING(ret), LOG_API_GENERIC_OBJECT_STRING(config));
+        return ret;
     }
 
     status_t RamsesRenderer::handlePickEvent(sceneId_t sceneId, float bufferNormalizedCoordX, float bufferNormalizedCoordY)
@@ -121,52 +117,10 @@ namespace ramses
         return status;
     }
 
-    status_t RamsesRenderer::linkOffscreenBufferToSceneData(displayBufferId_t offscreenBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId)
-    {
-        const status_t status = impl.linkOffscreenBufferToSceneData(offscreenBufferId, consumerSceneId, consumerDataSlotId);
-        LOG_HL_RENDERER_API3(status, offscreenBufferId, consumerSceneId, consumerDataSlotId);
-        return status;
-    }
-
-    status_t RamsesRenderer::unlinkData(sceneId_t consumerScene, dataConsumerId_t consumerId)
-    {
-        const status_t status = impl.unlinkData(consumerScene, consumerId);
-        LOG_HL_RENDERER_API2(status, consumerScene, consumerId);
-        return status;
-    }
-
     status_t RamsesRenderer::dispatchEvents(IRendererEventHandler& rendererEventHandler)
     {
         const status_t status = impl.dispatchEvents(rendererEventHandler);
         LOG_HL_RENDERER_API1(status, LOG_API_GENERIC_OBJECT_STRING(rendererEventHandler));
-        return status;
-    }
-
-    status_t RamsesRenderer::mapScene(displayId_t displayId, sceneId_t sceneId)
-    {
-        const status_t status = impl.mapScene(displayId, sceneId);
-        LOG_HL_RENDERER_API2(status, displayId, sceneId);
-        return status;
-    }
-
-    status_t RamsesRenderer::unmapScene(sceneId_t sceneId)
-    {
-        const status_t status = impl.unmapScene(sceneId);
-        LOG_HL_RENDERER_API1(status, sceneId);
-        return status;
-    }
-
-    status_t RamsesRenderer::showScene(sceneId_t sceneId)
-    {
-        const status_t status = impl.showScene(sceneId);
-        LOG_HL_RENDERER_API1(status, sceneId);
-        return status;
-    }
-
-    status_t RamsesRenderer::hideScene(sceneId_t sceneId)
-    {
-        const status_t status = impl.hideScene(sceneId);
-        LOG_HL_RENDERER_API1(status, sceneId);
         return status;
     }
 
@@ -181,20 +135,6 @@ namespace ramses
     {
         const status_t status = impl.destroyOffscreenBuffer(display, offscreenBuffer);
         LOG_HL_RENDERER_API2(status, display, offscreenBuffer);
-        return status;
-    }
-
-    status_t RamsesRenderer::assignSceneToDisplayBuffer(sceneId_t sceneId, displayBufferId_t displayBuffer, int32_t sceneRenderOrder)
-    {
-        const status_t status = impl.assignSceneToDisplayBuffer(sceneId, displayBuffer, sceneRenderOrder);
-        LOG_HL_RENDERER_API3(status, sceneId, displayBuffer, sceneRenderOrder);
-        return status;
-    }
-
-    status_t RamsesRenderer::setBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a)
-    {
-        const status_t status = impl.setBufferClearColor(display, displayBuffer, r, g, b, a);
-        LOG_HL_RENDERER_API6(status, display, displayBuffer, r, g, b, a);
         return status;
     }
 
@@ -261,10 +201,10 @@ namespace ramses
         return status;
     }
 
-    status_t RamsesRenderer::setFrameTimerLimits(uint64_t limitForSceneResourcesUpload, uint64_t limitForClientResourcesUpload, uint64_t limitForSceneActionsApply, uint64_t limitForOffscreenBufferRender)
+    status_t RamsesRenderer::setFrameTimerLimits(uint64_t limitForSceneResourcesUpload, uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender)
     {
-        const status_t status = impl.setFrameTimerLimits(limitForSceneResourcesUpload, limitForClientResourcesUpload, limitForSceneActionsApply, limitForOffscreenBufferRender);
-        LOG_HL_RENDERER_API4(status, limitForSceneResourcesUpload, limitForClientResourcesUpload, limitForSceneActionsApply, limitForOffscreenBufferRender);
+        const status_t status = impl.setFrameTimerLimits(limitForSceneResourcesUpload, limitForClientResourcesUpload, limitForOffscreenBufferRender);
+        LOG_HL_RENDERER_API3(status, limitForSceneResourcesUpload, limitForClientResourcesUpload, limitForOffscreenBufferRender);
         return status;
     }
 

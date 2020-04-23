@@ -13,6 +13,7 @@
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/DataVector4f.h"
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -286,11 +287,6 @@ namespace ramses_internal
             addMeshNodeToDefaultRenderGroup(*m_meshNode1, 0);
             addMeshNodeToDefaultRenderGroup(*m_meshNode2, 1);
             addMeshNodeToDefaultRenderGroup(*m_meshNode3, 2);
-            break;
-        case STEREO_RENDERING:
-            m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
-            m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
-            m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
             break;
         case PERSPECTIVE_CAMERA:
         {

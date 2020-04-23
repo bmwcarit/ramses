@@ -20,12 +20,13 @@ namespace ramses_internal
     class RendererCommandBuffer;
     class RendererEventCollector;
     class RendererSceneUpdater;
+    class IRendererSceneControlLogic;
     class FrameTimer;
 
     class RendererCommandExecutor
     {
     public:
-        RendererCommandExecutor(Renderer& renderer, RendererCommandBuffer& rendererCommandBuffer, RendererSceneUpdater& rendererSceneUpdater, RendererEventCollector& rendererEventCollector, FrameTimer& frameTimer);
+        RendererCommandExecutor(Renderer& renderer, RendererCommandBuffer& rendererCommandBuffer, RendererSceneUpdater& rendererSceneUpdater, IRendererSceneControlLogic& sceneControlLogic, RendererEventCollector& rendererEventCollector, FrameTimer& frameTimer);
 
         void executePendingCommands();
 
@@ -33,6 +34,7 @@ namespace ramses_internal
 
         Renderer&                       m_renderer;
         RendererSceneUpdater&           m_rendererSceneUpdater;
+        IRendererSceneControlLogic&     m_sceneControlLogic;
         RendererCommandBuffer&          m_rendererCommandBuffer;
         RendererEventCollector&         m_rendererEventCollector;
         FrameTimer&                     m_frameTimer;

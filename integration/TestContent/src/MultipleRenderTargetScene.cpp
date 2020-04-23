@@ -21,6 +21,7 @@
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/RenderTargetDescription.h"
 #include "Math3d/Vector3.h"
+#include <cassert>
 
 namespace ramses_internal
 {

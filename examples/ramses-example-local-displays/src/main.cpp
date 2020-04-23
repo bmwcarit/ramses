@@ -7,11 +7,10 @@
 //  -------------------------------------------------------------------------
 
 #include "ramses-client.h"
-#include "ramses-utils.h"
 
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/DisplayConfig.h"
-#include "ramses-renderer-api/IRendererEventHandler.h"
+#include "ramses-renderer-api/RendererSceneControl.h"
 #include <unordered_set>
 #include <thread>
 
@@ -19,92 +18,6 @@
  * @example ramses-example-local-displays/src/main.cpp
  * @brief Example of a local client plus renderer and two displays
  */
-
-/** \cond HIDDEN_SYMBOLS */
-class SceneStateEventHandler : public ramses::RendererEventHandlerEmpty
-{
-public:
-    SceneStateEventHandler(ramses::RamsesRenderer& renderer)
-        : m_renderer(renderer)
-    {
-    }
-
-    virtual void scenePublished(ramses::sceneId_t sceneId) override
-    {
-        m_publishedScenes.insert(sceneId);
-    }
-
-    virtual void sceneUnpublished(ramses::sceneId_t sceneId) override
-    {
-        m_publishedScenes.erase(sceneId);
-    }
-
-    virtual void sceneSubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_OK == result)
-        {
-            m_subscribedScenes.insert(sceneId);
-        }
-    }
-
-    virtual void sceneUnsubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_FAIL != result)
-        {
-            m_subscribedScenes.erase(sceneId);
-        }
-    }
-
-    virtual void sceneMapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_OK == result)
-        {
-            m_mappedScenes.insert(sceneId);
-        }
-    }
-
-    virtual void sceneUnmapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_FAIL != result)
-        {
-            m_mappedScenes.erase(sceneId);
-        }
-    }
-
-    void waitForPublication(const ramses::sceneId_t sceneId)
-    {
-        waitForSceneInSet(sceneId, m_publishedScenes);
-    }
-
-    void waitForSubscription(const ramses::sceneId_t sceneId)
-    {
-        waitForSceneInSet(sceneId, m_subscribedScenes);
-    }
-
-    void waitForMapped(const ramses::sceneId_t sceneId)
-    {
-        waitForSceneInSet(sceneId, m_mappedScenes);
-    }
-
-private:
-    typedef std::unordered_set<ramses::sceneId_t> SceneSet;
-
-    void waitForSceneInSet(const ramses::sceneId_t sceneId, const SceneSet& sceneSet)
-    {
-        while (sceneSet.find(sceneId) == sceneSet.end())
-        {
-            m_renderer.doOneLoop();
-            m_renderer.dispatchEvents(*this);
-        }
-    }
-
-    SceneSet m_publishedScenes;
-    SceneSet m_subscribedScenes;
-    SceneSet m_mappedScenes;
-
-    ramses::RamsesRenderer& m_renderer;
-};
-/** \endcond */
 
 uint64_t nowMs()
 {
@@ -158,7 +71,34 @@ ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t scen
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
 
+    ramses::AnimationSystemRealTime* animationSystem = clientScene->createRealTimeAnimationSystem(ramses::EAnimationSystemFlags_Default, "animation system");
+
+    // create splines with animation keys
+    ramses::SplineLinearFloat* spline1 = animationSystem->createSplineLinearFloat("spline1");
+    spline1->setKey(0u, 0.f);
+    spline1->setKey(5000u, 500.f);
+    spline1->setKey(10000u, 1000.f);
+
+    // create animated property for each translation node with single component animation
+    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode, ramses::EAnimatedProperty_Rotation, ramses::EAnimatedPropertyComponent_Z);
+
+    // create three animations
+    ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
+
+    // create animation sequence and add animation
+    ramses::AnimationSequence* sequence = animationSystem->createAnimationSequence();
+    sequence->addAnimation(*animation1);
+
+    // set animation properties (optional)
+    sequence->setAnimationLooping(*animation1);
+    sequence->setPlaybackSpeed(5.f);
+
+    // start animation sequence
+    animationSystem->updateLocalTime(nowMs());
+    sequence->start();
+
     appearance->setInputValueVector4f(colorInput, 1.0f, 1.0f, 0.3f, 1.0f);
+
 
     return clientScene;
 }
@@ -209,7 +149,34 @@ ramses::Scene* createScene2(ramses::RamsesClient& client, ramses::sceneId_t scen
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
 
+    ramses::AnimationSystemRealTime* animationSystem = clientScene->createRealTimeAnimationSystem(ramses::EAnimationSystemFlags_Default, "animation system");
+
+    // create splines with animation keys
+    ramses::SplineLinearFloat* spline1 = animationSystem->createSplineLinearFloat("spline1");
+    spline1->setKey(0u, 0.f);
+    spline1->setKey(5000u, -500.f);
+    spline1->setKey(10000u, -1000.f);
+
+    // create animated property for each translation node with single component animation
+    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode, ramses::EAnimatedProperty_Rotation, ramses::EAnimatedPropertyComponent_Z);
+
+    // create three animations
+    ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
+
+    // create animation sequence and add animation
+    ramses::AnimationSequence* sequence = animationSystem->createAnimationSequence();
+    sequence->addAnimation(*animation1);
+
+    // set animation properties (optional)
+    sequence->setAnimationLooping(*animation1);
+    sequence->setPlaybackSpeed(5.f);
+
+    // start animation sequence
+    animationSystem->updateLocalTime(nowMs());
+    sequence->start();
+
     appearance->setInputValueVector4f(colorInput, 1.0f, 0.0f, 0.5f, 1.0f);
+
 
     return clientScene;
 }
@@ -225,6 +192,7 @@ int main(int argc, char* argv[])
     // Ramses renderer
     ramses::RendererConfig rendererConfig(argc, argv);
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
+    auto& sceneControlAPI = *renderer.getSceneControlAPI();
     framework.connect();
 
     ramses::sceneId_t sceneId1(1u);
@@ -237,19 +205,6 @@ int main(int argc, char* argv[])
     scene2->flush();
     scene2->publish();
 
-    SceneStateEventHandler eventHandler(renderer);
-
-    eventHandler.waitForPublication(sceneId1);
-    eventHandler.waitForPublication(sceneId2);
-
-    //subscribe to scenes
-    renderer.subscribeScene(sceneId1);
-    renderer.subscribeScene(sceneId2);
-    //apply subscriptions immediately, otherwise scene cannot be mapped
-    renderer.flush();
-    eventHandler.waitForSubscription(sceneId1);
-    eventHandler.waitForSubscription(sceneId2);
-
     /// [Displays Example]
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
     //                 This should not be the case for real applications.
@@ -260,10 +215,10 @@ int main(int argc, char* argv[])
     displayConfig1.setWaylandIviLayerID(3);
     displayConfig1.setWindowIviVisible();
     const ramses::displayId_t display1 = renderer.createDisplay(displayConfig1);
-    renderer.mapScene(display1, sceneId1);
-    renderer.flush();
-    eventHandler.waitForMapped(sceneId1);
-    renderer.showScene(sceneId1);
+
+    sceneControlAPI.setSceneMapping(sceneId1, display1);
+    sceneControlAPI.setSceneState(sceneId1, ramses::RendererSceneState::Rendered);
+    sceneControlAPI.flush();
 
     ramses::DisplayConfig displayConfig2(argc, argv);
     displayConfig2.setIntegrityRGLDeviceUnit(1);
@@ -271,22 +226,16 @@ int main(int argc, char* argv[])
     displayConfig2.setWaylandIviLayerID(3);
     displayConfig2.setWindowIviVisible();
     const ramses::displayId_t display2 = renderer.createDisplay(displayConfig2);
-    renderer.mapScene(display2, sceneId2);
     renderer.flush();
-    eventHandler.waitForMapped(sceneId2);
-    renderer.showScene(sceneId2);
+
+    sceneControlAPI.setSceneMapping(sceneId2, display2);
+    sceneControlAPI.setSceneState(sceneId2, ramses::RendererSceneState::Rendered);
+    sceneControlAPI.flush();
+
     /// [Displays Example]
 
-    renderer.flush();
-
-    ramses::MeshNode* meshScene1 = ramses::RamsesUtils::TryConvert<ramses::MeshNode>(*scene1->findObjectByName("triangle mesh node"));
-    ramses::MeshNode* meshScene2 = ramses::RamsesUtils::TryConvert<ramses::MeshNode>(*scene2->findObjectByName("triangle mesh node"));
     for (;;)
     {
         renderer.doOneLoop();
-        meshScene1->rotate(0.f, 0.f, 15.f);
-        scene1->flush();
-        meshScene2->rotate(0.f, 0.f, -15.f);
-        scene2->flush();
     }
 }

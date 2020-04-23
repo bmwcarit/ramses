@@ -37,7 +37,6 @@ namespace ramses_internal
     {
         ResourceLoadInfo()
             : resourceStream(nullptr)
-            , requesterId(false)
         {}
 
         BinaryFileInputStream* resourceStream;
@@ -87,7 +86,7 @@ namespace ramses_internal
         void participantHasDisconnected(const Guid& guid) override;
 
         // implement ResourceConsumerServiceHandler
-        virtual void handleSendResource(const ByteArrayView& data, const Guid& providerID) override;
+        virtual void handleSendResource(const absl::Span<const Byte>& data, const Guid& providerID) override;
         virtual void handleResourcesNotAvailable(const ResourceContentHashVector& resources, const Guid& providerID) override;
 
         // internal / testing
@@ -142,6 +141,7 @@ namespace ramses_internal
         HashMap<Guid, ResourceStreamDeserializer*>              m_resourceDeserializers;
         RequestsMap                                             m_requestedResources;
         std::unordered_map<RequesterID, ManagedResourceVector>  m_arrivedResources;
+        std::unordered_map<RequesterID, bool>                   m_hasArrivedRemoteResources;
         std::vector<ResourceContentHash>                        m_unrequestedResources;
 
         StatisticCollectionFramework&                           m_statistics;

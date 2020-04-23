@@ -132,4 +132,35 @@ namespace ramses
 #define LOG_FATAL_F(context, callable) \
     LOG_COMMON_F((context), ::ramses_internal::ELogLevel::Fatal, callable)
 
+// LOG_* macros for log message via printf syntax with callable
+#define LOG_COMMON_PF(context, logLevel, callable)                                                                                                                             \
+    do                                                                                                                                                                         \
+    {                                                                                                                                                                          \
+        if ((logLevel) <= (context).getLogLevel())                                                                                                                             \
+        {                                                                                                                                                                      \
+            fmt::memory_buffer ramses_fmtlib_buffer; \
+            callable(ramses_fmtlib_buffer); \
+            ::ramses_internal::GetRamsesLogger().log(::ramses_internal::LogMessage((context), (logLevel), ::ramses_internal::StringOutputStream(fmt::to_string(ramses_fmtlib_buffer)))); \
+        }                                                                                                                                                                      \
+    } while (0)
+
+#define LOG_TRACE_PF(context, callable)                                 \
+    LOG_COMMON_PF((context), ::ramses_internal::ELogLevel::Trace, callable)
+
+#define LOG_INFO_PF(context, callable)                                  \
+    LOG_COMMON_PF((context), ::ramses_internal::ELogLevel::Info, callable)
+
+#define LOG_DEBUG_PF(context, callable)                                 \
+    LOG_COMMON_PF((context), ::ramses_internal::ELogLevel::Debug, callable)
+
+#define LOG_WARN_PF(context, callable)                                  \
+    LOG_COMMON_PF((context), ::ramses_internal::ELogLevel::Warn, callable)
+
+#define LOG_ERROR_PF(context, callable)                                 \
+    LOG_COMMON_PF((context), ::ramses_internal::ELogLevel::Error, callable)
+
+#define LOG_FATAL_PF(context, callable)                                 \
+    LOG_COMMON_PF((context), ::ramses_internal::ELogLevel::Fatal, callable)
+
+
 #endif

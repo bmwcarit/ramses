@@ -19,12 +19,21 @@ namespace ramses
     class DisplayConfig;
     class IRendererEventHandler;
     class WarpingMeshData;
+    class RendererSceneControl;
+    class RendererSceneControl_legacy;
+    class DcsmContentControl;
+    class DcsmContentControlConfig;
 
     /**
-    * @brief RamsesRenderer is the main renderer component
-    *        which provides API to configure and control the way
-    *        content will be rendered on display(s).
-    * @details RamsesRenderer API is not thread-safe.
+    * @brief RamsesRenderer is the main renderer component which provides API to configure
+    *        and control the way content will be rendered on display(s).
+    * @details All the commands in this class are put to a queue and submitted only when RamsesRenderer::flush is called,
+    *          they are then executed asynchronously in the renderer core, the order of execution is preserved.
+    *          Most of the commands have a corresponding callback which reports the result back to the caller
+    *          via RamsesRenderer::dispatchEvents.
+    *          Some commands can fail immediately by returning a status with value other than StatusOK,
+    *          in such case there will be no callback, because the command will not even be submitted.
+    *          RamsesRenderer API is not thread-safe.
     */
     class RAMSES_API RamsesRenderer : public StatusObject
     {
@@ -118,7 +127,7 @@ namespace ramses
         *          Since time limits are calculated relative to the start of the frame, the values set
         *          should be monotonically increasing in the order of:
         *            1. Uploading client resources
-        *            2. Applying scene actions
+        *            2. Uploading scene resources
         *            3. Rendering scenes mapped to interruptible offscreen buffers
         *
         *          By default sections have infinite time limit, so renderer would not try to interrupt their execution.
@@ -129,13 +138,12 @@ namespace ramses
         *
         * @param[in] limitForSceneResourcesUpload  Time limit in microseconds (since beginning of frame) for uploading scene resources to GPU
         * @param[in] limitForClientResourcesUpload Time limit in microseconds (since beginning of frame) for uploading client resources to GPU
-        * @param[in] limitForSceneActionsApply     Time limit in microseconds (since beginning of frame) for applying scene changes coming from Ramses client side
         * @param[in] limitForOffscreenBufferRender Time limit in microseconds (since beginning of frame) for rendering scenes that are mapped to interruptible offscreen buffers
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         *         StatusOK does not guarantee successful read back, the result event has its own status.
         */
-        status_t setFrameTimerLimits(uint64_t limitForSceneResourcesUpload, uint64_t limitForClientResourcesUpload, uint64_t limitForSceneActionsApply, uint64_t limitForOffscreenBufferRender);
+        status_t setFrameTimerLimits(uint64_t limitForSceneResourcesUpload, uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender);
 
         /**
         * @brief Sets the number of pending flushes accepted before force-applying them to their scene, or forcefully insubscribing the scene.
@@ -213,143 +221,6 @@ namespace ramses
         displayBufferId_t getDisplayFramebuffer(displayId_t displayId) const;
 
         /**
-        * @brief Subscribes to receiving scene actions from a scene.
-        *
-        * @param sceneId The id of the scene to subscribe to
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t subscribeScene(sceneId_t sceneId);
-
-        /**
-        * @brief Unsubscribes from receiving scene actions from a scene and
-        * removes it from renderer.
-        *
-        * @param sceneId The id of the scene to unsubscribe from
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t unsubscribeScene(sceneId_t sceneId);
-
-        /**
-        * @brief Links a data provider to a data consumer across two scenes.
-        *        Data provider and data consumer must be created via client scene API
-        *        and their data type must match.
-        *        Linking data means that the consumer's data property will be overridden by provider's data property.
-        *        A consumer within a scene can be linked to exactly one provider.
-        * @param providerScene The id of the scene which provides the data.
-        * @param providerId The id of the data provider within the providerScene.
-        * @param consumerScene The id of the scene which consumes the data.
-        * @param consumerId The id of the data consumer within the consumerScene
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t linkData(sceneId_t providerScene, dataProviderId_t providerId, sceneId_t consumerScene, dataConsumerId_t consumerId);
-
-        /**
-        * @brief Trigger renderer to test if given pick event with coordinates intersects with any instances
-        *        of ramses::PickableObject contained in given scene. If so, the intersected PickableObjects are
-        *        reported to client (see ramses::IRendererEventHandler::objectsPicked) using their user IDs
-        *        given at creation time (see ramses::Scene::createPickableObject).
-        *
-        * @details \section Coordinates
-        *          Coordinates normalized to range <-1, 1> where (-1, -1) is bottom left corner of the buffer where scene is mapped to
-        *          and (1, 1) is top right corner.
-        *          If the scene to test is rendered directly to framebuffer then display size should be used,
-        *          i.e. (-1, -1) is bottom left corner of the display and (1, 1) top right corner of display.
-        *          If the scene is mapped to an offscreen buffer and rendered as a texture mapped
-        *          on a mesh in another scene, the given coordinates need to be mapped to the offscreen buffer
-        *          dimensions in the same way.
-        *          For example if the scene's offscreen buffer is mapped on a 2D quad placed somewhere on screen
-        *          then the coordinates provided need to be within the region of the 2D quad, i.e. (-1, -1) at bottom left corner of the quad and (1, 1) at top right corner.
-        *
-        * @param sceneId Id of scene to check for intersected PickableObjects.
-        * @param bufferNormalizedCoordX Normalized X pick coordinate within buffer size (see \ref Coordinates).
-        * @param bufferNormalizedCoordY Normalized Y pick coordinate within buffer size (see \ref Coordinates).
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t handlePickEvent(sceneId_t sceneId, float bufferNormalizedCoordX, float bufferNormalizedCoordY);
-
-        /**
-        * @brief Links an offscreen buffer to a data consumer.
-        *        Same as texture linking where an offscreen buffer acts as texture provider.
-        *        Offscreen buffer can be used as texture input in one or more scene's texture sampler(s).
-        *        In order to link, the scene must be mapped to the same display which has the offscreen buffer.
-        *        Note: To unlink offscreen buffer use \c unlinkData as with any other type of data linking.
-        * @param[in] offscreenBufferId The id of the offscreen buffer to use as texture provider.
-        *                              The display that owns the buffer is determined from where the consumer scene is mapped to.
-        * @param[in] consumerSceneId The id of the scene which consumes the data.
-        * @param[in] consumerDataSlotId The id of the data consumer within the consumerScene.
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t linkOffscreenBufferToSceneData(displayBufferId_t offscreenBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId);
-
-        /**
-        * @brief Removes an existing link between two scenes (see RamsesRenderer::linkData()).
-        *        Consumer scene and id are enough, since a consumer can be linked to exactly one provider, which is already
-        *        known from the call to linkData()
-        * @param consumerScene The id of the scene which consumes the data.
-        * @param consumerId The id of the data consumer within the consumerScene
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t unlinkData(sceneId_t consumerScene, dataConsumerId_t consumerId);
-
-        /**
-        * @brief Triggers an asynchronous map of scene with given scene id to a display with given display id.
-        * @details Scene and display ids must refer to valid and existing instances.
-        *          The result of the asynchronous operation can be retrieved via dispatchEvents.
-        *          The scene will be assigned to display's framebuffer by default (IRendererEventHandler::sceneAssignedToDisplayBuffer
-        *          will not be called), this assignment and render order can be changed at any time using RamsesRenderer::assignSceneToDisplayBuffer.
-        *
-        * @param[in] displayId id of display to map scene to
-        * @param[in] sceneId id of scene to map
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        *         StatusOK does not guarantee successful map, the result event has its own status.
-        */
-        status_t mapScene(displayId_t displayId, sceneId_t sceneId);
-
-        /**
-        * @brief Triggers an asynchronous unmap of scene with given scene id from any display it is mapped to.
-        * @details The unmap operation will trigger fail event if the scene is not mapped to any display.
-        *          The result of the asynchronous operation can be retrieved via dispatchEvents.
-        *
-        * @param[in] sceneId id of scene to unmap
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t unmapScene(sceneId_t sceneId);
-
-        /**
-        * @brief Triggers a scene with given scene id to be rendered.
-        * @details Scene id must refer to a valid and existing instance.
-        *          The scene to be rendered must be in mapped state.
-        *          The result of this asynchronous operation can be retrieved via dispatchEvents.
-        *
-        * @param[in] sceneId id of scene to render
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        *         StatusOK does not guarantee successful show, the result event has its own status.
-        */
-        status_t showScene(sceneId_t sceneId);
-
-        /**
-        * @brief Triggers a scene with given scene id to be not rendered anymore.
-        * @details Scene id must refer to a valid and existing instance.
-        *          The scene to be rendered must be in rendered state.
-        *          The result of this asynchronous operation can be retrieved via dispatchEvents.
-        *
-        * @param[in] sceneId id of scene to hide
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        *         StatusOK does not guarantee successful hide, the result event has its own status.
-        */
-        status_t hideScene(sceneId_t sceneId);
-
-        /**
         * @brief Will create an offscreen buffer that can be used to render scenes into (see RamsesRenderer::assignSceneToDisplayBuffer)
         *        and can be linked as input to a consumer texture sampler (see RamsesRenderer::linkOffscreenBufferToConsumer).
         *
@@ -400,46 +271,29 @@ namespace ramses
         status_t destroyOffscreenBuffer(displayId_t display, displayBufferId_t offscreenBuffer);
 
         /**
-        * @brief When a scene is mapped and shown it is by default rendered directly to display's framebuffer.
-        *        However scene can be assigned to any of the display's offscreen buffers at any point in time while mapped or shown.
-        *        Scene's shown/hidden state is not affected by this assignment.
+        * @brief Trigger renderer to test if given pick event with coordinates intersects with any instances
+        *        of ramses::PickableObject contained in given scene. If so, the intersected PickableObjects are
+        *        reported to client (see ramses::IRendererEventHandler::objectsPicked) using their user IDs
+        *        given at creation time (see ramses::Scene::createPickableObject).
         *
-        *        Assigning a scene to framebuffer or offscreen buffer changes the way its render order is determined.
-        *        The rendering order of following buffer groups is fixed:
-        *          1. Offscreen buffers
-        *          2. Framebuffer
-        *          3. Interruptible offscreen buffers
-        *        The scene render order only guarantees the order in scope of the buffer the scene is assigned to.
+        * @details \section Coordinates
+        *          Coordinates normalized to range <-1, 1> where (-1, -1) is bottom left corner of the buffer where scene is mapped to
+        *          and (1, 1) is top right corner.
+        *          If the scene to test is rendered directly to framebuffer then display size should be used,
+        *          i.e. (-1, -1) is bottom left corner of the display and (1, 1) top right corner of display.
+        *          If the scene is mapped to an offscreen buffer and rendered as a texture mapped
+        *          on a mesh in another scene, the given coordinates need to be mapped to the offscreen buffer
+        *          dimensions in the same way.
+        *          For example if the scene's offscreen buffer is mapped on a 2D quad placed somewhere on screen
+        *          then the coordinates provided need to be within the region of the 2D quad, i.e. (-1, -1) at bottom left corner of the quad and (1, 1) at top right corner.
         *
-        *        The assignment will fail if scene not in mapped or shown state, if trying to assign to a display buffer
-        *        that does not exist or does not belong to the display the scene is mapped to.
-        *
-        * @param[in] sceneId Id of scene that should be assigned to the display buffer.
-        * @param[in] displayBuffer Id of display buffer (framebuffer or offscreen buffer) the scene should be assigned to.
-        *                          If provided buffer Id is invalid, framebuffer of display where scene is mapped is used.
-        * @param[in] sceneRenderOrder Lower value means that a scene is rendered before a scene with higher value. Default is 0.
-        *                             The render order is guaranteed only in the scope of the buffer it is mapped to (framebuffer or offscreen buffer).
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        *         StatusOK does not guarantee successful assignment, the renderer event dispatched via callback has its own status.
-        */
-        status_t assignSceneToDisplayBuffer(sceneId_t sceneId, displayBufferId_t displayBuffer, int32_t sceneRenderOrder = 0);
-
-        /**
-        * @brief Sets clear color for display's framebuffer or offscreen buffer.
-        *        Clear color is used to clear the whole buffer at the beginning of a rendering cycle (typically every frame).
-        *
-        * @param[in] display Id of display that the buffer to set clear color belongs to.
-        * @param[in] displayBuffer Id of display buffer to set clear color,
-        *                          if ramses::displayBufferId_t::Invalid() is passed then the clear color is set for display's framebuffer.
-        * @param[in] r Clear color red channel value [0,1]
-        * @param[in] g Clear color green channel value [0,1]
-        * @param[in] b Clear color blue channel value [0,1]
-        * @param[in] a Clear color alpha channel value [0,1]
+        * @param sceneId Id of scene to check for intersected PickableObjects.
+        * @param bufferNormalizedCoordX Normalized X pick coordinate within buffer size (see \ref Coordinates).
+        * @param bufferNormalizedCoordY Normalized Y pick coordinate within buffer size (see \ref Coordinates).
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setBufferClearColor(displayId_t display, displayBufferId_t displayBuffer = displayBufferId_t::Invalid(), float r = 0.f, float g = 0.f, float b = 0.f, float a = 1.f);
+        status_t handlePickEvent(sceneId_t sceneId, float bufferNormalizedCoordX, float bufferNormalizedCoordY);
 
         /**
         * @brief Triggers an asynchronous read back of framebuffer memory from GPU to system memory.
@@ -460,6 +314,83 @@ namespace ramses
         *         StatusOK does not guarantee successful read back, the result event has its own status.
         */
         status_t readPixels(displayId_t displayId, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+
+        /**
+        * @brief Get scene control API
+        * @details Typical application using Ramses has different components controlling the renderer
+        *          (display management, frame limits and looping control, etc.) and controlling the states
+        *          of content to be rendered (show/hide scene, data link, assign to display buffer, etc.).
+        *          The scene control part can be obtained using this method, calling this method
+        *          multiple times is allowed and will always return the same pointer, i.e. there is only
+        *          a single instance per RamsesRenderer.
+        *          This method will return nullptr in case an internal policy disallows controlling of scenes
+        *          through this API - this could mean that there is another, incompatible scene control
+        *          mechanism in use.
+        *          Scene control API has its own independent flush and event dispatching,
+        *          see #ramses::RendererSceneControl for details.
+        *
+        *          Obtaining the #ramses::RendererSceneControl will disallow usage of any other type of scene control
+        *          (#ramses::RendererSceneControl_legacy or #ramses::DcsmContentControl).
+        *          #RamsesRenderer is owner of the #ramses::RendererSceneControl API and the pointer
+        *          stays valid as long as this #RamsesRenderer instance is alive. It cannot be destroyed
+        *          without destroying the #RamsesRenderer.
+        *
+        * @return Pointer to scene control API, or nullptr on error
+        */
+        RendererSceneControl* getSceneControlAPI();
+
+        /**
+        * @deprecated [Use RendererSceneControl via RamsesRenderer::getSceneControlAPI instead]
+        * @brief Get scene control API
+        * @details Typical application using Ramses has different components controlling the renderer
+        *          (display management, frame limits and looping control, etc.) and controlling the states
+        *          of content to be rendered (show/hide scene, data link, assign to display buffer, etc.).
+        *          The scene control part can be obtained using this method, calling this method
+        *          multiple times is allowed and will always return the same pointer, i.e. there is only
+        *          a single instance per RamsesRenderer.
+        *          This method will return nullptr in case an internal policy disallows controlling of scenes
+        *          through this API - this could mean that there is another, incompatible scene control
+        *          mechanism in use.
+        *          Scene control API has its own independent flush and event dispatching,
+        *          see #ramses::RendererSceneControl_legacy for details.
+        *
+        *          Obtaining the #ramses::RendererSceneControl_legacy will disallow usage of any other type of scene control
+        *          (#ramses::RendererSceneControl or #ramses::DcsmContentControl).
+        *          #RamsesRenderer is owner of the #ramses::RendererSceneControl_legacy API and the pointer
+        *          stays valid as long as this #RamsesRenderer instance is alive. It cannot be destroyed
+        *          without destroying the #RamsesRenderer.
+        *
+        *          Using of #ramses::RendererSceneControl_legacy will fail in undefined ways if any of the scenes
+        *          contains a #ramses::SceneReference.
+        *
+        * @return Pointer to scene control API, or nullptr on error
+        */
+        RendererSceneControl_legacy* getSceneControlAPI_legacy();
+
+        /**
+        * @brief Create #ramses::DcsmContentControl to control content states
+        * @details #ramses::DcsmContentControl can be used to control content states (a DCSM content is an abstraction
+        *          for a scene). In addition #ramses::DcsmContentControl handles content states in the DCSM protocol
+        *          context, it is essentially a combination of renderer scene control API and #ramses::DcsmConsumer.
+        *          There can be only a single instance of #ramses::DcsmContentControl within #RamsesRenderer. Calling
+        *          this method more than once will fail.
+        *          This method will return nullptr in case an internal policy disallows controlling of scenes
+        *          through this API - this could mean that there is another, incompatible scene control
+        *          mechanism in use.
+        *          #ramses::DcsmContentControl has its own event dispatching mechanism,
+        *          see #ramses::DcsmContentControl for details.
+        *
+        *          Obtaining the #ramses::DcsmContentControl will disallow usage of any other type of scene control
+        *          (#ramses::RendererSceneControl or #ramses::RendererSceneControl_legacy).
+        *          #RamsesRenderer is owner of the #ramses::DcsmContentControl API and the pointer
+        *          stays valid as long as this #RamsesRenderer instance is alive. It cannot be destroyed
+        *          without destroying the #RamsesRenderer.
+        *
+        * @param config Parameters to be used to instantiate the #ramses::DcsmContentControl.
+        *               These are used only at instantiation time, modifications to config done later have no effect on this #ramses::DcsmContentControl instance.
+        * @return Pointer to #ramses::DcsmContentControl, or nullptr on error
+        */
+        DcsmContentControl* createDcsmContentControl(const DcsmContentControlConfig& config);
 
         /////////////////////////////////////////////////
         //      System Compositor API
@@ -530,24 +461,25 @@ namespace ramses
         status_t updateWarpingMeshData(displayId_t displayId, const WarpingMeshData& newWarpingMeshData);
 
         /**
-        * @brief Most RamsesRenderer methods trigger asynchronous actions in the internal renderer,
-        *        which are executed during a render loop (doOneLoop or startThread).
+        * @brief Most RamsesRenderer methods push commands to an internal queue which is submitted
+        *        when calling RamsesRenderer::flush. The commands are then executed during a render loop
+        *        (RamsesRenderer::doOneLoop or in a render thread if used RamsesRenderer::startThread).
         *        Some of these calls result in an event (can be both informational and data).
         *        Such events and their result can be retrieved using the dispatchEvents call.
-        *        *IMPORTANT* In the threaded version of the renderer (RamsesRenderer::startThread)
-        *        events must be regularly polled by calling dispatchEvents() in order to prevent
-        *        buffer overflow of the internal event queue, even if the application is not interested
-        *        in those events.
+        *        *IMPORTANT* Renderer events must be regularly consumed by calling dispatchEvents()
+        *        in order to prevent buffer overflow of the internal event queue,
+        *        even if the application is not interested in those events.
         *
         * @param rendererEventHandler User class that implements the callbacks that can be triggered if a corresponding event happened.
-        *                         Check IRendererEventHandler documentation for more details.
+        *                             Check ramses::IRendererEventHandler documentation for more details.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
         status_t dispatchEvents(IRendererEventHandler& rendererEventHandler);
 
         /**
-        * @brief Marks renderer calls made since previous call to the function (if any) as to be executed in the next frame
+        * @brief Submits renderer commands (API calls on this instance of RamsesRenderer)
+        *        since previous flush to be executed in the next renderer update loop.
         *
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().

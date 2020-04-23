@@ -89,14 +89,14 @@ namespace ramses
     {
         CHECK_RETURN_ERR(SceneObjectImpl::resolveDeserializationDependencies(serializationContext));
 
-        for (uint32_t i = 0; i < m_meshes.size(); ++i)
+        for (size_t i = 0; i < m_meshes.size(); ++i)
         {
             MeshNodeImpl* mesh = const_cast<MeshNodeImpl*>(m_meshes[i]);
             serializationContext.resolveDependencyIDImplAndStoreAsPointer(mesh);
             m_meshes[i] = mesh;
         }
 
-        for (uint32_t i = 0; i < m_renderGroups.size(); ++i)
+        for (size_t i = 0; i < m_renderGroups.size(); ++i)
         {
             RenderGroupImpl* renderGroup = const_cast<RenderGroupImpl*>(m_renderGroups[i]);
             serializationContext.resolveDependencyIDImplAndStoreAsPointer(renderGroup);
@@ -106,9 +106,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t RenderGroupImpl::validate(uint32_t indent) const
+    status_t RenderGroupImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        status_t status = SceneObjectImpl::validate(indent);
+        status_t status = SceneObjectImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
 
         if (m_meshes.size() == 0u)
@@ -117,8 +117,8 @@ namespace ramses
             status = getValidationErrorStatus();
         }
 
-        validateElements(indent, status, m_meshes);
-        validateElements(indent, status, m_renderGroups);
+        validateElements(indent, status, m_meshes, visitedObjects);
+        validateElements(indent, status, m_renderGroups, visitedObjects);
 
         return status;
     }
@@ -316,11 +316,11 @@ namespace ramses
     }
 
     template <typename ELEMENT>
-    void RenderGroupImpl::validateElements(uint32_t& indent, status_t& status, const std::vector<const ELEMENT*>& elements) const
+    void RenderGroupImpl::validateElements(uint32_t& indent, status_t& status, const std::vector<const ELEMENT*>& elements, StatusObjectSet& visitedObjects) const
     {
         for(const auto& element : elements)
         {
-            if (addValidationOfDependentObject(indent, *element) != StatusOK)
+            if (addValidationOfDependentObject(indent, *element, visitedObjects) != StatusOK)
             {
                 status = getValidationErrorStatus();
             }

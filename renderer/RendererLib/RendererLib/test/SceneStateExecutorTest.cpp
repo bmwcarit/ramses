@@ -15,6 +15,7 @@
 #include "RendererEventCollector.h"
 #include "ComponentMocks.h"
 #include "RendererMock.h"
+#include "RendererSceneEventSenderMock.h"
 
 namespace ramses_internal
 {
@@ -23,31 +24,46 @@ namespace ramses_internal
     {
     protected:
         ASceneStateExecutor()
-            : senderID(true)
+            : senderID(1000)
             , mapDisplayHandle(1u)
             , rendererScenes(rendererEventCollector)
             , expirationMonitor(rendererScenes, rendererEventCollector)
             , renderer(platformFactory, rendererScenes, rendererEventCollector, expirationMonitor, rendererStatistics)
-            , sceneStateExecutor(renderer, sceneGraphConsumerComponent, rendererEventCollector)
+            , sceneStateExecutor(renderer, rendererSceneSender, rendererEventCollector)
         {
         }
 
-        void expectRendererEvents(const std::initializer_list<ERendererEventType> expectedEvents)
+        virtual void TearDown() override
+        {
+            // make sure all test cases dispatch all collected events
+            RendererEventVector resultEvents;
+            rendererEventCollector.appendAndConsumePendingEvents(resultEvents, resultEvents);
+            EXPECT_TRUE(resultEvents.empty());
+            InternalSceneStateEvents sceneEvts;
+            rendererEventCollector.dispatchInternalSceneStateEvents(sceneEvts);
+            EXPECT_TRUE(sceneEvts.empty());
+        }
+
+        void expectRendererEvents(const std::vector<ERendererEventType>& expectedEvents, SceneId sId = sceneId)
         {
             RendererEventVector events;
-            rendererEventCollector.dispatchEvents(events);
+            RendererEventVector dummy;
+            rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
             ASSERT_EQ(expectedEvents.size(), events.size());
-            auto eventIt = events.cbegin();
-            for (auto expectedEvent : expectedEvents)
+            for (size_t i = 0; i < events.size(); ++i)
             {
-                EXPECT_EQ(expectedEvent, eventIt->eventType);
-                ++eventIt;
+                EXPECT_EQ(expectedEvents[i], events[i].eventType) << "scene control event #" << i;
+                EXPECT_EQ(sId, events[i].sceneId) << "scene control event #" << i;
             }
-        }
 
-        void expectRendererEvent(ERendererEventType eventType)
-        {
-            expectRendererEvents({ eventType });
+            InternalSceneStateEvents sceneEvts;
+            rendererEventCollector.dispatchInternalSceneStateEvents(sceneEvts);
+            ASSERT_EQ(expectedEvents.size(), sceneEvts.size());
+            for (size_t i = 0; i < sceneEvts.size(); ++i)
+            {
+                EXPECT_EQ(expectedEvents[i], sceneEvts[i].type) << "internal scene state event #" << i;
+                EXPECT_EQ(sId, sceneEvts[i].sceneId) << "scene control event #" << i;
+            }
         }
 
         void expectNoRendererEvent()
@@ -55,25 +71,21 @@ namespace ramses_internal
             expectRendererEvents({});
         }
 
-        void expectRendererEvent(ERendererEventType eventType, SceneId sId)
+        void expectRendererEvent(ERendererEventType eventType, SceneId sId = sceneId)
         {
-            RendererEventVector events;
-            rendererEventCollector.dispatchEvents(events);
-            ASSERT_EQ(1u, events.size());
-            EXPECT_EQ(sId, events[0].sceneId);
-            EXPECT_EQ(eventType, events[0].eventType);
+            expectRendererEvents({ eventType }, sId);
         }
 
         void publishScene()
         {
-            sceneStateExecutor.setPublished(sceneId, senderID, EScenePublicationMode_LocalAndRemote);
+            sceneStateExecutor.setPublished(sceneId, EScenePublicationMode_LocalAndRemote);
             expectRendererEvent(ERendererEventType_ScenePublished);
             EXPECT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(sceneId));
         }
 
         void subscribeScene()
         {
-            EXPECT_CALL(sceneGraphConsumerComponent, subscribeScene(senderID, sceneId));
+            EXPECT_CALL(rendererSceneSender, sendSubscribeScene(sceneId));
             sceneStateExecutor.setSubscriptionRequested(sceneId);
             EXPECT_EQ(ESceneState::SubscriptionRequested, sceneStateExecutor.getSceneState(sceneId));
         }
@@ -145,8 +157,8 @@ namespace ramses_internal
             renderer.destroyDisplayContext(mapDisplayHandle);
         }
 
-        const Guid     senderID;
-        const SceneId  sceneId;
+        const Guid senderID;
+        static constexpr SceneId sceneId{ 123u };
 
         const DisplayHandle mapDisplayHandle;
 
@@ -156,9 +168,11 @@ namespace ramses_internal
         SceneExpirationMonitor expirationMonitor;
         RendererStatistics rendererStatistics;
         NiceMock<RendererMockWithNiceMockDisplay> renderer;
-        StrictMock<SceneGraphConsumerComponentMock> sceneGraphConsumerComponent;
+        StrictMock<RendererSceneEventSenderMock> rendererSceneSender;
         SceneStateExecutor sceneStateExecutor;
     };
+
+    constexpr SceneId ASceneStateExecutor::sceneId;
 
     TEST_F(ASceneStateExecutor, canPublishUnknownScene)
     {
@@ -927,21 +941,20 @@ namespace ramses_internal
 
     TEST_F(ASceneStateExecutor, publishesScene)
     {
-        sceneStateExecutor.setPublished(sceneId, senderID, EScenePublicationMode_LocalAndRemote);
+        sceneStateExecutor.setPublished(sceneId, EScenePublicationMode_LocalAndRemote);
         expectRendererEvent(ERendererEventType_ScenePublished);
     }
 
     TEST_F(ASceneStateExecutor, canGetClientGuidOfKnownScene)
     {
-        sceneStateExecutor.setPublished(sceneId, senderID, EScenePublicationMode_LocalAndRemote);
+        sceneStateExecutor.setPublished(sceneId, EScenePublicationMode_LocalAndRemote);
         expectRendererEvent(ERendererEventType_ScenePublished);
-        EXPECT_EQ(senderID, sceneStateExecutor.getSceneClientGuid(sceneId));
     }
 
     TEST_F(ASceneStateExecutor, requestsSubscriptionForPublishedScene)
     {
         publishScene();
-        EXPECT_CALL(sceneGraphConsumerComponent, subscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendSubscribeScene(sceneId));
         sceneStateExecutor.setSubscriptionRequested(sceneId);
         expectNoRendererEvent();
     }
@@ -975,7 +988,7 @@ namespace ramses_internal
     {
         publishScene();
         subscribeScene();
-        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendUnsubscribeScene(sceneId));
         sceneStateExecutor.setUnpublished(sceneId);
         expectRendererEvents({ ERendererEventType_SceneSubscribeFailed, ERendererEventType_SceneUnpublished });
         EXPECT_EQ(ESceneState::Unknown, sceneStateExecutor.getSceneState(sceneId));
@@ -986,7 +999,7 @@ namespace ramses_internal
         publishScene();
         subscribeScene();
         receiveScene();
-        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendUnsubscribeScene(sceneId));
         sceneStateExecutor.setUnpublished(sceneId);
         // subscription still pending
         expectRendererEvents({ ERendererEventType_SceneSubscribeFailed, ERendererEventType_SceneUnpublished });
@@ -999,7 +1012,7 @@ namespace ramses_internal
         subscribeScene();
         receiveScene();
         receiveFlush();
-        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendUnsubscribeScene(sceneId));
         sceneStateExecutor.setUnpublished(sceneId);
         expectRendererEvents({ ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished });
         EXPECT_EQ(ESceneState::Unknown, sceneStateExecutor.getSceneState(sceneId));
@@ -1014,7 +1027,7 @@ namespace ramses_internal
         receiveScene();
         receiveFlush();
         requestMapScene();
-        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendUnsubscribeScene(sceneId));
         sceneStateExecutor.setUnpublished(sceneId);
         expectRendererEvents({ ERendererEventType_SceneMapFailed, ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished });
         EXPECT_EQ(ESceneState::Unknown, sceneStateExecutor.getSceneState(sceneId));
@@ -1032,7 +1045,7 @@ namespace ramses_internal
         receiveFlush();
         requestMapScene();
         setSceneMappingAndUploading();
-        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendUnsubscribeScene(sceneId));
         sceneStateExecutor.setUnpublished(sceneId);
         expectRendererEvents({ ERendererEventType_SceneMapFailed, ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished });
         EXPECT_EQ(ESceneState::Unknown, sceneStateExecutor.getSceneState(sceneId));
@@ -1051,7 +1064,7 @@ namespace ramses_internal
         requestMapScene();
         setSceneMappingAndUploading();
         setSceneMapped();
-        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendUnsubscribeScene(sceneId));
         sceneStateExecutor.setUnpublished(sceneId);
         expectRendererEvents({ ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished });
         EXPECT_EQ(ESceneState::Unknown, sceneStateExecutor.getSceneState(sceneId));
@@ -1071,7 +1084,7 @@ namespace ramses_internal
         setSceneMappingAndUploading();
         setSceneMapped();
         setSceneRenderedRequested();
-        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendUnsubscribeScene(sceneId));
         sceneStateExecutor.setUnpublished(sceneId);
         expectRendererEvents({ ERendererEventType_SceneShowFailed, ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished });
         EXPECT_EQ(ESceneState::Unknown, sceneStateExecutor.getSceneState(sceneId));
@@ -1092,7 +1105,7 @@ namespace ramses_internal
         setSceneMapped();
         setSceneRenderedRequested();
         setSceneRendered();
-        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendUnsubscribeScene(sceneId));
         sceneStateExecutor.setUnpublished(sceneId);
         expectRendererEvents({ ERendererEventType_SceneHiddenIndirect, ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished });
         EXPECT_EQ(ESceneState::Unknown, sceneStateExecutor.getSceneState(sceneId));
@@ -1106,7 +1119,7 @@ namespace ramses_internal
         subscribeScene();
         receiveScene();
         receiveFlush();
-        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendUnsubscribeScene(sceneId));
         sceneStateExecutor.setUnsubscribed(sceneId, false);
         expectRendererEvent(ERendererEventType_SceneUnsubscribed);
     }
@@ -1115,7 +1128,7 @@ namespace ramses_internal
     {
         publishScene();
         subscribeScene();
-        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendUnsubscribeScene(sceneId));
         sceneStateExecutor.setUnsubscribed(sceneId, false);
         expectRendererEvents({ ERendererEventType_SceneUnsubscribed });
     }
@@ -1125,7 +1138,7 @@ namespace ramses_internal
         publishScene();
         subscribeScene();
         receiveScene();
-        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendUnsubscribeScene(sceneId));
         sceneStateExecutor.setUnsubscribed(sceneId, false);
         expectRendererEvents({ ERendererEventType_SceneUnsubscribed });
     }
@@ -1141,7 +1154,7 @@ namespace ramses_internal
     {
         publishScene();
         subscribeScene();
-        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendUnsubscribeScene(sceneId));
         sceneStateExecutor.setUnsubscribed(sceneId, true);
         // only expect failed because user never got subscribed and user didn't cause fail
         expectRendererEvents({ ERendererEventType_SceneSubscribeFailed });
@@ -1152,7 +1165,7 @@ namespace ramses_internal
         publishScene();
         subscribeScene();
         receiveScene();
-        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendUnsubscribeScene(sceneId));
         sceneStateExecutor.setUnsubscribed(sceneId, true);
         // only expect failed because user never got subscribed and user didn't cause fail
         expectRendererEvents({ ERendererEventType_SceneSubscribeFailed });
@@ -1164,7 +1177,7 @@ namespace ramses_internal
         subscribeScene();
         receiveScene();
         receiveFlush();
-        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendUnsubscribeScene(sceneId));
         sceneStateExecutor.setUnsubscribed(sceneId, true);
         expectRendererEvent(ERendererEventType_SceneUnsubscribedIndirect);
     }
@@ -1178,7 +1191,7 @@ namespace ramses_internal
         receiveScene();
         receiveFlush();
         requestMapScene();
-        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendUnsubscribeScene(sceneId));
         sceneStateExecutor.setUnsubscribed(sceneId, true);
         expectRendererEvents({ ERendererEventType_SceneMapFailed, ERendererEventType_SceneUnsubscribedIndirect });
 
@@ -1195,7 +1208,7 @@ namespace ramses_internal
         receiveFlush();
         requestMapScene();
         setSceneMappingAndUploading();
-        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendUnsubscribeScene(sceneId));
         sceneStateExecutor.setUnsubscribed(sceneId, true);
         expectRendererEvents({ ERendererEventType_SceneMapFailed, ERendererEventType_SceneUnsubscribedIndirect });
 
@@ -1213,7 +1226,7 @@ namespace ramses_internal
         requestMapScene();
         setSceneMappingAndUploading();
         setSceneMapped();
-        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendUnsubscribeScene(sceneId));
         sceneStateExecutor.setUnsubscribed(sceneId, true);
         expectRendererEvents({ ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect });
 
@@ -1232,7 +1245,7 @@ namespace ramses_internal
         setSceneMappingAndUploading();
         setSceneMapped();
         setSceneRenderedRequested();
-        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendUnsubscribeScene(sceneId));
         sceneStateExecutor.setUnsubscribed(sceneId, true);
         expectRendererEvents({ ERendererEventType_SceneShowFailed, ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect });
 
@@ -1252,7 +1265,7 @@ namespace ramses_internal
         setSceneMapped();
         setSceneRenderedRequested();
         setSceneRendered();
-        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendUnsubscribeScene(sceneId));
         sceneStateExecutor.setUnsubscribed(sceneId, true);
         expectRendererEvents({ ERendererEventType_SceneHiddenIndirect, ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect });
 
@@ -1388,7 +1401,7 @@ namespace ramses_internal
         subscribeScene();
         receiveScene();
         receiveFlush();
-        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendUnsubscribeScene(sceneId));
         sceneStateExecutor.setUnsubscribed(sceneId, false);
         expectRendererEvent(ERendererEventType_SceneUnsubscribed);
         subscribeScene();
@@ -1400,7 +1413,7 @@ namespace ramses_internal
         subscribeScene();
         receiveScene();
         receiveFlush();
-        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(senderID, sceneId));
+        EXPECT_CALL(rendererSceneSender, sendUnsubscribeScene(sceneId));
         sceneStateExecutor.setUnsubscribed(sceneId, true);
         expectRendererEvent(ERendererEventType_SceneUnsubscribedIndirect);
         subscribeScene();

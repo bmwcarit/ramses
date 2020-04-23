@@ -146,6 +146,48 @@ namespace ramses_internal
         ESceneActionId_SetDataSlotTexture,
         ESceneActionId_ReleaseDataSlot,
 
+        // scene references
+        ESceneActionId_AllocateSceneReference,
+        ESceneActionId_ReleaseSceneReference,
+        ESceneActionId_RequestSceneReferenceState,
+        ESceneActionId_SetSceneReferenceRenderOrder,
+        ESceneActionId_RequestSceneReferenceFlushNotifications,
+        //animation
+        ESceneActionId_AddAnimationSystem,
+        ESceneActionId_RemoveAnimationSystem,
+        ESceneActionId_AnimationSystemSetTime,
+        ESceneActionId_AnimationSystemAllocateSpline,
+        ESceneActionId_AnimationSystemAllocateDataBinding,
+        ESceneActionId_AnimationSystemAllocateAnimationInstance,
+        ESceneActionId_AnimationSystemAllocateAnimation,
+        ESceneActionId_AnimationSystemAddDataBindingToAnimationInstance,
+        ESceneActionId_AnimationSystemSetSplineKeyBasicBool,
+        ESceneActionId_AnimationSystemSetSplineKeyBasicInt32,
+        ESceneActionId_AnimationSystemSetSplineKeyBasicFloat,
+        ESceneActionId_AnimationSystemSetSplineKeyBasicVector2f,
+        ESceneActionId_AnimationSystemSetSplineKeyBasicVector3f,
+        ESceneActionId_AnimationSystemSetSplineKeyBasicVector4f,
+        ESceneActionId_AnimationSystemSetSplineKeyBasicVector2i,
+        ESceneActionId_AnimationSystemSetSplineKeyBasicVector3i,
+        ESceneActionId_AnimationSystemSetSplineKeyBasicVector4i,
+        ESceneActionId_AnimationSystemSetSplineKeyTangentsInt32,
+        ESceneActionId_AnimationSystemSetSplineKeyTangentsFloat,
+        ESceneActionId_AnimationSystemSetSplineKeyTangentsVector2f,
+        ESceneActionId_AnimationSystemSetSplineKeyTangentsVector3f,
+        ESceneActionId_AnimationSystemSetSplineKeyTangentsVector4f,
+        ESceneActionId_AnimationSystemSetSplineKeyTangentsVector2i,
+        ESceneActionId_AnimationSystemSetSplineKeyTangentsVector3i,
+        ESceneActionId_AnimationSystemSetSplineKeyTangentsVector4i,
+        ESceneActionId_AnimationSystemRemoveSplineKey,
+        ESceneActionId_AnimationSystemSetAnimationStartTime,
+        ESceneActionId_AnimationSystemSetAnimationStopTime,
+        ESceneActionId_AnimationSystemSetAnimationProperties,
+        ESceneActionId_AnimationSystemStopAnimationAndRollback,
+        ESceneActionId_AnimationSystemRemoveSpline,
+        ESceneActionId_AnimationSystemRemoveDataBinding,
+        ESceneActionId_AnimationSystemRemoveAnimationInstance,
+        ESceneActionId_AnimationSystemRemoveAnimation,
+
         ESceneActionId_PreallocateSceneSize,
 
         ESceneActionId_PushResource,
@@ -305,6 +347,47 @@ case ENUMVALUE: return #ENUMVALUE
             CreateNameForEnumID(ESceneActionId_AllocateDataSlot);
             CreateNameForEnumID(ESceneActionId_SetDataSlotTexture);
             CreateNameForEnumID(ESceneActionId_ReleaseDataSlot);
+
+            CreateNameForEnumID(ESceneActionId_AllocateSceneReference);
+            CreateNameForEnumID(ESceneActionId_ReleaseSceneReference);
+            CreateNameForEnumID(ESceneActionId_RequestSceneReferenceState);
+            CreateNameForEnumID(ESceneActionId_SetSceneReferenceRenderOrder);
+            CreateNameForEnumID(ESceneActionId_RequestSceneReferenceFlushNotifications);
+            //animation
+            CreateNameForEnumID(ESceneActionId_AddAnimationSystem);
+            CreateNameForEnumID(ESceneActionId_RemoveAnimationSystem);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemSetTime);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemAllocateSpline);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemAllocateDataBinding);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemAllocateAnimationInstance);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemAllocateAnimation);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemAddDataBindingToAnimationInstance);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemSetSplineKeyBasicBool);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemSetSplineKeyBasicInt32);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemSetSplineKeyBasicFloat);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemSetSplineKeyBasicVector2f);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemSetSplineKeyBasicVector3f);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemSetSplineKeyBasicVector4f);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemSetSplineKeyBasicVector2i);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemSetSplineKeyBasicVector3i);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemSetSplineKeyBasicVector4i);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemSetSplineKeyTangentsInt32);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemSetSplineKeyTangentsFloat);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemSetSplineKeyTangentsVector2f);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemSetSplineKeyTangentsVector3f);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemSetSplineKeyTangentsVector4f);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemSetSplineKeyTangentsVector2i);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemSetSplineKeyTangentsVector3i);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemSetSplineKeyTangentsVector4i);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemRemoveSplineKey);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemSetAnimationStartTime);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemSetAnimationStopTime);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemSetAnimationProperties);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemStopAnimationAndRollback);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemRemoveSpline);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemRemoveDataBinding);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemRemoveAnimationInstance);
+            CreateNameForEnumID(ESceneActionId_AnimationSystemRemoveAnimation);
 
             CreateNameForEnumID(ESceneActionId_PreallocateSceneSize);
 

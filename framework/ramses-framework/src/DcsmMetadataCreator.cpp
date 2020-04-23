@@ -80,4 +80,18 @@ namespace ramses
         return status;
     }
 
+    status_t DcsmMetadataCreator::setExclusiveBackground(bool state)
+    {
+        const auto status = impl.setExclusiveBackground(state);
+        LOG_HL_CLIENT_API1(status, state);
+        return status;
+    }
+
+    status_t DcsmMetadataCreator::setFocusRequest(int32_t state)
+    {
+        const auto status = impl.setFocusRequest(state);
+        LOG_HL_CLIENT_API1(status, state);
+        return status;
+    }
+
 }

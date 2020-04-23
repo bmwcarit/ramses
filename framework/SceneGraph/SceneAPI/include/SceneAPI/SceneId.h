@@ -20,7 +20,6 @@ namespace ramses_internal
 {
     struct SceneIdTag {};
     typedef StronglyTypedValue<UInt64, 0, SceneIdTag> SceneId;
-    DEFINE_SPECIAL_STRINGOUTPUTSTREAM_OPERATOR(SceneId, ramses::sceneId_t)
 
     typedef std::vector<SceneId> SceneIdVector;
 
@@ -49,5 +48,7 @@ namespace ramses_internal
     };
     typedef std::vector<SceneInfo> SceneInfoVector;
 }
+
+MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::SceneId, ramses::sceneId_t)
 
 #endif

@@ -34,6 +34,6 @@ namespace ramses_internal
         waylandSystemCompositorController.update();
     }
 
-    INSTANTIATE_TYPED_TEST_CASE_P(Window_Wayland_IVI_Test, AWindowWaylandWithEventHandling, Window_Wayland_IVI);
-    INSTANTIATE_TYPED_TEST_CASE_P(Window_Wayland_IVI_Test, AWindowWayland, Window_Wayland_IVI);
+    INSTANTIATE_TYPED_TEST_SUITE_P(Window_Wayland_IVI_Test, AWindowWaylandWithEventHandling, Window_Wayland_IVI);
+    INSTANTIATE_TYPED_TEST_SUITE_P(Window_Wayland_IVI_Test, AWindowWayland, Window_Wayland_IVI);
 }

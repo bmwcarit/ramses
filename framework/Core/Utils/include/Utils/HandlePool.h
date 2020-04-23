@@ -12,6 +12,7 @@
 #include "Common/TypedMemoryHandle.h"
 #include "Collections/Vector.h"
 #include <limits>
+#include <cassert>
 
 namespace ramses_internal
 {

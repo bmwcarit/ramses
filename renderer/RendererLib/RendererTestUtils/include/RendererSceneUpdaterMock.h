@@ -19,8 +19,8 @@ namespace ramses_internal
     class RendererSceneUpdaterMock : public RendererSceneUpdater
     {
     public:
-        RendererSceneUpdaterMock(const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor, const ISceneGraphConsumerComponent& sceneGraphComponent, const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor)
-            : RendererSceneUpdater(const_cast<Renderer&>(renderer), const_cast<RendererScenes&>(rendererScenes), const_cast<SceneStateExecutor&>(sceneStateExecutor), const_cast<ISceneGraphConsumerComponent&>(sceneGraphComponent), const_cast<RendererEventCollector&>(rendererEventCollector), const_cast<FrameTimer&>(frameTimer), const_cast<SceneExpirationMonitor&>(expirationMonitor))
+        RendererSceneUpdaterMock(const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor, const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor)
+            : RendererSceneUpdater(const_cast<Renderer&>(renderer), const_cast<RendererScenes&>(rendererScenes), const_cast<SceneStateExecutor&>(sceneStateExecutor), const_cast<RendererEventCollector&>(rendererEventCollector), const_cast<FrameTimer&>(frameTimer), const_cast<SceneExpirationMonitor&>(expirationMonitor))
         {
         }
 
@@ -31,15 +31,15 @@ namespace ramses_internal
     class RendererSceneUpdaterFacade : public RendererSceneUpdaterMock
     {
     public:
-        RendererSceneUpdaterFacade(const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor, const ISceneGraphConsumerComponent& sceneGraphComponent, const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor)
-            : RendererSceneUpdaterMock(renderer, rendererScenes, sceneStateExecutor, sceneGraphComponent, rendererEventCollector, frameTimer, expirationMonitor)
+        RendererSceneUpdaterFacade(const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor, const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor)
+            : RendererSceneUpdaterMock(renderer, rendererScenes, sceneStateExecutor, rendererEventCollector, frameTimer, expirationMonitor)
         {
         }
 
         virtual void handleSceneActions(SceneId sceneId, SceneActionCollection& actionsForScene) override
         {
             RendererSceneUpdaterMock::handleSceneActions(sceneId, actionsForScene);
-            RendererSceneUpdater::handleSceneActions(sceneId, actionsForScene);
+            RendererSceneUpdater::handleSceneActions(sceneId, actionsForScene); // NOLINT clang-tidy: We really mean to call into RendererSceneUpdater
         }
     };
 }

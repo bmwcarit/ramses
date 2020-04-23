@@ -11,10 +11,10 @@
 
 namespace ramses_internal
 {
-    enum ELoopMode
+    enum class ELoopMode
     {
-        ELoopMode_UpdateAndRender = 0,
-        ELoopMode_UpdateOnly,
+        UpdateAndRender = 0,
+        UpdateOnly
     };
 }
 

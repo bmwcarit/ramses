@@ -143,12 +143,12 @@ namespace ramses_internal
     {
     }
 
-    std::vector<IResource*> ResourceStreamDeserializer::processData(const ByteArrayView& data)
+    std::vector<IResource*> ResourceStreamDeserializer::processData(const absl::Span<const Byte>& data)
     {
         UInt32 packetNum = 0;
         auto it = data.begin();
         {
-            BinaryInputStream stream(it.get());
+            BinaryInputStream stream(&*it);
             stream >> packetNum;
             it += sizeof(packetNum);
         }
@@ -189,7 +189,7 @@ namespace ramses_internal
             case EState::None:
             {
                 UInt32 metadataSize = 0;
-                BinaryInputStream stream(it.get());
+                BinaryInputStream stream(&*it);
                 stream >> metadataSize;
                 stream >> m_currentBlobSize;
                 stream >> m_currentHash;
@@ -207,7 +207,7 @@ namespace ramses_internal
                 const UInt32 metadataMissing = static_cast<UInt32>(m_currentMetadata.size()) - m_metadataRead;
                 const UInt32 remainingData = static_cast<UInt32>(data.end() - it);
                 const UInt32 dataToCopy = std::min(metadataMissing, remainingData);
-                PlatformMemory::Copy(m_currentMetadata.data() + m_metadataRead, it.get(), dataToCopy);
+                PlatformMemory::Copy(m_currentMetadata.data() + m_metadataRead, &*it, dataToCopy);
                 m_metadataRead += dataToCopy;
                 it += dataToCopy;
 
@@ -254,7 +254,7 @@ namespace ramses_internal
                 Byte* blobBase = const_cast<Byte*>(m_currentResource->isCompressedAvailable() ?
                     m_currentResource->getCompressedResourceData().data() : m_currentResource->getResourceData().data());
 
-                PlatformMemory::Copy(blobBase + m_blobRead, it.get(), dataToCopy);
+                PlatformMemory::Copy(blobBase + m_blobRead, &*it, dataToCopy);
                 m_blobRead += dataToCopy;
                 it += dataToCopy;
 

@@ -47,7 +47,7 @@ namespace ramses_internal
         };
     }
 
-    INSTANTIATE_TEST_CASE_P(AResourceTest,
+    INSTANTIATE_TEST_SUITE_P(AResourceTest,
                             ResourceCompression,
                             ::testing::Values(IResource::CompressionLevel::REALTIME,
                                               IResource::CompressionLevel::OFFLINE));

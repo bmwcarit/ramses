@@ -17,6 +17,7 @@
 
 namespace ramses_internal
 {
+    class ConsoleInput;
 
 class RamshCommunicationChannelConsole : public RamshCommunicationChannel, public Runnable
 {
@@ -37,6 +38,7 @@ class RamshCommunicationChannelConsole : public RamshCommunicationChannel, publi
 
         mutable PlatformLock m_lock;
         String promptString() const;
+
         String m_input;
         std::atomic<bool> m_pausePrompt;
         PlatformThread m_checkInputThread;
@@ -44,7 +46,8 @@ class RamshCommunicationChannelConsole : public RamshCommunicationChannel, publi
         std::vector<String> m_commandHistory;
         uint32_t m_nextCommandFromHistory;
 
-        const bool m_interactiveMode;
+        bool m_interactiveMode;
+        std::unique_ptr<ConsoleInput> m_console;
 };
 
 }// namespace ramses_internal

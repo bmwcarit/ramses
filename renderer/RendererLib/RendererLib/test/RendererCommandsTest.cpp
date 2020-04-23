@@ -23,11 +23,6 @@ using namespace testing;
 
 class ARendererCommands : public ::testing::Test
 {
-public:
-    ARendererCommands()
-    {
-    }
-
 protected:
     RendererCommands queue;
 };
@@ -40,8 +35,7 @@ TEST_F(ARendererCommands, hasEmptyCommandQueueAfterCreation)
 TEST_F(ARendererCommands, createsCommandForScenePublication)
 {
     const SceneId sceneId(12u);
-    const Guid clientID(true);
-    queue.publishScene(sceneId, clientID, EScenePublicationMode_LocalAndRemote);
+    queue.publishScene(sceneId, EScenePublicationMode_LocalAndRemote);
 
     EXPECT_EQ(1u, queue.getCommands().getTotalCommandCount());
     EXPECT_EQ(ERendererCommand_PublishedScene, queue.getCommands().getCommandType(0));
@@ -49,7 +43,6 @@ TEST_F(ARendererCommands, createsCommandForScenePublication)
     const SceneInfoCommand& command = queue.getCommands().getCommandData<SceneInfoCommand>(0);
     EXPECT_EQ(sceneId, command.sceneInformation.sceneID);
     EXPECT_EQ(EScenePublicationMode_LocalAndRemote, command.sceneInformation.publicationMode);
-    EXPECT_EQ(clientID, command.clientID);
 }
 
 TEST_F(ARendererCommands, createsCommandForSceneUnpublication)
@@ -79,6 +72,50 @@ TEST_F(ARendererCommands, createsCommandForSceneCreation)
 
     EXPECT_EQ(sceneName, command.sceneInformation.friendlyName);
     EXPECT_EQ(sceneId, command.sceneInformation.sceneID);
+}
+
+TEST_F(ARendererCommands, createsCommandForSetSceneState)
+{
+    constexpr SceneId sceneId{ 12u };
+    queue.setSceneState(sceneId, RendererSceneState::Ready);
+
+    EXPECT_EQ(1u, queue.getCommands().getTotalCommandCount());
+    EXPECT_EQ(ERendererCommand_SetSceneState, queue.getCommands().getCommandType(0));
+
+    const auto& command = queue.getCommands().getCommandData<SceneStateCommand>(0);
+    EXPECT_EQ(sceneId, command.sceneId);
+    EXPECT_EQ(RendererSceneState::Ready, command.state);
+}
+
+TEST_F(ARendererCommands, createsCommandForSetSceneMapping)
+{
+    constexpr SceneId sceneId{ 12u };
+    constexpr DisplayHandle display{ 2u };
+
+    queue.setSceneMapping(sceneId, display);
+
+    EXPECT_EQ(1u, queue.getCommands().getTotalCommandCount());
+    EXPECT_EQ(ERendererCommand_SetSceneMapping, queue.getCommands().getCommandType(0));
+
+    const auto& command = queue.getCommands().getCommandData<SceneMappingCommand>(0);
+    EXPECT_EQ(sceneId, command.sceneId);
+    EXPECT_EQ(display, command.displayHandle);
+}
+
+TEST_F(ARendererCommands, createsCommandForSetSceneDisplayBufferAssignment)
+{
+    constexpr SceneId sceneId{ 12u };
+    constexpr OffscreenBufferHandle ob{ 2u };
+
+    queue.setSceneDisplayBufferAssignment(sceneId, ob, -13);
+
+    EXPECT_EQ(1u, queue.getCommands().getTotalCommandCount());
+    EXPECT_EQ(ERendererCommand_SetSceneDisplayBufferAssignment, queue.getCommands().getCommandType(0));
+
+    const auto& command = queue.getCommands().getCommandData<SceneMappingCommand>(0);
+    EXPECT_EQ(sceneId, command.sceneId);
+    EXPECT_EQ(ob, command.offscreenBuffer);
+    EXPECT_EQ(-13, command.sceneRenderOrder);
 }
 
 TEST_F(ARendererCommands, createsCommandForSceneSubscription)
@@ -210,7 +247,7 @@ TEST_F(ARendererCommands, createsCommandForShowingSceneOnDisplay)
     EXPECT_EQ(1u, queue.getCommands().getTotalCommandCount());
     EXPECT_EQ(ERendererCommand_ShowScene, queue.getCommands().getCommandType(0u));
 
-    const SceneRenderCommand& command = queue.getCommands().getCommandData<SceneRenderCommand>(0u);
+    const auto& command = queue.getCommands().getCommandData<SceneStateCommand>(0u);
 
     EXPECT_EQ(sceneId, command.sceneId);
 }
@@ -364,7 +401,7 @@ TEST_F(ARendererCommands, createsCommandForHidingSceneOnDisplay)
     EXPECT_EQ(1u, queue.getCommands().getTotalCommandCount());
     EXPECT_EQ(ERendererCommand_HideScene, queue.getCommands().getCommandType(0u));
 
-    const SceneRenderCommand& command = queue.getCommands().getCommandData<SceneRenderCommand>(0u);
+    const auto& command = queue.getCommands().getCommandData<SceneStateCommand>(0u);
 
     EXPECT_EQ(sceneId, command.sceneId);
 }
@@ -624,7 +661,7 @@ TEST_F(ARendererCommands, createsCommandsForSetClearColor)
 
 TEST_F(ARendererCommands, createsCommandForSettingFrameTimerLimits)
 {
-    queue.setFrameTimerLimits(5u, 10u, 20u, 30u);
+    queue.setFrameTimerLimits(5u, 10u, 30u);
 
     EXPECT_EQ(1u, queue.getCommands().getTotalCommandCount());
     {
@@ -632,7 +669,6 @@ TEST_F(ARendererCommands, createsCommandForSettingFrameTimerLimits)
         EXPECT_EQ(ERendererCommand_SetFrameTimerLimits, queue.getCommands().getCommandType(0));
         EXPECT_EQ(5u, command.limitForSceneResourcesUploadMicrosec);
         EXPECT_EQ(10u, command.limitForClientResourcesUploadMicrosec);
-        EXPECT_EQ(20u, command.limitForSceneActionsApplyMicrosec);
         EXPECT_EQ(30u, command.limitForOffscreenBufferRenderMicrosec);
     }
 }

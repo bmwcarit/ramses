@@ -13,12 +13,11 @@
 
 namespace ramses_internal
 {
-    enum EConnectionProtocol
+    enum class EConnectionProtocol
     {
-        EConnectionProtocol_TCP = 0,
-        EConnectionProtocol_Fake,
-        EConnectionProtocol_Invalid,
-        EConnectionProtocol_NUMBER_OF_ELEMENTS
+        TCP,
+        Fake,
+        Invalid, // must be last
     };
 
     static const char* ConectionProtocolNames[] =
@@ -27,8 +26,8 @@ namespace ramses_internal
         "Fake",
         "Invalid"
     };
-
-    ENUM_TO_STRING(EConnectionProtocol, ConectionProtocolNames, EConnectionProtocol_NUMBER_OF_ELEMENTS);
 }
+
+MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses_internal::EConnectionProtocol, ramses_internal::ConectionProtocolNames, ramses_internal::EConnectionProtocol::Invalid);
 
 #endif

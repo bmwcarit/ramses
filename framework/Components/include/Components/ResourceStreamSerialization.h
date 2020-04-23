@@ -13,7 +13,7 @@
 #include "Collections/Pair.h"
 #include "SceneAPI/ResourceContentHash.h"
 #include "Components/ManagedResource.h"
-#include "Collections/ArrayView.h"
+#include "absl/types/span.h"
 
 namespace ramses_internal
 {
@@ -73,7 +73,7 @@ namespace ramses_internal
     public:
         ResourceStreamDeserializer();
 
-        std::vector<IResource*> processData(const ByteArrayView& data);
+        std::vector<IResource*> processData(const absl::Span<const Byte>& data);
         bool processingFinished() const;
         bool processingFailed() const;
 

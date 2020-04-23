@@ -8,7 +8,7 @@
 
 #include "FlushSceneVersion.h"
 #include "RamsesClientImpl.h"
-#include "SceneCommandTypes.h"
+#include "SceneCommandBuffer.h"
 
 namespace ramses_internal
 {
@@ -23,10 +23,10 @@ namespace ramses_internal
 
     Bool FlushSceneVersion::execute(ramses::sceneVersionTag_t& sceneVersion, uint64_t& sceneId) const
     {
-        FlushSceneVersionCommand command;
+        SceneCommandFlushSceneVersion command;
         command.sceneVersion = sceneVersion;
 
-        m_client.enqueueSceneCommand(ramses::sceneId_t(sceneId), command);
+        m_client.enqueueSceneCommand(ramses::sceneId_t(sceneId), std::move(command));
         return true;
     }
 }

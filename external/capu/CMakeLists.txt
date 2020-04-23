@@ -59,6 +59,7 @@ ACME_MODULE(
 
     FILES_SOURCE            src/os/${TARGET_OS}/*.cpp
                             src/util/*.cpp
+                            src/*.cpp
                             ${PLATFORM_SPECIFIC_SOURCE_FILES}
 
 

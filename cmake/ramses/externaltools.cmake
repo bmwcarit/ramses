@@ -19,3 +19,16 @@ if (PYTHONINTERP_FOUND AND PYTHON_EXECUTABLE)
 else()
     message(STATUS "- python3")
 endif()
+
+
+### enable ccache when configured and available
+OPTION(ramses-sdk_USE_CCACHE "Enable ccache for build" OFF)
+
+if(ramses-sdk_USE_CCACHE)
+    find_program(CCACHE_EXECUTABLE ccache)
+    if(CCACHE_EXECUTABLE)
+        message(STATUS "Enable ccache")
+        set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_EXECUTABLE})
+        set(CMAKE_C_COMPILER_LAUNCHER   ${CCACHE_EXECUTABLE})
+    endif()
+endif()

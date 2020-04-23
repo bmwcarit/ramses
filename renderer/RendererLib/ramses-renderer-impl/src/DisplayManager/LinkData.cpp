@@ -35,8 +35,7 @@ namespace ramses_internal
 
     bool LinkData::execute(uint64_t& providerSceneId, uint32_t& providerId, uint64_t& consumerSceneId, uint32_t& consumerId) const
     {
-        m_displayManager.linkData(ramses::sceneId_t(providerSceneId), providerId, ramses::sceneId_t(consumerSceneId), consumerId);
-
+        m_displayManager.linkData(ramses::sceneId_t(providerSceneId), ramses::dataProviderId_t{providerId}, ramses::sceneId_t(consumerSceneId), ramses::dataConsumerId_t{consumerId});
         return true;
     }
 }

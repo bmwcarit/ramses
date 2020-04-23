@@ -76,15 +76,46 @@ namespace ramses
     // - provide info whether type is concrete (can be instantiated) or a pure base type
     DEFINE_RAMSES_OBJECT_TRAITS(RamsesClient, ERamsesObjectType_Client, ERamsesObjectType_RamsesObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(Scene, ERamsesObjectType_Scene, ERamsesObjectType_ClientObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(AnimationSystem, ERamsesObjectType_AnimationSystem, ERamsesObjectType_SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(AnimationSystemRealTime, ERamsesObjectType_AnimationSystemRealTime, ERamsesObjectType_AnimationSystem, true);
     DEFINE_RAMSES_OBJECT_TRAITS(MeshNode, ERamsesObjectType_MeshNode, ERamsesObjectType_Node, true);
     DEFINE_RAMSES_OBJECT_TRAITS(RemoteCamera, ERamsesObjectType_RemoteCamera, ERamsesObjectType_Camera, true);
     DEFINE_RAMSES_OBJECT_TRAITS(PerspectiveCamera, ERamsesObjectType_PerspectiveCamera, ERamsesObjectType_LocalCamera, true);
     DEFINE_RAMSES_OBJECT_TRAITS(OrthographicCamera, ERamsesObjectType_OrthographicCamera, ERamsesObjectType_LocalCamera, true);
     DEFINE_RAMSES_OBJECT_TRAITS(LocalCamera, ERamsesObjectType_LocalCamera, ERamsesObjectType_Camera, false);
     DEFINE_RAMSES_OBJECT_TRAITS(Effect, ERamsesObjectType_Effect, ERamsesObjectType_Resource, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(AnimatedProperty, ERamsesObjectType_AnimatedProperty, ERamsesObjectType_AnimationObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(Animation, ERamsesObjectType_Animation, ERamsesObjectType_AnimationObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(AnimationSequence, ERamsesObjectType_AnimationSequence, ERamsesObjectType_AnimationObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(AnimatedSetter, ERamsesObjectType_AnimatedSetter, ERamsesObjectType_AnimationObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(Appearance, ERamsesObjectType_Appearance, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(GeometryBinding, ERamsesObjectType_GeometryBinding, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(PickableObject, ERamsesObjectType_PickableObject, ERamsesObjectType_Node, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineStepBool, ERamsesObjectType_SplineStepBool, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineStepFloat, ERamsesObjectType_SplineStepFloat, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineStepInt32, ERamsesObjectType_SplineStepInt32, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineStepVector2f, ERamsesObjectType_SplineStepVector2f, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineStepVector3f, ERamsesObjectType_SplineStepVector3f, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineStepVector4f, ERamsesObjectType_SplineStepVector4f, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineStepVector2i, ERamsesObjectType_SplineStepVector2i, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineStepVector3i, ERamsesObjectType_SplineStepVector3i, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineStepVector4i, ERamsesObjectType_SplineStepVector4i, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineLinearFloat, ERamsesObjectType_SplineLinearFloat, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineLinearInt32, ERamsesObjectType_SplineLinearInt32, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineLinearVector2f, ERamsesObjectType_SplineLinearVector2f, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineLinearVector3f, ERamsesObjectType_SplineLinearVector3f, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineLinearVector4f, ERamsesObjectType_SplineLinearVector4f, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineLinearVector2i, ERamsesObjectType_SplineLinearVector2i, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineLinearVector3i, ERamsesObjectType_SplineLinearVector3i, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineLinearVector4i, ERamsesObjectType_SplineLinearVector4i, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineBezierFloat, ERamsesObjectType_SplineBezierFloat, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineBezierInt32, ERamsesObjectType_SplineBezierInt32, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineBezierVector2f, ERamsesObjectType_SplineBezierVector2f, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineBezierVector3f, ERamsesObjectType_SplineBezierVector3f, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineBezierVector4f, ERamsesObjectType_SplineBezierVector4f, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineBezierVector2i, ERamsesObjectType_SplineBezierVector2i, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineBezierVector3i, ERamsesObjectType_SplineBezierVector3i, ERamsesObjectType_Spline, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SplineBezierVector4i, ERamsesObjectType_SplineBezierVector4i, ERamsesObjectType_Spline, true);
     DEFINE_RAMSES_OBJECT_TRAITS(Texture2D, ERamsesObjectType_Texture2D, ERamsesObjectType_Resource, true);
     DEFINE_RAMSES_OBJECT_TRAITS(Texture3D, ERamsesObjectType_Texture3D, ERamsesObjectType_Resource, true);
     DEFINE_RAMSES_OBJECT_TRAITS(TextureCube, ERamsesObjectType_TextureCube, ERamsesObjectType_Resource, true);
@@ -118,13 +149,16 @@ namespace ramses
     DEFINE_RAMSES_OBJECT_TRAITS(RamsesObject, ERamsesObjectType_RamsesObject, ERamsesObjectType_Invalid, false);
     DEFINE_RAMSES_OBJECT_TRAITS(ClientObject, ERamsesObjectType_ClientObject, ERamsesObjectType_RamsesObject, false);
     DEFINE_RAMSES_OBJECT_TRAITS(SceneObject, ERamsesObjectType_SceneObject, ERamsesObjectType_ClientObject, false);
+    DEFINE_RAMSES_OBJECT_TRAITS(AnimationObject, ERamsesObjectType_AnimationObject, ERamsesObjectType_SceneObject, false);
     DEFINE_RAMSES_OBJECT_TRAITS(Node, ERamsesObjectType_Node, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(Camera, ERamsesObjectType_Camera, ERamsesObjectType_Node, false);
+    DEFINE_RAMSES_OBJECT_TRAITS(Spline, ERamsesObjectType_Spline, ERamsesObjectType_AnimationObject, false);
     DEFINE_RAMSES_OBJECT_TRAITS(Resource, ERamsesObjectType_Resource, ERamsesObjectType_ClientObject, false);
     DEFINE_RAMSES_OBJECT_TRAITS(DataObject, ERamsesObjectType_DataObject, ERamsesObjectType_SceneObject, false);
     DEFINE_RAMSES_OBJECT_TRAITS(IndexDataBuffer, ERamsesObjectType_IndexDataBuffer, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(VertexDataBuffer, ERamsesObjectType_VertexDataBuffer, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(Texture2DBuffer, ERamsesObjectType_Texture2DBuffer, ERamsesObjectType_SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SceneReference, ERamsesObjectType_SceneReference, ERamsesObjectType_SceneObject, true);
 
     struct RamsesObjectTraitsEntry
     {
@@ -139,7 +173,7 @@ namespace ramses
             { ERamsesObjectType_Invalid, ERamsesObjectType_Invalid, false },
 #define DEFINE_RAMSES_OBJECT_TRAITS_LIST(_typeId) \
             { _typeId, CLASS_OF_RAMSES_OBJECT_TYPE<_typeId>::BaseTypeID, CLASS_OF_RAMSES_OBJECT_TYPE<_typeId>::IsConcreteType },
-#define DEFINE_RAMSES_OBJECT_TRAITS_LIST_END() \
+#define DATA_BIND_DEFINE_END() \
         };
 
     // Define dynamic traits for all RamsesObject types that allow:
@@ -150,8 +184,11 @@ namespace ramses
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_ClientObject)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_RamsesObject)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SceneObject)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_AnimationObject)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Client)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Scene)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_AnimationSystem)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_AnimationSystemRealTime)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Node)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_MeshNode)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Camera)
@@ -160,9 +197,39 @@ namespace ramses
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_PerspectiveCamera)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_OrthographicCamera)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Effect)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_AnimatedProperty)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Animation)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_AnimationSequence)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_AnimatedSetter)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Appearance)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_GeometryBinding)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_PickableObject)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Spline)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineStepBool)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineStepFloat)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineStepInt32)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineStepVector2f)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineStepVector3f)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineStepVector4f)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineStepVector2i)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineStepVector3i)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineStepVector4i)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineLinearFloat)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineLinearInt32)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineLinearVector2f)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineLinearVector3f)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineLinearVector4f)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineLinearVector2i)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineLinearVector3i)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineLinearVector4i)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineBezierFloat)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineBezierInt32)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineBezierVector2f)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineBezierVector3f)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineBezierVector4f)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineBezierVector2i)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineBezierVector3i)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineBezierVector4i)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Resource)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Texture2D)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Texture3D)
@@ -198,7 +265,8 @@ namespace ramses
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataVector3i)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataVector4i)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_StreamTexture)
-    DEFINE_RAMSES_OBJECT_TRAITS_LIST_END()
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SceneReference)
+        DATA_BIND_DEFINE_END()
 }
 
 #endif

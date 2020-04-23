@@ -88,7 +88,7 @@ namespace ramses_internal
 
 
 
-    TYPED_TEST_CASE(RawBinaryOutputStreamBaseTypesTest, RawBinaryOutputStreamBaseTypesTestTypes);
+    TYPED_TEST_SUITE(RawBinaryOutputStreamBaseTypesTest, RawBinaryOutputStreamBaseTypesTestTypes);
 
 
     TYPED_TEST(RawBinaryOutputStreamBaseTypesTest, WriteAndCheckSingleElement)

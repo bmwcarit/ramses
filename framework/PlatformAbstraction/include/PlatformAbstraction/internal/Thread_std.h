@@ -25,8 +25,8 @@ namespace internal
         Thread() = default;
         explicit Thread(std::string name, Fun_t fun);
 
-        Thread(Thread&& other) RNOEXCEPT = default;
-        Thread& operator=(Thread&& other) RNOEXCEPT = default;
+        Thread(Thread&& other) noexcept = default;
+        Thread& operator=(Thread&& other) noexcept = default;
 
         bool joinable() const;
         void join();

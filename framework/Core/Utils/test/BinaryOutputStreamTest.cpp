@@ -179,7 +179,7 @@ namespace ramses_internal
 
         char* buffer = new char[strlen + 1];
 
-        ramses_capu::Memory::Copy(buffer, outStream.getData() + sizeof(uint32_t), strlen);
+        std::memcpy(buffer, outStream.getData() + sizeof(uint32_t), strlen);
         buffer[strlen] = 0;
 
         EXPECT_STREQ("Hello World with a lot of characters", buffer);
@@ -241,5 +241,13 @@ namespace ramses_internal
         EXPECT_EQ(sizeof(uint32_t), vec.size());
         EXPECT_EQ(0u, stream.getSize());
         EXPECT_TRUE(nullptr == stream.getData());
+    }
+
+    TEST(BinaryOutputStreamTest, CanUseWithUnsignedChar)
+    {
+        BinaryOutputStreamT<unsigned char> stream;
+        stream << 123;
+        std::vector<unsigned char> v = stream.release();
+        EXPECT_NE(0u, v.size());
     }
 }

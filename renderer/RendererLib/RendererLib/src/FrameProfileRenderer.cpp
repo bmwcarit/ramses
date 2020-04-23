@@ -42,7 +42,7 @@ namespace ramses_internal
         precision highp float;                              \n\
                                                             \n\
         flat in int colorId;                                \n\
-        const vec4 colors[16] = vec4[16](                   \n\
+        const vec4 colors[17] = vec4[17](                   \n\
             vec4(0.0, 0.0, 0.0, 1.0),                       \n\
             vec4(0.5, 1.0, 0.0, 0.5),        // RendererCommands                   \n\
             vec4(0.0, 0.0, 0.0, 0.5),        // ConsolidateSceneActions            \n\
@@ -53,6 +53,7 @@ namespace ramses_internal
             vec4(1.0, 0.5, 0.0, 0.5),        // UpdateStreamTextures               \n\
             vec4(0.5, 0.0, 1.0, 0.25),       // UpdateScenesToBeMapped             \n\
             vec4(0.25, 0.75, 0.25, 0.5),     // UpdateResourceCache                \n\
+            vec4(0.75, 0.25, 0.25, 0.5),     // UpdateAnimations                   \n\
             vec4(0.25, 0.75, 0.75, 0.5),     // UpdateTransformations              \n\
             vec4(1.0, 1.0, 0.0, 0.5),        // UpdateDataLinks                    \n\
             vec4(0.0, 0.0, 0.0, 0.5),        // HandleDisplayEvents                \n\
@@ -472,16 +473,14 @@ namespace ramses_internal
         const Look graphLook = createLookFromEffect(*m_timingLineEffect, m_timingLineShaderHandle);
         const Look stackedGraphLook = createLookFromEffect(*m_stackedTimingLineEffect, m_stackedTimingLineShaderHandle);
         const Vector4 backgroundColor(1.0f, 1.0f, 1.0f, 0.2f);
-        const Vector4 redColor(1.0f, 0.0f, 0.0f, 0.5f);
         const Vector4 greenColor(0.0f, 1.0f, 0.0f, 0.5f);
         const Vector4 blueColor(0.0f, 0.0f, 1.0f, 0.5f);
         const Vector4 whiteColor(1.0f, 1.0f, 1.0f, 0.5f);
         const Vector4 blackColor(0.0f, 0.0f, 0.0f, 0.5f);
         const Vector4 violetColor(1.0f, 0.0f, 1.0f, 0.5f);
-        const Vector4 cyanColor(0.0f, 1.0f, 1.0f, 0.5f);
 
         // timing graphs
-        const Float VerticalTimingScale(TimingGridlinePixelDistance / (m_timingGraphHeight * 1000)); // convert into microseconds
+        const Float VerticalTimingScale(TimingGridlinePixelDistance / static_cast<float>(m_timingGraphHeight * 1000)); // convert into microseconds
         const Vector2 timingScale(1.0f, VerticalTimingScale);
         const Vector2 timingTranslation(10.f, 10.f);
 

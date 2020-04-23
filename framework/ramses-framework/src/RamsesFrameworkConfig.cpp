@@ -43,6 +43,11 @@ namespace ramses
         return impl.setWatchdogNotificationCallBack(callback);
     }
 
+    status_t RamsesFrameworkConfig::disableDLTApplicationRegistration()
+    {
+        return impl.enableDLTApplicationRegistration(false);
+    }
+
     void RamsesFrameworkConfig::setDLTApplicationID(const char* id)
     {
         impl.setDLTApplicationID(id);

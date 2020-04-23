@@ -21,9 +21,11 @@
 #include "SceneAPI/DataFieldInfo.h"
 #include "SceneAPI/MipMapSize.h"
 #include "SceneAPI/Renderable.h"
+#include "SceneAPI/RendererSceneState.h"
 
 #include "Collections/HashMap.h"
 #include "Collections/Vector.h"
+#include "AnimationAPI/IAnimationSystem.h"
 
 namespace ramses_internal
 {
@@ -52,6 +54,7 @@ namespace ramses_internal
     struct RenderBuffer;
     struct BlitPass;
     struct PickableObject;
+    struct SceneReference;
 
     class IScene
     {
@@ -310,6 +313,24 @@ namespace ramses_internal
         virtual bool                        isDataSlotAllocated             (DataSlotHandle handle) const = 0;
         virtual UInt32                      getDataSlotCount                () const = 0;
         virtual const DataSlot&             getDataSlot                     (DataSlotHandle handle) const = 0;
+
+        // Scene references
+        virtual SceneReferenceHandle        allocateSceneReference          (SceneId sceneId, SceneReferenceHandle handle = {}) = 0;
+        virtual void                        releaseSceneReference           (SceneReferenceHandle handle) = 0;
+        virtual void                        requestSceneReferenceState      (SceneReferenceHandle handle, RendererSceneState state) = 0;
+        virtual void                        requestSceneReferenceFlushNotifications(SceneReferenceHandle handle, bool enable) = 0;
+        virtual void                        setSceneReferenceRenderOrder    (SceneReferenceHandle handle, int32_t renderOrder) = 0;
+        virtual bool                        isSceneReferenceAllocated       (SceneReferenceHandle handle) const = 0;
+        virtual UInt32                      getSceneReferenceCount          () const = 0;
+        virtual const SceneReference&       getSceneReference               (SceneReferenceHandle handle) const = 0;
+
+        //Animation system
+        virtual AnimationSystemHandle       addAnimationSystem              (IAnimationSystem* animationSystem, AnimationSystemHandle externalHandle = AnimationSystemHandle::Invalid()) = 0;
+        virtual void                        removeAnimationSystem           (AnimationSystemHandle animSystemHandle) = 0;
+        virtual IAnimationSystem*           getAnimationSystem              (AnimationSystemHandle animSystemHandle) = 0;
+        virtual const IAnimationSystem*     getAnimationSystem              (AnimationSystemHandle animSystemHandle) const = 0;
+        virtual bool                        isAnimationSystemAllocated      (AnimationSystemHandle animSystemHandle) const = 0;
+        virtual UInt32                      getAnimationSystemCount         () const = 0;
     };
 }
 

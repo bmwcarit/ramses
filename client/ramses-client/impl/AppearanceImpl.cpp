@@ -306,18 +306,18 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t AppearanceImpl::validate(uint32_t indent) const
+    status_t AppearanceImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        status_t status = SceneObjectImpl::validate(indent);
+        status_t status = SceneObjectImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
 
-        const status_t effectStatus = validateEffect(indent);
+        const status_t effectStatus = validateEffect(indent, visitedObjects);
         if (StatusOK != effectStatus)
         {
             status = effectStatus;
         }
 
-        const status_t uniformsStatus = validateUniforms(indent);
+        const status_t uniformsStatus = validateUniforms(indent, visitedObjects);
         if (StatusOK != uniformsStatus)
         {
             status = uniformsStatus;
@@ -326,7 +326,7 @@ namespace ramses
         return status;
     }
 
-    status_t AppearanceImpl::validateEffect(uint32_t indent) const
+    status_t AppearanceImpl::validateEffect(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
         ResourceIteratorImpl iter(getClientImpl(), ERamsesObjectType_Effect);
         RamsesObject* ramsesObject = iter.getNext();
@@ -335,7 +335,7 @@ namespace ramses
             const Effect& effect = RamsesObjectTypeUtils::ConvertTo<Effect>(*ramsesObject);
             if (&effect.impl == m_effectImpl)
             {
-                return addValidationOfDependentObject(indent, *m_effectImpl);
+                return addValidationOfDependentObject(indent, *m_effectImpl, visitedObjects);
             }
 
             ramsesObject = iter.getNext();
@@ -345,7 +345,7 @@ namespace ramses
         return getValidationErrorStatus();
     }
 
-    status_t AppearanceImpl::validateUniforms(uint32_t indent) const
+    status_t AppearanceImpl::validateUniforms(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
         status_t status = StatusOK;
         const ramses_internal::DataLayout& layout = getIScene().getDataLayout(m_uniformLayout);
@@ -370,7 +370,7 @@ namespace ramses
             {
                 if (samplerHandle == sampler->impl.getTextureSamplerHandle())
                 {
-                    const status_t samplerStatus = addValidationOfDependentObject(indent, sampler->impl);
+                    const status_t samplerStatus = addValidationOfDependentObject(indent, sampler->impl, visitedObjects);
                     if (StatusOK != samplerStatus)
                     {
                         status = samplerStatus;
@@ -398,7 +398,7 @@ namespace ramses
                     const DataObject& dataObject = RamsesObjectTypeUtils::ConvertTo<DataObject>(*ramsesObject);
                     if (boundInstance == dataObject.impl.getDataReference())
                     {
-                        const status_t dataObjectStatus = addValidationOfDependentObject(indent, dataObject.impl);
+                        const status_t dataObjectStatus = addValidationOfDependentObject(indent, dataObject.impl, visitedObjects);
                         if (StatusOK != dataObjectStatus)
                         {
                             status = dataObjectStatus;

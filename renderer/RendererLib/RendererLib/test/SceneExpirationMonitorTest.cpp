@@ -49,7 +49,8 @@ protected:
     void expectNoEvent()
     {
         RendererEventVector events;
-        eventCollector.dispatchEvents(events);
+        RendererEventVector dummy;
+        eventCollector.appendAndConsumePendingEvents(dummy, events);
         EXPECT_TRUE(events.empty());
         for (const auto& e : events)
         {
@@ -61,7 +62,8 @@ protected:
     void expectEvents(std::initializer_list< std::pair<SceneId, ERendererEventType> > expectedEvents)
     {
         RendererEventVector events;
-        eventCollector.dispatchEvents(events);
+        RendererEventVector dummy;
+        eventCollector.appendAndConsumePendingEvents(dummy, events);
         EXPECT_EQ(expectedEvents.size(), events.size());
         for (const auto& expectedEvent : expectedEvents)
         {

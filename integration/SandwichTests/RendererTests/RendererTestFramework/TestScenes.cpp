@@ -9,6 +9,7 @@
 #include "TestScenes.h"
 #include "ramses-client-api/ResourceIterator.h"
 #include "TestScenes/FileLoadingScene.h"
+#include <cassert>
 
 TestScenes::TestScenes(ramses::RamsesClient& client)
     : m_client(client)

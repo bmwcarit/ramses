@@ -87,6 +87,10 @@ namespace ramses_internal
     {
         return sizeInfo.dataBufferCount;
     }
+    template <> UInt32& getObjectCount<AnimationSystemHandle>(SceneSizeInformation& sizeInfo)
+    {
+        return sizeInfo.animationSystemCount;
+    }
     template <> UInt32& getObjectCount<TextureBufferHandle>(SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.textureBufferCount;
@@ -94,6 +98,10 @@ namespace ramses_internal
     template <> UInt32& getObjectCount<PickableObjectHandle>(SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.pickableObjectCount;
+    }
+    template <> UInt32& getObjectCount<SceneReferenceHandle>(SceneSizeInformation& sizeInfo)
+    {
+        return sizeInfo.sceneReferenceCount;
     }
 
     template <typename HANDLE>
@@ -205,5 +213,10 @@ namespace ramses_internal
     PickableObjectHandle SceneAllocateHelper::allocatePickableObject(DataBufferHandle geometryHandle, NodeHandle nodeHandle, PickableObjectId id, PickableObjectHandle pickableHandle)
     {
         return m_scene.allocatePickableObject(geometryHandle, nodeHandle, id, preallocateHandle(pickableHandle));
+    }
+
+    SceneReferenceHandle SceneAllocateHelper::allocateSceneReference(SceneId sceneId, SceneReferenceHandle handle)
+    {
+        return m_scene.allocateSceneReference(sceneId, preallocateHandle(handle));
     }
 }

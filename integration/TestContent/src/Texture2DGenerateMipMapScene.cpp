@@ -18,6 +18,7 @@
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/OrthographicCamera.h"
+#include <cassert>
 
 // Uses mip-map generation to generate LOD level-1 from level-0 data. Draws two quads, for the left one, 2x2 texels
 // map to one pixel, thus LOD level-1 is used, which is the average of the four level-0 texels (red, green, blue, white).

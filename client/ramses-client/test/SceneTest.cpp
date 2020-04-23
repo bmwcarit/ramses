@@ -244,7 +244,7 @@ namespace ramses
         Node* node = anotherScene.createNode("node");
         ASSERT_TRUE(nullptr != node);
 
-        EXPECT_NE(StatusOK, m_scene.createTransformationDataProvider(*node, 1u));
+        EXPECT_NE(StatusOK, m_scene.createTransformationDataProvider(*node, dataProviderId_t{1u}));
 
         client.destroy(anotherScene);
     }
@@ -256,7 +256,7 @@ namespace ramses
         Node* node = anotherScene.createNode("groupNode");
         ASSERT_TRUE(nullptr != node);
 
-        EXPECT_NE(StatusOK, m_scene.createTransformationDataConsumer(*node, 1u));
+        EXPECT_NE(StatusOK, m_scene.createTransformationDataConsumer(*node, dataConsumerId_t{1u}));
 
         client.destroy(anotherScene);
     }
@@ -710,7 +710,7 @@ namespace ramses
         DataFloat* dataObject = anotherScene.createDataFloat();
         ASSERT_TRUE(nullptr != dataObject);
 
-        EXPECT_NE(StatusOK, m_scene.createDataProvider(*dataObject, 1u));
+        EXPECT_NE(StatusOK, m_scene.createDataProvider(*dataObject, dataProviderId_t{1u}));
 
         client.destroy(anotherScene);
     }
@@ -722,7 +722,7 @@ namespace ramses
         DataFloat* dataObject = anotherScene.createDataFloat();
         ASSERT_TRUE(nullptr != dataObject);
 
-        EXPECT_NE(StatusOK, m_scene.createDataConsumer(*dataObject, 1u));
+        EXPECT_NE(StatusOK, m_scene.createDataConsumer(*dataObject, dataConsumerId_t{1u}));
 
         client.destroy(anotherScene);
     }
@@ -786,7 +786,7 @@ namespace ramses
         const Texture2D* texture = anotherClient.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
-        EXPECT_NE(StatusOK, m_scene.createTextureProvider(*texture, 1u));
+        EXPECT_NE(StatusOK, m_scene.createTextureProvider(*texture, dataProviderId_t{1u}));
     }
 
     TEST_F(AScene, reportsErrorWhenCreateTextureConsumerWithSamplerFromAnotherScene)
@@ -800,7 +800,7 @@ namespace ramses
         const TextureSampler* sampler = anotherScene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
         ASSERT_TRUE(nullptr != sampler);
 
-        EXPECT_NE(StatusOK, m_scene.createTextureConsumer(*sampler, 1u));
+        EXPECT_NE(StatusOK, m_scene.createTextureConsumer(*sampler, dataConsumerId_t{1u}));
 
         client.destroy(anotherScene);
     }
@@ -814,7 +814,7 @@ namespace ramses
         Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
-        EXPECT_EQ(StatusOK, m_scene.createTextureProvider(*texture, 666u));
+        EXPECT_EQ(StatusOK, m_scene.createTextureProvider(*texture, dataProviderId_t{666u}));
 
         EXPECT_EQ(1u, m_scene.impl.getIScene().getDataSlotCount());
         ramses_internal::DataSlotHandle slotHandle(0u);
@@ -838,8 +838,8 @@ namespace ramses
         Texture2D* texture2 = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData2, false);
         ASSERT_TRUE(nullptr != texture2);
 
-        EXPECT_EQ(StatusOK, m_scene.createTextureProvider(*texture1, 666u));
-        EXPECT_EQ(StatusOK, m_scene.updateTextureProvider(*texture2, 666u));
+        EXPECT_EQ(StatusOK, m_scene.createTextureProvider(*texture1, dataProviderId_t{666u}));
+        EXPECT_EQ(StatusOK, m_scene.updateTextureProvider(*texture2, dataProviderId_t{666u}));
 
         EXPECT_EQ(1u, m_scene.impl.getIScene().getDataSlotCount());
         ramses_internal::DataSlotHandle slotHandle(0u);
@@ -861,7 +861,7 @@ namespace ramses
         const TextureSampler* sampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
         ASSERT_TRUE(nullptr != sampler);
 
-        EXPECT_EQ(StatusOK, m_scene.createTextureConsumer(*sampler, 666u));
+        EXPECT_EQ(StatusOK, m_scene.createTextureConsumer(*sampler, dataConsumerId_t{666u}));
 
         EXPECT_EQ(1u, m_scene.impl.getIScene().getDataSlotCount());
         ramses_internal::DataSlotHandle slotHandle(0u);
@@ -883,7 +883,7 @@ namespace ramses
         const TextureSampler* sampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
         ASSERT_TRUE(nullptr != sampler);
 
-        EXPECT_NE(StatusOK, m_scene.createTextureConsumer(*sampler, 666u));
+        EXPECT_NE(StatusOK, m_scene.createTextureConsumer(*sampler, dataConsumerId_t{666u}));
     }
 
     TEST_F(AScene, removesDataSlotsOfTextureSamplerOnDestruction)
@@ -896,7 +896,7 @@ namespace ramses
         TextureSampler* sampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
         ASSERT_TRUE(nullptr != sampler);
 
-        EXPECT_EQ(StatusOK, m_scene.createTextureConsumer(*sampler, 666u));
+        EXPECT_EQ(StatusOK, m_scene.createTextureConsumer(*sampler, dataConsumerId_t{666u}));
 
         EXPECT_EQ(1u, m_scene.impl.getIScene().getDataSlotCount());
         ramses_internal::DataSlotHandle linkHandle(0u);
@@ -917,8 +917,8 @@ namespace ramses
         TextureSampler* sampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
         ASSERT_TRUE(nullptr != sampler);
 
-        EXPECT_EQ(StatusOK, m_scene.createTextureConsumer(*sampler, 666u));
-        EXPECT_NE(StatusOK, m_scene.createTextureConsumer(*sampler, 667u));
+        EXPECT_EQ(StatusOK, m_scene.createTextureConsumer(*sampler, dataConsumerId_t{666u}));
+        EXPECT_NE(StatusOK, m_scene.createTextureConsumer(*sampler, dataConsumerId_t{667u}));
     }
 
     TEST_F(AScene, canNotCreateMoreThanOneProviderForATexture)
@@ -928,8 +928,8 @@ namespace ramses
         Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
-        EXPECT_EQ(StatusOK, m_scene.createTextureProvider(*texture, 666u));
-        EXPECT_NE(StatusOK, m_scene.createTextureProvider(*texture, 667u));
+        EXPECT_EQ(StatusOK, m_scene.createTextureProvider(*texture, dataProviderId_t{666u}));
+        EXPECT_NE(StatusOK, m_scene.createTextureProvider(*texture, dataProviderId_t{667u}));
     }
 
     TEST_F(AScene, canNotCreateMoreThanOneTextureConsumerOrProviderWithTheSameId)

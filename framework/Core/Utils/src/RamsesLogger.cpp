@@ -14,6 +14,7 @@
 #include "Utils/LogMacros.h"
 #include "DltLogAppender/DltLogAppender.h"
 #include "PlatformAbstraction/PlatformEnvironmentVariables.h"
+#include <cassert>
 
 #ifdef __ANDROID__
     #include <AndroidLogger/AndroidLogAppender.h>
@@ -74,7 +75,7 @@ namespace ramses_internal
         }
     }
 
-    void RamsesLogger::initialize(const CommandLineParser& parser, const String& idString, const String& descriptionString, bool disableDLT)
+    void RamsesLogger::initialize(const CommandLineParser& parser, const String& idString, const String& descriptionString, bool disableDLT, bool enableDLTApplicationRegistration)
     {
         if (m_isInitialized)
         {
@@ -146,14 +147,16 @@ namespace ramses_internal
 
             if (!dltAppIdAsString.empty())
             {
-                DltAdapter* dltAdapter = DltAdapter::getDltAdapter();
-                if (dltAdapter->registerApplication(dltAppIdAsString, dltAppDescription))
-                {
-                    dltAdapter->registerLogLevelChangeCallback([this](const String& contextId_, int logLevel_) {
-                            dltLogLevelChangeCallback(contextId_, logLevel_);
-                        });
-                    createDltContexts(pushLogLevelToDltDaemon);
+                if (!enableDLTApplicationRegistration)
+                    LOG_INFO(CONTEXT_FRAMEWORK, "RamsesLogger::initialize: Reuse exising DLT application registration");
 
+                DltAdapter* dltAdapter = DltAdapter::getDltAdapter();
+                if (dltAdapter->initialize(dltAppIdAsString, dltAppDescription, enableDLTApplicationRegistration,
+                                           [this](const String& contextId_, int logLevel_) {
+                                               dltLogLevelChangeCallback(contextId_, logLevel_);
+                                           },
+                                           m_logContexts, pushLogLevelToDltDaemon))
+                {
                     m_dltLogAppender.reset(new DltLogAppender);
 
                     {
@@ -163,7 +166,7 @@ namespace ramses_internal
                 }
                 else
                 {
-                    LOG_WARN(CONTEXT_FRAMEWORK, "RamsesLogger::initialize: DLT disabled because registerApplication failed");
+                    LOG_WARN(CONTEXT_FRAMEWORK, "RamsesLogger::initialize: DLT disabled because initialize failed");
                 }
             }
             else
@@ -176,6 +179,7 @@ namespace ramses_internal
         if (!enableSmokeTestContext.wasDefined())
         {
             CONTEXT_SMOKETEST.setLogLevel(ELogLevel::Off);
+            CONTEXT_SMOKETEST.disableSetLogLevel();
         }
 
         LOG_INFO(CONTEXT_FRAMEWORK, "Ramses log levels: Contexts " << RamsesLogger::GetLogLevelText(logLevelContexts) <<
@@ -232,11 +236,13 @@ namespace ramses_internal
 
     void RamsesLogger::setAfterConsoleLogCallback(const std::function<void()>& callback)
     {
+        std::lock_guard<std::mutex> guard(m_appenderLock);
         m_consoleLogAppender.setAfterLogCallback(callback);
     }
 
     void RamsesLogger::removeAfterConsoleLogCallback()
     {
+        std::lock_guard<std::mutex> guard(m_appenderLock);
         m_consoleLogAppender.removeAfterLogCallback();
     }
 
@@ -275,15 +281,6 @@ namespace ramses_internal
         LogContext* ctx = new LogContext(name, id);
         m_logContexts.push_back(ctx);
         return *ctx;
-    }
-
-    void RamsesLogger::createDltContexts(bool pushLogLevel)
-    {
-        for (auto& ctx : m_logContexts)
-        {
-            assert(ctx->getUserData() == nullptr);
-            DltAdapter::getDltAdapter()->registerContext(ctx, pushLogLevel, ctx->getLogLevel());
-        }
     }
 
     void RamsesLogger::dltLogLevelChangeCallback(const String& contextId, int logLevelAsInt)

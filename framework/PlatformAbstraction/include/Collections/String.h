@@ -14,8 +14,8 @@
 #include "Collections/IOutputStream.h"
 #include "Collections/IInputStream.h"
 #include "ramses-capu/os/StringUtils.h"
-#include "ramses-capu/container/Hash.h"
-#include "fmt/format.h"
+#include "PlatformAbstraction/Hash.h"
+#include "PlatformAbstraction/FmtBase.h"
 #include <string>
 #include <cctype>
 
@@ -31,7 +31,7 @@ namespace ramses_internal
         explicit String(const std::string& other);
         explicit String(std::string&& other);
         String(const String& other) = default;
-        String(String&& other) RNOEXCEPT = default;
+        String(String&& other) noexcept = default;
         ~String() = default;
         const Char* c_str() const;
         Char at(UInt position) const;
@@ -39,7 +39,7 @@ namespace ramses_internal
         Int find(char ch, UInt offset = 0) const;
 
         String& operator=(const String& other) = default;
-        String& operator=(String&& other) RNOEXCEPT = default;
+        String& operator=(String&& other) noexcept = default;
         String& operator=(const std::string& other);
         String& operator=(std::string&& other);
         String& operator=(Char character);
@@ -482,14 +482,8 @@ namespace ramses_internal
 }
 
 template <>
-struct fmt::formatter<ramses_internal::String>
+struct fmt::formatter<ramses_internal::String> : public ramses_internal::SimpleFormatterBase
 {
-    template<typename ParseContext>
-    constexpr auto parse(ParseContext& ctx)
-    {
-        return ctx.begin();
-    }
-
     template<typename FormatContext>
     auto format(const ramses_internal::String& str, FormatContext& ctx)
     {
@@ -497,16 +491,13 @@ struct fmt::formatter<ramses_internal::String>
     }
 };
 
-namespace std
+template<>
+struct std::hash<ramses_internal::String>
 {
-    template<>
-    struct hash<ramses_internal::String>
+    size_t operator()(const ramses_internal::String& key)
     {
-        size_t operator()(const ramses_internal::String& key)
-        {
-            return ramses_capu::HashMemoryRange(key.data(), key.size());
-        }
-    };
-}
+        return ramses_internal::HashMemoryRange(key.data(), key.size());
+    }
+};
 
 #endif

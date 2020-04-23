@@ -20,6 +20,7 @@ IF (CMAKE_SYSTEM_NAME MATCHES "Windows")
 
     # no shlib versioning support on windows
     FIND_LIBRARY(ramses-shared-lib-client-only_LIBRARIES
+        NAMES "ramses-shared-lib-client-only"
         HINTS @PACKAGE_PROJECT_INSTALL_BINARY@
     )
 

@@ -167,10 +167,10 @@ namespace ramses
         EXPECT_EQ(4u, glyphBitmapSize.x);
         EXPECT_EQ(4u, glyphBitmapSize.y);
 
-        EXPECT_THAT(bitmapData, testing::ContainerEq(std::vector<uint8_t>{ 0x1e, 0x57, 0x54, 0x7,
-                                                                           0x66, 0x6f, 0x65, 0x51,
-                                                                           0x5e, 0x8b, 0x96, 0x36,
-                                                                           0x41, 0x58, 0x28, 0x0 }));
+        EXPECT_EQ(bitmapData, std::vector<uint8_t>({ 0x1e, 0x57, 0x54, 0x7,
+                                                     0x66, 0x6f, 0x65, 0x51,
+                                                     0x5e, 0x8b, 0x96, 0x36,
+                                                     0x41, 0x58, 0x28, 0x0 }));
     }
 
     TEST_F(AHarfbuzzFontInstance, ReportsUnsupportedCharCode)

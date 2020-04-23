@@ -12,6 +12,7 @@
 
 #include "Utils/LogMacros.h"
 #include <array>
+#include <cassert>
 
 namespace ramses_internal
 {

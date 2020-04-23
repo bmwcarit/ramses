@@ -49,6 +49,11 @@ namespace ramses_internal
             m_state->event.signal();
         }
 
+        void skipStatisticsTest()
+        {
+            statisticsTestEnabled = false;
+        }
+
     private:
         void SetUp() override
         {
@@ -66,9 +71,12 @@ namespace ramses_internal
 
         void TearDown() override
         {
-            // check at least one message sent and received
-            EXPECT_LE(numberMessagesSentBefore + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
-            EXPECT_LE(numberMessagesReceivedBefore + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
+            if (statisticsTestEnabled)
+            {
+                // check at least one message sent and received
+                EXPECT_LE(numberMessagesSentBefore + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
+                EXPECT_LE(numberMessagesReceivedBefore + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
+            }
 
             m_state->disconnectAll();
             EXPECT_TRUE(m_daemon->stop());
@@ -89,6 +97,7 @@ namespace ramses_internal
         PlatformLock& receiverExpectCallLock;
         uint32_t numberMessagesSentBefore = 0;
         uint32_t numberMessagesReceivedBefore = 0;
+        bool statisticsTestEnabled = true;
     };
 }
 

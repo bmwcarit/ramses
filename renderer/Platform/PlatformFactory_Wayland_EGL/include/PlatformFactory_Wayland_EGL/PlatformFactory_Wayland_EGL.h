@@ -11,7 +11,7 @@
 
 #include "Platform_Base/PlatformFactory_Base.h"
 #include "Context_EGL/Context_EGL.h"
-#include "WindowEventsPollingManager_Wayland/WindowEventsPollingManager_Wayland.h"
+#include "Window_Wayland/WindowEventsPollingManager_Wayland.h"
 
 namespace ramses_internal
 {

@@ -69,6 +69,7 @@ ACME_MODULE(
     #==========================================================================
     DEPENDENCIES            ramses-renderer-api
                             ramses-framework
+                            imgui
 )
 
 INSTALL(DIRECTORY ramses-renderer-api/include/ DESTINATION "${PROJECT_INSTALL_HEADER}" COMPONENT ramses-sdk-devel)
@@ -131,29 +132,7 @@ ACME_MODULE(
                             ShaderLanguage_Base/test/*.h
                             RendererCommands/test/*.cpp
                             RendererCommands/test/*.h
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
-    DEPENDENCIES            ramses-renderer-lib
-                            ramses-gmock-main
-                            RendererTestUtils
-                            FrameworkTestUtils
-)
-
-ACME_MODULE(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
-    NAME                    ramses-renderer-test
-    TYPE                    TEST
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-
-    FILES_SOURCE            ramses-renderer-impl/test/*.h
+                            ramses-renderer-impl/test/*.h
                             ramses-renderer-impl/test/*.cpp
 
     #==========================================================================

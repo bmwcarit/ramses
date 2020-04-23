@@ -18,7 +18,6 @@
 #include "RendererLib/DisplayController.h"
 #include "RendererLib/RendererLogContext.h"
 #include "RendererLib/DisplayConfig.h"
-#include "RendererLib/StereoDisplayController.h"
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/DisplayEventHandler.h"
 #include "RendererLib/SceneExpirationMonitor.h"
@@ -722,18 +721,9 @@ namespace ramses_internal
         // The initialization of display controller below needs active context
         renderBackend->getSurface().enable();
 
-        IDisplayController* displayController = nullptr;
-        if (config.isStereoDisplay())
-        {
-            displayController = new StereoDisplayController(*renderBackend);
-        }
-        else
-        {
-            const UInt32 postProcessorEffects = config.isWarpingEnabled() ? EPostProcessingEffect_Warping : EPostProcessingEffect_None;
-            const UInt32 numSamples = (config.getAntialiasingMethod() == EAntiAliasingMethod_MultiSampling) ? config.getAntialiasingSampleCount() : 1u;
-            displayController = new DisplayController(*renderBackend, numSamples, postProcessorEffects);
-        }
-        assert(displayController != nullptr);
+        const UInt32 postProcessorEffects = config.isWarpingEnabled() ? EPostProcessingEffect_Warping : EPostProcessingEffect_None;
+        const UInt32 numSamples = (config.getAntialiasingMethod() == EAntiAliasingMethod_MultiSampling) ? config.getAntialiasingSampleCount() : 1u;
+        IDisplayController* displayController = new DisplayController(*renderBackend, numSamples, postProcessorEffects);
 
         displayController->setViewPosition(config.getCameraPosition());
         displayController->setViewRotation(config.getCameraRotation());

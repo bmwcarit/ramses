@@ -10,13 +10,12 @@
 #define RAMSES_TYPEDMEMORYHANDLE_H
 
 #include "PlatformAbstraction/PlatformTypes.h"
+#include "PlatformAbstraction/Hash.h"
 #include "Collections/IInputStream.h"
 #include "Collections/IOutputStream.h"
 #include "Collections/StringOutputStream.h"
 #include "Common/MemoryHandle.h"
-
-#include "ramses-capu/util/Traits.h"
-#include "ramses-capu/container/Hash.h"
+#include "PlatformAbstraction/FmtBase.h"
 
 namespace ramses_internal
 {
@@ -240,15 +239,17 @@ namespace ramses_internal
         is >> handle.asMemoryHandleReference();
         return is;
     }
-
-    // StringOutputStream operators
-    template <typename UniqueId>
-    inline StringOutputStream& operator<<(StringOutputStream& os, const TypedMemoryHandle<UniqueId>& handle)
-    {
-        os << handle.asMemoryHandle();
-        return os;
-    }
 }
+
+template <typename UniqueId>
+struct fmt::formatter<ramses_internal::TypedMemoryHandle<UniqueId>> : public ramses_internal::SimpleFormatterBase
+{
+    template<typename FormatContext>
+    auto format(const ramses_internal::TypedMemoryHandle<UniqueId>& str, FormatContext& ctx)
+    {
+        return fmt::format_to(ctx.out(), "{}", str.asMemoryHandle());
+    }
+};
 
 namespace std
 {

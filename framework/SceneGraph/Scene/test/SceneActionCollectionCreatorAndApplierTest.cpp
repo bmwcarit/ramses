@@ -26,18 +26,19 @@ namespace ramses_internal
         void readFlushByIndex(UInt idx)
         {
             ASSERT_TRUE(idx < collection.numberOfActions());
-            SceneActionApplier::ReadParameterForFlushAction(collection[idx], flushIdx, hasSizeInfo, sizeInfo, resourceChanges, timeInfo, versionTag);
+            SceneActionApplier::ReadParameterForFlushAction(collection[idx], flushIdx, hasSizeInfo, sizeInfo, resourceChanges, sceneReferenceActions, timeInfo, versionTag);
         }
 
         SceneActionCollection collection;
         SceneActionCollectionCreator creator;
 
-        const SceneSizeInformation sizeInfoIn{1u, 2u, 3u, 4u, 5u, 6u, 7u, 8u, 9u, 10u, 11u, 12u, 13u, 14u, 15u, 16u, 17u, 18u};
+        const SceneSizeInformation sizeInfoIn{1u, 2u, 3u, 4u, 5u, 6u, 7u, 8u, 9u, 10u, 11u, 12u, 13u, 14u, 15u, 16u, 17u, 18u, 19u, 20u};
 
         UInt64 flushIdx = 0;
         bool hasSizeInfo = false;
         SceneSizeInformation sizeInfo;
         SceneResourceChanges resourceChanges;
+        SceneReferenceActionVector sceneReferenceActions;
         FlushTimeInformation timeInfo;
         SceneVersionTag versionTag;
     };
@@ -101,8 +102,8 @@ namespace ramses_internal
         const FlushTimeInformation timeInfo0{ FlushTime::Clock::time_point(std::chrono::milliseconds(20)), FlushTime::Clock::time_point(std::chrono::milliseconds(30)) };
         const FlushTimeInformation timeInfo1{ FlushTime::Clock::time_point(std::chrono::milliseconds(200)), FlushTime::Clock::time_point(std::chrono::milliseconds(300)) };
 
-        creator.flush(1u, false, SceneSizeInformation(), SceneResourceChanges(), timeInfo0);
-        creator.flush(2u, false, SceneSizeInformation(), SceneResourceChanges(), timeInfo1);
+        creator.flush(1u, false, SceneSizeInformation(), SceneResourceChanges(), {}, timeInfo0);
+        creator.flush(2u, false, SceneSizeInformation(), SceneResourceChanges(), {}, timeInfo1);
 
         readFlushByIndex(0);
         EXPECT_EQ(timeInfo0, timeInfo);
@@ -114,7 +115,7 @@ namespace ramses_internal
     TEST_F(ASceneActionCollectionCreatorAndApplier, canReadFlushTimeInfoIfExpirationTimestampNotSet)
     {
         const FlushTimeInformation timeInfoIn{ FlushTime::InvalidTimestamp, FlushTime::Clock::time_point(std::chrono::milliseconds(30)) };
-        creator.flush(1u, false, SceneSizeInformation(), SceneResourceChanges(), timeInfoIn);
+        creator.flush(1u, false, SceneSizeInformation(), SceneResourceChanges(), {}, timeInfoIn);
 
         readFlushByIndex(0);
         EXPECT_EQ(timeInfoIn, timeInfo);
@@ -123,7 +124,7 @@ namespace ramses_internal
     TEST_F(ASceneActionCollectionCreatorAndApplier, canReadVersionTagFromFlush)
     {
         const SceneVersionTag versionTagIn{ 333 };
-        creator.flush(1u, false, SceneSizeInformation(), SceneResourceChanges(), {}, versionTagIn);
+        creator.flush(1u, false, SceneSizeInformation(), SceneResourceChanges(), {}, {}, versionTagIn);
 
         readFlushByIndex(0);
         EXPECT_EQ(versionTagIn, versionTag);

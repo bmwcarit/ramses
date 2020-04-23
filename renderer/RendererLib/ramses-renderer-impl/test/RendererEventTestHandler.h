@@ -10,6 +10,7 @@
 #define RAMSES_RENDEREREVENTTESTHANDLER_H
 
 #include "ramses-renderer-api/IRendererEventHandler.h"
+#include "ramses-renderer-api/IRendererSceneControlEventHandler_legacy.h"
 #include "PlatformAbstraction/PlatformMemory.h"
 #include "Collections/Vector.h"
 #include <algorithm>
@@ -124,19 +125,15 @@ struct RendererTestEvent
     std::vector<ramses::pickableObjectId_t> pickedObjects;
 };
 
-class RendererEventTestHandler : public ramses::IRendererEventHandler
+class RendererEventTestHandler : public ramses::IRendererEventHandler, public ramses::IRendererSceneControlEventHandler_legacy
 {
 public:
-    RendererEventTestHandler()
-    {
-    }
-
     ~RendererEventTestHandler()
     {
         EXPECT_TRUE(m_events.empty());
     }
 
-    virtual void scenePublished(ramses::sceneId_t sceneId)
+    virtual void scenePublished(ramses::sceneId_t sceneId) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_ScenePublished;
@@ -144,7 +141,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void sceneSubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result)
+    virtual void sceneSubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_SceneSubscribed;
@@ -153,7 +150,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void sceneMapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result)
+    virtual void sceneMapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_SceneMapped;
@@ -162,7 +159,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void sceneShown(ramses::sceneId_t sceneId, ramses::ERendererEventResult result)
+    virtual void sceneShown(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_SceneShown;
@@ -171,7 +168,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void sceneUnpublished(ramses::sceneId_t sceneId)
+    virtual void sceneUnpublished(ramses::sceneId_t sceneId) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_SceneUnpublished;
@@ -179,7 +176,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void sceneUnsubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result)
+    virtual void sceneUnsubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_SceneUnsubscribed;
@@ -188,7 +185,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void sceneUnmapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result)
+    virtual void sceneUnmapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_SceneUnmapped;
@@ -197,7 +194,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void sceneHidden(ramses::sceneId_t sceneId, ramses::ERendererEventResult result)
+    virtual void sceneHidden(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_SceneHidden;
@@ -206,7 +203,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void dataLinked(ramses::sceneId_t providerScene, ramses::dataProviderId_t dataProviderId, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t dataConsumerId, ramses::ERendererEventResult result)
+    virtual void dataLinked(ramses::sceneId_t providerScene, ramses::dataProviderId_t dataProviderId, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t dataConsumerId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_DataLinked;
@@ -218,7 +215,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void offscreenBufferLinkedToSceneData(ramses::displayBufferId_t providerOffscreenBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t dataConsumerId, ramses::ERendererEventResult result)
+    virtual void offscreenBufferLinkedToSceneData(ramses::displayBufferId_t providerOffscreenBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t dataConsumerId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_BufferLinked;
@@ -229,7 +226,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void dataUnlinked(ramses::sceneId_t consumerScene, ramses::dataConsumerId_t dataConsumerId, ramses::ERendererEventResult result)
+    virtual void dataUnlinked(ramses::sceneId_t consumerScene, ramses::dataConsumerId_t dataConsumerId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_DataUnlinked;
@@ -239,7 +236,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void offscreenBufferCreated(ramses::displayId_t displayId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
+    virtual void offscreenBufferCreated(ramses::displayId_t displayId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_OffscreenBufferCreated;
@@ -249,7 +246,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void offscreenBufferDestroyed(ramses::displayId_t displayId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
+    virtual void offscreenBufferDestroyed(ramses::displayId_t displayId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_OffscreenBufferDestroyed;
@@ -259,7 +256,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void sceneAssignedToDisplayBuffer(ramses::sceneId_t sceneId, ramses::displayBufferId_t displayBufferId, ramses::ERendererEventResult result)
+    virtual void sceneAssignedToDisplayBuffer(ramses::sceneId_t sceneId, ramses::displayBufferId_t displayBufferId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_SceneAssignedToDisplayBuffer;
@@ -269,7 +266,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void framebufferPixelsRead(const uint8_t* /*pixelData*/, const uint32_t /*pixelDataSize*/, ramses::displayId_t displayId, ramses::ERendererEventResult result)
+    virtual void framebufferPixelsRead(const uint8_t* /*pixelData*/, const uint32_t /*pixelDataSize*/, ramses::displayId_t displayId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_PixelsRead;
@@ -278,7 +275,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void warpingMeshDataUpdated(ramses::displayId_t displayId, ramses::ERendererEventResult result)
+    virtual void warpingMeshDataUpdated(ramses::displayId_t displayId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_WarpingUpdated;
@@ -287,7 +284,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void displayCreated(ramses::displayId_t displayId, ramses::ERendererEventResult result)
+    virtual void displayCreated(ramses::displayId_t displayId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_DisplayCreated;
@@ -296,7 +293,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void displayDestroyed(ramses::displayId_t displayId, ramses::ERendererEventResult result)
+    virtual void displayDestroyed(ramses::displayId_t displayId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_DisplayDestroyed;
@@ -305,7 +302,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void dataProviderCreated(ramses::sceneId_t providerScene, ramses::dataProviderId_t dataProviderId)
+    virtual void dataProviderCreated(ramses::sceneId_t providerScene, ramses::dataProviderId_t dataProviderId) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_DataProviderCreated;
@@ -314,7 +311,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void dataProviderDestroyed(ramses::sceneId_t providerScene, ramses::dataProviderId_t dataProviderId)
+    virtual void dataProviderDestroyed(ramses::sceneId_t providerScene, ramses::dataProviderId_t dataProviderId) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_DataProviderDestroyed;
@@ -323,7 +320,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void dataConsumerCreated(ramses::sceneId_t consumerScene, ramses::dataConsumerId_t dataConsumerId)
+    virtual void dataConsumerCreated(ramses::sceneId_t consumerScene, ramses::dataConsumerId_t dataConsumerId) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_DataConsumerCreated;
@@ -332,7 +329,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void dataConsumerDestroyed(ramses::sceneId_t consumerScene, ramses::dataConsumerId_t dataConsumerId)
+    virtual void dataConsumerDestroyed(ramses::sceneId_t consumerScene, ramses::dataConsumerId_t dataConsumerId) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_DataConsumerDestroyed;
@@ -341,7 +338,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void sceneFlushed(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersionTag, ramses::ESceneResourceStatus resourceStatus)
+    virtual void sceneFlushed(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersionTag, ramses::ESceneResourceStatus resourceStatus) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_SceneFlushed;
@@ -351,7 +348,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void sceneExpired(ramses::sceneId_t sceneId)
+    virtual void sceneExpired(ramses::sceneId_t sceneId) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_SceneExpired;
@@ -359,7 +356,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void sceneRecoveredFromExpiration(ramses::sceneId_t sceneId)
+    virtual void sceneRecoveredFromExpiration(ramses::sceneId_t sceneId) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_SceneRecoveredAfterExpiration;
@@ -367,7 +364,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void windowClosed(ramses::displayId_t displayId)
+    virtual void windowClosed(ramses::displayId_t displayId) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_WindowClosed;
@@ -375,7 +372,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void windowResized(ramses::displayId_t displayId, uint32_t width, uint32_t height)
+    virtual void windowResized(ramses::displayId_t displayId, uint32_t width, uint32_t height) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_WindowResized;
@@ -385,7 +382,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void windowMoved(ramses::displayId_t displayId, int32_t posX, int32_t posY)
+    virtual void windowMoved(ramses::displayId_t displayId, int32_t posX, int32_t posY) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_WindowMoved;
@@ -395,7 +392,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void streamAvailabilityChanged(ramses::streamSource_t /*streamId*/, bool /*available*/)
+    virtual void streamAvailabilityChanged(ramses::streamSource_t /*streamId*/, bool /*available*/) override
     {
         // only add event, content tested elsewhere, no need to test here too
         RendererTestEvent event;
@@ -403,7 +400,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void keyEvent(ramses::displayId_t displayId, ramses::EKeyEvent keyEvent, uint32_t keyModifiers, ramses::EKeyCode keyCode)
+    virtual void keyEvent(ramses::displayId_t displayId, ramses::EKeyEvent keyEvent, uint32_t keyModifiers, ramses::EKeyCode keyCode) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_KeyEvent;
@@ -414,7 +411,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void mouseEvent(ramses::displayId_t displayId, ramses::EMouseEvent mouseEvent, int32_t mousePosX, int32_t mousePosY)
+    virtual void mouseEvent(ramses::displayId_t displayId, ramses::EMouseEvent mouseEvent, int32_t mousePosX, int32_t mousePosY) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_MouseEvent;
@@ -740,12 +737,10 @@ private:
     void expectEvent(const RendererTestEvent& event, const ramses_internal::UInt withinLast = 1u)
     {
         auto it = std::find(m_events.begin(), m_events.begin() + std::min(m_events.size(), withinLast), event);
-        EXPECT_TRUE(it != m_events.end());
+        EXPECT_TRUE(it != m_events.end()) << "expected event " << event.eventType << " not emitted";
 
         if (it != m_events.end())
-        {
             m_events.erase(it);
-        }
     }
 
     std::vector<RendererTestEvent> m_events;

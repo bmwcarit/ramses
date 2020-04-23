@@ -37,7 +37,7 @@ void InterruptibleOffscreenBufferLinkTests::setUpTestCases(RendererTestsFramewor
 
 bool InterruptibleOffscreenBufferLinkTests::run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase)
 {
-    testFramework.setFrameTimerLimits(std::numeric_limits<uint64_t>::max(), std::numeric_limits<uint64_t>::max(), 0u);
+    testFramework.setFrameTimerLimits(std::numeric_limits<uint64_t>::max(), 0u);
     // Override the number of meshes rendered between the time budget checks, for the test we need to interrupt at every single renderable
     ramses_internal::RenderExecutor::NumRenderablesToRenderInBetweenTimeBudgetChecks = 1u;
 

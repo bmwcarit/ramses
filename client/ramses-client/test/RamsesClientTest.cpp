@@ -23,6 +23,8 @@
 #include "Collections/String.h"
 #include "ClientEventHandlerMock.h"
 
+#include "SceneReferencing/SceneReferenceEvent.h"
+
 namespace ramses
 {
     using namespace testing;
@@ -44,75 +46,43 @@ namespace ramses
     {
     public:
         ARamsesClient()
-            : m_client(m_framework.impl, "client")
+            : m_client(*m_framework.createClient("client"))
         {
         }
 
     protected:
         RamsesFramework m_framework;
-        RamsesClientImpl m_client;
+        RamsesClient& m_client;
     };
 
     TEST_F(ARamsesClient, canBeValidated)
     {
-        EXPECT_EQ(StatusOK, m_client.validate(0));
+        ramses::StatusObjectImpl::StatusObjectSet visitedObjects;
+        EXPECT_EQ(StatusOK, m_client.impl.validate(0, visitedObjects));
     }
 
     TEST_F(ARamsesClient, failsValidationWhenContainsSceneWithInvalidRenderPass)
     {
-        ramses::Scene* scene = m_client.createScene(sceneId_t(1), ramses::SceneConfigImpl(), "");
+        ramses::Scene* scene = m_client.createScene(sceneId_t(1), ramses::SceneConfig(), "");
         ASSERT_TRUE(nullptr != scene);
 
         RenderPass* passWithoutCamera = scene->createRenderPass();
         ASSERT_TRUE(nullptr != passWithoutCamera);
 
         EXPECT_NE(StatusOK, scene->validate());
-        EXPECT_NE(StatusOK, m_client.validate(0));
+        EXPECT_NE(StatusOK, m_client.validate());
     }
 
     TEST_F(ARamsesClient, failsValidationWhenContainsSceneWithInvalidCamera)
     {
-        ramses::Scene* scene = m_client.createScene(sceneId_t(1), ramses::SceneConfigImpl(), "");
+        ramses::Scene* scene = m_client.createScene(sceneId_t(1), ramses::SceneConfig(), "");
         ASSERT_TRUE(nullptr != scene);
 
         Camera* cameraWithoutValidValues = scene->createPerspectiveCamera();
         ASSERT_TRUE(nullptr != cameraWithoutValidValues);
 
         EXPECT_NE(StatusOK, scene->validate());
-        EXPECT_NE(StatusOK, m_client.validate(0));
-    }
-
-    TEST_F(ARamsesClient, isNotConnectedInitially)
-    {
-        EXPECT_FALSE(m_framework.isConnected());
-    }
-
-    TEST_F(ARamsesClient, connectLifeCycleOK)
-    {
-        EXPECT_EQ(StatusOK, m_framework.connect());
-        EXPECT_TRUE(m_framework.isConnected());
-
-        EXPECT_EQ(StatusOK, m_framework.disconnect());
-    }
-
-    TEST_F(ARamsesClient, reportsErrorWhenConnectingSecondTime)
-    {
-        m_framework.connect();
-        EXPECT_NE(StatusOK, m_framework.connect());
-        EXPECT_TRUE(m_framework.isConnected());
-    }
-
-    TEST_F(ARamsesClient, disconnectsViaApplication)
-    {
-        m_framework.connect();
-        EXPECT_EQ(StatusOK, m_framework.disconnect());
-    }
-
-    TEST_F(ARamsesClient, reportsErrorWhenDisconnectingSecondTime)
-    {
-        m_framework.connect();
-        EXPECT_EQ(StatusOK, m_framework.disconnect());
-        EXPECT_NE(StatusOK, m_framework.disconnect());
+        EXPECT_NE(StatusOK, m_client.validate());
     }
 
     TEST_F(ARamsesClient, noEventHandlerCallbacksIfNoEvents)
@@ -124,7 +94,8 @@ namespace ramses
     // Not really useful and behavior is not defined, but should not crash at least
     TEST_F(ARamsesClient, canLiveParallelToAnotherClientUsingTheSameFramework)
     {
-        RamsesClientImpl secondClient(m_framework.impl, "client");
+        RamsesClient& secondClient(*m_framework.createClient("client"));
+        (void)secondClient;  //unused on purpose
 
         m_framework.connect();
         EXPECT_TRUE(m_framework.isConnected());
@@ -172,20 +143,6 @@ namespace ramses
         ASSERT_TRUE(nullptr == resourceFound);
     }
 
-    TEST_F(ALocalRamsesClient, disconnectingWhenDisconnectedGivesError)
-    {
-        EXPECT_EQ(ramses::StatusOK, framework.connect());
-        EXPECT_EQ(ramses::StatusOK, framework.disconnect());
-
-        EXPECT_NE(ramses::StatusOK, framework.disconnect());
-    }
-
-    TEST_F(ALocalRamsesClient, connectingTwiceGivesError)
-    {
-        EXPECT_EQ(ramses::StatusOK, framework.connect());
-        EXPECT_NE(ramses::StatusOK, framework.connect());
-    }
-
     TEST_F(ALocalRamsesClient, requestNonexistantStatusMessage)
     {
         const char* msg = client.getStatusMessage(0xFFFFFFFF);
@@ -212,6 +169,13 @@ namespace ramses
         ramses::Scene* scene = client.createScene(sceneId);
         ASSERT_TRUE(scene != nullptr);
         EXPECT_EQ(sceneId, scene->getSceneId());
+    }
+
+    TEST_F(ALocalRamsesClient, createdSceneHasClientReference)
+    {
+        ramses::Scene* scene = client.createScene(sceneId_t(1));
+        ASSERT_TRUE(scene != nullptr);
+        EXPECT_EQ(&client, &scene->getRamsesClient());
     }
 
     TEST_F(ALocalRamsesClient, createsSceneFailsWithInvalidId)
@@ -396,6 +360,194 @@ namespace ramses
 
         client.destroy(*scene);
         EXPECT_FALSE(client.impl.getClientApplication().isScenePublished(internalSceneId));
+    }
+
+    TEST_F(ALocalRamsesClient, returnsNullptrOnFindSceneReferenceIfThereIsNoSceneReference)
+    {
+        EXPECT_EQ(client.impl.findSceneReference(sceneId_t{ 123 }, sceneId_t{ 456 }), nullptr);
+        client.createScene(sceneId_t{ 123 });
+        EXPECT_EQ(client.impl.findSceneReference(sceneId_t{ 123 }, sceneId_t{ 456 }), nullptr);
+    }
+
+    TEST_F(ALocalRamsesClient, returnsNullptrOnFindSceneReferenceIfWrongReferencedSceneIdIsProvided)
+    {
+        auto scene = client.createScene(sceneId_t{ 123 });
+        scene->createSceneReference(sceneId_t{ 456 });
+
+        EXPECT_EQ(client.impl.findSceneReference(sceneId_t{ 123 }, sceneId_t{ 1 }), nullptr);
+    }
+
+    TEST_F(ALocalRamsesClient, returnsNullptrOnFindSceneReferenceIfWrongMasterSceneIdIsProvided)
+    {
+        auto scene = client.createScene(sceneId_t{ 123 });
+        scene->createSceneReference(sceneId_t{ 456 });
+        auto scene2 = client.createScene(sceneId_t{ 1234 });
+        scene2->createSceneReference(sceneId_t{ 4567 });
+
+        EXPECT_EQ(client.impl.findSceneReference(sceneId_t{ 1 }, sceneId_t{ 456 }), nullptr);
+        EXPECT_EQ(client.impl.findSceneReference(sceneId_t{ 1234 }, sceneId_t{ 456 }), nullptr);
+        EXPECT_EQ(client.impl.findSceneReference(sceneId_t{ 123 }, sceneId_t{ 4567 }), nullptr);
+    }
+
+    TEST_F(ALocalRamsesClient, returnsSceneReferenceOnFindSceneReference)
+    {
+        auto scene = client.createScene(sceneId_t{ 123 });
+        auto scene2 = client.createScene(sceneId_t{ 1234 });
+        auto sr = scene->createSceneReference(sceneId_t{ 456 });
+        auto sr2 = scene->createSceneReference(sceneId_t{ 12345 });
+        auto sr3 = scene2->createSceneReference(sceneId_t{ 12345 });
+
+        EXPECT_EQ(client.impl.findSceneReference(sceneId_t{ 123 }, sceneId_t{ 456 }), sr);
+        EXPECT_EQ(client.impl.findSceneReference(sceneId_t{ 123 }, sceneId_t{ 12345 }), sr2);
+        EXPECT_EQ(client.impl.findSceneReference(sceneId_t{ 1234 }, sceneId_t{ 12345 }), sr3);
+    }
+
+    TEST_F(ALocalRamsesClient, callsAppropriateNotificationForSceneStateChangedEvent)
+    {
+        constexpr auto masterScene = ramses_internal::SceneId{ 123 };
+        constexpr auto reffedScene = ramses_internal::SceneId{ 456 };
+
+        auto scene = client.createScene(sceneId_t{ masterScene.getValue() });
+        auto sr = scene->createSceneReference(sceneId_t{ reffedScene.getValue() });
+
+        ramses_internal::SceneReferenceEvent event(masterScene);
+        event.referencedScene = reffedScene;
+        event.type = ramses_internal::SceneReferenceEventType::SceneStateChanged;
+        event.sceneState = ramses_internal::RendererSceneState::Rendered;
+
+        client.impl.getClientApplication().handleSceneReferenceEvent(event, {});
+
+        testing::StrictMock<ClientEventHandlerMock> handler;
+        EXPECT_CALL(handler, sceneReferenceStateChanged(_, RendererSceneState::Rendered)).WillOnce([sr](SceneReference& ref, RendererSceneState)
+            {
+                EXPECT_EQ(&ref, sr);
+            });
+        client.dispatchEvents(handler);
+    }
+
+    TEST_F(ALocalRamsesClient, callsAppropriateNotificationForSceneFlushedEvent)
+    {
+        constexpr auto masterScene = ramses_internal::SceneId{ 123 };
+        constexpr auto reffedScene = ramses_internal::SceneId{ 456 };
+
+        auto scene = client.createScene(sceneId_t{ masterScene.getValue() });
+        auto sr = scene->createSceneReference(sceneId_t{ reffedScene.getValue() });
+
+        ramses_internal::SceneReferenceEvent event(masterScene);
+        event.referencedScene = reffedScene;
+        event.type = ramses_internal::SceneReferenceEventType::SceneFlushed;
+        event.tag = ramses_internal::SceneVersionTag{ 567 };
+
+        client.impl.getClientApplication().handleSceneReferenceEvent(event, {});
+
+        testing::StrictMock<ClientEventHandlerMock> handler;
+        EXPECT_CALL(handler, sceneReferenceFlushed(_, sceneVersionTag_t{ 567 })).WillOnce([sr](SceneReference& ref, sceneVersionTag_t)
+            {
+                EXPECT_EQ(&ref, sr);
+            });
+        client.dispatchEvents(handler);
+    }
+
+    TEST_F(ALocalRamsesClient, callsAppropriateNotificationForDataLinkedEvent)
+    {
+        constexpr auto masterScene = ramses_internal::SceneId{ 123 };
+        constexpr auto reffedScene = ramses_internal::SceneId{ 456 };
+
+        auto scene = client.createScene(sceneId_t{ masterScene.getValue() });
+        scene->createSceneReference(sceneId_t{ reffedScene.getValue() });
+
+        ramses_internal::SceneReferenceEvent event(masterScene);
+        event.type = ramses_internal::SceneReferenceEventType::DataLinked;
+        event.providerScene = masterScene;
+        event.consumerScene = reffedScene;
+        event.dataProvider = ramses_internal::DataSlotId{ 123 };
+        event.dataConsumer = ramses_internal::DataSlotId{ 987 };
+        event.status = false;
+
+        client.impl.getClientApplication().handleSceneReferenceEvent(event, {});
+
+        testing::StrictMock<ClientEventHandlerMock> handler;
+        EXPECT_CALL(handler, dataLinked(sceneId_t{ masterScene.getValue() }, dataProviderId_t{ 123 }, sceneId_t{ reffedScene.getValue() }, dataConsumerId_t{ 987 }, false));
+        client.dispatchEvents(handler);
+    }
+
+    TEST_F(ALocalRamsesClient, callsAppropriateNotificationForDataUnlinkedEvent)
+    {
+        constexpr auto masterScene = ramses_internal::SceneId{ 123 };
+        constexpr auto reffedScene = ramses_internal::SceneId{ 456 };
+
+        auto scene = client.createScene(sceneId_t{ masterScene.getValue() });
+        scene->createSceneReference(sceneId_t{ reffedScene.getValue() });
+
+        ramses_internal::SceneReferenceEvent event(masterScene);
+        event.type = ramses_internal::SceneReferenceEventType::DataUnlinked;
+        event.consumerScene = reffedScene;
+        event.dataConsumer = ramses_internal::DataSlotId{ 987 };
+        event.status = true;
+
+        client.impl.getClientApplication().handleSceneReferenceEvent(event, {});
+
+        testing::StrictMock<ClientEventHandlerMock> handler;
+        EXPECT_CALL(handler, dataUnlinked(sceneId_t{ reffedScene.getValue() }, dataConsumerId_t{ 987 }, true));
+        client.dispatchEvents(handler);
+    }
+
+    TEST_F(ALocalRamsesClient, callsNotificationForEachEvent)
+    {
+        constexpr auto masterScene = ramses_internal::SceneId{ 123 };
+        constexpr auto reffedScene = ramses_internal::SceneId{ 456 };
+
+        auto scene = client.createScene(sceneId_t{ masterScene.getValue() });
+        auto sr = scene->createSceneReference(sceneId_t{ reffedScene.getValue() });
+
+        ramses_internal::SceneReferenceEvent event(masterScene);
+        event.referencedScene = reffedScene;
+        event.type = ramses_internal::SceneReferenceEventType::SceneFlushed;
+        event.tag = ramses_internal::SceneVersionTag{ 567 };
+        client.impl.getClientApplication().handleSceneReferenceEvent(event, {});
+        event.tag = ramses_internal::SceneVersionTag{ 568 };
+        client.impl.getClientApplication().handleSceneReferenceEvent(event, {});
+        event.tag = ramses_internal::SceneVersionTag{ 569 };
+        client.impl.getClientApplication().handleSceneReferenceEvent(event, {});
+
+        testing::StrictMock<ClientEventHandlerMock> handler;
+        EXPECT_CALL(handler, sceneReferenceFlushed(_, sceneVersionTag_t{ 567 })).WillOnce([sr](SceneReference& ref, sceneVersionTag_t)
+            {
+                EXPECT_EQ(&ref, sr);
+            });
+        EXPECT_CALL(handler, sceneReferenceFlushed(_, sceneVersionTag_t{ 568 })).WillOnce([sr](SceneReference& ref, sceneVersionTag_t)
+            {
+                EXPECT_EQ(&ref, sr);
+            });
+        EXPECT_CALL(handler, sceneReferenceFlushed(_, sceneVersionTag_t{ 569 })).WillOnce([sr](SceneReference& ref, sceneVersionTag_t)
+            {
+                EXPECT_EQ(&ref, sr);
+            });
+        client.dispatchEvents(handler);
+    }
+
+    TEST_F(ALocalRamsesClient, doesNotCallAnyNotificationIfSceneReferenceDoesNotExistForNonDataLinkEvents)
+    {
+        constexpr auto masterScene = ramses_internal::SceneId{ 123 };
+        constexpr auto reffedScene = ramses_internal::SceneId{ 456 };
+
+        client.createScene(sceneId_t{ masterScene.getValue() });
+
+        ramses_internal::SceneReferenceEvent event(masterScene);
+        event.referencedScene = reffedScene;
+        event.type = ramses_internal::SceneReferenceEventType::SceneFlushed;
+        event.tag = ramses_internal::SceneVersionTag{ 567 };
+
+        client.impl.getClientApplication().handleSceneReferenceEvent(event, {});
+
+        event.referencedScene = reffedScene;
+        event.type = ramses_internal::SceneReferenceEventType::SceneFlushed;
+        event.tag = ramses_internal::SceneVersionTag{ 567 };
+
+        client.impl.getClientApplication().handleSceneReferenceEvent(event, {});
+
+        testing::StrictMock<ClientEventHandlerMock> handler;
+        client.dispatchEvents(handler);
     }
 
     TEST(ARamsesFrameworkImplInAClientLib, canCreateAClient)

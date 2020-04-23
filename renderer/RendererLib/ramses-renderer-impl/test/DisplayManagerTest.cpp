@@ -16,6 +16,7 @@
 #include "RendererLib/RendererCommands.h"
 #include "RendererLib/RendererCommandTypes.h"
 #include "RamsesRendererImpl.h"
+#include "RendererSceneControlImpl_legacy.h"
 #include "PlatformAbstraction/Macros.h"
 
 using namespace ramses_internal;
@@ -35,7 +36,8 @@ class ADisplayManager : public Test
 public:
     ADisplayManager()
         : renderer(*ramsesFramework.createRenderer(ramses::RendererConfig()))
-        , displayManager(renderer, ramsesFramework)
+        , displayManager(renderer.impl, ramsesFramework.impl)
+        , displayManagerRendererEventHandler(displayManager)
         , displayManagerEventHandler(displayManager)
         , sceneId(33u)
     {
@@ -74,15 +76,6 @@ public:
     }
 
 protected:
-    template <typename COMMAND_TYPE>
-    const COMMAND_TYPE& getLastRendererCommand() const
-    {
-        const auto& cmds = renderer.impl.getPendingCommands().getCommands();
-        const auto numCmds = cmds.getTotalCommandCount();
-        EXPECT_TRUE(numCmds > 0);
-        return cmds.getCommandData<COMMAND_TYPE>(numCmds - 1);
-    }
-
     void expectRendererCommands(std::initializer_list<ramses_internal::ERendererCommand> expectedCmds)
     {
         const ramses_internal::RendererCommandContainer& cmds = renderer.impl.getPendingCommands().getCommands();
@@ -95,20 +88,39 @@ protected:
         const_cast<ramses_internal::RendererCommands&>(renderer.impl.getPendingCommands()).clear();
     }
 
+    void expectRendererSceneCommands(std::initializer_list<ramses_internal::ERendererCommand> expectedCmds)
+    {
+        const auto& cmds = renderer.getSceneControlAPI_legacy()->impl.getPendingCommands();
+        ASSERT_EQ(expectedCmds.size(), cmds.getCommands().getTotalCommandCount());
+
+        uint32_t i = 0;
+        for (const auto expectedCmd : expectedCmds)
+            EXPECT_EQ(expectedCmd, cmds.getCommands().getCommandType(i++));
+
+        // to clear the commands
+        renderer.getSceneControlAPI_legacy()->impl.flush();
+    }
+
     void expectRendererCommand(ramses_internal::ERendererCommand expectedCmd)
     {
         expectRendererCommands({ expectedCmd });
     }
 
+    void expectRendererSceneCommand(ramses_internal::ERendererCommand expectedCmd)
+    {
+        expectRendererSceneCommands({ expectedCmd });
+    }
+
     void expectNoRendererCommand()
     {
-        expectRendererCommands({});
+        expectRendererSceneCommands({});
+        expectRendererSceneCommands({});
     }
 
     template <typename COMMAND_TYPE>
-    COMMAND_TYPE getRendererCommand(uint32_t idx, ramses_internal::ERendererCommand expectedCmd)
+    COMMAND_TYPE getRendererSceneCommand(uint32_t idx, ramses_internal::ERendererCommand expectedCmd)
     {
-        const ramses_internal::RendererCommandContainer& cmds = renderer.impl.getPendingCommands().getCommands();
+        const ramses_internal::RendererCommandContainer& cmds = renderer.getSceneControlAPI_legacy()->impl.getPendingCommands().getCommands();
         EXPECT_LT(idx, cmds.getTotalCommandCount());
         EXPECT_EQ(expectedCmd, cmds.getCommandType(idx));
         COMMAND_TYPE cmdData = cmds.getCommandData<COMMAND_TYPE>(idx);
@@ -123,24 +135,24 @@ protected:
         displayManagerEventHandler.scenePublished(sceneId);
         if (state != SceneState::Unavailable)
         {
-            expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+            expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
             displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
 
             if (state != SceneState::Available)
             {
-                expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+                expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
                 displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
 
                 if (state != SceneState::Ready)
                 {
                     assert(state == SceneState::Rendered);
-                    expectRendererCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
+                    expectRendererSceneCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
                     EXPECT_FALSE(isSceneShown());
                     displayManagerEventHandler.sceneShown(sceneId, ramses::ERendererEventResult_OK);
                     EXPECT_TRUE(isSceneShown());
                 }
                 else
-                    expectRendererCommand(ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
+                    expectRendererSceneCommand(ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
             }
         }
 
@@ -206,7 +218,8 @@ private:
 
 protected:
     DisplayManager displayManager;
-    ramses::IRendererEventHandler& displayManagerEventHandler;
+    ramses::IRendererEventHandler& displayManagerRendererEventHandler;
+    ramses::IRendererSceneControlEventHandler_legacy& displayManagerEventHandler;
     StrictMock<EventHandlerMock> eventHandlerMock;
 
     const ramses::sceneId_t sceneId;
@@ -256,13 +269,13 @@ TEST_F(ADisplayManager, willShowSceneAlreadyPublished)
     displayManagerEventHandler.scenePublished(sceneId);
 
     displayManager.setSceneState(sceneId, SceneState::Rendered);
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
 
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
 
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
+    expectRendererSceneCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
 
     displayManagerEventHandler.sceneShown(sceneId, ramses::ERendererEventResult_OK);
     expectNoRendererCommand();
@@ -276,10 +289,10 @@ TEST_F(ADisplayManager, willRetryIfSubscribeFailed)
     displayManagerEventHandler.scenePublished(sceneId);
 
     displayManager.setSceneState(sceneId, SceneState::Available);
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
 
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_FAIL);
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
     expectNoRendererCommand();
 
@@ -292,17 +305,17 @@ TEST_F(ADisplayManager, willRetryIfMapFailed)
     displayManagerEventHandler.scenePublished(sceneId);
 
     displayManager.setSceneState(sceneId, SceneState::Ready);
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
 
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
 
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_FAIL);
     EXPECT_EQ(ramses::displayId_t::Invalid(), displayManager.getDisplaySceneIsMappedTo(sceneId));
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
     EXPECT_EQ(displayId, displayManager.getDisplaySceneIsMappedTo(sceneId));
-    expectRendererCommand(ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
 
     doAnotherFullCycleFromUnpublishToState(ramses_internal::ERendererCommand_SubscribeScene, SceneState::Ready);
     doAnotherFullCycleFromUnpublishToShownWithShowTriggered();
@@ -313,16 +326,16 @@ TEST_F(ADisplayManager, willRetryIfShowFailed)
     displayManagerEventHandler.scenePublished(sceneId);
 
     displayManager.setSceneState(sceneId, SceneState::Rendered);
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
 
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
 
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
+    expectRendererSceneCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
 
     displayManagerEventHandler.sceneShown(sceneId, ramses::ERendererEventResult_FAIL);
-    expectRendererCommand(ramses_internal::ERendererCommand_ShowScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_ShowScene);
     displayManagerEventHandler.sceneShown(sceneId, ramses::ERendererEventResult_OK);
     expectNoRendererCommand();
 
@@ -336,9 +349,9 @@ TEST_F(ADisplayManager, willRetryIfHideFailed)
     publishAndExpectToGetToState(SceneState::Rendered);
 
     displayManager.setSceneState(sceneId, SceneState::Ready);
-    expectRendererCommand(ramses_internal::ERendererCommand_HideScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_HideScene);
     displayManagerEventHandler.sceneHidden(sceneId, ramses::ERendererEventResult_FAIL);
-    expectRendererCommand(ramses_internal::ERendererCommand_HideScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_HideScene);
     displayManagerEventHandler.sceneHidden(sceneId, ramses::ERendererEventResult_OK);
     expectNoRendererCommand();
 
@@ -352,10 +365,10 @@ TEST_F(ADisplayManager, willRetryIfUnmapFailed)
     publishAndExpectToGetToState(SceneState::Ready);
 
     displayManager.setSceneState(sceneId, SceneState::Available);
-    expectRendererCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
     displayManagerEventHandler.sceneUnmapped(sceneId, ramses::ERendererEventResult_FAIL);
     EXPECT_EQ(displayId, displayManager.getDisplaySceneIsMappedTo(sceneId));
-    expectRendererCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
     displayManagerEventHandler.sceneUnmapped(sceneId, ramses::ERendererEventResult_OK);
     EXPECT_EQ(ramses::displayId_t::Invalid(), displayManager.getDisplaySceneIsMappedTo(sceneId));
     expectNoRendererCommand();
@@ -370,9 +383,9 @@ TEST_F(ADisplayManager, willRetryIfUnsubscribeFailed)
     publishAndExpectToGetToState(SceneState::Available);
 
     displayManager.setSceneState(sceneId, SceneState::Unavailable);
-    expectRendererCommand(ramses_internal::ERendererCommand_UnsubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnsubscribeScene);
     displayManagerEventHandler.sceneUnsubscribed(sceneId, ramses::ERendererEventResult_FAIL);
-    expectRendererCommand(ramses_internal::ERendererCommand_UnsubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnsubscribeScene);
     displayManagerEventHandler.sceneUnsubscribed(sceneId, ramses::ERendererEventResult_OK);
     expectNoRendererCommand();
 
@@ -386,15 +399,15 @@ TEST_F(ADisplayManager, reportsDisplaySceneIsMappedToOnlyMapped)
 
     displayManagerEventHandler.scenePublished(sceneId);
     EXPECT_EQ(ramses::displayId_t::Invalid(), displayManager.getDisplaySceneIsMappedTo(sceneId));
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
 
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
     EXPECT_EQ(ramses::displayId_t::Invalid(), displayManager.getDisplaySceneIsMappedTo(sceneId));
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
 
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
     EXPECT_EQ(displayId, displayManager.getDisplaySceneIsMappedTo(sceneId));
-    expectRendererCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
+    expectRendererSceneCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
 
     EXPECT_FALSE(isSceneShown());
     displayManagerEventHandler.sceneShown(sceneId, ramses::ERendererEventResult_OK);
@@ -411,15 +424,15 @@ TEST_F(ADisplayManager, reportsInvalidDisplaySceneIsMappedToAfterUnmapped)
 
     displayManagerEventHandler.scenePublished(sceneId);
     EXPECT_EQ(ramses::displayId_t::Invalid(), displayManager.getDisplaySceneIsMappedTo(sceneId));
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
 
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
     EXPECT_EQ(ramses::displayId_t::Invalid(), displayManager.getDisplaySceneIsMappedTo(sceneId));
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
 
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
     EXPECT_EQ(displayId, displayManager.getDisplaySceneIsMappedTo(sceneId));
-    expectRendererCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
+    expectRendererSceneCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
 
     EXPECT_FALSE(isSceneShown());
     displayManagerEventHandler.sceneShown(sceneId, ramses::ERendererEventResult_OK);
@@ -427,12 +440,12 @@ TEST_F(ADisplayManager, reportsInvalidDisplaySceneIsMappedToAfterUnmapped)
     EXPECT_TRUE(isSceneShown());
 
     displayManager.setSceneState(sceneId, SceneState::Available);
-    expectRendererCommand(ramses_internal::ERendererCommand_HideScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_HideScene);
 
     displayManagerEventHandler.sceneHidden(sceneId, ramses::ERendererEventResult_OK);
     EXPECT_EQ(displayId, displayManager.getDisplaySceneIsMappedTo(sceneId));
     EXPECT_FALSE(isSceneShown());
-    expectRendererCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
 
     displayManagerEventHandler.sceneUnmapped(sceneId, ramses::ERendererEventResult_OK);
     EXPECT_EQ(ramses::displayId_t::Invalid(), displayManager.getDisplaySceneIsMappedTo(sceneId));
@@ -450,7 +463,7 @@ TEST_F(ADisplayManager, hidesShownScene)
     publishAndExpectToGetToState(SceneState::Rendered);
 
     displayManager.setSceneState(sceneId, SceneState::Ready);
-    expectRendererCommand(ramses_internal::ERendererCommand_HideScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_HideScene);
 
     displayManagerEventHandler.sceneHidden(sceneId, ramses::ERendererEventResult_OK);
     expectNoRendererCommand();
@@ -467,10 +480,10 @@ TEST_F(ADisplayManager, unmapsShownScene)
     publishAndExpectToGetToState(SceneState::Rendered);
 
     displayManager.setSceneState(sceneId, SceneState::Available);
-    expectRendererCommand(ramses_internal::ERendererCommand_HideScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_HideScene);
 
     displayManagerEventHandler.sceneHidden(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
     EXPECT_EQ(displayId, displayManager.getDisplaySceneIsMappedTo(sceneId));
 
     displayManagerEventHandler.sceneUnmapped(sceneId, ramses::ERendererEventResult_OK);
@@ -489,12 +502,12 @@ TEST_F(ADisplayManager, unmapsMappedScene)
 
     // hide first
     displayManager.setSceneState(sceneId, SceneState::Ready);
-    expectRendererCommand(ramses_internal::ERendererCommand_HideScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_HideScene);
     displayManagerEventHandler.sceneHidden(sceneId, ramses::ERendererEventResult_OK);
     expectNoRendererCommand();
 
     displayManager.setSceneState(sceneId, SceneState::Available);
-    expectRendererCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
 
     displayManagerEventHandler.sceneUnmapped(sceneId, ramses::ERendererEventResult_OK);
     expectNoRendererCommand();
@@ -511,13 +524,13 @@ TEST_F(ADisplayManager, unsubscribesShownScene)
     publishAndExpectToGetToState(SceneState::Rendered);
 
     displayManager.setSceneState(sceneId, SceneState::Unavailable);
-    expectRendererCommand(ramses_internal::ERendererCommand_HideScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_HideScene);
 
     displayManagerEventHandler.sceneHidden(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
 
     displayManagerEventHandler.sceneUnmapped(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_UnsubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnsubscribeScene);
 
     displayManagerEventHandler.sceneUnsubscribed(sceneId, ramses::ERendererEventResult_OK);
     expectNoRendererCommand();
@@ -531,15 +544,15 @@ TEST_F(ADisplayManager, unsubscribesMappedScene)
 
     // hide first
     displayManager.setSceneState(sceneId, SceneState::Ready);
-    expectRendererCommand(ramses_internal::ERendererCommand_HideScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_HideScene);
     displayManagerEventHandler.sceneHidden(sceneId, ramses::ERendererEventResult_OK);
     expectNoRendererCommand();
 
     displayManager.setSceneState(sceneId, SceneState::Unavailable);
-    expectRendererCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
 
     displayManagerEventHandler.sceneUnmapped(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_UnsubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnsubscribeScene);
 
     displayManagerEventHandler.sceneUnsubscribed(sceneId, ramses::ERendererEventResult_OK);
     expectNoRendererCommand();
@@ -553,14 +566,14 @@ TEST_F(ADisplayManager, unsubscribesSubscribedScene)
 
     // unmap first
     displayManager.setSceneState(sceneId, SceneState::Available);
-    expectRendererCommand(ramses_internal::ERendererCommand_HideScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_HideScene);
     displayManagerEventHandler.sceneHidden(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
     displayManagerEventHandler.sceneUnmapped(sceneId, ramses::ERendererEventResult_OK);
     expectNoRendererCommand();
 
     displayManager.setSceneState(sceneId, SceneState::Unavailable);
-    expectRendererCommand(ramses_internal::ERendererCommand_UnsubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnsubscribeScene);
 
     displayManagerEventHandler.sceneUnsubscribed(sceneId, ramses::ERendererEventResult_OK);
     expectNoRendererCommand();
@@ -572,7 +585,7 @@ TEST_F(ADisplayManager, handlesSceneUnpublishWhileProcessingSubscribe)
     expectNoRendererCommand();
 
     displayManagerEventHandler.scenePublished(sceneId);
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
 
     //unexpected unpublish!!
     unpublish(ramses_internal::ERendererCommand_PublishedScene);
@@ -587,10 +600,10 @@ TEST_F(ADisplayManager, handlesSceneUnpublishWhileProcessingMap)
     expectNoRendererCommand();
 
     displayManagerEventHandler.scenePublished(sceneId);
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
 
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
 
     //unexpected unpublish!!
     unpublish(ramses_internal::ERendererCommand_SubscribeScene);
@@ -605,13 +618,13 @@ TEST_F(ADisplayManager, handlesSceneUnpublishWhileProcessingShow)
     expectNoRendererCommand();
 
     displayManagerEventHandler.scenePublished(sceneId);
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
 
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
 
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
+    expectRendererSceneCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
 
     //unexpected unpublish!!
     unpublish(ramses_internal::ERendererCommand_MapSceneToDisplay);
@@ -640,7 +653,7 @@ TEST_F(ADisplayManager, failsToChangeMappingPropertiesIfSceneAlreadyReadyOrRende
     EXPECT_EQ(displayId, displayManager.getDisplaySceneIsMappedTo(sceneId));
 
     displayManager.setSceneState(sceneId, SceneState::Rendered);
-    expectRendererCommand(ramses_internal::ERendererCommand_ShowScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_ShowScene);
     displayManagerEventHandler.sceneShown(sceneId, ramses::ERendererEventResult_OK);
     expectNoRendererCommand();
     EXPECT_EQ(displayId, displayManager.getDisplaySceneIsMappedTo(sceneId));
@@ -686,9 +699,9 @@ TEST_F(ADisplayManager, canChangeMappingPropertiesWhenSceneAvailableAndNotSetToR
     EXPECT_EQ(ramses::displayId_t::Invalid(), displayManager.getDisplaySceneIsMappedTo(sceneId));
 
     displayManager.setSceneState(sceneId, SceneState::Ready);
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
     EXPECT_EQ(otherDisplayId, displayManager.getDisplaySceneIsMappedTo(sceneId));
 
     doAnotherFullCycleFromUnpublishToState(ramses_internal::ERendererCommand_MapSceneToDisplay, SceneState::Ready);
@@ -707,7 +720,7 @@ TEST_F(ADisplayManager, canChangeMappingPropertiesForReadySceneAfterGettingItToA
     EXPECT_EQ(displayId, displayManager.getDisplaySceneIsMappedTo(sceneId));
 
     displayManager.setSceneState(sceneId, SceneState::Available);
-    expectRendererCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
     displayManagerEventHandler.sceneUnmapped(sceneId, ramses::ERendererEventResult_OK);
     expectNoRendererCommand();
     EXPECT_EQ(ramses::displayId_t::Invalid(), displayManager.getDisplaySceneIsMappedTo(sceneId));
@@ -718,9 +731,9 @@ TEST_F(ADisplayManager, canChangeMappingPropertiesForReadySceneAfterGettingItToA
     EXPECT_EQ(ramses::displayId_t::Invalid(), displayManager.getDisplaySceneIsMappedTo(sceneId));
 
     displayManager.setSceneState(sceneId, SceneState::Ready);
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
     EXPECT_EQ(otherDisplayId, displayManager.getDisplaySceneIsMappedTo(sceneId));
 
     doAnotherFullCycleFromUnpublishToState(ramses_internal::ERendererCommand_MapSceneToDisplay, SceneState::Ready);
@@ -735,17 +748,17 @@ TEST_F(ADisplayManager, canShowASubscribedSceneOnAnotherDisplay)
 
     // unmap first
     displayManager.setSceneState(sceneId, SceneState::Available);
-    expectRendererCommand(ramses_internal::ERendererCommand_HideScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_HideScene);
     displayManagerEventHandler.sceneHidden(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
     displayManagerEventHandler.sceneUnmapped(sceneId, ramses::ERendererEventResult_OK);
     expectNoRendererCommand();
 
     EXPECT_TRUE(displayManager.setSceneMapping(sceneId, otherDisplayId));
     displayManager.setSceneState(sceneId, SceneState::Rendered);
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
+    expectRendererSceneCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
     displayManagerEventHandler.sceneShown(sceneId, ramses::ERendererEventResult_OK);
     expectNoRendererCommand();
 
@@ -755,21 +768,21 @@ TEST_F(ADisplayManager, canShowASubscribedSceneOnAnotherDisplay)
 TEST_F(ADisplayManager, forwardsCommandForDisplayFrameBufferClearColorWithCorrectDisplayHandle)
 {
     EXPECT_TRUE(displayManager.setDisplayBufferClearColor(otherDisplayFramebufferId, 1, 2, 3, 4));
-    const auto cmd = getRendererCommand<ramses_internal::SetClearColorCommand>(0u, ramses_internal::ERendererCommand_SetClearColor);
+    const auto cmd = getRendererSceneCommand<ramses_internal::SetClearColorCommand>(0u, ramses_internal::ERendererCommand_SetClearColor);
     EXPECT_EQ(otherDisplayId.getValue(), cmd.displayHandle.asMemoryHandle());
     EXPECT_FALSE(cmd.obHandle.isValid());
     EXPECT_EQ(ramses_internal::Vector4(1, 2, 3, 4), cmd.clearColor);
-    expectRendererCommand(ramses_internal::ERendererCommand_SetClearColor);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SetClearColor);
 }
 
 TEST_F(ADisplayManager, forwardsCommandForDisplayOffscreenBufferClearColorWithCorrectDisplayHandle)
 {
     EXPECT_TRUE(displayManager.setDisplayBufferClearColor(offscreenBufferId, 1, 2, 3, 4));
-    const auto cmd = getRendererCommand<ramses_internal::SetClearColorCommand>(0u, ramses_internal::ERendererCommand_SetClearColor);
+    const auto cmd = getRendererSceneCommand<ramses_internal::SetClearColorCommand>(0u, ramses_internal::ERendererCommand_SetClearColor);
     EXPECT_EQ(displayId.getValue(), cmd.displayHandle.asMemoryHandle());
     EXPECT_EQ(offscreenBufferId.getValue(), cmd.obHandle.asMemoryHandle());
     EXPECT_EQ(ramses_internal::Vector4(1, 2, 3, 4), cmd.clearColor);
-    expectRendererCommand(ramses_internal::ERendererCommand_SetClearColor);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SetClearColor);
 }
 
 TEST_F(ADisplayManager, failsToSetDisplayBufferClearColorForUnknownBuffer)
@@ -784,11 +797,11 @@ TEST_F(ADisplayManager, forwardsCommandForOffscreenBufferLink)
     const ramses::dataConsumerId_t consumerId(4u);
 
     displayManager.linkOffscreenBuffer(offscreenBufferId, consumerSceneId, consumerId);
-    const auto cmd = getRendererCommand<ramses_internal::DataLinkCommand>(0u, ramses_internal::ERendererCommand_LinkBufferToSceneData);
+    const auto cmd = getRendererSceneCommand<ramses_internal::DataLinkCommand>(0u, ramses_internal::ERendererCommand_LinkBufferToSceneData);
     EXPECT_EQ(offscreenBufferId.getValue(), cmd.providerBuffer.asMemoryHandle());
     EXPECT_EQ(consumerSceneId, ramses::sceneId_t(cmd.consumerScene.getValue()));
-    EXPECT_EQ(consumerId, cmd.consumerData.getValue());
-    expectRendererCommand(ramses_internal::ERendererCommand_LinkBufferToSceneData);
+    EXPECT_EQ(consumerId.getValue(), cmd.consumerData.getValue());
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_LinkBufferToSceneData);
 }
 
 TEST_F(ADisplayManager, forwardsCommandForDataLink)
@@ -799,12 +812,12 @@ TEST_F(ADisplayManager, forwardsCommandForDataLink)
     const ramses::dataConsumerId_t consumerId(4u);
 
     displayManager.linkData(providerSceneId, providerId, consumerSceneId, consumerId);
-    const auto cmd = getRendererCommand<ramses_internal::DataLinkCommand>(0u, ramses_internal::ERendererCommand_LinkSceneData);
+    const auto cmd = getRendererSceneCommand<ramses_internal::DataLinkCommand>(0u, ramses_internal::ERendererCommand_LinkSceneData);
     EXPECT_EQ(providerSceneId, ramses::sceneId_t(cmd.providerScene.getValue()));
-    EXPECT_EQ(providerId, cmd.providerData.getValue());
+    EXPECT_EQ(providerId.getValue(), cmd.providerData.getValue());
     EXPECT_EQ(consumerSceneId, ramses::sceneId_t(cmd.consumerScene.getValue()));
-    EXPECT_EQ(consumerId, cmd.consumerData.getValue());
-    expectRendererCommand(ramses_internal::ERendererCommand_LinkSceneData);
+    EXPECT_EQ(consumerId.getValue(), cmd.consumerData.getValue());
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_LinkSceneData);
 }
 
 TEST_F(ADisplayManager, reportsCorrectSceneShowState)
@@ -816,14 +829,14 @@ TEST_F(ADisplayManager, reportsCorrectSceneShowState)
 
     // explicitly hide
     displayManager.setSceneState(sceneId, SceneState::Ready);
-    expectRendererCommand(ramses_internal::ERendererCommand_HideScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_HideScene);
     EXPECT_TRUE(isSceneShown()); // hide command not processed yet
     displayManagerEventHandler.sceneHidden(sceneId, ramses::ERendererEventResult_OK);
     EXPECT_FALSE(isSceneShown());
 
     // show again
     displayManager.setSceneState(sceneId, SceneState::Rendered);
-    expectRendererCommand(ramses_internal::ERendererCommand_ShowScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_ShowScene);
     EXPECT_FALSE(isSceneShown()); // show command not processed yet
     displayManagerEventHandler.sceneShown(sceneId, ramses::ERendererEventResult_OK);
     EXPECT_TRUE(isSceneShown());
@@ -866,18 +879,18 @@ TEST_F(ADisplayManager, sceneWillBeShownWhenDisplayIsCreated)
     expectNoRendererCommand();
 
     displayManagerEventHandler.scenePublished(sceneId);
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
 
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
     expectNoRendererCommand(); // do not map, because display is not yet created
 
-    displayManagerEventHandler.displayCreated(customDisplay, ramses::ERendererEventResult_OK);
+    displayManagerRendererEventHandler.displayCreated(customDisplay, ramses::ERendererEventResult_OK);
 
     // now request map
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
 
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
+    expectRendererSceneCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
 
     displayManagerEventHandler.sceneShown(sceneId, ramses::ERendererEventResult_OK);
 
@@ -890,10 +903,10 @@ TEST_F(ADisplayManager, continuesToShowSceneAndLogsConfirmationAfterReconnect)
     expectNoRendererCommand();
 
     displayManager.setSceneState(sceneId, SceneState::Rendered, "scene is shown now");
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
 
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
 
     // simulate disconnect, renderer framework sends unpublish for all its scenes
     unpublish(ramses_internal::ERendererCommand_SubscribeScene);
@@ -916,7 +929,7 @@ TEST_F(ADisplayManager, recoversFromRepublishAfterFailedSubscribe)
     displayManager.setSceneState(sceneId, SceneState::Rendered, "scene is shown now");
 
     displayManagerEventHandler.scenePublished(sceneId);
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
     unpublish(ramses_internal::ERendererCommand_PublishedScene);
     expectNoRendererCommand();
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_FAIL);
@@ -929,9 +942,9 @@ TEST_F(ADisplayManager, recoversFromRepublishAfterFailedMap)
     displayManager.setSceneState(sceneId, SceneState::Rendered, "scene is shown now");
 
     displayManagerEventHandler.scenePublished(sceneId);
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
 
     unpublish(ramses_internal::ERendererCommand_SubscribeScene);
     expectNoRendererCommand();
@@ -945,11 +958,11 @@ TEST_F(ADisplayManager, recoversFromRepublishAfterFailedShow)
     displayManager.setSceneState(sceneId, SceneState::Rendered, "scene is shown now");
 
     displayManagerEventHandler.scenePublished(sceneId);
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
+    expectRendererSceneCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
 
     unpublish(ramses_internal::ERendererCommand_MapSceneToDisplay);
     expectNoRendererCommand();
@@ -968,7 +981,7 @@ TEST_F(ADisplayManager, recoversFromRepublishBeforeFailedSubscribe)
     displayManager.setSceneState(sceneId, SceneState::Rendered, "scene is shown now");
 
     displayManagerEventHandler.scenePublished(sceneId);
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
 
     unpublish(ramses_internal::ERendererCommand_PublishedScene);
     expectNoRendererCommand();
@@ -976,11 +989,11 @@ TEST_F(ADisplayManager, recoversFromRepublishBeforeFailedSubscribe)
     expectNoRendererCommand(); // not trying to subscribe because last subscribe not answered yet
 
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_FAIL);
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene); // now try subscribe again
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene); // now try subscribe again
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
+    expectRendererSceneCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
     displayManagerEventHandler.sceneShown(sceneId, ramses::ERendererEventResult_OK);
     expectRendererCommand(ramses_internal::ERendererCommand_ConfirmationEcho);
 
@@ -992,9 +1005,9 @@ TEST_F(ADisplayManager, recoversFromRepublishBeforeFailedMap)
     displayManager.setSceneState(sceneId, SceneState::Rendered, "scene is shown now");
 
     displayManagerEventHandler.scenePublished(sceneId);
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
 
     unpublish(ramses_internal::ERendererCommand_SubscribeScene);
     expectNoRendererCommand();
@@ -1003,11 +1016,11 @@ TEST_F(ADisplayManager, recoversFromRepublishBeforeFailedMap)
 
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_FAIL);
 
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene); // now start again from subscribe
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene); // now start again from subscribe
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
+    expectRendererSceneCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
     displayManagerEventHandler.sceneShown(sceneId, ramses::ERendererEventResult_OK);
     expectRendererCommand(ramses_internal::ERendererCommand_ConfirmationEcho);
 
@@ -1019,11 +1032,11 @@ TEST_F(ADisplayManager, recoversFromRepublishBeforeFailedShow)
     displayManager.setSceneState(sceneId, SceneState::Rendered, "scene is shown now");
 
     displayManagerEventHandler.scenePublished(sceneId);
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
+    expectRendererSceneCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
 
     unpublish(ramses_internal::ERendererCommand_MapSceneToDisplay);
     expectNoRendererCommand();
@@ -1032,11 +1045,11 @@ TEST_F(ADisplayManager, recoversFromRepublishBeforeFailedShow)
 
     displayManagerEventHandler.sceneShown(sceneId, ramses::ERendererEventResult_FAIL);
 
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene); // now start again from subscribe
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene); // now start again from subscribe
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
+    expectRendererSceneCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
     displayManagerEventHandler.sceneShown(sceneId, ramses::ERendererEventResult_OK);
     expectRendererCommand(ramses_internal::ERendererCommand_ConfirmationEcho);
 
@@ -1055,11 +1068,11 @@ TEST_F(ADisplayManager, canRecoverFromRepublishAfterFailedUnsubscribe)
     publishAndExpectToGetToState(SceneState::Rendered);
 
     displayManager.setSceneState(sceneId, SceneState::Unavailable);
-    expectRendererCommand(ramses_internal::ERendererCommand_HideScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_HideScene);
     displayManagerEventHandler.sceneHidden(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
     displayManagerEventHandler.sceneUnmapped(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_UnsubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnsubscribeScene);
 
     unpublish(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
     expectNoRendererCommand();
@@ -1075,9 +1088,9 @@ TEST_F(ADisplayManager, canRecoverFromRepublishAfterFailedUnmap)
     publishAndExpectToGetToState(SceneState::Rendered);
 
     displayManager.setSceneState(sceneId, SceneState::Unavailable);
-    expectRendererCommand(ramses_internal::ERendererCommand_HideScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_HideScene);
     displayManagerEventHandler.sceneHidden(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
 
     unpublish(ramses_internal::ERendererCommand_HideScene);
     expectNoRendererCommand();
@@ -1093,7 +1106,7 @@ TEST_F(ADisplayManager, canRecoverFromRepublishAfterFailedHide)
     publishAndExpectToGetToState(SceneState::Rendered);
 
     displayManager.setSceneState(sceneId, SceneState::Unavailable);
-    expectRendererCommand(ramses_internal::ERendererCommand_HideScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_HideScene);
 
     unpublish(ramses_internal::ERendererCommand_ShowScene);
     expectNoRendererCommand();
@@ -1115,11 +1128,11 @@ TEST_F(ADisplayManager, canRecoverFromRepublishBeforeFailedUnsubscribe)
     publishAndExpectToGetToState(SceneState::Rendered);
 
     displayManager.setSceneState(sceneId, SceneState::Unavailable);
-    expectRendererCommand(ramses_internal::ERendererCommand_HideScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_HideScene);
     displayManagerEventHandler.sceneHidden(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
     displayManagerEventHandler.sceneUnmapped(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_UnsubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnsubscribeScene);
 
     // unpublish and publish coming together
     unpublish(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
@@ -1133,11 +1146,11 @@ TEST_F(ADisplayManager, canRecoverFromRepublishBeforeFailedUnsubscribe)
     // trigger new show
     displayManager.setSceneState(sceneId, SceneState::Rendered);
 
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
+    expectRendererSceneCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
     displayManagerEventHandler.sceneShown(sceneId, ramses::ERendererEventResult_OK);
 
     doAnotherFullCycleFromUnpublishToState();
@@ -1149,9 +1162,9 @@ TEST_F(ADisplayManager, canRecoverFromRepublishBeforeFailedUnmap)
     publishAndExpectToGetToState(SceneState::Rendered);
 
     displayManager.setSceneState(sceneId, SceneState::Unavailable);
-    expectRendererCommand(ramses_internal::ERendererCommand_HideScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_HideScene);
     displayManagerEventHandler.sceneHidden(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
 
     // unpublish and publish coming together
     unpublish(ramses_internal::ERendererCommand_HideScene);
@@ -1165,11 +1178,11 @@ TEST_F(ADisplayManager, canRecoverFromRepublishBeforeFailedUnmap)
     // trigger new show
     displayManager.setSceneState(sceneId, SceneState::Rendered);
 
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
+    expectRendererSceneCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
     displayManagerEventHandler.sceneShown(sceneId, ramses::ERendererEventResult_OK);
 
     doAnotherFullCycleFromUnpublishToState();
@@ -1181,7 +1194,7 @@ TEST_F(ADisplayManager, canRecoverFromRepublishBeforeFailedHide)
     publishAndExpectToGetToState(SceneState::Rendered);
 
     displayManager.setSceneState(sceneId, SceneState::Unavailable);
-    expectRendererCommand(ramses_internal::ERendererCommand_HideScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_HideScene);
 
     // unpublish and publish coming together
     unpublish(ramses_internal::ERendererCommand_ShowScene);
@@ -1195,11 +1208,11 @@ TEST_F(ADisplayManager, canRecoverFromRepublishBeforeFailedHide)
     // trigger new show
     displayManager.setSceneState(sceneId, SceneState::Rendered);
 
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
+    expectRendererSceneCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
     displayManagerEventHandler.sceneShown(sceneId, ramses::ERendererEventResult_OK);
 
     doAnotherFullCycleFromUnpublishToState();
@@ -1220,18 +1233,18 @@ TEST_F(ADisplayManager, assignsSceneToBufferAfterSceneIsMapped)
     displayManager.setSceneState(sceneId, SceneState::Rendered);
 
     displayManagerEventHandler.scenePublished(sceneId);
-    expectRendererCommand(ramses_internal::ERendererCommand_SubscribeScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_SubscribeScene);
     displayManagerEventHandler.sceneSubscribed(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
 
     EXPECT_TRUE(displayManager.setSceneDisplayBufferAssignment(sceneId, displayFramebufferId, 11));
     expectNoRendererCommand();
 
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
-    const auto cmd = getRendererCommand<ramses_internal::SceneMappingCommand>(0u, ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
+    const auto cmd = getRendererSceneCommand<ramses_internal::SceneMappingCommand>(0u, ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
     EXPECT_FALSE(cmd.offscreenBuffer.isValid()); // FB is represented as invalid OB handle internally
     EXPECT_EQ(11, cmd.sceneRenderOrder);
-    expectRendererCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
+    expectRendererSceneCommands({ ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer, ramses_internal::ERendererCommand_ShowScene });
     displayManagerEventHandler.sceneShown(sceneId, ramses::ERendererEventResult_OK);
 }
 
@@ -1241,10 +1254,10 @@ TEST_F(ADisplayManager, assignsSceneToBufferRightAwayIfSceneIsMapped)
     publishAndExpectToGetToState(SceneState::Rendered);
 
     EXPECT_TRUE(displayManager.setSceneDisplayBufferAssignment(sceneId, offscreenBufferId, 11));
-    const auto cmd = getRendererCommand<ramses_internal::SceneMappingCommand>(0u, ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
+    const auto cmd = getRendererSceneCommand<ramses_internal::SceneMappingCommand>(0u, ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
     EXPECT_EQ(offscreenBufferId.getValue(), cmd.offscreenBuffer.asMemoryHandle());
     EXPECT_EQ(11, cmd.sceneRenderOrder);
-    expectRendererCommand(ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
 }
 
 TEST_F(ADisplayManager, failsToAssignSceneToUnknownBuffer)
@@ -1264,16 +1277,16 @@ TEST_F(ADisplayManager, mappingSceneToAnotherDisplayResetsDisplayBufferAssignmen
 
     // assign to OB + render order
     EXPECT_TRUE(displayManager.setSceneDisplayBufferAssignment(sceneId, offscreenBufferId, 11));
-    const auto cmd1 = getRendererCommand<ramses_internal::SceneMappingCommand>(0u, ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
+    const auto cmd1 = getRendererSceneCommand<ramses_internal::SceneMappingCommand>(0u, ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
     EXPECT_EQ(offscreenBufferId.getValue(), cmd1.offscreenBuffer.asMemoryHandle());
     EXPECT_EQ(11, cmd1.sceneRenderOrder);
-    expectRendererCommand(ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
 
     // unmap scene
     displayManager.setSceneState(sceneId, SceneState::Available);
-    expectRendererCommand(ramses_internal::ERendererCommand_HideScene);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_HideScene);
     displayManagerEventHandler.sceneHidden(sceneId, ramses::ERendererEventResult_OK);
-    expectRendererCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_UnmapSceneFromDisplays);
     displayManagerEventHandler.sceneUnmapped(sceneId, ramses::ERendererEventResult_OK);
     EXPECT_EQ(ramses::displayId_t::Invalid(), displayManager.getDisplaySceneIsMappedTo(sceneId));
     expectNoRendererCommand();
@@ -1284,13 +1297,13 @@ TEST_F(ADisplayManager, mappingSceneToAnotherDisplayResetsDisplayBufferAssignmen
 
     // map scene
     displayManager.setSceneState(sceneId, SceneState::Ready);
-    expectRendererCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_MapSceneToDisplay);
     displayManagerEventHandler.sceneMapped(sceneId, ramses::ERendererEventResult_OK);
     // expect assignment to default FB, render order 0
-    const auto cmd2 = getRendererCommand<ramses_internal::SceneMappingCommand>(0u, ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
+    const auto cmd2 = getRendererSceneCommand<ramses_internal::SceneMappingCommand>(0u, ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
     EXPECT_FALSE(cmd2.offscreenBuffer.isValid()); // FB is represented as invalid OB handle internally
     EXPECT_EQ(0, cmd2.sceneRenderOrder);
-    expectRendererCommand(ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
+    expectRendererSceneCommand(ramses_internal::ERendererCommand_AssignSceneToDisplayBuffer);
     displayManagerEventHandler.sceneAssignedToDisplayBuffer(sceneId, otherDisplayFramebufferId, ramses::ERendererEventResult_OK);
     EXPECT_EQ(otherDisplayId, displayManager.getDisplaySceneIsMappedTo(sceneId));
     expectNoRendererCommand();

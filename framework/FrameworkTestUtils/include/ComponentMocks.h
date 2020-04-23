@@ -21,6 +21,8 @@
 #include "Components/IResourceProviderComponent.h"
 #include "Components/ResourceTableOfContents.h"
 #include "Components/IResourceConsumerComponent.h"
+#include "Components/ISceneProviderEventConsumer.h"
+#include "SceneReferencing/SceneReferenceEvent.h"
 
 namespace ramses_internal
 {
@@ -66,7 +68,7 @@ namespace ramses_internal
         virtual ~SceneGraphProviderComponentMock() override;
 
         MOCK_METHOD1(setSceneProviderServiceHandler, void(ISceneProviderServiceHandler* handler));
-        MOCK_METHOD2(handleCreateScene, void(ClientScene& scene, bool enableLocalOnlyOptimization));
+        MOCK_METHOD3(handleCreateScene, void(ClientScene& scene, bool enableLocalOnlyOptimization, ISceneProviderEventConsumer& consumer));
         MOCK_METHOD2(handlePublishScene, void(SceneId sceneId, EScenePublicationMode publicationMode));
         MOCK_METHOD1(handleUnpublishScene, void(SceneId sceneId));
         MOCK_METHOD3(handleFlush, void(SceneId sceneId, const FlushTimeInformation&, SceneVersionTag));
@@ -83,10 +85,20 @@ namespace ramses_internal
 
         MOCK_METHOD2(subscribeScene, void(const Guid& to, SceneId sceneId));
         MOCK_METHOD2(unsubscribeScene, void(const Guid& to, SceneId sceneId));
+        MOCK_METHOD2(sendSceneReferenceEvent, void(const Guid& to, SceneReferenceEvent const& event));
 
         virtual void setSceneRendererServiceHandler(ISceneRendererServiceHandler*) override
         {
         }
+    };
+
+    class SceneProviderEventConsumerMock : public ISceneProviderEventConsumer
+    {
+    public:
+        SceneProviderEventConsumerMock();
+        virtual ~SceneProviderEventConsumerMock() override;
+
+        MOCK_METHOD2(handleSceneReferenceEvent, void(SceneReferenceEvent const& event, const Guid& rendererId));
     };
 }
 

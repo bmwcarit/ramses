@@ -10,7 +10,7 @@
 
 #include "Window_Wayland_IVI/Window_Wayland_IVI.h"
 #include "SystemCompositorController_Wayland_IVI/SystemCompositorController_Wayland_IVI.h"
-#include "WindowEventsPollingManager_Wayland/WindowEventsPollingManager_Wayland.h"
+#include "Window_Wayland/WindowEventsPollingManager_Wayland.h"
 #include "RendererLib/RendererConfig.h"
 #include "RendererLib/DisplayConfig.h"
 #include "Utils/LogMacros.h"

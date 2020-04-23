@@ -18,6 +18,7 @@
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/OrthographicCamera.h"
+#include <cassert>
 
 // The magic of these tests is that they must show a significant difference in the output picture, when the wrong sampling mode is
 // enabled. On the other side they must be stable across different OpenGL implementations in different platforms.

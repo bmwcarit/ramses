@@ -21,6 +21,8 @@
 #include "TransportCommon/IConnectionStatusListener.h"
 #include "Collections/HashSet.h"
 #include "Utils/IPeriodicLogSupplier.h"
+#include "ISceneProviderEventConsumer.h"
+#include "TransportCommon/ServiceHandlerInterfaces.h"
 
 namespace ramses_internal
 {
@@ -32,14 +34,18 @@ namespace ramses_internal
 
     const uint64_t SceneActionList_CounterWrapAround = 10000;
 
-    class SceneGraphComponent final : public ISceneGraphProviderComponent, public ISceneGraphSender, public ISceneGraphConsumerComponent, public IConnectionStatusListener, public IPeriodicLogSupplier
+    class SceneGraphComponent final : public ISceneGraphProviderComponent,
+                                      public ISceneGraphSender,
+                                      public ISceneGraphConsumerComponent,
+                                      public IConnectionStatusListener,
+                                      public ISceneProviderServiceHandler,
+                                      public IPeriodicLogSupplier
     {
     public:
         SceneGraphComponent(const Guid& myID, ICommunicationSystem& communicationSystem, IConnectionStatusUpdateNotifier& connectionStatusUpdateNotifier, PlatformLock& frameworkLock);
         virtual ~SceneGraphComponent() override;
 
         virtual void setSceneRendererServiceHandler(ISceneRendererServiceHandler* sceneRendererHandler) override;
-        virtual void setSceneProviderServiceHandler(ISceneProviderServiceHandler* handler) override;
 
         // ISceneGraphSender
         virtual void sendCreateScene(const Guid& to, const SceneInfo& sceneInfo, EScenePublicationMode mode) override;
@@ -50,19 +56,23 @@ namespace ramses_internal
         // ISceneGraphConsumerComponent
         virtual void subscribeScene(const Guid& to, SceneId sceneId) override;
         virtual void unsubscribeScene(const Guid& to, SceneId sceneId) override;
+        virtual void sendSceneReferenceEvent(const Guid& to, SceneReferenceEvent const& event) override;
 
         // IConnectionStatusListener
         virtual void newParticipantHasConnected(const Guid& guid) override;
         virtual void participantHasDisconnected(const Guid& guid) override;
 
         // ISceneGraphProviderComponent
-        virtual void handleCreateScene(ClientScene& scene, bool enableLocalOnlyOptimization) override;
+        virtual void handleCreateScene(ClientScene& scene, bool enableLocalOnlyOptimization, ISceneProviderEventConsumer& eventInterface) override;
         virtual void handlePublishScene(SceneId sceneId, EScenePublicationMode publicationMode) override;
         virtual void handleUnpublishScene(SceneId sceneId) override;
         virtual void handleFlush(SceneId sceneId, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) override;
         virtual void handleRemoveScene(SceneId sceneId) override;
-        virtual void handleSceneSubscription(SceneId sceneId, const Guid& subscriber) override;
-        virtual void handleSceneUnsubscription(SceneId sceneId, const Guid& subscriber) override;
+
+        // ISceneProviderServiceHandler
+        virtual void handleSubscribeScene(const SceneId& sceneId, const Guid& consumerID) override;
+        virtual void handleUnsubscribeScene(const SceneId& sceneId, const Guid& consumerID) override;
+        virtual void handleRendererEvent(const SceneId& sceneId, std::vector<Byte> data, const Guid& rendererID) override;
 
         // IPeriodicLogSupplier
         virtual void triggerLogMessageForPeriodicLog() override;
@@ -70,8 +80,9 @@ namespace ramses_internal
         void disconnectFromNetwork();
 
     private:
+        void forwardToSceneProviderEventConsumer(SceneReferenceEvent const& event);
+
         ISceneRendererServiceHandler* m_sceneRendererHandler;
-        ISceneProviderServiceHandler* m_sceneProviderHandler;
         Guid m_myID;
         ICommunicationSystem& m_communicationSystem;
         IConnectionStatusUpdateNotifier& m_connectionStatusUpdateNotifier;
@@ -97,6 +108,9 @@ namespace ramses_internal
 
         typedef HashMap<SceneId, ClientSceneLogicBase*> ClientSceneLogicMap;
         ClientSceneLogicMap m_clientSceneLogicMap;
+
+        typedef HashMap<SceneId, ISceneProviderEventConsumer*> SceneEventConsumerMap;
+        SceneEventConsumerMap m_sceneEventConsumers;
 
         typedef std::pair<Guid, SceneId> Subscription;
         typedef HashMap<Subscription, uint64_t > SceneActionListCountPerSubscription;

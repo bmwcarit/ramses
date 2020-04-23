@@ -18,7 +18,7 @@
 
 namespace ramses_internal
 {
-    INSTANTIATE_TEST_CASE_P(TypedCommunicationTest, ACommunicationSystem, ::testing::ValuesIn(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()));
+    INSTANTIATE_TEST_SUITE_P(TypedCommunicationTest, ACommunicationSystem, ::testing::ValuesIn(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()));
 
     TEST_P(ACommunicationSystem, canStartStopDiscoveryDaemon)
     {
@@ -38,7 +38,7 @@ namespace ramses_internal
 
     TEST_P(ACommunicationSystem, sendFunctionsFailWhenNotYetConnected)
     {
-        Guid to(true);
+        Guid to(5);
         std::unique_ptr<CommunicationSystemTestWrapper> csw{CommunicationSystemTestFactory::ConstructTestWrapper(*state)};
         EXPECT_FALSE(csw->commSystem->sendRequestResources(to, ResourceContentHashVector()));
         EXPECT_FALSE(csw->commSystem->sendResourcesNotAvailable(to, ResourceContentHashVector()));
@@ -53,7 +53,7 @@ namespace ramses_internal
         EXPECT_EQ(0u, csw->commSystem->sendSceneActionList(to, SceneId(123), SceneActionCollection(), 1));
         EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastOfferContent(ContentID{}, Category{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmOfferContent(to, ContentID{}, Category{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentReady(to, ContentID{}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentReady(to, ContentID{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmContentFocusRequest(to, ContentID{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastRequestStopOfferContent(ContentID{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastForceStopOfferContent(ContentID{}));
@@ -63,7 +63,7 @@ namespace ramses_internal
 
     TEST_P(ACommunicationSystem, sendFunctionsFailAfterCallingDisconnect)
     {
-        Guid to(true);
+        Guid to(5);
         std::unique_ptr<CommunicationSystemTestWrapper> csw{CommunicationSystemTestFactory::ConstructTestWrapper(*state)};
         csw->commSystem->connectServices();
         csw->commSystem->disconnectServices();
@@ -81,7 +81,7 @@ namespace ramses_internal
         EXPECT_EQ(0u, csw->commSystem->sendSceneActionList(to, SceneId(123), SceneActionCollection(), 1));
         EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastOfferContent(ContentID{}, Category{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmOfferContent(to, ContentID{}, Category{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentReady(to, ContentID{}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentReady(to, ContentID{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmContentFocusRequest(to, ContentID{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastRequestStopOfferContent(ContentID{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastForceStopOfferContent(ContentID{}));
@@ -93,9 +93,9 @@ namespace ramses_internal
     {
     };
 
-    INSTANTIATE_TEST_CASE_P(TypedCommunicationTest, ACommunicationSystemWithDaemon, TESTING_SERVICETYPE_RAMSES(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()));
-    INSTANTIATE_TEST_CASE_P(TypedCommunicationTest_ramses, ACommunicationSystemWithDaemonConnectionSetup, TESTING_SERVICETYPE_RAMSES(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()));
-    INSTANTIATE_TEST_CASE_P(TypedCommunicationTest_dcsm, ACommunicationSystemWithDaemonConnectionSetup, TESTING_SERVICETYPE_DCSM(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes(ECommunicationSystemType_Tcp)));
+    INSTANTIATE_TEST_SUITE_P(TypedCommunicationTest, ACommunicationSystemWithDaemon, TESTING_SERVICETYPE_RAMSES(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()));
+    INSTANTIATE_TEST_SUITE_P(TypedCommunicationTest_ramses, ACommunicationSystemWithDaemonConnectionSetup, TESTING_SERVICETYPE_RAMSES(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()));
+    INSTANTIATE_TEST_SUITE_P(TypedCommunicationTest_dcsm, ACommunicationSystemWithDaemonConnectionSetup, TESTING_SERVICETYPE_DCSM(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes(ECommunicationSystemType_Tcp)));
 
     TEST_P(ACommunicationSystemWithDaemon, canConnectAndDisconnectWithoutBlocking)
     {
@@ -215,10 +215,10 @@ namespace ramses_internal
     public:
     };
 
-    INSTANTIATE_TEST_CASE_P(TypedCommunicationTest, ACommunicationSystemWithDaemonMultiParticipant,
+    INSTANTIATE_TEST_SUITE_P(TypedCommunicationTest, ACommunicationSystemWithDaemonMultiParticipant,
                             TESTING_SERVICETYPE_RAMSES(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes(ECommunicationSystemType_Tcp)));
 
-    INSTANTIATE_TEST_CASE_P(TypedCommunicationTest, ACommunicationSystemWithDaemonTcpOnly,
+    INSTANTIATE_TEST_SUITE_P(TypedCommunicationTest, ACommunicationSystemWithDaemonTcpOnly,
                             TESTING_SERVICETYPE_RAMSES(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes(ECommunicationSystemType_Tcp)));
 
     TEST_P(ACommunicationSystemWithDaemonMultiParticipant, canConnectAndDisconnectMultipleTimes)
@@ -297,7 +297,7 @@ namespace ramses_internal
 
         std::vector<Byte> receivedResourceData;
         std::vector<Byte> sentResourceData;
-        EXPECT_CALL(handler, handleSendResource(_, sender->id)).WillOnce([this, &receivedResourceData](const ByteArrayView& resourceData, const Guid&)
+        EXPECT_CALL(handler, handleSendResource(_, sender->id)).WillOnce([this, &receivedResourceData](const auto& resourceData, const Guid&)
         {
             receivedResourceData.insert(receivedResourceData.begin(), resourceData.begin(), resourceData.end());
             state->event.signal();
@@ -307,7 +307,7 @@ namespace ramses_internal
             std::vector<Float> data(60000);  // data size ~250k
             for (UInt i = 0; i < data.size(); ++i)
             {
-                data[i] = 1.1f * (i + 1);
+                data[i] = 1.1f * static_cast<float>(i + 1);
             }
 
             std::unique_ptr<IResource> resource(new ArrayResource(EResourceType_VertexArray, static_cast<UInt32>(data.size()), EDataType_Float, reinterpret_cast<const Byte*>(&data[0]), ResourceCacheFlag(0u), String("resName")));
@@ -354,7 +354,7 @@ namespace ramses_internal
 
         std::vector<std::vector<Byte>> receivedResourceData;
         std::vector<std::vector<Byte>> sentResourceData;
-        EXPECT_CALL(handler, handleSendResource(_, sender->id)).WillRepeatedly([this, &receivedResourceData](const ByteArrayView& resourceData, const Guid&)
+        EXPECT_CALL(handler, handleSendResource(_, sender->id)).WillRepeatedly([this, &receivedResourceData](const auto& resourceData, const Guid&)
         {
             std::vector<Byte> data;
             data.insert(data.begin(), resourceData.begin(), resourceData.end());
@@ -367,7 +367,7 @@ namespace ramses_internal
             std::vector<Float> data(numFloatElements);
             for (UInt i = 0; i < data.size(); ++i)
             {
-                data[i] = 1.1f * (i + 1);
+                data[i] = 1.1f * static_cast<float>(i + 1);
             }
             std::unique_ptr<IResource> resource(new ArrayResource(EResourceType_VertexArray, static_cast<UInt32>(data.size()), EDataType_Float, reinterpret_cast<const Byte*>(&data[0]), ResourceCacheFlag(0u), String("resName")));
             resource->compress(IResource::CompressionLevel::REALTIME);
@@ -466,8 +466,8 @@ namespace ramses_internal
 
     TEST_P(ACommunicationSystemWithDaemonMultiParticipant, canEstablishConnectionToNewParticipantWithSameGuid)
     {
-        const Guid csw1Id(0, 2);
-        const Guid csw2Id(0, 1);   // csw2 id MUST be smaller => forces csw1 to initiate connections
+        const Guid csw1Id(2);
+        const Guid csw2Id(1);   // csw2 id MUST be smaller => forces csw1 to initiate connections
 
         std::unique_ptr<CommunicationSystemTestWrapper> csw1{CommunicationSystemTestFactory::ConstructTestWrapper(*state, "csw1", csw1Id)};
         std::unique_ptr<CommunicationSystemTestWrapper> csw2{CommunicationSystemTestFactory::ConstructTestWrapper(*state, "csw2", csw2Id)};

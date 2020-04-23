@@ -43,7 +43,7 @@ namespace ramses_internal
 
         m_testRenderer.setSkippingOfUnmodifiedBuffers(!config.disableSkippingOfFrames);
 
-        m_testRenderer.setFrameTimerLimits(config.perFrameBudgetMSec_ClientRes, config.perFrameBudgetMSec_SceneActions, config.perFrameBudgetMSec_Rendering);
+        m_testRenderer.setFrameTimerLimits(config.perFrameBudgetMSec_ClientRes, config.perFrameBudgetMSec_Rendering);
 
         uint32_t displayOffset = 0;
         for (UInt i = 0; i < config.displayCount; ++i)
@@ -134,7 +134,7 @@ namespace ramses_internal
         const uint32_t displayCount = static_cast<uint32_t>(m_displays.size());
         const uint32_t topLevelSceneCount = m_sceneSetsPerDisplay * displayCount;
 
-        ramses::dataConsumerId_t textureConsumerId = 0;
+        ramses::dataConsumerId_t textureConsumerId{0};
         ramses::sceneId_t sceneId(1);
 
         SceneArrayConfig sceneArrayConfig;
@@ -145,11 +145,12 @@ namespace ramses_internal
             const ramses::sceneId_t topLevelSceneId(sceneId);
             sceneId.getReference()++;
 
-            const TextureConsumerDataIds topLevelSceneConsumerIds = {
-                textureConsumerId++,
-                textureConsumerId++,
-                textureConsumerId++,
-                textureConsumerId++ };
+            auto getConsumerId = [&] {
+                textureConsumerId.getReference()++;
+                return textureConsumerId;
+            };
+
+            const TextureConsumerDataIds topLevelSceneConsumerIds = {getConsumerId(), getConsumerId(), getConsumerId(), getConsumerId()};
 
             // Construct a quad to position the top-level scene on a fraction of the display (horizontally)
             // For one scene per display, that's the whole display, for two scenes: half of it, and so on
@@ -172,7 +173,7 @@ namespace ramses_internal
                 });
 
             // Offscreenbuffer scenes -> rendered to offscreen buffer and linked to top level scene as texture
-            for (uint32_t obIndex = 0; obIndex <  display.offscreenBuffers.size(); ++obIndex)
+            for (size_t obIndex = 0; obIndex <  display.offscreenBuffers.size(); ++obIndex)
             {
                 const auto& offscreenBuffer = display.offscreenBuffers[obIndex];
                 const uint32_t scenesPerBuffer = (offscreenBuffer.isInterruptable) ? 2 : 1;
@@ -209,8 +210,7 @@ namespace ramses_internal
     Int32 ResourceStressTests::recreateResourcesEveryFrame(uint32_t sceneFpsLimit)
     {
         ResourceStressTestSceneArray scenes(m_client, m_testRenderer, generateStressSceneConfig());
-        scenes.subscribeAll();
-        scenes.mapAndShowAll();
+        scenes.getAllToState(ramses::RendererSceneState::Rendered);
 
         const UInt64 startTimeMs = PlatformTime::GetMillisecondsMonotonic();
         ramses::sceneVersionTag_t flushName = 0;
@@ -230,7 +230,7 @@ namespace ramses_internal
     Int32 ResourceStressTests::recreateResourcesEveryFrame_MapSceneAfterAWhile(uint32_t sceneFpsLimit, uint32_t mapSceneDelayMSec)
     {
         ResourceStressTestSceneArray scenes(m_client, m_testRenderer, generateStressSceneConfig());
-        scenes.subscribeAll();
+        scenes.getAllToState(ramses::RendererSceneState::Available);
 
         const UInt64 startTimeMs = PlatformTime::GetMillisecondsMonotonic();
         ramses::sceneVersionTag_t flushName = 0;
@@ -243,7 +243,7 @@ namespace ramses_internal
             {
                 if (!scenesMapped)
                 {
-                    scenes.mapAndShowAll();
+                    scenes.getAllToState(ramses::RendererSceneState::Rendered);
                     scenesMapped = true;
                 }
             }
@@ -262,7 +262,7 @@ namespace ramses_internal
     Int32 ResourceStressTests::recreateResourcesEveryFrame_RemapSceneAllTheTime(uint32_t remapCycleDurationMSec)
     {
         ResourceStressTestSceneArray scenes(m_client, m_testRenderer, generateStressSceneConfig());
-        scenes.subscribeAll();
+        scenes.getAllToState(ramses::RendererSceneState::Available);
 
         const UInt64 startTimeMs = PlatformTime::GetMillisecondsMonotonic();
         ramses::sceneVersionTag_t flushName = 0;
@@ -278,13 +278,13 @@ namespace ramses_internal
             // if half the time of the remap cycle passed -> map scene
             if (isSecondHalfOfRemapCycle && !scenesMapped)
             {
-                scenes.mapAndShowAll();
+                scenes.getAllToState(ramses::RendererSceneState::Rendered);
                 scenesMapped = true;
             }
             // if second half of the cycle passed -> unmap the scene again
             else if (!isSecondHalfOfRemapCycle && scenesMapped)
             {
-                scenes.hideAndUnmapAll();
+                scenes.getAllToState(ramses::RendererSceneState::Available);
                 scenesMapped = false;
             }
 

@@ -28,17 +28,17 @@ namespace ramses
     {
     }
 
-    status_t DcsmProvider::offerContent(ContentID contentID, Category category, sceneId_t scene)
+    status_t DcsmProvider::offerContent(ContentID contentID, Category category, sceneId_t scene, EDcsmOfferingMode mode)
     {
-        auto status = impl.offerContent(contentID, category, scene);
-        LOG_HL_CLIENT_API3(status, contentID, category, scene);
+        auto status = impl.offerContent(contentID, category, scene, mode);
+        LOG_HL_CLIENT_API4(status, contentID, category, scene, static_cast<int>(mode));
         return status;
     }
 
-    status_t DcsmProvider::offerContentWithMetadata(ContentID contentID, Category category, sceneId_t scene, const DcsmMetadataCreator& metadata)
+    status_t DcsmProvider::offerContentWithMetadata(ContentID contentID, Category category, sceneId_t scene, EDcsmOfferingMode mode, const DcsmMetadataCreator& metadata)
     {
-        const auto status = impl.offerContentWithMetadata(contentID, category, scene, metadata);
-        LOG_HL_CLIENT_API4(status, contentID, category, scene, LOG_API_GENERIC_OBJECT_STRING(metadata));
+        const auto status = impl.offerContentWithMetadata(contentID, category, scene, mode, metadata);
+        LOG_HL_CLIENT_API5(status, contentID, category, scene, static_cast<int>(mode), LOG_API_GENERIC_OBJECT_STRING(metadata));
         return status;
     }
 

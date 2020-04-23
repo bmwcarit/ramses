@@ -21,12 +21,11 @@ class AClientApplicationLogic : public ::testing::Test
 {
 public:
     AClientApplicationLogic()
-        : dummyGuid(true)
+        : dummyGuid(555)
         , logic(dummyGuid, frameworkLock)
         , sceneId(44u)
         , dummyScene(SceneInfo(sceneId))
     {
-        EXPECT_CALL(scenegraphProviderComponent, setSceneProviderServiceHandler(_));
         logic.init(resourceComponent, scenegraphProviderComponent);
     }
 
@@ -42,7 +41,7 @@ protected:
 
     void createDummyScene()
     {
-        EXPECT_CALL(scenegraphProviderComponent, handleCreateScene(Ref(dummyScene), false));
+        EXPECT_CALL(scenegraphProviderComponent, handleCreateScene(Ref(dummyScene), false, Ref(logic)));
         logic.createScene(dummyScene, false);
     }
 };
@@ -141,4 +140,22 @@ TEST_F(AClientApplicationLogic, addsAndRemovesResourceFilesFromComponent)
 
     EXPECT_CALL(resourceComponent, removeResourceFile(String("testfilename")));
     logic.removeResourceFile("testfilename");
+}
+
+TEST_F(AClientApplicationLogic, gathersSceneReferenceEventsInAContainer)
+{
+    SceneReferenceEvent event(SceneId { 123 });
+    event.referencedScene = SceneId{ 123456789 };
+
+    EXPECT_TRUE(logic.getSceneReferenceEvents().empty());
+    logic.handleSceneReferenceEvent(event, Guid{});
+    EXPECT_EQ(logic.getSceneReferenceEvents().size(), 1u);
+    auto sre = logic.getSceneReferenceEvents().front();
+    EXPECT_EQ(sre.referencedScene, event.referencedScene);
+
+    logic.handleSceneReferenceEvent(event, Guid{});
+    logic.handleSceneReferenceEvent(event, Guid{});
+    logic.handleSceneReferenceEvent(event, Guid{});
+    logic.handleSceneReferenceEvent(event, Guid{});
+    EXPECT_EQ(logic.getSceneReferenceEvents().size(), 5u);
 }

@@ -26,10 +26,10 @@ G_RE_LICENSE_TEMPLATE_OPEN = re.compile(r"""(?://|::|#)  -----------------------
 """, re.MULTILINE)
 
 G_RE_LICENSE_TEMPLATE_PROP =  re.compile(r"""(?://|::|#)  -------------------------------------------------------------------------
-(?://|::|#)  Copyright \(C\) 2\d{3}(?:-2\d{3})? (?:BMW AG|BMW Car IT GmbH)
+(?://|::|#)  Copyright \(C\) 2\d{3}(?:-2\d{3})? (BMW AG|BMW Car IT GmbH)
 (?://|::|#)  All rights reserved\.
 (?://|::|#)  -------------------------------------------------------------------------
-(?://|::|#)  This document contains proprietary information belonging to (BMW AG|BMW Car IT)\.
+(?://|::|#)  This document contains proprietary information belonging to (\1)(\.)
 (?://|::|#)  Passing on and copying of this document, use and communication of its
 (?://|::|#)  contents is not permitted without prior written authorization\.
 (?://|::|#)  -------------------------------------------------------------------------

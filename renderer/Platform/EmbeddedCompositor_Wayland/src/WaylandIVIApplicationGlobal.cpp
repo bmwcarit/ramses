@@ -13,6 +13,7 @@
 #include "EmbeddedCompositor_Wayland/IWaylandGlobal.h"
 #include "PlatformAbstraction/PlatformMath.h"
 #include "Utils/LogMacros.h"
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -35,7 +36,7 @@ namespace ramses_internal
         // are ALL handled in WaylandIVIApplicationConnection::IVIApplication_Interface.
         const int maximumSupportedIVIApplicationInterfaceVersion = 1;
 
-        const int supportedIVIApplicationInterfaceVersion = min(maximumSupportedIVIApplicationInterfaceVersion, ivi_application_interface.version);
+        const int supportedIVIApplicationInterfaceVersion = std::min(maximumSupportedIVIApplicationInterfaceVersion, ivi_application_interface.version);
         m_waylandGlobal = serverDisplay.createGlobal(&ivi_application_interface, supportedIVIApplicationInterfaceVersion, this, IVIApplicationBindCallback);
 
         if (nullptr == m_waylandGlobal)

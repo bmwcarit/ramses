@@ -26,6 +26,7 @@ namespace ramses_internal
             ShowFallbackTexture = 0,
             ShowStreamTexture,
             StreamTextureWithDifferentSizeFromFallbackTexture,
+            ShowStreamTextureWithTexCoordsOffset,
             ShowFallbackTextureAfterSurfaceIsDestroyed,
             StreamTextureContentAvailableBeforeSceneCreated,
             TestCorrectNumberOfCommitedFrames,

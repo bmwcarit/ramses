@@ -97,9 +97,9 @@ namespace ramses
         NodeImpl::deinitializeFrameworkData();
     }
 
-    status_t CameraNodeImpl::validate(uint32_t indent) const
+    status_t CameraNodeImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        status_t status = NodeImpl::validate(indent);
+        status_t status = NodeImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
 
         // camera plane parameters are always valid,

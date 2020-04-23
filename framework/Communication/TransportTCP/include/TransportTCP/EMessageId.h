@@ -30,6 +30,8 @@ namespace ramses_internal
         EMessageId_InputEvent,
         EMessageId_SendSceneActionList,
 
+        EMessageId_RendererEvent,
+
         EMessageId_Alive,
 
         // resources
@@ -45,6 +47,7 @@ namespace ramses_internal
         EMessageId_DcsmCanvasSizeChange,
         EMessageId_DcsmContentStatusChange,
         EMessageId_DcsmContentAvailable,
+        EMessageId_DcsmContentDescription,
         EMessageId_DcsmCategoryContentSwitchRequest,
         EMessageId_DcsmRequestUnregisterContent,
         EMessageId_DcsmForceUnregisterContent,

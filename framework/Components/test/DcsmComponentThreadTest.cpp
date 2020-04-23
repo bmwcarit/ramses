@@ -27,8 +27,8 @@ namespace ramses_internal
     {
     public:
         ADcsmComponentThreadTest()
-            : localId(true)
-            , remoteId(true)
+            : localId(111)
+            , remoteId(222)
             , comp(localId, comm, connNotifier, frameworkLock)
             , startBarrier(4)
             , shouldStop(false)
@@ -39,7 +39,8 @@ namespace ramses_internal
         {
             EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(_, _)).Times(AnyNumber());
             EXPECT_CALL(comm, sendDcsmOfferContent(_, _, _)).Times(AnyNumber());
-            EXPECT_CALL(comm, sendDcsmContentReady(_, _, _, _)).Times(AnyNumber());
+            EXPECT_CALL(comm, sendDcsmContentDescription(_, _, _, _)).Times(AnyNumber());
+            EXPECT_CALL(comm, sendDcsmContentReady(_, _)).Times(AnyNumber());
             EXPECT_CALL(comm, sendDcsmContentFocusRequest(_, _)).Times(AnyNumber());
             EXPECT_CALL(comm, sendDcsmBroadcastRequestStopOfferContent(_)).Times(AnyNumber());
             EXPECT_CALL(comm, sendDcsmBroadcastForceStopOfferContent(_)).Times(AnyNumber());
@@ -51,7 +52,7 @@ namespace ramses_internal
             EXPECT_CALL(provider, contentStateChange(_, _, _, _)).Times(AnyNumber());
 
             EXPECT_CALL(consumer, contentOffered(_, _)).Times(AnyNumber());
-            EXPECT_CALL(consumer, contentReady(_, _, _)).Times(AnyNumber());
+            EXPECT_CALL(consumer, contentReady(_)).Times(AnyNumber());
             EXPECT_CALL(consumer, contentFocusRequest(_)).Times(AnyNumber());
             EXPECT_CALL(consumer, contentStopOfferRequest(_)).Times(AnyNumber());
             EXPECT_CALL(consumer, forceContentOfferStopped(_)).Times(AnyNumber());
@@ -94,31 +95,35 @@ namespace ramses_internal
                     if (rnd() < 90)
                         comp.newParticipantHasConnected(remoteId);
                     if (rnd() < 20)
-                        comp.newParticipantHasConnected(Guid(true));
+                        comp.newParticipantHasConnected(Guid(rnd()));
                     if (rnd() < 40)
                         comp.handleOfferContent(ContentID{rnd()%5}, Category{cnt++}, localId);
                     if (rnd() < 10)
-                        comp.handleOfferContent(ContentID{rnd()%5}, Category{cnt++}, Guid(true));
+                        comp.handleOfferContent(ContentID{rnd()%5}, Category{cnt++}, Guid(rnd()));
                     if (rnd() < 50)
-                        comp.handleContentReady(ContentID{rnd()%5}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{cnt++}, localId);
+                        comp.handleContentDescription(ContentID{rnd()%5}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{cnt++}, localId);
                     if (rnd() < 10)
-                        comp.handleContentReady(ContentID{rnd()%5}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{cnt++}, Guid(true));
+                        comp.handleContentDescription(ContentID{rnd()%5}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{cnt++}, Guid(rnd()));
+                    if (rnd() < 50)
+                        comp.handleContentReady(ContentID{rnd()%5}, localId);
+                    if (rnd() < 10)
+                        comp.handleContentReady(ContentID{rnd()%5}, Guid(rnd()));
                     if (rnd() < 50)
                         comp.handleContentFocusRequest(ContentID{rnd()%5}, localId);
                     if (rnd() < 10)
-                        comp.handleContentFocusRequest(ContentID{rnd()%5}, Guid(true));
+                        comp.handleContentFocusRequest(ContentID{rnd()%5}, Guid(rnd()));
                     if (rnd() < 30)
                         comp.handleRequestStopOfferContent(ContentID{rnd()%5}, localId);
                     if (rnd() < 10)
-                        comp.handleRequestStopOfferContent(ContentID{rnd()%5}, Guid(true));
+                        comp.handleRequestStopOfferContent(ContentID{rnd()%5}, Guid(rnd()));
                     if (rnd() < 40)
                         comp.handleUpdateContentMetadata(ContentID{rnd()%5}, randomMetadata(rnd), localId);
                     if (rnd() < 40)
-                        comp.handleUpdateContentMetadata(ContentID{rnd()%5}, randomMetadata(rnd), Guid(true));
+                        comp.handleUpdateContentMetadata(ContentID{rnd()%5}, randomMetadata(rnd), Guid(rnd()));
                     if (rnd() < 50)
                         comp.handleCanvasSizeChange(ContentID{rnd()%5}, SizeInfo{1, 1}, AnimationInformation{20, 100}, localId);
                     if (rnd() < 10)
-                        comp.handleCanvasSizeChange(ContentID{rnd()%5}, SizeInfo{1, 1}, AnimationInformation{20, 100}, Guid(true));
+                        comp.handleCanvasSizeChange(ContentID{rnd()%5}, SizeInfo{1, 1}, AnimationInformation{20, 100}, Guid(rnd()));
                     if (rnd() < 70)
                         comp.handleContentStateChange(ContentID{rnd()%5}, static_cast<EDcsmState>(rnd()%8), SizeInfo{0, 0}, AnimationInformation{10, 20}, localId);
                     if (rnd() < 50)
@@ -150,9 +155,11 @@ namespace ramses_internal
             while (!shouldStop)
             {
                 if (rnd() < 50)
-                    comp.sendOfferContent(ContentID{rnd()%5}, Category{1});
+                    comp.sendOfferContent(ContentID{rnd()%5}, Category{1}, false);
                 if (rnd() < 50)
-                    comp.sendContentReady(ContentID{rnd()%5}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{2});
+                    comp.sendContentDescription(ContentID{rnd()%5}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{2});
+                if (rnd() < 50)
+                    comp.sendContentReady(ContentID{rnd()%5});
                 if (rnd() < 50)
                     comp.sendContentFocusRequest(ContentID{rnd()%5});
                 if (rnd() < 30)

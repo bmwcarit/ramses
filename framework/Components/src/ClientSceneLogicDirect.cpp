@@ -12,7 +12,6 @@
 #include "Scene/SceneDescriber.h"
 #include "Scene/SceneActionApplier.h"
 #include "Scene/SceneActionCollectionCreator.h"
-#include "Scene/SceneResourceUtils.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "Utils/LogMacros.h"
 #include "Utils/StatisticCollection.h"
@@ -53,6 +52,8 @@ namespace ramses_internal
 
         ++m_flushCounter;
 
+        updateResourceChanges(hasNewActions);
+
         if (isPublished())
         {
             SceneActionCollectionCreator creator(collection);
@@ -60,7 +61,8 @@ namespace ramses_internal
                 m_flushCounter,
                 sceneSizes > m_previousSceneSizes,
                 sceneSizes,
-                m_scene.getResourceChanges(),
+                m_resourceChanges,
+                m_scene.getSceneReferenceActions(),
                 flushTimeInfo,
                 versionTag);
 
@@ -84,7 +86,8 @@ namespace ramses_internal
             m_scenegraphSender.sendSceneActionList(m_subscribersActive, std::move(collection), m_sceneId, m_scenePublicationMode);
         }
 
-        m_scene.clearResourceChanges();
+        m_scene.resetResourceChanges();
+        m_scene.resetSceneReferenceActions();
 
         if (isPublished())
         {

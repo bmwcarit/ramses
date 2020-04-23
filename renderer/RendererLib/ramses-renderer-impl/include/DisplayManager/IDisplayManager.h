@@ -15,6 +15,7 @@
 namespace ramses
 {
     class IRendererEventHandler;
+    class IRendererSceneControlEventHandler_legacy;
 }
 
 namespace ramses_internal
@@ -41,7 +42,7 @@ namespace ramses_internal
         virtual void linkOffscreenBuffer(ramses::displayBufferId_t offscreenBufferId, ramses::sceneId_t consumerSceneId, ramses::dataConsumerId_t consumerDataSlotId) = 0;
         virtual void linkData(ramses::sceneId_t providerSceneId, ramses::dataProviderId_t providerId, ramses::sceneId_t consumerSceneId, ramses::dataConsumerId_t consumerId) = 0;
         virtual void processConfirmationEchoCommand(const char* text) = 0;
-        virtual void dispatchAndFlush(IEventHandler* eventHandler = nullptr, ramses::IRendererEventHandler* customRendererEventHandler = nullptr) = 0;
+        virtual void dispatchAndFlush(IEventHandler* eventHandler = nullptr, ramses::IRendererEventHandler* customRendererEventHandler = nullptr, ramses::IRendererSceneControlEventHandler_legacy* customSceneControlHandler = nullptr) = 0;
     };
 
     static constexpr int GetNumSceneStates()
@@ -51,16 +52,16 @@ namespace ramses_internal
 
     static inline const char* SceneStateName(SceneState state)
     {
-        static const char* SceneStateNames[] =
+        static const char* DMSceneStateNames[] =
         {
             "UNAVAILABLE",
             "AVAILABLE",
             "READY",
             "RENDERED"
         };
-        static_assert(GetNumSceneStates() == sizeof(SceneStateNames) / sizeof(SceneStateNames[0]), "missing state name");
+        static_assert(GetNumSceneStates() == sizeof(DMSceneStateNames) / sizeof(DMSceneStateNames[0]), "missing state name");
 
-        return SceneStateNames[int(state)];
+        return DMSceneStateNames[int(state)];
     }
 
     class IEventHandler

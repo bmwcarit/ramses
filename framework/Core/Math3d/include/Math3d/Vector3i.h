@@ -10,266 +10,94 @@
 #ifndef RAMSES_VECTOR3I_H
 #define RAMSES_VECTOR3I_H
 
-#include "PlatformAbstraction/PlatformTypes.h"
-#include "PlatformAbstraction/PlatformMemory.h"
-#include "PlatformAbstraction/PlatformMath.h"
-
 #include "Collections/IInputStream.h"
 #include "Collections/IOutputStream.h"
-#include "Collections/StringOutputStream.h"
-#include "Utils/Warnings.h"
+#include "PlatformAbstraction/FmtBase.h"
 
 namespace ramses_internal
 {
-    /**
-     *  Allows storing of 3d-vector data and operations
-     */
     class Vector3i
     {
     public:
-
-        /**
-         * Vector with all values set to 0.0
-         */
-        static const Vector3i Empty;
-
-        /*
-         *  Vector with all values set to 1.0
-         */
-        static const Vector3i Identity;
-
-        /**
-         *  Direct access to vector data in different ways
-         */
         union
         {
-            /**
-             * Vector3i vec;
-             * vec.x = 1;
-             * vec.y = 2;
-             * vec.z = 3;
-             */
             struct
             {
                 Int32 x;
                 Int32 y;
                 Int32 z;
             };
-
-            /**
-            * Vector3i vec;
-            * vec.data[0] = 1;
-            * vec.data[1] = 2;
-            * vec.data[2] = 3;
-             */
             Int32 data[3];
         };
 
-        /**
-         *  Default constructor initializes elements with 0.0f
-         */
-        Vector3i();
+        constexpr Vector3i();
+        constexpr Vector3i(const Int32 _x, const Int32 _y, const Int32 _z);
+        explicit constexpr Vector3i(const Int32 value);
 
-        /**
-         *  Copy constructor
-         * @param other Vector3i to copy from
-         */
-        Vector3i(const Vector3i& other);
+        constexpr Vector3i(const Vector3i& other) = default;
+        constexpr Vector3i& operator=(const Vector3i& other) = default;
 
-        /**
-         *  Constructor to initialize the vector with single values
-         * @param _x value of x element
-         * @param _y value of y element
-         * @param _z value of z element
-         */
-        Vector3i(const Int32 _x, const Int32 _y, const Int32 _z);
+        constexpr void set(const Int32 _x, const Int32 _y, const Int32 _z);
+        constexpr void set(const Int32 xyz);
 
-        /**
-         *  Constructor to initialize the vector with one value
-         * @param value for all elements
-         */
-        explicit Vector3i(const Int32 value);
+        constexpr Vector3i operator+(const Vector3i& other) const;
+        constexpr void operator+=(const Vector3i& other);
+        constexpr Vector3i operator-(const Vector3i& other) const;
+        constexpr void operator-=(const Vector3i& other);
 
-        /**
-         * Sets the vector elements
-         * @param x value of x element
-         * @param y value of y element
-         * @param z value of z element
-         */
-        void set(const Int32 _x, const Int32 _y, const Int32 _z);
+        constexpr Vector3i operator-() const;
 
-        /**
-         * Sets all elements of the vector to the given value
-         * @param val for all elements
-         */
-        void set(const Int32 xyz);
+        constexpr Vector3i operator*(const Int32 scalar) const;
+        constexpr Vector3i operator*(const Vector3i& vec) const;
+        constexpr void operator*=(const Int32 scalar);
+        constexpr void operator*=(const Vector3i& vec);
+        constexpr void operator/=(const Int32 scalar);
 
-        /**
-         *  Assignment operator to overwrite vector data with other vector data
-         * @param other Vector3i to copy from
-         */
-        Vector3i& operator=(const Vector3i& other);
+        constexpr bool operator==(const Vector3i& other) const;
+        constexpr bool operator!=(const Vector3i& other) const;
 
-        /**
-         *  Add operator to add two Vector3i by elements
-         * @param other Vector3i with the elements to add
-         * @return Vector3i with the result
-         */
-        Vector3i operator+(const Vector3i& other) const;
+        constexpr Int32& operator[](const UInt32 index);
+        constexpr const Int32& operator[](const UInt32 index) const;
 
-        /**
-         *  Add and assign operator to add other Vector3i elements to local elements
-         * @param other Vector3i with the elements to add
-         */
-        void operator+=(const Vector3i& other);
-
-        /**
-         *  Sub operator to substract two Vector3i by elements
-         * @param other Vector3i with the elements to sub
-         * @return Vector3i with the result
-         */
-        Vector3i operator-(const Vector3i& other) const;
-
-        /**
-         * Returns the inverse of the Vector
-         * @return the inverse of the Vector
-         */
-        Vector3i operator-() const;
-
-        /**
-         *  Sub and assign operator to sub other Vector3i elements from local elements
-         * @param other Vector3i with the elements to sub
-         */
-        void operator-=(const Vector3i& other);
-
-        /**
-         *  Operator to multiply a scalar to the vector elements
-         * @param the scalar for multiplication
-         * @return Vector3i with the multiplied result
-         */
-        Vector3i operator*(const Int32 scalar) const;
-
-        /**
-        *  Operator to multiply a scalar and assign the result to the local vector elements
-        * @param the scalar for multiplication
-        */
-        void operator*=(const Int32 scalar);
-
-        /**
-         * Operator to devide a scalar and assign the result to the local vector elements
-         * @param the scalar for devision
-         */
-        void operator/=(const Int32 scalar);
-
-        /**
-         * Operator to scale each vector element with the elements of the given vector
-         * @param vec Vector3i to scale with
-         * @return scaled Vector3i
-         */
-        Vector3i operator*(const Vector3i& vec) const;
-
-        /**
-         * Operator to scale each vector element with the elements of the given vector
-         * @param vec Vector3i to scale with
-         */
-        void operator*=(const Vector3i& vec);
-
-        /**
-         * Compares each element to check if two vectors are equal
-         * @param other Vector3i to compare to
-         * @return true if both vectors are equal false otherwise
-         */
-        bool operator==(const Vector3i& other) const;
-
-        /**
-         * Compares each element to check if two vectors are not equal
-         * @param other Vector3i to compare to
-         * @return false if both vectors are equal true otherwise
-         */
-        bool operator!=(const Vector3i& other) const;
-
-        /**
-         * Returns the element of the given index
-         * @return the element of the given index
-         */
-        Int32& operator[](const UInt32 index);
-
-        /**
-         * Returns the element of the given index
-         * @return the element of the given index
-         */
-        const Int32& operator[](const UInt32 index) const;
-
-
-        /**
-         *  Computes the dot product of two Vector3i
-         * @other Vector3i for the computation of the dot product
-         * @return the resulting dot product
-         */
-        Int32 dot(const Vector3i& other) const;
-
-        /**
-         *  Computes the cross product of two Vector3i
-         * @other Vector3i for the computation of the cross product
-         * @return Vector3i with the result of the cross product
-         */
-        Vector3i cross(const Vector3i& other) const;
-
-        /**
-         *  Computes the euclidean length of the vector
-         * @return the euclidean length of the vector
-         */
+        constexpr Int32 dot(const Vector3i& other) const;
+        constexpr Vector3i cross(const Vector3i& other) const;
         Float length() const;
+        Float angle(const Vector3i& other) const; ///< in radians
 
-        /**
-         *  Computes the angle between two vectors in radians.
-         * @param other Vector3i to compute the angle with
-         * @return the angle in radians between the vectors
-         */
-        Float angle(const Vector3i& other) const;
-
-        String toString() const;
-
-        friend Vector3i operator*(const Int32 scalar, const Vector3i&);
-
-    protected:
-    private:
+        friend constexpr Vector3i operator*(const Int32 scalar, const Vector3i&);
     };
 
-    inline Vector3i::Vector3i()
+    constexpr inline Vector3i::Vector3i()
+        : x(0)
+        , y(0)
+        , z(0)
     {
-        PlatformMemory::Set(data, 0, sizeof(data));
     }
 
-    inline
+    constexpr inline
     Vector3i::Vector3i(const Int32 value)
-    : x(value)
-    , y(value)
-    , z(value)
+        : x(value)
+        , y(value)
+        , z(value)
     {
 
     }
 
-    inline Vector3i::Vector3i(const Int32 _x, const Int32 _y, const Int32 _z)
+    constexpr inline Vector3i::Vector3i(const Int32 _x, const Int32 _y, const Int32 _z)
         : x(_x)
         , y(_y)
         , z(_z)
     {
     }
 
-    inline Vector3i::Vector3i(const Vector3i& other)
-    {
-        PlatformMemory::Copy(data, other.data, sizeof(data));
-    }
-
-    inline void Vector3i::set(const Int32 _x, const Int32 _y, const Int32 _z)
+    constexpr inline void Vector3i::set(const Int32 _x, const Int32 _y, const Int32 _z)
     {
         x = _x;
         y = _y;
         z = _z;
     }
 
-    inline void Vector3i::set(const Int32 xyz)
+    constexpr inline void Vector3i::set(const Int32 xyz)
     {
         x = y = z = xyz;
     }
@@ -279,89 +107,83 @@ namespace ramses_internal
         return std::sqrt(static_cast<Float>(x*x + y*y + z*z));
     }
 
-    inline Vector3i& Vector3i::operator=(const Vector3i& other)
-    {
-        PlatformMemory::Copy(data, other.data, sizeof(data));
-        return *this;
-    }
-
-    inline Vector3i Vector3i::operator+(const Vector3i& other) const
+    constexpr inline Vector3i Vector3i::operator+(const Vector3i& other) const
     {
         return Vector3i( x + other.x
                         , y + other.y
                         , z + other.z);
     }
 
-    inline void Vector3i::operator+=(const Vector3i& other)
+    constexpr inline void Vector3i::operator+=(const Vector3i& other)
     {
         x += other.x;
         y += other.y;
         z += other.z;
     }
 
-    inline Vector3i Vector3i::operator-(const Vector3i& other) const
+    constexpr inline Vector3i Vector3i::operator-(const Vector3i& other) const
     {
         return Vector3i( x - other.x
                         , y - other.y
                         , z - other.z);
     }
 
-    inline void Vector3i::operator-=(const Vector3i& other)
+    constexpr inline void Vector3i::operator-=(const Vector3i& other)
     {
         x -= other.x;
         y -= other.y;
         z -= other.z;
     }
 
-    inline bool Vector3i::operator==(const Vector3i& other) const
+    constexpr inline bool Vector3i::operator==(const Vector3i& other) const
     {
-        return PlatformMemory::Compare(data, other.data, sizeof(data)) == 0;
+        return x == other.x && y == other.y && z == other.z;
     }
 
-    inline bool Vector3i::operator!=(const Vector3i& other) const
+    constexpr inline bool Vector3i::operator!=(const Vector3i& other) const
     {
         return !operator==(other);
     }
 
-    inline Int32 Vector3i::dot(const Vector3i& other) const
+    constexpr inline Int32 Vector3i::dot(const Vector3i& other) const
     {
         return x * other.x + y * other.y + z * other.z;
     }
 
-    inline Vector3i Vector3i::cross(const Vector3i& other) const
+    constexpr inline Vector3i Vector3i::cross(const Vector3i& other) const
     {
         return Vector3i( y * other.z - z * other.y
                         , z * other.x - x * other.z
                         , x * other.y - y * other.x);
     }
 
-    inline void Vector3i::operator*=(const Int32 scalar)
+    constexpr inline void Vector3i::operator*=(const Int32 scalar)
     {
         x *= scalar;
         y *= scalar;
         z *= scalar;
     }
 
-    inline void Vector3i::operator/=(const Int32 scalar)
+    constexpr inline void Vector3i::operator/=(const Int32 scalar)
     {
         x /= scalar;
         y /= scalar;
         z /= scalar;
     }
 
-    inline Vector3i Vector3i::operator*(const Int32 scalar) const
+    constexpr inline Vector3i Vector3i::operator*(const Int32 scalar) const
     {
         return Vector3i( x * scalar
                         , y * scalar
                         , z * scalar);
     }
 
-    inline Vector3i Vector3i::operator*(const Vector3i& vec) const
+    constexpr inline Vector3i Vector3i::operator*(const Vector3i& vec) const
     {
         return Vector3i(x * vec.x, y * vec.y, z * vec.z);
     }
 
-    inline void Vector3i::operator*=(const Vector3i& vec)
+    constexpr inline void Vector3i::operator*=(const Vector3i& vec)
     {
         x *= vec.x;
         y *= vec.y;
@@ -373,24 +195,23 @@ namespace ramses_internal
         return std::acos(dot(other) / (length() * other.length()));
     }
 
-    inline
+    constexpr inline
     Int32& Vector3i::operator[](const UInt32 index)
     {
         return data[index];
     }
 
-    inline
+    constexpr inline
     const Int32& Vector3i::operator[](const UInt32 index) const
     {
         return data[index];
     }
 
-    inline
+    constexpr inline
     Vector3i Vector3i::operator-() const
     {
         return Vector3i(-x, -y, -z);
     }
-
 
     inline
     IOutputStream&
@@ -406,28 +227,23 @@ namespace ramses_internal
         return inputStream.read(reinterpret_cast<Char*>(vector.data), sizeof(vector.data));
     }
 
-    inline
-        StringOutputStream& operator<<(StringOutputStream& outputStream, const Vector3i& vec3)
-    {
-        return outputStream << vec3.x << "/" << vec3.y << "/" << vec3.z;
-    }
-
-
-
-    inline
-        String Vector3i::toString() const
-    {
-        StringOutputStream s;
-        s << *this;
-        return s.c_str();
-    }
-
-    inline Vector3i operator*(const Int32 scalar, const Vector3i& vec)
+    constexpr inline Vector3i operator*(const Int32 scalar, const Vector3i& vec)
     {
         return Vector3i(vec.x * scalar
             , vec.y * scalar
             , vec.z * scalar);
     }
 }
+
+template <>
+struct fmt::formatter<ramses_internal::Vector3i> : public ramses_internal::SimpleFormatterBase
+{
+    template<typename FormatContext>
+    auto format(const ramses_internal::Vector3i& m, FormatContext& ctx)
+    {
+        return fmt::format_to(ctx.out(), "[{} {} {}]", m.data[0], m.data[1], m.data[2]);
+    }
+};
+
 
 #endif

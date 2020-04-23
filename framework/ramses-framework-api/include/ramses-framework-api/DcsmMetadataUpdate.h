@@ -155,6 +155,36 @@ namespace ramses
         bool getCarModelVisibility() const;
 
         /**
+         * @brief Check if object contains exclusive background metadata entry.
+         *
+         * @return true when has exclusive background metadata, false when not
+         */
+        bool hasExclusiveBackground() const;
+
+        /**
+         * @brief Get exclusive background metadata entry.
+         *        Value is undefined when not hasExclusiveBackground().
+         *
+         * @return exclusive background state
+         */
+        bool getExclusiveBackground() const;
+
+        /**
+         * @brief Check if object contains focus request metadata entry.
+         *
+         * @return true when has focus request metadata, false when not
+         */
+        bool hasFocusRequest() const;
+
+        /**
+         * @brief Get focus request metadata entry.
+         *        Value is undefined when not hasFocusRequest().
+         *
+         * @return focus request state
+         */
+        int32_t getFocusRequest() const;
+
+        /**
          * @brief Deleted default constructor
          */
         DcsmMetadataUpdate() = delete;

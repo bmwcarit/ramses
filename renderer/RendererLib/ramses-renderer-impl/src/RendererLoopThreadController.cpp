@@ -88,7 +88,7 @@ namespace ramses_internal
             Bool doRendering = false;
             Bool destroyRenderer = false;
             std::chrono::microseconds minimumFrameDuration{ 0 };
-            ELoopMode loopMode = ELoopMode_UpdateAndRender;
+            ELoopMode loopMode = ELoopMode::UpdateAndRender;
             {
                 std::lock_guard<std::mutex> guard(m_lock);
                 minimumFrameDuration = m_targetMinimumFrameDuration;
@@ -113,7 +113,7 @@ namespace ramses_internal
             else
             {
                 assert(m_windowedRenderer != nullptr);
-                ramses::RamsesRendererUtils::DoOneLoop(*m_windowedRenderer, loopMode, lastLoopSleepTime);
+                m_windowedRenderer->doOneLoop(loopMode, lastLoopSleepTime);
 
                 const UInt64 loopEndTime = PlatformTime::GetMicrosecondsMonotonic();
                 assert(loopEndTime >= loopStartTime);

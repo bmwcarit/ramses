@@ -83,14 +83,14 @@ void RendererMockWithMockDisplay<MOCK_TYPE>::destroyDisplayContext(DisplayHandle
 template <template<typename> class MOCK_TYPE>
 void RendererMockWithMockDisplay<MOCK_TYPE>::markBufferWithSceneAsModified(SceneId sceneId)
 {
-    Renderer::markBufferWithSceneAsModified(sceneId);
+    Renderer::markBufferWithSceneAsModified(sceneId);  // NOLINT clang-tidy: We really mean to call into Renderer
     RendererMock::markBufferWithSceneAsModified(sceneId);
 }
 
 template <template<typename> class MOCK_TYPE>
 void ramses_internal::RendererMockWithMockDisplay<MOCK_TYPE>::setClearColor(DisplayHandle displayHandle, DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor)
 {
-    Renderer::setClearColor(displayHandle, bufferDeviceHandle, clearColor);
+    Renderer::setClearColor(displayHandle, bufferDeviceHandle, clearColor);  // NOLINT clang-tidy: We really mean to call into Renderer
     RendererMock::setClearColor(displayHandle, bufferDeviceHandle, clearColor);
 }
 

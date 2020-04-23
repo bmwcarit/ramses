@@ -11,7 +11,6 @@
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "EmbeddedCompositingTestMessages.h"
 #include "Utils/RamsesLogger.h"
-#include "Utils/BinaryOutputStream.h"
 #include <sys/wait.h>
 
 namespace ramses_internal

@@ -9,225 +9,38 @@
 #ifndef RAMSES_RENDEREREVENTCOLLECTOR_H
 #define RAMSES_RENDEREREVENTCOLLECTOR_H
 
-#include "RendererAPI/Types.h"
-#include "SceneAPI/SceneId.h"
-#include "SceneAPI/DataSlot.h"
-#include "SceneAPI/SceneVersionTag.h"
-#include "RendererLib/DisplayConfig.h"
-#include "RendererLib/EResourceStatus.h"
-#include "RendererLib/EMouseEventType.h"
-#include "RendererLib/EKeyEventType.h"
-#include "RendererLib/EKeyModifier.h"
-#include "RendererLib/EKeyCode.h"
-#include "Math3d/Vector2i.h"
-#include "Utils/LoggingUtils.h"
+#include "RendererLib/RendererEvent.h"
 #include "Utils/LogMacros.h"
-#include "PlatformAbstraction/PlatformLock.h"
-#include "Collections/Vector.h"
-#include "SceneAPI/SceneTypes.h"
+#include <mutex>
 
 namespace ramses_internal
 {
-    enum ERendererEventType
-    {
-        ERendererEventType_Invalid = 0,
-        ERendererEventType_DisplayCreated,
-        ERendererEventType_DisplayCreateFailed,
-        ERendererEventType_DisplayDestroyed,
-        ERendererEventType_DisplayDestroyFailed,
-        ERendererEventType_ReadPixelsFromFramebuffer,
-        ERendererEventType_ReadPixelsFromFramebufferFailed,
-        ERendererEventType_WarpingDataUpdated,
-        ERendererEventType_WarpingDataUpdateFailed,
-        ERendererEventType_OffscreenBufferCreated,
-        ERendererEventType_OffscreenBufferCreateFailed,
-        ERendererEventType_OffscreenBufferDestroyed,
-        ERendererEventType_OffscreenBufferDestroyFailed,
-        ERendererEventType_ScenePublished,
-        ERendererEventType_SceneUnpublished,
-        ERendererEventType_SceneFlushed,
-        ERendererEventType_SceneSubscribed,
-        ERendererEventType_SceneSubscribeFailed,
-        ERendererEventType_SceneUnsubscribed,
-        ERendererEventType_SceneUnsubscribedIndirect,
-        ERendererEventType_SceneUnsubscribeFailed,
-        ERendererEventType_SceneMapped,
-        ERendererEventType_SceneMapFailed,
-        ERendererEventType_SceneUnmapped,
-        ERendererEventType_SceneUnmappedIndirect,
-        ERendererEventType_SceneUnmapFailed,
-        ERendererEventType_SceneAssignedToDisplayBuffer,
-        ERendererEventType_SceneAssignedToDisplayBufferFailed,
-        ERendererEventType_SceneShown,
-        ERendererEventType_SceneShowFailed,
-        ERendererEventType_SceneHidden,
-        ERendererEventType_SceneHiddenIndirect,
-        ERendererEventType_SceneHideFailed,
-        ERendererEventType_SceneExpired,
-        ERendererEventType_SceneRecoveredFromExpiration,
-        ERendererEventType_SceneDataLinked,
-        ERendererEventType_SceneDataLinkFailed,
-        ERendererEventType_SceneDataBufferLinked,
-        ERendererEventType_SceneDataBufferLinkFailed,
-        ERendererEventType_SceneDataUnlinked,
-        ERendererEventType_SceneDataUnlinkedAsResultOfClientSceneChange,
-        ERendererEventType_SceneDataUnlinkFailed,
-        ERendererEventType_SceneDataSlotProviderCreated,
-        ERendererEventType_SceneDataSlotProviderDestroyed,
-        ERendererEventType_SceneDataSlotConsumerCreated,
-        ERendererEventType_SceneDataSlotConsumerDestroyed,
-        ERendererEventType_WindowClosed,
-        ERendererEventType_WindowKeyEvent,
-        ERendererEventType_WindowMouseEvent,
-        ERendererEventType_WindowMoveEvent,
-        ERendererEventType_WindowResizeEvent,
-        ERendererEventType_StreamSurfaceAvailable,
-        ERendererEventType_StreamSurfaceUnavailable,
-        ERendererEventType_ObjectsPicked,
-        ERendererEventType_RenderThreadPeriodicLoopTimes,
-        ERendererEventType_NUMBER_OF_ELEMENTS
-    };
-
-    static const Char* RendererEventTypeNames[] =
-    {
-        "ERendererEventType_Invalid",
-        "ERendererEventType_DisplayCreated",
-        "ERendererEventType_DisplayCreateFailed",
-        "ERendererEventType_DisplayDestroyed",
-        "ERendererEventType_DisplayDestroyFailed",
-        "ERendererEventType_ReadPixelsFromFramebuffer",
-        "ERendererEventType_ReadPixelsFromFramebufferFailed",
-        "ERendererEventType_WarpingDataUpdated",
-        "ERendererEventType_WarpingDataUpdateFailed",
-        "ERendererEventType_OffscreenBufferCreated",
-        "ERendererEventType_OffscreenBufferCreateFailed",
-        "ERendererEventType_OffscreenBufferDestroyed",
-        "ERendererEventType_OffscreenBufferDestroyFailed",
-        "ERendererEventType_ScenePublished",
-        "ERendererEventType_SceneUnpublished",
-        "ERendererEventType_SceneFlushed",
-        "ERendererEventType_SceneSubscribed",
-        "ERendererEventType_SceneSubscribeFailed",
-        "ERendererEventType_SceneUnsubscribed",
-        "ERendererEventType_SceneUnsubscribedAsResultOfUnpublish",
-        "ERendererEventType_SceneUnsubscribeFailed",
-        "ERendererEventType_SceneMapped",
-        "ERendererEventType_SceneMapFailed",
-        "ERendererEventType_SceneUnmapped",
-        "ERendererEventType_SceneUnmappedAsResultOfUnpublish",
-        "ERendererEventType_SceneUnmapFailed",
-        "ERendererEventType_SceneAssignedToDisplayBuffer",
-        "ERendererEventType_SceneAssignedToDisplayBufferFailed",
-        "ERendererEventType_SceneShown",
-        "ERendererEventType_SceneShowFailed",
-        "ERendererEventType_SceneHidden",
-        "ERendererEventType_SceneHiddenAsResultOfUnpublish",
-        "ERendererEventType_SceneHideFailed",
-        "ERendererEventType_SceneExpired",
-        "ERendererEventType_SceneRecoveredFromExpiration",
-        "ERendererEventType_SceneDataLinked",
-        "ERendererEventType_SceneDataLinkFailed",
-        "ERendererEventType_SceneDataBufferLinked",
-        "ERendererEventType_SceneDataBufferLinkFailed",
-        "ERendererEventType_SceneDataUnlinked",
-        "ERendererEventType_SceneDataUnlinkedAsResultOfClientSceneChange",
-        "ERendererEventType_SceneDataUnlinkFailed",
-        "ERendererEventType_SceneDataSlotProviderCreated",
-        "ERendererEventType_SceneDataSlotProviderDestroyed",
-        "ERendererEventType_SceneDataSlotConsumerCreated",
-        "ERendererEventType_SceneDataSlotConsumerDestroyed",
-        "ERendererEventType_WindowClosed",
-        "ERendererEventType_WindowKeyEvent",
-        "ERendererEventType_WindowMouseEvent",
-        "ERendererEventType_WindowMoveEvent",
-        "ERendererEventType_WindowResizeEvent",
-        "ERendererEventType_StreamSurfaceAvailable",
-        "ERendererEventType_StreamSurfaceUnavailable",
-        "ERendererEventType_ObjectsPicked",
-        "ERendererEventType_RenderThreadPeriodicLoopTimes",
-    };
-
-    ENUM_TO_STRING(ERendererEventType, RendererEventTypeNames, ERendererEventType_NUMBER_OF_ELEMENTS);
-
-    struct MouseEvent
-    {
-        EMouseEventType type = EMouseEventType_Invalid;
-        Vector2i        pos;
-    };
-
-    struct WindowMoveEvent
-    {
-        Int32        posX;
-        Int32        posY;
-    };
-
-    struct KeyEvent
-    {
-        EKeyEventType type = EKeyEventType_Invalid;
-        UInt32        modifier;
-        EKeyCode      keyCode;
-    };
-
-    struct ResizeEvent
-    {
-        UInt32 width;
-        UInt32 height;
-    };
-
-    struct RenderThreadPeriodicLoopTimes
-    {
-        std::chrono::microseconds maximumLoopTimeWithinPeriod;
-        std::chrono::microseconds averageLoopTimeWithinPeriod;
-    };
-
-    struct RendererEvent
-    {
-        RendererEvent(ERendererEventType type = ERendererEventType_Invalid)
-            : eventType(type)
-        {
-        }
-
-        ERendererEventType          eventType;
-        SceneId                     sceneId;
-        DisplayHandle               displayHandle;
-        DisplayConfig               displayConfig;
-        UInt8Vector                 pixelData;
-        SceneId                     providerSceneId;
-        SceneId                     consumerSceneId;
-        DataSlotId                  providerdataId;
-        DataSlotId                  consumerdataId;
-        OffscreenBufferHandle       offscreenBuffer;
-        SceneVersionTag             sceneVersionTag;
-        EResourceStatus             resourceStatus = EResourceStatus_Unknown;
-        MouseEvent                  mouseEvent;
-        ResizeEvent                 resizeEvent;
-        KeyEvent                    keyEvent;
-        WindowMoveEvent             moveEvent;
-        StreamTextureSourceId       streamSourceId;
-        PickableObjectIds           pickedObjectIds;
-        RenderThreadPeriodicLoopTimes renderThreadLoopTimes;
-    };
-
-    using RendererEventVector = std::vector<RendererEvent>;
-
     class RendererEventCollector
     {
     public:
-        RendererEventCollector()
+        void appendAndConsumePendingEvents(RendererEventVector& rendererEvents, RendererEventVector& sceneControlEvents)
         {
+            rendererEvents.insert(rendererEvents.end(), m_rendererEvents.cbegin(), m_rendererEvents.cend());
+            m_rendererEvents.clear();
+
+            sceneControlEvents.insert(sceneControlEvents.end(), m_sceneControlEvents.cbegin(), m_sceneControlEvents.cend());
+            m_sceneControlEvents.clear();
         }
 
-        void dispatchEvents(RendererEventVector& resultEvents)
+        void dispatchInternalSceneStateEvents(InternalSceneStateEvents& resultEvents)
         {
-            std::lock_guard<std::mutex> guard(m_eventsLock);
-            m_events.swap(resultEvents);
-            m_events.clear();
+            m_internalSceneStateEvents.swap(resultEvents);
+            m_internalSceneStateEvents.clear();
         }
 
-        void getEvents(RendererEventVector& resultEvents) const
+        RendererEventVector getRendererEvents() const
         {
-            std::lock_guard<std::mutex> guard(m_eventsLock);
-            resultEvents = m_events;
+            return m_rendererEvents;
+        }
+
+        RendererEventVector getSceneControlEvents() const
+        {
+            return m_sceneControlEvents;
         }
 
         void addDisplayEvent(ERendererEventType eventType, DisplayHandle displayHandle, const DisplayConfig& config = {})
@@ -237,8 +50,7 @@ namespace ramses_internal
             RendererEvent event(eventType);
             event.displayHandle = displayHandle;
             event.displayConfig = config;
-
-            pushEventToQueue(event);
+            pushToRendererEventQueue(std::move(event));
         }
 
         void addReadPixelsEvent(ERendererEventType eventType, DisplayHandle displayHandle, UInt8Vector&& pixelData)
@@ -248,18 +60,34 @@ namespace ramses_internal
             RendererEvent event(eventType);
             event.displayHandle = displayHandle;
             event.pixelData = std::move(pixelData);
-
-            pushEventToQueue(event);
+            pushToRendererEventQueue(std::move(event));
         }
 
-        void addSceneEvent(ERendererEventType eventType, SceneId sceneId)
+        void addInternalSceneEvent(ERendererEventType eventType, SceneId sceneId)
+        {
+            pushToInternalSceneStateEventQueue({ eventType, sceneId });
+
+            // keep pushing event into general queue as well for now while supporting legacy scene control
+            RendererEvent event(eventType);
+            event.sceneId = sceneId;
+            pushToSceneControlEventQueue(std::move(event));
+        }
+
+        void addSceneEvent(ERendererEventType eventType, SceneId sceneId, RendererSceneState state)
+        {
+            RendererEvent event(eventType);
+            event.sceneId = sceneId;
+            event.state = state;
+            pushToSceneControlEventQueue(std::move(event));
+        }
+
+        void addSceneExpirationEvent(ERendererEventType eventType, SceneId sceneId)
         {
             LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " sceneId=" << sceneId.getValue());
 
             RendererEvent event(eventType);
             event.sceneId = sceneId;
-
-            pushEventToQueue(event);
+            pushToSceneControlEventQueue(std::move(event));
         }
 
         void addDataLinkEvent(ERendererEventType eventType, SceneId providerSceneId, SceneId consumerSceneId, DataSlotId providerdataId, DataSlotId consumerdataId)
@@ -271,7 +99,7 @@ namespace ramses_internal
             event.consumerSceneId = consumerSceneId;
             event.providerdataId = providerdataId;
             event.consumerdataId = consumerdataId;
-            pushEventToQueue(event);
+            pushToSceneControlEventQueue(std::move(event));
         }
 
         void addOBLinkEvent(ERendererEventType eventType, OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId)
@@ -282,7 +110,7 @@ namespace ramses_internal
             event.offscreenBuffer = providerBuffer;
             event.consumerSceneId = consumerSceneId;
             event.consumerdataId = consumerdataId;
-            pushEventToQueue(event);
+            pushToSceneControlEventQueue(std::move(event));
         }
 
         void addOBEvent(ERendererEventType eventType, OffscreenBufferHandle buffer, DisplayHandle display)
@@ -292,7 +120,7 @@ namespace ramses_internal
             RendererEvent event(eventType);
             event.offscreenBuffer = buffer;
             event.displayHandle = display;
-            pushEventToQueue(event);
+            pushToRendererEventQueue(std::move(event));
         }
 
         void addSceneAssignEvent(ERendererEventType eventType, OffscreenBufferHandle buffer, DisplayHandle display, SceneId scene)
@@ -303,7 +131,7 @@ namespace ramses_internal
             event.displayHandle = display;
             event.offscreenBuffer = buffer;
             event.sceneId = scene;
-            pushEventToQueue(event);
+            pushToSceneControlEventQueue(std::move(event));
         }
 
         void addSceneFlushEvent(ERendererEventType eventType, SceneId sceneId, SceneVersionTag sceneVersionTag, EResourceStatus resourceStatus)
@@ -314,7 +142,7 @@ namespace ramses_internal
             event.sceneId = sceneId;
             event.sceneVersionTag = sceneVersionTag;
             event.resourceStatus = resourceStatus;
-            pushEventToQueue(event);
+            pushToSceneControlEventQueue(std::move(event));
         }
 
         void addWindowEvent(ERendererEventType eventType, DisplayHandle display, MouseEvent mouseEvent)
@@ -322,7 +150,7 @@ namespace ramses_internal
             RendererEvent event(eventType);
             event.displayHandle = display;
             event.mouseEvent = mouseEvent;
-            pushEventToQueue(event);
+            pushToRendererEventQueue(std::move(event));
         }
 
         void addWindowEvent(ERendererEventType eventType, DisplayHandle display, KeyEvent keyEvent)
@@ -330,7 +158,7 @@ namespace ramses_internal
             RendererEvent event(eventType);
             event.displayHandle = display;
             event.keyEvent = keyEvent;
-            pushEventToQueue(event);
+            pushToRendererEventQueue(std::move(event));
         }
 
         void addWindowEvent(ERendererEventType eventType, DisplayHandle display, ResizeEvent resizeEvent)
@@ -338,7 +166,7 @@ namespace ramses_internal
             RendererEvent event(eventType);
             event.displayHandle = display;
             event.resizeEvent = resizeEvent;
-            pushEventToQueue(event);
+            pushToRendererEventQueue(std::move(event));
         }
 
         void addWindowEvent(ERendererEventType eventType, DisplayHandle display, WindowMoveEvent moveEvent)
@@ -346,7 +174,7 @@ namespace ramses_internal
             RendererEvent event(eventType);
             event.displayHandle = display;
             event.moveEvent = moveEvent;
-            pushEventToQueue(event);
+            pushToRendererEventQueue(std::move(event));
         }
 
         void addStreamSourceEvent(ERendererEventType eventType, StreamTextureSourceId streamSourceId)
@@ -355,7 +183,7 @@ namespace ramses_internal
 
             RendererEvent event(eventType);
             event.streamSourceId = streamSourceId;
-            pushEventToQueue(event);
+            pushToSceneControlEventQueue(std::move(event));
         }
 
         void addPickedEvent(ERendererEventType eventType, const SceneId& sceneId, PickableObjectIds&& pickedObjectIds)
@@ -363,7 +191,7 @@ namespace ramses_internal
             RendererEvent event(eventType);
             event.sceneId = sceneId;
             event.pickedObjectIds = std::move(pickedObjectIds);
-            pushEventToQueue(event);
+            pushToRendererEventQueue(std::move(event));
         }
 
         void addRenderStatsEvent(ERendererEventType eventType, std::chrono::microseconds maximumLoopTimeInPeriod, std::chrono::microseconds renderthreadAverageLooptime)
@@ -372,24 +200,28 @@ namespace ramses_internal
             RendererEvent event(eventType);
             event.renderThreadLoopTimes.maximumLoopTimeWithinPeriod = maximumLoopTimeInPeriod;
             event.renderThreadLoopTimes.averageLoopTimeWithinPeriod = renderthreadAverageLooptime;
-            pushEventToQueue(event);
+            pushToRendererEventQueue(std::move(event));
         }
 
         private:
-            void pushEventToQueue(const RendererEvent& newEvent)
+            void pushToRendererEventQueue(RendererEvent&& newEvent)
             {
-                std::lock_guard<std::mutex> guard(m_eventsLock);
-                m_events.push_back(newEvent);
-
-                // Every 10000 messages, an error is printed to avoid internal buffer overflow of event queue
-                if(0 == (m_events.size() % 10000))
-                {
-                    LOG_ERROR(CONTEXT_RENDERER, "RendererEventCollector::pushEventToQueue internal event queue has " << m_events.size() << " events! Looks like application is not dispatching renderer events. Possible buffer overflow of the event queue!");
-                }
+                m_rendererEvents.push_back(std::move(newEvent));
             }
 
-            mutable std::mutex m_eventsLock;
-            RendererEventVector m_events;
+            void pushToSceneControlEventQueue(RendererEvent&& newEvent)
+            {
+                m_sceneControlEvents.push_back(std::move(newEvent));
+            }
+
+            void pushToInternalSceneStateEventQueue(InternalSceneStateEvent&& newEvent)
+            {
+                m_internalSceneStateEvents.push_back(std::move(newEvent));
+            }
+
+            RendererEventVector m_rendererEvents;
+            RendererEventVector m_sceneControlEvents;
+            InternalSceneStateEvents m_internalSceneStateEvents;
     };
 }
 

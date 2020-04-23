@@ -728,7 +728,7 @@ TEST_F(ARendererResourceManager, rerequestsResourceIfUnavailableForSeveralUpdate
     resourceManager.requestAndUnrequestPendingClientResources();
 
     EXPECT_CALL(resourceProvider, requestResourceAsyncronouslyFromFramework(resources, resourceManager.getRequesterID(), fakeSceneId));
-    for (UInt32 i = 0u; i < 60; ++i)
+    for (UInt32 i = 0u; i < 90; ++i)
     {
         resourceManager.requestAndUnrequestPendingClientResources();
     }
@@ -755,7 +755,7 @@ TEST_F(ARendererResourceManager, doesNotRerequestsResourceAfterItArrived)
 
     resourceProvider.setIndexArrayAvailability(true);
     EXPECT_CALL(resourceProvider, requestResourceAsyncronouslyFromFramework(resources, resourceManager.getRequesterID(), fakeSceneId));
-    for (UInt32 i = 0u; i < 60u; ++i)
+    for (UInt32 i = 0u; i < 90u; ++i)
     {
         resourceManager.requestAndUnrequestPendingClientResources();
     }
@@ -764,7 +764,7 @@ TEST_F(ARendererResourceManager, doesNotRerequestsResourceAfterItArrived)
 
     // no more requests after it was provided
     EXPECT_CALL(resourceProvider, requestResourceAsyncronouslyFromFramework(resources, resourceManager.getRequesterID(), fakeSceneId)).Times(0);
-    for (UInt32 i = 0u; i < 60u; ++i)
+    for (UInt32 i = 0u; i < 90u; ++i)
     {
         resourceManager.requestAndUnrequestPendingClientResources();
     }

@@ -22,6 +22,7 @@
 #include <type_traits>
 #include <algorithm>
 #include <iterator>
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -34,8 +35,8 @@ namespace ramses_internal
         SceneActionCollection(const SceneActionCollection&) = delete;
         SceneActionCollection& operator=(const SceneActionCollection&) = delete;
 
-        SceneActionCollection(SceneActionCollection&&) RNOEXCEPT = default;
-        SceneActionCollection& operator=(SceneActionCollection&&) RNOEXCEPT = default;
+        SceneActionCollection(SceneActionCollection&&) noexcept = default;
+        SceneActionCollection& operator=(SceneActionCollection&&) noexcept = default;
 
         SceneActionCollection copy() const;
 
@@ -56,7 +57,6 @@ namespace ramses_internal
 
         // concrete types
         void write(const String& str);
-        void write(const generic_uuid_t& guid);
         void write(const Guid& guid);
         void write(const ResourceContentHash& hash);
         template <typename T>
@@ -109,7 +109,6 @@ namespace ramses_internal
 
             // concrete types
             void read(String& str);
-            void read(generic_uuid_t& guid);
             void read(Guid& guid);
             void read(ResourceContentHash& hash);
             template <typename T>
@@ -282,7 +281,7 @@ namespace ramses_internal
 
     inline void SceneActionCollection::swap(SceneActionCollection& second)
     {
-        using ramses_capu::swap;
+        using std::swap;
         swap(m_data, second.m_data);
         swap(m_actionInfo, second.m_actionInfo);
     }
@@ -308,14 +307,9 @@ namespace ramses_internal
         writeAsByteBlob(str.c_str(), truncatedLength);
     }
 
-    inline void SceneActionCollection::write(const generic_uuid_t& guid)
-    {
-        writeAsByteBlob(guid);
-    }
-
     inline void SceneActionCollection::write(const Guid& guid)
     {
-        writeAsByteBlob(guid.getGuidData());
+        writeAsByteBlob(guid.get());
     }
 
     inline void SceneActionCollection::write(const ResourceContentHash& hash)
@@ -510,14 +504,9 @@ namespace ramses_internal
             data = nullptr;
     }
 
-    inline void SceneActionCollection::SceneActionReader::read(generic_uuid_t& guid)
-    {
-        readFromByteBlob(guid);
-    }
-
     inline void SceneActionCollection::SceneActionReader::read(Guid& guid)
     {
-        generic_uuid_t data;
+        uint64_t data;
         readFromByteBlob(data);
         guid = Guid(data);
     }

@@ -19,7 +19,6 @@ namespace ramses_internal
         , m_eventHandler(eventHandler)
         , m_fullscreen(displayConfig.getFullscreenState())
         , m_borderless(displayConfig.getBorderlessState())
-        , m_offscreen(displayConfig.getOffscreen())
         , m_msaaSampleCount(1)
         , m_width(displayConfig.getDesiredWindowWidth())
         , m_height(displayConfig.getDesiredWindowHeight())
@@ -69,11 +68,6 @@ namespace ramses_internal
     WaylandIviSurfaceId Window_Base::getWaylandIviSurfaceID() const
     {
         return m_waylandIviSurfaceID;
-    }
-
-    Bool Window_Base::isOffscreen() const
-    {
-        return m_offscreen;
     }
 
     UInt32 Window_Base::getWidth() const

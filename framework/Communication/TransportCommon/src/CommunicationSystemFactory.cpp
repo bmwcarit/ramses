@@ -65,7 +65,7 @@ namespace ramses_internal
         IDiscoveryDaemon* constructedDaemon = nullptr;
         switch(config.getUsedProtocol())
         {
-            case EConnectionProtocol_TCP:
+            case EConnectionProtocol::TCP:
             {
 #if defined(HAS_TCP_COMM)
                 constructedDaemon = new TcpDiscoveryDaemon(config, frameworkLock, statisticCollection, optionalRamsh);
@@ -73,7 +73,7 @@ namespace ramses_internal
 #endif
             }
 
-            case EConnectionProtocol_Fake:
+            case EConnectionProtocol::Fake:
                 constructedDaemon = new FakeDiscoveryDaemon();
                 break;
 
@@ -93,12 +93,12 @@ namespace ramses_internal
         switch (config.getUsedProtocol())
         {
 #if defined(HAS_TCP_COMM)
-        case EConnectionProtocol_TCP:
+        case EConnectionProtocol::TCP:
         {
             return ConstructTCPConnectionManager(config, participantIdentifier, frameworkLock, statisticCollection);
         }
 #endif
-        case EConnectionProtocol_Fake:
+        case EConnectionProtocol::Fake:
         {
             LOG_INFO(CONTEXT_COMMUNICATION, "Using no connection system");
             return std::make_unique<FakeConnectionSystem>();

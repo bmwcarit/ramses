@@ -10,7 +10,6 @@
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "ramses-framework-api/RamsesFrameworkConfig.h"
 #include "TestScenesAndRenderer.h"
-#include "RendererTestEventHandler.h"
 #include "RendererTestsFramework.h"
 #include "ReadPixelCallbackHandler.h"
 #include "TestScenes/MultipleTrianglesScene.h"
@@ -19,22 +18,19 @@
 #include "TestScenes/TextScene.h"
 #include "TestScenes/FileLoadingScene.h"
 #include "TestScenes/Texture2DFormatScene.h"
+#include "TestScenes/TransformationLinkScene.h"
 #include "RendererTestUtils.h"
 
 // These includes are needed because of ramses API usage
 #include "ramses-renderer-api/IRendererEventHandler.h"
+#include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-client-api/DataInt32.h"
-
-// These includes should not be needed... Technical debts + usage of internal classes
-#include "RamsesRendererImpl.h"
-#include "DisplayConfigImpl.h"
-#include "RendererAPI/IDevice.h"
-#include "RendererAPI/IRenderBackend.h"
-#include "RendererAPI/ISurface.h"
+#include "ramses-client-api/SceneReference.h"
 
 #include "gtest/gtest.h"
 #include <thread>
+#include <unordered_map>
 
 namespace ramses_internal
 {
@@ -83,9 +79,8 @@ namespace ramses_internal
 
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
         ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_Three_Triangles"));
 
@@ -101,9 +96,8 @@ namespace ramses_internal
 
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
         ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_Three_Triangles"));
 
@@ -113,9 +107,8 @@ namespace ramses_internal
         testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, sceneId, ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
         ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_Three_Triangles"));
 
         testScenesAndRenderer.unpublish(sceneId);
@@ -133,10 +126,8 @@ namespace ramses_internal
 
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
         ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_AfterLoadSave"));
 
@@ -156,24 +147,12 @@ namespace ramses_internal
         const ramses::displayId_t display = createDisplayForWindow();
 
         testScenesAndRenderer.publish(sceneId);
-        testScenesAndRenderer.flush(sceneId);
-
-        // Subscribe
-        testRenderer.subscribeScene(sceneId);
-
-        // Map
-        testRenderer.mapScene(display, sceneId);
-
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
         testScenesAndRenderer.flush(sceneId, 1);
-        testRenderer.waitForNamedFlush(sceneId, 1);
-
-        // Show
-        testRenderer.showScene(sceneId);
+        testRenderer.waitForFlush(sceneId, 1);
 
         ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_AfterLoadSave"));
-
-        testRenderer.hideScene(sceneId);
-        testRenderer.unmapScene(sceneId);
 
         testScenesAndRenderer.unpublish(sceneId);
         testRenderer.destroyDisplay(display);
@@ -190,9 +169,8 @@ namespace ramses_internal
 
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
         testScenesAndRenderer.unpublish(sceneId);
         testScenesAndRenderer.destroyRenderer();
@@ -201,9 +179,8 @@ namespace ramses_internal
         display = createDisplayForWindow();
 
         testScenesAndRenderer.publish(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
         ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_Three_Triangles"));
 
@@ -219,9 +196,8 @@ namespace ramses_internal
 
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
         testScenesAndRenderer.unpublish(sceneId);
         testScenesAndRenderer.destroyRenderer();
@@ -234,9 +210,8 @@ namespace ramses_internal
 
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
         ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_SimpleText"));
 
@@ -253,19 +228,17 @@ namespace ramses_internal
 
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
         ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_Three_Triangles"));
 
-        testRenderer.hideUnmapAndUnsubscribeScene(sceneId);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Unavailable);
         ASSERT_TRUE(checkScreenshot(display, "ARendererDisplays_Black"));
 
         testScenesAndRenderer.getScenesRegistry().setSceneState<ramses_internal::MultipleTrianglesScene>(sceneId, ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
         ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_Triangles_reordered"));
 
         testScenesAndRenderer.unpublish(sceneId);
@@ -281,19 +254,17 @@ namespace ramses_internal
 
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
         ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_Three_Triangles"));
 
         testScenesAndRenderer.getScenesRegistry().setSceneState<ramses_internal::MultipleTrianglesScene>(sceneId, ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED);
-        testRenderer.hideUnmapAndUnsubscribeScene(sceneId);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Unavailable);
         ASSERT_TRUE(checkScreenshot(display, "ARendererDisplays_Black"));
 
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
         ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_Triangles_reordered"));
 
@@ -311,9 +282,8 @@ namespace ramses_internal
         const ramses::displayId_t display = createDisplayForWindow();
         ASSERT_TRUE(ramses::displayId_t::Invalid() != display);
 
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
         ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_Three_Triangles"));
 
@@ -332,17 +302,15 @@ namespace ramses_internal
 
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display1, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display1);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
-        testRenderer.hideScene(sceneId);
-        testRenderer.unmapScene(sceneId);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Available);
 
         testRenderer.destroyDisplay(display1);
 
-        testRenderer.mapScene(display2, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display2);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
         ASSERT_TRUE(checkScreenshot(display2, "ARendererInstance_Three_Triangles"));
 
@@ -361,18 +329,13 @@ namespace ramses_internal
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
 
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
         testScenesAndRenderer.flush(sceneId, 1u);
-        testRenderer.waitForNamedFlush(sceneId, 1u);
-
-        testRenderer.showScene(sceneId);
+        testRenderer.waitForFlush(sceneId, 1u);
 
         ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_Three_Triangles"));
-
-        testRenderer.hideScene(sceneId);
-        testRenderer.unmapScene(sceneId);
 
         testScenesAndRenderer.unpublish(sceneId);
         testRenderer.destroyDisplay(display);
@@ -396,7 +359,7 @@ namespace ramses_internal
         testScenesAndRenderer.publish(sceneId);
 
         //do not wait for subscription
-        testRenderer.subscribeScene(sceneId, false);
+        testRenderer.setSceneState(sceneId, ramses::RendererSceneState::Available);
 
         // change scene while subscription is ongoing
         for (int i = 0; i < 80; i++)
@@ -404,19 +367,15 @@ namespace ramses_internal
             data->setValue(i);
             testScenesAndRenderer.flush(sceneId);
         }
-        testRenderer.waitForSubscription(sceneId);
+        testRenderer.waitForSceneStateChange(sceneId, ramses::RendererSceneState::Available);
 
-        testRenderer.mapScene(display, sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
         testScenesAndRenderer.flush(sceneId, 1u);
-        testRenderer.waitForNamedFlush(sceneId, 1u);
-
-        testRenderer.showScene(sceneId);
+        testRenderer.waitForFlush(sceneId, 1u);
 
         ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_Three_Triangles"));
-
-        testRenderer.hideScene(sceneId);
-        testRenderer.unmapScene(sceneId);
 
         testScenesAndRenderer.unpublish(sceneId);
         testRenderer.destroyDisplay(display);
@@ -433,17 +392,9 @@ namespace ramses_internal
 
         const ramses::sceneId_t sceneId = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
         testScenesAndRenderer.publish(sceneId);
-
-        testRenderer.subscribeScene(sceneId, false);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.waitForSubscription(sceneId);
-
-        testRenderer.mapScene(display, sceneId);
-
-        testScenesAndRenderer.flush(sceneId, 1u);
-        testRenderer.waitForNamedFlush(sceneId, 1u);
-
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
         ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_Three_Triangles"));
 
@@ -456,9 +407,6 @@ namespace ramses_internal
         testRenderer.startRendererThread();
 
         ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_Three_Triangles"));
-
-        testRenderer.hideScene(sceneId);
-        testRenderer.unmapScene(sceneId);
 
         testScenesAndRenderer.unpublish(sceneId);
         testRenderer.destroyDisplay(display);
@@ -475,20 +423,11 @@ namespace ramses_internal
 
         const ramses::sceneId_t sceneId = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
         testScenesAndRenderer.publish(sceneId);
-
-        testRenderer.subscribeScene(sceneId, false);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.waitForSubscription(sceneId);
-
-        testRenderer.mapScene(display, sceneId);
-
-        testScenesAndRenderer.flush(sceneId, 1u);
-        testRenderer.waitForNamedFlush(sceneId, 1u);
-
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
         testScenesAndRenderer.destroyRenderer();
-
     }
 
     TEST_F(ARendererLifecycleTest, RendererUploadsResourcesIfIviSurfaceInvisible)
@@ -501,10 +440,10 @@ namespace ramses_internal
         const ramses::sceneId_t sceneId = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::Texture2DFormatScene>(ramses_internal::Texture2DFormatScene::EState_R8, ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId); // this would time out if resources for the scene could not be uploaded
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
+        // this would time out if resources for the scene could not be uploaded
 
-        testRenderer.unmapScene(sceneId);
         testScenesAndRenderer.unpublish(sceneId);
         testRenderer.destroyDisplay(display);
         testRenderer.stopRendererThread();
@@ -522,10 +461,10 @@ namespace ramses_internal
         const ramses::sceneId_t sceneId = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::Texture2DFormatScene>(ramses_internal::Texture2DFormatScene::EState_R8, ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId); // this would time out if resources for the scene could not be uploaded
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
+        // this would time out if resources for the scene could not be uploaded
 
-        testRenderer.unmapScene(sceneId);
         testScenesAndRenderer.unpublish(sceneId);
         testRenderer.destroyDisplay(display);
         testRenderer.stopRendererThread();
@@ -546,24 +485,20 @@ namespace ramses_internal
         testScenesAndRenderer.publish(sceneId2);
         testScenesAndRenderer.flush(sceneId1);
         testScenesAndRenderer.flush(sceneId2);
-        testRenderer.subscribeScene(sceneId1);
-        testRenderer.subscribeScene(sceneId2);
-        testRenderer.mapScene(display1, sceneId1);
-        testRenderer.mapScene(display1, sceneId2);
-        testRenderer.showScene(sceneId1);
-        testRenderer.showScene(sceneId2);
+        testRenderer.setSceneMapping(sceneId1, display1);
+        testRenderer.setSceneMapping(sceneId2, display1);
+        testRenderer.getSceneToState(sceneId1, ramses::RendererSceneState::Rendered);
+        testRenderer.getSceneToState(sceneId2, ramses::RendererSceneState::Rendered);
 
-        testRenderer.hideScene(sceneId1);
-        testRenderer.hideScene(sceneId2);
-        testRenderer.unmapScene(sceneId1);
-        testRenderer.unmapScene(sceneId2);
+        testRenderer.getSceneToState(sceneId1, ramses::RendererSceneState::Available);
+        testRenderer.getSceneToState(sceneId2, ramses::RendererSceneState::Available);
 
         ASSERT_TRUE(checkScreenshot(display1, "ARendererDisplays_Black"));
 
-        testRenderer.mapScene(display2, sceneId1);
-        testRenderer.mapScene(display2, sceneId2);
-        testRenderer.showScene(sceneId1);
-        testRenderer.showScene(sceneId2);
+        testRenderer.setSceneMapping(sceneId1, display2);
+        testRenderer.setSceneMapping(sceneId2, display2);
+        testRenderer.getSceneToState(sceneId1, ramses::RendererSceneState::Rendered);
+        testRenderer.getSceneToState(sceneId2, ramses::RendererSceneState::Rendered);
 
         ASSERT_TRUE(checkScreenshot(display2, "ARendererInstance_DynamicResources"));
 
@@ -583,9 +518,8 @@ namespace ramses_internal
 
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
         testScenesAndRenderer.unpublish(sceneId);
         testScenesAndRenderer.destroyRenderer();
@@ -603,12 +537,8 @@ namespace ramses_internal
         const ramses::sceneId_t sceneId = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::Texture2DFormatScene>(ramses_internal::Texture2DFormatScene::EState_R8, ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
-
-        testRenderer.hideScene(sceneId);
-        testRenderer.unmapScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
         testScenesAndRenderer.unpublish(sceneId);
         testRenderer.destroyDisplay(display);
@@ -628,12 +558,8 @@ namespace ramses_internal
         const ramses::sceneId_t sceneId = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::Texture2DFormatScene>(ramses_internal::Texture2DFormatScene::EState_R8, ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
-
-        testRenderer.hideScene(sceneId);
-        testRenderer.unmapScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
         testScenesAndRenderer.unpublish(sceneId);
         testRenderer.destroyDisplay(display);
@@ -653,8 +579,8 @@ namespace ramses_internal
         testRenderer.doOneLoop();
 
         ReadPixelCallbackHandler callbackHandler;
-
-        testRenderer.dispatchRendererEvents(callbackHandler);
+        ramses::RendererSceneControlEventHandlerEmpty dummy;
+        testRenderer.dispatchEvents(callbackHandler, dummy);
         ASSERT_FALSE(callbackHandler.m_pixelDataRead);
 
         testScenesAndRenderer.destroyRenderer();
@@ -668,9 +594,8 @@ namespace ramses_internal
 
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
         ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_Three_Triangles"));
 
         testScenesAndRenderer.unpublish(sceneId);
@@ -678,12 +603,76 @@ namespace ramses_internal
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
 
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
         ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_Triangles_reordered"));
 
         testScenesAndRenderer.unpublish(sceneId);
+        testScenesAndRenderer.destroyRenderer();
+    }
+
+    TEST_F(ARendererLifecycleTest, ReferencedScenesWithDataLinkAndRenderOrder)
+    {
+        testScenesAndRenderer.initializeRenderer();
+        ramses::displayId_t display = createDisplayForWindow();
+
+        // simulate referenced content published
+        const ramses::sceneId_t sceneRefId1 = testScenesAndRenderer.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_PROVIDER, Vector3(0.0f, 0.0f, 5.0f));
+        const ramses::sceneId_t sceneRefId2 = testScenesAndRenderer.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_CONSUMER, Vector3(-1.5f, 0.0f, 5.0f));
+        testScenesAndRenderer.publish(sceneRefId1);
+        testScenesAndRenderer.publish(sceneRefId2);
+        testScenesAndRenderer.flush(sceneRefId1);
+        testScenesAndRenderer.flush(sceneRefId2);
+
+        const ramses::sceneId_t sceneMasterId = testScenesAndRenderer.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_PROVIDER_WITHOUT_CONTENT);
+        auto& masterScene = testScenesAndRenderer.getScenesRegistry().getScene(sceneMasterId);
+        auto sceneRef1 = masterScene.createSceneReference(sceneRefId1);
+        auto sceneRef2 = masterScene.createSceneReference(sceneRefId2);
+        sceneRef1->requestState(ramses::RendererSceneState::Rendered);
+        sceneRef2->requestState(ramses::RendererSceneState::Rendered);
+        sceneRef1->setRenderOrder(1);
+        sceneRef2->setRenderOrder(2);
+        testScenesAndRenderer.publish(sceneMasterId);
+        testScenesAndRenderer.flush(sceneMasterId);
+
+        // get master to ready
+        testRenderer.setSceneMapping(sceneMasterId, display);
+        testRenderer.getSceneToState(sceneMasterId, ramses::RendererSceneState::Ready);
+
+        // get ref scenes to ready (requested rendered but blocked by master)
+        class EventHandler final : public TestClientEventHandler
+        {
+        public:
+            virtual void sceneReferenceStateChanged(ramses::SceneReference& sceneRef, ramses::RendererSceneState state) override
+            {
+                m_states[sceneRef.getReferencedSceneId()] = state;
+            }
+            virtual bool waitCondition() const override
+            {
+                return std::all_of(m_states.cbegin(), m_states.cend(), [](const auto& it) { return it.second == ramses::RendererSceneState::Ready; });
+            }
+        private:
+            std::unordered_map<ramses::sceneId_t, ramses::RendererSceneState> m_states;
+        } handler;
+        EXPECT_TRUE(testScenesAndRenderer.loopTillClientEvent(handler));
+
+        // nothing rendered
+        ASSERT_TRUE(checkScreenshot(display, "ARendererDisplays_Black"));
+
+        // link data
+        masterScene.linkData(sceneRef1, TransformationLinkScene::transformProviderDataId_Left, sceneRef2, TransformationLinkScene::transformConsumerDataId);
+        testScenesAndRenderer.flush(sceneMasterId);
+
+        // now all rendered
+        testRenderer.getSceneToState(sceneMasterId, ramses::RendererSceneState::Rendered);
+        ASSERT_TRUE(checkScreenshot(display, "ReferencedScenes"));
+
+        // kill master, nothing rendered
+        testScenesAndRenderer.unpublish(sceneMasterId);
+        ASSERT_TRUE(checkScreenshot(display, "ARendererDisplays_Black"));
+
+        testScenesAndRenderer.unpublish(sceneRefId1);
+        testScenesAndRenderer.unpublish(sceneRefId2);
         testScenesAndRenderer.destroyRenderer();
     }
 
@@ -779,9 +768,8 @@ namespace ramses_internal
 
             testScenesAndRenderer.publish(sceneId);
             testScenesAndRenderer.flush(sceneId);
-            testRenderer.subscribeScene(sceneId);
-            testRenderer.mapScene(display1, sceneId);
-            testRenderer.showScene(sceneId);
+            testRenderer.setSceneMapping(sceneId, display1);
+            testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
             const auto startTime = std::chrono::steady_clock::now();
 
@@ -817,9 +805,8 @@ namespace ramses_internal
 
             testScenesAndRenderer.publish(sceneId);
             testScenesAndRenderer.flush(sceneId);
-            testRenderer.subscribeScene(sceneId);
-            testRenderer.mapScene(display2, sceneId);
-            testRenderer.showScene(sceneId);
+            testRenderer.setSceneMapping(sceneId, display2);
+            testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
             const auto startTime = std::chrono::steady_clock::now();
 
@@ -856,9 +843,8 @@ namespace ramses_internal
 
             testScenesAndRenderer.publish(sceneId);
             testScenesAndRenderer.flush(sceneId);
-            testRenderer.subscribeScene(sceneId);
-            testRenderer.mapScene(display1, sceneId);
-            testRenderer.showScene(sceneId);
+            testRenderer.setSceneMapping(sceneId, display1);
+            testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
             ASSERT_TRUE(checkScreenshot(display1, "ARendererInstance_Three_Triangles"));
 
@@ -890,9 +876,8 @@ namespace ramses_internal
 
             testScenesAndRenderer.publish(sceneId);
             testScenesAndRenderer.flush(sceneId);
-            testRenderer.subscribeScene(sceneId);
-            testRenderer.mapScene(display2, sceneId);
-            testRenderer.showScene(sceneId);
+            testRenderer.setSceneMapping(sceneId, display2);
+            testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
             ASSERT_TRUE(checkScreenshot(display2, "ARendererInstance_Three_Triangles"));
 
@@ -913,7 +898,7 @@ namespace ramses_internal
         const ramses::sceneId_t sceneId = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f));
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Available);
 
         for (int i = 0; i < 5; ++i)
         {
@@ -922,7 +907,7 @@ namespace ramses_internal
             testRenderer.doOneLoop();
         }
 
-        ASSERT_FALSE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId }));
+        ASSERT_FALSE(testRenderer.checkScenesExpired({ sceneId }));
 
         testScenesAndRenderer.destroyRenderer();
     }
@@ -934,7 +919,7 @@ namespace ramses_internal
         const ramses::sceneId_t sceneId = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f));
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Available);
         testRenderer.doOneLoop();
 
         // next flush expired already in past to trigger the exceeded event
@@ -942,7 +927,7 @@ namespace ramses_internal
         testScenesAndRenderer.flush(sceneId);
         testRenderer.doOneLoop();
 
-        ASSERT_TRUE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId }));
+        ASSERT_TRUE(testRenderer.checkScenesExpired({ sceneId }));
 
         testScenesAndRenderer.destroyRenderer();
     }
@@ -956,21 +941,21 @@ namespace ramses_internal
 
         testScenesAndRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() + std::chrono::hours(1));
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Available);
         testRenderer.doOneLoop();
 
         // next flush will be in past to trigger the exceeded event
         testScenesAndRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() - std::chrono::hours(1));
         testScenesAndRenderer.flush(sceneId);
         testRenderer.doOneLoop();
-        ASSERT_TRUE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId }));
+        ASSERT_TRUE(testRenderer.checkScenesExpired({ sceneId }));
 
         // next flush will be in future again to trigger the recovery event
         testScenesAndRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() + std::chrono::hours(1));
         testScenesAndRenderer.flush(sceneId);
         testRenderer.doOneLoop();
 
-        ASSERT_TRUE(testRenderer.consumeEventsAndCheckRecoveredScenes({ sceneId }));
+        ASSERT_TRUE(testRenderer.checkScenesNotExpired({ sceneId }));
 
         testScenesAndRenderer.destroyRenderer();
     }
@@ -984,9 +969,8 @@ namespace ramses_internal
         const ramses::sceneId_t sceneId = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f));
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
         testRenderer.doOneLoop();
 
         // send flushes and render within limit
@@ -999,7 +983,7 @@ namespace ramses_internal
             testRenderer.doOneLoop();
         }
 
-        ASSERT_FALSE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId }));
+        ASSERT_FALSE(testRenderer.checkScenesExpired({ sceneId }));
 
         testScenesAndRenderer.destroyRenderer();
     }
@@ -1013,9 +997,8 @@ namespace ramses_internal
         const ramses::sceneId_t sceneId = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f));
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
         testRenderer.doOneLoop();
 
         // send flushes and render within limit
@@ -1027,7 +1010,7 @@ namespace ramses_internal
             testRenderer.doOneLoop();
         }
 
-        ASSERT_FALSE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId }));
+        ASSERT_FALSE(testRenderer.checkScenesExpired({ sceneId }));
 
         testScenesAndRenderer.destroyRenderer();
     }
@@ -1041,9 +1024,8 @@ namespace ramses_internal
         const ramses::sceneId_t sceneId = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f));
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
         testRenderer.doOneLoop();
 
         // set expiration of content that will be rendered and eventually will expire
@@ -1063,7 +1045,7 @@ namespace ramses_internal
             std::this_thread::sleep_for(std::chrono::milliseconds(300));
         }
 
-        ASSERT_TRUE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId }));
+        ASSERT_TRUE(testRenderer.checkScenesExpired({ sceneId }));
 
         testScenesAndRenderer.destroyRenderer();
     }
@@ -1077,9 +1059,8 @@ namespace ramses_internal
         const ramses::sceneId_t sceneId = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f));
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
         testRenderer.doOneLoop();
 
         // set expiration of content that will be rendered and eventually will expire
@@ -1099,7 +1080,7 @@ namespace ramses_internal
             std::this_thread::sleep_for(std::chrono::milliseconds(300));
         }
         // rendered content expired
-        ASSERT_TRUE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId }));
+        ASSERT_TRUE(testRenderer.checkScenesExpired({ sceneId }));
 
         // make sure the scene is still expired till after hidden
         testScenesAndRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() - std::chrono::hours(1));
@@ -1107,7 +1088,7 @@ namespace ramses_internal
         testRenderer.doOneLoop();
 
         // now hide scene so regular flushes are enough to recover
-        testRenderer.hideScene(sceneId);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Ready);
         for (int i = 0; i < 5; ++i)
         {
             // make modifications to scene
@@ -1116,16 +1097,16 @@ namespace ramses_internal
             testScenesAndRenderer.flush(sceneId);
             testRenderer.doOneLoop();
         }
-        ASSERT_TRUE(testRenderer.consumeEventsAndCheckRecoveredScenes({ sceneId }));
+        ASSERT_TRUE(testRenderer.checkScenesNotExpired({ sceneId }));
 
         testScenesAndRenderer.destroyRenderer();
     }
 
     TEST_F(ARendererLifecycleTest, SceneExpirationCanBeDisabled_ConfidenceTest)
     {
-        struct ExpirationCounter final : public ramses::RendererEventHandlerEmpty
+        struct ExpirationCounter final : public ramses::RendererSceneControlEventHandlerEmpty
         {
-            virtual void sceneExpired(ramses::sceneId_t) override final
+            virtual void sceneExpired(ramses::sceneId_t) override
             {
                 numExpirationEvents++;
             }
@@ -1139,9 +1120,8 @@ namespace ramses_internal
         const ramses::sceneId_t sceneId = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f));
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
         testRenderer.doOneLoop();
 
         // set expiration of content that will be rendered
@@ -1158,11 +1138,12 @@ namespace ramses_internal
             testScenesAndRenderer.flush(sceneId);
             testRenderer.doOneLoop();
         }
-        testRenderer.dispatchRendererEvents(expirationCounter);
+        ramses::RendererEventHandlerEmpty dummy;
+        testRenderer.dispatchEvents(dummy, expirationCounter);
         ASSERT_TRUE(expirationCounter.numExpirationEvents == 0u);
 
         // now hide scene
-        testRenderer.hideScene(sceneId);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Ready);
 
         // send few more flushes within limit and no changes
         for (int i = 0; i < 3; ++i)
@@ -1171,7 +1152,7 @@ namespace ramses_internal
             testScenesAndRenderer.flush(sceneId);
             testRenderer.doOneLoop();
         }
-        testRenderer.dispatchRendererEvents(expirationCounter);
+        testRenderer.dispatchEvents(dummy, expirationCounter);
         ASSERT_TRUE(expirationCounter.numExpirationEvents == 0u);
 
         // disable expiration together with scene changes
@@ -1188,7 +1169,7 @@ namespace ramses_internal
             testRenderer.doOneLoop();
             std::this_thread::sleep_for(std::chrono::milliseconds(300));
         }
-        testRenderer.dispatchRendererEvents(expirationCounter);
+        testRenderer.dispatchEvents(dummy, expirationCounter);
         ASSERT_TRUE(expirationCounter.numExpirationEvents == 0u);
 
         testScenesAndRenderer.destroyRenderer();
@@ -1203,9 +1184,8 @@ namespace ramses_internal
         const ramses::sceneId_t sceneId = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(-0.50f, 1.0f, 5.0f));
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
-        testRenderer.subscribeScene(sceneId);
-        testRenderer.mapScene(display, sceneId);
-        testRenderer.showScene(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
         testRenderer.doOneLoop();
 
         // set expiration of content that will be rendered and eventually will expire
@@ -1224,7 +1204,7 @@ namespace ramses_internal
             testRenderer.doOneLoop();
             std::this_thread::sleep_for(std::chrono::milliseconds(300));
         }
-        ASSERT_TRUE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId }));
+        ASSERT_TRUE(testRenderer.checkScenesExpired({ sceneId }));
 
         // now also render within limit to recover
         testRenderer.setLoopMode(ramses::ELoopMode_UpdateAndRender);
@@ -1236,7 +1216,7 @@ namespace ramses_internal
             testScenesAndRenderer.flush(sceneId);
             testRenderer.doOneLoop();
         }
-        ASSERT_TRUE(testRenderer.consumeEventsAndCheckRecoveredScenes({ sceneId }));
+        ASSERT_TRUE(testRenderer.checkScenesNotExpired({ sceneId }));
 
         testScenesAndRenderer.destroyRenderer();
     }
@@ -1253,12 +1233,10 @@ namespace ramses_internal
         testScenesAndRenderer.publish(sceneId2);
         testScenesAndRenderer.flush(sceneId1);
         testScenesAndRenderer.flush(sceneId2);
-        testRenderer.subscribeScene(sceneId1);
-        testRenderer.subscribeScene(sceneId2);
-        testRenderer.mapScene(display, sceneId1);
-        testRenderer.mapScene(display, sceneId2);
-        testRenderer.showScene(sceneId1);
-        testRenderer.showScene(sceneId2);
+        testRenderer.setSceneMapping(sceneId1, display);
+        testRenderer.setSceneMapping(sceneId2, display);
+        testRenderer.getSceneToState(sceneId1, ramses::RendererSceneState::Rendered);
+        testRenderer.getSceneToState(sceneId2, ramses::RendererSceneState::Rendered);
         testRenderer.doOneLoop();
 
         testScenesAndRenderer.setExpirationTimestamp(sceneId1, FlushTime::Clock::now() + std::chrono::milliseconds(500));
@@ -1274,7 +1252,7 @@ namespace ramses_internal
             testRenderer.doOneLoop();
             std::this_thread::sleep_for(std::chrono::milliseconds(300));
         }
-        ASSERT_TRUE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId1 }));
+        ASSERT_TRUE(testRenderer.checkScenesExpired({ sceneId1 }));
 
         // S1 recovers, S2 is ok
         for (int i = 0; i < 5; ++i)
@@ -1285,7 +1263,7 @@ namespace ramses_internal
             testScenesAndRenderer.flush(sceneId2);
             testRenderer.doOneLoop();
         }
-        ASSERT_TRUE(testRenderer.consumeEventsAndCheckRecoveredScenes({ sceneId1 }));
+        ASSERT_TRUE(testRenderer.checkScenesNotExpired({ sceneId1 }));
 
         // S1 ok, S2 exceeds
         for (int i = 0; i < 5; ++i)
@@ -1295,7 +1273,7 @@ namespace ramses_internal
             testRenderer.doOneLoop();
             std::this_thread::sleep_for(std::chrono::milliseconds(300));
         }
-        ASSERT_TRUE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId2 }));
+        ASSERT_TRUE(testRenderer.checkScenesExpired({ sceneId2 }));
 
         // S1 ok, S2 is recovers
         for (int i = 0; i < 5; ++i)
@@ -1306,7 +1284,7 @@ namespace ramses_internal
             testScenesAndRenderer.flush(sceneId2);
             testRenderer.doOneLoop();
         }
-        ASSERT_TRUE(testRenderer.consumeEventsAndCheckRecoveredScenes({ sceneId2 }));
+        ASSERT_TRUE(testRenderer.checkScenesNotExpired({ sceneId2 }));
 
         // both S1 and S2 exceed
         for (int i = 0; i < 5; ++i)
@@ -1314,7 +1292,7 @@ namespace ramses_internal
             testRenderer.doOneLoop();
             std::this_thread::sleep_for(std::chrono::milliseconds(300));
         }
-        ASSERT_TRUE(testRenderer.consumeEventsAndCheckExpiredScenes({ sceneId1, sceneId2 }));
+        ASSERT_TRUE(testRenderer.checkScenesExpired({ sceneId1, sceneId2 }));
 
         testScenesAndRenderer.destroyRenderer();
     }

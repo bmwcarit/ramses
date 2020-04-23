@@ -379,6 +379,7 @@ namespace ramses
         *                         conform to GL specification. Order ist lowest level (biggest
         *                         resolution) to highest level (smallest resolution).
         * @param[in] generateMipChain Auto generate mipmap levels. Cannot be used if custom data for lower mipmap levels provided.
+        * @param[in] swizzle Describes how RGBA channels of the texture are swizzled,
         * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
         * @param[in] name The name of the Cube Texture.
         * @return A pointer to the created Cube Texture, null on failure. Will fail with any face-data == nullptr and/or size == 0.
@@ -389,6 +390,7 @@ namespace ramses
             uint32_t mipMapCount,
             const CubeMipLevelData mipLevelData[],
             bool generateMipChain = false,
+            const TextureSwizzle& swizzle = {},
             resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache,
             const char* name = nullptr);
 

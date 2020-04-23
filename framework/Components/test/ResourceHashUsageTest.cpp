@@ -10,7 +10,6 @@
 #include "gmock/gmock.h"
 #include "Components/ResourceHashUsageCallback.h"
 #include "Components/ResourceHashUsage.h"
-#include "gmock/gmock-generated-nice-strict.h"
 
 namespace ramses_internal
 {

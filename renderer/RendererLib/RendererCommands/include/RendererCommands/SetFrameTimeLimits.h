@@ -14,11 +14,11 @@
 
 namespace ramses_internal
 {
-    class SetFrameTimeLimits : public RamshCommandArgs<UInt32, UInt32, UInt32>
+    class SetFrameTimeLimits : public RamshCommandArgs<UInt32, UInt32>
     {
     public:
         SetFrameTimeLimits(FrameTimer& frametimer);
-        virtual Bool execute(UInt32& limitForClientResourcesUploadMicrosec, UInt32& limitForSceneActionsApplyMicrosec, UInt32& limitForOffscreenBufferRenderMicrosec) const override;
+        virtual Bool execute(UInt32& limitForClientResourcesUploadMicrosec, UInt32& limitForOffscreenBufferRenderMicrosec) const override;
 
     private:
         FrameTimer& m_frametimer;

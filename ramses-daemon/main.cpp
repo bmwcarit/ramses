@@ -23,7 +23,7 @@ int main(int argc, const char* argv[])
     using namespace ramses_internal;
 
     ramses::RamsesFrameworkConfigImpl config(argc, argv);
-    GetRamsesLogger().initialize(config.getCommandLineParser(), "SMGR", "ramses-daemon", false); // no framework used
+    GetRamsesLogger().initialize(config.getCommandLineParser(), "SMGR", "ramses-daemon", false, true); // no framework used
 
     RamshCommandExit commandExit;
     RamshStandardSetup ramsh("Daemon");

@@ -11,6 +11,7 @@
 
 #include "Scene/ResourceChangeCollectingScene.h"
 #include "Scene/SceneActionCollectionCreator.h"
+#include "SceneReferencing/SceneReferenceAction.h"
 
 namespace ramses_internal
 {
@@ -96,6 +97,9 @@ namespace ramses_internal
         virtual TextureSamplerHandle        allocateTextureSampler          (const TextureSampler& sampler, TextureSamplerHandle handle = TextureSamplerHandle::Invalid()) override;
         virtual void                        releaseTextureSampler           (TextureSamplerHandle handle) override;
 
+        virtual AnimationSystemHandle       addAnimationSystem              (IAnimationSystem* animationSystem, AnimationSystemHandle externalHandle = AnimationSystemHandle::Invalid()) override;
+        virtual void                        removeAnimationSystem           (AnimationSystemHandle animSystemHandle) override;
+
         // Render groups
         virtual RenderGroupHandle           allocateRenderGroup             (UInt32 renderableCount = 0u, UInt32 nestedGroupCount = 0u, RenderGroupHandle groupHandle = RenderGroupHandle::Invalid()) override;
         virtual void                        releaseRenderGroup              (RenderGroupHandle groupHandle) override;
@@ -156,12 +160,25 @@ namespace ramses_internal
         virtual void                        releaseTextureBuffer            (TextureBufferHandle handle) override;
         virtual void                        updateTextureBuffer             (TextureBufferHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const Byte* data) override;
 
+        virtual SceneReferenceHandle        allocateSceneReference          (SceneId sceneId, SceneReferenceHandle handle = {}) override;
+        virtual void                        releaseSceneReference           (SceneReferenceHandle handle) override;
+        virtual void                        requestSceneReferenceState      (SceneReferenceHandle handle, RendererSceneState state) override;
+        virtual void                        requestSceneReferenceFlushNotifications(SceneReferenceHandle handle, bool enable) override;
+        virtual void                        setSceneReferenceRenderOrder    (SceneReferenceHandle handle, int32_t renderOrder) override;
+
         const SceneActionCollection& getSceneActionCollection() const;
         SceneActionCollection& getSceneActionCollection();
+
+        void linkData(SceneReferenceHandle providerScene, DataSlotId providerId, SceneReferenceHandle consumerScene, DataSlotId consumerId);
+        void unlinkData(SceneReferenceHandle consumerScene, DataSlotId consumerId);
+
+        const SceneReferenceActionVector& getSceneReferenceActions() const;
+        void resetSceneReferenceActions();
 
     private:
         SceneActionCollection m_collection;
         SceneActionCollectionCreator m_creator;
+        SceneReferenceActionVector m_sceneReferenceActions;
     };
 }
 

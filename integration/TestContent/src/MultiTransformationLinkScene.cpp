@@ -9,6 +9,7 @@
 #include "TestScenes/MultiTransformationLinkScene.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -57,7 +58,7 @@ namespace ramses_internal
                 rowNode->setParent(*rootNode);
             }
             lastRowNode = rowNode;
-            m_scene.createTransformationDataProvider(*rowNode, DataIdRowStart + row);
+            m_scene.createTransformationDataProvider(*rowNode, ramses::dataProviderId_t{DataIdRowStart + row});
 
             ramses::Node* lastTransNode = nullptr;
             for (UInt32 column = 0; column < NumRows && meshIndex < NumMeshes; ++column, ++meshIndex)
@@ -99,7 +100,7 @@ namespace ramses_internal
             ramses::Node* rowGroupNode = m_scene.createNode();
             rowNode->setParent(*rowGroupNode);
 
-            m_scene.createTransformationDataConsumer(*rowGroupNode, DataIdRowStart + row);
+            m_scene.createTransformationDataConsumer(*rowGroupNode, ramses::dataConsumerId_t{DataIdRowStart + row});
             rowNode->setTranslation(m_scaleFactor * 0.2f, m_scaleFactor * 0.2f, m_scaleFactor * 0.2f);
 
             ramses::Node* lastTransNode = nullptr;
@@ -130,7 +131,7 @@ namespace ramses_internal
                 meshNode->setParent(*scaleNode);
                 scaleNode->setParent(*transNode);
 
-                m_scene.createTransformationDataProvider(*meshNode, DataIdMeshStart + meshIndex);
+                m_scene.createTransformationDataProvider(*meshNode, ramses::dataProviderId_t{DataIdMeshStart + meshIndex});
             }
         }
     }
@@ -140,7 +141,7 @@ namespace ramses_internal
         for (UInt32 meshIndex = 0; meshIndex < NumMeshes; ++meshIndex)
         {
             ramses::Node* meshGroupNode = m_scene.createNode();
-            m_scene.createTransformationDataConsumer(*meshGroupNode, DataIdMeshStart + meshIndex);
+            m_scene.createTransformationDataConsumer(*meshGroupNode, ramses::dataConsumerId_t{DataIdMeshStart + meshIndex});
 
             ramses::Node* transNode = m_scene.createNode();
             transNode->setTranslation(m_scaleFactor * 0.3f, m_scaleFactor * 0.3f, m_scaleFactor * 0.3f);

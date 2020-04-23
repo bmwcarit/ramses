@@ -67,23 +67,28 @@ namespace ramses
         return status;
     }
 
-    status_t RendererConfig::setWaylandSocketEmbeddedGroup(const char* groupname)
+    status_t RendererConfig::setWaylandEmbeddedCompositingSocketGroup(const char* groupname)
     {
-        const status_t status = impl.setWaylandSocketEmbeddedGroup(groupname);
+        const status_t status = impl.setWaylandEmbeddedCompositingSocketGroup(groupname);
         LOG_HL_RENDERER_API1(status, groupname);
         return status;
     }
 
-    status_t RendererConfig::setWaylandSocketEmbedded(const char* socketname)
+    status_t RendererConfig::setWaylandEmbeddedCompositingSocketName(const char* socketname)
     {
-        const status_t status = impl.setWaylandSocketEmbedded(socketname);
+        const status_t status = impl.setWaylandEmbeddedCompositingSocketName(socketname);
         LOG_HL_RENDERER_API1(status, socketname);
         return status;
     }
 
-    status_t RendererConfig::setWaylandSocketEmbeddedFD(int socketFileDescriptor)
+    const char* RendererConfig::getWaylandEmbeddedCompositingSocketName() const
     {
-        const status_t status = impl.setWaylandSocketEmbeddedFD(socketFileDescriptor);
+        return impl.getWaylandEmbeddedCompositingSocketName();
+    }
+
+    status_t RendererConfig::setWaylandEmbeddedCompositingSocketFD(int socketFileDescriptor)
+    {
+        const status_t status = impl.setWaylandEmbeddedCompositingSocketFD(socketFileDescriptor);
         LOG_HL_RENDERER_API1(status, socketFileDescriptor);
         return status;
     }

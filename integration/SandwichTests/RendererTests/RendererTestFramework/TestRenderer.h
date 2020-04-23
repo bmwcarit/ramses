@@ -10,6 +10,7 @@
 #define RAMSES_TESTRENDERER_H
 
 #include "ramses-renderer-api/RamsesRenderer.h"
+#include "ramses-framework-api/RendererSceneState.h"
 #include "RendererAPI/Types.h"
 #include "RendererAPI/EDeviceTypeId.h"
 #include "RendererTestUtils.h"
@@ -18,6 +19,8 @@
 namespace ramses
 {
     class RamsesFramework;
+    class IRendererEventHandler;
+    class IRendererSceneControlEventHandler;
 }
 
 namespace ramses_internal
@@ -38,26 +41,19 @@ namespace ramses_internal
         void flushRenderer();
 
         ramses::displayId_t createDisplay(const ramses::DisplayConfig& displayConfig);
-        void destroyDisplay              (ramses::displayId_t displayId);
+        void destroyDisplay(ramses::displayId_t displayId);
         ramses::displayBufferId_t getDisplayFramebufferId(ramses::displayId_t displayId) const;
-        void subscribeScene              (ramses::sceneId_t sceneId, bool blockUntilSubscription = true);
-        void hideUnmapAndUnsubscribeScene(ramses::sceneId_t sceneId);
-        void unsubscribeScene            (ramses::sceneId_t sceneId);
-        void mapScene                    (ramses::displayId_t displayId, ramses::sceneId_t sceneId);
-        void unmapScene                  (ramses::sceneId_t sceneId);
-        bool showScene                   (ramses::sceneId_t sceneId);
-        void hideScene                   (ramses::sceneId_t sceneId);
-        void hideAndUnmapScene           (ramses::sceneId_t sceneId);
 
-        void waitForPublication (ramses::sceneId_t sceneId);
-        void waitForUnpublished (ramses::sceneId_t sceneId);
-        void waitForSubscription(ramses::sceneId_t sceneId);
-        void waitForUnmapped    (ramses::sceneId_t sceneId);
-        void waitForNamedFlush  (ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersionTag);
+        void setSceneMapping(ramses::sceneId_t sceneId, ramses::displayId_t display);
+        bool getSceneToState(ramses::sceneId_t sceneId, ramses::RendererSceneState state);
+        void setSceneState(ramses::sceneId_t sceneId, ramses::RendererSceneState state);
+        bool waitForSceneStateChange(ramses::sceneId_t sceneId, ramses::RendererSceneState state);
+        void waitForFlush(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersionTag);
+        bool checkScenesExpired(std::initializer_list<ramses::sceneId_t> sceneIds);
+        bool checkScenesNotExpired(std::initializer_list<ramses::sceneId_t> sceneIds);
         bool waitForStreamSurfaceAvailabilityChange(ramses::streamSource_t streamSource, bool available);
-        bool consumeEventsAndCheckExpiredScenes(std::initializer_list<ramses::sceneId_t> sceneIds);
-        bool consumeEventsAndCheckRecoveredScenes(std::initializer_list<ramses::sceneId_t> sceneIds);
-        void dispatchRendererEvents(ramses::IRendererEventHandler& eventHandler);
+
+        void dispatchEvents(ramses::IRendererEventHandler& eventHandler, ramses::IRendererSceneControlEventHandler& sceneControlEventHandler);
 
         void setLoopMode(ramses::ELoopMode loopMode);
         void startRendererThread();
@@ -81,12 +77,13 @@ namespace ramses_internal
         void setSurfaceVisibility(WaylandIviSurfaceId surfaceId, bool visibility);
         void readPixels(ramses::displayId_t displayId, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
         IEmbeddedCompositor& getEmbeddedCompositor(ramses::displayId_t displayId);
-        void setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForSceneActionsApply, uint64_t limitForOffscreenBufferRender);
+        void setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender);
 
         bool hasSystemCompositorController() const;
 
     private:
         ramses::RamsesRenderer* m_renderer = nullptr;
+        ramses::RendererSceneControl* m_sceneControlAPI = nullptr;
     };
 }
 

@@ -55,7 +55,7 @@ namespace ramses
     }
 
     typedef ::testing::Types<IndexDataBuffer, VertexDataBuffer> DataBufferTestTypes;
-    TYPED_TEST_CASE(ADataBuffer, DataBufferTestTypes);
+    TYPED_TEST_SUITE(ADataBuffer, DataBufferTestTypes);
 
     TYPED_TEST(ADataBuffer, IsAllocatedOnInternalSceneAfterCreation)
     {

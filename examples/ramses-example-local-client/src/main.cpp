@@ -10,101 +10,14 @@
 
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/DisplayConfig.h"
-#include "ramses-renderer-api/IRendererEventHandler.h"
+#include "ramses-renderer-api/RendererSceneControl.h"
 #include <unordered_set>
 #include <thread>
-#include <cmath>
 
 /**
  * @example ramses-example-local-client/src/main.cpp
  * @brief Local Client Example
  */
-
-/** \cond HIDDEN_SYMBOLS */
-class SceneStateEventHandler : public ramses::RendererEventHandlerEmpty
-{
-public:
-    SceneStateEventHandler(ramses::RamsesRenderer& renderer)
-        : m_renderer(renderer)
-    {
-    }
-
-    virtual void scenePublished(ramses::sceneId_t sceneId) override
-    {
-        m_publishedScenes.insert(sceneId);
-    }
-
-    virtual void sceneUnpublished(ramses::sceneId_t sceneId) override
-    {
-        m_publishedScenes.erase(sceneId);
-    }
-
-    virtual void sceneSubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_OK == result)
-        {
-            m_subscribedScenes.insert(sceneId);
-        }
-    }
-
-    virtual void sceneUnsubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_FAIL != result)
-        {
-            m_subscribedScenes.erase(sceneId);
-        }
-    }
-
-    virtual void sceneMapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_OK == result)
-        {
-            m_mappedScenes.insert(sceneId);
-        }
-    }
-
-    virtual void sceneUnmapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_FAIL != result)
-        {
-            m_mappedScenes.erase(sceneId);
-        }
-    }
-
-    void waitForPublication(const ramses::sceneId_t sceneId)
-    {
-        waitForSceneInSet(sceneId, m_publishedScenes);
-    }
-
-    void waitForSubscription(const ramses::sceneId_t sceneId)
-    {
-        waitForSceneInSet(sceneId, m_subscribedScenes);
-    }
-
-    void waitForMapped(const ramses::sceneId_t sceneId)
-    {
-        waitForSceneInSet(sceneId, m_mappedScenes);
-    }
-
-private:
-    typedef std::unordered_set<ramses::sceneId_t> SceneSet;
-
-    void waitForSceneInSet(const ramses::sceneId_t sceneId, const SceneSet& sceneSet)
-    {
-        while (sceneSet.find(sceneId) == sceneSet.end())
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            m_renderer.dispatchEvents(*this);
-        }
-    }
-
-    SceneSet m_publishedScenes;
-    SceneSet m_subscribedScenes;
-    SceneSet m_mappedScenes;
-
-    ramses::RamsesRenderer& m_renderer;
-};
-/** \endcond */
 
 int main(int argc, char* argv[])
 {
@@ -116,6 +29,7 @@ int main(int argc, char* argv[])
 
     ramses::RendererConfig rendererConfig(argc, argv);
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
+    ramses::RendererSceneControl& sceneControlAPI = *renderer.getSceneControlAPI();
     renderer.startThread();
 
     ramses::DisplayConfig displayConfig;
@@ -124,6 +38,7 @@ int main(int argc, char* argv[])
     displayConfig.setWindowIviVisible();
     displayConfig.setWaylandIviLayerID(3);
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
+    renderer.flush();
 
     framework.connect();
 
@@ -171,31 +86,43 @@ int main(int argc, char* argv[])
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
 
+    ramses::AnimationSystemRealTime* animationSystem = clientScene->createRealTimeAnimationSystem(ramses::EAnimationSystemFlags_Default, "animation system");
+
+    // create splines with animation keys
+    ramses::SplineLinearFloat* spline1 = animationSystem->createSplineLinearFloat("spline1");
+    spline1->setKey(0u, 0.f);
+    spline1->setKey(4000u, 360.f);
+
+    // create animated property for each translation node with single component animation
+    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode, ramses::EAnimatedProperty_Rotation, ramses::EAnimatedPropertyComponent_Z);
+
+    // create three animations
+    ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
+
+    // create animation sequence and add animation
+    ramses::AnimationSequence* sequence = animationSystem->createAnimationSequence();
+    sequence->addAnimation(*animation1);
+
+    // set animation properties (optional)
+    sequence->setAnimationLooping(*animation1);
+    sequence->setPlaybackSpeed(0.5f);
+
+    // start animation sequence
+    animationSystem->updateLocalTime();
+    sequence->start();
+
     appearance->setInputValueVector4f(colorInput, 1.0f, 0.0f, 0.3f, 1.0f);
 
     clientScene->publish();
     clientScene->flush();
 
     // show the scene on the renderer
-    SceneStateEventHandler eventHandler(renderer);
-
-    eventHandler.waitForPublication(sceneId);
-
-    renderer.subscribeScene(sceneId);
-    renderer.flush();
-    eventHandler.waitForSubscription(sceneId);
-
-    renderer.mapScene(display, sceneId);
-    renderer.flush();
-    eventHandler.waitForMapped(sceneId);
-
-    renderer.showScene(sceneId);
-    renderer.flush();
+    sceneControlAPI.setSceneMapping(sceneId, display);
+    sceneControlAPI.setSceneState(sceneId, ramses::RendererSceneState::Rendered);
+    sceneControlAPI.flush();
 
     for (;;)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(16));
-        meshNode->rotate(0.f, 0.f, 1.5f);
-        clientScene->flush();
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }

@@ -36,8 +36,6 @@ namespace ramses_internal
 
         UInt32 getMSAASampleCount() const;
 
-        Bool isOffscreen() const override final;
-
         virtual IntegrityRGLDeviceUnit getIntegrityRGLDeviceUnit() const final;
         virtual WaylandIviSurfaceId getWaylandIviSurfaceID() const override final;
 
@@ -46,7 +44,6 @@ namespace ramses_internal
         IWindowEventHandler& m_eventHandler;
         const Bool m_fullscreen;
         const Bool m_borderless;
-        const Bool m_offscreen;
         UInt32 m_msaaSampleCount;
 
         UInt32 m_width;

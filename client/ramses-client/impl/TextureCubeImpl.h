@@ -11,6 +11,7 @@
 
 #include "ramses-client-api/TextureEnums.h"
 #include "ResourceImpl.h"
+#include "ramses-client-api/TextureSwizzle.h"
 
 namespace ramses_internal
 {
@@ -28,17 +29,18 @@ namespace ramses
         TextureCubeImpl(ramses_internal::ResourceHashUsage texture, RamsesClientImpl& client, const char* name);
         virtual ~TextureCubeImpl();
 
-        void initializeFromFrameworkData(uint32_t size, ETextureFormat textureFormat);
+        void initializeFromFrameworkData(uint32_t size, ETextureFormat textureFormat, const TextureSwizzle& swizzle);
         virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
         virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
 
         uint32_t       getSize() const;
         ETextureFormat getTextureFormat() const;
+        const TextureSwizzle& getTextureSwizzle() const;
 
     private:
         uint32_t m_size;
         ETextureFormat m_textureFormat;
-
+        TextureSwizzle m_swizzle;
     };
 }
 

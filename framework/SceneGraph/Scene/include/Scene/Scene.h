@@ -24,6 +24,8 @@
 #include "SceneAPI/RenderTarget.h"
 #include "SceneAPI/BlitPass.h"
 #include "SceneAPI/PickableObject.h"
+#include "SceneAPI/SceneReference.h"
+#include "AnimationAPI/IAnimationSystem.h"
 
 #include "Scene/TopologyNode.h"
 #include "Scene/TopologyTransform.h"
@@ -191,6 +193,14 @@ namespace ramses_internal
         virtual UInt32                      getTextureSamplerCount          () const override final;
         virtual const TextureSampler&       getTextureSampler               (TextureSamplerHandle handle) const override final;
 
+        //Animation system
+        virtual AnimationSystemHandle   addAnimationSystem              (IAnimationSystem* animationSystem, AnimationSystemHandle externalHandle = AnimationSystemHandle::Invalid()) override;
+        virtual void                    removeAnimationSystem           (AnimationSystemHandle animSystemHandle) override;
+        virtual IAnimationSystem*       getAnimationSystem              (AnimationSystemHandle animSystemHandle) override final;
+        virtual const IAnimationSystem* getAnimationSystem              (AnimationSystemHandle animSystemHandle) const override final;
+        virtual bool                    isAnimationSystemAllocated      (AnimationSystemHandle animSystemHandle) const override final;
+        virtual UInt32                  getAnimationSystemCount         () const override final;
+
         // Render groups
         virtual RenderGroupHandle       allocateRenderGroup             (UInt32 renderableCount = 0u, UInt32 nestedGroupCount = 0u, RenderGroupHandle groupHandle = RenderGroupHandle::Invalid()) override;
         virtual void                    releaseRenderGroup              (RenderGroupHandle groupHandle) override;
@@ -286,6 +296,15 @@ namespace ramses_internal
         virtual UInt32                  getDataSlotCount                () const override final;
         virtual const DataSlot&         getDataSlot                     (DataSlotHandle handle) const override final;
 
+        virtual SceneReferenceHandle    allocateSceneReference          (SceneId sceneId, SceneReferenceHandle handle = {}) override;
+        virtual void                    releaseSceneReference           (SceneReferenceHandle handle) override;
+        virtual void                    requestSceneReferenceState      (SceneReferenceHandle handle, RendererSceneState state) override;
+        virtual void                    requestSceneReferenceFlushNotifications(SceneReferenceHandle handle, bool enable) override;
+        virtual void                    setSceneReferenceRenderOrder    (SceneReferenceHandle handle, int32_t renderOrder) override;
+        virtual bool                    isSceneReferenceAllocated       (SceneReferenceHandle handle) const override final;
+        virtual UInt32                  getSceneReferenceCount          () const override final;
+        virtual const SceneReference&   getSceneReference               (SceneReferenceHandle handle) const override final;
+
         virtual SceneSizeInformation    getSceneSizeInformation         () const final override;
 
     protected:
@@ -353,6 +372,12 @@ namespace ramses_internal
 
         typedef MEMORYPOOL<DataSlot, DataSlotHandle> DataSlotMemoryType;
         DataSlotMemoryType          m_dataSlots;
+
+        typedef MEMORYPOOL<SceneReference, SceneReferenceHandle> SceneReferenceMemoryType;
+        SceneReferenceMemoryType    m_sceneReferences;
+
+        typedef MEMORYPOOL<IAnimationSystem*, AnimationSystemHandle> AnimationSystemMemoryType;
+        AnimationSystemMemoryType   m_animationSystems;
 
         const String                m_name;
         const SceneId               m_sceneId;
@@ -451,6 +476,12 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
+    inline bool SceneT<MEMORYPOOL>::isAnimationSystemAllocated(AnimationSystemHandle handle) const
+    {
+        return m_animationSystems.isAllocated(handle);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
     inline bool SceneT<MEMORYPOOL>::isRenderStateAllocated(RenderStateHandle stateHandle) const
     {
         return m_states.isAllocated(stateHandle);
@@ -496,6 +527,12 @@ namespace ramses_internal
     inline bool SceneT<MEMORYPOOL>::isNodeAllocated(NodeHandle node) const
     {
         return m_nodes.isAllocated(node);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    bool SceneT<MEMORYPOOL>::isSceneReferenceAllocated(SceneReferenceHandle handle) const
+    {
+        return m_sceneReferences.isAllocated(handle);
     }
 
     // inline often called getters

@@ -14,12 +14,13 @@
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/RendererConfig.h"
 #include "ramses-renderer-api/DisplayConfig.h"
+#include "ramses-renderer-api/IRendererSceneControlEventHandler_legacy.h"
 #include "Scene/ClientScene.h"
 
 using namespace ramses_internal;
 using namespace testing;
 
-class SceneRendererStateTracker final : public ramses::RendererEventHandlerEmpty
+class SceneRendererStateTracker final : public ramses::RendererSceneControlEventHandlerEmpty_legacy
 {
 public:
     enum class RendererSceneState
@@ -146,7 +147,7 @@ public:
     RamsesClientAndRendererWithScene()
         : m_renderer(*m_framework.createRenderer({}))
         , m_client(*m_framework.createClient("client"))
-        , m_displayManager(m_renderer, m_framework)
+        , m_displayManager(m_renderer.impl, m_framework.impl)
         , m_sceneId(33u)
         , m_scene(*m_client.createScene(m_sceneId))
     {
@@ -210,7 +211,7 @@ protected:
     void dispatchAndFlush()
     {
         expectSyncedSceneStates();
-        ramsesClientRenderer->m_displayManager.dispatchAndFlush(&m_sceneStateTracker, &m_sceneRendererStateTracker);
+        ramsesClientRenderer->m_displayManager.dispatchAndFlush(&m_sceneStateTracker, nullptr, &m_sceneRendererStateTracker);
         expectSyncedSceneStates();
     }
 
@@ -298,7 +299,7 @@ public:
     }
 };
 
-INSTANTIATE_TEST_CASE_P(TargetToTarget, ADisplayManagerWithRenderer_TargetToTarget, Range(0, ADisplayManagerWithRenderer_TargetToTarget::NumCombinations));
+INSTANTIATE_TEST_SUITE_P(TargetToTarget, ADisplayManagerWithRenderer_TargetToTarget, Range(0, ADisplayManagerWithRenderer_TargetToTarget::NumCombinations));
 
 TEST_P(ADisplayManagerWithRenderer_TargetToTarget, switchFromTargetStateToTargetStateAtEveryStep)
 {
@@ -363,7 +364,7 @@ public:
     }
 };
 
-INSTANTIATE_TEST_CASE_P(ReachTargetStateWithUnpublish, ADisplayManagerWithRenderer_ReachTargetStateWithUnpublish, Range(0, ADisplayManagerWithRenderer_ReachTargetStateWithUnpublish::NumCombinations));
+INSTANTIATE_TEST_SUITE_P(ReachTargetStateWithUnpublish, ADisplayManagerWithRenderer_ReachTargetStateWithUnpublish, Range(0, ADisplayManagerWithRenderer_ReachTargetStateWithUnpublish::NumCombinations));
 
 TEST_P(ADisplayManagerWithRenderer_ReachTargetStateWithUnpublish, unpublishAtEveryStepWhileReachingEveryState)
 {

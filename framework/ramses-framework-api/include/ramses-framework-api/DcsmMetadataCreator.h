@@ -111,6 +111,25 @@ namespace ramses
         status_t setCarModelVisibility(bool visiblity);
 
         /**
+         * @brief Set the exclusive background metadata entry. Requests to show widget exclusively
+         *        without other overlapping content in background.
+         *
+         * @param state true to request exclusive state, false to allow background content.
+         * @return StatusOK for success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        status_t setExclusiveBackground(bool state);
+
+        /**
+         * @brief Set the focus request metadata entry. Requests to focus widget.
+         *
+         * @param state values !=0 mean requesting focus with priority, 0 means no focus request
+         * @return StatusOK for success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        status_t setFocusRequest(int32_t state);
+
+        /**
          * @brief Deleted move constructor
          * @param other unused
          */

@@ -24,11 +24,11 @@ using namespace ramses_internal;
 
 namespace ramses
 {
-    class ARenderGroup : public LocalTestClientWithScene, public testing::Test
+    class ARenderGroup : public LocalTestClientWithSceneAndAnimationSystem, public testing::Test
     {
     protected:
         ARenderGroup()
-            : LocalTestClientWithScene()
+            : LocalTestClientWithSceneAndAnimationSystem()
             , renderGroup(*m_scene.createRenderGroup("RenderGroup"))
             , renderGroup2(*m_scene.createRenderGroup("RenderGroup2"))
         {

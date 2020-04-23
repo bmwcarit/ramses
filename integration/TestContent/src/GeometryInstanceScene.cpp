@@ -16,6 +16,7 @@
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/MeshNode.h"
+#include <cassert>
 
 namespace ramses_internal
 {

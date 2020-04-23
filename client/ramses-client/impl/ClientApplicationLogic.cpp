@@ -34,16 +34,11 @@ namespace ramses_internal
         PlatformGuard guard(m_frameworkLock);
         m_resourceComponent = &resources;
         m_scenegraphProviderComponent = &scenegraph;
-        m_scenegraphProviderComponent->setSceneProviderServiceHandler(this);
     }
 
     void ClientApplicationLogic::deinit()
     {
         PlatformGuard guard(m_frameworkLock);
-        if (m_scenegraphProviderComponent)
-        {
-            m_scenegraphProviderComponent->setSceneProviderServiceHandler(nullptr);
-        }
         m_scenegraphProviderComponent = nullptr;
     }
 
@@ -51,7 +46,7 @@ namespace ramses_internal
     {
         PlatformGuard guard(m_frameworkLock);
         LOG_TRACE(CONTEXT_CLIENT, "ClientApplicationLogic::createScene:  '" << scene.getName() << "' with id '" << scene.getSceneId().getValue() << "'");
-        m_scenegraphProviderComponent->handleCreateScene(scene, enableLocalOnlyOptimization);
+        m_scenegraphProviderComponent->handleCreateScene(scene, enableLocalOnlyOptimization, *this);
     }
 
     void ClientApplicationLogic::publishScene(SceneId sceneId, EScenePublicationMode publicationMode)
@@ -87,14 +82,9 @@ namespace ramses_internal
         m_scenegraphProviderComponent->handleRemoveScene(sceneId);
     }
 
-    void ClientApplicationLogic::handleSubscribeScene(const SceneId& sceneId, const Guid& consumerID)
+    void ClientApplicationLogic::handleSceneReferenceEvent(SceneReferenceEvent const& event, const Guid& /*rendererId*/)
     {
-        m_scenegraphProviderComponent->handleSceneSubscription(sceneId, consumerID);
-    }
-
-    void ClientApplicationLogic::handleUnsubscribeScene(const SceneId& sceneId, const Guid& consumerID)
-    {
-        m_scenegraphProviderComponent->handleSceneUnsubscription(sceneId, consumerID);
+        m_sceneReferenceEventVec.push_back(event);
     }
 
     ramses_internal::ManagedResource ClientApplicationLogic::addResource(const IResource* resource)
@@ -142,6 +132,11 @@ namespace ramses_internal
     void ClientApplicationLogic::reserveResourceCount(uint32_t totalCount)
     {
         m_resourceComponent->reserveResourceCount(totalCount);
+    }
+
+    std::vector<ramses_internal::SceneReferenceEvent>& ClientApplicationLogic::getSceneReferenceEvents()
+    {
+        return m_sceneReferenceEventVec;
     }
 
     ManagedResource ClientApplicationLogic::forceLoadResource(const ResourceContentHash& hash) const

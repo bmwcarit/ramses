@@ -149,7 +149,7 @@ TEST_F(ADefaultRendererResourceCache, canStoreAndGetResource)
     uint8_t resData[50];
 
     // Add some non-zero data
-    for (uint32_t i = 0; i < sizeof(resData); i++)
+    for (size_t i = 0; i < sizeof(resData); i++)
     {
         resData[i] = i % 9;
     }
@@ -163,7 +163,7 @@ TEST_F(ADefaultRendererResourceCache, canStoreAndGetResource)
     uint8_t readBuffer[200] = {0}; // On purpose this is larger than the result data
     EXPECT_TRUE(cache.getResourceData(resId, readBuffer, sizeof(readBuffer)));
 
-    for (uint32_t i = 0; i < sizeof(resData); i++)
+    for (size_t i = 0; i < sizeof(resData); i++)
     {
         EXPECT_EQ(resData[i], readBuffer[i]);
     }
@@ -286,13 +286,13 @@ TEST_F(ADefaultRendererResourceCache, reportsFailForAnyByteCorruptionInFile)
     UInt                  fileSize(0);
     file.getSizeInBytes(fileSize);
 
-    for (uint32_t offset = 0; offset < fileSize; offset++)
+    for (size_t offset = 0; offset < fileSize; offset++)
     {
         if (offset > 0)
         {
             createTestFile();
         }
-        corruptTestFile(offset);
+        corruptTestFile(static_cast<uint32_t>(offset));
         EXPECT_FALSE(cache.loadFromFile(m_saveFilePath.c_str()));
     }
 }

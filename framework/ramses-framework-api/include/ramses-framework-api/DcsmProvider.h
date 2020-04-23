@@ -14,6 +14,7 @@
 #include "ramses-framework-api/IDcsmProviderEventHandler.h"
 #include "ramses-framework-api/StatusObject.h"
 #include "ramses-framework-api/DcsmMetadataCreator.h"
+#include "ramses-framework-api/EDcsmOfferingMode.h"
 
 namespace ramses
 {
@@ -35,26 +36,28 @@ namespace ramses
          * @param contentID The ID of the content to be offered
          * @param category The category the content is made for
          * @param scene The ramses scene ID containing the content.
+         * @param mode Indicates if content should be offered within same process only
          * @return StatusOK for success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().
          */
-        status_t offerContent(ContentID contentID, Category category, sceneId_t scene);
+        status_t offerContent(ContentID contentID, Category category, sceneId_t scene, EDcsmOfferingMode mode);
 
         /**
          * @brief Same behavior as offerContent() but additionally send provided
          *        metadata to consumers that assigned content to themselves.
          *
-         * This method should be used to attach metadata immediatly on offer to a
+         * This method should be used to attach metadata immediately on offer to a
          * content but is no prerequisite for later calls to updateContentMetadata().
          *
          * @param contentID The ID of the content to be offered
          * @param category The category the content is made for
          * @param scene The ramses scene ID containing the content.
+         * @param mode Indicates if content should be offered within same process only
          * @param metadata metadata creator filled with metadata
          * @return StatusOK for success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().
          */
-        status_t offerContentWithMetadata(ContentID contentID, Category category, sceneId_t scene, const DcsmMetadataCreator& metadata);
+        status_t offerContentWithMetadata(ContentID contentID, Category category, sceneId_t scene, EDcsmOfferingMode mode, const DcsmMetadataCreator& metadata);
 
         /**
          * @brief Send metadata updates to consumers content is assigned to. The content is earliest
@@ -100,7 +103,8 @@ namespace ramses
         status_t markContentReady(ContentID contentID);
 
         /**
-         * @brief Requests an assigned DcsmConsumer to switch to/focus this content within a category.
+         * @brief DEPRECATED use metadata focusRequested instead
+         *        Requests an assigned DcsmConsumer to switch to/focus this content within a category.
          *        This function does not have to be called to enable a consumer to use this
          *        content, it is only needed when the provider side wants to influence
          *        the consumer application logic concerning which content to use.
@@ -115,7 +119,7 @@ namespace ramses
         /**
          * @brief Communication from DcsmConsumer will be handled by a
          *        DcsmProvider.  Some of this communication results in
-         *        an event. Calls handler funtions synchronously in
+         *        an event. Calls handler functions synchronously in
          *        the caller context for DCSM events which were
          *        received asynchronously.  This function must be
          *        called regularly to avoid buffer overflow of the

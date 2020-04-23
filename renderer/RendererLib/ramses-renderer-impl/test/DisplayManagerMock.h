@@ -26,7 +26,7 @@ namespace ramses
         MOCK_METHOD3(linkOffscreenBuffer, void(displayBufferId_t, sceneId_t, dataConsumerId_t));
         MOCK_METHOD4(linkData, void(sceneId_t, dataProviderId_t, sceneId_t, dataConsumerId_t));
         MOCK_METHOD1(processConfirmationEchoCommand, void(const char*));
-        MOCK_METHOD2(dispatchAndFlush, void(ramses_internal::IEventHandler*, IRendererEventHandler*));
+        MOCK_METHOD3(dispatchAndFlush, void(ramses_internal::IEventHandler*, IRendererEventHandler*, IRendererSceneControlEventHandler_legacy*));
     };
 }
 

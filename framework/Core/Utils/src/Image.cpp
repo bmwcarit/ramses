@@ -125,7 +125,7 @@ namespace ramses_internal
     UInt32 Image::getNumberOfNonBlackPixels(UInt8 maxDiffPerColorChannel) const
     {
         UInt32 result = 0;
-        for (UInt32 px = 0; px < m_data.size() / 4; ++px)
+        for (size_t px = 0; px < m_data.size() / 4; ++px)
         {
             const UInt8* pxData = &m_data[4 * px];
             if (pxData[0] > maxDiffPerColorChannel ||

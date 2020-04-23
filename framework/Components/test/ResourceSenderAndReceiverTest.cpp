@@ -52,7 +52,7 @@ namespace ramses_internal
             std::vector<Byte> receivedResourceData;
             {
                 PlatformGuard g(receiverExpectCallLock);
-                EXPECT_CALL(handler, handleSendResource(_, senderId)).WillOnce([this, &receivedResourceData](const ByteArrayView& view, const Guid&)
+                EXPECT_CALL(handler, handleSendResource(_, senderId)).WillOnce([this, &receivedResourceData](const auto& view, const Guid&)
                 {
                     receivedResourceData.insert(receivedResourceData.begin(), view.begin(), view.end());
                     sendEvent();
@@ -69,7 +69,7 @@ namespace ramses_internal
             }
 
             ResourceStreamDeserializer deserializer;
-            ByteArrayView view(receivedResourceData.data(), static_cast<UInt32>(receivedResourceData.size()));
+            absl::Span<const Byte> view(receivedResourceData.data(), static_cast<UInt32>(receivedResourceData.size()));
             std::vector<IResource*> receivedRecources = deserializer.processData(view);
             EXPECT_TRUE(deserializer.processingFinished());
             EXPECT_EQ(1u, receivedRecources.size());
@@ -98,7 +98,7 @@ namespace ramses_internal
         {
             const uint8_t seed = static_cast<UInt8>(TestRandom::Get(0, 256));
             ResourceBlob blob(res.getResourceData().size());
-            for (UInt32 i = 0; i < blob.size(); ++i)
+            for (size_t i = 0; i < blob.size(); ++i)
             {
                 blob.data()[i] = static_cast<uint8_t>(i+seed);
             }
@@ -116,7 +116,7 @@ namespace ramses_internal
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(TypedCommunicationTest, AResourceSenderAndReceiverTest,
+    INSTANTIATE_TEST_SUITE_P(TypedCommunicationTest, AResourceSenderAndReceiverTest,
                             ::testing::ValuesIn(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()));
 
     TEST_P(AResourceSenderAndReceiverTest, ReceivesTheSameTexture2DSentByTheSender)
@@ -294,7 +294,7 @@ namespace ramses_internal
         std::vector<std::vector<Byte>> receivedResourceData;
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(handler, handleSendResource(_, senderId)).Times(1).WillRepeatedly([this, &receivedResourceData](const ByteArrayView& resourceData, const Guid&)
+            EXPECT_CALL(handler, handleSendResource(_, senderId)).Times(1).WillRepeatedly([this, &receivedResourceData](const auto& resourceData, const Guid&)
             {
                 std::vector<Byte> data;
                 data.insert(data.begin(), resourceData.begin(), resourceData.end());
@@ -322,7 +322,7 @@ namespace ramses_internal
         std::vector<std::vector<Byte>> receivedResourceData;
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(handler, handleSendResource(_, senderId)).Times(1).WillRepeatedly([this, &receivedResourceData](const ByteArrayView& resourceData, const Guid&)
+            EXPECT_CALL(handler, handleSendResource(_, senderId)).Times(1).WillRepeatedly([this, &receivedResourceData](const auto& resourceData, const Guid&)
             {
                 std::vector<Byte> data;
                 data.insert(data.begin(), resourceData.begin(), resourceData.end());

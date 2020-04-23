@@ -22,6 +22,9 @@
 
 namespace ramses_internal
 {
+    constexpr const ramses::dataProviderId_t TextureLinkScene::DataProviderId;
+    constexpr const ramses::dataConsumerId_t TextureLinkScene::DataConsumerId;
+
     TextureLinkScene::TextureLinkScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
         : IntegrationScene(ramsesClient, scene, cameraPosition)
     {

@@ -18,6 +18,7 @@
 
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/DisplayConfig.h"
+#include "ramses-renderer-api/IRendererSceneControlEventHandler_legacy.h"
 #include "ramses-framework-api/RamsesFramework.h"
 #include "DisplayManager/DisplayManager.h"
 
@@ -29,7 +30,7 @@
 #include "Utils/Image.h"
 #include "ramses-capu/os/File.h"
 
-class ScreenshotRendererEventHandler final : public ramses::RendererEventHandlerEmpty
+class ScreenshotRendererEventHandler final : public ramses::RendererEventHandlerEmpty, public ramses::RendererSceneControlEventHandlerEmpty_legacy
 {
 public:
     ScreenshotRendererEventHandler(ramses::RamsesRenderer& renderer, ramses::displayId_t displayId, uint32_t width, uint32_t height, std::string filename)
@@ -85,7 +86,7 @@ namespace ramses_internal
         , m_validationUnrequiredObjectsDirectoryArgument(m_parser, "vd", "validation-output-directory", String(), "Directory Path were validation output should be saved")
         , m_screenshotFile(m_parser, "x", "screenshot-file", {}, "Screenshot filename. Setting to non-empty enables screenshot capturing after the scene is shown")
     {
-        GetRamsesLogger().initialize(m_parser, String(), String(), false);
+        GetRamsesLogger().initialize(m_parser, String(), String(), false, true);
 
         const bool   helpRequested    = m_helpArgument;
         const String scenePathAndFile = m_scenePathAndFileArgument;
@@ -144,7 +145,7 @@ namespace ramses_internal
         }
 
         renderer->startThread();
-        ramses_internal::DisplayManager displayManager(*renderer, framework);
+        ramses_internal::DisplayManager displayManager(renderer->impl, framework.impl);
         // allow camera free move
         displayManager.enableKeysHandling();
 

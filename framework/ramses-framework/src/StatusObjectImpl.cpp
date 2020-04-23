@@ -46,13 +46,18 @@ namespace ramses
         return m_statusCache.addMessage(message);
     }
 
+    RNODISCARD status_t StatusObjectImpl::addErrorEntry(const std::string& message) const
+    {
+        return addErrorEntry(message.c_str());
+    }
+
     const char* StatusObjectImpl::getStatusMessage(status_t status) const
     {
         std::lock_guard<std::mutex> g(m_statusCacheLock);
         return m_statusCache.getMessage(status);
     }
 
-    status_t StatusObjectImpl::validate(uint32_t indent) const
+    status_t StatusObjectImpl::validate(uint32_t indent, StatusObjectSet& /*visitedObjects*/) const
     {
         status_t status = StatusOK;
 
@@ -122,9 +127,13 @@ namespace ramses
         m_validationMessages.push_back(validationMessage);
     }
 
-    status_t StatusObjectImpl::addValidationOfDependentObject(uint32_t indent, const StatusObjectImpl& dependentObject) const
+    status_t StatusObjectImpl::addValidationOfDependentObject(uint32_t indent, const StatusObjectImpl& dependentObject, StatusObjectSet& visitedObjects) const
     {
-        const status_t status = dependentObject.validate(indent);
+        if (visitedObjects.contains(&dependentObject))
+            return StatusOK;
+        visitedObjects.put(&dependentObject);
+
+        const status_t status = dependentObject.validate(indent, visitedObjects);
 
         if (status != StatusOK)
         {

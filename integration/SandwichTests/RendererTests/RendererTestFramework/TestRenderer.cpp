@@ -10,7 +10,7 @@
 #include "ramses-renderer-api/RendererConfig.h"
 #include "RendererAPI/IRenderBackend.h"
 #include "RamsesRendererImpl.h"
-#include "RendererTestEventHandler.h"
+#include "RendererAndSceneTestEventHandler.h"
 #include "ramses-renderer-api/WarpingMeshData.h"
 #include "RendererLib/FrameProfileRenderer.h"
 
@@ -18,14 +18,15 @@ namespace ramses_internal
 {
     ramses::displayId_t TestRenderer::createDisplay(const ramses::DisplayConfig& displayConfig)
     {
-        assert(nullptr != m_renderer);
         return RendererTestUtils::CreateDisplayImmediate(*m_renderer, displayConfig);
     }
 
     void TestRenderer::initializeRendererWithFramework(ramses::RamsesFramework& ramsesFramework, const ramses::RendererConfig& rendererConfig)
     {
-        assert(nullptr == m_renderer);
         m_renderer = ramsesFramework.createRenderer(rendererConfig);
+        assert(m_renderer != nullptr);
+        m_sceneControlAPI = m_renderer->getSceneControlAPI();
+        assert(m_sceneControlAPI != nullptr);
     }
 
     bool TestRenderer::isRendererInitialized() const
@@ -39,172 +40,73 @@ namespace ramses_internal
         {
             ramsesFramework.destroyRenderer(*m_renderer);
             m_renderer = nullptr;
+            m_sceneControlAPI = nullptr;
         }
     }
 
     void TestRenderer::flushRenderer()
     {
-        assert(nullptr != m_renderer);
         m_renderer->flush();
     }
 
     void TestRenderer::destroyDisplay(ramses::displayId_t displayId)
     {
-        assert(nullptr != m_renderer);
         RendererTestUtils::DestroyDisplayImmediate(*m_renderer, displayId);
     }
 
     ramses::displayBufferId_t TestRenderer::getDisplayFramebufferId(ramses::displayId_t displayId) const
     {
-        assert(nullptr != m_renderer);
         return m_renderer->getDisplayFramebuffer(displayId);
     }
 
-    void TestRenderer::subscribeScene(ramses::sceneId_t sceneId, bool blockUntilSubscription)
+    void TestRenderer::setSceneMapping(ramses::sceneId_t sceneId, ramses::displayId_t display)
     {
-        assert(nullptr != m_renderer);
-        m_renderer->subscribeScene(sceneId);
-        m_renderer->flush();
-
-        if (blockUntilSubscription)
-        {
-            waitForSubscription(sceneId);
-        }
+        m_sceneControlAPI->setSceneMapping(sceneId, display);
+        m_sceneControlAPI->flush();
     }
 
-    void TestRenderer::hideUnmapAndUnsubscribeScene(ramses::sceneId_t sceneId)
+    bool TestRenderer::getSceneToState(ramses::sceneId_t sceneId, ramses::RendererSceneState state)
     {
-        assert(nullptr != m_renderer);
-        RendererTestEventHandler eventHandler(*m_renderer);
-
-        m_renderer->hideScene(sceneId);
-        m_renderer->flush();
-        eventHandler.waitForHidden(sceneId);
-
-        m_renderer->unmapScene(sceneId);
-        m_renderer->flush();
-        eventHandler.waitForUnmapped(sceneId);
-
-        m_renderer->unsubscribeScene(sceneId);
-        m_renderer->flush();
-        eventHandler.waitForUnsubscribed(sceneId);
+        setSceneState(sceneId, state);
+        return waitForSceneStateChange(sceneId, state);
     }
 
-    void TestRenderer::waitForSubscription(ramses::sceneId_t sceneId)
+    void TestRenderer::setSceneState(ramses::sceneId_t sceneId, ramses::RendererSceneState state)
     {
-        assert(nullptr != m_renderer);
-        RendererTestEventHandler eventHandler(*m_renderer);
-        eventHandler.waitForSubscription(sceneId);
+        m_sceneControlAPI->setSceneState(sceneId, state);
+        m_sceneControlAPI->flush();
     }
 
-    void TestRenderer::unsubscribeScene(ramses::sceneId_t sceneId)
+    bool TestRenderer::waitForSceneStateChange(ramses::sceneId_t sceneId, ramses::RendererSceneState state)
     {
-        assert(nullptr != m_renderer);
-        m_renderer->unsubscribeScene(sceneId);
-        m_renderer->flush();
-
-        RendererTestEventHandler eventHandler(*m_renderer);
-        eventHandler.waitForUnsubscribed(sceneId);
+        ramses::RendererAndSceneTestEventHandler eventHandler(*m_renderer);
+        return eventHandler.waitForSceneState(sceneId, state);
     }
 
-    void TestRenderer::mapScene(ramses::displayId_t displayId, ramses::sceneId_t sceneId)
+    void TestRenderer::waitForFlush(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersionTag)
     {
-        assert(nullptr != m_renderer);
-        m_renderer->mapScene(displayId, sceneId);
-        m_renderer->flush();
-
-        RendererTestEventHandler eventHandler(*m_renderer);
-        eventHandler.waitForMapped(sceneId);
+        ramses::RendererAndSceneTestEventHandler sceneEventHandler(*m_renderer);
+        sceneEventHandler.waitForFlush(sceneId, sceneVersionTag);
     }
 
-    void TestRenderer::unmapScene(ramses::sceneId_t sceneId)
+    bool TestRenderer::checkScenesExpired(std::initializer_list<ramses::sceneId_t> sceneIds)
     {
-        assert(nullptr != m_renderer);
-        m_renderer->unmapScene(sceneId);
-        m_renderer->flush();
-        waitForUnmapped(sceneId);
-    }
-
-    void TestRenderer::waitForUnmapped(ramses::sceneId_t sceneId)
-    {
-        assert(nullptr != m_renderer);
-        RendererTestEventHandler eventHandler(*m_renderer);
-        eventHandler.waitForUnmapped(sceneId);
-    }
-
-    bool TestRenderer::showScene(ramses::sceneId_t sceneId)
-    {
-        assert(nullptr != m_renderer);
-        m_renderer->showScene(sceneId);
-        m_renderer->flush();
-
-        RendererTestEventHandler eventHandler(*m_renderer);
-        return eventHandler.waitForShown(sceneId);
-    }
-
-    void TestRenderer::hideScene(ramses::sceneId_t sceneId)
-    {
-        assert(nullptr != m_renderer);
-        m_renderer->hideScene(sceneId);
-        m_renderer->flush();
-
-        RendererTestEventHandler eventHandler(*m_renderer);
-        eventHandler.waitForHidden(sceneId);
-    }
-
-    void TestRenderer::hideAndUnmapScene(ramses::sceneId_t sceneId)
-    {
-        assert(nullptr != m_renderer);
-        m_renderer->hideScene(sceneId);
-        m_renderer->unmapScene(sceneId);
-        m_renderer->flush();
-
-        RendererTestEventHandler eventHandler(*m_renderer);
-        eventHandler.waitForHidden(sceneId);
-        eventHandler.waitForUnmapped(sceneId);
-    }
-
-    void TestRenderer::waitForPublication(ramses::sceneId_t sceneId)
-    {
-        assert(nullptr != m_renderer);
-        RendererTestEventHandler eventHandler(*m_renderer);
-        eventHandler.waitForPublication(sceneId);
-    }
-
-    void TestRenderer::waitForUnpublished(ramses::sceneId_t sceneId)
-    {
-        assert(nullptr != m_renderer);
-        RendererTestEventHandler eventHandler(*m_renderer);
-        eventHandler.waitForUnpublished(sceneId);
-    }
-
-    void TestRenderer::waitForNamedFlush(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersionTag)
-    {
-        assert(nullptr != m_renderer);
-        RendererTestEventHandler sceneEventHandler(*m_renderer);
-        sceneEventHandler.waitForNamedFlush(sceneId, sceneVersionTag, true);
-    }
-
-    bool TestRenderer::consumeEventsAndCheckExpiredScenes(std::initializer_list<ramses::sceneId_t> sceneIds)
-    {
-        assert(nullptr != m_renderer);
-        RendererTestEventHandler sceneEventHandler(*m_renderer);
+        ramses::RendererAndSceneTestEventHandler sceneEventHandler(*m_renderer);
         for (auto sceneId : sceneIds)
         {
-            if (!sceneEventHandler.checkAndConsumeExpiredScenesEvents(sceneId))
+            if (!sceneEventHandler.checkExpiredState(sceneId))
                 return false;
         }
 
         return true;
     }
 
-    bool TestRenderer::consumeEventsAndCheckRecoveredScenes(std::initializer_list<ramses::sceneId_t> sceneIds)
+    bool TestRenderer::checkScenesNotExpired(std::initializer_list<ramses::sceneId_t> sceneIds)
     {
-        assert(nullptr != m_renderer);
-        RendererTestEventHandler sceneEventHandler(*m_renderer);
+        ramses::RendererAndSceneTestEventHandler sceneEventHandler(*m_renderer);
         for (auto sceneId : sceneIds)
         {
-            if (!sceneEventHandler.checkAndConsumeRecoveredScenesEvents(sceneId))
+            if (sceneEventHandler.checkExpiredState(sceneId))
                 return false;
         }
 
@@ -213,44 +115,38 @@ namespace ramses_internal
 
     bool TestRenderer::waitForStreamSurfaceAvailabilityChange(ramses::streamSource_t streamSource, bool available)
     {
-        assert(nullptr != m_renderer);
-        RendererTestEventHandler eventHandler(*m_renderer);
+        ramses::RendererAndSceneTestEventHandler eventHandler(*m_renderer);
         return eventHandler.waitForStreamSurfaceAvailabilityChange(streamSource, available);
     }
 
-    void TestRenderer::dispatchRendererEvents(ramses::IRendererEventHandler& eventHandler)
+    void TestRenderer::dispatchEvents(ramses::IRendererEventHandler& eventHandler, ramses::IRendererSceneControlEventHandler& sceneControlEventHandler)
     {
-        assert(nullptr != m_renderer);
         m_renderer->dispatchEvents(eventHandler);
+        m_sceneControlAPI->dispatchEvents(sceneControlEventHandler);
     }
 
     void TestRenderer::setLoopMode(ramses::ELoopMode loopMode)
     {
-        assert(nullptr != m_renderer);
         m_renderer->setLoopMode(loopMode);
     }
 
     void TestRenderer::startRendererThread()
     {
-        assert(nullptr != m_renderer);
         m_renderer->startThread();
     }
 
     void TestRenderer::stopRendererThread()
     {
-        assert(nullptr != m_renderer);
         m_renderer->stopThread();
     }
 
     void TestRenderer::doOneLoop()
     {
-        assert(nullptr != m_renderer);
         m_renderer->doOneLoop();
     }
 
     ramses::displayBufferId_t TestRenderer::createOffscreenBuffer(ramses::displayId_t displayId, uint32_t width, uint32_t height, bool interruptible)
     {
-        assert(nullptr != m_renderer);
         ramses::displayBufferId_t offscreenBufferId;
         if (interruptible)
             offscreenBufferId = m_renderer->createInterruptibleOffscreenBuffer(displayId, width, height);
@@ -258,7 +154,7 @@ namespace ramses_internal
             offscreenBufferId = m_renderer->createOffscreenBuffer(displayId, width, height);
         m_renderer->flush();
 
-        RendererTestEventHandler eventHandler(*m_renderer);
+        ramses::RendererAndSceneTestEventHandler eventHandler(*m_renderer);
         eventHandler.waitForOffscreenBufferCreation(offscreenBufferId);
 
         return offscreenBufferId;
@@ -266,60 +162,51 @@ namespace ramses_internal
 
     void TestRenderer::destroyOffscreenBuffer(ramses::displayId_t displayId, ramses::displayBufferId_t buffer)
     {
-        assert(nullptr != m_renderer);
         m_renderer->destroyOffscreenBuffer(displayId, buffer);
         m_renderer->flush();
 
-        RendererTestEventHandler eventHandler(*m_renderer);
+        ramses::RendererAndSceneTestEventHandler eventHandler(*m_renderer);
         eventHandler.waitForOffscreenBufferDestruction(buffer);
     }
 
     void TestRenderer::assignSceneToDisplayBuffer(ramses::sceneId_t sceneId, ramses::displayBufferId_t buffer, int32_t renderOrder)
     {
-        assert(nullptr != m_renderer);
-        m_renderer->assignSceneToDisplayBuffer(sceneId, buffer, renderOrder);
-        m_renderer->flush();
+        m_sceneControlAPI->setSceneDisplayBufferAssignment(sceneId, buffer, renderOrder);
+        m_sceneControlAPI->flush();
     }
 
     void TestRenderer::setClearColor(ramses::displayId_t displayId, ramses::displayBufferId_t buffer, const ramses_internal::Vector4& clearColor)
     {
-        assert(nullptr != m_renderer);
-        m_renderer->setBufferClearColor(displayId, buffer, clearColor.r, clearColor.g, clearColor.b, clearColor.a);
-        m_renderer->flush();
+        m_sceneControlAPI->setDisplayBufferClearColor(displayId, buffer, clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+        m_sceneControlAPI->flush();
     }
 
     void TestRenderer::createBufferDataLink(ramses::displayBufferId_t providerBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag)
     {
-        assert(nullptr != m_renderer);
-        m_renderer->linkOffscreenBufferToSceneData(providerBuffer, consumerScene, consumerTag);
-        m_renderer->flush();
+        m_sceneControlAPI->linkOffscreenBuffer(providerBuffer, consumerScene, consumerTag);
+        m_sceneControlAPI->flush();
     }
 
     void TestRenderer::createDataLink(ramses::sceneId_t providerScene, ramses::dataProviderId_t providerId, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId)
     {
-        assert(nullptr != m_renderer);
-        m_renderer->linkData(providerScene, providerId, consumerScene, consumerId);
-        m_renderer->flush();
+        m_sceneControlAPI->linkData(providerScene, providerId, consumerScene, consumerId);
+        m_sceneControlAPI->flush();
     }
 
     void TestRenderer::removeDataLink(ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId)
     {
-        assert(nullptr != m_renderer);
-        m_renderer->unlinkData(consumerScene, consumerId);
-        m_renderer->flush();
+        m_sceneControlAPI->unlinkData(consumerScene, consumerId);
+        m_sceneControlAPI->flush();
     }
 
     void TestRenderer::updateWarpingMeshData(ramses::displayId_t displayId, const ramses::WarpingMeshData& warpingMeshData)
     {
-        assert(nullptr != m_renderer);
         m_renderer->updateWarpingMeshData(displayId, warpingMeshData);
         m_renderer->flush();
     }
 
     bool TestRenderer::performScreenshotCheck(ramses::displayId_t displayId, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const String& comparisonImageFile, float maxAveragePercentErrorPerPixel, bool readPixelsTwice)
     {
-        assert(nullptr != m_renderer);
-
         // In some cases (interruptible OB) taking screenshot needs to be delayed to guarantee that the last state was rendered to framebuffer,
         // reading pixels twice before checking result guarantees that.
         if (readPixelsTwice)
@@ -338,7 +225,6 @@ namespace ramses_internal
 
     void TestRenderer::saveScreenshotForDisplay(ramses::displayId_t displayId, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const String& imageFile)
     {
-        assert(nullptr != m_renderer);
         RendererTestUtils::SaveScreenshotForDisplay(
             *m_renderer,
             displayId,
@@ -351,7 +237,6 @@ namespace ramses_internal
 
     void TestRenderer::toggleRendererFrameProfiler()
     {
-        assert(nullptr != m_renderer);
         FrameProfileRenderer::ForAllFrameProfileRenderer(
             m_renderer->impl.getRenderer().getRenderer(),
             [](FrameProfileRenderer& renderer) { renderer.enable(!renderer.isEnabled()); });
@@ -359,37 +244,32 @@ namespace ramses_internal
 
     IEmbeddedCompositingManager& TestRenderer::getEmbeddedCompositorManager(ramses::displayId_t displayId)
     {
-        assert(nullptr != m_renderer);
         IDisplayController& displayController = m_renderer->impl.getRenderer().getRenderer().getDisplayController(DisplayHandle(displayId.getValue()));
         return displayController.getEmbeddedCompositingManager();
     }
 
     void TestRenderer::setSurfaceVisibility(WaylandIviSurfaceId surfaceId, bool visibility)
     {
-        assert(nullptr != m_renderer);
         m_renderer->impl.getRenderer().getRenderer().systemCompositorSetIviSurfaceVisibility(surfaceId, visibility);
     }
 
     void TestRenderer::readPixels(ramses::displayId_t displayId, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
     {
-        assert(nullptr != m_renderer);
         m_renderer->readPixels(displayId, x, y, width, height);
     }
 
     IEmbeddedCompositor& TestRenderer::getEmbeddedCompositor(ramses::displayId_t displayId)
     {
-        assert(nullptr != m_renderer);
         return m_renderer->impl.getRenderer().getRenderer().getDisplayController(DisplayHandle(displayId.getValue())).getRenderBackend().getEmbeddedCompositor();
     }
 
-    void TestRenderer::setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForSceneActionsApply, uint64_t limitForOffscreenBufferRender)
+    void TestRenderer::setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender)
     {
-        m_renderer->setFrameTimerLimits(0u, limitForClientResourcesUpload, limitForSceneActionsApply, limitForOffscreenBufferRender);
+        m_renderer->setFrameTimerLimits(0u, limitForClientResourcesUpload, limitForOffscreenBufferRender);
     }
 
     bool TestRenderer::hasSystemCompositorController() const
     {
-        assert(nullptr != m_renderer);
         return m_renderer->impl.getRenderer().getRenderer().hasSystemCompositorController();
     }
 }

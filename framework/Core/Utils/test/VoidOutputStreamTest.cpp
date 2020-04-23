@@ -81,7 +81,7 @@ namespace ramses_internal
     {
         const Guid value;
         stream << value;
-        EXPECT_EQ( sizeof(generic_uuid_t),  stream.getSize());
+        EXPECT_EQ(sizeof(Guid::value_type),  stream.getSize());
     }
 
     TEST_F(VoidOutputStreamTest, InsertString)

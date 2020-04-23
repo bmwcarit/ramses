@@ -18,6 +18,7 @@ namespace ramses_internal
     class String;
     class IOutputStream;
     class IInputStream;
+    class AnimationSystemFactory;
     struct SceneCreationInformation;
 
     class ScenePersistation
@@ -28,8 +29,8 @@ namespace ramses_internal
         static void WriteSceneToFile(const String& filename, const ClientScene& scene);
 
         static void ReadSceneMetadataFromStream(IInputStream& inStream, SceneCreationInformation& createInfo);
-        static void ReadSceneFromStream(IInputStream& inStream, IScene& scene);
-        static void ReadSceneFromFile(const String& filename, IScene& scene);
+        static void ReadSceneFromStream(IInputStream& inStream, IScene& scene, AnimationSystemFactory* animSystemFactory = nullptr);
+        static void ReadSceneFromFile(const String& filename, IScene& scene, AnimationSystemFactory* animSystemFactory = nullptr);
     };
 }
 

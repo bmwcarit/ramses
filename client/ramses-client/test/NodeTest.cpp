@@ -23,7 +23,7 @@ using namespace testing;
 namespace ramses
 {
     template <typename NodeType>
-    class NodeTest : public LocalTestClientWithScene, public testing::Test
+    class NodeTest : public LocalTestClientWithSceneAndAnimationSystem, public testing::Test
     {
     public:
         NodeType& createNode(const char* name)
@@ -32,7 +32,7 @@ namespace ramses
         }
     };
 
-    TYPED_TEST_CASE(NodeTest, NodeTypes);
+    TYPED_TEST_SUITE(NodeTest, NodeTypes);
 
     TYPED_TEST(NodeTest, hasChild)
     {
@@ -72,7 +72,7 @@ namespace ramses
     TYPED_TEST(NodeTest, shouldNotAddNodeFromOneSceneAsChildToNodeInOtherScene)
     {
         Scene& otherScene = *this->client.createScene(sceneId_t(1234u));
-        CreationHelper otherSceneCreationHelper(&otherScene, &this->client);
+        CreationHelper otherSceneCreationHelper(&otherScene, nullptr, &this->client);
         Node& parent = *otherSceneCreationHelper.template createObjectOfType<TypeParam>("parent");
         EXPECT_EQ(0u, parent.getChildCount());
 
@@ -309,7 +309,7 @@ namespace ramses
     {
         Scene& anotherScene = *this->client.createScene(sceneId_t(12u));
 
-        CreationHelper otherSceneCreationHelper(&anotherScene, &this->client);
+        CreationHelper otherSceneCreationHelper(&anotherScene, nullptr, &this->client);
         Node& parent = *otherSceneCreationHelper.template createObjectOfType<TypeParam>("parent");
 
         Node& node = this->createNode("node");

@@ -131,13 +131,6 @@ namespace ramses
         return status;
     }
 
-    status_t DisplayConfig::enableStereoDisplay()
-    {
-        const status_t status = impl.enableStereoDisplay();
-        LOG_HL_RENDERER_API_NOARG(status);
-        return status;
-    }
-
     status_t DisplayConfig::setWaylandIviLayerID(uint32_t waylandIviLayerID)
     {
         const status_t status = impl.setWaylandIviLayerID(waylandIviLayerID);
@@ -196,7 +189,7 @@ namespace ramses
 
     status_t DisplayConfig::setWindowIviVisible()
     {
-        const status_t status = impl.setWindowIviVisible();
+        const status_t status = impl.setWindowIviVisible(true);
         LOG_HL_RENDERER_API_NOARG(status);
         return status;
     }
@@ -226,13 +219,6 @@ namespace ramses
     {
         const status_t status = impl.setClearColor(red, green, blue, alpha);
         LOG_HL_RENDERER_API4(status, red, green, blue, alpha);
-        return status;
-    }
-
-    status_t DisplayConfig::setOffscreen(bool offscreenFlag)
-    {
-        const status_t status = impl.setOffscreen(offscreenFlag);
-        LOG_HL_RENDERER_API1(status, offscreenFlag);
         return status;
     }
 

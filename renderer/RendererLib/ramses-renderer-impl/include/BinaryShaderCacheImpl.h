@@ -14,6 +14,7 @@
 #include "ramses-renderer-api/Types.h"
 #include "SceneAPI/ResourceContentHash.h"
 #include "SceneAPI/SceneId.h"
+#include <mutex>
 
 namespace ramses_internal
 {
@@ -58,6 +59,10 @@ namespace ramses
 
         BinaryShaderTable m_binaryShaders;
         std::vector<binaryShaderFormatId_t> m_supportedFormats;
+        // protects HashMap write of new shaders concurrently with saving of file
+        // WARNING: Does not protect loading from file concurrently with querying for shaders!
+        // Reason: Avoid performance degradation because unknown if Integrity mutexes are cheap without congestion.
+        mutable std::mutex m_hashMapLock;
     };
 }
 

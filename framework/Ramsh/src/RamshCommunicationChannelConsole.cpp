@@ -13,8 +13,7 @@
 #include "Utils/RamsesLogger.h"
 #include "PlatformAbstraction/PlatformEnvironmentVariables.h"
 #include "Utils/LogMacros.h"
-#include "PlatformAbstraction/PlatformConsole.h"
-#include "ramses-capu/os/Console.h"
+#include "PlatformAbstraction/ConsoleInput.h"
 
 namespace ramses_internal
 {
@@ -24,8 +23,20 @@ namespace ramses_internal
         , m_commandHistory()
         , m_nextCommandFromHistory(0)
         , m_interactiveMode(!PlatformEnvironmentVariables::HasEnvVar("DISABLE_RAMSH_INTERACTIVE_MODE"))
+        , m_console(ConsoleInput::TryGetUniqueConsoleInput())
     {
-        RamshCommunicationChannelConsoleSignalHandler::getInstance().insert(this);
+        if (m_console)
+        {
+            // only register own signal handler when ConsoleInput might mess up settings
+            RamshCommunicationChannelConsoleSignalHandler::getInstance().insert(this);
+        }
+        else
+        {
+            LOG_INFO(CONTEXT_RAMSH, "Could not open stdin: Ramsh console input disabled");
+            // no stdin means no interaction possible
+            m_interactiveMode = false;
+        }
+
         if (m_interactiveMode)
         {
             // register callback to output prompt and unfinished command after each log message
@@ -37,7 +48,8 @@ namespace ramses_internal
 
     RamshCommunicationChannelConsole::~RamshCommunicationChannelConsole()
     {
-        RamshCommunicationChannelConsoleSignalHandler::getInstance().remove(this);
+        if (m_console)
+            RamshCommunicationChannelConsoleSignalHandler::getInstance().remove(this);
         GetRamsesLogger().removeAfterConsoleLogCallback();
     }
 
@@ -49,7 +61,8 @@ namespace ramses_internal
 
     void RamshCommunicationChannelConsole::startThread()
     {
-        m_checkInputThread.start(*this);
+        if (m_console)
+            m_checkInputThread.start(*this);
     }
 
     void RamshCommunicationChannelConsole::stopThread()
@@ -198,12 +211,12 @@ namespace ramses_internal
 
     void RamshCommunicationChannelConsole::run()
     {
+        assert(m_console);
         while(!isCancelRequested())
         {
             //blocking read
             char c = '\0';
-            ramses_capu::status_t status = ramses_capu::Console::ReadChar(c);
-            if (status == ramses_capu::CAPU_OK)
+            if (m_console->readChar(c))
             {
                 processInput(c);
             }
@@ -220,6 +233,7 @@ namespace ramses_internal
     void RamshCommunicationChannelConsole::cancel()
     {
         Runnable::cancel();
-        ramses_capu::Console::InterruptReadChar();
+        if (m_console)
+            m_console->interruptReadChar();
     }
 }

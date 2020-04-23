@@ -482,7 +482,7 @@ namespace ramses_internal
                                                });
     }
 
-    void TCPConnectionSystem::removeParticipant(const ParticipantPtr& pp)
+    void TCPConnectionSystem::removeParticipant(const ParticipantPtr& pp, bool reconnectWithBackoff)
     {
         if (pp->state == EParticipantState::Invalid)
             return;
@@ -511,7 +511,20 @@ namespace ramses_internal
         }
 
         // check if should be tried again
-        addNewParticipantByAddress(pp->address);
+        if (reconnectWithBackoff)
+        {
+            const std::chrono::milliseconds backoffTime{2000};
+            LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::removeParticipant: will delay reconnect by " << backoffTime.count() << "ms");
+            pp->connectTimer.expires_after(backoffTime);
+            pp->connectTimer.async_wait([this, pp](asio::error_code ee) {
+                if (ee)
+                    LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::removeParticipant: Backoff timer got canceled.");
+                else
+                    addNewParticipantByAddress(pp->address);
+            });
+        }
+        else
+            addNewParticipantByAddress(pp->address);
     }
 
     const char* TCPConnectionSystem::EnumToString(EParticipantState e)
@@ -543,7 +556,7 @@ namespace ramses_internal
         // TODO: what if both daemon? guid? remember who connected/should connect (in pp)
 
         const bool otherIsDaemon = (m_hasOtherDaemon && address.getIp() == m_daemonAddress.getIp() && address.getPort() == m_daemonAddress.getPort());
-        const bool shouldConnectbasedOnGuid = PlatformMemory::Compare(&m_participantAddress.getParticipantId().getGuidData(), &address.getParticipantId().getGuidData(), sizeof(generic_uuid_t)) > 0;
+        const bool shouldConnectbasedOnGuid = m_participantAddress.getParticipantId().get() > address.getParticipantId().get();
 
         if (!m_actAsDaemon && (otherIsDaemon || (!address.getParticipantId().isInvalid() && shouldConnectbasedOnGuid)))
         {
@@ -667,6 +680,9 @@ namespace ramses_internal
         case EMessageId_CreateScene:
             handleCreateScene(pp, stream);
             break;
+        case EMessageId_RendererEvent:
+            handleRendererEvent(pp, stream);
+            break;
         case EMessageId_DcsmRegisterContent:
             handleDcsmRegisterContent(pp, stream);
             break;
@@ -675,6 +691,9 @@ namespace ramses_internal
             break;
         case EMessageId_DcsmContentStatusChange:
             handleDcsmContentStatusChange(pp, stream);
+            break;
+        case EMessageId_DcsmContentDescription:
+            handleDcsmContentDescription(pp, stream);
             break;
         case EMessageId_DcsmContentAvailable:
             handleDcsmContentAvailable(pp, stream);
@@ -722,7 +741,7 @@ namespace ramses_internal
         {
             LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleConnectionDescriptionMessage: Unexpected connection description from " << pp->address.getParticipantId() <<
                       " in state " << EnumToString(pp->state));
-            removeParticipant(pp);
+            removeParticipant(pp, true);
             return;
         }
 
@@ -733,7 +752,7 @@ namespace ramses_internal
         {
             LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleConnectionDescriptionMessage: Invalid protocol version (expected "
                      << m_protocolVersion << ", got " << protocolVersion << ") on new connection. Drop connection");
-            removeParticipant(pp);
+            removeParticipant(pp, true);
             return;
         }
 
@@ -1051,7 +1070,7 @@ namespace ramses_internal
                                                 sos << "]";
                                             }));
 
-        OutMessage msg(Guid(false), EMessageId_PublishScene);
+        OutMessage msg(Guid(), EMessageId_PublishScene);
         msg.stream << static_cast<uint32_t>(newScenes.size());
         for (const auto& s : newScenes)
         {
@@ -1120,7 +1139,7 @@ namespace ramses_internal
                                                 sos << "]";
                                             }));
 
-        OutMessage msg(Guid(false), EMessageId_UnpublishScene);
+        OutMessage msg(Guid(), EMessageId_UnpublishScene);
         msg.stream << static_cast<uint32_t>(unavailableScenes.size());
         for (const auto& s : unavailableScenes)
         {
@@ -1281,7 +1300,7 @@ namespace ramses_internal
             stream >> dataSize;
 
             const char* receiveBufferEnd = pp->receiveBuffer.data() + pp->receiveBuffer.size();
-            ByteArrayView resourceData(reinterpret_cast<const Byte*>(stream.readPosition()), static_cast<uint32_t>(receiveBufferEnd - stream.readPosition()));
+            absl::Span<const Byte> resourceData(reinterpret_cast<const Byte*>(stream.readPosition()), static_cast<uint32_t>(receiveBufferEnd - stream.readPosition()));
 
             LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleTransferResources: from " << pp->address.getParticipantId() << ", dataSize " << dataSize);
             PlatformGuard guard(m_frameworkLock);
@@ -1299,7 +1318,7 @@ namespace ramses_internal
                                                 sos << "]";
                                             }));
 
-        OutMessage msg(Guid(false), EMessageId_ResourcesNotAvailable);
+        OutMessage msg(Guid(), EMessageId_ResourcesNotAvailable);
         msg.stream << static_cast<uint32_t>(resources.size());
         for (const auto& r : resources)
         {
@@ -1328,6 +1347,42 @@ namespace ramses_internal
 
             PlatformGuard guard(m_frameworkLock);
             m_resourceConsumerHandler->handleResourcesNotAvailable(resources, pp->address.getParticipantId());
+        }
+    }
+
+    // --
+    bool TCPConnectionSystem::sendRendererEvent(const Guid& to, const SceneId& sceneId, const std::vector<Byte>& data)
+    {
+        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendRendererEvent: to " << to << ", size " << data.size());
+        if (data.size() > 32000)  // really 32768
+        {
+            LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendRendererEvent: to " << to << " failed because size too large " << data.size());
+            return false;
+        }
+        OutMessage msg(to, EMessageId_RendererEvent);
+        msg.stream << sceneId.getValue()
+                   << static_cast<uint32_t>(data.size());
+        msg.stream.write(data.data(), static_cast<uint32_t>(data.size()));
+        return postMessageForSending(std::move(msg), true);
+    }
+
+    void TCPConnectionSystem::handleRendererEvent(const ParticipantPtr& pp, BinaryInputStream& stream)
+    {
+        if (m_sceneProviderHandler)
+        {
+            SceneId sceneId;
+            stream >> sceneId.getReference();
+
+            uint32_t dataSize = 0;
+            stream >> dataSize;
+
+            std::vector<Byte> data(dataSize);
+
+            stream.read(data.data(), dataSize);
+
+            LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleRendererEvent: from " << pp->address.getParticipantId() << ", size " << dataSize);
+            PlatformGuard guard(m_frameworkLock);
+            m_sceneProviderHandler->handleRendererEvent(sceneId, std::move(data), pp->address.getParticipantId());
         }
     }
 
@@ -1402,7 +1457,7 @@ namespace ramses_internal
     // --
     bool TCPConnectionSystem::sendDcsmBroadcastOfferContent(ContentID contentID, Category category)
     {
-        OutMessage msg(Guid(false), EMessageId_DcsmRegisterContent);
+        OutMessage msg(Guid(), EMessageId_DcsmRegisterContent);
         msg.stream << contentID.getValue()
                    << category.getValue();
         return postMessageForSending(std::move(msg), true);
@@ -1432,16 +1487,16 @@ namespace ramses_internal
     }
 
     // --
-    bool TCPConnectionSystem::sendDcsmContentReady(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor)
+    bool TCPConnectionSystem::sendDcsmContentDescription(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor)
     {
-        OutMessage msg(to, EMessageId_DcsmContentAvailable);
+        OutMessage msg(to, EMessageId_DcsmContentDescription);
         msg.stream << contentID.getValue()
                    << technicalContentType
                    << technicalContentDescriptor.getValue();
         return postMessageForSending(std::move(msg), true);
     }
 
-    void TCPConnectionSystem::handleDcsmContentAvailable(const ParticipantPtr& pp, BinaryInputStream& stream)
+    void TCPConnectionSystem::handleDcsmContentDescription(const ParticipantPtr& pp, BinaryInputStream& stream)
     {
         if (m_dcsmConsumerHandler)
         {
@@ -1455,7 +1510,27 @@ namespace ramses_internal
             stream >> technicalContentDescriptor.getReference();
 
             PlatformGuard guard(m_frameworkLock);
-            m_dcsmConsumerHandler->handleContentReady(contentID, technicalContentType, technicalContentDescriptor, pp->address.getParticipantId());
+            m_dcsmConsumerHandler->handleContentDescription(contentID, technicalContentType, technicalContentDescriptor, pp->address.getParticipantId());
+        }
+    }
+
+    // --
+    bool TCPConnectionSystem::sendDcsmContentReady(const Guid& to, ContentID contentID)
+    {
+        OutMessage msg(to, EMessageId_DcsmContentAvailable);
+        msg.stream << contentID.getValue();
+        return postMessageForSending(std::move(msg), true);
+    }
+
+    void TCPConnectionSystem::handleDcsmContentAvailable(const ParticipantPtr& pp, BinaryInputStream& stream)
+    {
+        if (m_dcsmConsumerHandler)
+        {
+            ContentID contentID;
+            stream >> contentID.getReference();
+
+            PlatformGuard guard(m_frameworkLock);
+            m_dcsmConsumerHandler->handleContentReady(contentID, pp->address.getParticipantId());
         }
     }
 
@@ -1482,7 +1557,7 @@ namespace ramses_internal
     // --
     bool TCPConnectionSystem::sendDcsmBroadcastRequestStopOfferContent(ContentID contentID)
     {
-        OutMessage msg(Guid(false), EMessageId_DcsmRequestUnregisterContent);
+        OutMessage msg(Guid(), EMessageId_DcsmRequestUnregisterContent);
         msg.stream << contentID.getValue();
         return postMessageForSending(std::move(msg), true);
     }
@@ -1502,7 +1577,7 @@ namespace ramses_internal
     // --
     bool TCPConnectionSystem::sendDcsmBroadcastForceStopOfferContent(ContentID contentID)
     {
-        OutMessage msg(Guid(false), EMessageId_DcsmForceUnregisterContent);
+        OutMessage msg(Guid(), EMessageId_DcsmForceUnregisterContent);
         msg.stream << contentID.getValue();
         return postMessageForSending(std::move(msg), true);
     }

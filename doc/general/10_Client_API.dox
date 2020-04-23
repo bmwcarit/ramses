@@ -33,6 +33,13 @@ Scope: Scene Instance
 - Mixing up objects of different scene instances will result in error status or undefined behaviour (e.g. setting
   a parent-child relationship between nodes of different scenes; see Validation)
 
+Scope: Animation System
+- Objects are created and destroyed with the AnimationSystem object.
+- On destruction of AnimationSystem, objects in this AnimationSystem instance will be deleted automatically
+- To destroy objects created by AnimationSystem, one must explicitly call AnimationSystem::destroy()
+- Objects of this AnimationSystem instance can be used only with objects of the AnimationSystem instance
+- Mixing up objects of different AnimationSystem instances will result in error status or undefined behaviour
+
 # Object lifecycle
 
 Object lifecycle is an important topic in any C++ framework. In the case of RAMSES, creation and destruction is strict, straightforward and simple,

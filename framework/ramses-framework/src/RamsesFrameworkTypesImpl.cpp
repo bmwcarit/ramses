@@ -21,8 +21,11 @@ static_assert(ramses::sceneId_t::Invalid().getValue() == ramses_internal::SceneI
 static_assert(std::is_same<ramses::sceneVersionTag_t, ramses_internal::SceneVersionTag::BaseType>::value, "SceneVersionTag type mismatch");
 static_assert(ramses::InvalidSceneVersionTag == ramses_internal::SceneVersionTag::Invalid().getValue(), "SceneVersionTag default mismatch");
 
-static_assert(std::is_same<ramses::dataProviderId_t, ramses_internal::DataSlotId::BaseType>::value, "dataProviderId_t type mismatch");
-static_assert(std::is_same<ramses::dataConsumerId_t, ramses_internal::DataSlotId::BaseType>::value, "dataConsumerId_t type mismatch");
+static_assert(std::is_same<ramses::dataProviderId_t::BaseType, ramses_internal::DataSlotId::BaseType>::value, "dataProviderId_t type mismatch");
+static_assert(ramses::dataProviderId_t::Invalid().getValue() == ramses_internal::DataSlotId::Invalid().getValue(), "dataProviderId_t invalid value mismatch");
+
+static_assert(std::is_same<ramses::dataConsumerId_t::BaseType, ramses_internal::DataSlotId::BaseType>::value, "dataConsumerId_t type mismatch");
+static_assert(ramses::dataConsumerId_t::Invalid().getValue() == ramses_internal::DataSlotId::Invalid().getValue(), "dataConsumerId_t invalid value mismatch");
 
 static_assert(std::is_same<ramses::nodeId_t::BaseType, ramses_internal::NodeHandle::Type>::value, "NodeHandle type mismatch");
 static_assert(ramses::nodeId_t::Invalid().getValue() == ramses_internal::NodeHandle::Invalid().asMemoryHandle(), "NodeHandle default mismatch");

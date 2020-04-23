@@ -132,7 +132,6 @@ namespace ramses_internal
         for(const auto sceneId : knownSceneIds)
         {
             const ESceneState sceneState = updater.m_sceneStateExecutor.getSceneState(sceneId);
-            const Guid clientGuid = updater.m_sceneStateExecutor.m_scenesStateInfo.getSceneClientGuid(sceneId);
 
             String sceneName("N/A");
             if (updater.m_rendererScenes.hasScene(sceneId))
@@ -158,7 +157,6 @@ namespace ramses_internal
                     {
                         context << "Display:  " << "N/A" << RendererLogContext::NewLine;
                     }
-                    context << "Client:   " << "\"" << clientGuid << "\"" << RendererLogContext::NewLine;
                 }
 
                 if (updater.hasPendingFlushes(sceneId))
@@ -864,7 +862,7 @@ namespace ramses_internal
         // Iterate through all scenes and list all consumers & providers with type and connections!!
         for(const auto& sceneIt : scenes)
         {
-            const RendererCachedScene& scene = *sceneIt.value.scene;
+            const RendererCachedScene& scene = *(sceneIt.value.scene);
             const SceneId sceneId = sceneIt.key;
             const UInt32 sceneSlotCount = scene.getDataSlotCount();
 
@@ -1107,24 +1105,19 @@ namespace ramses_internal
     {
         StartSection("RENDERER EVENTS", context);
 
-        std::vector<RendererEvent> events;
-        updater.m_rendererEventCollector.getEvents(events);
+        const auto rendererEvents = updater.m_rendererEventCollector.getRendererEvents();
+        const auto sceneControlEvents = updater.m_rendererEventCollector.getSceneControlEvents();
 
-        context << events.size() << " renderer event(s) pending to be dispatched" << RendererLogContext::NewLine;
+        context << rendererEvents.size() << " renderer event(s) pending to be dispatched" << RendererLogContext::NewLine;
+        context << sceneControlEvents.size() << " scene control event(s) pending to be dispatched" << RendererLogContext::NewLine;
         context.indent();
-        if (events.size() > 0u)
-        {
-            context << "Dispatch events using RamsesRenderer::dispatchEvents(...)!" << RendererLogContext::NewLine;
-        }
-        context << RendererLogContext::NewLine;
 
         if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
         {
-            UInt32 i = 0;
-            for(const auto& eventIt : events)
-            {
-                context << ++i << ". " << EnumToString(eventIt.eventType) << RendererLogContext::NewLine;
-            }
+            for (size_t i = 0; i < rendererEvents.size(); ++i)
+                context << i << ". " << EnumToString(rendererEvents[i].eventType) << RendererLogContext::NewLine;
+            for (size_t i = 0; i < sceneControlEvents.size(); ++i)
+                context << i << ". " << EnumToString(sceneControlEvents[i].eventType) << RendererLogContext::NewLine;
         }
 
         context.unindent();
@@ -1152,10 +1145,9 @@ namespace ramses_internal
                         }
                         const ESceneState sceneState = updater.m_sceneStateExecutor.getSceneState(sceneId);
                         sos << " " << sceneId.getValue() << " " << EnumToString(sceneState);
-                        const auto it = updater.m_pendingSceneActions.find(sceneId);
-                        if (it != updater.m_pendingSceneActions.end())
+                        if (updater.m_rendererScenes.hasScene(sceneId))
                         {
-                            const auto& pendingFlushes = it->second;
+                            const auto& pendingFlushes = updater.m_rendererScenes.getStagingInfo(sceneId).pendingFlushes;
                             if (!pendingFlushes.empty())
                                 sos << " (" << pendingFlushes.size() << " pending flushes)";
                         }
@@ -1164,8 +1156,8 @@ namespace ramses_internal
                     sos << "\n";
                     updater.m_renderer.getStatistics().writeStatsToStream(sos);
                     sos << "\nTime budgets:"
-                        << " flushApply " << Int64(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneActionsApply).count()) << "us"
-                        << " resourceUpload " << Int64(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::ClientResourcesUpload).count()) << "us"
+                        << " sceneResourceUpload " << Int64(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneResourcesUpload).count()) << "us"
+                        << " clientResourceUpload " << Int64(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::ClientResourcesUpload).count()) << "us"
                         << " obRender " << Int64(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::OffscreenBufferRender).count()) << "us";
                     sos << "\n";
                     updater.m_renderer.getProfilerStatistics().writeLongestFrameTimingsToStream(sos);

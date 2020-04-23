@@ -69,6 +69,20 @@ namespace ramses
         return StatusOK;
     }
 
+    status_t DcsmMetadataCreatorImpl::setExclusiveBackground(bool state)
+    {
+        if (!m_metadata.setExclusiveBackground(state))
+            return addErrorEntry("DcsmMetadataCreatorImpl::setExclusiveBackground: input not valid");
+        return StatusOK;
+    }
+
+    status_t DcsmMetadataCreatorImpl::setFocusRequest(int32_t state)
+    {
+        if (!m_metadata.setFocusRequested(state))
+            return addErrorEntry("DcsmMetadataCreatorImpl::setFocusRequested: input not valid");
+        return StatusOK;
+    }
+
     ramses_internal::DcsmMetadata DcsmMetadataCreatorImpl::getMetadata() const
     {
         return m_metadata;

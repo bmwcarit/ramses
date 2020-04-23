@@ -12,7 +12,7 @@
 namespace ramses_internal
 {
 
-    TYPED_TEST_CASE_P(AWindowWaylandWithEventHandling);
+    TYPED_TEST_SUITE_P(AWindowWaylandWithEventHandling);
 
     TYPED_TEST_P(AWindowWaylandWithEventHandling, singleKeyPressEventTriggersKeyPressedEventWithCorrectKeyCode)
     {
@@ -123,7 +123,7 @@ namespace ramses_internal
         this->processAllEvents();
     }
 
-    REGISTER_TYPED_TEST_CASE_P(AWindowWaylandWithEventHandling,
+    REGISTER_TYPED_TEST_SUITE_P(AWindowWaylandWithEventHandling,
             singleKeyPressEventTriggersKeyPressedEventWithCorrectKeyCode,
             leftMouseButtonDownEventTriggersLeftButtonDownEvent,
             leftMouseButtonUpEventTriggersLeftButtonUpEvent,
@@ -136,7 +136,7 @@ namespace ramses_internal
             mouseMoveEventTriggersMouseMoveEvent
             );
 
-    TYPED_TEST_CASE_P(AWindowWayland);
+    TYPED_TEST_SUITE_P(AWindowWayland);
 
     TYPED_TEST_P(AWindowWayland, canInitAWindow)
     {
@@ -207,7 +207,7 @@ namespace ramses_internal
         EXPECT_FALSE(this->m_window->init());
     }
 
-    REGISTER_TYPED_TEST_CASE_P(AWindowWayland,
+    REGISTER_TYPED_TEST_SUITE_P(AWindowWayland,
             canInitAWindow,
             IfXdgRuntimeDirIsNotSetInitWillFail,
             IfXdgRuntimeDirIsNotCorrectInitWillFail,

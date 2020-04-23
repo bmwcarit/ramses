@@ -51,7 +51,9 @@ protected:
     void expectRendererEvent(ERendererEventType event, SceneId providerSId, DataSlotId pId, SceneId consumerSId, DataSlotId cId)
     {
         RendererEventVector events;
-        rendererEventCollector.dispatchEvents(events);
+        RendererEventVector dummy;
+        rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
+
         ASSERT_EQ(1u, events.size());
         EXPECT_EQ(event, events.front().eventType);
         EXPECT_EQ(providerSId, events.front().providerSceneId);
@@ -63,7 +65,8 @@ protected:
     void expectRendererEvent(ERendererEventType event, SceneId consumerSId, DataSlotId cId)
     {
         RendererEventVector events;
-        rendererEventCollector.dispatchEvents(events);
+        RendererEventVector dummy;
+        rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
         ASSERT_EQ(1u, events.size());
         EXPECT_EQ(event, events.front().eventType);
         EXPECT_EQ(consumerSId, events.front().consumerSceneId);
@@ -73,7 +76,8 @@ protected:
     void expectRendererEventUnlinkedAndDestroyedSlot(EDataSlotType destroyedSlotType, SceneId sceneIdOfDestroyedSlot, DataSlotId destroyedSlotId, SceneId consumerSId, DataSlotId cId, SceneId consumerSceneId2 = SceneId(0u), DataSlotId consumerId2 = DataSlotId(0u))
     {
         RendererEventVector events;
-        rendererEventCollector.dispatchEvents(events);
+        RendererEventVector dummy;
+        rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
 
         const bool hasTwoLinksRemoved = (consumerId2.getValue() != 0u);
         if (hasTwoLinksRemoved)

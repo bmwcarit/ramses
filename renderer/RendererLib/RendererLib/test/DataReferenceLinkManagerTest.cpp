@@ -54,7 +54,8 @@ protected:
     void expectRendererEvent(ERendererEventType event, SceneId providerSId, DataSlotId pId, SceneId consumerSId, DataSlotId cId)
     {
         RendererEventVector events;
-        rendererEventCollector.dispatchEvents(events);
+        RendererEventVector dummy;
+        rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
         ASSERT_EQ(1u, events.size());
         EXPECT_EQ(event, events.front().eventType);
         EXPECT_EQ(providerSId, events.front().providerSceneId);
@@ -63,14 +64,16 @@ protected:
         EXPECT_EQ(cId, events.front().consumerdataId);
     }
 
-    void expectRendererEvent(ERendererEventType event, SceneId consumerSId, DataSlotId cId)
+    void expectRendererEvent(ERendererEventType event, SceneId consumerSId, DataSlotId cId, SceneId providerSId)
     {
         RendererEventVector events;
-        rendererEventCollector.dispatchEvents(events);
+        RendererEventVector dummy;
+        rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
         ASSERT_EQ(1u, events.size());
         EXPECT_EQ(event, events.front().eventType);
         EXPECT_EQ(consumerSId, events.front().consumerSceneId);
         EXPECT_EQ(cId, events.front().consumerdataId);
+        EXPECT_EQ(providerSId, events.front().providerSceneId);
     }
 
     void setDataValue(DataInstanceHandle dataRef, IScene& scene, float value)
@@ -178,7 +181,7 @@ TEST_F(ADataReferenceLinkManager, doesNotResolveLinkedDataIfConsumerUnlinked)
     expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId2);
 
     sceneLinksManager.removeDataLink(consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataUnlinked, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType_SceneDataUnlinked, consumerSceneId, consumerId, providerSceneId);
 
     dataReferenceLinkManager.resolveLinksForConsumerScene(consumerScene);
 
@@ -243,7 +246,7 @@ TEST_F(ADataReferenceLinkManager, unlinkedDataFallsBackToPreviousValue)
     expectDataValue(consumerDataRef, consumerScene, 666.f);
 
     sceneLinksManager.removeDataLink(consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataUnlinked, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType_SceneDataUnlinked, consumerSceneId, consumerId, providerSceneId);
 
     expectDataValue(providerDataRef, providerScene, 666.f);
     expectDataValue(consumerDataRef, consumerScene, -1.f);
@@ -305,7 +308,7 @@ TEST_F(ADataReferenceLinkManager, confidenceTest_createTwoLinksChangeValueAndUnl
     expectDataValue(providerDataRef, providerScene, 123.f);
 
     sceneLinksManager.removeDataLink(consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataUnlinked, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType_SceneDataUnlinked, consumerSceneId, consumerId, providerSceneId);
 
     expectDataValue(consumerDataRef, consumerScene, -1.f);
     expectDataValue(consumerDataRef2, consumerScene, 123.f);
@@ -336,7 +339,7 @@ typedef ::testing::Types <
     Matrix44f
 > ItemTypes;
 
-TYPED_TEST_CASE(ADataReferenceLinkManagerTyped, ItemTypes);
+TYPED_TEST_SUITE(ADataReferenceLinkManagerTyped, ItemTypes);
 
 template <typename T>
 T GetSomeValue()
@@ -450,7 +453,7 @@ TYPED_TEST(ADataReferenceLinkManagerTyped, confidenceTest_linkAndChangeAndUnlink
 
     // remove link
     this->sceneLinksManager.removeDataLink(this->consumerSceneId, this->consumerId);
-    this->expectRendererEvent(ERendererEventType_SceneDataUnlinked, this->consumerSceneId, this->consumerId);
+    this->expectRendererEvent(ERendererEventType_SceneDataUnlinked, this->consumerSceneId, this->consumerId, this->providerSceneId);
 
     actualProviderValue = ISceneDataArrayAccessor::GetDataArray<TypeParam>(&this->providerScene, this->providerDataRef, DataFieldHandle(0u))[0];
     actualConsumerValue = ISceneDataArrayAccessor::GetDataArray<TypeParam>(&this->consumerScene, this->consumerDataRef, DataFieldHandle(0u))[0];

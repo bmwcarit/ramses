@@ -14,11 +14,10 @@
 #include "EmbeddedCompositingTestMessages.h"
 #include "RendererAPI/IEmbeddedCompositingManager.h"
 #include "Utils/LogMacros.h"
+#include "Utils/BinaryOutputStream.h"
 
 namespace ramses_internal
 {
-    class BinaryOutputStream;
-
     class TestForkingController
     {
     public:

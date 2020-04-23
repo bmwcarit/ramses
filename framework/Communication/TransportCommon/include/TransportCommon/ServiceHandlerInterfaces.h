@@ -13,21 +13,22 @@
 #include "Resource/ResourceInfo.h"
 #include "SceneAPI/SceneId.h"
 #include "SceneAPI/SceneTypes.h"
-#include "Collections/ArrayView.h"
 #include "Components/DcsmTypes.h"
 #include "Components/DcsmMetadata.h"
+#include "absl/types/span.h"
 
 namespace ramses_internal
 {
     class Guid;
     class SceneActionCollection;
+    struct SceneReferenceEvent;
 
     class IResourceConsumerServiceHandler
     {
     public:
         virtual ~IResourceConsumerServiceHandler() {}
 
-        virtual void handleSendResource(const ByteArrayView& data, const Guid& providerID) = 0;
+        virtual void handleSendResource(const absl::Span<const Byte>& data, const Guid& providerID) = 0;
         virtual void handleResourcesNotAvailable(const ResourceContentHashVector& resources, const Guid& providerID) = 0;
     };
 
@@ -46,6 +47,7 @@ namespace ramses_internal
 
         virtual void handleSubscribeScene(const SceneId& sceneId, const Guid& consumerID) = 0;
         virtual void handleUnsubscribeScene(const SceneId& sceneId, const Guid& consumerID) = 0;
+        virtual void handleRendererEvent(const SceneId& sceneId, std::vector<Byte> data, const Guid& rendererId) = 0;
     };
 
     class ISceneRendererServiceHandler
@@ -75,7 +77,8 @@ namespace ramses_internal
     public:
         virtual ~IDcsmConsumerServiceHandler() {};
         virtual void handleOfferContent(ContentID contentID, Category, const Guid& providerID) = 0;
-        virtual void handleContentReady(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID) = 0;
+        virtual void handleContentDescription(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID) = 0;
+        virtual void handleContentReady(ContentID contentID, const Guid& providerID) = 0;
         virtual void handleContentFocusRequest(ContentID contentID, const Guid& providerID) = 0;
         virtual void handleRequestStopOfferContent(ContentID contentID, const Guid& providerID) = 0;
         virtual void handleForceStopOfferContent(ContentID contentID, const Guid& providerID) = 0;

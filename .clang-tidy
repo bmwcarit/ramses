@@ -24,6 +24,8 @@ Checks: >
         -clang-analyzer-cplusplus.NewDelete,
         -clang-analyzer-cplusplus*,
         -misc-macro-parentheses,
+        -bugprone-macro-parentheses,
+        -bugprone-narrowing-conversions,
         -readability-redundant-string-init,
         -readability-redundant-member-init,
         -cert-err58-cpp,
@@ -38,7 +40,7 @@ Checks: >
 WarningsAsErrors: '*'
 
 # ignore headers in external because we cannot fix them
-HeaderFilterRegex: '/git/(client|demo|examples|external/capu|framework|integration|renderer|utils|proprietary/(android|client|demo|framework|utils))/'
+HeaderFilterRegex: '/git/(client|demo|examples|external/capu|framework|integration|renderer|utils)/'
 
 AnalyzeTemporaryDtors: false
 FormatStyle:     none

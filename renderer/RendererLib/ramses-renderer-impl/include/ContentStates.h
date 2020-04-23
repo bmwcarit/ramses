@@ -15,9 +15,9 @@ namespace ramses
 {
     enum class ContentState
     {
-        Available,   /// Content is known and can be requested to get ready in order to show it
-        Ready,       /// Content is ready both from Dcsm and renderer perspective (content data is fully ready to be rendered)
-        Shown,       /// Content is actively rendered on display determined from its assigned category
+        Available,   ///< Content is known and can be requested to get ready in order to show it
+        Ready,       ///< Content is ready both from Dcsm and renderer perspective (content data is fully ready to be rendered)
+        Shown,       ///< Content is actively rendered on display determined from its assigned category
 
         Invalid
     };

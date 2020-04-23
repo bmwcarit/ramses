@@ -26,7 +26,7 @@ namespace ramses_internal
     TEST_F(AConnectionStatusUpdateNotifier, doesNotNotifyAnyoneIfNooneRegistered)
     {
         ConnectionStatusUpdateNotifier notifier(String(), String(), lock);
-        notifier.triggerNotification(Guid(true), EConnectionStatus_Connected);
+        notifier.triggerNotification(Guid(123), EConnectionStatus_Connected);
     }
 
     TEST_F(AConnectionStatusUpdateNotifier, doesNotNotifyListenerOfNooneConnected)
@@ -39,8 +39,8 @@ namespace ramses_internal
     TEST_F(AConnectionStatusUpdateNotifier, notifiesAboutAllCurrentlyConnectedParticipants)
     {
         ConnectionStatusUpdateNotifier notifier(String(), String(), lock);
-        Guid p1(true);
-        Guid p2(true);
+        Guid p1(1);
+        Guid p2(2);
         notifier.triggerNotification(p1, EConnectionStatus_Connected);
         notifier.triggerNotification(p2, EConnectionStatus_Connected);
 
@@ -54,7 +54,7 @@ namespace ramses_internal
         ConnectionStatusUpdateNotifier notifier(String(), String(), lock);
         notifier.registerForConnectionUpdates(&listener);
 
-        Guid p1(true);
+        Guid p1(3);
         EXPECT_CALL(listener, newParticipantHasConnected(p1));
         notifier.triggerNotification(p1, EConnectionStatus_Connected);
     }
@@ -66,14 +66,14 @@ namespace ramses_internal
         notifier.unregisterForConnectionUpdates(&listener);
 
         EXPECT_CALL(listener, newParticipantHasConnected(_)).Times(0);
-        notifier.triggerNotification(Guid(true), EConnectionStatus_Connected);
+        notifier.triggerNotification(Guid(4), EConnectionStatus_Connected);
     }
 
     TEST_F(AConnectionStatusUpdateNotifier, notifiesAboutDisconnectingParticipants)
     {
         ConnectionStatusUpdateNotifier notifier(String(), String(), lock);
 
-        Guid p(true);
+        Guid p(5);
         EXPECT_CALL(listener, newParticipantHasConnected(p));
         notifier.triggerNotification(p, EConnectionStatus_Connected);
         notifier.registerForConnectionUpdates(&listener);
@@ -87,7 +87,7 @@ namespace ramses_internal
     {
         ConnectionStatusUpdateNotifier notifier(String(), String(), lock);
 
-        Guid p(true);
+        Guid p(6);
         notifier.triggerNotification(p, EConnectionStatus_Connected);
         notifier.triggerNotification(p, EConnectionStatus_NotConnected);
 

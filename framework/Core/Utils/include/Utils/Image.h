@@ -28,10 +28,10 @@ namespace ramses_internal
         Image(UInt32 width, UInt32 height, std::vector<UInt8>&& data);
 
         Image(const Image& other) = default;
-        Image(Image&& other) RNOEXCEPT = default;
+        Image(Image&& other) noexcept = default;
 
         Image& operator=(const Image& other) = default;
-        Image& operator=(Image&& other) RNOEXCEPT = default;
+        Image& operator=(Image&& other) noexcept = default;
 
         void loadFromFilePNG(const String& filename);
         void saveToFilePNG(const String& filename) const;

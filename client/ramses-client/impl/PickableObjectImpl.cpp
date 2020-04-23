@@ -83,9 +83,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t PickableObjectImpl::validate(uint32_t indent) const
+    status_t PickableObjectImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        status_t status = NodeImpl::validate(indent);
+        status_t status = NodeImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
 
         const ramses_internal::PickableObject& pickableObject = getIScene().getPickableObject(m_pickableObjectHandle);
@@ -95,7 +95,7 @@ namespace ramses
             addValidationMessage(EValidationSeverity_Error, indent, "pickable object references a deleted geometry buffer");
             status = getValidationErrorStatus();
         }
-        else if (addValidationOfDependentObject(indent, *m_geometryBufferImpl) != StatusOK)
+        else if (addValidationOfDependentObject(indent, *m_geometryBufferImpl, visitedObjects) != StatusOK)
             status = getValidationErrorStatus();
 
         if (!pickableObject.cameraHandle.isValid())
@@ -126,7 +126,8 @@ namespace ramses
             return addErrorEntry("PickableObject::setCamera failed - camera is not from the same scene as this PickableObject");
         }
 
-        const status_t cameraValidity = cameraImpl.validate(0u);
+        StatusObjectSet visitedObjects;
+        const status_t cameraValidity = cameraImpl.validate(0u, visitedObjects);
         if (StatusOK == cameraValidity)
         {
             m_cameraImpl = &cameraImpl;

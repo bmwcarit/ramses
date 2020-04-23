@@ -21,7 +21,12 @@ namespace ramses_internal
 
         typedef StronglyTypedValue<void*, nullptr, struct VoidPtrTag> StronglyTypedPtr;
     }
+}
 
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::StronglyTypedUInt32);
+
+namespace ramses_internal
+{
     TEST(AStronglyTypedValue, CanBeCreatedWithDefaultValue)
     {
         StronglyTypedUInt32 stronglyTypedUInt;
@@ -161,6 +166,18 @@ namespace ramses_internal
 
         EXPECT_TRUE(StronglyTypedPtr(reinterpret_cast<void*>(123u)).isValid());
         EXPECT_TRUE(StronglyTypedPtr(reinterpret_cast<void*>(1u)).isValid());
+    }
+
+    TEST(AStronglyTypedValue, canUseWithStringOutputStream)
+    {
+        StronglyTypedUInt32 val(123);
+        EXPECT_EQ("123", StringOutputStream::ToString(val));
+    }
+
+    TEST(AStronglyTypedValue, canUseWithFmtlib)
+    {
+        StronglyTypedUInt32 val(123);
+        EXPECT_EQ("123", fmt::to_string(val));
     }
 
     // enforce performance guarantees

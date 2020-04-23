@@ -28,6 +28,9 @@ namespace ramses
         ~RamsesFrameworkConfigImpl();
         const ramses_internal::CommandLineParser& getCommandLineParser() const;
 
+        status_t enableDLTApplicationRegistration(bool state);
+        bool getDltApplicationRegistrationEnabled() const;
+
         void setDLTApplicationID(const char* id);
         const char* getDLTApplicationID() const;
 
@@ -63,6 +66,7 @@ namespace ramses
 
         ramses_internal::EConnectionProtocol m_usedProtocol;
         ramses_internal::CommandLineParser m_parser;
+        bool m_enableDltApplicationRegistration = true;
         ramses_internal::String m_dltAppID;
         ramses_internal::String m_dltAppDescription;
         uint32_t m_maximumTotalBytesForAsyncResourceLoading;

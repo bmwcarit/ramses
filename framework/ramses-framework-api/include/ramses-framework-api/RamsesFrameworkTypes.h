@@ -62,13 +62,13 @@ namespace ramses
     * @brief Data identifier used to refer to data provider
     *        and then manage their linkage to data consumer using renderer API
     */
-    using dataProviderId_t = uint32_t;
+    using dataProviderId_t = StronglyTypedValue<uint32_t, 0, struct DataProviderIdTag>;
 
     /**
     * @brief Data link identifier used to refer to data consumer
     *        and then manage their linkage to data provider using renderer API
     */
-    using dataConsumerId_t = uint32_t;
+    using dataConsumerId_t = StronglyTypedValue<uint32_t, 0, struct DataConsumerIdTag>;
 
     /**
     * @brief Resource identifier used to refer to a resource

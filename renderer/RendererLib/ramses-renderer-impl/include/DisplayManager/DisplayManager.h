@@ -12,6 +12,7 @@
 #include "DisplayManager/IDisplayManager.h"
 #include "DisplayManager/DisplayManagerEvent.h"
 #include "ramses-renderer-api/IRendererEventHandler.h"
+#include "ramses-renderer-api/IRendererSceneControlEventHandler_legacy.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "DisplayManager/ShowSceneOnDisplay.h"
 #include "DisplayManager/HideScene.h"
@@ -28,17 +29,18 @@
 
 namespace ramses
 {
-    class RamsesFramework;
-    class RamsesRenderer;
+    class RamsesRendererImpl;
+    class RamsesFrameworkImpl;
+    class RendererSceneControl_legacy;
     class DisplayConfig;
 }
 
 namespace ramses_internal
 {
-    class DisplayManager final : public IDisplayManager, public ramses::RendererEventHandlerEmpty
+    class DisplayManager final : public IDisplayManager, public ramses::RendererEventHandlerEmpty, public ramses::RendererSceneControlEventHandlerEmpty_legacy
     {
     public:
-        DisplayManager(ramses::RamsesRenderer& renderer, ramses::RamsesFramework& framework);
+        DisplayManager(ramses::RamsesRendererImpl& renderer, ramses::RamsesFrameworkImpl& framework);
 
         // IDisplayManager
         virtual bool setSceneState(ramses::sceneId_t sceneId, SceneState state, const char* confirmationText = "") override;
@@ -49,7 +51,7 @@ namespace ramses_internal
         virtual void linkData(ramses::sceneId_t providerSceneId, ramses::dataProviderId_t providerId, ramses::sceneId_t consumerSceneId, ramses::dataConsumerId_t consumerId) override;
         virtual void processConfirmationEchoCommand(const char* text) override;
 
-        virtual void dispatchAndFlush(IEventHandler* eventHandler = nullptr, ramses::IRendererEventHandler* customRendererEventHandler = nullptr) override;
+        virtual void dispatchAndFlush(IEventHandler* eventHandler = nullptr, ramses::IRendererEventHandler* customRendererEventHandler = nullptr, ramses::IRendererSceneControlEventHandler_legacy* customSceneControlHandler = nullptr) override;
 
         ramses::displayId_t createDisplay(const ramses::DisplayConfig& config);
         void destroyDisplay(ramses::displayId_t displayId);
@@ -128,7 +130,8 @@ namespace ramses_internal
         static SceneState GetSceneStateFromInternal(ESceneStateInternal internalState);
         static ESceneStateInternal GetInternalSceneState(SceneState state);
 
-        ramses::RamsesRenderer& m_ramsesRenderer;
+        ramses::RamsesRendererImpl& m_ramsesRenderer;
+        ramses::RendererSceneControl_legacy& m_rendererSceneControl;
 
         std::unordered_map<ramses::sceneId_t, SceneInfo> m_scenesInfo;
 

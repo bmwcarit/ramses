@@ -30,7 +30,7 @@ namespace ramses_internal
 
     Bool ValidateCommand::execute(uint64_t& sceneId, String& severity, String& objectName) const
     {
-        ValidationRequestCommand command;
+        SceneCommandValidationRequest command;
 
         if (severity == String("info"))
         {
@@ -52,7 +52,7 @@ namespace ramses_internal
 
         command.optionalObjectName = objectName;
 
-        m_client.enqueueSceneCommand(ramses::sceneId_t(sceneId), command);
+        m_client.enqueueSceneCommand(ramses::sceneId_t(sceneId), std::move(command));
         return true;
     }
 }

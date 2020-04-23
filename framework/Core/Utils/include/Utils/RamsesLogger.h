@@ -36,7 +36,7 @@ namespace ramses_internal
         RamsesLogger();
         ~RamsesLogger();
 
-        void initialize(const CommandLineParser& parser, const String& idString, const String& descriptionString, bool disableDLT);
+        void initialize(const CommandLineParser& parser, const String& idString, const String& descriptionString, bool disableDLT, bool enableDLTApplicationRegistration);
 
         LogContext& createContext(const char* name, const char* id);
 
@@ -67,7 +67,6 @@ namespace ramses_internal
         static void UpdateConsoleLogLevelFromDefine(ELogLevel& loglevel);
         static void UpdateConsoleLogLevelFromEnvVar(ELogLevel& loglevel);
 
-        void createDltContexts(bool pushLogLevel);
         void dltLogLevelChangeCallback(const String& contextId, int logLevelAsInt);
         LogContext* getLogContextById(const String& contextId);
 

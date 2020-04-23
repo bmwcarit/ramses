@@ -43,6 +43,7 @@ namespace ramses_internal
 
     private:
         ramses::FontInstanceId m_font;
+        ramses::FontInstanceId m_fontSmall;
         ramses::FontInstanceId m_chineseFont;
         ramses::FontInstanceId m_lightFont;
         ramses::FontInstanceId m_lightAutoHintFont;

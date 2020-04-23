@@ -13,11 +13,13 @@
 #include "SceneActionCollection.h"
 #include "SceneAPI/SceneVersionTag.h"
 #include "Collections/Vector.h"
+#include "SceneReferencing/SceneReferenceAction.h"
 #include <memory>
 
 namespace ramses_internal
 {
     class IScene;
+    class AnimationSystemFactory;
     struct SceneResourceChanges;
     struct SceneSizeInformation;
     class IResource;
@@ -28,20 +30,20 @@ namespace ramses_internal
     public:
         using ResourceVector = std::vector<std::unique_ptr<IResource>>;
 
-        static void ApplyActionsOnScene(IScene& scene, const SceneActionCollection& actions, ResourceVector* resources = nullptr);
-        static void ApplyActionRangeOnScene(IScene& scene, const SceneActionCollection& actions, UInt startIdx, UInt endIdx, ResourceVector* resources = nullptr);
+        static void ApplyActionsOnScene(IScene& scene, const SceneActionCollection& actions, AnimationSystemFactory* animSystemFactory = nullptr, ResourceVector* resources = nullptr);
         static void ReadParameterForFlushAction(
             SceneActionCollection::SceneActionReader action,
             UInt64& flushIndex,
             bool& hasSizeInfo,
             SceneSizeInformation& sizeInfo,
             SceneResourceChanges& resourceChanges,
+            SceneReferenceActionVector& sceneReferenceActions,
             FlushTimeInformation& flushTimeInfo,
             SceneVersionTag& versionTag);
 
     private:
         static void GetSceneSizeInformation(SceneActionCollection::SceneActionReader& action, SceneSizeInformation& sizeInfo);
-        static void ApplySingleActionOnScene(IScene& scene, SceneActionCollection::SceneActionReader& action, ResourceVector* resources);
+        static void ApplySingleActionOnScene(IScene& scene, SceneActionCollection::SceneActionReader& action, AnimationSystemFactory* animSystemFactory, ResourceVector* resources);
     };
 }
 

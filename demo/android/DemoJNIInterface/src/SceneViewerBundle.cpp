@@ -14,9 +14,8 @@
 #include "ramses-utils.h"
 
 
-SceneViewerBundle::SceneViewerBundle(JNIEnv *env, jobject instance,
-        jobject javaSurface, jint width, jint height, const char* sceneFile, const char* resFile)
-: RendererBundle(env, instance, javaSurface, width, height, "127.0.0.1", "127.0.0.1")
+SceneViewerBundle::SceneViewerBundle(ANativeWindow* nativeWindow, int width, int height, const char* sceneFile, const char* resFile)
+: RendererBundle(nativeWindow, width, height, "127.0.0.1", "127.0.0.1")
 {
     m_client = m_framework->createClient("client-scene-reader");
 

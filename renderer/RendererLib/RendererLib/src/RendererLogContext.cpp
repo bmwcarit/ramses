@@ -9,6 +9,7 @@
 #include "RendererLib/RendererLogContext.h"
 #include "PlatformAbstraction/PlatformMath.h"
 #include "PlatformAbstraction/Macros.h"
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -61,7 +62,7 @@ namespace ramses_internal
     {
         String resultString = filter.substr(1u, filter.size());
 
-        const UInt lastCharIndex = max<Int>(0, resultString.size() - 1);
+        const UInt lastCharIndex = std::max<Int>(0, resultString.size() - 1);
         if (resultString[lastCharIndex] == '*')
         {
             resultString = resultString.substr(0, lastCharIndex);

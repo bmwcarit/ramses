@@ -56,6 +56,9 @@ namespace ramses_internal
             return;
         }
 
+        // remove any existing data link to establish a new one
+        removeAnyDataLinkFromConsumer(consumerSceneId, consumerSlotHandle);
+
         const EDataSlotType providerSlotType = DataLinkUtils::GetDataSlot(providerSceneId, providerSlotHandle, m_rendererScenes).type;
         const EDataSlotType consumerSlotType = DataLinkUtils::GetDataSlot(consumerSceneId, consumerSlotHandle, m_rendererScenes).type;
         Bool linkSuccess = false;
@@ -105,6 +108,9 @@ namespace ramses_internal
             return;
         }
 
+        // remove any existing data link to establish a new one
+        removeAnyDataLinkFromConsumer(consumerSceneId, consumerSlotHandle);
+
         const Bool linkSuccess = m_textureLinkManager.createBufferLink(providerBuffer, consumerSceneId, consumerSlotHandle);
 
         m_rendererEventCollector.addOBLinkEvent((linkSuccess ? ERendererEventType_SceneDataBufferLinked : ERendererEventType_SceneDataBufferLinkFailed), providerBuffer, consumerSceneId, consumerId);
@@ -130,18 +136,19 @@ namespace ramses_internal
 
         const EDataSlotType consumerSlotType = DataLinkUtils::GetDataSlot(consumerSceneId, consumerSlotHandle, m_rendererScenes).type;
         Bool unlinkSuccess = false;
+        SceneId providerSceneId;
 
         if (consumerSlotType == EDataSlotType_TransformationConsumer)
         {
-            unlinkSuccess = m_transformationLinkManager.removeDataLink(consumerSceneId, consumerSlotHandle);
+            unlinkSuccess = m_transformationLinkManager.removeDataLink(consumerSceneId, consumerSlotHandle, &providerSceneId);
         }
         else if (consumerSlotType == EDataSlotType_DataConsumer)
         {
-            unlinkSuccess = m_dataReferenceLinkManager.removeDataLink(consumerSceneId, consumerSlotHandle);
+            unlinkSuccess = m_dataReferenceLinkManager.removeDataLink(consumerSceneId, consumerSlotHandle, &providerSceneId);
         }
         else if (consumerSlotType == EDataSlotType_TextureConsumer)
         {
-            unlinkSuccess = m_textureLinkManager.removeDataLink(consumerSceneId, consumerSlotHandle);
+            unlinkSuccess = m_textureLinkManager.removeDataLink(consumerSceneId, consumerSlotHandle, &providerSceneId);
         }
         else
         {
@@ -150,7 +157,7 @@ namespace ramses_internal
             return;
         }
 
-        m_rendererEventCollector.addDataLinkEvent((unlinkSuccess ? ERendererEventType_SceneDataUnlinked : ERendererEventType_SceneDataUnlinkFailed), SceneId(0u), consumerSceneId, DataSlotId(0u), consumerId);
+        m_rendererEventCollector.addDataLinkEvent((unlinkSuccess ? ERendererEventType_SceneDataUnlinked : ERendererEventType_SceneDataUnlinkFailed), providerSceneId, consumerSceneId, DataSlotId(0u), consumerId);
     }
 
     void SceneLinksManager::handleSceneRemoved(SceneId sceneId)
@@ -278,6 +285,23 @@ namespace ramses_internal
                 const DataSlotId consumerId = consumerScene.getDataSlot(link.consumerSlot).id;
                 m_rendererEventCollector.addDataLinkEvent(ERendererEventType_SceneDataUnlinkedAsResultOfClientSceneChange, SceneId(0u), link.consumerSceneId, DataSlotId(0u), consumerId);
             }
+        }
+    }
+
+    void SceneLinksManager::removeAnyDataLinkFromConsumer(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle)
+    {
+        if (m_transformationLinkManager.getSceneLinks().hasLinkedProvider(consumerSceneId, consumerSlotHandle))
+        {
+            m_transformationLinkManager.removeDataLink(consumerSceneId, consumerSlotHandle);
+        }
+        else if (m_dataReferenceLinkManager.getSceneLinks().hasLinkedProvider(consumerSceneId, consumerSlotHandle))
+        {
+            m_dataReferenceLinkManager.removeDataLink(consumerSceneId, consumerSlotHandle);
+        }
+        else if (m_textureLinkManager.getSceneLinks().hasLinkedProvider(consumerSceneId, consumerSlotHandle)
+            || m_textureLinkManager.getOffscreenBufferLinks().hasLinkedProvider(consumerSceneId, consumerSlotHandle))
+        {
+            m_textureLinkManager.removeDataLink(consumerSceneId, consumerSlotHandle);
         }
     }
 

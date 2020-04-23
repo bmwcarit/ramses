@@ -77,7 +77,6 @@ namespace ramses_internal
             , integrityRGLDeviceUnit("rglDeviceUnit", "integrityRGLDeviceUnit", config.getIntegrityRGLDeviceUnit().getValue(), "set id of the device unit to use on Integrity")
             , startVisible("startVisible", "startVisible", "set IVI surface visible when created")
             , resizable("resizableWindow", "resizable window", "enables resizable renderer window")
-            , offscreen("off", "offscreen", "renders offscreen, no window gets created, no output visible, screenshots possible though")
             , clearColorR("ccr", "clearColorR", config.getClearColor().r, "set r component of clear color")
             , clearColorG("ccg", "clearColorG", config.getClearColor().g, "set g component of clear color")
             , clearColorB("ccb", "clearColorB", config.getClearColor().b, "set b component of clear color")
@@ -115,7 +114,6 @@ namespace ramses_internal
         ArgumentUInt32 integrityRGLDeviceUnit;
         ArgumentBool startVisible;
         ArgumentBool resizable;
-        ArgumentBool offscreen;
         ArgumentFloat clearColorR;
         ArgumentFloat clearColorG;
         ArgumentFloat clearColorB;
@@ -150,7 +148,6 @@ namespace ramses_internal
                         sos << waylandIviSurfaceID.getHelpString();
                         sos << integrityRGLDeviceUnit.getHelpString();
                         sos << startVisible.getHelpString();
-                        sos << offscreen.getHelpString();
                         sos << clearColorR.getHelpString();
                         sos << clearColorG.getHelpString();
                         sos << clearColorB.getHelpString();
@@ -170,8 +167,8 @@ namespace ramses_internal
     void RendererConfigUtils::ApplyValuesFromCommandLine(const CommandLineParser& parser, RendererConfig& config)
     {
         RendererCommandLineArguments rendererArgs(config);
-        config.setWaylandSocketEmbedded(rendererArgs.waylandSocketEmbedded.parseValueFromCmdLine(parser));
-        config.setWaylandSocketEmbeddedGroup(rendererArgs.waylandSocketEmbeddedGroup.parseValueFromCmdLine(parser));
+        config.setWaylandEmbeddedCompositingSocketName(rendererArgs.waylandSocketEmbedded.parseValueFromCmdLine(parser));
+        config.setWaylandEmbeddedCompositingSocketGroup(rendererArgs.waylandSocketEmbeddedGroup.parseValueFromCmdLine(parser));
         config.setKPIFileName(rendererArgs.kpiFilename.parseValueFromCmdLine(parser));
 
         if(rendererArgs.systemCompositorControllerEnabled.parseFromCmdLine(parser))
@@ -252,7 +249,6 @@ namespace ramses_internal
         config.setIntegrityRGLDeviceUnit(IntegrityRGLDeviceUnit(rendererArgs.integrityRGLDeviceUnit.parseValueFromCmdLine(parser)));
         config.setStartVisibleIvi(rendererArgs.startVisible.parseFromCmdLine(parser));
         config.setResizable(rendererArgs.resizable.parseFromCmdLine(parser));
-        config.setOffscreen(rendererArgs.offscreen.parseFromCmdLine(parser));
 
         const Vector4 clearColor = Vector4(
             rendererArgs.clearColorR.parseValueFromCmdLine(parser),

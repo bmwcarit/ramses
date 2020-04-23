@@ -131,7 +131,7 @@ namespace ramses
         }
         else
         {
-            mipMapCount = ramses_internal::max(Log2(originalWidth), Log2(originalHeight)) + 1u;
+            mipMapCount = std::max(Log2(originalWidth), Log2(originalHeight)) + 1u;
         }
 
         // prepare mip data generation
@@ -143,8 +143,8 @@ namespace ramses
         uint32_t currentMipMapIndex = 1u;
         while (currentMipMapIndex < mipMapCount)
         {
-            uint32_t nextWidth = ramses_internal::max(originalWidth >> 1, 1u);
-            uint32_t nextHeight = ramses_internal::max(originalHeight >> 1, 1u);
+            uint32_t nextWidth = std::max(originalWidth >> 1, 1u);
+            uint32_t nextHeight = std::max(originalHeight >> 1, 1u);
             uint32_t nextSize = nextWidth * nextHeight * bytesPerPixel;
             uint8_t* nextData = new uint8_t[nextSize];
 
@@ -248,7 +248,7 @@ namespace ramses
 
     void RamsesUtils::DeleteGeneratedMipMaps(CubeMipLevelData*& data, uint32_t numMipMaps)
     {
-        for (uint8_t level = 0u; level < numMipMaps; level++)
+        for (size_t level = 0u; level < numMipMaps; level++)
         {
             delete[] data[level].m_dataPX;
             delete[] data[level].m_dataNX;
@@ -268,6 +268,12 @@ namespace ramses
 }
 
 // include all RamsesObject to instantiate conversion templates
+#include "ramses-client-api/AnimatedProperty.h"
+#include "ramses-client-api/AnimatedSetter.h"
+#include "ramses-client-api/Animation.h"
+#include "ramses-client-api/AnimationSequence.h"
+#include "ramses-client-api/AnimationSystem.h"
+#include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Camera.h"
 #include "ramses-client-api/FloatArray.h"
@@ -295,6 +301,32 @@ namespace ramses
 #include "ramses-client-api/RenderPass.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/PickableObject.h"
+#include "ramses-client-api/SceneReference.h"
+#include "ramses-client-api/SplineBezierFloat.h"
+#include "ramses-client-api/SplineBezierInt32.h"
+#include "ramses-client-api/SplineBezierVector2f.h"
+#include "ramses-client-api/SplineBezierVector2i.h"
+#include "ramses-client-api/SplineBezierVector3f.h"
+#include "ramses-client-api/SplineBezierVector3i.h"
+#include "ramses-client-api/SplineBezierVector4f.h"
+#include "ramses-client-api/SplineBezierVector4i.h"
+#include "ramses-client-api/SplineLinearFloat.h"
+#include "ramses-client-api/SplineLinearInt32.h"
+#include "ramses-client-api/SplineLinearVector2f.h"
+#include "ramses-client-api/SplineLinearVector2i.h"
+#include "ramses-client-api/SplineLinearVector3f.h"
+#include "ramses-client-api/SplineLinearVector3i.h"
+#include "ramses-client-api/SplineLinearVector4f.h"
+#include "ramses-client-api/SplineLinearVector4i.h"
+#include "ramses-client-api/SplineStepBool.h"
+#include "ramses-client-api/SplineStepFloat.h"
+#include "ramses-client-api/SplineStepInt32.h"
+#include "ramses-client-api/SplineStepVector2f.h"
+#include "ramses-client-api/SplineStepVector2i.h"
+#include "ramses-client-api/SplineStepVector3f.h"
+#include "ramses-client-api/SplineStepVector3i.h"
+#include "ramses-client-api/SplineStepVector4f.h"
+#include "ramses-client-api/SplineStepVector4i.h"
 #include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/Texture3D.h"
@@ -316,8 +348,11 @@ namespace ramses
 INSTANTIATE_CONVERT_TEMPLATE(ClientObject)
 INSTANTIATE_CONVERT_TEMPLATE(RamsesObject)
 INSTANTIATE_CONVERT_TEMPLATE(SceneObject)
+INSTANTIATE_CONVERT_TEMPLATE(AnimationObject)
 INSTANTIATE_CONVERT_TEMPLATE(RamsesClient)
 INSTANTIATE_CONVERT_TEMPLATE(Scene)
+INSTANTIATE_CONVERT_TEMPLATE(AnimationSystem)
+INSTANTIATE_CONVERT_TEMPLATE(AnimationSystemRealTime)
 INSTANTIATE_CONVERT_TEMPLATE(Node)
 INSTANTIATE_CONVERT_TEMPLATE(MeshNode)
 INSTANTIATE_CONVERT_TEMPLATE(Camera)
@@ -326,9 +361,39 @@ INSTANTIATE_CONVERT_TEMPLATE(LocalCamera)
 INSTANTIATE_CONVERT_TEMPLATE(PerspectiveCamera)
 INSTANTIATE_CONVERT_TEMPLATE(OrthographicCamera)
 INSTANTIATE_CONVERT_TEMPLATE(Effect)
+INSTANTIATE_CONVERT_TEMPLATE(AnimatedProperty)
+INSTANTIATE_CONVERT_TEMPLATE(Animation)
+INSTANTIATE_CONVERT_TEMPLATE(AnimationSequence)
+INSTANTIATE_CONVERT_TEMPLATE(AnimatedSetter)
 INSTANTIATE_CONVERT_TEMPLATE(Appearance)
 INSTANTIATE_CONVERT_TEMPLATE(GeometryBinding)
 INSTANTIATE_CONVERT_TEMPLATE(PickableObject)
+INSTANTIATE_CONVERT_TEMPLATE(Spline)
+INSTANTIATE_CONVERT_TEMPLATE(SplineStepBool)
+INSTANTIATE_CONVERT_TEMPLATE(SplineStepFloat)
+INSTANTIATE_CONVERT_TEMPLATE(SplineStepInt32)
+INSTANTIATE_CONVERT_TEMPLATE(SplineStepVector2f)
+INSTANTIATE_CONVERT_TEMPLATE(SplineStepVector3f)
+INSTANTIATE_CONVERT_TEMPLATE(SplineStepVector4f)
+INSTANTIATE_CONVERT_TEMPLATE(SplineStepVector2i)
+INSTANTIATE_CONVERT_TEMPLATE(SplineStepVector3i)
+INSTANTIATE_CONVERT_TEMPLATE(SplineStepVector4i)
+INSTANTIATE_CONVERT_TEMPLATE(SplineLinearFloat)
+INSTANTIATE_CONVERT_TEMPLATE(SplineLinearInt32)
+INSTANTIATE_CONVERT_TEMPLATE(SplineLinearVector2f)
+INSTANTIATE_CONVERT_TEMPLATE(SplineLinearVector3f)
+INSTANTIATE_CONVERT_TEMPLATE(SplineLinearVector4f)
+INSTANTIATE_CONVERT_TEMPLATE(SplineLinearVector2i)
+INSTANTIATE_CONVERT_TEMPLATE(SplineLinearVector3i)
+INSTANTIATE_CONVERT_TEMPLATE(SplineLinearVector4i)
+INSTANTIATE_CONVERT_TEMPLATE(SplineBezierFloat)
+INSTANTIATE_CONVERT_TEMPLATE(SplineBezierInt32)
+INSTANTIATE_CONVERT_TEMPLATE(SplineBezierVector2f)
+INSTANTIATE_CONVERT_TEMPLATE(SplineBezierVector3f)
+INSTANTIATE_CONVERT_TEMPLATE(SplineBezierVector4f)
+INSTANTIATE_CONVERT_TEMPLATE(SplineBezierVector2i)
+INSTANTIATE_CONVERT_TEMPLATE(SplineBezierVector3i)
+INSTANTIATE_CONVERT_TEMPLATE(SplineBezierVector4i)
 INSTANTIATE_CONVERT_TEMPLATE(Resource)
 INSTANTIATE_CONVERT_TEMPLATE(Texture2D)
 INSTANTIATE_CONVERT_TEMPLATE(Texture3D)
@@ -361,3 +426,4 @@ INSTANTIATE_CONVERT_TEMPLATE(IndexDataBuffer)
 INSTANTIATE_CONVERT_TEMPLATE(VertexDataBuffer)
 INSTANTIATE_CONVERT_TEMPLATE(Texture2DBuffer)
 INSTANTIATE_CONVERT_TEMPLATE(StreamTexture)
+INSTANTIATE_CONVERT_TEMPLATE(SceneReference)

@@ -110,4 +110,24 @@ namespace ramses
         dm.setCarModelVisibility(true);
         EXPECT_EQ(dm, dmf.impl.getMetadata());
     }
+
+    TEST_F(ADcsmMetadataCreator, canSetExclusiveBackground)
+    {
+        DcsmMetadataCreator dmf;
+        EXPECT_EQ(StatusOK, dmf.setExclusiveBackground(true));
+
+        ramses_internal::DcsmMetadata dm;
+        dm.setExclusiveBackground(true);
+        EXPECT_EQ(dm, dmf.impl.getMetadata());
+    }
+
+    TEST_F(ADcsmMetadataCreator, canSetFocusRequest)
+    {
+        DcsmMetadataCreator dmf;
+        EXPECT_EQ(StatusOK, dmf.setFocusRequest(18));
+
+        ramses_internal::DcsmMetadata dm;
+        dm.setFocusRequested(18);
+        EXPECT_EQ(dm, dmf.impl.getMetadata());
+    }
 }

@@ -5,8 +5,10 @@
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
+
 #include "gtest/gtest.h"
 #include "Math3d/Matrix33f.h"
+#include "Collections/StringOutputStream.h"
 
 namespace ramses_internal
 {
@@ -205,6 +207,12 @@ namespace ramses_internal
         EXPECT_EQ(42.0f, mat1.m33);
     }
 
+    TEST_F(Matrix33fTest, CanPrintToString)
+    {
+        EXPECT_EQ("[1.0 2.0 3.0; 4.0 5.0 6.0; 7.0 8.0 9.0]", fmt::to_string(mat1));
+        EXPECT_EQ("[1.0 2.0 3.0; 4.0 5.0 6.0; 7.0 8.0 9.0]", StringOutputStream::ToString(mat1));
+    }
+
     class Matrix33fParamTest : public Matrix33fTest, public ::testing::WithParamInterface<Vector3>
     {
     };
@@ -245,6 +253,6 @@ namespace ramses_internal
         Vector3(90.0f, -155.f, -15.0f)
     };
 
-    INSTANTIATE_TEST_CASE_P(TestRotationConsistency, Matrix33fParamTest, ::testing::ValuesIn(values));
+    INSTANTIATE_TEST_SUITE_P(TestRotationConsistency, Matrix33fParamTest, ::testing::ValuesIn(values));
 
 }

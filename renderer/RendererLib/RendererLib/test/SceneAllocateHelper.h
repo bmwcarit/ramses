@@ -16,6 +16,7 @@
 #include "SceneAPI/TextureEnums.h"
 #include "SceneAPI/DataFieldInfo.h"
 #include "SceneAPI/MipMapSize.h"
+#include "SceneAPI/SceneId.h"
 
 namespace ramses_internal
 {
@@ -47,6 +48,7 @@ namespace ramses_internal
         DataBufferHandle            allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle = DataBufferHandle::Invalid());
         TextureBufferHandle         allocateTextureBuffer(ETextureFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle = TextureBufferHandle::Invalid());
         PickableObjectHandle        allocatePickableObject(DataBufferHandle geometryHandle, NodeHandle nodeHandle, PickableObjectId id, PickableObjectHandle pickableHandle = PickableObjectHandle::Invalid());
+        SceneReferenceHandle        allocateSceneReference(SceneId sceneId, SceneReferenceHandle handle = {});
 
         IScene& getScene()
         {

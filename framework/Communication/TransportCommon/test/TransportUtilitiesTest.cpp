@@ -11,7 +11,6 @@
 #include "TransportCommon/TransportUtilities.h"
 #include "PlatformAbstraction/PlatformMemory.h"
 #include "Scene/SceneActionCollectionCreator.h"
-#include "gmock/gmock-generated-nice-strict.h"
 
 namespace ramses_internal
 {

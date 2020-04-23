@@ -12,6 +12,9 @@
 #include <gmock/gmock.h>
 #include "framework_common_gmock_header.h"
 #include "TransportCommon/ServiceHandlerInterfaces.h"
+#include "SceneReferencing/SceneReferenceEvent.h"
+#include "TransportCommon/ServiceHandlerInterfaces.h"
+#include "Components/ISceneProviderEventConsumer.h"
 
 namespace ramses_internal
 {
@@ -21,7 +24,7 @@ namespace ramses_internal
         ResourceConsumerServiceHandlerMock();
         virtual ~ResourceConsumerServiceHandlerMock() override;
 
-        MOCK_METHOD2(handleSendResource, void(const ByteArrayView& data, const Guid& providerID));
+        MOCK_METHOD2(handleSendResource, void(const absl::Span<const Byte>& data, const Guid& providerID));
         MOCK_METHOD2(handleResourcesNotAvailable, void(const ResourceContentHashVector& resources, const Guid& providerID));
     };
 
@@ -42,6 +45,7 @@ namespace ramses_internal
 
         MOCK_METHOD2(handleSubscribeScene, void(const SceneId& sceneId, const Guid& consumerID));
         MOCK_METHOD2(handleUnsubscribeScene, void(const SceneId& sceneId, const Guid& consumerID));
+        MOCK_METHOD3(handleRendererEvent, void(const SceneId& sceneId, std::vector<Byte> data, const Guid& rendererID));
     };
 
     class SceneRendererServiceHandlerMock : public ISceneRendererServiceHandler
@@ -80,7 +84,8 @@ namespace ramses_internal
         virtual ~DcsmConsumerServiceHandlerMock() override;
 
         MOCK_METHOD3(handleOfferContent, void(ContentID contentID, Category, const Guid& providerID));
-        MOCK_METHOD4(handleContentReady, void(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID));
+        MOCK_METHOD4(handleContentDescription, void(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID));
+        MOCK_METHOD2(handleContentReady, void(ContentID contentID, const Guid& providerID));
         MOCK_METHOD2(handleContentFocusRequest, void(ContentID contentID, const Guid& providerID));
         MOCK_METHOD2(handleRequestStopOfferContent, void(ContentID contentID, const Guid& providerID));
         MOCK_METHOD2(handleForceStopOfferContent, void(ContentID contentID, const Guid& providerID));

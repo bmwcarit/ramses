@@ -18,13 +18,12 @@ namespace ramses_internal
         registerKeyword("limits");
     }
 
-    Bool SetFrameTimeLimits::execute(UInt32& limitForClientResourcesUploadMicrosec, UInt32& limitForSceneActionsApplyMicrosec, UInt32& limitForOffscreenBufferRenderMicrosec) const
+    Bool SetFrameTimeLimits::execute(UInt32& limitForClientResourcesUploadMicrosec, UInt32& limitForOffscreenBufferRenderMicrosec) const
     {
         m_frametimer.setSectionTimeBudget(EFrameTimerSectionBudget::ClientResourcesUpload, limitForClientResourcesUploadMicrosec);
-        m_frametimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, limitForSceneActionsApplyMicrosec);
         m_frametimer.setSectionTimeBudget(EFrameTimerSectionBudget::OffscreenBufferRender, limitForOffscreenBufferRenderMicrosec);
 
-        LOG_INFO(CONTEXT_RENDERER, "Changed limiting values:" << limitForClientResourcesUploadMicrosec << "/" << limitForSceneActionsApplyMicrosec <<  "/" << limitForOffscreenBufferRenderMicrosec);
+        LOG_INFO(CONTEXT_RENDERER, "Changed limiting values:" << limitForClientResourcesUploadMicrosec <<  "/" << limitForOffscreenBufferRenderMicrosec);
         return true;
     }
 }

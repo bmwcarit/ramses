@@ -31,11 +31,11 @@ using namespace ramses_internal;
 
 namespace ramses
 {
-    class ARenderPass : public LocalTestClientWithScene, public testing::Test
+    class ARenderPass : public LocalTestClientWithSceneAndAnimationSystem, public testing::Test
     {
     protected:
         ARenderPass()
-            : LocalTestClientWithScene()
+            : LocalTestClientWithSceneAndAnimationSystem()
             , renderpass(*m_scene.createRenderPass("RenderPass"))
             , renderpass2(*m_scene.createRenderPass("RenderPass2"))
         {

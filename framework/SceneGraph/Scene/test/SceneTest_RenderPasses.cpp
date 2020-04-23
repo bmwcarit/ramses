@@ -14,7 +14,7 @@ using namespace testing;
 
 namespace ramses_internal
 {
-    TYPED_TEST_CASE(AScene, SceneTypes);
+    TYPED_TEST_SUITE(AScene, SceneTypes);
 
     TYPED_TEST(AScene, RenderPassCreated)
     {
@@ -98,8 +98,6 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, AssignsDefaultClearValuesToRenderPass)
     {
-        const Vector4 clearColor(0.5f, 0.0f, 1.f, 0.25f);
-
         const RenderPassHandle pass = this->m_scene.allocateRenderPass();
 
         const RenderPass& rp = this->m_scene.getRenderPass(pass);

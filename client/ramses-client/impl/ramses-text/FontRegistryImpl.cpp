@@ -12,6 +12,7 @@
 #include "ramses-text/TextTypesImpl.h"
 #include "Utils/LogMacros.h"
 #include "RamsesFrameworkTypesImpl.h"
+#include "Utils/File.h"
 #include <fstream>
 #include <assert.h>
 
@@ -58,7 +59,24 @@ namespace ramses
 
     FontId FontRegistryImpl::createFreetype2Font(const char* fontPath)
     {
-        return registerFont(Freetype2FontType, fontPath);
+        // basic checks
+        if (!fontPath || !ramses_internal::File(fontPath).exists())
+        {
+            LOG_ERROR(CONTEXT_TEXT, "FontRegistry::createFreetype2Font: Font file not found " << fontPath);
+            return {};
+        }
+
+        auto face = std::make_unique<FreetypeFontFace>(fontPath, m_ft2Library.get());
+        if (!face->init())
+            return {};
+
+        const FontId fontId = m_lastFontId;
+        m_lastFontId.getReference()++;
+
+        assert(m_fonts.count(fontId) == 0u);
+        m_fonts.insert(std::make_pair(fontId, std::move(face)));
+
+        return fontId;
     }
 
     bool FontRegistryImpl::deleteFont(FontId fontId)
@@ -73,30 +91,30 @@ namespace ramses
 
     FontInstanceId FontRegistryImpl::createFreetype2FontInstance(FontId fontId, uint32_t size, bool forceAutohinting)
     {
-        const FontData* fontData = getFontData(fontId);
-        if (fontData == nullptr || fontData->type != Freetype2FontType)
+        const auto fontIt = m_fonts.find(fontId);
+        if (fontIt == m_fonts.cend())
         {
-            LOG_ERROR(CONTEXT_TEXT, "FontRegistry: Failed to create font instance, fontId " << fontId << " does not exist or is of invalid type");
+            LOG_ERROR(CONTEXT_TEXT, "FontRegistry: Failed to create font instance, fontId " << fontId << " does not exist");
             return {};
         }
 
         const FontInstanceId fontInstanceId = reserveFontInstanceId();
-        registerFontInstance(fontInstanceId, std::unique_ptr<IFontInstance>{ new Freetype2FontInstance(fontInstanceId, m_ft2Library.get(), *fontData, size, forceAutohinting) });
+        registerFontInstance(fontInstanceId, std::unique_ptr<IFontInstance>{ new Freetype2FontInstance(fontInstanceId, fontIt->second->getFace(), size, forceAutohinting) });
 
         return fontInstanceId;
     }
 
     FontInstanceId FontRegistryImpl::createFreetype2FontInstanceWithHarfBuzz(FontId fontId, uint32_t size, bool forceAutohinting)
     {
-        const FontData* fontData = getFontData(fontId);
-        if (fontData == nullptr || fontData->type != Freetype2FontType)
+        const auto fontIt = m_fonts.find(fontId);
+        if (fontIt == m_fonts.cend())
         {
-            LOG_ERROR(CONTEXT_TEXT, "FontRegistry: Failed to create font instance, fontId " << fontId << " does not exist or is of invalid type");
+            LOG_ERROR(CONTEXT_TEXT, "FontRegistry: Failed to create font instance, fontId " << fontId << " does not exist");
             return {};
         }
 
         const FontInstanceId fontInstanceId = reserveFontInstanceId();
-        registerFontInstance(fontInstanceId, std::unique_ptr<IFontInstance>{ new HarfbuzzFontInstance(fontInstanceId, m_ft2Library.get(), *fontData, size, forceAutohinting) });
+        registerFontInstance(fontInstanceId, std::unique_ptr<IFontInstance>{ new HarfbuzzFontInstance(fontInstanceId, fontIt->second->getFace(), size, forceAutohinting) });
 
         return fontInstanceId;
     }
@@ -109,30 +127,6 @@ namespace ramses
             return false;
         }
         return true;
-    }
-
-    ramses::FontId FontRegistryImpl::registerFont(uint32_t fontType, const char* fontPath)
-    {
-        auto fontBinaryData = LoadFile(fontPath);
-        if (fontBinaryData.empty())
-        {
-            LOG_ERROR(CONTEXT_TEXT, "FontRegistry: Failed to load font from file " << fontPath);
-            return {};
-        }
-
-        const FontId fontId = m_lastFontId;
-        m_lastFontId.getReference()++;
-
-        assert(m_fonts.count(fontId) == 0u);
-        m_fonts.insert(std::make_pair(fontId, std::unique_ptr<FontData>(new FontData{ fontType, std::move(fontBinaryData) })));
-
-        return fontId;
-    }
-
-    const FontData* FontRegistryImpl::getFontData(FontId fontId) const
-    {
-        const auto fontIt = m_fonts.find(fontId);
-        return (fontIt == m_fonts.cend() ? nullptr : fontIt->second.get());
     }
 
     FontInstanceId FontRegistryImpl::reserveFontInstanceId()
@@ -148,17 +142,5 @@ namespace ramses
     {
         assert(m_fontInstances.count(fontInstanceId) == 0u);
         m_fontInstances.insert(std::make_pair(fontInstanceId, std::move(fontInstance)));
-    }
-
-    std::vector<uint8_t> FontRegistryImpl::LoadFile(const char* fontFileName)
-    {
-        std::ifstream input(fontFileName, std::ios::binary | std::ios::ate);
-        const auto size = input.tellg();
-        if (input.fail() || size < 0)
-            return {};
-        std::vector<uint8_t> vec(static_cast<std::size_t>(size));
-        input.seekg(0);
-        input.read(reinterpret_cast<char*>(vec.data()), vec.size());
-        return vec;
     }
 }

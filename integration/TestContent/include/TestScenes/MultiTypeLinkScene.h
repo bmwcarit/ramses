@@ -34,14 +34,17 @@ namespace ramses_internal
             TRANSFORMATION_PROVIDER_DATA_AND_TEXTURE_CONSUMER
         };
 
-        static const ramses::dataProviderId_t TransformationProviderId = 121u;
-        static const ramses::dataConsumerId_t TransformationConsumerId = 122u;
-        static const ramses::dataProviderId_t DataProviderId = 1251u;
-        static const ramses::dataConsumerId_t DataConsumerId = 1252u;
-        static const ramses::dataProviderId_t TextureProviderId = 31251u;
-        static const ramses::dataConsumerId_t TextureConsumerId = 31252u;
+        static constexpr const ramses::dataProviderId_t TransformationProviderId{121u};
+        static constexpr const ramses::dataConsumerId_t TransformationConsumerId{122u};
+        static constexpr const ramses::dataProviderId_t DataProviderId{1251u};
+        static constexpr const ramses::dataConsumerId_t DataConsumerId{1252u};
+        static constexpr const ramses::dataProviderId_t TextureProviderId{31251u};
+        static constexpr const ramses::dataConsumerId_t TextureConsumerId{31252u};
 
     private:
+        void animateProvidedContent(ramses::DataObject& dataObject);
+        void animateProvidedContent(ramses::Node& translateNode);
+
         const ramses::TextureSampler& createSampler(const ramses::Texture2D& texture);
         void                          setSampler(ramses::Appearance& appearance, const ramses::TextureSampler& sampler);
     };

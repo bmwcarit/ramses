@@ -46,9 +46,12 @@ namespace ramses_internal
         MOCK_METHOD2(sendInitializeScene, bool(const Guid& to, const SceneInfo& sceneInfo));
         MOCK_METHOD4(sendSceneActionList, uint64_t(const Guid& to, const SceneId& sceneId, const SceneActionCollection& actions, const uint64_t& actionListCounter));
 
+        MOCK_METHOD3(sendRendererEvent, bool(const Guid& to, const SceneId& sceneId, const std::vector<Byte>& data));
+
         MOCK_METHOD2(sendDcsmBroadcastOfferContent, bool(ContentID contentID, Category));
         MOCK_METHOD3(sendDcsmOfferContent, bool(const Guid& to, ContentID contentID, Category));
-        MOCK_METHOD4(sendDcsmContentReady, bool(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor));
+        MOCK_METHOD4(sendDcsmContentDescription, bool(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor));
+        MOCK_METHOD2(sendDcsmContentReady, bool(const Guid& to, ContentID contentID));
         MOCK_METHOD2(sendDcsmContentFocusRequest, bool(const Guid& to, ContentID contentID));
         MOCK_METHOD1(sendDcsmBroadcastRequestStopOfferContent, bool(ContentID contentID));
         MOCK_METHOD1(sendDcsmBroadcastForceStopOfferContent, bool(ContentID contentID));

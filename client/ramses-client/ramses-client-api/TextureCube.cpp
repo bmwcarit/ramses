@@ -30,4 +30,9 @@ namespace ramses
     {
         return impl.getSize();
     }
+
+    const TextureSwizzle& TextureCube::getTextureSwizzle() const
+    {
+        return impl.getTextureSwizzle();
+    }
 }

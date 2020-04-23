@@ -24,6 +24,8 @@ typedef std::vector<RenderingTestCase*> RenderingTestCases;
 namespace ramses
 {
     class WarpingMeshData;
+    class IRendererEventHandler;
+    class IRendererSceneControlEventHandler;
 }
 
 class RendererTestsFramework
@@ -46,14 +48,11 @@ public:
     RenderingTestCase& createTestCaseWithDefaultDisplay(ramses_internal::UInt32 id, IRendererTest& rendererTest, const ramses_internal::String& name, bool iviWindowStartVisible = true);
     RenderingTestCase& createTestCaseWithoutRenderer(ramses_internal::UInt32 id, IRendererTest& rendererTest, const ramses_internal::String& name);
 
-    void subscribeScene(ramses::sceneId_t sceneId);
-    void unsubscribeScene(ramses::sceneId_t sceneId);
-    void mapScene(ramses::sceneId_t sceneId, uint32_t testDisplayIdx = 0u);
-    void unmapScene(ramses::sceneId_t sceneId);
-    void showScene(ramses::sceneId_t sceneId);
-    void hideScene(ramses::sceneId_t sceneId);
-    void hideAndUnmap(ramses::sceneId_t sceneId);
-    void dispatchRendererEvents(ramses::IRendererEventHandler& eventHandler);
+    void setSceneMapping(ramses::sceneId_t sceneId, uint32_t testDisplayIdx);
+    bool getSceneToState(ramses::sceneId_t sceneId, ramses::RendererSceneState state);
+    bool getSceneToRendered(ramses::sceneId_t sceneId, uint32_t testDisplayIdx = 0);
+
+    void dispatchRendererEvents(ramses::IRendererEventHandler& eventHandler, ramses::IRendererSceneControlEventHandler& sceneControlEventHandler);
     ramses::displayBufferId_t   createOffscreenBuffer       (uint32_t testDisplayIdx, uint32_t width, uint32_t height, bool interruptible);
     void                        destroyOffscreenBuffer      (uint32_t testDisplayIdx, ramses::displayBufferId_t buffer);
     void assignSceneToDisplayBuffer(ramses::sceneId_t sceneId, ramses::displayBufferId_t buffer, int32_t renderOrder = 0);
@@ -66,7 +65,7 @@ public:
     void flushRendererAndDoOneLoop();
     bool renderAndCompareScreenshot(const ramses_internal::String& expectedImageName, uint32_t testDisplayIdx = 0u, float maxAveragePercentErrorPerPixel = RendererTestUtils::DefaultMaxAveragePercentPerPixel, bool readPixelsTwice = false);
     bool renderAndCompareScreenshotSubimage(const ramses_internal::String& expectedImageName, ramses_internal::UInt32 subimageX, ramses_internal::UInt32 subimageY, ramses_internal::UInt32 subimageWidth, ramses_internal::UInt32 subimageHeight, float maxAveragePercentErrorPerPixel = RendererTestUtils::DefaultMaxAveragePercentPerPixel, bool readPixelsTwice = false);
-    void setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForSceneActionsApply, uint64_t limitForOffscreenBufferRender);
+    void setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender);
     void filterTestCases(const ramses_internal::StringVector& filterIn, const ramses_internal::StringVector& filterOut);
 
     bool runAllTests();
@@ -79,9 +78,7 @@ public:
     {
         const ramses::sceneId_t sceneId = getScenesRegistry().createScene<INTEGRATION_SCENE>(sceneState, cameraPosition, sceneConfig);
         publishAndFlushScene(sceneId);
-        subscribeScene(sceneId);
-        mapScene(sceneId, 0);
-        showScene(sceneId);
+        getSceneToRendered(sceneId);
         return sceneId;
     }
 

@@ -40,7 +40,7 @@ namespace ramses_internal
         ramses::Scene* m_createdScene;
 
         void createFiles(ramses::RamsesClient& ramsesClient, ramses::sceneId_t sceneId, const Vector3& cameraPosition, const String& folder, const ramses::SceneConfig& sceneConfig = ramses::SceneConfig());
-        void addTriangles(ramses::RamsesClient& ramses, ramses::Scene& scene, ramses::ResourceFileDescription& resources, ramses::RenderGroup& renderGroup);
+        void initializeAnimationContent(ramses::RamsesClient& ramses, ramses::Scene& scene, ramses::ResourceFileDescription& resources, ramses::RenderGroup& renderGroup);
         void loadFromFiles(ramses::RamsesClient& ramsesClient, const String& folder);
         void cleanupFiles(const String& folder);
     };

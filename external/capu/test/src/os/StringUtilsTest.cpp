@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
 #include "ramses-capu/os/StringUtils.h"
-#include "ramses-capu/os/Memory.h"
+#include <gtest/gtest.h>
 
 TEST(StringUtils, Strncpy)
 {
@@ -30,12 +29,12 @@ TEST(StringUtils, Strncpy2)
 {
     char string1[20] = "My String";
     char string2[20];
-    ramses_capu::Memory::Set(string2, 42, sizeof(string2));
+    std::memset(string2, 42, sizeof(string2));
     ramses_capu::StringUtils::Strncpy(string2, 4, string1);
     EXPECT_STREQ("My ", string2);
 
     // check that only 4 bytes are written, an no more
-    for (uint32_t i = 4; i < sizeof(string2); ++i)
+    for (size_t i = 4; i < sizeof(string2); ++i)
     {
         EXPECT_EQ(42, string2[i]);
     }

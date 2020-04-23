@@ -10,6 +10,7 @@
 #define RAMSES_RAMSESOBJECTFACTORYINTERFACES_H
 
 #include <memory>
+#include <functional>
 
 namespace ramses
 {
@@ -18,8 +19,10 @@ namespace ramses
     class RendererConfig;
     class RamsesFrameworkImpl;
 
-    using ClientUniquePtr = std::unique_ptr<RamsesClient, void(*)(RamsesClient*)>;
-    using RendererUniquePtr = std::unique_ptr<RamsesRenderer, void(*)(RamsesRenderer*)>;
+    template <typename T>
+    using UniquePtrWithDeleter = std::unique_ptr<T, std::function<void(T*)>>;
+    using ClientUniquePtr = UniquePtrWithDeleter<RamsesClient>;
+    using RendererUniquePtr = UniquePtrWithDeleter<RamsesRenderer>;
 
     class IClientFactory
     {

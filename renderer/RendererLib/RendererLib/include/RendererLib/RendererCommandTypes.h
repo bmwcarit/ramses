@@ -71,6 +71,9 @@ namespace ramses_internal
         ERendererCommand_ReadPixels,
         ERendererCommand_SetClearColor,
         ERendererCommand_SceneActions,
+        ERendererCommand_SetSceneState,
+        ERendererCommand_SetSceneMapping,
+        ERendererCommand_SetSceneDisplayBufferAssignment,
         // Data linking
         ERendererCommand_LinkSceneData,
         ERendererCommand_LinkBufferToSceneData,
@@ -119,7 +122,6 @@ namespace ramses_internal
         DEFINE_COMMAND_TYPE(SceneInfoCommand, ERendererCommandType_Scene);
 
         SceneInfo sceneInformation;
-        Guid clientID;
         Bool indirect = false;
     };
 
@@ -151,11 +153,12 @@ namespace ramses_internal
         Int32                   sceneRenderOrder = 0;
     };
 
-    struct SceneRenderCommand : public RendererCommand
+    struct SceneStateCommand : public RendererCommand
     {
-        DEFINE_COMMAND_TYPE(SceneRenderCommand, ERendererCommandType_SceneRendering);
+        DEFINE_COMMAND_TYPE(SceneStateCommand, ERendererCommandType_SceneRendering);
 
-        SceneId                 sceneId;
+        SceneId sceneId;
+        RendererSceneState state = RendererSceneState::Unavailable;
     };
 
     struct WarpingDataCommand : public RendererCommand
@@ -275,7 +278,6 @@ namespace ramses_internal
 
         UInt64 limitForClientResourcesUploadMicrosec = 0u;
         UInt64 limitForSceneResourcesUploadMicrosec = 0u;
-        UInt64 limitForSceneActionsApplyMicrosec = 0u;
         UInt64 limitForOffscreenBufferRenderMicrosec = 0u;
         UInt limitForPendingFlushesForceApply = 0u;
         UInt limitForPendingFlushesForceUnsubscribe = 0u;
@@ -310,6 +312,9 @@ namespace ramses_internal
         "ERendererCommand_ReadPixels",
         "ERendererCommand_SetClearColor",
         "ERendererCommand_SceneActions",
+        "ERendererCommand_SetSceneState",
+        "ERendererCommand_SetSceneMapping",
+        "ERendererCommand_SetSceneDisplayBufferAssignment",
         "ERendererCommand_LinkSceneData",
         "ERendererCommand_LinkBufferToSceneData",
         "ERendererCommand_UnlinkSceneData",

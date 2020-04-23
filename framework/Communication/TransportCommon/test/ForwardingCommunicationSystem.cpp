@@ -108,7 +108,7 @@ namespace ramses_internal
             auto resDataVec = ResourceSerializationTestHelper::ConvertResourcesToResourceDataVector(resources, getSendDataSizes().resourceDataArray);
             for (const auto& resData : resDataVec)
             {
-                ByteArrayView view(resData.data(), static_cast<UInt32>(resData.size()));
+                absl::Span<const Byte> view(resData.data(), static_cast<UInt32>(resData.size()));
                 m_targetCommunicationSystem->m_resourceConsumerHandler->handleSendResource(view, m_id);
             }
         }
@@ -157,6 +157,16 @@ namespace ramses_internal
         return 1u;
     }
 
+
+    bool ForwardingCommunicationSystem::sendRendererEvent(const Guid& to, const SceneId& sceneId, const std::vector<Byte>& data)
+    {
+        if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_sceneRendererHandler && to == m_targetCommunicationSystem->m_id)
+        {
+            m_targetCommunicationSystem->m_sceneProviderHandler->handleRendererEvent(sceneId, data, m_id);
+        }
+        return true;
+    }
+
     bool ForwardingCommunicationSystem::sendDcsmBroadcastOfferContent(ContentID contentID, Category category)
     {
         if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmConsumerHandler)
@@ -175,11 +185,20 @@ namespace ramses_internal
         return true;
     }
 
-    bool ForwardingCommunicationSystem::sendDcsmContentReady(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor)
+    bool ForwardingCommunicationSystem::sendDcsmContentDescription(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor)
     {
         if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmConsumerHandler && to == m_targetCommunicationSystem->m_id)
         {
-            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleContentReady(contentID, technicalContentType, technicalContentDescriptor, m_id);
+            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleContentDescription(contentID, technicalContentType, technicalContentDescriptor, m_id);
+        }
+        return true;
+    }
+
+    bool ForwardingCommunicationSystem::sendDcsmContentReady(const Guid& to, ContentID contentID)
+    {
+        if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmConsumerHandler && to == m_targetCommunicationSystem->m_id)
+        {
+            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleContentReady(contentID, m_id);
         }
         return true;
     }

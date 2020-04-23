@@ -16,6 +16,7 @@
 namespace ramses_internal
 {
     class ISceneRendererServiceHandler;
+    struct SceneReferenceEvent;
 
     class ISceneGraphConsumerComponent
     {
@@ -25,6 +26,7 @@ namespace ramses_internal
         virtual void setSceneRendererServiceHandler(ISceneRendererServiceHandler* sceneRendererHandler) = 0;
         virtual void subscribeScene(const Guid& to, SceneId sceneId) = 0;
         virtual void unsubscribeScene(const Guid& to, SceneId sceneId) = 0;
+        virtual void sendSceneReferenceEvent(const Guid& to, SceneReferenceEvent const& event) = 0;
     };
 }
 

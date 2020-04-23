@@ -13,7 +13,7 @@
 #include "RendererLib/EKeyEventType.h"
 #include "RendererLib/EKeyModifier.h"
 #include "PlatformAbstraction/PlatformThread.h"
-#include "WindowEventsPollingManager_Wayland/WindowEventsPollingManager_Wayland.h"
+#include "Window_Wayland/WindowEventsPollingManager_Wayland.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>

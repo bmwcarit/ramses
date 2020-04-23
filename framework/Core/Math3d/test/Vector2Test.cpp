@@ -6,16 +6,17 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "Vector2Test.h"
+#include "Math3d/Vector2.h"
+#include "PlatformAbstraction/PlatformMath.h"
+#include "framework_common_gmock_header.h"
+#include "gtest/gtest.h"
 
-void Vector2Test::SetUp()
-{
-    vec1 = ramses_internal::Vector2(1.f, 2.f);
-}
 
-void Vector2Test::TearDown()
+class Vector2Test: public testing::Test
 {
-}
+public:
+    ramses_internal::Vector2 vec1{1.f, 2.f};
+};
 
 TEST_F(Vector2Test, DefaultConstructor)
 {
@@ -161,13 +162,6 @@ TEST_F(Vector2Test, UnEquality)
     EXPECT_EQ(true, unequal);
 }
 
-TEST_F(Vector2Test, Empty)
-{
-    ramses_internal::Vector2 vec2(0.0f, 0.0f);
-
-    EXPECT_EQ(vec2, ramses_internal::Vector2::Empty);
-}
-
 TEST_F(Vector2Test, SetSingleValues)
 {
     vec1.set(3.0f, 4.0f);
@@ -197,4 +191,10 @@ TEST_F(Vector2Test, Normalize)
 
     EXPECT_FLOAT_EQ( 0.44721359f, normalized.x);
     EXPECT_FLOAT_EQ( 0.89442718f, normalized.y);
+}
+
+TEST_F(Vector2Test, CanPrintToString)
+{
+    EXPECT_EQ("[1.0 2.0]", fmt::to_string(vec1));
+    EXPECT_EQ("[1.0 2.0]", ramses_internal::StringOutputStream::ToString(vec1));
 }

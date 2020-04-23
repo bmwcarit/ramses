@@ -6,16 +6,16 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "Vector4iTest.h"
+#include "Math3d/Vector4i.h"
+#include "framework_common_gmock_header.h"
+#include "PlatformAbstraction/PlatformMath.h"
+#include "gmock/gmock.h"
 
-void Vector4iTest::SetUp()
+class Vector4iTest: public testing::Test
 {
-    vec1 = ramses_internal::Vector4i(1, 2, 3, 4);
-}
-
-void Vector4iTest::TearDown()
-{
-}
+public:
+    ramses_internal::Vector4i vec1{1, 2, 3, 4};
+};
 
 TEST_F(Vector4iTest, DefaultConstructor)
 {
@@ -203,13 +203,6 @@ TEST_F(Vector4iTest, Angle)
     EXPECT_FLOAT_EQ(90, angle);
 }
 
-TEST_F(Vector4iTest, Empty)
-{
-    ramses_internal::Vector4i vec2(0, 0, 0, 0);
-
-    EXPECT_EQ(vec2, ramses_internal::Vector4i::Empty);
-}
-
 TEST_F(Vector4iTest, SetSingleValues)
 {
     vec1.set(3, 4, 7, 5);
@@ -224,4 +217,10 @@ TEST_F(Vector4iTest, SetAllValues)
     ramses_internal::Vector4i vec2(5, 5, 5, 5);
 
     EXPECT_EQ(vec2, vec1);
+}
+
+TEST_F(Vector4iTest, CanPrintToString)
+{
+    EXPECT_EQ("[1 2 3 4]", fmt::to_string(vec1));
+    EXPECT_EQ("[1 2 3 4]", ramses_internal::StringOutputStream::ToString(vec1));
 }

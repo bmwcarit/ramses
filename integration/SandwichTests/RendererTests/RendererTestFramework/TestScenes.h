@@ -14,6 +14,7 @@
 #include "TestScenes/IntegrationScene.h"
 #include "Collections/HashMap.h"
 #include "Math3d/Vector3.h"
+#include <cassert>
 
 class TestScenes
 {

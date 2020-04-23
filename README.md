@@ -93,7 +93,7 @@ You can also check the docker container setup scripts for a reference how to bui
 ## License
 RAMSES original code is copyright BMW Car IT or BMW AG
 
-```Copyright (C) 2018 BMW Car IT GmbH``` or ```Copyright (C) 2019 BMW AG```
+```Copyright (C) 20xx BMW Car IT GmbH``` or ```Copyright (C) 20xx BMW AG```
 
 The source code is licensed under the Mozilla Public License 2.0, please find a
 copy of that license in the [LICENSE.txt](https://github.com/GENIVI/ramses/blob/master/LICENSE.txt) file.
@@ -118,6 +118,9 @@ Submodule reference:
 - Harfbuzz (Licensed under MIT and ISC; see external/harfbuzz/COPYING)
 - Asio (Boost Software License - Version 1.0)
 - LZ4 (Licensed under BSD-2; see also external/lz4/LICENSE for more details)
+- {fmt} (Licensed under MIT License)
+- ImGui (Licensed under MIT License)
+- Abseil (Licensed under Apache 2.0; see also external/abseil/LICENSE for more details)
 
 Included Assets:
 - Roboto Font (Licensed under Apache 2.0)

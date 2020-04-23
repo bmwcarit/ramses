@@ -10,6 +10,7 @@
 #include "EmbeddedCompositor_Wayland/WaylandClient.h"
 #include "EmbeddedCompositor_Wayland/WaylandResource.h"
 #include "Utils/LogMacros.h"
+#include <cassert>
 
 namespace ramses_internal
 {

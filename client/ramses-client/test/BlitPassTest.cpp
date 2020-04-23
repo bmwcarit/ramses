@@ -22,11 +22,11 @@ using namespace ramses_internal;
 
 namespace ramses
 {
-    class ABlitPass : public LocalTestClientWithScene, public testing::Test
+    class ABlitPass : public LocalTestClientWithSceneAndAnimationSystem, public testing::Test
     {
     protected:
         ABlitPass()
-            : LocalTestClientWithScene()
+            : LocalTestClientWithSceneAndAnimationSystem()
             , sourceRenderBuffer(*createRenderBuffer())
             , destinationRenderBuffer(*createRenderBuffer())
             , blitpass(*m_scene.createBlitPass(sourceRenderBuffer, destinationRenderBuffer, "BlitPass"))

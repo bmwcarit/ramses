@@ -8,6 +8,8 @@
 
 #include "Math3d/ProjectionParams.h"
 #include "Common/TypedMemoryHandle.h"
+#include "PlatformAbstraction/PlatformMath.h"
+#include <cassert>
 
 namespace ramses_internal
 {

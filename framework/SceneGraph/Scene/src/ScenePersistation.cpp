@@ -43,6 +43,7 @@ namespace ramses_internal
         inStream >> sizeInfo.renderBufferCount;
         inStream >> sizeInfo.textureSamplerCount;
         inStream >> sizeInfo.dataBufferCount;
+        inStream >> sizeInfo.animationSystemCount;
         inStream >> sizeInfo.textureBufferCount;
         createInfo.m_sizeInfo = sizeInfo;
 
@@ -67,6 +68,7 @@ namespace ramses_internal
         outStream << sizeInfo.renderBufferCount;
         outStream << sizeInfo.textureSamplerCount;
         outStream << sizeInfo.dataBufferCount;
+        outStream << sizeInfo.animationSystemCount;
         outStream << sizeInfo.textureBufferCount;
 
         outStream << scene.getName();
@@ -111,7 +113,7 @@ namespace ramses_internal
         }
     }
 
-    void ScenePersistation::ReadSceneFromStream(IInputStream& inStream, IScene& scene)
+    void ScenePersistation::ReadSceneFromStream(IInputStream& inStream, IScene& scene, AnimationSystemFactory* animSystemFactory)
     {
         UInt32 sceneMarker = 0;
         inStream >> sceneMarker;
@@ -157,10 +159,10 @@ namespace ramses_internal
                     }
                 }));
 
-        SceneActionApplier::ApplyActionsOnScene(scene, actions);
+        SceneActionApplier::ApplyActionsOnScene(scene, actions, animSystemFactory);
     }
 
-    void ScenePersistation::ReadSceneFromFile(const String& filename, IScene& scene)
+    void ScenePersistation::ReadSceneFromFile(const String& filename, IScene& scene, AnimationSystemFactory* animSystemFactory)
     {
         File f(filename);
         if (!f.exists())
@@ -173,7 +175,7 @@ namespace ramses_internal
         const EStatus state = stream.getState();
         if (EStatus_RAMSES_OK == state)
         {
-            ScenePersistation::ReadSceneFromStream(stream, scene);
+            ScenePersistation::ReadSceneFromStream(stream, scene, animSystemFactory);
         }
         else
         {

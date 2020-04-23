@@ -415,6 +415,20 @@ namespace ramses_internal
         m_creator.removeRenderGroupFromRenderGroup(groupHandleParent, groupHandleChild);
     }
 
+    AnimationSystemHandle ActionCollectingScene::addAnimationSystem(IAnimationSystem* animationSystem, AnimationSystemHandle externalHandle)
+    {
+        auto handle = ResourceChangeCollectingScene::addAnimationSystem(animationSystem, externalHandle);
+        m_creator.addAnimationSystem(handle, animationSystem->getFlags(), animationSystem->getTotalSizeInformation());
+        return handle;
+    }
+
+    void ActionCollectingScene::removeAnimationSystem(AnimationSystemHandle animSystemHandle)
+    {
+        // SceneAction must be created first because animationSystemID is deleted with next call!
+        m_creator.removeAnimationSystem(animSystemHandle);
+        ResourceChangeCollectingScene::removeAnimationSystem(animSystemHandle);
+    }
+
     ramses_internal::RenderPassHandle ActionCollectingScene::allocateRenderPass(UInt32 renderGroupCount, RenderPassHandle handle /*= InvalidRenderPassHandle*/)
     {
         const RenderPassHandle handleActual = ResourceChangeCollectingScene::allocateRenderPass(renderGroupCount, handle);
@@ -675,6 +689,37 @@ namespace ramses_internal
         m_creator.updateTextureBuffer(handle, mipLevel, x, y, width, height, data, dataSize);
     }
 
+    SceneReferenceHandle ActionCollectingScene::allocateSceneReference(SceneId sceneId, SceneReferenceHandle handle)
+    {
+        const auto actualHandle = ResourceChangeCollectingScene::allocateSceneReference(sceneId, handle);
+        m_creator.allocateSceneReference(sceneId, actualHandle);
+        return actualHandle;
+    }
+
+    void ActionCollectingScene::releaseSceneReference(SceneReferenceHandle handle)
+    {
+        ResourceChangeCollectingScene::releaseSceneReference(handle);
+        m_creator.releaseSceneReference(handle);
+    }
+
+    void ActionCollectingScene::requestSceneReferenceState(SceneReferenceHandle handle, RendererSceneState state)
+    {
+        ResourceChangeCollectingScene::requestSceneReferenceState(handle, state);
+        m_creator.requestSceneReferenceState(handle, state);
+    }
+
+    void ActionCollectingScene::requestSceneReferenceFlushNotifications(SceneReferenceHandle handle, bool enable)
+    {
+        ResourceChangeCollectingScene::requestSceneReferenceFlushNotifications(handle, enable);
+        m_creator.requestSceneReferenceFlushNotifications(handle, enable);
+    }
+
+    void ActionCollectingScene::setSceneReferenceRenderOrder(SceneReferenceHandle handle, int32_t renderOrder)
+    {
+        ResourceChangeCollectingScene::setSceneReferenceRenderOrder(handle, renderOrder);
+        m_creator.setSceneReferenceRenderOrder(handle, renderOrder);
+    }
+
     const SceneActionCollection& ActionCollectingScene::getSceneActionCollection() const
     {
         return m_collection;
@@ -683,5 +728,35 @@ namespace ramses_internal
     SceneActionCollection& ActionCollectingScene::getSceneActionCollection()
     {
         return m_collection;
+    }
+
+    void ActionCollectingScene::linkData(SceneReferenceHandle providerScene, DataSlotId providerId, SceneReferenceHandle consumerScene, DataSlotId consumerId)
+    {
+        SceneReferenceAction action;
+        action.type = SceneReferenceActionType::LinkData;
+        action.providerScene = providerScene;
+        action.providerId = providerId;
+        action.consumerScene = consumerScene;
+        action.consumerId = consumerId;
+        m_sceneReferenceActions.push_back(std::move(action));
+    }
+
+    void ActionCollectingScene::unlinkData(SceneReferenceHandle consumerScene, DataSlotId consumerId)
+    {
+        SceneReferenceAction action;
+        action.type = SceneReferenceActionType::UnlinkData;
+        action.consumerScene = consumerScene;
+        action.consumerId = consumerId;
+        m_sceneReferenceActions.push_back(std::move(action));
+    }
+
+    const SceneReferenceActionVector& ActionCollectingScene::getSceneReferenceActions() const
+    {
+        return m_sceneReferenceActions;
+    }
+
+    void ActionCollectingScene::resetSceneReferenceActions()
+    {
+        m_sceneReferenceActions.clear();
     }
 }

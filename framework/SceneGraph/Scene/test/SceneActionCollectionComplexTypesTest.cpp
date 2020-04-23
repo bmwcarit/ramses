@@ -36,7 +36,6 @@ namespace ramses_internal
                 Suspendisse viverra, orci vel commodo aliquam, sem felis \
                 egestas tortor, non sollicitudin lorem ipsum ut nullam.")
             , guid(Guid("9d2aeb99-6eea-4acb-8d93-df619186cff9"))
-            , guidData(guid.getGuidData())
             , bufferSize(96u)
             , buffer(bufferSize, 0x71)
             , fval(3.0f)
@@ -51,7 +50,6 @@ namespace ramses_internal
         const String strEmpty;
         const String strLong;
         const Guid guid;
-        const generic_uuid_t guidData;
 
         const UInt32 bufferSize;
         const std::vector<Byte> buffer;
@@ -117,17 +115,7 @@ namespace ramses_internal
         collection.beginWriteSceneAction(ESceneActionId_TestAction);
         collection.write(guid);
 
-        const UInt32 expectedSize = sizeof(generic_uuid_t);
-        EXPECT_EQ(expectedSize, collection.collectionData().size());
-        EXPECT_EQ(expectedSize, collection[0].size());
-    }
-
-    TEST_F(ASceneActionCollectionComplexTypes, WriteGuidDataAndCheckBufferSize)
-    {
-        collection.beginWriteSceneAction(ESceneActionId_TestAction);
-        collection.write(guidData);
-
-        const UInt32 expectedSize = sizeof(generic_uuid_t);
+        const UInt32 expectedSize = sizeof(Guid::value_type);
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
     }
@@ -246,15 +234,15 @@ namespace ramses_internal
         collection.write(guid);
 
         SceneActionCollection::SceneActionReader reader(collection[0]);
-        generic_uuid_t readGuid;
+        Guid readGuid;
         reader.read(readGuid);
         EXPECT_TRUE(reader.isFullyRead());
 
-        const UInt32 expectedSize = sizeof(generic_uuid_t);
+        const UInt32 expectedSize = sizeof(Guid::value_type);
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
 
-        EXPECT_EQ(0, PlatformMemory::Compare(&readGuid, &guid, sizeof(generic_uuid_t)));
+        EXPECT_EQ(guid, readGuid);
     }
 
     TEST_F(ASceneActionCollectionComplexTypes, WriteAndGetMixtureOfTypes)
@@ -290,9 +278,9 @@ namespace ramses_internal
         reader.read(readStr2);
         EXPECT_EQ(strLong.substr(0, SceneActionCollection::MaxStringLength), readStr2);
 
-        generic_uuid_t readGuid;
+        Guid readGuid;
         reader.read(readGuid);
-        EXPECT_EQ(0, PlatformMemory::Compare(&readGuid, &guid, sizeof(generic_uuid_t)));
+        EXPECT_EQ(guid, readGuid);
 
         String readStr3;
         reader.read(readStr3);

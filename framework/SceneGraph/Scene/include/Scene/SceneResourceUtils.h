@@ -20,7 +20,7 @@ namespace ramses_internal
         void GetAllSceneResourcesFromScene(SceneResourceActionVector& actions, const IScene& scene, size_t& usedDataByteSize);
         void GetAllClientResourcesFromScene(ResourceContentHashVector& resources, const IScene& scene);
 
-        void GetSceneResourceChangesFromScene(SceneResourceChanges& changes, const IScene& scene, size_t& sceneResourcesUsedDataByteSize);
+        void DiffClientResources(ResourceContentHashVector const& old, ResourceContentHashVector const& curr, SceneResourceChanges& changes);
     }
 }
 

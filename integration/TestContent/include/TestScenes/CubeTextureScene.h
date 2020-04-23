@@ -30,6 +30,7 @@ namespace ramses_internal
         enum EState
         {
             EState_RGBA8 = 0,
+            EState_BGRA_Swizzled,
             EState_Float
         };
 

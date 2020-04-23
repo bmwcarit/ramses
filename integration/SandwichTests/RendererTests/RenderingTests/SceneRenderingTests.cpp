@@ -19,6 +19,7 @@
 #include "TestScenes/TextScene.h"
 #include "TestScenes/MultiLanguageTextScene.h"
 #include "TestScenes/AntiAliasingScene.h"
+#include "TestScenes/AnimatedTrianglesScene.h"
 #include "TestScenes/ArrayInputScene.h"
 #include "TestScenes/GeometryInstanceScene.h"
 #include "TestScenes/RenderTargetScene.h"
@@ -101,6 +102,8 @@ void SceneRenderingTests::setUpTestCases(RendererTestsFramework& testFramework)
     testFramework.createTestCaseWithDefaultDisplay(RenderPassClear_ColorDepth, *this, "RenderPassClear_ColorDepth");
     testFramework.createTestCaseWithDefaultDisplay(RenderPassClear_StencilDepth, *this, "RenderPassClear_StencilDepth");
     testFramework.createTestCaseWithDefaultDisplay(RenderPassClear_ColorStencilDepth, *this, "RenderPassClear_ColorStencilDepth");
+
+    testFramework.createTestCaseWithDefaultDisplay(AnimationTest_AnimatedScene, *this, "AnimationTest_AnimatedScene");
 
     testFramework.createTestCaseWithDefaultDisplay(ArrayInputTest_ArrayInputVec4, *this, "ArrayInputTest_ArrayInputVec4");
     testFramework.createTestCaseWithDefaultDisplay(ArrayInputTest_ArrayInputInt32, *this, "ArrayInputTest_ArrayInputInt32");
@@ -245,6 +248,10 @@ bool SceneRenderingTests::run(RendererTestsFramework& testFramework, const Rende
         return runBasicTest<TextScene>(testFramework, TextScene::EState_SHAPING, "TextScene_Shaping");
     case TextTest_DifferentLanguages:
         return runBasicTest<MultiLanguageTextScene>(testFramework, MultiLanguageTextScene::EState_INITIAL, "MultiLanguageScene_MultiLanguageText");
+
+
+    case AnimationTest_AnimatedScene:
+        return runBasicTest<AnimatedTrianglesScene>(testFramework, AnimatedTrianglesScene::ANIMATION_POINT4, "AnimatedTriangleScene_AnimatedScene");
 
     case AntiAliasingTest_MSAA4:
         return runBasicTest<AntiAliasingScene>(testFramework, AntiAliasingScene::MSAA_4_STATE, "AntiAliasingScene_MSAAx4", 2.5f);

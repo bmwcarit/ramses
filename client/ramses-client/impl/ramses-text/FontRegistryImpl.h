@@ -11,7 +11,7 @@
 
 #include "ramses-text-api/IFontInstance.h"
 #include "ramses-text/Freetype2Wrapper.h"
-#include "ramses-text/FontData.h"
+#include "ramses-text/FreetypeFontFace.h"
 #include <unordered_map>
 #include <memory>
 
@@ -44,30 +44,23 @@ namespace ramses
         bool                    deleteFont(FontId fontId);
         bool                    deleteFontInstance(FontInstanceId fontInstance);
 
-        FontId          registerFont(uint32_t fontType, const char* fontPath);
-        const FontData* getFontData(FontId fontId) const;
-        FontInstanceId  reserveFontInstanceId();
-        void            registerFontInstance(FontInstanceId fontInstanceId, std::unique_ptr<IFontInstance> fontInstance);
-
         FontRegistryImpl(const FontRegistryImpl&) = delete;
         FontRegistryImpl& operator=(const FontRegistryImpl&) = delete;
         FontRegistryImpl(FontRegistryImpl&&) = delete;
         FontRegistryImpl& operator=(FontRegistryImpl&&) = delete;
 
     private:
-        static std::vector<uint8_t> LoadFile(const char* fontFileName);
+        FontInstanceId  reserveFontInstanceId();
+        void            registerFontInstance(FontInstanceId fontInstanceId, std::unique_ptr<IFontInstance> fontInstance);
 
         SharedFTLibrary m_ft2Library;
 
-        using Fonts = std::unordered_map<FontId, std::unique_ptr<FontData>>;
-        Fonts m_fonts;
+        std::unordered_map<FontId, std::unique_ptr<FreetypeFontFace>> m_fonts;
         FontId m_lastFontId{ 0u };
 
         using FontInstances = std::unordered_map<FontInstanceId, std::unique_ptr<IFontInstance>>;
         FontInstances m_fontInstances;
         FontInstanceId m_lastFontInstanceId{ 0u };
-
-        static constexpr uint32_t Freetype2FontType = 0x1;
     };
 }
 

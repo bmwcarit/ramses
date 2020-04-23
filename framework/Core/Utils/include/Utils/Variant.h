@@ -21,6 +21,7 @@
 #include "Math3d/Matrix33f.h"
 #include "Math3d/Matrix44f.h"
 #include "Utils/DataTypeUtils.h"
+#include <cassert>
 
 namespace ramses_internal
 {

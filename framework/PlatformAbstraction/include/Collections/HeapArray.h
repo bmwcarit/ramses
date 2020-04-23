@@ -28,8 +28,8 @@ namespace ramses_internal
         HeapArray(const HeapArray&) = delete;
         HeapArray& operator=(const HeapArray&) = delete;
 
-        HeapArray(HeapArray&&) RNOEXCEPT;
-        HeapArray& operator=(HeapArray&&) RNOEXCEPT;
+        HeapArray(HeapArray&&) noexcept;
+        HeapArray& operator=(HeapArray&&) noexcept;
 
         UInt size() const;
         T* data();
@@ -66,7 +66,7 @@ namespace ramses_internal
 
     template <typename T, typename _uniqueId>
     inline
-    HeapArray<T, _uniqueId>::HeapArray(HeapArray&& o) RNOEXCEPT
+    HeapArray<T, _uniqueId>::HeapArray(HeapArray&& o) noexcept
         : m_size(o.m_size)
         , m_data(std::move(o.m_data))
     {
@@ -76,7 +76,7 @@ namespace ramses_internal
 
     template <typename T, typename _uniqueId>
     inline
-    HeapArray<T, _uniqueId>& HeapArray<T, _uniqueId>::operator=(HeapArray&& o) RNOEXCEPT
+    HeapArray<T, _uniqueId>& HeapArray<T, _uniqueId>::operator=(HeapArray&& o) noexcept
     {
         if (&o != this)
         {

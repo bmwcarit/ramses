@@ -12,6 +12,7 @@
 #include "ramses-text-api/GlyphMetrics.h"
 #include <stdint.h>
 #include <string>
+#include <unordered_set>
 
 namespace ramses
 {
@@ -27,11 +28,17 @@ namespace ramses
         virtual ~IFontInstance() = default;
 
         /**
-        * @brief Check if font instance supports a char using it's UTF32 char code
+        * @brief Check if font instance supports a char using it's UTF32 char code and cache the result
         * @param[in] character The UTF32 char code of the character
         * @return True if the character is supported, false otherwise
         */
         virtual bool supportsCharacter(char32_t character) const = 0;
+
+        /**
+        * @brief Get all characters that are supported (mapped to a glyph) by IFontInstance
+        * @return set with all supported UTF32 char codes
+        */
+        virtual std::unordered_set<unsigned long> getAllSupportedCharacters() = 0;
 
         /**
         * @brief Get the line height of the font instance

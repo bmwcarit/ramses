@@ -94,7 +94,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool TextureLinkManager::removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle)
+    Bool TextureLinkManager::removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle, SceneId* providerSceneIdOut)
     {
         Bool removed = false;
         if (m_offscreenBufferLinks.hasLinkedProvider(consumerSceneId, consumerSlotHandle))
@@ -104,6 +104,8 @@ namespace ramses_internal
         }
         else
         {
+            if (providerSceneIdOut && getSceneLinks().hasLinkedProvider(consumerSceneId, consumerSlotHandle))
+                *providerSceneIdOut = getSceneLinks().getLinkedProvider(consumerSceneId, consumerSlotHandle).providerSceneId;
             removed = LinkManagerBase::removeDataLink(consumerSceneId, consumerSlotHandle);
         }
 

@@ -15,44 +15,12 @@
 
 namespace ramses
 {
-    Freetype2FontInstance::Freetype2FontInstance(FontInstanceId id, FT_Library freetypeLib, const FontData& font, uint32_t pixelSize, bool forceAutohinting)
+    Freetype2FontInstance::Freetype2FontInstance(FontInstanceId id, FT_Face fontFace, uint32_t pixelSize, bool forceAutohinting)
         : m_id(id)
-        , m_font(font)
+        , m_face(fontFace)
         , m_forceAutohinting(forceAutohinting)
     {
-        // TODO Violin check if face has to be created per instance, or is enough to have it per font
-
-        FT_Open_Args fontDataArgs;
-        fontDataArgs.flags = FT_OPEN_MEMORY;
-        fontDataArgs.memory_base = m_font.data.data();
-        fontDataArgs.memory_size = static_cast<FT_Long>(m_font.data.size());
-        fontDataArgs.num_params = 0;
-
-        int32_t error = FT_Open_Face(freetypeLib, &fontDataArgs, -1, &m_face);
-        if (error != 0)
-        {
-            LOG_ERROR(CONTEXT_TEXT, "Freetype2FontInstance: Failed to open face, FT error " << error);
-            assert(false);
-            return;
-        }
-        if (m_face->num_faces < 1)
-        {
-            LOG_ERROR(CONTEXT_TEXT, "Freetype2FontInstance: no font faces found in font data");
-            assert(false);
-            return;
-        }
-        else if (m_face->num_faces > 1)
-            LOG_INFO(CONTEXT_TEXT, "Freetype2FontInstance: current implementation does not support multiple faces, face with index 0 will be used (" << static_cast<int64_t>(m_face->num_faces) << " faces found in file)");
-
-        error = FT_Open_Face(freetypeLib, &fontDataArgs, 0, &m_face);
-        if (error != 0)
-        {
-            LOG_ERROR(CONTEXT_TEXT, "Freetype2FontInstance: Failed to open face, FT error " << error);
-            assert(false);
-            return;
-        }
-
-        error = FT_New_Size(m_face, &m_size);
+        int error = FT_New_Size(m_face, &m_size);
         if (error != 0)
             LOG_ERROR(CONTEXT_TEXT, "Freetype2FontInstance: Failed to initialize FT size, FT error " << error);
         assert(0 == error);
@@ -64,17 +32,15 @@ namespace ramses
             LOG_ERROR(CONTEXT_TEXT, "Freetype2FontInstance: Failed to set pixel sizes, FT error " << error);
         assert(0 == error);
 
-        m_height = m_size->metrics.height / 64;
-        m_ascender = m_size->metrics.ascender / 64;
-        m_descender = m_size->metrics.descender / 64;
+        m_height = static_cast<int>(m_size->metrics.height / 64);
+        m_ascender = static_cast<int>(m_size->metrics.ascender / 64);
+        m_descender = static_cast<int>(m_size->metrics.descender / 64);
     }
 
     Freetype2FontInstance::~Freetype2FontInstance()
     {
         if (m_size)
             FT_Done_Size(m_size);
-        if (m_face)
-            FT_Done_Face(m_face);
     }
 
     void Freetype2FontInstance::loadAndAppendGlyphMetrics(std::u32string::const_iterator charsBegin, std::u32string::const_iterator charsEnd, GlyphMetricsVector& positionedGlyphs)
@@ -126,8 +92,15 @@ namespace ramses
 
     bool Freetype2FontInstance::supportsCharacter(char32_t charcode) const
     {
-        // TODO Violin try to find a more expressive code for this check
-        return 0 != getGlyphId(charcode).getValue();
+        const auto it = m_supportedCharacters.find(charcode);
+
+        if (m_supportedCharacters.end() != it)
+            return it->second;
+
+        //if the font doesn't contain a glyph for the queried charcode it's not supported
+        const bool isCharSupported = (0 != getGlyphId(charcode).getValue());
+        m_supportedCharacters[charcode] = isCharSupported;
+        return isCharSupported;
     }
 
     const GlyphMetrics* Freetype2FontInstance::getGlyphMetricsData(GlyphId glyphId)
@@ -206,6 +179,8 @@ namespace ramses
         }
 
         // must call activateSize() before loading
+        activateSize();
+
         int32_t flags = FT_LOAD_DEFAULT;
         if (m_forceAutohinting)
             flags = FT_LOAD_FORCE_AUTOHINT;
@@ -266,5 +241,35 @@ namespace ramses
     {
         activateSize();
         return GlyphId(FT_Get_Char_Index(m_face, charcode));
+    }
+
+    void Freetype2FontInstance::cacheAllSupportedCharacters()
+    {
+        assert(!m_allSupportedCharactersCached);
+        FT_UInt gindex = 0;
+        FT_ULong charcode = FT_Get_First_Char(m_face, &gindex);
+
+        while (gindex != 0)
+        {
+            m_supportedCharacters[charcode] = true;
+            charcode = FT_Get_Next_Char(m_face, charcode, &gindex);
+        }
+    }
+
+    std::unordered_set<FT_ULong> Freetype2FontInstance::getAllSupportedCharacters()
+    {
+        if (!m_allSupportedCharactersCached)
+        {
+            cacheAllSupportedCharacters();
+            m_allSupportedCharactersCached = true;
+        }
+        std::unordered_set<FT_ULong> allSupportedCharactersSet;
+
+        for (const auto character : m_supportedCharacters)
+        {
+            if (character.second)
+                allSupportedCharactersSet.insert(character.first);
+        }
+        return allSupportedCharactersSet;
     }
 }

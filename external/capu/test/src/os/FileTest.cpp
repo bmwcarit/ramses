@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
+#include "ramses-capu/os/File.h"
 #include <gtest/gtest.h>
 #include "ramses-capu/Config.h"
-#include "ramses-capu/os/File.h"
-#include "ramses-capu/os/Memory.h"
+#include <cstring>
 
 TEST(File, ConstructorTest)
 {
@@ -217,7 +217,7 @@ TEST(File, ReadWriteBinaryTest)
     f3.close();
 
     EXPECT_EQ(sizeof(buf1), bytes);
-    for (uint32_t i = 0; i < sizeof(buf1); i++)
+    for (size_t i = 0; i < sizeof(buf1); i++)
     {
         EXPECT_EQ(buf1[i], buf2[i]);
     }
@@ -259,7 +259,7 @@ TEST(File, Seek)
     EXPECT_EQ(ramses_capu::CAPU_OK, status);
     readFile.close();
 
-    EXPECT_EQ(0, ramses_capu::Memory::Compare("hello world!", readBuffer, sizeof(readBuffer)));
+    EXPECT_EQ(0, std::memcmp("hello world!", readBuffer, sizeof(readBuffer)));
 }
 
 TEST(File, getCurrentPositionWithinFile)

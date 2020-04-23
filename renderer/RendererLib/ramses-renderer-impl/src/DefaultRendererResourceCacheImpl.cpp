@@ -14,6 +14,7 @@
 #include "Utils/Adler32Checksum.h"
 #include "PlatformAbstraction/PlatformMemory.h"
 #include "TransportCommon/RamsesTransportProtocolVersion.h"
+#include <cassert>
 
 namespace ramses
 {

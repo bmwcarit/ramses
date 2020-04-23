@@ -69,7 +69,6 @@ TEST_F(ADisplayConfig, hasDefaultValuesUponConstruction)
     EXPECT_EQ(defaultDisplayConfig.getBorderlessState(), displayConfig.getBorderlessState());
     EXPECT_EQ(defaultDisplayConfig.isWarpingEnabled(), displayConfig.isWarpingEnabled());
     EXPECT_EQ(defaultDisplayConfig.getKeepEffectsUploaded(), displayConfig.getKeepEffectsUploaded());
-    EXPECT_EQ(defaultDisplayConfig.isStereoDisplay(), displayConfig.isStereoDisplay());
 
     EXPECT_EQ(defaultDisplayConfig.getAntialiasingMethod(), displayConfig.getAntialiasingMethod());
     EXPECT_EQ(defaultDisplayConfig.getAntialiasingSampleCount(), displayConfig.getAntialiasingSampleCount());
@@ -189,12 +188,6 @@ TEST_F(ADisplayConfig, disablesKeepingOfEffectsInVRAM)
 {
     EXPECT_EQ(ramses::StatusOK, config.keepEffectsUploaded(false));
     EXPECT_FALSE(config.impl.getInternalDisplayConfig().getKeepEffectsUploaded());
-}
-
-TEST_F(ADisplayConfig, enablesStereoDisplay)
-{
-    EXPECT_EQ(ramses::StatusOK, config.enableStereoDisplay());
-    EXPECT_TRUE(config.impl.getInternalDisplayConfig().isStereoDisplay());
 }
 
 TEST_F(ADisplayConfig, setsNativeDisplayID)
@@ -325,26 +318,6 @@ TEST_F(ADisplayConfig, doesPerspectiveProjectionParamsValidationOnSetting)
     EXPECT_EQ(ramses::StatusOK, config.validate());
 }
 
-TEST_F(ADisplayConfig, validatesStereoDisplay)
-{
-    EXPECT_EQ(ramses::StatusOK, config.enableStereoDisplay());
-    EXPECT_EQ(ramses::StatusOK, config.validate());
-}
-
-TEST_F(ADisplayConfig, failsValidationOfStereoDisplayWithWarping)
-{
-    EXPECT_EQ(ramses::StatusOK, config.enableStereoDisplay());
-    EXPECT_EQ(ramses::StatusOK, config.enableWarpingPostEffect());
-    EXPECT_NE(ramses::StatusOK, config.validate());
-}
-
-TEST_F(ADisplayConfig, failsValidationOfStereoDisplayWithAntialiasing)
-{
-    EXPECT_EQ(ramses::StatusOK, config.enableStereoDisplay());
-    EXPECT_EQ(ramses::StatusOK, config.setMultiSampling(4u));
-    EXPECT_NE(ramses::StatusOK, config.validate());
-}
-
 TEST_F(ADisplayConfig, failsValidationIfCLIParamsForPerspectiveCameraAreInvalid)
 {
     const char *args[] = { "renderer", "-fov", "-45.4" };
@@ -405,12 +378,4 @@ TEST_F(ADisplayConfig, setClearColor)
     EXPECT_EQ(clearColor.g, green);
     EXPECT_EQ(clearColor.b, blue);
     EXPECT_EQ(clearColor.a, alpha);
-}
-
-TEST_F(ADisplayConfig, setOffscreen)
-{
-    const bool newOffscreenFlag = !config.impl.getInternalDisplayConfig().getOffscreen();
-
-    EXPECT_EQ(ramses::StatusOK, config.setOffscreen(newOffscreenFlag));
-    EXPECT_EQ(newOffscreenFlag, config.impl.getInternalDisplayConfig().getOffscreen());
 }

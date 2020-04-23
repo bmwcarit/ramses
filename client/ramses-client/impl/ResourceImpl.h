@@ -42,7 +42,7 @@ namespace ramses
         resourceId_t     getResourceId() const;
         ramses_internal::ResourceContentHash getLowlevelResourceHash() const;
 
-        virtual status_t validate(uint32_t indent) const override;
+        virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
         virtual status_t setName(RamsesObject& object, const char* name) override;
 
     private:

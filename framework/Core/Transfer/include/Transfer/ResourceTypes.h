@@ -11,15 +11,17 @@
 
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/ResourceContentHash.h"
-#include "Collections/Vector.h"
 #include "Common/StronglyTypedValue.h"
+
+#include <vector>
 
 namespace ramses_internal
 {
     typedef std::vector<ResourceContentHash> ResourceContentHashVector;
     typedef StronglyTypedValue<UInt32, static_cast<UInt32>(-1), struct RequesterIDTag> RequesterID;
-    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(RequesterID)
     typedef std::vector<RenderTargetHandle> RenderTargetHandleVector;
 }
+
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::RequesterID)
 
 #endif

@@ -65,12 +65,9 @@ public:
     static ramses::RendererConfig CreateTestRendererConfig();
     // All renderer tests should use this display config which makes window visible by default for Wayland
     static ramses::DisplayConfig CreateTestDisplayConfig(uint32_t iviSurfaceIdOffset, bool iviWindowStartVisible = true);
-    static void SetWaylandIviLayerID(ramses_internal::UInt32 layerId);
-    static void SetWaylandSocketEmbedded(const ramses_internal::String& wse);
-    static void SetWaylandSocketEmbeddedFileDescriptor(int fileDescriptor);
-    static void SetWaylandSocketEmbeddedGroup(const ramses_internal::String& wsegn);
     static void SetMaxFrameCallbackPollingTime(std::chrono::microseconds time);
     static void SetWaylandDisplayForSystemCompositorController(const ramses_internal::String& wd);
+    static void SetCommandLineParams(const int argc, char const* const* argv);
     static const ramses::WarpingMeshData& CreateTestWarpingMesh();
 
     static const float DefaultMaxAveragePercentPerPixel;
@@ -80,12 +77,9 @@ private:
                                             const ramses_internal::String& expectedScreenshotFileName,
                                             float maxAveragePercentErrorPerPixel);
 
-    static ramses_internal::UInt32 WaylandIviLayerIdForTestDisplayConfig;
-    static ramses_internal::String WaylandSocketEmbedded;
-    static int WaylandSocketEmbeddedFileDescriptor;
-    static ramses_internal::String WaylandSocketEmbeddedGroup;
     static std::chrono::microseconds MaxFrameCallbackPollingTime;
     static ramses_internal::String WaylandDisplayForSystemCompositorController;
+    static std::vector<const char*> CommandLineArgs;
 };
 
 #endif

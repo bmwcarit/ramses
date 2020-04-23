@@ -53,8 +53,9 @@ namespace ramses_internal
         virtual bool sendContentStateChange(ContentID contentID, EDcsmState status, SizeInfo sizeInfo, AnimationInformation ai) override;
 
         // Local provider send methods
-        virtual bool sendOfferContent(ContentID contentID, Category) override;
-        virtual bool sendContentReady(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) override;
+        virtual bool sendOfferContent(ContentID contentID, Category category, bool localOnly) override;
+        virtual bool sendContentDescription(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) override;
+        virtual bool sendContentReady(ContentID contentID) override;
         virtual bool sendContentFocusRequest(ContentID contentID) override;
         virtual bool sendRequestStopOfferContent(ContentID contentID) override;
         virtual bool sendUpdateContentMetadata(ContentID contentID, const DcsmMetadata& metadata) override;
@@ -65,7 +66,8 @@ namespace ramses_internal
 
         // IDcsmConsumerServiceHandler implementation
         virtual void handleOfferContent(ContentID contentID, Category, const Guid& providerID) override;
-        virtual void handleContentReady(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID) override;
+        virtual void handleContentDescription(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID) override;
+        virtual void handleContentReady(ContentID contentID, const Guid& providerID) override;
         virtual void handleContentFocusRequest(ContentID contentID, const Guid& providerID) override;
         virtual void handleRequestStopOfferContent(ContentID contentID, const Guid& providerID) override;
         virtual void handleForceStopOfferContent(ContentID contentID, const Guid& providerID) override;
@@ -103,11 +105,15 @@ namespace ramses_internal
             Guid providerID;
             Guid consumerID;
             DcsmMetadata metadata;
+            bool localOnly;
+            ETechnicalContentType contentType;
+            TechnicalContentDescriptor contentDescriptor;
             // TODO(tobias): add more infos (tech etc) for periodic/ramsh logging
         };
 
         enum class EDcsmCommandType {
             OfferContent,
+            ContentDescription,
             ContentReady,
             ContentStateChange,
             CanvasSizeChange,
@@ -123,10 +129,10 @@ namespace ramses_internal
             ContentID                  contentID;
             Category                   category;
             TechnicalContentDescriptor descriptor;
-            ETechnicalContentType      contentType;
-            EDcsmState                 state;
-            SizeInfo                   size;
-            AnimationInformation       animation;
+            ETechnicalContentType      contentType = ETechnicalContentType::RamsesSceneID;
+            EDcsmState                 state       = EDcsmState::Offered;
+            SizeInfo                   size       {0, 0};
+            AnimationInformation       animation  {0, 0};
             DcsmMetadata               metadata;
             Guid                       from;
         };
@@ -134,7 +140,8 @@ namespace ramses_internal
         void addProviderEvent_CanvasSizeChange(ContentID contentID, SizeInfo sizeinfo, AnimationInformation, const Guid& consumerID);
         void addProviderEvent_ContentStateChange(ContentID contentID, EDcsmState status, SizeInfo sizeInfo,AnimationInformation, const Guid& consumerID);
         void addConsumerEvent_OfferContent(ContentID contentID, Category, const Guid& providerID);
-        void addConsumerEvent_ContentReady(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID);
+        void addConsumerEvent_ContentDescription(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID);
+        void addConsumerEvent_ContentReady(ContentID contentID, const Guid& providerID);
         void addConsumerEvent_ContentFocusRequest(ContentID contentID, const Guid& providerID);
         void addConsumerEvent_RequestStopOfferContent(ContentID contentID, const Guid& providerID);
         void addConsumerEvent_ForceStopOfferContent(ContentID contentID, const Guid& providerID);

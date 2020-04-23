@@ -43,9 +43,7 @@ ramses::sceneId_t RenderPassRenderingTests::createAndSetupInitialRenderOnceScene
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<RenderPassOnceScene>(RenderPassOnceScene::INITIAL_RENDER_ONCE);
 
     testFramework.publishAndFlushScene(sceneId);
-    testFramework.subscribeScene(sceneId);
-    testFramework.mapScene(sceneId, 0u);
-    testFramework.showScene(sceneId);
+    testFramework.getSceneToRendered(sceneId);
 
     return sceneId;
 }
@@ -104,14 +102,13 @@ bool RenderPassRenderingTests::runRemapSceneWithRenderOnceTest(RendererTestsFram
         return false;
     }
 
-    testFramework.hideAndUnmap(sceneId);
+    testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Available);
     if (!testFramework.renderAndCompareScreenshot("OffscreenBufferLinkTest_Black"))
     {
         return false;
     }
 
-    testFramework.mapScene(sceneId, 0u);
-    testFramework.showScene(sceneId);
+    testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
     return testFramework.renderAndCompareScreenshot("RenderPassOnce_Initial");
 }
@@ -125,16 +122,13 @@ bool RenderPassRenderingTests::runResubscribeSceneWithRenderOnceTest(RendererTes
         return false;
     }
 
-    testFramework.hideAndUnmap(sceneId);
-    testFramework.unsubscribeScene(sceneId);
+    testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Unavailable);
     if (!testFramework.renderAndCompareScreenshot("OffscreenBufferLinkTest_Black"))
     {
         return false;
     }
 
-    testFramework.subscribeScene(sceneId);
-    testFramework.mapScene(sceneId, 0u);
-    testFramework.showScene(sceneId);
+    testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 
     return testFramework.renderAndCompareScreenshot("RenderPassOnce_Initial");
 }

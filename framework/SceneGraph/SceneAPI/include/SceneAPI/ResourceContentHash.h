@@ -10,10 +10,10 @@
 #define RAMSES_RESOURCECONTENTHASH_H
 
 #include "PlatformAbstraction/PlatformTypes.h"
+#include "PlatformAbstraction/Hash.h"
 #include "Collections/IOutputStream.h"
 #include "Collections/IInputStream.h"
-#include "Collections/StringOutputStream.h"
-#include "ramses-capu/container/Hash.h"
+#include "PlatformAbstraction/FmtBase.h"
 #include <cinttypes>
 #include <functional>
 
@@ -71,15 +71,17 @@ namespace ramses_internal
     {
         return stream >> value.lowPart >> value.highPart;
     }
-
-    inline StringOutputStream& operator<<(StringOutputStream& sos, const ResourceContentHash& value)
-    {
-        sos.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexLeadingZeros);
-        sos << "0x" << value.highPart << value.lowPart;
-        sos.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_NoHex);
-        return sos;
-    }
 }
+
+template <>
+struct fmt::formatter<ramses_internal::ResourceContentHash> : public ramses_internal::SimpleFormatterBase
+{
+    template<typename FormatContext>
+    auto format(const ramses_internal::ResourceContentHash& res, FormatContext& ctx)
+    {
+        return fmt::format_to(ctx.out(), "0x{:016X}{:016X}", res.highPart, res.lowPart);
+    }
+};
 
 // make hashable
 namespace std
@@ -91,7 +93,7 @@ namespace std
         size_t operator()(const ramses_internal::ResourceContentHash& v) const
         {
             static_assert(sizeof(ramses_internal::ResourceContentHash) == 2*sizeof(uint64_t), "make sure resourceontenthash is just 2 64 values");
-            return ramses_capu::HashMemoryRange(&v, 2 * sizeof(uint64_t));
+            return ramses_internal::HashMemoryRange(&v, 2 * sizeof(uint64_t));
         }
     };
 }

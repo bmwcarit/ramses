@@ -217,16 +217,6 @@ namespace ramses
         status_t enableWarpingPostEffect();
 
         /**
-        * @brief Enable stereo display.
-        *        Will create a stereo display that can be used to render left and right eye.
-        *        Stereo display does not support anti aliasing and any post processing.
-        *
-        * @return RendererStatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t enableStereoDisplay();
-
-        /**
         * @brief [Mandatory on Wayland] Set IVI layer ID to use for attaching the IVI surface created by the display.
         *
         * RAMSES does not try to create the layer, instead the layer must be already existing before creating the display.
@@ -367,19 +357,6 @@ namespace ramses
         *          to resolve error message using getStatusMessage()
         */
         status_t setClearColor(float red, float green, float blue, float alpha);
-
-        /**
-        * @brief Enables/disables offscreen rendering for the created display. By default displays are
-        *        created to be onscreen (not offscreen). An offscreen display will not open a visible
-        *        window, but will use an offscreen surface to render the framebuffer contents. Also,
-        *        an offscreen display will not block on the system compositor, if created on a
-        *        wayland backend.
-        * @param[in] offscreenFlag The flag for enabling or disabling offscreen rendering for the display
-        *
-        * @return  StatusOK on success, otherwise the returned status can be used to resolve
-        *          to resolve error message using getStatusMessage()
-        */
-        status_t setOffscreen(bool offscreenFlag);
 
         /**
         * @brief [Only for Windows] Set the HWND handle for custom display creation.

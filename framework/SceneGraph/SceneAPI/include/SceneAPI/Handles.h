@@ -65,15 +65,17 @@ namespace ramses_internal
     struct DataBufferHandleTag {};
     typedef TypedMemoryHandle<DataBufferHandleTag> DataBufferHandle;
 
+    struct AnimationSystemHandleTag {};
+    typedef TypedMemoryHandle<AnimationSystemHandleTag> AnimationSystemHandle;
+
     struct TextureBufferHandleTag {};
     typedef TypedMemoryHandle<TextureBufferHandleTag> TextureBufferHandle;
 
-    //Queue handles
-    struct QueueHandleTag {};
-    typedef TypedMemoryHandle<QueueHandleTag> QueueHandle;
-
     struct DataFieldHandleTag {};
     typedef TypedMemoryHandle<DataFieldHandleTag> DataFieldHandle;
+
+    struct SceneReferenceHandleTag {};
+    typedef TypedMemoryHandle<SceneReferenceHandleTag> SceneReferenceHandle;
 }
 
 #endif

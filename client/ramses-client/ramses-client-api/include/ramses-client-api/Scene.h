@@ -11,6 +11,7 @@
 
 #include "ramses-client-api/ClientObject.h"
 #include "ramses-client-api/TextureEnums.h"
+#include "ramses-client-api/AnimationSystemEnums.h"
 #include "ramses-client-api/EScenePublicationMode.h"
 #include "ramses-client-api/EDataType.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
@@ -27,6 +28,8 @@ namespace ramses
     class GeometryBinding;
     class SceneImpl;
     class RamsesClientImpl;
+    class AnimationSystem;
+    class AnimationSystemRealTime;
     class RenderGroup;
     class RenderPass;
     class RenderBuffer;
@@ -55,7 +58,9 @@ namespace ramses
     class IndexDataBuffer;
     class VertexDataBuffer;
     class Texture2DBuffer;
+    class SceneReference;
     class SceneObject;
+    class RamsesClient;
 
     /**
      * @brief The Scene holds a scene graph.
@@ -602,6 +607,38 @@ namespace ramses
         status_t createTextureConsumer(const TextureSampler& sampler, dataConsumerId_t dataId);
 
         /**
+        * @brief Create a new animation system. The animation system will be
+        * updated on renderer side after calls to AnimationSystem::setTime().
+        * The animation system is not automatically updated on client side.
+        * If live updates of animated values are needed on client side, provide
+        * the creation flag EAnimationSystemFlags_ClientSideProcessing. Calls to
+        * AnimationSystem::setTime() then also update the animation systems
+        * client side state.
+        *
+        * @param[in] flags Optional creation flags for the animation system.
+        * @param[in] name The optional name of the created animation system.
+        * @return A reference to the created animation system.
+        */
+        AnimationSystem* createAnimationSystem(uint32_t flags = EAnimationSystemFlags_Default, const char* name = nullptr);
+
+        /**
+        * @brief Create a new animation system that is designed to work with system
+        * time. The animation system will be updated automatically every frame on
+        * renderer side using its system time. The animation system is not
+        * automatically updated on client side. If live updates of animated values
+        * are needed on client side, provide the creation flag
+        * EAnimationSystemFlags_ClientSideProcessing, and make sure to call
+        * AnimationSystem::updateLocalTime() before accessing any values. Calls
+        * to AnimationSystem::updateLocalTime() are also mandatory before any
+        * client side changes to the state of the animation system.
+        *
+        * @param[in] flags Optional creation flags for the animation system.
+        * @param[in] name The optional name of the created animation system.
+        * @return A reference to the created animation system.
+        */
+        AnimationSystemRealTime* createRealTimeAnimationSystem(uint32_t flags = EAnimationSystemFlags_Default, const char* name = nullptr);
+
+        /**
         * @brief Create a new IndexDataBuffer. The created object can be used as a mutable resource
         * as index buffer in GeometryBinding. The created resource has mutable contents and immutable size that has to be specified
         * at creation time. Upon creation the contents of the resource data are undefined. The contents of the resource
@@ -610,7 +647,7 @@ namespace ramses
         * @param[in] maximumSizeInBytes Maximum size of the resource data.
         * @param[in] dataType Data type of the resource data. Must be an integral data type.
         * @param[in] name The optional name of the created index data buffer.
-        * @return A reference to the created index data buffer.
+        * @return A pointer to the created index data buffer.
         */
         IndexDataBuffer* createIndexDataBuffer(uint32_t maximumSizeInBytes, EDataType dataType, const char* name = nullptr);
 
@@ -623,7 +660,7 @@ namespace ramses
         * @param[in] maximumSizeInBytes Maximum size of the resource data.
         * @param[in] dataType Data type of the resource data. Must be a float or float vector data type.
         * @param[in] name The optional name of the created vertex data buffer.
-        * @return A reference to the created vertex data buffer.
+        * @return A pointer to the created vertex data buffer.
         */
         VertexDataBuffer* createVertexDataBuffer(uint32_t maximumSizeInBytes, EDataType dataType, const char* name = nullptr);
 
@@ -641,9 +678,78 @@ namespace ramses
         * @param[in] height height of the first and largest mipmap level.
         * @param[in] textureFormat texture format. Only uncompressed texture formats are supported
         * @param[in] name The optional name of the created Texture2DBuffer.
-        * @return A reference to the created Texture2DBuffer.
+        * @return A pointer to the created Texture2DBuffer.
         */
         Texture2DBuffer* createTexture2DBuffer(uint32_t mipLevelCount, uint32_t width, uint32_t height, ETextureFormat textureFormat, const char* name = nullptr);
+
+        /**
+        * @brief Creates a new SceneReference object.
+        * @details The SceneReference object references a scene, which might be unknown
+        *          to this RamsesClient, but is known to the RamsesRenderer rendering this scene.
+        *          It allows to request rendering states of the referenced scene on renderer side.
+        *          There can be only one instance of #ramses::SceneReference per scene ID in all
+        *          RamsesClients connected to a RamsesRenderer. Creating two instances in one RamsesClient
+        *          will result in an error, creating two instances in different RamsesClients results
+        *          in undefined behavior.
+        *
+        * @param[in] referencedScene A scene id of a scene known to the RamsesRenderer.
+        * @param[in] name The optional name of the created SceneReference.
+        * @return A pointer to the created SceneReference.
+        */
+        SceneReference* createSceneReference(sceneId_t referencedScene, const char* name = nullptr);
+
+        /**
+        * @brief Tell the RamsesRenderer to link a data provider to a data consumer across two scenes.
+        * @details Data provider and data consumer must be created via client scene API and their data type must match.
+        *          Linking data means that the consumer's data property will be overridden by provider's data property.
+        *          A consumer within a scene can be linked to exactly one provider.
+        *
+        *          A link between provider and consumer is possible, if they are either part of the this scene
+        *          or one of its scene references.
+        *
+        *          If the function returns StatusOK, #ramses::IClientEventHandler::dataLinked will be emitted after the link is
+        *          processed by renderer. The link will fail (reported via callback result argument) if either the data provider
+        *          or data consumer does not exist or their data type does not match.
+        *
+        *          Scene reference must be known to renderer side before attempting to make a data link. Make sure any involved
+        *          #ramses::SceneReference was reported to be in state Available or higher
+        *          (see #ramses::IClientEventHandler::sceneReferenceStateChanged).
+        *
+        *          Should one of the scene references of the data link go to state Unavailable while the data link is active, the link
+        *          will implicitly be destroyed and needs to be rerequested again.
+        *
+        *          If successful the operation can be assumed to be effective in the next frame consumer scene is rendered after flushed.
+        *          If the data consumer is already linked to a provider (data or offscreen buffer), the old link will be discarded,
+        *          however if the new link fails it is undefined whether previous link was discarded or not.
+        *
+        * @param providerReference A pointer to a SceneReference created by this scene, or nullptr to use this scene.
+        * @param providerId The id of the data provider within the providerScene or providerReference.
+        * @param consumerReference A pointer to the SceneReference which consumes the data, or nullptr to use this scene.
+        * @param consumerId The id of the data consumer within the consumerScene or consumerReference.
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t linkData(SceneReference* providerReference, dataProviderId_t providerId, SceneReference* consumerReference, dataConsumerId_t consumerId);
+
+        /**
+        * @brief   Removes an existing link between two scenes (see #ramses::Scene::linkData).
+        * @details If the function returns StatusOK, #ramses::IClientEventHandler::dataUnlinked will be emitted after it is
+        *          processed by renderer. If successful the operation can be assumed to be effective in the next frame consumer
+        *          scene is rendered after flushed.
+        *
+        * @param consumerReference The pointer to the SceneReference which consumes the data, or nullptr to use this scene.
+        * @param consumerId The id of the data consumer within the consumerReference.
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t unlinkData(SceneReference* consumerReference, dataConsumerId_t consumerId);
+
+        /**
+         * @brief Getter for #ramses::RamsesClient this Scene was created from
+         *
+         * @return the parent RamsesCLient
+         */
+        RamsesClient& getRamsesClient();
 
     protected:
         /**

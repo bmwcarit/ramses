@@ -24,7 +24,7 @@ using namespace testing;
 
 namespace ramses_internal
 {
-    TYPED_TEST_CASE(AScene, SceneTypes);
+    TYPED_TEST_SUITE(AScene, SceneTypes);
 
     TYPED_TEST(AScene, ContainsZeroTotalDataInstancesUponCreation)
     {

@@ -22,9 +22,9 @@ namespace ramses_internal
     using namespace testing;
 
     ProviderAndConsumerBaseTest::ProviderAndConsumerBaseTest()
-            : consumerGuid(true)
+            : consumerGuid(78)
             , consumerCommunicationSystem(consumerGuid)
-            , providerGuid(true)
+            , providerGuid(79)
             , providerCommunicationSystem(providerGuid)
         {
             consumerCommunicationSystem.setForwardingTarget(&providerCommunicationSystem);

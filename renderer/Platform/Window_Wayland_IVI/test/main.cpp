@@ -17,24 +17,8 @@
 int main(int argc, char* argv[])
 {
     ramses_internal::CommandLineParser parser(argc, argv);
-
-    ramses_internal::ArgumentUInt32 waylandIviLayerId(parser, "lid", "waylandIviLayerId", 3);
-    ramses_internal::ArgumentBool helpRequested(parser, "help", "help");
-
-    RendererTestUtils::SetWaylandIviLayerID(waylandIviLayerId);
-
+    RendererTestUtils::SetCommandLineParams(argc, argv);
     testing::InitGoogleMock(&argc, argv);
-
-    if (helpRequested)
-    {
-        ramses_internal::StringOutputStream stream;
-        stream << "\n";
-        stream << "Additional command line parameters:\n";
-        stream << waylandIviLayerId.getHelpString();
-        stream << "\n";
-
-        ramses_internal::Console::Print(ramses_internal::ConsoleColor::Green, stream.c_str());
-    }
 
     return RUN_ALL_TESTS();
 }

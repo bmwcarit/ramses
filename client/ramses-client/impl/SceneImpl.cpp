@@ -20,12 +20,15 @@
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
 #include "ramses-client-api/BlitPass.h"
+#include "ramses-client-api/AnimationSystemEnums.h"
 #include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/GeometryBinding.h"
+#include "ramses-client-api/AnimationSystem.h"
+#include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/EScenePublicationMode.h"
 #include "ramses-client-api/AttributeInput.h"
@@ -44,6 +47,8 @@
 #include "ramses-client-api/VertexDataBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
 #include "ramses-client-api/PickableObject.h"
+#include "ramses-client-api/SceneReference.h"
+#include "ramses-client-api/Scene.h"
 
 #include "Scene/Scene.h"
 #include "CameraNodeImpl.h"
@@ -52,6 +57,10 @@
 #include "AppearanceImpl.h"
 #include "GeometryBindingImpl.h"
 #include "StreamTextureImpl.h"
+#include "AnimationSystemImpl.h"
+#include "AnimationAPI/IAnimationSystem.h"
+#include "Animation/ActionCollectingAnimationSystem.h"
+#include "Animation/AnimationSystemFactory.h"
 #include "SerializationContext.h"
 #include "Collections/IOutputStream.h"
 #include "Collections/IInputStream.h"
@@ -75,7 +84,8 @@
 #include "SceneUtils.h"
 #include "DataObjectImpl.h"
 #include "BlitPassImpl.h"
-#include "ClientCommands/SceneCommandExecutor.h"
+#include "ClientCommands/SceneCommandBuffer.h"
+#include "ClientCommands/SceneCommandVisitor.h"
 #include "RamsesObjectRegistryIterator.h"
 #include "SerializationHelper.h"
 #include "VertexDataBufferImpl.h"
@@ -83,6 +93,7 @@
 #include "Texture2DBufferImpl.h"
 #include "DataSlotUtils.h"
 #include "PickableObjectImpl.h"
+#include "SceneReferenceImpl.h"
 
 #include "Components/FlushTimeInformation.h"
 #include "PlatformAbstraction/PlatformMath.h"
@@ -92,11 +103,12 @@
 
 namespace ramses
 {
-    SceneImpl::SceneImpl(ramses_internal::ClientScene& scene, const SceneConfigImpl& sceneConfig, RamsesClientImpl& ramsesClient)
-        : ClientObjectImpl(ramsesClient, ERamsesObjectType_Scene, scene.getName().c_str())
+    SceneImpl::SceneImpl(ramses_internal::ClientScene& scene, const SceneConfigImpl& sceneConfig, RamsesClient& ramsesClient)
+        : ClientObjectImpl(ramsesClient.impl, ERamsesObjectType_Scene, scene.getName().c_str())
         , m_scene(scene)
         , m_nextSceneVersion(InvalidSceneVersionTag)
         , m_futurePublicationMode(sceneConfig.getPublicationMode())
+        , m_hlClient(ramsesClient)
     {
         LOG_INFO(ramses_internal::CONTEXT_CLIENT, "Scene::Scene: sceneId " << scene.getSceneId()  <<
                  ", publicationMode " << (sceneConfig.getPublicationMode() == EScenePublicationMode_LocalAndRemote ? "LocalAndRemote" : "LocalOnly"));
@@ -140,6 +152,11 @@ namespace ramses
     T& createImplHelper(SceneImpl& sceneImpl, ERamsesObjectType)
     {
         return *new T(sceneImpl, "");
+    }
+    template <>
+    AnimationSystemImpl& createImplHelper<AnimationSystemImpl>(SceneImpl& sceneImpl, ERamsesObjectType type)
+    {
+        return *new AnimationSystemImpl(sceneImpl, type, "");
     }
     template <>
     CameraNodeImpl& createImplHelper<CameraNodeImpl>(SceneImpl& sceneImpl, ERamsesObjectType type)
@@ -238,6 +255,12 @@ namespace ramses
             case ERamsesObjectType_StreamTexture:
                 status = createAndDeserializeObjectImpls<StreamTexture, StreamTextureImpl>(inStream, serializationContext, count);
                 break;
+            case ERamsesObjectType_AnimationSystem:
+                status = createAndDeserializeObjectImpls<AnimationSystem, AnimationSystemImpl>(inStream, serializationContext, count);
+                break;
+            case ERamsesObjectType_AnimationSystemRealTime:
+                status = createAndDeserializeObjectImpls<AnimationSystemRealTime, AnimationSystemImpl>(inStream, serializationContext, count);
+                break;
             case ERamsesObjectType_RenderGroup:
                 status = createAndDeserializeObjectImpls<RenderGroup, RenderGroupImpl>(inStream, serializationContext, count);
                 break;
@@ -249,6 +272,9 @@ namespace ramses
                 break;
             case ERamsesObjectType_PickableObject:
                 status = createAndDeserializeObjectImpls<PickableObject, PickableObjectImpl>(inStream, serializationContext, count);
+                break;
+            case ERamsesObjectType_SceneReference:
+                status = createAndDeserializeObjectImpls<SceneReference, SceneReferenceImpl>(inStream, serializationContext, count);
                 break;
             case ERamsesObjectType_RenderBuffer:
                 status = createAndDeserializeObjectImpls<RenderBuffer, RenderBufferImpl>(inStream, serializationContext, count);
@@ -324,9 +350,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t SceneImpl::validate(uint32_t indent) const
+    status_t SceneImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        status_t status = ClientObjectImpl::validate(indent);
+        status_t status = ClientObjectImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
 
         uint32_t objectCount[ERamsesObjectType_NUMBER_OF_TYPES];
@@ -334,13 +360,14 @@ namespace ramses
         {
             const ERamsesObjectType type = static_cast<ERamsesObjectType>(i);
             if (RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ERamsesObjectType_SceneObject)
+                && !RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ERamsesObjectType_AnimationObject)
                 && RamsesObjectTypeUtils::IsConcreteType(type))
             {
                 objectCount[i] = 0u;
                 RamsesObjectRegistryIterator iter(getObjectRegistry(), ERamsesObjectType(i));
                 while (const RamsesObject* obj = iter.getNext())
                 {
-                    if (addValidationOfDependentObject(indent, obj->impl) != StatusOK)
+                    if (addValidationOfDependentObject(indent, obj->impl, visitedObjects) != StatusOK)
                     {
                         status = getValidationErrorStatus();
                     }
@@ -353,6 +380,7 @@ namespace ramses
         {
             const ERamsesObjectType type = static_cast<ERamsesObjectType>(i);
             if (RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ERamsesObjectType_SceneObject)
+                && !RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ERamsesObjectType_AnimationObject)
                 && RamsesObjectTypeUtils::IsConcreteType(type))
             {
                 ramses_internal::StringOutputStream msg;
@@ -475,6 +503,10 @@ namespace ramses
         case ERamsesObjectType_MeshNode:
             returnStatus = destroyMeshNode(RamsesObjectTypeUtils::ConvertTo<MeshNode>(object));
             break;
+        case ERamsesObjectType_AnimationSystem:
+        case ERamsesObjectType_AnimationSystemRealTime:
+            returnStatus = destroyAnimationSystem(RamsesObjectTypeUtils::ConvertTo<AnimationSystem>(object));
+            break;
         case ERamsesObjectType_DataFloat:
         case ERamsesObjectType_DataVector2f:
         case ERamsesObjectType_DataVector3f:
@@ -500,6 +532,10 @@ namespace ramses
         case ERamsesObjectType_IndexDataBuffer:
         case ERamsesObjectType_VertexDataBuffer:
         case ERamsesObjectType_Texture2DBuffer:
+            returnStatus = destroyObject(object);
+            break;
+        case ERamsesObjectType_SceneReference:
+            m_sceneReferences.remove(RamsesObjectTypeUtils::ConvertTo<SceneReference>(object).getReferencedSceneId());
             returnStatus = destroyObject(object);
             break;
         default:
@@ -799,7 +835,8 @@ namespace ramses
 
     RenderTarget* SceneImpl::createRenderTarget(const RenderTargetDescriptionImpl& rtDesc, const char* name)
     {
-        if (rtDesc.validate(0u) != StatusOK)
+        StatusObjectSet visitedObjects;
+        if (rtDesc.validate(0u, visitedObjects) != StatusOK)
         {
             LOG_ERROR(CONTEXT_CLIENT, "Scene::createRenderTarget failed, RenderTargetDescription is invalid.");
             return nullptr;
@@ -828,19 +865,7 @@ namespace ramses
             return nullptr;
         }
 
-        if (anisotropyLevel < 1)
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, anisotropyLevel must be at least 1.");
-            return nullptr;
-        }
-
-        if (ETextureSamplingMethod_Nearest != magSamplingMethod && ETextureSamplingMethod_Linear != magSamplingMethod)
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, mag sampling method must be set to Nearest or Linear.");
-            return nullptr;
-        }
-
-        TextureSamplerImpl& pimpl = createTextureSamplerImpl(
+        return createTextureSamplerImpl(
             wrapUMode, wrapVMode, ETextureAddressMode_Clamp,
             minSamplingMethod,
             magSamplingMethod,
@@ -850,10 +875,6 @@ namespace ramses
             texture.impl.getLowlevelResourceHash(),
             ramses_internal::InvalidMemoryHandle,
             name);
-        TextureSampler* sampler = new TextureSampler(pimpl);
-        registerCreatedObject(*sampler);
-
-        return sampler;
     }
 
     TextureSampler* SceneImpl::createTextureSampler(
@@ -871,23 +892,13 @@ namespace ramses
             return nullptr;
         }
 
-        if (ETextureSamplingMethod_Nearest != magSamplingMethod && ETextureSamplingMethod_Linear != magSamplingMethod)
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, mag sampling method must be set to Nearest or Linear.");
-            return nullptr;
-        }
-
-        TextureSamplerImpl& pimpl = createTextureSamplerImpl(
+        return createTextureSamplerImpl(
             wrapUMode, wrapVMode, wrapRMode, minSamplingMethod, magSamplingMethod, 1u,
             ERamsesObjectType_Texture3D,
             ramses_internal::TextureSampler::ContentType::ClientTexture,
             texture.impl.getLowlevelResourceHash(),
             ramses_internal::InvalidMemoryHandle,
             name);
-        TextureSampler* sampler = new TextureSampler(pimpl);
-        registerCreatedObject(*sampler);
-
-        return sampler;
     }
 
     TextureSampler* SceneImpl::createTextureSampler(
@@ -905,42 +916,27 @@ namespace ramses
             return nullptr;
         }
 
-        if (anisotropyLevel < 1)
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, anisotropyLevel must be at least 1.");
-            return nullptr;
-        }
-
-        if (ETextureSamplingMethod_Nearest != magSamplingMethod && ETextureSamplingMethod_Linear != magSamplingMethod)
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, mag sampling method must be set to Nearest or Linear.");
-            return nullptr;
-        }
-
-        TextureSamplerImpl& pimpl = createTextureSamplerImpl(
+        return createTextureSamplerImpl(
             wrapUMode, wrapVMode, ETextureAddressMode_Clamp, minSamplingMethod, magSamplingMethod, anisotropyLevel,
             ERamsesObjectType_TextureCube,
             ramses_internal::TextureSampler::ContentType::ClientTexture,
             texture.impl.getLowlevelResourceHash(),
             ramses_internal::InvalidMemoryHandle,
             name);
-        TextureSampler* sampler = new TextureSampler(pimpl);
-        registerCreatedObject(*sampler);
-
-        return sampler;
     }
 
-    TextureSampler* SceneImpl::createTextureSampler(ETextureAddressMode wrapUMode, ETextureAddressMode wrapVMode, ETextureSamplingMethod minSamplingMethod, ETextureSamplingMethod magSamplingMethod , uint32_t anisotropyLevel, const RenderBuffer& renderBuffer, const char* name)
+    TextureSampler* SceneImpl::createTextureSampler(
+        ETextureAddressMode wrapUMode,
+        ETextureAddressMode wrapVMode,
+        ETextureSamplingMethod minSamplingMethod,
+        ETextureSamplingMethod magSamplingMethod ,
+        uint32_t anisotropyLevel,
+        const RenderBuffer& renderBuffer,
+        const char* name)
     {
         if (!containsSceneObject(renderBuffer.impl))
         {
             LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, render buffer is not from this scene.");
-            return nullptr;
-        }
-
-        if (anisotropyLevel < 1)
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, anisotropyLevel must be at least 1.");
             return nullptr;
         }
 
@@ -950,23 +946,13 @@ namespace ramses
             return nullptr;
         }
 
-        if (ETextureSamplingMethod_Nearest != magSamplingMethod && ETextureSamplingMethod_Linear != magSamplingMethod)
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, mag sampling method must be set to Nearest or Linear.");
-            return nullptr;
-        }
-
-        TextureSamplerImpl& pimpl = createTextureSamplerImpl(
+        return createTextureSamplerImpl(
             wrapUMode, wrapVMode, ETextureAddressMode_Clamp, minSamplingMethod, magSamplingMethod, anisotropyLevel,
             ERamsesObjectType_RenderBuffer,
             ramses_internal::TextureSampler::ContentType::RenderBuffer,
             ramses_internal::ResourceContentHash::Invalid(),
             renderBuffer.impl.getRenderBufferHandle().asMemoryHandle(),
             name);
-        TextureSampler* sampler = new TextureSampler(pimpl);
-        registerCreatedObject(*sampler);
-
-        return sampler;
     }
 
     ramses::TextureSampler* SceneImpl::createTextureSampler(
@@ -984,29 +970,13 @@ namespace ramses
             return nullptr;
         }
 
-        if (anisotropyLevel < 1)
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, anisotropyLevel must be at least 1.");
-            return nullptr;
-        }
-
-        if (ETextureSamplingMethod_Nearest != magSamplingMethod && ETextureSamplingMethod_Linear != magSamplingMethod)
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, mag sampling method must be set to Nearest or Linear.");
-            return nullptr;
-        }
-
-        TextureSamplerImpl& pimpl = createTextureSamplerImpl(
+        return createTextureSamplerImpl(
             wrapUMode, wrapVMode, ETextureAddressMode_Clamp, minSamplingMethod, magSamplingMethod, anisotropyLevel,
             ERamsesObjectType_Texture2DBuffer,
             ramses_internal::TextureSampler::ContentType::TextureBuffer,
             ramses_internal::ResourceContentHash::Invalid(),
             textureBuffer.impl.getTextureBufferHandle().asMemoryHandle(),
             name);
-        TextureSampler* sampler = new TextureSampler(pimpl);
-        registerCreatedObject(*sampler);
-
-        return sampler;
     }
 
     ramses::TextureSampler* SceneImpl::createTextureSampler(
@@ -1023,26 +993,16 @@ namespace ramses
             return nullptr;
         }
 
-        if (ETextureSamplingMethod_Nearest != magSamplingMethod && ETextureSamplingMethod_Linear != magSamplingMethod)
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, mag sampling method must be set to Nearest or Linear.");
-            return nullptr;
-        }
-
-        TextureSamplerImpl& pimpl = createTextureSamplerImpl(
+        return createTextureSamplerImpl(
             wrapUMode, wrapVMode, ETextureAddressMode_Clamp, minSamplingMethod, magSamplingMethod, 1u,
             ERamsesObjectType_StreamTexture,
             ramses_internal::TextureSampler::ContentType::StreamTexture,
             ramses_internal::ResourceContentHash::Invalid(),
             streamTexture.impl.getHandle().asMemoryHandle(),
             name);
-        TextureSampler* sampler = new TextureSampler(pimpl);
-        registerCreatedObject(*sampler);
-
-        return sampler;
     }
 
-    TextureSamplerImpl& SceneImpl::createTextureSamplerImpl(
+    ramses::TextureSampler* SceneImpl::createTextureSamplerImpl(
         ETextureAddressMode wrapUMode,
         ETextureAddressMode wrapVMode,
         ETextureAddressMode wrapRMode,
@@ -1055,6 +1015,18 @@ namespace ramses
         ramses_internal::MemoryHandle contentHandle,
         const char* name /*= 0*/)
     {
+        if (ETextureSamplingMethod_Nearest != magSamplingMethod && ETextureSamplingMethod_Linear != magSamplingMethod)
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, mag sampling method must be set to Nearest or Linear.");
+            return nullptr;
+        }
+
+        if (anisotropyLevel < 1)
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, anisotropyLevel must be at least 1.");
+            return nullptr;
+        }
+
         ramses_internal::TextureSamplerStates samplerStates(
             TextureUtils::GetTextureAddressModeInternal(wrapUMode),
             TextureUtils::GetTextureAddressModeInternal(wrapVMode),
@@ -1066,7 +1038,10 @@ namespace ramses
 
         TextureSamplerImpl& samplerImpl = *new TextureSamplerImpl(*this, name);
         samplerImpl.initializeFrameworkData(samplerStates, samplerType, contentType, textureResourceHash, contentHandle);
-        return samplerImpl;
+
+        TextureSampler* sampler = new TextureSampler(samplerImpl);
+        registerCreatedObject(*sampler);
+        return sampler;
     }
 
     DataFloat* SceneImpl::createDataFloat(const char* name /* =0 */)
@@ -1186,7 +1161,7 @@ namespace ramses
             return addErrorEntry("Scene::createTransformationDataProvider failed, node is not from this scene.");
         }
 
-        const ramses_internal::DataSlotId internalDataSlotId(id);
+        const ramses_internal::DataSlotId internalDataSlotId(id.getValue());
         if (ramses_internal::DataSlotUtils::HasDataSlotId(m_scene, internalDataSlotId))
         {
             return addErrorEntry("Scene::createTransformationDataProvider failed, duplicate data slot id");
@@ -1209,7 +1184,7 @@ namespace ramses
             return addErrorEntry("Scene::createTransformationDataConsumer failed, Group Node is not from this scene.");
         }
 
-        const ramses_internal::DataSlotId internalDataSlotId(id);
+        const ramses_internal::DataSlotId internalDataSlotId(id.getValue());
         if (ramses_internal::DataSlotUtils::HasDataSlotId(m_scene, internalDataSlotId))
         {
             return addErrorEntry("Scene::createTransformationDataConsumer failed, duplicate data slot id");
@@ -1232,7 +1207,7 @@ namespace ramses
             return addErrorEntry("Scene::createDataProvider failed, data object is not from this scene.");
         }
 
-        const ramses_internal::DataSlotId internalDataSlotId(id);
+        const ramses_internal::DataSlotId internalDataSlotId(id.getValue());
         if (ramses_internal::DataSlotUtils::HasDataSlotId(m_scene, internalDataSlotId))
         {
             return addErrorEntry("Scene::createDataProvider failed, duplicate data slot id");
@@ -1255,7 +1230,7 @@ namespace ramses
             return addErrorEntry("Scene::createDataConsumer failed, data object is not from this scene.");
         }
 
-        const ramses_internal::DataSlotId internalDataSlotId(id);
+        const ramses_internal::DataSlotId internalDataSlotId(id.getValue());
         if (ramses_internal::DataSlotUtils::HasDataSlotId(m_scene, internalDataSlotId))
         {
             return addErrorEntry("Scene::createDataConsumer failed, duplicate data slot id");
@@ -1278,7 +1253,7 @@ namespace ramses
             return addErrorEntry("Scene::createTextureProvider failed, texture is not from same client as scene.");
         }
 
-        const ramses_internal::DataSlotId internalDataSlotId(id);
+        const ramses_internal::DataSlotId internalDataSlotId(id.getValue());
         if (ramses_internal::DataSlotUtils::HasDataSlotId(m_scene, internalDataSlotId))
         {
             return addErrorEntry("Scene::createTextureProvider failed, duplicate data slot id");
@@ -1301,7 +1276,7 @@ namespace ramses
             return addErrorEntry("Scene::updateTextureProvider failed, texture is not from same client as scene.");
         }
 
-        const ramses_internal::DataSlotId internalDataSlotId(id);
+        const ramses_internal::DataSlotId internalDataSlotId(id.getValue());
         if (!ramses_internal::DataSlotUtils::HasDataSlotId(m_scene, internalDataSlotId))
         {
             return addErrorEntry("Scene::updateTextureProvider failed, provider has not been created before.");
@@ -1336,7 +1311,7 @@ namespace ramses
             return addErrorEntry("Scene::createTextureConsumer failed, only texture sampler using 2D texture can be used for linking.");
         }
 
-        const ramses_internal::DataSlotId internalDataSlotId(id);
+        const ramses_internal::DataSlotId internalDataSlotId(id.getValue());
         if (ramses_internal::DataSlotUtils::HasDataSlotId(m_scene, internalDataSlotId))
         {
             return addErrorEntry("Scene::createTextureConsumer failed, duplicate data slot id");
@@ -1376,7 +1351,7 @@ namespace ramses
 
         const ramses_internal::SceneVersionTag sceneVersionInternal(sceneVersion);
 
-        ramses_internal::SceneCommandExecutor::Execute(*this, m_commandBuffer);
+        m_commandBuffer.execute(ramses_internal::SceneCommandVisitor(*this));
         applyHierarchicalVisibility();
 
         const auto timestampOfFlushCall = ramses_internal::FlushTime::Clock::now();
@@ -1389,6 +1364,49 @@ namespace ramses
         getStatisticCollection().statFlushesTriggered.incCounter(1);
 
         return StatusOK;
+    }
+
+    AnimationSystem* SceneImpl::createAnimationSystem(uint32_t flags, const char* name)
+    {
+        uint32_t creationFlags = ramses_internal::EAnimationSystemFlags_Default;
+        if ((flags & EAnimationSystemFlags_ClientSideProcessing) != 0)
+        {
+            creationFlags |= ramses_internal::EAnimationSystemFlags_FullProcessing;
+        }
+
+        AnimationSystemImpl& pimpl = createAnimationSystemImpl(creationFlags, ERamsesObjectType_AnimationSystem, name);
+        AnimationSystem* animationSystem = new AnimationSystem(pimpl);
+        registerCreatedObject(*animationSystem);
+        return animationSystem;
+    }
+
+    AnimationSystemRealTime* SceneImpl::createRealTimeAnimationSystem(uint32_t flags, const char* name)
+    {
+        uint32_t creationFlags = ramses_internal::EAnimationSystemFlags_RealTime;
+        if ((flags & EAnimationSystemFlags_ClientSideProcessing) != 0)
+        {
+            creationFlags |= ramses_internal::EAnimationSystemFlags_FullProcessing;
+        }
+
+        AnimationSystemImpl& pimpl = createAnimationSystemImpl(creationFlags, ERamsesObjectType_AnimationSystemRealTime, name);
+        AnimationSystemRealTime* animationSystem = new AnimationSystemRealTime(pimpl);
+        registerCreatedObject(*animationSystem);
+        return animationSystem;
+    }
+
+    AnimationSystemImpl& SceneImpl::createAnimationSystemImpl(uint32_t flags, ERamsesObjectType type, const char* name)
+    {
+        ramses_internal::AnimationSystemFactory animSystemFactory(ramses_internal::EAnimationSystemOwner_Client, &m_scene.getSceneActionCollection());
+        ramses_internal::IAnimationSystem* ianimationSystem =
+            animSystemFactory.createAnimationSystem(flags, ramses_internal::AnimationSystemSizeInformation());
+        AnimationSystemImpl& pimpl = *new AnimationSystemImpl(*this, type, name);
+        pimpl.initializeFrameworkData(*ianimationSystem);
+        return pimpl;
+    }
+
+    status_t SceneImpl::destroyAnimationSystem(AnimationSystem& animationSystem)
+    {
+        return destroyObject(animationSystem);
     }
 
     RamsesObjectRegistry& SceneImpl::getObjectRegistry()
@@ -1558,11 +1576,6 @@ namespace ramses
         m_objectRegistry.clearDirtyNodes();
     }
 
-    void SceneImpl::enqueueSceneCommand(const ramses_internal::SceneCommand& command)
-    {
-        m_commandBuffer.enqueueCommand(command);
-    }
-
     void SceneImpl::setSceneVersionForNextFlush(sceneVersionTag_t sceneVersion)
     {
         assert(m_nextSceneVersion == InvalidSceneVersionTag);
@@ -1666,8 +1679,8 @@ namespace ramses
         {
             mipMapSizes.push_back({ currentWidth, currentHeight });
 
-            currentWidth = ramses_internal::max<uint32_t>(1, currentWidth / 2);
-            currentHeight = ramses_internal::max<uint32_t>(1, currentHeight / 2);
+            currentWidth = std::max<uint32_t>(1, currentWidth / 2);
+            currentHeight = std::max<uint32_t>(1, currentHeight / 2);
         }
 
         Texture2DBufferImpl* pimpl = new Texture2DBufferImpl(*this, name);
@@ -1678,5 +1691,79 @@ namespace ramses
     ramses_internal::StatisticCollectionScene& SceneImpl::getStatisticCollection()
     {
         return m_scene.getStatisticCollection();
+    }
+
+    ramses::SceneReference* SceneImpl::createSceneReference(sceneId_t referencedScene, const char* name)
+    {
+        if (!referencedScene.isValid())
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Scene::createSceneReference: cannot reference a scene with invalid scene ID.");
+            return nullptr;
+        }
+
+        const auto scenes = getClientImpl().getListOfScenes();
+        for (const auto scene : scenes)
+        {
+            if (getClientImpl().findSceneReference(scene->getSceneId(), referencedScene))
+            {
+                LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Scene::createSceneReference: there is already a SceneReference with sceneId "
+                    << referencedScene << " in master scene " << scene->getSceneId() << ", cannot create another one");
+                return nullptr;
+            }
+        }
+
+        SceneReferenceImpl& pimpl = *new SceneReferenceImpl(*this, name);
+        pimpl.initializeFrameworkData(referencedScene);
+        SceneReference* sr = new SceneReference(pimpl);
+        registerCreatedObject(*sr);
+        m_sceneReferences.put(referencedScene, sr);
+        return sr;
+    }
+
+    status_t SceneImpl::linkData(SceneReference* providerReference, dataProviderId_t providerId, SceneReference* consumerReference, dataConsumerId_t consumerId)
+    {
+        if (!providerReference && !consumerReference)
+            return addErrorEntry("Scene::linkData: can't link an object to another object in the same scene");
+
+        if (consumerReference == providerReference)
+            return addErrorEntry("Scene::linkData: can't link an object to another object in the same scene reference");
+
+        if ((providerReference && providerReference->impl.getSceneImpl().getSceneId() != getSceneId()) ||
+            (consumerReference && consumerReference->impl.getSceneImpl().getSceneId() != getSceneId()))
+            return addErrorEntry("Scene::linkData: can't link to object of a scene reference with a different master scene");
+
+        if (providerReference && providerReference->impl.getReportedState() < RendererSceneState::Available)
+            return addErrorEntry("Scene::linkData: Provider SceneReference state has to be at least Available");
+
+        if (consumerReference && consumerReference->impl.getReportedState() < RendererSceneState::Available)
+            return addErrorEntry("Scene::linkData: Consumer SceneReference state has to be at least Available");
+
+        const auto providerScene = (providerReference ? providerReference->impl.getSceneReferenceHandle() : ramses_internal::SceneReferenceHandle{});
+        const auto consumerScene = (consumerReference ? consumerReference->impl.getSceneReferenceHandle() : ramses_internal::SceneReferenceHandle{});
+        getIScene().linkData(providerScene, ramses_internal::DataSlotId{ providerId.getValue() }, consumerScene, ramses_internal::DataSlotId{ consumerId.getValue() });
+
+        return StatusOK;
+    }
+
+    status_t SceneImpl::unlinkData(SceneReference* consumerReference, dataConsumerId_t consumerId)
+    {
+        if (consumerReference && consumerReference->impl.getSceneImpl().getSceneId() != getSceneId())
+            return addErrorEntry("Scene::unlinkData: can't unlink object of a scene reference with a different master scene");
+
+        const auto consumerScene = (consumerReference ? consumerReference->impl.getSceneReferenceHandle() : ramses_internal::SceneReferenceHandle{});
+        getIScene().unlinkData(consumerScene, ramses_internal::DataSlotId{ consumerId.getValue() });
+
+        return StatusOK;
+    }
+
+    SceneReference* SceneImpl::getSceneReference(sceneId_t referencedSceneId)
+    {
+        auto it = m_sceneReferences.find(referencedSceneId);
+        return (it != m_sceneReferences.end()) ? it->value : nullptr;
+    }
+
+    RamsesClient& SceneImpl::getHlRamsesClient()
+    {
+        return m_hlClient;
     }
 }

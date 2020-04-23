@@ -13,31 +13,60 @@
 #include "ramses-client-api/TextureSwizzle.h"
 #include "SceneAPI/TextureEnums.h"
 #include "TextureUtils.h"
+#include "ramses-client-api/ResourceFileDescription.h"
+#include "ramses-client-api/ResourceFileDescriptionSet.h"
 
-namespace ramses
+template <>
+struct fmt::formatter<ramses::TextureSwizzle> : public ramses_internal::SimpleFormatterBase
 {
-    class ResourceFileDescription;
-    class ResourceFileDescriptionSet;
-
-    inline ramses_internal::StringOutputStream& operator<<(ramses_internal::StringOutputStream& os, const TextureSwizzle& swizzle)
+    template<typename FormatContext>
+    auto format(const ramses::TextureSwizzle& swizzle, FormatContext& ctx)
     {
-        os << "TextureSwizzling:[" << ramses_internal::EnumToString(TextureUtils::GetTextureChannelColorInternal(swizzle.channelRed)) << ";";
-        os << ramses_internal::EnumToString(TextureUtils::GetTextureChannelColorInternal(swizzle.channelGreen)) << ";";
-        os << ramses_internal::EnumToString(TextureUtils::GetTextureChannelColorInternal(swizzle.channelBlue)) << ";";
-        os << ramses_internal::EnumToString(TextureUtils::GetTextureChannelColorInternal(swizzle.channelAlpha)) << "]";
-        return os;
+        return fmt::format_to(ctx.out(), "TextureSwizzling:[{};{};{};{}]",
+                              ramses_internal::EnumToString(ramses::TextureUtils::GetTextureChannelColorInternal(swizzle.channelRed)),
+                              ramses_internal::EnumToString(ramses::TextureUtils::GetTextureChannelColorInternal(swizzle.channelGreen)),
+                              ramses_internal::EnumToString(ramses::TextureUtils::GetTextureChannelColorInternal(swizzle.channelBlue)),
+                              ramses_internal::EnumToString(ramses::TextureUtils::GetTextureChannelColorInternal(swizzle.channelAlpha)));
     }
+};
 
-    inline ramses_internal::StringOutputStream& operator<<(ramses_internal::StringOutputStream& lhs, resourceId_t const& rhs)
+
+template <>
+struct fmt::formatter<ramses::ResourceFileDescription> : public ramses_internal::SimpleFormatterBase
+{
+    template<typename FormatContext>
+    auto format(const ramses::ResourceFileDescription& rhs, FormatContext& ctx)
     {
-        lhs.setHexadecimalOutputFormat(ramses_internal::StringOutputStream::EHexadecimalType_HexLeadingZeros);
-        lhs << "0x" << rhs.highPart << ":" << rhs.lowPart;
-        lhs.setHexadecimalOutputFormat(ramses_internal::StringOutputStream::EHexadecimalType_NoHex);
-        return lhs;
+        const auto numResources = rhs.getNumberOfResources();
+        fmt::format_to(ctx.out(), "Filename: {}; Resource count {}: [", rhs.getFilename(), numResources);
+        for (uint32_t i = 0; i < numResources; ++i)
+            fmt::format_to(ctx.out(), "{} ", rhs.getResource(i).getResourceId());
+        return fmt::format_to(ctx.out(), "]");
     }
+};
 
-    ramses_internal::StringOutputStream& operator<<(ramses_internal::StringOutputStream& lhs, const ResourceFileDescription& rhs);
-    ramses_internal::StringOutputStream& operator<<(ramses_internal::StringOutputStream& lhs, const ResourceFileDescriptionSet& rhs);
-}
+template <>
+struct fmt::formatter<ramses::ResourceFileDescriptionSet> : public ramses_internal::SimpleFormatterBase
+{
+    template<typename FormatContext>
+    auto format(const ramses::ResourceFileDescriptionSet& rhs, FormatContext& ctx)
+    {
+        const auto numDescriptions = rhs.getNumberOfDescriptions();
+        fmt::format_to(ctx.out(), "{} Resource File Descriptions: [", numDescriptions);
+        for (uint32_t i = 0; i < numDescriptions; ++i)
+            fmt::format_to(ctx.out(), "{}; ", rhs.getDescription(i));
+        return fmt::format_to(ctx.out(), "]");
+    }
+};
+
+template <>
+struct fmt::formatter<ramses::resourceId_t> : public ramses_internal::SimpleFormatterBase
+{
+    template<typename FormatContext>
+    auto format(const ramses::resourceId_t& res, FormatContext& ctx)
+    {
+        return fmt::format_to(ctx.out(), "0x{:016X}:{:016X}", res.highPart, res.lowPart);
+    }
+};
 
 #endif

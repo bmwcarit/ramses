@@ -11,7 +11,6 @@
 
 #include "framework_common_gmock_header.h"
 #include "gmock/gmock.h"
-#include "gmock/gmock-generated-nice-strict.h"
 #include "MockConnectionStatusListener.h"
 #include "CommunicationSystemTestWrapper.h"
 #include "CommunicationSystemTestFactory.h"

@@ -88,6 +88,7 @@ namespace ramses
         void setupResourceMap();
 
         bool addToRequiredObjects(const RamsesObjectImpl& object);
+        void markAllObjectsOfTypeAsRequired(ERamsesObjectType objectType);
 
         RenderPassSet      markRequiredScreenRenderPasses();
         RenderPassSet      getRequiredRenderPasses(const RenderBufferSet& requiredRenderBuffers);

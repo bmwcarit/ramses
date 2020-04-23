@@ -8,10 +8,10 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
-SET(RAMSES_VERSION_MAJOR 0)
+SET(RAMSES_VERSION_MAJOR 24)
 SET(RAMSES_VERSION_MINOR 0)
-SET(RAMSES_VERSION_PATCH 0)
-SET(RAMSES_VERSION_POSTFIX "-devMaster")
+SET(RAMSES_VERSION_PATCH 1)
+SET(RAMSES_VERSION_POSTFIX "")
 
 CMAKE_POLICY(SET CMP0048 NEW)
 PROJECT(ramses-sdk VERSION ${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAMSES_VERSION_PATCH})
@@ -28,7 +28,8 @@ include(cmake/ramses/platformDetection.cmake)
 include(cmake/ramses/platformConfig.cmake)
 include(cmake/ramses/getGitInformation.cmake)
 include(cmake/ramses/externaltools.cmake)
-
+include(cmake/ramses/tools.cmake)
+include(cmake/ramses/testConfig.cmake)
 
 SET(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -76,10 +77,6 @@ SET_PROPERTY(CACHE ramses-sdk_CONSOLE_LOGLEVEL PROPERTY STRINGS "off" "fatal" "e
 OPTION(ACME_ENABLE_PLUGIN_PROJECT_CONFIG_HEADER "ACME2 plugin for build config header generation" ON)
 
 SET(RAMSES_VERSION "${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAMSES_VERSION_PATCH}${RAMSES_VERSION_POSTFIX}")
-IF (BUILD_ENV_VERSION_INFO_FULL)
-    string(REPLACE "\\" "\\\\" BUILD_ENV_VERSION_INFO_FULL_ESCAPED ${BUILD_ENV_VERSION_INFO_FULL})
-    string(REPLACE "\"" "\\\"" BUILD_ENV_VERSION_INFO_FULL_ESCAPED ${BUILD_ENV_VERSION_INFO_FULL_ESCAPED})
-endif (BUILD_ENV_VERSION_INFO_FULL)
 
 MESSAGE(STATUS "RAMSES_VERSION=${RAMSES_VERSION}")
 
@@ -95,10 +92,13 @@ include(cmake/ramses/rendererModulePerConfig.cmake)
 ADD_DEFINITIONS(-DRAMSES_LINK_STATIC)
 
 
-if (NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY AND NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
-    message(STATUS "Redirect ramses runtime and library output to ${CMAKE_CURRENT_BINARY_DIR}/bin")
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+if (NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+    message(STATUS "Redirect ramses library output to ${CMAKE_CURRENT_BINARY_DIR}/bin")
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+endif()
+if (NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+    message(STATUS "Redirect ramses runtime output to ${CMAKE_CURRENT_BINARY_DIR}/bin")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 endif()
 set(CMAKE_DEBUG_POSTFIX "") # no debug suffix in this project
 
@@ -153,9 +153,7 @@ ACME2_PROJECT(
 
                                 # Window Components
                                 AUTO renderer/Platform/Window_Windows
-                                AUTO renderer/Platform/Window_X11
                                 AUTO renderer/Platform/Window_Wayland
-                                AUTO renderer/Platform/Window_Integrity_RGL
 
                                 # Context Components
                                 AUTO renderer/Platform/Context_WGL
@@ -166,22 +164,14 @@ ACME2_PROJECT(
 
                                 # Other Components
                                 # TODO Mohamed: those components should be possible to move before window components (have less deps)
-                                AUTO renderer/Platform/WindowEventsPollingManager_Wayland
                                 AUTO renderer/Platform/TextureUploadingAdapter_Wayland
-                                AUTO renderer/Platform/EmbeddedCompositor_Dummy
                                 AUTO renderer/Platform/EmbeddedCompositor_Wayland
                                 AUTO renderer/Platform/Window_Wayland_Test
                                 AUTO renderer/Platform/Window_Wayland_IVI
                                 AUTO renderer/Platform/Window_Wayland_Shell
-                                AUTO renderer/Platform/Window_Android
 
                                 # Surface Components
                                 AUTO renderer/Platform/Surface_Windows_WGL
-                                AUTO renderer/Platform/Surface_X11_EGL
-                                AUTO renderer/Platform/Surface_Wayland_EGL
-                                AUTO renderer/Platform/Surface_EGL_Offscreen
-                                AUTO renderer/Platform/Surface_Integrity_RGL_EGL
-                                AUTO renderer/Platform/Surface_Android_EGL
                                 AUTO renderer/Platform/PlatformFactory_Wayland_EGL
                                 AUTO renderer/Platform/PlatformFactory_Wayland_IVI_EGL
                                 AUTO renderer/Platform/PlatformFactory_Wayland_Shell_EGL
@@ -192,9 +182,9 @@ ACME2_PROJECT(
                                 AUTO renderer/Platform/Platform_Windows_WGL_ES_3_0
                                 AUTO renderer/Platform/Platform_Wayland_IVI_EGL_ES_3_0
                                 AUTO renderer/Platform/Platform_Wayland_Shell_EGL_ES_3_0
-                                AUTO renderer/Platform/Platform_X11_EGL_ES_3_0
-                                AUTO renderer/Platform/Platform_Integrity_RGL_EGL_ES_3_0
-                                AUTO renderer/Platform/Platform_Android_EGL_ES_3_0
+                                AUTO renderer/Platform/Platform_X11
+                                AUTO renderer/Platform/Platform_Integrity_RGL
+                                AUTO renderer/Platform/Platform_Android
 
                                 AUTO ramses-shared-lib
 

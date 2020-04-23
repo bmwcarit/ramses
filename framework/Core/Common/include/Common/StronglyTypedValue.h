@@ -10,8 +10,7 @@
 #define RAMSES_INTERNAL_STRONGLYTYPEDVALUE_H
 
 #include "Utils/Warnings.h"
-#include "ramses-capu/util/Traits.h"
-#include "ramses-capu/container/Hash.h"
+#include "PlatformAbstraction/Hash.h"
 #include "Collections/StringOutputStream.h"
 #include <type_traits>
 #include <functional>
@@ -71,12 +70,19 @@ namespace ramses_internal
 
 }
 
-#define DEFINE_STRINGOUTPUTSTREAM_OPERATOR(stronglyType) \
-inline ramses_internal::StringOutputStream& operator<<(ramses_internal::StringOutputStream& os, const stronglyType& value) \
-{ \
-    os << value.getValue(); \
-    return os; \
-} \
+#define MAKE_STRONGLYTYPEDVALUE_PRINTABLE(stronglyType) \
+    template <> \
+    struct fmt::formatter<::stronglyType> {    \
+        template<typename ParseContext> \
+        constexpr auto parse(ParseContext& ctx)  { \
+            return ctx.begin(); \
+        } \
+        template<typename FormatContext> \
+        auto format(const ::stronglyType& str, FormatContext& ctx) {    \
+            return fmt::format_to(ctx.out(), "{}", str.getValue()); \
+        } \
+    };
+
 
 namespace std
 {

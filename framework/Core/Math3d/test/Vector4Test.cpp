@@ -6,16 +6,16 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "Vector4Test.h"
+#include "Math3d/Vector4.h"
+#include "framework_common_gmock_header.h"
+#include "PlatformAbstraction/PlatformMath.h"
+#include "gmock/gmock.h"
 
-void Vector4Test::SetUp()
+class Vector4Test: public testing::Test
 {
-    vec1 = ramses_internal::Vector4(1.f, 2.f, 3.f, 4.f);
-}
-
-void Vector4Test::TearDown()
-{
-}
+public:
+    ramses_internal::Vector4 vec1{1.f, 2.f, 3.f, 4.f};
+};
 
 TEST_F(Vector4Test, DefaultConstructor)
 {
@@ -223,13 +223,6 @@ TEST_F(Vector4Test, Angle)
     EXPECT_FLOAT_EQ(90.f, angle);
 }
 
-TEST_F(Vector4Test, Empty)
-{
-    ramses_internal::Vector4 vec2(0.0f, 0.0f, 0.0f, 0.0f);
-
-    EXPECT_EQ(vec2, ramses_internal::Vector4::Empty);
-}
-
 TEST_F(Vector4Test, SetSingleValues)
 {
     vec1.set(3.0f, 4.0f, 7.0f, 5.0f);
@@ -244,4 +237,10 @@ TEST_F(Vector4Test, SetAllValues)
     ramses_internal::Vector4 vec2(5.0f, 5.0f, 5.0f, 5.0f);
 
     EXPECT_EQ(vec2, vec1);
+}
+
+TEST_F(Vector4Test, CanPrintToString)
+{
+    EXPECT_EQ("[1.0 2.0 3.0 4.0]", fmt::to_string(vec1));
+    EXPECT_EQ("[1.0 2.0 3.0 4.0]", ramses_internal::StringOutputStream::ToString(vec1));
 }

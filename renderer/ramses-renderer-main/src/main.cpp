@@ -10,9 +10,9 @@
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/RendererConfig.h"
 #include "ramses-renderer-api/DisplayConfig.h"
-#include "ramses-renderer-api/IDcsmRendererEventHandler.h"
-#include "ramses-renderer-api/DcsmRenderer.h"
-#include "ramses-renderer-api/DcsmRendererConfig.h"
+#include "ramses-renderer-api/IDcsmContentControlEventHandler.h"
+#include "ramses-renderer-api/DcsmContentControl.h"
+#include "ramses-renderer-api/DcsmContentControlConfig.h"
 #include "RendererLib/RendererConfigUtils.h"
 #include "Utils/Argument.h"
 #include "Utils/LogMacros.h"
@@ -109,43 +109,41 @@ private:
     bool sPressed = false;
 };
 
-class Handler : public ramses::IDcsmRendererEventHandler
+class Handler : public ramses::IDcsmContentControlEventHandler
 {
-
 public:
-    Handler(ramses::DcsmRenderer& renderer)
-        : m_dcsmrenderer(renderer)
+    Handler(ramses::DcsmContentControl& renderer)
+        : m_dcsmContentControl(renderer)
     {}
 
     std::unordered_set<ramses::ContentID> readyContents;
 
     virtual void contentAvailable(ramses::ContentID contentID, ramses::Category ) override
     {
-        m_dcsmrenderer.requestContentReady(contentID, 0u);
+        readyContents.erase(contentID);
+        m_dcsmContentControl.requestContentReady(contentID, 0u);
     }
 
-    virtual void contentReady(ramses::ContentID contentID, ramses::DcsmRendererEventResult ) override
+    virtual void contentReady(ramses::ContentID contentID, ramses::DcsmContentControlEventResult ) override
     {
         readyContents.insert(contentID);
-        m_dcsmrenderer.showContent(contentID, ramses::AnimationInformation{});
-    }
-
-    virtual void contentReleased(ramses::ContentID contentID) override
-    {
-        readyContents.erase(contentID);
+        m_dcsmContentControl.showContent(contentID, ramses::AnimationInformation{});
     }
 
     virtual void contentShown(ramses::ContentID) override {}
-    virtual void contentHidden(ramses::ContentID) override {}
     virtual void contentFocusRequested(ramses::ContentID) override {}
     virtual void contentStopOfferRequested(ramses::ContentID) override {}
     virtual void contentNotAvailable(ramses::ContentID) override {}
     virtual void contentMetadataUpdated(ramses::ContentID, const ramses::DcsmMetadataUpdate&) {}
     virtual void offscreenBufferLinked(ramses::displayBufferId_t, ramses::ContentID, ramses::dataConsumerId_t, bool) override {}
     virtual void dataLinked(ramses::ContentID, ramses::dataProviderId_t, ramses::ContentID, ramses::dataConsumerId_t, bool) override {}
+    virtual void contentFlushed(ramses::ContentID, ramses::sceneVersionTag_t) override {}
+    virtual void contentExpired(ramses::ContentID) override {}
+    virtual void contentRecoveredFromExpiration(ramses::ContentID) override {}
+    virtual void streamAvailabilityChanged(ramses::streamSource_t, bool) override {}
 
 private:
-    ramses::DcsmRenderer& m_dcsmrenderer;
+    ramses::DcsmContentControl& m_dcsmContentControl;
 };
 
 ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
@@ -239,12 +237,6 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
 
     if (enabledcsm)
     {
-        ramses::DcsmRendererConfig conf;
-        for (auto&& ci : categories)
-        {
-            conf.addCategory(ramses::Category(ci.category), ramses::DcsmRendererConfig::CategoryInfo{ ci.size, ci.display });
-        }
-        ramses::DcsmRenderer dcsmrenderer(renderer, framework, conf);
         for (uint32_t i = 0u; i < numDisplays; ++i)
         {
             ramses::DisplayConfig displayConfig(argc, argv);
@@ -256,17 +248,23 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
             displayConfig.setWaylandIviSurfaceID(displayConfig.getWaylandIviSurfaceID() + i);
 
             renderer.createDisplay(displayConfig);
-
         }
         renderer.startThread();
-        Handler handler(dcsmrenderer);
-        dcsmrenderer.update(0u, handler);
+        renderer.flush();
+
+        ramses::DcsmContentControlConfig conf;
+        for (const auto& ci : categories)
+            conf.addCategory(ramses::Category(ci.category), ramses::DcsmContentControlConfig::CategoryInfo{ ci.size, ci.display });
+
+        ramses::DcsmContentControl& dcsmContentControl = *renderer.createDcsmContentControl(conf);
+        Handler handler(dcsmContentControl);
+        dcsmContentControl.update(0u, handler);
 
         while (handler.readyContents.empty())
         {
             auto now = std::chrono::system_clock::now();
             auto tsNow = std::chrono::duration_cast<std::chrono::milliseconds>((now).time_since_epoch()).count();
-            dcsmrenderer.update(tsNow, handler);
+            dcsmContentControl.update(tsNow, handler);
         }
 
         KeyGatherer keyGatherer;
@@ -277,7 +275,8 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
             auto now = std::chrono::system_clock::now();
             auto tsNow = std::chrono::duration_cast<std::chrono::milliseconds>((now).time_since_epoch()).count();
-            dcsmrenderer.update(tsNow, handler, &keyGatherer);
+            dcsmContentControl.update(tsNow, handler);
+            renderer.dispatchEvents(keyGatherer);
 
             auto start = std::chrono::duration_cast<std::chrono::milliseconds>((now + std::chrono::milliseconds(50)).time_since_epoch()).count();
             auto end = std::chrono::duration_cast<std::chrono::milliseconds>((now + std::chrono::milliseconds(2000)).time_since_epoch()).count();
@@ -287,7 +286,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
             {
                 for (auto&& anim : dcsmAnimation)
                 {
-                    dcsmrenderer.setCategorySize(ramses::Category(anim.category), hasSizeA ? anim.sizeB : anim.sizeA, animTimers);
+                    dcsmContentControl.setCategorySize(ramses::Category(anim.category), hasSizeA ? anim.sizeB : anim.sizeA, animTimers);
                 }
                 hasSizeA = !hasSizeA;
             }
@@ -296,9 +295,9 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
                 for (auto content : handler.readyContents)
                 {
                     if (isVisible)
-                        dcsmrenderer.hideContent(content, animTimers);
+                        dcsmContentControl.hideContent(content, animTimers);
                     else
-                        dcsmrenderer.showContent(content, animTimers);
+                        dcsmContentControl.showContent(content, animTimers);
                 }
                 isVisible = !isVisible;
             }
@@ -310,7 +309,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
     {
         // renderer object by default does not automap anymore
         // stand alone renderer by default enables automap, unless explicitly disabled
-        ramses_internal::DisplayManager displayManager(renderer, framework);
+        ramses_internal::DisplayManager displayManager(renderer.impl, framework.impl);
         // allow camera free move
         displayManager.enableKeysHandling();
         DMEventHandler dmEventHandler(displayManager, !disableAutoMapping.wasDefined());

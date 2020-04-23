@@ -12,7 +12,7 @@
 #include "RendererLib/EKeyModifier.h"
 #include "Utils/LogMacros.h"
 #include "Collections/Guid.h"
-
+#include "fmt/format.h"
 #include <WindowsX.h>
 
 
@@ -135,7 +135,7 @@ namespace ramses_internal
         }
     }
 
-    Bool TrackMouse(HWND hwnd)
+    static Bool TrackMouse(HWND hwnd)
     {
         TRACKMOUSEEVENT tme;
         tme.cbSize = sizeof(TRACKMOUSEEVENT);
@@ -164,7 +164,8 @@ namespace ramses_internal
 
     void Window_Windows::generateUniqueClassname()
     {
-        m_classname = getTitle() + Guid(true).toString();
+        static int classnameCount = 0;
+        m_classname = String(fmt::format("{}{}", getTitle(), ++classnameCount));
         assert(m_classname.size() < 255);
     }
 

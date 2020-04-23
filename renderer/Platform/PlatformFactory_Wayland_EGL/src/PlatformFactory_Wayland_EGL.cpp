@@ -8,14 +8,13 @@
 
 #include "PlatformFactory_Wayland_EGL/PlatformFactory_Wayland_EGL.h"
 #include "PlatformFactory_Wayland_EGL/Logger_Wayland.h"
-#include "Surface_Wayland_EGL/Surface_Wayland_EGL.h"
-#include "Surface_EGL_Offscreen/Surface_EGL_Offscreen.h"
 #include "RendererLib/DisplayConfig.h"
 #include "RendererLib/RendererConfig.h"
 #include "Window_Wayland/Window_Wayland.h"
-#include "EmbeddedCompositor_Dummy/EmbeddedCompositor_Dummy.h"
+#include "Platform_Base/EmbeddedCompositor_Dummy.h"
 #include "EmbeddedCompositor_Wayland/EmbeddedCompositor_Wayland.h"
 #include "TextureUploadingAdapter_Wayland/TextureUploadingAdapter_Wayland.h"
+#include "Platform_Base/Surface_Base.h"
 #include "Utils/LogMacros.h"
 
 namespace ramses_internal
@@ -48,11 +47,6 @@ namespace ramses_internal
 
         // if we do offscreen rendering, single buffer should be enough
         std::vector<EGLint> windowSurfaceAttributes;
-        if(window.isOffscreen())
-        {
-            windowSurfaceAttributes.push_back(EGL_RENDER_BUFFER);
-            windowSurfaceAttributes.push_back(EGL_SINGLE_BUFFER);
-        }
         windowSurfaceAttributes.push_back(EGL_NONE);
 
         // Use swap interval of 0 so the renderer does not block due invisible surfaces
@@ -76,15 +70,7 @@ namespace ramses_internal
         assert(nullptr != platformWindow);
         assert(nullptr != platformContext);
 
-        ISurface* platformSurface = nullptr;
-        if(window.isOffscreen())
-        {
-            platformSurface = new Surface_EGL_Offscreen(*platformWindow, *platformContext);
-        }
-        else
-        {
-            platformSurface = new Surface_Wayland_EGL(*platformWindow, *platformContext);
-        }
+        ISurface* platformSurface = new Surface_Base(*platformWindow, *platformContext);
         return addPlatformSurface(platformSurface);
     }
 

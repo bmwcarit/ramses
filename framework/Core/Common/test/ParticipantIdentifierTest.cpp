@@ -16,7 +16,7 @@ namespace ramses_internal
 {
     TEST(ParticipantIdentifier, Constructor)
     {
-        Guid id(true);
+        Guid id(777);
 
         ParticipantIdentifier identifier(id, "MyIdentifier");
 
@@ -26,9 +26,9 @@ namespace ramses_internal
 
     TEST(ParticipantIdentifier, IsNotEQualWhenIdsDiffer)
     {
-        Guid id1(true);
+        Guid id1(444);
         ParticipantIdentifier identifier1(id1, "MyIdentifier");
-        Guid id2(true);
+        Guid id2(5465);
         ParticipantIdentifier identifier2(id2, "MyOtherIdentifier");
 
         EXPECT_FALSE(identifier1 == identifier2);
@@ -36,7 +36,7 @@ namespace ramses_internal
 
     TEST(ParticipantIdentifier, IsEqalWhenIdsAreSame)
     {
-        Guid id1(true);
+        Guid id1(998879);
         ParticipantIdentifier identifier1(id1, "MyIdentifier");
         ParticipantIdentifier identifier2(id1, "MyOtherIdentifier");
 

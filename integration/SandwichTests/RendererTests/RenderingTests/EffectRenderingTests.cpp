@@ -56,8 +56,6 @@ bool EffectRenderingTests::runBasicTest(RendererTestsFramework& testFramework, U
 {
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<INTEGRATION_SCENE>(sceneState);
     testFramework.publishAndFlushScene(sceneId);
-    testFramework.subscribeScene(sceneId);
-    testFramework.mapScene(sceneId);
-    testFramework.showScene(sceneId);
+    testFramework.getSceneToRendered(sceneId);
     return testFramework.renderAndCompareScreenshot(expectedImageName, 0u);
 }

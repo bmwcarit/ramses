@@ -14,6 +14,7 @@
 #include <errno.h>
 #include <cstddef>
 #include <fcntl.h>
+#include <cassert>
 
 namespace ramses_internal
 {

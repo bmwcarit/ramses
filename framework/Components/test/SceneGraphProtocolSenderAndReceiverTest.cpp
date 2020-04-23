@@ -11,7 +11,6 @@
 #include "SceneAPI/SceneTypes.h"
 #include "Scene/SceneActionCollectionCreator.h"
 #include "PlatformAbstraction/PlatformThread.h"
-#include "SceneActionCollectionTestHelpers.h"
 
 namespace ramses_internal
 {
@@ -31,7 +30,7 @@ namespace ramses_internal
         StrictMock<SceneProviderServiceHandlerMock> providerHandler;
     };
 
-    INSTANTIATE_TEST_CASE_P(TypedCommunicationTest, ASceneGraphProtocolSenderAndReceiverTest,
+    INSTANTIATE_TEST_SUITE_P(TypedCommunicationTest, ASceneGraphProtocolSenderAndReceiverTest,
                             ::testing::ValuesIn(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()));
 
     TEST_P(ASceneGraphProtocolSenderAndReceiverTest, broadcastNewScenesAvailable)
@@ -267,5 +266,24 @@ namespace ramses_internal
         }
         sender.sendSceneActionList(receiverId, sceneId, actions, 59);
         ASSERT_TRUE(waitForEvent());
+    }
+
+    TEST_P(ASceneGraphProtocolSenderAndReceiverTest, sendRendererEvent)
+    {
+        SceneId sceneId{432};
+        std::vector<Byte> data{7, 1, 2, 3, 4, 5, 6};
+        {
+            PlatformGuard g(receiverExpectCallLock);
+            EXPECT_CALL(providerHandler, handleRendererEvent(sceneId, data, senderId)).WillOnce(InvokeWithoutArgs([&] { sendEvent(); }));
+        }
+        EXPECT_TRUE(sender.sendRendererEvent(receiverId, sceneId, data));
+        ASSERT_TRUE(waitForEvent());
+    }
+
+    TEST_P(ASceneGraphProtocolSenderAndReceiverTest, sendRendererEventFailsForTooLargeData)
+    {
+        std::vector<Byte> data(35000);
+        EXPECT_FALSE(sender.sendRendererEvent(receiverId, SceneId(111), data));
+        skipStatisticsTest();
     }
 }

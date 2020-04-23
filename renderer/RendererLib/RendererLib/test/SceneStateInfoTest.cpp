@@ -18,7 +18,6 @@ namespace ramses_internal
     {
     protected:
         ASceneStateInfo()
-            : guid(true)
         {
         }
 
@@ -40,7 +39,6 @@ namespace ramses_internal
         }
 
         SceneId sceneId;
-        Guid guid;
         SceneStateInfo sceneStateInfo;
 
     private:
@@ -62,7 +60,7 @@ namespace ramses_internal
     TEST_F(ASceneStateInfo, CanAddScene)
     {
 
-        sceneStateInfo.addScene(sceneId, guid, EScenePublicationMode_LocalOnly);
+        sceneStateInfo.addScene(sceneId, EScenePublicationMode_LocalOnly);
         EXPECT_TRUE(sceneStateInfo.hasScene(sceneId));
         EXPECT_EQ(EScenePublicationMode_LocalOnly, sceneStateInfo.getScenePublicationMode(sceneId));
         checkNumberOfKnownScenes(1u);
@@ -71,7 +69,7 @@ namespace ramses_internal
 
     TEST_F(ASceneStateInfo, CanRemoveScene)
     {
-        sceneStateInfo.addScene(sceneId, guid, EScenePublicationMode_LocalOnly);
+        sceneStateInfo.addScene(sceneId, EScenePublicationMode_LocalOnly);
         checkNumberOfKnownScenes(1u);
         checkSceneIsKnown(sceneId);
 
@@ -84,12 +82,12 @@ namespace ramses_internal
     TEST_F(ASceneStateInfo, CanAddAndRemoveMultipleScenes)
     {
         SceneId sceneId2(5u);
-        sceneStateInfo.addScene(sceneId, guid, EScenePublicationMode_LocalOnly);
+        sceneStateInfo.addScene(sceneId, EScenePublicationMode_LocalOnly);
         checkNumberOfKnownScenes(1u);
         checkSceneIsKnown(sceneId);
         checkSceneIsUnknown(sceneId2);
 
-        sceneStateInfo.addScene(sceneId2, guid, EScenePublicationMode_LocalAndRemote);
+        sceneStateInfo.addScene(sceneId2, EScenePublicationMode_LocalAndRemote);
         checkNumberOfKnownScenes(2u);
         checkSceneIsKnown(sceneId);
         checkSceneIsKnown(sceneId2);
@@ -112,20 +110,14 @@ namespace ramses_internal
 
     TEST_F(ASceneStateInfo, CanGetSceneState)
     {
-        sceneStateInfo.addScene(sceneId, guid, EScenePublicationMode_LocalAndRemote);
+        sceneStateInfo.addScene(sceneId, EScenePublicationMode_LocalAndRemote);
         EXPECT_EQ(ESceneState::Published, sceneStateInfo.getSceneState(sceneId));
     }
 
     TEST_F(ASceneStateInfo, CanSetSceneState)
     {
-        sceneStateInfo.addScene(sceneId, guid, EScenePublicationMode_LocalAndRemote);
+        sceneStateInfo.addScene(sceneId, EScenePublicationMode_LocalAndRemote);
         sceneStateInfo.setSceneState(sceneId, ESceneState::Subscribed);
         EXPECT_EQ(ESceneState::Subscribed, sceneStateInfo.getSceneState(sceneId));
-    }
-
-    TEST_F(ASceneStateInfo, CanGetClientGuid)
-    {
-        sceneStateInfo.addScene(sceneId, guid, EScenePublicationMode_LocalAndRemote);
-        EXPECT_EQ(guid, sceneStateInfo.getSceneClientGuid(sceneId));
     }
 }

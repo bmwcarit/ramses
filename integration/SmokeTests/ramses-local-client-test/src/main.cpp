@@ -61,7 +61,7 @@ int main(int argc, const char* argv[])
 
     ramses::RendererConfig rendererConfig(argc, argv);
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
-    ramses_internal::DisplayManager displayManager(renderer, framework);
+    ramses_internal::DisplayManager displayManager(renderer.impl, framework.impl);
     DMEventHandler dmEventHandler(displayManager, !disableAutoMapping.wasDefined());
 
     framework.connect();

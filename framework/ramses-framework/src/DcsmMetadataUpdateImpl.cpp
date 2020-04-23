@@ -93,6 +93,26 @@ namespace ramses
         return m_metadata.getCarModelVisibility();
     }
 
+    bool DcsmMetadataUpdateImpl::hasExclusiveBackground() const
+    {
+        return m_metadata.hasExclusiveBackground();
+    }
+
+    bool DcsmMetadataUpdateImpl::getExclusiveBackground() const
+    {
+        return m_metadata.getExclusiveBackground();
+    }
+
+    bool DcsmMetadataUpdateImpl::hasFocusRequest() const
+    {
+        return m_metadata.hasFocusRequest();
+    }
+
+    int32_t DcsmMetadataUpdateImpl::getFocusRequest() const
+    {
+        return m_metadata.getFocusRequest();
+    }
+
     void DcsmMetadataUpdateImpl::setMetadata(ramses_internal::DcsmMetadata metadata)
     {
         m_metadata = std::move(metadata);

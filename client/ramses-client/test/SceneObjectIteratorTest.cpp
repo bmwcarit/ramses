@@ -10,6 +10,7 @@
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/SceneObjectIterator.h"
+#include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
@@ -35,6 +36,7 @@
 #include "ramses-client-api/VertexDataBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
 #include "ramses-client-api/PickableObject.h"
+#include "ramses-client-api/SceneReference.h"
 #include "ramses-utils.h"
 
 #include "ClientTestUtils.h"
@@ -59,7 +61,7 @@ namespace ramses
         }
     };
 
-    TYPED_TEST_CASE(SceneObjectIteratorTest, SceneObjectTypes);
+    TYPED_TEST_SUITE(SceneObjectIteratorTest, SceneObjectTypes);
 
     TYPED_TEST(SceneObjectIteratorTest, ObjectIteratorReturnsMultipleObjects)
     {

@@ -36,7 +36,7 @@ namespace ramses
         OrthographicCamera
         > CameraTypes;
 
-    TYPED_TEST_CASE(ACamera, CameraTypes);
+    TYPED_TEST_SUITE(ACamera, CameraTypes);
 
     TYPED_TEST(ACamera, hasDefaultParams)
     {

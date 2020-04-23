@@ -39,7 +39,7 @@ namespace ramses_internal
         MemoryPoolExplicit<ComparableObject, UInt16>
     > MemoryPoolTypes;
 
-    TYPED_TEST_CASE(AMemoryPoolExplicit, MemoryPoolTypes);
+    TYPED_TEST_SUITE(AMemoryPoolExplicit, MemoryPoolTypes);
 
     TYPED_TEST(AMemoryPoolExplicit, HasInitialSize)
     {

@@ -55,7 +55,7 @@ namespace ramses_internal
             quadForAllTextureConsumers.createSubQuad({ 0.0f, 0.5f, 0.5f, 1.0f })
         };
 
-        for (uint32_t i = 0; i < texConsumerDataIds.size(); ++i)
+        for (size_t i = 0; i < texConsumerDataIds.size(); ++i)
         {
             m_quadsWithTextureConsumerLinks[i].reset(new DynamicQuad_ClientResources(m_client, m_scene, subQuadsForTextureConsumers[i]));
             m_quadsWithTextureConsumerLinks[i]->createTextureDataConsumer(texConsumerDataIds[i]);

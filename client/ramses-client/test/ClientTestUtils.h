@@ -11,6 +11,7 @@
 
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
+#include "ramses-client-api/AnimationSystem.h"
 
 #include "CreationHelper.h"
 #include "MockActionCollector.h"
@@ -27,7 +28,7 @@
 
 namespace ramses_internal
 {
-    class IScene;
+    class ClientScene;
 }
 
 namespace ramses
@@ -42,7 +43,7 @@ namespace ramses
         LocalTestClient()
             : framework(sizeof(clientArgs) / sizeof(char*), clientArgs)
             , client(*framework.createClient("localTestClient"))
-            , m_creationHelper(nullptr, &client)
+            , m_creationHelper(nullptr, nullptr, &client)
             , sceneActionsCollector()
         {
             sceneActionsCollector.init(framework.impl.getScenegraphComponent());
@@ -95,7 +96,7 @@ namespace ramses
             return m_scene;
         }
 
-        ramses_internal::IScene& getInternalScene()
+        ramses_internal::ClientScene& getInternalScene()
         {
             return m_internalScene;
         }
@@ -140,7 +141,26 @@ namespace ramses
     protected:
         Scene& m_scene;
         const Scene& m_constRefToScene;
-        ramses_internal::IScene& m_internalScene;
+        ramses_internal::ClientScene& m_internalScene;
+    };
+
+    class LocalTestClientWithSceneAndAnimationSystem : public LocalTestClientWithScene
+    {
+    protected:
+        explicit LocalTestClientWithSceneAndAnimationSystem(uint32_t animationSystemCreationFlags = EAnimationSystemFlags_Default)
+            : LocalTestClientWithScene()
+            , animationSystem(*m_scene.createAnimationSystem(animationSystemCreationFlags, "animation system"))
+        {
+            m_creationHelper.setAnimationSystem(&animationSystem);
+        }
+
+        ~LocalTestClientWithSceneAndAnimationSystem()
+        {
+            m_creationHelper.destroyAdditionalAllocatedAnimationSystemObjects();
+            m_scene.destroy(animationSystem);
+        }
+
+        AnimationSystem& animationSystem;
     };
 }
 

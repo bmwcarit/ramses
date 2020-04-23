@@ -58,9 +58,9 @@ namespace ramses_internal
 
         Bool init();
 
-        Bool swapBuffers();
-        Bool enable();
-        Bool disable();
+        bool swapBuffers() override final;
+        bool enable() override final;
+        bool disable() override final;
 
         void* getProcAddress(const char* name) const override;
 

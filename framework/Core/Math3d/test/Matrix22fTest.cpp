@@ -8,6 +8,7 @@
 
 #include "gtest/gtest.h"
 #include "Math3d/Matrix22f.h"
+#include "Collections/StringOutputStream.h"
 
 namespace ramses_internal
 {
@@ -137,5 +138,11 @@ namespace ramses_internal
         EXPECT_EQ(42.0f, mat1.m12);
         EXPECT_EQ(42.0f, mat1.m21);
         EXPECT_EQ(42.0f, mat1.m22);
+    }
+
+    TEST_F(Matrix22fTest, CanPrintToString)
+    {
+        EXPECT_EQ("[1.0 2.0; 4.0 5.0]", fmt::to_string(mat1));
+        EXPECT_EQ("[1.0 2.0; 4.0 5.0]", StringOutputStream::ToString(mat1));
     }
 }

@@ -13,6 +13,7 @@
 #include "SceneAPI/SceneVersionTag.h"
 #include "Scene/SceneActionCollection.h"
 #include "Scene/SceneResourceChanges.h"
+#include "SceneReferencing/SceneReferenceAction.h"
 #include "Transfer/ResourceTypes.h"
 #include "Components/FlushTimeInformation.h"
 #include <deque>
@@ -24,7 +25,6 @@ namespace ramses_internal
     struct PendingFlush
     {
         SceneActionCollection sceneActions;
-        UInt                  sceneActionsIt = 0u;
         UInt64                flushIndex = 0u;
         FlushTimeInformation  timeInfo;
         SceneVersionTag       versionTag;
@@ -40,6 +40,8 @@ namespace ramses_internal
         ResourceContentHashVector clientResourcesPendingUnneeded;
         // - scene resource actions to execute after pending flushes are applied
         SceneResourceActionVector sceneResourceActions;
+        // - scene reference actions to execute after pending flushes are applied
+        SceneReferenceActionVector sceneReferenceActions;
     };
     typedef std::deque<PendingFlush> PendingFlushes;
 
@@ -47,6 +49,7 @@ namespace ramses_internal
     {
         PendingFlushes            pendingFlushes;
         SceneSizeInformation      sizeInformation;
+        bool                      allPendingFlushesApplied = false;
 
         // client resources referenced by renderer scene (without pending flushes)
         ResourceContentHashVector clientResourcesInUse;

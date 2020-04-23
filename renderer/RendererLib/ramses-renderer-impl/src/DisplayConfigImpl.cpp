@@ -163,12 +163,6 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t DisplayConfigImpl::enableStereoDisplay()
-    {
-        m_internalConfig.setStereoDisplay(true);
-        return StatusOK;
-    }
-
     status_t DisplayConfigImpl::setWaylandIviLayerID(uint32_t waylandIviLayerID)
     {
         m_internalConfig.setWaylandIviLayerID(ramses_internal::WaylandIviLayerId(waylandIviLayerID));
@@ -213,9 +207,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t DisplayConfigImpl::setWindowIviVisible()
+    status_t DisplayConfigImpl::setWindowIviVisible(bool visible)
     {
-        m_internalConfig.setStartVisibleIvi(true);
+        m_internalConfig.setStartVisibleIvi(visible);
         return StatusOK;
     }
 
@@ -243,12 +237,6 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t DisplayConfigImpl::setOffscreen(bool offscreenFlag)
-    {
-        m_internalConfig.setOffscreen(offscreenFlag);
-        return StatusOK;
-    }
-
     status_t DisplayConfigImpl::setWindowsWindowHandle(void* hwnd)
     {
         m_internalConfig.setWindowsWindowHandle(ramses_internal::WindowsWindowHandle(hwnd));
@@ -271,9 +259,9 @@ namespace ramses
         return m_internalConfig.getWaylandDisplay().c_str();
     }
 
-    status_t DisplayConfigImpl::validate(uint32_t indent) const
+    status_t DisplayConfigImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        status_t status = StatusObjectImpl::validate(indent);
+        status_t status = StatusObjectImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
 
         const ramses_internal::ProjectionParams& projParams = m_internalConfig.getProjectionParams();
@@ -292,21 +280,6 @@ namespace ramses
             addValidationMessage(EValidationSeverity_Error, indent, "bottom plane can not be greater than or equal to top plane");
             status = getValidationErrorStatus();
         }
-
-        if (m_internalConfig.isStereoDisplay())
-        {
-            if (m_internalConfig.isWarpingEnabled())
-            {
-                addValidationMessage(EValidationSeverity_Error, indent, "warping is not supported for stereo display");
-                status = getValidationErrorStatus();
-            }
-            if (m_internalConfig.getAntialiasingMethod() != ramses_internal::EAntiAliasingMethod_PlainFramebuffer)
-            {
-                addValidationMessage(EValidationSeverity_Error, indent, "anti aliasing is not supported for stereo display");
-                status = getValidationErrorStatus();
-            }
-        }
-
         return status;
     }
 }

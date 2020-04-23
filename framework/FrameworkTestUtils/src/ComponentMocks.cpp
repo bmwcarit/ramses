@@ -41,4 +41,12 @@ namespace ramses_internal
     SceneGraphConsumerComponentMock::~SceneGraphConsumerComponentMock()
     {
     }
+
+    SceneProviderEventConsumerMock::SceneProviderEventConsumerMock()
+    {
+    }
+
+    SceneProviderEventConsumerMock::~SceneProviderEventConsumerMock()
+    {
+    }
 }

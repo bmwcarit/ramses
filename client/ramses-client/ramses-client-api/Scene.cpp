@@ -26,6 +26,8 @@
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/GeometryBinding.h"
+#include "ramses-client-api/AnimationSystem.h"
+#include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/BlitPass.h"
 #include "ramses-client-api/PickableObject.h"
@@ -165,6 +167,20 @@ namespace ramses
         return status;
     }
 
+    AnimationSystem* Scene::createAnimationSystem(uint32_t flags, const char* name)
+    {
+        AnimationSystem* animationSystem = impl.createAnimationSystem(flags, name);
+        LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(animationSystem), flags, name);
+        return animationSystem;
+    }
+
+    AnimationSystemRealTime* Scene::createRealTimeAnimationSystem(uint32_t flags, const char* name)
+    {
+        AnimationSystemRealTime* animationSystemRealtime = impl.createRealTimeAnimationSystem(flags, name);
+        LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(animationSystemRealtime), flags, name);
+        return animationSystemRealtime;
+    }
+
     IndexDataBuffer* Scene::createIndexDataBuffer(uint32_t maximumSizeInBytes, EDataType dataType, const char* name /*= 0*/)
     {
         IndexDataBuffer* indexDataBuffer = impl.createIndexDataBuffer(maximumSizeInBytes, dataType, name);
@@ -184,6 +200,27 @@ namespace ramses
         Texture2DBuffer* texture2DBuffer = impl.createTexture2DBuffer(mipLevelCount, width, height, textureFormat, name);
         LOG_HL_CLIENT_API5(LOG_API_RAMSESOBJECT_PTR_STRING(texture2DBuffer), mipLevelCount, width, height, textureFormat, name);
         return texture2DBuffer;
+    }
+
+    SceneReference* Scene::createSceneReference(sceneId_t referencedScene, const char* name /*= nullptr*/)
+    {
+        SceneReference* sceneReference = impl.createSceneReference(referencedScene, name);
+        LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(sceneReference), referencedScene, name);
+        return sceneReference;
+    }
+
+    status_t Scene::linkData(SceneReference* providerReference, dataProviderId_t providerId, SceneReference* consumerReference, dataConsumerId_t consumerId)
+    {
+        auto status = impl.linkData(providerReference, providerId, consumerReference, consumerId);
+        LOG_HL_CLIENT_API4(status, LOG_API_RAMSESOBJECT_PTR_STRING(providerReference), providerId, LOG_API_RAMSESOBJECT_PTR_STRING(consumerReference), consumerId);
+        return status;
+    }
+
+    ramses::status_t Scene::unlinkData(SceneReference* consumerReference, dataConsumerId_t consumerId)
+    {
+        auto status = impl.unlinkData(consumerReference, consumerId);
+        LOG_HL_CLIENT_API2(status, LOG_API_RAMSESOBJECT_PTR_STRING(consumerReference), consumerId);
+        return status;
     }
 
     const RamsesObject* Scene::findObjectByName(const char* name) const
@@ -447,4 +484,8 @@ namespace ramses
         return dataObject;
     }
 
+    RamsesClient& Scene::getRamsesClient()
+    {
+        return impl.getHlRamsesClient();
+    }
 }

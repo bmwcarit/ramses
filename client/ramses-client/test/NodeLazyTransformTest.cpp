@@ -44,7 +44,7 @@ namespace ramses
         T* m_node;
     };
 
-    TYPED_TEST_CASE(NodeLazyTransformTest, NodeTypes);
+    TYPED_TEST_SUITE(NodeLazyTransformTest, NodeTypes);
 
     TYPED_TEST(NodeLazyTransformTest, instantiationCreatesNoTransform)
     {

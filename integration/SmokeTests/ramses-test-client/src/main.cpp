@@ -12,6 +12,7 @@
 #include "Utils/Argument.h"
 #include "TestScenes/HierarchicalRedTrianglesScene.h"
 #include "TestScenes/MultipleTrianglesScene.h"
+#include "TestScenes/AnimatedTrianglesScene.h"
 #include "TestScenes/CubeTextureScene.h"
 #include "TestScenes/TextScene.h"
 #include "TestScenes/StreamTextureScene.h"
@@ -159,24 +160,34 @@ int main(int argc, const char* argv[])
         integrationScenes.push_back(std::move(integrationScene));
         break;
     }
+    case 6:
+    {
+        auto integrationScene = createSceneAndSetState<ramses_internal::AnimatedTrianglesScene>(*ramses, scenes, testState, ramses::sceneId_t(27u), cameraPosParam);
+        integrationScenes.push_back(std::move(integrationScene));
+        break;
+    }
     case 7:
     {
-        auto integrationScene1 = createSceneAndSetState<ramses_internal::MultipleTrianglesScene>(*ramses, scenes, ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED, ramses::sceneId_t(29u),
-                                                                                                 cameraPosParam + ramses_internal::Vector3(30.0f, 0.0f, 0.0f));
+        auto integrationScene1 = createSceneAndSetState<ramses_internal::AnimatedTrianglesScene>(
+            *ramses, scenes, ramses_internal::AnimatedTrianglesScene::ANIMATION_POINT1, ramses::sceneId_t(28u), cameraPosParam + ramses_internal::Vector3(50.0f, 0.0f, 0.0f));
 
-        auto integrationScene2 = createSceneAndSetState<ramses_internal::MultipleTrianglesScene>(*ramses, scenes, ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses::sceneId_t(30u),
-                                                                                                 cameraPosParam + ramses_internal::Vector3(10.0f, 0.0f, 0.0f));
+        auto integrationScene2 = createSceneAndSetState<ramses_internal::AnimatedTrianglesScene>(
+            *ramses, scenes, ramses_internal::AnimatedTrianglesScene::ANIMATION_POINT2, ramses::sceneId_t(29u), cameraPosParam + ramses_internal::Vector3(25.0f, 0.0f, 0.0f));
 
-        auto integrationScene3 = createSceneAndSetState<ramses_internal::HierarchicalRedTrianglesScene>(*ramses, scenes, ramses_internal::HierarchicalRedTrianglesScene::THREE_ROWS_TRIANGLES, ramses::sceneId_t(31u),
-                                                                                                        cameraPosParam + ramses_internal::Vector3(-10.0f, 0.0f, 0.0f));
+        auto integrationScene3 = createSceneAndSetState<ramses_internal::AnimatedTrianglesScene>(
+            *ramses, scenes, ramses_internal::AnimatedTrianglesScene::ANIMATION_POINT3, ramses::sceneId_t(30u), cameraPosParam + ramses_internal::Vector3(0.0f, 0.0f, 0.0f));
 
-        auto integrationScene4 = createSceneAndSetState<ramses_internal::HierarchicalRedTrianglesScene>(*ramses, scenes, ramses_internal::HierarchicalRedTrianglesScene::THREE_ROWS_TRIANGLES, ramses::sceneId_t(32u),
-                                                                                                        cameraPosParam + ramses_internal::Vector3(-30.0f, 0.0f, 0.0f));
+        auto integrationScene4 = createSceneAndSetState<ramses_internal::HierarchicalRedTrianglesScene>(
+            *ramses, scenes, ramses_internal::HierarchicalRedTrianglesScene::THREE_ROWS_TRIANGLES, ramses::sceneId_t(31u), cameraPosParam + ramses_internal::Vector3(-25.0f, 0.0f, 0.0f));
+
+        auto integrationScene5 = createSceneAndSetState<ramses_internal::HierarchicalRedTrianglesScene>(
+            *ramses, scenes, ramses_internal::HierarchicalRedTrianglesScene::THREE_ROWS_TRIANGLES, ramses::sceneId_t(32u), cameraPosParam + ramses_internal::Vector3(-50.0f, 0.0f, 0.0f));
 
         integrationScenes.push_back(std::move(integrationScene1));
         integrationScenes.push_back(std::move(integrationScene2));
         integrationScenes.push_back(std::move(integrationScene3));
         integrationScenes.push_back(std::move(integrationScene4));
+        integrationScenes.push_back(std::move(integrationScene5));
         break;
     }
     case 8:

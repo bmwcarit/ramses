@@ -34,5 +34,6 @@ class TestEmbeddedCompositorLifecycleClientCleansUp(embedded_compositor_base.Emb
         self.validateScreenshot(self.renderer, "testClient_compositing_fallbacktexture.png")
 
         # check that given permissions of wayland socket were set correctly
-        (stdoutdata, stderrdata, returncode) = self.target.execute_on_target("stat -c '%G' /run/wayland/wayland-10", env=self.target.defaultEnvironment)
+        socket_file_name = "{}/wayland-10".format(self.target.defaultEnvironment['XDG_RUNTIME_DIR'])
+        (stdoutdata, stderrdata, returncode) = self.target.execute_on_target("stat -c '%G' {}".format(socket_file_name), env=self.target.defaultEnvironment)
         self.assertTrue('wayland\n' in stdoutdata, "permission group not set correctly on embedded compositing socket")

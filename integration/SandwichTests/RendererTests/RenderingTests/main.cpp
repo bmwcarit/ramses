@@ -23,7 +23,6 @@ int main(int argc, const char *argv[])
     ArgumentString filterInTest(parser, "fi", "filterIn", "*");
     ArgumentString filterOutTest(parser, "fo", "filterOut", "");
     ArgumentUInt32 repeatTestCount(parser, "rc", "repeatCount", 1);
-    ArgumentUInt32 waylandIviLayerId(parser, "lid", "waylandIviLayerId", 3);
 
     std::vector<ramses_internal::String>  filterInTestStrings;
     std::vector<ramses_internal::String>  filterOutTestStrings;
@@ -42,7 +41,7 @@ int main(int argc, const char *argv[])
     }
 #endif
 
-    RendererTestUtils::SetWaylandIviLayerID(waylandIviLayerId);
+    RendererTestUtils::SetCommandLineParams(argc, argv);
     const ramses::RamsesFrameworkConfig config(argc, argv);
     RenderingTests renderingTests(filterInTestStrings, filterOutTestStrings, generateBitmaps, config);
 

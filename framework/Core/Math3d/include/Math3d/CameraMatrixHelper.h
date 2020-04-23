@@ -10,6 +10,7 @@
 #define RAMSES_CAMERAMATRIXHELPER_H
 
 #include "ProjectionParams.h"
+#include <cassert>
 
 namespace ramses_internal
 {

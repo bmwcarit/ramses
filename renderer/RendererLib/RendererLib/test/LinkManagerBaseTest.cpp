@@ -61,7 +61,7 @@ typedef ::testing::Types <
     TextureLinkManager
 > ManagerTypes;
 
-TYPED_TEST_CASE(ALinkManager, ManagerTypes);
+TYPED_TEST_SUITE(ALinkManager, ManagerTypes);
 
 TYPED_TEST(ALinkManager, reportsNoDependenciesInitially)
 {

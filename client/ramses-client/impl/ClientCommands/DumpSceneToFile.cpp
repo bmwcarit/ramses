@@ -8,7 +8,7 @@
 
 #include "DumpSceneToFile.h"
 #include "RamsesClientImpl.h"
-#include "SceneCommandTypes.h"
+#include "SceneCommandBuffer.h"
 
 namespace ramses_internal
 {
@@ -25,11 +25,11 @@ namespace ramses_internal
 
     Bool DumpSceneToFile::execute(uint64_t& sceneId, String& fileName, String& sendViaDLT) const
     {
-        DumpSceneToFileCommand command;
+        SceneCommandDumpSceneToFile command;
         command.fileName = fileName;
         command.sendViaDLT = sendViaDLT == String("-sendViaDLT");
 
-        m_client.enqueueSceneCommand(ramses::sceneId_t(sceneId), command);
+        m_client.enqueueSceneCommand(ramses::sceneId_t(sceneId), std::move(command));
         return true;
     }
 }

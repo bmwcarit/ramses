@@ -10,6 +10,7 @@
 #define RAMSES_RESOURCECHANGEUTILS_H
 
 #include "Transfer/ResourceTypes.h"
+#include <cassert>
 
 namespace ramses_internal
 {

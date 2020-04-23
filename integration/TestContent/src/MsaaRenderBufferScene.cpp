@@ -20,6 +20,7 @@
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/GeometryBinding.h"
+#include <cassert>
 
 namespace ramses_internal
 {

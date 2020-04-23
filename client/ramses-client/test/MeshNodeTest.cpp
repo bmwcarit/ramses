@@ -25,7 +25,7 @@ using namespace ramses_internal;
 
 namespace ramses
 {
-    class MeshNodeTest : public LocalTestClientWithScene, public testing::Test
+    class MeshNodeTest : public LocalTestClientWithSceneAndAnimationSystem, public testing::Test
     {
     protected:
         virtual void SetUp()

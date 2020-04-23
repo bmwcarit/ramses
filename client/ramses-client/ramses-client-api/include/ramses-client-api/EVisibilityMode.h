@@ -19,9 +19,9 @@ namespace ramses
 
     enum class EVisibilityMode : uint32_t
     {
-        Off = 0,    /// A node shall be invisible and the node shall not trigger its resources to be loaded.
-        Invisible,  /// A node shall be invisible, but the node shall trigger its resources to be loaded.
-        Visible     /// A node shall be fully loaded and visible.
+        Off = 0,    ///< A node shall be invisible and the node shall not trigger its resources to be loaded.
+        Invisible,  ///< A node shall be invisible, but the node shall trigger its resources to be loaded.
+        Visible     ///< A node shall be fully loaded and visible.
     };
 }
 

@@ -6,10 +6,19 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "Matrix44Test.h"
+#include "Math3d/Matrix44f.h"
+#include "framework_common_gmock_header.h"
+#include "gtest/gtest.h"
 
 namespace ramses_internal
 {
+    class Matrix44Test: public testing::Test
+    {
+    public:
+        Matrix44Test();
+        Matrix44f mat1;
+    };
+
     Matrix44Test::Matrix44Test()
         : mat1(Matrix44f(  1.0f,  2.0f,  3.0f,  4.0f
                         ,  5.0f,  6.0f,  7.0f,  8.0f
@@ -644,5 +653,13 @@ namespace ramses_internal
         EXPECT_FLOAT_EQ(rotated.x, 1.0);
         EXPECT_FLOAT_EQ(rotated.y, -1.0);
         EXPECT_FLOAT_EQ(rotated.z, 0.0);
+    }
+
+    TEST_F(Matrix44Test, CanPrintToString)
+    {
+        EXPECT_EQ("[1.0 2.0 3.0 4.0; 5.0 6.0 7.0 8.0; 9.0 10.0 11.0 12.0; 13.0 14.0 15.0 16.0]",
+                  fmt::to_string(mat1));
+        EXPECT_EQ("[1.0 2.0 3.0 4.0; 5.0 6.0 7.0 8.0; 9.0 10.0 11.0 12.0; 13.0 14.0 15.0 16.0]",
+                  StringOutputStream::ToString(mat1));
     }
 }

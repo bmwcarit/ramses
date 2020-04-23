@@ -21,12 +21,12 @@
 
 namespace ramses
 {
-    ::testing::AssertionResult AssertArraysEqual( const char *m, const char *n, uint32_t size)
+    ::testing::AssertionResult AssertArraysEqual( const char *m, const char *n, size_t size)
     {
         char mHexValue[5];
         char nHexValue[5];
 
-        for(uint32_t i = 0; i < size; ++i)
+        for(size_t i = 0; i < size; ++i)
         {
             if(m[i] != n[i])
             {
@@ -121,10 +121,10 @@ namespace ramses
     };
 
     typedef ::testing::Types< std::vector<RamsesObject*>, ramses_internal::HashSet<RamsesObject*> > ContainerObjectTypes;
-    TYPED_TEST_CASE(SerializationHelperObjectTest, ContainerObjectTypes);
+    TYPED_TEST_SUITE(SerializationHelperObjectTest, ContainerObjectTypes);
 
     typedef ::testing::Types< std::vector<RamsesObjectImpl*>, ramses_internal::HashSet<RamsesObjectImpl*> > ContainerImplTypes;
-    TYPED_TEST_CASE(SerializationHelperImplTest, ContainerImplTypes);
+    TYPED_TEST_SUITE(SerializationHelperImplTest, ContainerImplTypes);
 
     TYPED_TEST(SerializationHelperObjectTest, CanGetCount)
     {
@@ -151,7 +151,7 @@ namespace ramses
         SerializationHelper::SerializeContainerIDs(this->m_outStream, this->m_serializationContext, this->m_originalContainer);
 
         const char* data = this->m_outStream.getData();
-        uint32_t size    = this->m_outStream.getSize();
+        size_t size    = this->m_outStream.getSize();
 
         EXPECT_TRUE(AssertArraysEqual(SerializationHelperTestBase::firstElementSerialString, data, size));
     }
@@ -163,7 +163,7 @@ namespace ramses
         SerializationHelper::SerializeContainerImplIDs(this->m_outStream, this->m_serializationContext, this->m_originalContainer);
 
         const char* data = this->m_outStream.getData();
-        uint32_t size    = this->m_outStream.getSize();
+        size_t size    = this->m_outStream.getSize();
 
         EXPECT_TRUE(AssertArraysEqual(SerializationHelperTestBase::firstElementSerialString, data, size));
     }

@@ -18,6 +18,11 @@
 
 namespace ramses_internal
 {
+    constexpr const ramses::dataProviderId_t ViewportLinkScene::ViewportOffsetProviderId;
+    constexpr const ramses::dataProviderId_t ViewportLinkScene::ViewportSizeProviderId;
+    constexpr const ramses::dataConsumerId_t ViewportLinkScene::ViewportOffsetConsumerId;
+    constexpr const ramses::dataConsumerId_t ViewportLinkScene::ViewportSizeConsumerId;
+
     ViewportLinkScene::ViewportLinkScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
         : IntegrationScene(ramsesClient, scene, cameraPosition)
     {

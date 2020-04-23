@@ -25,6 +25,9 @@ namespace ramses_internal
         , m_sceneId(scene.getSceneId())
         , m_scene(scene)
         , m_scenePublicationMode(EScenePublicationMode_Unpublished)
+        , m_resourceChanges()
+        , m_newClientResources()
+        , m_animationSystemFactory(ramses_internal::EAnimationSystemOwner_Scenemanager)
     {
     }
 
@@ -112,23 +115,26 @@ namespace ramses_internal
         SceneActionCollectionCreator creator(collection);
         SceneDescriber::describeScene<IScene>(scene, creator);
 
-        SceneResourceChanges resourceChanges;
+        m_resourceChanges.clear();
         size_t sceneResourcesSize = 0u;
-        SceneResourceUtils::GetSceneResourceChangesFromScene(resourceChanges, scene, sceneResourcesSize);
+        SceneResourceUtils::GetAllSceneResourcesFromScene(m_resourceChanges.m_sceneResourceActions, scene, sceneResourcesSize);
+
+        m_resourceChanges.m_addedClientResourceRefs = m_lastFlushClientResourcesInUse;
 
         // flush asynchronously & check if there already was a named flush
         creator.flush(
             m_flushCounter,
             true,
             scene.getSceneSizeInformation(),
-            resourceChanges,
+            m_resourceChanges,
+            {}, // scene reference actions are transient, not sent to new subscribers
             flushTimeInfo,
             versionTag);
 
         LOG_INFO(CONTEXT_CLIENT, "Sending scene " << scene.getSceneId() << " to " << m_subscribersWaitingForScene.size() << " subscribers, " <<
             collection.numberOfActions() << " scene actions (" << collection.collectionData().size() << " bytes)" <<
-            resourceChanges.m_addedClientResourceRefs.size() << " client resources, " <<
-            resourceChanges.m_sceneResourceActions.size() << " scene resource actions (" << sceneResourcesSize << " bytes in total used by scene resources)");
+            m_resourceChanges.m_addedClientResourceRefs.size() << " client resources, " <<
+            m_resourceChanges.m_sceneResourceActions.size() << " scene resource actions (" << sceneResourcesSize << " bytes in total used by scene resources)");
 
         for(const auto& subscriber : m_subscribersWaitingForScene)
         {
@@ -189,5 +195,24 @@ namespace ramses_internal
                 return "Invalid";
             }
         }
+    }
+
+    void ClientSceneLogicBase::updateResourceChanges(bool hasNewActions)
+    {
+        m_resourceChanges.clear();
+
+        // optimization: early out if nothing changed in the scene
+        if (!hasNewActions)
+            return;
+
+        if (m_scene.getClientResourcesChanged())
+        {
+            m_newClientResources.clear();
+            SceneResourceUtils::GetAllClientResourcesFromScene(m_newClientResources, m_scene);
+            SceneResourceUtils::DiffClientResources(m_lastFlushClientResourcesInUse, m_newClientResources, m_resourceChanges);
+            m_lastFlushClientResourcesInUse.swap(m_newClientResources);
+        }
+
+        m_resourceChanges.m_sceneResourceActions = m_scene.getSceneResourceActions();
     }
 }

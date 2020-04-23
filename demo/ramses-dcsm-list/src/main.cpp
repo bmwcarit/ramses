@@ -11,6 +11,7 @@
 
 #include "ramses-framework-api/DcsmProvider.h"
 #include "ramses-framework-api/IDcsmProviderEventHandler.h"
+#include "ramses-framework-api/EDcsmOfferingMode.h"
 
 #include <thread>
 #include <iostream>
@@ -57,9 +58,9 @@ public:
                     std::cerr << "'-offer' argument error: invalid category, using default " << m_categoryID.getValue() << std::endl;
 
                 if (viewportProvider > 0)
-                    m_viewportProviderID = viewportProvider;
+                    m_viewportProviderID.getReference() = viewportProvider;
                 else
-                    std::cerr << "'-offer' argument error: invalid viewportProvider, using default " << m_viewportProviderID << std::endl;
+                    std::cerr << "'-offer' argument error: invalid viewportProvider, using default " << m_viewportProviderID.getValue() << std::endl;
             }
         }
 
@@ -160,7 +161,7 @@ public:
         m_sizeReceived = false;
         m_released = false;
 
-        m_dcsm.offerContent(m_contentID, m_categoryID, m_sceneToOffer);
+        m_dcsm.offerContent(m_contentID, m_categoryID, m_sceneToOffer, ramses::EDcsmOfferingMode::LocalAndRemote);
         while (!m_sizeReceived)
         {
             m_dcsm.dispatchEvents(*this);
@@ -263,7 +264,7 @@ private:
     // Viewport size can be linked to data provider on consumer/renderer side.
     // The viewport size represents the content size in screen space
     // and can be used for various layouting effects on consumer/renderer.
-    ramses::dataProviderId_t m_viewportProviderID = { 667 };
+    ramses::dataProviderId_t m_viewportProviderID{667};
 
     ramses::SizeInfo m_newSize = ramses::SizeInfo{ 0, 0 };
     ramses::AnimationInformation m_sizeAnim = ramses::AnimationInformation{ 0, 0 };

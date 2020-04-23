@@ -10,8 +10,9 @@
 #define RAMSES_TEXTUREMATHUTILS_H
 
 #include "PlatformAbstraction/PlatformTypes.h"
-#include "PlatformAbstraction/PlatformMath.h"
-#include <assert.h>
+#include <algorithm>
+#include <cmath>
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -20,7 +21,7 @@ namespace ramses_internal
     public:
         static UInt32 GetLowerMipSize(UInt32 size)
         {
-            return ramses_internal::max<UInt32>(1u, size >> 1);
+            return std::max<UInt32>(1u, size >> 1);
         }
 
         static UInt32 GetMipSize(UInt32 mipLevel, UInt32 baseMipSize)
@@ -36,7 +37,7 @@ namespace ramses_internal
 
         static UInt32 GetMipLevelCount(UInt32 width, UInt32 height, UInt32 depth)
         {
-            const UInt32 maxDimension = ramses_internal::max<UInt32>(width, ramses_internal::max<UInt32>(height, depth));
+            const UInt32 maxDimension = std::max(width, std::max(height, depth));
             assert(maxDimension > 0u);
             // add 0.5 so that floating precision errors do not cause value to fall below the integral part
             // 0.5 is small enough not to affect the log2 result and big enough to avoid the potential precision error

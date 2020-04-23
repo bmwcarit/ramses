@@ -56,7 +56,7 @@ namespace ramses_internal
     {
         const TextureBuffer& texBuffer = scene.getTextureBuffer(handle);
         const auto& mipMaps = texBuffer.mipMaps;
-        for (UInt32 mipLevel = 0u; mipLevel < mipMaps.size(); ++mipLevel)
+        for (UInt32 mipLevel = 0u; mipLevel < static_cast<uint32_t>(mipMaps.size()); ++mipLevel)
         {
             const auto& mip = mipMaps[mipLevel];
             resourceManager.updateTextureBuffer(handle, mipLevel, 0u, 0u, mip.width, mip.height, texBuffer.mipMaps[mipLevel].data.data(), scene.getSceneId());

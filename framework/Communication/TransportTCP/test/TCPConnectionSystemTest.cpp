@@ -19,7 +19,7 @@ namespace ramses_internal
     {
     public:
         ATCPConnectionSystem()
-            : addr(Guid(true), "foo", "127.0.0.1", 0)
+            : addr(Guid(111), "foo", "127.0.0.1", 0)
             , daemonAddr(TCPConnectionSystem::GetDaemonId(), "SM", "127.0.0.1", 5999)
             , connsys(addr, 0, daemonAddr, false, lock, statistics, std::chrono::milliseconds{1000}, std::chrono::milliseconds{10000})
             , startBarrier(5)
@@ -31,7 +31,7 @@ namespace ramses_internal
         StatisticCollectionFramework statistics;
         TCPConnectionSystem connsys;
         ThreadBarrier startBarrier;
-        Guid other{true};
+        Guid other{333};
         std::atomic<bool> shouldStop{false};
     };
 

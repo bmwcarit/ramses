@@ -41,6 +41,13 @@ namespace ramses_internal
     template <template<typename, typename> class MEMORYPOOL>
     SceneT<MEMORYPOOL>::~SceneT()
     {
+        for (auto i = AnimationSystemHandle(0); i < getAnimationSystemCount(); ++i)
+        {
+            if (isAnimationSystemAllocated(i))
+            {
+                removeAnimationSystem(i);
+            }
+        }
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -270,7 +277,7 @@ namespace ramses_internal
         assert(dataSizeInBytes + offsetInBytes <= dataBuffer.data.size());
         Byte* const copyDestination = dataBuffer.data.data() + offsetInBytes;
         PlatformMemory::Copy(copyDestination, data, dataSizeInBytes);
-        dataBuffer.usedSize = max<UInt32>(dataBuffer.usedSize, dataSizeInBytes + offsetInBytes);
+        dataBuffer.usedSize = std::max(dataBuffer.usedSize, dataSizeInBytes + offsetInBytes);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -289,7 +296,7 @@ namespace ramses_internal
         textureBuffer->mipMaps.resize(mipMapDimensions.size());
 
         const auto texelSize = GetTexelSizeFromFormat(textureFormat);
-        for (UInt32 i = 0u; i < mipMapDimensions.size(); ++i)
+        for (size_t i = 0u; i < mipMapDimensions.size(); ++i)
         {
             auto& mip = textureBuffer->mipMaps[i];
             const UInt32 mipLevelSize = mipMapDimensions[i].width * mipMapDimensions[i].height * texelSize;
@@ -492,6 +499,42 @@ namespace ramses_internal
     const BlitPass& SceneT<MEMORYPOOL>::getBlitPass(BlitPassHandle passHandle) const
     {
         return *m_blitPasses.getMemory(passHandle);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    AnimationSystemHandle SceneT<MEMORYPOOL>::addAnimationSystem(IAnimationSystem* animationSystem, AnimationSystemHandle externalHandle)
+    {
+        assert(nullptr != animationSystem);
+        const auto handle = m_animationSystems.allocate(externalHandle);
+        *m_animationSystems.getMemory(handle) = animationSystem;
+        animationSystem->setHandle(handle);
+        return handle;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    void SceneT<MEMORYPOOL>::removeAnimationSystem(AnimationSystemHandle handle)
+    {
+        delete getAnimationSystem(handle);
+        m_animationSystems.release(handle);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    IAnimationSystem* SceneT<MEMORYPOOL>::getAnimationSystem(AnimationSystemHandle handle)
+    {
+        // Non-const version of getAnimationSystem cast to its const version to avoid duplicating code
+        return const_cast<IAnimationSystem*>((const_cast<const SceneT&>(*this)).getAnimationSystem(handle));
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    const IAnimationSystem* SceneT<MEMORYPOOL>::getAnimationSystem(AnimationSystemHandle handle) const
+    {
+        return m_animationSystems.isAllocated(handle) ? *m_animationSystems.getMemory(handle) : nullptr;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    UInt32 SceneT<MEMORYPOOL>::getAnimationSystemCount() const
+    {
+        return m_animationSystems.getTotalCount();
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -1134,8 +1177,10 @@ namespace ramses_internal
         m_streamTextures.preallocateSize(sizeInfo.streamTextureCount);
         m_dataSlots.preallocateSize(sizeInfo.dataSlotCount);
         m_dataBuffers.preallocateSize(sizeInfo.dataBufferCount);
+        m_animationSystems.preallocateSize(sizeInfo.animationSystemCount);
         m_textureBuffers.preallocateSize(sizeInfo.textureBufferCount);
         m_pickableObjects.preallocateSize(sizeInfo.pickableObjectCount);
+        m_sceneReferences.preallocateSize(sizeInfo.sceneReferenceCount);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -1224,6 +1269,50 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
+    SceneReferenceHandle SceneT<MEMORYPOOL>::allocateSceneReference(SceneId sceneId, SceneReferenceHandle handle)
+    {
+        const auto actualHandle = m_sceneReferences.allocate(handle);
+        m_sceneReferences.getMemory(actualHandle)->sceneId = sceneId;
+        return actualHandle;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    void SceneT<MEMORYPOOL>::releaseSceneReference(SceneReferenceHandle handle)
+    {
+        m_sceneReferences.release(handle);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    void SceneT<MEMORYPOOL>::requestSceneReferenceState(SceneReferenceHandle handle, RendererSceneState state)
+    {
+        m_sceneReferences.getMemory(handle)->requestedState = state;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    void SceneT<MEMORYPOOL>::requestSceneReferenceFlushNotifications(SceneReferenceHandle handle, bool enable)
+    {
+        m_sceneReferences.getMemory(handle)->flushNotifications = enable;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    void SceneT<MEMORYPOOL>::setSceneReferenceRenderOrder(SceneReferenceHandle handle, int32_t renderOrder)
+    {
+        m_sceneReferences.getMemory(handle)->renderOrder = renderOrder;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    UInt32 SceneT<MEMORYPOOL>::getSceneReferenceCount() const
+    {
+        return m_sceneReferences.getTotalCount();
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    const SceneReference& SceneT<MEMORYPOOL>::getSceneReference(SceneReferenceHandle handle) const
+    {
+        return *m_sceneReferences.getMemory(handle);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
     SceneSizeInformation SceneT<MEMORYPOOL>::getSceneSizeInformation() const
     {
         SceneSizeInformation sizeInfo;
@@ -1245,6 +1334,9 @@ namespace ramses_internal
         sizeInfo.dataBufferCount = m_dataBuffers.getTotalCount();
         sizeInfo.textureBufferCount = m_textureBuffers.getTotalCount();
         sizeInfo.pickableObjectCount = m_pickableObjects.getTotalCount();
+        sizeInfo.sceneReferenceCount = m_sceneReferences.getTotalCount();
+        sizeInfo.animationSystemCount = m_animationSystems.getTotalCount();
+
         return sizeInfo;
     }
 

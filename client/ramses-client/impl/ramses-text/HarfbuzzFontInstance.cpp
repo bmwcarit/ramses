@@ -26,8 +26,8 @@ namespace ramses
             return (fixed - 32) / 64;
     }
 
-    HarfbuzzFontInstance::HarfbuzzFontInstance(FontInstanceId id, FT_Library freetypeLib, const FontData& font, uint32_t pixelSize, bool forceAutohinting)
-        : Freetype2FontInstance(id, freetypeLib, font, pixelSize, forceAutohinting)
+    HarfbuzzFontInstance::HarfbuzzFontInstance(FontInstanceId id, FT_Face fontFace, uint32_t pixelSize, bool forceAutohinting)
+        : Freetype2FontInstance(id, fontFace, pixelSize, forceAutohinting)
     {
         m_hbFont = hb_ft_font_create(m_face, nullptr);
         if (m_hbFont == nullptr)
@@ -54,7 +54,6 @@ namespace ramses
         hbGlyphInfos.reserve(std::distance(charsBegin, charsEnd));
 
         activateHBFontSize();
-        hb_unicode_funcs_t* unicodeFuncs = hb_unicode_funcs_get_default();
 
         unsigned clusterIdx = 0u;
         auto charIt = charsBegin;
@@ -62,6 +61,7 @@ namespace ramses
         {
             hb_buffer_t* hbBuffer = hb_buffer_create();
             assert(hbBuffer != nullptr);
+            hb_unicode_funcs_t* unicodeFuncs = hb_buffer_get_unicode_funcs(hbBuffer);
 
             hb_buffer_set_content_type(hbBuffer, HB_BUFFER_CONTENT_TYPE_UNICODE);
             // Always take LTR direction. With that Arabic reshaping works, but char codes must already come in the swapped order.
@@ -149,5 +149,8 @@ namespace ramses
         hb_font_set_scale(m_hbFont,
             static_cast<int>((x_scale * units_per_EM + (1 << 15)) >> 16),
             static_cast<int>((y_scale * units_per_EM + (1 << 15)) >> 16));
+
+        // also activate on freetype
+        activateSize();
     }
 }

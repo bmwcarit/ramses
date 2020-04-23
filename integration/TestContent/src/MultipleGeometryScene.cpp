@@ -15,6 +15,7 @@
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/UniformInput.h"
+#include <cassert>
 
 namespace ramses_internal
 {

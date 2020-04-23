@@ -303,27 +303,4 @@ namespace ramses
             return ramses::EKeyCode_Unknown;
         }
     }
-
-    void RamsesRendererUtils::DoOneLoop(ramses_internal::WindowedRenderer& renderer, ramses_internal::ELoopMode loopMode, std::chrono::microseconds sleepTime)
-    {
-        LOG_TRACE(ramses_internal::CONTEXT_PROFILING, "RamsesRendererUtils::DoOneLoop start frame");
-
-        if (ramses_internal::ELoopMode_UpdateOnly == loopMode)
-        {
-            renderer.update();
-        }
-        else if (ramses_internal::ELoopMode_UpdateAndRender == loopMode)
-        {
-            renderer.update();
-            renderer.render();
-        }
-        else
-        {
-            assert(false && "Unhandled loop mode");
-        }
-
-        renderer.finishFrameStatistics(sleepTime);
-
-        LOG_TRACE(ramses_internal::CONTEXT_PROFILING, "RamsesRendererUtils::DoOneLoop end frame");
-    }
 }

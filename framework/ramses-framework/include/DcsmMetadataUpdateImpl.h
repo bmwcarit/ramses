@@ -47,6 +47,12 @@ namespace ramses
         bool hasCarModelVisibility() const;
         bool getCarModelVisibility() const;
 
+        bool hasExclusiveBackground() const;
+        bool getExclusiveBackground() const;
+
+        bool hasFocusRequest() const;
+        int32_t getFocusRequest() const;
+
         void setMetadata(ramses_internal::DcsmMetadata metadata);
         ramses_internal::DcsmMetadata getMetadata() const;
     private:

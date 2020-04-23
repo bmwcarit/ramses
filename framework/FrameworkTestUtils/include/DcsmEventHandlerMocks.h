@@ -36,7 +36,8 @@ namespace ramses_internal
         ~DcsmConsumerEventHandlerMock() override;
 
         MOCK_METHOD2(contentOffered, void(ramses::ContentID, ramses::Category));
-        MOCK_METHOD3(contentReady, void(ramses::ContentID, ramses::ETechnicalContentType, ramses::TechnicalContentDescriptor));
+        MOCK_METHOD3(contentDescription, void(ramses::ContentID, ramses::ETechnicalContentType, ramses::TechnicalContentDescriptor));
+        MOCK_METHOD1(contentReady, void(ramses::ContentID));
         MOCK_METHOD1(contentFocusRequest, void(ramses::ContentID));
         MOCK_METHOD1(contentStopOfferRequest, void(ramses::ContentID));
         MOCK_METHOD1(forceContentOfferStopped, void(ramses::ContentID));

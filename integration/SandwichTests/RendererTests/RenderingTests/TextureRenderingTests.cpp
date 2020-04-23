@@ -69,6 +69,7 @@ void TextureRenderingTests::setUpTestCases(RendererTestsFramework& testFramework
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture3D_RGBA8, *this, "TextureTest_Texture3D_RGBA8");
 
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_CubeMap_RGBA8, *this, "TextureTest_CubeMap_RGBA8");
+    testFramework.createTestCaseWithDefaultDisplay(TextureTest_CubeMap_BGRA_Swizzled, *this, "TextureTest_CubeMap_BGRA_Swizzled");
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_CubeMap_Float, *this, "TextureTest_CubeMap_Float");
 
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_TextureCube_AnisotropicFilter, *this, "TextureTest_TextureCube_AnisotropicFilter");
@@ -174,6 +175,8 @@ bool TextureRenderingTests::run(RendererTestsFramework& testFramework, const Ren
         return runBasicTest<Texture3DScene>(testFramework, Texture3DScene::SLICES_4, "Texture3DScene_4Slices");
     case TextureTest_CubeMap_RGBA8:
         return runBasicTest<CubeTextureScene>(testFramework, CubeTextureScene::EState_RGBA8, "CubeTextureScene_CubeMap");
+    case TextureTest_CubeMap_BGRA_Swizzled:
+        return runBasicTest<CubeTextureScene>(testFramework, CubeTextureScene::EState_BGRA_Swizzled, "CubeTextureScene_CubeMapSwizzled");
     case TextureTest_CubeMap_Float:
         return runBasicTest<CubeTextureScene>(testFramework, CubeTextureScene::EState_Float, "CubeTextureScene_CubeMapFloat");
     case TextureTest_TextureCube_AnisotropicFilter:
@@ -230,12 +233,11 @@ bool TextureRenderingTests::run(RendererTestsFramework& testFramework, const Ren
         const ramses::sceneId_t sceneId = createAndShowScene<TextureBufferScene>(testFramework, TextureBufferScene::EState_RGBA8_OneMip);
         const Bool beforeRemapping = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMip", 0u);
 
-        testFramework.hideAndUnmap(sceneId);
+        testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Available);
         // just for confidence (reuse existing black image)
         const Bool blackAfterUnmap = testFramework.renderAndCompareScreenshot("DistributedScene_UnpublishedScene", 0u);
 
-        testFramework.mapScene(sceneId);
-        testFramework.showScene(sceneId);
+        testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
         const Bool afterRemapping = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMip", 0u);
 
         return beforeRemapping && blackAfterUnmap && afterRemapping;
@@ -298,9 +300,7 @@ ramses::sceneId_t TextureRenderingTests::createAndShowScene(RendererTestsFramewo
 {
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<INTEGRATION_SCENE>(sceneState);
     testFramework.publishAndFlushScene(sceneId);
-    testFramework.subscribeScene(sceneId);
-    testFramework.mapScene(sceneId);
-    testFramework.showScene(sceneId);
+    testFramework.getSceneToRendered(sceneId);
 
     return sceneId;
 }

@@ -36,7 +36,10 @@ class LocalTarget(Target):
 
         return True
 
-    def start_application(self, applicationName, args="", binaryDirectoryOnTarget= None, nameExtension="", env={}, dltAppID=None):
+    def start_application(self, applicationName, args="", binaryDirectoryOnTarget= None, nameExtension="", env={}, dltAppID=None, prepend_unbuffer=False):
+        if prepend_unbuffer:
+            log.warn("Unbuffer is not supported on this target! Will be ignored.")
+
         if binaryDirectoryOnTarget:
             applicationDirectory = os.path.normcase(binaryDirectoryOnTarget)
             applicationPath = os.path.normcase(applicationDirectory + "/" + applicationName)

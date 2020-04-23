@@ -24,8 +24,8 @@ namespace ramses_internal
     Bool LogResourceMemoryUsage::execute(uint64_t& sceneId) const
     {
         LOG_INFO(CONTEXT_CLIENT,"LogResourceMemoryUsage");
-        LogResourceMemoryUsageCommand command;
-        m_client.enqueueSceneCommand(ramses::sceneId_t(sceneId), command);
+        SceneCommandLogResourceMemoryUsage command;
+        m_client.enqueueSceneCommand(ramses::sceneId_t(sceneId), std::move(command));
         return true;
     }
 }

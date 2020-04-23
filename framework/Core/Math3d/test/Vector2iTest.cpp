@@ -6,16 +6,16 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "Vector2iTest.h"
+#include "Math3d/Vector2i.h"
+#include "framework_common_gmock_header.h"
+#include "PlatformAbstraction/PlatformMath.h"
+#include "gtest/gtest.h"
 
-void Vector2iTest::SetUp()
+class Vector2iTest: public testing::Test
 {
-    vec1 = ramses_internal::Vector2i(1, 2);
-}
-
-void Vector2iTest::TearDown()
-{
-}
+public:
+    ramses_internal::Vector2i vec1{1, 2};
+};
 
 TEST_F(Vector2iTest, DefaultConstructor)
 {
@@ -161,13 +161,6 @@ TEST_F(Vector2iTest, UnEquality)
     EXPECT_EQ(true, unequal);
 }
 
-TEST_F(Vector2iTest, Empty)
-{
-    ramses_internal::Vector2i vec2(0, 0);
-
-    EXPECT_EQ(vec2, ramses_internal::Vector2i::Empty);
-}
-
 TEST_F(Vector2iTest, SetSingleValues)
 {
     vec1.set(3, 4);
@@ -182,4 +175,10 @@ TEST_F(Vector2iTest, SetAllValues)
     ramses_internal::Vector2i vec2(5, 5);
 
     EXPECT_EQ(vec2, vec1);
+}
+
+TEST_F(Vector2iTest, CanPrintToString)
+{
+    EXPECT_EQ("[1 2]", fmt::to_string(vec1));
+    EXPECT_EQ("[1 2]", ramses_internal::StringOutputStream::ToString(vec1));
 }

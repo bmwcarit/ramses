@@ -41,7 +41,6 @@ namespace ramses_internal
             STENCIL_TEST_2,
             STENCIL_TEST_3,
             SCISSOR_TEST,
-            STEREO_RENDERING,
             MULTIPLE_DISPLAYS,
             SUBIMAGES,
             PERSPECTIVE_CAMERA,

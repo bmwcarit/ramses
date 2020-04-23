@@ -24,6 +24,7 @@
 #include "ramses-framework-api/DcsmConsumer.h"
 #include "FrameworkFactoryRegistry.h"
 #include "PlatformAbstraction/PlatformTime.h"
+#include <random>
 
 namespace ramses
 {
@@ -194,6 +195,8 @@ namespace ramses
 
     ramses::status_t RamsesFrameworkImpl::connect()
     {
+        LOG_INFO(CONTEXT_FRAMEWORK, "RamsesFrameworkImpl::connect");
+
         if (m_connected)
         {
             return addErrorEntry("Already connected, cannot connect twice");
@@ -301,25 +304,29 @@ namespace ramses
     RamsesFrameworkImpl& RamsesFrameworkImpl::createImpl(const RamsesFrameworkConfig& config)
     {
         const ramses_internal::CommandLineParser& parser = config.impl.getCommandLineParser();
-        ramses_internal::GetRamsesLogger().initialize(parser, config.getDLTApplicationID(), config.getDLTApplicationDescription(), false);
+        ramses_internal::GetRamsesLogger().initialize(parser, config.getDLTApplicationID(), config.getDLTApplicationDescription(), false, config.impl.getDltApplicationRegistrationEnabled());
 
         const ramses_internal::String& participantName = GetParticipantName(config);
 
-        ramses_internal::Guid myGuid(false);
-        if (myGuid.isInvalid())
+        ramses_internal::Guid myGuid;
+        if (!myGuid.isValid())
         {
-            // try from user first, fall back to random if still invalid
+            // check if user provided one
             myGuid = config.impl.getUserProvidedGuid();
 
-            // make sure generated ids do not collide with explicit guids
-            while (myGuid.isInvalid() || myGuid.getLow64() <= 0xFF)
+            // generate randomly when invalid or overlappping with reserved values (make sure generated ids do not collide with explicit guids)
+            if (myGuid.isInvalid() || myGuid.get() <= 0xFF)
             {
-                myGuid = Guid(true);
+                // minimum value is 256, ensure never collides with explicit guid
+                std::mt19937 gen(std::random_device{}());
+                std::uniform_int_distribution<uint64_t> dis(256);
+                myGuid = Guid(dis(gen));
             }
         }
         ramses_internal::ParticipantIdentifier participantAddress(myGuid, participantName);
 
-        LOG_INFO(CONTEXT_FRAMEWORK, "Starting Ramses Client Application: " << participantAddress.getParticipantName() << " guid:" << participantAddress.getParticipantId());
+        LOG_INFO(CONTEXT_FRAMEWORK, "Starting Ramses Client Application: " << participantAddress.getParticipantName() << " guid:" << participantAddress.getParticipantId() <<
+                 " stack: " << config.impl.getUsedProtocol());
         const ramses_internal::ArgumentUInt32 periodicLogTimeout(parser, "plt", "periodicLogTimeout", uint32_t(PeriodicLogIntervalInSeconds));
 
         LogEnvironmentVariableIfSet("XDG_RUNTIME_DIR");
@@ -372,7 +379,7 @@ namespace ramses
         // use communication user
         participantName += "_";
 
-        if (config.impl.getUsedProtocol() == EConnectionProtocol_TCP)
+        if (config.impl.getUsedProtocol() == EConnectionProtocol::TCP)
         {
             participantName += "TCP";
         }

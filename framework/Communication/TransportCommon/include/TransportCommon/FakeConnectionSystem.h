@@ -98,6 +98,11 @@ namespace ramses_internal
             return 0u;
         }
 
+        virtual bool sendRendererEvent(const Guid& /*to*/, const SceneId& /*sceneId*/, const std::vector<Byte>& /*data*/) override
+        {
+            return true;
+        }
+
         virtual bool sendDcsmBroadcastOfferContent(ContentID /*contentID*/, Category) override
         {
             return true;
@@ -108,7 +113,12 @@ namespace ramses_internal
             return true;
         }
 
-        virtual bool sendDcsmContentReady(const Guid& /*to*/, ContentID /*contentID*/, ETechnicalContentType /*technicalContentType*/, TechnicalContentDescriptor /*technicalContentDescriptor*/) override
+        virtual bool sendDcsmContentDescription(const Guid& /*to*/, ContentID /*contentID*/, ETechnicalContentType /*technicalContentType*/, TechnicalContentDescriptor /*technicalContentDescriptor*/) override
+        {
+            return true;
+        }
+
+        virtual bool sendDcsmContentReady(const Guid& /*to*/, ContentID /*contentID*/) override
         {
             return true;
         }

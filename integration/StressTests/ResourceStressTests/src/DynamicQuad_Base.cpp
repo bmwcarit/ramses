@@ -73,7 +73,7 @@ namespace ramses_internal
             0.f, 1.f
         };
 
-        for (uint32_t t = 0; t < sizeof(vertexTexcoordsData) / sizeof(float); ++t)
+        for (size_t t = 0; t < sizeof(vertexTexcoordsData) / sizeof(float); ++t)
         {
             vertexTexcoordsData[t] += 0.01f * static_cast<float>(TestRandom::Get(0, 10));
         }

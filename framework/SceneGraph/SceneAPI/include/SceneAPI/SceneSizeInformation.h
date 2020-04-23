@@ -33,8 +33,10 @@ namespace ramses_internal
             UInt32 streamTextures,
             UInt32 dataSlots,
             UInt32 dataBuffers,
+            UInt32 animationSystems,
             UInt32 textureBuffers,
-            UInt32 pickableObjects)
+            UInt32 pickableObjects,
+            UInt32 sceneReferences)
             : nodeCount(nodes)
             , cameraCount(cameras)
             , transformCount(transforms)
@@ -51,14 +53,14 @@ namespace ramses_internal
             , streamTextureCount(streamTextures)
             , dataSlotCount(dataSlots)
             , dataBufferCount(dataBuffers)
+            , animationSystemCount(animationSystems)
             , textureBufferCount(textureBuffers)
             , pickableObjectCount(pickableObjects)
+            , sceneReferenceCount(sceneReferences)
         {
         }
 
-        SceneSizeInformation()
-        {
-        }
+        SceneSizeInformation() = default;
 
         bool operator==(const SceneSizeInformation& other) const
         {
@@ -72,13 +74,16 @@ namespace ramses_internal
                 && (renderGroupCount == other.renderGroupCount)
                 && (renderPassCount == other.renderPassCount)
                 && (blitPassCount == other.blitPassCount)
-                && (pickableObjectCount == other.pickableObjectCount)
                 && (renderTargetCount == other.renderTargetCount)
                 && (renderBufferCount == other.renderBufferCount)
                 && (textureSamplerCount == other.textureSamplerCount)
                 && (streamTextureCount == other.streamTextureCount)
                 && (dataSlotCount == other.dataSlotCount)
                 && (dataBufferCount == other.dataBufferCount)
+                && (textureBufferCount == other.textureBufferCount)
+                && (pickableObjectCount == other.pickableObjectCount)
+                && (sceneReferenceCount == other.sceneReferenceCount)
+                && (animationSystemCount == other.animationSystemCount)
                 && (textureBufferCount == other.textureBufferCount);
         }
 
@@ -101,6 +106,10 @@ namespace ramses_internal
                 || (streamTextureCount > other.streamTextureCount)
                 || (dataSlotCount > other.dataSlotCount)
                 || (dataBufferCount > other.dataBufferCount)
+                || (textureBufferCount > other.textureBufferCount)
+                || (pickableObjectCount > other.pickableObjectCount)
+                || (sceneReferenceCount > other.sceneReferenceCount)
+                || (animationSystemCount > other.animationSystemCount)
                 || (textureBufferCount > other.textureBufferCount);
         }
 
@@ -118,14 +127,16 @@ namespace ramses_internal
             str << " renderGroup=" << renderGroupCount;
             str << " renderPass=" << renderPassCount;
             str << " blitPass=" << blitPassCount;
-            str << " pickableObject=" << pickableObjectCount;
             str << " renderTarget=" << renderTargetCount;
             str << " renderBuffer=" << renderBufferCount;
             str << " textureSampler=" << textureSamplerCount;
             str << " streamTexture=" << streamTextureCount;
             str << " dataSlot=" << dataSlotCount;
             str << " dataBuffer=" << dataBufferCount;
+            str << " animationSystem=" << animationSystemCount;
             str << " textureBuffer=" << textureBufferCount;
+            str << " pickableObjectCount=" << pickableObjectCount;
+            str << " sceneReferenceCount=" << sceneReferenceCount;
             str << " ]";
 
             return str.c_str();
@@ -147,8 +158,10 @@ namespace ramses_internal
         UInt32 streamTextureCount   = 0u;
         UInt32 dataSlotCount        = 0u;
         UInt32 dataBufferCount      = 0u;
+        UInt32 animationSystemCount = 0u;
         UInt32 textureBufferCount   = 0u;
-        UInt32 pickableObjectCount =  0u;
+        UInt32 pickableObjectCount  = 0u;
+        UInt32 sceneReferenceCount  = 0u;
     };
 }
 

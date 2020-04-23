@@ -27,14 +27,8 @@ namespace ramses_internal
         StrictMock<DcsmProviderServiceHandlerMock> providerHandler;
     };
 
-    class ADcsmSenderAndReceiverTestTcp : public ADcsmSenderAndReceiverTest
-    {
-    };
-
-    INSTANTIATE_TEST_CASE_P(TypedCommunicationTest, ADcsmSenderAndReceiverTest,
+    INSTANTIATE_TEST_SUITE_P(TypedCommunicationTest, ADcsmSenderAndReceiverTest,
                             ::testing::ValuesIn(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()));
-    INSTANTIATE_TEST_CASE_P(TypedCommunicationTest, ADcsmSenderAndReceiverTestTcp,
-                            ::testing::ValuesIn(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes(ECommunicationSystemType_Tcp)));
 
     TEST_P(ADcsmSenderAndReceiverTest, broadcastOfferContent)
     {
@@ -60,16 +54,27 @@ namespace ramses_internal
         ASSERT_TRUE(waitForEvent());
     }
 
-    TEST_P(ADcsmSenderAndReceiverTest, sendContentReady)
+    TEST_P(ADcsmSenderAndReceiverTest, sendContentDescription)
     {
         ContentID contentID(987);
         ETechnicalContentType techtype = ETechnicalContentType::RamsesSceneID;
         TechnicalContentDescriptor descriptor(123);
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleContentReady(contentID, techtype, descriptor, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
+            EXPECT_CALL(consumerHandler, handleContentDescription(contentID, techtype, descriptor, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
-        EXPECT_TRUE(sender.sendDcsmContentReady(receiverId, contentID, techtype, descriptor));
+        EXPECT_TRUE(sender.sendDcsmContentDescription(receiverId, contentID, techtype, descriptor));
+        ASSERT_TRUE(waitForEvent());
+    }
+
+    TEST_P(ADcsmSenderAndReceiverTest, sendContentReady)
+    {
+        ContentID contentID(987);
+        {
+            PlatformGuard g(receiverExpectCallLock);
+            EXPECT_CALL(consumerHandler, handleContentReady(contentID, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
+        }
+        EXPECT_TRUE(sender.sendDcsmContentReady(receiverId, contentID));
         ASSERT_TRUE(waitForEvent());
     }
 
@@ -106,7 +111,7 @@ namespace ramses_internal
         ASSERT_TRUE(waitForEvent());
     }
 
-    TEST_P(ADcsmSenderAndReceiverTestTcp, sendUpdateContentMetadata)
+    TEST_P(ADcsmSenderAndReceiverTest, sendUpdateContentMetadata)
     {
         ContentID contentID(987);
         DcsmMetadata dm;

@@ -9,18 +9,21 @@
 #ifndef RAMSES_RAMSESRENDERERIMPL_H
 #define RAMSES_RAMSESRENDERERIMPL_H
 
+#include "ramses-renderer-api/Types.h"
+#include "ramses-renderer-api/RendererSceneControl.h"
+#include "ramses-renderer-api/RendererSceneControl_legacy.h"
+#include "ramses-renderer-api/DcsmContentControl.h"
 #include "StatusObjectImpl.h"
+#include "RendererLoopThreadController.h"
 #include "RendererLib/RendererCommandBuffer.h"
 #include "RendererLib/WindowedRenderer.h"
 #include "RendererLib/ResourceUploader.h"
-#include "RendererFramework/RendererFrameworkLogic.h"
 #include "RendererLib/RendererConfig.h"
-#include "Watchdog/PlatformWatchdog.h"
-#include "RendererLoopThreadController.h"
 #include "RendererLib/RendererPeriodicLogSupplier.h"
-#include "ramses-renderer-api/Types.h"
-#include "RendererAPI/ELoopMode.h"
 #include "RendererLib/RendererStatistics.h"
+#include "RendererAPI/ELoopMode.h"
+#include "RendererFramework/RendererFrameworkLogic.h"
+#include "Watchdog/PlatformWatchdog.h"
 #include <memory>
 
 namespace ramses_internal
@@ -51,27 +54,15 @@ namespace ramses
         status_t    destroyDisplay(displayId_t displayId);
         displayBufferId_t getDisplayFramebuffer(displayId_t displayId) const;
 
-        status_t linkData(sceneId_t providerSceneId, dataProviderId_t providerDataSlotId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId);
-        status_t linkOffscreenBufferToSceneData(displayBufferId_t offscreenBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId);
-        status_t unlinkData(sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId);
-
         const ramses_internal::WindowedRenderer& getRenderer() const;
         ramses_internal::WindowedRenderer& getRenderer();
 
-        status_t subscribeScene(sceneId_t sceneId);
-        status_t unsubscribeScene(sceneId_t sceneId);
-
-        status_t mapScene(displayId_t displayId, sceneId_t sceneId);
-        status_t unmapScene(sceneId_t sceneId);
-
-        status_t showScene(sceneId_t sceneId);
-        status_t hideScene(sceneId_t sceneId);
+        RendererSceneControl* getSceneControlAPI();
+        RendererSceneControl_legacy* getSceneControlAPI_legacy();
+        DcsmContentControl* createDcsmContentControl(const DcsmContentControlConfig& config);
 
         displayBufferId_t createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, bool interruptible);
         status_t destroyOffscreenBuffer(displayId_t display, displayBufferId_t offscreenBuffer);
-
-        status_t assignSceneToDisplayBuffer(sceneId_t sceneId, displayBufferId_t displayBuffer, int32_t sceneRenderOrder);
-        status_t setBufferClearColor(displayId_t display, displayBufferId_t offscreenBuffer, float r, float g, float b, float a);
 
         status_t readPixels(displayId_t displayId, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
         status_t updateWarpingMeshData(displayId_t displayId, const WarpingMeshData& newWarpingMeshData);
@@ -88,8 +79,6 @@ namespace ramses
         void logConfirmationEcho(const ramses_internal::String& text);
         status_t logRendererInfo();
 
-        const ramses_internal::RendererCommands& getPendingCommands() const;
-
         status_t startThread();
         status_t stopThread();
         bool isThreadRunning() const;
@@ -98,14 +87,21 @@ namespace ramses
         float getMaximumFramerate() const;
         status_t setLoopMode(ELoopMode loopMode);
         ELoopMode getLoopMode() const;
-        status_t setFrameTimerLimits(uint64_t limitForSceneResourcesUpload, uint64_t limitForClientResourcesUpload, uint64_t limitForSceneActionsApply, uint64_t limitForOffscreenBufferRender);
+        status_t setFrameTimerLimits(uint64_t limitForSceneResourcesUpload, uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender);
 
         status_t setPendingFlushLimits(uint32_t forceApplyFlushLimit, uint32_t forceUnsubscribeSceneLimit);
         status_t setSkippingOfUnmodifiedBuffers(bool enable);
 
         status_t handlePickEvent(sceneId_t sceneId, float bufferNormalizedCoordX, float bufferNormalizedCoordY);
 
+        const ramses_internal::RendererCommands& getPendingCommands() const;
+        void submitRendererCommands(const ramses_internal::RendererCommands& cmds);
+
+        using DisplayFrameBufferMap = std::unordered_map<displayId_t, displayBufferId_t>;
+        const DisplayFrameBufferMap& getDisplayFrameBuffers() const;
+
     private:
+        RamsesFrameworkImpl&                                                        m_framework;
         const ramses_internal::RendererConfig                                       m_internalConfig;
         std::unique_ptr<ramses_internal::IBinaryShaderCache>                        m_binaryShaderCache;
         std::unique_ptr<ramses_internal::IRendererResourceCache>                    m_rendererResourceCache;
@@ -121,7 +117,7 @@ namespace ramses
 
         displayId_t                                                                 m_nextDisplayId{ 0u };
         displayBufferId_t                                                           m_nextDisplayBufferId{ 0u };
-        std::unordered_map<displayId_t, displayBufferId_t>                          m_displayFramebuffers;
+        DisplayFrameBufferMap                                                       m_displayFramebuffers;
         bool                                                                        m_systemCompositorEnabled;
         ramses_internal::ELoopMode                                                  m_loopMode;
         ramses_internal::PlatformWatchdog                                           m_rendererLoopThreadWatchdog;
@@ -135,6 +131,16 @@ namespace ramses
         };
         ERendererLoopThreadType                                                       m_rendererLoopThreadType;
         ramses_internal::RendererPeriodicLogSupplier                                  m_periodicLogSupplier;  //must be destructed before the RendererCommandBuffer!
+
+        // scene control APIs can only be destructed within their friend RamsesRendererImpl class,
+        // use custom deleter to achieve that with unique ptr
+        template <typename T> using UniquePtrWithDeleter = std::unique_ptr<T, std::function<void(T*)>>;
+        UniquePtrWithDeleter<RendererSceneControl> m_sceneControlAPI;
+        UniquePtrWithDeleter<RendererSceneControl_legacy> m_sceneControlAPI_legacy;
+        UniquePtrWithDeleter<DcsmContentControl> m_dcsmContentControl;
+
+        // keep allocated containers which are used to swap internal data
+        ramses_internal::RendererEventVector m_tempRendererEvents;
     };
 }
 

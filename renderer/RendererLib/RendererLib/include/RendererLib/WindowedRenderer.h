@@ -14,9 +14,12 @@
 #include "RendererLib/RendererCommandExecutor.h"
 #include "RendererLib/SceneStateExecutor.h"
 #include "RendererLib/RendererSceneUpdater.h"
+#include "RendererLib/RendererSceneControlLogic.h"
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/FrameTimer.h"
 #include "RendererLib/SceneExpirationMonitor.h"
+#include "RendererLib/SceneReferenceLogic.h"
+#include "RendererAPI/ELoopMode.h"
 #include "RendererCommands/Screenshot.h"
 #include "RendererCommands/LogRendererInfo.h"
 #include "RendererCommands/PrintStatistics.h"
@@ -39,13 +42,13 @@
 #include "RendererCommands/SetFrameTimeLimits.h"
 #include "RendererEventCollector.h"
 #include "DisplayEventHandlerManager.h"
+#include "Monitoring/Monitor.h"
+#include <memory>
 
 namespace ramses_internal
 {
     class RendererCommandBuffer;
-    class Monitor;
     class Ramsh;
-    class ISceneGraphConsumerComponent;
     class RendererStatistics;
 
     class WindowedRenderer
@@ -53,27 +56,39 @@ namespace ramses_internal
     public:
         WindowedRenderer(
             RendererCommandBuffer& commandBuffer,
-            ISceneGraphConsumerComponent& sceneGraphConsumerComponent,
+            IRendererSceneEventSender& rendererSceneSender,
             IPlatformFactory& platformFactory,
             RendererStatistics& m_rendererStatistics,
             const String& monitorFilename = String());
-        ~WindowedRenderer();
 
-        void update();
-        void render();
-        void finishFrameStatistics(std::chrono::microseconds sleepTime);
+        void doOneLoop(ELoopMode loopMode, std::chrono::microseconds sleepTime = std::chrono::microseconds{0});
 
         const Renderer& getRenderer() const;
         Renderer& getRenderer();
 
-        RendererCommandBuffer& getRendererCommandBuffer();
         const SceneStateExecutor& getSceneStateExecutor() const;
         void fireLoopTimingReportRendererEvent(std::chrono::microseconds maximumLoopTimeInPeriod, std::chrono::microseconds renderthreadAverageLooptime);
 
-        void registerRamshCommands(Ramsh& ramsh);
         void dispatchRendererEvents(RendererEventVector& events);
+        void dispatchSceneControlEvents(RendererEventVector& events);
+
+        RendererCommandBuffer& getRendererCommandBuffer();
+        RendererEventCollector& getEventCollector();
+
+        void registerRamshCommands(Ramsh& ramsh);
+
+        // TODO vaclav remove when legacy scene control gone
+        // flag denoting if new scene control using internal logic is enabled
+        // false means that new scene control is not active - either legacy is used or it was not used by user yet
+        bool m_sceneControlLogicActive = false;
 
     private:
+        void update();
+        void render();
+        void collectEvents();
+        void finishFrameStatistics(std::chrono::microseconds sleepTime);
+
+        void updateSceneControlLogic();
         void updateWindowTitles();
         void processScreenshotResults();
 
@@ -85,7 +100,13 @@ namespace ramses_internal
         Renderer                                    m_renderer;
         SceneStateExecutor                          m_sceneStateExecutor;
         RendererSceneUpdater                        m_rendererSceneUpdater;
+        RendererSceneControlLogic                   m_sceneControlLogic;
         RendererCommandExecutor                     m_rendererCommandExecutor;
+        SceneReferenceLogic                         m_sceneReferenceLogic;
+
+        std::mutex m_eventsLock;
+        RendererEventVector m_rendererEvents;
+        RendererEventVector m_sceneControlEvents;
 
         Screenshot                                        m_cmdScreenshot;
         LogRendererInfo                                   m_cmdLogRendererInfo;

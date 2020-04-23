@@ -15,6 +15,7 @@
 #include "Utils/MessagePool.h"
 #include "Collections/String.h"
 #include "PlatformAbstraction/PlatformLock.h"
+#include "Collections/HashSet.h"
 
 //logging utils
 #include "APILoggingMacros.h"
@@ -49,15 +50,17 @@ namespace ramses
         virtual ~StatusObjectImpl();
 
         RNODISCARD status_t addErrorEntry(const char* message) const;
+        RNODISCARD status_t addErrorEntry(const std::string& message) const;
         const char*         getStatusMessage(status_t status) const;
 
-        virtual status_t    validate(uint32_t indent) const;
+        using StatusObjectSet = ramses_internal::HashSet<const StatusObjectImpl*>;
+        virtual status_t    validate(uint32_t indent, StatusObjectSet& visitedObjects) const;
         const char*         getValidationReport(EValidationSeverity severity) const;
 
     protected:
         void                addValidationMessage(EValidationSeverity severity, uint32_t indent, const ramses_internal::String& message) const;
         void                addValidationObjectName(uint32_t indent, const ramses_internal::String& message) const;
-        status_t            addValidationOfDependentObject(uint32_t indent, const StatusObjectImpl& dependentObject) const;
+        status_t            addValidationOfDependentObject(uint32_t indent, const StatusObjectImpl& dependentObject, StatusObjectSet& visitedObjects) const;
 
         status_t            getValidationErrorStatus() const;
 

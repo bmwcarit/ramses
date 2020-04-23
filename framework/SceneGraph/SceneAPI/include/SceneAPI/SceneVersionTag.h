@@ -16,7 +16,8 @@ namespace ramses_internal
 {
     struct SceneVersionTagTag {};
     typedef StronglyTypedValue<UInt64, std::numeric_limits<uint64_t>::max(), SceneVersionTagTag> SceneVersionTag;
-    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(SceneVersionTag)
 }
+
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::SceneVersionTag)
 
 #endif

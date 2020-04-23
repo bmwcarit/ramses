@@ -14,7 +14,7 @@
 #include "ramses-framework-api/DcsmApiTypes.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 
-#define DEFINE_SPECIAL_STRINGOUTPUTSTREAM_OPERATOR(type, compatibleOutputType) \
-    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(type)
+#define MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(stronglyType, compatibleOutputType) \
+    MAKE_STRONGLYTYPEDVALUE_PRINTABLE(stronglyType)
 
 #endif

@@ -79,9 +79,9 @@ namespace ramses
         return getIScene().getStreamTexture(m_streamTextureHandle).fallbackTexture;
     }
 
-    status_t StreamTextureImpl::validate(uint32_t indent) const
+    status_t StreamTextureImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        status_t status = SceneObjectImpl::validate(indent);
+        status_t status = SceneObjectImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
 
         const ramses_internal::ResourceContentHash fallbackTextureHash = getFallbackTextureHash();
@@ -94,7 +94,7 @@ namespace ramses
 
         assert(resource->getType() == ERamsesObjectType_Texture2D);
         const Texture2D& texture = RamsesObjectTypeUtils::ConvertTo<Texture2D>(*resource);
-        status_t textureStatus = addValidationOfDependentObject(indent, texture.impl);
+        status_t textureStatus = addValidationOfDependentObject(indent, texture.impl, visitedObjects);
         if (StatusOK != textureStatus)
         {
             status = textureStatus;

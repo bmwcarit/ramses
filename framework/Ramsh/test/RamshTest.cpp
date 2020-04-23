@@ -8,7 +8,6 @@
 
 #include "Ramsh/Ramsh.h"
 #include "Ramsh/RamshCommandArguments.h"
-#include "Ramsh/RamshCommandArgumentsOptionSet.h"
 #include "Ramsh/RamshCommunicationChannelConsole.h"
 #include "framework_common_gmock_header.h"
 #include "gmock/gmock.h"
@@ -171,12 +170,12 @@ namespace ramses_internal
 
     TEST_F(RamshAPI, typedCommand)
     {
-        TypedTestCommand<BoolLiteral, bool, String, Float> typedCmd;
+        TypedTestCommand<uint32_t, bool, String, Float> typedCmd;
 
         typedCmd.registerKeyword("typed");
 
         typedCmd.getArgument<0>()
-            .registerKeyword("bool-literal");
+            .registerKeyword("int");
 
         typedCmd.getArgument<1>()
             .registerKeyword("bool");
@@ -192,14 +191,14 @@ namespace ramses_internal
         input.append("typed");
 
         // arguments without flags
-        input.append("true");
+        input.append("44");
         input.append("-bool");
         input.append("foobar");
         input.append("1.337");
 
         EXPECT_TRUE(ramsh.execute(input));
 
-        EXPECT_TRUE(typedCmd.data->a1);
+        EXPECT_EQ(44u, typedCmd.data->a1);
         EXPECT_TRUE(typedCmd.data->a2);
 
         EXPECT_EQ(String("foobar"), typedCmd.data->a3);
@@ -216,12 +215,12 @@ namespace ramses_internal
         input.append("-bool");
         input.append("-float");
         input.append("-1337");
-        input.append("-bool-literal");
-        input.append("false");
+        input.append("-int");
+        input.append("123");
 
         EXPECT_TRUE(ramsh.execute(input));
 
-        EXPECT_FALSE(typedCmd.data->a1);
+        EXPECT_EQ(123u, typedCmd.data->a1);
         EXPECT_TRUE(typedCmd.data->a2);
 
         EXPECT_EQ(String("foo"), typedCmd.data->a3);
@@ -256,13 +255,13 @@ namespace ramses_internal
 
     TEST_F(RamshAPI, typedCommandWithDefaultValues)
     {
-        TypedTestCommand<BoolLiteral, bool, String, Float> typedCmd;
+        TypedTestCommand<int32_t, bool, String, Float> typedCmd;
 
         typedCmd.registerKeyword("typed");
 
         typedCmd.getArgument<0>()
-            .registerKeyword("bool-literal")
-            .setDefaultValue(false);
+            .registerKeyword("int")
+            .setDefaultValue(-1);
 
         typedCmd.getArgument<1>()
             .registerKeyword("bool")
@@ -283,7 +282,7 @@ namespace ramses_internal
 
         EXPECT_TRUE(ramsh.execute(input));
 
-        EXPECT_FALSE(typedCmd.data->a1);
+        EXPECT_EQ(-1, typedCmd.data->a1);
         EXPECT_TRUE(typedCmd.data->a2);
 
         EXPECT_EQ(String("abcdef"), typedCmd.data->a3);
@@ -298,7 +297,7 @@ namespace ramses_internal
 
         EXPECT_TRUE(ramsh.execute(input));
 
-        EXPECT_FALSE(typedCmd.data->a1);
+        EXPECT_EQ(-1, typedCmd.data->a1);
         EXPECT_FALSE(typedCmd.data->a2);
 
         EXPECT_EQ(String("abcdef"), typedCmd.data->a3);
@@ -314,12 +313,12 @@ namespace ramses_internal
         input.append("-1337.1337");
         input.append("-string");
         input.append("foo");
-        input.append("-bool-literal");
-        input.append("false");
+        input.append("-int");
+        input.append("90000");
 
         EXPECT_TRUE(ramsh.execute(input));
 
-        EXPECT_FALSE(typedCmd.data->a1);
+        EXPECT_EQ(90000, typedCmd.data->a1);
         EXPECT_TRUE(typedCmd.data->a2);
 
         EXPECT_EQ(String("foo"), typedCmd.data->a3);

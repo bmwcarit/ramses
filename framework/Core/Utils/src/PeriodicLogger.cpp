@@ -129,7 +129,7 @@ namespace ramses_internal
 
         LOG_INFO(CONTEXT_PERIODIC, "Version: " << ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING << " Hash:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH
             << " Commit:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_COUNT << " Type:" << ::ramses_sdk::RAMSES_SDK_CMAKE_BUILD_TYPE
-            << " Env:" << ::ramses_sdk::RAMSES_SDK_BUILD_ENV_VERSION_INFO_FULL_ESCAPED
+            << " Env:" << ::ramses_sdk::RAMSES_SDK_BUILD_ENV_VERSION_INFO_FULL
             << " SyncT:" << asMilliseconds(syncNow) << "ms (dtSteady:" << steadyDiff << " - dtSync:" << syncDiff << " -> " << (steadyDiff - syncDiff) << ")"
             << " PUp:" << pUp <<  " RUp:" << rUp
             << " RInit:" << m_numberOfRamsesInstancesStartedInProcess << " RParallel:" << m_numberOfRamsesInstancesCurrentlyActive);
@@ -144,9 +144,9 @@ namespace ramses_internal
                     UInt32 numberTimeIntervals = m_statisticCollection.getNumberTimeIntervalsSinceLastSummaryReset();
                     output << "msgIn ";
                     logStatisticSummaryEntry(output, m_statisticCollection.statMessagesReceived.getSummary(), numberTimeIntervals);
-                    output << "srMsgIn ";
+                    output << " srMsgIn ";
                     logStatisticSummaryEntry(output, m_statisticCollection.statSendResourceMessagesReceived.getSummary(), numberTimeIntervals);
-                    output << "rrMsgIn ";
+                    output << " rrMsgIn ";
                     logStatisticSummaryEntry(output, m_statisticCollection.statRequestResourceMessagesReceived.getSummary(), numberTimeIntervals);
                     output << " msgO ";
                     logStatisticSummaryEntry(output, m_statisticCollection.statMessagesSent.getSummary(), numberTimeIntervals);

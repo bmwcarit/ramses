@@ -25,9 +25,9 @@ void OffscreenBufferLinkTests::setUpTestCases(RendererTestsFramework& testFramew
     testFramework.createTestCaseWithDefaultDisplay(OffscreenBufferLinkTest_ConsumersLinkedToBufferWithOneScene, *this, baseTestName + "ConsumersLinkedToBufferWithOneScene");
     testFramework.createTestCaseWithDefaultDisplay(OffscreenBufferLinkTest_OneOfTwoLinksRemoved, *this, baseTestName + "OneOfTwoLinksRemoved");
     testFramework.createTestCaseWithDefaultDisplay(OffscreenBufferLinkTest_ConsumerLinkedToBufferWithTwoScenes, *this, baseTestName + "ConsumerLinkedToBufferWithTwoScenes");
+    testFramework.createTestCaseWithDefaultDisplay(OffscreenBufferLinkTest_ConsumerRelinkedToAnotherBuffer, *this, baseTestName + "ConsumerRelinkedToAnotherBuffer");
     testFramework.createTestCaseWithDefaultDisplay(OffscreenBufferLinkTest_ProviderBufferDestroyed, *this, baseTestName + "ProviderBufferDestroyed");
     testFramework.createTestCaseWithDefaultDisplay(OffscreenBufferLinkTest_SourceSceneHidden, *this, baseTestName + "SourceSceneHidden");
-    testFramework.createTestCaseWithDefaultDisplay(OffscreenBufferLinkTest_SourceSceneHiddenAndUnmappedInOneFlush, *this, baseTestName + "SourceSceneHiddenAndUnmappedInOneFlush");
     testFramework.createTestCaseWithDefaultDisplay(OffscreenBufferLinkTest_SourceSceneAssignedToFBWhileShown, *this, baseTestName + "SourceSceneAssignedToFBWhileShown");
     testFramework.createTestCaseWithDefaultDisplay(OffscreenBufferLinkTest_OneOfTwoSourceScenesUnmapped, *this, baseTestName + "OneOfTwoSourceScenesUnmapped");
     testFramework.createTestCaseWithDefaultDisplay(OffscreenBufferLinkTest_ProviderSceneUsesDepthTest, *this, baseTestName + "ProviderSceneUsesDepthTest");
@@ -75,6 +75,27 @@ bool OffscreenBufferLinkTests::run(RendererTestsFramework& testFramework, const 
         testFramework.createBufferDataLink(offscreenBuffer, m_sceneIdConsumer, TextureLinkScene::DataConsumerId);
 
         expectedImageName = "OffscreenBufferLinkTest_LinkedTwoScenes";
+        break;
+    }
+    case OffscreenBufferLinkTest_ConsumerRelinkedToAnotherBuffer:
+    {
+        m_sceneIdConsumer = testFramework.createAndShowScene<TextureLinkScene>(TextureLinkScene::DATA_CONSUMER, m_cameraMid);
+        m_sceneIdProvider = testFramework.createAndShowScene<TextureLinkScene>(TextureLinkScene::DATA_PROVIDER_LARGE, m_cameraMid);
+        m_sceneIdProvider2 = testFramework.createAndShowScene<TextureLinkScene>(TextureLinkScene::DATA_CONSUMER_AND_PROVIDER_LARGE, m_cameraLow);
+
+        const ramses::displayBufferId_t offscreenBuffer1 = testFramework.createOffscreenBuffer(0, 256, 128, m_interruptibleBuffers);
+        const ramses::displayBufferId_t offscreenBuffer2 = testFramework.createOffscreenBuffer(0, 256, 128, m_interruptibleBuffers);
+        testFramework.assignSceneToDisplayBuffer(m_sceneIdProvider, offscreenBuffer1);
+        testFramework.assignSceneToDisplayBuffer(m_sceneIdProvider2, offscreenBuffer2);
+        testFramework.createBufferDataLink(offscreenBuffer1, m_sceneIdConsumer, TextureLinkScene::DataConsumerId);
+
+        if (!renderAndCompareScreenshot(testFramework, "OffscreenBufferLinkTest_Linked", 0u))
+            return false;
+
+        // relink to another buffer
+        testFramework.createBufferDataLink(offscreenBuffer2, m_sceneIdConsumer, TextureLinkScene::DataConsumerId);
+
+        expectedImageName = "OffscreenBufferLinkTest_Linked2";
         break;
     }
     case OffscreenBufferLinkTest_OneOfTwoLinksRemoved:
@@ -132,26 +153,7 @@ bool OffscreenBufferLinkTests::run(RendererTestsFramework& testFramework, const 
             return false;
         }
 
-        testFramework.hideScene(m_sceneIdProvider);
-
-        expectedImageName = "OffscreenBufferLinkTest_Black";
-        break;
-    }
-    case OffscreenBufferLinkTest_SourceSceneHiddenAndUnmappedInOneFlush:
-    {
-        m_sceneIdProvider = testFramework.createAndShowScene<TextureLinkScene>(TextureLinkScene::DATA_PROVIDER_LARGE, m_cameraMid);
-        m_sceneIdConsumer = testFramework.createAndShowScene<TextureLinkScene>(TextureLinkScene::DATA_CONSUMER, m_cameraMid);
-
-        const ramses::displayBufferId_t offscreenBuffer = testFramework.createOffscreenBuffer(0, 256, 128, m_interruptibleBuffers);
-        testFramework.assignSceneToDisplayBuffer(m_sceneIdProvider, offscreenBuffer);
-        testFramework.createBufferDataLink(offscreenBuffer, m_sceneIdConsumer, TextureLinkScene::DataConsumerId);
-
-        if (!renderAndCompareScreenshot(testFramework, "OffscreenBufferLinkTest_Linked", 0u))
-        {
-            return false;
-        }
-
-        testFramework.hideAndUnmap(m_sceneIdProvider);
+        testFramework.getSceneToState(m_sceneIdProvider, ramses::RendererSceneState::Ready);
 
         expectedImageName = "OffscreenBufferLinkTest_Black";
         break;
@@ -191,8 +193,7 @@ bool OffscreenBufferLinkTests::run(RendererTestsFramework& testFramework, const 
             return false;
         }
 
-        testFramework.hideScene(m_sceneIdProvider2);
-        testFramework.unmapScene(m_sceneIdProvider2);
+        testFramework.getSceneToState(m_sceneIdProvider2, ramses::RendererSceneState::Available);
 
         // Scene unmapped -> buffer is still there, but is not cleared any more
         expectedImageName = "OffscreenBufferLinkTest_Linked";

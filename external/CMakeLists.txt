@@ -34,10 +34,7 @@ target_link_libraries(ramses-gmock-main INTERFACE gmock_main gtest)
 # fmt string formatting library
 add_subdirectory("fmt")
 target_compile_definitions(fmt PUBLIC "-DFMT_EXCEPTIONS=0")
-if (CMAKE_SYSTEM_NAME STREQUAL "Integrity")
-    # work around bug that integrity fails on noexcept when exceptions are disabled
-    target_compile_definitions(fmt PUBLIC "-DFMT_USE_NOEXCEPT=0")
-endif()
+ACME_FOLDERIZE_TARGET(fmt)
 ACME_INFO("+ fmt")
 
 # capu
@@ -46,6 +43,28 @@ ADD_SUBDIRECTORY(capu)
 # these directories will be built with
 # modified compiler flags
 include(../cmake/ramses/adaptCompilerFlagsForExternals.cmake)
+
+function(add_abseil_scope)
+    set(BUILD_TESTING OFF)
+    ACME_CURRENT_FOLDER_PATH(folder_base)
+    set(ABSL_IDE_FOLDER "${folder_base}/Abseil")
+    add_subdirectory(abseil)
+    ACME_INFO("+ abseil")
+endfunction()
+add_abseil_scope()
+
+# create interface target for easier usage
+add_library(ramses-abseil INTERFACE)
+foreach(lib
+        base
+        algorithm
+        memory
+        meta
+        span optional variant
+        utility)
+    target_link_libraries(ramses-abseil INTERFACE absl::${lib})
+endforeach()
+
 
 #==========================================================================
 # glslang
@@ -138,7 +157,11 @@ IF (ramses-sdk_ALLOW_CUSTOM_FREETYPE AND NOT freetype_FOUND)
         "set(HARFBUZZ_FOUND TRUE)\n")
 
     # config and include freetype
-    target_include_directories(harfbuzz INTERFACE "harfbuzz/src" "${CMAKE_CURRENT_BINARY_DIR}/harfbuzz" "${CMAKE_CURRENT_BINARY_DIR}/harfbuzz/src")
+    foreach (inc "${CMAKE_CURRENT_SOURCE_DIR}/harfbuzz/src" "${CMAKE_CURRENT_BINARY_DIR}/harfbuzz" "${CMAKE_CURRENT_BINARY_DIR}/harfbuzz/src")
+        if (EXISTS "${inc}")
+            target_include_directories(harfbuzz INTERFACE ${inc})
+        endif()
+    endforeach()
     ADD_SUBDIRECTORY(freetype)
     set(CMAKE_MODULE_PATH ${OLD_CMAKE_MODULE_PATH})
 
@@ -261,3 +284,16 @@ if (ramses-sdk_ENABLE_TCP_SUPPORT)
 else()
     ACME_INFO("- asio")
 endif()
+
+
+ACME_MODULE(
+    NAME                    imgui
+    TYPE                    STATIC_LIBRARY
+    ENABLE_INSTALL          OFF
+
+    INCLUDE_BASE            imgui
+    FILES_PRIVATE_HEADER    imgui/*.h
+                            imgui/misc/cpp/*.h
+    FILES_SOURCE            imgui/*.cpp
+                            imgui/misc/cpp/*.cpp
+    )

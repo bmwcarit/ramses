@@ -11,6 +11,7 @@
 
 #include "Utils/HandlePool.h"
 #include <type_traits>
+#include <cassert>
 
 namespace ramses_internal
 {

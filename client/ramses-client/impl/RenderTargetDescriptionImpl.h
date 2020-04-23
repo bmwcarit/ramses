@@ -23,7 +23,7 @@ namespace ramses
         RenderTargetDescriptionImpl();
         virtual ~RenderTargetDescriptionImpl();
 
-        virtual status_t validate(uint32_t indent) const override;
+        virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
 
         status_t addRenderBuffer(const RenderBufferImpl& renderBuffer);
 

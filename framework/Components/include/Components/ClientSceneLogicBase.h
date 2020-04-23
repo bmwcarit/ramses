@@ -11,6 +11,7 @@
 
 #include "Scene/EScenePublicationMode.h"
 #include "Scene/ClientScene.h"
+#include "Animation/AnimationSystemFactory.h"
 #include "Scene/Scene.h"
 
 namespace ramses_internal
@@ -41,6 +42,7 @@ namespace ramses_internal
         virtual void postAddSubscriber() {};
         void sendSceneToWaitingSubscribers(const IScene& scene, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag);
         void printFlushInfo(StringOutputStream& sos, const char* name, const SceneActionCollection& collection) const;
+        void updateResourceChanges(bool hasNewActions);
 
         ISceneGraphSender&     m_scenegraphSender;
         const Guid             m_myID;
@@ -53,6 +55,11 @@ namespace ramses_internal
         EScenePublicationMode m_scenePublicationMode;
 
         UInt64                 m_flushCounter = 0u;
+        ResourceContentHashVector m_lastFlushClientResourcesInUse;
+
+        SceneResourceChanges m_resourceChanges; // keep container memory allocated
+        ResourceContentHashVector m_newClientResources; // keep container memory allocated
+        AnimationSystemFactory m_animationSystemFactory;
     };
 }
 

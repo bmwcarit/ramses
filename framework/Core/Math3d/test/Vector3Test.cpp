@@ -6,17 +6,17 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "Vector3Test.h"
+#include "Math3d/Vector3.h"
 #include "Math3d/Vector4.h"
+#include "framework_common_gmock_header.h"
+#include "PlatformAbstraction/PlatformMath.h"
+#include "gtest/gtest.h"
 
-void Vector3Test::SetUp()
+class Vector3Test: public testing::Test
 {
-    vec1 = ramses_internal::Vector3(1.f, 2.f, 3.f);
-}
-
-void Vector3Test::TearDown()
-{
-}
+public:
+    ramses_internal::Vector3 vec1{1.f, 2.f, 3.f};
+};
 
 TEST_F(Vector3Test, DefaultConstructor)
 {
@@ -194,13 +194,6 @@ TEST_F(Vector3Test, UnEquality)
     EXPECT_EQ(true, unequal);
 }
 
-TEST_F(Vector3Test, Empty)
-{
-    ramses_internal::Vector3 vec2(0.0f, 0.0f, 0.0f);
-
-    EXPECT_EQ(vec2, ramses_internal::Vector3::Empty);
-}
-
 TEST_F(Vector3Test, SetSingleValues)
 {
     vec1.set(3.0f, 4.0f, 7.0f);
@@ -232,4 +225,10 @@ TEST_F(Vector3Test, Normalize)
     EXPECT_FLOAT_EQ( 0.26726124f, normalized.x);
     EXPECT_FLOAT_EQ( 0.53452247f, normalized.y);
     EXPECT_FLOAT_EQ( 0.80178368f, normalized.z);
+}
+
+TEST_F(Vector3Test, CanPrintToString)
+{
+    EXPECT_EQ("[1.0 2.0 3.0]", fmt::to_string(vec1));
+    EXPECT_EQ("[1.0 2.0 3.0]", ramses_internal::StringOutputStream::ToString(vec1));
 }

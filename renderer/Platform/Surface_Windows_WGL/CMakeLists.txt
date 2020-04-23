@@ -26,7 +26,7 @@ ACME_MODULE(
     #==========================================================================
     DEPENDENCIES            Window_Windows
                             Context_WGL
-                            EmbeddedCompositor_Dummy
+                            ramses-renderer-lib
 )
 
 # This module is tested in the renderer sandwich tests (<ramses>/integration/ramses-renderer-tests)

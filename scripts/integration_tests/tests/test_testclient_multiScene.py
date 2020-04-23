@@ -23,7 +23,7 @@ class TestClass(test_classes.OnAllDefaultTargetsTest):
         self.renderer = self.target.start_default_renderer()
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
-        self.testClient = self.target.start_client("ramses-test-client", "-tn 7 -ts 0 -cz 80")
+        self.testClient = self.target.start_client("ramses-test-client", "-tn 7 -ts 0 -cz 120")
         self.checkThatApplicationWasStarted(self.testClient)
         self.addCleanup(self.target.kill_application, self.testClient)
 
@@ -38,6 +38,7 @@ class TestClass(test_classes.OnAllDefaultTargetsTest):
         log.info("output saved")
 
     def impl_test(self):
+        self.renderer.showScene(28)
         self.renderer.showScene(29)
         self.renderer.showScene(30)
         self.renderer.showScene(31)

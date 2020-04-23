@@ -11,13 +11,14 @@
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-renderer-api/IRendererEventHandler.h"
-#include <unordered_set>
-#include <thread>
+#include "ramses-renderer-api/RendererSceneControl.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
-#include <iostream>
 #include "ramses-client-api/PickableObject.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "RamsesObjectTypeUtils.h"
+#include <unordered_set>
+#include <thread>
+#include <iostream>
 #include <map>
 
 /**
@@ -42,63 +43,6 @@ public:
         , m_appearanceB(appearanceB)
         , m_colorInput(colorInput)
     {
-    }
-
-    virtual void scenePublished(ramses::sceneId_t sceneId) override
-    {
-        m_publishedScenes.insert(sceneId);
-    }
-
-    virtual void sceneUnpublished(ramses::sceneId_t sceneId) override
-    {
-        m_publishedScenes.erase(sceneId);
-    }
-
-    virtual void sceneSubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_OK == result)
-        {
-            m_subscribedScenes.insert(sceneId);
-        }
-    }
-
-    virtual void sceneUnsubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_FAIL != result)
-        {
-            m_subscribedScenes.erase(sceneId);
-        }
-    }
-
-    virtual void sceneMapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_OK == result)
-        {
-            m_mappedScenes.insert(sceneId);
-        }
-    }
-
-    virtual void sceneUnmapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_FAIL != result)
-        {
-            m_mappedScenes.erase(sceneId);
-        }
-    }
-
-    void waitForPublication(const ramses::sceneId_t sceneId)
-    {
-        waitForSceneInSet(sceneId, m_publishedScenes);
-    }
-
-    void waitForSubscription(const ramses::sceneId_t sceneId)
-    {
-        waitForSceneInSet(sceneId, m_subscribedScenes);
-    }
-
-    void waitForMapped(const ramses::sceneId_t sceneId)
-    {
-        waitForSceneInSet(sceneId, m_mappedScenes);
     }
 
     void mouseEvent(ramses::displayId_t, ramses::EMouseEvent eventType, int32_t mousePosX, int32_t mousePosY) override
@@ -144,23 +88,7 @@ public:
     }
 
 private:
-    typedef std::unordered_set<ramses::sceneId_t> SceneSet;
-
-    void waitForSceneInSet(const ramses::sceneId_t sceneId, const SceneSet& sceneSet)
-    {
-        while (sceneSet.find(sceneId) == sceneSet.end())
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            m_renderer.dispatchEvents(*this);
-        }
-    }
-
-    SceneSet m_publishedScenes;
-    SceneSet m_subscribedScenes;
-    SceneSet m_mappedScenes;
-
     ramses::RamsesRenderer& m_renderer;
-
     ramses::Appearance& m_appearanceA;
     ramses::Appearance& m_appearanceB;
     ramses::UniformInput& m_colorInput;
@@ -177,6 +105,7 @@ int main(int argc, char* argv[])
 
     ramses::RendererConfig rendererConfig(argc, argv);
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
+    auto& sceneControlAPI = *renderer.getSceneControlAPI();
     renderer.startThread();
 
     ramses::DisplayConfig displayConfig;
@@ -186,6 +115,7 @@ int main(int argc, char* argv[])
     displayConfig.setWindowIviVisible();
     displayConfig.setWaylandIviLayerID(3);
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
+    renderer.flush();
 
     framework.connect();
 
@@ -286,18 +216,9 @@ int main(int argc, char* argv[])
     SceneStateEventHandler eventHandler(renderer, *appearanceA, *appearanceB, colorInput);
 
     // show the scene on the renderer
-    eventHandler.waitForPublication(sceneId);
-
-    renderer.subscribeScene(sceneId);
-    renderer.flush();
-    eventHandler.waitForSubscription(sceneId);
-
-    renderer.mapScene(display, sceneId);
-    renderer.flush();
-    eventHandler.waitForMapped(sceneId);
-
-    renderer.showScene(sceneId);
-    renderer.flush();
+    sceneControlAPI.setSceneMapping(sceneId, display);
+    sceneControlAPI.setSceneState(sceneId, ramses::RendererSceneState::Rendered);
+    sceneControlAPI.flush();
 
     for (;;)
     {

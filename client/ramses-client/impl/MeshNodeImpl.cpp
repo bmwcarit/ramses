@@ -87,9 +87,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t MeshNodeImpl::validate(uint32_t indent) const
+    status_t MeshNodeImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        status_t status = NodeImpl::validate(indent);
+        status_t status = NodeImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
         if (nullptr == m_appearanceImpl)
         {
@@ -98,7 +98,7 @@ namespace ramses
         }
         else
         {
-            if (addValidationOfDependentObject(indent, *m_appearanceImpl) != StatusOK)
+            if (addValidationOfDependentObject(indent, *m_appearanceImpl, visitedObjects) != StatusOK)
             {
                 status = getValidationErrorStatus();
             }
@@ -111,7 +111,7 @@ namespace ramses
         }
         else
         {
-            if (addValidationOfDependentObject(indent, *m_geometryImpl) != StatusOK)
+            if (addValidationOfDependentObject(indent, *m_geometryImpl, visitedObjects) != StatusOK)
             {
                 status = getValidationErrorStatus();
             }

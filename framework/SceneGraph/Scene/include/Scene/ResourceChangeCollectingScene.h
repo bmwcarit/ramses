@@ -19,32 +19,35 @@ namespace ramses_internal
     public:
         ResourceChangeCollectingScene(const SceneInfo& sceneInfo = SceneInfo());
 
-        const SceneResourceChanges&         getResourceChanges() const;
-        void                                clearResourceChanges();
+        const SceneResourceActionVector&    getSceneResourceActions() const;
+        bool                                getClientResourcesChanged() const;
+        void                                resetResourceChanges();
 
-        // Renderable allocation
-        virtual void                        releaseDataInstance(DataInstanceHandle dataInstanceHandle) override;
+        // functions which affect client resources
+        virtual void                        releaseRenderable(RenderableHandle renderableHandle) override;
+        virtual void                        setRenderableDataInstance(RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance) override;
+        virtual void                        setRenderableVisibility(RenderableHandle renderableHandle, EVisibilityMode visibility) override;
+
+        virtual void                        setDataResource(DataInstanceHandle dataInstanceHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor) override;
+        virtual void                        setDataTextureSamplerHandle(DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) override;
+
+        virtual TextureSamplerHandle        allocateTextureSampler(const TextureSampler& sampler, TextureSamplerHandle handle = TextureSamplerHandle::Invalid()) override;
         virtual void                        releaseTextureSampler(TextureSamplerHandle handle) override;
 
-        // Renderable data (stuff required for rendering)
+        virtual DataSlotHandle              allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle = DataSlotHandle::Invalid()) override;
         virtual void                        setDataSlotTexture(DataSlotHandle providerId, const ResourceContentHash& texture) override;
-        virtual void                        setDataResource(DataInstanceHandle dataInstanceHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor) override;
-        virtual TextureSamplerHandle        allocateTextureSampler(const TextureSampler& sampler, TextureSamplerHandle handle = TextureSamplerHandle::Invalid()) override;
+        virtual void                        releaseDataSlot(DataSlotHandle handle) override;
 
+        // functions which both affect client and scene resources
+        virtual StreamTextureHandle         allocateStreamTexture(uint32_t streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle = StreamTextureHandle::Invalid()) override;
+        virtual void                        releaseStreamTexture(StreamTextureHandle handle) override;
+
+        // functions which affect scene resources
         virtual RenderTargetHandle          allocateRenderTarget(RenderTargetHandle targetHandle = RenderTargetHandle::Invalid()) override;
         virtual void                        releaseRenderTarget(RenderTargetHandle handle) override;
 
         virtual RenderBufferHandle          allocateRenderBuffer(const RenderBuffer& renderBuffer, RenderBufferHandle handle = RenderBufferHandle::Invalid()) override;
         virtual void                        releaseRenderBuffer(RenderBufferHandle handle) override;
-
-        virtual StreamTextureHandle         allocateStreamTexture(uint32_t streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle = StreamTextureHandle::Invalid()) override;
-        virtual void                        releaseStreamTexture(StreamTextureHandle handle) override;
-
-        virtual DataSlotHandle              allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle = DataSlotHandle::Invalid()) override;
-        virtual void                        releaseDataSlot(DataSlotHandle handle) override;
-
-        virtual DataLayoutHandle            allocateDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid()) override;
-        virtual void                        releaseDataLayout(DataLayoutHandle layoutHandle) override;
 
         virtual BlitPassHandle              allocateBlitPass(RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle = BlitPassHandle::Invalid()) override;
         virtual void                        releaseBlitPass(BlitPassHandle handle) override;
@@ -58,14 +61,9 @@ namespace ramses_internal
         virtual void                        updateTextureBuffer(TextureBufferHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const Byte* data) override;
 
     private:
-        void handleClientResourceReferenceChange(const ResourceContentHash& currentHash, const ResourceContentHash& newHash);
-        void incrementClientResourceUsageCount(const ResourceContentHash& hash);
-        void decrementClientResourceUsageCount(const ResourceContentHash& hash);
 
-        typedef HashMap<ResourceContentHash, UInt32> ResourceHashRefCountMap;
-        ResourceHashRefCountMap m_clientResourcesUsageMap;
-
-        SceneResourceChanges m_changes;
+        SceneResourceActionVector   m_sceneResourceActions;
+        bool                        m_clientResourcesChanged = false;
     };
 }
 

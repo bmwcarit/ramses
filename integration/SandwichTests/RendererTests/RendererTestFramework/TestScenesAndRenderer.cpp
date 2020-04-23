@@ -32,10 +32,7 @@ namespace ramses_internal
 
     void TestScenesAndRenderer::publish(ramses::sceneId_t sceneId)
     {
-        ramses::Scene& clientScene = m_scenes.getScene(sceneId);
-        clientScene.publish(ramses::EScenePublicationMode_LocalOnly);
-
-        m_renderer.waitForPublication(sceneId);
+        m_scenes.getScene(sceneId).publish(ramses::EScenePublicationMode_LocalOnly);
     }
 
     void TestScenesAndRenderer::flush(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersionTag)
@@ -46,14 +43,25 @@ namespace ramses_internal
 
     void TestScenesAndRenderer::unpublish(ramses::sceneId_t sceneId)
     {
-        ramses::Scene& clientScene = m_scenes.getScene(sceneId);
-        clientScene.unpublish();
-        m_renderer.waitForUnpublished(sceneId);
+        m_scenes.getScene(sceneId).unpublish();
     }
 
     void TestScenesAndRenderer::setExpirationTimestamp(ramses::sceneId_t sceneId, FlushTime::Clock::time_point expirationTS)
     {
         m_scenes.getScene(sceneId).setExpirationTimestamp(std::chrono::duration_cast<std::chrono::milliseconds>(expirationTS.time_since_epoch()).count());
+    }
+
+    bool TestScenesAndRenderer::loopTillClientEvent(TestClientEventHandler& handlerWithCondition)
+    {
+        for (int i = 0; i < 20; ++i)
+        {
+            getClient().dispatchEvents(handlerWithCondition);
+            getTestRenderer().doOneLoop();
+            if (handlerWithCondition.waitCondition())
+                return true;
+        }
+
+        return false;
     }
 
     ramses::status_t TestScenesAndRenderer::validateScene(ramses::sceneId_t sceneId)

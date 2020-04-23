@@ -18,6 +18,11 @@ namespace ramses_internal
     {
     }
 
+    Surface_Base::~Surface_Base()
+    {
+        disable();
+    }
+
     Bool Surface_Base::canRenderNewFrame() const
     {
         return m_window.canRenderNewFrame();
@@ -46,6 +51,21 @@ namespace ramses_internal
     IContext& Surface_Base::getContext()
     {
         return m_context;
+    }
+
+    Bool Surface_Base::swapBuffers()
+    {
+        return m_context.swapBuffers();
+    }
+
+    Bool Surface_Base::enable()
+    {
+        return m_context.enable();
+    }
+
+    Bool Surface_Base::disable()
+    {
+        return m_context.disable();
     }
 }
 

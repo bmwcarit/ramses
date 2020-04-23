@@ -18,7 +18,7 @@ namespace ramses
     class HarfbuzzFontInstance final : public Freetype2FontInstance
     {
     public:
-        HarfbuzzFontInstance(FontInstanceId id, FT_Library freetypeLib, const FontData& font, uint32_t pixelSize, bool forceAutohinting);
+        HarfbuzzFontInstance(FontInstanceId id, FT_Face fontFace, uint32_t pixelSize, bool forceAutohinting);
         virtual ~HarfbuzzFontInstance();
 
         virtual void loadAndAppendGlyphMetrics(std::u32string::const_iterator charsBegin, std::u32string::const_iterator charsEnd, GlyphMetricsVector& positionedGlyphs) override final;

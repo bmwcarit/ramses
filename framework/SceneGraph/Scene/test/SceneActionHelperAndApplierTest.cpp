@@ -247,7 +247,7 @@ namespace ramses_internal
         }
     };
 
-    TYPED_TEST_CASE(ASceneActionCreatorAndApplierForResources, ResourceSerializationTestHelper::Types);
+    TYPED_TEST_SUITE(ASceneActionCreatorAndApplierForResources, ResourceSerializationTestHelper::Types);
 
     TYPED_TEST(ASceneActionCreatorAndApplierForResources, writeSingleSmallResource)
     {
@@ -255,7 +255,7 @@ namespace ramses_internal
         sendResources.emplace_back(ResourceSerializationTestHelper::CreateTestResource<TypeParam>(5));
         this->creator.pushResource(*sendResources.front());
 
-        SceneActionApplier::ApplyActionsOnScene(this->scene, this->collection, &this->receivedResources);
+        SceneActionApplier::ApplyActionsOnScene(this->scene, this->collection, nullptr, &this->receivedResources);
         this->compareResources(sendResources);
     }
 
@@ -265,7 +265,7 @@ namespace ramses_internal
         sendResources.emplace_back(ResourceSerializationTestHelper::CreateTestResource<TypeParam>(100 * 1000));
         this->creator.pushResource(*sendResources.front());
 
-        SceneActionApplier::ApplyActionsOnScene(this->scene, this->collection, &this->receivedResources);
+        SceneActionApplier::ApplyActionsOnScene(this->scene, this->collection, nullptr, &this->receivedResources);
         this->compareResources(sendResources);
     }
 
@@ -283,7 +283,7 @@ namespace ramses_internal
             this->creator.pushResource(*res);
         }
 
-        SceneActionApplier::ApplyActionsOnScene(this->scene, this->collection, &this->receivedResources);
+        SceneActionApplier::ApplyActionsOnScene(this->scene, this->collection, nullptr, &this->receivedResources);
         this->compareResources(sendResources);
     }
 }

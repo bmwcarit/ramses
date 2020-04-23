@@ -49,14 +49,14 @@ namespace ramses_internal
         Bool m_doRendering;
         std::chrono::microseconds m_targetMinimumFrameDuration;
         Bool m_threadStarted;
-        ELoopMode m_loopMode = ELoopMode_UpdateAndRender;
+        ELoopMode m_loopMode = ELoopMode::UpdateAndRender;
         std::condition_variable m_rendererDestroyedCondVar;
         Bool m_destroyRenderer;
         std::chrono::milliseconds m_loopCountPeriod;
         uint64_t m_lastPeriodLoopCountReportingTimeMicroseconds{ 0 };
-        std::chrono::microseconds m_maximumLoopTimeInPeriod;
-        uint64_t m_numberOfLoopsInPeriod;
-        std::chrono::microseconds m_sumOfLoopTimeInPeriod;
+        std::chrono::microseconds m_maximumLoopTimeInPeriod{ 0 };
+        uint64_t m_numberOfLoopsInPeriod{ 0 };
+        std::chrono::microseconds m_sumOfLoopTimeInPeriod{ 0 };
     };
 }
 

@@ -22,8 +22,7 @@ namespace ramses
 
 class SceneViewerBundle : public RendererBundle {
 public:
-    SceneViewerBundle(JNIEnv *env, jobject instance,
-                                 jobject javaSurface, jint width, jint height,
+    SceneViewerBundle(ANativeWindow* nativeWindow, int width, int height,
                                  const char *sceneFile, const char *resFile);
 
     virtual ~SceneViewerBundle();

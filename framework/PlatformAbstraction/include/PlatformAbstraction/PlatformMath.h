@@ -9,63 +9,38 @@
 #ifndef RAMSES_PLATFORMMATH_H
 #define RAMSES_PLATFORMMATH_H
 
-#include <PlatformAbstraction/PlatformTypes.h>
 #include <cmath>
-#include <cstdlib>
-
-#undef min
-#undef max
 
 namespace ramses_internal
 {
-
-    template<class T>
-    const T& min(const T& a, const T& b)
-    {
-        return (b < a) ? b : a;
-    }
-
-    template<class T>
-    const T& max(const T& a, const T& b)
-    {
-        return (b > a) ? b : a;
-    }
-
-    template<class T>
-    const T& clamp(const T& val, const T& minVal, const T& maxVal)
-    {
-        return (min(max(minVal, val), maxVal));
-    }
-
     class PlatformMath
     {
     public:
+        static constexpr const float  PI_f = 3.1415926535897932384626433832795028841971693993751058209749f;
+        static constexpr const double PI_d = 3.1415926535897932384626433832795028841971693993751058209749;
 
-        static const Float  PI_f;
-        static const Double PI_d;
-
-        static Float  Rad2Deg(Float val);
-        static Double Rad2Deg(Double val);
-        static Float  Deg2Rad(Float val);
-        static Double Deg2Rad(Double val);
+        static constexpr float  Rad2Deg(float val);
+        static constexpr double Rad2Deg(double val);
+        static constexpr float  Deg2Rad(float val);
+        static constexpr double Deg2Rad(double val);
     };
 
-    inline float PlatformMath::Rad2Deg(float val)
+    inline constexpr float PlatformMath::Rad2Deg(float val)
     {
         return val * (180.f / PI_f);
     }
 
-    inline double PlatformMath::Rad2Deg(double val)
+    inline constexpr double PlatformMath::Rad2Deg(double val)
     {
         return val * (180.0 / PI_d);
     }
 
-    inline float PlatformMath::Deg2Rad(float val)
+    inline constexpr float PlatformMath::Deg2Rad(float val)
     {
         return val * (PI_f / 180.f);
     }
 
-    inline double PlatformMath::Deg2Rad(double val)
+    inline constexpr double PlatformMath::Deg2Rad(double val)
     {
         return val * (PI_d / 180.0);
     }

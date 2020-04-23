@@ -7,3 +7,4 @@
 #  -------------------------------------------------------------------------
 
 ADD_SUBDIRECTORY(DemoJNIInterface)
+ADD_SUBDIRECTORY(ramses-renderer-android-app-native-activity/app)

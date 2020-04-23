@@ -18,7 +18,6 @@ namespace ramses_internal
 {
     struct DataSlotIdTag {};
     typedef StronglyTypedValue<UInt32, 0, DataSlotIdTag> DataSlotId;
-    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(DataSlotId)
 
     struct DataSlot
     {
@@ -30,5 +29,7 @@ namespace ramses_internal
         TextureSamplerHandle attachedTextureSampler;
     };
 }
+
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::DataSlotId)
 
 #endif

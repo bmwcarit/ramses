@@ -21,7 +21,6 @@ int main(int argc, const char *argv[])
     const UInt32 scenesPerDisplay   = ArgumentUInt32(parser, "sspd"     , "scenes-sets-per-display"     , 1);
     const bool disableSkipping      = ArgumentBool  (parser, "noskip"   , "never-skip-rendering");
     const UInt32 limitClientRes     = ArgumentUInt32(parser, "lc"       , "res-upload-limit"            , 10000);
-    const UInt32 limitSceneActions  = ArgumentUInt32(parser, "ls"       , "sceneactions-limit"          , 12000);
     const UInt32 limitRendering     = ArgumentUInt32(parser, "lr"       , "rendering-limit"             , 16000);
     const UInt32 renderablePerLoop  = ArgumentUInt32(parser, "rpl"      , "renderable-per-loop"         , 1);
     // Some tests don't work with duration < 15 seconds
@@ -36,7 +35,6 @@ int main(int argc, const char *argv[])
         scenesPerDisplay,
         disableSkipping,
         limitClientRes,
-        limitSceneActions,
         limitRendering,
         renderablePerLoop
     };

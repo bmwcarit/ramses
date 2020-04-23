@@ -23,9 +23,9 @@ namespace ramses_internal
         const String& getWaylandSocketEmbedded() const;
         const String& getWaylandSocketEmbeddedGroup() const;
         int getWaylandSocketEmbeddedFD() const;
-        void setWaylandSocketEmbedded(const String& socket);
-        void setWaylandSocketEmbeddedGroup(const String& groupNameForSocketPermissions);
-        void setWaylandSocketEmbeddedFD(int fd);
+        void setWaylandEmbeddedCompositingSocketName(const String& socket);
+        void setWaylandEmbeddedCompositingSocketGroup(const String& groupNameForSocketPermissions);
+        void setWaylandEmbeddedCompositingSocketFD(int fd);
         void setWaylandDisplayForSystemCompositorController(const String& wd);
         const String& getWaylandDisplayForSystemCompositorController() const;
 

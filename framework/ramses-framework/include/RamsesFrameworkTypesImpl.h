@@ -11,25 +11,24 @@
 
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "ramses-framework-api/DcsmApiTypes.h"
-#include "ramses-capu/container/Hash.h"
+#include "PlatformAbstraction/Hash.h"
 #include "Collections/StringOutputStream.h"
 #include "Common/StronglyTypedValue.h"
 #include "Utils/StringOutputSpecialWrapper.h"
 
-namespace ramses
-{
-    // StringOutputStream operators
-    DEFINE_SPECIAL_STRINGOUTPUTSTREAM_OPERATOR(ramses::ContentID, ramses::ContentID);
-    DEFINE_SPECIAL_STRINGOUTPUTSTREAM_OPERATOR(ramses::Category, ramses::Category);
-    DEFINE_SPECIAL_STRINGOUTPUTSTREAM_OPERATOR(ramses::sceneId_t, ramses::sceneId_t);
-    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(ramses::TechnicalContentDescriptor);
-    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(ramses::pickableObjectId_t);
-    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(ramses::streamSource_t);
-    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(ramses::displayId_t);
-    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(ramses::displayBufferId_t);
-    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(ramses::resourceCacheFlag_t);
-    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(ramses::binaryShaderFormatId_t);
-}
+MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses::ContentID, ramses::ContentID);
+MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses::Category, ramses::Category);
+MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses::sceneId_t, ramses::sceneId_t);
+
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::TechnicalContentDescriptor);
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::pickableObjectId_t);
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::streamSource_t);
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::displayId_t);
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::displayBufferId_t);
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::resourceCacheFlag_t);
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::binaryShaderFormatId_t);
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::dataProviderId_t);
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::dataConsumerId_t);
 
 namespace std
 {
@@ -38,7 +37,7 @@ namespace std
     {
         size_t operator()(const ::ramses::resourceId_t& rid)
         {
-            return ramses_capu::HashValue(rid.lowPart, rid.highPart);
+            return ramses_internal::HashValue(rid.lowPart, rid.highPart);
         }
     };
 }

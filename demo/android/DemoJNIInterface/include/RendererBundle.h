@@ -13,28 +13,29 @@
 #include <thread>
 #include <atomic>
 #include <memory>
-#include "ramses-renderer-api/IRendererEventHandler.h"
+#include "ramses-renderer-api/IRendererSceneControlEventHandler_legacy.h"
 
 namespace ramses
 {
     class RamsesFramework;
     class RamsesRenderer;
+    class RendererSceneControl_legacy;
 }
 
-class ANativeWindow;
+struct ANativeWindow;
 
-class RendererBundle
+class RAMSES_API_EXPORT RendererBundle
 {
 public:
-    RendererBundle(JNIEnv *env, jobject /*instance*/,
-                   jobject javaSurface, jint width, jint height,
-                   const char* interfaceSelectionIP, const char* daemonIP);
+    RendererBundle(ANativeWindow* nativeWindow, int width, int height,
+                  const char* interfaceSelectionIP, const char* daemonIP);
 
     virtual ~RendererBundle();
     virtual void connect();
     virtual void run();
+    ANativeWindow* getNativeWindow();
 
-    class SceneStateAutoShowEventHandler : public ramses::RendererEventHandlerEmpty
+    class SceneStateAutoShowEventHandler : public ramses::RendererSceneControlEventHandlerEmpty_legacy
     {
     public:
         SceneStateAutoShowEventHandler(ramses::RamsesRenderer& renderer, ramses::displayId_t displayId);
@@ -44,12 +45,12 @@ public:
         virtual void sceneMapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override;
 
     private:
-        ramses::RamsesRenderer& m_renderer;
+        ramses::RendererSceneControl_legacy& m_sceneControlAPI;
         ramses::displayId_t m_displayId;
     };
 
 protected:
-    std::unique_ptr<ANativeWindow, std::function<void(ANativeWindow*)>> m_nativeWindow;
+    ANativeWindow* m_nativeWindow;
     std::unique_ptr<ramses::RamsesFramework> m_framework;
     ramses::RamsesRenderer* m_renderer;
     std::unique_ptr<SceneStateAutoShowEventHandler> m_autoShowHandler;

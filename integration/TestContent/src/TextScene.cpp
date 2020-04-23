@@ -28,7 +28,8 @@ namespace ramses_internal
         const ramses::FontId lightFont = m_fontRegistry.createFreetype2Font("res/ramses-test-client-Roboto-Light.ttf");
         const ramses::FontId arabicFont = m_fontRegistry.createFreetype2Font("res/ramses-test-client-DroidKufi-Regular.ttf");
 
-        m_font = m_fontRegistry.createFreetype2FontInstance(font, 64u);
+        m_font = m_fontRegistry.createFreetype2FontInstance(font, 60u);
+        m_fontSmall = m_fontRegistry.createFreetype2FontInstance(font, 40u);
         m_chineseFont = m_fontRegistry.createFreetype2FontInstance(chineseFont, 32u);
         m_lightFont = m_fontRegistry.createFreetype2FontInstance(lightFont, 26u);
         m_lightAutoHintFont = m_fontRegistry.createFreetype2FontInstance(lightFont, 26u, true);
@@ -60,7 +61,7 @@ namespace ramses_internal
         m_textASCII = m_textCache.createTextLine(glyphMetrics, *textEffect);
         m_meshASCII = m_textCache.getTextLine(m_textASCII)->meshNode;
 
-        glyphMetrics = m_textCache.getPositionedGlyphs(U"12345", m_font);
+        glyphMetrics = m_textCache.getPositionedGlyphs(U"12345", m_fontSmall);
         m_textDigits = m_textCache.createTextLine(glyphMetrics, *textEffect);
         m_meshDigits = m_textCache.getTextLine(m_textDigits)->meshNode;
 

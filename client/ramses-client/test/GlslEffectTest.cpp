@@ -6,10 +6,10 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include <gtest/gtest.h>
 #include "glslEffectBlock/GlslEffect.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "Resource/EffectResource.h"
+#include "gmock/gmock.h"
 #include <memory>
 
 using namespace ramses_internal;
@@ -893,10 +893,12 @@ TEST_F(AGlslEffect, canRetrieveGLSLErrorMessage)
     GlslEffect ge(vertexShader, basicFragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     ASSERT_FALSE(res);
-    ramses_internal::String errorMessages = ge.getEffectErrorMessages();
-    ramses_internal::String epextedErrorMessages =
-        "[GLSL Compiler] vertex shader Shader Parsing Error:\n"
-        "ERROR: 2:5: '' :  syntax error, unexpected RIGHT_BRACE, expecting COMMA or SEMICOLON\n"
-        "ERROR: 1 compilation errors.  No code generated.\n\n\n";
-    EXPECT_EQ(epextedErrorMessages, errorMessages);
+    using namespace ::testing;
+    EXPECT_THAT(ge.getEffectErrorMessages(),
+                AnyOf(Eq("[GLSL Compiler] vertex shader Shader Parsing Error:\n"
+                         "ERROR: 2:5: '' :  syntax error\n"
+                         "ERROR: 1 compilation errors.  No code generated.\n\n\n"),
+                      Eq("[GLSL Compiler] vertex shader Shader Parsing Error:\n"
+                         "ERROR: 2:5: '' :  syntax error, unexpected RIGHT_BRACE, expecting COMMA or SEMICOLON\n"
+                         "ERROR: 1 compilation errors.  No code generated.\n\n\n")));
 }

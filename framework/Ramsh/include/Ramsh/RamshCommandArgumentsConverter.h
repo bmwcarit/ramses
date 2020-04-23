@@ -35,29 +35,6 @@ namespace ramses_internal
 
 namespace ramses_internal
 {
-
-    template<typename T>
-    inline StringOutputStream& operator<<(StringOutputStream& lhs, const std::vector<T>& rhs)
-    {
-        typename std::vector<T>::ConstIterator it = rhs.begin();
-        const typename std::vector<T>::ConstIterator end = rhs.end();
-
-        for(;it!=end;++it)
-        {
-            lhs << "," << *it;
-        }
-        return lhs;
-    }
-
-    template<typename A, typename B>
-    inline StringOutputStream& operator<<(StringOutputStream& lhs, const std::pair<A,B>& rhs)
-    {
-        lhs << rhs.first;
-        lhs << ";";
-        lhs << rhs.second;
-        return lhs;
-    }
-
     // converts raw binary data
     template<typename T>
     struct ArgumentConverter

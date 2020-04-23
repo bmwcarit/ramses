@@ -22,7 +22,8 @@ transition animations into new sizes and new content states.
 
 The Consumer is the part of the system, which owns the display and is able to show received Content on that display. The Provider is the
 part of the system, which owns and controls the actual graphical content and makes it available to the Consumer. The design of the
-protocol puts the Consumer in charge of what is being shown when and in which size. The Provider controls, what is available for being shown and how the graphical content looks.
+protocol puts the Consumer in charge of what is being shown when and in which size. The Provider controls, what is available for being shown
+and how the graphical content looks.
 
 There can be multiple Consumers and Providers in a DCSM system. Providers offer their Content to all Consumers, but a Content might only
 be assigned to one Consumer at a time.
@@ -117,6 +118,13 @@ the Content is in state Shown and needs to be hidden with an animation (see abov
 After this ContentStateChange message has been received and the transition animation has been executed and the Content is hidden, the
 Provider and previously assigned Consumer may release the Content and graphical content.
 
+<b>UpdateContentMetadata(<i>ContentID, Metadata</i>)</b><br>
+This message carries arbitrary <i>Metadata</i> related to the Content from the Provider to the assigned Consumer. This message can be sent
+multiple times, as often as the <i>Metadata</i> needs to be updated.
+
+DCSM does not define a <i>Metadata</i> format and leaves this for the Consumer and Provider to agree upon by other means. It just carries the
+<i>Metadata</i> as data blob.
+
 # Implementation
 
 In the Ramses solution there is a DCSM Implementation. It implements the DCSM protocol specifically to control Ramses scenes.
@@ -127,8 +135,8 @@ There are four major components in this implementation:
   of DCSM in a generic way.
 - The DcsmProvider is a simplified API which can be used by a content provider application to provide Ramses scenes as content.
 - The DcsmConsumer is an API which can be used by a consumer application to receive Ramses scenes as Content and render it.
-- The DcsmRenderer is a simplified API which unifies calls to a renderer and DCSM. It is based on DcsmConsumer and RamsesRenderer and
-  is used to render Content in form of Ramses Scenes.
+- The DcsmContentControl is an API which combines DcsmConsumer control and content rendering state control. It is based on DcsmConsumer and RendererSceneControl and
+  is used to render DCSM content in form of Ramses scenes.
 
 Refer to the API documentation for details about usage of the last three API classes.
 

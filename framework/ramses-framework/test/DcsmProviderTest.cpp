@@ -25,8 +25,9 @@ namespace ramses
     {
     public:
         MOCK_METHOD1(dispatchProviderEvents, bool(ramses_internal::IDcsmProviderEventHandler&));
-        MOCK_METHOD2(sendOfferContent, bool(ramses_internal::ContentID, ramses_internal::Category));
-        MOCK_METHOD3(sendContentReady, bool(ramses_internal::ContentID, ramses_internal::ETechnicalContentType, ramses_internal::TechnicalContentDescriptor));
+        MOCK_METHOD3(sendOfferContent, bool(ramses_internal::ContentID, ramses_internal::Category, bool));
+        MOCK_METHOD3(sendContentDescription, bool(ramses_internal::ContentID, ramses_internal::ETechnicalContentType, ramses_internal::TechnicalContentDescriptor));
+        MOCK_METHOD1(sendContentReady, bool(ramses_internal::ContentID));
         MOCK_METHOD1(sendContentFocusRequest, bool(ramses_internal::ContentID));
         MOCK_METHOD1(sendRequestStopOfferContent, bool(ramses_internal::ContentID));
         MOCK_METHOD2(sendAcceptStopOffer, bool(ramses_internal::ContentID, ramses_internal::AnimationInformation));
@@ -93,62 +94,72 @@ namespace ramses
 
     TEST_F(ADcsmProvider, canOfferContent)
     {
-        EXPECT_CALL(compMock, sendOfferContent(ramses_internal::ContentID(123), ramses_internal::Category(567))).WillOnce(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(ramses_internal::ContentID(123), ramses_internal::Category(567), false)).WillOnce(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
+    }
+
+    TEST_F(ADcsmProvider, canOfferContentLocallyOnly)
+    {
+        EXPECT_CALL(compMock, sendOfferContent(ramses_internal::ContentID(123), ramses_internal::Category(567), true)).WillOnce(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalOnly), StatusOK);
     }
 
     TEST_F(ADcsmProvider, canOfferContentWithMetadata)
     {
         InSequence seq;
-        EXPECT_CALL(compMock, sendOfferContent(ramses_internal::ContentID(123), ramses_internal::Category(567))).WillOnce(Return(true));
+        EXPECT_CALL(compMock, sendOfferContent(ramses_internal::ContentID(123), ramses_internal::Category(567), false)).WillOnce(Return(true));
         EXPECT_CALL(compMock, sendUpdateContentMetadata(ramses_internal::ContentID(123), metadata)).WillOnce(Return(true));
-        EXPECT_EQ(provider->offerContentWithMetadata(id, Category(567), sceneId_t(432), metadataCreator), StatusOK);
+        EXPECT_EQ(provider->offerContentWithMetadata(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote, metadataCreator), StatusOK);
     }
 
     TEST_F(ADcsmProvider, willIgnoreAllButOneOfferContent)
     {
-        EXPECT_CALL(compMock, sendOfferContent(ramses_internal::ContentID(123), ramses_internal::Category(567))).WillOnce(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
-        EXPECT_NE(provider->offerContent(id, Category(5678), sceneId_t(432)), StatusOK);
-        EXPECT_NE(provider->offerContent(id, Category(5678), sceneId_t(4321)), StatusOK);
-        EXPECT_NE(provider->offerContentWithMetadata(id, Category(567), sceneId_t(432), metadataCreator), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(ramses_internal::ContentID(123), ramses_internal::Category(567), false)).WillOnce(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
+        EXPECT_NE(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalOnly), StatusOK);
+        EXPECT_NE(provider->offerContent(id, Category(5678), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
+        EXPECT_NE(provider->offerContent(id, Category(5678), sceneId_t(4321), EDcsmOfferingMode::LocalAndRemote), StatusOK);
+        EXPECT_NE(provider->offerContentWithMetadata(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote, metadataCreator), StatusOK);
     }
 
     TEST_F(ADcsmProvider, willIgnoreAllButOneOfferContentAfterOfferWithMetadata)
     {
-        EXPECT_CALL(compMock, sendOfferContent(ramses_internal::ContentID(123), ramses_internal::Category(567))).WillOnce(Return(true));
+        EXPECT_CALL(compMock, sendOfferContent(ramses_internal::ContentID(123), ramses_internal::Category(567), false)).WillOnce(Return(true));
         EXPECT_CALL(compMock, sendUpdateContentMetadata(ramses_internal::ContentID(123), metadata)).WillOnce(Return(true));
-        EXPECT_EQ(provider->offerContentWithMetadata(id, Category(567), sceneId_t(432), metadataCreator), StatusOK);
-        EXPECT_NE(provider->offerContent(id, Category(5678), sceneId_t(4321)), StatusOK);
-        EXPECT_NE(provider->offerContentWithMetadata(id, Category(567), sceneId_t(432), metadataCreator), StatusOK);
+        EXPECT_EQ(provider->offerContentWithMetadata(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote, metadataCreator), StatusOK);
+        EXPECT_NE(provider->offerContentWithMetadata(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalOnly, metadataCreator), StatusOK);
+        EXPECT_NE(provider->offerContent(id, Category(5678), sceneId_t(4321), EDcsmOfferingMode::LocalAndRemote), StatusOK);
+        EXPECT_NE(provider->offerContentWithMetadata(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote, metadataCreator), StatusOK);
     }
 
     TEST_F(ADcsmProvider, willAcceptSameSceneIDForDifferentContents)
     {
-        EXPECT_CALL(compMock, sendOfferContent(ramses_internal::ContentID(123), ramses_internal::Category(567))).WillOnce(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(ramses_internal::ContentID(123), ramses_internal::Category(567), false)).WillOnce(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
 
-        EXPECT_CALL(compMock, sendOfferContent(ramses_internal::ContentID(124), ramses_internal::Category(567))).WillOnce(Return(true));
-        EXPECT_EQ(provider->offerContent(ContentID(124), Category(567), sceneId_t(433)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(ramses_internal::ContentID(124), ramses_internal::Category(567), false)).WillOnce(Return(true));
+        EXPECT_EQ(provider->offerContent(ContentID(124), Category(567), sceneId_t(433), EDcsmOfferingMode::LocalAndRemote), StatusOK);
     }
 
     TEST_F(ADcsmProvider, willAutomaticallyReplyContentReadyIfContentIsMarkedReadyAndNotCallCallback)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_EQ(provider->markContentReady(id), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
-        EXPECT_CALL(compMock, sendContentReady(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(ramses_internal::ContentID(123))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
     }
 
     TEST_F(ADcsmProvider, willCallCallbackIfContentNotMarkedReady)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
         EXPECT_CALL(handler, contentReadyRequested(id));
@@ -157,27 +168,29 @@ namespace ramses
 
     TEST_F(ADcsmProvider, willReplyContentReadyOnceContentIsMarkedReady)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
         EXPECT_CALL(handler, contentReadyRequested(_));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
 
-        EXPECT_CALL(compMock, sendContentReady(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(ramses_internal::ContentID(123))).WillOnce(Return(true));
         EXPECT_EQ(provider->markContentReady(id), StatusOK);
     }
 
     TEST_F(ADcsmProvider, ignoresStateChangeRequestToSameState)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillOnce(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillOnce(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
         EXPECT_EQ(provider->markContentReady(id), StatusOK);
-        EXPECT_CALL(compMock, sendContentReady(_, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(_)).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
         EXPECT_CALL(handler, contentShow(_, _));
@@ -190,8 +203,8 @@ namespace ramses
 
     TEST_F(ADcsmProvider, callsCallbackForEachSizeChangedWithCorrectSizeInfoAndAnimInformation)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
 
         EXPECT_CALL(handler, contentSizeChange(id, SizeInfo{133, 337}, AnimationInformation{12345, 67890}));
         provider->contentSizeChange(id, SizeInfo{ 133, 337 }, AnimationInformation{ 12345, 67890 });
@@ -205,15 +218,16 @@ namespace ramses
 
     TEST_F(ADcsmProvider, callsCallbackForEachStatusChangedWithCorrectAnimInformation)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
         EXPECT_CALL(handler, contentReadyRequested(_)).WillOnce([this](ContentID id_)
         {
             EXPECT_EQ(id, id_);
-            EXPECT_CALL(compMock, sendContentReady(_, _, _)).WillRepeatedly(Return(true));
+            EXPECT_CALL(compMock, sendContentReady(_)).WillRepeatedly(Return(true));
             EXPECT_EQ(provider->markContentReady(id_), StatusOK);
         });
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
@@ -226,21 +240,23 @@ namespace ramses
 
     TEST_F(ADcsmProvider, callsSizeChangedCallbackOnStatusChangedToAssignedFromOffered)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
     }
 
     TEST_F(ADcsmProvider, doesNotCallSizeChangedCallbackOnStatusChangedToAssignedFromAboveButContentReleasedCallback)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_EQ(provider->markContentReady(id), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
-        EXPECT_CALL(compMock, sendContentReady(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(_)).WillRepeatedly(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
 
         EXPECT_CALL(handler, contentRelease(id, AnimationInformation{ 325, 43290587 }));
@@ -249,8 +265,8 @@ namespace ramses
 
     TEST_F(ADcsmProvider, doesNotCallSizeChangedCallbackOnStatusChangedToAnyOtherStateThanAssignedUpwards)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).Times(AtLeast(1)).WillRepeatedly(Return(true));
-        EXPECT_CALL(compMock, sendContentReady(_, _, _)).Times(AtLeast(1)).WillRepeatedly(Return(true));
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).Times(AtLeast(1)).WillRepeatedly(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(_)).Times(AtLeast(1)).WillRepeatedly(Return(true));
         EXPECT_CALL(compMock, sendRequestStopOfferContent(_)).Times(AtLeast(1)).WillRepeatedly(Return(true));
         EXPECT_CALL(handler, contentShow(id, AnimationInformation())).Times(AtLeast(1));
         EXPECT_CALL(handler, contentHide(id, AnimationInformation())).Times(AtLeast(1));
@@ -258,10 +274,11 @@ namespace ramses
         EXPECT_CALL(handler, contentReadyRequested(id)).Times(AtLeast(1));
         EXPECT_CALL(handler, stopOfferAccepted(id, AnimationInformation{ 91385675902, 8237492095 })).Times(1);
 
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_EQ(provider->markContentReady(id), StatusOK);
 
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
@@ -280,14 +297,15 @@ namespace ramses
 
     TEST_F(ADcsmProvider, sendsRequestStopOfferMessageAndCallsStopOfferAcceptedOnStatusChange)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
 
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
         EXPECT_EQ(provider->markContentReady(id), StatusOK);
-        EXPECT_CALL(compMock, sendContentReady(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(_)).WillRepeatedly(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
 
         EXPECT_CALL(handler, contentShow(_, _));
@@ -302,12 +320,13 @@ namespace ramses
 
     TEST_F(ADcsmProvider, sendsRequestContentFacosMessageToConsumerIfUserCallsRequestContentFocus)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
         provider->markContentReady(id);
-        EXPECT_CALL(compMock, sendContentReady(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(_)).WillRepeatedly(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
         EXPECT_CALL(compMock, sendContentFocusRequest(ramses_internal::ContentID(123))).WillOnce(Return(true));
         EXPECT_EQ(provider->requestContentFocus(id), StatusOK);
@@ -315,16 +334,17 @@ namespace ramses
 
     TEST_F(ADcsmProvider, doesNothingIfUserUsesWrongContentIDOnStopOfferContent)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_NE(provider->requestStopOfferContent(ContentID(1234)), StatusOK);
     }
 
     TEST_F(ADcsmProvider, doesNothingIfUserUsesWrongContentIDOnRequestContentFocus)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
         provider->markContentReady(id);
         EXPECT_CALL(compMock, sendContentFocusRequest(_)).WillOnce(Return(true));
@@ -334,9 +354,10 @@ namespace ramses
 
     TEST_F(ADcsmProvider, doesNothingIfUserUsesWrongContentIDOnMarkContentReady)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
         EXPECT_CALL(handler, contentReadyRequested(_));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
@@ -345,22 +366,24 @@ namespace ramses
 
     TEST_F(ADcsmProvider, marksContentReadyOnlyOnce)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
         EXPECT_CALL(handler, contentReadyRequested(_));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
-        EXPECT_CALL(compMock, sendContentReady(_, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(_)).WillOnce(Return(true));
         EXPECT_EQ(provider->markContentReady(id), StatusOK);
         EXPECT_NE(provider->markContentReady(ContentID(1234)), StatusOK);
     }
 
     TEST_F(ADcsmProvider, callsNoCanvasSizeCallbackIfDcsmSizeMessageHasUnknownContentID)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
         provider->contentSizeChange(ContentID(124), SizeInfo{ 555, 900 }, AnimationInformation());
@@ -368,8 +391,8 @@ namespace ramses
 
     TEST_F(ADcsmProvider, doesNothingIfContentStateMessageHasWrongContentID)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         provider->contentStateChange(ContentID(124), ramses_internal::EDcsmState::Assigned, SizeInfo{ 1, 1 }, AnimationInformation());
         provider->contentStateChange(ContentID(124), ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
         provider->contentStateChange(ContentID(124), ramses_internal::EDcsmState::Shown, SizeInfo{ 1, 1 }, AnimationInformation());
@@ -380,66 +403,66 @@ namespace ramses
 
     TEST_F(ADcsmProvider, allowsToReofferContentWithSameOrDifferentParameters)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_CALL(compMock, sendRequestStopOfferContent(_)).WillRepeatedly(Return(true));
         EXPECT_CALL(handler, stopOfferAccepted(_, _));
         EXPECT_EQ(provider->requestStopOfferContent(id), StatusOK);
         provider->contentStateChange(id, ramses_internal::EDcsmState::AcceptStopOffer, SizeInfo{ 1, 1 }, AnimationInformation());
 
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_CALL(compMock, sendRequestStopOfferContent(_)).WillRepeatedly(Return(true));
         EXPECT_CALL(handler, stopOfferAccepted(_, _));
         EXPECT_EQ(provider->requestStopOfferContent(id), StatusOK);
         provider->contentStateChange(id, ramses_internal::EDcsmState::AcceptStopOffer, SizeInfo{ 1, 1 }, AnimationInformation());
 
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(5678), sceneId_t(4321)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(5678), sceneId_t(4321), EDcsmOfferingMode::LocalOnly), StatusOK);
     }
 
     TEST_F(ADcsmProvider, offerContentFailsIfSendOfferContentFails)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillOnce(Return(false));
-        EXPECT_NE(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillOnce(Return(false));
+        EXPECT_NE(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
     }
 
     TEST_F(ADcsmProvider, offerContentWithMetadataFailsIfSendOfferContentFails)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillOnce(Return(false));
-        EXPECT_NE(provider->offerContentWithMetadata(id, Category(567), sceneId_t(432), metadataCreator), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillOnce(Return(false));
+        EXPECT_NE(provider->offerContentWithMetadata(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote, metadataCreator), StatusOK);
     }
 
     TEST_F(ADcsmProvider, offerContentWithMetadataFailsIfSendMetadataFails)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillOnce(Return(true));
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillOnce(Return(true));
         EXPECT_CALL(compMock, sendUpdateContentMetadata(_, _)).WillOnce(Return(false));
-        EXPECT_NE(provider->offerContentWithMetadata(id, Category(567), sceneId_t(432), metadataCreator), StatusOK);
+        EXPECT_NE(provider->offerContentWithMetadata(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote, metadataCreator), StatusOK);
     }
 
     TEST_F(ADcsmProvider, requestStopOfferContentFailsIfSendRequestUnregisterContentFails)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_CALL(compMock, sendRequestStopOfferContent(_)).WillOnce(Return(false));
         EXPECT_NE(provider->requestStopOfferContent(id), StatusOK);
     }
 
     TEST_F(ADcsmProvider, markContentReadyFailsIfsendContentReadyFails)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
         EXPECT_CALL(handler, contentReadyRequested(_));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
-        EXPECT_CALL(compMock, sendContentReady(_, _, _)).WillOnce(Return(false));
+        EXPECT_CALL(compMock, sendContentReady(_)).WillOnce(Return(false));
         EXPECT_NE(provider->markContentReady(id), StatusOK);
     }
 
     TEST_F(ADcsmProvider, requestContentFocusFailsIfSendContentFocusRequestFails)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
         EXPECT_CALL(handler, contentReadyRequested(_));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
         EXPECT_CALL(compMock, sendContentFocusRequest(_)).WillOnce(Return(false));
         EXPECT_NE(provider->requestContentFocus(id), StatusOK);
@@ -447,8 +470,8 @@ namespace ramses
 
     TEST_F(ADcsmProvider, dispatchesToTheHandlerProvidedByUser)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillOnce(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillOnce(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_CALL(compMock, dispatchProviderEvents(_)).WillOnce([this](auto& h)
         {
             EXPECT_CALL(handler, contentSizeChange(_, _, _));
@@ -469,13 +492,14 @@ namespace ramses
 
     TEST_F(ADcsmProvider, callsShowCallbackIfNewStateIsShown)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_EQ(provider->markContentReady(id), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
-        EXPECT_CALL(compMock, sendContentReady(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(_)).WillRepeatedly(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
 
         EXPECT_CALL(handler, contentShow(id, AnimationInformation{ 325, 43290587 }));
@@ -484,13 +508,14 @@ namespace ramses
 
     TEST_F(ADcsmProvider, callsHideCallbackIfNewStateIsReadyAndWasShown)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_EQ(provider->markContentReady(id), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
-        EXPECT_CALL(compMock, sendContentReady(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(_)).WillRepeatedly(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
 
         EXPECT_CALL(handler, contentShow(id, AnimationInformation()));
@@ -502,13 +527,14 @@ namespace ramses
 
     TEST_F(ADcsmProvider, callsReleaseCallbackIfNewStateIsAssignedAndWasShown)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_EQ(provider->markContentReady(id), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
-        EXPECT_CALL(compMock, sendContentReady(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(_)).WillRepeatedly(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
 
         EXPECT_CALL(handler, contentShow(id, AnimationInformation()));
@@ -520,13 +546,14 @@ namespace ramses
 
     TEST_F(ADcsmProvider, callsReleaseCallbackIfNewStateIsAssignedAndWasReady)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_EQ(provider->markContentReady(id), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
-        EXPECT_CALL(compMock, sendContentReady(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(_)).WillRepeatedly(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
 
         EXPECT_CALL(handler, contentRelease(id, AnimationInformation()));
@@ -535,13 +562,14 @@ namespace ramses
 
     TEST_F(ADcsmProvider, callsStopOfferCallbackIfNewStateIsUnregisteredAndWasShown)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_EQ(provider->markContentReady(id), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
-        EXPECT_CALL(compMock, sendContentReady(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(_)).WillRepeatedly(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
 
         EXPECT_CALL(handler, contentShow(id, AnimationInformation()));
@@ -555,13 +583,14 @@ namespace ramses
 
     TEST_F(ADcsmProvider, callsStopOfferCallbackIfNewStateIsUnregisteredAndWasReady)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_EQ(provider->markContentReady(id), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
-        EXPECT_CALL(compMock, sendContentReady(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(_)).WillRepeatedly(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
 
         EXPECT_CALL(compMock, sendRequestStopOfferContent(_)).Times(1).WillOnce(Return(true));
@@ -572,10 +601,11 @@ namespace ramses
 
     TEST_F(ADcsmProvider, callsStopOfferCallbackIfNewStateIsUnregisteredAndWasAssigned)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_EQ(provider->markContentReady(id), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
         EXPECT_CALL(compMock, sendRequestStopOfferContent(_)).Times(1).WillOnce(Return(true));
@@ -584,15 +614,34 @@ namespace ramses
         provider->contentStateChange(id, ramses_internal::EDcsmState::AcceptStopOffer, size, AnimationInformation());
     }
 
-    TEST_F(ADcsmProvider, needsANewMarkReadyAfterContentHasBeenSetToAssigned)
+    TEST_F(ADcsmProvider, doesNotCallReleaseCallbackIfNewStateIsOfferedAndWasAssigned)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_EQ(provider->markContentReady(id), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
-        EXPECT_CALL(compMock, sendContentReady(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(_)).WillRepeatedly(Return(true));
+        provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
+
+        EXPECT_CALL(handler, contentRelease(id, AnimationInformation()));
+        provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
+
+        provider->contentStateChange(id, ramses_internal::EDcsmState::Offered, size, AnimationInformation());
+    }
+
+    TEST_F(ADcsmProvider, needsANewMarkReadyAfterContentHasBeenSetToAssigned)
+    {
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
+        EXPECT_EQ(provider->markContentReady(id), StatusOK);
+        EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
+        provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
+
+        EXPECT_CALL(compMock, sendContentReady(_)).WillRepeatedly(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
 
         EXPECT_CALL(handler, contentRelease(id, AnimationInformation()));
@@ -601,43 +650,46 @@ namespace ramses
         EXPECT_CALL(handler, contentReadyRequested(id));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
 
-        EXPECT_CALL(compMock, sendContentReady(_, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(_)).WillOnce(Return(true));
         EXPECT_EQ(provider->markContentReady(id), StatusOK);
     }
 
     TEST_F(ADcsmProvider, needsANewMarkReadyAfterContentHasBeenSetToOffered)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_EQ(provider->markContentReady(id), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
-        EXPECT_CALL(compMock, sendContentReady(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(_)).WillRepeatedly(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
 
         EXPECT_CALL(handler, contentRelease(id, AnimationInformation()));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Offered, SizeInfo{ 1, 1 }, AnimationInformation());
 
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
         EXPECT_CALL(handler, contentReadyRequested(id));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
 
-        EXPECT_CALL(compMock, sendContentReady(_, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(_)).WillOnce(Return(true));
         EXPECT_EQ(provider->markContentReady(id), StatusOK);
     }
 
     TEST_F(ADcsmProvider, allowsUserToCallMarkReadyWithinContentReleaseCallback)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_EQ(provider->markContentReady(id), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
-        EXPECT_CALL(compMock, sendContentReady(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(_)).WillRepeatedly(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
 
         EXPECT_CALL(handler, contentRelease(id, AnimationInformation())).WillOnce([this](auto id_, auto)
@@ -646,19 +698,20 @@ namespace ramses
         });
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, SizeInfo{ 1, 1 }, AnimationInformation());
 
-        EXPECT_CALL(compMock, sendContentReady(_, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(_)).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
     }
 
     TEST_F(ADcsmProvider, doesNotCallSendContentReadyWhenContentHasBeenMarkedReadyButNotRequestedAfterUnreadying)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_EQ(provider->markContentReady(id), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
-        EXPECT_CALL(compMock, sendContentReady(_, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(_)).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
 
         EXPECT_CALL(handler, contentRelease(id, AnimationInformation())).WillOnce([this](auto id_, auto)
@@ -671,13 +724,14 @@ namespace ramses
 
     TEST_F(ADcsmProvider, doesNotCallSendContentReadyWhenContentHasBeenMarkedReadyButNotRequestedAfterReassigning)
     {
-        EXPECT_CALL(compMock, sendOfferContent(_, _)).WillRepeatedly(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_EQ(provider->markContentReady(id), StatusOK);
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
 
-        EXPECT_CALL(compMock, sendContentReady(_, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(compMock, sendContentReady(_)).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Ready, SizeInfo{ 1, 1 }, AnimationInformation());
 
         EXPECT_CALL(handler, contentRelease(id, AnimationInformation())).WillOnce([this](auto id_, auto)
@@ -687,13 +741,14 @@ namespace ramses
         provider->contentStateChange(id, ramses_internal::EDcsmState::Offered, SizeInfo{ 1, 1 }, AnimationInformation());
 
         EXPECT_CALL(handler, contentSizeChange(id, size, AnimationInformation()));
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         provider->contentStateChange(id, ramses_internal::EDcsmState::Assigned, size, AnimationInformation());
     }
 
     TEST_F(ADcsmProvider, canUpdateContentMetadata)
     {
-        EXPECT_CALL(compMock, sendOfferContent(ramses_internal::ContentID(123), ramses_internal::Category(567))).WillOnce(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(ramses_internal::ContentID(123), ramses_internal::Category(567), false)).WillOnce(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_CALL(compMock, sendUpdateContentMetadata(ramses_internal::ContentID(123), metadata)).WillOnce(Return(true));
         EXPECT_EQ(provider->updateContentMetadata(id, metadataCreator), StatusOK);
     }
@@ -705,8 +760,8 @@ namespace ramses
 
     TEST_F(ADcsmProvider, updateContentMetadataFailsWhenSendUpdateContentMetadataFails)
     {
-        EXPECT_CALL(compMock, sendOfferContent(ramses_internal::ContentID(123), ramses_internal::Category(567))).WillOnce(Return(true));
-        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432)), StatusOK);
+        EXPECT_CALL(compMock, sendOfferContent(ramses_internal::ContentID(123), ramses_internal::Category(567), false)).WillOnce(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
         EXPECT_CALL(compMock, sendUpdateContentMetadata(ramses_internal::ContentID(123), metadata)).WillOnce(Return(false));
         EXPECT_NE(provider->updateContentMetadata(id, metadataCreator), StatusOK);
     }

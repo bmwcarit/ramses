@@ -15,8 +15,9 @@
 
 namespace ramses_internal
 {
-    DisplayManager::DisplayManager(ramses::RamsesRenderer& renderer, ramses::RamsesFramework& framework)
+    DisplayManager::DisplayManager(ramses::RamsesRendererImpl& renderer, ramses::RamsesFrameworkImpl& framework)
         : m_ramsesRenderer(renderer)
+        , m_rendererSceneControl(*renderer.getSceneControlAPI_legacy())
         , m_isRunning(true)
     {
         m_exitCommand.reset(new ramses_internal::RamshCommandExit);
@@ -27,7 +28,7 @@ namespace ramses_internal
         m_linkData.reset(new LinkData(*this));
         m_confirmationEchoCommand.reset(new ConfirmationEcho(*this));
 
-        ramses_internal::Ramsh& ramsh = framework.impl.getRamsh();
+        ramses_internal::Ramsh& ramsh = framework.getRamsh();
         ramsh.add(*m_exitCommand);
         ramsh.add(*m_showOnDisplayCommand);
         ramsh.add(*m_hideCommand);
@@ -109,7 +110,7 @@ namespace ramses_internal
         const auto currState = getCurrentSceneState(sceneId);
         const auto targetState = getTargetSceneState(sceneId);
         if (currState >= ESceneStateInternal::MappedAndAssigned && targetState >= ESceneStateInternal::Mapped)
-            return m_ramsesRenderer.assignSceneToDisplayBuffer(sceneId, displayBuffer, sceneRenderOrder) == ramses::StatusOK;
+            return m_rendererSceneControl.assignSceneToDisplayBuffer(sceneId, displayBuffer, sceneRenderOrder) == ramses::StatusOK;
 
         return true;
     }
@@ -123,7 +124,7 @@ namespace ramses_internal
             return false;
         }
 
-        return m_ramsesRenderer.setBufferClearColor(it->first, displayBuffer, r, g, b, a) == ramses::StatusOK;
+        return m_rendererSceneControl.setDisplayBufferClearColor(it->first, displayBuffer, r, g, b, a) == ramses::StatusOK;
     }
 
     ramses::displayId_t DisplayManager::createDisplay(const ramses::DisplayConfig& config)
@@ -138,28 +139,36 @@ namespace ramses_internal
 
     void DisplayManager::processConfirmationEchoCommand(const char* text)
     {
-        m_ramsesRenderer.impl.logConfirmationEcho(text);
+        m_ramsesRenderer.logConfirmationEcho(text);
     }
 
     void DisplayManager::linkOffscreenBuffer(ramses::displayBufferId_t offscreenBufferId, ramses::sceneId_t consumerSceneId, ramses::dataConsumerId_t consumerDataSlotId)
     {
-        m_ramsesRenderer.linkOffscreenBufferToSceneData(offscreenBufferId, consumerSceneId, consumerDataSlotId);
+        m_rendererSceneControl.linkOffscreenBufferToSceneData(offscreenBufferId, consumerSceneId, consumerDataSlotId);
     }
 
     void DisplayManager::linkData(ramses::sceneId_t providerSceneId, ramses::dataProviderId_t providerId, ramses::sceneId_t consumerSceneId, ramses::dataConsumerId_t consumerId)
     {
-        m_ramsesRenderer.linkData(providerSceneId, providerId, consumerSceneId, consumerId);
+        m_rendererSceneControl.linkData(providerSceneId, providerId, consumerSceneId, consumerId);
     }
 
-    void DisplayManager::dispatchAndFlush(IEventHandler* eventHandler, ramses::IRendererEventHandler* customRendererEventHandler)
+    void DisplayManager::dispatchAndFlush(IEventHandler* eventHandler, ramses::IRendererEventHandler* customRendererEventHandler, ramses::IRendererSceneControlEventHandler_legacy* customSceneControlHandler)
     {
         if (customRendererEventHandler)
         {
-            RendererEventChainer chainer{ *customRendererEventHandler, *this };
+            RendererEventChainer chainer{ *this, *customRendererEventHandler };
             m_ramsesRenderer.dispatchEvents(chainer);
         }
         else
             m_ramsesRenderer.dispatchEvents(*this);
+
+        if (customSceneControlHandler)
+        {
+            RendererSceneControlEventChainer chainer{ *this, *customSceneControlHandler };
+            m_rendererSceneControl.dispatchEvents(chainer);
+        }
+        else
+            m_rendererSceneControl.dispatchEvents(*this);
 
         if (eventHandler)
         {
@@ -183,13 +192,12 @@ namespace ramses_internal
             }
             m_pendingEvents.clear();
         }
-        else if (m_pendingEvents.size() > 10000)
-        {
-            LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DisplayManager collected " << m_pendingEvents.size() << " events that were not dispatched, purging most of them. This is OK if not using event handler at all.");
-            m_pendingEvents.erase(m_pendingEvents.begin(), m_pendingEvents.end() - 100); // remove all but last 100 events
-        }
+        // Every 10000 messages, an error is printed to avoid internal buffer overflow of event queue
+        if (((m_pendingEvents.size() + 1) % 10000) == 0)
+            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DisplayManager internal event queue has " << m_pendingEvents.size() << " events! Looks like application is not dispatching renderer events. Possible buffer overflow of the event queue!");
 
         m_ramsesRenderer.flush();
+        m_rendererSceneControl.flush();
     }
 
     bool DisplayManager::isRunning() const
@@ -273,7 +281,7 @@ namespace ramses_internal
             case ESceneStateInternal::MappedAndAssigned:
             case ESceneStateInternal::Rendered:
                 LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager initiating subscribe to scene with id: " << sceneId);
-                if (m_ramsesRenderer.subscribeScene(sceneId) == ramses::StatusOK)
+                if (m_rendererSceneControl.subscribeScene(sceneId) == ramses::StatusOK)
                     sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Subscribe;
                 break;
             default:
@@ -295,7 +303,7 @@ namespace ramses_internal
                 if (isDisplayCreated(mapInfo.display))
                 {
                     LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager initiating map of scene with id: " << sceneId);
-                    if (m_ramsesRenderer.mapScene(mapInfo.display, sceneId) == ramses::StatusOK)
+                    if (m_rendererSceneControl.mapScene(mapInfo.display, sceneId) == ramses::StatusOK)
                         sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Map;
                 }
                 else
@@ -304,7 +312,7 @@ namespace ramses_internal
             }
             case ESceneStateInternal::Published:
                 LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager initiating unsubscribe of scene with id: " << sceneId);
-                if (m_ramsesRenderer.unsubscribeScene(sceneId) == ramses::StatusOK)
+                if (m_rendererSceneControl.unsubscribeScene(sceneId) == ramses::StatusOK)
                     sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Unsubscribe;
                 break;
             default:
@@ -322,7 +330,7 @@ namespace ramses_internal
             case ESceneStateInternal::Subscribed:
             case ESceneStateInternal::Published:
                 LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager initiating show of scene with id: " << sceneId);
-                if (m_ramsesRenderer.unmapScene(sceneId) == ramses::StatusOK)
+                if (m_rendererSceneControl.unmapScene(sceneId) == ramses::StatusOK)
                     sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Unmap;
                 break;
             default:
@@ -336,13 +344,13 @@ namespace ramses_internal
             {
             case ESceneStateInternal::Rendered:
                 LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager initiating show of scene with id: " << sceneId);
-                if (m_ramsesRenderer.showScene(sceneId) == ramses::StatusOK)
+                if (m_rendererSceneControl.showScene(sceneId) == ramses::StatusOK)
                     sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Show;
                 break;
             case ESceneStateInternal::Subscribed:
             case ESceneStateInternal::Published:
                 LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager initiating show of scene with id: " << sceneId);
-                if (m_ramsesRenderer.unmapScene(sceneId) == ramses::StatusOK)
+                if (m_rendererSceneControl.unmapScene(sceneId) == ramses::StatusOK)
                     sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Unmap;
                 break;
             default:
@@ -358,7 +366,7 @@ namespace ramses_internal
             case ESceneStateInternal::Subscribed:
             case ESceneStateInternal::Published:
                 LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DisplayManager initiating hide of scene with id: " << sceneId);
-                if (m_ramsesRenderer.hideScene(sceneId) == ramses::StatusOK)
+                if (m_rendererSceneControl.hideScene(sceneId) == ramses::StatusOK)
                     sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Hide;
                 break;
             default:
@@ -378,7 +386,7 @@ namespace ramses_internal
         SceneInfo& sceneInfo = m_scenesInfo[sceneId];
         MappingInfo& mapInfo = sceneInfo.mappingInfo;
 
-        if (m_ramsesRenderer.assignSceneToDisplayBuffer(sceneId, mapInfo.displayBuffer, mapInfo.renderOrder) == ramses::StatusOK)
+        if (m_rendererSceneControl.assignSceneToDisplayBuffer(sceneId, mapInfo.displayBuffer, mapInfo.renderOrder) == ramses::StatusOK)
         {
             setCurrentSceneState(sceneId, ESceneStateInternal::MappedAndAssigned);
             goToTargetState(sceneId);
@@ -663,7 +671,7 @@ namespace ramses_internal
         if (keyEvent != ramses::EKeyEvent_Pressed)
             return;
 
-        ramses_internal::RendererCommandBuffer& commandBuffer = m_ramsesRenderer.impl.getRenderer().getRendererCommandBuffer();
+        ramses_internal::RendererCommandBuffer& commandBuffer = m_ramsesRenderer.getRenderer().getRendererCommandBuffer();
         if (keyCode == ramses::EKeyCode_Escape && keyModifiers == ramses::EKeyModifier_NoModifier)
         {
             m_isRunning = false;

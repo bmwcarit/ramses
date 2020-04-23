@@ -111,6 +111,7 @@ namespace ramses_internal
 
         m_limits.addTextureFormat(ETextureFormat_SRGB8);
         m_limits.addTextureFormat(ETextureFormat_SRGB8_ALPHA8);
+        m_limits.addTextureFormat(ETextureFormat_DXT3RGBA);
     }
 
     Device_GL::~Device_GL()
@@ -537,11 +538,11 @@ namespace ramses_internal
         return m_resourceMapper.registerResource(gpuResource);
     }
 
-    DeviceResourceHandle Device_GL::allocateTextureCube(UInt32 faceSize, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes)
+    DeviceResourceHandle Device_GL::allocateTextureCube(UInt32 faceSize, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes)
     {
         const GLHandle texID = generateAndBindTexture(GL_TEXTURE_CUBE_MAP);
         GLTextureInfo texInfo;
-        fillGLInternalTextureInfo(GL_TEXTURE_CUBE_MAP, faceSize, faceSize, 1u, textureFormat, DefaultTextureSwizzleArray, texInfo);
+        fillGLInternalTextureInfo(GL_TEXTURE_CUBE_MAP, faceSize, faceSize, 1u, textureFormat, swizzle, texInfo);
         allocateTextureStorage(texInfo, mipLevelCount);
 
         const GPUResource& gpuResource = *new TextureGPUResource_GL(texInfo, texID, totalSizeInBytes);
@@ -994,7 +995,7 @@ namespace ramses_internal
         if ((target != GL_TEXTURE_3D) && m_limits.getMaximumAnisotropy() > 1u)
         {
             // clamp anisotropy value to max supported range
-            anisotropyLevel = min(anisotropyLevel, m_limits.getMaximumAnisotropy());
+            anisotropyLevel = std::min(anisotropyLevel, m_limits.getMaximumAnisotropy());
             glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropyLevel);
         }
     }

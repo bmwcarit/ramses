@@ -9,7 +9,6 @@
 #ifndef RAMSES_IDLTADAPTER_H
 #define RAMSES_IDLTADAPTER_H
 
-#include "DltLogAppender/DltAdapterTypes.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Utils/LogLevel.h"
 #include "Utils/LogMessage.h"
@@ -36,26 +35,12 @@ namespace ramses_internal
          * Send log message to dlt
          * @param msg a string containing the log message
          */
-        virtual void logMessage(const LogMessage& msg) = 0;
+        virtual bool logMessage(const LogMessage& msg) = 0;
 
-        /**
-         * Register new context, if context already exists no new context is created
-         * @param ctx log context to use
-         * @returns void ptr to the newly created dlt context
-         */
-        virtual void* registerContext(LogContext* ctx, bool pushLogLevel, ELogLevel logLevel) = 0;
-
-        /**
-         * Register new application. Every application has one unique name
-         * @param id id string for application
-         * @param desc description text with more details than the name
-         */
-        virtual bool registerApplication(const String& id, const String& desc) = 0;
-
-        /**
-         * Unregister Application
-         */
-        virtual void unregisterApplication() = 0;
+        virtual bool initialize(const String& id, const String& description, bool registerApplication,
+                                const std::function<void(const String&, int)>& logLevelChangeCallback,
+                                const std::vector<LogContext*>& contexts, bool pushLogLevelsToDaemon) = 0;
+        virtual void uninitialize() = 0;
 
         /**
          * Register injection callback
@@ -63,7 +48,7 @@ namespace ramses_internal
          * @param sid the service id of the callback
          * @param dltInjectionCallback the function to be called trough the callback
          */
-        virtual void registerInjectionCallback(LogContext* ctx,uint32_t sid,int (*dltInjectionCallback)(uint32_t service_id, void *data, uint32_t length)) = 0;
+        virtual bool registerInjectionCallback(LogContext* ctx,uint32_t sid,int (*dltInjectionCallback)(uint32_t service_id, void *data, uint32_t length)) = 0;
 
         /**
          * Transmit a file via DLT
@@ -72,32 +57,11 @@ namespace ramses_internal
          */
         virtual bool transmitFile(LogContext& ctx, const String& uri, bool deleteFile) = 0;
 
-        virtual void registerLogLevelChangeCallback(const std::function<void(const String&, int)>& callback) = 0;
-
-        /**
-         * Returns the application name
-         * @returns name of the application
-         */
-        virtual const String& getApplicationName() = 0;
-
-        /**
-         * Returns the description of the application
-         * @return description of the application
-         */
-        virtual const String& getApplicationDescription() = 0;
-
         /**
          * Return the state if dlt was found at runtime
          * @return if dlt was successfully initialized
          */
-        virtual bool isDltInitialized() = 0;
-
-        /**
-         * Get the error status of the DltAdapter
-         * DLT_ERROR_NO_ERROR indicates that no error occurred
-         * @returns enum with error code and clears the current error
-         */
-        virtual EDltError getDltStatus() = 0;
+        virtual bool isInitialized() = 0;
     };
 }
 #endif // RAMSES_DLTADAPTERIMPL_H

@@ -90,9 +90,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t DataBufferImpl::validate(uint32_t indent) const
+    status_t DataBufferImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        status_t status = SceneObjectImpl::validate(indent);
+        status_t status = SceneObjectImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
 
         const auto& iscene = getIScene();

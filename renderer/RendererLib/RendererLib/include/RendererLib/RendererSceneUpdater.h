@@ -11,15 +11,14 @@
 
 #include "RendererAPI/Types.h"
 #include "SceneAPI/SceneId.h"
-#include "SceneAPI/DataSlot.h"
 #include "Collections/HashMap.h"
+#include "Animation/AnimationSystemFactory.h"
 #include "RendererLib/EResourceStatus.h"
 #include "RendererLib/StagingInfo.h"
 #include "RendererLib/OffscreenBufferLinks.h"
 #include "RendererLib/FrameTimer.h"
+#include "RendererLib/IRendererSceneControl.h"
 #include "Scene/EScenePublicationMode.h"
-#include "Math3d/Vector4.h"
-#include "Math3d/Vector2.h"
 #include <unordered_map>
 
 namespace ramses_internal
@@ -27,7 +26,6 @@ namespace ramses_internal
     class IScene;
     class Renderer;
     class SceneStateExecutor;
-    class ISceneGraphConsumerComponent;
     class IResourceProvider;
     class IResourceUploader;
     class IRendererResourceCache;
@@ -40,15 +38,23 @@ namespace ramses_internal
     class DataReferenceLinkManager;
     class TransformationLinkManager;
     class TextureLinkManager;
+    class ISceneReferenceLogic;
 
-    class RendererSceneUpdater
+    class RendererSceneUpdater : public IRendererSceneControl
     {
         friend class RendererLogger;
         //TODO (Violin) remove this after KPI Monitor is reworked
         friend class GpuMemorySample;
 
     public:
-        RendererSceneUpdater(Renderer& renderer, RendererScenes& rendererScenes, SceneStateExecutor& sceneStateExecutor, ISceneGraphConsumerComponent& sceneGraphConsumerComponent, RendererEventCollector& eventCollector, FrameTimer& frameTimer, SceneExpirationMonitor& expirationMonitor, IRendererResourceCache* rendererResourceCache = nullptr);
+        RendererSceneUpdater(
+            Renderer& renderer,
+            RendererScenes& rendererScenes,
+            SceneStateExecutor& sceneStateExecutor,
+            RendererEventCollector& eventCollector,
+            FrameTimer& frameTimer,
+            SceneExpirationMonitor& expirationMonitor,
+            IRendererResourceCache* rendererResourceCache = nullptr);
         virtual ~RendererSceneUpdater();
 
         virtual void handleSceneActions(SceneId sceneId, SceneActionCollection& actionsForScene);
@@ -57,22 +63,24 @@ namespace ramses_internal
         void destroyDisplayContext(DisplayHandle handle);
         void updateScenes();
 
-        void handleScenePublished               (SceneId sceneId, const Guid& clientWhereSceneIsAvailable, EScenePublicationMode mode);
+        // IRendererSceneControl
+        virtual void handleSceneSubscriptionRequest     (SceneId sceneId) override;
+        virtual void handleSceneUnsubscriptionRequest   (SceneId sceneId, bool indirect) override;
+        virtual void handleSceneMappingRequest          (SceneId sceneId, DisplayHandle handle) override;
+        virtual void handleSceneUnmappingRequest        (SceneId sceneId) override;
+        virtual void handleSceneShowRequest             (SceneId sceneId) override;
+        virtual void handleSceneHideRequest             (SceneId sceneId) override;
+        virtual bool handleSceneDisplayBufferAssignmentRequest(SceneId sceneId, OffscreenBufferHandle buffer, int32_t sceneRenderOrder) override;
+        virtual void handleSceneDataLinkRequest         (SceneId providerSceneId, DataSlotId providerId, SceneId consumerSceneId, DataSlotId consumerId) override;
+        virtual void handleBufferToSceneDataLinkRequest (OffscreenBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId) override;
+        virtual void handleDataUnlinkRequest            (SceneId consumerSceneId, DataSlotId consumerId) override;
+
+        void handleScenePublished               (SceneId sceneId, EScenePublicationMode mode);
         void handleSceneUnpublished             (SceneId sceneId);
-        void handleSceneSubscriptionRequest     (SceneId sceneId);
-        void handleSceneUnsubscriptionRequest   (SceneId sceneId, bool indirect);
-        void handleSceneMappingRequest          (SceneId sceneId, DisplayHandle handle);
-        void handleSceneUnmappingRequest        (SceneId sceneId);
-        void handleSceneShowRequest             (SceneId sceneId);
-        void handleSceneHideRequest             (SceneId sceneId);
         void handleSceneReceived                (const SceneInfo& sceneInfo);
-        Bool handleSceneDisplayBufferAssignmentRequest(SceneId sceneId, OffscreenBufferHandle buffer, Int32 sceneRenderOrder);
         Bool handleBufferCreateRequest          (OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, Bool isDoubleBuffered);
         Bool handleBufferDestroyRequest         (OffscreenBufferHandle buffer, DisplayHandle display);
         void handleSetClearColor                (DisplayHandle display, OffscreenBufferHandle buffer, const Vector4& clearColor);
-        void handleSceneDataLinkRequest         (SceneId providerSceneId, DataSlotId providerId, SceneId consumerSceneId, DataSlotId consumerId);
-        void handleBufferToSceneDataLinkRequest (OffscreenBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId);
-        void handleDataUnlinkRequest            (SceneId consumerSceneId, DataSlotId consumerId);
         virtual void handlePickEvent            (SceneId sceneId, Vector2 coordsNormalizedToBufferSize);
 
         Bool hasPendingFlushes(SceneId sceneId) const;
@@ -80,7 +88,7 @@ namespace ramses_internal
         void setLimitFlushesForceApply(UInt limitForPendingFlushesForceApply);
         void setLimitFlushesForceUnsubscribe(UInt limitForPendingFlushesForceUnsubscribe);
 
-        static constexpr UInt SceneActionsPerChunkToApply = 100u;
+        void setSceneReferenceLogicHandler(ISceneReferenceLogic& sceneRefLogic);
 
     private:
         void destroyScene(SceneId sceneID);
@@ -90,8 +98,7 @@ namespace ramses_internal
 
         UInt32 updateScenePendingFlushes(SceneId sceneID, StagingInfo& stagingInfo);
         void applySceneActions(IScene& scene, PendingFlush& flushInfo);
-        void applySceneActionsPartially(IScene& scene, PendingFlush& flushInfo, bool firstChunk);
-        UInt32 applyPendingFlushes(SceneId sceneID, StagingInfo& stagingInfo, EResourceStatus resourcesStatus, Bool applyFlushPartially);
+        UInt32 applyPendingFlushes(SceneId sceneID, StagingInfo& stagingInfo, EResourceStatus resourcesStatus);
         void processStagedResourceChanges(SceneId sceneID, StagingInfo& stagingInfo, DisplayHandle& activeDisplay);
 
         Bool willApplyingChangesMakeAllResourcesAvailable(SceneId sceneId) const;
@@ -106,6 +113,7 @@ namespace ramses_internal
         void processStagedResourceChangesFromAppliedFlushes(DisplayHandle& activeDisplay);
         void updateSceneStreamTexturesDirtiness();
         void updateScenesResourceCache();
+        void updateScenesRealTimeAnimationSystems();
         void updateScenesTransformationCache();
         void updateScenesDataLinks();
         void updateScenesStates();
@@ -121,11 +129,13 @@ namespace ramses_internal
         Renderer&                                         m_renderer;
         RendererScenes&                                   m_rendererScenes;
         SceneStateExecutor&                               m_sceneStateExecutor;
-        ISceneGraphConsumerComponent&                     m_sceneGraphConsumerComponent;
         RendererEventCollector&                           m_rendererEventCollector;
         FrameTimer&                                       m_frameTimer;
         SceneExpirationMonitor&                           m_expirationMonitor;
-        IRendererResourceCache*                           m_rendererResourceCache;
+        ISceneReferenceLogic*                             m_sceneReferenceLogic = nullptr;
+        IRendererResourceCache*                           m_rendererResourceCache = nullptr;
+
+        AnimationSystemFactory                            m_animationSystemFactory;
 
         HashMap<DisplayHandle, IRendererResourceManager*> m_displayResourceManagers;
 

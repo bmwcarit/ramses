@@ -6,8 +6,9 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include <gtest/gtest.h>
 #include "Math3d/ProjectionParams.h"
+#include "PlatformAbstraction/PlatformMath.h"
+#include <gtest/gtest.h>
 
 namespace ramses_internal
 {

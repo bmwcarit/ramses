@@ -7,54 +7,39 @@
 //  -------------------------------------------------------------------------
 
 #include "Collections/StringOutputStream.h"
-#include "Math3d/Matrix44f.h"
 #include "framework_common_gmock_header.h"
 #include "gmock/gmock.h"
-#include "gmock/gmock-matchers.h"
 
 
 namespace ramses_internal
 {
-    using namespace testing;
-    using ::testing::AnyOf;
-
-    TEST(AStringOutputStream, WriteFloatWithDefaultPrecision)
+    TEST(AStringOutputStream, WriteFloat)
     {
         StringOutputStream outputStream;
         outputStream << 47.11f;
-        EXPECT_STREQ("47.110001", outputStream.c_str());
-        EXPECT_EQ(9U, outputStream.size());
+        EXPECT_EQ("47.11", outputStream.data());
+        EXPECT_EQ(5U, outputStream.size());
     }
 
-    TEST(AStringOutputStream, WriteFloatMaximumNegativeWithDefaultPrecision)
+    TEST(AStringOutputStream, WriteFloatMaximumNegative)
     {
         StringOutputStream outputStream;
         outputStream << -std::numeric_limits<float>::max();
-        EXPECT_EQ(47U, outputStream.size());
+        EXPECT_EQ("-3.4028235e+38", outputStream.data());
     }
 
-    TEST(AStringOutputStream, WriteFloatZeroWithMaximumPrecision)
+    TEST(AStringOutputStream, WriteFloatZero)
     {
         StringOutputStream outputStream;
-        outputStream.setDecimalDigits(45);
         outputStream << 0.f;
-        EXPECT_EQ(2U + 45U, outputStream.size()); // '0.' + precision
+        EXPECT_EQ("0.0", outputStream.data());
     }
 
-    TEST(AStringOutputStream, WriteFloatZeroWithCappedToMaximumPrecision)
+    TEST(AStringOutputStream, WriteFloatSmallestNegative)
     {
         StringOutputStream outputStream;
-        outputStream.setDecimalDigits(46);
-        outputStream << 0.f;
-        EXPECT_EQ(2U + 45U, outputStream.size()); // '0.' + precision
-    }
-
-    TEST(AStringOutputStream, WriteFloatSmallestNegativeWithMaximumPrecision)
-    {
-        StringOutputStream outputStream;
-        outputStream.setDecimalDigits(45);
         outputStream << (-1.f / (std::numeric_limits<float>::max() - 1));
-        EXPECT_EQ(3U + 45U, outputStream.size()); // '-' + '0.' + precision
+        EXPECT_EQ("-2.938736e-39", outputStream.data());
     }
 
     TEST(AStringOutputStream, WriteInt32)
@@ -111,24 +96,29 @@ namespace ramses_internal
     {
         StringOutputStream outputStream;
         outputStream << true;
-        EXPECT_STREQ("true", outputStream.c_str());
-        EXPECT_EQ(4U, outputStream.size());
+        EXPECT_EQ("true", outputStream.data());
     }
 
     TEST(AStringOutputStream, WriteBoolFalse)
     {
         StringOutputStream outputStream;
         outputStream << false;
-        EXPECT_STREQ("false", outputStream.c_str());
-        EXPECT_EQ(5U, outputStream.size());
+        EXPECT_EQ("false", outputStream.data());
     }
 
     TEST(AStringOutputStream, WriteCharArray)
     {
         StringOutputStream outputStream;
         outputStream << "Hello World";
-        EXPECT_STREQ("Hello World", outputStream.c_str());
-        EXPECT_EQ(11U, outputStream.size());
+        EXPECT_EQ("Hello World", outputStream.data());
+    }
+
+    TEST(AStringOutputStream, WriteNullCharArray)
+    {
+        StringOutputStream outputStream;
+        const char* str = nullptr;
+        outputStream << str;
+        EXPECT_EQ("", outputStream.data());
     }
 
     TEST(AStringOutputStream, WriteChar)
@@ -136,29 +126,14 @@ namespace ramses_internal
         StringOutputStream outputStream;
         char c = 'T';
         outputStream << c;
-        EXPECT_STREQ("T", outputStream.c_str());
-        EXPECT_EQ(1U, outputStream.size());
+        EXPECT_EQ("T", outputStream.data());
     }
 
     TEST(AStringOutputStream, WriteUInt16)
     {
         StringOutputStream outputStream;
         outputStream << static_cast<uint16_t>(4711);
-        EXPECT_STREQ("4711", outputStream.c_str());
-        EXPECT_EQ(4U, outputStream.size());
-    }
-
-    TEST(AStringOutputStream, WriteFixed)
-    {
-        StringOutputStream outputStream;
-        outputStream << 47.11f;
-        EXPECT_STREQ("47.110001", outputStream.c_str());
-        EXPECT_EQ(9u, outputStream.size());
-        outputStream.clear();
-        outputStream.setFloatingPointType(StringOutputStream::EFloatingPointType_Fixed);
-        outputStream << 47.11f;
-        EXPECT_STREQ("47.1100", outputStream.c_str());
-        EXPECT_EQ(7u, outputStream.size());
+        EXPECT_EQ("4711", outputStream.data());
     }
 
     TEST(AStringOutputStream, Clear)
@@ -194,8 +169,7 @@ namespace ramses_internal
     {
         StringOutputStream outputStream;
         outputStream << 4711 << " " << 47.11f << " " << "Hello World" << " " << true;
-        EXPECT_STREQ("4711 47.110001 Hello World true", outputStream.c_str());
-        EXPECT_EQ(31U, outputStream.size());
+        EXPECT_EQ("4711 47.11 Hello World true", outputStream.data());
     }
 
     TEST(AStringOutputStream, Resize)
@@ -214,169 +188,16 @@ namespace ramses_internal
         EXPECT_STREQ("a", constStream.c_str());
     }
 
-    TEST(AStringOutputStream, WriteUInt32HexNoLeadingZero)
-    {
-        StringOutputStream outputStream;
-        outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexNoLeadingZeros);
-        uint32_t value = 4446222;
-        outputStream << value;
-        EXPECT_STREQ("43D80E", outputStream.c_str());
-        EXPECT_EQ(6U, outputStream.size());
-    }
-
-    TEST(AStringOutputStream, WriteUInt32HexLeadingZero)
-    {
-        StringOutputStream outputStream;
-        outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexLeadingZeros);
-        uint32_t value = 4446222;
-        outputStream << value;
-        EXPECT_STREQ("0043D80E", outputStream.c_str());
-        EXPECT_EQ(8U, outputStream.size());
-    }
-
-    TEST(AStringOutputStream, WriteInt32HexNoLeadingZero)
-    {
-        StringOutputStream outputStream;
-        outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexNoLeadingZeros);
-        int32_t value = 4446222;
-        outputStream << value;
-        EXPECT_STREQ("43D80E", outputStream.c_str());
-        EXPECT_EQ(6U, outputStream.size());
-    }
-
-    TEST(AStringOutputStream, WriteInt32HexLeadingZero)
-    {
-        StringOutputStream outputStream;
-        outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexLeadingZeros);
-        int32_t value = 4446222;
-        outputStream << value;
-        EXPECT_STREQ("0043D80E", outputStream.c_str());
-        EXPECT_EQ(8U, outputStream.size());
-    }
-
-    TEST(AStringOutputStream, WriteInt32HexNegativeValue)
-    {
-        StringOutputStream outputStream;
-        outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexLeadingZeros);
-        int32_t value = -4446222;
-        outputStream << value;
-        EXPECT_STREQ("FFBC27F2", outputStream.c_str());//uint32_max - value
-        EXPECT_EQ(8U, outputStream.size());
-    }
-
-    TEST(AStringOutputStream, WriteUInt64HexNoLeadingZero)
-    {
-        StringOutputStream outputStream;
-        outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexNoLeadingZeros);
-        uint64_t value = 353544462511222;
-        outputStream << value;
-        EXPECT_STREQ("1418BFC19AC76", outputStream.c_str());
-        EXPECT_EQ(13U, outputStream.size());
-    }
-
-    TEST(AStringOutputStream, WriteUInt64HexLeadingZero)
-    {
-        StringOutputStream outputStream;
-        outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexLeadingZeros);
-        uint64_t value = 353544462511222;
-        outputStream << value;
-        EXPECT_STREQ("0001418BFC19AC76", outputStream.c_str());
-        EXPECT_EQ(16U, outputStream.size());
-    }
-
-    TEST(AStringOutputStream, WriteInt64HexNoLeadingZero)
-    {
-        StringOutputStream outputStream;
-        outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexNoLeadingZeros);
-        int64_t value = 353544462511222;
-        outputStream << value;
-        EXPECT_STREQ("1418BFC19AC76", outputStream.c_str());
-        EXPECT_EQ(13U, outputStream.size());
-    }
-
-    TEST(AStringOutputStream, WriteInt64HexLeadingZero)
-    {
-        StringOutputStream outputStream;
-        outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexLeadingZeros);
-        int64_t value = 353544462511222;
-        outputStream << value;
-        EXPECT_STREQ("0001418BFC19AC76", outputStream.c_str());
-        EXPECT_EQ(16U, outputStream.size());
-    }
-
-    TEST(AStringOutputStream, WriteInt64HexNegativeValue)
-    {
-        StringOutputStream outputStream;
-        outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexLeadingZeros);
-        int64_t value = -353544462511222;
-        outputStream << value;
-        EXPECT_STREQ("FFFEBE7403E6538A", outputStream.c_str());//uint64_max - value
-        EXPECT_EQ(16U, outputStream.size());
-    }
-
-    TEST(AStringOutputStream, WriteUInt16HexLeadingZero)
-    {
-        StringOutputStream outputStream;
-        outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexLeadingZeros);
-        uint16_t value = 1337;
-        outputStream << value;
-        EXPECT_STREQ("0539", outputStream.c_str());
-        EXPECT_EQ(4U, outputStream.size());
-    }
-
-    TEST(AStringOutputStream, WriteUInt16HexNoLeadingZero)
-    {
-        StringOutputStream outputStream;
-        outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexNoLeadingZeros);
-        uint16_t value = 1337;
-        outputStream << value;
-        EXPECT_STREQ("539", outputStream.c_str());
-        EXPECT_EQ(3U, outputStream.size());
-    }
-
-    TEST(AStringOutputStream, WriteInt16HexLeadingZero)
-    {
-        StringOutputStream outputStream;
-        outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexLeadingZeros);
-        uint16_t value = 1337;
-        outputStream << value;
-        EXPECT_STREQ("0539", outputStream.c_str());
-        EXPECT_EQ(4U, outputStream.size());
-    }
-
-    TEST(AStringOutputStream, WriteInt16HexNoLeadingZero)
-    {
-        StringOutputStream outputStream;
-        outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexNoLeadingZeros);
-        uint16_t value = 1337;
-        outputStream << value;
-        EXPECT_STREQ("539", outputStream.c_str());
-        EXPECT_EQ(3U, outputStream.size());
-    }
-
-    TEST(AStringOutputStream, WriteInt16HexNegativeValue)
-    {
-        StringOutputStream outputStream;
-        outputStream.setHexadecimalOutputFormat(StringOutputStream::EHexadecimalType_HexLeadingZeros);
-        int16_t value = -1337;
-        outputStream << value;
-        EXPECT_STREQ("FAC7", outputStream.c_str());//uint16_max - value
-        EXPECT_EQ(4U, outputStream.size());
-    }
-
     TEST(AStringOutputStream, hasLengthZeroIntially)
     {
         StringOutputStream stream;
-
         EXPECT_EQ(0u, stream.size());
     }
 
     TEST(AStringOutputStream, returnsCorrectLength)
     {
         StringOutputStream stream;
-
         stream << "12345";
-
         EXPECT_EQ(5u, stream.size());
     }
 
@@ -385,8 +206,7 @@ namespace ramses_internal
         StringOutputStream stream;
         void* nullPointer = nullptr;
         stream << nullPointer;
-
-        EXPECT_THAT(stream.c_str(), AnyOf(StrEq("0"), StrEq("0x0"), StrEq("00000000"), StrEq("0000000000000000"), StrEq("(nil)")));
+        EXPECT_EQ("0x0", stream.data());
     }
 
     TEST(AStringOutputStream, PrintsNonNullVoidPointerAsHex)
@@ -394,20 +214,7 @@ namespace ramses_internal
         StringOutputStream stream;
         void* forgedPointer = reinterpret_cast<void*>(1024);
         stream << forgedPointer;
-
-        EXPECT_THAT(stream.c_str(), AnyOf(StrEq("0x400"), StrEq("00000400"), StrEq("0000000000000400")));
-    }
-
-    TEST(AStringOutputStream, Matrix44f)
-    {
-        StringOutputStream stream;
-
-        Matrix44f m(1.0f, 5.0f, 9.0f, 13.0f, 2.0f, 6.0f, 10.0f, 14.0f, 3.0f, 7.0f, 11.0f, 15.0f, 4.0f, 8.0f, 12.0f,
-                    16.0f);
-
-        stream << m;
-
-        EXPECT_STREQ("1.000000 2.000000 3.000000 4.000000 5.000000 6.000000 7.000000 8.000000 9.000000 10.000000 11.000000 12.000000 13.000000 14.000000 15.000000 16.000000", stream.c_str());
+        EXPECT_EQ("0x400", stream.data());
     }
 
     TEST(AStringOutputStream, releaseReturnsStringAndClearsStream)

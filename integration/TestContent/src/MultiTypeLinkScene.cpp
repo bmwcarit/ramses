@@ -11,6 +11,9 @@
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/DataVector4f.h"
+#include "ramses-client-api/AnimationSystem.h"
+#include "ramses-client-api/SplineLinearFloat.h"
+#include "ramses-client-api/AnimationSequence.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/Effect.h"
@@ -22,6 +25,13 @@
 
 namespace ramses_internal
 {
+    constexpr const ramses::dataProviderId_t MultiTypeLinkScene::TransformationProviderId;
+    constexpr const ramses::dataConsumerId_t MultiTypeLinkScene::TransformationConsumerId;
+    constexpr const ramses::dataProviderId_t MultiTypeLinkScene::DataProviderId;
+    constexpr const ramses::dataConsumerId_t MultiTypeLinkScene::DataConsumerId;
+    constexpr const ramses::dataProviderId_t MultiTypeLinkScene::TextureProviderId;
+    constexpr const ramses::dataConsumerId_t MultiTypeLinkScene::TextureConsumerId;
+
     MultiTypeLinkScene::MultiTypeLinkScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
         : IntegrationScene(ramsesClient, scene, cameraPosition)
     {
@@ -74,7 +84,8 @@ namespace ramses_internal
         case TRANSFORMATION_CONSUMER_DATA_AND_TEXTURE_PROVIDER:
         {
             scene.createDataProvider(*colorData, DataProviderId);
-            colorData->setValue(1.f, 1.f, 0.f, 1.f);
+            colorData->setValue(1.f, 0.f, 0.f, 1.f);
+            animateProvidedContent(*colorData);
 
             scene.createTransformationDataConsumer(*groupNode, TransformationConsumerId);
 
@@ -93,8 +104,9 @@ namespace ramses_internal
             colorData->setValue(0.f, 1.f, 0.f, 1.f);
 
             ramses::Node* providerNode = scene.createNode();
-            providerNode->setTranslation(1.5f, -2.f, 5.f);
+            providerNode->setTranslation(1.5f, -2.f, 0.f);
             scene.createTransformationDataProvider(*providerNode, TransformationProviderId);
+            animateProvidedContent(*providerNode);
 
             const std::array<uint8_t, 4> pxData{ { 0x0, 0xff, 0x0, 0xff } };
             const ramses::MipLevelData mipLevelData(4, pxData.data());
@@ -108,6 +120,39 @@ namespace ramses_internal
         default:
             assert(false && "invalid scene state");
         }
+    }
+
+    void MultiTypeLinkScene::animateProvidedContent(ramses::DataObject& dataObject)
+    {
+        ramses::AnimationSystem* animSystem = m_scene.createAnimationSystem();
+        ramses::AnimatedProperty* animProperty = animSystem->createAnimatedProperty(dataObject, ramses::EAnimatedPropertyComponent_Y);
+        ramses::SplineLinearFloat* spline = animSystem->createSplineLinearFloat();
+        spline->setKey(0u, 0.f);
+        spline->setKey(1000u, 1.f);
+        ramses::Animation* animation = animSystem->createAnimation(*animProperty, *spline);
+        ramses::AnimationSequence* seq = animSystem->createAnimationSequence();
+        seq->addAnimation(*animation);
+        seq->startAt(0u);
+
+        animSystem->setTime(0u);
+        animSystem->setTime(500u);
+        animSystem->setTime(1500u);
+    }
+
+    void MultiTypeLinkScene::animateProvidedContent(ramses::Node& translateNode)
+    {
+        ramses::AnimationSystem* animSystem = m_scene.createAnimationSystem();
+        ramses::AnimatedProperty* animProperty = animSystem->createAnimatedProperty(translateNode, ramses::EAnimatedProperty_Translation, ramses::EAnimatedPropertyComponent_Z);
+        ramses::SplineLinearFloat* spline = animSystem->createSplineLinearFloat();
+        spline->setKey(0u, 0.f);
+        spline->setKey(1000u, 10.f);
+        ramses::Animation* animation = animSystem->createAnimation(*animProperty, *spline);
+        ramses::AnimationSequence* seq = animSystem->createAnimationSequence();
+        seq->addAnimation(*animation);
+
+        animSystem->setTime(0u);
+        seq->startAt(0u);
+        animSystem->setTime(500u);
     }
 
     const ramses::TextureSampler& MultiTypeLinkScene::createSampler(const ramses::Texture2D& texture)

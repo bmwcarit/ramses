@@ -29,6 +29,8 @@
 #include "SceneConfigImpl.h"
 #include "ArrayResourceImpl.h"
 #include "ResourceImpl.h"
+#include "AnimationSystemImpl.h"
+#include "AnimatedPropertyImpl.h"
 #include "Texture2DImpl.h"
 #include "Texture3DImpl.h"
 #include "TextureCubeImpl.h"
@@ -43,6 +45,7 @@
 #include "RamsesObjectRegistryIterator.h"
 #include "SerializationHelper.h"
 #include "RamsesVersion.h"
+#include "SceneReferenceImpl.h"
 
 // framework
 #include "SceneAPI/SceneCreationInformation.h"
@@ -52,6 +55,7 @@
 #include "Components/ResourcePersistation.h"
 #include "Components/ManagedResource.h"
 #include "Components/ResourceTableOfContents.h"
+#include "Animation/AnimationSystemFactory.h"
 #include "Resource/ArrayResource.h"
 #include "Resource/EffectResource.h"
 #include "Resource/IResource.h"
@@ -136,6 +140,13 @@ namespace ramses
         m_framework.getPeriodicLogger().removePeriodicLogSupplier(&m_framework.getScenegraphComponent());
     }
 
+    void RamsesClientImpl::setHLObject(RamsesClient* hlClient)
+    {
+        assert(hlClient);
+        m_hlClient = hlClient;
+    }
+
+
     void RamsesClientImpl::deinitializeFrameworkData()
     {
     }
@@ -169,7 +180,7 @@ namespace ramses
             return nullptr;
         }
 
-        SceneImpl& pimpl = *new SceneImpl(*internalScene, sceneConfig, *this);
+        SceneImpl& pimpl = *new SceneImpl(*internalScene, sceneConfig, *m_hlClient);
         pimpl.initializeFrameworkData();
         Scene* scene = new Scene(pimpl);
         m_scenes.push_back(scene);
@@ -314,17 +325,17 @@ namespace ramses
         return nullptr;
     }
 
-    TextureCube* RamsesClientImpl::createTextureCube(uint32_t size, ETextureFormat format, resourceCacheFlag_t cacheFlag, const char* name, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain)
+    TextureCube* RamsesClientImpl::createTextureCube(uint32_t size, ETextureFormat format, resourceCacheFlag_t cacheFlag, const char* name, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle)
     {
         LOG_TRACE(ramses_internal::CONTEXT_CLIENT, "RamsesClient::createTextureCube:");
 
-        const ramses_internal::TextureResource* resource = createTextureResource(ramses_internal::EResourceType_TextureCube, size, 1u, 1u, format, mipMapCount, mipLevelData, generateMipChain, {}, cacheFlag, name);
+        const ramses_internal::TextureResource* resource = createTextureResource(ramses_internal::EResourceType_TextureCube, size, 1u, 1u, format, mipMapCount, mipLevelData, generateMipChain, swizzle, cacheFlag, name);
         if (resource != nullptr)
         {
             ramses_internal::ManagedResource res = manageResource(resource);
             ramses_internal::ResourceHashUsage hashUsage = m_appLogic.getHashUsage(res.getResourceObject()->getHash());
             TextureCubeImpl& pimpl = *new TextureCubeImpl(hashUsage, *this, name);
-            pimpl.initializeFromFrameworkData(size, format);
+            pimpl.initializeFromFrameworkData(size, format, swizzle);
             TextureCube* texture = new TextureCube(pimpl);
 
             addResourceObjectToRegistry_ThreadSafe(*texture);
@@ -785,6 +796,8 @@ namespace ramses
         }
         internalScene->preallocateSceneSize(sizeInformation);
 
+        ramses_internal::AnimationSystemFactory animSystemFactory(ramses_internal::EAnimationSystemOwner_Client, &internalScene->getSceneActionCollection());
+
         // need first to create the pimpl, so that internal framework components know the new scene
         SceneConfigImpl sceneConfig;
         ramses_internal::PlatformGuard g(m_clientLock);
@@ -796,11 +809,11 @@ namespace ramses
             }
         }
 
-        SceneImpl& pimpl = *new SceneImpl(*internalScene, sceneConfig, *this);
+        SceneImpl& pimpl = *new SceneImpl(*internalScene, sceneConfig, *m_hlClient);
 
         // now the scene is registered, so it's possible to load the low level content into the scene
         LOG_TRACE(ramses_internal::CONTEXT_CLIENT, "    Reading low level scene from stream");
-        ramses_internal::ScenePersistation::ReadSceneFromStream(inputStream, *internalScene);
+        ramses_internal::ScenePersistation::ReadSceneFromStream(inputStream, *internalScene, &animSystemFactory);
 
         LOG_TRACE(ramses_internal::CONTEXT_CLIENT, "    Deserializing high level scene objects from stream");
         DeserializationContext deserializationContext;
@@ -997,14 +1010,27 @@ namespace ramses
         return StatusOK;
     }
 
+    SceneReference* RamsesClientImpl::findSceneReference(sceneId_t masterSceneId, sceneId_t referencedSceneId)
+    {
+        for (auto const& scene : getListOfScenes())
+        {
+            if (masterSceneId == scene->getSceneId())
+                return scene->impl.getSceneReference(referencedSceneId);
+        }
+
+        return nullptr;
+    }
+
     status_t RamsesClientImpl::dispatchEvents(IClientEventHandler& clientEventHandler)
     {
         std::vector<ResourceLoadStatus> localAsyncResourcesStatus;
         std::vector<SceneLoadStatus> localAsyncSceneLoadStatus;
+        std::vector<ramses_internal::SceneReferenceEvent> clientRendererEvents;
         {
             ramses_internal::PlatformGuard g(m_clientLock);
             localAsyncResourcesStatus.swap(m_asyncResourceLoadStatusVec);
             localAsyncSceneLoadStatus.swap(m_asyncSceneLoadStatusVec);
+            clientRendererEvents.swap(getClientApplication().getSceneReferenceEvents());
         }
 
         for (const auto& resourceStatus : localAsyncResourcesStatus)
@@ -1039,6 +1065,43 @@ namespace ramses
             {
                 LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesClient::dispatchEvents(sceneFileLoadFailed): " << sceneStatus.sceneFilename);
                 clientEventHandler.sceneFileLoadFailed(sceneStatus.sceneFilename.c_str());
+            }
+        }
+
+        for (const auto& rendererEvent : clientRendererEvents)
+        {
+            switch (rendererEvent.type)
+            {
+            case ramses_internal::SceneReferenceEventType::SceneStateChanged:
+            {
+                auto sr = findSceneReference(sceneId_t{ rendererEvent.masterSceneId.getValue() }, sceneId_t{ rendererEvent.referencedScene.getValue() });
+                if (sr)
+                {
+                    sr->impl.setReportedState(SceneReferenceImpl::GetSceneReferenceState(rendererEvent.sceneState));
+                    clientEventHandler.sceneReferenceStateChanged(*sr, SceneReferenceImpl::GetSceneReferenceState(rendererEvent.sceneState));
+                }
+                else
+                    LOG_WARN(CONTEXT_CLIENT, "RamsesClientImpl::dispatchEvents: did not find SceneReference for a SceneStateChanged event: "
+                        << rendererEvent.masterSceneId.getValue() << " " << rendererEvent.referencedScene << " " << EnumToString(rendererEvent.sceneState));
+                break;
+            }
+            case ramses_internal::SceneReferenceEventType::SceneFlushed:
+            {
+                auto sr = findSceneReference(sceneId_t{ rendererEvent.masterSceneId.getValue() }, sceneId_t{ rendererEvent.referencedScene.getValue() });
+                if (sr)
+                    clientEventHandler.sceneReferenceFlushed(*sr, sceneVersionTag_t{ rendererEvent.tag.getValue() });
+                else
+                    LOG_WARN(CONTEXT_CLIENT, "RamsesClientImpl::dispatchEvents: did not find SceneReference for a SceneFlushed event: "
+                        << rendererEvent.masterSceneId.getValue() << " " << rendererEvent.referencedScene << " " << rendererEvent.tag);
+                break;
+            }
+            case ramses_internal::SceneReferenceEventType::DataLinked:
+                clientEventHandler.dataLinked(sceneId_t{ rendererEvent.providerScene.getValue() }, dataProviderId_t{ rendererEvent.dataProvider.getValue() },
+                    sceneId_t{ rendererEvent.consumerScene.getValue() }, dataConsumerId_t{ rendererEvent.dataConsumer.getValue() }, rendererEvent.status);
+                break;
+            case ramses_internal::SceneReferenceEventType::DataUnlinked:
+                clientEventHandler.dataUnlinked(sceneId_t{ rendererEvent.consumerScene.getValue() }, dataConsumerId_t{ rendererEvent.dataConsumer.getValue() }, rendererEvent.status);
+                break;
             }
         }
 
@@ -1221,18 +1284,18 @@ namespace ramses
         return m_framework;
     }
 
-    status_t RamsesClientImpl::validate(uint32_t indent) const
+    status_t RamsesClientImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        status_t status = RamsesObjectImpl::validate(indent);
+        status_t status = RamsesObjectImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
 
-        const status_t scenesStatus = validateScenes(indent);
+        const status_t scenesStatus = validateScenes(indent, visitedObjects);
         if (StatusOK != scenesStatus)
         {
             status = scenesStatus;
         }
 
-        const status_t resourcesStatus = validateResources(indent);
+        const status_t resourcesStatus = validateResources(indent, visitedObjects);
         if (StatusOK != resourcesStatus)
         {
             status = resourcesStatus;
@@ -1243,14 +1306,14 @@ namespace ramses
         return status;
     }
 
-    status_t RamsesClientImpl::validateScenes(uint32_t indent) const
+    status_t RamsesClientImpl::validateScenes(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
         ramses_internal::PlatformGuard g(m_clientLock);
 
         status_t status = StatusOK;
         for(const auto& scene : m_scenes)
         {
-            const status_t sceneStatus = addValidationOfDependentObject(indent, scene->impl);
+            const status_t sceneStatus = addValidationOfDependentObject(indent, scene->impl, visitedObjects);
             if (StatusOK != sceneStatus)
             {
                 status = sceneStatus;
@@ -1294,7 +1357,7 @@ namespace ramses
         }
     }
 
-    status_t RamsesClientImpl::validateResources(uint32_t indent) const
+    status_t RamsesClientImpl::validateResources(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
         status_t status = StatusOK;
         ResourceIteratorImpl iter(*this, ERamsesObjectType_Resource);
@@ -1302,7 +1365,7 @@ namespace ramses
         while (nullptr != (ramsesObject = iter.getNext()))
         {
             const Resource& resource = RamsesObjectTypeUtils::ConvertTo<Resource>(*ramsesObject);
-            const status_t resourceStatus = addValidationOfDependentObject(indent, resource.impl);
+            const status_t resourceStatus = addValidationOfDependentObject(indent, resource.impl, visitedObjects);
             if (StatusOK != resourceStatus)
             {
                 status = resourceStatus;
@@ -1320,19 +1383,6 @@ namespace ramses
         const resourceId_t resId = object.getResourceId();
         m_resourcesById.put(resId, &object);
         m_resources.addObject(object);
-    }
-
-    void RamsesClientImpl::enqueueSceneCommand(sceneId_t sceneId, const ramses_internal::SceneCommand& command)
-    {
-        ramses_internal::PlatformGuard guard(m_clientLock);
-
-        for (const auto& scene : m_scenes)
-        {
-            if ( scene->impl.getSceneId() == sceneId )
-            {
-                scene->impl.enqueueSceneCommand(command);
-            }
-        }
     }
 
     ramses::Resource* RamsesClientImpl::getHLResource_Threadsafe(resourceId_t rid) const

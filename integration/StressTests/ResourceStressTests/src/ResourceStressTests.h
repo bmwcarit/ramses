@@ -28,7 +28,6 @@ namespace ramses_internal
         uint32_t sceneSetsPerDisplay;
         bool disableSkippingOfFrames;
         UInt32 perFrameBudgetMSec_ClientRes;
-        UInt32 perFrameBudgetMSec_SceneActions;
         UInt32 perFrameBudgetMSec_Rendering;
         UInt32 renderablesBatchSizeForRenderingInterruption;
     };

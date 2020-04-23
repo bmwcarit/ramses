@@ -34,7 +34,7 @@ namespace ramses
         T* m_node;
     };
 
-    TYPED_TEST_CASE(NodeTransformationTest, NodeTypes);
+    TYPED_TEST_SUITE(NodeTransformationTest, NodeTypes);
 
     TYPED_TEST(NodeTransformationTest, setTranslate)
     {
@@ -164,7 +164,7 @@ namespace ramses
         T* m_node;
     };
 
-    TYPED_TEST_CASE(NodeTransformationTestWithPublishedScene, NodeTypes);
+    TYPED_TEST_SUITE(NodeTransformationTestWithPublishedScene, NodeTypes);
 
     TYPED_TEST(NodeTransformationTestWithPublishedScene, setTranslateWithValuesEqualToCurrentValuesDoesNotCreateSceneActions)
     {

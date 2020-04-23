@@ -17,8 +17,7 @@ namespace ramses_internal
     }
 
     ParticipantIdentifier::ParticipantIdentifier()
-        : m_participantId(Guid(false))
-        , m_participantName("<unknown>")
+        : m_participantName("<unknown>")
     {
     }
 

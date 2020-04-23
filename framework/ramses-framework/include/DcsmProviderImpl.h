@@ -11,6 +11,7 @@
 
 #include "ramses-framework-api/IDcsmProviderEventHandler.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
+#include "ramses-framework-api/EDcsmOfferingMode.h"
 
 #include "Components/IDcsmComponent.h"
 #include "Components/IDcsmProviderEventHandler.h"
@@ -31,8 +32,8 @@ namespace ramses
         DcsmProviderImpl(ramses_internal::IDcsmComponent& dcsm);
         ~DcsmProviderImpl() override;
 
-        status_t offerContent(ContentID contentID, Category category, sceneId_t scene);
-        status_t offerContentWithMetadata(ContentID contentID, Category category, sceneId_t scene, const DcsmMetadataCreator& metadata);
+        status_t offerContent(ContentID contentID, Category category, sceneId_t scene, EDcsmOfferingMode mode);
+        status_t offerContentWithMetadata(ContentID contentID, Category category, sceneId_t scene, EDcsmOfferingMode mode, const DcsmMetadataCreator& metadata);
         status_t requestStopOfferContent(ContentID contentID);
 
         status_t updateContentMetadata(ContentID contentID, const DcsmMetadataCreator& metadata);
@@ -56,7 +57,7 @@ namespace ramses
             bool                            contentRequested = false;
         };
 
-        status_t commonOfferContent(const char* callerMethod, ContentID contentID, Category category, sceneId_t scene);
+        status_t commonOfferContent(const char* callerMethod, ContentID contentID, Category category, sceneId_t scene, EDcsmOfferingMode mode);
 
         ramses_internal::IDcsmComponent& m_dcsm;
         ramses::IDcsmProviderEventHandler* m_handler = nullptr;

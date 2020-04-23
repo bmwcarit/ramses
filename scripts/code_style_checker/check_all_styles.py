@@ -31,7 +31,7 @@ from check_tabbing_and_spacing import check_tabs_no_spaces
 from check_enum_style import check_enum_style
 from check_last_line_newline import check_last_line_newline
 from check_api_export_symbols import check_api_export_symbols
-
+from check_comments import check_doxygen_singleline_comments
 
 def main():
     sdk_root = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", ".."))
@@ -57,6 +57,8 @@ def main():
         r'\.ctm$',
         r'\.tar\.bz2$',
         r'\.jar$',
+        r'\.rgba_astc$',
+        r'\.dds$',
     }
 
     # These files are not checked at all
@@ -102,6 +104,7 @@ def main():
         check_enum_style                    (f, clean_file_contents)
         check_last_line_newline             (f, file_contents)
         check_api_export_symbols            (f, clean_file_contents)
+        check_doxygen_singleline_comments   (f, file_lines)
 
     shared_blacklist_non_src_files = shared_blacklist | {
         # Externals allowed to have own formatting and license
@@ -112,15 +115,15 @@ def main():
         r'^LICENSE\.txt$',   # Contains license info, not related to code/content
         r'^.lfsconfig$',     # Doesn't need a license
         # created by Android Studio
-        r'^demo/android/ramses-renderer-android-app/.idea/',
+        r'.*/\.idea/',
+        r'.*/gradle/wrapper',
+        r'.*/gradle\.properties$',
+        r'.*/gradlew$',
+        r'.*/gradlew\.bat$',
         r'^demo/android/ramses-renderer-android-app/app/src/main/res/',
         r'^demo/android/ramses-renderer-android-app/build\.gradle',
-        r'^demo/android/ramses-renderer-android-app/gradle\.properties',
-        r'^demo/android/ramses-renderer-android-app/gradle/wrapper',
-        r'^demo/android/ramses-renderer-android-app/gradlew',
-        r'^demo/android/ramses-renderer-android-app/gradlew',
-        # Only on the build server, needs to be blacklisted
-        r'^envVar\.txt$',
+        r'^demo/android/ramses-renderer-android-app-native-activity/app/src/main/res/',
+        r'^demo/android/ramses-renderer-android-app-native-activity/build\.gradle',
     }
 
     blacklist_files_formatting = shared_blacklist_non_src_files | {
@@ -154,10 +157,10 @@ def main():
         # Excluded on purpose - add new lines reasonibly here!
         r'\.patch$',        # License headers can't be added to patch files
         r'\.tmpl$',         # File content hash-dependent, can't modify
-        r'(^|/)README\.md$',                   # Doesn't need a license
+        r'\.md$',                   # Markdown files never need license
         r'^integration/TestContent/res/BigString\.txt$', # Test file with random content - doesn't need license
         r'^cmake/templates/ramses-version\.in$', # Just a template, doesn't need license
-        r'^demo/android/ramses-renderer-android-app/app/src/main/AndroidManifest', #formatting different due to xml restrictions
+        r'.*/AndroidManifest\.xml$', #formatting different due to xml restrictions
     }
     files_license_header = common_modules.common.get_all_files_with_filter(sdk_root, path, {r'.*'}, blacklist_license)
 

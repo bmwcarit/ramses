@@ -21,6 +21,7 @@ namespace ramses_internal
     {
     public:
         Surface_Base(Window_Base& window, Context_Base& context);
+        ~Surface_Base() override;
 
         Bool canRenderNewFrame() const override;
         void frameRendered() override;
@@ -29,6 +30,10 @@ namespace ramses_internal
         IWindow& getWindow() override final;
         const IContext& getContext() const override final;
         IContext& getContext() override final;
+
+        bool swapBuffers() override;
+        bool enable() override final;
+        bool disable() override final;
 
     protected:
         Window_Base& m_window;

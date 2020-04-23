@@ -82,7 +82,7 @@ namespace ramses_internal
 
         MOCK_METHOD6(allocateTexture2D, DeviceResourceHandle(UInt32 width, UInt32 height, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes));
         MOCK_METHOD6(allocateTexture3D, DeviceResourceHandle(UInt32 width, UInt32 height, UInt32 depth, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes));
-        MOCK_METHOD4(allocateTextureCube, DeviceResourceHandle(UInt32 faceSize, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes));
+        MOCK_METHOD5(allocateTextureCube, DeviceResourceHandle(UInt32 faceSize, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes));
         MOCK_METHOD1(bindTexture, void(DeviceResourceHandle handle));
         MOCK_METHOD1(generateMipmaps, void(DeviceResourceHandle handle));
         MOCK_METHOD10(uploadTextureData, void(DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte* data, UInt32 dataSize));

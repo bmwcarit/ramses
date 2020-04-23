@@ -16,6 +16,11 @@
 
 namespace ramses_internal
 {
+    constexpr const ramses::dataProviderId_t TransformationLinkScene::transformProviderDataId;
+    constexpr const ramses::dataProviderId_t TransformationLinkScene::transformProviderDataId_Left;
+    constexpr const ramses::dataProviderId_t TransformationLinkScene::transformProviderDataId_Right;
+    constexpr const ramses::dataConsumerId_t TransformationLinkScene::transformConsumerDataId;
+
     TransformationLinkScene::TransformationLinkScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
         : IntegrationScene(ramsesClient, scene, cameraPosition)
     {

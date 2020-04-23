@@ -11,12 +11,12 @@
 
 namespace ramses_internal
 {
-    void RendererConfig::setWaylandSocketEmbedded(const String& socket)
+    void RendererConfig::setWaylandEmbeddedCompositingSocketName(const String& socket)
     {
         m_waylandSocketEmbedded = socket;
     }
 
-    void RendererConfig::setWaylandSocketEmbeddedFD(int fd)
+    void RendererConfig::setWaylandEmbeddedCompositingSocketFD(int fd)
     {
         m_waylandSocketEmbeddedFD = fd;
     }
@@ -36,7 +36,7 @@ namespace ramses_internal
         return m_waylandSocketEmbeddedFD;
     }
 
-    void RendererConfig::setWaylandSocketEmbeddedGroup(const String& groupNameForSocketPermissions)
+    void RendererConfig::setWaylandEmbeddedCompositingSocketGroup(const String& groupNameForSocketPermissions)
     {
         m_waylandSocketEmbeddedGroupName = groupNameForSocketPermissions;
     }

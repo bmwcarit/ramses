@@ -87,8 +87,6 @@ ENDIF()
 
 # clang specific
 IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    ADD_FLAGS(RAMSES_C_CXX_FLAGS "-Wimplicit-fallthrough")
-
     #  do not optimize debug build at all (-Og is wrong on clang)
     ADD_FLAGS(RAMSES_DEBUG_FLAGS "-O0")
 
@@ -100,7 +98,7 @@ ENDIF()
 
 # flags for integrity
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Integrity")
-    ADD_FLAGS(RAMSES_C_CXX_FLAGS "--diag_suppress=381,111,2008,620,82,1974,1932,1721,1704")
+    ADD_FLAGS(RAMSES_C_CXX_FLAGS "--diag_suppress=381,111,2008,620,82,1974,1932,1721,1704,540,68,991,177")
     ADD_FLAGS(CMAKE_EXE_LINKER_FLAGS "--c++14")
 
     if (ramses-sdk_WARNINGS_AS_ERRORS)
@@ -126,6 +124,12 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         ADD_FLAGS(RAMSES_C_CXX_FLAGS "/WX")
     endif()
     ADD_DEFINITIONS("-D_WIN32_WINNT=0x0600" "-DWINVER=0x0600") # enable 'modern' windows APIs
+ENDIF()
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Android")
+    SET(ENV{PKG_CONFIG_PATH} "")
+    SET(ENV{PKG_CONFIG_LIBDIR} "${CMAKE_SYSROOT}/usr/lib/pkgconfig:${CMAKE_SYSROOT}/usr/share/pkgconfig")
+    SET(ENV{PKG_CONFIG_SYSROOT_DIR} ${CMAKE_SYSROOT})
 ENDIF()
 
 # distribute to the correct cmake variables

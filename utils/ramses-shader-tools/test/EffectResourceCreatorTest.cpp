@@ -21,6 +21,7 @@
 #include "EffectInputImpl.h"
 #include "RamsesClientImpl.h"
 #include "RamsesObjectTypeUtils.h"
+#include "Utils/GtestHelper.h"
 
 namespace
 {
@@ -113,7 +114,7 @@ TEST_F(AnEffectResourceCreator, canCreateEffectWithCorrectNameWhenEffectNameIsNo
 
     ramses::Effect* effectRead = nullptr;
     loadEffectFromFile(OUTPUT_RESOURCE_FILE, effectRead);
-    ASSERT_TRUE(effectRead != nullptr);
+    ASSERT_NOT_NULL(effectRead);
     EXPECT_STREQ(effectRead->getName(), "ramses-shader-tools-test.vertexshader_ramses-shader-tools-test.fragmentshader");
 }
 

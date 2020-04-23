@@ -16,7 +16,7 @@
 #include "Utils/Image.h"
 #include "Utils/File.h"
 #include "Collections/String.h"
-#include "RendererTestEventHandler.h"
+#include "RendererAndSceneTestEventHandler.h"
 #include "RendererAPI/IRenderBackend.h"
 #include "RendererAPI/ISurface.h"
 #include "ReadPixelCallbackHandler.h"
@@ -24,12 +24,9 @@
 using namespace ramses_internal;
 
 const float RendererTestUtils::DefaultMaxAveragePercentPerPixel = 0.2f;
-UInt32 RendererTestUtils::WaylandIviLayerIdForTestDisplayConfig = ramses_internal::WaylandIviLayerId::Invalid().getValue();
-ramses_internal::String RendererTestUtils::WaylandSocketEmbedded;
-int RendererTestUtils::WaylandSocketEmbeddedFileDescriptor = -1;
-ramses_internal::String RendererTestUtils::WaylandSocketEmbeddedGroup;
 std::chrono::microseconds RendererTestUtils::MaxFrameCallbackPollingTime;
 ramses_internal::String RendererTestUtils::WaylandDisplayForSystemCompositorController;
+std::vector<const char*> RendererTestUtils::CommandLineArgs{};
 
 namespace
 {
@@ -104,7 +101,7 @@ ramses::displayId_t RendererTestUtils::CreateDisplayImmediate(ramses::RamsesRend
 {
     const ramses::displayId_t displayId = renderer.createDisplay(displayConfig);
     renderer.flush();
-    RendererTestEventHandler eventHandler(renderer);
+    ramses::RendererAndSceneTestEventHandler eventHandler(renderer);
     if (eventHandler.waitForDisplayCreation(displayId))
     {
         return displayId;
@@ -118,7 +115,7 @@ void RendererTestUtils::DestroyDisplayImmediate(ramses::RamsesRenderer& renderer
 {
     renderer.destroyDisplay(displayId);
     renderer.flush();
-    RendererTestEventHandler eventHandler(renderer);
+    ramses::RendererAndSceneTestEventHandler eventHandler(renderer);
     if (!eventHandler.waitForDisplayDestruction(displayId))
     {
         assert(false && "Display destruction failed or timed out!");
@@ -127,38 +124,18 @@ void RendererTestUtils::DestroyDisplayImmediate(ramses::RamsesRenderer& renderer
 
 ramses::RendererConfig RendererTestUtils::CreateTestRendererConfig()
 {
-    ramses::RendererConfig rendererConfig;
+    ramses::RendererConfig rendererConfig(static_cast<int32_t>(CommandLineArgs.size()), CommandLineArgs.data());
     ramses_internal::RendererConfig& internalRendererConfig = const_cast<ramses_internal::RendererConfig&>(rendererConfig.impl.getInternalRendererConfig());
-    if (WaylandSocketEmbeddedFileDescriptor >= 0)
-    {
-        internalRendererConfig.setWaylandSocketEmbeddedFD(WaylandSocketEmbeddedFileDescriptor);
-    }
-    else if (WaylandSocketEmbedded.size() > 0)
-    {
-        internalRendererConfig.setWaylandSocketEmbedded(WaylandSocketEmbedded);
-    }
-
-    if (WaylandSocketEmbeddedGroup.size() > 0)
-    {
-        internalRendererConfig.setWaylandSocketEmbeddedGroup(WaylandSocketEmbeddedGroup);
-    }
 
     if(WaylandDisplayForSystemCompositorController.size() > 0)
     {
+        internalRendererConfig.enableSystemCompositorControl();
         internalRendererConfig.setWaylandDisplayForSystemCompositorController(WaylandDisplayForSystemCompositorController);
     }
-
-    // system compositor always exists internally, this only allows control of it via renderer API which is used in some tests, should not affect anything else
-    internalRendererConfig.enableSystemCompositorControl();
 
     internalRendererConfig.setFrameCallbackMaxPollTime(MaxFrameCallbackPollingTime);
 
     return rendererConfig;
-}
-
-void RendererTestUtils::SetWaylandIviLayerID(UInt32 layerId)
-{
-    WaylandIviLayerIdForTestDisplayConfig = layerId;
 }
 
 void RendererTestUtils::SetWaylandDisplayForSystemCompositorController(const ramses_internal::String& wd)
@@ -166,19 +143,9 @@ void RendererTestUtils::SetWaylandDisplayForSystemCompositorController(const ram
     WaylandDisplayForSystemCompositorController = wd;
 }
 
-void RendererTestUtils::SetWaylandSocketEmbedded(const ramses_internal::String& wse)
+void RendererTestUtils::SetCommandLineParams(const int argc, char const* const* argv)
 {
-    WaylandSocketEmbedded = wse;
-}
-
-void RendererTestUtils::SetWaylandSocketEmbeddedFileDescriptor(int fileDescriptor)
-{
-    WaylandSocketEmbeddedFileDescriptor = fileDescriptor;
-}
-
-void RendererTestUtils::SetWaylandSocketEmbeddedGroup(const ramses_internal::String& wsegn)
-{
-    WaylandSocketEmbeddedGroup = wsegn;
+    CommandLineArgs.assign(argv, argv + argc);
 }
 
 void RendererTestUtils::SetMaxFrameCallbackPollingTime(std::chrono::microseconds time)
@@ -188,20 +155,11 @@ void RendererTestUtils::SetMaxFrameCallbackPollingTime(std::chrono::microseconds
 
 ramses::DisplayConfig RendererTestUtils::CreateTestDisplayConfig(uint32_t iviSurfaceIdOffset, bool iviWindowStartVisible)
 {
-    ramses::DisplayConfig displayConfig;
+    ramses::DisplayConfig displayConfig(static_cast<int32_t>(CommandLineArgs.size()), CommandLineArgs.data());
     displayConfig.setWaylandIviSurfaceID(firstIviSurfaceId + iviSurfaceIdOffset);
 
     if(iviWindowStartVisible)
-    {
         displayConfig.setWindowIviVisible();
-    }
-    else
-    {
-        //default value is window invisible
-        assert(false == displayConfig.impl.getInternalDisplayConfig().getStartVisibleIvi());
-    }
-
-    displayConfig.setWaylandIviLayerID(WaylandIviLayerIdForTestDisplayConfig);
 
     return displayConfig;
 }

@@ -30,6 +30,14 @@ This code creates a simple geometry.
 This code creates a simple scene graph with multiple nodes.
 @snippet ramses-example-basic-scenegraph/src/main.cpp Basic Scene Graph Example
 
+## Basic Animation
+This code creates a simple animation of a color of an appearance.
+@snippet ramses-example-basic-animation/src/main.cpp Basic Animation Example
+
+## Basic Realtime Animation
+This code creates a simple realtime animation sequence with three triangles.
+@snippet ramses-example-basic-animation-realtime/src/main.cpp Basic Realtime Animation Example
+
 ## Basic Blending
 This code creates a simple scene consisting of three triangles with alpha blending.
 @snippet ramses-example-basic-blending/src/main.cpp Basic Blending Example
@@ -160,4 +168,14 @@ This code offers a small scene via DCSM and is able to resize it and run a hide/
 is supposed to work with this example properly needs to understand the DCSM protocol. For the standalone renderer this can be enabled
 with the "-dcsm" command line parameter.
 
+## Scene referencing
+This code creates two scenes with content and a master scene. The master scene is only used to control position and size
+of the other two scenes (in 2D) using data linking - it links viewport parameters to the other scenes' cameras. The master scene
+has no knowledge of the other scenes except for their camera viewport data consumer IDs. The example also shows how a client can control
+rendering states of other scenes without access to renderer API.
+
+Create scene references and get the to a rendered state:
+@snippet ramses-example-local-scene-referencing/src/main.cpp Scene referencing setup
+Link viewport via scene referencing:
+@snippet ramses-example-local-scene-referencing/src/main.cpp Scene referencing data linking
 */

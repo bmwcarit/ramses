@@ -13,6 +13,7 @@
 #include "EmbeddedCompositor_Wayland/WaylandClient.h"
 #include "EmbeddedCompositor_Wayland/IWaylandResource.h"
 #include "Utils/LogMacros.h"
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -22,8 +23,8 @@ namespace ramses_internal
     {
         LOG_DEBUG(CONTEXT_RENDERER, "WaylandCompositorConnection::WaylandCompositorConnection Connection created");
 
-        uid_t userId;
-        gid_t groupId;
+        uid_t userId = 0;
+        gid_t groupId = 0;
         client.getCredentials(m_processId, userId, groupId);
 
         m_resource = client.resourceCreate(&wl_compositor_interface, version, id);

@@ -8,6 +8,8 @@
 
 #include <Math3d/Matrix33f.h>
 #include <Math3d/Matrix44f.h>
+#include "PlatformAbstraction/PlatformMath.h"
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -40,12 +42,12 @@ namespace ramses_internal
         const float rotZ = PlatformMath::Deg2Rad(rotationXYZ.z);
 
         // Save some sin and cos values for reuse in the computations
-        const float sinX = sin(rotX);
-        const float cosX = cos(rotX);
-        const float sinY = sin(rotY);
-        const float cosY = cos(rotY);
-        const float sinZ = sin(rotZ);
-        const float cosZ = cos(rotZ);
+        const float sinX = std::sin(rotX);
+        const float cosX = std::cos(rotX);
+        const float sinY = std::sin(rotY);
+        const float cosY = std::cos(rotY);
+        const float sinZ = std::sin(rotZ);
+        const float cosZ = std::cos(rotZ);
 
         // Creation form below utilizes sign change in comparison to regular XYZ construction.
         // This change is tolerated back when angles are extracted back from the matrix in toRotationEulerXYZ() method
@@ -111,12 +113,12 @@ namespace ramses_internal
         const float rotZ = PlatformMath::Deg2Rad(rotationXYZ.z);
 
         // Save some sin and cos values for reuse in the computations
-        const float sinX = sin(rotX);
-        const float cosX = cos(rotX);
-        const float sinY = sin(rotY);
-        const float cosY = cos(rotY);
-        const float sinZ = sin(rotZ);
-        const float cosZ = cos(rotZ);
+        const float sinX = std::sin(rotX);
+        const float cosX = std::cos(rotX);
+        const float sinY = std::sin(rotY);
+        const float cosY = std::cos(rotY);
+        const float sinZ = std::sin(rotZ);
+        const float cosZ = std::cos(rotZ);
 
         // Creation form below utilizes sign change in comparison to regular ZYX construction.
         // This change is tolerated back when angles are extracted back from the matrix in toRotationEulerZYX() method
@@ -177,20 +179,4 @@ namespace ramses_internal
 
         return singular;
     }
-
-
-    Float& Matrix33f::m(UInt32 column, UInt32 row)
-    {
-        assert(row < 3);
-        assert(column < 3);
-        return *(&m11 + (row * 3) + column);
-    }
-
-    const ramses_internal::Float& Matrix33f::m(UInt32 column, UInt32 row) const
-    {
-        assert(row < 3);
-        assert(column < 3);
-        return *(&m11 + (row * 3) + column);
-    }
-
 }

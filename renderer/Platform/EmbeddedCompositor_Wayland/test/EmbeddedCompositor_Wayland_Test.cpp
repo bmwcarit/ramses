@@ -159,7 +159,7 @@ namespace ramses_internal
         {
             WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, m_initialValueOfXdgRuntimeDir);
             const String socketName("wayland-10");
-            rendererConfig.setWaylandSocketEmbedded(socketName);
+            rendererConfig.setWaylandEmbeddedCompositingSocketName(socketName);
             EXPECT_TRUE(embeddedCompositor->init());
         }
 
@@ -234,8 +234,8 @@ namespace ramses_internal
         const String socketName("wayland-10");
         const String groupName = getUserGroupName();
         LOG_INFO(CONTEXT_RENDERER, "InitializeWorksWithSocketNameAndGroupSet groupName: " << groupName);
-        rendererConfig.setWaylandSocketEmbedded(socketName);
-        rendererConfig.setWaylandSocketEmbeddedGroup(groupName);
+        rendererConfig.setWaylandEmbeddedCompositingSocketName(socketName);
+        rendererConfig.setWaylandEmbeddedCompositingSocketGroup(groupName);
 
         EXPECT_TRUE(embeddedCompositor->init());
 
@@ -245,8 +245,8 @@ namespace ramses_internal
     TEST_F(AEmbeddedCompositor_Wayland, InitializeFailsWithSocketNameAndWrongGroupSet)
     {
         const String socketName("wayland-10");
-        rendererConfig.setWaylandSocketEmbedded(socketName);
-        rendererConfig.setWaylandSocketEmbeddedGroup("notExistingGroupName");
+        rendererConfig.setWaylandEmbeddedCompositingSocketName(socketName);
+        rendererConfig.setWaylandEmbeddedCompositingSocketGroup("notExistingGroupName");
         EXPECT_FALSE(embeddedCompositor->init());
     }
 
@@ -257,7 +257,7 @@ namespace ramses_internal
         ASSERT_TRUE(isSocket(socketFD));
         ASSERT_TRUE(isSocket(clientFD));
 
-        rendererConfig.setWaylandSocketEmbeddedFD(socketFD);
+        rendererConfig.setWaylandEmbeddedCompositingSocketFD(socketFD);
         EXPECT_TRUE(embeddedCompositor->init());
 
         EXPECT_TRUE(clientCanConnectViaSocket(clientFD));
@@ -267,7 +267,7 @@ namespace ramses_internal
     {
         const int nonExistentSocketFD = socket.createBoundFileDescriptor() + 3;
         ASSERT_FALSE(isSocket(nonExistentSocketFD));
-        rendererConfig.setWaylandSocketEmbeddedFD(nonExistentSocketFD);
+        rendererConfig.setWaylandEmbeddedCompositingSocketFD(nonExistentSocketFD);
 
         EXPECT_FALSE(embeddedCompositor->init());
     }
@@ -278,15 +278,15 @@ namespace ramses_internal
         const int socketFD = socket.createBoundFileDescriptor();
         ASSERT_TRUE(isSocket(socketFD));
 
-        rendererConfig.setWaylandSocketEmbedded(socketName);
-        rendererConfig.setWaylandSocketEmbeddedFD(socketFD);
+        rendererConfig.setWaylandEmbeddedCompositingSocketName(socketName);
+        rendererConfig.setWaylandEmbeddedCompositingSocketFD(socketFD);
         EXPECT_FALSE(embeddedCompositor->init());
     }
 
     TEST_F(AEmbeddedCompositor_Wayland, CanNotInitializeWithSocketNameSetButXDGRuntimeDirNotSet)
     {
         const String socketName("wayland-10");
-        rendererConfig.setWaylandSocketEmbedded(socketName);
+        rendererConfig.setWaylandEmbeddedCompositingSocketName(socketName);
 
         WaylandEnvironmentUtils::UnsetVariable(WaylandEnvironmentVariable::XDGRuntimeDir);
 
@@ -303,7 +303,7 @@ namespace ramses_internal
 
         // the SocketEmbeddedFD is the socket the EC is using for incomming
         // connections from different clients
-        rendererConfig.setWaylandSocketEmbeddedFD(socketFD);
+        rendererConfig.setWaylandEmbeddedCompositingSocketFD(socketFD);
 
         UnixDomainSocket systemCompositorSocket("wayland-0", m_initialValueOfXdgRuntimeDir);
         StringOutputStream systemCompositorSocketFD;

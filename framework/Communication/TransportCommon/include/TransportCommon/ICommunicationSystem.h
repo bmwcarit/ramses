@@ -63,10 +63,13 @@ namespace ramses_internal
         virtual bool sendInitializeScene(const Guid& to, const SceneInfo& sceneInfo) = 0;
         virtual uint64_t sendSceneActionList(const Guid& to, const SceneId& sceneId, const SceneActionCollection& actions, const uint64_t& actionListCounter) = 0;
 
+        virtual bool sendRendererEvent(const Guid& to, const SceneId& sceneId, const std::vector<Byte>& data) = 0;
+
         // dcsm provider -> consumer
         virtual bool sendDcsmBroadcastOfferContent(ContentID contentID, Category) = 0;
         virtual bool sendDcsmOfferContent(const Guid& to, ContentID contentID, Category) = 0;
-        virtual bool sendDcsmContentReady(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) = 0;
+        virtual bool sendDcsmContentDescription(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) = 0;
+        virtual bool sendDcsmContentReady(const Guid& to, ContentID contentID) = 0;
         virtual bool sendDcsmContentFocusRequest(const Guid& to, ContentID contentID) = 0;
         virtual bool sendDcsmBroadcastRequestStopOfferContent(ContentID contentID) = 0;
         virtual bool sendDcsmBroadcastForceStopOfferContent(ContentID contentID) = 0;

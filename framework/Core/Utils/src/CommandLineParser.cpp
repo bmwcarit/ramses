@@ -68,7 +68,7 @@ namespace ramses_internal
         CommandLineArgument* argument = nullptr;
         const UInt32 searchIndex = (searchIndexInOut == nullptr ? 0u : *searchIndexInOut);
 
-        for (UInt32 i = searchIndex; i < m_args.size(); ++ i)
+        for (size_t i = searchIndex; i < m_args.size(); ++ i)
         {
             auto& current = m_args[i];
             if (current.getName() == shortname || current.getName() == longname)
@@ -88,13 +88,13 @@ namespace ramses_internal
             m_args.push_back(newArgument);
         }
 
-        for (UInt32 i = searchIndex; i < m_args.size(); ++i)
+        for (size_t i = searchIndex; i < m_args.size(); ++i)
         {
             auto& current = m_args[i];
             if (current.getName() == shortname || current.getName() == longname)
             {
                 if (nullptr != searchIndexInOut)
-                    *searchIndexInOut = i + 1;
+                    *searchIndexInOut = static_cast<uint32_t>(i) + 1;
 
                 return &current;
             }

@@ -131,7 +131,7 @@ namespace ramses_internal
         ClientResourceUploadingManager m_resourceUploadingManager;
         RendererStatistics&            m_stats;
 
-        const UInt64 m_numberOfFramesToRerequestResource = 60u;
+        const UInt64 m_numberOfFramesToRerequestResource = 90u;  // 1.5s at 60fps, less than 2s force apply for remote content (assuming 30 flushes/s)
         UInt64 m_frameCounter = 0u;
         UInt64 m_numberOfArrivedResourcesInWrongStatus = 0u;
         UInt64 m_sizeOfArrivedResourcesInWrongStatus = 0u;

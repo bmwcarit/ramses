@@ -44,16 +44,17 @@ namespace ramses
             EXPECT_EQ(provider.dispatchEvents(provHandler), StatusOK);
         }
 
-        void offerContent(ContentID id_, Category cat_, sceneId_t scene_)
+        void offerContent(ContentID id_, Category cat_, sceneId_t scene_, EDcsmOfferingMode mode_)
         {
             EXPECT_CALL(consHandler, contentOffered(id_, cat_));
-            EXPECT_EQ(provider.offerContent(id_, cat_, scene_), StatusOK);
+            EXPECT_EQ(provider.offerContent(id_, cat_, scene_, mode_), StatusOK);
             dispatch();
         }
 
-        void assignContentToConsumer(ContentID id_, SizeInfo size_, AnimationInformation anim_)
+        void assignContentToConsumer(ContentID id_, SizeInfo size_, AnimationInformation anim_, sceneId_t sceneId_)
         {
             EXPECT_CALL(provHandler, contentSizeChange(id_, size_, anim_));
+            EXPECT_CALL(consHandler, contentDescription(id_, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ sceneId_.getValue() }));
             EXPECT_EQ(consumer.assignContentToConsumer(id_, size_), StatusOK);
             dispatch();
         }
@@ -97,12 +98,12 @@ namespace ramses
             dispatch();
         }
 
-        void requestAndMarkReady(ContentID id_, sceneId_t sceneId_)
+        void requestAndMarkReady(ContentID id_)
         {
             EXPECT_CALL(provHandler, contentReadyRequested(id_));
             EXPECT_EQ(consumer.contentStateChange(id_, EDcsmState::Ready, AnimationInformation()), StatusOK);
             dispatch();
-            EXPECT_CALL(consHandler, contentReady(id_, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(sceneId_.getValue())));
+            EXPECT_CALL(consHandler, contentReady(id_));
             EXPECT_EQ(provider.markContentReady(id_), StatusOK);
             dispatch();
         }
@@ -118,14 +119,24 @@ namespace ramses
         SizeInfo size{ 800, 600 };
     };
 
-    TEST_F(ADcsmSystem, canDoAFullContentLifecycle)
+    TEST_F(ADcsmSystem, localConsumerReceivesLocalAndLocalAndRemoteOffers)
     {
-        offerContent(id, Category(111), sceneId_t(18));
+        offerContent(id, Category(111), sceneId_t(18), EDcsmOfferingMode::LocalAndRemote);
         EXPECT_EQ(provider.markContentReady(id), StatusOK);
 
-        assignContentToConsumer(id, size, AnimationInformation());
+        ContentID id2(124);
+        offerContent(id2, Category(112), sceneId_t(19), EDcsmOfferingMode::LocalOnly);
+        EXPECT_EQ(provider.markContentReady(id2), StatusOK);
+    }
 
-        EXPECT_CALL(consHandler, contentReady(id, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(18)));
+    TEST_F(ADcsmSystem, canDoAFullContentLifecycle)
+    {
+        offerContent(id, Category(111), sceneId_t(18), EDcsmOfferingMode::LocalAndRemote);
+        EXPECT_EQ(provider.markContentReady(id), StatusOK);
+
+        assignContentToConsumer(id, size, AnimationInformation(), sceneId_t(18));
+
+        EXPECT_CALL(consHandler, contentReady(id));
         EXPECT_EQ(consumer.contentStateChange(id, EDcsmState::Ready, AnimationInformation()), StatusOK);
         dispatch();
 
@@ -138,10 +149,10 @@ namespace ramses
 
     TEST_F(ADcsmSystem, canDoAFullContentLifecycleLateMarkReady)
     {
-        offerContent(id, Category(111), sceneId_t(18));
-        assignContentToConsumer(id, size, AnimationInformation());
+        offerContent(id, Category(111), sceneId_t(18), EDcsmOfferingMode::LocalAndRemote);
+        assignContentToConsumer(id, size, AnimationInformation(), sceneId_t(18));
 
-        requestAndMarkReady(id, sceneId_t(18));
+        requestAndMarkReady(id);
 
         showContent(id, AnimationInformation{ 200, 300 });
         hideContent(id, AnimationInformation{ 200, 300 });
@@ -152,16 +163,16 @@ namespace ramses
 
     TEST_F(ADcsmSystem, allowsToAssignAndUnassignToSameContentRepeatedly)
     {
-        offerContent(id, Category(111), sceneId_t(18));
-        assignContentToConsumer(id, size, AnimationInformation());
-        requestAndMarkReady(id, sceneId_t(18));
+        offerContent(id, Category(111), sceneId_t(18), EDcsmOfferingMode::LocalAndRemote);
+        assignContentToConsumer(id, size, AnimationInformation(), sceneId_t(18));
+        requestAndMarkReady(id);
         showContent(id, AnimationInformation{ 200, 300 });
 
         for (int i = 0; i < 3; ++i)
         {
             unassignConsumer(id, AnimationInformation{ 200, 300 });
-            assignContentToConsumer(id, size, AnimationInformation());
-            requestAndMarkReady(id, sceneId_t(18));
+            assignContentToConsumer(id, size, AnimationInformation(), sceneId_t(18));
+            requestAndMarkReady(id);
             showContent(id, AnimationInformation{ 200, 300 });
         }
         stopOfferByProvider(id, AnimationInformation{ 200, 300 });
@@ -169,15 +180,15 @@ namespace ramses
 
     TEST_F(ADcsmSystem, allowsToRereadyTheSameContentRepeatedly)
     {
-        offerContent(id, Category(111), sceneId_t(18));
-        assignContentToConsumer(id, size, AnimationInformation());
-        requestAndMarkReady(id, sceneId_t(18));
+        offerContent(id, Category(111), sceneId_t(18), EDcsmOfferingMode::LocalAndRemote);
+        assignContentToConsumer(id, size, AnimationInformation(), sceneId_t(18));
+        requestAndMarkReady(id);
         showContent(id, AnimationInformation{ 200, 300 });
 
         for (int i = 0; i < 3; ++i)
         {
             releaseContent(id, AnimationInformation{ 200, 300 });
-            requestAndMarkReady(id, sceneId_t(18));
+            requestAndMarkReady(id);
             showContent(id, AnimationInformation{ 200, 300 });
         }
         stopOfferByProvider(id, AnimationInformation{ 200, 300 });
@@ -188,25 +199,25 @@ namespace ramses
         DcsmMetadataCreator mdf;
         mdf.setPreviewDescription(U"asdf");
         EXPECT_CALL(consHandler, contentOffered(id, Category(123)));
-        EXPECT_EQ(provider.offerContentWithMetadata(id, Category(123), sceneId_t(18), mdf), StatusOK);
+        EXPECT_EQ(provider.offerContentWithMetadata(id, Category(123), sceneId_t(18), EDcsmOfferingMode::LocalAndRemote, mdf), StatusOK);
 
         EXPECT_CALL(consHandler, contentMetadataUpdated(id, _)).
             WillOnce(Invoke([](auto, auto& prov) { EXPECT_EQ(U"asdf", prov.getPreviewDescription()); }));
-        assignContentToConsumer(id, size, AnimationInformation());
+        assignContentToConsumer(id, size, AnimationInformation(), sceneId_t(18));
 
         dispatch();
     }
 
     TEST_F(ADcsmSystem, canUpdateMetadataAfterOffer)
     {
-        offerContent(id, Category(111), sceneId_t(18));
+        offerContent(id, Category(111), sceneId_t(18), EDcsmOfferingMode::LocalAndRemote);
         DcsmMetadataCreator mdf;
         mdf.setPreviewDescription(U"00asdf");
         EXPECT_EQ(provider.updateContentMetadata(id, mdf), StatusOK);
 
         EXPECT_CALL(consHandler, contentMetadataUpdated(id, _)).
             WillOnce(Invoke([](auto, auto& prov) { EXPECT_EQ(U"00asdf", prov.getPreviewDescription()); }));
-        assignContentToConsumer(id, size, AnimationInformation());
+        assignContentToConsumer(id, size, AnimationInformation(), sceneId_t(18));
 
         dispatch();
     }

@@ -9,12 +9,6 @@
 #ifndef RAMSES_PLATFORMABSTRACTION_MACROS_H
 #define RAMSES_PLATFORMABSTRACTION_MACROS_H
 
-#if defined(__INTEGRITY)
-#  define RNOEXCEPT
-#else
-#  define RNOEXCEPT noexcept
-#endif
-
 #if defined(__clang__)
 #  define RFALLTHROUGH [[clang::fallthrough]]
 #else

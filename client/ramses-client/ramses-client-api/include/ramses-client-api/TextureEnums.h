@@ -167,8 +167,8 @@ namespace ramses
     /// Enum for access mode of a RenderBuffer
     enum ERenderBufferAccessMode
     {
-        ERenderBufferAccessMode_WriteOnly = 0, /// RenderBuffer with this access can only be used in RenderTarget
-        ERenderBufferAccessMode_ReadWrite /// RenderBuffer with this access can be used both in RenderTarget and TextureSampler
+        ERenderBufferAccessMode_WriteOnly = 0, ///< RenderBuffer with this access can only be used in RenderTarget
+        ERenderBufferAccessMode_ReadWrite      ///< RenderBuffer with this access can be used both in RenderTarget and TextureSampler
     };
 
     /**

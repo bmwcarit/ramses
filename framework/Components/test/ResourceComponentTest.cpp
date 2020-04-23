@@ -10,7 +10,7 @@
 #include "ComponentMocks.h"
 #include "Components/ResourceComponent.h"
 #include "ResourceMock.h"
-#include "gmock/gmock-generated-actions.h"
+#include "gmock/gmock.h"
 #include "Resource/ArrayResource.h"
 #include "Utils/BinaryFileOutputStream.h"
 #include "Utils/BinaryOutputStream.h"
@@ -79,7 +79,7 @@ namespace ramses_internal
     {
     public:
         ResourceComponentTestBase()
-            : m_myID(true)
+            : m_myID(20)
             , resourceFileName("test.resource")
         {
         }
@@ -91,15 +91,16 @@ namespace ramses_internal
             deleteTestResourceFile();
         }
 
-        static IResource* CreateTestResource(float someValue = 0.0f)
+        static IResource* CreateTestResource(float someValue = 0.0f, size_t extraSize = 0)
         {
-            const Float vertexData[] = {
+            std::vector<float> vertexData = {
                 0.0f, 0.0f, 0.0f,
                 1.0f, 0.0f, 0.0f,
                 1.0f, 1.0f, someValue
             };
+            vertexData.resize(vertexData.size() + extraSize*3);
 
-            ArrayResource* resource = new ArrayResource(EResourceType_VertexArray, 3, EDataType_Vector3F, reinterpret_cast<const Byte*>(vertexData), ResourceCacheFlag(0u), String("resName"));
+            ArrayResource* resource = new ArrayResource(EResourceType_VertexArray, 3 + static_cast<uint32_t>(extraSize), EDataType_Vector3F, reinterpret_cast<const Byte*>(vertexData.data()), ResourceCacheFlag(0u), String("resName"));
             return resource;
         }
 
@@ -113,7 +114,7 @@ namespace ramses_internal
             return hashes;
         }
 
-        ResourceContentHashVector writeMultipleTestResourceFile(UInt32 num)
+        ResourceContentHashVector writeMultipleTestResourceFile(UInt32 num, size_t extraSize = 0, bool compress = false)
         {
             ResourceComponent& localResourceComponent = getResourceComponent();
 
@@ -122,7 +123,7 @@ namespace ramses_internal
 
             for (UInt32 i = 0; i < num; ++i)
             {
-                IResource* resource = CreateTestResource(i*1.0f);
+                IResource* resource = CreateTestResource(i*1.0f, extraSize);
                 ManagedResource managedResource = localResourceComponent.manageResource(*resource, true);
                 managedResourceVec.push_back(managedResource);
                 hashes.push_back(managedResource.getResourceObject()->getHash());
@@ -131,7 +132,7 @@ namespace ramses_internal
             {
                 File resourceFile(resourceFileName);
                 BinaryFileOutputStream resourceOutputStream(resourceFile);
-                ResourcePersistation::WriteNamedResourcesWithTOCToStream(resourceOutputStream, managedResourceVec, false);
+                ResourcePersistation::WriteNamedResourcesWithTOCToStream(resourceOutputStream, managedResourceVec, compress);
             }
 
             ramses_internal::ResourceTableOfContents resourceFileToc;
@@ -257,7 +258,7 @@ namespace ramses_internal
         ManagedResource dummyManagedResource = localResourceComponent.manageResource(*dummyResource);
 
         RequesterID requesterID(1);
-        Guid providerID(true);
+        Guid providerID(222);
         ResourceContentHashVector requestedResourceHashes;
         requestedResourceHashes.push_back(dummyResourceHash);
         localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResourceHashes, requesterID, providerID);
@@ -278,7 +279,7 @@ namespace ramses_internal
 
     TEST_F(AResourceComponentTest, ResolveResources_RequestResourceFromProviderIfNotAvailableLocaly)
     {
-        Guid providerID(true);
+        Guid providerID(222);
         ResourceContentHashVector requestedResourceHashes;
         requestedResourceHashes.push_back(ResourceContentHash(123, 456));
         EXPECT_CALL(communicationSystem, sendRequestResources(providerID, requestedResourceHashes));
@@ -293,7 +294,7 @@ namespace ramses_internal
             ManagedResource dummyManagedResource = localResourceComponent.manageResource(*dummyResource);
         }
 
-        Guid providerID(true);
+        Guid providerID(222);
         ResourceContentHashVector requestedResourceHashes;
         requestedResourceHashes.push_back(dummyResourceHash);
         EXPECT_CALL(communicationSystem, sendRequestResources(providerID, requestedResourceHashes));
@@ -311,7 +312,7 @@ namespace ramses_internal
         EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).getResourceObject());
 
         RequesterID requesterID(1);
-        Guid providerID(true);
+        Guid providerID(222);
         localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResourceHashes, requesterID, providerID);
 
         // execute enqueued resource loading task
@@ -337,14 +338,15 @@ namespace ramses_internal
         EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).getResourceObject());
 
         RequesterID requesterID(1);
-        Guid        providerID(true);
+        Guid        providerID(222);
         localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResourceHashes, requesterID, providerID);
         localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResourceHashes, requesterID, providerID);
 
-        // execute enqueued resource loading task
+        // execute both enqueued resource loading task
+        executor.execute();
         executor.execute();
 
-        // check that resource was only loaded and returned once
+        // check that resource is only returned once
         ManagedResourceVector poppedResources = localResourceComponent.popArrivedResources(requesterID);
         ASSERT_TRUE(poppedResources.size() > 0);
         ManagedResource resource = poppedResources.back();
@@ -361,7 +363,7 @@ namespace ramses_internal
         // so resolveResources() has to trigger loading it from file
         EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).getResourceObject());
 
-        Guid        providerID(true);
+        Guid        providerID(222);
         localResourceComponent.handleRequestResources(requestedResourceHashes, 0, providerID);
         localResourceComponent.handleRequestResources(requestedResourceHashes, 0, providerID);
 
@@ -391,7 +393,7 @@ namespace ramses_internal
             EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).getResourceObject());
 
             RequesterID requesterID(1);
-            Guid        providerID(true);
+            Guid        providerID(222);
             localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResourceHashes, requesterID, providerID);
 
             // execute enqueued resource loading task
@@ -423,7 +425,7 @@ namespace ramses_internal
             EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).getResourceObject());
 
             RequesterID requesterID(1);
-            Guid        providerID(true);
+            Guid        providerID(222);
             localResourceComponent.requestResourceAsynchronouslyFromFramework(
                 requestedResourceHashes, requesterID, providerID);
 
@@ -453,7 +455,7 @@ namespace ramses_internal
         // so resolveResources() has to trigger loading it from file
         EXPECT_EQ(localResourceComponent.getResources().size(), 0u);
 
-        Guid providerID(true);
+        Guid providerID(222);
         RequesterID requesterID(1);
         EXPECT_CALL(communicationSystem, sendRequestResources(providerID, requestedResourceHashes));
         localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResourceHashes, requesterID, providerID);
@@ -468,12 +470,12 @@ namespace ramses_internal
         //retrieved from the file system
         localResourceComponent.newParticipantHasConnected(m_myID);
         const auto testRes = CreateTestResourceData();
-        ByteArrayView view(testRes.data.data(), static_cast<UInt32>(testRes.data.size()));
+        absl::Span<const Byte> view(testRes.data.data(), static_cast<UInt32>(testRes.data.size()));
         ResourceContentHashVector requestedResources;
         requestedResources.push_back(testRes.hash);
 
         RequesterID requesterID(1);
-        Guid providerID(true);
+        Guid providerID(222);
         EXPECT_CALL(communicationSystem, sendRequestResources(providerID, _)).Times(1);
         localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResources, requesterID, providerID);
         EXPECT_TRUE(localResourceComponent.hasRequestForResource(testRes.hash, requesterID));
@@ -485,16 +487,16 @@ namespace ramses_internal
 
     TEST_F(AResourceComponentTest, CancelResourceRequest_StillHandleWhenOnlyOneOutOfTwoRequestsGotCancelled)
     {
-        Guid providerID(true);
+        Guid providerID(222);
         localResourceComponent.newParticipantHasConnected(providerID);
         const auto testRes = CreateTestResourceData();
-        ByteArrayView view(testRes.data.data(), static_cast<UInt32>(testRes.data.size()));
+        absl::Span<const Byte> view(testRes.data.data(), static_cast<UInt32>(testRes.data.size()));
         ResourceContentHashVector requestedResources;
         requestedResources.push_back(testRes.hash);
 
         RequesterID requesterID_1(1);
         RequesterID requesterID_2(2);
-        EXPECT_CALL(communicationSystem, sendRequestResources(providerID, _)).Times(1);
+        EXPECT_CALL(communicationSystem, sendRequestResources(providerID, _)).Times(2);
         localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResources, requesterID_1, providerID);
         localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResources, requesterID_2, providerID);
 
@@ -513,16 +515,16 @@ namespace ramses_internal
 
     TEST_F(AResourceComponentTest, CancelResourceRequest_IgnoresResourceReceivedIfAllRequestsCanceled)
     {
-        Guid providerID(true);
+        Guid providerID(222);
         localResourceComponent.newParticipantHasConnected(providerID);
         const auto testRes = CreateTestResourceData();
-        ByteArrayView view(testRes.data.data(), static_cast<UInt32>(testRes.data.size()));
+        absl::Span<const Byte> view(testRes.data.data(), static_cast<UInt32>(testRes.data.size()));
         ResourceContentHashVector requestedResources;
         requestedResources.push_back(testRes.hash);
 
         RequesterID requesterID_1(1);
         RequesterID requesterID_2(2);
-        EXPECT_CALL(communicationSystem, sendRequestResources(providerID, _)).Times(1);
+        EXPECT_CALL(communicationSystem, sendRequestResources(providerID, _)).Times(2);
         localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResources, requesterID_1, providerID);
         localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResources, requesterID_2, providerID);
 
@@ -546,7 +548,7 @@ namespace ramses_internal
 
         ResourceContentHashVector requestedResources;
         requestedResources.push_back(testRes.hash);
-        Guid providerID(true);
+        Guid providerID(222);
 
         RequesterID requesterID(1);
         localResourceComponent.newParticipantHasConnected(providerID);
@@ -557,7 +559,7 @@ namespace ramses_internal
 
         EXPECT_CALL(communicationSystem, sendRequestResources(providerID, _)).Times(1);
         localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResources, requesterID, providerID);
-        ByteArrayView view(testRes.data.data(), static_cast<UInt32>(testRes.data.size()));
+        absl::Span<const Byte> view(testRes.data.data(), static_cast<UInt32>(testRes.data.size()));
         localResourceComponent.handleSendResource(view, providerID);
 
         EXPECT_EQ(1u, localResourceComponent.popArrivedResources(requesterID).size());
@@ -568,14 +570,16 @@ namespace ramses_internal
         ResourceContentHash hash(5, 0);
         ResourceContentHashVector requestedResources;
         requestedResources.push_back(hash);
-        Guid providerID(true);
+        Guid providerID(222);
         RequesterID requesterID_1(1);
         RequesterID requesterID_2(2);
         localResourceComponent.newParticipantHasConnected(providerID);
-        EXPECT_CALL(communicationSystem, sendRequestResources(providerID, _)).Times(1);
+        EXPECT_CALL(communicationSystem, sendRequestResources(providerID, _));
         localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResources, requesterID_1, providerID);
         Mock::VerifyAndClearExpectations(&communicationSystem);
+        EXPECT_CALL(communicationSystem, sendRequestResources(providerID, _));
         localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResources, requesterID_2, providerID);
+        Mock::VerifyAndClearExpectations(&communicationSystem);
 
         EXPECT_TRUE(localResourceComponent.hasRequestForResource(hash, requesterID_1));
         EXPECT_TRUE(localResourceComponent.hasRequestForResource(hash, requesterID_2));
@@ -588,7 +592,7 @@ namespace ramses_internal
 
     TEST_F(AResourceComponentTest, CanHandleMultipleResourceHashesInOneRequest)
     {
-        Guid providerID(true);
+        Guid providerID(222);
         ResourceInfo res1(EResourceType_VertexArray, ResourceContentHash(1u, 0), 0u, 0u);
         ResourceInfo res2(EResourceType_VertexArray, ResourceContentHash(2u, 0), 0u, 0u);
 
@@ -605,69 +609,42 @@ namespace ramses_internal
         localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResources, requesterID, providerID);
     }
 
-    TEST_F(AResourceComponentTest, DoesNotRequestAlreadyRequestedResource)
+    TEST_F(AResourceComponentTest, RerequestsAlreadyRequestedResource)
     {
         ResourceInfo res(EResourceType_VertexArray, ResourceContentHash(1u, 0), 0u, 0u);
-        Guid providerID(true);
+        Guid providerID(222);
         ResourceContentHashVector requestedResources(1, res.hash);
         ResourceInfoVector knownResources(1, res);
 
         RequesterID requesterID(1);
-        EXPECT_CALL(communicationSystem, sendRequestResources(providerID, requestedResources)).Times(1);
+        EXPECT_CALL(communicationSystem, sendRequestResources(providerID, requestedResources));
         localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResources, requesterID, providerID);
         Mock::VerifyAndClearExpectations(&communicationSystem);
 
-        EXPECT_CALL(communicationSystem, sendRequestResources(_, _)).Times(0);
+        EXPECT_CALL(communicationSystem, sendRequestResources(providerID, requestedResources));
         localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResources, requesterID, providerID);
     }
 
-    TEST_F(AResourceComponentTest, FiltersOutAlreadyRequestedResourcesFromProvider)
+    TEST_F(AResourceComponentTest, RerequestsResourcesFromDifferentProvider)
     {
         ResourceInfo res1(EResourceType_VertexArray, ResourceContentHash(1u, 0), 0u, 0u);
         ResourceInfo res2(EResourceType_VertexArray, ResourceContentHash(2u, 0), 0u, 0u);
 
-        ResourceContentHashVector requestedResources_single;
-        requestedResources_single.push_back(res1.hash);
+        ResourceContentHashVector requestedResources_provider1;
+        requestedResources_provider1.push_back(res1.hash);
 
-        ResourceContentHashVector requestedResources_other;
-        requestedResources_other.push_back(res2.hash);
-
-        ResourceContentHashVector requestedResources_all;
-        requestedResources_all.push_back(res1.hash);
-        requestedResources_all.push_back(res2.hash);
+        ResourceContentHashVector requestedResources_provider2;
+        requestedResources_provider2.push_back(res1.hash);
+        requestedResources_provider2.push_back(res2.hash);
 
         RequesterID requesterID(1);
-        Guid providerID(true);
-        EXPECT_CALL(communicationSystem, sendRequestResources(providerID, requestedResources_single)).Times(1);
-        localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResources_single, requesterID, providerID);
+        Guid provider1(222);
+        Guid provider2(333);
+        EXPECT_CALL(communicationSystem, sendRequestResources(provider1, requestedResources_provider1)).Times(1);
+        localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResources_provider1, requesterID, provider1);
 
-        EXPECT_CALL(communicationSystem, sendRequestResources(providerID, requestedResources_other)).Times(1);
-        localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResources_all, requesterID, providerID);
-    }
-
-    TEST_F(AResourceComponentTest, FiltersOutAlreadyRequestedResourcesFromDifferentProvider)
-    {
-        ResourceInfo res1(EResourceType_VertexArray, ResourceContentHash(1u, 0), 0u, 0u);
-        ResourceInfo res2(EResourceType_VertexArray, ResourceContentHash(2u, 0), 0u, 0u);
-
-        ResourceContentHashVector requestedResources_single;
-        requestedResources_single.push_back(res1.hash);
-
-        ResourceContentHashVector requestedResources_other;
-        requestedResources_other.push_back(res2.hash);
-
-        ResourceContentHashVector requestedResources_all;
-        requestedResources_all.push_back(res1.hash);
-        requestedResources_all.push_back(res2.hash);
-
-        RequesterID requesterID(1);
-        Guid provider1(true);
-        Guid provider2(true);
-        EXPECT_CALL(communicationSystem, sendRequestResources(provider1, requestedResources_single)).Times(1);
-        localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResources_single, requesterID, provider1);
-
-        EXPECT_CALL(communicationSystem, sendRequestResources(provider2, requestedResources_other)).Times(1);
-        localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResources_all, requesterID, provider2);
+        EXPECT_CALL(communicationSystem, sendRequestResources(provider2, requestedResources_provider2)).Times(1);
+        localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResources_provider2, requesterID, provider2);
     }
 
     TEST_F(AResourceComponentTest, AllowsRequestingResourceAgainIfClientAnsweredResourceNotAvailable)
@@ -676,7 +653,7 @@ namespace ramses_internal
 
         ResourceContentHashVector requestedResources(1, res.hash);
         ResourceInfoVector knownResources(1, res);
-        Guid clientId(true);
+        Guid clientId(222);
 
         RequesterID requesterID(1);
         EXPECT_CALL(communicationSystem, sendRequestResources(clientId, requestedResources)).Times(1);
@@ -692,9 +669,7 @@ namespace ramses_internal
     TEST_F(AResourceComponentTest, RequestFromSceneProviderIfResourceLocationIsNotGiven)
     {
         ResourceInfo res1(EResourceType_VertexArray, ResourceContentHash(1u, 0), 0u, 0u);
-        Guid client1(true);
-        Guid client2(true);
-        Guid providerID(true);
+        Guid providerID(444);
 
         RequesterID requesterID(1);
         ResourceContentHashVector requestedResources;
@@ -715,9 +690,9 @@ namespace ramses_internal
         ASSERT_EQ(1u, dataVec.size());
 
         const auto resourceData = dataVec[0];
-        ByteArrayView view(resourceData.data(), static_cast<UInt32>(resourceData.size()));
+        absl::Span<const Byte> view(resourceData.data(), static_cast<UInt32>(resourceData.size()));
 
-        const Guid dummyGuid(true);
+        const Guid dummyGuid(222);
         ResourceContentHashVector requestedResourceHashes;
         requestedResourceHashes.push_back(hash);
 
@@ -741,9 +716,9 @@ namespace ramses_internal
         ASSERT_GT(dataVec.size(), 1u);
 
         const auto resourceData = dataVec[0];
-        ByteArrayView view(resourceData.data(), static_cast<UInt32>(resourceData.size()));
+        absl::Span<const Byte> view(resourceData.data(), static_cast<UInt32>(resourceData.size()));
 
-        const Guid dummyGuid(true);
+        const Guid dummyGuid(222);
         ResourceContentHashVector requestedResourceHashes;
         requestedResourceHashes.push_back(hash);
 
@@ -767,7 +742,7 @@ namespace ramses_internal
         const auto dataVec = ResourceSerializationTestHelper::ConvertResourcesToResourceDataVector(resVec, 50);
         ASSERT_GT(dataVec.size(), 1u);
 
-        const Guid dummyGuid(true);
+        const Guid dummyGuid(222);
         ResourceContentHashVector requestedResourceHashes;
         requestedResourceHashes.push_back(hash);
 
@@ -780,14 +755,14 @@ namespace ramses_internal
         // "receive" all except last
         for (UInt i = 0; i < dataVec.size() - 1; ++i)
         {
-            ByteArrayView view(dataVec[i].data(), static_cast<UInt32>(dataVec[i].size()));
+            absl::Span<const Byte> view(dataVec[i].data(), static_cast<UInt32>(dataVec[i].size()));
             localResourceComponent.handleSendResource(view, m_myID);
         }
         ManagedResourceVector poppedResources = localResourceComponent.popArrivedResources(requesterID);
         EXPECT_EQ(0u, poppedResources.size());
 
         // "receive" last chunk
-        ByteArrayView view(dataVec.back().data(), static_cast<UInt32>(dataVec.back().size()));
+        absl::Span<const Byte> view(dataVec.back().data(), static_cast<UInt32>(dataVec.back().size()));
         localResourceComponent.handleSendResource(view, m_myID);
 
         poppedResources = localResourceComponent.popArrivedResources(requesterID);
@@ -811,11 +786,11 @@ namespace ramses_internal
         const auto resourceData = dataVec[0];
         ResourceInfo availableResource(EResourceType_VertexArray, testResource->getHash(), testResource->getDecompressedDataSize(), 0u);
 
-        const Guid dummyGuid(true);
+        const Guid dummyGuid(222);
         ResourceContentHashVector requestedResourceHashes;
         requestedResourceHashes.push_back(availableResource.hash);
 
-        Guid otherParticipant(true);
+        Guid otherParticipant(333);
         localResourceComponent.newParticipantHasConnected(m_myID);
         localResourceComponent.newParticipantHasConnected(otherParticipant);
 
@@ -826,14 +801,14 @@ namespace ramses_internal
         // "receive" all except last from one participant
         for (UInt i = 0; i < dataVec.size() - 1; ++i)
         {
-            ByteArrayView view(dataVec[i].data(), static_cast<UInt32>(dataVec[i].size()));
+            absl::Span<const Byte> view(dataVec[i].data(), static_cast<UInt32>(dataVec[i].size()));
             localResourceComponent.handleSendResource(view, m_myID);
         }
         ManagedResourceVector poppedResources = localResourceComponent.popArrivedResources(requesterID);
         EXPECT_EQ(0u, poppedResources.size());
 
         // "receive" last chunk from other participant
-        ByteArrayView view(dataVec.back().data(), static_cast<UInt32>(dataVec.back().size()));
+        absl::Span<const Byte> view(dataVec.back().data(), static_cast<UInt32>(dataVec.back().size()));
         localResourceComponent.handleSendResource(view, otherParticipant);
 
         poppedResources = localResourceComponent.popArrivedResources(requesterID);
@@ -854,7 +829,7 @@ namespace ramses_internal
 
         ResourceInfo availableResource(EResourceType_VertexArray, resVec[0].getResourceObject()->getHash(), resVec[0].getResourceObject()->getDecompressedDataSize(), 0u);
 
-        const Guid dummyGuid(true);
+        const Guid dummyGuid(222);
         ResourceContentHashVector requestedResourceHashes;
         requestedResourceHashes.push_back(availableResource.hash);
 
@@ -863,7 +838,7 @@ namespace ramses_internal
         RequesterID requesterID(1);
         EXPECT_CALL(communicationSystem, sendRequestResources(dummyGuid, _)).Times(1);
         localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResourceHashes, requesterID, dummyGuid);
-        ByteArrayView view(dataVec[0].data(), static_cast<UInt32>(dataVec[0].size()));
+        absl::Span<const Byte> view(dataVec[0].data(), static_cast<UInt32>(dataVec[0].size()));
         localResourceComponent.handleSendResource(view, m_myID);
         EXPECT_TRUE(localResourceComponent.isReceivingFromParticipant(m_myID));
 
@@ -873,7 +848,7 @@ namespace ramses_internal
 
     TEST_F(AResourceComponentTest, CanDeleteResourcesLoadedFromFile)
     {
-        const Guid dummyGuid(true);
+        const Guid dummyGuid(222);
         const ResourceContentHash dummyResourceHash(47, 0);
         const ResourceInfo dummyResourceInfo(EResourceType_VertexArray, dummyResourceHash, 2u, 1u);
         ResourceContentHashVector requestedResourceHashes;
@@ -904,7 +879,7 @@ namespace ramses_internal
 
         ResourceContentHashVector requestedResourceHashes;
         requestedResourceHashes.push_back(managedResource.getResourceObject()->getHash());
-        Guid requesterId(true);
+        Guid requesterId(222);
 
         EXPECT_CALL(communicationSystem, sendResources(requesterId, _));
         localResourceComponent.handleRequestResources(requestedResourceHashes, 0u, requesterId);
@@ -922,7 +897,7 @@ namespace ramses_internal
             requestedResourceHashes.push_back(res.getResourceObject()->getHash());
         }
 
-        Guid requesterId(true);
+        Guid requesterId(222);
         ManagedResourceVector sentResources;
         EXPECT_CALL(communicationSystem, sendResources(requesterId, _)).WillOnce(DoAll(SaveArg<1>(&sentResources), Return(true)));
         localResourceComponent.handleRequestResources(requestedResourceHashes, 0u, requesterId);
@@ -939,7 +914,7 @@ namespace ramses_internal
         // so handleResourceRequest has to load it from file before sending
         EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).getResourceObject());
 
-        Guid requester(true);
+        Guid requester(222);
         localResourceComponent.handleRequestResources(requestedResourceHashes, 0u, requester);
 
         // execute enqueued resource loading task
@@ -951,7 +926,7 @@ namespace ramses_internal
     {
         ResourceContentHashVector requestedResourceHashes = writeMultipleTestResourceFile(4);
 
-        Guid requester(true);
+        Guid requester(222);
         localResourceComponent.handleRequestResources(requestedResourceHashes, 0u, requester);
 
         // execute enqueued resource loading task
@@ -974,7 +949,7 @@ namespace ramses_internal
             fileResHashes[1],
             localRes[2].getResourceObject()->getHash() };
 
-        Guid requester(true);
+        Guid requester(222);
 
         ManagedResourceVector sentLocalResources;
         EXPECT_CALL(communicationSystem, sendResources(requester, _)).WillOnce(DoAll(SaveArg<1>(&sentLocalResources), Return(true)));
@@ -1001,7 +976,7 @@ namespace ramses_internal
         // so handleResourceRequest has to load it from file before sending
         EXPECT_EQ(localResourceComponent.getResources().size(), 0u);
 
-        Guid requesterId(true);
+        Guid requesterId(222);
         EXPECT_CALL(communicationSystem, sendResourcesNotAvailable(requesterId, requestedResourceHashes));
         localResourceComponent.handleRequestResources(requestedResourceHashes, 0u, requesterId);
     }
@@ -1021,7 +996,7 @@ namespace ramses_internal
         unknownResources.push_back(hash1);
         unknownResources.push_back(hash2);
 
-        Guid requesterId(true);
+        Guid requesterId(222);
         EXPECT_CALL(communicationSystem, sendResources(requesterId, _));
         EXPECT_CALL(communicationSystem, sendResourcesNotAvailable(requesterId, unknownResources));
         localResourceComponent.handleRequestResources(requestedResourceHashes, 0u, requesterId);
@@ -1030,7 +1005,7 @@ namespace ramses_internal
 
     TEST_F(AResourceComponentTest, SendsRemoteRequestToProviderIfAvailabilityUnknown)
     {
-        Guid providerID(true);
+        Guid providerID(222);
         ResourceContentHashVector requestedResourceHashes;
         requestedResourceHashes.push_back(ResourceContentHash(47, 0));
 
@@ -1087,7 +1062,7 @@ namespace ramses_internal
         IResource* resource = CreateTestResource();
         ManagedResource managedRes = localResourceComponent.manageResource(*resource);
 
-        localResourceComponent.newParticipantHasConnected(Guid(true));
+        localResourceComponent.newParticipantHasConnected(Guid(222));
     }
 
     TEST_F(AResourceComponentTest, hasNoArrivedResourcesInitially)
@@ -1101,7 +1076,7 @@ namespace ramses_internal
         ResourceDeleterCallingCallback deleterMock(DefaultManagedResourceDeleterCallback::GetInstance());
         ManagedResource resource(*lowLevelResourceMock, deleterMock);
         const RequesterID requesterID(1);
-        const Guid providerID(true);
+        const Guid providerID(222);
 
         ResourceContentHashVector hashesToRequest;
         hashesToRequest.push_back(ResourceContentHash(42, 0));
@@ -1130,7 +1105,7 @@ namespace ramses_internal
         ResourceContentHashVector hashesToRequest2;
         hashesToRequest2.push_back(hash2);
 
-        const Guid providerID(true);
+        const Guid providerID(222);
         EXPECT_CALL(communicationSystem, sendRequestResources(providerID, hashesToRequest));
         EXPECT_CALL(communicationSystem, sendRequestResources(providerID, hashesToRequest2));
         localResourceComponent.requestResourceAsynchronouslyFromFramework(hashesToRequest, requesterIDA, providerID);
@@ -1160,7 +1135,7 @@ namespace ramses_internal
         hashesToRequest.push_back(hash1);
         hashesToRequest.push_back(hash2);
 
-        const Guid providerID(true);
+        const Guid providerID(222);
         const RequesterID requesterID(1);
         const RequesterID otherRequesterID(2);
         EXPECT_CALL(communicationSystem, sendRequestResources(providerID, hashesToRequest));
@@ -1223,6 +1198,42 @@ namespace ramses_internal
         EXPECT_TRUE(fromfile.getResourceObject() == nullptr);
     }
 
+    TEST_F(AResourceComponentTest, uncompressesLocallyRequestedResources)
+    {
+        ResourceContentHashVector hashes = writeMultipleTestResourceFile(2, 2000, true);
+
+        RequesterID requesterID(1);
+        localResourceComponent.requestResourceAsynchronouslyFromFramework(hashes, requesterID, Guid(222));
+
+        // execute enqueued resource loading task
+        executor.execute();
+
+        ManagedResourceVector poppedResources = localResourceComponent.popArrivedResources(requesterID);
+        ASSERT_EQ(2u, poppedResources.size());
+        EXPECT_TRUE(poppedResources[0].getResourceObject()->isCompressedAvailable());
+        EXPECT_TRUE(poppedResources[0].getResourceObject()->isDeCompressedAvailable());
+        EXPECT_TRUE(poppedResources[1].getResourceObject()->isCompressedAvailable());
+        EXPECT_TRUE(poppedResources[1].getResourceObject()->isDeCompressedAvailable());
+    }
+
+    TEST_F(AResourceComponentTest, doesNotUncompressRemoteRequestedResources)
+    {
+        ResourceContentHashVector hashes = writeMultipleTestResourceFile(2, 2000, true);
+        Guid requester(123);
+
+        localResourceComponent.handleRequestResources(hashes, 0u, requester);
+
+        EXPECT_CALL(communicationSystem, sendResources(requester, _)).WillOnce([&](auto, const auto& sentRes) -> bool {
+            EXPECT_EQ(2u, sentRes.size());
+            EXPECT_TRUE(sentRes[0].getResourceObject()->isCompressedAvailable());
+            EXPECT_FALSE(sentRes[0].getResourceObject()->isDeCompressedAvailable());
+            EXPECT_TRUE(sentRes[1].getResourceObject()->isCompressedAvailable());
+            EXPECT_FALSE(sentRes[1].getResourceObject()->isDeCompressedAvailable());
+            return true;
+        });
+        executor.execute();
+    }
+
     TEST_F(AResourceComponentWithThreadedTaskExecutorTest, HandleResourceRequest_AsynchronousLoadingResourceFromFileAndSendsIt)
     {
         ResourceContentHashVector requestedResourceHashes;
@@ -1233,7 +1244,7 @@ namespace ramses_internal
         // so handleResourceRequest has to load it from file before sending
         EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).getResourceObject());
 
-        Guid requester(true);
+        Guid requester(222);
         ramses_internal::PlatformEvent syncWaiter;
         {
             ramses_internal::PlatformGuard g(expectLock);
@@ -1283,7 +1294,7 @@ namespace ramses_internal
         ResourceContentHashVector resourceHashes = writeMultipleTestResourceFile(3);
 
         RequesterID requesterID(1);
-        Guid        providerID(true);
+        Guid        providerID(222);
         localResourceComponent.requestResourceAsynchronouslyFromFramework(resourceHashes, requesterID, providerID);
 
         // execute enqueued resource loading task
@@ -1310,7 +1321,7 @@ namespace ramses_internal
     {
         ResourceContentHashVector resourceHashes = writeMultipleTestResourceFile(2);
 
-        Guid requesterID(true);
+        Guid requesterID(222);
         localResourceComponent.handleRequestResources(resourceHashes, 0, requesterID);
 
         // execute enqueued resource loading task

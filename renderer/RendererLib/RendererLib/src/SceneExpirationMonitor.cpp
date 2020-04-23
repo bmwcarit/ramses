@@ -119,7 +119,7 @@ namespace ramses_internal
 
             // report event only if state changed from last time
             if (expired != timestamps.inExpiredState)
-                m_eventCollector.addSceneEvent(expired ? ERendererEventType_SceneExpired : ERendererEventType_SceneRecoveredFromExpiration, sceneId);
+                m_eventCollector.addSceneExpirationEvent(expired ? ERendererEventType_SceneExpired : ERendererEventType_SceneRecoveredFromExpiration, sceneId);
             timestamps.inExpiredState = expired;
         }
     }

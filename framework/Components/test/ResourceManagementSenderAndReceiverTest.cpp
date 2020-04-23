@@ -25,7 +25,7 @@ namespace ramses_internal
         StrictMock<ResourceProviderServiceHandlerMock> handler;
     };
 
-    INSTANTIATE_TEST_CASE_P(TypedCommunicationTest, AResourceManagementSenderAndReceiverTest,
+    INSTANTIATE_TEST_SUITE_P(TypedCommunicationTest, AResourceManagementSenderAndReceiverTest,
                             ::testing::ValuesIn(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()));
 
     TEST_P(AResourceManagementSenderAndReceiverTest, RequestResources)

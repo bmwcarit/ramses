@@ -13,7 +13,7 @@ using namespace testing;
 
 namespace ramses_internal
 {
-    TYPED_TEST_CASE(AScene, SceneTypes);
+    TYPED_TEST_SUITE(AScene, SceneTypes);
 
     static const TextureSamplerStates SamplerStates = { EWrapMethod::Clamp, EWrapMethod::Repeat, EWrapMethod::RepeatMirrored, ESamplingMethod::Linear, ESamplingMethod::Nearest, 4u };
 

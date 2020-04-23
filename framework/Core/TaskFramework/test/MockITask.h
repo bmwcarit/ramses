@@ -30,6 +30,7 @@ namespace ramses_internal
         }
         void execute()
         {
+            assert(m_Task);
             m_Task->execute();
             m_Task->release();
         }

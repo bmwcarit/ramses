@@ -11,6 +11,7 @@
 
 #include "ramses-framework-api/DcsmProvider.h"
 #include "ramses-framework-api/IDcsmProviderEventHandler.h"
+#include "ramses-framework-api/EDcsmOfferingMode.h"
 
 #include <thread>
 #include <iostream>
@@ -215,7 +216,7 @@ public:
         metadata.setPreviewDescription(std::u32string(U"example/пример/例"));
         const auto& fileContents = loadPreviewImageFile();
         metadata.setPreviewImagePng(fileContents.data(), fileContents.size());
-        m_dcsm.offerContentWithMetadata(m_contentID, m_categoryID, m_sceneToOffer, metadata);
+        m_dcsm.offerContentWithMetadata(m_contentID, m_categoryID, m_sceneToOffer, ramses::EDcsmOfferingMode::LocalAndRemote, metadata);
 
         // wait for the consumer accepting the offer and sending the initial size
         while (!m_sizeReceived)

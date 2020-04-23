@@ -11,6 +11,7 @@
 
 #include "RendererLib/LinkManagerBase.h"
 #include "Scene/ETransformMatrixType.h"
+#include "Math3d/Matrix44f.h"
 
 namespace ramses_internal
 {
@@ -24,7 +25,7 @@ namespace ramses_internal
         void                      removeSceneLinks(SceneId sceneId);
 
         Bool                      createDataLink(SceneId providerSceneId, DataSlotHandle providerSlotHandle, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
-        Bool                      removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
+        Bool                      removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle, SceneId* providerSceneIdOut = nullptr);
 
         Bool                      nodeHasDataLinkToProvider(SceneId consumerSceneID, NodeHandle consumerNodeHandle) const;
 

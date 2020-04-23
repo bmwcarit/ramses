@@ -36,8 +36,8 @@ namespace ramses_internal
             DATA_CONSUMER_AND_PROVIDER
         };
 
-        static const ramses::dataProviderId_t DataProviderId = 151u;
-        static const ramses::dataConsumerId_t DataConsumerId = 152u;
+        static constexpr const ramses::dataProviderId_t DataProviderId{151u};
+        static constexpr const ramses::dataConsumerId_t DataConsumerId{152u};
 
     private:
         const ramses::TextureSampler& createSampler(const ramses::Texture2D& texture);

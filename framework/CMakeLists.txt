@@ -81,6 +81,7 @@ ACME_MODULE(
     DEPENDENCIES            ramses-capu
                             lz4
                             fmt::fmt
+                            ramses-abseil
 
     INCLUDE_BASE            Core/Math3d/include
     FILES_PRIVATE_HEADER    Core/Math3d/include/Math3d/*.h
@@ -127,6 +128,13 @@ ACME_MODULE(
     FILES_PRIVATE_HEADER    Collision/include/Collision/*.h
     FILES_SOURCE            Collision/src/*.cpp
 
+    INCLUDE_BASE            Animation/Animation/include
+    FILES_PRIVATE_HEADER    Animation/Animation/include/Animation/*.h
+    FILES_SOURCE            Animation/Animation/src/*.cpp
+
+    INCLUDE_BASE            Animation/AnimationAPI/include
+    FILES_PRIVATE_HEADER    Animation/AnimationAPI/include/AnimationAPI/*.h
+
     INCLUDE_BASE            Communication/TransportCommon/include
     FILES_PRIVATE_HEADER    Communication/TransportCommon/include/TransportCommon/*.h
     FILES_SOURCE            Communication/TransportCommon/src/*.cpp
@@ -156,6 +164,10 @@ ACME_MODULE(
     FILES_PRIVATE_HEADER    Monitoring/include/Monitoring/*.h
     FILES_SOURCE            Monitoring/src/*.cpp
 
+    INCLUDE_BASE            SceneReferencing/include
+    FILES_PRIVATE_HEADER    SceneReferencing/include/SceneReferencing/*.h
+    FILES_SOURCE            SceneReferencing/src/*.cpp
+
     # cityhash from external
     INCLUDE_BASE            ../external/cityhash/src
     FILES_PRIVATE_HEADER    ../external/cityhash/src/*.h
@@ -170,7 +182,7 @@ ACME_MODULE(
     ${ramses-framework-TCP_MIXIN}
     ${ramses-framework-DLT_MIXIN}
     ${ramses-framework-AndroidLogger_MIXIN}
-)
+    )
 
 IF (ramses-sdk_ENABLE_TCP_SUPPORT)
   TARGET_COMPILE_DEFINITIONS(ramses-framework PUBLIC "-DHAS_TCP_COMM=1")
@@ -280,6 +292,10 @@ ACME_MODULE(
     FILES_PRIVATE_HEADER    Effect/test/*.h
     FILES_SOURCE            Effect/test/*.cpp
 
+    INCLUDE_BASE            Animation/Animation/test
+    FILES_PRIVATE_HEADER    Animation/Animation/test/*.h
+    FILES_SOURCE            Animation/Animation/test/*.cpp
+
     INCLUDE_BASE            Communication/TransportCommon/test
     FILES_PRIVATE_HEADER    Communication/TransportCommon/test/*.h
     FILES_SOURCE            Communication/TransportCommon/test/*.cpp
@@ -307,6 +323,10 @@ ACME_MODULE(
     INCLUDE_BASE            Watchdog/test
     FILES_PRIVATE_HEADER    Watchdog/test/*.h
     FILES_SOURCE            Watchdog/test/*.cpp
+
+    INCLUDE_BASE            SceneReferencing/test
+    FILES_PRIVATE_HEADER    SceneReferencing/test/*.h
+    FILES_SOURCE            SceneReferencing/test/*.cpp
 
     ${ramses-framework-test-DLT_MIXIN}
     ${ramses-framework-test-TCP_MIXIN}

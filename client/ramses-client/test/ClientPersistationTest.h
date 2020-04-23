@@ -18,7 +18,7 @@
 
 namespace ramses
 {
-    class ClientPersistation : public ASceneLoadedFromFile
+    class ClientPersistation : public ASceneAndAnimationSystemLoadedFromFile
     {
     public:
         template<typename ResourceType>

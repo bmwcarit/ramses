@@ -48,7 +48,7 @@ namespace ramses
         MeshNode* m_childMesh;
     };
 
-    TYPED_TEST_CASE(ANodeVisibilityTest, NodeTypes);
+    TYPED_TEST_SUITE(ANodeVisibilityTest, NodeTypes);
 
     TYPED_TEST(ANodeVisibilityTest, isVisibleInitially)
     {

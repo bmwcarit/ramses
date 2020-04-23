@@ -9,9 +9,9 @@
 #include "Collections/String.h"
 #include "framework_common_gmock_header.h"
 #include "Collections/HashMap.h"
-#include "ramses-capu/os/Memory.h"
 #include "IOStreamTester.h"
 #include "gtest/gtest.h"
+#include <cstring>
 
 namespace ramses_internal
 {
@@ -692,7 +692,7 @@ TEST(String, IsNullterminatedAlsoAfterResizing)
 
     char destination[3];
 
-    ramses_capu::Memory::Copy(&destination, s.c_str(), 3);
+    std::memcpy(&destination, s.c_str(), 3);
     ASSERT_EQ(0, destination[2]);
 }
 
@@ -704,7 +704,7 @@ TEST(String, IsNullterminatedAlsoAfterResizingToZero)
 
     char destination;
 
-    ramses_capu::Memory::Copy(&destination, s.c_str(), 1);
+    std::memcpy(&destination, s.c_str(), 1);
     ASSERT_EQ(0, destination);
 }
 
@@ -713,7 +713,7 @@ TEST(String, ResizeReallyAllocatesEnough)
     String s("12");
     s.resize(6);
     const char* source = "12345\0";
-    ramses_capu::Memory::Copy(s.data(), source, 6);
+    std::memcpy(s.data(), source, 6);
 
     EXPECT_STREQ("12345", s.data());
 }

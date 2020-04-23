@@ -96,7 +96,7 @@ namespace ramses
 
         /**
          * @brief      Set the name to be used for the embedded compositing
-         *             socket.
+         *             display socket name.
          *
          *             The embedded compositor communicates with its clients via
          *             a socket file. There are two distinct ways to connect the
@@ -113,7 +113,7 @@ namespace ramses
          *
          *             Be aware that the socket file name is only used if the
          *             file descriptor is set to an invalid value (default), see
-         *             RendererConfig::setWaylandSocketEmbeddedFD
+         *             RendererConfig::setWaylandEmbeddedCompositingSocketFD
          *
          *             If neither filename nor file descriptor is set display
          *             creation will fail.
@@ -126,21 +126,28 @@ namespace ramses
          *             be used to resolve error message using
          *             getStatusMessage().
          */
-        status_t setWaylandSocketEmbedded(const char* socketname);
+        status_t setWaylandEmbeddedCompositingSocketName(const char* socketname);
 
         /**
-        * @brief Request that the embedded compositing socket obtains the group permissions given
+        * @brief Get the current setting of embedded compositing display socket name
+        *
+        * @return Wayland display name to use for embedded compositing socket
+        */
+        const char* getWaylandEmbeddedCompositingSocketName() const;
+
+        /**
+        * @brief Request that the embedded compositing display socket obtains the group permissions given
         *        by the given name.
         *
         * @param[in] groupname The group name of the socket.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setWaylandSocketEmbeddedGroup(const char* groupname);
+        status_t setWaylandEmbeddedCompositingSocketGroup(const char* groupname);
 
         /**
          * @brief      Set the file descriptor for the embedded compositor
-         *             socket.
+         *             display socket.
          *
          *             The embedded compositor communicates with its clients via
          *             a socket file. There are two distinct ways to connect the
@@ -168,7 +175,7 @@ namespace ramses
          *             be used to resolve error message using
          *             getStatusMessage().
          */
-        status_t setWaylandSocketEmbeddedFD(int socketFileDescriptor);
+        status_t setWaylandEmbeddedCompositingSocketFD(int socketFileDescriptor);
 
         /**
         * @brief Set the Wayland display name to connect system compositor to.

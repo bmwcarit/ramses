@@ -9,16 +9,17 @@
 #ifndef RAMSES_CLIENTAPPLICATIONLOGIC_H
 #define RAMSES_CLIENTAPPLICATIONLOGIC_H
 
-#include "TransportCommon/ServiceHandlerInterfaces.h"
 #include "Components/ManagedResource.h"
 #include "Components/ResourceHashUsage.h"
 #include "Components/ResourceFileInputStream.h"
+#include "Components/ISceneProviderEventConsumer.h"
 
 #include "SceneAPI/SceneVersionTag.h"
 #include "Scene/EScenePublicationMode.h"
 #include "Collections/HashSet.h"
 #include "Collections/Guid.h"
 #include "PlatformAbstraction/PlatformLock.h"
+#include "SceneReferencing/SceneReferenceEvent.h"
 
 namespace ramses
 {
@@ -34,7 +35,7 @@ namespace ramses_internal
     class ISceneGraphProviderComponent;
     struct FlushTimeInformation;
 
-    class ClientApplicationLogic : public ISceneProviderServiceHandler
+    class ClientApplicationLogic : public ISceneProviderEventConsumer
     {
     public:
         explicit ClientApplicationLogic(const Guid& myId, PlatformLock& frameworkLock);
@@ -52,8 +53,7 @@ namespace ramses_internal
         void flush(SceneId sceneId, const FlushTimeInformation& timeInfo, SceneVersionTag versionTag);
         void removeScene(SceneId sceneId);
 
-        virtual void handleSubscribeScene(const SceneId& sceneId, const Guid& consumerID) override;
-        virtual void handleUnsubscribeScene(const SceneId& sceneId, const Guid& consumerID) override;
+        virtual void handleSceneReferenceEvent(SceneReferenceEvent const& event, const Guid& rendererId) override;
 
         // Resource handling
         ManagedResource         addResource(const IResource* resource);
@@ -66,6 +66,8 @@ namespace ramses_internal
         bool                    hasResourceFile(const String& resourceFileName) const;
         void                    reserveResourceCount(uint32_t totalCount);
 
+        std::vector<ramses_internal::SceneReferenceEvent>& getSceneReferenceEvents();
+
     private:
         PlatformLock&                 m_frameworkLock;
         IResourceProviderComponent*   m_resourceComponent;
@@ -74,6 +76,8 @@ namespace ramses_internal
         const Guid                    m_myId;
 
         HashSet<SceneId> m_publishedScenes;
+
+        std::vector<ramses_internal::SceneReferenceEvent> m_sceneReferenceEventVec;
     };
 }
 

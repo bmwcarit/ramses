@@ -10,6 +10,7 @@
 #include "Utils/BinaryOutputStream.h"
 #include "Utils/BinaryInputStream.h"
 #include "Collections/HashSet.h"
+#include "Collections/StringOutputStream.h"
 #include "gtest/gtest.h"
 #include <unordered_set>
 
@@ -86,7 +87,7 @@ namespace ramses_internal
         EXPECT_EQ(o3, i3);
     }
 
-    TEST(AResourceContentHash, canPrintToStream)
+    TEST(AResourceContentHash, canPrintToString)
     {
         ResourceContentHash zero_hash(0, 0);
         ResourceContentHash small_hash(6342u, 0);
@@ -95,6 +96,10 @@ namespace ramses_internal
         EXPECT_EQ("0x00000000000000000000000000000000", StringOutputStream::ToString(zero_hash));
         EXPECT_EQ("0x000000000000000000000000000018C6", StringOutputStream::ToString(small_hash));
         EXPECT_EQ("0xFEDCBA98765432100123456789ABCDEF", StringOutputStream::ToString(big_hash));
+
+        EXPECT_EQ("0x00000000000000000000000000000000", fmt::to_string(zero_hash));
+        EXPECT_EQ("0x000000000000000000000000000018C6", fmt::to_string(small_hash));
+        EXPECT_EQ("0xFEDCBA98765432100123456789ABCDEF", fmt::to_string(big_hash));
     }
 
     TEST(AResourceContentHash, canBeUsedInHashContainers)

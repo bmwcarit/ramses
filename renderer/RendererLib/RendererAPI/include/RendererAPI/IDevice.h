@@ -103,7 +103,7 @@ namespace ramses_internal
 
         virtual DeviceResourceHandle    allocateTexture2D           (UInt32 width, UInt32 height, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes) = 0;
         virtual DeviceResourceHandle    allocateTexture3D           (UInt32 width, UInt32 height, UInt32 depth, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes) = 0;
-        virtual DeviceResourceHandle    allocateTextureCube         (UInt32 faceSize, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes) = 0;
+        virtual DeviceResourceHandle    allocateTextureCube         (UInt32 faceSize, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes) = 0;
         virtual void                    bindTexture                 (DeviceResourceHandle handle) = 0;
         virtual void                    generateMipmaps             (DeviceResourceHandle handle) = 0;
         virtual void                    uploadTextureData           (DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte* data, UInt32 dataSize) = 0;

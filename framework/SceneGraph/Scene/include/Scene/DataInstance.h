@@ -28,8 +28,8 @@ namespace ramses_internal
 
         DataInstance(const DataInstance&) = default;
         DataInstance& operator=(const  DataInstance&) = default;
-        DataInstance(DataInstance&&) RNOEXCEPT = default;
-        DataInstance& operator=(DataInstance&&) RNOEXCEPT = default;
+        DataInstance(DataInstance&&) noexcept = default;
+        DataInstance& operator=(DataInstance&&) noexcept = default;
 
         template <typename DATATYPE>
         const DATATYPE* getTypedDataPointer(UInt32 fieldOffset) const

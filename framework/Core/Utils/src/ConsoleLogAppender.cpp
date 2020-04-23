@@ -82,10 +82,10 @@ namespace ramses_internal
                        Console::White(), posix_tm, now % 1000, Console::Default(),
                        logLevelColor, logLevelStr, Console::Default(),
                        Console::Cyan(), logMessage.getContext().getContextId(), Console::Default(),
-                       logMessage.getStream().data().stdRef());
+                       logMessage.getStream().data());
         else
             fmt::print("{:%Y%m%d-%H:%M:%S}.{:03} | {} | {} | {}\n",
-                       posix_tm, now % 1000, logLevelStr,logMessage.getContext().getContextId(), logMessage.getStream().data().stdRef());
+                       posix_tm, now % 1000, logLevelStr,logMessage.getContext().getContextId(), logMessage.getStream().data());
         std::fflush(stdout);
 
         m_callback();

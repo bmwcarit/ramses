@@ -31,6 +31,8 @@ namespace ramses_internal
             filledDm.setCarModel(1);
             filledDm.setCarModelView({1,2,3,4,5,6});
             filledDm.setCarModelVisibility(true);
+            filledDm.setExclusiveBackground(true);
+            filledDm.setFocusRequested(15);
         }
 
         DcsmMetadata serializeDeserialize(const DcsmMetadata& ref)
@@ -63,6 +65,8 @@ namespace ramses_internal
         EXPECT_FALSE(dm.hasCarModel());
         EXPECT_FALSE(dm.hasCarModelView());
         EXPECT_FALSE(dm.hasCarModelVisibility());
+        EXPECT_FALSE(dm.hasExclusiveBackground());
+        EXPECT_FALSE(dm.hasFocusRequest());
     }
 
     TEST_F(ADcsmMetadata, canSetGetPreviewImagePngHeader)
@@ -172,6 +176,22 @@ namespace ramses_internal
         dm.setCarModelVisibility(true);
         EXPECT_TRUE(dm.hasCarModelVisibility());
         EXPECT_TRUE(dm.getCarModelVisibility());
+    }
+
+    TEST_F(ADcsmMetadata, canSetGetExclusiveBackground)
+    {
+        DcsmMetadata dm;
+        dm.setExclusiveBackground(true);
+        EXPECT_TRUE(dm.hasExclusiveBackground());
+        EXPECT_TRUE(dm.getExclusiveBackground());
+    }
+
+    TEST_F(ADcsmMetadata, canSetGetFocusRequest)
+    {
+        DcsmMetadata dm;
+        dm.setFocusRequested(16);
+        EXPECT_TRUE(dm.hasFocusRequest());
+        EXPECT_EQ(16, dm.getFocusRequest());
     }
 
     TEST_F(ADcsmMetadata, canCompare)
@@ -320,6 +340,24 @@ namespace ramses_internal
         EXPECT_TRUE(dm.getCarModelVisibility());
     }
 
+    TEST_F(ADcsmMetadata, canSetExclusiveBackgroundToNewValue)
+    {
+        DcsmMetadata dm;
+        EXPECT_TRUE(dm.setExclusiveBackground(false));
+        EXPECT_TRUE(dm.setExclusiveBackground(true));
+        EXPECT_TRUE(dm.hasExclusiveBackground());
+        EXPECT_TRUE(dm.getExclusiveBackground());
+    }
+
+    TEST_F(ADcsmMetadata, canSetFocusRequestToNewValue)
+    {
+        DcsmMetadata dm;
+        EXPECT_TRUE(dm.setFocusRequested(0));
+        EXPECT_TRUE(dm.setFocusRequested(13));
+        EXPECT_TRUE(dm.hasFocusRequest());
+        EXPECT_EQ(13, dm.getFocusRequest());
+    }
+
     TEST_F(ADcsmMetadata, canUpdatePngFromOther)
     {
         DcsmMetadata dm;
@@ -425,6 +463,32 @@ namespace ramses_internal
         EXPECT_TRUE(dm.getCarModelVisibility());
     }
 
+    TEST_F(ADcsmMetadata, canUpdateExclusiveBackgroundFromOther)
+    {
+        DcsmMetadata dm;
+        EXPECT_TRUE(dm.setExclusiveBackground(false));
+
+        DcsmMetadata otherDm;
+        EXPECT_TRUE(otherDm.setExclusiveBackground(true));
+
+        dm.updateFromOther(otherDm);
+        EXPECT_TRUE(dm.hasExclusiveBackground());
+        EXPECT_TRUE(dm.getExclusiveBackground());
+    }
+
+    TEST_F(ADcsmMetadata, canUpdateFocusRequestFromOther)
+    {
+        DcsmMetadata dm;
+        EXPECT_TRUE(dm.setFocusRequested(0));
+
+        DcsmMetadata otherDm;
+        EXPECT_TRUE(otherDm.setFocusRequested(1));
+
+        dm.updateFromOther(otherDm);
+        EXPECT_TRUE(dm.hasFocusRequest());
+        EXPECT_EQ(1, dm.getFocusRequest());
+    }
+
     TEST_F(ADcsmMetadata, canUpdateEmptyWithValues)
     {
         DcsmMetadata otherDm;
@@ -436,6 +500,8 @@ namespace ramses_internal
         EXPECT_TRUE(otherDm.setCarModel(1234));
         EXPECT_TRUE(otherDm.setCarModelView({1,2,3,4,5,6}));
         EXPECT_TRUE(otherDm.setCarModelVisibility(true));
+        EXPECT_TRUE(otherDm.setExclusiveBackground(true));
+        EXPECT_TRUE(otherDm.setFocusRequested(2));
 
         DcsmMetadata dm;
         dm.updateFromOther(otherDm);
@@ -455,6 +521,10 @@ namespace ramses_internal
         EXPECT_EQ(ramses::CarModelViewMetadata({1,2,3,4,5,6}), dm.getCarModelView());
         EXPECT_TRUE(dm.hasCarModelVisibility());
         EXPECT_TRUE(dm.getCarModelVisibility());
+        EXPECT_TRUE(dm.hasExclusiveBackground());
+        EXPECT_TRUE(dm.getExclusiveBackground());
+        EXPECT_TRUE(dm.hasFocusRequest());
+        EXPECT_EQ(2, dm.getFocusRequest());
     }
 
     TEST_F(ADcsmMetadata, canSkipDeserializeUnknownTypes)

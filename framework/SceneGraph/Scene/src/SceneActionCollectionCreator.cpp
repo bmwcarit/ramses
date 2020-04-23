@@ -793,6 +793,40 @@ namespace ramses_internal
         collection.write(handle);
     }
 
+    void SceneActionCollectionCreator::allocateSceneReference(SceneId sceneId, SceneReferenceHandle handle)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AllocateSceneReference);
+        collection.write(handle);
+        collection.write(sceneId);
+    }
+
+    void SceneActionCollectionCreator::releaseSceneReference(SceneReferenceHandle handle)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_ReleaseSceneReference);
+        collection.write(handle);
+    }
+
+    void SceneActionCollectionCreator::requestSceneReferenceState(SceneReferenceHandle handle, RendererSceneState state)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_RequestSceneReferenceState);
+        collection.write(handle);
+        collection.write(state);
+    }
+
+    void SceneActionCollectionCreator::requestSceneReferenceFlushNotifications(SceneReferenceHandle handle, bool enable)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_RequestSceneReferenceFlushNotifications);
+        collection.write(handle);
+        collection.write(enable);
+    }
+
+    void SceneActionCollectionCreator::setSceneReferenceRenderOrder(SceneReferenceHandle handle, int32_t renderOrder)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_SetSceneReferenceRenderOrder);
+        collection.write(handle);
+        collection.write(renderOrder);
+    }
+
     void SceneActionCollectionCreator::setRenderPassClearColor(RenderPassHandle handle, const Vector4& clearColor)
     {
         collection.beginWriteSceneAction(ESceneActionId_SetRenderPassClearColor);
@@ -805,6 +839,314 @@ namespace ramses_internal
         collection.beginWriteSceneAction(ESceneActionId_SetRenderPassClearFlag);
         collection.write(handle);
         collection.write(clearFlag);
+    }
+
+    void SceneActionCollectionCreator::addAnimationSystem(AnimationSystemHandle animSystemHandle, UInt32 flags, const AnimationSystemSizeInformation& sizeInfo)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AddAnimationSystem);
+        collection.write(animSystemHandle);
+        collection.write(flags);
+        collection.write(sizeInfo.splineCount);
+        collection.write(sizeInfo.dataBindCount);
+        collection.write(sizeInfo.animationInstanceCount);
+        collection.write(sizeInfo.animationCount);
+    }
+
+    void SceneActionCollectionCreator::removeAnimationSystem(AnimationSystemHandle animSystemHandle)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_RemoveAnimationSystem);
+        collection.write(animSystemHandle);
+    }
+
+    void SceneActionCollectionCreator::animationSystemSetTime(AnimationSystemHandle animSystemHandle, const AnimationTime& globalTime)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemSetTime);
+        collection.write(animSystemHandle);
+        collection.write(globalTime.getTimeStamp());
+    }
+
+    void SceneActionCollectionCreator::animationSystemAllocateSpline(AnimationSystemHandle animSystemHandle, ESplineKeyType keyType, EDataTypeID dataTypeID, SplineHandle handle)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemAllocateSpline);
+        collection.write(animSystemHandle);
+        collection.write(static_cast<UInt32>(keyType));
+        collection.write(static_cast<UInt32>(dataTypeID));
+        collection.write(handle);
+    }
+
+    void SceneActionCollectionCreator::animationSystemAllocateDataBinding(AnimationSystemHandle animSystemHandle, TDataBindID dataBindID, MemoryHandle handle1, MemoryHandle handle2, DataBindHandle dataBindHandle)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemAllocateDataBinding);
+        collection.write(animSystemHandle);
+        collection.write(dataBindID);
+        collection.write(handle1);
+        collection.write(handle2);
+        collection.write(dataBindHandle);
+    }
+
+    void SceneActionCollectionCreator::animationSystemAllocateAnimationInstance(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, EInterpolationType interpolationType, EVectorComponent vectorComponent, AnimationInstanceHandle handle)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemAllocateAnimationInstance);
+        collection.write(animSystemHandle);
+        collection.write(splineHandle);
+        collection.write(static_cast<UInt32>(interpolationType));
+        collection.write(static_cast<UInt32>(vectorComponent));
+        collection.write(handle);
+    }
+
+    void SceneActionCollectionCreator::animationSystemAllocateAnimation(AnimationSystemHandle animSystemHandle, AnimationInstanceHandle animInstHandle, AnimationHandle handle)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemAllocateAnimation);
+        collection.write(animSystemHandle);
+        collection.write(animInstHandle);
+        collection.write(handle);
+    }
+
+    void SceneActionCollectionCreator::animationSystemAddDataBindingToAnimationInstance(AnimationSystemHandle animSystemHandle, AnimationInstanceHandle handle, DataBindHandle dataBindHandle)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemAddDataBindingToAnimationInstance);
+        collection.write(animSystemHandle);
+        collection.write(handle);
+        collection.write(dataBindHandle);
+    }
+
+    void SceneActionCollectionCreator::animationSystemSetSplineKeyBasicBool(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, bool value)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemSetSplineKeyBasicBool);
+        collection.write(animSystemHandle);
+        collection.write(splineHandle);
+        collection.write(timeStamp);
+        collection.write(value);
+    }
+
+    void SceneActionCollectionCreator::animationSystemSetSplineKeyBasicInt32(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, Int32 value)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemSetSplineKeyBasicInt32);
+        collection.write(animSystemHandle);
+        collection.write(splineHandle);
+        collection.write(timeStamp);
+        collection.write(value);
+    }
+
+    void SceneActionCollectionCreator::animationSystemSetSplineKeyBasicFloat(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, Float value)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemSetSplineKeyBasicFloat);
+        collection.write(animSystemHandle);
+        collection.write(splineHandle);
+        collection.write(timeStamp);
+        collection.write(value);
+    }
+
+    void SceneActionCollectionCreator::animationSystemSetSplineKeyBasicVector2f(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector2& value)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemSetSplineKeyBasicVector2f);
+        collection.write(animSystemHandle);
+        collection.write(splineHandle);
+        collection.write(timeStamp);
+        collection.write(value.data);
+    }
+
+    void SceneActionCollectionCreator::animationSystemSetSplineKeyBasicVector3f(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector3& value)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemSetSplineKeyBasicVector3f);
+        collection.write(animSystemHandle);
+        collection.write(splineHandle);
+        collection.write(timeStamp);
+        collection.write(value.data);
+    }
+
+    void SceneActionCollectionCreator::animationSystemSetSplineKeyBasicVector4f(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector4& value)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemSetSplineKeyBasicVector4f);
+        collection.write(animSystemHandle);
+        collection.write(splineHandle);
+        collection.write(timeStamp);
+        collection.write(value.data);
+    }
+
+    void SceneActionCollectionCreator::animationSystemSetSplineKeyBasicVector2i(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector2i& value)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemSetSplineKeyBasicVector2i);
+        collection.write(animSystemHandle);
+        collection.write(splineHandle);
+        collection.write(timeStamp);
+        collection.write(value.data);
+    }
+
+    void SceneActionCollectionCreator::animationSystemSetSplineKeyBasicVector3i(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector3i& value)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemSetSplineKeyBasicVector3i);
+        collection.write(animSystemHandle);
+        collection.write(splineHandle);
+        collection.write(timeStamp);
+        collection.write(value.data);
+    }
+
+    void SceneActionCollectionCreator::animationSystemSetSplineKeyBasicVector4i(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector4i& value)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemSetSplineKeyBasicVector4i);
+        collection.write(animSystemHandle);
+        collection.write(splineHandle);
+        collection.write(timeStamp);
+        collection.write(value.data);
+    }
+
+    void SceneActionCollectionCreator::animationSystemSetSplineKeyTangentsInt32(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, Int32 value, const Vector2& tanIn, const Vector2& tanOut)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemSetSplineKeyTangentsInt32);
+        collection.write(animSystemHandle);
+        collection.write(splineHandle);
+        collection.write(timeStamp);
+        collection.write(value);
+        collection.write(tanIn.data);
+        collection.write(tanOut.data);
+    }
+
+    void SceneActionCollectionCreator::animationSystemSetSplineKeyTangentsFloat(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, Float value, const Vector2& tanIn, const Vector2& tanOut)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemSetSplineKeyTangentsFloat);
+        collection.write(animSystemHandle);
+        collection.write(splineHandle);
+        collection.write(timeStamp);
+        collection.write(value);
+        collection.write(tanIn.data);
+        collection.write(tanOut.data);
+    }
+
+    void SceneActionCollectionCreator::animationSystemSetSplineKeyTangentsVector2f(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector2& value, const Vector2& tanIn, const Vector2& tanOut)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemSetSplineKeyTangentsVector2f);
+        collection.write(animSystemHandle);
+        collection.write(splineHandle);
+        collection.write(timeStamp);
+        collection.write(value.data);
+        collection.write(tanIn.data);
+        collection.write(tanOut.data);
+    }
+
+    void SceneActionCollectionCreator::animationSystemSetSplineKeyTangentsVector3f(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector3& value, const Vector2& tanIn, const Vector2& tanOut)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemSetSplineKeyTangentsVector3f);
+        collection.write(animSystemHandle);
+        collection.write(splineHandle);
+        collection.write(timeStamp);
+        collection.write(value.data);
+        collection.write(tanIn.data);
+        collection.write(tanOut.data);
+    }
+
+    void SceneActionCollectionCreator::animationSystemSetSplineKeyTangentsVector4f(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector4& value, const Vector2& tanIn, const Vector2& tanOut)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemSetSplineKeyTangentsVector4f);
+        collection.write(animSystemHandle);
+        collection.write(splineHandle);
+        collection.write(timeStamp);
+        collection.write(value.data);
+        collection.write(tanIn.data);
+        collection.write(tanOut.data);
+    }
+
+    void SceneActionCollectionCreator::animationSystemSetSplineKeyTangentsVector2i(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector2i& value, const Vector2& tanIn, const Vector2& tanOut)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemSetSplineKeyTangentsVector2i);
+        collection.write(animSystemHandle);
+        collection.write(splineHandle);
+        collection.write(timeStamp);
+        collection.write(value.data);
+        collection.write(tanIn.data);
+        collection.write(tanOut.data);
+    }
+
+    void SceneActionCollectionCreator::animationSystemSetSplineKeyTangentsVector3i(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector3i& value, const Vector2& tanIn, const Vector2& tanOut)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemSetSplineKeyTangentsVector3i);
+        collection.write(animSystemHandle);
+        collection.write(splineHandle);
+        collection.write(timeStamp);
+        collection.write(value.data);
+        collection.write(tanIn.data);
+        collection.write(tanOut.data);
+    }
+
+    void SceneActionCollectionCreator::animationSystemSetSplineKeyTangentsVector4i(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector4i& value, const Vector2& tanIn, const Vector2& tanOut)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemSetSplineKeyTangentsVector4i);
+        collection.write(animSystemHandle);
+        collection.write(splineHandle);
+        collection.write(timeStamp);
+        collection.write(value.data);
+        collection.write(tanIn.data);
+        collection.write(tanOut.data);
+    }
+
+    void SceneActionCollectionCreator::animationSystemRemoveSplineKey(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineKeyIndex keyIndex)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemRemoveSplineKey);
+        collection.write(animSystemHandle);
+        collection.write(splineHandle);
+        collection.write(keyIndex);
+    }
+
+    void SceneActionCollectionCreator::animationSystemSetAnimationStartTime(AnimationSystemHandle animSystemHandle, AnimationHandle handle, const AnimationTime& timeStamp)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemSetAnimationStartTime);
+        collection.write(animSystemHandle);
+        collection.write(handle);
+        collection.write(timeStamp.getTimeStamp());
+    }
+
+    void SceneActionCollectionCreator::animationSystemSetAnimationStopTime(AnimationSystemHandle animSystemHandle, AnimationHandle handle, const AnimationTime& timeStamp)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemSetAnimationStopTime);
+        collection.write(animSystemHandle);
+        collection.write(handle);
+        collection.write(timeStamp.getTimeStamp());
+    }
+
+    void SceneActionCollectionCreator::animationSystemSetAnimationProperties(AnimationSystemHandle animSystemHandle, AnimationHandle handle, Float playbackSpeed, UInt32 flags, AnimationTime::Duration loopDuration, const AnimationTime& timeStamp)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemSetAnimationProperties);
+        collection.write(animSystemHandle);
+        collection.write(handle);
+        collection.write(playbackSpeed);
+        collection.write(flags);
+        collection.write(loopDuration);
+        collection.write(timeStamp.getTimeStamp());
+    }
+
+    void SceneActionCollectionCreator::animationSystemStopAnimationAndRollback(AnimationSystemHandle animSystemHandle, AnimationHandle handle)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemStopAnimationAndRollback);
+        collection.write(animSystemHandle);
+        collection.write(handle);
+    }
+
+    void SceneActionCollectionCreator::animationSystemRemoveSpline(AnimationSystemHandle animSystemHandle, SplineHandle handle)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemRemoveSpline);
+        collection.write(animSystemHandle);
+        collection.write(handle);
+    }
+
+    void SceneActionCollectionCreator::animationSystemRemoveDataBinding(AnimationSystemHandle animSystemHandle, DataBindHandle handle)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemRemoveDataBinding);
+        collection.write(animSystemHandle);
+        collection.write(handle);
+    }
+
+    void SceneActionCollectionCreator::animationSystemRemoveAnimationInstance(AnimationSystemHandle animSystemHandle, AnimationInstanceHandle handle)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemRemoveAnimationInstance);
+        collection.write(animSystemHandle);
+        collection.write(handle);
+    }
+
+    void SceneActionCollectionCreator::animationSystemRemoveAnimation(AnimationSystemHandle animSystemHandle, AnimationHandle handle)
+    {
+        collection.beginWriteSceneAction(ESceneActionId_AnimationSystemRemoveAnimation);
+        collection.write(animSystemHandle);
+        collection.write(handle);
     }
 
     void SceneActionCollectionCreator::compoundRenderableData(
@@ -891,6 +1233,7 @@ namespace ramses_internal
         bool addSizeInfo,
         const SceneSizeInformation& sizeInfo,
         const SceneResourceChanges& resourceChanges,
+        const SceneReferenceActionVector& sceneReferences,
         const FlushTimeInformation& flushTimeInfo,
         SceneVersionTag versionTag)
     {
@@ -900,6 +1243,7 @@ namespace ramses_internal
         const UInt estimatedDataSize = sizeof(flushIndex) + sizeof(flushFlags) +
             (addSizeInfo ? sizeof(SceneSizeInformation) : 0) +
             resourceChanges.getPutSizeEstimate() +
+            SceneReferenceActionUtils::GetSizeEstimate(sceneReferences) +
             2 * sizeof(UInt64);
         collection.reserveAdditionalCapacity(estimatedDataSize, 1u);
 
@@ -911,6 +1255,7 @@ namespace ramses_internal
             putSceneSizeInformation(sizeInfo);
         }
         resourceChanges.putToSceneAction(collection);
+        SceneReferenceActionUtils::WriteToCollection(sceneReferences, collection);
 
         collection.write(static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(flushTimeInfo.expirationTimestamp).time_since_epoch().count()));
         collection.write(static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(flushTimeInfo.internalTimestamp).time_since_epoch().count()));
@@ -936,7 +1281,9 @@ namespace ramses_internal
         collection.write(sizeInfo.streamTextureCount);
         collection.write(sizeInfo.dataSlotCount);
         collection.write(sizeInfo.dataBufferCount);
+        collection.write(sizeInfo.animationSystemCount);
         collection.write(sizeInfo.textureBufferCount);
         collection.write(sizeInfo.pickableObjectCount);
+        collection.write(sizeInfo.sceneReferenceCount);
     }
 }

@@ -29,8 +29,8 @@ namespace internal
         Thread() = default;
         explicit Thread(std::string name, Fun_t fun);
 
-        Thread(Thread&& other) RNOEXCEPT;
-        Thread& operator=(Thread&& other) RNOEXCEPT;
+        Thread(Thread&& other) noexcept;
+        Thread& operator=(Thread&& other) noexcept;
 
         ~Thread();
 
@@ -51,7 +51,7 @@ namespace internal
     static_assert(std::is_nothrow_move_constructible<Thread>::value, "Thread must be movable");
     static_assert(std::is_nothrow_move_assignable<Thread>::value, "Thread must be movable");
 
-    inline Thread::Thread(Thread&& other) RNOEXCEPT
+    inline Thread::Thread(Thread&& other) noexcept
         : m_running(other.m_running)
         , m_threadId(other.m_threadId)
         , m_fun(std::move(other.m_fun))
@@ -102,7 +102,7 @@ namespace internal
             std::terminate();
     }
 
-    inline Thread& Thread::operator=(Thread&& other) RNOEXCEPT
+    inline Thread& Thread::operator=(Thread&& other) noexcept
     {
         if (m_running)
             std::terminate();

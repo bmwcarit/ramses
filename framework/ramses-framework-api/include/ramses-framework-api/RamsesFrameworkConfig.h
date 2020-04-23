@@ -75,6 +75,20 @@ namespace ramses
         status_t setWatchdogNotificationCallBack(IThreadWatchdogNotification* callback);
 
         /**
+         * @brief Disable DLT application registration
+         *
+         * When set and DLT is enabled ramses expects DLT_REGISTER_APP beeing called before
+         * RamsesFramework construction and DLT_UNREGISTER_APP after RamsesFramework destruction.
+         * Ramses will add its context to the existing application.
+         *
+         * When not disabled, ramses will manage DLT application registration itself.
+         *
+         * @return StatusOK on success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        status_t disableDLTApplicationRegistration();
+
+        /**
         * @brief Set the application ID name for DLT (4 chars)
         *
         * @param[in] id to use as DLT application id

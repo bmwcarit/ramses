@@ -275,9 +275,9 @@ namespace ramses_internal
         return DeviceResourceHandle::Invalid();
     }
 
-    DeviceResourceHandle LoggingDevice::allocateTextureCube(UInt32 faceSize, ETextureFormat format, UInt32 mipLevelCount, UInt32)
+    DeviceResourceHandle LoggingDevice::allocateTextureCube(UInt32 faceSize, ETextureFormat format, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32)
     {
-        m_logContext << "allocate textureCube [ faceSize:" << faceSize << " mipLevelCount:" << mipLevelCount << " format:" << EnumToString(format) << "]" << RendererLogContext::NewLine;
+        m_logContext << "allocate textureCube [ faceSize:" << faceSize << " mipLevelCount:" << mipLevelCount << " format:" << EnumToString(format) << "textureSwizzle:"<< EnumToString(swizzle[0]) << ";" << EnumToString(swizzle[1]) << ";" << EnumToString(swizzle[2]) << ";" << EnumToString(swizzle[3]) <<  "]" << RendererLogContext::NewLine;
         return DeviceResourceHandle::Invalid();
     }
 

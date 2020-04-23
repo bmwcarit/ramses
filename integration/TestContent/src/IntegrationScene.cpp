@@ -15,6 +15,7 @@
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
 #include "Math3d/Vector3.h"
+#include <cassert>
 
 namespace ramses_internal
 {

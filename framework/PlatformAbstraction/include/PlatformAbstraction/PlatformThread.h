@@ -11,6 +11,7 @@
 
 #include "Collections/String.h"
 #include "PlatformAbstraction/Runnable.h"
+#include <cassert>
 
 #ifdef _WIN32
 #include "PlatformAbstraction/internal/Thread_std.h"

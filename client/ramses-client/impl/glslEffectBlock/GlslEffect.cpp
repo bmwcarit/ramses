@@ -90,7 +90,7 @@ namespace ramses_internal
         }
 
         std::unique_ptr<glslang::TProgram> program(linkProgram(glslVertexShader.get(), glslFragmentShader.get()));
-        if (!program.get())
+        if (!program)
         {
             return nullptr;
         }

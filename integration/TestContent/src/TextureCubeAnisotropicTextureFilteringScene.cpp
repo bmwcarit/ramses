@@ -122,7 +122,7 @@ namespace ramses_internal
         /// Horizontally, 2 texel map to one pixel => DefaultDisplayWidth * 2 texels needed.
         /// Vertically, 1 texel map to one pixel => DefaultDisplayHeight texels needed.
         /// Cube map textures are of square size, so take larger value.
-        const uint32_t numberOfMipLevels = GetNextLargerPowerOf2Exponent(max(DefaultDisplayWidth * 2, DefaultDisplayHeight)) + 1;
+        const uint32_t numberOfMipLevels = GetNextLargerPowerOf2Exponent(std::max(DefaultDisplayWidth * 2, DefaultDisplayHeight)) + 1;
         ramses::CubeMipLevelData* mipLevelData = new ramses::CubeMipLevelData[numberOfMipLevels];
 
         const uint32_t textureResolution = 1u << (numberOfMipLevels - 1);

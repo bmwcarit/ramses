@@ -13,6 +13,7 @@
 #include "RendererAPI/Types.h"
 #include "Utils/StatisticCollection.h"
 #include "PlatformAbstraction/PlatformTime.h"
+#include "Components/FlushTimeInformation.h"
 #include <map>
 
 namespace ramses_internal
@@ -26,10 +27,9 @@ namespace ramses_internal
         UInt32 getDrawCallsPerFrame() const;
 
         void sceneRendered(SceneId sceneId);
-        void trackArrivedFlush(SceneId sceneId, UInt numSceneActions, UInt numAddedClientResources, UInt numRemovedClientResources, UInt numSceneResourceActions);
+        void trackArrivedFlush(SceneId sceneId, UInt numSceneActions, UInt numAddedClientResources, UInt numRemovedClientResources, UInt numSceneResourceActions, std::chrono::milliseconds latency);
         void flushApplied(SceneId sceneId);
         void flushBlocked(SceneId sceneId);
-        void flushApplyInterrupted(SceneId sceneId);
 
         void offscreenBufferSwapped(DisplayHandle displayHandle, DeviceResourceHandle offscreenBuffer, bool isInterruptible);
         void offscreenBufferInterrupted(DisplayHandle displayHandle, DeviceResourceHandle offscreenBuffer);
@@ -71,7 +71,6 @@ namespace ramses_internal
             UInt numFramesWhereFlushArrived = 0u;
             UInt numFramesWhereFlushApplied = 0u;
             UInt numFramesWhereFlushBlocked = 0u;
-            UInt numFlushApplyInterrupted = 0u;
             UInt maxFramesWithNoFlushApplied = 0u;
             UInt maxConsecutiveFramesBlocked = 0u;
             UInt currentConsecutiveFramesBlocked = 0u;
@@ -83,6 +82,7 @@ namespace ramses_internal
             SummaryEntry<UInt> numClientResourcesAddedPerFlush;
             SummaryEntry<UInt> numClientResourcesRemovedPerFlush;
             SummaryEntry<UInt> numSceneResourceActionsPerFlush;
+            SummaryEntry<int64_t> flushLatency;
 
             UInt sceneResourcesUploaded = 0u;
             UInt sceneResourcesBytesUploaded = 0u;

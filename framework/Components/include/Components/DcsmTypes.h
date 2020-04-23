@@ -17,15 +17,12 @@ namespace ramses_internal
 {
     struct ContentIDTag;
     using ContentID = StronglyTypedValue<uint64_t, 0, ContentIDTag>;
-    DEFINE_SPECIAL_STRINGOUTPUTSTREAM_OPERATOR(ContentID, ramses::ContentID)
 
     struct CategoryTag;
     using Category = StronglyTypedValue<uint64_t, 0, CategoryTag>;
-    DEFINE_SPECIAL_STRINGOUTPUTSTREAM_OPERATOR(Category, ramses::Category)
 
     struct ProviderIDTag;
     using ProviderID = StronglyTypedValue<uint64_t, 0, ProviderIDTag>;
-    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(ProviderID)
 
     enum class ETechnicalContentType : uint32_t
     {
@@ -43,7 +40,6 @@ namespace ramses_internal
 
     struct TechnicalContentDescriptorTag;
     using TechnicalContentDescriptor = StronglyTypedValue<uint64_t, 0, TechnicalContentDescriptorTag>;
-    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(TechnicalContentDescriptor)
 
     struct SizeInfo
     {
@@ -94,5 +90,11 @@ namespace ramses_internal
         }
     };
 }
+
+MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::ContentID, ramses::ContentID)
+MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::Category, ramses::Category)
+
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::ProviderID)
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::TechnicalContentDescriptor)
 
 #endif

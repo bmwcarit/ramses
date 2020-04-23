@@ -67,6 +67,7 @@ private:
 
         TextureTest_Texture3D_RGBA8,
         TextureTest_CubeMap_RGBA8,
+        TextureTest_CubeMap_BGRA_Swizzled,
         TextureTest_CubeMap_Float,
         TextureTest_TextureCube_AnisotropicFilter,
 

@@ -47,7 +47,7 @@ The second way to create a unix domain socket to be used for connection between 
 is to create and bind the unix domain socket outside of RAMSES and
 only pass it's file descriptor to the renderer. This way, the renderer and all clients can
 be started separately and independently from each other. For more details,
-check \ref ramses::RendererConfig::setWaylandSocketEmbeddedFD.
+check \ref ramses::RendererConfig::setWaylandEmbeddedCompositingSocketFD.
 
 
 ## Configuration
@@ -77,7 +77,7 @@ Command line
 
 API in `RendererConfig`
 
-    status_t setWaylandSocketEmbedded(const char* socketname);
+    status_t setWaylandEmbeddedCompositingSocketName(const char* socketname);
 
 #### Socket group ownership.
 
@@ -90,14 +90,14 @@ Command line
     or
     --wayland-socket-embedded-groupname groupname
 
-API in `RendererConfig` : \ref ramses::RendererConfig::setWaylandSocketEmbeddedGroup
+API in `RendererConfig` : \ref ramses::RendererConfig::setWaylandEmbeddedCompositingSocketGroup
 
 #### Socket file descriptor
 
 Instead of the creating the socket file via RAMSES, you can provide
 the externally created socket file descriptor.
 
-This works via API in `RendererConfig` : \ref ramses::RendererConfig::setWaylandSocketEmbeddedFD
+This works via API in `RendererConfig` : \ref ramses::RendererConfig::setWaylandEmbeddedCompositingSocketFD
 
 
 ## Embedded Compositing API

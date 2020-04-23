@@ -14,12 +14,9 @@
 #include "ramses-text-api/TextLine.h"
 #include "Common/StronglyTypedValue.h"
 
-namespace ramses
-{
-    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(ramses::FontInstanceId);
-    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(ramses::GlyphId);
-    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(ramses::TextLineId);
-    DEFINE_STRINGOUTPUTSTREAM_OPERATOR(ramses::FontId);
-}
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::FontInstanceId);
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::GlyphId);
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::TextLineId);
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::FontId);
 
 #endif

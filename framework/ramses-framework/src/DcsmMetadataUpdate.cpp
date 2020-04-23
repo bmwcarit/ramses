@@ -104,4 +104,24 @@ namespace ramses
         return impl.getCarModelVisibility();
     }
 
+    bool DcsmMetadataUpdate::hasExclusiveBackground() const
+    {
+        return impl.hasExclusiveBackground();
+    }
+
+    bool DcsmMetadataUpdate::getExclusiveBackground() const
+    {
+        return impl.getExclusiveBackground();
+    }
+
+    bool DcsmMetadataUpdate::hasFocusRequest() const
+    {
+        return impl.hasFocusRequest();
+    }
+
+    int32_t DcsmMetadataUpdate::getFocusRequest() const
+    {
+        return impl.getFocusRequest();
+    }
+
 }

@@ -81,7 +81,8 @@ namespace ramses
         assert(nullptr != binaryShaderData);
         assert(binaryShaderDataSize > 0);
 
-        if (hasBinaryShader(effectId))
+        std::lock_guard<std::mutex> g(m_hashMapLock);
+        if (m_binaryShaders.contains(effectId))
         {
             assert(false);
             return;
@@ -158,12 +159,16 @@ namespace ramses
         uint32_t numBinaryShaders = 0;
         inputStream >> numBinaryShaders;
 
+        std::lock_guard<std::mutex> g(m_hashMapLock);
         for (uint32_t index = 0; index < numBinaryShaders; index++)
         {
             BinaryShader binaryShader;
             ramses_internal::ResourceContentHash effectId;
             if (!deserializeBinaryShader(inputStream, effectId, binaryShader.data, binaryShader.format))
+            {
+                LOG_WARN(ramses_internal::CONTEXT_RENDERER, "BinaryShaderCacheImpl::loadFromFile: Deserialization failed, abort loading at " << index << " of " << numBinaryShaders);
                 return false;
+            }
 
             m_binaryShaders.put(effectId, std::move(binaryShader));
         }
@@ -175,12 +180,15 @@ namespace ramses
     {
         ramses_internal::BinaryOutputStream outputStream;
 
-        outputStream << static_cast<uint32_t>(m_binaryShaders.size());
+        {
+            std::lock_guard<std::mutex> g(m_hashMapLock);
+            outputStream << static_cast<uint32_t>(m_binaryShaders.size());
 
-        for (const auto& binaryShader : m_binaryShaders)
-            serializeBinaryShader(outputStream, binaryShader.key, binaryShader.value.data, binaryShader.value.format);
+            for (const auto& binaryShader : m_binaryShaders)
+                serializeBinaryShader(outputStream, binaryShader.key, binaryShader.value.data, binaryShader.value.format);
+        }
 
-        const uint32_t contentSize = outputStream.getSize();
+        const uint32_t contentSize = static_cast<uint32_t>(outputStream.getSize());
         const uint64_t checksum = cityhash::CityHash64(outputStream.getData(), contentSize);
 
         FileHeader fileHeader = {};
@@ -228,7 +236,7 @@ namespace ramses
         inputStream >> binaryShaderFormat.getReference();
 
         uint32_t reservedField = 0;
-        for (uint32_t byteIndex = 0; byteIndex < NUM_RESERVED_BYTES / sizeof(uint32_t); byteIndex++)
+        for (size_t byteIndex = 0; byteIndex < NUM_RESERVED_BYTES / sizeof(uint32_t); byteIndex++)
         {
             inputStream >> reservedField;
         }
@@ -247,7 +255,7 @@ namespace ramses
         outputStream << binaryShaderFormat.getValue();
 
         uint32_t reservedField = 0;
-        for (uint32_t byteIndex = 0; byteIndex < NUM_RESERVED_BYTES / sizeof(uint32_t); byteIndex++)
+        for (size_t byteIndex = 0; byteIndex < NUM_RESERVED_BYTES / sizeof(uint32_t); byteIndex++)
         {
             outputStream << reservedField;
         }

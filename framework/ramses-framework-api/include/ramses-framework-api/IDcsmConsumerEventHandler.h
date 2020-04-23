@@ -33,14 +33,22 @@ namespace ramses
         virtual void contentOffered(ramses::ContentID contentID, ramses::Category category) = 0;
 
         /**
-         * @brief Provider made content ready and available to use. This is an answer to DcsmConsumer::sendContentStatusChange with
-         *        EDcsmState::Ready
+         * @brief Provides the content description. It will be triggered by provider after the content is assigned
+         *        to consumer. It will always be called before the contentReady callback.
          *
-         * @param contentID available content
+         * @param contentID described content
          * @param contentType what kind of content
          * @param contentDescriptor descriptor/id of this content
          */
-        virtual void contentReady(ramses::ContentID contentID, ramses::ETechnicalContentType contentType, ramses::TechnicalContentDescriptor contentDescriptor) = 0;
+        virtual void contentDescription(ramses::ContentID contentID, ramses::ETechnicalContentType contentType, ramses::TechnicalContentDescriptor contentDescriptor) = 0;
+
+        /**
+         * @brief Provider made content ready and available to use. This is an answer to DcsmConsumer::sendContentStatusChange with
+         *        EDcsmState::Ready. Will be called after receiving a contentDescription callback with the necessary content description.
+         *
+         * @param contentID available content
+         */
+        virtual void contentReady(ramses::ContentID contentID) = 0;
 
         /**
          * @brief Provider requested to switch to/focus this content within the category. Consumer may or may not follow this request.

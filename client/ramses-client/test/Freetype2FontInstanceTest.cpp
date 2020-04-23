@@ -10,7 +10,6 @@
 #include "ramses-text-api/FontRegistry.h"
 #include "ramses-text/Quad.h"
 #include "gtest/gtest.h"
-#include "gmock/gmock-matchers.h"
 
 namespace ramses
 {
@@ -156,7 +155,7 @@ namespace ramses
         EXPECT_EQ(4u, glyphBitmapSize.x);
         EXPECT_EQ(4u, glyphBitmapSize.y);
 
-        EXPECT_THAT(bitmapData, testing::ContainerEq(std::vector<uint8_t>{
+        EXPECT_EQ(bitmapData, std::vector<uint8_t>({
             0x1e, 0x57, 0x54, 0x7,
             0x66, 0x6f, 0x65, 0x51,
             0x5e, 0x8b, 0x96, 0x36,
@@ -194,5 +193,13 @@ namespace ramses
     TEST_F(AFreetype2FontInstance, ReportsUnsupportedCharCode)
     {
         EXPECT_FALSE(FontInstance10->supportsCharacter(0x19aa));
+    }
+
+    TEST_F(AFreetype2FontInstance, ReportsAllSupportedChars)
+    {
+        const std::unordered_set<FT_ULong> supportedChars = FontInstance10->getAllSupportedCharacters();
+        EXPECT_TRUE(896u == supportedChars.size());
+        EXPECT_TRUE(supportedChars.end() != supportedChars.find(165u));
+        EXPECT_FALSE(supportedChars.end() != supportedChars.find(127u));
     }
 }

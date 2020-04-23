@@ -12,7 +12,6 @@
 #include "Scene/SceneDescriber.h"
 #include "Scene/SceneActionApplier.h"
 #include "Scene/SceneActionCollectionCreator.h"
-#include "Scene/SceneResourceUtils.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "Utils/LogMacros.h"
 #include "Utils/StatisticCollection.h"
@@ -57,6 +56,8 @@ namespace ramses_internal
 
         ++m_flushCounter;
 
+        updateResourceChanges(hasNewActions);
+
         if (isPublished())
         {
             SceneActionCollectionCreator creator(collection);
@@ -64,7 +65,8 @@ namespace ramses_internal
                 m_flushCounter,
                 sceneSizes > m_sceneShadowCopy.getSceneSizeInformation(),
                 sceneSizes,
-                m_scene.getResourceChanges(),
+                m_resourceChanges,
+                m_scene.getSceneReferenceActions(),
                 flushTimeInfo,
                 versionTag);
         }
@@ -75,7 +77,7 @@ namespace ramses_internal
         if (hasNewActions)
         {
             m_sceneShadowCopy.preallocateSceneSize(sceneSizes);
-            SceneActionApplier::ApplyActionsOnScene(m_sceneShadowCopy, collection);
+            SceneActionApplier::ApplyActionsOnScene(m_sceneShadowCopy, collection, &m_animationSystemFactory);
             m_scene.getStatisticCollection().statSceneActionsGenerated.incCounter(collection.numberOfActions());
             m_scene.getStatisticCollection().statSceneActionsGeneratedSize.incCounter(static_cast<UInt32>(collection.collectionData().size()));
         }
@@ -88,7 +90,8 @@ namespace ramses_internal
             m_scenegraphSender.sendSceneActionList(m_subscribersActive, std::move(collection), m_sceneId, m_scenePublicationMode);
         }
 
-        m_scene.clearResourceChanges();
+        m_scene.resetResourceChanges();
+        m_scene.resetSceneReferenceActions();
 
         // store flush time info and version for async new subscribers, scene validity must also be guaranteed for them
         m_flushTimeInfoOfLastFlush = flushTimeInfo;

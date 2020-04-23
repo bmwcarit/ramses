@@ -24,13 +24,13 @@ namespace ramses
         RendererConfigImpl(int32_t argc, char const* const* argv);
 
         status_t enableSystemCompositorControl();
-        status_t setWaylandSocketEmbeddedGroup(const char* groupname);
+        status_t setWaylandEmbeddedCompositingSocketGroup(const char* groupname);
         const char* getWaylandSocketEmbeddedGroup() const;
 
-        status_t setWaylandSocketEmbedded(const char* socketname);
-        const char* getWaylandSocketEmbedded() const;
+        status_t setWaylandEmbeddedCompositingSocketName(const char* socketname);
+        const char* getWaylandEmbeddedCompositingSocketName() const;
 
-        status_t setWaylandSocketEmbeddedFD(int fd);
+        status_t setWaylandEmbeddedCompositingSocketFD(int fd);
         int getWaylandSocketEmbeddedFD() const;
 
         status_t setSystemCompositorWaylandDisplay(const char* waylandDisplay);
@@ -53,7 +53,7 @@ namespace ramses
         //impl methods
         const ramses_internal::RendererConfig& getInternalRendererConfig() const;
 
-        virtual status_t validate(uint32_t indent) const override;
+        virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
 
     private:
         ramses_internal::RendererConfig    m_internalConfig;

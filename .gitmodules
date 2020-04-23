@@ -1,11 +1,11 @@
 [submodule "external/harfbuzz"]
 	url = https://github.com/harfbuzz/harfbuzz.git
 	path = external/harfbuzz
-	branch = refs/heads/1.7.5
+	branch = refs/heads/2.6.1
 [submodule "external/googletest"]
 	url = https://github.com/google/googletest.git
 	path = external/googletest
-	branch = refs/heads/release-1.8.1
+	branch = refs/heads/release-1.10.0
 [submodule "external/glslang"]
 	url = https://github.com/KhronosGroup/glslang.git
 	path = external/glslang
@@ -26,3 +26,11 @@
 	url = https://github.com/fmtlib/fmt.git
 	path = external/fmt
 	branch = refs/heads/6.1.2
+[submodule "external/abseil"]
+	url = https://github.com/abseil/abseil-cpp.git
+	path = external/abseil
+	branch = refs/heads/lts_2019_08_08
+[submodule "external/imgui"]
+	url = https://github.com/ocornut/imgui.git
+	path = external/imgui
+	branch = refs/heads/v1.62

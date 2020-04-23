@@ -22,7 +22,7 @@ public:
     Bool checkSceneOrder(SceneId sceneFirst, SceneId sceneSecond, const SceneIdVector& sceneList) const
     {
         Bool foundFirst = false;
-        for (UInt32 i = 0; i < sceneList.size(); i++)
+        for (size_t i = 0; i < sceneList.size(); i++)
         {
             if (sceneList[i] == sceneFirst)
             {

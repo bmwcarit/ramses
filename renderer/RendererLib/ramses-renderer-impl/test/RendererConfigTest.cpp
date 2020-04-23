@@ -34,7 +34,7 @@ TEST(ARendererConfig, canEnableSystemCompositor)
 TEST(ARendererConfig, canBeCopyConstructed)
 {
     ramses::RendererConfig config;
-    EXPECT_EQ(ramses::StatusOK, config.setWaylandSocketEmbeddedFD(333));
+    EXPECT_EQ(ramses::StatusOK, config.setWaylandEmbeddedCompositingSocketFD(333));
     ramses::RendererConfig configOther(config);
     EXPECT_EQ(333, configOther.impl.getInternalRendererConfig().getWaylandSocketEmbeddedFD());
 }
@@ -52,7 +52,7 @@ TEST(ARendererConfig, canSetEmbeddedCompositingSocketPermissionsGroup)
 {
     ramses::RendererConfig config;
 
-    config.setWaylandSocketEmbeddedGroup("permissionGroup");
+    config.setWaylandEmbeddedCompositingSocketGroup("permissionGroup");
     EXPECT_STREQ("permissionGroup", config.impl.getWaylandSocketEmbeddedGroup());
 }
 
@@ -60,36 +60,36 @@ TEST(ARendererConfig, canSetEmbeddedCompositingSocketname)
 {
     ramses::RendererConfig config;
 
-    config.setWaylandSocketEmbedded("wayland-x123");
-    EXPECT_STREQ("wayland-x123", config.impl.getWaylandSocketEmbedded());
+    config.setWaylandEmbeddedCompositingSocketName("wayland-x123");
+    EXPECT_STREQ("wayland-x123", config.getWaylandEmbeddedCompositingSocketName());
 }
 
 TEST(ARendererConfig, canSetEmbeddedCompositingSocketFD)
 {
     ramses::RendererConfig config;
 
-    config.setWaylandSocketEmbeddedFD(23);
+    config.setWaylandEmbeddedCompositingSocketFD(23);
     EXPECT_EQ(23, config.impl.getWaylandSocketEmbeddedFD());
 }
 
 TEST(ARendererConfig, defaultRendererConfigDoesntValidate)
 {
     ramses::RendererConfig config;
-    EXPECT_NE(ramses::StatusOK, config.impl.validate(0u));
+    EXPECT_NE(ramses::StatusOK, config.validate());
 }
 
 TEST(ARendererConfig, settingEmbeddedCompositingSocketnameValidatesTrue)
 {
     ramses::RendererConfig config;
-    config.setWaylandSocketEmbedded("wayland-x123");
-    EXPECT_EQ(ramses::StatusOK, config.impl.validate(0u));
+    config.setWaylandEmbeddedCompositingSocketName("wayland-x123");
+    EXPECT_EQ(ramses::StatusOK, config.validate());
 }
 
 TEST(ARendererConfig, settingEmbeddedCompositingSocketFDValidatesTrue)
 {
     ramses::RendererConfig config;
-    config.setWaylandSocketEmbeddedFD(23);
-    EXPECT_EQ(ramses::StatusOK, config.impl.validate(0u));
+    config.setWaylandEmbeddedCompositingSocketFD(23);
+    EXPECT_EQ(ramses::StatusOK, config.validate());
 }
 
 TEST(ARendererConfig, setsAndGetsWaylandDisplay)

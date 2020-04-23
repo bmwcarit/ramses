@@ -88,9 +88,9 @@ namespace ramses_internal
         const ResourceCacheFlag flag(15u);
         TextureResource res(EResourceType_Texture3D, texDesc, flag, "resName");
         ResourceBlob pixels(std::accumulate(texDesc.m_dataSizes.cbegin(), texDesc.m_dataSizes.cend(), 0u));
-        for (UInt8 i = 0; i < pixels.size(); ++i)
+        for (size_t i = 0; i < pixels.size(); ++i)
         {
-            pixels.data()[i] = i;
+            pixels.data()[i] = static_cast<uint8_t>(i);
         }
         ASSERT_EQ(pixels.size(), res.getResourceData().size());
         res.setResourceData(std::move(pixels));
@@ -119,9 +119,9 @@ namespace ramses_internal
         const ResourceCacheFlag flag(15u);
         TextureResource res(EResourceType_TextureCube, texDesc, flag, "resName");
         ResourceBlob pixels(6u * std::accumulate(texDesc.m_dataSizes.cbegin(), texDesc.m_dataSizes.cend(), 0u));
-        for (UInt8 i = 0; i < pixels.size(); ++i)
+        for (size_t i = 0; i < pixels.size(); ++i)
         {
-            pixels.data()[i] = i;
+            pixels.data()[i] = static_cast<uint8_t>(i);
         }
         ASSERT_EQ(pixels.size(), res.getResourceData().size());
         res.setResourceData(std::move(pixels));

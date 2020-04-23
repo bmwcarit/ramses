@@ -12,8 +12,8 @@
 #include "ramses-text-api/IFontInstance.h"
 #include "ramses-text/Freetype2Wrapper.h"
 #include "ramses-text-api/Glyph.h"
-#include "ramses-text/FontData.h"
 #include <unordered_map>
+#include <unordered_set>
 
 namespace ramses
 {
@@ -22,7 +22,7 @@ namespace ramses
     class Freetype2FontInstance : public IFontInstance
     {
     public:
-        Freetype2FontInstance(FontInstanceId id, FT_Library freetypeLib, const FontData& font, uint32_t pixelSize, bool forceAutohinting);
+        Freetype2FontInstance(FontInstanceId id, FT_Face fontFace, uint32_t pixelSize, bool forceAutohinting);
         virtual ~Freetype2FontInstance();
 
         virtual bool      supportsCharacter(char32_t character) const override final;
@@ -30,8 +30,9 @@ namespace ramses
         virtual int       getAscender() const override;
         virtual int       getDescender() const override;
 
-        virtual void      loadAndAppendGlyphMetrics(std::u32string::const_iterator charsBegin, std::u32string::const_iterator charsEnd, GlyphMetricsVector& positionedGlyphs) override;
-        virtual GlyphData loadGlyphBitmapData(GlyphId glyphId, uint32_t& sizeX, uint32_t& sizeY) override final;
+        virtual void                 loadAndAppendGlyphMetrics(std::u32string::const_iterator charsBegin, std::u32string::const_iterator charsEnd, GlyphMetricsVector& positionedGlyphs) override;
+        virtual GlyphData            loadGlyphBitmapData(GlyphId glyphId, uint32_t& sizeX, uint32_t& sizeY) override final;
+        std::unordered_set<unsigned long> getAllSupportedCharacters() override;
 
         GlyphId getGlyphId(char32_t character) const;
 
@@ -43,15 +44,16 @@ namespace ramses
         bool                   loadGlyph(GlyphId glyphId);
         void                   activateSize() const;
         int32_t                getKerningAdvance(GlyphId glyphIdentifier1, GlyphId glyphIdentifier2) const;
+        void                   cacheAllSupportedCharacters();
 
         FontInstanceId          m_id;
-        const FontData&         m_font;
         FT_Face                 m_face = nullptr;
         FT_Size                 m_size = nullptr;
         bool                    m_forceAutohinting = false;
         int                     m_height = 0;
         int                     m_ascender = 0;
         int                     m_descender = 0;
+        bool                    m_allSupportedCharactersCached = false;
 
         struct GlyphBitmapData
         {
@@ -65,6 +67,7 @@ namespace ramses
         // which needs metrics only.
         std::unordered_map<GlyphId, GlyphMetrics> m_glyphMetricsCache;
         std::unordered_map<GlyphId, GlyphBitmapData> m_glyphBitmapCache;
+        mutable std::unordered_map<unsigned long, bool> m_supportedCharacters;
     };
 }
 

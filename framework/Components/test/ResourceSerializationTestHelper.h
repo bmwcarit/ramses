@@ -76,7 +76,7 @@ namespace ramses_internal
     {
         const uint8_t seed = static_cast<UInt8>(TestRandom::Get(0, 256));
         ResourceBlob data(blobSize);
-        for (UInt32 i = 0; i < data.size(); ++i)
+        for (size_t i = 0; i < data.size(); ++i)
         {
             data.data()[i] = static_cast<uint8_t>(i + seed);
         }

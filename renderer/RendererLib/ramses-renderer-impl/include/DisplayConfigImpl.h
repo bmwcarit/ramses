@@ -34,7 +34,6 @@ namespace ramses
         status_t setMultiSampling(uint32_t numSamples);
         status_t getMultiSamplingSamples(uint32_t& numSamples) const;
         status_t enableWarpingPostEffect();
-        status_t enableStereoDisplay();
         status_t setWaylandIviSurfaceID(uint32_t waylandIviSurfaceID);
         uint32_t getWaylandIviSurfaceID() const;
         status_t setWaylandIviLayerID(uint32_t waylandIviLayerID);
@@ -45,7 +44,7 @@ namespace ramses
         uint32_t getIntegrityRGLDeviceUnit() const;
         void* getAndroidNativeWindow() const;
         status_t setAndroidNativeWindow(void * nativeWindowPtr);
-        status_t setWindowIviVisible();
+        status_t setWindowIviVisible(bool visible);
         status_t setResizable(bool resizable);
         status_t keepEffectsUploaded(bool enable);
         status_t setGPUMemoryCacheSize(uint64_t size);
@@ -54,7 +53,7 @@ namespace ramses
         status_t setWindowsWindowHandle(void* hwnd);
         void*    getWindowsWindowHandle() const;
 
-        virtual status_t validate(uint32_t indent = 0u) const override;
+        virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
 
         //impl methods
         const ramses_internal::DisplayConfig& getInternalDisplayConfig() const;

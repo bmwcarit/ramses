@@ -28,7 +28,7 @@ namespace ramses_internal
         {
             if (preallocate)
             {
-                scene.preallocateSceneSize(SceneSizeInformation(100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u));
+                scene.preallocateSceneSize(SceneSizeInformation(100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u));
             }
 
             scene.allocateNode(0u, parent);
@@ -180,6 +180,11 @@ namespace ramses_internal
             scene.updateTextureBuffer(texture2DBuffer, 0u, 3u, 4u, 1u, 3u, std::array<Byte, 3>{ {34u, 35u, 36u}}.data()); //partial update level 0
             scene.updateTextureBuffer(texture2DBuffer, 0u, 3u, 4u, 1u, 2u, std::array<Byte, 2>{ {134u, 135u}}.data()); //override partial update level 0
             scene.updateTextureBuffer(texture2DBuffer, 2u, 0u, 0u, 2u, 2u, std::array<Byte, 4>{ {00u, 10u, 01u, 11u}}.data()); //full update level 2
+
+            scene.allocateSceneReference(sceneRefSceneId, sceneRef);
+            scene.requestSceneReferenceState(sceneRef, RendererSceneState::Ready);
+            scene.requestSceneReferenceFlushNotifications(sceneRef, true);
+            scene.setSceneReferenceRenderOrder(sceneRef, -13);
         }
 
         const SCENE& getScene() const
@@ -207,6 +212,7 @@ namespace ramses_internal
             CheckTextureBuffersEquivalentTo<OTHERSCENE>(otherScene);
             CheckDataSlotsEquivalentTo<OTHERSCENE>(otherScene);
             CheckPickableObjectsEquivalentTo<OTHERSCENE>(otherScene);
+            CheckSceneReferencesEquivalentTo<OTHERSCENE>(otherScene);
         }
 
         template <typename OTHERSCENE>
@@ -600,6 +606,17 @@ namespace ramses_internal
             EXPECT_FALSE(pickableObject.isEnabled);
         }
 
+        template <typename OTHERSCENE>
+        void CheckSceneReferencesEquivalentTo(const OTHERSCENE& otherScene) const
+        {
+            EXPECT_TRUE(otherScene.isSceneReferenceAllocated(sceneRef));
+            const auto& sr = otherScene.getSceneReference(sceneRef);
+            EXPECT_EQ(sceneRefSceneId, sr.sceneId);
+            EXPECT_EQ(RendererSceneState::Ready, sr.requestedState);
+            EXPECT_EQ(-13, sr.renderOrder);
+            EXPECT_TRUE(sr.flushNotifications);
+        }
+
         SCENE                       scene;
 
         const ResourceContentHash   indexArrayHash                  {111u, 0};
@@ -666,6 +683,8 @@ namespace ramses_internal
         const TextureBufferHandle    texture2DBuffer                { 67u };
         const PickableObjectHandle   pickableHandle                 { 68u };
         const PickableObjectId       pickableId                     { 69u };
+        const SceneReferenceHandle   sceneRef                       { 70u };
+        const SceneId                sceneRefSceneId                { 123 };
     };
 }
 

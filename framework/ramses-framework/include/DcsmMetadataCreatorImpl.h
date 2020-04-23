@@ -29,6 +29,8 @@ namespace ramses
         status_t setCarModel(int32_t carModel);
         status_t setCarModelView(const CarModelViewMetadata& data);
         status_t setCarModelVisibility(bool visibility);
+        status_t setExclusiveBackground(bool state);
+        status_t setFocusRequest(int32_t state);
 
         ramses_internal::DcsmMetadata getMetadata() const;
     private:

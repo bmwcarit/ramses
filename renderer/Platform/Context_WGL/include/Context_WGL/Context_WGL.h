@@ -28,7 +28,10 @@ namespace ramses_internal
 
         // Platform stuff used by other platform modules
         HGLRC getNativeContextHandle() const;
-        Bool setEnabled(Bool active);
+
+        virtual bool swapBuffers() override final;
+        virtual bool enable() override final;
+        virtual bool disable() override final;
 
     private:
         Bool initCustomPixelFormat();

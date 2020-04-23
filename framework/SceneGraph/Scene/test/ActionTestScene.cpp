@@ -7,12 +7,12 @@
 //  -------------------------------------------------------------------------
 
 #include "ActionTestScene.h"
-#include "Scene/SceneActionApplier.h"
 
 namespace ramses_internal
 {
     ActionTestScene::ActionTestScene(const SceneInfo& sceneInfo)
         : m_scene(sceneInfo)
+        , m_actionApplier(const_cast<Scene&>(m_scene))   // this const cast is needed to enforce usage of converter instead of m_scene
         , m_actionCollector()
     {
     }
@@ -685,6 +685,39 @@ namespace ramses_internal
         return m_scene.isTextureSamplerAllocated(samplerHandle);
     }
 
+    AnimationSystemHandle ActionTestScene::addAnimationSystem(IAnimationSystem* animationSystem, AnimationSystemHandle animSystemHandle)
+    {
+        auto handle = m_actionCollector.addAnimationSystem(animationSystem, animSystemHandle);
+        flushPendingSceneActions();
+        return handle;
+    }
+
+    void ActionTestScene::removeAnimationSystem(AnimationSystemHandle animSystemHandle)
+    {
+        m_actionCollector.removeAnimationSystem(animSystemHandle);
+        flushPendingSceneActions();
+    }
+
+    const IAnimationSystem* ActionTestScene::getAnimationSystem(AnimationSystemHandle animSystemHandle) const
+    {
+        return m_scene.getAnimationSystem(animSystemHandle);
+    }
+
+    IAnimationSystem* ActionTestScene::getAnimationSystem(AnimationSystemHandle animSystemHandle)
+    {
+        return const_cast<Scene&>(m_scene).getAnimationSystem(animSystemHandle);
+    }
+
+    bool ActionTestScene::isAnimationSystemAllocated(AnimationSystemHandle animSystemHandle) const
+    {
+        return m_scene.isAnimationSystemAllocated(animSystemHandle);
+    }
+
+    UInt32 ActionTestScene::getAnimationSystemCount() const
+    {
+        return m_scene.getAnimationSystemCount();
+    }
+
     SceneSizeInformation ActionTestScene::getSceneSizeInformation() const
     {
         return m_scene.getSceneSizeInformation();
@@ -964,6 +997,52 @@ namespace ramses_internal
         return m_scene.getDataSlot(handle);
     }
 
+    SceneReferenceHandle ActionTestScene::allocateSceneReference(SceneId sceneId, SceneReferenceHandle handle)
+    {
+        const auto actualHandle = m_actionCollector.allocateSceneReference(sceneId, handle);
+        flushPendingSceneActions();
+        return actualHandle;
+    }
+
+    void ActionTestScene::releaseSceneReference(SceneReferenceHandle handle)
+    {
+        m_actionCollector.releaseSceneReference(handle);
+        flushPendingSceneActions();
+    }
+
+    void ActionTestScene::requestSceneReferenceState(SceneReferenceHandle handle, RendererSceneState state)
+    {
+        m_actionCollector.requestSceneReferenceState(handle, state);
+        flushPendingSceneActions();
+    }
+
+    void ActionTestScene::requestSceneReferenceFlushNotifications(SceneReferenceHandle handle, bool enable)
+    {
+        m_actionCollector.requestSceneReferenceFlushNotifications(handle, enable);
+        flushPendingSceneActions();
+    }
+
+    void ActionTestScene::setSceneReferenceRenderOrder(SceneReferenceHandle handle, int32_t renderOrder)
+    {
+        m_actionCollector.setSceneReferenceRenderOrder(handle, renderOrder);
+        flushPendingSceneActions();
+    }
+
+    bool ActionTestScene::isSceneReferenceAllocated(SceneReferenceHandle handle) const
+    {
+        return m_scene.isSceneReferenceAllocated(handle);
+    }
+
+    UInt32 ActionTestScene::getSceneReferenceCount() const
+    {
+        return m_scene.getSceneReferenceCount();
+    }
+
+    const SceneReference& ActionTestScene::getSceneReference(SceneReferenceHandle handle) const
+    {
+        return m_scene.getSceneReference(handle);
+    }
+
     void ActionTestScene::setRenderPassClearFlag(RenderPassHandle handle, UInt32 clearFlag)
     {
         m_actionCollector.setRenderPassClearFlag(handle, clearFlag);
@@ -1133,8 +1212,8 @@ namespace ramses_internal
 
     void ActionTestScene::flushPendingSceneActions()
     {
-        SceneActionCollection& actionCollection = m_actionCollector.getSceneActionCollection();
-        SceneActionApplier::ApplyActionsOnScene(const_cast<Scene&>(m_scene), actionCollection);
+        SceneActionCollection& actionCollector = m_actionCollector.getSceneActionCollection();
+        m_actionApplier.applyActionsOnScene(actionCollector);
         m_actionCollector.getSceneActionCollection().clear();
     }
 

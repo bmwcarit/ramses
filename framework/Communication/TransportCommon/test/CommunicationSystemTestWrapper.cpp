@@ -74,7 +74,7 @@ namespace ramses_internal
         {
             initializedLogger = true;
             std::array<const char *const, 3> args{"", "-l", "warn"};
-            GetRamsesLogger().initialize(CommandLineParser{static_cast<Int>(args.size()), args.data()}, "TEST", "TEST", true);
+            GetRamsesLogger().initialize(CommandLineParser{static_cast<Int>(args.size()), args.data()}, "TEST", "TEST", true, true);
         }
     }
 

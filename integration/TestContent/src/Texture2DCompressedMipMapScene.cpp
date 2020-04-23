@@ -21,6 +21,7 @@
 #include "ramses-client-api/OrthographicCamera.h"
 
 #include "Collections/Vector.h"
+#include <cassert>
 
 // Renders one horizontal stripe for each mip-level.
 

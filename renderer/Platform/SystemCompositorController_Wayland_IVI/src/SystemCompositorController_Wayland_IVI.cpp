@@ -16,6 +16,8 @@
 #include "Utils/StringUtils.h"
 #include "Utils/LogMacros.h"
 #include "poll.h"
+#include <algorithm>
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -171,7 +173,7 @@ namespace ramses_internal
         IVIControllerSurface& controllerSurface = getOrCreateControllerSurface(surfaceId);
 
         // clamp opacity to valid range, convert it to fixed point representation, and set it
-        opacity = clamp(opacity, 0.0f, 1.0f);
+        opacity = std::min(std::max(0.f, opacity), 1.f);
         controllerSurface.setOpacity(opacity);
 
         commitAndFlushControllerChanges();

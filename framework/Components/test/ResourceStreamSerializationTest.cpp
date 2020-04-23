@@ -75,7 +75,7 @@ namespace ramses_internal
                 if (blobSize)
                 {
                     ResourceBlob data(blobSize);
-                    for (UInt32 i = 0; i < data.size(); ++i)
+                    for (size_t i = 0; i < data.size(); ++i)
                     {
                         data.data()[i] = static_cast<uint8_t>(i + seed);
                     }
@@ -148,7 +148,7 @@ namespace ramses_internal
             std::vector<std::unique_ptr<IResource>> result;
             for (const auto& pkt : serializer.packets)
             {
-                ByteArrayView resourceData(pkt.data(), static_cast<UInt32>(pkt.size()));
+                absl::Span<const Byte> resourceData(pkt.data(), static_cast<UInt32>(pkt.size()));
                 std::vector<IResource*> resVec = deserializer.processData(resourceData);
                 for (const auto& res : resVec)
                 {
@@ -516,7 +516,7 @@ namespace ramses_internal
         }
     };
 
-    TYPED_TEST_CASE(AResourceStreamSerializationTyped, ResourceSerializationTestHelper::Types);
+    TYPED_TEST_SUITE(AResourceStreamSerializationTyped, ResourceSerializationTestHelper::Types);
 
     TYPED_TEST(AResourceStreamSerializationTyped, canSerializeDeserializeToSameResources)
     {

@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
 
     /// [Data Buffer Example Setup]
     /// Creating a shape with DataBuffer vertices and constantly changing them afterwards
-    ///
+    //
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
     //                 This should not be the case for real applications.
 

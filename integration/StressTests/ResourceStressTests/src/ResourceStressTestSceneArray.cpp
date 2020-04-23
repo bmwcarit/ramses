@@ -8,6 +8,7 @@
 
 #include "ResourceStressTestSceneArray.h"
 #include "StressTestRenderer.h"
+#include <unordered_set>
 
 namespace ramses_internal
 {
@@ -21,48 +22,34 @@ namespace ramses_internal
         for (const auto& sceneConfig : sceneArrayConfig)
         {
             m_scenes[index++].reset(new ResourceStressTestScene(client, sceneConfig.sceneId, sceneConfig.textureConsumerIds, sceneConfig.targetScreenQuad));
+            m_renderer.setSceneDisplayAndBuffer(sceneConfig.sceneId, sceneConfig.displayId, sceneConfig.offscreenBufferId);
         }
     }
 
-    void ResourceStressTestSceneArray::subscribeAll()
+    void ResourceStressTestSceneArray::getAllToState(ramses::RendererSceneState state)
     {
+        // request change for all scenes first
         for (const auto& sceneConfig : m_sceneConfigs)
-        {
-            m_renderer.subscribeScene(sceneConfig.sceneId);
-        }
-    }
+            m_renderer.setSceneState(sceneConfig.sceneId, state);
 
-    void ResourceStressTestSceneArray::mapAndShowAll()
-    {
-        HashSet<ramses::dataConsumerId_t> linkedTextureConsumers;
-
+        // wait for all scenes to reach their state
         for (const auto& sceneConfig : m_sceneConfigs)
-        {
-            m_renderer.mapScene(sceneConfig.displayId, sceneConfig.sceneId);
-            if (sceneConfig.offscreenBufferId == ramses::displayBufferId_t::Invalid())
-            {
-                m_renderer.showScene(sceneConfig.sceneId);
-            }
-            else
-            {
-                m_renderer.showSceneOnOffscreenBuffer(sceneConfig.sceneId, sceneConfig.offscreenBufferId);
+            m_renderer.waitForSceneState(sceneConfig.sceneId, state);
 
+        // Link OBs to consumers
+        if (state == ramses::RendererSceneState::Rendered)
+        {
+            std::unordered_set<ramses::dataConsumerId_t> linkedTextureConsumers;
+
+            for (const auto& sceneConfig : m_sceneConfigs)
+            {
                 // If two OB scenes are in the same OB, should link the OB to the scene consumer only once
-                if (!linkedTextureConsumers.contains(sceneConfig.consumerSceneDataId))
+                if (sceneConfig.offscreenBufferId.isValid() && linkedTextureConsumers.count(sceneConfig.consumerSceneDataId) == 0)
                 {
                     m_renderer.linkOffscreenBufferToSceneTexture(sceneConfig.consumerSceneId, sceneConfig.offscreenBufferId, sceneConfig.consumerSceneDataId);
-                    linkedTextureConsumers.put(sceneConfig.consumerSceneDataId);
+                    linkedTextureConsumers.insert(sceneConfig.consumerSceneDataId);
                 }
             }
-
-        }
-    }
-
-    void ResourceStressTestSceneArray::hideAndUnmapAll()
-    {
-        for (const auto& sceneConfig : m_sceneConfigs)
-        {
-            m_renderer.hideAndUnmapScene(sceneConfig.sceneId);
         }
     }
 
@@ -78,8 +65,6 @@ namespace ramses_internal
     void ResourceStressTestSceneArray::waitForFlushOnAll(ramses::sceneVersionTag_t flushName)
     {
         for (const auto& sceneConfig : m_sceneConfigs)
-        {
-            m_renderer.waitForNamedFlush(sceneConfig.sceneId, flushName);
-        }
+            m_renderer.waitForFlush(sceneConfig.sceneId, flushName);
     }
 }

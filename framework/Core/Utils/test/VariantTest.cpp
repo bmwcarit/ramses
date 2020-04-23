@@ -57,7 +57,7 @@ namespace ramses_internal
         Matrix44f
     > ItemTypes;
 
-    TYPED_TEST_CASE(VariantTest, ItemTypes);
+    TYPED_TEST_SUITE(VariantTest, ItemTypes);
 
     TYPED_TEST(VariantTest, SetGetValue)
     {

@@ -11,6 +11,7 @@
 #include "Utils/LogMacros.h"
 #include "WaylandUtilities/WaylandEnvironmentUtils.h"
 #include <GLES3/gl3.h>
+#include <cassert>
 
 bool WaylandHandler::init()
 {

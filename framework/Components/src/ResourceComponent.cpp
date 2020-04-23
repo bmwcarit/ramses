@@ -181,15 +181,12 @@ namespace ramses_internal
             else
             {
                 const auto range = m_requestedResources.equal_range(hash);
-                const bool mustRequestResource = range.first == range.second;
-
                 if (FindInRequestsRange(range, requesterID) == range.second)
                 {
                     // add to requests if not yet requested by this requester
                     m_requestedResources.insert(std::make_pair(hash, requesterID));
                 }
 
-                if (mustRequestResource)
                 {
                     // only trigger request from file or network if not already requested by any requester
                     ResourceLoadInfo loadInfo;
@@ -335,8 +332,11 @@ namespace ramses_internal
     {
         ManagedResourceVector res;
         m_arrivedResources[requesterID].swap(res);
-        if (!res.empty())
-            LOG_INFO(CONTEXT_FRAMEWORK, "ResourceComponent::popArrivedResources: " << res.size() << " resources have arrived for requester " << requesterID);
+        if (!res.empty() && m_hasArrivedRemoteResources[requesterID])
+        {
+            m_hasArrivedRemoteResources[requesterID] = false;
+            LOG_INFO(CONTEXT_FRAMEWORK, "ResourceComponent::popArrivedResources: " << res.size() << " resources (>0 remote) have arrived for requester " << requesterID);
+        }
         return res;
     }
 
@@ -359,7 +359,7 @@ namespace ramses_internal
         m_resourceFiles.unregisterResourceFile(resourceFileName);
     }
 
-    void ResourceComponent::handleSendResource(const ByteArrayView& receivedResourceData, const Guid& providerID)
+    void ResourceComponent::handleSendResource(const absl::Span<const Byte>& receivedResourceData, const Guid& providerID)
     {
         PlatformGuard guard(m_frameworkLock);
 
@@ -404,6 +404,7 @@ namespace ramses_internal
             {
                 const auto requester = it->second;
                 m_arrivedResources[requester].push_back(resource);
+                m_hasArrivedRemoteResources[requester] = true;
                 m_statistics.statResourcesReceivedNumber.incCounter(1);
             }
             m_requestedResources.erase(range.first, range.second);
@@ -465,6 +466,8 @@ namespace ramses_internal
 
             if (requesterId.isInvalid())
             {
+                // always decompress locally requested resources in load thread (not later in renderer thread)
+                res->decompress();
                 m_resourceComponent.resourceHasBeenLoadedFromFile(res, resInfo.fileEntry.sizeInBytes);
             }
             else

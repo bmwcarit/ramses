@@ -17,6 +17,7 @@
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Texture2D.h"
+#include <cassert>
 
 namespace ramses_internal
 {
