@@ -21,12 +21,10 @@
 
 namespace ramses_internal
 {
-    typedef ramses_capu::Runnable Runnable;
-
     class PlatformThread
     {
     public:
-        PlatformThread(const String& threadName);
+        explicit PlatformThread(const String& threadName);
         ~PlatformThread();
 
         PlatformThread(const PlatformThread&) = delete;

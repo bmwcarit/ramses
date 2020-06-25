@@ -75,6 +75,7 @@
 #include "Utils/RamsesLogger.h"
 #include "ClientFactory.h"
 #include "FrameworkFactoryRegistry.h"
+#include "Ramsh/Ramsh.h"
 
 #include "PlatformAbstraction/PlatformTypes.h"
 #include <array>
@@ -93,10 +94,7 @@ namespace ramses
         , m_clientResourceCacheTimeout(5000)
         , m_effectErrorMessages()
     {
-        if (framework.isConnected())
-        {
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::RamsesClient creating a RamsesClient with RamsesFramework which is already connected - this may lead to further issues! Please first create RamsesClient, then call connect()");
-        }
+        assert(!framework.isConnected());
 
         m_appLogic.init(framework.getResourceComponent(), framework.getScenegraphComponent());
         m_cmdPrintSceneList.reset(new ramses_internal::PrintSceneList(*this));
@@ -459,42 +457,41 @@ namespace ramses
         LOG_DEBUG(ramses_internal::CONTEXT_CLIENT, "RamsesClient::writeResourcesToFile:  " << fileDescription.getFilename());
 
         if (getClientApplication().hasResourceFile(fileDescription.getFilename()))
-        {
-            return addErrorEntry("Cannot write resources to file, its already opened by the client.");
-        }
+            return addErrorEntry("RamsesClientImpl::writeResourcesToFile: Cannot write resources to file, its already opened by the client.");
 
         ramses_internal::File outputResources(fileDescription.getFilename());
         ramses_internal::BinaryFileOutputStream resourceOutputStream(outputResources);
         if (!outputResources.isOpen())
-        {
-            return addErrorEntry("Could not open file for writing resources");
-        }
+            return addErrorEntry("RamsesClientImpl::writeResourcesToFile: Could not open file for writing resources");
 
         WriteCurrentBuildVersionToStream(resourceOutputStream);
 
         ramses_internal::UInt bytesForVersion = 0;
-        outputResources.getPos(bytesForVersion);
+        if (!outputResources.getPos(bytesForVersion))
+            return addErrorEntry("RamsesClientImpl::writeResourcesToFile: File handling error");
 
         const ResourceObjects& resources = fileDescription.impl->m_resources;
 
         // reserve space for offset to HL-Objects and LL-Objects
         const uint64_t bytesForOffsets = sizeof(uint64_t) * 2u;
         const uint64_t offsetHLResourcesStart = bytesForVersion + bytesForOffsets;
-        outputResources.seek(static_cast<ramses_internal::Int>(offsetHLResourcesStart), ramses_internal::EFileSeekOrigin_BeginningOfFile);
+        if (!outputResources.seek(static_cast<ramses_internal::Int>(offsetHLResourcesStart), ramses_internal::File::SeekOrigin::BeginningOfFile))
+            return addErrorEntry("RamsesClientImpl::writeResourcesToFile: File handling error");
 
         CHECK_RETURN_ERR(writeHLResourcesToStream(resourceOutputStream, resources));
         ramses_internal::UInt offsetLLResourcesStart = 0;
-        outputResources.getPos(offsetLLResourcesStart);
+        if (!outputResources.getPos(offsetLLResourcesStart))
+            return addErrorEntry("RamsesClientImpl::writeResourcesToFile: File handling error");
 
         writeLowLevelResourcesToStream(resources, resourceOutputStream, compress);
 
-        outputResources.seek(bytesForVersion, ramses_internal::EFileSeekOrigin_BeginningOfFile);
+        if (!outputResources.seek(bytesForVersion, ramses_internal::File::SeekOrigin::BeginningOfFile))
+            return addErrorEntry("RamsesClientImpl::writeResourcesToFile: File handling error");
 
         resourceOutputStream << static_cast<uint64_t>(offsetHLResourcesStart);
         resourceOutputStream << static_cast<uint64_t>(offsetLLResourcesStart);
 
-        ramses_internal::EStatus stat = outputResources.close();
-        if (ramses_internal::EStatus_RAMSES_OK != stat)
+        if (!outputResources.close())
         {
             return addErrorEntry("Could not close resource file");
         }
@@ -591,7 +588,7 @@ namespace ramses
 
         const status_t status = writeSceneObjectsToStream(scene, outputStream);
 
-        if (outputFile.close() != ramses_internal::EStatus_RAMSES_OK)
+        if (!outputFile.close())
         {
             return addErrorEntry("RamsesClient::saveSceneToFile failed, close file failed.");
         }
@@ -640,7 +637,7 @@ namespace ramses
         //The current solution opens a new stream for every read operation and then closes them, except the first one.
         ramses_internal::ResourceFileInputStreamSPtr resourceFileStream(new ramses_internal::ResourceFileInputStream(resourceFilename));
         ramses_internal::BinaryFileInputStream& inputStream = resourceFileStream->resourceStream;
-        if (inputStream.getState() != ramses_internal::EStatus_RAMSES_OK)
+        if (inputStream.getState() != ramses_internal::EStatus::Ok)
         {
             return addErrorEntry((ramses_internal::StringOutputStream() << "RamsesClient::readResourcesFromFile '" << resourceFilename << "' failed, file could not be opened.").c_str());
         }
@@ -658,7 +655,7 @@ namespace ramses
 
         // read HL Resources
         DeserializationContext deserializationContext;
-        inputStream.seek(static_cast<ramses_internal::Int>(offsetForHLResources), ramses_internal::EFileSeekOrigin_BeginningOfFile);
+        inputStream.seek(static_cast<ramses_internal::Int>(offsetForHLResources), ramses_internal::File::SeekOrigin::BeginningOfFile);
 
         uint32_t totalCount = 0u;
         uint32_t typesCount = 0u;
@@ -860,7 +857,7 @@ namespace ramses
         ramses_internal::File inputFile(sceneFilename);
         ramses_internal::BinaryFileInputStream inputStream(inputFile);
 
-        if (inputStream.getState() != ramses_internal::EStatus_RAMSES_OK)
+        if (inputStream.getState() != ramses_internal::EStatus::Ok)
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::" << caller << ":  failed to open file");
             return nullptr;
@@ -874,7 +871,7 @@ namespace ramses
 
         Scene* scene = prepareSceneFromInputStream(caller, sceneFilename, inputStream);
 
-        if (inputFile.close() != ramses_internal::EStatus_RAMSES_OK)
+        if (!inputFile.close())
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::" << caller << ":  failed to close file, continue anyway");
         }
@@ -934,7 +931,7 @@ namespace ramses
     status_t RamsesClientImpl::saveResources(const ResourceFileDescription& fileDescription, bool compress) const
     {
         const status_t status = writeResourcesToFile(fileDescription, compress);
-        if (status != ramses_internal::EStatus_RAMSES_OK)
+        if (status != StatusOK)
         {
             return addErrorEntry("RamsesClient::saveResources failed.");
         }
@@ -949,7 +946,7 @@ namespace ramses
         for (const auto& resourceFile : descriptions)
         {
             const status_t status = writeResourcesToFile(resourceFile, compress);
-            if (status != ramses_internal::EStatus_RAMSES_OK)
+            if (status != StatusOK)
             {
                 return addErrorEntry("RamsesClient::saveResources failed.");
             }
@@ -1025,12 +1022,10 @@ namespace ramses
     {
         std::vector<ResourceLoadStatus> localAsyncResourcesStatus;
         std::vector<SceneLoadStatus> localAsyncSceneLoadStatus;
-        std::vector<ramses_internal::SceneReferenceEvent> clientRendererEvents;
         {
             ramses_internal::PlatformGuard g(m_clientLock);
             localAsyncResourcesStatus.swap(m_asyncResourceLoadStatusVec);
             localAsyncSceneLoadStatus.swap(m_asyncSceneLoadStatusVec);
-            clientRendererEvents.swap(getClientApplication().getSceneReferenceEvents());
         }
 
         for (const auto& resourceStatus : localAsyncResourcesStatus)
@@ -1068,6 +1063,7 @@ namespace ramses
             }
         }
 
+        const auto clientRendererEvents = getClientApplication().popSceneReferenceEvents();
         for (const auto& rendererEvent : clientRendererEvents)
         {
             switch (rendererEvent.type)

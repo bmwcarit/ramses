@@ -166,7 +166,7 @@ TEST_F(AWindowedRendererWithDisplay, saveScreenshotToFileWithFullscreenDoesNotGe
     updateAndRender();
 
     // expect file has been written
-    ramses_capu::File screenshotFile(filename.stdRef());
+    File screenshotFile(filename);
     EXPECT_TRUE(screenshotFile.exists());
 
     // expect correct fullScreen size
@@ -178,7 +178,7 @@ TEST_F(AWindowedRendererWithDisplay, saveScreenshotToFileWithFullscreenDoesNotGe
         EXPECT_EQ(displayWidth, bitmap.getWidth());
         EXPECT_EQ(displayHeight, bitmap.getHeight());
     }
-    EXPECT_EQ(ramses_capu::CAPU_OK, screenshotFile.remove());
+    EXPECT_TRUE(screenshotFile.remove());
 
     // Do not expect a renderer event
     RendererEventVector events;
@@ -196,7 +196,7 @@ TEST_F(AWindowedRendererWithDisplay, saveScreenshotToFileOnNotExistentDisplayDoe
     updateAndRender();
 
     // expect no file has been written
-    ramses_capu::File screenshotFile(filename.stdRef());
+    File screenshotFile(filename);
     EXPECT_FALSE(screenshotFile.exists());
 
     RendererEventVector events;
@@ -212,7 +212,7 @@ TEST_F(AWindowedRendererWithDisplay, saveScreenshotToFileFailsAndDoesNotGenerate
     updateAndRender();
 
     // expect no file has been written
-    ramses_capu::File screenshotFile(filename.stdRef());
+    File screenshotFile(filename);
     EXPECT_FALSE(screenshotFile.exists());
 
     // Do not expect a renderer event

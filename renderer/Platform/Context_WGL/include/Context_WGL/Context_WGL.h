@@ -12,7 +12,7 @@
 #include "Platform_Base/Context_Base.h"
 #include "Context_WGL/WglExtensions.h"
 
-#include "ramses-capu/os/Windows/MinimalWindowsH.h"
+#include "PlatformAbstraction/MinimalWindowsH.h"
 
 namespace ramses_internal
 {

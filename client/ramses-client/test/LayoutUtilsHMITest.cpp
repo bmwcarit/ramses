@@ -318,7 +318,7 @@ namespace ramses
         const FontCascade fontCascade{ *FRegistry, {}, OrderedFontList{ Arabic24 }, Latin24, 0xFFFD };
         // Arabic "Lam" (ل) and "Alef" (ا) join together to a single glyph (لا).
         FontInstanceOffsets fontOffsets;
-        const auto str = FontCascade::FilterAndFindFontInstancesForString(fontCascade, U"ال", fontOffsets);
+        const auto str = FontCascade::FilterAndFindFontInstancesForString(fontCascade, U"\u0627\u0644", fontOffsets);   // U"ال"
         const auto positionedGlyphs = m_textCache.getPositionedGlyphs(str, fontOffsets);
 
         EXPECT_EQ(positionedGlyphs.cend(), LayoutUtils::FindFittingSubstring(positionedGlyphs.cbegin(), positionedGlyphs.cend(), 15u));
@@ -336,7 +336,7 @@ namespace ramses
         const FontCascade fontCascade{ *FRegistry, {}, OrderedFontList{ Arabic24 }, Latin24, 0xFFFD };
         // Arabic "Lam" (ل) and "Alef" (ا) join together to a single glyph (لا).
         FontInstanceOffsets fontOffsets;
-        const auto str = FontCascade::FilterAndFindFontInstancesForString(fontCascade, U"ال", fontOffsets);
+        const auto str = FontCascade::FilterAndFindFontInstancesForString(fontCascade, U"\u0627\u0644", fontOffsets);   // U"ال"
         const auto positionedGlyphs = m_textCache.getPositionedGlyphs(str, fontOffsets);
 
         const auto subStrEndIt = LayoutUtils::FindFittingSubstring(positionedGlyphs.cbegin(), positionedGlyphs.cend(), 12u);
@@ -357,8 +357,9 @@ namespace ramses
         //  2 =>       2             "ص"
         //  3 =>       3             "ح"
         //  4 =>       4             "ة"
+        std::u32string input(U"\u0627\u0644\u0635\u062D\u0629");  // U"الصحة"
         FontInstanceOffsets fontOffsets;
-        const auto str = FontCascade::FilterAndFindFontInstancesForString(fontCascade, U"الصحة", fontOffsets);
+        const auto str = FontCascade::FilterAndFindFontInstancesForString(fontCascade, input, fontOffsets);
         const auto positionedGlyphs = m_textCache.getPositionedGlyphs(str, fontOffsets);
 
         auto subStrEndIt = LayoutUtils::FindFittingSubstring(positionedGlyphs.cbegin(), positionedGlyphs.cend(), 64u);

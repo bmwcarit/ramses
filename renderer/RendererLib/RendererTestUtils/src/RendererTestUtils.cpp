@@ -193,7 +193,7 @@ Image RendererTestUtils::ReadPixelData(
     ramses_internal::UInt32 width,
     ramses_internal::UInt32 height)
 {
-    const ramses::status_t status = renderer.readPixels(displayId, x, y, width, height);
+    const ramses::status_t status = renderer.readPixels(displayId, {}, x, y, width, height);
     assert(status == ramses::StatusOK);
     UNUSED(status);
     renderer.flush();

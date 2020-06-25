@@ -225,8 +225,8 @@ namespace ramses_internal
     {
         DEFINE_COMMAND_TYPE(LogCommand, ERendererCommandType_Log);
 
-        ERendererLogTopic       topic;
-        Bool                    verbose;
+        ERendererLogTopic       topic = ERendererLogTopic_All;
+        Bool                    verbose = false;
         NodeHandle              nodeHandleFilter;
     };
 

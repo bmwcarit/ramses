@@ -179,6 +179,7 @@ namespace ramses_internal
         StatisticEntry<UInt32> statObjectsDestroyed;
         StatisticEntry<UInt32> statObjectsNumber; //updated by values of statObjectsCreated and statObjectsDestroyed
         StatisticEntry<UInt32> statSceneActionsSent;
+        StatisticEntry<UInt32> statSceneActionsSentSkipped;
         StatisticEntry<UInt32> statSceneActionsGenerated;
         StatisticEntry<UInt32> statSceneActionsGeneratedSize;
     };

@@ -81,7 +81,7 @@ namespace ramses_internal
             const IScene& providerScene = m_scenes.getScene(link.providerSceneId);
             const DataInstanceHandle providerDataRef = providerScene.getDataSlot(link.providerSlot).attachedDataReference;
 
-            Variant value;
+            DataInstanceValueVariant value;
             DataInstanceHelper::GetInstanceFieldData(providerScene, providerDataRef, DataFieldHandle(0u), value);
             consumerScene.setValueWithoutUpdatingFallbackValue(consumerDataRef, DataFieldHandle(0u), value);
         }

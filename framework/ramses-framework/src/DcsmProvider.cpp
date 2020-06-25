@@ -63,10 +63,17 @@ namespace ramses
         return status;
     }
 
-    status_t DcsmProvider::requestContentFocus(ContentID contentID)
+    ramses::status_t DcsmProvider::enableFocusRequest(ContentID contentID, int32_t focusRequest)
     {
-        auto status = impl.requestContentFocus(contentID);
-        LOG_HL_CLIENT_API1(status, contentID);
+        auto status = impl.enableFocusRequest(contentID, focusRequest);
+        LOG_HL_CLIENT_API2(status, contentID, focusRequest);
+        return status;
+    }
+
+    ramses::status_t DcsmProvider::disableFocusRequest(ContentID contentID, int32_t focusRequest)
+    {
+        auto status = impl.disableFocusRequest(contentID, focusRequest);
+        LOG_HL_CLIENT_API2(status, contentID, focusRequest);
         return status;
     }
 

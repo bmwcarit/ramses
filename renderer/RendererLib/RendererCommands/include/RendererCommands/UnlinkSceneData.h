@@ -18,7 +18,7 @@ namespace ramses_internal
     class UnlinkSceneData : public RamshCommandArgs<UInt32, UInt32>
     {
     public:
-        UnlinkSceneData(RendererCommandBuffer& rendererCommandBuffer);
+        explicit UnlinkSceneData(RendererCommandBuffer& rendererCommandBuffer);
         virtual Bool execute(UInt32& consumerSceneId, UInt32& consumerDataSlotId) const override;
 
     private:

@@ -22,12 +22,9 @@ namespace ramses
     {
     public:
         /**
-        * @brief Constructor of DisplayConfig that takes command line parameters
-        * and parses them to initialize the parameters.
-        * @param[in] argc Number of arguments in arguments array parameter
-        * @param[in] argv Array of arguments as strings
+        * @brief Default constructor of DisplayConfig
         */
-        DisplayConfig(int32_t argc = 0, char const* const* argv = nullptr);
+        DisplayConfig();
 
         /**
         * @brief Constructor of DisplayConfig that takes command line parameters
@@ -35,7 +32,7 @@ namespace ramses
         * @param[in] argc Number of arguments in arguments array parameter
         * @param[in] argv Array of arguments as strings
         */
-        DisplayConfig(int32_t argc, char* argv[]);
+        DisplayConfig(int32_t argc, char const* const* argv);
 
         /**
         * @brief Copy constructor of DisplayConfig

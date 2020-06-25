@@ -94,10 +94,10 @@ namespace ramses
     TEST_F(ADcsmMetadataCreator, canSetCarModelView)
     {
         DcsmMetadataCreator dmf;
-        EXPECT_EQ(StatusOK, dmf.setCarModelView({1,2,3,4,5,6}));
+        EXPECT_EQ(StatusOK, dmf.setCarModelView({ 1,2,3,4,5,6,7 }, { 8,9 }));
 
         ramses_internal::DcsmMetadata dm;
-        dm.setCarModelView({1,2,3,4,5,6});
+        dm.setCarModelView({ 1,2,3,4,5,6,7 }, { 8,9 });
         EXPECT_EQ(dm, dmf.impl.getMetadata());
     }
 
@@ -121,13 +121,4 @@ namespace ramses
         EXPECT_EQ(dm, dmf.impl.getMetadata());
     }
 
-    TEST_F(ADcsmMetadataCreator, canSetFocusRequest)
-    {
-        DcsmMetadataCreator dmf;
-        EXPECT_EQ(StatusOK, dmf.setFocusRequest(18));
-
-        ramses_internal::DcsmMetadata dm;
-        dm.setFocusRequested(18);
-        EXPECT_EQ(dm, dmf.impl.getMetadata());
-    }
 }

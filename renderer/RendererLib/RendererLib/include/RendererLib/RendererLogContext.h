@@ -16,19 +16,19 @@
 
 namespace ramses_internal
 {
-    enum ERendererLogLevelFlag
+    enum ERendererLogLevelFlag : uint32_t
     {
         // Renderer log levels
-        ERendererLogLevelFlag_Error                    = BIT(0),
-        ERendererLogLevelFlag_Warn                     = BIT(1),
-        ERendererLogLevelFlag_Info                     = BIT(2),
-        ERendererLogLevelFlag_Details                  = BIT(3)
+        ERendererLogLevelFlag_Error                    = BIT(0u),
+        ERendererLogLevelFlag_Warn                     = BIT(1u),
+        ERendererLogLevelFlag_Info                     = BIT(2u),
+        ERendererLogLevelFlag_Details                  = BIT(3u)
     };
 
     class RendererLogContext
     {
     public:
-        RendererLogContext(ERendererLogLevelFlag logLevel);
+        explicit RendererLogContext(ERendererLogLevelFlag logLevel);
 
         void indent();
         void unindent();

@@ -29,7 +29,7 @@ namespace ramses_internal
     class Monitor
     {
     public:
-        Monitor(const String& csvFilename);
+        explicit Monitor(const String& csvFilename);
         ~Monitor();
 
         void recordFrameInfo(const FrameInfo& frameInfo);
@@ -38,7 +38,7 @@ namespace ramses_internal
 
         struct Runner : public Runnable
         {
-            Runner(const String& filename);
+            explicit Runner(const String& filename);
             void run() override;
 
             File file;

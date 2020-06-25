@@ -39,7 +39,7 @@ bool ResourcePacker::Pack(const RamsesResourcePackerArguments& arguments)
         ramses::ResourceFileDescription fileDescription(file.c_str());
         if (ramses::StatusOK != ramsesClient->loadResources(fileDescription))
         {
-            PRINT_ERROR("ramses fail to load input resource file:\"%s\".\n", file.c_str());
+            PRINT_ERROR("ramses fail to load input resource file:\"{}\".\n", file);
             return false;
         }
     }

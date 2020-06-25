@@ -159,9 +159,8 @@ namespace ramses
         expectSceneOperationsSent();
         m_scene.flush();
         sceneActionsCollector.resetCollecting();
-        expectSceneOperationsSent();
         m_scene.flush();
-        EXPECT_EQ(1u, sceneActionsCollector.getNumReceivedActionLists());
+        EXPECT_EQ(0u, sceneActionsCollector.getNumReceivedActionLists());
         expectSceneUnpublication();
     }
 }

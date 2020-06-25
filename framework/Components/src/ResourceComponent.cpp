@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "Components/ResourceComponent.h"
-#include "Transfer/ResourceTypes.h"
 #include "Components/ResourceTableOfContents.h"
 #include "Components/ResourceFilesRegistry.h"
 #include "TaskFramework/ITaskQueue.h"
@@ -108,7 +107,7 @@ namespace ramses_internal
                 // try resource files
                 ResourceLoadInfo loadInfo;
                 const EStatus canLoadFromFile = m_resourceFiles.getEntry(id, loadInfo.resourceStream, loadInfo.fileEntry);
-                if (canLoadFromFile == EStatus_RAMSES_OK)
+                if (canLoadFromFile == EStatus::Ok)
                 {
                     loadInfo.requesterId = requesterId;
                     m_resourcesToBeLoaded.push_back(loadInfo);
@@ -161,7 +160,7 @@ namespace ramses_internal
         triggerLoadingResourcesFromFile();
     }
 
-    void ResourceComponent::requestResourceAsynchronouslyFromFramework(const ResourceContentHashVector& resourceHashes, const RequesterID& requesterID, const Guid& providerID)
+    void ResourceComponent::requestResourceAsynchronouslyFromFramework(const ResourceContentHashVector& resourceHashes, const ResourceRequesterID& requesterID, const Guid& providerID)
     {
         ResourceContentHashVector resourcesToBeRetrievedFromProvider;
         ResourceContentHashVector resourcesToBeLoaded;
@@ -191,7 +190,7 @@ namespace ramses_internal
                     // only trigger request from file or network if not already requested by any requester
                     ResourceLoadInfo loadInfo;
                     const EStatus canLoadResource = m_resourceFiles.getEntry(hash, loadInfo.resourceStream, loadInfo.fileEntry);
-                    if (canLoadResource == EStatus_RAMSES_OK)
+                    if (canLoadResource == EStatus::Ok)
                     {
                         m_resourcesToBeLoaded.push_back(loadInfo);
                         LOG_DEBUG(CONTEXT_FRAMEWORK, "ResourceComponent::requestResourceAsynchronouslyFromFramework: resource found in resource file, will be loaded later:" << hash);
@@ -291,7 +290,7 @@ namespace ramses_internal
         }
     }
 
-    void ResourceComponent::cancelResourceRequest(const ResourceContentHash& resourceHash, const RequesterID& requesterID)
+    void ResourceComponent::cancelResourceRequest(const ResourceContentHash& resourceHash, const ResourceRequesterID& requesterID)
     {
         // remove from arrived
         bool removedFromArrived = false;
@@ -328,7 +327,7 @@ namespace ramses_internal
         }
     }
 
-    ManagedResourceVector ResourceComponent::popArrivedResources(const RequesterID& requesterID)
+    ManagedResourceVector ResourceComponent::popArrivedResources(const ResourceRequesterID& requesterID)
     {
         ManagedResourceVector res;
         m_arrivedResources[requesterID].swap(res);
@@ -529,7 +528,7 @@ namespace ramses_internal
         BinaryFileInputStream* resourceStream(nullptr);
         ResourceFileEntry entry;
         const EStatus canLoadFromFile = m_resourceFiles.getEntry(hash, resourceStream, entry);
-        if (canLoadFromFile == EStatus_RAMSES_OK)
+        if (canLoadFromFile == EStatus::Ok)
         {
             m_statistics.statResourcesLoadedFromFileNumber.incCounter(1);
             m_statistics.statResourcesLoadedFromFileSize.incCounter(entry.sizeInBytes);
@@ -550,7 +549,7 @@ namespace ramses_internal
         return deser && !(*deser)->processingFinished();
     }
 
-    bool ResourceComponent::hasRequestForResource(ResourceContentHash hash, RequesterID requester) const
+    bool ResourceComponent::hasRequestForResource(ResourceContentHash hash, ResourceRequesterID requester) const
     {
         auto range = m_requestedResources.equal_range(hash);
         return FindInRequestsRange(range, requester) != range.second;
@@ -574,7 +573,7 @@ namespace ramses_internal
         }
     }
 
-    ResourceComponent::RequestsMap::const_iterator ResourceComponent::FindInRequestsRange(std::pair<RequestsMap::const_iterator, RequestsMap::const_iterator> range, RequesterID requester)
+    ResourceComponent::RequestsMap::const_iterator ResourceComponent::FindInRequestsRange(std::pair<RequestsMap::const_iterator, RequestsMap::const_iterator> range, ResourceRequesterID requester)
     {
         for (auto it = range.first; it != range.second; ++it)
         {

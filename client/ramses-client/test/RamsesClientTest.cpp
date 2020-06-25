@@ -163,6 +163,24 @@ namespace ramses
         EXPECT_FALSE(framework.isConnected());
     }
 
+    TEST(RamsesClient, createClientFailsWhenConnected)
+    {
+        ramses::RamsesFramework framework;
+        EXPECT_EQ(ramses::StatusOK, framework.connect());
+        EXPECT_EQ(framework.createClient(nullptr), nullptr);
+    }
+
+    TEST(RamsesClient, destroyClientFailsWhenConnected)
+    {
+        ramses::RamsesFramework framework;
+        auto* client = framework.createClient(nullptr);
+        ASSERT_NE(client, nullptr);
+        EXPECT_EQ(ramses::StatusOK, framework.connect());
+        EXPECT_NE(ramses::StatusOK, framework.destroyClient(*client));
+        EXPECT_EQ(ramses::StatusOK, framework.disconnect());
+        EXPECT_EQ(ramses::StatusOK, framework.destroyClient(*client));
+    }
+
     TEST_F(ALocalRamsesClient, createsSceneWithGivenId)
     {
         const sceneId_t sceneId(33u);

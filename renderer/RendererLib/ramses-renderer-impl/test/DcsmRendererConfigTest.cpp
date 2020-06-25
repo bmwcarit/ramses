@@ -117,3 +117,25 @@ TEST(ADcsmContentControlConfig, ignoresDupliciteCategoryAdded)
     EXPECT_EQ(disp1, catInfo1->display);
     EXPECT_EQ(size1, catInfo1->size);
 }
+
+TEST(ADcsmContentControlConfig, ignoresInvalidCategoryGivenToConstructor)
+{
+    static constexpr Category cat1;
+    static constexpr displayId_t disp1{ 1 };
+    static constexpr SizeInfo size1{ 1, 2 };
+
+    const DcsmContentControlConfig config{ { { cat1, { size1, disp1 } } } };
+
+    EXPECT_EQ(nullptr, config.findCategoryInfo(cat1));
+}
+
+TEST(ADcsmContentControlConfig, ignoresInvalidCategoryAdded)
+{
+    static constexpr Category cat1;
+    static constexpr displayId_t disp1{ 1 };
+    static constexpr SizeInfo size1{ 1, 2 };
+
+    DcsmContentControlConfig config;
+    EXPECT_NE(StatusOK, config.addCategory(cat1, { size1, disp1 }));
+    EXPECT_EQ(nullptr, config.findCategoryInfo(cat1));
+}

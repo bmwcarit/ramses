@@ -26,7 +26,7 @@ namespace
     class IsSceneActionCollectionMatcher : public MatcherInterface<const SceneActionCollection&>
     {
     public:
-        IsSceneActionCollectionMatcher(const SceneActionCollection& actions)
+        explicit IsSceneActionCollectionMatcher(const SceneActionCollection& actions)
             : m_actions(actions.copy())
         {
         }
@@ -95,10 +95,10 @@ class SceneGraphSenderMock : public ISceneGraphSender
 public:
     SceneGraphSenderMock() {}
     virtual ~SceneGraphSenderMock() {}
-    MOCK_METHOD3(sendPublishScene, void(SceneId sceneId, EScenePublicationMode publicationMode, const String& name));
-    MOCK_METHOD2(sendUnpublishScene, void(SceneId sceneId, EScenePublicationMode publicationMode));
-    MOCK_METHOD3(sendCreateScene, void(const Guid& to, const SceneInfo& sceneInfo, EScenePublicationMode publicationMode));
-    MOCK_METHOD4(sendSceneActionList_rvr, void(const std::vector<Guid>& to, const SceneActionCollection & sceneAction, SceneId sceneId, EScenePublicationMode publicationMode));
+    MOCK_METHOD(void, sendPublishScene, (SceneId sceneId, EScenePublicationMode publicationMode, const String& name), (override));
+    MOCK_METHOD(void, sendUnpublishScene, (SceneId sceneId, EScenePublicationMode publicationMode), (override));
+    MOCK_METHOD(void, sendCreateScene, (const Guid& to, const SceneInfo& sceneInfo, EScenePublicationMode publicationMode), (override));
+    MOCK_METHOD(void, sendSceneActionList_rvr, (const std::vector<Guid>& to, const SceneActionCollection & sceneAction, SceneId sceneId, EScenePublicationMode publicationMode));
 
     void sendSceneActionList(const std::vector<Guid>& to, SceneActionCollection&& sceneAction, SceneId sceneId, EScenePublicationMode publicationMode) override
     {
@@ -317,7 +317,7 @@ TYPED_TEST(AClientSceneLogic_All, flushesPendingActionsIfSceneDistributedAndHasP
     this->expectSceneUnpublish();
 }
 
-TYPED_TEST(AClientSceneLogic_All, everyFlushGeneratesSceneActionSentToSubscriber)
+TEST_F(AClientSceneLogic_Direct, everyFlushGeneratesSceneActionSentToSubscriber)
 {
     this->publishAndAddSubscriberWithoutPendingActions();
 
@@ -334,6 +334,59 @@ TYPED_TEST(AClientSceneLogic_All, everyFlushGeneratesSceneActionSentToSubscriber
 
     this->expectSceneUnpublish();
 }
+
+TEST_F(AClientSceneLogic_ShadowCopy, unskippableEmptyFlushesGeneratesSceneActionSentToSubscriber)
+{
+    // has and checks first flush
+    this->publishAndAddSubscriberWithoutPendingActions();
+
+    this->m_scene.allocateNode();
+
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _));
+    // flush with change
+    this->m_sceneLogic.flushSceneActions({}, {});
+    Mock::VerifyAndClearExpectations(&this->m_sceneGraphProviderComponent);
+
+     // empty -> nothing sent
+    this->m_sceneLogic.flushSceneActions({}, {});
+
+    // has expiration
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(_, _, this->m_sceneId, _));
+    this->m_sceneLogic.flushSceneActions({FlushTime::Clock::time_point{std::chrono::milliseconds{1}}, FlushTime::Clock::time_point{}}, {});
+
+    this->expectSceneUnpublish();
+}
+
+TEST_F(AClientSceneLogic_ShadowCopy, skippedFlushesAreCounted)
+{
+    this->publish();
+    this->expectSceneSend();
+    this->expectFlushSceneActionList();
+    this->addSubscriber();
+
+    UInt32 initialValue = this->m_scene.getStatisticCollection().statSceneActionsSentSkipped.getCounterValue();
+    //first flush
+    this->flush();
+    Mock::VerifyAndClearExpectations(&this->m_sceneGraphProviderComponent);
+    EXPECT_EQ(initialValue, this->m_scene.getStatisticCollection().statSceneActionsSentSkipped.getCounterValue());
+
+     // empty -> nothing sent
+    this->m_sceneLogic.flushSceneActions({}, {});
+    EXPECT_EQ(initialValue+1, this->m_scene.getStatisticCollection().statSceneActionsSentSkipped.getCounterValue());
+
+    // non empty
+    this->m_scene.allocateNode();
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(_, _, this->m_sceneId, _));
+    this->m_sceneLogic.flushSceneActions({}, {});
+    EXPECT_EQ(initialValue+1, this->m_scene.getStatisticCollection().statSceneActionsSentSkipped.getCounterValue());
+
+     // empty -> nothing sent
+    this->m_sceneLogic.flushSceneActions({}, {});
+    EXPECT_EQ(initialValue+2, this->m_scene.getStatisticCollection().statSceneActionsSentSkipped.getCounterValue());
+
+    this->expectSceneUnpublish();
+}
+
 
 TEST_F(AClientSceneLogic_ShadowCopy, doesNotClearPendingActionsIfWaitingSubscriberRemoved)
 {
@@ -717,17 +770,6 @@ TYPED_TEST(AClientSceneLogic_All, doesAppendFlushActionIfOtherSceneActionsAreFlu
         EXPECT_EQ(ESceneActionId_Flush, actionsFromSendScene[1].type());
     });
     this->m_sceneLogic.flushSceneActions({}, {});
-    this->expectSceneUnpublish();
-}
-
-TYPED_TEST(AClientSceneLogic_All, flushAfterNoChangeStillProducesSceneActionsSentToSubscriber)
-{
-    // add some active subscriber so actions are queued
-    this->publishAndAddSubscriberWithoutPendingActions();
-
-    this->expectFlushSceneActionList(false);
-    this->m_sceneLogic.flushSceneActions({}, {});
-
     this->expectSceneUnpublish();
 }
 
@@ -1343,7 +1385,7 @@ TYPED_TEST(AClientSceneLogic_All, flushSendsOnlySceneReferenceActionsSinceLastFl
 
         EXPECT_TRUE(sceneReferenceActions.empty());
     });
-    this->flush();
+    this->flush({}, SceneVersionTag{1});  // force flush by version
     this->expectSceneUnpublish();
 }
 

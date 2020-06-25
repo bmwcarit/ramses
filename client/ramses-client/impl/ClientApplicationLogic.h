@@ -66,7 +66,7 @@ namespace ramses_internal
         bool                    hasResourceFile(const String& resourceFileName) const;
         void                    reserveResourceCount(uint32_t totalCount);
 
-        std::vector<ramses_internal::SceneReferenceEvent>& getSceneReferenceEvents();
+        std::vector<ramses_internal::SceneReferenceEvent> popSceneReferenceEvents();
 
     private:
         PlatformLock&                 m_frameworkLock;

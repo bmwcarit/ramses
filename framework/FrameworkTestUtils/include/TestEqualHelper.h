@@ -24,7 +24,8 @@ namespace ramses_internal
         static const UInt32 NumElements = sizeof(MATRIXTYPE) / sizeof(Float);
         for (UInt32 index = 0; index < NumElements; index++)
         {
-            const ::testing::internal::FloatingPoint<Float> lhs(expected.data[index]), rhs(actual.data[index]);
+            const ::testing::internal::FloatingPoint<Float> lhs(expected.data[index]);
+            const ::testing::internal::FloatingPoint<Float> rhs(actual.data[index]);
             if (!lhs.AlmostEquals(rhs))
             {
                 result << " " << expected.data[index] << " != " << actual.data[index] << " @ " << index << ", ";

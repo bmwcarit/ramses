@@ -38,7 +38,7 @@
  *   Automatically tries to bring all contents of a given master category to a Rendered state
  *   and shows them on the created display.
 */
-class RendererSide : public ramses::IDcsmContentControlEventHandler
+class RendererSide : public ramses::DcsmContentControlEventHandlerEmpty
 {
 public:
 
@@ -85,19 +85,7 @@ public:
     }
 
     // ramses::IDcsmContentControlEventHandler implementations
-    virtual void contentShown(ramses::ContentID) override {}
-    virtual void contentFocusRequested(ramses::ContentID) override {}
-    virtual void contentStopOfferRequested(ramses::ContentID) override {}
-    virtual void contentNotAvailable(ramses::ContentID) override {}
-    virtual void contentMetadataUpdated(ramses::ContentID, const ramses::DcsmMetadataUpdate&) override {}
-    virtual void offscreenBufferLinked(ramses::displayBufferId_t, ramses::ContentID, ramses::dataConsumerId_t, bool) override {}
-    virtual void dataLinked(ramses::ContentID, ramses::dataProviderId_t, ramses::ContentID, ramses::dataConsumerId_t, bool) override {}
-    virtual void contentFlushed(ramses::ContentID, ramses::sceneVersionTag_t) override {}
-    virtual void contentExpired(ramses::ContentID) override {}
-    virtual void contentRecoveredFromExpiration(ramses::ContentID) override {}
-    virtual void streamAvailabilityChanged(ramses::streamSource_t, bool) override {}
-
-    virtual void contentAvailable(ramses::ContentID contentID, ramses::Category categoryID)
+    virtual void contentAvailable(ramses::ContentID contentID, ramses::Category categoryID) override
     {
         /*
          * When content of the category is available, request content to be ready automatically.
@@ -105,7 +93,7 @@ public:
         if (categoryID == m_category)
             m_contentControl->requestContentReady(contentID, 0);
     }
-    virtual void contentReady(ramses::ContentID contentID, ramses::DcsmContentControlEventResult result)
+    virtual void contentReady(ramses::ContentID contentID, ramses::DcsmContentControlEventResult result) override
     {
         /*
          * After content is ready (Ready at Renderer and Ready in DCSM), show it atomically
@@ -131,7 +119,7 @@ private:
 class MasterClient : public ramses::IClientEventHandler, ramses::IDcsmProviderEventHandler
 {
 public:
-    MasterClient(ramses::RamsesFramework& framework)
+    explicit MasterClient(ramses::RamsesFramework& framework)
         : m_masterClient(framework.createClient("MasterClient"))
         , m_provider(framework.createDcsmProvider())
     {}
@@ -286,7 +274,7 @@ public:
     virtual void contentHide(ramses::ContentID, ramses::AnimationInformation) override {}
     virtual void contentShow(ramses::ContentID, ramses::AnimationInformation) override {}
     virtual void stopOfferAccepted(ramses::ContentID, ramses::AnimationInformation) override {}
-    virtual void contentSizeChange(ramses::ContentID, ramses::SizeInfo, ramses::AnimationInformation) override {}
+    virtual void contentSizeChange(ramses::ContentID, const ramses::CategoryInfoUpdate&, ramses::AnimationInformation) override {}
     virtual void contentReadyRequested(ramses::ContentID) override {}
     virtual void contentRelease(ramses::ContentID, ramses::AnimationInformation) override {}
 

@@ -5,7 +5,6 @@
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
-
 #ifndef RAMSES_DCSMEVENTHANDLERMOCKS_H
 #define RAMSES_DCSMEVENTHANDLERMOCKS_H
 
@@ -25,8 +24,8 @@ namespace ramses_internal
         DcsmProviderEventHandlerMock();
         ~DcsmProviderEventHandlerMock() override;
 
-        MOCK_METHOD3(contentSizeChange, void(ramses::ContentID, ramses::SizeInfo, ramses::AnimationInformation));
-        MOCK_METHOD4(contentStateChange, void(ramses::ContentID, ramses_internal::EDcsmState, ramses::SizeInfo, ramses::AnimationInformation));
+        MOCK_METHOD(void, contentSizeChange, (ramses::ContentID, const ramses::CategoryInfoUpdate&, ramses::AnimationInformation), (override));
+        MOCK_METHOD(void, contentStateChange, (ramses::ContentID, ramses_internal::EDcsmState, const ramses::CategoryInfoUpdate&, ramses::AnimationInformation), (override));
     };
 
     class DcsmConsumerEventHandlerMock : public ramses::IDcsmConsumerEventHandler
@@ -35,13 +34,14 @@ namespace ramses_internal
         DcsmConsumerEventHandlerMock();
         ~DcsmConsumerEventHandlerMock() override;
 
-        MOCK_METHOD2(contentOffered, void(ramses::ContentID, ramses::Category));
-        MOCK_METHOD3(contentDescription, void(ramses::ContentID, ramses::ETechnicalContentType, ramses::TechnicalContentDescriptor));
-        MOCK_METHOD1(contentReady, void(ramses::ContentID));
-        MOCK_METHOD1(contentFocusRequest, void(ramses::ContentID));
-        MOCK_METHOD1(contentStopOfferRequest, void(ramses::ContentID));
-        MOCK_METHOD1(forceContentOfferStopped, void(ramses::ContentID));
-        MOCK_METHOD2(contentMetadataUpdated, void (ramses::ContentID contentID, const ramses::DcsmMetadataUpdate& metadataUpdate));
+        MOCK_METHOD(void, contentOffered, (ramses::ContentID, ramses::Category), (override));
+        MOCK_METHOD(void, contentDescription, (ramses::ContentID, ramses::ETechnicalContentType, ramses::TechnicalContentDescriptor), (override));
+        MOCK_METHOD(void, contentReady, (ramses::ContentID), (override));
+        MOCK_METHOD(void, contentEnableFocusRequest, (ramses::ContentID, int32_t focusRequest), (override));
+        MOCK_METHOD(void, contentDisableFocusRequest, (ramses::ContentID, int32_t focusRequest), (override));
+        MOCK_METHOD(void, contentStopOfferRequest, (ramses::ContentID), (override));
+        MOCK_METHOD(void, forceContentOfferStopped, (ramses::ContentID), (override));
+        MOCK_METHOD(void , contentMetadataUpdated, (ramses::ContentID contentID, const ramses::DcsmMetadataUpdate& metadataUpdate), (override));
     };
 }
 
@@ -53,12 +53,12 @@ namespace ramses
         DcsmProviderEventHandlerMock();
         ~DcsmProviderEventHandlerMock() override;
 
-        MOCK_METHOD2(contentHide, void(ContentID, AnimationInformation));
-        MOCK_METHOD2(contentShow, void(ContentID, AnimationInformation));
-        MOCK_METHOD2(contentRelease, void(ContentID, AnimationInformation));
-        MOCK_METHOD3(contentSizeChange, void(ContentID, SizeInfo, AnimationInformation));
-        MOCK_METHOD2(stopOfferAccepted, void(ContentID, AnimationInformation));
-        MOCK_METHOD1(contentReadyRequested, void(ContentID));
+        MOCK_METHOD(void, contentHide, (ContentID, AnimationInformation), (override));
+        MOCK_METHOD(void, contentShow, (ContentID, AnimationInformation), (override));
+        MOCK_METHOD(void, contentRelease, (ContentID, AnimationInformation), (override));
+        MOCK_METHOD(void, contentSizeChange, (ContentID, const CategoryInfoUpdate&, AnimationInformation), (override));
+        MOCK_METHOD(void, stopOfferAccepted, (ContentID, AnimationInformation), (override));
+        MOCK_METHOD(void, contentReadyRequested, (ContentID), (override));
     };
 }
 

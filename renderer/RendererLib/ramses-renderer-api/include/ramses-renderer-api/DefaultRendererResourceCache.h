@@ -27,7 +27,7 @@ namespace ramses
         *        limit is exceeded, items will automatically be unloaded in a FIFO-manner.
         * @param maxCacheSizeInBytes Maximum size of cache content in bytes
         */
-        DefaultRendererResourceCache(uint32_t maxCacheSizeInBytes);
+        explicit DefaultRendererResourceCache(uint32_t maxCacheSizeInBytes);
 
         /**
         * @brief Destructor of DefaultRendererResourceCache

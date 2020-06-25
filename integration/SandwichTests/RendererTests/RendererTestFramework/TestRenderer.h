@@ -58,6 +58,7 @@ namespace ramses_internal
         void setLoopMode(ramses::ELoopMode loopMode);
         void startRendererThread();
         void stopRendererThread();
+        bool isRendererThreadEnabled() const;
         void doOneLoop();
 
         ramses::displayBufferId_t createOffscreenBuffer(ramses::displayId_t displayId, uint32_t width, uint32_t height, bool interruptible);

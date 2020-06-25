@@ -25,7 +25,7 @@ namespace ramses
 class OverlayClient
 {
 public:
-    OverlayClient(ramses::RamsesFramework& framework);
+    explicit OverlayClient(ramses::RamsesFramework& framework);
     ~OverlayClient();
 
     void createOverlayScenes();

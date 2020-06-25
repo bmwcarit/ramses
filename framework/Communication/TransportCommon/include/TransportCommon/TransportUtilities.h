@@ -23,7 +23,7 @@ namespace ramses_internal
 
     namespace TransportUtilities
     {
-        void SplitToChunks(UInt32 maxNumberOfItemsPerMessage, UInt32 totalNumberOfItems, std::function<void(UInt32, UInt32)> sendChunkFun);
+        void SplitToChunks(UInt32 maxNumberOfItemsPerMessage, UInt32 totalNumberOfItems, const std::function<void(UInt32, UInt32)>& sendChunkFun);
         void SplitSceneActionsToChunks(const SceneActionCollection& actions, UInt32 maxNumSceneActions, UInt32 maxSizeSceneActions,
                                        const std::function<void(std::pair<UInt32, UInt32>, std::pair<const Byte*, const Byte*>, bool)>& sendFunc);
     }

@@ -66,10 +66,10 @@ namespace ramses
         return status;
     }
 
-    status_t DcsmMetadataCreator::setCarModelView(const CarModelViewMetadata& data)
+    status_t DcsmMetadataCreator::setCarModelView(const CarModelViewMetadata& data, const AnimationInformation& timingInfo)
     {
-        const auto status = impl.setCarModelView(data);
-        LOG_HL_CLIENT_API6(status, data.pitch, data.yaw, data.distance, data.origin_x, data.origin_y, data.origin_z);
+        const auto status = impl.setCarModelView(data, timingInfo);
+        LOG_HL_CLIENT_API9(status, data.pitch, data.yaw, data.distance, data.origin_x, data.origin_y, data.origin_z, data.cameraFOV, timingInfo.startTime, timingInfo.finishTime);
         return status;
     }
 
@@ -83,13 +83,6 @@ namespace ramses
     status_t DcsmMetadataCreator::setExclusiveBackground(bool state)
     {
         const auto status = impl.setExclusiveBackground(state);
-        LOG_HL_CLIENT_API1(status, state);
-        return status;
-    }
-
-    status_t DcsmMetadataCreator::setFocusRequest(int32_t state)
-    {
-        const auto status = impl.setFocusRequest(state);
         LOG_HL_CLIENT_API1(status, state);
         return status;
     }

@@ -23,8 +23,8 @@ namespace ramses_internal
     class AliveHandlerMock : public IThreadAliveNotifier
     {
     public:
-        MOCK_METHOD1(notifyAlive, void(UInt16 threadIndex));
-        MOCK_CONST_METHOD0(calculateTimeout, UInt32());
+        MOCK_METHOD(void, notifyAlive, (UInt16 threadIndex), (override));
+        MOCK_METHOD(UInt32, calculateTimeout, (), (const, override));
     };
 
     TEST(ATaskExecutingThread, callsAliveNotificationWithGivenThreadID)

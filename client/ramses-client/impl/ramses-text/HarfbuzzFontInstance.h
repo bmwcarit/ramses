@@ -12,6 +12,7 @@
 #include "ramses-text/Freetype2FontInstance.h"
 
 struct hb_font_t;
+struct hb_buffer_t;
 
 namespace ramses
 {
@@ -32,6 +33,7 @@ namespace ramses
         void activateHBFontSize();
 
         hb_font_t* m_hbFont = nullptr;
+        hb_buffer_t* m_hbBuffer =  nullptr;
     };
 }
 

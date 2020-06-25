@@ -17,7 +17,7 @@ namespace ramses_internal
     class ResourceChangeCollectingScene : public TransformationCachedScene
     {
     public:
-        ResourceChangeCollectingScene(const SceneInfo& sceneInfo = SceneInfo());
+        explicit ResourceChangeCollectingScene(const SceneInfo& sceneInfo = SceneInfo());
 
         const SceneResourceActionVector&    getSceneResourceActions() const;
         bool                                getClientResourcesChanged() const;

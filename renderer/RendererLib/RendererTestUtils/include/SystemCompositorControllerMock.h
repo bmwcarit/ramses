@@ -22,19 +22,17 @@ namespace ramses_internal
         SystemCompositorControllerMock();
         virtual ~SystemCompositorControllerMock() override;
 
-        MOCK_METHOD0(init, Bool());
-        MOCK_METHOD0(update, void());
-        MOCK_METHOD0(destroy, Bool());
-        MOCK_METHOD2(setSurfaceVisibility, Bool(WaylandIviSurfaceId, Bool));
-        MOCK_METHOD2(setSurfaceOpacity, Bool(WaylandIviSurfaceId, Float));
-        MOCK_METHOD5(setSurfaceDestinationRectangle, Bool(WaylandIviSurfaceId, Int32, Int32, Int32, Int32));
-        MOCK_METHOD2(doScreenshot, Bool(const String& fileName, int32_t screenIviId));
-        MOCK_METHOD2(addSurfaceToLayer, Bool(WaylandIviSurfaceId, WaylandIviLayerId));
-        MOCK_METHOD2(removeSurfaceFromLayer, Bool(WaylandIviSurfaceId, WaylandIviLayerId));
-        MOCK_METHOD1(destroySurface, Bool(WaylandIviSurfaceId));
-        MOCK_METHOD1(createLayer, Bool(WaylandIviLayerId));
-        MOCK_METHOD2(setLayerVisibility, Bool(WaylandIviLayerId, Bool));
-        MOCK_CONST_METHOD0(listIVISurfaces, void());
+        MOCK_METHOD(Bool, init, ());
+        MOCK_METHOD(void, update, (), (override));
+        MOCK_METHOD(Bool, setSurfaceVisibility, (WaylandIviSurfaceId, Bool), (override));
+        MOCK_METHOD(Bool, setSurfaceOpacity, (WaylandIviSurfaceId, Float), (override));
+        MOCK_METHOD(Bool, setSurfaceDestinationRectangle, (WaylandIviSurfaceId, Int32, Int32, Int32, Int32), (override));
+        MOCK_METHOD(Bool, doScreenshot, (const String& fileName, int32_t screenIviId), (override));
+        MOCK_METHOD(Bool, addSurfaceToLayer, (WaylandIviSurfaceId, WaylandIviLayerId), (override));
+        MOCK_METHOD(Bool, removeSurfaceFromLayer, (WaylandIviSurfaceId, WaylandIviLayerId), (override));
+        MOCK_METHOD(Bool, destroySurface, (WaylandIviSurfaceId), (override));
+        MOCK_METHOD(Bool, setLayerVisibility, (WaylandIviLayerId, Bool), (override));
+        MOCK_METHOD(void, listIVISurfaces, (), (const, override));
     };
 
     class SystemCompositorControllerMockWithDestructor : public SystemCompositorControllerMock
@@ -43,7 +41,7 @@ namespace ramses_internal
         SystemCompositorControllerMockWithDestructor();
         virtual ~SystemCompositorControllerMockWithDestructor() override;
 
-        MOCK_METHOD0(Die, void());
+        MOCK_METHOD(void, Die, ());
     };
 }
 

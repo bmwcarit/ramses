@@ -235,11 +235,14 @@ public:
     {
     }
 
-    virtual void contentSizeChange(ramses::ContentID /*contentID*/, ramses::SizeInfo sizeInfo, ramses::AnimationInformation animInfo) override
+    virtual void contentSizeChange(ramses::ContentID /*contentID*/, const ramses::CategoryInfoUpdate& categoryInfo, ramses::AnimationInformation animInfo) override
     {
-        m_newSize = sizeInfo;
-        m_sizeAnim = animInfo;
-        m_sizeReceived = true;
+        if (categoryInfo.hasCategorySizeUpdate())
+        {
+            m_newSize = ramses::SizeInfo{ categoryInfo.getCategorySize().width, categoryInfo.getCategorySize().height };
+            m_sizeAnim = animInfo;
+            m_sizeReceived = true;
+        }
     }
 
     virtual void contentReadyRequested(ramses::ContentID contentID) override
@@ -266,7 +269,7 @@ private:
     // and can be used for various layouting effects on consumer/renderer.
     ramses::dataProviderId_t m_viewportProviderID{667};
 
-    ramses::SizeInfo m_newSize = ramses::SizeInfo{ 0, 0 };
+    ramses::SizeInfo m_newSize{ 0, 0 };
     ramses::AnimationInformation m_sizeAnim = ramses::AnimationInformation{ 0, 0 };
     ramses::AnimationInformation m_showHideAnim = ramses::AnimationInformation{ 0, 0 };
 

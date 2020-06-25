@@ -29,6 +29,9 @@ namespace ramses_internal
         virtual void enableAcceptingTasks() override;
         virtual void disableAcceptingTasksAfterExecutingCurrentQueue() override;
 
+        EnqueueOnlyOneAtATimeQueue(const EnqueueOnlyOneAtATimeQueue&) = delete;
+        EnqueueOnlyOneAtATimeQueue& operator=(const EnqueueOnlyOneAtATimeQueue&) = delete;
+
     protected:
         ITaskQueue& m_nextQueue;
         std::deque<ITask*> m_waitingTasks;
@@ -36,8 +39,6 @@ namespace ramses_internal
         PlatformLock mlock;
         bool m_acceptingTasks;
 
-    private:
-        explicit EnqueueOnlyOneAtATimeQueue(const EnqueueOnlyOneAtATimeQueue&);
         void moveTaskToNextQueue(ITask& task);
     };
 }

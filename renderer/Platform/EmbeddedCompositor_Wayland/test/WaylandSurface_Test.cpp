@@ -91,10 +91,7 @@ namespace ramses_internal
 
         void deleteWaylandSurface()
         {
-            if (m_waylandSurface != nullptr)
-            {
-                delete m_waylandSurface;
-            }
+            delete m_waylandSurface;
         }
 
     protected:

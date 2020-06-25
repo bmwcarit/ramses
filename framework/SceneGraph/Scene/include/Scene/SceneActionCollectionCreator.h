@@ -48,7 +48,7 @@ namespace ramses_internal
     class SceneActionCollectionCreator
     {
     public:
-        SceneActionCollectionCreator(SceneActionCollection& collection_);
+        explicit SceneActionCollectionCreator(SceneActionCollection& collection_);
 
         void preallocateSceneSize(const SceneSizeInformation& sizeInfo);
 

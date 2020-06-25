@@ -27,7 +27,7 @@
 class SceneStateEventHandler : public ramses::RendererEventHandlerEmpty, public ramses::RendererSceneControlEventHandlerEmpty
 {
 public:
-    SceneStateEventHandler(ramses::RamsesRenderer& renderer)
+    explicit SceneStateEventHandler(ramses::RamsesRenderer& renderer)
         : m_renderer(renderer)
     {
     }
@@ -78,7 +78,7 @@ public:
         return waitUntilOrTimeout([&] { return m_scenes[sceneId].version == sceneVersion; });
     }
 
-    bool waitUntilOrTimeout(const std::function<bool()> conditionFunction)
+    bool waitUntilOrTimeout(const std::function<bool()>& conditionFunction)
     {
         const std::chrono::steady_clock::time_point timeoutTS = std::chrono::steady_clock::now() + std::chrono::seconds{ 5 };
         while (!conditionFunction() && std::chrono::steady_clock::now() < timeoutTS)
@@ -324,10 +324,6 @@ int main(int argc, char* argv[])
     SceneStateEventHandler eventHandler(renderer);
 
     ramses::DisplayConfig displayConfig(argc, argv);
-    displayConfig.setIntegrityRGLDeviceUnit(0);
-    displayConfig.setWaylandIviSurfaceID(0);
-    displayConfig.setWaylandIviLayerID(3);
-    displayConfig.setWindowIviVisible();
     displayConfig.setWindowRectangle(100, 100, 800u, 800u);
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
     renderer.flush();

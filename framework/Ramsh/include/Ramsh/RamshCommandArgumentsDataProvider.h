@@ -38,7 +38,7 @@ namespace ramses_internal
         String keywords() const;
 
     protected:
-        RamshArgumentBase(const RamshTypeInfo& typeinfo, void* defaultValue = nullptr);
+        explicit RamshArgumentBase(const RamshTypeInfo& typeinfo, void* defaultValue = nullptr);
 
         virtual ~RamshArgumentBase()
         {
@@ -69,8 +69,7 @@ namespace ramses_internal
 
         template<typename T> inline void cleanup()
         {
-            if(m_defaultValue)
-                delete static_cast<T*>(m_defaultValue);
+            delete static_cast<T*>(m_defaultValue);
         }
 
     private:
@@ -102,7 +101,7 @@ namespace ramses_internal
     {
     public:
         // construct an argument definition with given default value
-        RamshArgument(const T& defaultValue);
+        explicit RamshArgument(const T& defaultValue);
 
         // construct an argument definition - argument will be mandatory if no default value is set later
         RamshArgument();
@@ -128,7 +127,7 @@ namespace ramses_internal
     class TypedRamshArgument : public RamshArgument<T>
     {
     public:
-        inline TypedRamshArgument(const T& defaultValue)
+        inline explicit TypedRamshArgument(const T& defaultValue)
             : RamshArgument<T>(defaultValue)
         {}
 
@@ -141,7 +140,7 @@ namespace ramses_internal
     class TypedRamshArgument<bool> : public RamshArgument<bool>
     {
     public:
-        inline TypedRamshArgument(const bool& defaultValue)
+        inline explicit TypedRamshArgument(const bool& defaultValue)
             : RamshArgument<bool>(defaultValue)
         {}
 
@@ -362,7 +361,7 @@ namespace ramses_internal
     template<typename T>
     inline String RamshArgument<T>::typeString() const
     {
-        return TypeName<T>();
+        return static_cast<String>(TypeName<T>());
     }
 
     template<typename T>
@@ -450,7 +449,7 @@ namespace ramses_internal
         for(size_t j = 0; j < m_args.size(); j++)
         {
             // only set the data if an argument has no previously found value, if any data is left and if the argument actually consumes any data
-            if(!m_data[j] && in.size() > 0 && m_args[j]->amountConsumed() > 1)
+            if(!m_data[j] && !in.empty() && m_args[j]->amountConsumed() > 1)
             {
                 m_data[j] = m_args[j]->forceSet(**in.begin());
                 in.erase(in.begin());

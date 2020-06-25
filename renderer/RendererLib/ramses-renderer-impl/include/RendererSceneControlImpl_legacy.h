@@ -45,7 +45,7 @@ namespace ramses
     class RendererSceneControlImpl_legacy final : public IRendererSceneControlImpl_legacy, public StatusObjectImpl
     {
     public:
-        RendererSceneControlImpl_legacy(RamsesRendererImpl& renderer);
+        explicit RendererSceneControlImpl_legacy(RamsesRendererImpl& renderer);
 
         virtual status_t subscribeScene(sceneId_t sceneId) override;
         virtual status_t unsubscribeScene(sceneId_t sceneId) override;

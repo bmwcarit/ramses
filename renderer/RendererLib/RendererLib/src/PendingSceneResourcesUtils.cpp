@@ -16,13 +16,10 @@
 
 namespace ramses_internal
 {
-    SceneResourceActionVector PendingSceneResourcesUtils::ConsolidateSceneResourceActions(const SceneResourceActionVector& newActions, const SceneResourceActionVector* oldActions)
+    void PendingSceneResourcesUtils::ConsolidateSceneResourceActions(const SceneResourceActionVector& newActions, SceneResourceActionVector& currentActionsInOut)
     {
-        SceneResourceActionVector consolidatedActions;
-        if (oldActions != nullptr)
-            consolidatedActions = *oldActions;
         // preallocate for maximum size - canceling out actions should be minimal in real use cases
-        consolidatedActions.reserve(consolidatedActions.size() + newActions.size());
+        currentActionsInOut.reserve(currentActionsInOut.size() + newActions.size());
 
         for (const auto& sceneResourceAction : newActions)
         {
@@ -34,38 +31,38 @@ namespace ramses_internal
             switch (action)
             {
             case ESceneResourceAction_DestroyRenderTarget:
-                wasCanceledOut = RemoveSceneResourceActionIfContained(consolidatedActions, sceneResourceAction.handle, ESceneResourceAction_CreateRenderTarget);
+                wasCanceledOut = RemoveSceneResourceActionIfContained(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_CreateRenderTarget);
                 break;
             case ESceneResourceAction_DestroyRenderBuffer:
-                wasCanceledOut = RemoveSceneResourceActionIfContained(consolidatedActions, sceneResourceAction.handle, ESceneResourceAction_CreateRenderBuffer);
+                wasCanceledOut = RemoveSceneResourceActionIfContained(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_CreateRenderBuffer);
                 break;
             case ESceneResourceAction_DestroyStreamTexture:
-                wasCanceledOut = RemoveSceneResourceActionIfContained(consolidatedActions, sceneResourceAction.handle, ESceneResourceAction_CreateStreamTexture);
+                wasCanceledOut = RemoveSceneResourceActionIfContained(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_CreateStreamTexture);
                 break;
             case ESceneResourceAction_DestroyBlitPass:
-                wasCanceledOut = RemoveSceneResourceActionIfContained(consolidatedActions, sceneResourceAction.handle, ESceneResourceAction_CreateBlitPass);
+                wasCanceledOut = RemoveSceneResourceActionIfContained(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_CreateBlitPass);
                 break;
             case ESceneResourceAction_DestroyDataBuffer:
                 //remove all update actions first
-                while (RemoveSceneResourceActionIfContained(consolidatedActions, sceneResourceAction.handle, ESceneResourceAction_UpdateDataBuffer))
+                while (RemoveSceneResourceActionIfContained(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_UpdateDataBuffer))
                 {
                 }
-                wasCanceledOut = RemoveSceneResourceActionIfContained(consolidatedActions, sceneResourceAction.handle, ESceneResourceAction_CreateDataBuffer);
+                wasCanceledOut = RemoveSceneResourceActionIfContained(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_CreateDataBuffer);
                 break;
             case ESceneResourceAction_UpdateDataBuffer:
                 //add update action iff update action does not already exist
-                wasCanceledOut = ContainsSceneResourceAction(consolidatedActions, sceneResourceAction.handle, ESceneResourceAction_UpdateDataBuffer);
+                wasCanceledOut = ContainsSceneResourceAction(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_UpdateDataBuffer);
                 break;
             case ESceneResourceAction_DestroyTextureBuffer:
                 //remove all update actions first
-                while (RemoveSceneResourceActionIfContained(consolidatedActions, sceneResourceAction.handle, ESceneResourceAction_UpdateTextureBuffer))
+                while (RemoveSceneResourceActionIfContained(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_UpdateTextureBuffer))
                 {
                 }
-                wasCanceledOut = RemoveSceneResourceActionIfContained(consolidatedActions, sceneResourceAction.handle, ESceneResourceAction_CreateTextureBuffer);
+                wasCanceledOut = RemoveSceneResourceActionIfContained(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_CreateTextureBuffer);
                 break;
             case ESceneResourceAction_UpdateTextureBuffer:
                 //add update action iff update action does not already exist
-                wasCanceledOut = ContainsSceneResourceAction(consolidatedActions, sceneResourceAction.handle, ESceneResourceAction_UpdateTextureBuffer);
+                wasCanceledOut = ContainsSceneResourceAction(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_UpdateTextureBuffer);
                 break;
             default:
                 break;
@@ -73,11 +70,9 @@ namespace ramses_internal
 
             if (!wasCanceledOut)
             {
-                consolidatedActions.push_back(sceneResourceAction);
+                currentActionsInOut.push_back(sceneResourceAction);
             }
         }
-
-        return consolidatedActions;
     }
 
     bool PendingSceneResourcesUtils::ApplySceneResourceActions(const SceneResourceActionVector& actions, const IScene& scene, IRendererResourceManager& resourceManager, const FrameTimer* frameTimer)

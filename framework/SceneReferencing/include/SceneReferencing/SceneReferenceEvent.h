@@ -29,7 +29,7 @@ namespace ramses_internal
 
     struct SceneReferenceEvent
     {
-        SceneReferenceEvent(SceneId sceneid)
+        explicit SceneReferenceEvent(SceneId sceneid)
             : masterSceneId(sceneid) {}
 
         SceneId masterSceneId; // intentionally not (de)serialized

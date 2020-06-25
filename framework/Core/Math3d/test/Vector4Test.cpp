@@ -9,6 +9,7 @@
 #include "Math3d/Vector4.h"
 #include "framework_common_gmock_header.h"
 #include "PlatformAbstraction/PlatformMath.h"
+#include "IOStreamTester.h"
 #include "gmock/gmock.h"
 
 class Vector4Test: public testing::Test
@@ -243,4 +244,11 @@ TEST_F(Vector4Test, CanPrintToString)
 {
     EXPECT_EQ("[1.0 2.0 3.0 4.0]", fmt::to_string(vec1));
     EXPECT_EQ("[1.0 2.0 3.0 4.0]", ramses_internal::StringOutputStream::ToString(vec1));
+}
+
+TEST_F(Vector4Test, canBinarySerializeDeserialize)
+{
+    ramses_internal::IOStreamTesterBase::expectSame(ramses_internal::Vector4());
+    ramses_internal::IOStreamTesterBase::expectSame(ramses_internal::Vector4(1.f, 2.f, 3.f, 4.f));
+    ramses_internal::IOStreamTesterBase::expectSame(ramses_internal::Vector4(std::numeric_limits<float>::max(), std::numeric_limits<float>::min(), std::numeric_limits<float>::max()-0.1f, std::numeric_limits<float>::min()+0.1f));
 }

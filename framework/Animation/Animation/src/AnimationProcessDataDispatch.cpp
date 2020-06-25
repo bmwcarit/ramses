@@ -36,7 +36,7 @@ namespace ramses_internal
     void AnimationProcessDataDispatch::dispatchSpline(const Spline<Key, EDataType>& spline)
     {
         const SplineSolver<Key, EDataType> splineSolver(spline, m_processData.m_splineIterator, m_processData.m_interpolationType);
-        m_interpolatedValue.setValue(splineSolver.getInterpolatedValue());
+        m_interpolatedValue = splineSolver.getInterpolatedValue();
     }
 
     template <typename ClassType, typename EDataType, typename HandleType, typename HandleType2>
@@ -73,7 +73,7 @@ namespace ramses_internal
     template <>
     bool AnimationProcessDataDispatch::getInterpolatedValue(const bool& offset) const
     {
-        const bool interpolatedValue = m_interpolatedValue.getValue<bool>();
+        const bool interpolatedValue = absl::get<bool>(m_interpolatedValue);
         return offset ^ interpolatedValue;
     }
 

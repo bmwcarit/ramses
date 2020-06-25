@@ -186,7 +186,7 @@ namespace ramses_internal
 
     struct RendererEvent
     {
-        RendererEvent(ERendererEventType type = ERendererEventType_Invalid)
+        RendererEvent(ERendererEventType type = ERendererEventType_Invalid)  //NOLINT(google-explicit-constructor) for RendererEventVector creation convenience
             : eventType(type)
         {
         }

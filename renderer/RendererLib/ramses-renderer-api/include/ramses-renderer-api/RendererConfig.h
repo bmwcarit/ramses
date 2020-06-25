@@ -26,12 +26,9 @@ namespace ramses
     {
     public:
         /**
-        * @brief Constructor of RendererConfig that takes command line parameters
-        * and parses them to initialize the parameters.
-        * @param[in] argc Number of arguments in arguments array parameter
-        * @param[in] argv Array of arguments as strings
+        * @brief Default constructor of RendererConfig
         */
-        RendererConfig(int32_t argc = 0, char const* const* argv = nullptr);
+        RendererConfig();
 
         /**
         * @brief Constructor of RendererConfig that takes command line parameters
@@ -39,7 +36,7 @@ namespace ramses
         * @param[in] argc Number of arguments in arguments array parameter
         * @param[in] argv Array of arguments as strings
         */
-        RendererConfig(int32_t argc, char* argv[]);
+        RendererConfig(int32_t argc, char const* const* argv);
 
         /**
         * @brief Copy constructor of RendererConfig

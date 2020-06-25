@@ -16,7 +16,7 @@ namespace ramses_internal
 
     void TestSignalHandler::RegisterSignalHandlersForCurrentProcess(String processName)
     {
-        ProcessName = processName;
+        ProcessName = std::move(processName);
 
         PlatformSignal::SetSignalHandler(ESignal::ABRT, HandleSignalCallback, true);
         PlatformSignal::SetSignalHandler(ESignal::FPE, HandleSignalCallback, true);

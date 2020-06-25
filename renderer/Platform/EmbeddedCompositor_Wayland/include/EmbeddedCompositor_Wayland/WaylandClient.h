@@ -16,7 +16,7 @@ namespace ramses_internal
     class WaylandClient: public IWaylandClient
     {
     public:
-        WaylandClient(wl_client* client);
+        explicit WaylandClient(wl_client* client);
         virtual void getCredentials(pid_t& processId, uid_t& userId, gid_t& groupId) override;
         virtual void postNoMemory() override;
         virtual IWaylandResource* resourceCreate(const wl_interface *interface, int version, uint32_t id) override;

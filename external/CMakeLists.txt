@@ -37,8 +37,6 @@ target_compile_definitions(fmt PUBLIC "-DFMT_EXCEPTIONS=0")
 ACME_FOLDERIZE_TARGET(fmt)
 ACME_INFO("+ fmt")
 
-# capu
-ADD_SUBDIRECTORY(capu)
 
 # these directories will be built with
 # modified compiler flags

@@ -10,8 +10,6 @@ from ramses_test_framework import test_classes
 from ramses_test_framework import log
 from ramses_test_framework.ramses_test_extensions import with_ramses_process_check
 from ramses_test_framework import application
-import time
-
 
 class EmbeddedCompositorBase(test_classes.OnAllDefaultTargetsTest):
     def __init__(self, methodName ='runTest', testSceneState=0):

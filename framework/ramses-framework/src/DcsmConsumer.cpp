@@ -32,17 +32,17 @@ namespace ramses
         return result;
     }
 
-    status_t DcsmConsumer::assignContentToConsumer(ContentID contentID, SizeInfo size)
+    status_t DcsmConsumer::assignContentToConsumer(ContentID contentID, const CategoryInfoUpdate& categoryInfo)
     {
-        const status_t result = impl.assignContentToConsumer(contentID, size);
-        LOG_HL_CLIENT_API3(result, contentID, size.width, size.height);
+        const status_t result = impl.assignContentToConsumer(contentID, categoryInfo);
+        LOG_HL_CLIENT_API2(result, contentID, categoryInfo);
         return result;
     }
 
-    status_t DcsmConsumer::contentSizeChange(ContentID contentID, SizeInfo size, AnimationInformation animationInformation)
+    status_t DcsmConsumer::contentSizeChange(ContentID contentID, const CategoryInfoUpdate& categoryInfo, AnimationInformation animationInformation)
     {
-        const status_t result = impl.contentSizeChange(contentID, size, animationInformation);
-        LOG_HL_CLIENT_API5(result, contentID, size.width, size.height, animationInformation.startTime, animationInformation.finishTime);
+        const status_t result = impl.contentSizeChange(contentID, categoryInfo, animationInformation);
+        LOG_HL_CLIENT_API4(result, contentID, categoryInfo, animationInformation.startTime, animationInformation.finishTime);
         return result;
     }
 

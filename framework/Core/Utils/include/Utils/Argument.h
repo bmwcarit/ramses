@@ -33,7 +33,7 @@ namespace ramses_internal
         String getHelpString() const;
         bool next();
 
-        operator T() const
+        operator T() const  // NOLINT(google-explicit-constructor) implicit conversion is a (questionable) feature
         {
             return getValue();
         }

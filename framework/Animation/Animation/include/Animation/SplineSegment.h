@@ -16,7 +16,7 @@ namespace ramses_internal
     class SplineSegment
     {
     public:
-        SplineSegment(SplineKeyIndex startIndex = InvalidSplineKeyIndex, SplineKeyIndex endIndex = InvalidSplineKeyIndex, SplineTimeStamp startTime = InvalidSplineTimeStamp, SplineTimeStamp endTime = InvalidSplineTimeStamp);
+        explicit SplineSegment(SplineKeyIndex startIndex = InvalidSplineKeyIndex, SplineKeyIndex endIndex = InvalidSplineKeyIndex, SplineTimeStamp startTime = InvalidSplineTimeStamp, SplineTimeStamp endTime = InvalidSplineTimeStamp);
 
         bool IsValid() const;
         bool IsTimeInSegment(SplineTimeStamp timeStamp) const;

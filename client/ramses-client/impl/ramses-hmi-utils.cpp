@@ -37,7 +37,7 @@ namespace ramses
         LOG_INFO_F(ramses_internal::CONTEXT_CLIENT, [&] (ramses_internal::StringOutputStream& output) {SceneDumper sceneDumper(scene.impl); sceneDumper.dumpUnrequiredObjects(output); });
     }
 
-    void RamsesHMIUtils::DumpUnrequiredSceneObjectsToFile(const Scene& scene, std::ofstream& out)
+    void RamsesHMIUtils::DumpUnrequiredSceneObjectsToFile(const Scene& scene, std::ostream& out)
     {
         ramses_internal::StringOutputStream output;
         SceneDumper sceneDumper(scene.impl);

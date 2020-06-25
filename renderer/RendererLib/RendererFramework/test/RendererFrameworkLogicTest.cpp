@@ -274,7 +274,7 @@ namespace ramses_internal
         ResourceContentHashVector resources;
         resources.push_back(resource);
 
-        RequesterID requester(1);
+        ResourceRequesterID requester(1);
 
         EXPECT_CALL(resourceComponent, requestResourceAsynchronouslyFromFramework(resources, requester, providerID));
         fixture.requestResourceAsyncronouslyFromFramework(resources, requester, sceneId);
@@ -284,7 +284,7 @@ namespace ramses_internal
     {
         const ResourceContentHash resource(44u, 0);
 
-        RequesterID requester(1);
+        ResourceRequesterID requester(1);
 
         EXPECT_CALL(resourceComponent, cancelResourceRequest(resource, requester));
         fixture.cancelResourceRequest(resource, requester);

@@ -87,7 +87,7 @@ namespace ramses_internal
     template <>
     inline IResource* ResourceSerializationTestHelper::CreateTestResource<TextureResource>(UInt32 blobSize)
     {
-        const TextureMetaInfo texDesc = { 16u, 17u, 1u, ETextureFormat_RGBA16, false, {}, { 18u, 19u} };
+        const TextureMetaInfo texDesc{ 16u, 17u, 1u, ETextureFormat_RGBA16, false, {}, { 18u, 19u} };
         TextureResource* resource = new TextureResource(EResourceType_Texture3D, texDesc, ResourceCacheFlag(15u), "resName");
         SetResourceDataRandom(*resource, blobSize);
         return resource;

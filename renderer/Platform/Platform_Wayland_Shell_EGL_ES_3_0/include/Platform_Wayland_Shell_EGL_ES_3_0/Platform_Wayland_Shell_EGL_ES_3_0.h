@@ -16,7 +16,7 @@ namespace ramses_internal
     class Platform_Wayland_Shell_EGL_ES_3_0 : public PlatformFactory_Wayland_Shell_EGL
     {
     public:
-        Platform_Wayland_Shell_EGL_ES_3_0(const RendererConfig& rendererConfig);
+        explicit Platform_Wayland_Shell_EGL_ES_3_0(const RendererConfig& rendererConfig);
 
         virtual IDevice*      createDevice(IContext& context) override final;
 

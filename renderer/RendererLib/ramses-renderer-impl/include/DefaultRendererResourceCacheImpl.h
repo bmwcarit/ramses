@@ -23,7 +23,7 @@ namespace ramses
     class DefaultRendererResourceCacheImpl : public IRendererResourceCache
     {
     public:
-        DefaultRendererResourceCacheImpl(uint32_t maxCacheSizeInBytes);
+        explicit DefaultRendererResourceCacheImpl(uint32_t maxCacheSizeInBytes);
         virtual ~DefaultRendererResourceCacheImpl();
 
         bool virtual hasResource(rendererResourceId_t resourceId, uint32_t& size) const override;

@@ -11,14 +11,13 @@
 
 namespace ramses
 {
-    RamsesFrameworkConfig::RamsesFrameworkConfig(int32_t argc, char const* const* argv)
-        : StatusObject(*new RamsesFrameworkConfigImpl(argc, argv))
-        , impl(static_cast<RamsesFrameworkConfigImpl&>(StatusObject::impl))
+    RamsesFrameworkConfig::RamsesFrameworkConfig()
+        : RamsesFrameworkConfig(0, nullptr)
     {
     }
 
-    RamsesFrameworkConfig::RamsesFrameworkConfig(int32_t argc, char * argv[])
-        : StatusObject(*new RamsesFrameworkConfigImpl(argc, const_cast<const char**>(argv)))
+    RamsesFrameworkConfig::RamsesFrameworkConfig(int32_t argc, char const* const* argv)
+        : StatusObject(*new RamsesFrameworkConfigImpl(argc, argv))
         , impl(static_cast<RamsesFrameworkConfigImpl&>(StatusObject::impl))
     {
     }

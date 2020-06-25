@@ -25,30 +25,30 @@ namespace ramses_internal
         SceneForSceneActionApplierTesting()
         {}
 
-        MOCK_METHOD2(allocateRenderable,         RenderableHandle(NodeHandle, RenderableHandle));
-        MOCK_METHOD2(setRenderableStartIndex,    void (RenderableHandle, UInt32));
-        MOCK_METHOD2(setRenderableIndexCount,    void (RenderableHandle, UInt32));
-        MOCK_METHOD2(setRenderableRenderState,   void (RenderableHandle, RenderStateHandle));
-        MOCK_METHOD2(setRenderableVisibility,    void (RenderableHandle, EVisibilityMode));
-        MOCK_METHOD2(setRenderableInstanceCount, void (RenderableHandle, UInt32));
-        MOCK_METHOD3(setRenderableDataInstance,  void (RenderableHandle, ERenderableDataSlotType, DataInstanceHandle));
-        MOCK_METHOD2(setRenderableStartVertex,   void(RenderableHandle, UInt32));
+        MOCK_METHOD(RenderableHandle, allocateRenderable, (NodeHandle, RenderableHandle), (override));
+        MOCK_METHOD(void , setRenderableStartIndex, (RenderableHandle, UInt32), (override));
+        MOCK_METHOD(void , setRenderableIndexCount, (RenderableHandle, UInt32), (override));
+        MOCK_METHOD(void , setRenderableRenderState, (RenderableHandle, RenderStateHandle), (override));
+        MOCK_METHOD(void , setRenderableVisibility, (RenderableHandle, EVisibilityMode), (override));
+        MOCK_METHOD(void , setRenderableInstanceCount, (RenderableHandle, UInt32), (override));
+        MOCK_METHOD(void , setRenderableDataInstance, (RenderableHandle, ERenderableDataSlotType, DataInstanceHandle), (override));
+        MOCK_METHOD(void, setRenderableStartVertex, (RenderableHandle, UInt32), (override));
 
-        MOCK_METHOD1(allocateRenderState,           RenderStateHandle(RenderStateHandle));
-        MOCK_METHOD5(setRenderStateBlendFactors,    void (RenderStateHandle, EBlendFactor, EBlendFactor, EBlendFactor, EBlendFactor));
-        MOCK_METHOD3(setRenderStateBlendOperations, void (RenderStateHandle, EBlendOperation, EBlendOperation));
-        MOCK_METHOD2(setRenderStateCullMode,        void (RenderStateHandle, ECullMode));
-        MOCK_METHOD2(setRenderStateDrawMode,        void (RenderStateHandle, EDrawMode));
-        MOCK_METHOD2(setRenderStateDepthWrite,      void (RenderStateHandle, EDepthWrite));
-        MOCK_METHOD2(setRenderStateDepthFunc,       void (RenderStateHandle, EDepthFunc));
-        MOCK_METHOD3(setRenderStateScissorTest,     void(RenderStateHandle, EScissorTest, const RenderState::ScissorRegion&));
-        MOCK_METHOD4(setRenderStateStencilFunc,     void (RenderStateHandle, EStencilFunc, UInt8, UInt8));
-        MOCK_METHOD4(setRenderStateStencilOps,      void (RenderStateHandle, EStencilOp, EStencilOp, EStencilOp));
-        MOCK_METHOD2(setRenderStateColorWriteMask,  void (RenderStateHandle, ColorWriteMask));
+        MOCK_METHOD(RenderStateHandle, allocateRenderState, (RenderStateHandle), (override));
+        MOCK_METHOD(void , setRenderStateBlendFactors, (RenderStateHandle, EBlendFactor, EBlendFactor, EBlendFactor, EBlendFactor), (override));
+        MOCK_METHOD(void , setRenderStateBlendOperations, (RenderStateHandle, EBlendOperation, EBlendOperation), (override));
+        MOCK_METHOD(void , setRenderStateCullMode, (RenderStateHandle, ECullMode), (override));
+        MOCK_METHOD(void , setRenderStateDrawMode, (RenderStateHandle, EDrawMode), (override));
+        MOCK_METHOD(void , setRenderStateDepthWrite, (RenderStateHandle, EDepthWrite), (override));
+        MOCK_METHOD(void , setRenderStateDepthFunc, (RenderStateHandle, EDepthFunc), (override));
+        MOCK_METHOD(void, setRenderStateScissorTest, (RenderStateHandle, EScissorTest, const RenderState::ScissorRegion&), (override));
+        MOCK_METHOD(void , setRenderStateStencilFunc, (RenderStateHandle, EStencilFunc, UInt8, UInt8), (override));
+        MOCK_METHOD(void , setRenderStateStencilOps, (RenderStateHandle, EStencilOp, EStencilOp, EStencilOp), (override));
+        MOCK_METHOD(void , setRenderStateColorWriteMask, (RenderStateHandle, ColorWriteMask), (override));
 
-        MOCK_METHOD2(allocateTextureSampler,    TextureSamplerHandle(const TextureSampler& sampler, TextureSamplerHandle handle));
+        MOCK_METHOD(TextureSamplerHandle, allocateTextureSampler, (const TextureSampler& sampler, TextureSamplerHandle handle), (override));
 
-        MOCK_METHOD1(setAckFlushState, void(bool));
+        MOCK_METHOD(void, setAckFlushState, (bool), (override));
     };
 
     class ASceneActionCreatorAndApplier : public ::testing::Test

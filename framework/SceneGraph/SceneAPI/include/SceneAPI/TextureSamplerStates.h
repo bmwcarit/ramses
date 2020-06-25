@@ -15,13 +15,17 @@ namespace ramses_internal
 {
     struct TextureSamplerStates
     {
-        TextureSamplerStates(
-            EWrapMethod addressModeU = EWrapMethod::Clamp,
-            EWrapMethod addressModeV = EWrapMethod::Clamp,
-            EWrapMethod addressModeR = EWrapMethod::Clamp,
-            ESamplingMethod minSamplingMode = ESamplingMethod::Linear_MipMapLinear,
-            ESamplingMethod magSamplingMode = ESamplingMethod::Linear,
-            UInt32 anisotropyLevel = 1u)
+        TextureSamplerStates()
+            : TextureSamplerStates(EWrapMethod::Clamp, EWrapMethod::Clamp, EWrapMethod::Clamp,
+                                   ESamplingMethod::Linear_MipMapLinear, ESamplingMethod::Linear_MipMapLinear)
+        {}
+
+        TextureSamplerStates(EWrapMethod addressModeU,
+                             EWrapMethod addressModeV,
+                             EWrapMethod addressModeR,
+                             ESamplingMethod minSamplingMode,
+                             ESamplingMethod magSamplingMode,
+                             UInt32 anisotropyLevel = 1u)
             : m_addressModeU(addressModeU)
             , m_addressModeV(addressModeV)
             , m_addressModeR(addressModeR)

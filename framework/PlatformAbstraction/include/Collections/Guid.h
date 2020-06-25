@@ -123,8 +123,8 @@ struct fmt::formatter<ramses_internal::Guid>
         }
         else
         {
-            const uint64_t upper = (v >> 48) & 0xFFFF;
-            const uint64_t lower = v & 0xFFFFFFFFFFFF;
+            const uint64_t upper = (v >> 48u) & 0xFFFFu;
+            const uint64_t lower = v & 0xFFFFFFFFFFFFu;
             return fmt::format_to(ctx.out(), "{:04X}-{:012X}", upper, lower);
         }
     }

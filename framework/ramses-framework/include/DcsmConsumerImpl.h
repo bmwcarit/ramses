@@ -17,16 +17,17 @@
 namespace ramses
 {
     class RamsesFrameworkImpl;
+    class CategoryInfoUpdate;
 
     class DcsmConsumerImpl final : public IDcsmConsumerImpl, public StatusObjectImpl
     {
     public:
-        DcsmConsumerImpl(RamsesFrameworkImpl& framework);
+        explicit DcsmConsumerImpl(RamsesFrameworkImpl& framework);
         virtual ~DcsmConsumerImpl() override;
 
         virtual status_t dispatchEvents(IDcsmConsumerEventHandler& handler) override;
-        virtual status_t assignContentToConsumer(ContentID contentID, SizeInfo size) override;
-        virtual status_t contentSizeChange(ContentID contentID, SizeInfo size, AnimationInformation animationInformation) override;
+        virtual status_t assignContentToConsumer(ContentID contentID, const CategoryInfoUpdate& size) override;
+        virtual status_t contentSizeChange(ContentID contentID, const CategoryInfoUpdate& size, AnimationInformation animationInformation) override;
         virtual status_t contentStateChange(ContentID contentID, EDcsmState status, AnimationInformation animationInformation) override;
         virtual status_t acceptStopOffer(ContentID contentID, AnimationInformation animationInformation) override;
 

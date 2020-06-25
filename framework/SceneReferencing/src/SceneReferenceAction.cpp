@@ -27,14 +27,15 @@ namespace ramses_internal
     {
         uint32_t count = 0;
         reader.read(count);
-        actions.resize(count);
-        for (auto& a : actions)
+        actions.reserve(actions.size() + count);
+        for (uint32_t i = 0u; i < count; ++i)
         {
-            reader.read(a.type);
-            reader.read(a.consumerScene);
-            reader.read(a.consumerId);
-            reader.read(a.providerScene);
-            reader.read(a.providerId);
+            actions.push_back({});
+            reader.read(actions.back().type);
+            reader.read(actions.back().consumerScene);
+            reader.read(actions.back().consumerId);
+            reader.read(actions.back().providerScene);
+            reader.read(actions.back().providerId);
         }
     }
 

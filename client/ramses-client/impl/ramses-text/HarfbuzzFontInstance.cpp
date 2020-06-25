@@ -32,10 +32,17 @@ namespace ramses
         m_hbFont = hb_ft_font_create(m_face, nullptr);
         if (m_hbFont == nullptr)
             LOG_ERROR(CONTEXT_TEXT, "HarfbuzzFontInstance::HarfbuzzFontInstance Could not create harfbuzz font");
+        assert(m_hbFont);
+
+        m_hbBuffer = hb_buffer_create();
+        if (m_hbBuffer == nullptr)
+            LOG_ERROR(CONTEXT_TEXT, "HarfbuzzFontInstance::HarfbuzzFontInstance Could not create harfbuzz buffer");
+        assert(m_hbBuffer);
     }
 
     HarfbuzzFontInstance::~HarfbuzzFontInstance()
     {
+        hb_buffer_destroy(m_hbBuffer);
         if (m_hbFont != nullptr)
             hb_font_destroy(m_hbFont);
     }
@@ -59,35 +66,34 @@ namespace ramses
         auto charIt = charsBegin;
         while (charIt != charsEnd)
         {
-            hb_buffer_t* hbBuffer = hb_buffer_create();
-            assert(hbBuffer != nullptr);
-            hb_unicode_funcs_t* unicodeFuncs = hb_buffer_get_unicode_funcs(hbBuffer);
+            hb_buffer_clear_contents(m_hbBuffer);
+            hb_unicode_funcs_t* unicodeFuncs = hb_buffer_get_unicode_funcs(m_hbBuffer);
 
-            hb_buffer_set_content_type(hbBuffer, HB_BUFFER_CONTENT_TYPE_UNICODE);
+            hb_buffer_set_content_type(m_hbBuffer, HB_BUFFER_CONTENT_TYPE_UNICODE);
             // Always take LTR direction. With that Arabic reshaping works, but char codes must already come in the swapped order.
-            hb_buffer_set_direction(hbBuffer, HB_DIRECTION_LTR);
+            hb_buffer_set_direction(m_hbBuffer, HB_DIRECTION_LTR);
 
             const hb_script_t hbScript = hb_unicode_script(unicodeFuncs, *charIt);
-            hb_buffer_set_script(hbBuffer, hbScript);
+            hb_buffer_set_script(m_hbBuffer, hbScript);
 
             // add chars using same script to buffer
             while (charIt != charsEnd)
             {
                 if (hb_unicode_script(unicodeFuncs, *charIt) == hbScript)
                 {
-                    hb_buffer_add(hbBuffer, *charIt, clusterIdx);
+                    hb_buffer_add(m_hbBuffer, *charIt, clusterIdx);
                     charIt++;
                 }
                 else
                     break;
             }
 
-            hb_shape(m_hbFont, hbBuffer, nullptr, 0);
+            hb_shape(m_hbFont, m_hbBuffer, nullptr, 0);
 
             uint32_t glyphCount;
-            hb_glyph_info_t* glyph_info = hb_buffer_get_glyph_infos(hbBuffer, &glyphCount);
+            hb_glyph_info_t* glyph_info = hb_buffer_get_glyph_infos(m_hbBuffer, &glyphCount);
             uint32_t glyphPosCount;
-            hb_glyph_position_t* glyph_pos = hb_buffer_get_glyph_positions(hbBuffer, &glyphPosCount);
+            hb_glyph_position_t* glyph_pos = hb_buffer_get_glyph_positions(m_hbBuffer, &glyphPosCount);
             assert(glyphPosCount == glyphCount);
 
             for (uint32_t i = 0; i < glyphCount; i++)
@@ -100,7 +106,6 @@ namespace ramses
                 hbGlyphInfos.push_back(glyphInfo);
             }
 
-            hb_buffer_destroy(hbBuffer);
             clusterIdx++;
         }
 

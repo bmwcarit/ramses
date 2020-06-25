@@ -1,3 +1,66 @@
+25.0.0
+-------------------
+        API changes
+        ------------------------------------------------------------------------
+        - Remove AnimatedSetter
+        - Rework API class constructors: Make explicit and/or remove misleading default arguments
+        - RamsesRenderer::createDcsmContentControl will fail if given DcsmContentControlConfig has no DCSM category
+        - Removed DcsmContentControl::setDisplayBufferClearColor, RendererSceneControl::setDisplayBufferClearColor
+          and added RamsesRenderer::setDisplayBufferClearColor instead
+            - behavior and arguments unchanged
+        - Added DcsmContentControl::unlinkData to break data link between consumer and provider
+        - Removed RamsesRenderer::handlePickEvent and IRendererEventHandler::objectsPicked and addded
+          RendererSceneControl::handlePickEvent and IRendererSceneControlEventHandler::objectsPicked instead
+            - behavior and arguments unchanged
+        - Added DcsmContentControl::handlePickEvent and IDcsmContentControlEventHandler::objectsPicked
+        - Added event callbacks for data provider/consumer creation/destruction
+          to both IRendererSceneControlEventHandler and IDcsmContentControlEventHandler
+            - dataProviderCreated, dataProviderDestroyed, dataConsumerCreated, dataConsumerDestroyed
+        - Dcsm metadata for 3d vehicle now also takes camera FOV, see struct CarModelViewMetadata
+        - Animation timing must be set together with Dcsm metadata for 3d vehicle via DcsmMetadataCreator::setCarModelView
+            - animation timing can be retrieved using DcsmMetadataUpdate::getCarModelViewAnimationInfo()
+        - Make RamsesFrameWork::createClient/destroyClient/createRenderer/destroyRenderer fail when connected
+        - DcsmProvider callbacks give CategoryInfo instead of SizeInfo. This object can be queried for multiple sets of values
+        - Removed DcsmProvider::requestContentFocus and callbacks in IDcsmConsumerEventHandler and IDcsmContentControlEventHandler in favour of enableContentFocusRequest
+        - Removed FocusRequest from DcsmMetadata in DcsmMetadataCreator and DcsmMetadataUpdate
+        - Added parameter "displayBuffer" to RamsesRenderer::readPixels to allow reading from offscreen buffers
+            -  Added parameter "displayBuffer" to IRendererEventHandler::framebufferPixelsRead that corresponds to
+            the buffer for which read pixels event was generted
+        - Added RenderSize and SafeArea to CategoryInfo
+
+        General changes
+        ------------------------------------------------------------------------
+        - Change display default XY position to (0,0) instead of (150,150)
+            - Leads to change of placement of created display window on Windows and X11 platforms if default values are used
+        - LZ4 compress compressed texture formats like ASTC for file or network
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Set ivi surface destination rectangle on display creation on Wayland IVI platform
+
+24.0.3
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Added DcsmContentControlEventHandlerEmpty for convenience when only subset of handlers need implementation
+        - Remove usage of capu library
+        - Unbreak windows OSS abseil build due to incompatible flags
+        - Update glslang 8.13.3743
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Make File tests more stable when shuffled
+        - Properly handle shift key in windows console input
+
+        API changes
+        ------------------------------------------------------------------------
+        - New FocusRequest handling:
+          - Added DCSMProvider::enableFocusRequest and disableFocusRequest
+          - Added IDcsmConsumerEventHandler and IDcsmContentControlEventHandler callbacks
+              contentEnableFocusRequest and contentDisableFocusRequest if compiled with ENABLE_NEW_FOCUSREQUEST_API defined
+          This allows backwards compatible integration on ramses 24.x versions. For future major version this will be integrated
+          as usual.
+
 24.0.1
 -------------------
         General changes

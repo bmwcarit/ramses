@@ -38,8 +38,8 @@ public:
         const RendererEventCollector& eventCollector, const SceneExpirationMonitor& expirationMonitor, const RendererStatistics& statistics);
     virtual ~RendererMock() override;
 
-    MOCK_METHOD1(markBufferWithSceneAsModified, void(SceneId));
-    MOCK_METHOD3(setClearColor, void(DisplayHandle, DeviceResourceHandle, const Vector4&));
+    MOCK_METHOD(void, markBufferWithSceneAsModified, (SceneId), (override));
+    MOCK_METHOD(void, setClearColor, (DisplayHandle, DeviceResourceHandle, const Vector4&), (override));
 
     static const FrameTimer FrameTimerInstance;
 };

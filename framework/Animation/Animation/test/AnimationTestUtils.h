@@ -146,12 +146,12 @@ namespace ramses_internal
     public:
         MockAnimationDataListener();
         virtual ~MockAnimationDataListener();
-        MOCK_METHOD1(preAnimationTimeRangeChange, void(AnimationHandle handle));
-        MOCK_METHOD1(onAnimationTimeRangeChanged, void(AnimationHandle handle));
-        MOCK_METHOD2(onAnimationPauseChanged, void(AnimationHandle handle, bool pause));
-        MOCK_METHOD1(onAnimationPropertiesChanged, void(AnimationHandle handle));
-        MOCK_METHOD1(onAnimationInstanceChanged, void(AnimationInstanceHandle handle));
-        MOCK_METHOD1(onSplineChanged, void(SplineHandle handle));
+        MOCK_METHOD(void, preAnimationTimeRangeChange, (AnimationHandle handle), (override));
+        MOCK_METHOD(void, onAnimationTimeRangeChanged, (AnimationHandle handle), (override));
+        MOCK_METHOD(void, onAnimationPauseChanged, (AnimationHandle handle, bool pause), (override));
+        MOCK_METHOD(void, onAnimationPropertiesChanged, (AnimationHandle handle), (override));
+        MOCK_METHOD(void, onAnimationInstanceChanged, (AnimationInstanceHandle handle), (override));
+        MOCK_METHOD(void, onSplineChanged, (SplineHandle handle), (override));
     };
 
     class MockAnimationStateListener : public AnimationLogicListener
@@ -159,13 +159,13 @@ namespace ramses_internal
     public:
         MockAnimationStateListener();
         virtual ~MockAnimationStateListener();
-        MOCK_METHOD1(onAnimationStarted, void(AnimationHandle handle));
-        MOCK_METHOD1(onAnimationFinished, void(AnimationHandle handle));
-        MOCK_METHOD1(onAnimationPaused, void(AnimationHandle handle));
-        MOCK_METHOD1(onAnimationResumed, void(AnimationHandle handle));
-        MOCK_METHOD1(onAnimationPropertiesChanged, void(AnimationHandle handle));
-        MOCK_METHOD1(onAnimationSplineDataChanged, void(AnimationHandle handle));
-        MOCK_METHOD1(onTimeChanged, void(const AnimationTime& time));
+        MOCK_METHOD(void, onAnimationStarted, (AnimationHandle handle), (override));
+        MOCK_METHOD(void, onAnimationFinished, (AnimationHandle handle), (override));
+        MOCK_METHOD(void, onAnimationPaused, (AnimationHandle handle), (override));
+        MOCK_METHOD(void, onAnimationResumed, (AnimationHandle handle), (override));
+        MOCK_METHOD(void, onAnimationPropertiesChanged, (AnimationHandle handle), (override));
+        MOCK_METHOD(void, onAnimationSplineDataChanged, (AnimationHandle handle), (override));
+        MOCK_METHOD(void, onTimeChanged, (const AnimationTime& time), (override));
     };
 
     class AnimationTest : public testing::Test

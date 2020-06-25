@@ -29,17 +29,16 @@ namespace ramses_internal
             filledDm.setWidgetOrder(m_widgetorder);
             filledDm.setWidgetHUDLineID(m_widgethudlineID);
             filledDm.setCarModel(1);
-            filledDm.setCarModelView({1,2,3,4,5,6});
+            filledDm.setCarModelView({ 1,2,3,4,5,6,7 }, {8,9});
             filledDm.setCarModelVisibility(true);
             filledDm.setExclusiveBackground(true);
-            filledDm.setFocusRequested(15);
         }
 
         DcsmMetadata serializeDeserialize(const DcsmMetadata& ref)
         {
             const auto vec = ref.toBinary();
             EXPECT_TRUE(vec.size() > 0);
-            return DcsmMetadata(reinterpret_cast<const unsigned char*>(vec.data()), vec.size());
+            return DcsmMetadata(vec);
         }
 
         std::vector<unsigned char> pngHeader;
@@ -66,7 +65,6 @@ namespace ramses_internal
         EXPECT_FALSE(dm.hasCarModelView());
         EXPECT_FALSE(dm.hasCarModelVisibility());
         EXPECT_FALSE(dm.hasExclusiveBackground());
-        EXPECT_FALSE(dm.hasFocusRequest());
     }
 
     TEST_F(ADcsmMetadata, canSetGetPreviewImagePngHeader)
@@ -115,12 +113,12 @@ namespace ramses_internal
     TEST_F(ADcsmMetadata, canSetGetRealPngImage)
     {
         File f("res/sampleImage.png");
-        f.open(EFileMode_ReadOnlyBinary);
+        EXPECT_TRUE(f.open(File::Mode::ReadOnlyBinary));
         UInt fileSize = 0;
-        f.getSizeInBytes(fileSize);
+        EXPECT_TRUE(f.getSizeInBytes(fileSize));
         std::vector<unsigned char> img(fileSize);
         UInt readBytes = 0;
-        f.read(reinterpret_cast<char*>(img.data()), fileSize, readBytes);
+        EXPECT_EQ(EStatus::Ok, f.read(reinterpret_cast<char*>(img.data()), fileSize, readBytes));
 
         DcsmMetadata dm;
         EXPECT_TRUE(dm.setPreviewImagePng(img.data(), img.size()));
@@ -164,10 +162,12 @@ namespace ramses_internal
     TEST_F(ADcsmMetadata, canSetGetCarModelView)
     {
         DcsmMetadata dm;
-        dm.setCarModelView({6,5,4,3,2,1});
+        constexpr ramses::CarModelViewMetadata values{ 7,6,5,4,3,2,1 };
+        constexpr AnimationInformation timing{ 9,8 };
+        dm.setCarModelView(values, timing);
         EXPECT_TRUE(dm.hasCarModelView());
-        ramses::CarModelViewMetadata values{ 6,5,4,3,2,1 };
         EXPECT_EQ(values, dm.getCarModelView());
+        EXPECT_EQ(timing, dm.getCarModelViewAnimationInfo());
     }
 
     TEST_F(ADcsmMetadata, canSetGetCarModelVisibility)
@@ -184,14 +184,6 @@ namespace ramses_internal
         dm.setExclusiveBackground(true);
         EXPECT_TRUE(dm.hasExclusiveBackground());
         EXPECT_TRUE(dm.getExclusiveBackground());
-    }
-
-    TEST_F(ADcsmMetadata, canSetGetFocusRequest)
-    {
-        DcsmMetadata dm;
-        dm.setFocusRequested(16);
-        EXPECT_TRUE(dm.hasFocusRequest());
-        EXPECT_EQ(16, dm.getFocusRequest());
     }
 
     TEST_F(ADcsmMetadata, canCompare)
@@ -324,11 +316,13 @@ namespace ramses_internal
     TEST_F(ADcsmMetadata, canSetCarModelViewToNewValue)
     {
         DcsmMetadata dm;
-        EXPECT_TRUE(dm.setCarModelView({1,2,3,4,5,6}));
-        EXPECT_TRUE(dm.setCarModelView({6,5,4,3,2,1}));
+        EXPECT_TRUE(dm.setCarModelView({ 1,2,3,4,5,6,7 }, { 8,9 }));
+        EXPECT_TRUE(dm.setCarModelView({ 7,6,5,4,3,2,1 }, { 9,8 }));
         EXPECT_TRUE(dm.hasCarModelView());
-        ramses::CarModelViewMetadata values{6,5,4,3,2,1};
+        constexpr ramses::CarModelViewMetadata values{7,6,5,4,3,2,1};
         EXPECT_EQ(values, dm.getCarModelView());
+        constexpr AnimationInformation timing{ 9,8 };
+        EXPECT_EQ(timing, dm.getCarModelViewAnimationInfo());
     }
 
     TEST_F(ADcsmMetadata, canSetCarModelVisibilityToNewValue)
@@ -347,15 +341,6 @@ namespace ramses_internal
         EXPECT_TRUE(dm.setExclusiveBackground(true));
         EXPECT_TRUE(dm.hasExclusiveBackground());
         EXPECT_TRUE(dm.getExclusiveBackground());
-    }
-
-    TEST_F(ADcsmMetadata, canSetFocusRequestToNewValue)
-    {
-        DcsmMetadata dm;
-        EXPECT_TRUE(dm.setFocusRequested(0));
-        EXPECT_TRUE(dm.setFocusRequested(13));
-        EXPECT_TRUE(dm.hasFocusRequest());
-        EXPECT_EQ(13, dm.getFocusRequest());
     }
 
     TEST_F(ADcsmMetadata, canUpdatePngFromOther)
@@ -439,15 +424,17 @@ namespace ramses_internal
     TEST_F(ADcsmMetadata, canUpdateCarModelViewLineFromOther)
     {
         DcsmMetadata dm;
-        EXPECT_TRUE(dm.setCarModelView({1,2,3,4,5,6}));
+        EXPECT_TRUE(dm.setCarModelView({ 1,2,3,4,5,6,7 }, { 8,9 }));
 
         DcsmMetadata otherDm;
-        EXPECT_TRUE(otherDm.setCarModelView({6,5,4,3,2,1}));
+        EXPECT_TRUE(otherDm.setCarModelView({ 7,6,5,4,3,2,1 }, { 9,8 }));
 
         dm.updateFromOther(otherDm);
         EXPECT_TRUE(dm.hasCarModelView());
-        ramses::CarModelViewMetadata values{6,5,4,3,2,1};
+        constexpr ramses::CarModelViewMetadata values{7,6,5,4,3,2,1};
         EXPECT_EQ(values, dm.getCarModelView());
+        constexpr AnimationInformation timing{ 9,8 };
+        EXPECT_EQ(timing, dm.getCarModelViewAnimationInfo());
     }
 
     TEST_F(ADcsmMetadata, canUpdateCarModelVisibilityFromOther)
@@ -476,19 +463,6 @@ namespace ramses_internal
         EXPECT_TRUE(dm.getExclusiveBackground());
     }
 
-    TEST_F(ADcsmMetadata, canUpdateFocusRequestFromOther)
-    {
-        DcsmMetadata dm;
-        EXPECT_TRUE(dm.setFocusRequested(0));
-
-        DcsmMetadata otherDm;
-        EXPECT_TRUE(otherDm.setFocusRequested(1));
-
-        dm.updateFromOther(otherDm);
-        EXPECT_TRUE(dm.hasFocusRequest());
-        EXPECT_EQ(1, dm.getFocusRequest());
-    }
-
     TEST_F(ADcsmMetadata, canUpdateEmptyWithValues)
     {
         DcsmMetadata otherDm;
@@ -498,10 +472,9 @@ namespace ramses_internal
         EXPECT_TRUE(otherDm.setWidgetBackgroundID(567));
         EXPECT_TRUE(otherDm.setWidgetHUDLineID(789));
         EXPECT_TRUE(otherDm.setCarModel(1234));
-        EXPECT_TRUE(otherDm.setCarModelView({1,2,3,4,5,6}));
+        EXPECT_TRUE(otherDm.setCarModelView({ 1,2,3,4,5,6,7 }, { 8,9 }));
         EXPECT_TRUE(otherDm.setCarModelVisibility(true));
         EXPECT_TRUE(otherDm.setExclusiveBackground(true));
-        EXPECT_TRUE(otherDm.setFocusRequested(2));
 
         DcsmMetadata dm;
         dm.updateFromOther(otherDm);
@@ -518,18 +491,17 @@ namespace ramses_internal
         EXPECT_TRUE(dm.hasCarModel());
         EXPECT_EQ(1234, dm.getCarModel());
         EXPECT_TRUE(dm.hasCarModelView());
-        EXPECT_EQ(ramses::CarModelViewMetadata({1,2,3,4,5,6}), dm.getCarModelView());
+        EXPECT_EQ(ramses::CarModelViewMetadata({1,2,3,4,5,6,7}), dm.getCarModelView());
+        EXPECT_EQ(AnimationInformation({ 8,9 }), dm.getCarModelViewAnimationInfo());
         EXPECT_TRUE(dm.hasCarModelVisibility());
         EXPECT_TRUE(dm.getCarModelVisibility());
         EXPECT_TRUE(dm.hasExclusiveBackground());
         EXPECT_TRUE(dm.getExclusiveBackground());
-        EXPECT_TRUE(dm.hasFocusRequest());
-        EXPECT_EQ(2, dm.getFocusRequest());
     }
 
     TEST_F(ADcsmMetadata, canSkipDeserializeUnknownTypes)
     {
-        BinaryOutputStream os;
+        BinaryOutputStreamT<Byte> os;
         os << static_cast<uint32_t>(1) // version
            << static_cast<uint32_t>(2) // entries
 
@@ -543,7 +515,7 @@ namespace ramses_internal
            << static_cast<uint8_t>(123) // png data
            << static_cast<uint8_t>(65);
 
-        DcsmMetadata dm(reinterpret_cast<const unsigned char*>(os.getData()), os.getSize());
+        DcsmMetadata dm(os.release());
         EXPECT_TRUE(dm.hasPreviewImagePng());
         EXPECT_FALSE(dm.hasPreviewDescription());
         EXPECT_EQ(U"", dm.getPreviewDescription());
@@ -552,14 +524,14 @@ namespace ramses_internal
 
     TEST_F(ADcsmMetadata, ignoresUnexpectedMetadataVersion)
     {
-        BinaryOutputStream os;
+        BinaryOutputStreamT<Byte> os;
         os << static_cast<uint32_t>(100) // unsupported version
            << static_cast<uint32_t>(1) // entries
 
            << static_cast<uint32_t>(1) // png type
            << static_cast<uint32_t>(1) // png size
            << static_cast<uint8_t>(123); // png data
-        DcsmMetadata dm(reinterpret_cast<const unsigned char*>(os.getData()), os.getSize());
+        DcsmMetadata dm(os.release());
         EXPECT_FALSE(dm.hasPreviewImagePng());
     }
 

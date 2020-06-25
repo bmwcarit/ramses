@@ -11,7 +11,7 @@
 namespace ramses
 {
     ArrayResourceImpl::ArrayResourceImpl(ramses_internal::ResourceHashUsage arrayHash, ERamsesObjectType type, RamsesClientImpl& client, const char* name)
-        : ResourceImpl(type, arrayHash, client, name)
+        : ResourceImpl(type, std::move(arrayHash), client, name)
         , m_elementCount(0)
         , m_elementType(ramses_internal::EDataType_Invalid) // initialize as invalid
     {

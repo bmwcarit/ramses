@@ -16,7 +16,7 @@ namespace ramses_internal
     class EmbeddedCompositingTestsWithFD : public IEmbeddedCompositingTest
     {
     public:
-        EmbeddedCompositingTestsWithFD(const String& waylandSocket)
+        explicit EmbeddedCompositingTestsWithFD(const String& waylandSocket)
             : m_waylandSocket(waylandSocket)
         {
         }

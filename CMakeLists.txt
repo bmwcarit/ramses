@@ -8,9 +8,9 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
-SET(RAMSES_VERSION_MAJOR 24)
+SET(RAMSES_VERSION_MAJOR 25)
 SET(RAMSES_VERSION_MINOR 0)
-SET(RAMSES_VERSION_PATCH 1)
+SET(RAMSES_VERSION_PATCH 0)
 SET(RAMSES_VERSION_POSTFIX "")
 
 CMAKE_POLICY(SET CMP0048 NEW)
@@ -20,7 +20,7 @@ PROJECT(ramses-sdk VERSION ${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAM
 SET(ramses-sdk_ROOT_CMAKE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
 # TODO(tobias) must be here because used inside platformConfig, rework order of all options to solve properly
-OPTION(ramses-sdk_WARNINGS_AS_ERRORS "Enable warnings as errors during build" ON)
+OPTION(ramses-sdk_WARNINGS_AS_ERRORS "Enable warnings as errors during build" OFF)
 
 include(cmake/ramses/setCmakePolicies.cmake NO_POLICY_SCOPE)  # we want to propagate policy settings out!
 include(cmake/ramses/removeFromFlags.cmake)
@@ -47,7 +47,8 @@ IF (NOT CMAKE_BUILD_TYPE)
 ELSE ()
     # Case-insensitive comparison required, built type is not case-sensitive
     STRING(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER_CASE)
-    IF(NOT("${CMAKE_BUILD_TYPE_LOWER_CASE}" STREQUAL "debug" OR "${CMAKE_BUILD_TYPE_LOWER_CASE}" STREQUAL "release" OR "${CMAKE_BUILD_TYPE_LOWER_CASE}" STREQUAL "relwithdebinfo"))
+    IF(NOT("${CMAKE_BUILD_TYPE_LOWER_CASE}" STREQUAL "debug" OR "${CMAKE_BUILD_TYPE_LOWER_CASE}" STREQUAL "release" OR
+           "${CMAKE_BUILD_TYPE_LOWER_CASE}" STREQUAL "relwithdebinfo" OR "${CMAKE_BUILD_TYPE_LOWER_CASE}" STREQUAL "minsizerel"))
         ACME_ERROR("Build type set to unsupported type ${CMAKE_BUILD_TYPE}.")
     ENDIF ()
 ENDIF (NOT CMAKE_BUILD_TYPE)
@@ -104,6 +105,8 @@ set(CMAKE_DEBUG_POSTFIX "") # no debug suffix in this project
 
 set(ramses-shared-lib-MIXIN CACHE INTERNAL "")
 set(ramses-shared-lib-renderer-MIXIN CACHE INTERNAL "")
+
+include(cmake/ramses/platformTargets.cmake)
 
 ACME2_PROJECT(
     #==========================================================================

@@ -2340,7 +2340,7 @@ TEST_F(ARendererSceneUpdater, confidenceTest_forcePendingFlushWithNewResourcesBe
         const ResourceContentHash effectHash(effectRes->getHash());
 
         // add effect to scene as new resource
-        const auto dataInstanceGeom = scene.allocateDataInstance(scene.allocateDataLayout({ { EDataType_Indices, 1u, EFixedSemantics_Indices } }, effectHash));
+        const auto dataInstanceGeom = scene.allocateDataInstance(scene.allocateDataLayout({ DataFieldInfo{ EDataType_Indices, 1u, EFixedSemantics_Indices } }, effectHash));
         scene.setDataResource(dataInstanceGeom, DataFieldHandle(0u), ResourceProviderMock::FakeIndexArrayHash, {}, 0);
         const auto dataInstanceUniforms = scene.allocateDataInstance(scene.allocateDataLayout({}, effectHash));
 
@@ -2368,7 +2368,7 @@ TEST_F(ARendererSceneUpdater, confidenceTest_forcePendingFlushWithNewResourcesBe
         // simulate previously requested resource arriving and randomly fail to upload
         if (prevRequestedResource)
         {
-            EXPECT_CALL(resourceProvider1, popArrivedResources(_)).WillOnce([&](const RequesterID&) { return ManagedResourceVector{ ManagedResource{*prevRequestedResource, resDeleter} }; });
+            EXPECT_CALL(resourceProvider1, popArrivedResources(_)).WillOnce([&](const ResourceRequesterID&) { return ManagedResourceVector{ ManagedResource{*prevRequestedResource, resDeleter} }; });
             expectContextEnable();
             if (TestRandom::Get(0, 3) == 0)
                 EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, uploadShader(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));

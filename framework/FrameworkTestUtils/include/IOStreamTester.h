@@ -33,7 +33,7 @@ namespace ramses_internal
 
         virtual EStatus getState() const override
         {
-            return EStatus_RAMSES_OK;
+            return EStatus::Ok;
         }
 
         virtual IOutputStream& write(const void* data, const uint32_t size) override
@@ -51,7 +51,7 @@ namespace ramses_internal
     {
     public:
         template <typename T>
-        void expectSame(T in, T out = {})
+        static void expectSame(T in, T out = {})
         {
             IOStreamTester io;
             io << in;
@@ -60,7 +60,7 @@ namespace ramses_internal
         }
 
         template <typename T, typename U>
-        void expectSame2(T in, U out = {})
+        static void expectSame2(T in, U out = {})
         {
             IOStreamTester io;
             io << in;

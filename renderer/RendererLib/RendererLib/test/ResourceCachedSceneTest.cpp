@@ -19,7 +19,7 @@ namespace ramses_internal
     class AResourceCachedScene : public ::testing::Test
     {
     public:
-        AResourceCachedScene(bool indexArrayAvailable = true)
+        explicit AResourceCachedScene(bool indexArrayAvailable = true)
             : rendererScenes(rendererEventCollector)
             , scene(rendererScenes.createScene(SceneInfo()))
             , sceneAllocator(scene)

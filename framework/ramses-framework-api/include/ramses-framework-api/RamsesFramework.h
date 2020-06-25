@@ -93,6 +93,8 @@ namespace ramses
         * @brief Destroy a RamsesClient created with this framework.
         *        This method will fail when handed an object created with another RamsesFramework.
         *
+        *        May not be called when connected.
+        *
         * @param client the object to destroy
         *
         * @return StatusOK for success, otherwise the returned status can be used
@@ -117,6 +119,8 @@ namespace ramses
         /**
         * @brief Destroy a RamsesRenderer created with this framework.
         *        This method will fail when handed an object created with another RamsesFramework.
+        *
+        *        May not be called when connected.
         *
         * @param renderer the object to destroy
         *

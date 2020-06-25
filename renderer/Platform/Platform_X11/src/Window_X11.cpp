@@ -309,17 +309,19 @@ namespace ramses_internal
             windowMask,
             &windowAttributes);
 
+        XSizeHints* sizeHints = XAllocSizeHints();
+        sizeHints->flags = USPosition;
         if(!m_resizable)
         {
-            XSizeHints* sh = XAllocSizeHints();
-            sh->flags = PMinSize | PMaxSize;
-            sh->min_width = m_width;
-            sh->max_width = m_width;
-            sh->min_height = m_height;
-            sh->max_height = m_height;
-            XSetWMNormalHints(m_X11WindowData.display, m_X11WindowData.window, sh);
-            XFree(sh);
+            sizeHints->flags |= PMinSize | PMaxSize;
+            sizeHints->min_width = m_width;
+            sizeHints->max_width = m_width;
+            sizeHints->min_height = m_height;
+            sizeHints->max_height = m_height;
         }
+        XSetWMNormalHints(m_X11WindowData.display, m_X11WindowData.window, sizeHints);
+        XFree(sizeHints);
+        sizeHints = nullptr;
 
         // disable window decorations
         if( m_borderless )
@@ -351,7 +353,6 @@ namespace ramses_internal
         XStoreName(m_X11WindowData.display, m_X11WindowData.window, m_windowName.c_str());
 
         LOG_INFO(CONTEXT_RENDERER, "Created X11 Window, size " << m_width << " by " << m_height << " pixels");
-
         return true;
     }
 

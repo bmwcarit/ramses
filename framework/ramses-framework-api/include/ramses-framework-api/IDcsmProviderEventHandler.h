@@ -10,6 +10,7 @@
 #define RAMSES_IDCSMPROVIDEREVENTHANDLER_H
 
 #include "ramses-framework-api/DcsmApiTypes.h"
+#include "ramses-framework-api/CategoryInfoUpdate.h"
 
 namespace ramses
 {
@@ -64,13 +65,13 @@ namespace ramses
          *        viewport size.
          *
          * @param contentID The ID of the content for which the viewport changes
-         * @param sizeInfo the new viewport
+         * @param categoryInfo the new viewport
          * @param animInfo animation information for resizing the content:
          *                 startTime: beginning of a potential animation
          *                 endTime: end of a potential animation and
          *                          time point when content has to have new size
          */
-        virtual void contentSizeChange(ContentID contentID, SizeInfo sizeInfo, AnimationInformation animInfo) = 0;
+        virtual void contentSizeChange(ContentID contentID, const CategoryInfoUpdate& categoryInfo, AnimationInformation animInfo) = 0;
 
         /**
          * @brief Called after a DcsmConsumer requested the content and it has not

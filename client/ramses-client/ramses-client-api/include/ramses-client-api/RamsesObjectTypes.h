@@ -36,7 +36,6 @@ namespace ramses
         ERamsesObjectType_AnimatedProperty,
         ERamsesObjectType_Animation,
         ERamsesObjectType_AnimationSequence,
-        ERamsesObjectType_AnimatedSetter,
         ERamsesObjectType_Appearance,
         ERamsesObjectType_GeometryBinding,
         ERamsesObjectType_PickableObject,

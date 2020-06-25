@@ -33,7 +33,7 @@ uint64_t nowMs()
 class SceneStateEventHandler : public ramses::RendererSceneControlEventHandlerEmpty
 {
 public:
-    SceneStateEventHandler(ramses::RamsesRenderer& renderer)
+    explicit SceneStateEventHandler(ramses::RamsesRenderer& renderer)
         : m_renderer(renderer)
     {
     }
@@ -244,10 +244,6 @@ int main(int argc, char* argv[])
     SceneStateEventHandler eventHandler(renderer);
 
     ramses::DisplayConfig displayConfig(argc, argv);
-    displayConfig.setIntegrityRGLDeviceUnit(0);
-    displayConfig.setWaylandIviSurfaceID(0);
-    displayConfig.setWaylandIviLayerID(3);
-    displayConfig.setWindowIviVisible();
     displayConfig.setWindowRectangle(50, 50, DispWidth, DispHeight);
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
     renderer.flush();

@@ -25,7 +25,7 @@ namespace ramses_internal
     class ResourceUploader : public IResourceUploader
     {
     public:
-        ResourceUploader(RendererStatistics& stats, IBinaryShaderCache* binaryShaderCache = nullptr);
+        explicit ResourceUploader(RendererStatistics& stats, IBinaryShaderCache* binaryShaderCache = nullptr);
 
         virtual DeviceResourceHandle uploadResource(IRenderBackend& renderBackend, const ResourceDescriptor& resourceObject, UInt32& outVRAMSize) override;
         virtual void                 unloadResource(IRenderBackend& renderBackend, EResourceType type, ResourceContentHash hash, DeviceResourceHandle handle) override;

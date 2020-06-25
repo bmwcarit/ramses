@@ -54,9 +54,17 @@ namespace ramses_internal
                     }));
         }
 
-        ++m_flushCounter;
-
         updateResourceChanges(hasNewActions);
+
+        const bool skipSceneActionSend =
+            m_flushCounter != 0 &&      // never skip first flush (might block renderer side transition subscription pending -> subscibed)
+            m_resourceChanges.empty() &&   // no resource changes (client+scene)
+            collection.empty() &&  // no other sceneactions yet
+            m_scene.getSceneReferenceActions().empty() &&  // no scenereference updates
+            flushTimeInfo.expirationTimestamp == FlushTime::InvalidTimestamp &&  // no expiration monitoring enabled (otherwise must always send to keep scene valid)
+            versionTag == SceneVersionTag::Invalid();  // no scene version
+
+        ++m_flushCounter;
 
         if (isPublished())
         {
@@ -86,8 +94,16 @@ namespace ramses_internal
 
         if (isPublished() && !m_subscribersActive.empty())
         {
-            m_scene.getStatisticCollection().statSceneActionsSent.incCounter(collection.numberOfActions()*static_cast<UInt32>(m_subscribersActive.size()));
-            m_scenegraphSender.sendSceneActionList(m_subscribersActive, std::move(collection), m_sceneId, m_scenePublicationMode);
+            if (skipSceneActionSend)
+            {
+                LOG_DEBUG(CONTEXT_CLIENT, "ClientSceneLogicShadowCopy::flushSceneActions: skip flush for sceneId " << m_sceneId << ", cnt " << m_flushCounter << " because empty");
+                m_scene.getStatisticCollection().statSceneActionsSentSkipped.incCounter(1);
+            }
+            else
+            {
+                m_scene.getStatisticCollection().statSceneActionsSent.incCounter(collection.numberOfActions() * static_cast<UInt32>(m_subscribersActive.size()));
+                m_scenegraphSender.sendSceneActionList(m_subscribersActive, std::move(collection), m_sceneId, m_scenePublicationMode);
+            }
         }
 
         m_scene.resetResourceChanges();

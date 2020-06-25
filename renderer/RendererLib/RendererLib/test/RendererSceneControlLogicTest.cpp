@@ -131,12 +131,6 @@ namespace ramses_internal
             expectEvents(expectedEvents);
         }
 
-        void doAnotherFullCycleFromUnpublishToState(ERendererCommand lastSuccessfulCommand = ERendererCommand_ShowScene, RendererSceneState state = RendererSceneState::Rendered)
-        {
-            unpublish(lastSuccessfulCommand);
-            publishAndExpectToGetToState(state);
-        }
-
         void doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand lastSuccessfulCommand = ERendererCommand_ShowScene)
         {
             unpublish(lastSuccessfulCommand);
@@ -160,7 +154,6 @@ namespace ramses_internal
         m_logic.setSceneState(sceneId, RendererSceneState::Rendered);
         publishAndExpectToGetToState(RendererSceneState::Rendered);
 
-        doAnotherFullCycleFromUnpublishToState();
         doAnotherFullCycleFromUnpublishToShownWithShowTriggered();
     }
 
@@ -184,8 +177,17 @@ namespace ramses_internal
         expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Rendered });
         expectEvents(expectedEvents);
 
-        doAnotherFullCycleFromUnpublishToState();
         doAnotherFullCycleFromUnpublishToShownWithShowTriggered();
+    }
+
+    TEST_F(ARendererSceneControlLogic, doesNotAttemptToReachTargetStateAfterUnpublishAndRepublish)
+    {
+        m_logic.setSceneState(sceneId, RendererSceneState::Rendered);
+        publishAndExpectToGetToState(RendererSceneState::Rendered);
+
+        unpublish(ERendererCommand_ShowScene);
+
+        publishAndExpectToGetToState(RendererSceneState::Unavailable);
     }
 
     TEST_F(ARendererSceneControlLogic, willRetryIfSubscribeFailed)
@@ -211,7 +213,6 @@ namespace ramses_internal
         expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Rendered });
         expectEvents(expectedEvents);
 
-        doAnotherFullCycleFromUnpublishToState();
         doAnotherFullCycleFromUnpublishToShownWithShowTriggered();
     }
 
@@ -238,7 +239,6 @@ namespace ramses_internal
         expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Rendered });
         expectEvents(expectedEvents);
 
-        doAnotherFullCycleFromUnpublishToState();
         doAnotherFullCycleFromUnpublishToShownWithShowTriggered();
     }
 
@@ -265,7 +265,6 @@ namespace ramses_internal
         expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Rendered });
         expectEvents(expectedEvents);
 
-        doAnotherFullCycleFromUnpublishToState();
         doAnotherFullCycleFromUnpublishToShownWithShowTriggered();
     }
 
@@ -297,7 +296,6 @@ namespace ramses_internal
         m_logic.sceneHidden(sceneId, RendererSceneControlLogic::EventResult::OK);
         expectEvents({ { RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Ready } });
 
-        doAnotherFullCycleFromUnpublishToState(ERendererCommand_HideScene, RendererSceneState::Ready);
         doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_HideScene);
     }
 
@@ -335,7 +333,6 @@ namespace ramses_internal
         expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Available });
         expectEvents(expectedEvents);
 
-        doAnotherFullCycleFromUnpublishToState(ERendererCommand_UnmapSceneFromDisplays, RendererSceneState::Available);
         doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_UnmapSceneFromDisplays);
     }
 
@@ -376,7 +373,6 @@ namespace ramses_internal
         expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Unavailable });
         expectEvents(expectedEvents);
 
-        doAnotherFullCycleFromUnpublishToState(ERendererCommand_UnsubscribeScene, RendererSceneState::Unavailable);
         doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_UnsubscribeScene);
     }
 
@@ -391,7 +387,6 @@ namespace ramses_internal
 
         expectEvents({ { RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Ready } });
 
-        doAnotherFullCycleFromUnpublishToState(ERendererCommand_HideScene, RendererSceneState::Ready);
         doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_HideScene);
     }
 
@@ -411,7 +406,6 @@ namespace ramses_internal
         expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Available });
         expectEvents(expectedEvents);
 
-        doAnotherFullCycleFromUnpublishToState(ERendererCommand_UnmapSceneFromDisplays, RendererSceneState::Available);
         doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_UnmapSceneFromDisplays);
     }
 
@@ -426,7 +420,6 @@ namespace ramses_internal
 
         expectEvents({ { RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Available } });
 
-        doAnotherFullCycleFromUnpublishToState(ERendererCommand_UnmapSceneFromDisplays, RendererSceneState::Available);
         doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_UnmapSceneFromDisplays);
     }
 
@@ -449,7 +442,6 @@ namespace ramses_internal
         expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Unavailable });
         expectEvents(expectedEvents);
 
-        doAnotherFullCycleFromUnpublishToState(ERendererCommand_UnsubscribeScene, RendererSceneState::Unavailable);
         doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_UnsubscribeScene);
     }
 
@@ -469,7 +461,6 @@ namespace ramses_internal
         expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Unavailable });
         expectEvents(expectedEvents);
 
-        doAnotherFullCycleFromUnpublishToState(ERendererCommand_UnsubscribeScene, RendererSceneState::Unavailable);
         doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_UnsubscribeScene);
     }
 
@@ -486,7 +477,6 @@ namespace ramses_internal
         expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Unavailable });
         expectEvents(expectedEvents);
 
-        doAnotherFullCycleFromUnpublishToState(ERendererCommand_UnsubscribeScene, RendererSceneState::Unavailable);
         doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_UnsubscribeScene);
     }
 
@@ -540,7 +530,7 @@ namespace ramses_internal
     /////////
     // Tests where scene is unpublished during a state transition, state transition fail is reported back
     // and scene gets re-published.
-    // Expectation is to reach original target state.
+    // Expectation is to be able to start new cycle and reach a newly set state.
     /////////
 
     TEST_F(ARendererSceneControlLogic, handlesSceneUnpublishWhileProcessingSubscribe)
@@ -555,10 +545,9 @@ namespace ramses_internal
         // - here we simulate that unpublish came BEFORE the subscribe execution -> therefore it fails for unpublished scene
         m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::Failed);
 
+        publishAndExpectToGetToState(RendererSceneState::Unavailable);
         // make sure target state can be reached once published again
-        publishAndExpectToGetToState(RendererSceneState::Available);
-        doAnotherFullCycleFromUnpublishToState(ERendererCommand_SubscribeScene, RendererSceneState::Available);
-        doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_SubscribeScene);
+        doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_PublishedScene);
     }
 
     TEST_F(ARendererSceneControlLogic, handlesSceneUnpublishWhileProcessingMap)
@@ -580,9 +569,8 @@ namespace ramses_internal
         m_logic.sceneMapped(sceneId, RendererSceneControlLogic::EventResult::Failed);
 
         // make sure target state can be reached once published again
-        publishAndExpectToGetToState(RendererSceneState::Ready);
-        doAnotherFullCycleFromUnpublishToState(ERendererCommand_MapSceneToDisplay, RendererSceneState::Ready);
-        doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_MapSceneToDisplay);
+        publishAndExpectToGetToState(RendererSceneState::Unavailable);
+        doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_PublishedScene);
     }
 
     TEST_F(ARendererSceneControlLogic, handlesSceneUnpublishWhileProcessingRender)
@@ -608,9 +596,8 @@ namespace ramses_internal
         m_logic.sceneShown(sceneId, RendererSceneControlLogic::EventResult::Failed);
 
         // make sure target state can be reached once published again
-        publishAndExpectToGetToState(RendererSceneState::Rendered);
-        doAnotherFullCycleFromUnpublishToState(ERendererCommand_MapSceneToDisplay, RendererSceneState::Rendered);
-        doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_MapSceneToDisplay);
+        publishAndExpectToGetToState(RendererSceneState::Unavailable);
+        doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_PublishedScene);
     }
 
     TEST_F(ARendererSceneControlLogic, handlesSceneUnpublishWhileProcessingUnsubscribe)
@@ -628,7 +615,6 @@ namespace ramses_internal
 
         // make sure target state can be reached once published again
         publishAndExpectToGetToState(RendererSceneState::Unavailable);
-        doAnotherFullCycleFromUnpublishToState(ERendererCommand_PublishedScene, RendererSceneState::Unavailable);
         doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_PublishedScene);
     }
 
@@ -646,9 +632,8 @@ namespace ramses_internal
         m_logic.sceneUnmapped(sceneId, RendererSceneControlLogic::EventResult::Failed);
 
         // make sure target state can be reached once published again
-        publishAndExpectToGetToState(RendererSceneState::Available);
-        doAnotherFullCycleFromUnpublishToState(ERendererCommand_SubscribeScene, RendererSceneState::Available);
-        doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_SubscribeScene);
+        publishAndExpectToGetToState(RendererSceneState::Unavailable);
+        doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_PublishedScene);
     }
 
     TEST_F(ARendererSceneControlLogic, handlesSceneUnpublishWhileProcessingHide)
@@ -665,15 +650,14 @@ namespace ramses_internal
         m_logic.sceneHidden(sceneId, RendererSceneControlLogic::EventResult::Failed);
 
         // make sure target state can be reached once published again
-        publishAndExpectToGetToState(RendererSceneState::Ready);
-        doAnotherFullCycleFromUnpublishToState(ERendererCommand_MapSceneToDisplay, RendererSceneState::Ready);
-        doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_MapSceneToDisplay);
+        publishAndExpectToGetToState(RendererSceneState::Unavailable);
+        doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_PublishedScene);
     }
 
     /////////
     // Tests where scene is unpublished during a state transition and re-published right after unpublish.
     // State transition fail is reported back AFTER the re-publish.
-    // Expectation it to reach original target state.
+    // Expectation is to be able to start new cycle and reach a newly set state.
     /////////
 
     TEST_F(ARendererSceneControlLogic, recoversFromRepublishBeforeFailedSubscribe)
@@ -688,20 +672,12 @@ namespace ramses_internal
         unpublish(ERendererCommand_PublishedScene);
         // ... and re-publish right after
         m_logic.scenePublished(sceneId);
-        // not trying to subscribe again because last subscribe not answered yet
 
         // renderer guarantees to send a response for every command
-        EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId)); // now try again
         m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::Failed);
-        m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
 
-        RendererSceneControlLogic::Events expectedEvents;
-        expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::ScenePublished, sceneId, RendererSceneState::Unavailable });
-        expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Available });
-        expectEvents(expectedEvents);
-
-        doAnotherFullCycleFromUnpublishToState(ERendererCommand_SubscribeScene, RendererSceneState::Available);
-        doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_SubscribeScene);
+        expectPublishedEvent();
+        doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_PublishedScene);
     }
 
     TEST_F(ARendererSceneControlLogic, recoversFromRepublishBeforeFailedMap)
@@ -722,25 +698,12 @@ namespace ramses_internal
         unpublish(ERendererCommand_SubscribeScene);
         // ... and re-publish right after
         m_logic.scenePublished(sceneId);
-        // not trying to map again because last map not answered yet
 
         // renderer guarantees to send a response for every command
-        // will try again starting from subscription
-        EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
         m_logic.sceneMapped(sceneId, RendererSceneControlLogic::EventResult::Failed);
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, displayId));
-        m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
-        EXPECT_CALL(m_logicOutput, handleSceneDisplayBufferAssignmentRequest(sceneId, OffscreenBufferHandle{}, sceneRenderOrder));
-        m_logic.sceneMapped(sceneId, RendererSceneControlLogic::EventResult::OK);
 
-        expectedEvents.clear();
-        expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::ScenePublished, sceneId, RendererSceneState::Unavailable });
-        expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Available });
-        expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Ready });
-        expectEvents(expectedEvents);
-
-        doAnotherFullCycleFromUnpublishToState(ERendererCommand_MapSceneToDisplay, RendererSceneState::Ready);
-        doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_MapSceneToDisplay);
+        expectPublishedEvent();
+        doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_PublishedScene);
     }
 
     TEST_F(ARendererSceneControlLogic, recoversFromRepublishBeforeFailedShow)
@@ -765,28 +728,12 @@ namespace ramses_internal
         unpublish(ERendererCommand_MapSceneToDisplay);
         // ... and re-publish right after
         m_logic.scenePublished(sceneId);
-        // not trying to show again because last show not answered yet
 
         // renderer guarantees to send a response for every command
-        // will try again starting from subscription
-        EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
         m_logic.sceneShown(sceneId, RendererSceneControlLogic::EventResult::Failed);
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, displayId));
-        m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
-        EXPECT_CALL(m_logicOutput, handleSceneDisplayBufferAssignmentRequest(sceneId, OffscreenBufferHandle{}, sceneRenderOrder));
-        EXPECT_CALL(m_logicOutput, handleSceneShowRequest(sceneId));
-        m_logic.sceneMapped(sceneId, RendererSceneControlLogic::EventResult::OK);
-        m_logic.sceneShown(sceneId, RendererSceneControlLogic::EventResult::OK);
 
-        expectedEvents.clear();
-        expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::ScenePublished, sceneId, RendererSceneState::Unavailable });
-        expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Available });
-        expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Ready });
-        expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Rendered });
-        expectEvents(expectedEvents);
-
-        doAnotherFullCycleFromUnpublishToState(ERendererCommand_ShowScene, RendererSceneState::Rendered);
-        doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_ShowScene);
+        expectPublishedEvent();
+        doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_PublishedScene);
     }
 
     TEST_F(ARendererSceneControlLogic, recoversFromRepublishBeforeFailedUnsubscribe)
@@ -801,17 +748,11 @@ namespace ramses_internal
         unpublish(ERendererCommand_SubscribeScene);
         // ... and re-publish right after
         m_logic.scenePublished(sceneId);
-        // not trying to do anything yet because last unsubscribe not answered yet
 
         // renderer guarantees to send a response for every command
         m_logic.sceneUnsubscribed(sceneId, RendererSceneControlLogic::EventResult::Failed);
-        // there is actually nothing to do - requested UNAVAILABLE state was reached
 
-        RendererSceneControlLogic::Events expectedEvents;
-        expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::ScenePublished, sceneId, RendererSceneState::Unavailable });
-        expectEvents(expectedEvents);
-
-        doAnotherFullCycleFromUnpublishToState(ERendererCommand_PublishedScene, RendererSceneState::Unavailable);
+        expectPublishedEvent();
         doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_PublishedScene);
     }
 
@@ -827,21 +768,12 @@ namespace ramses_internal
         unpublish(ERendererCommand_MapSceneToDisplay);
         // ... and re-publish right after
         m_logic.scenePublished(sceneId);
-        // not trying to do anything yet because last unmap not answered yet
 
         // renderer guarantees to send a response for every command
-        // will try to reach last target state again starting from subscription
-        EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
         m_logic.sceneUnmapped(sceneId, RendererSceneControlLogic::EventResult::Failed);
-        m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
 
-        RendererSceneControlLogic::Events expectedEvents;
-        expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::ScenePublished, sceneId, RendererSceneState::Unavailable });
-        expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Available });
-        expectEvents(expectedEvents);
-
-        doAnotherFullCycleFromUnpublishToState(ERendererCommand_SubscribeScene, RendererSceneState::Available);
-        doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_SubscribeScene);
+        expectPublishedEvent();
+        doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_PublishedScene);
     }
 
     TEST_F(ARendererSceneControlLogic, recoversFromRepublishBeforeFailedHide)
@@ -856,25 +788,12 @@ namespace ramses_internal
         unpublish(ERendererCommand_ShowScene);
         // ... and re-publish right after
         m_logic.scenePublished(sceneId);
-        // not trying to do anything yet because last hide not answered yet
 
         // renderer guarantees to send a response for every command
-        // will try to reach last target state again starting from subscription
-        EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
         m_logic.sceneHidden(sceneId, RendererSceneControlLogic::EventResult::Failed);
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, displayId));
-        m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
-        EXPECT_CALL(m_logicOutput, handleSceneDisplayBufferAssignmentRequest(sceneId, OffscreenBufferHandle{}, sceneRenderOrder));
-        m_logic.sceneMapped(sceneId, RendererSceneControlLogic::EventResult::OK);
 
-        RendererSceneControlLogic::Events expectedEvents;
-        expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::ScenePublished, sceneId, RendererSceneState::Unavailable });
-        expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Available });
-        expectedEvents.push_back({ RendererSceneControlLogic::Event::Type::SceneStateChanged, sceneId, RendererSceneState::Ready });
-        expectEvents(expectedEvents);
-
-        doAnotherFullCycleFromUnpublishToState(ERendererCommand_MapSceneToDisplay, RendererSceneState::Ready);
-        doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_MapSceneToDisplay);
+        expectPublishedEvent();
+        doAnotherFullCycleFromUnpublishToShownWithShowTriggered(ERendererCommand_PublishedScene);
     }
 
     TEST_F(ARendererSceneControlLogic, canAssignSceneToBufferAfterMapped)

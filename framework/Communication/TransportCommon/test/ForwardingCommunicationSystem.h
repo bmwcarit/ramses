@@ -18,7 +18,7 @@ namespace ramses_internal
     class ForwardingCommunicationSystem : public ICommunicationSystem
     {
     public:
-        ForwardingCommunicationSystem(const Guid& id);
+        explicit ForwardingCommunicationSystem(const Guid& id);
         virtual ~ForwardingCommunicationSystem() override;
 
         void setForwardingTarget(ForwardingCommunicationSystem* target);
@@ -53,14 +53,15 @@ namespace ramses_internal
         virtual bool sendDcsmOfferContent(const Guid& to, ContentID contentID, Category) override;
         virtual bool sendDcsmContentDescription(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) override;
         virtual bool sendDcsmContentReady(const Guid& to, ContentID contentID) override;
-        virtual bool sendDcsmContentFocusRequest(const Guid& to, ContentID contentID) override;
+        virtual bool sendDcsmContentEnableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest) override;
+        virtual bool sendDcsmContentDisableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest) override;
         virtual bool sendDcsmBroadcastRequestStopOfferContent(ContentID contentID) override;
         virtual bool sendDcsmBroadcastForceStopOfferContent(ContentID contentID) override;
         virtual bool sendDcsmUpdateContentMetadata(const Guid& to, ContentID contentID, const DcsmMetadata& metadata) override;
 
         // dcsm renderer -> client
-        virtual bool sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, SizeInfo sizeinfo, AnimationInformation) override;
-        virtual bool sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, SizeInfo, AnimationInformation) override;
+        virtual bool sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, const CategoryInfo& sizeinfo, AnimationInformation) override;
+        virtual bool sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, const CategoryInfo&, AnimationInformation) override;
 
         // message limits configuration
         virtual CommunicationSendDataSizes getSendDataSizes() const override final;

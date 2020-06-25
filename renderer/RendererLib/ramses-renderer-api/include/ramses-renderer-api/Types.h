@@ -37,11 +37,20 @@ namespace ramses
     struct rendererResourceId_t
     {
         /**
+        * @brief Default constructor constructs invalid value
+        */
+        constexpr rendererResourceId_t()
+            : lowPart(0)
+            , highPart(0)
+        {
+        }
+
+        /**
         * @brief The constructor
         * @param[in] low The low bits of the ID
         * @param[in] high The high bits of the ID
         */
-        constexpr rendererResourceId_t(uint64_t low = 0, uint64_t high = 0)
+        constexpr rendererResourceId_t(uint64_t low, uint64_t high)
             : lowPart(low)
             , highPart(high)
         {

@@ -21,8 +21,8 @@ public:
 
     static void RemoveFileIfExist(const char* filePath);
 
-    static void WriteTextToFile(const ramses_internal::String& text, const char* filePath);
-    static void WriteHashToFile(ramses_internal::ResourceContentHash hash, const char* filePath);
+    static bool WriteTextToFile(const ramses_internal::String& text, const char* filePath);
+    static bool WriteHashToFile(ramses_internal::ResourceContentHash hash, const char* filePath);
 
     static bool ReadFileLines(const char* filePath, std::vector<ramses_internal::String>& lines);
     static bool ReadFileContentsToString(const char* filePath, ramses_internal::String& contents);

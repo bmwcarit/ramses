@@ -20,7 +20,7 @@
 namespace ramses
 {
     EffectImpl::EffectImpl(ramses_internal::ResourceHashUsage hashUsage, RamsesClientImpl& client, const char* effectname)
-        : ResourceImpl(ERamsesObjectType_Effect, hashUsage, client, effectname)
+        : ResourceImpl(ERamsesObjectType_Effect, std::move(hashUsage), client, effectname)
     {
     }
 

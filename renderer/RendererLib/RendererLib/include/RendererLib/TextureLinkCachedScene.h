@@ -16,7 +16,7 @@ namespace ramses_internal
     class TextureLinkCachedScene : public ResourceCachedScene
     {
     public:
-        TextureLinkCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
+        explicit TextureLinkCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
 
         // From IScene
         virtual DataSlotHandle      allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle = DataSlotHandle::Invalid()) override;

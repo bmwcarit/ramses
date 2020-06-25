@@ -16,6 +16,7 @@
 #include "Utils/StatisticCollection.h"
 #include "Utils/LogMacros.h"
 #include <thread>
+#include "Components/CategoryInfo.h"
 
 namespace ramses_internal
 {
@@ -294,7 +295,7 @@ namespace ramses_internal
 
         asio::ip::tcp::endpoint ep(asioIp, pp->address.getPort());
         std::array<asio::ip::tcp::endpoint, 1> endpointSequence = {ep};
-        asio::async_connect(pp->socket, endpointSequence, [this, pp](asio::error_code e, asio::ip::tcp::endpoint usedEndpoint) {
+        asio::async_connect(pp->socket, endpointSequence, [this, pp](asio::error_code e, const asio::ip::tcp::endpoint& usedEndpoint) {
                 if (e)
                 {
                     // connect failed, try again after timeout
@@ -586,7 +587,7 @@ namespace ramses_internal
         }
 
         m_statisticCollection.statMessagesSent.incCounter(1);
-        asio::post(m_runState->m_io, [this, msg, hasPrio]() {
+        asio::post(m_runState->m_io, [this, msg = std::move(msg), hasPrio]() mutable {
                             const bool broadcast = msg.to.isInvalid();
                             if (broadcast)
                             {
@@ -607,7 +608,7 @@ namespace ramses_internal
                             else
                             {
                                 ParticipantPtr pp;
-                                if (m_establishedParticipants.get(msg.to, pp) != EStatus_RAMSES_OK)
+                                if (m_establishedParticipants.get(msg.to, pp) != EStatus::Ok)
                                 {
                                     LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::postMessageForSending: post message " << GetNameForMessageId(msg.messageType) <<
                                              " to not (fully) connected participant " << msg.to);
@@ -699,7 +700,7 @@ namespace ramses_internal
             handleDcsmContentAvailable(pp, stream);
             break;
         case EMessageId_DcsmCategoryContentSwitchRequest:
-            handleDcsmCategoryContentSwitchRequest(pp, stream);
+            handleDcsmCategoryContentSwitchRequest(pp, stream, pp->receiveBuffer.size());
             break;
         case EMessageId_DcsmRequestUnregisterContent:
             handleDcsmRequestUnregisterContent(pp, stream);
@@ -826,7 +827,7 @@ namespace ramses_internal
             }
 
             // send new participant to all others, inc daemons
-            for (const auto p : m_establishedParticipants)
+            for (const auto& p : m_establishedParticipants)
             {
                 if (newPp != p.value)
                 {
@@ -1387,14 +1388,16 @@ namespace ramses_internal
     }
 
     // --
-    bool TCPConnectionSystem::sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, SizeInfo sizeinfo, AnimationInformation ai)
+    bool TCPConnectionSystem::sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation ai)
     {
         OutMessage msg(to, EMessageId_DcsmCanvasSizeChange);
+        const auto blob = categoryInfo.toBinary();
+        const uint64_t blobSize = blob.size();
         msg.stream << contentID.getValue()
-                   << sizeinfo.width
-                   << sizeinfo.height
                    << ai.startTimeStamp
-                   << ai.finishedTimeStamp;
+                   << ai.finishedTimeStamp
+                   << blobSize;
+        msg.stream.write(blob.data(), static_cast<uint32_t>(blobSize));
         return postMessageForSending(std::move(msg), true);
     }
 
@@ -1405,29 +1408,34 @@ namespace ramses_internal
             ContentID contentID;
             stream >> contentID.getReference();
 
-            SizeInfo sizeInfo;
-            stream >> sizeInfo.width;
-            stream >> sizeInfo.height;
 
             AnimationInformation ai;
             stream >> ai.startTimeStamp;
             stream >> ai.finishedTimeStamp;
 
+            uint64_t blobSize = 0;
+            stream >> blobSize;
+
+            CategoryInfo categoryInfo({stream.readPositionUchar(), static_cast<size_t>(blobSize)});
+            stream.skip(blobSize);
+
             PlatformGuard guard(m_frameworkLock);
-            m_dcsmProviderHandler->handleCanvasSizeChange(contentID, sizeInfo, ai, pp->address.getParticipantId());
+            m_dcsmProviderHandler->handleCanvasSizeChange(contentID, categoryInfo, ai, pp->address.getParticipantId());
         }
     }
 
     // --
-    bool TCPConnectionSystem::sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, SizeInfo si, AnimationInformation ai)
+    bool TCPConnectionSystem::sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, const CategoryInfo& categoryInfo, AnimationInformation ai)
     {
         OutMessage msg(to, EMessageId_DcsmContentStatusChange);
+        const auto blob = categoryInfo.toBinary();
+        const uint64_t blobSize = blob.size();
         msg.stream << contentID.getValue()
                    << status
-                   << si.width
-                   << si.height
                    << ai.startTimeStamp
-                   << ai.finishedTimeStamp;
+                   << ai.finishedTimeStamp
+                   << blobSize;
+        msg.stream.write(blob.data(), static_cast<uint32_t>(blobSize));
         return postMessageForSending(std::move(msg), true);
     }
 
@@ -1441,16 +1449,18 @@ namespace ramses_internal
             EDcsmState statusInfo;
             stream >> statusInfo;
 
-            SizeInfo si;
-            stream >> si.width;
-            stream >> si.height;
-
             AnimationInformation ai;
             stream >> ai.startTimeStamp;
             stream >> ai.finishedTimeStamp;
 
+            uint64_t blobSize = 0;
+            stream >> blobSize;
+
+            CategoryInfo categoryInfo({stream.readPositionUchar(), static_cast<size_t>(blobSize)});
+            stream.skip(blobSize);
+
             PlatformGuard guard(m_frameworkLock);
-            m_dcsmProviderHandler->handleContentStateChange(contentID, statusInfo, si, ai, pp->address.getParticipantId());
+            m_dcsmProviderHandler->handleContentStateChange(contentID, statusInfo, categoryInfo, ai, pp->address.getParticipantId());
         }
     }
 
@@ -1535,22 +1545,50 @@ namespace ramses_internal
     }
 
     // --
-    bool TCPConnectionSystem::sendDcsmContentFocusRequest(const Guid& to, ContentID contentID)
+    bool TCPConnectionSystem::sendDcsmContentEnableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest)
     {
         OutMessage msg(to, EMessageId_DcsmCategoryContentSwitchRequest);
         msg.stream << contentID.getValue();
+        msg.stream << true;
+        msg.stream << focusRequest;
         return postMessageForSending(std::move(msg), true);
     }
 
-    void TCPConnectionSystem::handleDcsmCategoryContentSwitchRequest(const ParticipantPtr& pp, BinaryInputStream& stream)
+    bool TCPConnectionSystem::sendDcsmContentDisableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest)
+    {
+        OutMessage msg(to, EMessageId_DcsmCategoryContentSwitchRequest);
+        msg.stream << contentID.getValue();
+        msg.stream << false;
+        msg.stream << focusRequest;
+        return postMessageForSending(std::move(msg), true);
+    }
+
+    void TCPConnectionSystem::handleDcsmCategoryContentSwitchRequest(const ParticipantPtr& pp, BinaryInputStream& stream, size_t size)
     {
         if (m_dcsmConsumerHandler)
         {
             ContentID contentID;
             stream >> contentID.getReference();
-
-            PlatformGuard guard(m_frameworkLock);
-            m_dcsmConsumerHandler->handleContentFocusRequest(contentID, pp->address.getParticipantId());
+            if (size > stream.getCurrentReadBytes())
+            {
+                bool isEnable = false;
+                int32_t focusRequest = 0;
+                stream >> isEnable;
+                stream >> focusRequest;
+                PlatformGuard guard(m_frameworkLock);
+                if (isEnable)
+                {
+                    m_dcsmConsumerHandler->handleContentEnableFocusRequest(contentID, focusRequest, pp->address.getParticipantId());
+                }
+                else
+                {
+                    m_dcsmConsumerHandler->handleContentDisableFocusRequest(contentID, focusRequest, pp->address.getParticipantId());
+                }
+            }
+            else
+            {
+                LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem::handleDcsmCategoryContentSwitchRequest received deprecated contentSwitchRequest");
+            }
         }
     }
 
@@ -1616,7 +1654,7 @@ namespace ramses_internal
             uint64_t blobSize = 0;
             stream >> blobSize;
 
-            DcsmMetadata metadata(stream.readPositionUchar(), blobSize);
+            DcsmMetadata metadata({stream.readPositionUchar(), static_cast<size_t>(blobSize)});
             stream.skip(blobSize);
 
             PlatformGuard guard(m_frameworkLock);

@@ -38,8 +38,8 @@ namespace ramses_internal
                     resources);
             }
 
-            MOCK_METHOD1(preparePacket_cb, UInt32(UInt32));
-            MOCK_METHOD1(finishedPacket_cb, void(UInt32));
+            MOCK_METHOD(UInt32, preparePacket_cb, (UInt32));
+            MOCK_METHOD(void, finishedPacket_cb, (UInt32));
 
             std::vector<std::vector<Byte>> packets;
 

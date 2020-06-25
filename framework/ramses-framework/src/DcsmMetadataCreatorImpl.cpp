@@ -7,6 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "DcsmMetadataCreatorImpl.h"
+#include "Components/DcsmTypes.h"
 
 namespace ramses
 {
@@ -22,7 +23,7 @@ namespace ramses
 
     status_t DcsmMetadataCreatorImpl::setPreviewDescription(std::u32string previewDescription)
     {
-        if (!m_metadata.setPreviewDescription(previewDescription))
+        if (!m_metadata.setPreviewDescription(std::move(previewDescription)))
             return addErrorEntry("DcsmMetadataCreatorImpl::setPreviewDescription: input not valid");
         return StatusOK;
     }
@@ -55,9 +56,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t DcsmMetadataCreatorImpl::setCarModelView(const CarModelViewMetadata& data)
+    status_t DcsmMetadataCreatorImpl::setCarModelView(const CarModelViewMetadata& data, const AnimationInformation& timingInfo)
     {
-        if (!m_metadata.setCarModelView(data))
+        if (!m_metadata.setCarModelView(data, ramses_internal::AnimationInformation{ timingInfo.startTime, timingInfo.finishTime }))
             return addErrorEntry("DcsmMetadataCreatorImpl::setCarModelView: input not valid");
         return StatusOK;
     }
@@ -73,13 +74,6 @@ namespace ramses
     {
         if (!m_metadata.setExclusiveBackground(state))
             return addErrorEntry("DcsmMetadataCreatorImpl::setExclusiveBackground: input not valid");
-        return StatusOK;
-    }
-
-    status_t DcsmMetadataCreatorImpl::setFocusRequest(int32_t state)
-    {
-        if (!m_metadata.setFocusRequested(state))
-            return addErrorEntry("DcsmMetadataCreatorImpl::setFocusRequested: input not valid");
         return StatusOK;
     }
 

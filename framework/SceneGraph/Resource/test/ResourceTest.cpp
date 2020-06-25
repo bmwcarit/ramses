@@ -32,7 +32,7 @@ namespace ramses_internal
         class DummyResource : public ResourceBase
         {
         public:
-            DummyResource(uint32_t metadata = 0, const String& name = String())
+            explicit DummyResource(uint32_t metadata = 0, const String& name = String())
                 : ResourceBase(EResourceType_Invalid, ResourceCacheFlag(15u), name)
                 , m_metadata(metadata)
             {}

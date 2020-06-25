@@ -30,7 +30,7 @@ namespace ramses_internal
     class EmbeddedCompositor_Wayland: public IEmbeddedCompositor, public IEmbeddedCompositor_Wayland
     {
     public:
-        EmbeddedCompositor_Wayland(const RendererConfig& config);
+        explicit EmbeddedCompositor_Wayland(const RendererConfig& config);
         virtual ~EmbeddedCompositor_Wayland();
 
         Bool init();

@@ -21,7 +21,7 @@ namespace ramses_internal
         const IWindowEventsPollingManager* getWindowEventsPollingManager() const override final;
 
     protected:
-        PlatformFactory_Wayland_EGL(const RendererConfig& rendererConfig);
+        explicit PlatformFactory_Wayland_EGL(const RendererConfig& rendererConfig);
         ~PlatformFactory_Wayland_EGL();
 
         IContext*   createContext(IWindow& window) override final;

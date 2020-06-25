@@ -15,7 +15,11 @@ namespace ramses_internal
 {
     struct Viewport
     {
-        Viewport(Int32 x = 0, Int32 y = 0, UInt32 w = 0, UInt32 h = 0)
+        Viewport()
+            : Viewport(0, 0, 0, 0)
+        {}
+
+        Viewport(Int32 x, Int32 y, UInt32 w, UInt32 h)
             : posX(x)
             , posY(y)
             , width(w)

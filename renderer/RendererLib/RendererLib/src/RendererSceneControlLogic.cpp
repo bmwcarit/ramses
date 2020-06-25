@@ -253,6 +253,8 @@ namespace ramses_internal
     {
         assert(getCurrentSceneState(sceneId) == ESceneStateInternal::Published);
         setCurrentSceneState(sceneId, ESceneStateInternal::Unpublished);
+        // reset target state
+        m_scenesInfo[sceneId].targetState = ESceneStateInternal::Unpublished;
     }
 
     void RendererSceneControlLogic::sceneSubscribed(SceneId sceneId, EventResult result)

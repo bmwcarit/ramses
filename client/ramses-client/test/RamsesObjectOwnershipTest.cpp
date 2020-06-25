@@ -21,7 +21,6 @@
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Spline.h"
 #include "ramses-client-api/Animation.h"
-#include "ramses-client-api/AnimatedSetter.h"
 #include "ramses-client-api/AnimationSequence.h"
 #include "ramses-client-api/SplineStepBool.h"
 #include "ramses-client-api/SplineStepInt32.h"

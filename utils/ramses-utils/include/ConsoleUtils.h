@@ -11,9 +11,9 @@
 
 #include "PlatformAbstraction/PlatformConsole.h"
 
-#define PRINT_ERROR(format, ...) ramses_internal::Console::Print(ramses_internal::ConsoleColor::Red, "erro: " format, ##__VA_ARGS__)
-#define PRINT_INFO(format, ...) ramses_internal::Console::Print(ramses_internal::ConsoleColor::Green,"info: " format, ##__VA_ARGS__)
-#define PRINT_HINT(format, ...) ramses_internal::Console::Print(ramses_internal::ConsoleColor::Yellow, "hint: " format, ##__VA_ARGS__)
-#define PRINT(format, ...) ramses_internal::Console::Print(ramses_internal::ConsoleColor::Cyan, format, ##__VA_ARGS__)
+#define PRINT_ERROR( ...) ramses_internal::Console::Print(ramses_internal::ConsoleColor::Red, "erro: {}", fmt::format(__VA_ARGS__))
+#define PRINT_INFO(...) ramses_internal::Console::Print(ramses_internal::ConsoleColor::Green,"info: {}", fmt::format(__VA_ARGS__))
+#define PRINT_HINT(...) ramses_internal::Console::Print(ramses_internal::ConsoleColor::Yellow, "hint: {}", fmt::format(__VA_ARGS__))
+#define PRINT(...) ramses_internal::Console::Print(ramses_internal::ConsoleColor::Cyan, "{}", fmt::format(__VA_ARGS__))
 
 #endif

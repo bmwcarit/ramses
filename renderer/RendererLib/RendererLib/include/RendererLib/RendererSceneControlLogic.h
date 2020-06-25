@@ -32,7 +32,7 @@ namespace ramses_internal
     class RendererSceneControlLogic : public IRendererSceneControlLogic
     {
     public:
-        RendererSceneControlLogic(IRendererSceneControl& sceneStateControl);
+        explicit RendererSceneControlLogic(IRendererSceneControl& sceneStateControl);
 
         virtual void setSceneState(SceneId sceneId, RendererSceneState state) override;
         virtual void setSceneMapping(SceneId sceneId, DisplayHandle displayId) override;

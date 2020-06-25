@@ -22,7 +22,7 @@ namespace ramses_internal
     class DisplayEventHandlerManager
     {
     public:
-        DisplayEventHandlerManager(RendererEventCollector& eventCollector);
+        explicit DisplayEventHandlerManager(RendererEventCollector& eventCollector);
         virtual ~DisplayEventHandlerManager();
 
         DisplayEventHandler& createHandler(DisplayHandle display);

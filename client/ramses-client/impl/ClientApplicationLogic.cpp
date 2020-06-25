@@ -114,7 +114,7 @@ namespace ramses_internal
     void ClientApplicationLogic::addResourceFile(ResourceFileInputStreamSPtr resourceFileInputStream, const ResourceTableOfContents& toc)
     {
         PlatformGuard guard(m_frameworkLock);
-        m_resourceComponent->addResourceFile(resourceFileInputStream, toc);
+        m_resourceComponent->addResourceFile(std::move(resourceFileInputStream), toc);
     }
 
     void ClientApplicationLogic::removeResourceFile(const String& resourceFileName)
@@ -134,9 +134,12 @@ namespace ramses_internal
         m_resourceComponent->reserveResourceCount(totalCount);
     }
 
-    std::vector<ramses_internal::SceneReferenceEvent>& ClientApplicationLogic::getSceneReferenceEvents()
+    std::vector<ramses_internal::SceneReferenceEvent> ClientApplicationLogic::popSceneReferenceEvents()
     {
-        return m_sceneReferenceEventVec;
+        PlatformGuard guard(m_frameworkLock);
+        std::vector<ramses_internal::SceneReferenceEvent> ret;
+        m_sceneReferenceEventVec.swap(ret);
+        return ret;
     }
 
     ManagedResource ClientApplicationLogic::forceLoadResource(const ResourceContentHash& hash) const

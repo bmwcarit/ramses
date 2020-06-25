@@ -21,7 +21,7 @@ namespace ramses_internal
     class InputHandling_Wayland
     {
     public:
-        InputHandling_Wayland(IWindowEventHandler& windowEventHandler);
+        explicit InputHandling_Wayland(IWindowEventHandler& windowEventHandler);
         void deinit();
         void registerSeat(wl_registry* wl_registry, uint32_t name);
 

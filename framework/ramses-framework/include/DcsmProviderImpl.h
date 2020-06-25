@@ -25,11 +25,12 @@ namespace ramses
     class DcsmClientImpl;
     class IDcsmProviderEventHandler;
     class DcsmMetadataCreator;
+    class CategoryInfoUpdate;
 
     class DcsmProviderImpl : public ramses_internal::IDcsmProviderEventHandler, public StatusObjectImpl
     {
     public:
-        DcsmProviderImpl(ramses_internal::IDcsmComponent& dcsm);
+        explicit DcsmProviderImpl(ramses_internal::IDcsmComponent& dcsm);
         ~DcsmProviderImpl() override;
 
         status_t offerContent(ContentID contentID, Category category, sceneId_t scene, EDcsmOfferingMode mode);
@@ -40,12 +41,14 @@ namespace ramses
 
         status_t markContentReady(ContentID contentID);
 
+        status_t enableFocusRequest(ContentID contentID, int32_t focusRequest);
+        status_t disableFocusRequest(ContentID contentID, int32_t focusRequest);
         status_t requestContentFocus(ContentID contentID);
 
         status_t dispatchEvents(ramses::IDcsmProviderEventHandler& handler);
 
-        virtual void contentSizeChange(ContentID, SizeInfo, AnimationInformation) override;
-        virtual void contentStateChange(ContentID, ramses_internal::EDcsmState, SizeInfo, AnimationInformation) override;
+        virtual void contentSizeChange(ContentID, const CategoryInfoUpdate&, AnimationInformation) override;
+        virtual void contentStateChange(ContentID, ramses_internal::EDcsmState, const CategoryInfoUpdate&, AnimationInformation) override;
 
     private:
         struct DcsmProviderMapContent

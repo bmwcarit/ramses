@@ -22,7 +22,7 @@ namespace ramses_internal
     class ResourceCachedScene : public DataReferenceLinkCachedScene
     {
     public:
-        ResourceCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& creationInfo = SceneInfo());
+        explicit ResourceCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& creationInfo = SceneInfo());
 
         virtual void                        preallocateSceneSize(const SceneSizeInformation& sizeInfo) override;
         // Renderable allocation

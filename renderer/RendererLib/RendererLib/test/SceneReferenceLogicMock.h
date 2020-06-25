@@ -20,8 +20,8 @@ namespace ramses_internal
         SceneReferenceLogicMock();
         virtual ~SceneReferenceLogicMock();
 
-        MOCK_METHOD2(addActions, void(SceneId, const SceneReferenceActionVector&));
-        MOCK_METHOD0(update, void());
+        MOCK_METHOD(void, addActions, (SceneId, const SceneReferenceActionVector&), (override));
+        MOCK_METHOD(void, update, (), (override));
     };
 }
 

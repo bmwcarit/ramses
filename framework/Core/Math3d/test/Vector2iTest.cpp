@@ -9,6 +9,7 @@
 #include "Math3d/Vector2i.h"
 #include "framework_common_gmock_header.h"
 #include "PlatformAbstraction/PlatformMath.h"
+#include "IOStreamTester.h"
 #include "gtest/gtest.h"
 
 class Vector2iTest: public testing::Test
@@ -181,4 +182,11 @@ TEST_F(Vector2iTest, CanPrintToString)
 {
     EXPECT_EQ("[1 2]", fmt::to_string(vec1));
     EXPECT_EQ("[1 2]", ramses_internal::StringOutputStream::ToString(vec1));
+}
+
+TEST_F(Vector2iTest, canBinarySerializeDeserialize)
+{
+    ramses_internal::IOStreamTesterBase::expectSame(ramses_internal::Vector2i());
+    ramses_internal::IOStreamTesterBase::expectSame(ramses_internal::Vector2i(1, 2));
+    ramses_internal::IOStreamTesterBase::expectSame(ramses_internal::Vector2i(std::numeric_limits<int32_t>::max(), std::numeric_limits<int32_t>::min()));
 }

@@ -191,6 +191,8 @@ namespace ramses_internal
                             logStatisticSummaryEntry(output, entry.value->statSceneActionsGeneratedSize.getSummary(), numberTimeIntervals);
                             output << " actO ";
                             logStatisticSummaryEntry(output, entry.value->statSceneActionsSent.getSummary(), numberTimeIntervals);
+                            output << " actSkp ";
+                            logStatisticSummaryEntry(output, entry.value->statSceneActionsSentSkipped.getSummary(), numberTimeIntervals);
                             output << " ";
 
                             entry.value->resetSummaries();

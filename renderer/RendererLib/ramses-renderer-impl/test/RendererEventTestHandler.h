@@ -266,7 +266,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void framebufferPixelsRead(const uint8_t* /*pixelData*/, const uint32_t /*pixelDataSize*/, ramses::displayId_t displayId, ramses::ERendererEventResult result) override
+    virtual void framebufferPixelsRead(const uint8_t* /*pixelData*/, const uint32_t /*pixelDataSize*/, ramses::displayId_t displayId, ramses::displayBufferId_t /*displayBufferId*/, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_PixelsRead;
@@ -419,14 +419,6 @@ public:
         event.displayId = displayId;
         event.mousePosX = mousePosX;
         event.mousePosY = mousePosY;
-        m_events.push_back(event);
-    }
-
-    virtual void objectsPicked(ramses::sceneId_t sceneId, const ramses::pickableObjectId_t* pickedObjects, uint32_t pickedObjectsCount) override
-    {
-        RendererTestEvent event;
-        event.sceneId = sceneId;
-        event.pickedObjects.insert(event.pickedObjects.begin(), pickedObjects, pickedObjects + pickedObjectsCount);
         m_events.push_back(event);
     }
 

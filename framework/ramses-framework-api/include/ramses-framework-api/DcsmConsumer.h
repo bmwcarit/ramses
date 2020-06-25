@@ -13,6 +13,7 @@
 #include "ramses-framework-api/DcsmApiTypes.h"
 #include "ramses-framework-api/IDcsmConsumerEventHandler.h"
 #include "ramses-framework-api/StatusObject.h"
+#include "ramses-framework-api/CategoryInfoUpdate.h"
 
 namespace ramses
 {
@@ -36,7 +37,7 @@ namespace ramses
         status_t dispatchEvents(IDcsmConsumerEventHandler& handler);
 
         /**
-         * @brief Exclusively assign an offered content this consumer.
+         * @brief Exclusively assign an offered content to this consumer.
          *        Sends a DCSM canvasSizeEvent for the given content ID. May only be called for offered content IDs.
          *
          * @param contentID  content to assign to this consumer
@@ -45,7 +46,7 @@ namespace ramses
          * @return StatusOK for success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().
          */
-        status_t assignContentToConsumer(ContentID contentID, SizeInfo size);
+        status_t assignContentToConsumer(ContentID contentID, const CategoryInfoUpdate& size);
 
         /**
          * @brief Send a DCSM contentSizeEvent for the given content ID. May only be called on assigned content IDs.
@@ -63,7 +64,7 @@ namespace ramses
          * @return StatusOK for success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().
          */
-        status_t contentSizeChange(ContentID contentID, SizeInfo size, AnimationInformation animationInformation);
+        status_t contentSizeChange(ContentID contentID, const CategoryInfoUpdate& size, AnimationInformation animationInformation);
 
         /**
          * @brief Send a DCSM contentStateChange for the given content ID. May only be called on assigned content IDs.
@@ -115,7 +116,7 @@ namespace ramses
          * @brief Constructor from impl
          * @param impl_ impl
          */
-        DcsmConsumer(DcsmConsumerImpl& impl_);
+        explicit DcsmConsumer(DcsmConsumerImpl& impl_);
 
         /**
          * @brief Destructor

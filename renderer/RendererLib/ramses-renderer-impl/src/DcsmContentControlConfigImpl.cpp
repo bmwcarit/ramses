@@ -20,6 +20,8 @@ namespace ramses
     {
         if (m_categories.count(categoryId) > 0)
             return addErrorEntry("DcsmContentControlConfig: attempting to add category already existing in the list, remove the duplicate!");
+        if (!categoryId.isValid())
+            return addErrorEntry("DcsmContentControlConfig: attempting to add invalid category!");
         m_categories.insert({ categoryId, categoryInfo });
         return StatusOK;
     }

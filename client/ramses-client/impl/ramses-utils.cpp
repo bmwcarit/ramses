@@ -269,7 +269,6 @@ namespace ramses
 
 // include all RamsesObject to instantiate conversion templates
 #include "ramses-client-api/AnimatedProperty.h"
-#include "ramses-client-api/AnimatedSetter.h"
 #include "ramses-client-api/Animation.h"
 #include "ramses-client-api/AnimationSequence.h"
 #include "ramses-client-api/AnimationSystem.h"
@@ -364,7 +363,6 @@ INSTANTIATE_CONVERT_TEMPLATE(Effect)
 INSTANTIATE_CONVERT_TEMPLATE(AnimatedProperty)
 INSTANTIATE_CONVERT_TEMPLATE(Animation)
 INSTANTIATE_CONVERT_TEMPLATE(AnimationSequence)
-INSTANTIATE_CONVERT_TEMPLATE(AnimatedSetter)
 INSTANTIATE_CONVERT_TEMPLATE(Appearance)
 INSTANTIATE_CONVERT_TEMPLATE(GeometryBinding)
 INSTANTIATE_CONVERT_TEMPLATE(PickableObject)

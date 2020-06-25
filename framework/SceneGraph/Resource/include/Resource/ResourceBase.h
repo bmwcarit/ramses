@@ -20,9 +20,6 @@ namespace ramses_internal
     public:
         explicit ResourceBase(EResourceType typeID, ResourceCacheFlag cacheFlag, const String& name)
             : m_typeID(typeID)
-            , m_data()
-            , m_compressedData()
-            , m_hash()
             , m_cacheFlag(cacheFlag)
             , m_name(name)
         {
@@ -121,11 +118,6 @@ namespace ramses_internal
         void setHash(ResourceContentHash hash) const
         {
             m_hash = hash;
-        }
-
-        virtual bool isCompressable() const
-        {
-            return true;
         }
 
         void updateHash() const;

@@ -139,7 +139,7 @@ class Target:
 
         renderer = self._start_ramses_application(applicationName, extendedArgs, workingDirectory, nameExtension, env, dltAppID)
         if (waitForDisplayManagerRamsh):
-            renderer.initialisation_message_to_look_for("Ramsh commands registered from DisplayManager")
+            renderer.initialisation_message_to_look_for("Ramsh commands registered from RendererMate")
         else:
             renderer.initialisation_message_to_look_for("Ramsh commands registered from RamsesRenderer")
         return renderer

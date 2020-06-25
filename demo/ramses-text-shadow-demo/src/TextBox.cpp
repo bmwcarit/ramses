@@ -10,7 +10,7 @@
 #include "ramses-utils.h"
 #include <algorithm>
 
-TextBox::TextBox(std::u32string         string,
+TextBox::TextBox(const std::u32string&  string,
                  ramses::TextCache&     textCache,
                  ramses::FontInstanceId fontInstance,
                  int32_t                lineHeight,
@@ -42,7 +42,7 @@ TextBox::TextBox(std::u32string         string,
     setPosition(0, 0);
 }
 
-void TextBox::createTextNodes(std::u32string             string,
+void TextBox::createTextNodes(const std::u32string&      string,
                               ramses::TextCache&         textCache,
                               ramses::FontInstanceId     fontInstance,
                               int32_t lineHeight,

@@ -16,7 +16,7 @@ namespace ramses_internal
     class Platform_X11_EGL_ES_3_0 : public PlatformFactory_X11_EGL
     {
     public:
-        Platform_X11_EGL_ES_3_0(const RendererConfig& rendererConfig);
+        explicit Platform_X11_EGL_ES_3_0(const RendererConfig& rendererConfig);
 
         virtual IDevice*      createDevice(IContext& context) override final;
 

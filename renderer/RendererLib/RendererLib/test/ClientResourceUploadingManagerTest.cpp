@@ -23,7 +23,7 @@ namespace ramses_internal{
 class AClientResourceUploadingManager : public ::testing::Test
 {
 public:
-    AClientResourceUploadingManager(bool keepEffects = false, UInt64 clientResourceCacheSize = 0u)
+    explicit AClientResourceUploadingManager(bool keepEffects = false, UInt64 clientResourceCacheSize = 0u)
         : dummyResource(EResourceType_IndexArray, 5, EDataType_UInt16, reinterpret_cast<const Byte*>(m_dummyData), ResourceCacheFlag_DoNotCache, String())
         , dummyEffectResource("", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache)
         , dummyManagedResourceCallback(managedResourceDeleter)

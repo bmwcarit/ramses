@@ -18,7 +18,7 @@ namespace ramses_internal
     class AnimationInstance
     {
     public:
-        AnimationInstance(SplineHandle splineHandle = SplineHandle::Invalid(), EInterpolationType interpolationType = EInterpolationType_Invalid, EVectorComponent vectorComponent = EVectorComponent_All);
+        explicit AnimationInstance(SplineHandle splineHandle = SplineHandle::Invalid(), EInterpolationType interpolationType = EInterpolationType_Invalid, EVectorComponent vectorComponent = EVectorComponent_All);
 
         SplineHandle getSplineHandle() const;
         EInterpolationType getInterpolationType() const;

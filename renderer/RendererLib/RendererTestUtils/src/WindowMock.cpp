@@ -23,7 +23,6 @@ namespace ramses_internal
         ON_CALL(*this, getWidth()).WillByDefault(Return(FakeWidth));
         ON_CALL(*this, getAspectRatio()).WillByDefault(Return(static_cast<Float>(FakeWidth) / FakeHeight));
         ON_CALL(*this, getWaylandIviSurfaceID()).WillByDefault(Return(WaylandIviSurfaceId()));
-        ON_CALL(*this, isOffscreen()).WillByDefault(Return(false));
 
         EXPECT_CALL(*this, getWidth()).Times(AnyNumber());
         EXPECT_CALL(*this, getHeight()).Times(AnyNumber());

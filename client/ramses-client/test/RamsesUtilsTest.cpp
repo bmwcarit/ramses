@@ -25,12 +25,12 @@ namespace ramses
         static void LoadFileToVector(const char* fname, std::vector<unsigned char>& data)
         {
             ramses_internal::File f(fname);
-            ASSERT_EQ(ramses_internal::EStatus_RAMSES_OK, f.open(ramses_internal::EFileMode_ReadOnlyBinary));
+            ASSERT_TRUE(f.open(ramses_internal::File::Mode::ReadOnlyBinary));
             ramses_internal::UInt filesize = 0;
-            ASSERT_EQ(ramses_internal::EStatus_RAMSES_OK, f.getSizeInBytes(filesize));
+            ASSERT_TRUE(f.getSizeInBytes(filesize));
             data.resize(filesize);
             ramses_internal::UInt numread = 0;
-            ASSERT_EQ(ramses_internal::EStatus_RAMSES_OK, f.read(reinterpret_cast<char*>(data.data()), filesize, numread));
+            ASSERT_EQ(ramses_internal::EStatus::Ok, f.read(reinterpret_cast<char*>(data.data()), filesize, numread));
             ASSERT_EQ(filesize, numread);
         }
     };

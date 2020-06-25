@@ -26,12 +26,12 @@ namespace ramses_internal
     {
         DEFINE_COMMAND_TYPE(DoThisCommand, E_TestCommandTypes_DoThis)
 
-        DoThisCommand(uint8_t v)
+        explicit DoThisCommand(uint32_t v)
         : CustomCommand(E_TestCommandTypes_DoThis)
         , value(v)
         {}
 
-        uint8_t value;
+        uint32_t value;
     };
 
 

@@ -445,7 +445,7 @@ namespace ramses_internal
                 SceneActionsCommand& command = m_executedCommands.getCommandData<SceneActionsCommand>(i);
                 const SceneId sceneId = command.sceneId;
                 SceneActionCollection& actionsForScene = command.sceneActions;
-                m_rendererSceneUpdater.handleSceneActions(sceneId, actionsForScene);
+                m_rendererSceneUpdater.handleSceneActions(sceneId, std::move(actionsForScene));
                 break;
             }
             case ERendererCommand_SetFrameTimerLimits:

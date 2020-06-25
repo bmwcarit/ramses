@@ -18,7 +18,7 @@ namespace ramses_internal
     class SHMTriangleDrawer
     {
     public:
-        SHMTriangleDrawer(ETriangleColor triangleColor);
+        explicit SHMTriangleDrawer(ETriangleColor triangleColor);
         ~SHMTriangleDrawer();
 
         void draw(SHMBuffer* buffer);

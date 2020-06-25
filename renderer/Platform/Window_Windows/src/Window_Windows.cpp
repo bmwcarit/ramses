@@ -229,6 +229,17 @@ namespace ramses_internal
             return false;
         }
 
+        //AdjustWindowRectEx calculates total needed "window rectangle", which includes borders and toolbar, based on
+        //desired "client rectangle" (RAMSES display x, y, width, height). This difference between window rectangle
+        //and client rectangle needs to be compensated in the x,y offset of the window
+        const auto xOffset = getPosX() - windowRect.left;
+        const auto yOffset = getPosY() - windowRect.top;
+
+        windowRect.left     += xOffset;
+        windowRect.right    += xOffset;
+        windowRect.top      += yOffset;
+        windowRect.bottom   += yOffset;
+
         if (!m_userProvidedWindowHandle)
         {
             m_windowHandle = CreateWindowExA(m_windowEXStyle,

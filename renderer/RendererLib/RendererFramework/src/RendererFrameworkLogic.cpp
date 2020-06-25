@@ -112,7 +112,7 @@ namespace ramses_internal
         // TODO(tobias) report up to renderer API
     }
 
-    void RendererFrameworkLogic::requestResourceAsyncronouslyFromFramework(const ResourceContentHashVector& ids, const RequesterID& requesterID, const SceneId& sceneId)
+    void RendererFrameworkLogic::requestResourceAsyncronouslyFromFramework(const ResourceContentHashVector& ids, const ResourceRequesterID& requesterID, const SceneId& sceneId)
     {
         PlatformGuard guard(m_frameworkLock);
 
@@ -129,13 +129,13 @@ namespace ramses_internal
         }
     }
 
-    void RendererFrameworkLogic::cancelResourceRequest(const ResourceContentHash& resourceHash, const RequesterID& requesterID)
+    void RendererFrameworkLogic::cancelResourceRequest(const ResourceContentHash& resourceHash, const ResourceRequesterID& requesterID)
     {
         PlatformGuard guard(m_frameworkLock);
         m_resourceComponent.cancelResourceRequest(resourceHash, requesterID);
     }
 
-    ManagedResourceVector RendererFrameworkLogic::popArrivedResources(const RequesterID& requesterID)
+    ManagedResourceVector RendererFrameworkLogic::popArrivedResources(const ResourceRequesterID& requesterID)
     {
         PlatformGuard guard(m_frameworkLock);
         return m_resourceComponent.popArrivedResources(requesterID);

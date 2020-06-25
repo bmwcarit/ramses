@@ -28,7 +28,7 @@ namespace ramses_internal
     class AnimationSystemFactory
     {
     public:
-        AnimationSystemFactory(EAnimationSystemOwner ownerType, SceneActionCollection* actionCollector = nullptr);
+        explicit AnimationSystemFactory(EAnimationSystemOwner ownerType, SceneActionCollection* actionCollector = nullptr);
 
         IAnimationSystem* createAnimationSystem(UInt32 flags, const AnimationSystemSizeInformation& sizeInfo);
 

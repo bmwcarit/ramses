@@ -41,7 +41,7 @@ namespace ramses_internal
 
         const EGLNativeDisplayType      m_nativeDisplayHandle = EGL_DEFAULT_DISPLAY;
         const UInt32                    m_deviceUnit;
-        const UInt32                    m_layer = 0u;
+        const UInt32                    m_layer = 1u;
         const UInt32                    m_numberOfBuffers = 3u;
         const r_wm_WinColorFmt_t        m_colorFormat = R_WM_COLORFMT_ARGB8888;
         const r_wm_WinBufAllocMode_t    m_bufferAllocationMode = R_WM_WINBUF_ALLOC_INTERNAL;

@@ -447,7 +447,8 @@ TEST_F(ASceneGraphComponent, disconnectDoesNotAffectLocalScenesAtAllButUnpublish
     EXPECT_CALL(consumer, handleInitializeScene(sceneInfo, _));
     EXPECT_CALL(consumer, handleSceneActionList_rvr(SceneId(1), _, 0, _));
 
-    sceneGraphComponent.handleFlush(SceneId(1), {}, {});
+    const FlushTimeInformation flushTimesWithExpirationToPreventFlushOptimizazion {FlushTime::Clock::time_point {std::chrono::milliseconds{1}}, FlushTime::Clock::time_point {}};
+    sceneGraphComponent.handleFlush(SceneId(1), flushTimesWithExpirationToPreventFlushOptimizazion, {});
 
     // disconnect
     EXPECT_CALL(communicationSystem, broadcastScenesBecameUnavailable(SceneInfoVector{ sceneInfo }));
@@ -455,7 +456,7 @@ TEST_F(ASceneGraphComponent, disconnectDoesNotAffectLocalScenesAtAllButUnpublish
 
     // local flushing unaffected, nothing sent to network
     EXPECT_CALL(consumer, handleSceneActionList_rvr(SceneId(1), _, 0, _));
-    sceneGraphComponent.handleFlush(SceneId(1), {}, {});
+    sceneGraphComponent.handleFlush(SceneId(1), flushTimesWithExpirationToPreventFlushOptimizazion, {});
 
     // reconnect remote participant
     EXPECT_CALL(communicationSystem, sendScenesAvailable(remoteParticipantID, SceneInfoVector{ sceneInfo }));
@@ -468,7 +469,7 @@ TEST_F(ASceneGraphComponent, disconnectDoesNotAffectLocalScenesAtAllButUnpublish
     // flush again, remote now at flushCounter 2, local always 0
     EXPECT_CALL(communicationSystem, sendSceneActionList(remoteParticipantID, SceneId(1), _, 2)).WillOnce(Return(1));
     EXPECT_CALL(consumer, handleSceneActionList_rvr(SceneId(1), _, 0, _));
-    sceneGraphComponent.handleFlush(SceneId(1), {}, {});
+    sceneGraphComponent.handleFlush(SceneId(1), flushTimesWithExpirationToPreventFlushOptimizazion, {});
 
     // cleanup
     EXPECT_CALL(communicationSystem, broadcastScenesBecameUnavailable(SceneInfoVector{ sceneInfo }));

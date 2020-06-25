@@ -21,7 +21,7 @@ namespace ramses_internal
     class TestForkingController
     {
     public:
-        TestForkingController(const String& waylandSocket);
+        explicit TestForkingController(const String& waylandSocket);
         ~TestForkingController();
         TestForkingController(const TestForkingController&) = delete;
         TestForkingController& operator=(const TestForkingController&) = delete;

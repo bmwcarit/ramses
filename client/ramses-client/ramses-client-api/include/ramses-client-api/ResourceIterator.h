@@ -30,7 +30,7 @@ namespace ramses
         * @param[in] client RamsesClient whose resources to iterate through
         * @param[in] objectType Optional type of resources to iterate through.
         **/
-        ResourceIterator(const RamsesClient& client, ERamsesObjectType objectType = ERamsesObjectType_Resource);
+        explicit ResourceIterator(const RamsesClient& client, ERamsesObjectType objectType = ERamsesObjectType_Resource);
 
         /**
         * @brief Destructor

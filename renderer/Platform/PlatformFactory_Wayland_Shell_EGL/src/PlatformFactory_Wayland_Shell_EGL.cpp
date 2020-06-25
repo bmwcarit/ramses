@@ -27,9 +27,10 @@ namespace ramses_internal
     IWindow* PlatformFactory_Wayland_Shell_EGL::createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler)
     {
         Window_Wayland_Shell* platformWindow = new Window_Wayland_Shell(displayConfig, windowEventHandler, m_windows.size());
-        if(nullptr != addPlatformWindow(platformWindow))
-            m_windowEventsPollingManager.addWindow(platformWindow);
+        if(nullptr == addPlatformWindow(platformWindow))
+            return nullptr;
 
+        m_windowEventsPollingManager.addWindow(platformWindow);
         return platformWindow;
     }
 

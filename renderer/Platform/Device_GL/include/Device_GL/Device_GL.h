@@ -155,7 +155,6 @@ namespace ramses_internal
         void bindWriteOnlyRenderBufferToRenderTarget(const ERenderBufferType bufferType, const UInt32 colorBufferSlot, const GLHandle bufferGLHandle);
         GLHandle createTexture(UInt32 width, UInt32 height, ETextureFormat storageFormat) const;
         GLHandle createRenderBuffer(UInt32 width, UInt32 height, ETextureFormat format, UInt32 sampleCount);
-        void setDrawBuffers(const RenderTarget& renderTarget);
 
         GLHandle generateAndBindTexture(GLenum target) const;
         void setTextureFiltering(GLenum target, EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod minSampling, ESamplingMethod magSampling, UInt32 anisotropyLevel);

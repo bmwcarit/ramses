@@ -100,14 +100,25 @@ namespace ramses_internal
         ASSERT_TRUE(waitForEvent());
     }
 
-    TEST_P(ADcsmSenderAndReceiverTest, sendContentFocusRequest)
+    TEST_P(ADcsmSenderAndReceiverTest, sendContentEnableFocusRequest)
     {
         ContentID contentID(987);
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleContentFocusRequest(contentID, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
+            EXPECT_CALL(consumerHandler, handleContentEnableFocusRequest(contentID, 32, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
-        EXPECT_TRUE(sender.sendDcsmContentFocusRequest(receiverId, contentID));
+        EXPECT_TRUE(sender.sendDcsmContentEnableFocusRequest(receiverId, contentID, 32));
+        ASSERT_TRUE(waitForEvent());
+    }
+
+    TEST_P(ADcsmSenderAndReceiverTest, sendContentDisableFocusRequest)
+    {
+        ContentID contentID(987);
+        {
+            PlatformGuard g(receiverExpectCallLock);
+            EXPECT_CALL(consumerHandler, handleContentDisableFocusRequest(contentID, 32, senderId)).WillOnce(InvokeWithoutArgs([&] { sendEvent(); }));
+        }
+        EXPECT_TRUE(sender.sendDcsmContentDisableFocusRequest(receiverId, contentID, 32));
         ASSERT_TRUE(waitForEvent());
     }
 
@@ -127,7 +138,7 @@ namespace ramses_internal
     TEST_P(ADcsmSenderAndReceiverTest, sendCanvasSizeChange)
     {
         ContentID contentID(987);
-        SizeInfo si{ 780, 480 };
+        CategoryInfo si{ 780, 480 };
         AnimationInformation ai{ 678,789 };
         {
             PlatformGuard g(receiverExpectCallLock);
@@ -141,7 +152,7 @@ namespace ramses_internal
     {
         ContentID contentID(987);
         EDcsmState status(EDcsmState::Shown);
-        SizeInfo si{123, 432};
+        CategoryInfo si{123, 432};
         AnimationInformation ai{ 678,789 };
         {
             PlatformGuard g(receiverExpectCallLock);

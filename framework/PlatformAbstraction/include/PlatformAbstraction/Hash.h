@@ -19,7 +19,7 @@ namespace ramses_internal
     inline void HashCombine(size_t& seed, const T& value)
     {
         seed ^= std::hash<T>()(value)
-            + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            + 0x9e3779b9u + (seed << 6u) + (seed >> 2u);
     }
 
     template <typename T, typename... Types>

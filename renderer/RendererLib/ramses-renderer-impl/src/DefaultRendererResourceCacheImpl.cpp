@@ -46,7 +46,7 @@ namespace ramses
     class SaveDataFunctor : public IDataFunctor
     {
     public:
-        SaveDataFunctor(ramses_internal::IOutputStream& outputStream)
+        explicit SaveDataFunctor(ramses_internal::IOutputStream& outputStream)
             : m_outputStream(outputStream)
         {
         }
@@ -208,7 +208,7 @@ namespace ramses
         ramses_internal::File file(filePath);
         ramses_internal::BinaryFileOutputStream outputStream(file);
 
-        if (outputStream.getState() != ramses_internal::EStatus_RAMSES_OK)
+        if (outputStream.getState() != ramses_internal::EStatus::Ok)
         {
             LOG_WARN(ramses_internal::CONTEXT_RENDERER, "BinaryShaderCacheImpl::saveToFile: Failed to open for writing " << filePath);
             file.close();
@@ -242,7 +242,7 @@ namespace ramses
         }
 
         ramses_internal::BinaryFileInputStream inputStream(file);
-        if (inputStream.getState() != ramses_internal::EStatus_RAMSES_OK)
+        if (inputStream.getState() != ramses_internal::EStatus::Ok)
         {
             LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DefaultRendererResourceCacheImpl::loadFromFile: failed to load file: " << filePath << " errorstate: " << inputStream.getState());
             return false;
@@ -251,7 +251,7 @@ namespace ramses
         FileHeader fileHeader;
 
         ramses_internal::UInt actualFileSize = 0;
-        if (file.getSizeInBytes(actualFileSize) != ramses_internal::EStatus_RAMSES_OK || actualFileSize < sizeof(FileHeader))
+        if (!file.getSizeInBytes(actualFileSize) || actualFileSize < sizeof(FileHeader))
         {
             LOG_WARN(ramses_internal::CONTEXT_RENDERER,
                      "DefaultRendererResourceCacheImpl::loadFromFile: Invalid file size, file is corrupt - cache needs to be repopulated and saved again");
@@ -325,7 +325,7 @@ namespace ramses
                 return false;
             }
 
-            if (inputStream.getState() != ramses_internal::EStatus_RAMSES_OK)
+            if (inputStream.getState() != ramses_internal::EStatus::Ok)
             {
                 LOG_WARN(ramses_internal::CONTEXT_RENDERER,
                          "DefaultRendererResourceCacheImpl::loadFromFile: Reading failed, file is corrupt - cache "

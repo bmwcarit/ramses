@@ -28,7 +28,7 @@ namespace ramses_internal
     class WaylandEGLExtensionProcs
     {
     public:
-        WaylandEGLExtensionProcs(wl_display* waylandWindowDisplay);
+        explicit WaylandEGLExtensionProcs(wl_display* waylandWindowDisplay);
 
         EGLImageKHR eglCreateImageKHR(EGLContext context, EGLenum target, EGLClientBuffer buffer, const EGLint* attributeList) const;
         EGLBoolean eglDestroyImageKHR(EGLImageKHR image) const;

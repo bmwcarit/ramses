@@ -17,14 +17,13 @@
 
 namespace ramses
 {
-    RendererConfig::RendererConfig(int32_t argc, char const* const* argv)
-        : StatusObject(*new RendererConfigImpl(argc, argv))
-        , impl(static_cast<RendererConfigImpl&>(StatusObject::impl))
+    RendererConfig::RendererConfig()
+        : RendererConfig(0, nullptr)
     {
     }
 
-    RendererConfig::RendererConfig(int32_t argc, char* argv[])
-        : StatusObject(*new RendererConfigImpl(argc, const_cast<const char**>(argv)))
+    RendererConfig::RendererConfig(int32_t argc, char const* const* argv)
+        : StatusObject(*new RendererConfigImpl(argc, argv))
         , impl(static_cast<RendererConfigImpl&>(StatusObject::impl))
     {
     }

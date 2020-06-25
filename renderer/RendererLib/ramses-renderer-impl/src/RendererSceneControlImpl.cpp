@@ -68,23 +68,6 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t RendererSceneControlImpl::setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a)
-    {
-        const auto& frameBuffers = m_renderer.getDisplayFrameBuffers();
-        const auto it = frameBuffers.find(display);
-        if (it == frameBuffers.cend())
-            return addErrorEntry("RendererSceneControl::setDisplayBufferClearColor failed: display does not exist.");
-
-        ramses_internal::OffscreenBufferHandle bufferHandle{ displayBuffer.getValue() };
-        // if buffer to clear is display's framebuffer pass invalid OB to internal renderer
-        if (displayBuffer == it->second)
-            bufferHandle = ramses_internal::OffscreenBufferHandle::Invalid();
-
-        m_pendingRendererCommands.setClearColor(ramses_internal::DisplayHandle{ display.getValue() }, bufferHandle, { r, g, b, a });
-
-        return StatusOK;
-    }
-
     status_t RendererSceneControlImpl::linkOffscreenBuffer(displayBufferId_t offscreenBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId)
     {
         const ramses_internal::OffscreenBufferHandle providerBuffer{ offscreenBufferId.getValue() };
@@ -112,6 +95,14 @@ namespace ramses
         return StatusOK;
     }
 
+    status_t RendererSceneControlImpl::handlePickEvent(sceneId_t scene, float bufferNormalizedCoordX, float bufferNormalizedCoordY)
+    {
+        const ramses_internal::Vector2 coords(bufferNormalizedCoordX, bufferNormalizedCoordY);
+        const ramses_internal::SceneId sceneId(scene.getValue());
+        m_pendingRendererCommands.handlePickEvent(sceneId, coords);
+        return StatusOK;
+    }
+
     status_t RendererSceneControlImpl::flush()
     {
         m_renderer.submitRendererCommands(m_pendingRendererCommands);
@@ -136,6 +127,9 @@ namespace ramses
                 const sceneId_t sceneId{ event.sceneId.getValue() };
                 const auto state = static_cast<RendererSceneState>(event.state);
                 m_sceneInfos[sceneId].currState = state;
+                if (state == RendererSceneState::Unavailable)
+                    // reset stored target state if scene became unavailable
+                    m_sceneInfos[sceneId].targetState = RendererSceneState::Unavailable;
                 eventHandler.sceneStateChanged(sceneId, state);
                 break;
             }
@@ -163,6 +157,22 @@ namespace ramses
                 break;
             case ramses_internal::ERendererEventType_SceneDataUnlinkFailed:
                 eventHandler.dataUnlinked(sceneId_t(event.consumerSceneId.getValue()), dataConsumerId_t(event.consumerdataId.getValue()), false);
+                break;
+            case ramses_internal::ERendererEventType_SceneDataSlotProviderCreated:
+                eventHandler.dataProviderCreated(sceneId_t{ event.providerSceneId.getValue() }, dataProviderId_t{ event.providerdataId.getValue() });
+                break;
+            case ramses_internal::ERendererEventType_SceneDataSlotProviderDestroyed:
+                eventHandler.dataProviderDestroyed(sceneId_t{ event.providerSceneId.getValue() }, dataProviderId_t{ event.providerdataId.getValue() });
+                break;
+            case ramses_internal::ERendererEventType_SceneDataSlotConsumerCreated:
+                eventHandler.dataConsumerCreated(sceneId_t{ event.consumerSceneId.getValue() }, dataConsumerId_t{ event.consumerdataId.getValue() });
+                break;
+            case ramses_internal::ERendererEventType_SceneDataSlotConsumerDestroyed:
+                eventHandler.dataConsumerDestroyed(sceneId_t{ event.consumerSceneId.getValue() }, dataConsumerId_t{ event.consumerdataId.getValue() });
+                break;
+            case ramses_internal::ERendererEventType_ObjectsPicked:
+                static_assert(sizeof(ramses::pickableObjectId_t) == sizeof(std::remove_pointer<decltype(event.pickedObjectIds.data())>::type), "");
+                eventHandler.objectsPicked(ramses::sceneId_t(event.sceneId.getValue()), reinterpret_cast<const ramses::pickableObjectId_t*>(event.pickedObjectIds.data()), static_cast<uint32_t>(event.pickedObjectIds.size()));
                 break;
             case ramses_internal::ERendererEventType_SceneFlushed:
                 eventHandler.sceneFlushed(sceneId_t(event.sceneId.getValue()), event.sceneVersionTag.getValue());
@@ -196,10 +206,6 @@ namespace ramses
             case ramses_internal::ERendererEventType_SceneHidden:
             case ramses_internal::ERendererEventType_SceneHiddenIndirect:
             case ramses_internal::ERendererEventType_SceneHideFailed:
-            case ramses_internal::ERendererEventType_SceneDataSlotProviderCreated:
-            case ramses_internal::ERendererEventType_SceneDataSlotProviderDestroyed:
-            case ramses_internal::ERendererEventType_SceneDataSlotConsumerCreated:
-            case ramses_internal::ERendererEventType_SceneDataSlotConsumerDestroyed:
                 // these events are emitted from internal renderer all the way here to support legacy scene control
                 break;
 

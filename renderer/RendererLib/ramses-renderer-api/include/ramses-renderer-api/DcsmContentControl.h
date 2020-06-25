@@ -11,6 +11,7 @@
 
 #include "ramses-framework-api/StatusObject.h"
 #include "ramses-framework-api/DcsmApiTypes.h"
+#include "ramses-framework-api/CategoryInfoUpdate.h"
 
 namespace ramses
 {
@@ -20,15 +21,16 @@ namespace ramses
     class IDcsmContentControlEventHandler;
     class IRendererEventHandler;
 
-    /** @brief DcsmContentControl provides way to interact with both Dcsm (as consumer) and renderer (as owner)
-    *          in a unified way.
+    /** @brief DcsmContentControl provides way to interact with both Dcsm (as consumer) and renderer content control
+    *          (replaces #ramses::RendererSceneControl).
     *
     * @details DcsmContentControl's main purpose is to simplify the handling of combination of Dcsm content state
-    *          and state of a its renderer scene, which can become rather difficult.
-    *          DcsmContentControl presents a layer on top of RamsesRenderer and DcsmConsumer, provides a ContentState
-    *          which is essentially a 'compound' state of Dcsm content and its scene state. It also allows user
-    *          to define list of categories that should be managed by it, i.e. it should accept content offers
-    *          for those categories.
+    *          and state of a its renderer scene, which can become rather complicated if dealt with separately.
+    *          DcsmContentControl presents an alternative to #ramses::RendererSceneControl together with a layer
+    *          on top of #ramses::DcsmConsumer. It unifies control of content state in Dcsm context and content's
+    *          scene state in renderer context.
+    *          At initialization user must specify list of Dcsm categories that should be managed by it,
+    *          DcsmContentControl will then automatically accept Dcsm content offers for those categories.
     *
     *          \section TimingInformation
     *          Several methods (#ramses::DcsmContentControl::showContent, #ramses::DcsmContentControl::hideContent, #ramses::DcsmContentControl::releaseContent, ...) allow user to give timing information,
@@ -109,7 +111,7 @@ namespace ramses
         *
         *          This method is one of those supporting timing of state change, see #ramses::DcsmContentControl for general description.
         *          The content's scene will stop rendering at AnimationInformation::finishTime (unlike showContent),
-        *          #ramses::IDcsmContentControlEventHandler::contentReady is emitted when hide is confirmed from RamsesRenderer),
+        *          #ramses::IDcsmContentControlEventHandler::contentReady is emitted when hide is confirmed by the renderer),
         *          AnimationInformation::startTime sent to DcsmProvider to mark the start time of fade out animation if any.
         *          See \ref TimingInformation for more details.
         *
@@ -130,7 +132,7 @@ namespace ramses
         *          This method is one of those supporting timing of state change, see #ramses::DcsmContentControl for general description.
         *          If the content was shown its scene will stop rendering at AnimationInformation::finishTime (similar to hideContent),
         *          and it will be unloaded from renderer (#ramses::IDcsmContentControlEventHandler::contentAvailable is emitted when unload/unmap is confirmed
-        *          from RamsesRenderer), AnimationInformation::startTime sent to DcsmProvider to mark the start time of fade out animation if any.
+        *          by the renderer), AnimationInformation::startTime sent to DcsmProvider to mark the start time of fade out animation if any.
         *          See \ref TimingInformation for more details.
         *
         * @param contentID Content to release.
@@ -152,7 +154,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setCategorySize(Category categoryId, SizeInfo size, AnimationInformation timingInfo);
+        status_t setCategorySize(Category categoryId, const CategoryInfoUpdate& size, AnimationInformation timingInfo);
 
         /** @brief Stops using given content and accepts the request from provider.
         * @details The Dcsm message is sent immediately to provider with given timing information.
@@ -195,21 +197,6 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t assignContentToDisplayBuffer(ContentID contentID, displayBufferId_t displayBuffer, int32_t renderOrder = 0);
-
-        /**
-        * @brief Sets clear color for display's framebuffer or offscreen buffer.
-        *        Clear color is used to clear the whole buffer at the beginning of a rendering cycle (typically every frame).
-        *
-        * @param[in] display Id of display that the buffer to set clear color belongs to.
-        * @param[in] displayBuffer Id of display buffer to set clear color
-        * @param[in] r Clear color red channel value [0,1]
-        * @param[in] g Clear color green channel value [0,1]
-        * @param[in] b Clear color blue channel value [0,1]
-        * @param[in] a Clear color alpha channel value [0,1]
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a);
 
         /** @brief Creates a data link between offscreen buffer and a consumer data slot defined in Ramses scene.
         * @details When linked, the offscreen buffer contents can be used as a texture input on the consumer side (see ramses::Scene::createTextureConsumer).
@@ -254,7 +241,46 @@ namespace ramses
         */
         status_t linkData(ContentID providerContentID, dataProviderId_t providerId, ContentID consumerContentID, dataConsumerId_t consumerId);
 
-        /** @brief Do one update cycle which flushes any pending renderer commands, dispatches events from both Dcsm and renderer
+        /**
+        * @brief   Removes an existing link between data provider and consumer (#linkData)
+        *          or offscreen buffer and consumer (#linkOffscreenBuffer).
+        * @details Data link is fully defined by consumer content and its data slot as there can only be one link from consumer to provider.
+        *          #ramses::IDcsmContentControlEventHandler::dataUnlinked will be emitted after consumer unlinked from provider.
+        *          If successful the operation can be assumed to be effective in the next frame consumer content is rendered after #update.
+        *
+        * @param consumerContentID Consumer content containing consumer slot to unlink.
+        * @param consumerId ID of consumer slot to unlink.
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t unlinkData(ContentID consumerContentID, dataConsumerId_t consumerId);
+
+        /*
+        * @brief Trigger renderer to test if given pick event with coordinates intersects with any instances
+        *        of ramses::PickableObject contained in given content's scene. If so, the intersected PickableObjects are
+        *        reported to the ramses::DcsmContentControl (see ramses::IDcsmContentControlEventHandler::objectsPicked) using their user IDs
+        *        given at creation time (see ramses::Scene::createPickableObject).
+        *
+        * @details \section Coordinates
+        *          Coordinates normalized to range <-1, 1> where (-1, -1) is bottom left corner of the buffer where content is mapped to
+        *          and (1, 1) is top right corner.
+        *          If the content to test is rendered directly to framebuffer then display size should be used,
+        *          i.e. (-1, -1) is bottom left corner of the display and (1, 1) top right corner of display.
+        *          If the content is mapped to an offscreen buffer and rendered as a texture mapped
+        *          on a mesh in another content, the given coordinates need to be mapped to the offscreen buffer
+        *          dimensions in the same way.
+        *          For example if the content's offscreen buffer is mapped on a 2D quad placed somewhere on screen
+        *          then the coordinates provided need to be within the region of the 2D quad, i.e. (-1, -1) at bottom left corner of the quad and (1, 1) at top right corner.
+        *
+        * @param contentID Content to check for intersected PickableObjects.
+        * @param bufferNormalizedCoordX Normalized X pick coordinate within buffer size (see \ref Coordinates).
+        * @param bufferNormalizedCoordY Normalized Y pick coordinate within buffer size (see \ref Coordinates).
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t handlePickEvent(ContentID contentID, float bufferNormalizedCoordX, float bufferNormalizedCoordY);
+
+        /** @brief Do one update cycle which flushes any pending commands, dispatches events from both Dcsm and renderer's scene control
         *          and executes any scheduled operations to be done at given time.
         * @details If any of the actions caused a state change or an event to be reported, a corresponding callback will be called
         *          on given handler.
@@ -290,7 +316,7 @@ namespace ramses
         virtual ~DcsmContentControl();
 
         /// Constructor
-        DcsmContentControl(DcsmContentControlImpl&);
+        explicit DcsmContentControl(DcsmContentControlImpl&);
     };
 }
 

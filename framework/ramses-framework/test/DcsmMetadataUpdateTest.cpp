@@ -39,7 +39,6 @@ namespace ramses
         EXPECT_FALSE(dmp.hasCarModelView());
         EXPECT_FALSE(dmp.hasCarModelVisibility());
         EXPECT_FALSE(dmp.hasExclusiveBackground());
-        EXPECT_FALSE(dmp.hasFocusRequest());
     }
 
     TEST_F(ADcsmMetadataUpdate, returnsPreviewImagePng)
@@ -93,12 +92,16 @@ namespace ramses
 
     TEST_F(ADcsmMetadataUpdate, returnsCarModelView)
     {
-        EXPECT_TRUE(md.setCarModelView({1,2,3,4,5,6}));
+        constexpr CarModelViewMetadata values{ 1,2,3,4,5,6,7 };
+        constexpr ramses_internal::AnimationInformation timing{ 8,9 };
+
+        EXPECT_TRUE(md.setCarModelView(values, timing));
         dmp.impl.setMetadata(md);
         EXPECT_TRUE(dmp.hasCarModelView());
 
-        ramses::CarModelViewMetadata values{ 1,2,3,4,5,6 };
         EXPECT_EQ(values, dmp.getCarModelView());
+        constexpr AnimationInformation timingp{ 8,9 };
+        EXPECT_EQ(timingp, dmp.getCarModelViewAnimationInfo());
     }
 
     TEST_F(ADcsmMetadataUpdate, returnsCarModelVisibility)
@@ -117,11 +120,4 @@ namespace ramses
         EXPECT_TRUE(dmp.getExclusiveBackground());
     }
 
-    TEST_F(ADcsmMetadataUpdate, returnsFocusRequest)
-    {
-        EXPECT_TRUE(md.setFocusRequested(19));
-        dmp.impl.setMetadata(md);
-        EXPECT_TRUE(dmp.hasFocusRequest());
-        EXPECT_EQ(19, dmp.getFocusRequest());
-    }
 }

@@ -17,6 +17,9 @@
 #include "Animation/AnimationSystemDescriber.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Utils/MemoryUtils.h"
+#include "Math3d/Matrix22f.h"
+#include "Math3d/Matrix33f.h"
+#include "Math3d/Matrix44f.h"
 
 namespace ramses_internal
 {

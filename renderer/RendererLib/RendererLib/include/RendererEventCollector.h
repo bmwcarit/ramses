@@ -191,7 +191,7 @@ namespace ramses_internal
             RendererEvent event(eventType);
             event.sceneId = sceneId;
             event.pickedObjectIds = std::move(pickedObjectIds);
-            pushToRendererEventQueue(std::move(event));
+            pushToSceneControlEventQueue(std::move(event));
         }
 
         void addRenderStatsEvent(ERendererEventType eventType, std::chrono::microseconds maximumLoopTimeInPeriod, std::chrono::microseconds renderthreadAverageLooptime)

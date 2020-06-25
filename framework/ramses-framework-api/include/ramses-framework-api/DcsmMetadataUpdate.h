@@ -140,6 +140,14 @@ namespace ramses
         CarModelViewMetadata getCarModelView() const;
 
         /**
+        * @brief Get animation information associated with car model view metadata entry.
+        *        Value is undefined when not hasCarModelView().
+        *
+        * @return animation information for car model view metadata
+        */
+        AnimationInformation getCarModelViewAnimationInfo() const;
+
+        /**
          * @brief Check if object contains car model visibility metadata entry.
          *
          * @return true when has car model visibility metadata, false when not
@@ -170,21 +178,6 @@ namespace ramses
         bool getExclusiveBackground() const;
 
         /**
-         * @brief Check if object contains focus request metadata entry.
-         *
-         * @return true when has focus request metadata, false when not
-         */
-        bool hasFocusRequest() const;
-
-        /**
-         * @brief Get focus request metadata entry.
-         *        Value is undefined when not hasFocusRequest().
-         *
-         * @return focus request state
-         */
-        int32_t getFocusRequest() const;
-
-        /**
          * @brief Deleted default constructor
          */
         DcsmMetadataUpdate() = delete;
@@ -193,7 +186,7 @@ namespace ramses
          * @brief Constructor from impl
          * @param impl_ impl
          */
-        DcsmMetadataUpdate(DcsmMetadataUpdateImpl& impl_);
+        explicit DcsmMetadataUpdate(DcsmMetadataUpdateImpl& impl_);
 
         /**
          * @brief Deleted move constructor

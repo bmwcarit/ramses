@@ -18,7 +18,7 @@ namespace ramses_internal
     template<typename T>
     struct RamshStaticTypeId
     {
-        operator RamshTypeInfo()
+        explicit operator RamshTypeInfo()
         {
             static RamshTypeInfo id;
             return id;
@@ -28,7 +28,7 @@ namespace ramses_internal
     template<typename T>
     struct RamshStaticTypeId<const T>
     {
-        operator RamshTypeInfo()
+        explicit operator RamshTypeInfo()
         {
             return RamshStaticTypeId<T>();
         }
@@ -39,7 +39,7 @@ namespace ramses_internal
         template<typename T>
         static RamshTypeInfo id()
         {
-            return RamshStaticTypeId<T>();
+            return static_cast<RamshTypeInfo>(RamshStaticTypeId<T>());
         }
     };
 
@@ -52,7 +52,7 @@ namespace ramses_internal
     template<>
     struct TypeName<bool>
     {
-        inline operator String() const
+        inline explicit operator String() const
         {
             return "bool";
         }
@@ -61,7 +61,7 @@ namespace ramses_internal
     template<>
     struct TypeName<String>
     {
-        inline operator String() const
+        inline explicit operator String() const
         {
             return "String";
         }
@@ -70,7 +70,7 @@ namespace ramses_internal
     template<>
     struct TypeName<Float>
     {
-        inline operator String() const
+        inline explicit operator String() const
         {
             return "float";
         }
@@ -79,7 +79,7 @@ namespace ramses_internal
     template<>
     struct TypeName<Double>
     {
-        inline operator String() const
+        inline explicit operator String() const
         {
             return "double";
         }
@@ -88,7 +88,7 @@ namespace ramses_internal
     template<>
     struct TypeName<Int8>
     {
-        inline operator String() const
+        inline explicit operator String() const
         {
             return "int8";
         }
@@ -97,7 +97,7 @@ namespace ramses_internal
     template<>
     struct TypeName<Int16>
     {
-        inline operator String() const
+        inline explicit operator String() const
         {
             return "int16";
         }
@@ -106,7 +106,7 @@ namespace ramses_internal
     template<>
     struct TypeName<Int32>
     {
-        inline operator String() const
+        inline explicit operator String() const
         {
             return "int32";
         }
@@ -115,7 +115,7 @@ namespace ramses_internal
     template<>
     struct TypeName<Int64>
     {
-        inline operator String() const
+        inline explicit operator String() const
         {
             return "int64";
         }
@@ -124,7 +124,7 @@ namespace ramses_internal
     template<>
     struct TypeName<UInt8>
     {
-        inline operator String() const
+        inline explicit operator String() const
         {
             return "uint8";
         }
@@ -133,7 +133,7 @@ namespace ramses_internal
     template<>
     struct TypeName<UInt16>
     {
-        inline operator String() const
+        inline explicit operator String() const
         {
             return "uint16";
         }
@@ -142,7 +142,7 @@ namespace ramses_internal
     template<>
     struct TypeName<UInt32>
     {
-        inline operator String() const
+        inline explicit operator String() const
         {
             return "uint32";
         }
@@ -151,7 +151,7 @@ namespace ramses_internal
     template<>
     struct TypeName<UInt64>
     {
-        inline operator String() const
+        inline explicit operator String() const
         {
             return "uint64";
         }
@@ -160,7 +160,7 @@ namespace ramses_internal
     template<>
     struct TypeName<Char>
     {
-        inline operator String() const
+        inline explicit operator String() const
         {
             return "char";
         }

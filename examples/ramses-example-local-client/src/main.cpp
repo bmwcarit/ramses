@@ -32,11 +32,7 @@ int main(int argc, char* argv[])
     ramses::RendererSceneControl& sceneControlAPI = *renderer.getSceneControlAPI();
     renderer.startThread();
 
-    ramses::DisplayConfig displayConfig;
-    displayConfig.setIntegrityRGLDeviceUnit(0);
-    displayConfig.setWaylandIviSurfaceID(0);
-    displayConfig.setWindowIviVisible();
-    displayConfig.setWaylandIviLayerID(3);
+    ramses::DisplayConfig displayConfig(argc, argv);
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
     renderer.flush();
 

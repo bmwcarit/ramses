@@ -453,13 +453,13 @@ namespace ramses_internal
 
                 if (RendererInterruptState::IsInterrupted(interruptState))
                 {
-                    m_rendererInterruptState = { displayHandle, displayBuffer, sceneId, interruptState };
+                    m_rendererInterruptState = RendererInterruptState{ displayHandle, displayBuffer, sceneId, interruptState };
                     LOG_TRACE(CONTEXT_PROFILING, "Renderer::renderToInterruptibleOffscreenBuffers interrupted rendering to OB " << displayBuffer.asMemoryHandle() << " on display " << displayHandle.asMemoryHandle() << ", scene " << sceneId.getValue());
                     interrupted = true;
                     m_statistics.offscreenBufferInterrupted(displayHandle, displayBuffer);
                     break;
                 }
-                m_rendererInterruptState = {};
+                m_rendererInterruptState = RendererInterruptState{};
 
                 onSceneWasRendered(scene);
                 LOG_TRACE(CONTEXT_PROFILING, "Renderer::renderToInterruptibleOffscreenBuffers scene fully rendered to interruptible OB " << displayBuffer.asMemoryHandle() << " on display " << displayHandle.asMemoryHandle() << ", scene " << sceneId.getValue());
@@ -715,6 +715,7 @@ namespace ramses_internal
             }
 
             systemCompositorSetIviSurfaceVisibility(rendererSurfaceIVIID, config.getStartVisibleIvi());
+            systemCompositorSetIviSurfaceDestRectangle(rendererSurfaceIVIID, config.getWindowPositionX(), config.getWindowPositionY(), config.getDesiredWindowWidth(), config.getDesiredWindowHeight());
         }
 
         // Enable the context of the render backend that was just created
@@ -786,7 +787,7 @@ namespace ramses_internal
     void Renderer::resetRenderInterruptState()
     {
         LOG_TRACE(CONTEXT_PROFILING, "Renderer::resetRenderInterruptState");
-        m_rendererInterruptState = {};
+        m_rendererInterruptState = RendererInterruptState{};
     }
 
     FrameProfileRenderer& Renderer::getFrameProfileRenderer(DisplayHandle display)

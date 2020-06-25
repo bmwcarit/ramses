@@ -11,7 +11,6 @@
 
 #include "Utils/CommandLineParser.h"
 #include "TaskFramework/ThreadedTaskExecutor.h"
-#include "Ramsh/RamshStandardSetup.h"
 #include "Components/ResourceComponent.h"
 #include "Components/SceneGraphComponent.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
@@ -20,7 +19,6 @@
 #include "Utils/PeriodicLogger.h"
 #include "TransportCommon/LogConnectionInfo.h"
 #include "Utils/StatisticCollection.h"
-#include "Ramsh/RamshDLT.h"
 #include "Components/DcsmComponent.h"
 #include "Components/LogDcsmInfo.h"
 #include "RamsesObjectFactoryInterfaces.h"
@@ -30,6 +28,8 @@
 namespace ramses_internal
 {
     class ICommunicationSystem;
+    class RamshStandardSetup;
+    class Ramsh;
 }
 
 namespace ramses
@@ -87,7 +87,7 @@ namespace ramses
         // the framework-wide mutex that is used by all framework-base classes to synchronize access to shared resource
         // has to be used by all logic, component, etc classes
         ramses_internal::PlatformLock m_frameworkLock;
-        std::unique_ptr<ramses_internal::Ramsh> m_ramsh;
+        std::unique_ptr<ramses_internal::RamshStandardSetup> m_ramsh;
         ramses_internal::StatisticCollectionFramework m_statisticCollection;
         ramses_internal::ParticipantIdentifier m_participantAddress;
         ramses_internal::EConnectionProtocol m_connectionProtocol;

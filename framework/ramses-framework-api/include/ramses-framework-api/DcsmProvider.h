@@ -33,6 +33,9 @@ namespace ramses
          *        could and should currently be shown.
          *        The ramses scene belonging to the scene ID must not exist yet.
          *
+         *        A failing offerContent call might trigger a stopOfferAccepted event,
+         *        which can be safely ignored.
+         *
          * @param contentID The ID of the content to be offered
          * @param category The category the content is made for
          * @param scene The ramses scene ID containing the content.
@@ -46,8 +49,11 @@ namespace ramses
          * @brief Same behavior as offerContent() but additionally send provided
          *        metadata to consumers that assigned content to themselves.
          *
-         * This method should be used to attach metadata immediately on offer to a
-         * content but is no prerequisite for later calls to updateContentMetadata().
+         *        This method should be used to attach metadata immediately on offer to a
+         *        content but is no prerequisite for later calls to updateContentMetadata().
+         *
+         *        A failing offerContentWithMetadata call might trigger a stopOfferAccepted
+         *        event, which can be safely ignored.
          *
          * @param contentID The ID of the content to be offered
          * @param category The category the content is made for
@@ -103,18 +109,31 @@ namespace ramses
         status_t markContentReady(ContentID contentID);
 
         /**
-         * @brief DEPRECATED use metadata focusRequested instead
-         *        Requests an assigned DcsmConsumer to switch to/focus this content within a category.
+         * @brief Requests an assigned DcsmConsumer to switch to/focus this content within a category.
          *        This function does not have to be called to enable a consumer to use this
          *        content, it is only needed when the provider side wants to influence
          *        the consumer application logic concerning which content to use.
+         *        When the logical reason for the focus is no longer valid, the request should be disabled again.
          *
          * @param contentID The ID of the content to request focus for
+         * @param focusRequest An arbitrary identifier for this focusRequest
          *
          * @return StatusOK for success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().
          */
-        status_t requestContentFocus(ContentID contentID);
+        status_t enableFocusRequest(ContentID contentID, int32_t focusRequest);
+
+        /**
+         * @brief No longer request an assigned DcsmConsumer to focus this content for given focusrequest within a category.
+         *        Should be called, when the logical reason for the focus is no longer given.
+         *
+         * @param contentID The ID of the content for which to disable the focus request for
+         * @param focusRequest The focusRequest to disable
+         *
+         * @return StatusOK for success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        status_t disableFocusRequest(ContentID contentID, int32_t focusRequest);
 
         /**
          * @brief Communication from DcsmConsumer will be handled by a
@@ -134,7 +153,7 @@ namespace ramses
         /**
          * @brief Constructor of DcsmProvider
          */
-        DcsmProvider(DcsmProviderImpl&);
+        explicit DcsmProvider(DcsmProviderImpl&);
 
         /**
          * @brief Destructor of DcsmProvider

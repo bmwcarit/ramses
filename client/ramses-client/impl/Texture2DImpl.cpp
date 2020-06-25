@@ -18,7 +18,7 @@ namespace ramses
         RamsesClientImpl& client,
         const char* name,
         ERamsesObjectType overrideType /* = ERamsesObjectType_Texture2D*/)
-        : ResourceImpl(overrideType, resource, client, name)
+        : ResourceImpl(overrideType, std::move(resource), client, name)
         , m_width(0)
         , m_height(0)
         , m_textureFormat(ETextureFormat_NUMBER_OF_ELEMENTS)

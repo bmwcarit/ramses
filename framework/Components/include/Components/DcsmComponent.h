@@ -49,26 +49,28 @@ namespace ramses_internal
         virtual void participantHasDisconnected(const Guid& guid) override;
 
         // Local consumer send methods
-        virtual bool sendCanvasSizeChange(ContentID contentID, SizeInfo sizeInfo, AnimationInformation ai) override;
-        virtual bool sendContentStateChange(ContentID contentID, EDcsmState status, SizeInfo sizeInfo, AnimationInformation ai) override;
+        virtual bool sendCanvasSizeChange(ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation ai) override;
+        virtual bool sendContentStateChange(ContentID contentID, EDcsmState status, const CategoryInfo& categoryInfo, AnimationInformation ai) override;
 
         // Local provider send methods
         virtual bool sendOfferContent(ContentID contentID, Category category, bool localOnly) override;
         virtual bool sendContentDescription(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) override;
         virtual bool sendContentReady(ContentID contentID) override;
-        virtual bool sendContentFocusRequest(ContentID contentID) override;
+        virtual bool sendContentEnableFocusRequest(ContentID contentID, int32_t) override;
+        virtual bool sendContentDisableFocusRequest(ContentID contentID, int32_t) override;
         virtual bool sendRequestStopOfferContent(ContentID contentID) override;
         virtual bool sendUpdateContentMetadata(ContentID contentID, const DcsmMetadata& metadata) override;
 
         // IDcsmProviderServiceHandler implementation
-        virtual void handleCanvasSizeChange(ContentID contentID, SizeInfo sizeinfo, AnimationInformation, const Guid& consumerID) override;
-        virtual void handleContentStateChange(ContentID contentID, EDcsmState status, SizeInfo, AnimationInformation, const Guid& consumerID) override;
+        virtual void handleCanvasSizeChange(ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation, const Guid& consumerID) override;
+        virtual void handleContentStateChange(ContentID contentID, EDcsmState status, const CategoryInfo& categoryInfo, AnimationInformation, const Guid& consumerID) override;
 
         // IDcsmConsumerServiceHandler implementation
         virtual void handleOfferContent(ContentID contentID, Category, const Guid& providerID) override;
         virtual void handleContentDescription(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID) override;
         virtual void handleContentReady(ContentID contentID, const Guid& providerID) override;
-        virtual void handleContentFocusRequest(ContentID contentID, const Guid& providerID) override;
+        virtual void handleContentEnableFocusRequest(ContentID contentID, int32_t focusRequest, const Guid& providerID) override;
+        virtual void handleContentDisableFocusRequest(ContentID contentID, int32_t focusRequest, const Guid& providerID) override;
         virtual void handleRequestStopOfferContent(ContentID contentID, const Guid& providerID) override;
         virtual void handleForceStopOfferContent(ContentID contentID, const Guid& providerID) override;
         virtual void handleUpdateContentMetadata(ContentID contentID, DcsmMetadata metadata, const Guid& providerID) override;
@@ -105,6 +107,7 @@ namespace ramses_internal
             Guid providerID;
             Guid consumerID;
             DcsmMetadata metadata;
+            std::vector<int32_t> m_currentFocusRequests;
             bool localOnly;
             ETechnicalContentType contentType;
             TechnicalContentDescriptor contentDescriptor;
@@ -117,7 +120,8 @@ namespace ramses_internal
             ContentReady,
             ContentStateChange,
             CanvasSizeChange,
-            ContentFocusRequest,
+            ContentEnableFocusRequest,
+            ContentDisableFocusRequest,
             StopOfferContentRequest,
             ForceStopOfferContent,
             UpdateContentMetadata,
@@ -131,18 +135,20 @@ namespace ramses_internal
             TechnicalContentDescriptor descriptor;
             ETechnicalContentType      contentType = ETechnicalContentType::RamsesSceneID;
             EDcsmState                 state       = EDcsmState::Offered;
-            SizeInfo                   size       {0, 0};
+            CategoryInfo               categoryInfo;
             AnimationInformation       animation  {0, 0};
             DcsmMetadata               metadata;
+            int32_t                    focusRequest;
             Guid                       from;
         };
 
-        void addProviderEvent_CanvasSizeChange(ContentID contentID, SizeInfo sizeinfo, AnimationInformation, const Guid& consumerID);
-        void addProviderEvent_ContentStateChange(ContentID contentID, EDcsmState status, SizeInfo sizeInfo,AnimationInformation, const Guid& consumerID);
+        void addProviderEvent_CanvasSizeChange(ContentID contentID, CategoryInfo categoryInfo, AnimationInformation, const Guid& consumerID);
+        void addProviderEvent_ContentStateChange(ContentID contentID, EDcsmState status, CategoryInfo categoryInfo,AnimationInformation, const Guid& consumerID);
         void addConsumerEvent_OfferContent(ContentID contentID, Category, const Guid& providerID);
         void addConsumerEvent_ContentDescription(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID);
         void addConsumerEvent_ContentReady(ContentID contentID, const Guid& providerID);
-        void addConsumerEvent_ContentFocusRequest(ContentID contentID, const Guid& providerID);
+        void addConsumerEvent_ContentEnableFocusRequest(ContentID contentID, int32_t focusRequest, const Guid& providerID);
+        void addConsumerEvent_ContentDisableFocusRequest(ContentID contentID, int32_t focusRequest, const Guid& providerID);
         void addConsumerEvent_RequestStopOfferContent(ContentID contentID, const Guid& providerID);
         void addConsumerEvent_ForceStopOfferContent(ContentID contentID, const Guid& providerID);
         void addConsumerEvent_UpdateContentMetadata(ContentID contentID,  DcsmMetadata metadata, const Guid& providerID);

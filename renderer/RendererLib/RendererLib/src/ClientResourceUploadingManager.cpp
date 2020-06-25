@@ -104,7 +104,7 @@ namespace ramses_internal
                     for (size_t j = numUploaded; j < resourcesToUpload.size() && j < numUploaded + 10; ++j)
                     {
                         const ResourceDescriptor& interruptedRd = m_clientResources.getResourceDescriptor(resourcesToUpload[j]);
-                        logger << " [" << interruptedRd.hash << "; " << EnumToString(interruptedRd.type) << "; " << interruptedRd.decompressedSize << " B]";
+                        logger << " [" << interruptedRd.hash << "; " << EnumToString(interruptedRd.type) << "]";
                     }
                     if (numRemaining > 10)
                         logger << " ...";

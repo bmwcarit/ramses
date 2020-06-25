@@ -51,9 +51,9 @@ namespace ramses_internal
         virtual void handleScenesBecameUnavailable(const SceneInfoVector& unavailableScenes, const Guid& providerID) override;
 
         // IResourceProviderServiceHandler
-        virtual void requestResourceAsyncronouslyFromFramework(const ResourceContentHashVector& ids, const RequesterID& requesterID, const SceneId& sceneId) override;
-        virtual void cancelResourceRequest(const ResourceContentHash& resourceHash, const RequesterID& requesterID) override;
-        virtual ManagedResourceVector popArrivedResources(const RequesterID& requesterID) override;
+        virtual void requestResourceAsyncronouslyFromFramework(const ResourceContentHashVector& ids, const ResourceRequesterID& requesterID, const SceneId& sceneId) override;
+        virtual void cancelResourceRequest(const ResourceContentHash& resourceHash, const ResourceRequesterID& requesterID) override;
+        virtual ManagedResourceVector popArrivedResources(const ResourceRequesterID& requesterID) override;
 
         // IConnectionStatusListener
         virtual void newParticipantHasConnected(const Guid& guid) override;

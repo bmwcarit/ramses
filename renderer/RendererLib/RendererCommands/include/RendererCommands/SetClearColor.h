@@ -18,7 +18,7 @@ namespace ramses_internal
     class SetClearColor : public RamshCommandArgs<UInt32, Float, Float, Float, Float>
     {
     public:
-        SetClearColor(RendererCommandBuffer& rendererCommandBuffer);
+        explicit SetClearColor(RendererCommandBuffer& rendererCommandBuffer);
         virtual Bool execute(UInt32& displayId, Float& red, Float& green, Float& blue, Float& alpha) const override;
 
     private:

@@ -12,6 +12,7 @@
 #include "ramses-framework-api/DcsmApiTypes.h"
 #include "Components/DcsmComponent.h"
 #include "gmock/gmock.h"
+#include "CategoryInfoUpdateImpl.h"
 
 namespace ramses_internal
 {
@@ -30,9 +31,9 @@ namespace ramses_internal
         *os << "ri:TechnicalContentDescriptor:" << id.getValue();
     }
 
-    inline void PrintTo(const SizeInfo& si, ::std::ostream* os)
+    inline void PrintTo(const CategoryInfo& categoryInfo, ::std::ostream* os)
     {
-        *os << "ri:SizeInfo[" << si.width << "x" << si.height << "]";
+        *os << "ri:CategoryInfo" << StringOutputStream::ToString(categoryInfo).stdRef();
     }
 
     inline void PrintTo(const AnimationInformation& ai, ::std::ostream* os)
@@ -76,6 +77,11 @@ namespace ramses
     inline void PrintTo(const ramses::AnimationInformation& ai, ::std::ostream* os)
     {
         *os << "r:AnimationInformation[" << ai.startTime << ";" << ai.finishTime << "]";
+    }
+
+    inline void PrintTo(const ramses::CategoryInfoUpdate& categoryInfo, ::std::ostream* os)
+    {
+        *os << "r:CategoryInfoUpdate" << ramses_internal::StringOutputStream::ToString(categoryInfo.impl.getCategoryInfo()).stdRef();
     }
 }
 

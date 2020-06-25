@@ -14,7 +14,7 @@
 #include "Ramsh/RamshTools.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "Utils/RamsesLogger.h"
-
+#include "Utils/CommandLineParser.h"
 
 namespace ramses_internal
 {
@@ -59,7 +59,7 @@ namespace ramses_internal
 
     class DummyRamshCommand : public RamshCommand
     {
-        virtual bool executeInput(const RamshInput& /*input*/)
+        virtual bool executeInput(const RamshInput& /*input*/) override
         {
             return true;
         }
@@ -329,20 +329,20 @@ namespace ramses_internal
     class MockRamsh : public Ramsh
     {
     public:
-        MOCK_METHOD1(execute, bool(RamshInput& input));
+        MOCK_METHOD(bool, execute, (const RamshInput& input), (override));
     };
 
     class RamshCommunicationChannelConsoleTest : public ::testing::Test
     {
     public:
         RamshCommunicationChannelConsoleTest()
+            : inputProvider(RamshCommunicationChannelConsole::Construct(ramsh, "noname", false))
         {
-            inputProvider.registerRamsh(ramsh);
         }
 
     protected:
         NiceMock<MockRamsh> ramsh;
-        RamshCommunicationChannelConsole inputProvider;
+        std::unique_ptr<RamshCommunicationChannelConsole> inputProvider;
     };
 
     class RamshCommunicationChannelConsoleTestThread : public ramses_internal::Runnable
@@ -357,7 +357,7 @@ namespace ramses_internal
         {
         }
 
-        virtual void run()
+        virtual void run() override
         {
             logSomeMessage();
         }
@@ -378,11 +378,11 @@ namespace ramses_internal
         RamshInput expectedRamshInput;
         expectedRamshInput.append("help"); //read stops at enter
 
-        EXPECT_CALL(ramsh, execute(Eq(expectedRamshInput))).Times(1);
+        EXPECT_CALL(ramsh, execute(Eq(expectedRamshInput)));
 
         for (UInt i = 0; i < input.size(); i++)
         {
-            inputProvider.processInput(input[i]);
+            inputProvider->processInput(input[i]);
         }
     }
 
@@ -399,9 +399,65 @@ namespace ramses_internal
         String input = "help\n";
         for (UInt i = 0; i < input.size(); i++)
         {
-            inputProvider.processInput(input[i]);
+            inputProvider->processInput(input[i]);
         }
 
         thread.join();
     }
+
+    class ARamshAsyncTester : public ::testing::Test
+    {
+    public:
+        static RamshInput CreateInput(std::initializer_list<const char*> inpList)
+        {
+            RamshInput input;
+            for (const auto& inp : inpList)
+                input.append(inp);
+            return input;
+        }
+
+        virtual void TearDown() override
+        {
+            // reset loglevels back to default
+            GetRamsesLogger().initialize(CommandLineParser{0, nullptr}, "RAMS", "ramses", false, true);
+        }
+
+        Ramsh rsh;
+    };
+
+    TEST_F(ARamshAsyncTester, canRunSideEffectCommands)
+    {
+        std::thread([&]() {
+            rsh.execute(CreateInput({"help"}));
+            rsh.execute(CreateInput({"buildConfig"}));
+            rsh.execute(CreateInput({"ramsesVersion"}));
+            rsh.execute(CreateInput({"printLogLevels"}));
+        }).join();
+    }
+
+    TEST_F(ARamshAsyncTester, canSetConsoleLogLevel)
+    {
+        std::thread([&]() {
+            rsh.execute(CreateInput({"setLogLevelConsole", "trace"}));
+            EXPECT_EQ(ELogLevel::Trace, GetRamsesLogger().getConsoleLogLevel());
+        }).join();
+    }
+
+    TEST_F(ARamshAsyncTester, canSetContextLogLevel)
+    {
+        std::thread([&]() {
+            rsh.execute(CreateInput({"setContextLogLevel", "trace"}));
+            EXPECT_EQ(ELogLevel::Trace, CONTEXT_FRAMEWORK.getLogLevel());
+        }).join();
+    }
+
+    TEST_F(ARamshAsyncTester, canSetContextLogLevelFilter)
+    {
+        std::thread([&]() {
+            rsh.execute(CreateInput({"setContextLogLevelFilter", "trace:RFRA,debug:RCLI"}));
+            EXPECT_EQ(ELogLevel::Trace, CONTEXT_FRAMEWORK.getLogLevel());
+            EXPECT_EQ(ELogLevel::Debug, CONTEXT_CLIENT.getLogLevel());
+        }).join();
+    }
+
 }

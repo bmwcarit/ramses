@@ -17,6 +17,7 @@
 #include "Collections/HashMap.h"
 #include "Collections/Vector.h"
 #include "Utils/MemoryPool.h"
+#include "Components/ResourceRequesterID.h"
 
 namespace ramses_internal
 {
@@ -36,7 +37,7 @@ namespace ramses_internal
             IResourceUploader& uploader,
             IRenderBackend& renderBackend,
             IEmbeddedCompositingManager& embeddedCompositingManager,
-            RequesterID requesterId,
+            ResourceRequesterID requesterId,
             Bool keepEffects,
             const FrameTimer& frameTimer,
             RendererStatistics& stats,
@@ -99,7 +100,7 @@ namespace ramses_internal
         virtual DeviceResourceHandle getOffscreenBufferColorBufferDeviceHandle(OffscreenBufferHandle bufferHandle) const override;
         virtual OffscreenBufferHandle getOffscreenBufferHandle(DeviceResourceHandle bufferDeviceHandle) const override;
 
-        const RequesterID& getRequesterID() const;
+        const ResourceRequesterID& getRequesterID() const;
 
     private:
         typedef HashMap<SceneId, ResourceContentHashVector> ResourcesPerSceneMap;
@@ -119,7 +120,7 @@ namespace ramses_internal
         };
         using OffscreenBufferMap = MemoryPool<OffscreenBufferDescriptor, OffscreenBufferHandle>;
 
-        const RequesterID m_id;
+        const ResourceRequesterID m_id;
 
         IResourceProvider&             m_resourceProvider;
         IRenderBackend&                m_renderBackend;

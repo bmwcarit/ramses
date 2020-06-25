@@ -16,6 +16,7 @@
 #include "PlatformAbstraction/FmtBase.h"
 #include <cinttypes>
 #include <functional>
+#include <vector>
 
 namespace ramses_internal
 {
@@ -71,6 +72,8 @@ namespace ramses_internal
     {
         return stream >> value.lowPart >> value.highPart;
     }
+
+    using ResourceContentHashVector = std::vector<ResourceContentHash>;
 }
 
 template <>

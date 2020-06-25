@@ -22,8 +22,8 @@ namespace ramses_internal
 {
     struct ResourceFileEntry
     {
-        UInt32 offsetInBytes;
-        UInt32 sizeInBytes;
+        UInt32 offsetInBytes = 0;
+        UInt32 sizeInBytes = 0;
         ResourceInfo resourceInfo;
     };
 

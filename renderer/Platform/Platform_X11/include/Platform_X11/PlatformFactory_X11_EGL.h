@@ -18,7 +18,7 @@ namespace ramses_internal
     class PlatformFactory_X11_EGL : public PlatformFactory_Base
     {
     protected:
-        PlatformFactory_X11_EGL(const RendererConfig& rendererConfig);
+        explicit PlatformFactory_X11_EGL(const RendererConfig& rendererConfig);
 
         ISystemCompositorController* createSystemCompositorController() override final;
         IWindow*    createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override final;

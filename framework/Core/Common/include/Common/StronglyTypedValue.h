@@ -23,17 +23,17 @@ namespace ramses_internal
     public:
         typedef _baseType BaseType;
 
-        constexpr static StronglyTypedValue Invalid()
+        constexpr static StronglyTypedValue Invalid() noexcept
         {
             return StronglyTypedValue(_invalid);
         }
 
-        constexpr explicit StronglyTypedValue(BaseType value)
+        constexpr explicit StronglyTypedValue(BaseType value) noexcept
             : m_value(value)
         {
         }
 
-        constexpr StronglyTypedValue()
+        constexpr StronglyTypedValue() noexcept
             : m_value(_invalid)
         {
         }

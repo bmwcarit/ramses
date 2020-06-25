@@ -274,7 +274,7 @@ namespace ramses_internal
         const PickableObjectId pickable2{ 2567u };
 
         m_rendererEventCollector.addPickedEvent(ERendererEventType_ObjectsPicked, sceneId, { pickable1, pickable2 });
-        const RendererEventVector resultEvents = consumeRendererEvents();
+        const RendererEventVector resultEvents = consumeSceneControlEvents();
         ASSERT_EQ(1u, resultEvents.size());
         EXPECT_EQ(ERendererEventType_ObjectsPicked, resultEvents[0].eventType);
         EXPECT_EQ(sceneId, resultEvents[0].sceneId);

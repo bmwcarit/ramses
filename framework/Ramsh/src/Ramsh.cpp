@@ -13,10 +13,9 @@
 
 namespace ramses_internal
 {
-    Ramsh::Ramsh(String prompt)
-    : m_prompt(prompt.append(">"))
-    , m_cmdPrintBuildConfig(::ramses_sdk::RAMSES_SDK_BUILD_CONFIG)
-    , m_cmdPrintRamsesVersion(::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING)
+    Ramsh::Ramsh()
+        : m_cmdPrintBuildConfig(::ramses_sdk::RAMSES_SDK_BUILD_CONFIG)
+        , m_cmdPrintRamsesVersion(::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING)
     {
         add(m_cmdPrintBuildConfig);
         add(m_cmdPrintRamsesVersion);
@@ -54,22 +53,7 @@ namespace ramses_internal
         }
     }
 
-    bool Ramsh::start()
-    {
-        return true;
-    }
-
-    bool Ramsh::stop()
-    {
-        return true;
-    }
-
-    const String& Ramsh::getPrompt() const
-    {
-        return m_prompt;
-    }
-
-    bool Ramsh::execute(RamshInput& input)
+    bool Ramsh::execute(const RamshInput& input)
     {
         if (!input.isValid())
         {

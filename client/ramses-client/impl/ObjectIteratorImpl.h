@@ -19,7 +19,6 @@ namespace ramses
     {
     public:
         ObjectIteratorImpl(const RamsesObjectRegistry& objRegistry, ERamsesObjectType objType)
-            : IteratorImpl<RamsesObject*>()
         {
             objRegistry.getObjectsOfType(this->m_objects, objType);
             this->m_objectIterator = this->m_objects.begin();

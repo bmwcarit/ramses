@@ -44,7 +44,7 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         self.expectedSurfaceIds = set(self.target.ivi_control.getSurfaceIds())
 
         # Start black background renderer
-        self.rendererbackground = self.target.start_default_renderer("--waylandIviLayerId {0} --waylandIviSurfaceID {1} --wayland-socket-embedded wayland-12".format(DEFAULT_TEST_LAYER, self.testSurfaceIVIIds["rendererbackground"]))
+        self.rendererbackground = self.target.start_default_renderer("--waylandIviSurfaceID {}".format(self.testSurfaceIVIIds["rendererbackground"]))
         self.checkThatApplicationWasStarted(self.rendererbackground)
         self.addCleanup(self.target.kill_application, self.rendererbackground)
         self.expectedSurfaceIds.add("{0}".format(self.testSurfaceIVIIds["rendererbackground"]))
@@ -81,7 +81,7 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         self.addCleanup(self.target.kill_application, self.ramsesDaemon)
 
         # Start renderer
-        self.renderer = self.target.start_default_renderer("--waylandIviLayerId {0} --waylandIviSurfaceID {1} --wayland-socket-embedded wayland-11".format(self.testLayer, self.testSurfaceIVIIds["renderer"]))
+        self.renderer = self.target.start_default_renderer("--waylandIviLayerId {} --waylandIviSurfaceID {}".format(self.testLayer, self.testSurfaceIVIIds["renderer"]))
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.save_application_output, self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)

@@ -34,28 +34,30 @@ void FileUtils::RemoveFileIfExist(const char* filePath)
     }
 }
 
-void FileUtils::WriteTextToFile(const ramses_internal::String& text, const char* filePath)
+bool FileUtils::WriteTextToFile(const ramses_internal::String& text, const char* filePath)
 {
     ramses_internal::File file(filePath);
-    file.open(ramses_internal::EFileMode_WriteNew);
-
-    file.write(text.c_str(), text.size());
+    if (!file.open(ramses_internal::File::Mode::WriteNew) ||
+        !file.write(text.c_str(), text.size()))
+        return false;
     file.flush();
-
     file.close();
+    return true;
 }
 
-void FileUtils::WriteHashToFile(ramses_internal::ResourceContentHash hash, const char* filePath)
+bool FileUtils::WriteHashToFile(ramses_internal::ResourceContentHash hash, const char* filePath)
 {
     ramses_internal::File file(filePath);
-    file.open(ramses_internal::EFileMode_WriteNew);
+    if (!file.open(ramses_internal::File::Mode::WriteNew))
+        return false;
 
     ramses_internal::StringOutputStream stringStream;
     stringStream << hash << "\n";
-    file.write(stringStream.c_str(), stringStream.size());
+    if (!file.write(stringStream.c_str(), stringStream.size()))
+        return false;
     file.flush();
-
     file.close();
+    return true;
 }
 
 bool FileUtils::ReadFileLines(const char* filePath, std::vector<ramses_internal::String>& lines)
@@ -75,25 +77,23 @@ bool FileUtils::ReadFileLines(const char* filePath, std::vector<ramses_internal:
 bool FileUtils::ReadFileContentsToString(const char* filePath, ramses_internal::String& contents)
 {
     ramses_internal::File file(filePath);
-    if (!file.exists())
+    if (!file.exists() ||
+        !file.open(ramses_internal::File::Mode::ReadOnly))
     {
         return false;
     }
 
-    file.open(ramses_internal::EFileMode_ReadOnly);
-
     ramses_internal::UInt fileSize = 0;
     ramses_internal::UInt readBytes = 0;
-    ramses_internal::EStatus stat = file.getSizeInBytes(fileSize);
-    if (stat != ramses_internal::EStatus_RAMSES_OK)
+    if (!file.getSizeInBytes(fileSize))
     {
-        PRINT_ERROR("fail to read from file: %s\n", filePath);
+        PRINT_ERROR("fail to read from file: {}\n", filePath);
         return false;
     }
 
     std::vector<char> charVector(fileSize + 1u);
-    stat = file.read(&charVector[0], fileSize, readBytes);
-    if (stat == ramses_internal::EStatus_RAMSES_OK || stat == ramses_internal::EStatus_RAMSES_EOF)
+    const ramses_internal::EStatus stat = file.read(&charVector[0], fileSize, readBytes);
+    if (stat == ramses_internal::EStatus::Ok || stat == ramses_internal::EStatus::Eof)
     {
         charVector[readBytes] = '\0';
         contents = &charVector[0];
@@ -101,7 +101,7 @@ bool FileUtils::ReadFileContentsToString(const char* filePath, ramses_internal::
     }
     else
     {
-        PRINT_ERROR("Fail to read file contents: %s", filePath);
+        PRINT_ERROR("Fail to read file contents: {}", filePath);
         return false;
     }
 }

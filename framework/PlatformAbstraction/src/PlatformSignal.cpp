@@ -21,13 +21,13 @@ namespace ramses_internal
             bool active;
         };
 
-        static HashMap<ESignal, HandlerInfo> gSignalMap;
+        HashMap<ESignal, HandlerInfo> gSignalMap;
 
-        static void SignalHandlerDispatcher(int sig)
+        void SignalHandlerDispatcher(int sig)
         {
             ESignal enumSig = static_cast<ESignal>(sig);
             HandlerInfo info;
-            if (EStatus_RAMSES_OK == gSignalMap.get(enumSig, info))
+            if (EStatus::Ok == gSignalMap.get(enumSig, info))
             {
                 info.handler(sig);
                 if (info.chainPrevious && !info.active)
@@ -44,7 +44,7 @@ namespace ramses_internal
             }
         }
 
-        static PlatformSignal::SignalHandlerFunction InstallSignalHandler(ESignal sig, PlatformSignal::SignalHandlerFunction handler)
+        PlatformSignal::SignalHandlerFunction InstallSignalHandler(ESignal sig, PlatformSignal::SignalHandlerFunction handler)
         {
 #ifdef __INTEGRITY
             UNUSED(sig);

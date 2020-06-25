@@ -42,13 +42,6 @@ namespace ramses
         return status;
     }
 
-    status_t RendererSceneControl::setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a)
-    {
-        const status_t status = impl.setDisplayBufferClearColor(display, displayBuffer, r, g, b, a);
-        LOG_HL_RENDERER_API6(status, display, displayBuffer, r, g, b, a);
-        return status;
-    }
-
     status_t RendererSceneControl::linkOffscreenBuffer(displayBufferId_t offscreenBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId)
     {
         const status_t status = impl.linkOffscreenBuffer(offscreenBufferId, consumerSceneId, consumerDataSlotId);
@@ -67,6 +60,13 @@ namespace ramses
     {
         const status_t status = impl.unlinkData(consumerSceneId, consumerId);
         LOG_HL_RENDERER_API2(status, consumerSceneId, consumerId);
+        return status;
+    }
+
+    status_t RendererSceneControl::handlePickEvent(sceneId_t sceneId, float bufferNormalizedCoordX, float bufferNormalizedCoordY)
+    {
+        const status_t status = impl.handlePickEvent(sceneId, bufferNormalizedCoordX, bufferNormalizedCoordY);
+        LOG_HL_RENDERER_API3(status, sceneId, bufferNormalizedCoordX, bufferNormalizedCoordY);
         return status;
     }
 

@@ -18,19 +18,18 @@
 
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/DisplayConfig.h"
-#include "ramses-renderer-api/IRendererSceneControlEventHandler_legacy.h"
+#include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "ramses-framework-api/RamsesFramework.h"
-#include "DisplayManager/DisplayManager.h"
+#include "RendererMate.h"
 
 #include "PlatformAbstraction/PlatformThread.h"
 #include "RendererLib/RendererConfigUtils.h"
 #include "ramses-hmi-utils.h"
 #include <fstream>
-#include "ramses-capu/os/StringUtils.h"
 #include "Utils/Image.h"
-#include "ramses-capu/os/File.h"
+#include "Utils/File.h"
 
-class ScreenshotRendererEventHandler final : public ramses::RendererEventHandlerEmpty, public ramses::RendererSceneControlEventHandlerEmpty_legacy
+class ScreenshotRendererEventHandler final : public ramses::RendererEventHandlerEmpty, public ramses::RendererSceneControlEventHandlerEmpty
 {
 public:
     ScreenshotRendererEventHandler(ramses::RamsesRenderer& renderer, ramses::displayId_t displayId, uint32_t width, uint32_t height, std::string filename)
@@ -41,7 +40,7 @@ public:
         , m_filename(std::move(filename))
     {}
 
-    virtual void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, ramses::displayId_t /*displayId*/, ramses::ERendererEventResult result) override
+    virtual void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, ramses::displayId_t /*displayId*/, ramses::displayBufferId_t /*displayBuffer*/, ramses::ERendererEventResult result) override
     {
         if (result == ramses::ERendererEventResult_OK)
         {
@@ -52,11 +51,11 @@ public:
         }
     }
 
-    virtual void sceneShown(ramses::sceneId_t /*sceneId*/, ramses::ERendererEventResult result) override
+    virtual void sceneStateChanged(ramses::sceneId_t /*sceneId*/, ramses::RendererSceneState state) override
     {
-        if (result == ramses::ERendererEventResult_OK)
+        if (state == ramses::RendererSceneState::Rendered)
         {
-            m_renderer.readPixels(m_displayId, 0, 0, m_width, m_height);
+            m_renderer.readPixels(m_displayId, {}, 0, 0, m_width, m_height);
             m_renderer.flush();
         }
     }
@@ -91,7 +90,7 @@ namespace ramses_internal
         const bool   helpRequested    = m_helpArgument;
         const String scenePathAndFile = m_scenePathAndFileArgument;
         const String optionalResFile  = m_optionalResFileArgument;
-        m_sceneName = ramses_capu::File(scenePathAndFile.stdRef()).getFileName();
+        m_sceneName = ramses_internal::File(scenePathAndFile).getFileName().stdRef();
 
         if (helpRequested)
         {
@@ -136,31 +135,12 @@ namespace ramses_internal
         frameworkConfig.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);
         ramses::RamsesFramework framework(frameworkConfig);
 
-        const ramses::RendererConfig rendererConfig(argc, argv);
-        auto renderer = framework.createRenderer(rendererConfig);
-        if (!renderer)
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "Creation of renderer failed");
-            return;
-        }
-
-        renderer->startThread();
-        ramses_internal::DisplayManager displayManager(renderer->impl, framework.impl);
-        // allow camera free move
-        displayManager.enableKeysHandling();
-
-        const ramses::DisplayConfig displayConfig(argc, argv);
-        const ramses::displayId_t displayId = displayManager.createDisplay(displayConfig);
-        displayManager.dispatchAndFlush();
-
         auto client = framework.createClient("client-scene-reader");
         if (!client)
         {
             LOG_ERROR(CONTEXT_CLIENT, "Creation of client failed");
             return;
         }
-
-        framework.connect();
 
         auto loadedScene = loadSceneWithResources(*client, sceneFile, resFile);
         if (loadedScene == nullptr)
@@ -184,9 +164,27 @@ namespace ramses_internal
         }
         ramses::RamsesHMIUtils::DumpUnrequiredSceneObjects(*loadedScene);
 
-        displayManager.setSceneMapping(loadedScene->getSceneId(), displayId);
-        displayManager.setSceneState(loadedScene->getSceneId(), ramses_internal::SceneState::Rendered);
+        const ramses::RendererConfig rendererConfig(argc, argv);
+        auto renderer = framework.createRenderer(rendererConfig);
+        if (!renderer)
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Creation of renderer failed");
+            return;
+        }
+        framework.connect();
 
+        const ramses::DisplayConfig displayConfig(argc, argv);
+        const ramses::displayId_t displayId = renderer->createDisplay(displayConfig);
+        renderer->flush();
+
+        renderer->startThread();
+
+        ramses::RendererMate rendererMate(renderer->impl, framework.impl);
+        // allow camera free move
+        rendererMate.enableKeysHandling();
+
+        rendererMate.setSceneMapping(loadedScene->getSceneId(), displayId);
+        rendererMate.setSceneState(loadedScene->getSceneId(), ramses::RendererSceneState::Rendered);
 
         std::unique_ptr<ScreenshotRendererEventHandler> eventHandler;
         const String screenshotFile = m_screenshotFile;
@@ -204,12 +202,18 @@ namespace ramses_internal
             else
                 LOG_ERROR(CONTEXT_CLIENT, "Screenshot in fullscreen mode is not supported");
         }
+        ramses::RendererSceneControlEventHandlerEmpty dummy;
 
-        while (displayManager.isRunning())
+        while (rendererMate.isRunning())
         {
-            displayManager.dispatchAndFlush(nullptr, eventHandler.get());
-            if(eventHandler && eventHandler->isScreenshotTaken())
-                break;
+            if (eventHandler)
+            {
+                rendererMate.dispatchAndFlush(*eventHandler, eventHandler.get());
+                if (eventHandler->isScreenshotTaken())
+                    break;
+            }
+            else
+                rendererMate.dispatchAndFlush(dummy);
 
             ramses_internal::PlatformThread::Sleep(30u);
         }

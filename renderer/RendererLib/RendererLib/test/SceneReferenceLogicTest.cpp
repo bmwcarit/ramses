@@ -30,17 +30,17 @@ namespace ramses_internal
 
         virtual void SetUp() override
         {
-            SceneAllocateHelper masterScene1{ m_scenes.createScene({ MasterSceneId1 }) };
+            SceneAllocateHelper masterScene1{ m_scenes.createScene(SceneInfo{ MasterSceneId1 }) };
             masterScene1.allocateSceneReference(RefSceneId11, RefSceneHandle11);
             masterScene1.allocateSceneReference(RefSceneId12, RefSceneHandle12);
-            SceneAllocateHelper masterScene2{ m_scenes.createScene({ MasterSceneId2 }) };
+            SceneAllocateHelper masterScene2{ m_scenes.createScene(SceneInfo{ MasterSceneId2 }) };
             masterScene2.allocateSceneReference(RefSceneId21, RefSceneHandle21);
             masterScene2.allocateSceneReference(RefSceneId22, RefSceneHandle22);
 
-            m_scenes.createScene({ RefSceneId11 });
-            m_scenes.createScene({ RefSceneId12 });
-            m_scenes.createScene({ RefSceneId21 });
-            m_scenes.createScene({ RefSceneId22 });
+            m_scenes.createScene(SceneInfo{ RefSceneId11 });
+            m_scenes.createScene(SceneInfo{ RefSceneId12 });
+            m_scenes.createScene(SceneInfo{ RefSceneId21 });
+            m_scenes.createScene(SceneInfo{ RefSceneId22 });
 
             // ignore this unless overriden by test
             EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _, _)).Times(AnyNumber());

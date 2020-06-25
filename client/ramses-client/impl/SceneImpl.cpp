@@ -664,7 +664,7 @@ namespace ramses
         }
         if (requestedPublicationMode != EScenePublicationMode_LocalOnly && !getClientImpl().getFramework().isConnected())
         {
-            return addErrorEntry((ramses_internal::StringOutputStream() << "Scene(" << m_scene.getSceneId() << ")::publish: failed, have to connect() the client first").c_str());
+            return addErrorEntry((ramses_internal::StringOutputStream() << "Scene(" << m_scene.getSceneId() << ")::publish: failed, have to connect the framework first using RamsesFramework::connect").c_str());
         }
         const ramses_internal::EScenePublicationMode internalMode = SceneUtils::GetScenePublicationModeInternal(requestedPublicationMode);
         getClientImpl().getClientApplication().publishScene(m_scene.getSceneId(), internalMode);

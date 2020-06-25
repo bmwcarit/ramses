@@ -37,7 +37,7 @@ public:
     void initializeRenderer();
     void initializeRenderer(const ramses::RendererConfig& rendererConfig);
     void destroyRenderer();
-    ramses::displayId_t createDisplay(ramses::DisplayConfig displayConfig);
+    ramses::displayId_t createDisplay(const ramses::DisplayConfig& displayConfig);
     ramses::displayBufferId_t getDisplayFramebufferId(uint32_t testDisplayIdx) const;
     void destroyDisplays();
     ramses_internal::TestRenderer& getTestRenderer();

@@ -18,7 +18,7 @@ namespace ramses_internal
     class SetSkippingOfUnmodifiedBuffers : public RamshCommandArgs<UInt32>
     {
     public:
-        SetSkippingOfUnmodifiedBuffers(RendererCommandBuffer& rendererCommandBuffer);
+        explicit SetSkippingOfUnmodifiedBuffers(RendererCommandBuffer& rendererCommandBuffer);
         virtual Bool execute(UInt32& enableSkipping) const override;
 
     private:

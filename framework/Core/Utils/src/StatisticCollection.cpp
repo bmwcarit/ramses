@@ -106,6 +106,7 @@ namespace ramses_internal
         statObjectsDestroyed.reset();
         statObjectsNumber.reset();
         statSceneActionsSent.reset();
+        statSceneActionsSentSkipped.reset();
         statSceneActionsGenerated.reset();
         statSceneActionsGeneratedSize.reset();
     }
@@ -119,6 +120,7 @@ namespace ramses_internal
         statObjectsDestroyed.getSummary().reset();
         statObjectsNumber.getSummary().reset();
         statSceneActionsSent.getSummary().reset();
+        statSceneActionsSentSkipped.getSummary().reset();
         statSceneActionsGenerated.getSummary().reset();
         statSceneActionsGeneratedSize.getSummary().reset();
     }
@@ -131,6 +133,7 @@ namespace ramses_internal
         const UInt32 objectsCreated = statObjectsCreated.updateSummaryAndResetCounter();
         const UInt32 objectsDestroyed = statObjectsDestroyed.updateSummaryAndResetCounter();
         statSceneActionsSent.updateSummaryAndResetCounter();
+        statSceneActionsSentSkipped.updateSummaryAndResetCounter();
         statSceneActionsGenerated.updateSummaryAndResetCounter();
         statSceneActionsGeneratedSize.updateSummaryAndResetCounter();
 

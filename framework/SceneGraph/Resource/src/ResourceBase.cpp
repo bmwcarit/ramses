@@ -36,15 +36,17 @@ namespace ramses_internal
             metaDataStream << cityhash::Uint128High64(cityHashBlob);
             const cityhash::uint128 cityHashMetadataAndBlob = cityhash::CityHash128(metaDataStream.getData(), metaDataStream.getSize());
 
+            // store resource type in resource hash highest nibble. assume enough bits left for hash and useful in case of error
+            static_assert(EResourceType_NUMBER_OF_ELEMENTS <= 0xF, "Too many resource types");
+
             m_hash.lowPart = cityhash::Uint128Low64(cityHashMetadataAndBlob);
-            m_hash.highPart = cityhash::Uint128High64(cityHashMetadataAndBlob);
+            m_hash.highPart = (cityhash::Uint128High64(cityHashMetadataAndBlob) & 0xFFFFFFFFFFFFFFFLU) | (static_cast<uint64_t>(getTypeID()) << 60LU);
         }
     }
 
     void ResourceBase::compress(CompressionLevel level) const
     {
         if (level != CompressionLevel::NONE &&
-            isCompressable() &&
             !isCompressedAvailable() &&
             m_data.size() > 1000) // only compress if it pays off
         {

@@ -11,7 +11,7 @@
 
 #ifdef _MSC_VER
 
-#include "ramses-capu/os/Windows/MinimalWindowsH.h"
+#include "PlatformAbstraction/MinimalWindowsH.h"
 #include <conio.h>
 #include <array>
 
@@ -92,7 +92,9 @@ namespace
                                 return false;
 
                             // ignore all other input types and try again next loop
-                            if (inputRecord.EventType == KEY_EVENT && inputRecord.Event.KeyEvent.bKeyDown)
+                            if (inputRecord.EventType == KEY_EVENT &&   // from keyboard
+                                inputRecord.Event.KeyEvent.bKeyDown &&   // key pressed
+                                inputRecord.Event.KeyEvent.uChar.AsciiChar) // no control key (e.g. shift)
                             {
                                 c = inputRecord.Event.KeyEvent.uChar.AsciiChar;
                                 return true;
@@ -155,7 +157,7 @@ namespace
             // select with zero timeout on stdin to check if fd is valid and open
             const int stdinFd = ::fileno(stdin);
             fd_set fdset;
-            FD_ZERO(&fdset);
+            FD_ZERO(&fdset);  // NOLINT macro does unsafe stuff inside
             FD_SET(stdinFd, &fdset);
             struct timeval timeout = {0, 0};
             if (::select(stdinFd + 1, &fdset, nullptr, nullptr, &timeout) < 0)
@@ -212,7 +214,7 @@ namespace
             {
                 // select infinitly on stdin and pipe
                 fd_set fdset;
-                FD_ZERO(&fdset);
+                FD_ZERO(&fdset);  // NOLINT macro does unsafe stuff inside
                 FD_SET(m_readPipe, &fdset); // read end of pipe;
                 FD_SET(stdinFd, &fdset);
                 if (::select(std::max(stdinFd, m_readPipe) + 1, &fdset, nullptr, nullptr, nullptr) > 0)

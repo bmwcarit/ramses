@@ -18,6 +18,7 @@
 #include "Components/ResourceStreamSerialization.h"
 #include "ResourceSerializationTestHelper.h"
 #include "Components/SingleResourceSerialization.h"
+#include "Resource/ResourceInfo.h"
 #include "TestRandom.h"
 
 namespace ramses_internal

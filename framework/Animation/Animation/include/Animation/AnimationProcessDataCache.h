@@ -20,7 +20,7 @@ namespace ramses_internal
     public:
         typedef HashMap<AnimationHandle, AnimationProcessData> DataProcessMap;
 
-        AnimationProcessDataCache(const AnimationData& animationData);
+        explicit AnimationProcessDataCache(const AnimationData& animationData);
 
         void addProcessData(AnimationHandle handle);
         void removeProcessData(AnimationHandle handle);

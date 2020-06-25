@@ -70,7 +70,7 @@ namespace ramses_internal
 
     private:
 
-        ResourceStressTests(const StressTestConfig& config);
+        explicit ResourceStressTests(const StressTestConfig& config);
 
         Int32 runTest(EStressTestCaseId testToRun);
 

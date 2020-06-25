@@ -17,11 +17,9 @@ namespace ramses_internal
     class WaylandBufferMock : public IWaylandBuffer
     {
     public:
-        MOCK_CONST_METHOD0(getSharedMemoryBufferWidth, int32_t());
-        MOCK_CONST_METHOD0(getSharedMemoryBufferHeight, int32_t());
-        MOCK_CONST_METHOD0(getResource, WaylandBufferResource&());
-        MOCK_METHOD0(reference, void());
-        MOCK_METHOD0(release, void());
+        MOCK_METHOD(WaylandBufferResource&, getResource, (), (const, override));
+        MOCK_METHOD(void, reference, (), (override));
+        MOCK_METHOD(void, release, (), (override));
     };
 }
 

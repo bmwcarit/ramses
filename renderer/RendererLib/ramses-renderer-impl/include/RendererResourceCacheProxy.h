@@ -20,7 +20,7 @@ namespace ramses
     class RendererResourceCacheProxy : public ramses_internal::IRendererResourceCache
     {
     public:
-        RendererResourceCacheProxy(ramses::IRendererResourceCache& cache);
+        explicit RendererResourceCacheProxy(ramses::IRendererResourceCache& cache);
         virtual ~RendererResourceCacheProxy();
 
         virtual bool hasResource(ramses_internal::ResourceContentHash resourceId, uint32_t& size) const override;

@@ -162,7 +162,8 @@ namespace ramses_internal
                 if (updater.hasPendingFlushes(sceneId))
                 {
                     const auto& stagingInfo = updater.m_rendererScenes.getStagingInfo(sceneId);
-                    const auto& pendingFlushes = stagingInfo.pendingFlushes;
+                    const auto& pendingData = stagingInfo.pendingData;
+                    const auto& pendingFlushes = pendingData.pendingFlushes;
                     context << "Pending flushes: " << pendingFlushes.size() << RendererLogContext::NewLine;
                     context.indent();
                     for (const auto& flushInfo : pendingFlushes)
@@ -170,13 +171,14 @@ namespace ramses_internal
                         context << "Flush " << flushInfo.flushIndex << RendererLogContext::NewLine;
                         context << "[ sceneActions: " << flushInfo.sceneActions.numberOfActions() << " (" << flushInfo.sceneActions.collectionData().size() << " bytes) ]" << RendererLogContext::NewLine;
                         context << "[ " << stagingInfo.sizeInformation.asString().c_str() << " ]" << RendererLogContext::NewLine;
-                        context << "[ needed resources (squashed with previous pending flushes): " << flushInfo.clientResourcesNeeded.size() << " : [";
-                        for (const auto& res : flushInfo.clientResourcesNeeded)
-                        {
-                            context << " " << res;
-                        }
                         context << "] ]" << RendererLogContext::NewLine;
                     }
+                    context << "[ needed resources (all pending flushes): " << pendingData.clientResourcesNeeded.size() << " : [";
+                    for (const auto& res : pendingData.clientResourcesNeeded)
+                    {
+                        context << " " << res;
+                    }
+                    context << "] ]" << RendererLogContext::NewLine;
                     context.unindent();
                 }
             }
@@ -624,16 +626,22 @@ namespace ramses_internal
         for (const auto& sceneIt : updater.m_rendererScenes)
         {
             context << "Scene " << sceneIt.key << RendererLogContext::NewLine;
+            const auto& pendingData = sceneIt.value.stagingInfo->pendingData;
+
             context.indent();
-            for (const auto& pendingFlush : sceneIt.value.stagingInfo->pendingFlushes)
+            context << "Pending flush(es) : [ ";
+            for (const auto& pendingFlush : pendingData.pendingFlushes)
             {
-                context << "Pending flush " << pendingFlush.flushIndex << " consolidated lists:" << RendererLogContext::NewLine;
-                context.indent();
-                context << "Needed = " << resourcesToString(pendingFlush.clientResourcesNeeded) << RendererLogContext::NewLine;
-                context << "Unneeded = " << resourcesToString(pendingFlush.clientResourcesUnneeded) << RendererLogContext::NewLine;
-                context << "PendingUnneeded = " << resourcesToString(pendingFlush.clientResourcesPendingUnneeded) << RendererLogContext::NewLine;
-                context.unindent();
+                context << pendingFlush.flushIndex << " ";
             }
+            context << "]" << RendererLogContext::NewLine;
+
+            context.indent();
+            context << "Needed = " << resourcesToString(pendingData.clientResourcesNeeded) << RendererLogContext::NewLine;
+            context << "Unneeded = " << resourcesToString(pendingData.clientResourcesUnneeded) << RendererLogContext::NewLine;
+            context << "PendingUnneeded = " << resourcesToString(pendingData.clientResourcesPendingUnneeded) << RendererLogContext::NewLine;
+            context.unindent();
+
             context.unindent();
         }
         EndSection("RENDERER MISSING RESOURCES", context);
@@ -1147,7 +1155,7 @@ namespace ramses_internal
                         sos << " " << sceneId.getValue() << " " << EnumToString(sceneState);
                         if (updater.m_rendererScenes.hasScene(sceneId))
                         {
-                            const auto& pendingFlushes = updater.m_rendererScenes.getStagingInfo(sceneId).pendingFlushes;
+                            const auto& pendingFlushes = updater.m_rendererScenes.getStagingInfo(sceneId).pendingData.pendingFlushes;
                             if (!pendingFlushes.empty())
                                 sos << " (" << pendingFlushes.size() << " pending flushes)";
                         }

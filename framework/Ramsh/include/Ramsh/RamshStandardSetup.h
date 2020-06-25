@@ -9,27 +9,31 @@
 #ifndef RAMSES_RAMSHSTANDARDSETUP_H
 #define RAMSES_RAMSHSTANDARDSETUP_H
 
+#include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "Ramsh/Ramsh.h"
-#include "Ramsh/RamshCommunicationChannelConsole.h"
-#include "Ramsh/RamshDLT.h"
 
 namespace ramses_internal
 {
-    class RamshStandardSetup : public RamshDLT
+    class RamshCommunicationChannelConsole;
+    class RamshCommunicationChannelDLT;
+
+    class RamshStandardSetup : public Ramsh
     {
     public:
-        RamshStandardSetup(String prompt = "noname");
+        explicit RamshStandardSetup(ramses::ERamsesShellType type, String prompt = "ramses");
+        virtual ~RamshStandardSetup() override;
 
-        virtual bool start() override;
-        virtual bool stop() override;
-
-        ~RamshStandardSetup();
+        bool start();
+        bool stop();
 
     private:
-        bool internalStop();
-        RamshCommunicationChannelConsole m_consoleChannel;
+        const ramses::ERamsesShellType m_type;
+        const String m_prompt;
+        bool m_started = false;
+        std::unique_ptr<RamshCommunicationChannelConsole> m_consoleChannel;
+        std::unique_ptr<RamshCommunicationChannelDLT> m_dltChannel;
     };
 
-}// namespace ramses_internal
+}
 
 #endif

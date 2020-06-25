@@ -17,7 +17,7 @@
 class TextBoxWithShadow : public GraphicalItem
 {
 public:
-    TextBoxWithShadow(std::u32string            string,
+    TextBoxWithShadow(const std::u32string&     string,
                       ramses::TextCache&        textCache,
                       ramses::FontInstanceId    fontInstance,
                       int32_t                   lineHeight,

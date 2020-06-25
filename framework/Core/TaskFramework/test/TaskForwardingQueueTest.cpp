@@ -37,7 +37,7 @@ namespace ramses_internal
         {
         }
 
-        virtual void execute()
+        virtual void execute() override
         {
             mq.enqueue(task);
         }
@@ -49,17 +49,17 @@ namespace ramses_internal
     class DirectTaskExecutor : public ITaskQueue
     {
     public:
-        virtual bool enqueue(ITask& Task)
+        virtual bool enqueue(ITask& Task) override
         {
             Task.execute();
             return true;
         }
 
-        virtual void enableAcceptingTasks()
+        virtual void enableAcceptingTasks() override
         {
         }
 
-        virtual void disableAcceptingTasksAfterExecutingCurrentQueue()
+        virtual void disableAcceptingTasksAfterExecutingCurrentQueue() override
         {
         }
     };

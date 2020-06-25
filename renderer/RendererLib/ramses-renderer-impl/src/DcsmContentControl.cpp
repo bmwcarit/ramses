@@ -14,6 +14,7 @@
 #include "DcsmConsumerImpl.h"
 #include "APILoggingMacros.h"
 #include "RamsesFrameworkTypesImpl.h"
+#include "ramses-framework-api/CategoryInfoUpdate.h"
 
 namespace ramses
 {
@@ -53,10 +54,10 @@ namespace ramses
         return status;
     }
 
-    status_t DcsmContentControl::setCategorySize(Category categoryId, SizeInfo size, AnimationInformation timingInfo)
+    status_t DcsmContentControl::setCategorySize(Category categoryId, const CategoryInfoUpdate& categoryInfo, AnimationInformation timingInfo)
     {
-        const auto status = m_impl.setCategorySize(categoryId, size, timingInfo);
-        LOG_HL_RENDERER_API5(status, categoryId, size.width, size.height, timingInfo.startTime, timingInfo.finishTime);
+        const auto status = m_impl.setCategorySize(categoryId, categoryInfo, timingInfo);
+        LOG_HL_RENDERER_API4(status, categoryId, categoryInfo, timingInfo.startTime, timingInfo.finishTime);
         return status;
     }
 
@@ -74,13 +75,6 @@ namespace ramses
         return status;
     }
 
-    status_t DcsmContentControl::setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a)
-    {
-        const auto status = m_impl.setDisplayBufferClearColor(display, displayBuffer, r, g, b, a);
-        LOG_HL_RENDERER_API5(status, displayBuffer, r, g, b, a);
-        return status;
-    }
-
     status_t DcsmContentControl::linkOffscreenBuffer(displayBufferId_t offscreenBufferId, ContentID consumerContentID, dataConsumerId_t consumerId)
     {
         const auto status = m_impl.linkOffscreenBuffer(offscreenBufferId, consumerContentID, consumerId);
@@ -92,6 +86,20 @@ namespace ramses
     {
         const auto status = m_impl.linkData(providerContentID, providerId, consumerContentID, consumerId);
         LOG_HL_RENDERER_API4(status, providerContentID, providerId, consumerContentID, consumerId);
+        return status;
+    }
+
+    status_t DcsmContentControl::unlinkData(ContentID consumerContentID, dataConsumerId_t consumerId)
+    {
+        const auto status = m_impl.unlinkData(consumerContentID, consumerId);
+        LOG_HL_RENDERER_API2(status, consumerContentID, consumerId);
+        return status;
+    }
+
+    status_t DcsmContentControl::handlePickEvent(ContentID contentID, float bufferNormalizedCoordX, float bufferNormalizedCoordY)
+    {
+        const auto status = m_impl.handlePickEvent(contentID, bufferNormalizedCoordX, bufferNormalizedCoordY);
+        LOG_HL_RENDERER_API3(status, contentID, bufferNormalizedCoordX, bufferNormalizedCoordY);
         return status;
     }
 

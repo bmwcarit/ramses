@@ -7,47 +7,39 @@
 //  -------------------------------------------------------------------------
 
 #include "Ramsh/RamshStandardSetup.h"
+#include "Ramsh/RamshCommunicationChannelDLT.h"
+#include "Ramsh/RamshCommunicationChannelConsole.h"
 
 namespace ramses_internal
 {
-    RamshStandardSetup::RamshStandardSetup(String prompt /* = "noname" */):
-        RamshDLT(prompt)
-        , m_consoleChannel()
+    RamshStandardSetup::RamshStandardSetup(ramses::ERamsesShellType type, String prompt)
+        : m_type(type)
+        , m_prompt(std::move(prompt))
     {
     }
+
+    RamshStandardSetup::~RamshStandardSetup() = default;
 
     bool RamshStandardSetup::start()
     {
         if (m_started)
-        {
             return false;
-        }
+        m_started = true;
 
-        m_consoleChannel.startThread();
-        m_consoleChannel.registerRamsh(*this);
-        return RamshDLT::start();
-    }
-
-    bool RamshStandardSetup::internalStop()
-    {
-        if (!m_started)
-        {
-            return false;
-        }
-
-        m_consoleChannel.stopThread();
-        return RamshDLT::stop();
+        if (m_type == ramses::ERamsesShellType_Console)
+            m_consoleChannel = RamshCommunicationChannelConsole::Construct(*this, m_prompt);
+        if (m_type == ramses::ERamsesShellType_Console || m_type == ramses::ERamsesShellType_Default)
+            m_dltChannel.reset(new RamshCommunicationChannelDLT(*this));
+        return true;
     }
 
     bool RamshStandardSetup::stop()
     {
-        return internalStop();
-
-    }
-
-    RamshStandardSetup::~RamshStandardSetup()
-    {
-        internalStop();
+        if (!m_started)
+            return false;
+        m_dltChannel.reset();
+        m_consoleChannel.reset();
+        m_started  = false;
+        return true;
     }
 }
-

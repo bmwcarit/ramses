@@ -27,6 +27,7 @@
 #include "RamsesFrameworkImpl.h"
 #include "Ramsh/RamshCommandExit.h"
 #include "TestStepCommand.h"
+#include "Ramsh/Ramsh.h"
 
 
 using SceneVector = std::vector<ramses::Scene*>;

@@ -9,7 +9,6 @@
 #ifndef RAMSES_SCENEACTIONAPPLIER_H
 #define RAMSES_SCENEACTIONAPPLIER_H
 
-#include "Transfer/ResourceTypes.h"
 #include "SceneActionCollection.h"
 #include "SceneAPI/SceneVersionTag.h"
 #include "Collections/Vector.h"

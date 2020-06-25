@@ -31,7 +31,7 @@ namespace ramses
     class RendererSceneControlLogic final : public RendererSceneControlEventHandlerEmpty_legacy
     {
     public:
-        RendererSceneControlLogic(IRendererSceneControlImpl_legacy& sceneControl);
+        explicit RendererSceneControlLogic(IRendererSceneControlImpl_legacy& sceneControl);
 
         void setSceneState(sceneId_t sceneId, RendererSceneState state);
         void setSceneMapping(sceneId_t sceneId, displayId_t displayId);

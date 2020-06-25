@@ -8,7 +8,6 @@
 
 #include "RendererLib/DataReferenceLinkCachedScene.h"
 #include "RendererLib/SceneLinksManager.h"
-#include "SceneUtils/DataInstanceHelper.h"
 
 namespace ramses_internal
 {
@@ -113,11 +112,11 @@ namespace ramses_internal
         DataInstanceHelper::SetInstanceFieldData(*this, containerHandle, field, *m_fallbackValues.getMemory(containerHandle));
     }
 
-    void DataReferenceLinkCachedScene::setValueWithoutUpdatingFallbackValue(DataInstanceHandle containerHandle, DataFieldHandle field, const Variant& value)
+    void DataReferenceLinkCachedScene::setValueWithoutUpdatingFallbackValue(DataInstanceHandle containerHandle, DataFieldHandle field, const DataInstanceValueVariant& value)
     {
         // store current fallback value
         // setting new value will update fallback value to the value we set
-        const Variant fallbackValue = *m_fallbackValues.getMemory(containerHandle);
+        const DataInstanceValueVariant fallbackValue = *m_fallbackValues.getMemory(containerHandle);
 
         DataInstanceHelper::SetInstanceFieldData(*this, containerHandle, field, value);
 
@@ -130,7 +129,7 @@ namespace ramses_internal
     {
         if (m_fallbackValues.isAllocated(containerHandle))
         {
-            m_fallbackValues.getMemory(containerHandle)->setValue(data[0]);
+            *m_fallbackValues.getMemory(containerHandle) = data[0];
         }
     }
 }

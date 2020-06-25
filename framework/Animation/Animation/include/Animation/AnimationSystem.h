@@ -15,11 +15,11 @@
 
 namespace ramses_internal
 {
-    enum EAnimationSystemFlags
+    enum EAnimationSystemFlags : uint32_t
     {
         EAnimationSystemFlags_Default        = 0,
-        EAnimationSystemFlags_FullProcessing = BIT(0),  ///< Full processing of animations is used. If not set only animations are processed only when finished.
-        EAnimationSystemFlags_RealTime       = BIT(1)   ///< Hints the renderer to use system time for every frame updates. If not set animation system is fully controlled via setTime calls from client.
+        EAnimationSystemFlags_FullProcessing = BIT(0u),  ///< Full processing of animations is used. If not set only animations are processed only when finished.
+        EAnimationSystemFlags_RealTime       = BIT(1u)   ///< Hints the renderer to use system time for every frame updates. If not set animation system is fully controlled via setTime calls from client.
     };
 
     class AnimationSystem : public IAnimationSystem
@@ -107,7 +107,7 @@ namespace ramses_internal
         AnimationLogicListener*  m_animationProcessing;
         const UInt32             m_flags;
 
-        static const UInt64 LoopingLengthMultiplier = 1u << 20;
+        static const UInt64 LoopingLengthMultiplier = 1u << 20u;
     private:
         AnimationSystemHandle    m_handle;
     };

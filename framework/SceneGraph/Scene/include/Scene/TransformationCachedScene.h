@@ -27,7 +27,7 @@ namespace ramses_internal
     class TransformationCachedSceneT : public SceneT<MEMORYPOOL>
     {
     public:
-        TransformationCachedSceneT(const SceneInfo& sceneInfo = SceneInfo());
+        explicit TransformationCachedSceneT(const SceneInfo& sceneInfo = SceneInfo());
 
         virtual void                    preallocateSceneSize(const SceneSizeInformation& sizeInfo) override;
 

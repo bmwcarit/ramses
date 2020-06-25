@@ -463,7 +463,7 @@ namespace ramses
         /**
          * @brief Constructor of RamsesClient
          */
-        RamsesClient(RamsesClientImpl&);
+        explicit RamsesClient(RamsesClientImpl&);
 
         /**
          * @brief Deleted default constructor

@@ -115,7 +115,7 @@ namespace ramses_internal
              *
              * @para iter iterator of the underlying hash table
              */
-            HashSetIterator(const HashMapIteratorType& iter)
+            explicit HashSetIterator(const HashMapIteratorType& iter)
                 : m_iter(iter)
             {
             }
@@ -141,7 +141,7 @@ namespace ramses_internal
         /**
          * Parameterized Constructor
          */
-        HashSet(size_t initialCapacity);
+        explicit HashSet(size_t initialCapacity);
 
         /**
          * Copy constructor.
@@ -315,8 +315,8 @@ namespace ramses_internal
     {
         const auto it = m_map.find(value);
         if (it != m_map.end())
-            return it;
-        return m_map.put(value, 0);
+            return Iterator{it};
+        return Iterator{m_map.put(value, 0)};
     }
 
     template <class T>
@@ -328,7 +328,7 @@ namespace ramses_internal
     template <class T>
     typename HashSet<T>::Iterator HashSet<T>::remove(Iterator it)
     {
-        return m_map.remove(it.m_iter);
+        return Iterator{m_map.remove(it.m_iter)};
     }
 
     template <class T>
@@ -376,13 +376,13 @@ namespace ramses_internal
     template <class T>
     typename HashSet<T>::Iterator HashSet<T>::find(const T& value)
     {
-        return m_map.find(value);
+        return Iterator{m_map.find(value)};
     }
 
     template <class T>
     typename HashSet<T>::ConstIterator HashSet<T>::find(const T& value) const
     {
-        return m_map.find(value);
+        return ConstIterator{m_map.find(value)};
     }
 
     template<class T>
@@ -443,4 +443,4 @@ namespace ramses_internal
     }
 }
 
-#endif /* RAMSES_CAPU_HASHSET_H */
+#endif

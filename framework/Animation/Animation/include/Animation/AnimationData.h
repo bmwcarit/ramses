@@ -25,7 +25,7 @@ namespace ramses_internal
     class AnimationData : public AnimationDataNotifier
     {
     public:
-        AnimationData(const AnimationSystemSizeInformation& sizeInfo = AnimationSystemSizeInformation());
+        explicit AnimationData(const AnimationSystemSizeInformation& sizeInfo = AnimationSystemSizeInformation());
         virtual ~AnimationData();
 
         template <template<typename> class Key, typename EDataType>

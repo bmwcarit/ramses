@@ -9,7 +9,7 @@
 #ifndef RAMSES_ITASK_H
 #define RAMSES_ITASK_H
 
-#include "Transfer/RefCounted.h"
+#include "TaskFramework/RefCounted.h"
 
 namespace ramses_internal
 {

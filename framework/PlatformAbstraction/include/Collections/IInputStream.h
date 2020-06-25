@@ -78,7 +78,7 @@ namespace ramses_internal
              typename = typename std::enable_if<std::is_enum<E>::value  && !std::is_convertible<E, int>::value>::type>
     IInputStream& operator>>(IInputStream& stream, E& value)
     {
-        typename std::underlying_type<E>::type valueInUnderlyingType;
+        std::underlying_type_t<E> valueInUnderlyingType;
         stream >> valueInUnderlyingType;
         value = static_cast<E>(valueInUnderlyingType);
 

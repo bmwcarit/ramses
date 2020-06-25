@@ -80,7 +80,7 @@ namespace ramses_internal
         class ClientRunnable : public Runnable
         {
         public:
-            ClientRunnable(int fd)
+            explicit ClientRunnable(int fd)
                 : m_fd(fd)
                 , m_protocolErrorCode(0)
             {

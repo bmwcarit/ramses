@@ -12,7 +12,7 @@
 #include "RendererAPI/Types.h"
 #include "Utils/StringUtils.h"
 
-#include "ramses-capu/os/Windows/MinimalWindowsH.h"
+#include "PlatformAbstraction/MinimalWindowsH.h"
 #include "GL/GL.h"
 #include "GL/wgl.h"
 

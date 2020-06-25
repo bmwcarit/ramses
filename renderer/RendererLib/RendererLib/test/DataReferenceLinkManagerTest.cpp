@@ -20,7 +20,7 @@ using namespace ramses_internal;
 class ADataReferenceLinkManager : public ::testing::Test
 {
 public:
-    ADataReferenceLinkManager(bool createSlots = true)
+    explicit ADataReferenceLinkManager(bool createSlots = true)
         : rendererScenes(rendererEventCollector)
         , sceneLinksManager(rendererScenes.getSceneLinksManager())
         , dataReferenceLinkManager(sceneLinksManager.getDataReferenceLinkManager())

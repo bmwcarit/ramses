@@ -10,7 +10,7 @@
 #define RAMSES_DEVICE_GL_PLATFORM_H
 
 #ifdef _WIN32
-#include "ramses-capu/os/Windows/MinimalWindowsH.h"
+#include "PlatformAbstraction/MinimalWindowsH.h"
 #include <GL/gl.h>
 #include <GL/glext.h>
 

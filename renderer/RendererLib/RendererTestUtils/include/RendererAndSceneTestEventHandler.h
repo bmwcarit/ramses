@@ -139,7 +139,7 @@ namespace ramses
         }
 
     private:
-        bool waitUntilOrTimeout(const std::function<bool()> conditionFunction)
+        bool waitUntilOrTimeout(const std::function<bool()>& conditionFunction)
         {
             const std::chrono::steady_clock::time_point timeoutTS = std::chrono::steady_clock::now() + m_timeout;
             while (!conditionFunction() && std::chrono::steady_clock::now() < timeoutTS)

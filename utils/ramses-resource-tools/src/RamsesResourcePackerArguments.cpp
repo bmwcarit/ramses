@@ -54,9 +54,9 @@ bool RamsesResourcePackerArguments::getUseCompression() const
 void RamsesResourcePackerArguments::printUsage() const
 {
     PRINT_HINT( "usage: program\n"
-                "--%s (-%s) <filename>\n"
-                "--%s (-%s) <filename>\n"
-                "--%s (-%s) {optional}\n\n",
+                "--{} (-{}) <filename>\n"
+                "--{} (-{}) <filename>\n"
+                "--{} (-{}) {{optional}}\n\n",
                 IN_RESOURCE_FILES_CONFIG_NAME, IN_RESOURCE_FILES_CONFIG_SHORT_NAME,
                 OUT_RESOURCE_FILE_NAME, OUT_RESOURCE_FILE_SHORT_NAME,
                 OUT_COMPRESSION, OUT_COMPRESSION_SHORT);

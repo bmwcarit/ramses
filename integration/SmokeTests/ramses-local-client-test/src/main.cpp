@@ -9,6 +9,7 @@
 #include "ramses-client-api/Scene.h"
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/DisplayConfig.h"
+#include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "ramses-framework-api/RamsesFramework.h"
 
 #include "TestScenes/TransformationLinkScene.h"
@@ -17,34 +18,8 @@
 #include "TestStepCommand.h"
 #include "Utils/Argument.h"
 #include "Math3d/Vector3.h"
-#include "DisplayManager/DisplayManager.h"
-
-class DMEventHandler final : public ramses_internal::IEventHandler
-{
-public:
-    DMEventHandler(ramses_internal::IDisplayManager& dm, bool autoShow)
-        : m_dm(dm)
-        , m_autoShow(autoShow)
-    {
-    }
-
-    virtual void scenePublished(ramses::sceneId_t sceneId) override
-    {
-        if (m_autoShow)
-        {
-            m_dm.setSceneMapping(sceneId, ramses::displayId_t{ 0 });
-            m_dm.setSceneState(sceneId, ramses_internal::SceneState::Rendered);
-        }
-    }
-
-    virtual void sceneStateChanged(ramses::sceneId_t, ramses_internal::SceneState, ramses::displayId_t) override {}
-    virtual void offscreenBufferLinked(ramses::displayBufferId_t, ramses::sceneId_t, ramses::dataConsumerId_t, bool) override {}
-    virtual void dataLinked(ramses::sceneId_t, ramses::dataProviderId_t, ramses::sceneId_t, ramses::dataConsumerId_t, bool) override {}
-
-private:
-    ramses_internal::IDisplayManager& m_dm;
-    bool m_autoShow;
-};
+#include "RendererMate.h"
+#include "Ramsh/Ramsh.h"
 
 int main(int argc, const char* argv[])
 {
@@ -61,8 +36,6 @@ int main(int argc, const char* argv[])
 
     ramses::RendererConfig rendererConfig(argc, argv);
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
-    ramses_internal::DisplayManager displayManager(renderer.impl, framework.impl);
-    DMEventHandler dmEventHandler(displayManager, !disableAutoMapping.wasDefined());
 
     framework.connect();
 
@@ -75,6 +48,10 @@ int main(int argc, const char* argv[])
         displayConfig.setClearColor(0.0, 0.0, 1.0, 1.0);
     }
     renderer.createDisplay(displayConfig);
+    renderer.flush();
+
+    ramses::RendererMate rendererMate(renderer.impl, framework.impl);
+    ramses::RendererMateAutoShowHandler dmEventHandler(rendererMate, !disableAutoMapping.wasDefined());
 
     if (testNrArgument == 1 || testNrArgument == 2)
     {
@@ -111,9 +88,9 @@ int main(int argc, const char* argv[])
             printf("receiver mode\n");
         }
 
-        while (displayManager.isRunning())
+        while (rendererMate.isRunning())
         {
-            displayManager.dispatchAndFlush(&dmEventHandler);
+            rendererMate.dispatchAndFlush(dmEventHandler);
             renderer.doOneLoop();
             ramses_internal::PlatformThread::Sleep(16);
         }
@@ -129,10 +106,10 @@ int main(int argc, const char* argv[])
                 ramses::Scene* scene = fileLoadingScene.getCreatedScene();
                 scene->publish();
 
-                while (displayManager.getLastReportedSceneState(sceneId) != ramses_internal::SceneState::Rendered)
+                while (rendererMate.getLastReportedSceneState(sceneId) != ramses::RendererSceneState::Rendered)
                 {
                     renderer.doOneLoop();
-                    displayManager.dispatchAndFlush(&dmEventHandler);
+                    rendererMate.dispatchAndFlush(dmEventHandler);
                     ramses_internal::PlatformThread::Sleep(16);
                 }
             }
@@ -154,10 +131,10 @@ int main(int argc, const char* argv[])
 
                 clientScene.publish();
                 clientScene.flush();
-                while (displayManager.getLastReportedSceneState(sceneId) != ramses_internal::SceneState::Rendered)
+                while (rendererMate.getLastReportedSceneState(sceneId) != ramses::RendererSceneState::Rendered)
                 {
                     renderer.doOneLoop();
-                    displayManager.dispatchAndFlush(&dmEventHandler);
+                    rendererMate.dispatchAndFlush(dmEventHandler);
                     ramses_internal::PlatformThread::Sleep(16);
                 }
                 LOG_INFO(ramses_internal::CONTEXT_SMOKETEST, "Surface should be still invisible");

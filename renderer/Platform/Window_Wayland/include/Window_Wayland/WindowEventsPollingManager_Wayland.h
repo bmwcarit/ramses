@@ -21,7 +21,7 @@ namespace ramses_internal
     class WindowEventsPollingManager_Wayland : public IWindowEventsPollingManager
     {
     public:
-        WindowEventsPollingManager_Wayland(std::chrono::microseconds maxFrameCallbackTime);
+        explicit WindowEventsPollingManager_Wayland(std::chrono::microseconds maxFrameCallbackTime);
         virtual ~WindowEventsPollingManager_Wayland();
 
         virtual void pollWindowsTillAnyCanRender() const override final;

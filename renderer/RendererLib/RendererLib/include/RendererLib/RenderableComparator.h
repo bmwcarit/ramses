@@ -16,7 +16,7 @@ namespace ramses_internal
     class RenderableComparator
     {
     public:
-        RenderableComparator(const ResourceCachedScene& scene)
+        explicit RenderableComparator(const ResourceCachedScene& scene)
             : m_scene(scene)
         {
         }

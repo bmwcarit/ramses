@@ -16,7 +16,7 @@
 #include "Utils/RamsesLogger.h"
 #include "RamsesFrameworkConfigImpl.h"
 #include "ramses-framework-api/RamsesFrameworkConfig.h"
-#include "Ramsh/RamshFactory.h"
+#include "Ramsh/RamshStandardSetup.h"
 #include "PlatformAbstraction/synchronized_clock.h"
 #include "DcsmProviderImpl.h"
 #include "ramses-framework-api/DcsmProvider.h"
@@ -32,7 +32,7 @@ namespace ramses
 
     RamsesFrameworkImpl::RamsesFrameworkImpl(const RamsesFrameworkConfigImpl& config, const ramses_internal::ParticipantIdentifier& participantAddress)
         : StatusObjectImpl()
-        , m_ramsh(RamshFactory::ConstructRamsh(config))
+        , m_ramsh(new RamshStandardSetup(config.m_shellType))
         , m_participantAddress(participantAddress)
         // NOTE: if you add something here consider using m_frameworkLock for all locking purposes inside this new class
         , m_connectionProtocol(config.getUsedProtocol())
@@ -81,13 +81,18 @@ namespace ramses
             LOG_ERROR(CONTEXT_FRAMEWORK, "RamsesFramework::createRamsesRenderer: renderer creation failed because ramses was built without renderer support");
             return nullptr;
         }
-
-        LOG_INFO(ramses_internal::CONTEXT_FRAMEWORK, "RamsesFramework::createRamsesRenderer");
+        if (m_connected)
+        {
+            LOG_ERROR(CONTEXT_FRAMEWORK, "RamsesFramework::createRamsesClient: framework may not be connected on client creation");
+            return nullptr;
+        }
         if (m_ramsesRenderer)
         {
             LOG_ERROR(CONTEXT_FRAMEWORK, "RamsesFramework::createRamsesRenderer: can only create one renderer per framework");
             return nullptr;
         }
+
+        LOG_INFO(ramses_internal::CONTEXT_FRAMEWORK, "RamsesFramework::createRamsesRenderer");
         m_ramsesRenderer = FrameworkFactoryRegistry::GetInstance().getRendererFactory()->createRenderer(this, config);
         return m_ramsesRenderer.get();
     }
@@ -97,6 +102,11 @@ namespace ramses
         if (!FrameworkFactoryRegistry::GetInstance().getClientFactory())
         {
             LOG_ERROR(CONTEXT_FRAMEWORK, "RamsesFramework::createRamsesClient: client creation failed because ramses was built without client support");
+            return nullptr;
+        }
+        if (m_connected)
+        {
+            LOG_ERROR(CONTEXT_FRAMEWORK, "RamsesFramework::createRamsesClient: framework may not be connected on client creation");
             return nullptr;
         }
 
@@ -110,14 +120,19 @@ namespace ramses
     status_t RamsesFrameworkImpl::destroyRenderer(RamsesRenderer& renderer)
     {
         if (!FrameworkFactoryRegistry::GetInstance().getRendererFactory())
-            return addErrorEntry("RamsesFramework::destroyRamsesRenderer: renderer destruction failed because ramses was built without renderer support");
+            return addErrorEntry("RamsesFramework::destroyRenderer: renderer destruction failed because ramses was built without renderer support");
 
-        LOG_INFO(ramses_internal::CONTEXT_FRAMEWORK, "RamsesFramework::destroyRamsesRenderer");
+        LOG_INFO(ramses_internal::CONTEXT_FRAMEWORK, "RamsesFramework::destroyRenderer");
 
         if (!m_ramsesRenderer || m_ramsesRenderer.get() != &renderer)
         {
-            return addErrorEntry("RamsesFramework::destroyRamsesRenderer: renderer does not belong to this framework");
+            return addErrorEntry("RamsesFramework::destroyRenderer: renderer does not belong to this framework");
         }
+        if (m_connected)
+        {
+            return addErrorEntry("RamsesFramework::destroyRenderer: framework may not be connected on renderer destruction");
+        }
+
         m_ramsesRenderer.reset();
         return StatusOK;
     }
@@ -125,15 +140,20 @@ namespace ramses
     status_t RamsesFrameworkImpl::destroyClient(RamsesClient& client)
     {
         if (!FrameworkFactoryRegistry::GetInstance().getClientFactory())
-            return addErrorEntry("RamsesFramework::destroyRamsesClient: client destruction failed because ramses was built without client support");
+            return addErrorEntry("RamsesFramework::destroyClient: client destruction failed because ramses was built without client support");
 
-        LOG_INFO(ramses_internal::CONTEXT_FRAMEWORK, "RamsesFramework::destroyRamsesClient");
+        LOG_INFO(ramses_internal::CONTEXT_FRAMEWORK, "RamsesFramework::destroyClient");
 
         auto clientIt = m_ramsesClients.find(&client);
         if (clientIt == m_ramsesClients.end())
         {
-            return addErrorEntry("RamsesFramework::destroyRamsesClient: client does not belong to this framework");
+            return addErrorEntry("RamsesFramework::destroyClient: client does not belong to this framework");
         }
+        if (m_connected)
+        {
+            return addErrorEntry("RamsesFramework::destroyClient: framework may not be connected on client destruction");
+        }
+
         m_ramsesClients.erase(clientIt);
         return StatusOK;
     }
@@ -394,7 +414,7 @@ namespace ramses
     void RamsesFrameworkImpl::LogEnvironmentVariableIfSet(const ramses_internal::String& envVarName)
     {
         ramses_internal::String envVarValue;
-        // TODO(tobias) envVarValue.getLength should not be there because empty variable is also set. remove when capu fixed
+        // TODO(tobias) envVarValue.getLength should not be there because empty variable is also set. remove when fixed
         if (ramses_internal::PlatformEnvironmentVariables::get(envVarName, envVarValue) && envVarValue.size() != 0)
         {
             LOG_INFO(CONTEXT_FRAMEWORK, "Environment variable set: " << envVarName << "=" << envVarValue);

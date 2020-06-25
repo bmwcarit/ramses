@@ -148,14 +148,16 @@ IF(DEFINED ACME_FILES_RESOURCE)
         LIST(APPEND TARGETS_FOR_FILES_RESOURCE_BINARYDIR "${TARGET_NAME}")
     ENDFOREACH()
 
-    # files are only copied if a target depends on them
-    add_custom_target(RESCOPY_${ACME_NAME} COMMENT "copy resource files to build folder (if changed)" )
     if (TARGETS_FOR_FILES_RESOURCE_BINARYDIR)
-       ADD_DEPENDENCIES(RESCOPY_${ACME_NAME} ${TARGETS_FOR_FILES_RESOURCE_BINARYDIR})
-    endif()
-    ADD_DEPENDENCIES(${ACME_NAME} RESCOPY_${ACME_NAME})
+        # files are only copied if a target depends on them
+        add_custom_target(RESCOPY_${ACME_NAME} COMMENT "copy resource files to build folder (if changed)" )
+        if (TARGETS_FOR_FILES_RESOURCE_BINARYDIR)
+            ADD_DEPENDENCIES(RESCOPY_${ACME_NAME} ${TARGETS_FOR_FILES_RESOURCE_BINARYDIR})
+        endif()
+        ADD_DEPENDENCIES(${ACME_NAME} RESCOPY_${ACME_NAME})
 
-    SET_PROPERTY(TARGET RESCOPY_${ACME_NAME} PROPERTY FOLDER "CMakePredefinedTargets/rescopy")
+        SET_PROPERTY(TARGET RESCOPY_${ACME_NAME} PROPERTY FOLDER "CMakePredefinedTargets/rescopy")
+    endif()
 ENDIF()
 
 #==============================================================================================

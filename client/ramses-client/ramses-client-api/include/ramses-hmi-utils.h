@@ -50,7 +50,7 @@ namespace ramses
          * @param[in] scene the source scene
          * @param[out] out stream to write to
          */
-        static void DumpUnrequiredSceneObjectsToFile(const Scene& scene, std::ofstream& out);
+        static void DumpUnrequiredSceneObjectsToFile(const Scene& scene, std::ostream& out);
     };
 }
 

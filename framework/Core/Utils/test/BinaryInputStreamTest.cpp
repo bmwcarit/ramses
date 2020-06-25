@@ -263,4 +263,47 @@ namespace ramses_internal
         inStream >> in;
         EXPECT_EQ(4u, in);
     }
+
+    TEST(BinaryInputStreamTest, currentReadBytesStartsWithZero)
+    {
+        const char buffer[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        BinaryInputStream inStream(buffer);
+
+        EXPECT_EQ(0u, inStream.getCurrentReadBytes());
+    }
+
+    TEST(BinaryInputStreamTest, currentReadBytesIsIncrementedByReading)
+    {
+        const char buffer[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        BinaryInputStream inStream(buffer);
+
+        uint8_t in = 0;
+        inStream >> in;
+        EXPECT_EQ(1u, inStream.getCurrentReadBytes());
+        uint32_t in2 = 0;
+        inStream >> in2;
+        EXPECT_EQ(5u, inStream.getCurrentReadBytes());
+    }
+
+    TEST(BinaryInputStreamTest, currentReadBytesIsIncrementedBySkip)
+    {
+        const char buffer[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        BinaryInputStream inStream(buffer);
+
+        inStream.skip(1234);
+        EXPECT_EQ(1234u, inStream.getCurrentReadBytes());
+        inStream.skip(5432);
+        EXPECT_EQ(6666u, inStream.getCurrentReadBytes());
+    }
+
+    TEST(BinaryInputStreamTest, currentReadBytesIsDecrementedBySkippingBackwards)
+    {
+        const char buffer[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        BinaryInputStream inStream(buffer);
+
+        inStream.skip(5555);
+        EXPECT_EQ(5555u, inStream.getCurrentReadBytes());
+        inStream.skip(-555);
+        EXPECT_EQ(5000u, inStream.getCurrentReadBytes());
+    }
 }

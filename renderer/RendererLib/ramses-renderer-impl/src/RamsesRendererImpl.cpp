@@ -22,6 +22,7 @@
 #include "RendererSceneControlImpl.h"
 #include "RendererSceneControlImpl_legacy.h"
 #include "DcsmContentControlImpl.h"
+#include "DcsmContentControlConfigImpl.h"
 #include "DcsmConsumerImpl.h"
 #include "RamsesFrameworkTypesImpl.h"
 #include "SceneAPI/SceneId.h"
@@ -57,10 +58,7 @@ namespace ramses
         , m_rendererLoopThreadType(ERendererLoopThreadType_Undefined)
         , m_periodicLogSupplier(framework.getPeriodicLogger(), m_rendererCommandBuffer)
     {
-        if (framework.isConnected())
-        {
-            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "RamsesRenderer::RamsesRenderer creating a RamsesRenderer with framework which is already connected - this may lead to further issues! Please first create RamsesRenderer, then call connect() on RamsesFramework");
-        }
+        assert(!framework.isConnected());
 
         { //Add ramsh commands to ramsh, independent of whether it is enabled or not.
 
@@ -196,6 +194,12 @@ namespace ramses
             return nullptr;
         }
 
+        if (config.m_impl.getCategories().empty())
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Cannot instantiate DcsmContentControl, there is no DCSM category in given DcsmContentControlConfig. Without a category no content can be assigned.");
+            return nullptr;
+        }
+
         // DcsmContentControl operates on scene control API, the check above makes sure that it can be instantiated.
         // DcsmContentControl will be then the only active 'scene control' API for user, even though in fact RendererSceneControl is the actual API used internally - via DcsmContentControl.
         auto sceneControlAPI = getSceneControlAPI();
@@ -263,8 +267,25 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t RamsesRendererImpl::readPixels(displayId_t displayId, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+    status_t RamsesRendererImpl::setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a)
     {
+        const auto it = m_displayFramebuffers.find(display);
+        if (it == m_displayFramebuffers.cend())
+            return addErrorEntry("RendererSceneControl::setDisplayBufferClearColor failed: display does not exist.");
+
+        ramses_internal::OffscreenBufferHandle bufferHandle{ displayBuffer.getValue() };
+        // if buffer to clear is display's framebuffer pass invalid OB to internal renderer
+        if (displayBuffer == it->second)
+            bufferHandle = ramses_internal::OffscreenBufferHandle::Invalid();
+
+        m_pendingRendererCommands.setClearColor(ramses_internal::DisplayHandle{ display.getValue() }, bufferHandle, { r, g, b, a });
+
+        return StatusOK;
+    }
+
+    status_t RamsesRendererImpl::readPixels(displayId_t displayId, displayBufferId_t /*displayBuffer*/, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+    {
+        //TODO: implement read pixels from offscreen buffers
         const ramses_internal::DisplayHandle displayHandle(displayId.getValue());
         m_pendingRendererCommands.readPixels(displayHandle, "", false, x, y, width, height);
 
@@ -380,11 +401,11 @@ namespace ramses
             {
                 const ramses_internal::UInt8Vector& pixelData = event.pixelData;
                 assert(!pixelData.empty());
-                rendererEventHandler.framebufferPixelsRead(&pixelData.front(), static_cast<uint32_t>(pixelData.size()), displayId_t{ event.displayHandle.asMemoryHandle() }, ERendererEventResult_OK);
+                rendererEventHandler.framebufferPixelsRead(&pixelData.front(), static_cast<uint32_t>(pixelData.size()), displayId_t{ event.displayHandle.asMemoryHandle() }, getDisplayFramebuffer(displayId_t{ event.displayHandle.asMemoryHandle() }), ERendererEventResult_OK);
                 break;
             }
             case ramses_internal::ERendererEventType_ReadPixelsFromFramebufferFailed:
-                rendererEventHandler.framebufferPixelsRead(nullptr, 0u, displayId_t{ event.displayHandle.asMemoryHandle() }, ERendererEventResult_FAIL);
+                rendererEventHandler.framebufferPixelsRead(nullptr, 0u, displayId_t{ event.displayHandle.asMemoryHandle() }, getDisplayFramebuffer(displayId_t{ event.displayHandle.asMemoryHandle() }), ERendererEventResult_FAIL);
                 break;
             case ramses_internal::ERendererEventType_WarpingDataUpdated:
                 rendererEventHandler.warpingMeshDataUpdated(displayId_t{ event.displayHandle.asMemoryHandle() }, ERendererEventResult_OK);
@@ -422,10 +443,6 @@ namespace ramses
                 break;
             case ramses_internal::ERendererEventType_WindowMoveEvent:
                 rendererEventHandler.windowMoved(displayId_t{ event.displayHandle.asMemoryHandle() }, event.moveEvent.posX, event.moveEvent.posY);
-                break;
-            case ramses_internal::ERendererEventType_ObjectsPicked:
-                static_assert(sizeof(ramses::pickableObjectId_t) == sizeof(std::remove_pointer<decltype(event.pickedObjectIds.data())>::type), "");
-                rendererEventHandler.objectsPicked(ramses::sceneId_t{ event.sceneId.getValue() }, reinterpret_cast<const ramses::pickableObjectId_t*>(event.pickedObjectIds.data()), static_cast<uint32_t>(event.pickedObjectIds.size()));
                 break;
             case ramses_internal::ERendererEventType_RenderThreadPeriodicLoopTimes:
                 rendererEventHandler.renderThreadLoopTimings(event.renderThreadLoopTimes.maximumLoopTimeWithinPeriod, event.renderThreadLoopTimes.averageLoopTimeWithinPeriod);
@@ -554,14 +571,6 @@ namespace ramses
     status_t RamsesRendererImpl::setSkippingOfUnmodifiedBuffers(bool enable)
     {
         m_pendingRendererCommands.setSkippingOfUnmodifiedBuffers(enable);
-        return StatusOK;
-    }
-
-    status_t RamsesRendererImpl::handlePickEvent(sceneId_t scene, float bufferNormalizedCoordX, float bufferNormalizedCoordY)
-    {
-        const ramses_internal::Vector2 coords(bufferNormalizedCoordX, bufferNormalizedCoordY);
-        const ramses_internal::SceneId sceneId(scene.getValue());
-        m_pendingRendererCommands.handlePickEvent(sceneId, coords);
         return StatusOK;
     }
 

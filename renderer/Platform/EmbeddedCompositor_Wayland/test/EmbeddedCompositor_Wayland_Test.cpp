@@ -80,7 +80,7 @@ namespace ramses_internal
         class ConnectToDisplayRunnable : public Runnable
         {
         public:
-            ConnectToDisplayRunnable(int clientFileDescriptor)
+            explicit ConnectToDisplayRunnable(int clientFileDescriptor)
             : m_clientSocketFileDescriptor(clientFileDescriptor)
             , m_result(false)
             , m_started(false)
@@ -88,7 +88,7 @@ namespace ramses_internal
             {
             }
 
-            ConnectToDisplayRunnable(const String& clientFileName)
+            explicit ConnectToDisplayRunnable(const String& clientFileName)
             : m_clientSocketFileName(clientFileName)
             , m_result(false)
             , m_started(false)

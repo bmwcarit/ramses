@@ -13,7 +13,6 @@
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/Animation.h"
-#include "ramses-client-api/AnimatedSetter.h"
 #include "ramses-client-api/AnimationSequence.h"
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/SplineLinearVector3f.h"
@@ -206,14 +205,6 @@ namespace ramses
     template <> AnimationSequence* CreationHelper::createObjectOfType<AnimationSequence>(const char* name)
     {
         return m_animationSystem->createAnimationSequence(name);
-    }
-    template <> AnimatedSetter* CreationHelper::createObjectOfType<AnimatedSetter>(const char* name)
-    {
-        Node& node = *m_scene->createNode("node");
-        m_additionalAllocatedSceneObjects.push_back(&node);
-        AnimatedProperty& prop = *m_animationSystem->createAnimatedProperty(node, EAnimatedProperty_Translation);
-        m_additionalAllocatedAnimationSystemObjects.push_back(&prop);
-        return m_animationSystem->createAnimatedSetter(prop, name);
     }
     template <> Appearance* CreationHelper::createObjectOfType<Appearance>(const char* name)
     {

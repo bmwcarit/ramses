@@ -70,14 +70,15 @@ namespace ramses_internal
         virtual bool sendDcsmOfferContent(const Guid& to, ContentID contentID, Category) override;
         virtual bool sendDcsmContentDescription(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) override;
         virtual bool sendDcsmContentReady(const Guid& to, ContentID contentID) override;
-        virtual bool sendDcsmContentFocusRequest(const Guid& to, ContentID contentID) override;
+        virtual bool sendDcsmContentEnableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest) override;
+        virtual bool sendDcsmContentDisableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest) override;
         virtual bool sendDcsmBroadcastRequestStopOfferContent(ContentID contentID) override;
         virtual bool sendDcsmBroadcastForceStopOfferContent(ContentID contentID) override;
         virtual bool sendDcsmUpdateContentMetadata(const Guid& to, ContentID contentID, const DcsmMetadata& metadata) override;
 
         // dcsm renderer -> client
-        virtual bool sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, SizeInfo sizeinfo, AnimationInformation ai) override;
-        virtual bool sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, SizeInfo si, AnimationInformation ai) override;
+        virtual bool sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, const CategoryInfo& sizeinfo, AnimationInformation ai) override;
+        virtual bool sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, const CategoryInfo& si, AnimationInformation ai) override;
 
         // set service handlers
         void setResourceProviderServiceHandler(IResourceProviderServiceHandler* handler) override;
@@ -209,7 +210,7 @@ namespace ramses_internal
         void handleDcsmRegisterContent(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmContentDescription(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmContentAvailable(const ParticipantPtr& pp, BinaryInputStream& stream);
-        void handleDcsmCategoryContentSwitchRequest(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleDcsmCategoryContentSwitchRequest(const ParticipantPtr& pp, BinaryInputStream& stream, size_t size);
         void handleDcsmRequestUnregisterContent(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmForceStopOfferContent(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmUpdateContentMetadata(const ParticipantPtr& pp, BinaryInputStream& stream);

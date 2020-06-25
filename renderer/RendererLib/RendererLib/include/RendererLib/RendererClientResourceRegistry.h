@@ -10,7 +10,6 @@
 #define RAMSES_RENDERERCLIENTRESOURCEREGISTRY_H
 
 #include "RendererLib/ResourceDescriptor.h"
-#include "Transfer/ResourceTypes.h"
 #include <array>
 
 namespace ramses_internal

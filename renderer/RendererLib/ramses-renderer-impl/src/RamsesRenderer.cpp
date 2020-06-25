@@ -110,13 +110,6 @@ namespace ramses
         return ret;
     }
 
-    status_t RamsesRenderer::handlePickEvent(sceneId_t sceneId, float bufferNormalizedCoordX, float bufferNormalizedCoordY)
-    {
-        const status_t status = impl.handlePickEvent(sceneId, bufferNormalizedCoordX, bufferNormalizedCoordY);
-        LOG_HL_RENDERER_API3(status, sceneId, bufferNormalizedCoordX, bufferNormalizedCoordY);
-        return status;
-    }
-
     status_t RamsesRenderer::dispatchEvents(IRendererEventHandler& rendererEventHandler)
     {
         const status_t status = impl.dispatchEvents(rendererEventHandler);
@@ -138,10 +131,17 @@ namespace ramses
         return status;
     }
 
-    status_t RamsesRenderer::readPixels(displayId_t displayId, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+    status_t RamsesRenderer::setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a)
     {
-        const status_t status = impl.readPixels(displayId, x, y, width, height);
-        LOG_HL_RENDERER_API5(status, displayId, x, y, width, height);
+        const status_t status = impl.setDisplayBufferClearColor(display, displayBuffer, r, g, b, a);
+        LOG_HL_RENDERER_API6(status, display, displayBuffer, r, g, b, a);
+        return status;
+    }
+
+    status_t RamsesRenderer::readPixels(displayId_t displayId, displayBufferId_t displayBuffer, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+    {
+        const status_t status = impl.readPixels(displayId, displayBuffer, x, y, width, height);
+        LOG_HL_RENDERER_API6(status, displayId, displayBuffer, x, y, width, height);
         return status;
     }
 

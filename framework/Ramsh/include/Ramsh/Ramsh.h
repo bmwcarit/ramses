@@ -31,23 +31,17 @@ namespace ramses_internal
     class Ramsh
     {
     public:
-        Ramsh(String prompt = "noname");
+        Ramsh();
 
         virtual ~Ramsh();
 
         void add(RamshCommand& command);
 
-        virtual bool start();
-        virtual bool stop();
-
-        virtual bool execute(RamshInput& input);
-
-        const String& getPrompt() const;
+        virtual bool execute(const RamshInput& input);
 
         const KeywordToCommandMap& commands() const;
 
     protected:
-        String m_prompt;
         KeywordToCommandMap m_commands;
         RamshCommandPrintHelp* m_pCmdPrintHelp;
         RamshCommandPrintBuildConfig m_cmdPrintBuildConfig;

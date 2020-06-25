@@ -109,7 +109,7 @@ namespace ramses_internal
              * @param begin Pointer to the entry on which iteration should start.
              * @param end Pointer to an entry on which iteration should end (if begin == end).
              */
-            ConstIterator(HashMapEntry* begin)
+            explicit ConstIterator(HashMapEntry* begin)
                 : mCurrentHashMapEntry(begin)
             {
             }
@@ -199,7 +199,7 @@ namespace ramses_internal
              * @param begin Pointer to the entry on which iteration should start.
              * @param end Pointer to an entry on which iteration should end (if begin == end).
              */
-            Iterator(HashMapEntry* begin)
+            explicit Iterator(HashMapEntry* begin)
                 : mCurrentHashMapEntry(begin)
             {
             }
@@ -217,7 +217,7 @@ namespace ramses_internal
              * Convert Constructor
              * @param iter ConstIterator to convert from
              */
-            Iterator(const ConstIterator& iter)
+            Iterator(const ConstIterator& iter)  // NOLINT(google-explicit-constructor) const to non-const iterator should be implicit
                 : mCurrentHashMapEntry(iter.mCurrentHashMapEntry)
             {
             }
@@ -312,7 +312,7 @@ namespace ramses_internal
          * Constructor.
          *                   return NO_MEMORY if too many items were added.
          */
-        HashMap(const size_t capcity);
+        explicit HashMap(const size_t capcity);
 
         /**
          * Destructor.
@@ -493,7 +493,7 @@ namespace ramses_internal
         , mFirstFreeHashMapEntry(mData)
         , mCount(0)
     {
-        PlatformMemory::Set(mBuckets, 0, sizeof(HashMapEntry*) * mSize);
+        PlatformMemory::Set(mBuckets, 0, sizeof(HashMapEntry*) * mSize);  //NOLINT(bugprone-sizeof-expression) sizeof is really a pointer type here
         initializeLastEntry();
     }
 
@@ -508,7 +508,7 @@ namespace ramses_internal
         , mFirstFreeHashMapEntry(mData)
         , mCount(0) // will get increased by internalPut
     {
-        PlatformMemory::Set(mBuckets, 0, sizeof(HashMapEntry*) * mSize);
+        PlatformMemory::Set(mBuckets, 0, sizeof(HashMapEntry*) * mSize);  //NOLINT(bugprone-sizeof-expression) sizeof is really a pointer type here
         initializeLastEntry();
 
         // right here, we have an empty map with the exact same size as the given other table
@@ -546,7 +546,7 @@ namespace ramses_internal
         , mFirstFreeHashMapEntry(mData)
         , mCount(0)
     {
-        PlatformMemory::Set(mBuckets, 0, sizeof(HashMapEntry*) * mSize);
+        PlatformMemory::Set(mBuckets, 0, sizeof(HashMapEntry*) * mSize);  //NOLINT(bugprone-sizeof-expression) sizeof is really a pointer type here
         initializeLastEntry();
     }
 
@@ -570,7 +570,7 @@ namespace ramses_internal
         mBuckets = new HashMapEntry*[mSize];
         mData    = new HashMapEntry[mThreshold + 1];
 
-        PlatformMemory::Set(mBuckets, 0, sizeof(HashMapEntry*) * mSize);
+        PlatformMemory::Set(mBuckets, 0, sizeof(HashMapEntry*) * mSize);  //NOLINT(bugprone-sizeof-expression) sizeof is really a pointer type here
         mFirstFreeHashMapEntry = mData;
         mLastHashMapEntry = mData + mThreshold;
         initializeLastEntry();
@@ -687,9 +687,9 @@ namespace ramses_internal
     {
         auto iter = find(key);
         if (iter == end())
-            return EStatus_RAMSES_NOT_EXIST;
+            return EStatus::NotExist;
         value = iter->value;
-        return EStatus_RAMSES_OK;
+        return EStatus::Ok;
     }
 
     template<class Key, class T>
@@ -764,7 +764,7 @@ namespace ramses_internal
 
         auto result = current->next;
         internalRemove(current, hashValue, value_old);
-        return result;
+        return Iterator{result};
     }
 
     template <class Key, class T>
@@ -807,7 +807,7 @@ namespace ramses_internal
         destructAll();
 
         // reset all buckets and link entries to empty list
-        PlatformMemory::Set(mBuckets, 0, sizeof(HashMapEntry*) * mSize);
+        PlatformMemory::Set(mBuckets, 0, sizeof(HashMapEntry*) * mSize);  //NOLINT(bugprone-sizeof-expression) sizeof is really a pointer type here
         HashMapEntry* entry = mData;
         for (size_t i = 0; i < mThreshold + 1; ++i)
         {
@@ -918,7 +918,7 @@ namespace ramses_internal
     template <class Key, class T>
     inline void HashMap<Key, T>::rehash()
     {
-        reserve(static_cast<size_t>(1) << (mBitCount + 1));
+        reserve(static_cast<size_t>(1) << (mBitCount + 1u));
     }
 
     template <class Key, class T>

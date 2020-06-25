@@ -126,6 +126,36 @@ namespace ramses
         EXPECT_EQ(RendererSceneState::Rendered, m_sceneStateTracker.m_lastState);
     }
 
+    TEST_F(ARendererSceneControlWithRenderer, doesNotAttemptToReachTargetStateAfterUnpublishAndRepublish)
+    {
+        ramsesClientRenderer->m_sceneControl.setSceneState(ramsesClientRenderer->m_sceneId, RendererSceneState::Rendered);
+        ramsesClientRenderer->m_sceneControl.flush();
+        for (int i = 0; i < NumLoopsToReachRenderedTargetState; ++i)
+        {
+            ramsesClientRenderer->m_renderer.doOneLoop();
+            ramsesClientRenderer->m_sceneControl.dispatchEvents(m_sceneStateTracker);
+        }
+        EXPECT_EQ(RendererSceneState::Rendered, m_sceneStateTracker.m_lastState);
+
+        ramsesClientRenderer->m_scene.unpublish();
+
+        for (int i = 0; i < NumLoopsToReachRenderedTargetState; ++i)
+        {
+            ramsesClientRenderer->m_renderer.doOneLoop();
+            ramsesClientRenderer->m_sceneControl.dispatchEvents(m_sceneStateTracker);
+        }
+        EXPECT_EQ(RendererSceneState::Unavailable, m_sceneStateTracker.m_lastState);
+
+        ramsesClientRenderer->m_scene.publish(EScenePublicationMode_LocalOnly);
+
+        for (int i = 0; i < NumLoopsToReachRenderedTargetState; ++i)
+        {
+            ramsesClientRenderer->m_renderer.doOneLoop();
+            ramsesClientRenderer->m_sceneControl.dispatchEvents(m_sceneStateTracker);
+        }
+        EXPECT_EQ(RendererSceneState::Unavailable, m_sceneStateTracker.m_lastState);
+    }
+
     /////////
     // Combinatorial tests where every combination of: target state is set and new target state is set at some point
     /////////
@@ -183,7 +213,7 @@ namespace ramses
             ++step;
         }
 
-        // execute few more loops to allow DM to get to target state
+        // execute few more loops to get to target state
         for (int i = 0; i < NumLoopsToReachTargetState; ++i)
         {
             ramsesClientRenderer->m_renderer.doOneLoop();
@@ -251,19 +281,23 @@ namespace ramses
             ++step;
         }
 
-        // execute few more loops to allow DM to get to last state
+        // execute few more loops
         for (int i = 0; i < NumLoopsToReachTargetState; ++i)
         {
             ramsesClientRenderer->m_renderer.doOneLoop();
             ramsesClientRenderer->m_sceneControl.dispatchEvents(m_sceneStateTracker);
         }
-        EXPECT_EQ(GetTargetState(), m_sceneStateTracker.m_lastState);
+        // special case when initial publish triggers subscribe, then in same frame unpublish/republish arrives, scene control executes subscribe at end of frame - therefore succeeds
+        if (GetTargetState() >= RendererSceneState::Available && GetStepToUnpublish() == 0 && GetStepToRepublish() == 0)
+            EXPECT_EQ(RendererSceneState::Available, m_sceneStateTracker.m_lastState);
+        else
+            EXPECT_EQ(RendererSceneState::Unavailable, m_sceneStateTracker.m_lastState);
 
-        // test that rendered state can be reached, regardless of previous target state
+        // test that rendered state can be reached again in new cycle
         ramsesClientRenderer->m_sceneControl.setSceneState(ramsesClientRenderer->m_sceneId, RendererSceneState::Rendered);
         ramsesClientRenderer->m_sceneControl.flush();
 
-        // execute few more loops to allow DM to get to rendered state
+        // execute few more loops to get to rendered state
         for (int i = 0; i < NumLoopsToReachTargetState; ++i)
         {
             ramsesClientRenderer->m_renderer.doOneLoop();

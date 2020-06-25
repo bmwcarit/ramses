@@ -20,7 +20,7 @@
 class TextBox : public GraphicalItem
 {
 public:
-    TextBox(std::u32string          string,
+    TextBox(const std::u32string&   string,
             ramses::TextCache&      textCache,
             ramses::FontInstanceId  fontInstance,
             int32_t                 lineHeight,
@@ -34,7 +34,7 @@ public:
     int32_t getOffsetY() const;
 
 private:
-    void createTextNodes(std::u32string             string,
+    void createTextNodes(const std::u32string&      string,
                          ramses::TextCache&         textCache,
                          ramses::FontInstanceId     fontInstance,
                          int32_t                    lineHeight,

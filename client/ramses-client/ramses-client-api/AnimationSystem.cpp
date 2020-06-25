@@ -37,7 +37,6 @@
 #include "ramses-client-api/SplineBezierVector3i.h"
 #include "ramses-client-api/SplineBezierVector4i.h"
 #include "ramses-client-api/Animation.h"
-#include "ramses-client-api/AnimatedSetter.h"
 #include "ramses-client-api/AnimationSequence.h"
 #include "ramses-client-api/PickableObject.h"
 
@@ -248,20 +247,6 @@ namespace ramses
         Animation* animation = impl.createAnimation(animatedProperty, spline, name);
         LOG_HL_CLIENT_API3(LOG_API_RAMSESOBJECT_PTR_STRING(animation), LOG_API_RAMSESOBJECT_STRING(animatedProperty), LOG_API_RAMSESOBJECT_STRING(spline), name);
         return animation;
-    }
-
-    AnimatedSetter* AnimationSystem::createAnimatedSetter(const AnimatedProperty& animatedProperty, const char* name)
-    {
-        AnimatedSetter* animatedSetter = impl.createAnimatedSetter(animatedProperty, name);
-        LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(animatedSetter), LOG_API_RAMSESOBJECT_STRING(animatedProperty), name);
-        return animatedSetter;
-    }
-
-    status_t AnimationSystem::setDelayForAnimatedSetters(timeMilliseconds_t delay)
-    {
-        const status_t status = impl.setDelayForAnimatedSetters(delay);
-        LOG_HL_CLIENT_API1(status, delay);
-        return status;
     }
 
     AnimationSequence* AnimationSystem::createAnimationSequence(const char* name)

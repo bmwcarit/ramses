@@ -35,7 +35,7 @@ namespace ramses
 
     TEST(UtfUtils, CanConvertUTF32ToUTF8emptyStr)
     {
-        const std::string emptyStr = "";
+        const std::string emptyStr;
         const std::u32string emptyU32String;
         EXPECT_EQ(emptyStr, UtfUtils::ConvertStrUtf32ToUtf8(emptyU32String));
     }

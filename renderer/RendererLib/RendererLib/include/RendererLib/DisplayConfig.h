@@ -100,8 +100,8 @@ namespace ramses_internal
 
         UInt32 m_desiredWindowWidth = 1280;
         UInt32 m_desiredWindowHeight = 480;
-        Int32 m_windowPositionX = 150;
-        Int32 m_windowPositionY = 150;
+        Int32 m_windowPositionX = 0;
+        Int32 m_windowPositionY = 0;
         Vector3 m_cameraPosition{ 0.f, 0.f, 0.f };
         Vector3 m_cameraRotation{ 0.f, 0.f, 0.f };
         ProjectionParams m_projectionParams{ ProjectionParams::Perspective(19.f, 1280.f / 480.f, 0.1f, 1500.f) };

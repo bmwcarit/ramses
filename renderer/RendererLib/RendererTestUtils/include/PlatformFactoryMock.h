@@ -34,27 +34,27 @@ namespace ramses_internal
         ~PlatformFactoryMock() override;
 
 
-        MOCK_METHOD0(createPerRendererComponents, Bool());
-        MOCK_METHOD0(destroyPerRendererComponents, void());
-        MOCK_METHOD2(createRenderBackend, IRenderBackend*(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler));
-        MOCK_METHOD1(destroyRenderBackend, void(IRenderBackend& renderBackend));
+        MOCK_METHOD(Bool, createPerRendererComponents, (), (override));
+        MOCK_METHOD(void, destroyPerRendererComponents, (), (override));
+        MOCK_METHOD(IRenderBackend*, createRenderBackend, (const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler), (override));
+        MOCK_METHOD(void, destroyRenderBackend, (IRenderBackend& renderBackend), (override));
 
-        MOCK_METHOD0(createSystemCompositorController, ISystemCompositorController* ());
-        MOCK_METHOD0(destroySystemCompositorController, void());
-        MOCK_METHOD2(createWindow, IWindow*(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler));
-        MOCK_METHOD1(destroyWindow, Bool(IWindow&));
-        MOCK_METHOD1(createContext, IContext*(IWindow& window));
-        MOCK_METHOD1(destroyContext, Bool(IContext&));
-        MOCK_METHOD1(createDevice, IDevice*(IContext& context));
-        MOCK_METHOD1(destroyDevice, Bool(IDevice&));
-        MOCK_METHOD2(createSurface, ISurface*(IWindow& window, IContext& context));
-        MOCK_METHOD1(destroySurface, Bool(ISurface& surface));
-        MOCK_METHOD0(createEmbeddedCompositor, IEmbeddedCompositor*());
-        MOCK_METHOD1(destroyEmbeddedCompositor, Bool(IEmbeddedCompositor& compositor));
-        MOCK_METHOD3(createTextureUploadingAdapter, ITextureUploadingAdapter*(IDevice& device, IEmbeddedCompositor& embeddedCompositor, IWindow& window));
-        MOCK_METHOD1(destroyTextureUploadingAdapter, Bool(ITextureUploadingAdapter& textureUploadingAdapter));
-        MOCK_CONST_METHOD0(getSystemCompositorController, ISystemCompositorController*());
-        MOCK_CONST_METHOD0(getWindowEventsPollingManager, const IWindowEventsPollingManager*());
+        MOCK_METHOD(ISystemCompositorController* , createSystemCompositorController, (), (override));
+        MOCK_METHOD(void, destroySystemCompositorController, (), (override));
+        MOCK_METHOD(IWindow*, createWindow, (const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler), (override));
+        MOCK_METHOD(Bool, destroyWindow, (IWindow&), (override));
+        MOCK_METHOD(IContext*, createContext, (IWindow& window), (override));
+        MOCK_METHOD(Bool, destroyContext, (IContext&), (override));
+        MOCK_METHOD(IDevice*, createDevice, (IContext& context), (override));
+        MOCK_METHOD(Bool, destroyDevice, (IDevice&), (override));
+        MOCK_METHOD(ISurface*, createSurface, (IWindow& window, IContext& context), (override));
+        MOCK_METHOD(Bool, destroySurface, (ISurface& surface), (override));
+        MOCK_METHOD(IEmbeddedCompositor*, createEmbeddedCompositor, (), (override));
+        MOCK_METHOD(Bool, destroyEmbeddedCompositor, (IEmbeddedCompositor& compositor), (override));
+        MOCK_METHOD(ITextureUploadingAdapter*, createTextureUploadingAdapter, (IDevice& device, IEmbeddedCompositor& embeddedCompositor, IWindow& window), (override));
+        MOCK_METHOD(Bool, destroyTextureUploadingAdapter, (ITextureUploadingAdapter& textureUploadingAdapter), (override));
+        MOCK_METHOD(ISystemCompositorController*, getSystemCompositorController, (), (const, override));
+        MOCK_METHOD(const IWindowEventsPollingManager*, getWindowEventsPollingManager, (), (const, override));
 
         MOCK_TYPE< SystemCompositorControllerMock > systemCompositorControllerMock;
         MOCK_TYPE< WindowEventsPollingManagerMock > windowEventsPollingManagerMock;

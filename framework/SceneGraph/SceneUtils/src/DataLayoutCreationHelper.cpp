@@ -29,7 +29,7 @@ namespace ramses_internal
             }
             else
             {
-                dataFields.push_back({ inputInformation.dataType, inputInformation.elementCount, inputInformation.semantics });
+                dataFields.push_back(DataFieldInfo{ inputInformation.dataType, inputInformation.elementCount, inputInformation.semantics });
             }
         }
 

@@ -19,7 +19,7 @@ namespace ramses_internal
     class TextureUploadingAdapter_Base : public ITextureUploadingAdapter
     {
     public:
-        TextureUploadingAdapter_Base(IDevice& device);
+        explicit TextureUploadingAdapter_Base(IDevice& device);
         virtual void uploadTexture2D(DeviceResourceHandle textureHandle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data,  const TextureSwizzleArray& swizzle) override;
 
     protected:

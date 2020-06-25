@@ -24,7 +24,7 @@ namespace ramses
     class AnimatedPropertyFactory
     {
     public:
-        AnimatedPropertyFactory(AnimationSystemImpl& animationSystem);
+        explicit AnimatedPropertyFactory(AnimationSystemImpl& animationSystem);
 
         AnimatedProperty* createAnimatedProperty(const NodeImpl& propertyOwner, EAnimatedPropertyComponent ePropertyComponent, ramses_internal::TDataBindID bindID, const char* name);
         AnimatedProperty* createAnimatedProperty(const EffectInputImpl& propertyOwner, const AppearanceImpl& appearance, EAnimatedPropertyComponent ePropertyComponent, ramses_internal::TDataBindID bindID, const char* name);

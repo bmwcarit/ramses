@@ -26,7 +26,7 @@ int main(int argc, const char* argv[])
     GetRamsesLogger().initialize(config.getCommandLineParser(), "SMGR", "ramses-daemon", false, true); // no framework used
 
     RamshCommandExit commandExit;
-    RamshStandardSetup ramsh("Daemon");
+    RamshStandardSetup ramsh(ramses::ERamsesShellType_Console, "Daemon");
     ramsh.add(commandExit);
     ramsh.start();
 

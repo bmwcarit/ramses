@@ -289,7 +289,7 @@ TEST_F(ARendererSceneUpdater, renderOncePassesAreRetriggeredWhenSceneMapped)
 
     auto& stageScene = *stagingScene[0];
     const RenderPassHandle pass = stageScene.allocateRenderPass();
-    const auto dataLayout = stageScene.allocateDataLayout({ {EDataType_Vector2I}, {EDataType_Vector2I} }, ResourceContentHash::Invalid());
+    const auto dataLayout = stageScene.allocateDataLayout({ DataFieldInfo{EDataType_Vector2I}, DataFieldInfo{EDataType_Vector2I} }, ResourceContentHash::Invalid());
     const CameraHandle camera = stageScene.allocateCamera(ECameraProjectionType_Orthographic, stageScene.allocateNode(), stageScene.allocateDataInstance(dataLayout));
     stageScene.setRenderPassCamera(pass, camera);
     stageScene.setRenderPassRenderOnce(pass, true);
@@ -4356,9 +4356,9 @@ TEST_F(ARendererSceneUpdater, reportsPickedObjects)
     const auto geomHandle = sceneAllocator.allocateDataBuffer(EDataBufferType::VertexBuffer, EDataType_Vector3F, UInt32(geomData.size() * sizeof(float)));
     iscene.updateDataBuffer(geomHandle, 0, UInt32(geomData.size() * sizeof(float)), reinterpret_cast<const Byte*>(geomData.data()));
 
-    const auto viewportDataLayout = sceneAllocator.allocateDataLayout({ {EDataType_DataReference}, {EDataType_DataReference} }, ResourceContentHash::Invalid());
+    const auto viewportDataLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType_DataReference}, DataFieldInfo{EDataType_DataReference} }, ResourceContentHash::Invalid());
     const auto viewportDataInstance = sceneAllocator.allocateDataInstance(viewportDataLayout);
-    const auto viewportDataReferenceLayout = sceneAllocator.allocateDataLayout({ {EDataType_Vector2I} }, ResourceContentHash::Invalid());
+    const auto viewportDataReferenceLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType_Vector2I} }, ResourceContentHash::Invalid());
     const auto viewportOffsetDataReference = sceneAllocator.allocateDataInstance(viewportDataReferenceLayout);
     const auto viewportSizeDataReference = sceneAllocator.allocateDataInstance(viewportDataReferenceLayout);
     const auto cameraHandle = sceneAllocator.allocateCamera(ECameraProjectionType_Orthographic, nodeHandle, viewportDataInstance);
@@ -4384,7 +4384,7 @@ TEST_F(ARendererSceneUpdater, reportsPickedObjects)
     update();
 
     rendererSceneUpdater->handlePickEvent(getSceneId(), { -0.375000f, 0.250000f });
-    expectEvent(ERendererEventType_ObjectsPicked);
+    expectSceneEvent(ERendererEventType_ObjectsPicked);
 
     expectContextEnable();
     EXPECT_CALL(renderer.getDisplayMock(display).m_renderBackend->deviceMock, deleteVertexBuffer(_));
@@ -4463,6 +4463,11 @@ TEST_F(ARendererSceneUpdater, propagatesGeneratedSceneReferenceActionsToSceneRef
         EXPECT_EQ(action2.consumerId, actions[1].consumerId);
     });
     update();
+
+    //make empty flush to make sure actions were consumed
+    performFlush(0u, {}, nullptr, {}, {});
+    EXPECT_CALL(sceneReferenceLogic, addActions(_, _)).Times(0u);
+    update();
 }
 
 TEST_F(ARendererSceneUpdater, propagatesGeneratedSceneReferenceActionsToSceneReferenceControlOnlyAfterFlushApplied)
@@ -4514,6 +4519,9 @@ TEST_F(ARendererSceneUpdater, propagatesGeneratedSceneReferenceActionsToSceneRef
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
+    //make empty flush to make sure actions were consumed
+    performFlush(0u, {}, nullptr, {}, {});
+    EXPECT_CALL(sceneReferenceLogic, addActions(_, _)).Times(0u);
     expectResourceRequestCancel(InvalidResource1);
     update();
 

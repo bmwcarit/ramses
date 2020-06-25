@@ -6,8 +6,6 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-import time
-
 from ramses_test_framework import test_classes
 from ramses_test_framework import log
 from ramses_test_framework.ramses_test_extensions import with_ramses_process_check

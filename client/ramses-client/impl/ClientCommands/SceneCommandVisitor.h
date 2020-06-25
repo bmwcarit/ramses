@@ -28,7 +28,7 @@ namespace ramses_internal
     class SceneCommandVisitor
     {
     public:
-        SceneCommandVisitor(ramses::SceneImpl& scene)
+        explicit SceneCommandVisitor(ramses::SceneImpl& scene)
             : m_scene(scene)
         {}
 

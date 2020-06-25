@@ -10,7 +10,8 @@
 #define RAMSES_COMPONENTS_IDCSMPROVIDEREVENTHANDLER_H
 
 #include "ramses-framework-api/DcsmApiTypes.h"
-#include "Components/DcsmTypes.h"
+#include "ramses-framework-api/CategoryInfoUpdate.h"
+#include "DcsmTypes.h"
 
 namespace ramses_internal
 {
@@ -21,8 +22,8 @@ namespace ramses_internal
     public:
         virtual ~IDcsmProviderEventHandler() = default;
 
-        virtual void contentSizeChange(ramses::ContentID, ramses::SizeInfo, ramses::AnimationInformation) = 0;
-        virtual void contentStateChange(ramses::ContentID, ramses_internal::EDcsmState, ramses::SizeInfo, ramses::AnimationInformation) = 0;
+        virtual void contentSizeChange(ramses::ContentID, const ramses::CategoryInfoUpdate&, ramses::AnimationInformation) = 0;
+        virtual void contentStateChange(ramses::ContentID, ramses_internal::EDcsmState, const ramses::CategoryInfoUpdate&, ramses::AnimationInformation) = 0;
     };
 }
 

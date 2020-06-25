@@ -64,7 +64,7 @@ namespace ramses
         assert(nullptr != buffer);
         assert(bufferSize > 0);
 
-        BinaryShaderTable::Iterator iter = m_binaryShaders.find(effectId);
+        BinaryShaderTable::ConstIterator iter = m_binaryShaders.find(effectId);
         if (iter == m_binaryShaders.end())
         {
             return;
@@ -102,7 +102,7 @@ namespace ramses
         }
 
         ramses_internal::BinaryFileInputStream fileInputStream(file);
-        if (ramses_internal::EStatus_RAMSES_OK != fileInputStream.getState())
+        if (ramses_internal::EStatus::Ok != fileInputStream.getState())
         {
             LOG_WARN(ramses_internal::CONTEXT_RENDERER, "BinaryShaderCacheImpl::loadFromFile: failed to load file: " << filePath << " errorstate: " << fileInputStream.getState());
             return false;
@@ -111,7 +111,7 @@ namespace ramses
         FileHeader fileHeader;
 
         ramses_internal::UInt actualSize = 0;
-        if (file.getSizeInBytes(actualSize) != ramses_internal::EStatus_RAMSES_OK || actualSize < sizeof(FileHeader))
+        if (!file.getSizeInBytes(actualSize) || actualSize < sizeof(FileHeader))
         {
             LOG_WARN(ramses_internal::CONTEXT_RENDERER,
                      "BinaryShaderCacheImpl::loadFromFile: Invalid file size - cache needs to be repopulated and saved again");
@@ -199,7 +199,7 @@ namespace ramses
         ramses_internal::File                   file(filePath);
         ramses_internal::BinaryFileOutputStream outputFileStream(file);
 
-        if (outputFileStream.getState() == ramses_internal::EStatus_RAMSES_OK)
+        if (outputFileStream.getState() == ramses_internal::EStatus::Ok)
         {
             outputFileStream << fileHeader.fileSize << fileHeader.transportVersion << fileHeader.checksum;
             outputFileStream.write(outputStream.getData(), contentSize);

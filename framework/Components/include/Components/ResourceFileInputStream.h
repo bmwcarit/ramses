@@ -17,7 +17,7 @@ namespace ramses_internal
     class ResourceFileInputStream
     {
     public:
-        ResourceFileInputStream(const String& resourceFileName)
+        explicit ResourceFileInputStream(const String& resourceFileName)
             : resourceFile(resourceFileName)
             , resourceStream(resourceFile)
         {}

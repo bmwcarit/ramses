@@ -17,9 +17,9 @@ namespace ramses_internal
     class PlatformWatchdogMockCallback : public ramses::IThreadWatchdogNotification
     {
     public:
-        MOCK_METHOD1(notifyThread, void(ramses::ERamsesThreadIdentifier));
-        MOCK_METHOD1(registerThread, void(ramses::ERamsesThreadIdentifier));
-        MOCK_METHOD1(unregisterThread, void(ramses::ERamsesThreadIdentifier));
+        MOCK_METHOD(void, notifyThread, (ramses::ERamsesThreadIdentifier), (override));
+        MOCK_METHOD(void, registerThread, (ramses::ERamsesThreadIdentifier), (override));
+        MOCK_METHOD(void, unregisterThread, (ramses::ERamsesThreadIdentifier), (override));
     };
 }
 

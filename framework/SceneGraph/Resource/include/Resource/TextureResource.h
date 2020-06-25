@@ -151,11 +151,6 @@ namespace ramses_internal
             return new TextureResource(typeID, texDesc, cacheFlag, name);
         }
 
-        virtual bool isCompressable() const override
-        {
-            return !IsFormatCompressed(getTextureFormat());
-        }
-
     private:
         static UInt32 GetTotalDataSizeFromMipSizes(const MipDataSizeVector& mipSizes, EResourceType typeID)
         {

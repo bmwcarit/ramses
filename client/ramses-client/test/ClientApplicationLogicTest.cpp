@@ -147,15 +147,16 @@ TEST_F(AClientApplicationLogic, gathersSceneReferenceEventsInAContainer)
     SceneReferenceEvent event(SceneId { 123 });
     event.referencedScene = SceneId{ 123456789 };
 
-    EXPECT_TRUE(logic.getSceneReferenceEvents().empty());
+    EXPECT_TRUE(logic.popSceneReferenceEvents().empty());
     logic.handleSceneReferenceEvent(event, Guid{});
-    EXPECT_EQ(logic.getSceneReferenceEvents().size(), 1u);
-    auto sre = logic.getSceneReferenceEvents().front();
+    const auto result = logic.popSceneReferenceEvents();
+    EXPECT_EQ(result.size(), 1u);
+    const auto sre = result.front();
     EXPECT_EQ(sre.referencedScene, event.referencedScene);
 
     logic.handleSceneReferenceEvent(event, Guid{});
     logic.handleSceneReferenceEvent(event, Guid{});
     logic.handleSceneReferenceEvent(event, Guid{});
     logic.handleSceneReferenceEvent(event, Guid{});
-    EXPECT_EQ(logic.getSceneReferenceEvents().size(), 5u);
+    EXPECT_EQ(logic.popSceneReferenceEvents().size(), 4u);
 }

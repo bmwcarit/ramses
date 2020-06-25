@@ -53,7 +53,6 @@ namespace ramses
     class TextureCube;
     class AnimatedProperty;
     class Animation;
-    class AnimatedSetter;
     class AnimationSequence;
     class Spline;
     class SplineStepBool;
@@ -159,7 +158,6 @@ namespace ramses
         AnimatedProperty,
         Animation,
         AnimationSequence,
-        AnimatedSetter,
         SplineStepBool,
         SplineStepFloat,
         SplineStepInt32,
@@ -217,7 +215,6 @@ namespace ramses
         AnimatedProperty,
         Animation,
         AnimationSequence,
-        AnimatedSetter,
         Appearance,
         SplineStepBool,
         SplineStepFloat,

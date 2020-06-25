@@ -18,7 +18,7 @@ namespace ramses_internal
 {
     struct TextureSlotInfo
     {
-        TextureSlotInfo(TextureSlot slotInit = 0u)
+        explicit TextureSlotInfo(TextureSlot slotInit = 0u)
             : slot(slotInit)
             , textureType(EEffectInputTextureType_Invalid)
         {
@@ -106,7 +106,7 @@ namespace ramses_internal
         TextureSlotInfo slot;
         const EStatus status = m_bufferSlots.get(field, slot);
         UNUSED(status);
-        assert(status == EStatus_RAMSES_OK);
+        assert(status == EStatus::Ok);
         return slot;
     }
 

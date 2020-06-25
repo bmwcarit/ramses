@@ -394,6 +394,7 @@ namespace ramses_internal
     {
         const ResourceContentHashVector old{ {0, 111}, {0, 222}, {0, 333}, {0, 444} };
         const ResourceContentHashVector current = old;
+        (void)current;
         SceneResourceChanges changes;
 
         SceneResourceUtils::DiffClientResources(old, current, changes);

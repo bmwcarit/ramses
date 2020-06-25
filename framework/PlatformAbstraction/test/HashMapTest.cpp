@@ -31,7 +31,7 @@ namespace {
         {
             i = 0;
         }
-        SomeClass(int val)
+        explicit SomeClass(int val)
         {
             i = val;
         }
@@ -180,7 +180,7 @@ TEST_F(HashMapTest, TestReserve)
     EXPECT_GE(map.capacity(), 100u);
     EXPECT_LE(map.capacity(), 2*100u);
 
-    const ramses_capu::uint_t old = map.capacity();
+    const size_t old = map.capacity();
     map.reserve(90);
     EXPECT_EQ(old, map.capacity());
 }
@@ -191,7 +191,7 @@ TEST_F(HashMapTest, CanInsertWithoutRehashWhenConstructedWithCapacity)
     {
         SCOPED_TRACE(param);
         HashMap<int32_t, int32_t> map(param);
-        const ramses_capu::uint_t oldCapacity = map.capacity();
+        const size_t oldCapacity = map.capacity();
         EXPECT_GE(oldCapacity, param);
 
         for (unsigned i = 0; i < param; ++i)
@@ -211,7 +211,7 @@ TEST_F(HashMapTest, CanInsertWithoutRehashWhenReservedToCapacity)
         HashMap<int32_t, int32_t> map;
 
         map.reserve(param);
-        const ramses_capu::uint_t oldCapacity = map.capacity();
+        const size_t oldCapacity = map.capacity();
         EXPECT_GE(oldCapacity, param);
 
         for (unsigned i = 0; i < param; ++i)
@@ -379,7 +379,7 @@ TEST_F(HashMapTest, operator_subscript_read)
 
     // non trivial object
     SomeHashMap newmap2;
-    newmap2.put(1, 5);
+    newmap2.put(1, SomeClass(5));
     SomeClass val2 = newmap2[1];
     EXPECT_EQ(5u, val2.i);
 
@@ -804,16 +804,16 @@ TEST_F(HashMapTest, HashMapWithComplexKey)
 {
     TestType::Reset();
     {
-        HashMap<TestType, ramses_capu::uint_t> ht;
+        HashMap<TestType, size_t> ht;
         std::vector<TestType> vec;
-        for (ramses_capu::uint_t i = 0; i < 20; ++i)
+        for (size_t i = 0; i < 20; ++i)
         {
             TestType ctt(i*20);
             ht.put(ctt, i);
             vec.push_back(ctt);
         }
 
-        for (ramses_capu::uint_t i = 0; i < vec.size(); ++i)
+        for (size_t i = 0; i < vec.size(); ++i)
         {
             const TestType& ctt = vec[i];
             auto it = ht.find(ctt);

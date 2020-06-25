@@ -32,6 +32,7 @@ from check_enum_style import check_enum_style
 from check_last_line_newline import check_last_line_newline
 from check_api_export_symbols import check_api_export_symbols
 from check_comments import check_doxygen_singleline_comments
+from check_deprecated import check_deprecated
 
 def main():
     sdk_root = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", ".."))
@@ -101,6 +102,7 @@ def main():
         check_curly_braces_alone_on_line    (f, file_contents, clean_file_contents, file_lines, clean_file_lines)
         check_single_statement_on_line      (f, file_contents, clean_file_contents, file_lines, clean_file_lines)
         check_single_definition_on_line     (f, file_contents, clean_file_contents, file_lines, clean_file_lines)
+        check_deprecated                    (f, file_contents, clean_file_contents, file_lines, clean_file_lines)
         check_enum_style                    (f, clean_file_contents)
         check_last_line_newline             (f, file_contents)
         check_api_export_symbols            (f, clean_file_contents)

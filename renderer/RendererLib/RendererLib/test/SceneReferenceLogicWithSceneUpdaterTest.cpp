@@ -75,7 +75,7 @@ namespace ramses_internal
             SceneActionCollection sceneActions;
             SceneActionCollectionCreator creator(sceneActions);
             creator.flush(1u, false);
-            m_sceneUpdater.handleSceneActions(sceneId, sceneActions);
+            m_sceneUpdater.handleSceneActions(sceneId, std::move(sceneActions));
         }
 
         void flushSceneWithRefSceneStateRequest(SceneId sceneId, SceneReferenceHandle refSceneHandle, RendererSceneState refSceneState)
@@ -84,7 +84,7 @@ namespace ramses_internal
             SceneActionCollectionCreator creator(sceneActions);
             creator.requestSceneReferenceState(refSceneHandle, refSceneState);
             creator.flush(1u, false);
-            m_sceneUpdater.handleSceneActions(sceneId, sceneActions);
+            m_sceneUpdater.handleSceneActions(sceneId, std::move(sceneActions));
         }
 
         void processInternalEventsBySceneLogic()

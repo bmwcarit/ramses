@@ -19,7 +19,7 @@ namespace ramses_internal
         typedef UInt64 TimeStamp;
         typedef UInt64 Duration;
 
-        AnimationTime(TimeStamp timeStamp = InvalidTimeStamp);
+        AnimationTime(TimeStamp timeStamp = InvalidTimeStamp);  //NOLINT(google-explicit-constructor) allow implcit conversion for convenience
         AnimationTime(const AnimationTime& other) = default;
         AnimationTime& operator=(const AnimationTime&) = default;
 

@@ -83,6 +83,12 @@ namespace ramses
         return m_metadata.getCarModelView();
     }
 
+    AnimationInformation DcsmMetadataUpdateImpl::getCarModelViewAnimationInfo() const
+    {
+        const auto& timing = m_metadata.getCarModelViewAnimationInfo();
+        return AnimationInformation{ timing.startTimeStamp, timing.finishedTimeStamp };
+    }
+
     bool DcsmMetadataUpdateImpl::hasCarModelVisibility() const
     {
         return m_metadata.hasCarModelVisibility();
@@ -101,16 +107,6 @@ namespace ramses
     bool DcsmMetadataUpdateImpl::getExclusiveBackground() const
     {
         return m_metadata.getExclusiveBackground();
-    }
-
-    bool DcsmMetadataUpdateImpl::hasFocusRequest() const
-    {
-        return m_metadata.hasFocusRequest();
-    }
-
-    int32_t DcsmMetadataUpdateImpl::getFocusRequest() const
-    {
-        return m_metadata.getFocusRequest();
     }
 
     void DcsmMetadataUpdateImpl::setMetadata(ramses_internal::DcsmMetadata metadata)

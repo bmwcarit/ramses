@@ -340,7 +340,7 @@ protected:
 
         creator.flush(1u, newSizeInfo > currSizeInfo, newSizeInfo, resourceChanges, sceneRefActions, timeInfo, version);
         scene.resetResourceChanges();
-        rendererSceneUpdater->handleSceneActions(stagingScene[sceneIndex]->getSceneId(), sceneActions);
+        rendererSceneUpdater->handleSceneActions(stagingScene[sceneIndex]->getSceneId(), std::move(sceneActions));
     }
 
     void performFlushWithExpiration(UInt32 sceneIndex, UInt32 expirationTS)
@@ -396,7 +396,7 @@ protected:
         scene.allocateRenderGroup(0u, 0u, renderGroupHandle);
         scene.allocateNode(0u, renderableNode);
         scene.allocateRenderable(renderableNode, renderableHandle);
-        scene.allocateDataLayout({ {EDataType_Vector2I}, {EDataType_Vector2I} }, ResourceProviderMock::FakeEffectHash, camDataLayoutHandle);
+        scene.allocateDataLayout({ DataFieldInfo{EDataType_Vector2I}, DataFieldInfo{EDataType_Vector2I} }, ResourceProviderMock::FakeEffectHash, camDataLayoutHandle);
         scene.allocateCamera(ECameraProjectionType_Perspective, scene.allocateNode(), scene.allocateDataInstance(camDataLayoutHandle, camDataHandle), cameraHandle);
 
         scene.addRenderableToRenderGroup(renderGroupHandle, renderableHandle, 0u);
@@ -407,17 +407,17 @@ protected:
         DataFieldInfoVector uniformDataFields;
         if (withTextureSampler)
         {
-            uniformDataFields.push_back({ EDataType_TextureSampler });
+            uniformDataFields.push_back(DataFieldInfo{ EDataType_TextureSampler });
         }
         scene.allocateDataLayout(uniformDataFields, ResourceProviderMock::FakeEffectHash, uniformDataLayoutHandle);
         scene.allocateDataInstance(uniformDataLayoutHandle, uniformDataInstanceHandle);
         scene.setRenderableDataInstance(renderableHandle, ERenderableDataSlotType_Uniforms, uniformDataInstanceHandle);
 
         DataFieldInfoVector geometryDataFields;
-        geometryDataFields.push_back({ EDataType_Indices, 1u, EFixedSemantics_Indices });
+        geometryDataFields.push_back(DataFieldInfo{ EDataType_Indices, 1u, EFixedSemantics_Indices });
         if (withVertexArray)
         {
-            geometryDataFields.push_back({ EDataType_Vector3Buffer, 1u, EFixedSemantics_VertexPositionAttribute });
+            geometryDataFields.push_back(DataFieldInfo{ EDataType_Vector3Buffer, 1u, EFixedSemantics_VertexPositionAttribute });
         }
         scene.allocateDataLayout(geometryDataFields, ResourceProviderMock::FakeEffectHash, geometryDataLayoutHandle);
         scene.allocateDataInstance(geometryDataLayoutHandle, geometryDataInstanceHandle);

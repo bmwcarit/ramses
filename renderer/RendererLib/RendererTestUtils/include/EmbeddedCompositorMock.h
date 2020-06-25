@@ -23,22 +23,22 @@ namespace ramses_internal
         EmbeddedCompositorMock();
         ~EmbeddedCompositorMock();
 
-        MOCK_METHOD0(init, Bool());
-        MOCK_METHOD0(handleRequestsFromClients, void());
-        MOCK_CONST_METHOD0(hasUpdatedStreamTextureSources, bool());
-        MOCK_METHOD0(dispatchUpdatedStreamTextureSourceIds, StreamTextureSourceIdSet());
-        MOCK_METHOD0(dispatchNewStreamTextureSourceIds, StreamTextureSourceIdSet());
-        MOCK_METHOD0(dispatchObsoleteStreamTextureSourceIds, StreamTextureSourceIdSet());
-        MOCK_METHOD1(endFrame, void(Bool));
-        MOCK_METHOD3(uploadCompositingContentForStreamTexture, UInt32(StreamTextureSourceId, DeviceResourceHandle textureHandle, ITextureUploadingAdapter&));
-        MOCK_CONST_METHOD1(isContentAvailableForStreamTexture, Bool (StreamTextureSourceId));
-        MOCK_CONST_METHOD1(getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime, UInt64(WaylandIviSurfaceId));
-        MOCK_CONST_METHOD1(isBufferAttachedToWaylandIviSurface, Bool(WaylandIviSurfaceId));
-        MOCK_CONST_METHOD0(getNumberOfCompositorConnections, UInt32());
-        MOCK_CONST_METHOD1(hasSurfaceForStreamTexture, Bool (StreamTextureSourceId));
-        MOCK_CONST_METHOD1(getTitleOfWaylandIviSurface, String (WaylandIviSurfaceId));
-        MOCK_CONST_METHOD1(logInfos, void(RendererLogContext&));
-        MOCK_CONST_METHOD0(isRealCompositor, bool()); //TODO Mohamed: remove this when dummy EC is removed
+        MOCK_METHOD(Bool, init, ());
+        MOCK_METHOD(void, handleRequestsFromClients, (), (override));
+        MOCK_METHOD(bool, hasUpdatedStreamTextureSources, (), (const, override));
+        MOCK_METHOD(StreamTextureSourceIdSet, dispatchUpdatedStreamTextureSourceIds, (), (override));
+        MOCK_METHOD(StreamTextureSourceIdSet, dispatchNewStreamTextureSourceIds, (), (override));
+        MOCK_METHOD(StreamTextureSourceIdSet, dispatchObsoleteStreamTextureSourceIds, (), (override));
+        MOCK_METHOD(void, endFrame, (Bool), (override));
+        MOCK_METHOD(UInt32, uploadCompositingContentForStreamTexture, (StreamTextureSourceId, DeviceResourceHandle textureHandle, ITextureUploadingAdapter&), (override));
+        MOCK_METHOD(Bool , isContentAvailableForStreamTexture, (StreamTextureSourceId), (const, override));
+        MOCK_METHOD(UInt64, getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime, (WaylandIviSurfaceId), (const, override));
+        MOCK_METHOD(Bool, isBufferAttachedToWaylandIviSurface, (WaylandIviSurfaceId), (const, override));
+        MOCK_METHOD(UInt32, getNumberOfCompositorConnections, (), (const, override));
+        MOCK_METHOD(Bool , hasSurfaceForStreamTexture, (StreamTextureSourceId), (const, override));
+        MOCK_METHOD(String , getTitleOfWaylandIviSurface, (WaylandIviSurfaceId), (const, override));
+        MOCK_METHOD(void, logInfos, (RendererLogContext&), (const, override));
+        MOCK_METHOD(bool, isRealCompositor, (), (const, override)); //TODO Mohamed: remove this when dummy EC is removed
     };
 
     class EmbeddedCompositorMockWithDestructor : public EmbeddedCompositorMock
@@ -47,7 +47,7 @@ namespace ramses_internal
         EmbeddedCompositorMockWithDestructor();
         ~EmbeddedCompositorMockWithDestructor();
 
-        MOCK_METHOD0(Die, void());
+        MOCK_METHOD(void, Die, ());
     };
 }
 

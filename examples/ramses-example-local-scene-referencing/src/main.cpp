@@ -23,7 +23,7 @@
 class SceneReferenceEventHandler final : public ramses::IClientEventHandler
 {
 public:
-    SceneReferenceEventHandler(ramses::RamsesClient& client)
+    explicit SceneReferenceEventHandler(ramses::RamsesClient& client)
         : m_client(client)
     {}
 
@@ -106,8 +106,17 @@ void createContentProviderScene(ramses::RamsesClient& client, ramses::sceneId_t 
     const ramses::UInt16Array* indices = client.createConstUInt16Array(3, indicesArray);
 
     ramses::EffectDescription effectDesc;
-    effectDesc.setVertexShaderFromFile("res/ramses-example-local-viewport-link.vert");
-    effectDesc.setFragmentShaderFromFile("res/ramses-example-local-viewport-link.frag");
+    effectDesc.setVertexShader(R"glsl(#version 100
+uniform highp mat4 mvpMatrix;
+attribute vec3 a_position;
+void main() {
+    gl_Position = mvpMatrix * vec4(a_position, 1.0);
+})glsl");
+    effectDesc.setFragmentShader(R"glsl(#version 100
+uniform highp vec4 color;
+void main(void) {
+    gl_FragColor = color + vec4(0.1);
+})glsl");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
     const ramses::Effect* effect = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
@@ -207,11 +216,7 @@ int main(int argc, char* argv[])
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
     renderer.startThread();
 
-    ramses::DisplayConfig displayConfig;
-    displayConfig.setIntegrityRGLDeviceUnit(0);
-    displayConfig.setWaylandIviSurfaceID(0);
-    displayConfig.setWindowIviVisible();
-    displayConfig.setWaylandIviLayerID(3);
+    ramses::DisplayConfig displayConfig(argc, argv);
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
     renderer.flush();
 

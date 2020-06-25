@@ -31,6 +31,7 @@ namespace ramses
         {
             /// Size in pixels that a content assigned to this category should be configured for.
             /// Size can be modified later via #ramses::DcsmContentControl::setCategorySize.
+            /// Values will implicity be applied additionally as initial rendersize, can also be modified later
             SizeInfo size;
             /// Display where this category belongs. All contents assigned to this category will be mapped to its display.
             displayId_t display;

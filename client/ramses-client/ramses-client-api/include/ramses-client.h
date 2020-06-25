@@ -69,7 +69,6 @@
 
 // Animation
 #include "ramses-client-api/AnimatedProperty.h"
-#include "ramses-client-api/AnimatedSetter.h"
 #include "ramses-client-api/Animation.h"
 #include "ramses-client-api/AnimationSequence.h"
 #include "ramses-client-api/AnimationSystem.h"

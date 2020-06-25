@@ -182,8 +182,8 @@ protected:
     {
         const RenderPassHandle pass = sceneAllocator.allocateRenderPass();
         const NodeHandle cameraNode = sceneAllocator.allocateNode();
-        const auto vpDataLayout = sceneAllocator.allocateDataLayout({ {EDataType_DataReference}, {EDataType_DataReference} }, ResourceProviderMock::FakeEffectHash);
-        const auto vpDataRefLayout = sceneAllocator.allocateDataLayout({ {EDataType_Vector2I} }, ResourceProviderMock::FakeEffectHash);
+        const auto vpDataLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType_DataReference}, DataFieldInfo{EDataType_DataReference} }, ResourceProviderMock::FakeEffectHash);
+        const auto vpDataRefLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType_Vector2I} }, ResourceProviderMock::FakeEffectHash);
         const auto vpDataInstance = sceneAllocator.allocateDataInstance(vpDataLayout);
         const auto vpOffsetInstance = sceneAllocator.allocateDataInstance(vpDataRefLayout);
         const auto vpSizeInstance = sceneAllocator.allocateDataInstance(vpDataRefLayout);

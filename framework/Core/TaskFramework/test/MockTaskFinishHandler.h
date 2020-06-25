@@ -18,7 +18,7 @@ namespace ramses_internal
     {
     public:
 
-        MOCK_METHOD1(TaskFinished, void(ITask& Task));
+        MOCK_METHOD(void, TaskFinished, (ITask& Task), (override));
     };
 }
 

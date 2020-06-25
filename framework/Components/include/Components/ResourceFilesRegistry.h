@@ -38,8 +38,8 @@ namespace ramses_internal
     class ResourceFilesRegistry
     {
     public:
-        void registerResourceFile(ResourceFileInputStreamSPtr resourceFileInputStream, const ResourceTableOfContents& toc, ResourceStorage& resourceStorage);
-        void unregisterResourceFile(ResourceFileInputStreamSPtr resourceFileInputStream);
+        void registerResourceFile(const ResourceFileInputStreamSPtr& resourceFileInputStream, const ResourceTableOfContents& toc, ResourceStorage& resourceStorage);
+        void unregisterResourceFile(const ResourceFileInputStreamSPtr& resourceFileInputStream);
         void unregisterResourceFile(const String& filename);
         bool hasResourceFile(const String& resourceFileName) const;
 
@@ -50,7 +50,7 @@ namespace ramses_internal
     };
 
     inline
-    void ResourceFilesRegistry::registerResourceFile(ResourceFileInputStreamSPtr resourceFileInputStream, const ResourceTableOfContents& toc, ResourceStorage& resourceStorage)
+    void ResourceFilesRegistry::registerResourceFile(const ResourceFileInputStreamSPtr& resourceFileInputStream, const ResourceTableOfContents& toc, ResourceStorage& resourceStorage)
     {
         assert(resourceFileInputStream);
 
@@ -77,7 +77,7 @@ namespace ramses_internal
     }
 
     inline
-    void ResourceFilesRegistry::unregisterResourceFile(ResourceFileInputStreamSPtr resourceFileInputStream)
+    void ResourceFilesRegistry::unregisterResourceFile(const ResourceFileInputStreamSPtr& resourceFileInputStream)
     {
         m_resourceFiles.remove(resourceFileInputStream);
     }
@@ -106,10 +106,10 @@ namespace ramses_internal
             {
                 resourceStream = &iter.key->resourceStream;
                 fileEntry = entry->fileEntry;
-                return EStatus_RAMSES_OK;
+                return EStatus::Ok;
             }
         }
-        return EStatus_RAMSES_NOT_EXIST;
+        return EStatus::NotExist;
     }
 
 }

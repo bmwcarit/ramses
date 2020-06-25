@@ -15,16 +15,11 @@ namespace ramses_internal
     {
     }
 
-    void RamshInput::append(const Char c)
-    {
-        Char tmp[] = { c, '\0' };
-        this->push_back(tmp);
-    }
-
     void RamshInput::append(const String& c)
     {
         this->push_back(c);
     }
+
     void RamshInput::append(const Char* c)
     {
         this->push_back(c);

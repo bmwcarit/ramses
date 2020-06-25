@@ -296,10 +296,10 @@ public:
     }
 
     // DCSM Provider event handler interface implementation
-    virtual void contentSizeChange(ramses::ContentID /*contentID*/, ramses::SizeInfo sizeInfo, ramses::AnimationInformation animInfo) override
+    virtual void contentSizeChange(ramses::ContentID /*contentID*/, const ramses::CategoryInfoUpdate& categoryInfo, ramses::AnimationInformation animInfo) override
     {
         // save the resize parameters, which are then used within our logic loop
-        m_newSize = sizeInfo;
+        m_newSize = ramses::SizeInfo{ categoryInfo.getCategorySize().width, categoryInfo.getCategorySize().height };
         m_sizeAnim = animInfo;
         m_sizeReceived = true;
     }

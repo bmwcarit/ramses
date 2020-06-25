@@ -24,13 +24,13 @@ namespace ramses_internal
     class LongRunningTestTask : public ITask
     {
     public:
-        LongRunningTestTask(UInt32 howLong = 50)
+        explicit LongRunningTestTask(UInt32 howLong = 50)
             : time(howLong)
         {
             ON_CALL(*this, execute()).WillByDefault(Invoke(this, &LongRunningTestTask::doSomethingLong));
         }
         virtual ~LongRunningTestTask(){};
-        MOCK_METHOD0(execute, void());
+        MOCK_METHOD(void, execute, (), (override));
         virtual void doSomethingLong()
         {
             executeStarted.signal();
@@ -84,7 +84,7 @@ namespace ramses_internal
     class CountingWatchdogNotifier : public ramses::IThreadWatchdogNotification
     {
     public:
-        CountingWatchdogNotifier(std::atomic<uint32_t>& counter)
+        explicit CountingWatchdogNotifier(std::atomic<uint32_t>& counter)
             : m_counter(counter)
         {
         }

@@ -210,10 +210,6 @@ int main(int argc, char* argv[])
     //                 This should not be the case for real applications.
     // Create displays and map scenes to them
     ramses::DisplayConfig displayConfig1(argc, argv);
-    displayConfig1.setIntegrityRGLDeviceUnit(0);
-    displayConfig1.setWaylandIviSurfaceID(0);
-    displayConfig1.setWaylandIviLayerID(3);
-    displayConfig1.setWindowIviVisible();
     const ramses::displayId_t display1 = renderer.createDisplay(displayConfig1);
 
     sceneControlAPI.setSceneMapping(sceneId1, display1);
@@ -221,10 +217,8 @@ int main(int argc, char* argv[])
     sceneControlAPI.flush();
 
     ramses::DisplayConfig displayConfig2(argc, argv);
-    displayConfig2.setIntegrityRGLDeviceUnit(1);
-    displayConfig2.setWaylandIviSurfaceID(1);
-    displayConfig2.setWaylandIviLayerID(3);
-    displayConfig2.setWindowIviVisible();
+    //ivi surfaces must be unique for every display
+    displayConfig2.setWaylandIviSurfaceID(displayConfig1.getWaylandIviSurfaceID() + 1);
     const ramses::displayId_t display2 = renderer.createDisplay(displayConfig2);
     renderer.flush();
 

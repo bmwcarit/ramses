@@ -63,8 +63,9 @@ namespace ramses
 
         displayBufferId_t createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, bool interruptible);
         status_t destroyOffscreenBuffer(displayId_t display, displayBufferId_t offscreenBuffer);
+        status_t setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a);
 
-        status_t readPixels(displayId_t displayId, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+        status_t readPixels(displayId_t displayId, displayBufferId_t displayBuffer, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
         status_t updateWarpingMeshData(displayId_t displayId, const WarpingMeshData& newWarpingMeshData);
 
         status_t systemCompositorSetIviSurfaceVisibility(uint32_t surfaceId, bool visibility);
@@ -91,8 +92,6 @@ namespace ramses
 
         status_t setPendingFlushLimits(uint32_t forceApplyFlushLimit, uint32_t forceUnsubscribeSceneLimit);
         status_t setSkippingOfUnmodifiedBuffers(bool enable);
-
-        status_t handlePickEvent(sceneId_t sceneId, float bufferNormalizedCoordX, float bufferNormalizedCoordY);
 
         const ramses_internal::RendererCommands& getPendingCommands() const;
         void submitRendererCommands(const ramses_internal::RendererCommands& cmds);

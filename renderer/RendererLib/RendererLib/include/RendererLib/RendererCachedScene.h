@@ -19,7 +19,7 @@ namespace ramses_internal
     class RendererCachedScene final : public TextureLinkCachedScene
     {
     public:
-        RendererCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
+        explicit RendererCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
 
         void updateRenderablesAndResourceCache(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager);
         void updateRenderableWorldMatrices();

@@ -18,7 +18,7 @@ namespace ramses_internal
     class SystemCompositorControllerListIviSurfaces : public RamshCommand
     {
     public:
-        SystemCompositorControllerListIviSurfaces(RendererCommandBuffer& rendererCommandBuffer);
+        explicit SystemCompositorControllerListIviSurfaces(RendererCommandBuffer& rendererCommandBuffer);
         virtual Bool executeInput(const RamshInput& input) override;
 
     private:

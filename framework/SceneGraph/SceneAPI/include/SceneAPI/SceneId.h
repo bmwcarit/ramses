@@ -26,7 +26,7 @@ namespace ramses_internal
     struct SceneInfo
     {
         SceneInfo() {}
-        SceneInfo(const SceneId& sceneID_, const String& friendlyName_ = String(), EScenePublicationMode mode = EScenePublicationMode_LocalAndRemote)
+        explicit SceneInfo(const SceneId& sceneID_, const String& friendlyName_ = String(), EScenePublicationMode mode = EScenePublicationMode_LocalAndRemote)
             : sceneID(sceneID_)
             , friendlyName(friendlyName_)
             , publicationMode(mode)

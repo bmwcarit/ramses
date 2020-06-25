@@ -26,101 +26,98 @@ namespace ramses_internal
     {
     public:
         DeviceMock();
-        DeviceMock(IContext&);
+        explicit DeviceMock(IContext&);
         ~DeviceMock() override;
 
-        MOCK_CONST_METHOD0(getDeviceTypeId, EDeviceTypeId());
-        MOCK_METHOD0(init, Bool());
+        MOCK_METHOD(EDeviceTypeId, getDeviceTypeId, (), (const, override));
+        MOCK_METHOD(Bool, init, ());
 
-        MOCK_METHOD1(clear, void(UInt32));
+        MOCK_METHOD(void, clear, (UInt32), (override));
 
-        MOCK_METHOD3(setConstant, void(DataFieldHandle, UInt32, const Float*));
-        MOCK_METHOD3(setConstant, void(DataFieldHandle, UInt32, const Vector2*));
-        MOCK_METHOD3(setConstant, void(DataFieldHandle, UInt32, const Vector3*));
-        MOCK_METHOD3(setConstant, void(DataFieldHandle, UInt32, const Vector4*));
-        MOCK_METHOD3(setConstant, void(DataFieldHandle, UInt32, const Int32*));
-        MOCK_METHOD3(setConstant, void(DataFieldHandle, UInt32, const Vector2i*));
-        MOCK_METHOD3(setConstant, void(DataFieldHandle, UInt32, const Vector3i*));
-        MOCK_METHOD3(setConstant, void(DataFieldHandle, UInt32, const Vector4i*));
-        MOCK_METHOD3(setConstant, void(DataFieldHandle, UInt32, const Matrix22f*));
-        MOCK_METHOD3(setConstant, void(DataFieldHandle, UInt32, const Matrix33f*));
-        MOCK_METHOD3(setConstant, void(DataFieldHandle, UInt32, const Matrix44f*));
+        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Float*), (override));
+        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Vector2*), (override));
+        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Vector3*), (override));
+        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Vector4*), (override));
+        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Int32*), (override));
+        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Vector2i*), (override));
+        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Vector3i*), (override));
+        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Vector4i*), (override));
+        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Matrix22f*), (override));
+        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Matrix33f*), (override));
+        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Matrix44f*), (override));
 
-        MOCK_METHOD3(drawIndexedTriangles, void(Int32, Int32, UInt32));
-        MOCK_METHOD3(drawTriangles, void(Int32, Int32, UInt32));
+        MOCK_METHOD(void, drawIndexedTriangles, (Int32, Int32, UInt32), (override));
+        MOCK_METHOD(void, drawTriangles, (Int32, Int32, UInt32), (override));
 
-        MOCK_METHOD4(colorMask, void(Bool, Bool, Bool, Bool));
-        MOCK_METHOD1(clearColor, void(const Vector4&));
-        MOCK_METHOD1(clearDepth, void(Float));
-        MOCK_METHOD1(clearStencil, void(Int32));
-        MOCK_METHOD4(blendFactors, void(EBlendFactor, EBlendFactor, EBlendFactor, EBlendFactor));
-        MOCK_METHOD2(blendOperations, void(EBlendOperation, EBlendOperation));
-        MOCK_METHOD1(cullMode, void(ECullMode));
-        MOCK_METHOD1(depthFunc, void(EDepthFunc));
-        MOCK_METHOD1(depthWrite, void(EDepthWrite));
-        MOCK_METHOD3(stencilFunc, void(EStencilFunc, UInt8, UInt8));
-        MOCK_METHOD2(scissorTest, void(EScissorTest, const RenderState::ScissorRegion&));
-        MOCK_METHOD3(stencilOp, void(EStencilOp, EStencilOp, EStencilOp));
-        MOCK_METHOD1(drawMode, void(EDrawMode));
-        MOCK_METHOD4(setViewport, void(UInt32, UInt32, UInt32, UInt32));
-        MOCK_METHOD7(setTextureSampling, void(DataFieldHandle, EWrapMethod, EWrapMethod, EWrapMethod, ESamplingMethod, ESamplingMethod, UInt32));
+        MOCK_METHOD(void, colorMask, (Bool, Bool, Bool, Bool), (override));
+        MOCK_METHOD(void, clearColor, (const Vector4&), (override));
+        MOCK_METHOD(void, clearDepth, (Float), (override));
+        MOCK_METHOD(void, clearStencil, (Int32), (override));
+        MOCK_METHOD(void, blendFactors, (EBlendFactor, EBlendFactor, EBlendFactor, EBlendFactor), (override));
+        MOCK_METHOD(void, blendOperations, (EBlendOperation, EBlendOperation), (override));
+        MOCK_METHOD(void, cullMode, (ECullMode), (override));
+        MOCK_METHOD(void, depthFunc, (EDepthFunc), (override));
+        MOCK_METHOD(void, depthWrite, (EDepthWrite), (override));
+        MOCK_METHOD(void, stencilFunc, (EStencilFunc, UInt8, UInt8), (override));
+        MOCK_METHOD(void, scissorTest, (EScissorTest, const RenderState::ScissorRegion&), (override));
+        MOCK_METHOD(void, stencilOp, (EStencilOp, EStencilOp, EStencilOp), (override));
+        MOCK_METHOD(void, drawMode, (EDrawMode), (override));
+        MOCK_METHOD(void, setViewport, (UInt32, UInt32, UInt32, UInt32), (override));
+        MOCK_METHOD(void, setTextureSampling, (DataFieldHandle, EWrapMethod, EWrapMethod, EWrapMethod, ESamplingMethod, ESamplingMethod, UInt32), (override));
 
-        MOCK_METHOD2(allocateVertexBuffer, DeviceResourceHandle(EDataType, UInt32));
-        MOCK_METHOD3(uploadVertexBufferData, void(DeviceResourceHandle, const Byte*, UInt32));
-        MOCK_METHOD1(deleteVertexBuffer, void(DeviceResourceHandle));
-        MOCK_METHOD4(activateVertexBuffer, void(DeviceResourceHandle, DataFieldHandle, UInt32, UInt32));
-        MOCK_METHOD2(allocateIndexBuffer, DeviceResourceHandle(EDataType, UInt32));
-        MOCK_METHOD3(uploadIndexBufferData, void(DeviceResourceHandle, const Byte*, UInt32));
-        MOCK_METHOD1(deleteIndexBuffer, void(DeviceResourceHandle));
-        MOCK_METHOD1(activateIndexBuffer, void(DeviceResourceHandle));
+        MOCK_METHOD(DeviceResourceHandle, allocateVertexBuffer, (EDataType, UInt32), (override));
+        MOCK_METHOD(void, uploadVertexBufferData, (DeviceResourceHandle, const Byte*, UInt32), (override));
+        MOCK_METHOD(void, deleteVertexBuffer, (DeviceResourceHandle), (override));
+        MOCK_METHOD(void, activateVertexBuffer, (DeviceResourceHandle, DataFieldHandle, UInt32, UInt32), (override));
+        MOCK_METHOD(DeviceResourceHandle, allocateIndexBuffer, (EDataType, UInt32), (override));
+        MOCK_METHOD(void, uploadIndexBufferData, (DeviceResourceHandle, const Byte*, UInt32), (override));
+        MOCK_METHOD(void, deleteIndexBuffer, (DeviceResourceHandle), (override));
+        MOCK_METHOD(void, activateIndexBuffer, (DeviceResourceHandle), (override));
 
-        MOCK_METHOD1(uploadShader, DeviceResourceHandle(const EffectResource&));
-        MOCK_METHOD4(uploadBinaryShader, DeviceResourceHandle(const EffectResource&, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat));
-        MOCK_METHOD3(getBinaryShader, Bool(DeviceResourceHandle, UInt8Vector&, BinaryShaderFormatID&));
-        MOCK_METHOD1(deleteShader, void(DeviceResourceHandle));
-        MOCK_METHOD1(activateShader, void(DeviceResourceHandle));
+        MOCK_METHOD(DeviceResourceHandle, uploadShader, (const EffectResource&), (override));
+        MOCK_METHOD(DeviceResourceHandle, uploadBinaryShader, (const EffectResource&, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat), (override));
+        MOCK_METHOD(Bool, getBinaryShader, (DeviceResourceHandle, UInt8Vector&, BinaryShaderFormatID&), (override));
+        MOCK_METHOD(void, deleteShader, (DeviceResourceHandle), (override));
+        MOCK_METHOD(void, activateShader, (DeviceResourceHandle), (override));
 
-        MOCK_METHOD6(allocateTexture2D, DeviceResourceHandle(UInt32 width, UInt32 height, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes));
-        MOCK_METHOD6(allocateTexture3D, DeviceResourceHandle(UInt32 width, UInt32 height, UInt32 depth, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes));
-        MOCK_METHOD5(allocateTextureCube, DeviceResourceHandle(UInt32 faceSize, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes));
-        MOCK_METHOD1(bindTexture, void(DeviceResourceHandle handle));
-        MOCK_METHOD1(generateMipmaps, void(DeviceResourceHandle handle));
-        MOCK_METHOD10(uploadTextureData, void(DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte* data, UInt32 dataSize));
-        MOCK_METHOD6(uploadStreamTexture2D, DeviceResourceHandle(DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data, const TextureSwizzleArray& swizzle));
-        MOCK_METHOD1(deleteTexture, void(DeviceResourceHandle));
-        MOCK_METHOD2(activateTexture, void(DeviceResourceHandle, DataFieldHandle));
+        MOCK_METHOD(DeviceResourceHandle, allocateTexture2D, (UInt32 width, UInt32 height, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes), (override));
+        MOCK_METHOD(DeviceResourceHandle, allocateTexture3D, (UInt32 width, UInt32 height, UInt32 depth, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes), (override));
+        MOCK_METHOD(DeviceResourceHandle, allocateTextureCube, (UInt32 faceSize, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes), (override));
+        MOCK_METHOD(void, bindTexture, (DeviceResourceHandle handle), (override));
+        MOCK_METHOD(void, generateMipmaps, (DeviceResourceHandle handle), (override));
+        MOCK_METHOD(void, uploadTextureData, (DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte* data, UInt32 dataSize), (override));
+        MOCK_METHOD(DeviceResourceHandle, uploadStreamTexture2D, (DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data, const TextureSwizzleArray& swizzle), (override));
+        MOCK_METHOD(void, deleteTexture, (DeviceResourceHandle), (override));
+        MOCK_METHOD(void, activateTexture, (DeviceResourceHandle, DataFieldHandle), (override));
 
-        MOCK_METHOD1(uploadRenderBuffer, DeviceResourceHandle(const RenderBuffer&));
-        MOCK_METHOD1(deleteRenderBuffer, void(DeviceResourceHandle));
-        MOCK_METHOD6(uploadTextureSampler, DeviceResourceHandle(EWrapMethod, EWrapMethod, EWrapMethod, ESamplingMethod, ESamplingMethod, UInt32));
-        MOCK_METHOD1(deleteTextureSampler, void(DeviceResourceHandle));
-        MOCK_METHOD2(activateTextureSampler, void(DeviceResourceHandle, DataFieldHandle));
-        MOCK_CONST_METHOD0(getFramebufferRenderTarget, DeviceResourceHandle());
-        MOCK_METHOD1(uploadRenderTarget, DeviceResourceHandle(const DeviceHandleVector&));
-        MOCK_METHOD1(activateRenderTarget, void(DeviceResourceHandle));
-        MOCK_METHOD1(deleteRenderTarget, void(DeviceResourceHandle));
-        MOCK_METHOD5(blitRenderTargets, void(DeviceResourceHandle, DeviceResourceHandle, const PixelRectangle&, const PixelRectangle&, Bool));
+        MOCK_METHOD(DeviceResourceHandle, uploadRenderBuffer, (const RenderBuffer&), (override));
+        MOCK_METHOD(void, deleteRenderBuffer, (DeviceResourceHandle), (override));
+        MOCK_METHOD(DeviceResourceHandle, uploadTextureSampler, (EWrapMethod, EWrapMethod, EWrapMethod, ESamplingMethod, ESamplingMethod, UInt32), (override));
+        MOCK_METHOD(void, deleteTextureSampler, (DeviceResourceHandle), (override));
+        MOCK_METHOD(void, activateTextureSampler, (DeviceResourceHandle, DataFieldHandle), (override));
+        MOCK_METHOD(DeviceResourceHandle, getFramebufferRenderTarget, (), (const, override));
+        MOCK_METHOD(DeviceResourceHandle, uploadRenderTarget, (const DeviceHandleVector&), (override));
+        MOCK_METHOD(void, activateRenderTarget, (DeviceResourceHandle), (override));
+        MOCK_METHOD(void, deleteRenderTarget, (DeviceResourceHandle), (override));
+        MOCK_METHOD(void, blitRenderTargets, (DeviceResourceHandle, DeviceResourceHandle, const PixelRectangle&, const PixelRectangle&, Bool), (override));
 
-        MOCK_METHOD2(pairRenderTargetsForDoubleBuffering, void(DeviceResourceHandle[2], DeviceResourceHandle[2]));
-        MOCK_METHOD1(unpairRenderTargets, void(DeviceResourceHandle));
-        MOCK_METHOD1(swapDoubleBufferedRenderTarget, void(DeviceResourceHandle));
+        MOCK_METHOD(void, pairRenderTargetsForDoubleBuffering, (DeviceResourceHandle[2], DeviceResourceHandle[2]), (override));
+        MOCK_METHOD(void, unpairRenderTargets, (DeviceResourceHandle), (override));
+        MOCK_METHOD(void, swapDoubleBufferedRenderTarget, (DeviceResourceHandle), (override));
 
-        MOCK_METHOD2(uploadBlitPassRenderTargets, DeviceResourceHandle(DeviceResourceHandle, DeviceResourceHandle));
-        MOCK_METHOD1(deleteBlitPassRenderTargets, void(DeviceResourceHandle));
+        MOCK_METHOD(void, readPixels, (UInt8*, UInt32, UInt32, UInt32, UInt32), (override));
 
-        MOCK_METHOD5(readPixels, void(UInt8*, UInt32, UInt32, UInt32, UInt32));
+        MOCK_METHOD(UInt32, getTotalGpuMemoryUsageInKB, (), (const, override));
+        MOCK_METHOD(UInt32, getDrawCallCount, (), (const, override));
+        MOCK_METHOD(void, resetDrawCallCount, (), (override));
 
-        MOCK_CONST_METHOD0(getTotalGpuMemoryUsageInKB, UInt32());
-        MOCK_CONST_METHOD0(getDrawCallCount, UInt32());
-        MOCK_METHOD0(resetDrawCallCount, void());
+        MOCK_METHOD(void, validateDeviceStatusHealthy, (), (const, override));
+        MOCK_METHOD(Bool, isDeviceStatusHealthy, (), (const, override));
+        MOCK_METHOD(void, getSupportedBinaryProgramFormats, (std::vector<BinaryShaderFormatID>&), (const, override));
 
-        MOCK_CONST_METHOD0(validateDeviceStatusHealthy, void());
-        MOCK_CONST_METHOD0(isDeviceStatusHealthy, Bool());
-        MOCK_CONST_METHOD1(getSupportedBinaryProgramFormats, void(std::vector<BinaryShaderFormatID>&));
+        MOCK_METHOD(void, finish, (), (override));
 
-        MOCK_METHOD0(finish, void());
-
-        MOCK_CONST_METHOD1(getTextureAddress, int(DeviceResourceHandle));
+        MOCK_METHOD(int, getTextureAddress, (DeviceResourceHandle), (const, override));
 
         static const DeviceResourceHandle FakeShaderDeviceHandle                 ;
         static const DeviceResourceHandle FakeVertexBufferDeviceHandle           ;
@@ -143,7 +140,7 @@ namespace ramses_internal
         DeviceMockWithDestructor();
         ~DeviceMockWithDestructor();
 
-        MOCK_METHOD0(Die, void());
+        MOCK_METHOD(void, Die, ());
     };
 }
 

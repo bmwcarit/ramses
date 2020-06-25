@@ -27,7 +27,7 @@ namespace ramses_internal
 
         IInputStream& read(Char* buffer, UInt32 size) override;
 
-        EStatus seek(Int numberOfBytesToSeek, EFileSeekOrigin origin);
+        EStatus seek(Int numberOfBytesToSeek, File::SeekOrigin origin);
         EStatus getPos(UInt& position);
 
         virtual EStatus getState() const override;
@@ -40,7 +40,7 @@ namespace ramses_internal
     inline
     BinaryFileInputStream::BinaryFileInputStream(File& file)
         : m_file(file)
-        , m_state(m_file.open(EFileMode_ReadOnlyBinary))
+        , m_state(m_file.open(File::Mode::ReadOnlyBinary) ? EStatus::Ok : EStatus::Error)
     {
     }
 
@@ -54,7 +54,7 @@ namespace ramses_internal
     IInputStream&
     BinaryFileInputStream::read(Char* data, UInt32 size)
     {
-        if (EStatus_RAMSES_OK == m_state)
+        if (EStatus::Ok == m_state)
         {
             UInt readBytes = 0;
             UInt numBytes = 0;
@@ -62,7 +62,7 @@ namespace ramses_internal
             {
                 EStatus retVal = m_file.read(data + readBytes, size, numBytes);
                 readBytes += numBytes;
-                if (retVal != EStatus_RAMSES_OK)
+                if (retVal != EStatus::Ok)
                 {
                     // error reading file, abort read method
                     // EOF is no error, but a valid return value, so we need a special handling here
@@ -76,16 +76,16 @@ namespace ramses_internal
 
     inline
     ramses_internal::EStatus
-    BinaryFileInputStream::seek(Int numberOfBytesToSeek, EFileSeekOrigin origin)
+    BinaryFileInputStream::seek(Int numberOfBytesToSeek, File::SeekOrigin origin)
     {
-        return m_file.seek(numberOfBytesToSeek, origin);
+        return m_file.seek(numberOfBytesToSeek, origin) ? EStatus::Ok : EStatus::Error;
     }
 
     inline
     ramses_internal::EStatus
     BinaryFileInputStream::getPos(UInt& position)
     {
-        return m_file.getPos(position);
+        return m_file.getPos(position) ? EStatus::Ok : EStatus::Error;
     }
 
     inline

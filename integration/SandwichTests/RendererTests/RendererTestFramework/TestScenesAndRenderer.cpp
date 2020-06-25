@@ -53,12 +53,28 @@ namespace ramses_internal
 
     bool TestScenesAndRenderer::loopTillClientEvent(TestClientEventHandler& handlerWithCondition)
     {
-        for (int i = 0; i < 20; ++i)
+        if (getTestRenderer().isRendererThreadEnabled())
         {
-            getClient().dispatchEvents(handlerWithCondition);
-            getTestRenderer().doOneLoop();
-            if (handlerWithCondition.waitCondition())
-                return true;
+            const auto startTime = std::chrono::steady_clock::now();
+            while (std::chrono::steady_clock::now() - startTime < std::chrono::seconds{ 20 })
+            {
+                getClient().dispatchEvents(handlerWithCondition);
+                if (handlerWithCondition.waitCondition())
+                    return true;
+
+                std::this_thread::sleep_for(std::chrono::milliseconds{ 5 });
+            }
+        }
+        else
+        {
+            // fixed amount of attempts in non-threaded mode
+            for (int i = 0; i < 20; ++i)
+            {
+                getClient().dispatchEvents(handlerWithCondition);
+                getTestRenderer().doOneLoop();
+                if (handlerWithCondition.waitCondition())
+                    return true;
+            }
         }
 
         return false;

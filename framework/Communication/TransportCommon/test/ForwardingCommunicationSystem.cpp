@@ -203,11 +203,20 @@ namespace ramses_internal
         return true;
     }
 
-    bool ForwardingCommunicationSystem::sendDcsmContentFocusRequest(const Guid& to, ContentID contentID)
+    bool ForwardingCommunicationSystem::sendDcsmContentEnableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest)
     {
         if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmConsumerHandler && to == m_targetCommunicationSystem->m_id)
         {
-            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleContentFocusRequest(contentID, m_id);
+            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleContentEnableFocusRequest(contentID, focusRequest, m_id);
+        }
+        return true;
+    }
+
+    bool ForwardingCommunicationSystem::sendDcsmContentDisableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest)
+    {
+        if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmConsumerHandler && to == m_targetCommunicationSystem->m_id)
+        {
+            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleContentDisableFocusRequest(contentID, focusRequest, m_id);
         }
         return true;
     }
@@ -239,7 +248,7 @@ namespace ramses_internal
         return true;
     }
 
-    bool ForwardingCommunicationSystem::sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, SizeInfo sizeinfo, AnimationInformation ai)
+    bool ForwardingCommunicationSystem::sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, const CategoryInfo& sizeinfo, AnimationInformation ai)
     {
         if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmProviderHandler && to == m_targetCommunicationSystem->m_id)
         {
@@ -248,7 +257,7 @@ namespace ramses_internal
         return true;
     }
 
-    bool ForwardingCommunicationSystem::sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, SizeInfo si, AnimationInformation ai)
+    bool ForwardingCommunicationSystem::sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, const CategoryInfo& si, AnimationInformation ai)
     {
         if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmProviderHandler && to == m_targetCommunicationSystem->m_id)
         {

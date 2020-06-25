@@ -20,15 +20,20 @@ namespace ramses
         RendererSceneControlEventHandlerMock();
         virtual ~RendererSceneControlEventHandlerMock();
 
-        MOCK_METHOD1(scenePublished, void(sceneId_t));
-        MOCK_METHOD2(sceneStateChanged, void(sceneId_t, RendererSceneState));
-        MOCK_METHOD4(offscreenBufferLinked, void(displayBufferId_t, sceneId_t, dataConsumerId_t, bool));
-        MOCK_METHOD5(dataLinked, void(sceneId_t, dataProviderId_t, sceneId_t, dataConsumerId_t, bool));
-        MOCK_METHOD3(dataUnlinked, void(sceneId_t, dataConsumerId_t, bool));
-        MOCK_METHOD2(sceneFlushed, void(sceneId_t, sceneVersionTag_t));
-        MOCK_METHOD1(sceneExpired, void(sceneId_t));
-        MOCK_METHOD1(sceneRecoveredFromExpiration, void(sceneId_t));
-        MOCK_METHOD2(streamAvailabilityChanged, void(streamSource_t, bool));
+        MOCK_METHOD(void, scenePublished, (sceneId_t), (override));
+        MOCK_METHOD(void, sceneStateChanged, (sceneId_t, RendererSceneState), (override));
+        MOCK_METHOD(void, offscreenBufferLinked, (displayBufferId_t, sceneId_t, dataConsumerId_t, bool), (override));
+        MOCK_METHOD(void, dataLinked, (sceneId_t, dataProviderId_t, sceneId_t, dataConsumerId_t, bool), (override));
+        MOCK_METHOD(void, objectsPicked, (sceneId_t, const pickableObjectId_t*, uint32_t), (override));
+        MOCK_METHOD(void, dataUnlinked, (sceneId_t, dataConsumerId_t, bool), (override));
+        MOCK_METHOD(void, dataProviderCreated, (sceneId_t, dataProviderId_t), (override));
+        MOCK_METHOD(void, dataProviderDestroyed, (sceneId_t, dataProviderId_t), (override));
+        MOCK_METHOD(void, dataConsumerCreated, (sceneId_t, dataConsumerId_t), (override));
+        MOCK_METHOD(void, dataConsumerDestroyed, (sceneId_t, dataConsumerId_t), (override));
+        MOCK_METHOD(void, sceneFlushed, (sceneId_t, sceneVersionTag_t), (override));
+        MOCK_METHOD(void, sceneExpired, (sceneId_t), (override));
+        MOCK_METHOD(void, sceneRecoveredFromExpiration, (sceneId_t), (override));
+        MOCK_METHOD(void, streamAvailabilityChanged, (streamSource_t, bool), (override));
     };
 }
 

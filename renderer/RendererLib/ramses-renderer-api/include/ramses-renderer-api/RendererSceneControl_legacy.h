@@ -278,7 +278,7 @@ namespace ramses
         /**
         * @brief Constructor
         */
-        RendererSceneControl_legacy(RendererSceneControlImpl_legacy&);
+        explicit RendererSceneControl_legacy(RendererSceneControlImpl_legacy&);
     };
 }
 

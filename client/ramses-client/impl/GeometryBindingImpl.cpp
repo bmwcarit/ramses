@@ -244,10 +244,10 @@ namespace ramses
         dataFields.reserve(attributesList.size());
 
         // Indices are always stored at fixed data slot with index IndicesDataFieldIndex
-        dataFields.push_back({ ramses_internal::EDataType_Indices, 1u, ramses_internal::EFixedSemantics_Indices });
+        dataFields.push_back(ramses_internal::DataFieldInfo{ ramses_internal::EDataType_Indices, 1u, ramses_internal::EFixedSemantics_Indices });
         for (const auto& attribInfo : attributesList)
         {
-            dataFields.push_back({ attribInfo.dataType, attribInfo.elementCount, attribInfo.semantics });
+            dataFields.push_back(ramses_internal::DataFieldInfo{ attribInfo.dataType, attribInfo.elementCount, attribInfo.semantics });
         }
 
         m_attributeLayout = getIScene().allocateDataLayout(dataFields, m_effectImpl->getLowlevelResourceHash());

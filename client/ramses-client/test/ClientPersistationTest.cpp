@@ -297,7 +297,7 @@ namespace ramses
         EXPECT_EQ(ramses::StatusOK, status);
 
         ramses_internal::File file(fileDescription.getFilename());
-        EXPECT_EQ(ramses_internal::EStatus_RAMSES_OK, file.remove());
+        EXPECT_TRUE(file.remove());
     }
 
     TEST_F(ClientPersistation, loadResourcesFromFile_InvalidFilename)
@@ -438,14 +438,14 @@ namespace ramses
         ramses_internal::File file(fileDescription.getFilename());
         EXPECT_TRUE(file.exists());
         ramses_internal::UInt fileSize = 0;
-        EXPECT_EQ(ramses_internal::EStatus_RAMSES_OK, file.getSizeInBytes(fileSize));
+        EXPECT_TRUE(file.getSizeInBytes(fileSize));
 
         EXPECT_EQ(StatusOK, client.saveResources(fileDescription, true));
 
         ramses_internal::File file2(fileDescription.getFilename());
         EXPECT_TRUE(file2.exists());
         ramses_internal::UInt fileSize2 = 0;
-        EXPECT_EQ(ramses_internal::EStatus_RAMSES_OK, file2.getSizeInBytes(fileSize2));
+        EXPECT_TRUE(file2.getSizeInBytes(fileSize2));
 
         EXPECT_GT(fileSize, fileSize2);
     }
@@ -465,14 +465,14 @@ namespace ramses
         ramses_internal::File file(fileDescription.getFilename());
         EXPECT_TRUE(file.exists());
         ramses_internal::UInt uncompressedFileSize = 0;
-        EXPECT_EQ(ramses_internal::EStatus_RAMSES_OK, file.getSizeInBytes(uncompressedFileSize));
+        EXPECT_TRUE(file.getSizeInBytes(uncompressedFileSize));
 
         EXPECT_EQ(StatusOK, client.saveSceneToFile(*scene, "testscene2.ramscene", fileDescriptionSet, true));
 
         ramses_internal::File file2(fileDescription.getFilename());
         EXPECT_TRUE(file2.exists());
         ramses_internal::UInt compressedFileSize = 0;
-        EXPECT_EQ(ramses_internal::EStatus_RAMSES_OK, file2.getSizeInBytes(compressedFileSize));
+        EXPECT_TRUE(file2.getSizeInBytes(compressedFileSize));
 
         EXPECT_GT(uncompressedFileSize, compressedFileSize);
     }
@@ -481,9 +481,9 @@ namespace ramses
     {
         using namespace ramses_internal;
         File file1(fileName1);
-        file1.open(EFileMode_ReadOnlyBinary);
+        EXPECT_TRUE(file1.open(File::Mode::ReadOnlyBinary));
         File file2(fileName2);
-        file2.open(EFileMode_ReadOnlyBinary);
+        EXPECT_TRUE(file2.open(File::Mode::ReadOnlyBinary));
 
         if (!file1.isOpen() || !file2.isOpen())
         {
@@ -492,8 +492,8 @@ namespace ramses
 
         UInt length1 = 0u;
         UInt length2 = 0u;
-        file1.getSizeInBytes(length1);
-        file2.getSizeInBytes(length2);
+        EXPECT_TRUE(file1.getSizeInBytes(length1));
+        EXPECT_TRUE(file2.getSizeInBytes(length2));
         if (length1 != length2)
         {
             return false;
@@ -509,8 +509,8 @@ namespace ramses
         while (offset < length1 && equal)
         {
             UInt left =  std::min(length1 - offset, bufferLength);
-            file1.read(buf1.data(), left, dummy);
-            file2.read(buf2.data(), left, dummy);
+            EXPECT_EQ(EStatus::Ok, file1.read(buf1.data(), left, dummy));
+            EXPECT_EQ(EStatus::Ok, file2.read(buf2.data(), left, dummy));
             equal = (PlatformMemory::Compare(buf1.data(), buf2.data(), left) == 0);
             offset += left;
         }

@@ -15,7 +15,6 @@
 #include "Collections/Vector.h"
 #include "Collections/HashSet.h"
 #include "ClientTestUtils.h"
-#include "ramses-capu/os/StringUtils.h"
 
 #include <cstdio>
 
@@ -57,7 +56,7 @@ namespace ramses
     class RamsesObjectDummy : public RamsesObject
     {
     public:
-        RamsesObjectDummy(RamsesObjectImpl& _impl)
+        explicit RamsesObjectDummy(RamsesObjectImpl& _impl)
             : RamsesObject(_impl)
             , impl(static_cast<RamsesObjectImplDummy&>(_impl))
         {

@@ -23,14 +23,14 @@ using namespace ramses_internal;
 class BinaryShaderProviderMock : public IBinaryShaderCache
 {
 public:
-    MOCK_METHOD1(deviceSupportsBinaryShaderFormats, void(const std::vector<BinaryShaderFormatID>&));
-    MOCK_CONST_METHOD1(hasBinaryShader, ramses_internal::Bool(ResourceContentHash));
-    MOCK_CONST_METHOD1(getBinaryShaderSize, UInt32(ResourceContentHash));
-    MOCK_CONST_METHOD1(getBinaryShaderFormat, BinaryShaderFormatID(ResourceContentHash));
-    MOCK_CONST_METHOD2(shouldBinaryShaderBeCached, ramses_internal::Bool(ResourceContentHash, SceneId));
-    MOCK_CONST_METHOD3(getBinaryShaderData, void(ResourceContentHash, UInt8*, UInt32));
-    MOCK_METHOD5(storeBinaryShader, void(ResourceContentHash, SceneId, const UInt8*, UInt32, BinaryShaderFormatID));
-    MOCK_CONST_METHOD2(binaryShaderUploaded, void(ResourceContentHash, ramses_internal::Bool));
+    MOCK_METHOD(void, deviceSupportsBinaryShaderFormats, (const std::vector<BinaryShaderFormatID>&), (override));
+    MOCK_METHOD(ramses_internal::Bool, hasBinaryShader, (ResourceContentHash), (const, override));
+    MOCK_METHOD(UInt32, getBinaryShaderSize, (ResourceContentHash), (const, override));
+    MOCK_METHOD(BinaryShaderFormatID, getBinaryShaderFormat, (ResourceContentHash), (const, override));
+    MOCK_METHOD(ramses_internal::Bool, shouldBinaryShaderBeCached, (ResourceContentHash, SceneId), (const, override));
+    MOCK_METHOD(void, getBinaryShaderData, (ResourceContentHash, UInt8*, UInt32), (const, override));
+    MOCK_METHOD(void, storeBinaryShader, (ResourceContentHash, SceneId, const UInt8*, UInt32, BinaryShaderFormatID), (override));
+    MOCK_METHOD(void, binaryShaderUploaded, (ResourceContentHash, ramses_internal::Bool), (const, override));
 };
 
 class BinaryShaderProviderFake final : public StrictMock<BinaryShaderProviderMock>

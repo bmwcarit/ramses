@@ -31,7 +31,7 @@ namespace ramses_internal
         IResourceUploader& uploader,
         IRenderBackend& renderBackend,
         IEmbeddedCompositingManager& embeddedCompositingManager,
-        RequesterID requesterId,
+        ResourceRequesterID requesterId,
         Bool keepEffects,
         const FrameTimer& frameTimer,
         RendererStatistics& stats,
@@ -63,7 +63,7 @@ namespace ramses_internal
         }
     }
 
-    const RequesterID& RendererResourceManager::getRequesterID() const
+    const ResourceRequesterID& RendererResourceManager::getRequesterID() const
     {
         return m_id;
     }

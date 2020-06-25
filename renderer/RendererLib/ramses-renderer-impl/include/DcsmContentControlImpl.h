@@ -21,11 +21,13 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <vector>
+#include "Components/CategoryInfo.h"
 
 namespace ramses
 {
     class IDcsmConsumerImpl;
     class IRendererSceneControl;
+    class CategoryInfoUpdate;
 
     class DcsmContentControlImpl final : public StatusObjectImpl, public IDcsmConsumerEventHandler, public IRendererSceneControlEventHandler
     {
@@ -36,12 +38,13 @@ namespace ramses
         status_t showContent(ContentID contentID, AnimationInformation timingInfo);
         status_t hideContent(ContentID contentID, AnimationInformation timingInfo);
         status_t releaseContent(ContentID contentID, AnimationInformation timingInfo);
-        status_t setCategorySize(Category categoryId, SizeInfo size, AnimationInformation timingInfo);
+        status_t setCategorySize(Category categoryId, const CategoryInfoUpdate& size, AnimationInformation timingInfo);
         status_t acceptStopOffer(ContentID contentID, AnimationInformation timingInfo);
         status_t assignContentToDisplayBuffer(ContentID contentID, displayBufferId_t displayBuffer, int32_t renderOrder);
-        status_t setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a);
         status_t linkOffscreenBuffer(displayBufferId_t offscreenBufferId, ContentID consumerContentID, dataConsumerId_t consumerId);
         status_t linkData(ContentID providerContentID, dataProviderId_t providerId, ContentID consumerContentID, dataConsumerId_t consumerId);
+        status_t unlinkData(ContentID consumerContentID, dataConsumerId_t consumerId);
+        status_t handlePickEvent(ContentID contentID, float bufferNormalizedCoordX, float bufferNormalizedCoordY);
         status_t update(uint64_t timeStampNow, IDcsmContentControlEventHandler& eventHandler);
 
     private:
@@ -49,7 +52,8 @@ namespace ramses
         virtual void contentOffered(ContentID contentID, Category category) override;
         virtual void contentDescription(ContentID contentID, ETechnicalContentType contentType, TechnicalContentDescriptor contentDescriptor) override;
         virtual void contentReady(ContentID contentID) override;
-        virtual void contentFocusRequest(ContentID contentID) override;
+        virtual void contentEnableFocusRequest(ramses::ContentID contentID, int32_t focusRequest) override;
+        virtual void contentDisableFocusRequest(ramses::ContentID contentID, int32_t focusRequest) override;
         virtual void contentStopOfferRequest(ContentID contentID) override;
         virtual void forceContentOfferStopped(ContentID contentID) override;
         virtual void contentMetadataUpdated(ContentID contentID, const DcsmMetadataUpdate& metadataUpdate) override;
@@ -60,6 +64,11 @@ namespace ramses
         virtual void offscreenBufferLinked(displayBufferId_t offscreenBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override;
         virtual void dataLinked(sceneId_t providerScene, dataProviderId_t providerId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override;
         virtual void dataUnlinked(sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override;
+        virtual void objectsPicked(sceneId_t scene, const pickableObjectId_t* pickedObjects, uint32_t pickedObjectsCount) override;
+        virtual void dataProviderCreated(sceneId_t sceneId, dataProviderId_t dataProviderId) override;
+        virtual void dataProviderDestroyed(sceneId_t sceneId, dataProviderId_t dataProviderId) override;
+        virtual void dataConsumerCreated(sceneId_t sceneId, dataConsumerId_t dataConsumerId) override;
+        virtual void dataConsumerDestroyed(sceneId_t sceneId, dataConsumerId_t dataConsumerId) override;
         virtual void sceneFlushed(sceneId_t sceneId, sceneVersionTag_t sceneVersionTag) override;
         virtual void sceneExpired(sceneId_t sceneId) override;
         virtual void sceneRecoveredFromExpiration(sceneId_t sceneId) override;
@@ -78,18 +87,19 @@ namespace ramses
         sceneId_t findSceneAssociatedWithContent(ContentID contentID) const;
         std::vector<ContentID> findContentsAssociatingScene(sceneId_t sceneId) const;
 
+
         IRendererSceneControl& m_sceneControl;
         IDcsmConsumerImpl& m_dcsmConsumer;
 
         uint64_t m_timeStampNow = 0;
 
-        struct CategoryInfo
+        struct CategoryData
         {
-            SizeInfo size;
+            ramses_internal::CategoryInfo categoryInfo;
             displayId_t display;
             std::unordered_set<ContentID> assignedContentIds;
         };
-        std::unordered_map<Category, CategoryInfo> m_categories;
+        std::unordered_map<Category, CategoryData> m_categories;
 
         struct ContentInfo
         {
@@ -127,12 +137,19 @@ namespace ramses
         enum class EventType
         {
             ContentStateChanged,
-            ContentFocusRequested,
+            ContentEnableFocusRequest,
+            ContentDisableFocusRequest,
             ContentStopOfferRequested,
             ContentNotAvailable,
             ContentMetadataUpdate,
             OffscreenBufferLinked,
             DataLinked,
+            DataUnlinked,
+            ObjectsPicked,
+            DataProviderCreated,
+            DataProviderDestroyed,
+            DataConsumerCreated,
+            DataConsumerDestroyed,
             ContentFlushed,
             ContentExpired,
             ContentRecoveredFromExpiration,
@@ -155,7 +172,9 @@ namespace ramses
             dataProviderId_t providerID{};
             dataConsumerId_t consumerID{};
             displayBufferId_t displayBuffer{};
+            std::vector<pickableObjectId_t> pickedObjectIds{};
             streamSource_t streamSource{};
+            int32_t focusRequest = 0;
             bool streamAvailable{ false };
         };
         std::vector<Event> m_pendingEvents;

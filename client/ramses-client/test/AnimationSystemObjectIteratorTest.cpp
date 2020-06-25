@@ -18,7 +18,6 @@
 #include "ramses-client-api/AnimationSystemObjectIterator.h"
 #include "ramses-client-api/AnimationSequence.h"
 #include "ramses-client-api/Animation.h"
-#include "ramses-client-api/AnimatedSetter.h"
 #include "ramses-client-api/SplineStepBool.h"
 #include "ramses-client-api/SplineStepFloat.h"
 #include "ramses-client-api/SplineStepVector4i.h"

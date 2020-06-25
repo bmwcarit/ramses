@@ -20,7 +20,7 @@ namespace ramses_internal
     class ClientScene final : public DataLayoutCachedScene
     {
     public:
-        ClientScene(const SceneInfo& sceneInfo = {})
+        explicit ClientScene(const SceneInfo& sceneInfo = {})
             : DataLayoutCachedScene(sceneInfo)
         {
         }

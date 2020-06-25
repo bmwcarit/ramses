@@ -42,7 +42,7 @@ namespace ramses
         virtual void offscreenBufferDestroyed(displayId_t displayId, displayBufferId_t offscreenBufferId, ERendererEventResult result) = 0;
 
         /**
-        * @brief This method will be called when a read back of pixels from framebuffer
+        * @brief This method will be called when a read back of pixels from display buffer
         *        was finished. This is the result of RamsesRenderer::readPixels call which
         *        triggers an asynchronous read back from the internal device.
         * @param pixelData Pointer to the pixel data in uncompressed RGBA8 format.
@@ -52,9 +52,10 @@ namespace ramses
         * @param pixelDataSize The number of elements in the data array pixelData, ie. number of pixels * 4 (color channels).
         *                      The size is 0 in case of failure.
         * @param displayId Display id of display that the callback refers to.
+        * @param displayBuffer Buffer id of buffer that the callback refers to.
         * @param result Can be ERendererEventResult_OK if succeeded or ERendererEventResult_FAIL if failed.
         */
-        virtual void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, displayId_t displayId, ERendererEventResult result) = 0;
+        virtual void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, displayId_t displayId, displayBufferId_t displayBuffer, ERendererEventResult result) = 0;
 
         /**
         * @brief This method will be called when update of warping mesh data was finished.
@@ -125,18 +126,6 @@ namespace ramses
         virtual void windowClosed(displayId_t displayId) = 0;
 
         /**
-        * @brief This method will be called when there were scene objects picked.
-        *        A ramses::PickableObject can be 'picked' via a pick input event
-        *        which is passed to renderer where the scene is rendered (see ramses::RamsesRenderer::handlePickInput).
-        *
-        * @param[in] sceneId ID of scene to which the picked objects belong.
-        * @param[in] pickedObjects Pointer to first ID of the picked objects array.
-        *                          This array is valid only for the time of calling this method.
-        * @param[in] pickedObjectsCount Number of picked object IDs in the \c pickedObjects array.
-        */
-        virtual void objectsPicked(sceneId_t sceneId, const pickableObjectId_t* pickedObjects, uint32_t pickedObjectsCount) = 0;
-
-        /**
         * @brief This method will be called in period given to renderer config and provides rough performance indicators.
         *        It only works when using render thread.
         *
@@ -181,11 +170,12 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::framebufferPixelsRead
         */
-        virtual void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, displayId_t displayId, ERendererEventResult result) override
+        virtual void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, displayId_t displayId, displayBufferId_t displayBuffer, ERendererEventResult result) override
         {
             (void)pixelData;
             (void)pixelDataSize;
             (void)displayId;
+            (void)displayBuffer;
             (void)result;
         }
 
@@ -264,16 +254,6 @@ namespace ramses
         virtual void windowClosed(displayId_t displayId) override
         {
             (void)displayId;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::objectsPicked
-        */
-        virtual void objectsPicked(sceneId_t sceneId, const pickableObjectId_t* pickedObjects, uint32_t pickedObjectsCount) override
-        {
-            (void)sceneId;
-            (void)pickedObjects;
-            (void)pickedObjectsCount;
         }
 
         /**

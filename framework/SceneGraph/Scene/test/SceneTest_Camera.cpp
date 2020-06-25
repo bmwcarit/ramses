@@ -17,7 +17,7 @@ namespace ramses_internal
 
     static DataInstanceHandle AllocDummyDataInstance(IScene& scene)
     {
-        const auto dataLayout = scene.allocateDataLayout({ {ramses_internal::EDataType_Vector2I}, {ramses_internal::EDataType_Vector2I} }, ResourceContentHash(123u, 0u));
+        const auto dataLayout = scene.allocateDataLayout({ DataFieldInfo{ramses_internal::EDataType_Vector2I}, DataFieldInfo{ramses_internal::EDataType_Vector2I} }, ResourceContentHash(123u, 0u));
         return scene.allocateDataInstance(dataLayout);
     }
 

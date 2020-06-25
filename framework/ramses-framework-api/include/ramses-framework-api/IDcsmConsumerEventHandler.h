@@ -53,9 +53,18 @@ namespace ramses
         /**
          * @brief Provider requested to switch to/focus this content within the category. Consumer may or may not follow this request.
          *
-         * @param contentID content that provider wants to switch ot
+         * @param contentID content that provider wants to switch focus to
+         * @param focusRequest identifier of the focus request
          */
-        virtual void contentFocusRequest(ramses::ContentID contentID) = 0;
+        virtual void contentEnableFocusRequest(ramses::ContentID contentID, int32_t focusRequest) = 0;
+
+        /**
+         * @brief Provider requested to no longer request focusing this content within the category. Consumer may or may not follow this request.
+         *
+         * @param contentID content that provider should no longer focus
+         * @param focusRequest identifier of the focus request
+         */
+        virtual void contentDisableFocusRequest(ramses::ContentID contentID, int32_t focusRequest) = 0;
 
         /**
          * @brief Provider no longer wants to offer the content and wants to remove it.

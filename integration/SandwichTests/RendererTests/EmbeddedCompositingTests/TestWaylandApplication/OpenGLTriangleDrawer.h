@@ -17,7 +17,7 @@ namespace ramses_internal
     class OpenGLTriangleDrawer
     {
     public:
-        OpenGLTriangleDrawer(ETriangleColor triangleColor);
+        explicit OpenGLTriangleDrawer(ETriangleColor triangleColor);
         ~OpenGLTriangleDrawer();
 
         void draw();

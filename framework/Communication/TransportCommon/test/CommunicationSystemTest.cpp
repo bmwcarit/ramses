@@ -54,11 +54,12 @@ namespace ramses_internal
         EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastOfferContent(ContentID{}, Category{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmOfferContent(to, ContentID{}, Category{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmContentReady(to, ContentID{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentFocusRequest(to, ContentID{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentEnableFocusRequest(to, ContentID{}, 32));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentDisableFocusRequest(to, ContentID{}, 32));
         EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastRequestStopOfferContent(ContentID{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastForceStopOfferContent(ContentID{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmCanvasSizeChange(to, ContentID{}, SizeInfo{}, AnimationInformation{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentStateChange(to, ContentID{}, EDcsmState::Offered, SizeInfo{}, AnimationInformation{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmCanvasSizeChange(to, ContentID{}, CategoryInfo{}, AnimationInformation{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentStateChange(to, ContentID{}, EDcsmState::Offered, CategoryInfo{}, AnimationInformation{}));
     }
 
     TEST_P(ACommunicationSystem, sendFunctionsFailAfterCallingDisconnect)
@@ -82,11 +83,12 @@ namespace ramses_internal
         EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastOfferContent(ContentID{}, Category{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmOfferContent(to, ContentID{}, Category{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmContentReady(to, ContentID{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentFocusRequest(to, ContentID{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentEnableFocusRequest(to, ContentID{}, 32));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentDisableFocusRequest(to, ContentID{}, 32));
         EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastRequestStopOfferContent(ContentID{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastForceStopOfferContent(ContentID{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmCanvasSizeChange(to, ContentID{}, SizeInfo{}, AnimationInformation{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentStateChange(to, ContentID{}, EDcsmState::Offered, SizeInfo{}, AnimationInformation{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmCanvasSizeChange(to, ContentID{}, CategoryInfo{}, AnimationInformation{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentStateChange(to, ContentID{}, EDcsmState::Offered, CategoryInfo{}, AnimationInformation{}));
     }
 
     class ACommunicationSystemWithDaemonConnectionSetup : public ACommunicationSystemWithDaemon

@@ -96,10 +96,11 @@ namespace ramses
          * @brief Set car model view metadata entry. Requests car model view parameters at consumer side.
          *
          * @param viewMetadata view metadata for the car model
+         * @param timingInfo hint to receiver when to start/finish animation to given values
          * @return StatusOK for success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().
          */
-        status_t setCarModelView(const ramses::CarModelViewMetadata& viewMetadata);
+        status_t setCarModelView(const CarModelViewMetadata& viewMetadata, const AnimationInformation& timingInfo);
 
         /**
          * @brief Set car model visibility metadata entry. Requests car model visibility at consumer side.
@@ -119,15 +120,6 @@ namespace ramses
          *         to resolve error message using getStatusMessage().
          */
         status_t setExclusiveBackground(bool state);
-
-        /**
-         * @brief Set the focus request metadata entry. Requests to focus widget.
-         *
-         * @param state values !=0 mean requesting focus with priority, 0 means no focus request
-         * @return StatusOK for success, otherwise the returned status can be used
-         *         to resolve error message using getStatusMessage().
-         */
-        status_t setFocusRequest(int32_t state);
 
         /**
          * @brief Deleted move constructor

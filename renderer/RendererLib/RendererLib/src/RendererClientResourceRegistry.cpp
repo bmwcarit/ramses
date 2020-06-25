@@ -117,7 +117,7 @@ namespace ramses_internal
     {
         assert(m_resources.contains(hash));
         ResourceDescriptor& rd = *m_resources.get(hash);
-        rd.resource = resourceObject;
+        rd.resource = std::move(resourceObject);
         rd.deviceHandle = deviceHandle;
         rd.type = resourceType;
     }

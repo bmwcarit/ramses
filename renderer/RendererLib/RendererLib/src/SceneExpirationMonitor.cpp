@@ -75,9 +75,9 @@ namespace ramses_internal
                 expired = true;
             }
 
-            if (!sceneIt.value.stagingInfo->pendingFlushes.empty()) // early out if no pending flushes
+            if (!sceneIt.value.stagingInfo->pendingData.pendingFlushes.empty()) // early out if no pending flushes
             {
-                const auto& pendingFlushes = sceneIt.value.stagingInfo->pendingFlushes;
+                const auto& pendingFlushes = sceneIt.value.stagingInfo->pendingData.pendingFlushes;
                 const auto& lastPendingFlush = pendingFlushes.back();
                 const auto& lastPendingTimeInfo = lastPendingFlush.timeInfo;
 

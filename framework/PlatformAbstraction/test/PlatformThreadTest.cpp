@@ -17,7 +17,7 @@ namespace ramses_internal
         class TestRunnable : public Runnable
         {
         public:
-            TestRunnable(uint32_t value = 0)
+            explicit TestRunnable(uint32_t value = 0)
                 : m_ctorValue(value)
             {
             }
@@ -37,7 +37,7 @@ namespace ramses_internal
         class ThreadCancelRunnable : public Runnable
         {
         public:
-            void run()
+            void run() override
             {
                 while (!isCancelRequested())
                 {

@@ -21,14 +21,14 @@ namespace ramses
         ClientEventHandlerMock();
         virtual ~ClientEventHandlerMock();
 
-        MOCK_METHOD1(resourceFileLoadFailed, void(const char* filename));
-        MOCK_METHOD1(resourceFileLoadSucceeded, void(const char* filename));
-        MOCK_METHOD1(sceneFileLoadFailed, void(const char* filename));
-        MOCK_METHOD2(sceneFileLoadSucceeded, void(const char* filename, Scene* loadedScene));
-        MOCK_METHOD2(sceneReferenceStateChanged, void(SceneReference& sceneRef, RendererSceneState state));
-        MOCK_METHOD2(sceneReferenceFlushed, void(SceneReference& sceneRef, sceneVersionTag_t versionTag));
-        MOCK_METHOD5(dataLinked, void(sceneId_t providerScene, dataProviderId_t providerId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success));
-        MOCK_METHOD3(dataUnlinked, void(sceneId_t consumerScene, dataConsumerId_t consumerId, bool success));
+        MOCK_METHOD(void, resourceFileLoadFailed, (const char* filename), (override));
+        MOCK_METHOD(void, resourceFileLoadSucceeded, (const char* filename), (override));
+        MOCK_METHOD(void, sceneFileLoadFailed, (const char* filename), (override));
+        MOCK_METHOD(void, sceneFileLoadSucceeded, (const char* filename, Scene* loadedScene), (override));
+        MOCK_METHOD(void, sceneReferenceStateChanged, (SceneReference& sceneRef, RendererSceneState state), (override));
+        MOCK_METHOD(void, sceneReferenceFlushed, (SceneReference& sceneRef, sceneVersionTag_t versionTag), (override));
+        MOCK_METHOD(void, dataLinked, (sceneId_t providerScene, dataProviderId_t providerId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success), (override));
+        MOCK_METHOD(void, dataUnlinked, (sceneId_t consumerScene, dataConsumerId_t consumerId, bool success), (override));
     };
 }
 

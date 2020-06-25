@@ -25,11 +25,11 @@ using namespace testing;
 class ARendererResourceManager : public ::testing::Test
 {
 public:
-    ARendererResourceManager(bool disableEffectDeletion = false)
+    explicit ARendererResourceManager(bool disableEffectDeletion = false)
         : fakeSceneId(66u)
         , resUploader(stats)
         , frameTimer()
-        , resourceManager(resourceProvider, resUploader, renderer, embeddedCompositingManager, RequesterID(1), disableEffectDeletion, frameTimer, stats)
+        , resourceManager(resourceProvider, resUploader, renderer, embeddedCompositingManager, ResourceRequesterID(1), disableEffectDeletion, frameTimer, stats)
     {
     }
 

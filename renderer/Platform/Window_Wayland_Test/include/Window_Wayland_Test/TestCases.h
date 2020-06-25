@@ -11,6 +11,7 @@
 
 namespace ramses_internal
 {
+    using namespace ::testing;
 
     TYPED_TEST_SUITE_P(AWindowWaylandWithEventHandling);
 

@@ -42,7 +42,6 @@ namespace ramses
     class SplineBezierVector3i;
     class SplineBezierVector4i;
     class Animation;
-    class AnimatedSetter;
     class AnimationSequence;
     class Node;
     class UniformInput;
@@ -286,27 +285,6 @@ namespace ramses
         * @return Pointer to the created Animation, null on failure
         */
         Animation* createAnimation(const AnimatedProperty& animatedProperty, const Spline& spline, const char* name = nullptr);
-
-        /**
-        * @brief Creates AnimatedSetter that can animate given property to a user specified target value with delay (see setDelayForAnimatedSetters) using linear interpolation.
-        *
-        * @param[in] animatedProperty AnimatedProperty to animate with this AnimatedSetter
-        * @param[in] name The optional name of the AnimatedSetter
-        * @return Pointer to the created AnimatedSetter, null on failure
-        */
-        AnimatedSetter* createAnimatedSetter(const AnimatedProperty& animatedProperty, const char* name = nullptr);
-
-        /**
-        * @brief Set a fixed delay to be used with all AnimatedSetter instances within this AnimationSystem.
-        *        Setting a new value on an AnimatedSetter will trigger animation towards the new value,
-        *        reaching the new value with this delay.
-        *        Delay can be changed dynamically however any previous set calls on existing AnimatedSetter instances will not be modified.
-        *
-        * @param[in] delay Delay for AnimatedSetter instances.
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t setDelayForAnimatedSetters(timeMilliseconds_t delay);
 
         /**
         * @brief Creates AnimationSequence that can hold references to multiple animations and control them together.

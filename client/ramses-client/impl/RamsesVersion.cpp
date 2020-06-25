@@ -34,7 +34,7 @@ namespace ramses_internal
             {
                 Char character = 0;
                 stream.read(&character, 1);
-                if (stream.getState() != EStatus_RAMSES_OK)
+                if (stream.getState() != EStatus::Ok)
                 {
                     break;
                 }

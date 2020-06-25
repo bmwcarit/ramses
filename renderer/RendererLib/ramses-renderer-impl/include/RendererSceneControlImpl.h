@@ -26,10 +26,10 @@ namespace ramses
         virtual status_t setSceneState(sceneId_t sceneId, RendererSceneState state) = 0;
         virtual status_t setSceneMapping(sceneId_t sceneId, displayId_t displayId) = 0;
         virtual status_t setSceneDisplayBufferAssignment(sceneId_t sceneId, displayBufferId_t displayBuffer, int32_t sceneRenderOrder) = 0;
-        virtual status_t setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a) = 0;
         virtual status_t linkOffscreenBuffer(displayBufferId_t offscreenBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId) = 0;
         virtual status_t linkData(sceneId_t providerSceneId, dataProviderId_t providerId, sceneId_t consumerSceneId, dataConsumerId_t consumerId) = 0;
         virtual status_t unlinkData(sceneId_t consumerSceneId, dataConsumerId_t consumerId) = 0;
+        virtual status_t handlePickEvent(sceneId_t scene, float bufferNormalizedCoordX, float bufferNormalizedCoordY) = 0;
         virtual status_t flush() = 0;
         virtual status_t dispatchEvents(IRendererSceneControlEventHandler& eventHandler) = 0;
 
@@ -39,15 +39,15 @@ namespace ramses
     class RendererSceneControlImpl final : public IRendererSceneControl, public StatusObjectImpl
     {
     public:
-        RendererSceneControlImpl(RamsesRendererImpl& renderer);
+        explicit RendererSceneControlImpl(RamsesRendererImpl& renderer);
 
         virtual status_t setSceneState(sceneId_t sceneId, RendererSceneState state) override;
         virtual status_t setSceneMapping(sceneId_t sceneId, displayId_t displayId) override;
         virtual status_t setSceneDisplayBufferAssignment(sceneId_t sceneId, displayBufferId_t displayBuffer, int32_t sceneRenderOrder) override;
-        virtual status_t setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a) override;
         virtual status_t linkOffscreenBuffer(displayBufferId_t offscreenBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId) override;
         virtual status_t linkData(sceneId_t providerSceneId, dataProviderId_t providerId, sceneId_t consumerSceneId, dataConsumerId_t consumerId) override;
         virtual status_t unlinkData(sceneId_t consumerSceneId, dataConsumerId_t consumerId) override;
+        virtual status_t handlePickEvent(sceneId_t scene, float bufferNormalizedCoordX, float bufferNormalizedCoordY) override;
 
         virtual status_t flush() override;
         virtual status_t dispatchEvents(IRendererSceneControlEventHandler& eventHandler) override;

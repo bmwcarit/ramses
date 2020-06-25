@@ -177,10 +177,9 @@ namespace ramses
         Mock::VerifyAndClearExpectations(this);
         this->sceneActionsCollector.resetCollecting();
 
-        EXPECT_CALL(this->sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()), _, _, _));
         EXPECT_EQ(StatusOK, this->m_node->setTranslation(translationVector.x, translationVector.y, translationVector.z));
         this->m_scene.flush();
-        EXPECT_EQ(1u, this->sceneActionsCollector.getNumberOfActions());  //only flush, no scene actions for setting translation
+        EXPECT_EQ(0u, this->sceneActionsCollector.getNumberOfActions());  // flush empty and optimized away
     }
 
     TYPED_TEST(NodeTransformationTestWithPublishedScene, setRotationWithValuesEqualToCurrentValuesDoesNotCreateSceneActions)
@@ -194,10 +193,9 @@ namespace ramses
         Mock::VerifyAndClearExpectations(this);
         this->sceneActionsCollector.resetCollecting();
 
-        EXPECT_CALL(this->sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()), _, _, _));
         EXPECT_EQ(StatusOK, this->m_node->setRotation(rotationVector.x, rotationVector.y, rotationVector.z));
         this->m_scene.flush();
-        EXPECT_EQ(1u, this->sceneActionsCollector.getNumberOfActions());  //only flush, no scene actions for setting rotation
+        EXPECT_EQ(0u, this->sceneActionsCollector.getNumberOfActions());  // flush empty and optimized away
     }
 
     TYPED_TEST(NodeTransformationTestWithPublishedScene, setScalingWithValuesEqualToCurrentValuesDoesNotCreateSceneActions)
@@ -211,9 +209,8 @@ namespace ramses
         Mock::VerifyAndClearExpectations(this);
         this->sceneActionsCollector.resetCollecting();
 
-        EXPECT_CALL(this->sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()), _, _, _));
         EXPECT_EQ(StatusOK, this->m_node->setScaling(scalingVector.x, scalingVector.y, scalingVector.z));
         this->m_scene.flush();
-        EXPECT_EQ(1u, this->sceneActionsCollector.getNumberOfActions());  //only flush, no scene actions for setting scaling
+        EXPECT_EQ(0u, this->sceneActionsCollector.getNumberOfActions());  // flush empty and optimized away
     }
 }

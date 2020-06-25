@@ -18,7 +18,7 @@ namespace ramses_internal
     class SystemCompositorControllerSetSurfaceDestRectangle : public RamshCommandArgs<Int32, Int32, Int32, Int32, Int32>
     {
     public:
-        SystemCompositorControllerSetSurfaceDestRectangle(RendererCommandBuffer& rendererCommandBuffer);
+        explicit SystemCompositorControllerSetSurfaceDestRectangle(RendererCommandBuffer& rendererCommandBuffer);
         virtual Bool execute(Int32& surfaceId, Int32& x, Int32& y, Int32& width, Int32& height) const override;
 
     private:

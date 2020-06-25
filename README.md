@@ -104,7 +104,6 @@ RAMSES also includes some assets (e.g. font files) which are licensed under diff
 
 Directly included:
 - ACME2 (Licensed under Apache 2.0)
-- CAPU (Licensed under Apache 2.0)
 - cityhash (Licensed under MIT License)
 - Khronos Headers (Licensed under Khronos Group License)
 - lodepng (Licensed under zlib License)

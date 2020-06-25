@@ -27,8 +27,8 @@ namespace ramses_internal
 
     enum ECommunicationSystemType
     {
-        ECommunicationSystemType_Tcp = BIT(0),
-        ECommunicationSystemType_All = BIT(3) - 1
+        ECommunicationSystemType_Tcp = BIT(0u),
+        ECommunicationSystemType_All = BIT(3u) - 1u
     };
 
     enum ECommunicationSystemTestConfiguration

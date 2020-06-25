@@ -28,8 +28,8 @@ static DataBufferHandle prepareGeometryBuffer(TransformationLinkCachedScene& sce
 static CameraHandle preparePickableCamera(TransformationLinkCachedScene& scene, SceneAllocateHelper& sceneAllocator, const Vector2i viewportOffset, const Vector2i viewportSize, const Vector3 translation, const Vector3 rotation, const Vector3 scale)
 {
     NodeHandle cameraNodeHandle = sceneAllocator.allocateNode();
-    const auto vpDataLayout = sceneAllocator.allocateDataLayout({ {EDataType_DataReference}, {EDataType_DataReference} }, ResourceContentHash::Invalid());
-    const auto vpDataRefLayout = sceneAllocator.allocateDataLayout({ {EDataType_Vector2I} }, ResourceContentHash::Invalid());
+    const auto vpDataLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType_DataReference}, DataFieldInfo{EDataType_DataReference} }, ResourceContentHash::Invalid());
+    const auto vpDataRefLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType_Vector2I} }, ResourceContentHash::Invalid());
     const auto vpDataInstance = sceneAllocator.allocateDataInstance(vpDataLayout);
     const auto vpOffsetInstance = sceneAllocator.allocateDataInstance(vpDataRefLayout);
     const auto vpSizeInstance = sceneAllocator.allocateDataInstance(vpDataRefLayout);

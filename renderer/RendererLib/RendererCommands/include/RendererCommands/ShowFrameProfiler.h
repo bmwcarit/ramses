@@ -19,7 +19,7 @@ namespace ramses_internal
     class ShowFrameProfiler : public RamshCommand
     {
     public:
-        ShowFrameProfiler(RendererCommandBuffer& commandBuffer);
+        explicit ShowFrameProfiler(RendererCommandBuffer& commandBuffer);
         virtual Bool executeInput(const RamshInput& input) override;
 
     private:

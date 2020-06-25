@@ -17,25 +17,32 @@
 
 namespace ramses_internal
 {
-    RamshCommunicationChannelConsole::RamshCommunicationChannelConsole()
-        : m_pausePrompt(false)
+    std::unique_ptr<RamshCommunicationChannelConsole> RamshCommunicationChannelConsole::Construct(Ramsh& ramsh, const String& prompt, bool startThread)
+    {
+        std::unique_ptr<ConsoleInput> consoleInput(ConsoleInput::TryGetUniqueConsoleInput());
+        if (!consoleInput)
+        {
+            LOG_WARN(CONTEXT_RAMSH, "RamshCommunicationChannelConsole::Construct: Failed to open console");
+            return nullptr;
+        }
+
+        return std::unique_ptr<RamshCommunicationChannelConsole>(new RamshCommunicationChannelConsole(ramsh, prompt, std::move(consoleInput), startThread));
+    }
+
+    RamshCommunicationChannelConsole::RamshCommunicationChannelConsole(Ramsh& ramsh, const String& prompt, std::unique_ptr<ConsoleInput> consoleInput, bool startThread)
+        : m_ramsh(ramsh)
+        , m_prompt(prompt)
+        , m_pausePrompt(false)
         , m_checkInputThread("R_Ramsh_Console")
         , m_commandHistory()
         , m_nextCommandFromHistory(0)
         , m_interactiveMode(!PlatformEnvironmentVariables::HasEnvVar("DISABLE_RAMSH_INTERACTIVE_MODE"))
-        , m_console(ConsoleInput::TryGetUniqueConsoleInput())
+        , m_console(std::move(consoleInput))
     {
-        if (m_console)
-        {
-            // only register own signal handler when ConsoleInput might mess up settings
-            RamshCommunicationChannelConsoleSignalHandler::getInstance().insert(this);
-        }
-        else
-        {
-            LOG_INFO(CONTEXT_RAMSH, "Could not open stdin: Ramsh console input disabled");
-            // no stdin means no interaction possible
-            m_interactiveMode = false;
-        }
+        assert(m_console);
+
+        // register signal handler to restore messed up console settings on signal
+        RamshCommunicationChannelConsoleSignalHandler::getInstance().insert(this);
 
         if (m_interactiveMode)
         {
@@ -44,31 +51,21 @@ namespace ramses_internal
             fmt::print("{}", promptString());
             std::fflush(stdout);
         }
+        if (startThread)
+            m_checkInputThread.start(*this);
     }
 
     RamshCommunicationChannelConsole::~RamshCommunicationChannelConsole()
     {
-        if (m_console)
-            RamshCommunicationChannelConsoleSignalHandler::getInstance().remove(this);
+        if (m_checkInputThread.joinable())
+        {
+            m_checkInputThread.cancel();
+            m_checkInputThread.join();
+        }
+
+        RamshCommunicationChannelConsoleSignalHandler::getInstance().remove(this);
+
         GetRamsesLogger().removeAfterConsoleLogCallback();
-    }
-
-    void RamshCommunicationChannelConsole::registerRamsh(Ramsh& ramsh)
-    {
-        PlatformGuard g(m_lock);
-        RamshCommunicationChannel::registerRamsh(ramsh);
-    }
-
-    void RamshCommunicationChannelConsole::startThread()
-    {
-        if (m_console)
-            m_checkInputThread.start(*this);
-    }
-
-    void RamshCommunicationChannelConsole::stopThread()
-    {
-        m_checkInputThread.cancel();
-        m_checkInputThread.join();
     }
 
     void RamshCommunicationChannelConsole::afterSendCallback()
@@ -78,6 +75,15 @@ namespace ramses_internal
             //new prompt
             fmt::print("{}", promptString());
             std::fflush(stdout);
+        }
+    }
+
+    void RamshCommunicationChannelConsole::stopThread()
+    {
+        if (m_checkInputThread.joinable())
+        {
+            m_checkInputThread.cancel();
+            m_checkInputThread.join();
         }
     }
 
@@ -99,28 +105,26 @@ namespace ramses_internal
                     // between and command and reaction
                     fmt::print("{}\n", promptString());
                 }
-                if(nullptr != m_ramsh)
-                {
-                    m_pausePrompt = true;
 
-                    RamshInput input = RamshTools::parseCommandString(m_input);
-                    m_commandHistory.insert(m_commandHistory.begin(), m_input);
-                    m_input.clear();
+                m_pausePrompt = true;
 
-                    // Another thread calling RamsesLogger::log(), locks RamsesLogger::m_appenderLock and then
-                    // RamshCommunicationChannelConsole::m_lock from afterSendCallback.
-                    // So, here it is not allowed to keep the lock to m_lock, while calling execute(), because execute
-                    // calls RamsesLogger::log().
-                    m_lock.unlock();
-                    m_ramsh->execute(input);
-                    m_lock.lock();
+                RamshInput input = RamshTools::parseCommandString(m_input);
+                m_commandHistory.insert(m_commandHistory.begin(), m_input);
+                m_input.clear();
 
-                    m_pausePrompt = false;
+                // Another thread calling RamsesLogger::log(), locks RamsesLogger::m_appenderLock and then
+                // RamshCommunicationChannelConsole::m_lock from afterSendCallback.
+                // So, here it is not allowed to keep the lock to m_lock, while calling execute(), because execute
+                // calls RamsesLogger::log().
+                m_lock.unlock();
+                m_ramsh.execute(input);
+                m_lock.lock();
 
-                    //resize command history to 10
-                    m_commandHistory.resize(std::min(static_cast<uint32_t>(m_commandHistory.size()), 10u));
-                    m_nextCommandFromHistory = 0;
-                }
+                m_pausePrompt = false;
+
+                //resize command history to 10
+                m_commandHistory.resize(std::min(static_cast<uint32_t>(m_commandHistory.size()), 10u));
+                m_nextCommandFromHistory = 0;
 
                 if (m_interactiveMode)
                 {
@@ -188,7 +192,7 @@ namespace ramses_internal
                 std::fflush(stdout);
             }
             m_lock.lock();
-            m_input.append(String(1,c));
+            m_input += c;
             m_lock.unlock();
             m_nextCommandFromHistory = 0;
         }
@@ -197,21 +201,11 @@ namespace ramses_internal
     String RamshCommunicationChannelConsole::promptString() const
     {
         PlatformGuard g(m_lock);
-        if (m_ramsh!=nullptr)
-        {
-            String currentPrompt(m_ramsh->getPrompt());
-            currentPrompt.append(m_input);
-            return currentPrompt;
-        }
-        else
-        {
-            return String("Unknown>");
-        }
+        return m_prompt + ">" + m_input;
     }
 
     void RamshCommunicationChannelConsole::run()
     {
-        assert(m_console);
         while(!isCancelRequested())
         {
             //blocking read
@@ -233,7 +227,6 @@ namespace ramses_internal
     void RamshCommunicationChannelConsole::cancel()
     {
         Runnable::cancel();
-        if (m_console)
-            m_console->interruptReadChar();
+        m_console->interruptReadChar();
     }
 }

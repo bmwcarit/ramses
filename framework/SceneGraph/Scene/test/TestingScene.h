@@ -93,7 +93,8 @@ namespace ramses_internal
             };
             scene.allocateDataLayout(geometryLayoutDataFields, effectHash, vertexLayout);
 
-            scene.allocateDataInstance(scene.allocateDataLayout({ {ramses_internal::EDataType_Vector2I}, {ramses_internal::EDataType_Vector2I} }, ResourceContentHash::Invalid()), cameraVPDataInstance);
+            scene.allocateDataInstance(scene.allocateDataLayout({ ramses_internal::DataFieldInfo{ramses_internal::EDataType_Vector2I}, ramses_internal::DataFieldInfo{ramses_internal::EDataType_Vector2I} },
+                                                                ResourceContentHash::Invalid()), cameraVPDataInstance);
 
             scene.allocateStreamTexture(87u, ResourceContentHash(234, 0), streamTexture);
             scene.setForceFallbackImage(streamTexture, true);

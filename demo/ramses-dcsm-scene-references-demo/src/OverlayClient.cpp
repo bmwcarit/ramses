@@ -23,7 +23,7 @@ constexpr ramses::dataConsumerId_t OverlayClient::Overlay2ViewportOffsetId;
 
 namespace
 {
-    ramses::Scene* createOverlayScene(ramses::RamsesClient& client, ramses::sceneId_t sceneId, std::u32string overlayText, ramses::dataConsumerId_t vpOffsetId)
+    ramses::Scene* createOverlayScene(ramses::RamsesClient& client, ramses::sceneId_t sceneId, const std::u32string& overlayText, ramses::dataConsumerId_t vpOffsetId)
     {
         ramses::Scene* scene = client.createScene(sceneId);
 

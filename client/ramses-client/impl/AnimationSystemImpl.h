@@ -51,11 +51,9 @@ namespace ramses
     class SplineBezierVector4i;
     class AnimatedProperty;
     class Animation;
-    class AnimatedSetter;
     class AnimationSequence;
     class SplineImpl;
     class AnimationImpl;
-    class AnimatedSetterImpl;
     class SceneImpl;
     class UniformInput;
     class DataObject;
@@ -105,11 +103,7 @@ namespace ramses
         SplineBezierVector4i*   createSplineBezierVector4i(const char* name);
 
         Animation*         createAnimation(const AnimatedProperty& animatedProperty, const Spline& spline, const char* name);
-        AnimatedSetter*    createAnimatedSetter(const AnimatedProperty& animatedProperty, const char* name);
         AnimationSequence* createAnimationSequence(const char* name);
-
-        status_t           setDelayForAnimatedSetters(timeMilliseconds_t delay);
-        timeMilliseconds_t getDelayForAnimatedSetters() const;
 
         AnimatedProperty* createAnimatedProperty(const NodeImpl& propertyOwner, EAnimatedProperty property, EAnimatedPropertyComponent propertyComponent, const char* name);
         AnimatedProperty* createAnimatedProperty(const UniformInput& propertyOwner, const Appearance& appearance, EAnimatedPropertyComponent propertyComponent, const char* name);

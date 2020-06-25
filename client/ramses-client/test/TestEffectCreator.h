@@ -19,7 +19,7 @@ namespace ramses
     class TestEffectCreator : public LocalTestClientWithScene
     {
     public:
-        TestEffectCreator(bool withSemantics = false)
+        explicit TestEffectCreator(bool withSemantics = false)
             : LocalTestClientWithScene()
         {
             effect = createEffect(client, withSemantics);

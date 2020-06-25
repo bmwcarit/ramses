@@ -8,6 +8,7 @@
 
 #include "Math3d/Vector2.h"
 #include "PlatformAbstraction/PlatformMath.h"
+#include "IOStreamTester.h"
 #include "framework_common_gmock_header.h"
 #include "gtest/gtest.h"
 
@@ -197,4 +198,11 @@ TEST_F(Vector2Test, CanPrintToString)
 {
     EXPECT_EQ("[1.0 2.0]", fmt::to_string(vec1));
     EXPECT_EQ("[1.0 2.0]", ramses_internal::StringOutputStream::ToString(vec1));
+}
+
+TEST_F(Vector2Test, canBinarySerializeDeserialize)
+{
+    ramses_internal::IOStreamTesterBase::expectSame(ramses_internal::Vector2());
+    ramses_internal::IOStreamTesterBase::expectSame(ramses_internal::Vector2(1.f, 2.f));
+    ramses_internal::IOStreamTesterBase::expectSame(ramses_internal::Vector2(std::numeric_limits<float>::max(), std::numeric_limits<float>::min()));
 }

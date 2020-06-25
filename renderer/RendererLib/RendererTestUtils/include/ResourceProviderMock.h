@@ -37,11 +37,11 @@ public:
 
     virtual ~ResourceProviderMock();
 
-    MOCK_METHOD2(cancelResourceRequest, void(const ResourceContentHash& hash, const RequesterID& requesterID));
-    MOCK_METHOD3(requestResourceAsyncronouslyFromFramework, void(const ResourceContentHashVector& ids, const RequesterID& /*requesterID*/, const SceneId& /*providerID*/));
-    MOCK_METHOD1(popArrivedResources, ManagedResourceVector(const RequesterID& /*requesterID*/));
+    MOCK_METHOD(void, cancelResourceRequest, (const ResourceContentHash& hash, const ResourceRequesterID& requesterID), (override));
+    MOCK_METHOD(void, requestResourceAsyncronouslyFromFramework, (const ResourceContentHashVector& ids, const ResourceRequesterID& /*requesterID*/, const SceneId& /*providerID*/), (override));
+    MOCK_METHOD(ManagedResourceVector, popArrivedResources, (const ResourceRequesterID& /*requesterID*/), (override));
 
-    virtual ManagedResourceVector fakePopArrivedResources(const RequesterID& /*requesterID*/)
+    virtual ManagedResourceVector fakePopArrivedResources(const ResourceRequesterID& /*requesterID*/)
     {
         ResourceContentHashVector arrivedResourceHashes;
         ManagedResourceVector arrivedResources;
@@ -118,16 +118,16 @@ private:
 class ResourceDeviceHandleAccessorMock : public IResourceDeviceHandleAccessor
 {
 public:
-    MOCK_CONST_METHOD1(getClientResourceDeviceHandle, DeviceResourceHandle(const ResourceContentHash& resourceHash));
-    MOCK_CONST_METHOD2(getRenderTargetDeviceHandle, DeviceResourceHandle(RenderTargetHandle targetHandle, SceneId sceneId));
-    MOCK_CONST_METHOD2(getRenderTargetBufferDeviceHandle, DeviceResourceHandle(RenderBufferHandle bufferHandle, SceneId sceneId));
-    MOCK_CONST_METHOD4(getBlitPassRenderTargetsDeviceHandle, void(BlitPassHandle blitPassHandle, SceneId sceneId, DeviceResourceHandle&, DeviceResourceHandle&));
-    MOCK_CONST_METHOD1(getOffscreenBufferDeviceHandle, DeviceResourceHandle(OffscreenBufferHandle bufferHandle));
-    MOCK_CONST_METHOD1(getOffscreenBufferColorBufferDeviceHandle, DeviceResourceHandle(OffscreenBufferHandle bufferHandle));
-    MOCK_CONST_METHOD1(getOffscreenBufferHandle, OffscreenBufferHandle(DeviceResourceHandle bufferDeviceHandle));
-    MOCK_CONST_METHOD2(getDataBufferDeviceHandle, DeviceResourceHandle(DataBufferHandle dataBufferHandle, SceneId sceneId));
-    MOCK_CONST_METHOD2(getTextureBufferDeviceHandle, DeviceResourceHandle(TextureBufferHandle textureBufferHandle, SceneId sceneId));
-    MOCK_CONST_METHOD2(getTextureSamplerDeviceHandle, DeviceResourceHandle(TextureSamplerHandle textureSamplerHandle, SceneId sceneId));
+    MOCK_METHOD(DeviceResourceHandle, getClientResourceDeviceHandle, (const ResourceContentHash& resourceHash), (const, override));
+    MOCK_METHOD(DeviceResourceHandle, getRenderTargetDeviceHandle, (RenderTargetHandle targetHandle, SceneId sceneId), (const, override));
+    MOCK_METHOD(DeviceResourceHandle, getRenderTargetBufferDeviceHandle, (RenderBufferHandle bufferHandle, SceneId sceneId), (const, override));
+    MOCK_METHOD(void, getBlitPassRenderTargetsDeviceHandle, (BlitPassHandle blitPassHandle, SceneId sceneId, DeviceResourceHandle&, DeviceResourceHandle&), (const, override));
+    MOCK_METHOD(DeviceResourceHandle, getOffscreenBufferDeviceHandle, (OffscreenBufferHandle bufferHandle), (const, override));
+    MOCK_METHOD(DeviceResourceHandle, getOffscreenBufferColorBufferDeviceHandle, (OffscreenBufferHandle bufferHandle), (const, override));
+    MOCK_METHOD(OffscreenBufferHandle, getOffscreenBufferHandle, (DeviceResourceHandle bufferDeviceHandle), (const, override));
+    MOCK_METHOD(DeviceResourceHandle, getDataBufferDeviceHandle, (DataBufferHandle dataBufferHandle, SceneId sceneId), (const, override));
+    MOCK_METHOD(DeviceResourceHandle, getTextureBufferDeviceHandle, (TextureBufferHandle textureBufferHandle, SceneId sceneId), (const, override));
+    MOCK_METHOD(DeviceResourceHandle, getTextureSamplerDeviceHandle, (TextureSamplerHandle textureSamplerHandle, SceneId sceneId), (const, override));
 };
 }
 #endif

@@ -16,6 +16,8 @@
 #include "DcsmMetadataUpdateImpl.h"
 #include "DcsmConsumerMock.h"
 #include <memory.h>
+#include <array>
+#include "ramses-framework-api/CategoryInfoUpdate.h"
 
 using namespace ramses;
 using namespace testing;
@@ -23,43 +25,56 @@ using namespace testing;
 class DcsmContentControlEventHandlerMock : public IDcsmContentControlEventHandler
 {
 public:
-    MOCK_METHOD2(contentAvailable, void(ContentID, Category));
-    MOCK_METHOD2(contentReady, void(ContentID, DcsmContentControlEventResult));
-    MOCK_METHOD1(contentShown, void(ContentID));
-    MOCK_METHOD1(contentFocusRequested, void(ContentID));
-    MOCK_METHOD1(contentStopOfferRequested, void(ContentID));
-    MOCK_METHOD1(contentNotAvailable, void(ContentID));
-    MOCK_METHOD2(contentMetadataUpdated, void(ContentID, const DcsmMetadataUpdate&));
-    MOCK_METHOD4(offscreenBufferLinked, void(displayBufferId_t, ContentID, dataConsumerId_t, bool));
-    MOCK_METHOD5(dataLinked, void(ContentID, dataProviderId_t, ContentID, dataConsumerId_t, bool));
-    MOCK_METHOD2(contentFlushed, void(ContentID, sceneVersionTag_t));
-    MOCK_METHOD1(contentExpired, void(ContentID));
-    MOCK_METHOD1(contentRecoveredFromExpiration, void(ContentID));
-    MOCK_METHOD2(streamAvailabilityChanged, void(streamSource_t, bool));
+    MOCK_METHOD(void, contentAvailable, (ContentID, Category), (override));
+    MOCK_METHOD(void, contentReady, (ContentID, DcsmContentControlEventResult), (override));
+    MOCK_METHOD(void, contentShown, (ContentID), (override));
+    MOCK_METHOD(void, contentStopOfferRequested, (ContentID), (override));
+    MOCK_METHOD(void, contentNotAvailable, (ContentID), (override));
+    MOCK_METHOD(void, contentMetadataUpdated, (ContentID, const DcsmMetadataUpdate&), (override));
+    MOCK_METHOD(void, offscreenBufferLinked, (displayBufferId_t, ContentID, dataConsumerId_t, bool), (override));
+    MOCK_METHOD(void, dataLinked, (ContentID, dataProviderId_t, ContentID, dataConsumerId_t, bool), (override));
+    MOCK_METHOD(void, dataUnlinked, (ContentID, dataConsumerId_t, bool), (override));
+    MOCK_METHOD(void, objectsPicked, (ContentID, const pickableObjectId_t*, uint32_t), (override));
+    MOCK_METHOD(void, dataProviderCreated, (ContentID, dataProviderId_t), (override));
+    MOCK_METHOD(void, dataProviderDestroyed, (ContentID, dataProviderId_t), (override));
+    MOCK_METHOD(void, dataConsumerCreated, (ContentID, dataConsumerId_t), (override));
+    MOCK_METHOD(void, dataConsumerDestroyed, (ContentID, dataConsumerId_t), (override));
+    MOCK_METHOD(void, contentFlushed, (ContentID, sceneVersionTag_t), (override));
+    MOCK_METHOD(void, contentExpired, (ContentID), (override));
+    MOCK_METHOD(void, contentRecoveredFromExpiration, (ContentID), (override));
+    MOCK_METHOD(void, streamAvailabilityChanged, (streamSource_t, bool), (override));
+    MOCK_METHOD(void, contentEnableFocusRequest, (ContentID, int32_t), (override));
+    MOCK_METHOD(void, contentDisableFocusRequest, (ContentID, int32_t), (override));
 };
 
 class RendererSceneControlMock : public IRendererSceneControl
 {
 public:
-    MOCK_METHOD2(setSceneState, status_t(sceneId_t, RendererSceneState));
-    MOCK_METHOD2(setSceneMapping, status_t(sceneId_t, displayId_t));
-    MOCK_METHOD3(setSceneDisplayBufferAssignment, status_t(sceneId_t, displayBufferId_t, int32_t));
-    MOCK_METHOD6(setDisplayBufferClearColor, status_t(displayId_t, displayBufferId_t, float, float, float, float));
-    MOCK_METHOD3(linkOffscreenBuffer, status_t(displayBufferId_t, sceneId_t, dataConsumerId_t));
-    MOCK_METHOD4(linkData, status_t(sceneId_t, dataProviderId_t, sceneId_t, dataConsumerId_t));
-    MOCK_METHOD2(unlinkData, status_t(sceneId_t, dataConsumerId_t));
-    MOCK_METHOD0(flush, status_t());
-    MOCK_METHOD1(dispatchEvents, status_t(IRendererSceneControlEventHandler&));
+    MOCK_METHOD(status_t, setSceneState, (sceneId_t, RendererSceneState), (override));
+    MOCK_METHOD(status_t, setSceneMapping, (sceneId_t, displayId_t), (override));
+    MOCK_METHOD(status_t, setSceneDisplayBufferAssignment, (sceneId_t, displayBufferId_t, int32_t), (override));
+    MOCK_METHOD(status_t, linkOffscreenBuffer, (displayBufferId_t, sceneId_t, dataConsumerId_t), (override));
+    MOCK_METHOD(status_t, linkData, (sceneId_t, dataProviderId_t, sceneId_t, dataConsumerId_t), (override));
+    MOCK_METHOD(status_t, unlinkData, (sceneId_t, dataConsumerId_t), (override));
+    MOCK_METHOD(status_t, handlePickEvent, (sceneId_t, float, float), (override));
+    MOCK_METHOD(status_t, flush, (), (override));
+    MOCK_METHOD(status_t, dispatchEvents, (IRendererSceneControlEventHandler&), (override));
 };
 
 class ADcsmContentControl : public Test
 {
 public:
     ADcsmContentControl()
-        : m_dcsmContentControl(DcsmContentControlConfig{ { {m_categoryID1, m_categoryInfo1}, {m_categoryID2, m_categoryInfo2} } }, m_dcsmConsumerMock, m_sceneControlMock)
+        : m_dcsmContentControl(DcsmContentControlConfig{ {m_categoryID1, {{16, 16}, m_displayId}}, {m_categoryID2, {{32,32}, m_displayId} } }, m_dcsmConsumerMock, m_sceneControlMock)
         , m_dcsmHandler(m_dcsmContentControl)
         , m_sceneControlHandler(m_dcsmContentControl)
     {
+        m_CategoryInfoUpdate1.setCategorySize({0, 0, 16, 16});
+        // when using initializer version on ContentControlConfig rendersize gets set by default to given category width/height
+        m_CategoryInfoUpdate1.setRenderSize({16, 16});
+        m_CategoryInfoUpdate2.setCategorySize({ 0, 0, 32, 32});
+        // when using initializer version on ContentControlConfig rendersize gets set by default to given category width/height
+        m_CategoryInfoUpdate2.setRenderSize({ 32, 32 });
     }
 
     virtual void TearDown() override
@@ -81,7 +96,10 @@ public:
     {
         // offered
         EXPECT_CALL(m_eventHandlerMock, contentAvailable(contentID, categoryID));
-        EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(contentID, m_categoryInfo1.size));
+        EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(contentID,_)).WillOnce([&](const auto&, const auto& infoupdate){
+            EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+            return StatusOK;
+        });
         m_dcsmHandler.contentOffered(contentID, categoryID);
         update(m_lastUpdateTS);
 
@@ -119,8 +137,8 @@ protected:
     const ContentID m_contentID2{ 322 };
     const ContentID m_contentID3{ 323 };
     const displayId_t m_displayId{ 0 };
-    const DcsmContentControlConfig::CategoryInfo m_categoryInfo1{ {16,16}, m_displayId };
-    const DcsmContentControlConfig::CategoryInfo m_categoryInfo2{ {32,32}, m_displayId };
+    CategoryInfoUpdate m_CategoryInfoUpdate1;
+    CategoryInfoUpdate m_CategoryInfoUpdate2;
 
     StrictMock<DcsmConsumerMock> m_dcsmConsumerMock;
     StrictMock<RendererSceneControlMock> m_sceneControlMock;
@@ -134,17 +152,22 @@ protected:
 constexpr sceneId_t ADcsmContentControl::SceneId1;
 constexpr sceneId_t ADcsmContentControl::SceneId2;
 
-
 TEST_F(ADcsmContentControl, handlesDcsmOffered)
 {
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
     update();
 }
 
 TEST_F(ADcsmContentControl, handlesDcsmContentDescription)
 {
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
 
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
@@ -162,12 +185,21 @@ TEST_F(ADcsmContentControl, doesNotAssignWhenDcsmOfferedContentForUnregisteredCa
 
 TEST_F(ADcsmContentControl, handlesDcsmOfferedForMultipleContentsAndCategories)
 {
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1);
     // content3 uses another category
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID3, m_categoryInfo2.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID3, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate2, infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID3, m_categoryID2);
     update();
 
@@ -185,7 +217,10 @@ TEST_F(ADcsmContentControl, handlesDcsmOfferedForMultipleContentsAndCategories)
 TEST_F(ADcsmContentControl, requestsContentReady)
 {
     // offered
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
     update();
 
@@ -224,7 +259,10 @@ TEST_F(ADcsmContentControl, handlesContentAndSceneReadyForMultipleContentsSharin
 
     // now request content3 ready
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID3, m_categoryID2));
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID3, m_categoryInfo2.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID3, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate2, infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID3, m_categoryID2);
     update();
 
@@ -448,7 +486,10 @@ TEST_F(ADcsmContentControl, canGetContentRenderedAndThenSwitchToAnotherContentAt
     //////////////////////////
     // new content offered, initiate content switch
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID2, m_categoryID1));
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1);
     update(30);
     // announce new content's description
@@ -529,7 +570,10 @@ TEST_F(ADcsmContentControl, canGetContentRenderedAndThenSwitchToAnotherContentAt
     //////////////////////////
     // new content offered, initiate content switch
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID2, m_categoryID1));
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1);
     update(30);
 
@@ -615,7 +659,7 @@ TEST_F(ADcsmContentControl, forcedStopOfferForUnknownContentIsIgnored)
     update();
 }
 
-TEST_F(ADcsmContentControl, propagatesFocusChangeRequestAsEvent)
+TEST_F(ADcsmContentControl, propagatesContentEnableFocusRequestAsEvent)
 {
     makeDcsmContentReady(m_contentID1, m_categoryID1);
     // make scene ready
@@ -623,14 +667,22 @@ TEST_F(ADcsmContentControl, propagatesFocusChangeRequestAsEvent)
     EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
     update();
 
-    m_dcsmHandler.contentFocusRequest(m_contentID1);
-    EXPECT_CALL(m_eventHandlerMock, contentFocusRequested(m_contentID1));
+    m_dcsmHandler.contentEnableFocusRequest(m_contentID1, 16);
+    EXPECT_CALL(m_eventHandlerMock, contentEnableFocusRequest(m_contentID1, 16));
     update();
+
+    m_dcsmHandler.contentDisableFocusRequest(m_contentID1, 16);
+    EXPECT_CALL(m_eventHandlerMock, contentDisableFocusRequest(m_contentID1, 16));
+    update();
+
 }
 
-TEST_F(ADcsmContentControl, focusChangeRequestForUnknownContentIsIgnored)
+TEST_F(ADcsmContentControl, enableAndDisableFocusRequestForUnknownContentIsIgnored)
 {
-    m_dcsmHandler.contentFocusRequest(m_contentID1);
+    m_dcsmHandler.contentEnableFocusRequest(m_contentID1, 17);
+    update();
+
+    m_dcsmHandler.contentDisableFocusRequest(m_contentID1, 17);
     update();
 }
 
@@ -746,50 +798,83 @@ TEST_F(ADcsmContentControl, contentCanBeReofferedAfterStopOfferRequestAccepted)
 
 TEST_F(ADcsmContentControl, failsToSetSizeOfUnknownCategory)
 {
-    EXPECT_NE(StatusOK, m_dcsmContentControl.setCategorySize(Category{ 9999 }, SizeInfo{ 1, 1 }, AnimationInformation{}));
+    EXPECT_NE(StatusOK, m_dcsmContentControl.setCategorySize(Category{ 9999 }, CategoryInfoUpdate( {1, 1} ), AnimationInformation{}));
 }
 
 TEST_F(ADcsmContentControl, sendsCategorySizeChangeToAllContentsAssociatedWithIt)
 {
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1);
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID3, m_categoryInfo2.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID3, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate2, infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID3, m_categoryID2);
     update();
 
-    EXPECT_CALL(m_dcsmConsumerMock, contentSizeChange(m_contentID1, SizeInfo{ 333, 111 }, AnimationInformation{ 500, 1000 }));
-    EXPECT_CALL(m_dcsmConsumerMock, contentSizeChange(m_contentID2, SizeInfo{ 333, 111 }, AnimationInformation{ 500, 1000 }));
-    EXPECT_EQ(StatusOK, m_dcsmContentControl.setCategorySize(m_categoryID1, SizeInfo{ 333, 111 }, AnimationInformation{ 500, 1000 }));
+    EXPECT_CALL(m_dcsmConsumerMock, contentSizeChange(m_contentID1, _, AnimationInformation{ 500, 1000 })).WillOnce([&](const auto&, const auto& infoupdate, const auto&) {
+        EXPECT_EQ(CategoryInfoUpdate({333, 111}), infoupdate);
+        return StatusOK;
+        });
+    EXPECT_CALL(m_dcsmConsumerMock, contentSizeChange(m_contentID2, _, AnimationInformation{ 500, 1000 })).WillOnce([&](const auto&, const auto& infoupdate, const auto&) {
+        EXPECT_EQ(CategoryInfoUpdate({333, 111}), infoupdate);
+        return StatusOK;
+        });
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.setCategorySize(m_categoryID1, CategoryInfoUpdate( {333, 111 }), AnimationInformation{ 500, 1000 }));
 
-    EXPECT_CALL(m_dcsmConsumerMock, contentSizeChange(m_contentID3, SizeInfo{ 666, 999 }, AnimationInformation{ 10, 100 }));
-    EXPECT_EQ(StatusOK, m_dcsmContentControl.setCategorySize(m_categoryID2, SizeInfo{ 666, 999 }, AnimationInformation{ 10, 100 }));
+    EXPECT_CALL(m_dcsmConsumerMock, contentSizeChange(m_contentID3, _, AnimationInformation{ 10, 100 })).WillOnce([&](const auto&, const auto& infoupdate, const auto&) {
+        EXPECT_EQ(CategoryInfoUpdate({666, 999}), infoupdate);
+        return StatusOK;
+        });
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.setCategorySize(m_categoryID2, CategoryInfoUpdate( {666, 999} ), AnimationInformation{ 10, 100 }));
 }
 
 TEST_F(ADcsmContentControl, sendsLatestCategorySizeToNewContentOfferedForItEvenIfNotReachedTheFinishTimeForTheSizeChange)
 {
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1,  _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
     update();
 
-    EXPECT_CALL(m_dcsmConsumerMock, contentSizeChange(m_contentID1, SizeInfo{ 333, 111 }, AnimationInformation{ 500, 1000 }));
-    EXPECT_EQ(StatusOK, m_dcsmContentControl.setCategorySize(m_categoryID1, SizeInfo{ 333, 111 }, AnimationInformation{ 500, 1000 }));
+    EXPECT_CALL(m_dcsmConsumerMock, contentSizeChange(m_contentID1, _, AnimationInformation{ 500, 1000 })).WillOnce([&](const auto&, const auto& infoupdate, const auto&) {
+        EXPECT_EQ(CategoryInfoUpdate({333, 111}), infoupdate);
+        return StatusOK;
+        });
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.setCategorySize(m_categoryID1, CategoryInfoUpdate( {333, 111} ), AnimationInformation{ 500, 1000 }));
 
     // before start time
     update(10);
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, SizeInfo{ 333, 111 }));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(CategoryInfoUpdate({333, 111}), infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1);
 
     // between start and end time
     update(700);
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID3, SizeInfo{ 333, 111 }));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID3, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(CategoryInfoUpdate({333, 111}), infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID3, m_categoryID1);
 
     // after end time
     const ContentID contentID4{ m_contentID3.getValue() + 1 };
     update(1100);
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(contentID4, SizeInfo{ 333, 111 }));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(contentID4, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(CategoryInfoUpdate({333, 111}), infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(contentID4, m_categoryID1);
 
     update(2000);
@@ -859,7 +944,10 @@ TEST_F(ADcsmContentControl, canRequestReadyAgainAfterReleasingContent)
 TEST_F(ADcsmContentControl, canRequestReadyButReleaseBeforeReadyConfirmedFromDcsmProvider)
 {
     // offered
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
     update();
 
@@ -900,7 +988,10 @@ TEST_F(ADcsmContentControl, canRequestReadyButReleaseBeforeReadyConfirmedFromRen
 {
     // offered
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
     update();
     // provider sends content description right after assign
@@ -944,7 +1035,10 @@ TEST_F(ADcsmContentControl, canRequestReadyButReleaseBeforeDcsmReadyConfirmedAnd
 {
     // offered
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
     update();
     // provider sends content description right after assign
@@ -993,7 +1087,10 @@ TEST_F(ADcsmContentControl, canRequestReadyButReleaseBeforeRendererReadyConfirme
 {
     // offered
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
     update();
     // provider sends content description right after assign
@@ -1047,7 +1144,10 @@ TEST_F(ADcsmContentControl, willNotTryToMapSceneIfReadyRequestedButForcedStopOff
 {
     // offered
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
     update();
     // provider sends content description right after assign
@@ -1086,7 +1186,10 @@ TEST_F(ADcsmContentControl, willNotTryToMapSceneIfReadyRequestedButAcceptedStopO
 {
     // offered
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
     update();
     // provider sends content description right after assign
@@ -1130,7 +1233,10 @@ TEST_F(ADcsmContentControl, handlesTimeOutWhenRequestReadyButNotReachedDcsmReady
 {
     // offered
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
     update(100); // set initial time
     // provider sends content description right after assign
@@ -1181,7 +1287,7 @@ TEST_F(ADcsmContentControl, handlesTimeOutWhenRequestReadyButNotReachedRendererR
 {
     // offered
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
     update(100); // set initial time
     // provider sends content description right after assign
@@ -1240,7 +1346,7 @@ TEST_F(ADcsmContentControl, failsToDataLinkUnknownProviderContent)
     constexpr dataProviderId_t providerId{ 12 };
     constexpr dataConsumerId_t consumerId{ 13 };
 
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, _));
     m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1);
     update();
 
@@ -1252,7 +1358,7 @@ TEST_F(ADcsmContentControl, failsToDataLinkUnknownConsumerContent)
     constexpr dataProviderId_t providerId{ 12 };
     constexpr dataConsumerId_t consumerId{ 13 };
 
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
     update();
 
@@ -1264,8 +1370,8 @@ TEST_F(ADcsmContentControl, failsToDataLinkProviderContentWithUnknownScene)
     constexpr dataProviderId_t providerId{ 12 };
     constexpr dataConsumerId_t consumerId{ 13 };
 
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, m_categoryInfo1.size));
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, _));
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
     m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1);
     update();
@@ -1281,7 +1387,7 @@ TEST_F(ADcsmContentControl, failsToDataLinkConsumerContentWithUnknownScene)
     makeDcsmContentReady(m_contentID1, m_categoryID1);
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
 
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, _));
     m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1);
 
     EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
@@ -1290,7 +1396,7 @@ TEST_F(ADcsmContentControl, failsToDataLinkConsumerContentWithUnknownScene)
     EXPECT_NE(StatusOK, m_dcsmContentControl.linkData(m_contentID1, providerId, m_contentID2, consumerId));
 }
 
-TEST_F(ADcsmContentControl, requestsDataLinkFromDisplayManager)
+TEST_F(ADcsmContentControl, requestsDataLink)
 {
     constexpr dataProviderId_t providerId{ 12 };
     constexpr dataConsumerId_t consumerId{ 13 };
@@ -1352,11 +1458,11 @@ TEST_F(ADcsmContentControl, reportsDataLinkedWithZeroContentIfContentGoneBeforeE
     update();
 
     // report data linked
-    EXPECT_CALL(m_eventHandlerMock, dataLinked(ContentID{ 0 }, providerId, m_contentID2, consumerId, true));
+    EXPECT_CALL(m_eventHandlerMock, dataLinked(ContentID::Invalid(), providerId, m_contentID2, consumerId, true));
     m_sceneControlHandler.dataLinked(SceneId1, providerId, SceneId2, consumerId, true);
 
     // failed case
-    EXPECT_CALL(m_eventHandlerMock, dataLinked(ContentID{ 0 }, providerId, m_contentID2, consumerId, false));
+    EXPECT_CALL(m_eventHandlerMock, dataLinked(ContentID::Invalid(), providerId, m_contentID2, consumerId, false));
     m_sceneControlHandler.dataLinked(SceneId1, providerId, SceneId2, consumerId, false);
 
     // remove consumer content
@@ -1365,17 +1471,210 @@ TEST_F(ADcsmContentControl, reportsDataLinkedWithZeroContentIfContentGoneBeforeE
     update();
 
     // report data linked
-    EXPECT_CALL(m_eventHandlerMock, dataLinked(ContentID{ 0 }, providerId, ContentID{ 0 }, consumerId, true));
+    EXPECT_CALL(m_eventHandlerMock, dataLinked(ContentID::Invalid(), providerId, ContentID::Invalid(), consumerId, true));
     m_sceneControlHandler.dataLinked(SceneId1, providerId, SceneId2, consumerId, true);
 
     // failed case
-    EXPECT_CALL(m_eventHandlerMock, dataLinked(ContentID{ 0 }, providerId, ContentID{ 0 }, consumerId, false));
+    EXPECT_CALL(m_eventHandlerMock, dataLinked(ContentID::Invalid(), providerId, ContentID::Invalid(), consumerId, false));
     m_sceneControlHandler.dataLinked(SceneId1, providerId, SceneId2, consumerId, false);
+}
+
+TEST_F(ADcsmContentControl, failsToUnlinkDataUnknownConsumerContent)
+{
+    constexpr dataConsumerId_t consumerId{ 13 };
+    EXPECT_NE(StatusOK, m_dcsmContentControl.unlinkData(m_contentID1, consumerId));
+}
+
+TEST_F(ADcsmContentControl, failsToUnlinkDataConsumerContentWithUnknownScene)
+{
+    constexpr dataConsumerId_t consumerId{ 13 };
+
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    update();
+
+    EXPECT_NE(StatusOK, m_dcsmContentControl.unlinkData(m_contentID1, consumerId));
+}
+
+TEST_F(ADcsmContentControl, requestsDataUnlink)
+{
+    constexpr dataConsumerId_t consumerId{ 13 };
+
+    makeDcsmContentReady(m_contentID1, m_categoryID1, SceneId1);
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update();
+
+    EXPECT_CALL(m_sceneControlMock, unlinkData(SceneId1, consumerId));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.unlinkData(m_contentID1, consumerId));
+}
+
+TEST_F(ADcsmContentControl, reportsDataUnlinkedWithCorrectContents)
+{
+    constexpr dataConsumerId_t consumerId{ 13 };
+
+    makeDcsmContentReady(m_contentID1, m_categoryID1, SceneId1);
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update();
+
+    EXPECT_CALL(m_eventHandlerMock, dataUnlinked(m_contentID1, consumerId, true));
+    m_sceneControlHandler.dataUnlinked(SceneId1, consumerId, true);
+
+    // failed case
+    EXPECT_CALL(m_eventHandlerMock, dataUnlinked(m_contentID1, consumerId, false));
+    m_sceneControlHandler.dataUnlinked(SceneId1, consumerId, false);
+}
+
+TEST_F(ADcsmContentControl, reportsDataUnlinkedWithZeroContentIfContentGoneBeforeEvent)
+{
+    constexpr dataConsumerId_t consumerId{ 13 };
+
+    makeDcsmContentReady(m_contentID1, m_categoryID1, SceneId1);
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update();
+
+    // unlink data with content known
+    EXPECT_CALL(m_sceneControlMock, unlinkData(SceneId1, consumerId));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.unlinkData(m_contentID1, consumerId));
+
+    // remove content
+    m_dcsmHandler.forceContentOfferStopped(m_contentID1);
+    EXPECT_CALL(m_eventHandlerMock, contentNotAvailable(m_contentID1));
+    update();
+
+    // report data unlinked
+    EXPECT_CALL(m_eventHandlerMock, dataUnlinked(ContentID::Invalid(), consumerId, true));
+    m_sceneControlHandler.dataUnlinked(SceneId1, consumerId, true);
+
+    // failed case
+    EXPECT_CALL(m_eventHandlerMock, dataUnlinked(ContentID::Invalid(), consumerId, false));
+    m_sceneControlHandler.dataUnlinked(SceneId1, consumerId, false);
+}
+
+TEST_F(ADcsmContentControl, failsToHandlePickEventUnknownContent)
+{
+    EXPECT_NE(StatusOK, m_dcsmContentControl.handlePickEvent(m_contentID2, 1.0f, 1.0f));
+}
+
+TEST_F(ADcsmContentControl, failsToHandlePickEventContentWithUnknownScene)
+{
+    constexpr float x_coord = 1.0f;
+    constexpr float y_coord = 2.0f;
+
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate2, infoupdate);
+        return StatusOK;
+        });
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID2);
+    update();
+
+    EXPECT_NE(StatusOK, m_dcsmContentControl.handlePickEvent(m_contentID1, x_coord, y_coord));
+}
+
+TEST_F(ADcsmContentControl, requestsHandlePickEvent)
+{
+    constexpr float x_coord = 1.0f;
+    constexpr float y_coord = 2.0f;
+
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    update();
+
+    makeDcsmContentReady(m_contentID1, m_categoryID1);
+
+    // handle scene ready
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update();
+
+    EXPECT_CALL(m_sceneControlMock, handlePickEvent(SceneId1, x_coord, y_coord));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.handlePickEvent(m_contentID1, x_coord, y_coord));
+}
+
+TEST_F(ADcsmContentControl, reportsObjectsPickedWithCorrectContents)
+{
+    constexpr std::array<pickableObjectId_t, 2> pickableObjects1{ pickableObjectId_t{567u}, pickableObjectId_t{578u} };
+    constexpr std::array<pickableObjectId_t, 2> pickableObjects2{ pickableObjectId_t{111u}, pickableObjectId_t{222u} };
+
+    makeDcsmContentReady(m_contentID1, m_categoryID1, SceneId1);
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update();
+
+    EXPECT_CALL(m_eventHandlerMock, objectsPicked(m_contentID1, _, static_cast<uint32_t>(pickableObjects1.size()))).WillOnce(Invoke([&](auto, auto pickedObjects, auto pickedObjectsCount)
+    {
+        ASSERT_EQ(static_cast<uint32_t>(pickableObjects1.size()), pickedObjectsCount);
+        for (uint32_t i = 0u; i < pickedObjectsCount; ++i)
+            EXPECT_EQ(pickableObjects1[i], pickedObjects[i]);
+    }));
+    m_sceneControlHandler.objectsPicked(SceneId1, pickableObjects1.data(), static_cast<uint32_t>(pickableObjects1.size()));
+    update();
+
+    // different content with different scene
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
+    m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1);
+    update();
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID2, m_categoryID1));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId2, RendererSceneState::Available));
+    m_dcsmHandler.contentDescription(m_contentID2, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId2.getValue() });
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID2, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
+    EXPECT_CALL(m_sceneControlMock, setSceneMapping(SceneId2, m_displayId));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId2, RendererSceneState::Ready));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID2, 0));
+    update();
+
+    EXPECT_CALL(m_eventHandlerMock, objectsPicked(m_contentID2, _, static_cast<uint32_t>(pickableObjects2.size()))).WillOnce(Invoke([&](auto, auto pickedObjects, auto pickedObjectsCount)
+    {
+        ASSERT_EQ(static_cast<uint32_t>(pickableObjects2.size()), pickedObjectsCount);
+        for (uint32_t i = 0u; i < pickedObjectsCount; ++i)
+            EXPECT_EQ(pickableObjects2[i], pickedObjects[i]);
+    }));
+    m_sceneControlHandler.objectsPicked(SceneId2, pickableObjects2.data(), static_cast<uint32_t>(pickableObjects2.size()));
+    update();
+}
+
+TEST_F(ADcsmContentControl, reportsObjectsPickedWithZeroContentIfContentGoneBeforeEvent)
+{
+    constexpr  pickableObjectId_t pickable1{ 567u };
+    constexpr  pickableObjectId_t pickable2{ 578u };
+    constexpr std::array<pickableObjectId_t, 2> pickableObjects{ pickable1, pickable2 };
+
+    makeDcsmContentReady(m_contentID1, m_categoryID1, SceneId1);
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update();
+
+    // handle Pick Event
+    EXPECT_CALL(m_sceneControlMock, handlePickEvent(SceneId1, 1.0f, 1.0f));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.handlePickEvent(m_contentID1, 1.0f, 1.0f));
+
+    // remove content with scene to be picked
+    m_dcsmHandler.forceContentOfferStopped(m_contentID1);
+    EXPECT_CALL(m_eventHandlerMock, contentNotAvailable(m_contentID1));
+    update();
+
+    // report objects picked
+    EXPECT_CALL(m_eventHandlerMock, objectsPicked(ContentID::Invalid(), _, static_cast<uint32_t>(pickableObjects.size()))).WillOnce(Invoke([&](auto, auto pickedObjects, auto pickedObjectsCount)
+    {
+        ASSERT_EQ(static_cast<uint32_t>(pickableObjects.size()), pickedObjectsCount);
+        for (uint32_t i = 0u; i < pickedObjectsCount; ++i)
+            EXPECT_EQ(pickableObjects[i], pickedObjects[i]);
+    }));
+    m_sceneControlHandler.objectsPicked(SceneId1, pickableObjects.data(), static_cast<uint32_t>(pickableObjects.size()));
+    update();
 }
 
 TEST_F(ADcsmContentControl, handlesDcsmMetadataUpdate)
 {
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
     EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
@@ -1423,7 +1722,7 @@ TEST_F(ADcsmContentControl, failsToAssignUnknownContentToDisplayBuffer)
 TEST_F(ADcsmContentControl, failsToAssignNotReadyContentToDisplayBuffer)
 {
     // offered
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
     update();
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
@@ -1465,14 +1764,14 @@ TEST_F(ADcsmContentControl, failsToOffscreenBufferLinkConsumerContentWithUnknown
     constexpr displayBufferId_t obId{ 12 };
     constexpr dataConsumerId_t consumerId{ 13 };
 
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, m_categoryInfo1.size));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
     update();
 
     EXPECT_NE(StatusOK, m_dcsmContentControl.linkOffscreenBuffer(obId, m_contentID1, consumerId));
 }
 
-TEST_F(ADcsmContentControl, requestsOffscreenBufferLinkFromDisplayManager)
+TEST_F(ADcsmContentControl, requestsOffscreenBufferLink)
 {
     constexpr displayBufferId_t obId{ 12 };
     constexpr dataConsumerId_t consumerId{ 13 };
@@ -1524,26 +1823,12 @@ TEST_F(ADcsmContentControl, reportsOffscreenBufferLinkedWithZeroContentIfContent
     update();
 
     // report data linked
-    EXPECT_CALL(m_eventHandlerMock, offscreenBufferLinked(obId, ContentID{ 0 }, consumerId, true));
+    EXPECT_CALL(m_eventHandlerMock, offscreenBufferLinked(obId, ContentID::Invalid(), consumerId, true));
     m_sceneControlHandler.offscreenBufferLinked(obId, SceneId1, consumerId, true);
 
     // failed case
-    EXPECT_CALL(m_eventHandlerMock, offscreenBufferLinked(obId, ContentID{ 0 }, consumerId, false));
+    EXPECT_CALL(m_eventHandlerMock, offscreenBufferLinked(obId, ContentID::Invalid(), consumerId, false));
     m_sceneControlHandler.offscreenBufferLinked(obId, SceneId1, consumerId, false);
-}
-
-TEST_F(ADcsmContentControl, canSetClearColorOfDisplayBuffer)
-{
-    const displayBufferId_t displayBuffer{ 123u };
-    EXPECT_CALL(m_sceneControlMock, setDisplayBufferClearColor(m_displayId, displayBuffer, 1, 2, 3, 4));
-    EXPECT_EQ(StatusOK, m_dcsmContentControl.setDisplayBufferClearColor(m_displayId, displayBuffer, 1, 2, 3, 4));
-}
-
-TEST_F(ADcsmContentControl, failsToSetClearColorIfInternalRequestFails)
-{
-    const displayBufferId_t displayBuffer{ 123u };
-    EXPECT_CALL(m_sceneControlMock, setDisplayBufferClearColor(m_displayId, displayBuffer, 1, 2, 3, 4)).WillOnce(Return(status_t{666}));
-    EXPECT_NE(StatusOK, m_dcsmContentControl.setDisplayBufferClearColor(m_displayId, displayBuffer, 1, 2, 3, 4));
 }
 
 TEST_F(ADcsmContentControl, reportsContentFlushed)
@@ -1666,6 +1951,60 @@ TEST_F(ADcsmContentControl, reportsStreamAvailabilityChange)
 
     EXPECT_CALL(m_eventHandlerMock, streamAvailabilityChanged(streamId2, false));
     m_sceneControlHandler.streamAvailabilityChanged(streamId2, false);
+
+    update();
+}
+
+TEST_F(ADcsmContentControl, reportsDataSlotEvent)
+{
+    constexpr dataProviderId_t dataProviderId1{ 1u };
+    constexpr dataProviderId_t dataProviderId2{ 2u };
+    constexpr dataConsumerId_t dataConsumerId1{ 3u };
+    constexpr dataConsumerId_t dataConsumerId2{ 4u };
+
+    makeDcsmContentReady(m_contentID1, m_categoryID1, SceneId1);
+    makeDcsmContentReady(m_contentID2, m_categoryID1, SceneId2);
+    update();
+
+    EXPECT_CALL(m_eventHandlerMock, dataProviderCreated(m_contentID1, dataProviderId1));
+    m_sceneControlHandler.dataProviderCreated(SceneId1, dataProviderId1);
+
+    EXPECT_CALL(m_eventHandlerMock, dataProviderDestroyed(m_contentID2, dataProviderId2));
+    m_sceneControlHandler.dataProviderDestroyed(SceneId2, dataProviderId2);
+
+    EXPECT_CALL(m_eventHandlerMock, dataConsumerCreated(m_contentID1, dataConsumerId1));
+    m_sceneControlHandler.dataConsumerCreated(SceneId1, dataConsumerId1);
+
+    EXPECT_CALL(m_eventHandlerMock, dataConsumerDestroyed(m_contentID2, dataConsumerId2));
+    m_sceneControlHandler.dataConsumerDestroyed(SceneId2, dataConsumerId2);
+
+    update();
+}
+
+TEST_F(ADcsmContentControl, reportsDataSlotEvent_SceneAssociatedWithMultipleContents)
+{
+    constexpr dataProviderId_t dataProviderId{ 1u };
+    constexpr dataConsumerId_t dataConsumerId{ 2u };
+
+    makeDcsmContentReady(m_contentID1, m_categoryID1, SceneId1);
+    makeDcsmContentReady(m_contentID2, m_categoryID1, SceneId1, true);
+    update();
+
+    EXPECT_CALL(m_eventHandlerMock, dataProviderCreated(m_contentID1, dataProviderId));
+    EXPECT_CALL(m_eventHandlerMock, dataProviderCreated(m_contentID2, dataProviderId));
+    m_sceneControlHandler.dataProviderCreated(SceneId1, dataProviderId);
+
+    EXPECT_CALL(m_eventHandlerMock, dataProviderDestroyed(m_contentID1, dataProviderId));
+    EXPECT_CALL(m_eventHandlerMock, dataProviderDestroyed(m_contentID2, dataProviderId));
+    m_sceneControlHandler.dataProviderDestroyed(SceneId1, dataProviderId);
+
+    EXPECT_CALL(m_eventHandlerMock, dataConsumerCreated(m_contentID1, dataConsumerId));
+    EXPECT_CALL(m_eventHandlerMock, dataConsumerCreated(m_contentID2, dataConsumerId));
+    m_sceneControlHandler.dataConsumerCreated(SceneId1, dataConsumerId);
+
+    EXPECT_CALL(m_eventHandlerMock, dataConsumerDestroyed(m_contentID1, dataConsumerId));
+    EXPECT_CALL(m_eventHandlerMock, dataConsumerDestroyed(m_contentID2, dataConsumerId));
+    m_sceneControlHandler.dataConsumerDestroyed(SceneId1, dataConsumerId);
 
     update();
 }

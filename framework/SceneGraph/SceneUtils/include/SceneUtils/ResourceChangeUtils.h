@@ -9,7 +9,8 @@
 #ifndef RAMSES_RESOURCECHANGEUTILS_H
 #define RAMSES_RESOURCECHANGEUTILS_H
 
-#include "Transfer/ResourceTypes.h"
+#include "SceneAPI/ResourceContentHash.h"
+#include "Collections/Vector.h"
 #include <cassert>
 
 namespace ramses_internal

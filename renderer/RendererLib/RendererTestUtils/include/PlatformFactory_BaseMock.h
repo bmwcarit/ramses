@@ -28,7 +28,7 @@ namespace ramses_internal
     class PlatformFactory_BaseMock : public PlatformFactory_Base
     {
     public:
-        PlatformFactory_BaseMock(const RendererConfig& config);
+        explicit PlatformFactory_BaseMock(const RendererConfig& config);
         virtual ~PlatformFactory_BaseMock();
 
         template <typename MockT>
@@ -40,13 +40,13 @@ namespace ramses_internal
 
         void createRenderBackendMockObjects();
 
-        MOCK_METHOD0(createSystemCompositorController, ISystemCompositorController* ());
-        MOCK_METHOD2(createWindow, IWindow*(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler));
-        MOCK_METHOD1(createContext, IContext*(IWindow& window));
-        MOCK_METHOD1(createDevice, IDevice*(IContext& context));
-        MOCK_METHOD2(createSurface, ISurface*(IWindow& window, IContext& context));
-        MOCK_METHOD0(createEmbeddedCompositor, IEmbeddedCompositor*());
-        MOCK_METHOD3(createTextureUploadingAdapter, ITextureUploadingAdapter*(IDevice& device, IEmbeddedCompositor& embeddedCompositor, IWindow& window));
+        MOCK_METHOD(ISystemCompositorController* , createSystemCompositorController, (), (override));
+        MOCK_METHOD(IWindow*, createWindow, (const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler), (override));
+        MOCK_METHOD(IContext*, createContext, (IWindow& window), (override));
+        MOCK_METHOD(IDevice*, createDevice, (IContext& context), (override));
+        MOCK_METHOD(ISurface*, createSurface, (IWindow& window, IContext& context), (override));
+        MOCK_METHOD(IEmbeddedCompositor*, createEmbeddedCompositor, (), (override));
+        MOCK_METHOD(ITextureUploadingAdapter*, createTextureUploadingAdapter, (IDevice& device, IEmbeddedCompositor& embeddedCompositor, IWindow& window), (override));
 
         WindowMockWithDestructor*                     window                  = nullptr;
         ContextMockWithDestructor*                    context                 = nullptr;

@@ -74,49 +74,9 @@ namespace ramses
         expectCommandCount(0u);
     }
 
-    TEST_F(ARendererSceneControl, createsCommandForBufferClearColorSet)
-    {
-        constexpr displayBufferId_t ob{ 123u };
-        EXPECT_EQ(StatusOK, m_sceneControlAPI.setDisplayBufferClearColor(m_displayId, ob, 0.1f, 0.2f, 0.3f, 0.4f));
-        expectCommandCount(1u);
-        expectCommand(0u, ramses_internal::ERendererCommand_SetClearColor);
-
-        const auto& cmd = m_pendingCommands.getCommands().getCommandData<ramses_internal::SetClearColorCommand>(0);
-        EXPECT_EQ(ob.getValue(), cmd.obHandle.asMemoryHandle());
-        EXPECT_EQ(ramses_internal::Vector4(0.1f, 0.2f, 0.3f, 0.4f), cmd.clearColor);
-    }
-
-    TEST_F(ARendererSceneControl, createsCommandForFramebufferClearColorSetUsingDisplayBufferId)
-    {
-        EXPECT_EQ(StatusOK, m_sceneControlAPI.setDisplayBufferClearColor(m_displayId, m_renderer.getDisplayFramebuffer(m_displayId), 0.1f, 0.2f, 0.3f, 0.4f));
-        expectCommandCount(1u);
-        expectCommand(0u, ramses_internal::ERendererCommand_SetClearColor);
-
-        const auto& cmd = m_pendingCommands.getCommands().getCommandData<ramses_internal::SetClearColorCommand>(0);
-        EXPECT_FALSE(cmd.obHandle.isValid());
-        EXPECT_EQ(ramses_internal::Vector4(0.1f, 0.2f, 0.3f, 0.4f), cmd.clearColor);
-    }
-
-    TEST_F(ARendererSceneControl, createsCommandForFramebufferClearColorSetUsingInvalidDisplayBuffer)
-    {
-        EXPECT_EQ(StatusOK, m_sceneControlAPI.setDisplayBufferClearColor(m_displayId, {}, 0.1f, 0.2f, 0.3f, 0.4f));
-        expectCommandCount(1u);
-        expectCommand(0u, ramses_internal::ERendererCommand_SetClearColor);
-
-        const auto& cmd = m_pendingCommands.getCommands().getCommandData<ramses_internal::SetClearColorCommand>(0);
-        EXPECT_FALSE(cmd.obHandle.isValid());
-        EXPECT_EQ(ramses_internal::Vector4(0.1f, 0.2f, 0.3f, 0.4f), cmd.clearColor);
-    }
-
-    TEST_F(ARendererSceneControl, failsToClearColorForNonExistingDisplay)
-    {
-        EXPECT_NE(StatusOK, m_sceneControlAPI.setDisplayBufferClearColor(displayId_t{ 13 }, {}, 0.1f, 0.2f, 0.3f, 0.4f));
-        expectCommandCount(0u);
-    }
-
     TEST_F(ARendererSceneControl, clearsAllPendingCommandsWhenCallingFlush)
     {
-        EXPECT_EQ(StatusOK, m_sceneControlAPI.setDisplayBufferClearColor(m_displayId, {}, 1, 2, 3, 4));
+        EXPECT_EQ(StatusOK, m_sceneControlAPI.setSceneState(sceneId_t{ 1u }, RendererSceneState::Available));
         expectCommandCount(1u);
         m_sceneControlAPI.flush();
         expectCommandCount(0u);
@@ -179,6 +139,14 @@ namespace ramses
         const auto& cmd = m_pendingCommands.getCommands().getCommandData<ramses_internal::DataLinkCommand>(0);
         EXPECT_EQ(scene.getValue(), cmd.consumerScene.getValue());
         EXPECT_EQ(consumerId.getValue(), cmd.consumerData.getValue());
+    }
+
+    TEST_F(ARendererSceneControl, createsCommandForHandlePickEvent)
+    {
+        constexpr ramses::sceneId_t scene(0u);
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.handlePickEvent(scene, 1, 2));
+        expectCommandCount(1u);
+        expectCommand(0u, ramses_internal::ERendererCommand_PickEvent);
     }
 
     TEST_F(ARendererSceneControl, createsCommandForAssignSceneToOffscreenBuffer)
@@ -304,7 +272,7 @@ namespace ramses
         class DisplayCreateEventHandler final : public RendererEventHandlerEmpty
         {
         public:
-            DisplayCreateEventHandler(RamsesRenderer& renderer)
+            explicit DisplayCreateEventHandler(RamsesRenderer& renderer)
                 : m_renderer(renderer)
             {
             }
@@ -342,11 +310,11 @@ namespace ramses
         m_sceneControlAPI.setSceneState(scene, RendererSceneState::Available);
         m_sceneControlAPI.linkData(scene, dataProviderId_t(1u), sceneId_t(2u), dataConsumerId_t(3u));
         m_sceneControlAPI.unlinkData(scene, dataConsumerId_t(1u));
+        m_sceneControlAPI.handlePickEvent(scene, 1.f, 2.f);
         EXPECT_EQ(StatusOK, m_sceneControlAPI.flush());
 
         m_sceneControlAPI.setSceneDisplayBufferAssignment(scene, displayBufferId_t{ 12 }, 11);
         m_sceneControlAPI.linkOffscreenBuffer(displayBufferId_t{ 12 }, scene, dataConsumerId_t(0u));
-        m_sceneControlAPI.setDisplayBufferClearColor(m_displayId, displayBufferId_t{ 12 }, 1, 2, 3, 4);
         EXPECT_EQ(StatusOK, m_sceneControlAPI.flush());
 
         RendererSceneControlEventHandlerEmpty handler;
@@ -451,6 +419,27 @@ namespace ramses
         dispatchSceneControlEvents();
     }
 
+    TEST_F(ARendererSceneControl, dispatchesHandlePickEventFromRenderer)
+    {
+        constexpr sceneId_t providerScene{ 3 };
+        constexpr ramses_internal::SceneId providerSceneInternal{ providerScene.getValue() };
+        constexpr  pickableObjectId_t pickable1{ 567u };
+        constexpr  pickableObjectId_t pickable2{ 578u };
+        constexpr ramses_internal::PickableObjectId pickable1Internal{pickable1.getValue()};
+        constexpr ramses_internal::PickableObjectId pickable2Internal{pickable2.getValue()};
+        constexpr std::array<pickableObjectId_t, 2> pickableObjects{ pickable1, pickable2 };
+
+        EXPECT_CALL(m_eventHandler, objectsPicked(providerScene, _, static_cast<uint32_t>(pickableObjects.size()))).WillOnce(Invoke([&](auto, auto pickedObjects, auto pickedObjectsCount)
+        {
+            ASSERT_EQ(static_cast<uint32_t>(pickableObjects.size()), pickedObjectsCount);
+            for (uint32_t i = 0u; i < pickedObjectsCount; ++i)
+                EXPECT_EQ(pickableObjects[i], pickedObjects[i]);
+        }));
+        m_eventsFromRenderer.addPickedEvent(ramses_internal::ERendererEventType_ObjectsPicked, providerSceneInternal, {pickable1Internal, pickable2Internal});
+
+        dispatchSceneControlEvents();
+    }
+
     TEST_F(ARendererSceneControl, dispatchesNamedFlushEventFromRenderer)
     {
         constexpr sceneId_t scene{ 3 };
@@ -486,6 +475,24 @@ namespace ramses
 
         EXPECT_CALL(m_eventHandler, streamAvailabilityChanged(stream, false));
         m_eventsFromRenderer.addStreamSourceEvent(ramses_internal::ERendererEventType_StreamSurfaceUnavailable, ramses_internal::StreamTextureSourceId{ stream.getValue() });
+
+        dispatchSceneControlEvents();
+    }
+
+    TEST_F(ARendererSceneControl, dispatchesDataSlotEventsFromRenderer)
+    {
+        InSequence seq;
+        EXPECT_CALL(m_eventHandler, dataProviderCreated(sceneId_t{ 123u }, dataProviderId_t{ 1u }));
+        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType_SceneDataSlotProviderCreated, ramses_internal::SceneId{ 123u }, {}, ramses_internal::DataSlotId{ 1u }, {});
+
+        EXPECT_CALL(m_eventHandler, dataProviderDestroyed(sceneId_t{ 124u }, dataProviderId_t{ 2u }));
+        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType_SceneDataSlotProviderDestroyed, ramses_internal::SceneId{ 124u }, {}, ramses_internal::DataSlotId{ 2u }, {});
+
+        EXPECT_CALL(m_eventHandler, dataConsumerCreated(sceneId_t{ 125u }, dataConsumerId_t{ 3u }));
+        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType_SceneDataSlotConsumerCreated, {}, ramses_internal::SceneId{ 125u }, {}, ramses_internal::DataSlotId{ 3u });
+
+        EXPECT_CALL(m_eventHandler, dataConsumerDestroyed(sceneId_t{ 126u }, dataConsumerId_t{ 4u }));
+        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType_SceneDataSlotConsumerDestroyed, {}, ramses_internal::SceneId{ 126u }, {}, ramses_internal::DataSlotId{ 4u });
 
         dispatchSceneControlEvents();
     }

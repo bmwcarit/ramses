@@ -11,7 +11,6 @@
 
 #include "TransportCommon/FakeConnectionStatusUpdateNotifier.h"
 #include "ICommunicationSystem.h"
-#include "Transfer/ResourceTypes.h"
 #include "Components/ManagedResource.h"
 
 namespace ramses_internal
@@ -123,7 +122,12 @@ namespace ramses_internal
             return true;
         }
 
-        virtual bool sendDcsmContentFocusRequest(const Guid& /*to*/, ContentID /*contentID*/) override
+        virtual bool sendDcsmContentEnableFocusRequest(const Guid& /*to*/, ContentID /*contentID*/, int32_t ) override
+        {
+            return true;
+        }
+
+        virtual bool sendDcsmContentDisableFocusRequest(const Guid& /*to*/, ContentID /*contentID*/, int32_t) override
         {
             return true;
         }
@@ -138,12 +142,12 @@ namespace ramses_internal
             return true;
         }
 
-        virtual bool sendDcsmCanvasSizeChange(const Guid& /*to*/, ContentID /*contentID*/, SizeInfo /*sizeinfo*/, AnimationInformation) override
+        virtual bool sendDcsmCanvasSizeChange(const Guid& /*to*/, ContentID /*contentID*/, const CategoryInfo& /*sizeinfo*/, AnimationInformation) override
         {
             return true;
         }
 
-        virtual bool sendDcsmContentStateChange(const Guid& /*to*/, ContentID /*contentID*/, EDcsmState /*status*/, SizeInfo, AnimationInformation) override
+        virtual bool sendDcsmContentStateChange(const Guid& /*to*/, ContentID /*contentID*/, EDcsmState /*status*/, const CategoryInfo&, AnimationInformation) override
         {
             return true;
         }

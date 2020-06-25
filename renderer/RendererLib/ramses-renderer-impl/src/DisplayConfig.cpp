@@ -14,14 +14,13 @@
 
 namespace ramses
 {
-    DisplayConfig::DisplayConfig(int32_t argc, char const* const* argv)
-        : StatusObject(*new DisplayConfigImpl(argc, argv))
-        , impl(static_cast<DisplayConfigImpl&>(StatusObject::impl))
+    DisplayConfig::DisplayConfig()
+        : DisplayConfig(0, nullptr)
     {
     }
 
-    DisplayConfig::DisplayConfig(int32_t argc, char* argv[])
-        : StatusObject(*new DisplayConfigImpl(argc, const_cast<char const* const*>(argv)))
+    DisplayConfig::DisplayConfig(int32_t argc, char const* const* argv)
+        : StatusObject(*new DisplayConfigImpl(argc, argv))
         , impl(static_cast<DisplayConfigImpl&>(StatusObject::impl))
     {
     }

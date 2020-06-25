@@ -87,6 +87,40 @@ namespace ramses
         virtual void dataUnlinked(sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) = 0;
 
         /**
+        * @brief   This method will be called whenever a data provider is created.
+        * @details The event is emitted also for every data provider in a newly available scene.
+        * @param sceneId The scene id of the scene on which the event occurred
+        * @param dataProviderId The created data provider id
+        */
+        virtual void dataProviderCreated(sceneId_t sceneId, dataProviderId_t dataProviderId) = 0;
+
+        /**
+        * @brief   This method will be called when a data provider is destroyed.
+        * @details The event is emitted only when data provider destroyed,
+        *          not if scene becomes unavailable as a whole.
+        * @param sceneId The scene id of the scene on which the event occurred
+        * @param dataProviderId The destroyed data provider id
+        */
+        virtual void dataProviderDestroyed(sceneId_t sceneId, dataProviderId_t dataProviderId) = 0;
+
+        /**
+        * @brief   This method will be called whenever a data consumer is created.
+        * @details The event is emitted also for every data consumer in a newly available scene.
+        * @param sceneId The scene id of the scene on which the event occurred
+        * @param dataConsumerId The created data consumer id
+        */
+        virtual void dataConsumerCreated(sceneId_t sceneId, dataConsumerId_t dataConsumerId) = 0;
+
+        /**
+        * @brief   This method will be called when a data consumer is destroyed.
+        * @details The event is emitted only when data consumer destroyed,
+        *          not if scene becomes unavailable as a whole.
+        * @param sceneId The scene id of the scene on which the event occurred
+        * @param dataConsumerId The destroyed data consumer id
+        */
+        virtual void dataConsumerDestroyed(sceneId_t sceneId, dataConsumerId_t dataConsumerId) = 0;
+
+        /**
         * @brief This method will be called after a flush with version tag (#ramses::Scene::flush) has been applied
         * @param sceneId The scene id of the scene which the versioned flush belongs to
         * @param sceneVersionTag The version tag of the scene flush
@@ -126,6 +160,18 @@ namespace ramses
         * @param available True if the stream became available, and false if it disappeared
         */
         virtual void streamAvailabilityChanged(streamSource_t streamId, bool available) = 0;
+
+        /**
+        * @brief This method will be called when there were scene objects picked.
+        *        A ramses::PickableObject can be 'picked' via a pick input event
+        *        which is passed to ramses::RendererSceneControl when the scene is rendered (see ramses::RendererSceneControl::handlePickEvent).
+        *
+        * @param[in] sceneId ID of scene to which the picked objects belong.
+        * @param[in] pickedObjects Pointer to first ID of the picked objects array.
+        *        This array is valid only for the time of calling this method.
+        * @param[in] pickedObjectsCount Number of picked object IDs in the \c pickedObjects array.
+        */
+        virtual void objectsPicked(sceneId_t sceneId, const pickableObjectId_t* pickedObjects, uint32_t pickedObjectsCount) = 0;
 
         /// Empty destructor
         virtual ~IRendererSceneControlEventHandler() = default;
@@ -189,6 +235,42 @@ namespace ramses
         }
 
         /**
+        * @copydoc ramses::IRendererSceneControlEventHandler::dataProviderCreated
+        */
+        virtual void dataProviderCreated(sceneId_t sceneId, dataProviderId_t dataProviderId) override
+        {
+            (void)sceneId;
+            (void)dataProviderId;
+        }
+
+        /**
+        * @copydoc ramses::IRendererSceneControlEventHandler::dataProviderDestroyed
+        */
+        virtual void dataProviderDestroyed(sceneId_t sceneId, dataProviderId_t dataProviderId) override
+        {
+            (void)sceneId;
+            (void)dataProviderId;
+        }
+
+        /**
+        * @copydoc ramses::IRendererSceneControlEventHandler::dataConsumerCreated
+        */
+        virtual void dataConsumerCreated(sceneId_t sceneId, dataConsumerId_t dataConsumerId) override
+        {
+            (void)sceneId;
+            (void)dataConsumerId;
+        }
+
+        /**
+        * @copydoc ramses::IRendererSceneControlEventHandler::dataConsumerDestroyed
+        */
+        virtual void dataConsumerDestroyed(sceneId_t sceneId, dataConsumerId_t dataConsumerId) override
+        {
+            (void)sceneId;
+            (void)dataConsumerId;
+        }
+
+        /**
         * @copydoc ramses::IRendererSceneControlEventHandler::sceneFlushed
         */
         virtual void sceneFlushed(sceneId_t sceneId, sceneVersionTag_t sceneVersionTag) override
@@ -220,6 +302,16 @@ namespace ramses
         {
             (void)streamId;
             (void)available;
+        }
+
+        /**
+        * @copydoc ramses::IRendererSceneControlEventHandler::objectsPicked
+        */
+        virtual void objectsPicked(sceneId_t sceneId, const pickableObjectId_t* pickedObjects, uint32_t pickedObjectsCount) override
+        {
+            (void)sceneId;
+            (void)pickedObjects;
+            (void)pickedObjectsCount;
         }
     };
 }

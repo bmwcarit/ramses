@@ -9,9 +9,7 @@
 #ifndef RAMSES_PLATFORMCONSOLE_H
 #define RAMSES_PLATFORMCONSOLE_H
 
-#include <cstdio>
-#include <cstdarg>
-
+#include "fmt/format.h"
 
 namespace ramses_internal
 {
@@ -30,7 +28,8 @@ namespace ramses_internal
     class Console
     {
     public:
-        static void Print(ConsoleColor color, const char* format, ...);
+        template <typename S, typename... Args>
+        static void Print(ConsoleColor color, const S& format, const Args&... args);
 
         static const char* GetColor(ConsoleColor color);
         static const char* Default();
@@ -48,15 +47,13 @@ namespace ramses_internal
         static void Initialize();
     };
 
-    inline void Console::Print(ConsoleColor color, const char* format, ...)
+    template <typename S, typename... Args>
+    inline void Console::Print(ConsoleColor color, const S& format, const Args&... args)
     {
         EnsureConsoleInitialized();
-        std::va_list argptr;
-        va_start(argptr, format);
-        std::fputs(GetColor(color), stdout);
-        std::vprintf(format, argptr);
-        std::fputs(Default(), stdout);
-        va_end(argptr);
+        fmt::print(GetColor(color));
+        fmt::print(format, args...);
+        fmt::print(Default());
     }
 
     inline const char* Console::GetColor(ConsoleColor color)

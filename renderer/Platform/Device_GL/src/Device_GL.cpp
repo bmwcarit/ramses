@@ -39,7 +39,6 @@
 #include "PlatformAbstraction/PlatformStringUtils.h"
 
 #include "Platform_Base/GpuResource.h"
-#include "SceneAPI/TextureEnums.h"
 #include "PlatformAbstraction/Macros.h"
 
 namespace ramses_internal
@@ -123,7 +122,7 @@ namespace ramses_internal
     {
         LOG_DEBUG(CONTEXT_RENDERER, "Device_GL::init:");
 
-        LOAD_ALL_API_PROCS;
+        LOAD_ALL_API_PROCS(m_context);
 
         const Char* tmp = nullptr;
 

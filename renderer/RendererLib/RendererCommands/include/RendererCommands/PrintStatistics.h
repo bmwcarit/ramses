@@ -19,7 +19,7 @@ namespace ramses_internal
     class PrintStatistics : public RamshCommand
     {
     public:
-        PrintStatistics(RendererCommandBuffer& rendererCommandBuffer);
+        explicit PrintStatistics(RendererCommandBuffer& rendererCommandBuffer);
         virtual Bool executeInput(const RamshInput& input) override;
 
     private:

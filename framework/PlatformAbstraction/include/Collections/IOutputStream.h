@@ -80,7 +80,7 @@ namespace ramses_internal
         //Only strongly typed enums are allowed. Non-strongly typed enums do not have a defined size
         static_assert(!std::is_convertible<E, int>::value, "Not allowed to write non-strongly typed enum values to output stream!");
 
-        stream << static_cast<typename std::underlying_type<E>::type>(value);
+        stream << static_cast<std::underlying_type_t<E> >(value);
         return stream;
     }
 }

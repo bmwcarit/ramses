@@ -19,7 +19,6 @@
 #include "ramses-client-api/SplineStepFloat.h"
 #include "ramses-client-api/AnimatedProperty.h"
 #include "ramses-client-api/Animation.h"
-#include "ramses-client-api/AnimatedSetter.h"
 #include "ramses-client-api/AnimationSequence.h"
 #include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
@@ -77,7 +76,6 @@
 #include "SplineImpl.h"
 #include "AnimatedPropertyImpl.h"
 #include "AnimationImpl.h"
-#include "AnimatedSetterImpl.h"
 #include "AnimationSequenceImpl.h"
 #include "Utils/File.h"
 #include "ramses-utils.h"
@@ -799,13 +797,11 @@ namespace ramses
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteAnAnimationSystem)
     {
         AnimationSystem* animSystem = this->m_scene.createAnimationSystem(ramses::EAnimationSystemFlags_Default, "anim system");
-        EXPECT_EQ(StatusOK, animSystem->setDelayForAnimatedSetters(33u));
 
         doWriteReadCycle();
 
         AnimationSystem* animSystemLoaded = this->getObjectForTesting<AnimationSystem>("anim system");
         EXPECT_EQ(animSystem->impl.getAnimationSystemHandle(), animSystemLoaded->impl.getAnimationSystemHandle());
-        EXPECT_EQ(animSystem->impl.getDelayForAnimatedSetters(), animSystemLoaded->impl.getDelayForAnimatedSetters());
     }
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteAnAnimationSystemRealTime)
@@ -1088,13 +1084,13 @@ namespace ramses
 
         {
             ramses_internal::File fileShouldBeOverwritten("dummyFile.dat");
-            fileShouldBeOverwritten.open(ramses_internal::EFileMode_ReadOnly);
+            EXPECT_TRUE(fileShouldBeOverwritten.open(ramses_internal::File::Mode::ReadOnly));
             ramses_internal::UInt fileSize = 0;
-            fileShouldBeOverwritten.getSizeInBytes(fileSize);
+            EXPECT_TRUE(fileShouldBeOverwritten.getSizeInBytes(fileSize));
             EXPECT_NE(0u, fileSize);
         }
 
-        EXPECT_EQ(ramses_internal::EStatus_RAMSES_OK, ramses_internal::File("dummyFile.dat").remove());
+        EXPECT_TRUE(ramses_internal::File("dummyFile.dat").remove());
     }
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, doesNotLoadSceneFromFileWithInvalidFileName)
@@ -1120,9 +1116,9 @@ namespace ramses
         const char* filename = "allzerofile.dat";
         {
             ramses_internal::File file(filename);
-            file.open(ramses_internal::EFileMode_WriteNew);
+            EXPECT_TRUE(file.open(ramses_internal::File::Mode::WriteNew));
             std::vector<ramses_internal::Char> zerovector(4096);
-            file.write(&zerovector[0], zerovector.size());
+            EXPECT_TRUE(file.write(&zerovector[0], zerovector.size()));
             file.close();
         }
 
@@ -1135,9 +1131,9 @@ namespace ramses
         const char* filename = "allzerofile.dat";
         {
             ramses_internal::File file(filename);
-            file.open(ramses_internal::EFileMode_WriteNew);
+            EXPECT_TRUE(file.open(ramses_internal::File::Mode::WriteNew));
             std::vector<ramses_internal::Char> zerovector(4096);
-            file.write(&zerovector[0], zerovector.size());
+            EXPECT_TRUE(file.write(&zerovector[0], zerovector.size()));
             file.close();
         }
 
@@ -1201,21 +1197,6 @@ namespace ramses
         const Animation* animLoaded = this->getAnimationObjectForTesting<Animation>("animation");
         EXPECT_EQ(anim->impl.getAnimationInstanceHandle(), animLoaded->impl.getAnimationInstanceHandle());
         EXPECT_EQ(anim->impl.getAnimationHandle(), animLoaded->impl.getAnimationHandle());
-    }
-
-    TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteAnimatedSetter)
-    {
-        Node* node = this->m_scene.createNode();
-        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Translation, EAnimatedPropertyComponent_X);
-        AnimatedSetter* anim = this->animationSystem.createAnimatedSetter(*prop, "animation");
-
-        doWriteReadCycle();
-
-        const AnimatedSetter* animLoaded = this->getAnimationObjectForTesting<AnimatedSetter>("animation");
-        EXPECT_EQ(anim->impl.getAnimation().getAnimationHandle(), animLoaded->impl.getAnimation().getAnimationHandle());
-        EXPECT_EQ(anim->impl.getSplineHandle(), animLoaded->impl.getSplineHandle());
-        EXPECT_EQ(anim->impl.getAnimation().getAnimationInstanceHandle(), animLoaded->impl.getAnimation().getAnimationInstanceHandle());
-        EXPECT_EQ(anim->impl.getAnimation().getAnimationHandle(), animLoaded->impl.getAnimation().getAnimationHandle());
     }
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteAnimationSequence)

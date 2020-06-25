@@ -19,7 +19,7 @@ namespace ramses_internal
     class WindowEventsPollingManagerMock : public IWindowEventsPollingManager
     {
     public:
-        MOCK_CONST_METHOD0(pollWindowsTillAnyCanRender, void());
+        MOCK_METHOD(void, pollWindowsTillAnyCanRender, (), (const, override));
     };
 
     class WindowEventsPollingManagerMockWithDestructor : public WindowEventsPollingManagerMock
@@ -30,7 +30,7 @@ namespace ramses_internal
             Die();
         }
 
-        MOCK_METHOD0(Die, void());
+        MOCK_METHOD(void, Die, ());
     };
 }
 

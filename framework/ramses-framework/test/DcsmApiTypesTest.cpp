@@ -7,12 +7,27 @@
 //  -------------------------------------------------------------------------
 
 #include "ramses-framework-api/DcsmApiTypes.h"
-#include "Components/DcsmComponent.h"
 #include "gtest/gtest.h"
 #include <unordered_set>
 
 namespace ramses
 {
+    TEST(DcsmApiTypes, hasRectComparison)
+    {
+        Rect r1{ 1,2,3,4};
+        Rect r2{ 1,2,3,4 };
+        Rect r3{ 1,2,4,3 };
+
+        EXPECT_TRUE(r1 == r1);
+        EXPECT_FALSE(r1 != r1);
+
+        EXPECT_TRUE(r1 == r2);
+        EXPECT_FALSE(r1 != r2);
+
+        EXPECT_FALSE(r1 == r3);
+        EXPECT_TRUE(r1 != r3);
+    }
+
     TEST(DcsmApiTypes, hasSizeInfoComparison)
     {
         SizeInfo si1{1, 2};

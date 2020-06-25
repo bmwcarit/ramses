@@ -41,22 +41,6 @@ namespace ramses_internal
     struct TechnicalContentDescriptorTag;
     using TechnicalContentDescriptor = StronglyTypedValue<uint64_t, 0, TechnicalContentDescriptorTag>;
 
-    struct SizeInfo
-    {
-        uint32_t width;
-        uint32_t height;
-
-        bool operator==(const SizeInfo& rhs) const
-        {
-            return width == rhs.width && height == rhs.height;
-        }
-
-        bool operator!=(const SizeInfo& rhs) const
-        {
-            return !(*this == rhs);
-        }
-    };
-
     enum class EDcsmState : uint64_t
     {
         Offered,

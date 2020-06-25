@@ -52,7 +52,7 @@ void RendererTestsFramework::destroyRenderer()
     m_testScenesAndRenderer.destroyRenderer();
 }
 
-ramses::displayId_t RendererTestsFramework::createDisplay(ramses::DisplayConfig displayConfig)
+ramses::displayId_t RendererTestsFramework::createDisplay(const ramses::DisplayConfig& displayConfig)
 {
     const ramses::displayId_t displayId = m_testRenderer.createDisplay(displayConfig);
     if (displayId != ramses::displayId_t::Invalid())

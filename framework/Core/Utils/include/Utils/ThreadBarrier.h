@@ -17,7 +17,7 @@ namespace ramses_internal
     class ThreadBarrier
     {
     public:
-        ThreadBarrier(int num = 0);
+        explicit ThreadBarrier(int num = 0);
 
         void init_wait_for_num(int num);
 

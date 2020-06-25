@@ -166,7 +166,7 @@ namespace ramses_internal
             const SceneActionReader* operator->() const;
         private:
             friend class SceneActionCollection;
-            Iterator(const SceneActionReader& reader);
+            explicit Iterator(const SceneActionReader& reader);
 
             SceneActionReader m_reader;
         };
@@ -409,13 +409,13 @@ namespace ramses_internal
 
     inline SceneActionCollection::SceneActionReader SceneActionCollection::front() const
     {
-        assert(m_actionInfo.size() > 0);
+        assert(!m_actionInfo.empty());
         return SceneActionCollection::SceneActionReader(this, 0);
     }
 
     inline SceneActionCollection::SceneActionReader SceneActionCollection::back() const
     {
-        assert(m_actionInfo.size() > 0);
+        assert(!m_actionInfo.empty());
         return SceneActionCollection::SceneActionReader(this, m_actionInfo.size() - 1);
     }
 

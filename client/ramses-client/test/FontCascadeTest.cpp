@@ -82,7 +82,7 @@ namespace ramses
 
     TEST_F(AFontCascade, picksCharactersFromFirstAppearanceInCascade)
     {
-        const std::u32string str = U" ش2";
+        const std::u32string str = U" \u06342";   // U" ش2"
         FontInstanceOffsets fontOffsets;
         const auto filteredStr = FontCascade::FilterAndFindFontInstancesForString(m_fontCascadeLatinThenArabic, str, fontOffsets);
 

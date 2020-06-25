@@ -19,13 +19,13 @@ namespace ramses_internal
     public:
         virtual ~RendererSceneEventSenderMock() {}
 
-        MOCK_METHOD1(sendSubscribeScene, void(SceneId sceneId));
-        MOCK_METHOD1(sendUnsubscribeScene, void(SceneId sceneId));
+        MOCK_METHOD(void, sendSubscribeScene, (SceneId sceneId), (override));
+        MOCK_METHOD(void, sendUnsubscribeScene, (SceneId sceneId), (override));
 
-        MOCK_METHOD3(sendSceneStateChanged, void(SceneId masterScene, SceneId referencedScene, RendererSceneState newState));
-        MOCK_METHOD3(sendSceneFlushed, void(SceneId masterScene, SceneId referencedScene, SceneVersionTag tag));
-        MOCK_METHOD6(sendDataLinked, void(SceneId masterScene, SceneId providerScene, DataSlotId provider, SceneId consumerScene, DataSlotId consumer, bool success));
-        MOCK_METHOD4(sendDataUnlinked, void(SceneId masterScene, SceneId consumerScene, DataSlotId consumer, bool success));
+        MOCK_METHOD(void, sendSceneStateChanged, (SceneId masterScene, SceneId referencedScene, RendererSceneState newState), (override));
+        MOCK_METHOD(void, sendSceneFlushed, (SceneId masterScene, SceneId referencedScene, SceneVersionTag tag), (override));
+        MOCK_METHOD(void, sendDataLinked, (SceneId masterScene, SceneId providerScene, DataSlotId provider, SceneId consumerScene, DataSlotId consumer, bool success), (override));
+        MOCK_METHOD(void, sendDataUnlinked, (SceneId masterScene, SceneId consumerScene, DataSlotId consumer, bool success), (override));
     };
 }
 #endif

@@ -27,10 +27,9 @@ namespace ramses
         status_t setWidgetBackgroundID(int32_t backgroundID);
         status_t setWidgetHUDLineID(int32_t widgetHudLineID);
         status_t setCarModel(int32_t carModel);
-        status_t setCarModelView(const CarModelViewMetadata& data);
+        status_t setCarModelView(const CarModelViewMetadata& data, const AnimationInformation& timingInfo);
         status_t setCarModelVisibility(bool visibility);
         status_t setExclusiveBackground(bool state);
-        status_t setFocusRequest(int32_t state);
 
         ramses_internal::DcsmMetadata getMetadata() const;
     private:

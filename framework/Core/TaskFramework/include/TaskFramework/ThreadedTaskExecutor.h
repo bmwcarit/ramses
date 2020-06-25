@@ -31,7 +31,7 @@ namespace ramses_internal
         * @param   threadCount     The number of threads which should be created.
         * @param   watchdogConfig The configuration for watchdogHandling
         */
-        ThreadedTaskExecutor(UInt16 threadCount, const ThreadWatchdogConfig& watchdogConfig = ThreadWatchdogConfig());
+        explicit ThreadedTaskExecutor(UInt16 threadCount, const ThreadWatchdogConfig& watchdogConfig = ThreadWatchdogConfig());
 
         /**
          * Virtual destructor.

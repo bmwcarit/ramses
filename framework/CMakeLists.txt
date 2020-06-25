@@ -78,7 +78,7 @@ ACME_MODULE(
                             PlatformAbstraction/include/PlatformAbstraction/*.h
                             PlatformAbstraction/include/PlatformAbstraction/internal/*.h
     FILES_SOURCE            PlatformAbstraction/src/*.cpp
-    DEPENDENCIES            ramses-capu
+    DEPENDENCIES            ramses-common-base
                             lz4
                             fmt::fmt
                             ramses-abseil

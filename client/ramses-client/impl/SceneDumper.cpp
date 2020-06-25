@@ -475,7 +475,7 @@ namespace ramses
         return requiredCameras;
     }
 
-    void SceneDumper::markRequiredResourcesFromHash(ResourceContentHashSet requiredResourceHashes)
+    void SceneDumper::markRequiredResourcesFromHash(const ResourceContentHashSet& requiredResourceHashes)
     {
         for (auto requiredResourceHash : requiredResourceHashes)
         {
@@ -654,7 +654,7 @@ namespace ramses
     void SceneDumper::outputNotRequiredObjects(ramses_internal::StringOutputStream& output)
     {
         RamsesObjectSet objects = getSceneAndClientObjects();
-        output << "SceneDumper::outputNotRequiredObjects Unrequired objects: \n";
+        output << "SceneDumper::outputNotRequiredObjects Unrequired objects:\n";
 
         ramses_internal::HashMap<ERamsesObjectType, Counter> typeStatistic;
         for (RamsesObject* object : objects)
@@ -669,7 +669,7 @@ namespace ramses
             typeStatistic[type].total++;
         }
 
-        output << "\nSceneDumper::outputNotRequiredObjects Statistic of unrequired objects: \n\n";
+        output << "\nSceneDumper::outputNotRequiredObjects Statistic of unrequired objects:\n\n";
 
         AddString("OBEJCT TYPE", output, 39);
 

@@ -57,7 +57,7 @@ namespace ramses_internal
             IRendererResourceCache* rendererResourceCache = nullptr);
         virtual ~RendererSceneUpdater();
 
-        virtual void handleSceneActions(SceneId sceneId, SceneActionCollection& actionsForScene);
+        virtual void handleSceneActions(SceneId sceneId, SceneActionCollection&& actionsForScene);
 
         void createDisplayContext(const DisplayConfig& displayConfig, IResourceProvider& resourceProvider, IResourceUploader& resourceUploader, DisplayHandle handle);
         void destroyDisplayContext(DisplayHandle handle);
@@ -94,7 +94,6 @@ namespace ramses_internal
         void destroyScene(SceneId sceneID);
         void unloadSceneResourcesAndUnrefSceneResources(SceneId sceneId);
         bool markClientAndSceneResourcesForReupload(SceneId sceneId);
-        void appendPendingSceneActions(SceneId sceneId, SceneActionCollection& actionsForScene);
 
         UInt32 updateScenePendingFlushes(SceneId sceneID, StagingInfo& stagingInfo);
         void applySceneActions(IScene& scene, PendingFlush& flushInfo);
@@ -104,9 +103,9 @@ namespace ramses_internal
         Bool willApplyingChangesMakeAllResourcesAvailable(SceneId sceneId) const;
         Bool areClientResourcesInUseUploaded(SceneId sceneId) const;
 
-        void consolidatePendingSceneActions();
-        void consolidatePendingSceneActions(SceneId sceneID, SceneActionCollection& actionsForScene);
-        void consolidateResourceChanges(PendingFlush& flushInfo, const PendingFlushes& pendingFlushes, const SceneResourceChanges& resourceChanges, ResourceContentHashVector& newlyNeededClientResources) const;
+        void logTooManyFlushesAndUnsubscribeIfRemoteScene(SceneId sceneId, std::size_t numPendingFlushes);
+        void consolidatePendingSceneActions(SceneId sceneID, SceneActionCollection&& actionsForScene);
+        void consolidateResourceChanges(PendingData& pendingData, const SceneResourceChanges& resourceChanges, ResourceContentHashVector& newlyNeededClientResources) const;
         void requestAndUploadAndUnloadResources(DisplayHandle& activeDisplay);
         void updateEmbeddedCompositingResources(DisplayHandle& activeDisplay);
         void tryToApplyPendingFlushes();
@@ -138,8 +137,6 @@ namespace ramses_internal
         AnimationSystemFactory                            m_animationSystemFactory;
 
         HashMap<DisplayHandle, IRendererResourceManager*> m_displayResourceManagers;
-
-        std::unordered_map<SceneId, std::vector<SceneActionCollection>> m_pendingSceneActions;
 
         struct SceneMapRequest
         {

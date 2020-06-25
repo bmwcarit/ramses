@@ -30,7 +30,7 @@ namespace ramses
         *
         * @param[in] renderPass RenderPass whose RenderGroups to iterate through
         **/
-        RenderPassGroupIterator(const RenderPass& renderPass);
+        explicit RenderPassGroupIterator(const RenderPass& renderPass);
 
         /**
         * @brief Destructor

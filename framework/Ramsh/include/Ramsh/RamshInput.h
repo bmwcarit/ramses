@@ -27,7 +27,6 @@ public:
 
     void append(const String& c);
     void append(const Char* c);
-    void append(const Char c);
 
     using StringVector::size;
     using StringVector::clear;

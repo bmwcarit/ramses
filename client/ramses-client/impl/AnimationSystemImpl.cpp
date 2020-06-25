@@ -33,7 +33,6 @@
 #include "ramses-client-api/SplineBezierVector4i.h"
 #include "ramses-client-api/AnimatedProperty.h"
 #include "ramses-client-api/Animation.h"
-#include "ramses-client-api/AnimatedSetter.h"
 #include "ramses-client-api/AnimationSequence.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/DataObject.h"
@@ -324,30 +323,9 @@ namespace ramses
         return m_data.createAnimation(animatedProperty.impl, spline, name);
     }
 
-    AnimatedSetter* AnimationSystemImpl::createAnimatedSetter(const AnimatedProperty& animatedProperty, const char* name)
-    {
-        if (!containsAnimationObject(animatedProperty.impl))
-        {
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimationSystem::createAnimatedSetter: failed to create AnimatedSetter, provided property belongs to another AnimationSystem!");
-            return nullptr;
-        }
-
-        return m_data.createAnimatedSetter(animatedProperty.impl, name);
-    }
-
     AnimationSequence* AnimationSystemImpl::createAnimationSequence(const char* name)
     {
         return m_data.createAnimationSequence(name);
-    }
-
-    status_t AnimationSystemImpl::setDelayForAnimatedSetters(timeMilliseconds_t delay)
-    {
-        return m_data.setDelayForAnimatedSetters(delay);
-    }
-
-    timeMilliseconds_t AnimationSystemImpl::getDelayForAnimatedSetters() const
-    {
-        return m_data.getDelayForAnimatedSetters();
     }
 
     AnimatedProperty* AnimationSystemImpl::createAnimatedProperty(const NodeImpl& propertyOwner, EAnimatedProperty property, EAnimatedPropertyComponent propertyComponent, const char* name)

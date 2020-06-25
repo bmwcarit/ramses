@@ -140,8 +140,14 @@ namespace ramses_internal
         m_renderer->stopThread();
     }
 
+    bool TestRenderer::isRendererThreadEnabled() const
+    {
+        return m_renderer->isThreadRunning();
+    }
+
     void TestRenderer::doOneLoop()
     {
+        assert(!m_renderer->isThreadRunning());
         m_renderer->doOneLoop();
     }
 
@@ -177,8 +183,8 @@ namespace ramses_internal
 
     void TestRenderer::setClearColor(ramses::displayId_t displayId, ramses::displayBufferId_t buffer, const ramses_internal::Vector4& clearColor)
     {
-        m_sceneControlAPI->setDisplayBufferClearColor(displayId, buffer, clearColor.r, clearColor.g, clearColor.b, clearColor.a);
-        m_sceneControlAPI->flush();
+        m_renderer->setDisplayBufferClearColor(displayId, buffer, clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+        m_renderer->flush();
     }
 
     void TestRenderer::createBufferDataLink(ramses::displayBufferId_t providerBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag)
@@ -255,7 +261,7 @@ namespace ramses_internal
 
     void TestRenderer::readPixels(ramses::displayId_t displayId, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
     {
-        m_renderer->readPixels(displayId, x, y, width, height);
+        m_renderer->readPixels(displayId, {}, x, y, width, height);
     }
 
     IEmbeddedCompositor& TestRenderer::getEmbeddedCompositor(ramses::displayId_t displayId)

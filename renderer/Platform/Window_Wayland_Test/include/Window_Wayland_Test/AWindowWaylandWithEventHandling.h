@@ -21,13 +21,14 @@
 #include "wayland-egl.h"
 #include <EGL/egl.h>
 
-using namespace testing;
 
 #define EV_RELEASED 0
 #define EV_PRESSED  1
 
 namespace ramses_internal
 {
+    using namespace ::testing;
+
     template <typename WINDOWTYPE>
     class AWindowWaylandWithEventHandling : public AWindowWayland<WINDOWTYPE>
     {

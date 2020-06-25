@@ -42,10 +42,9 @@ namespace ramses_internal
         precision highp float;                              \n\
                                                             \n\
         flat in int colorId;                                \n\
-        const vec4 colors[17] = vec4[17](                   \n\
+        const vec4 colors[16] = vec4[16](                   \n\
             vec4(0.0, 0.0, 0.0, 1.0),                       \n\
             vec4(0.5, 1.0, 0.0, 0.5),        // RendererCommands                   \n\
-            vec4(0.0, 0.0, 0.0, 0.5),        // ConsolidateSceneActions            \n\
             vec4(1.0, 0.0, 0.0, 0.5),        // UpdateClientResources              \n\
             vec4(0.0, 0.0, 1.0, 0.5),        // ApplySceneActions                  \n\
             vec4(1.0, 0.0, 1.0, 0.5),        // UpdateSceneResources               \n\
@@ -78,12 +77,12 @@ namespace ramses_internal
         void main()                                         \n\
         {                                                   \n\
             vec4 pos;                                       \n\
-            pos.x = float(gl_VertexID / 17);                \n\
+            pos.x = float(gl_VertexID / 16);                \n\
             pos.y = a_position;                             \n\
             pos.z = 0.0;                                    \n\
             pos.w = 1.0;                                    \n\
             gl_Position = mvpMatrix * pos;                  \n\
-            colorId = gl_VertexID % 17;                     \n\
+            colorId = gl_VertexID % 16;                     \n\
         }";
 
     static const char* TimingLineVertexShader = "           \n\

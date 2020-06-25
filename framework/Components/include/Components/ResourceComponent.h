@@ -74,9 +74,9 @@ namespace ramses_internal
         virtual void removeResourceFile(const String& resourceFileName) override;
 
         // implement IResourceConsumerComponent
-        virtual void requestResourceAsynchronouslyFromFramework(const ResourceContentHashVector& ids, const RequesterID& requesterID, const Guid& providerID) override;
-        virtual void cancelResourceRequest(const ResourceContentHash& resourceHash, const RequesterID& requesterID) override;
-        virtual ManagedResourceVector popArrivedResources(const RequesterID& requesterID) override;
+        virtual void requestResourceAsynchronouslyFromFramework(const ResourceContentHashVector& ids, const ResourceRequesterID& requesterID, const Guid& providerID) override;
+        virtual void cancelResourceRequest(const ResourceContentHash& resourceHash, const ResourceRequesterID& requesterID) override;
+        virtual ManagedResourceVector popArrivedResources(const ResourceRequesterID& requesterID) override;
 
         // implement ResourceProviderServiceHandler
         virtual void handleRequestResources(const ResourceContentHashVector& ids, UInt32 chunkSize, const Guid& participantTherequestCameFrom) override;
@@ -93,7 +93,7 @@ namespace ramses_internal
         void resourceHasBeenLoadedFromFile(IResource* loadedResource, uint32_t size);
         void handleArrivedResource(const ManagedResource& resource);
         bool isReceivingFromParticipant(const Guid& participant) const;
-        bool hasRequestForResource(ResourceContentHash hash, RequesterID requester) const;
+        bool hasRequestForResource(ResourceContentHash hash, ResourceRequesterID requester) const;
 
         virtual void reserveResourceCount(uint32_t totalCount) override;
 
@@ -123,8 +123,8 @@ namespace ramses_internal
         const ResourceInfo& getResourceInfo(const ResourceContentHash& hash) const;
         void storeResourceInfo(const ResourceContentHash& hash, const ResourceInfo& resourceInfo);
 
-        using RequestsMap = std::unordered_multimap<ResourceContentHash, RequesterID>;
-        static RequestsMap::const_iterator FindInRequestsRange(std::pair<RequestsMap::const_iterator, RequestsMap::const_iterator> range, RequesterID requester);
+        using RequestsMap = std::unordered_multimap<ResourceContentHash, ResourceRequesterID>;
+        static RequestsMap::const_iterator FindInRequestsRange(std::pair<RequestsMap::const_iterator, RequestsMap::const_iterator> range, ResourceRequesterID requester);
 
         PlatformLock& m_frameworkLock;
         IConnectionStatusUpdateNotifier& m_connectionStatusUpdateNotifier;
@@ -140,8 +140,8 @@ namespace ramses_internal
 
         HashMap<Guid, ResourceStreamDeserializer*>              m_resourceDeserializers;
         RequestsMap                                             m_requestedResources;
-        std::unordered_map<RequesterID, ManagedResourceVector>  m_arrivedResources;
-        std::unordered_map<RequesterID, bool>                   m_hasArrivedRemoteResources;
+        std::unordered_map<ResourceRequesterID, ManagedResourceVector>  m_arrivedResources;
+        std::unordered_map<ResourceRequesterID, bool>                   m_hasArrivedRemoteResources;
         std::vector<ResourceContentHash>                        m_unrequestedResources;
 
         StatisticCollectionFramework&                           m_statistics;

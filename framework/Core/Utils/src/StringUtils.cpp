@@ -66,7 +66,7 @@ namespace ramses_internal
         std::vector<ramses_internal::String> allTokens;
         ramses_internal::StringUtils::Tokenize(line, allTokens, split);
 
-        // due to the wired behavior of tokenize provided by capu, we have to filter out those empty tokens.
+        // we have to filter out empty tokens
         tokens.clear();
         for(const auto& token : allTokens)
         {

@@ -18,7 +18,7 @@ namespace ramses_internal
 {
     struct TestParam
     {
-        TestParam(const AnimationTime timeStamp = 0u, bool testOnlyFullProcessingSystems = false)
+        explicit TestParam(const AnimationTime timeStamp = 0u, bool testOnlyFullProcessingSystems = false)
             : m_timeStamp(timeStamp)
             , m_testOnlyFullProcessingSystems(testOnlyFullProcessingSystems)
         {

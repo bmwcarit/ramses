@@ -9,7 +9,7 @@
 #ifndef RAMSES_HIDDENWINDOW_H
 #define RAMSES_HIDDENWINDOW_H
 
-#include "ramses-capu/os/Windows/MinimalWindowsH.h"
+#include "PlatformAbstraction/MinimalWindowsH.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 
 namespace ramses_internal

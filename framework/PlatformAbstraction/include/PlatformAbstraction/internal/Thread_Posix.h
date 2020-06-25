@@ -60,7 +60,7 @@ namespace internal
     }
 
     inline Thread::Thread(std::string name, Fun_t fun)
-        : m_fun(new Fun_t([name = name, userfun = std::move(fun)]()
+        : m_fun(new Fun_t([name = std::move(name), userfun = std::move(fun)]()
                           {
 #ifdef __INTEGRITY
                               (void)name;

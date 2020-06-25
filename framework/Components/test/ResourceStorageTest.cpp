@@ -21,7 +21,7 @@ namespace ramses_internal
     class IStorageChangeListenerMock : public IResourceStorageChangeListener
     {
     public:
-        MOCK_METHOD1(onBytesNeededByStorageDecreased, void(uint64_t bytesNowUsed));
+        MOCK_METHOD(void, onBytesNeededByStorageDecreased, (uint64_t bytesNowUsed), (override));
     };
 
     class AResourceStorage : public testing::Test

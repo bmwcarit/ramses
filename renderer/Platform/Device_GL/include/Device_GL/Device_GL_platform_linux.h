@@ -9,9 +9,9 @@
 #ifndef RAMSES_DEVICE_GL_PLATFORM_LINUX_H
 #define RAMSES_DEVICE_GL_PLATFORM_LINUX_H
 
-#define LOAD_ALL_API_PROCS            // does nothing for linux - api procs are already defined in the GL library
-#define DECLARE_ALL_API_PROCS         // does nothing for linux - api procs are already declared in the GL headers
-#define DEFINE_ALL_API_PROCS          // does nothing for linux - api procs are already defined in the GL headers
+#define LOAD_ALL_API_PROCS(CONTEXT) (void)CONTEXT     // does nothing for linux - api procs are already defined in the GL library
+#define DECLARE_ALL_API_PROCS                         // does nothing for linux - api procs are already declared in the GL headers
+#define DEFINE_ALL_API_PROCS                          // does nothing for linux - api procs are already defined in the GL headers
 
 // extension procs, however, need to be declared and defined
 #define DECLARE_EXTENSION_PROC(TYPE, NAME) extern TYPE NAME;

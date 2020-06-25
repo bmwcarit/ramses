@@ -27,8 +27,8 @@ TEST_F(AInternalDisplayConfig, hasDefaultValues)
     EXPECT_EQ(1u, m_config.getAntialiasingSampleCount());
     EXPECT_EQ(1280u, m_config.getDesiredWindowWidth());
     EXPECT_EQ(480u, m_config.getDesiredWindowHeight());
-    EXPECT_EQ(150, m_config.getWindowPositionX());
-    EXPECT_EQ(150, m_config.getWindowPositionY());
+    EXPECT_EQ(0, m_config.getWindowPositionX());
+    EXPECT_EQ(0, m_config.getWindowPositionY());
     EXPECT_EQ(ramses_internal::Vector3(0.0f), m_config.getCameraRotation());
     EXPECT_EQ(ramses_internal::Vector3(0.0f), m_config.getCameraPosition());
     EXPECT_FALSE(m_config.isWarpingEnabled());

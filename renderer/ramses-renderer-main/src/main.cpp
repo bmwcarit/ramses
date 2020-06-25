@@ -13,11 +13,12 @@
 #include "ramses-renderer-api/IDcsmContentControlEventHandler.h"
 #include "ramses-renderer-api/DcsmContentControl.h"
 #include "ramses-renderer-api/DcsmContentControlConfig.h"
+#include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "RendererLib/RendererConfigUtils.h"
 #include "Utils/Argument.h"
 #include "Utils/LogMacros.h"
 #include "Utils/StringUtils.h"
-#include "DisplayManager/DisplayManager.h"
+#include "RendererMate.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "ContentStates.h"
 
@@ -33,34 +34,7 @@ struct MappingCommand
     int32_t sceneRenderOrder;
 };
 
-class DMEventHandler final : public ramses_internal::IEventHandler
-{
-public:
-    DMEventHandler(ramses_internal::IDisplayManager& dm, bool autoShow)
-        : m_dm(dm)
-        , m_autoShow(autoShow)
-    {
-    }
-
-    virtual void scenePublished(ramses::sceneId_t sceneId) override
-    {
-        if (m_autoShow)
-        {
-            m_dm.setSceneMapping(sceneId, ramses::displayId_t{ 0 });
-            m_dm.setSceneState(sceneId, ramses_internal::SceneState::Rendered);
-        }
-    }
-
-    virtual void sceneStateChanged(ramses::sceneId_t, ramses_internal::SceneState, ramses::displayId_t) override {}
-    virtual void offscreenBufferLinked(ramses::displayBufferId_t, ramses::sceneId_t, ramses::dataConsumerId_t, bool) override {}
-    virtual void dataLinked(ramses::sceneId_t, ramses::dataProviderId_t, ramses::sceneId_t, ramses::dataConsumerId_t, bool) override {}
-
-private:
-    ramses_internal::IDisplayManager& m_dm;
-    bool m_autoShow;
-};
-
-struct CategoryInfo
+struct CategoryData
 {
     uint32_t category = 0u;
     ramses::SizeInfo size = { 0, 0 };
@@ -109,10 +83,10 @@ private:
     bool sPressed = false;
 };
 
-class Handler : public ramses::IDcsmContentControlEventHandler
+class Handler : public ramses::DcsmContentControlEventHandlerEmpty
 {
 public:
-    Handler(ramses::DcsmContentControl& renderer)
+    explicit Handler(ramses::DcsmContentControl& renderer)
         : m_dcsmContentControl(renderer)
     {}
 
@@ -129,18 +103,6 @@ public:
         readyContents.insert(contentID);
         m_dcsmContentControl.showContent(contentID, ramses::AnimationInformation{});
     }
-
-    virtual void contentShown(ramses::ContentID) override {}
-    virtual void contentFocusRequested(ramses::ContentID) override {}
-    virtual void contentStopOfferRequested(ramses::ContentID) override {}
-    virtual void contentNotAvailable(ramses::ContentID) override {}
-    virtual void contentMetadataUpdated(ramses::ContentID, const ramses::DcsmMetadataUpdate&) {}
-    virtual void offscreenBufferLinked(ramses::displayBufferId_t, ramses::ContentID, ramses::dataConsumerId_t, bool) override {}
-    virtual void dataLinked(ramses::ContentID, ramses::dataProviderId_t, ramses::ContentID, ramses::dataConsumerId_t, bool) override {}
-    virtual void contentFlushed(ramses::ContentID, ramses::sceneVersionTag_t) override {}
-    virtual void contentExpired(ramses::ContentID) override {}
-    virtual void contentRecoveredFromExpiration(ramses::ContentID) override {}
-    virtual void streamAvailabilityChanged(ramses::streamSource_t, bool) override {}
 
 private:
     ramses::DcsmContentControl& m_dcsmContentControl;
@@ -173,14 +135,14 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
         }
     }
 
-    std::vector<CategoryInfo> categories;
+    std::vector<CategoryData> categories;
     {
         std::vector<ramses_internal::String> tokens;
         ramses_internal::StringUtils::Tokenize(categoriesToParse, tokens, ',');
         int tokenIndex = 0;
         while (tokens.size() - tokenIndex >= 4)
         {
-            CategoryInfo command;
+            CategoryData command;
             command.category = atoi(tokens[tokenIndex++].c_str());
             command.size.width = atoi(tokens[tokenIndex++].c_str());
             command.size.height = atoi(tokens[tokenIndex++].c_str());
@@ -235,23 +197,23 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
     renderer.setSkippingOfUnmodifiedBuffers(false);
     framework.connect();
 
+    for (uint32_t i = 0u; i < numDisplays; ++i)
+    {
+        ramses::DisplayConfig displayConfig(argc, argv);
+        displayConfig.setMultiSampling(msaaSamples);
+        //This is a workaround for the need of unique Wayland surface IDs.
+        //Typically this will be configured by the applications which use ramses, but the stand-alone renderer does not allow
+        //to have explicit configuration of several Wayland surface IDs as command line arguments
+        displayConfig.setWaylandIviSurfaceID(displayConfig.getWaylandIviSurfaceID() + i);
+
+        renderer.createDisplay(displayConfig);
+    }
+    renderer.setMaximumFramerate(60);
+    renderer.flush();
+    renderer.startThread();
+
     if (enabledcsm)
     {
-        for (uint32_t i = 0u; i < numDisplays; ++i)
-        {
-            ramses::DisplayConfig displayConfig(argc, argv);
-            displayConfig.setMultiSampling(msaaSamples);
-
-            //This is a workaround for the need of unique Wayland surface IDs.
-            //Typically this will be configured by the applications which use ramses, but the stand-alone renderer does not allow
-            //to have explicit configuration of several Wayland surface IDs as command line arguments
-            displayConfig.setWaylandIviSurfaceID(displayConfig.getWaylandIviSurfaceID() + i);
-
-            renderer.createDisplay(displayConfig);
-        }
-        renderer.startThread();
-        renderer.flush();
-
         ramses::DcsmContentControlConfig conf;
         for (const auto& ci : categories)
             conf.addCategory(ramses::Category(ci.category), ramses::DcsmContentControlConfig::CategoryInfo{ ci.size, ci.display });
@@ -286,7 +248,12 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
             {
                 for (auto&& anim : dcsmAnimation)
                 {
-                    dcsmContentControl.setCategorySize(ramses::Category(anim.category), hasSizeA ? anim.sizeB : anim.sizeA, animTimers);
+                    ramses::CategoryInfoUpdate update;
+                    if (hasSizeA)
+                        update.setCategorySize({0, 0, anim.sizeB.width, anim.sizeB.height});
+                    else
+                        update.setCategorySize({0, 0, anim.sizeA.width, anim.sizeA.height});
+                    dcsmContentControl.setCategorySize(ramses::Category(anim.category), update, animTimers);
                 }
                 hasSizeA = !hasSizeA;
             }
@@ -302,49 +269,30 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
                 isVisible = !isVisible;
             }
         }
-
-        renderer.stopThread();
     }
     else
     {
-        // renderer object by default does not automap anymore
-        // stand alone renderer by default enables automap, unless explicitly disabled
-        ramses_internal::DisplayManager displayManager(renderer.impl, framework.impl);
+        ramses::RendererMate rendererMate(renderer.impl, framework.impl);
         // allow camera free move
-        displayManager.enableKeysHandling();
-        DMEventHandler dmEventHandler(displayManager, !disableAutoMapping.wasDefined());
-
-        for (uint32_t i = 0u; i < numDisplays; ++i)
-        {
-            ramses::DisplayConfig displayConfig(argc, argv);
-            displayConfig.setMultiSampling(msaaSamples);
-            //This is a workaround for the need of unique Wayland surface IDs.
-            //Typically this will be configured by the applications which use ramses, but the stand-alone renderer does not allow
-            //to have explicit configuration of several Wayland surface IDs as command line arguments
-            displayConfig.setWaylandIviSurfaceID(displayConfig.getWaylandIviSurfaceID() + i);
-
-            displayManager.createDisplay(displayConfig);
-            displayManager.dispatchAndFlush(&dmEventHandler);
-        }
+        rendererMate.enableKeysHandling();
+        ramses::RendererMateAutoShowHandler dmEventHandler(rendererMate, !disableAutoMapping.wasDefined());
 
         // apply mapping commands
         for (const auto& command : mappingCommands)
         {
-            displayManager.setSceneMapping(command.sceneId, command.display);
-            displayManager.setSceneDisplayBufferAssignment(command.sceneId, renderer.getDisplayFramebuffer(command.display), command.sceneRenderOrder);
-            displayManager.setSceneState(command.sceneId, ramses_internal::SceneState::Rendered);
+            rendererMate.setSceneMapping(command.sceneId, command.display);
+            rendererMate.setSceneDisplayBufferAssignment(command.sceneId, renderer.getDisplayFramebuffer(command.display), command.sceneRenderOrder);
+            rendererMate.setSceneState(command.sceneId, ramses::RendererSceneState::Rendered);
         }
-        renderer.setMaximumFramerate(60);
-        renderer.startThread();
 
-        while (displayManager.isRunning())
+        while (rendererMate.isRunning())
         {
-            displayManager.dispatchAndFlush(&dmEventHandler);
+            rendererMate.dispatchAndFlush(dmEventHandler);
             ramses_internal::PlatformThread::Sleep(20u);
         }
-
-        renderer.stopThread();
     }
+
+    renderer.stopThread();
 
     return 0;
 }

@@ -60,63 +60,63 @@ public:
     void enlargeTestFile()
     {
         ramses_internal::File file(m_saveFilePath);
-        file.open(EFileMode_WriteExistingBinary);
         UInt fileSize(0);
-        file.getSizeInBytes(fileSize);
-        file.seek(fileSize, EFileSeekOrigin_BeginningOfFile);
+        EXPECT_TRUE(file.getSizeInBytes(fileSize));
+        EXPECT_TRUE(file.open(File::Mode::WriteExistingBinary));
+        EXPECT_TRUE(file.seek(fileSize, File::SeekOrigin::BeginningOfFile));
         ramses_internal::Char data(33);
-        file.write(&data, sizeof(data));
+        EXPECT_TRUE(file.write(&data, sizeof(data)));
     }
 
     void truncateTestFile(Int32 size)
     {
         ramses_internal::File file(m_saveFilePath);
-        file.open(EFileMode_ReadOnlyBinary);
+        EXPECT_TRUE(file.open(File::Mode::ReadOnlyBinary));
         UInt fileSize(0);
-        file.getSizeInBytes(fileSize);
+        EXPECT_TRUE(file.getSizeInBytes(fileSize));
         std::vector<uint8_t> data(fileSize);
 
         UInt numReadBytes;
-        file.read(reinterpret_cast<ramses_internal::Char*>(data.data()), fileSize, numReadBytes);
+        EXPECT_EQ(EStatus::Ok, file.read(reinterpret_cast<ramses_internal::Char*>(data.data()), fileSize, numReadBytes));
 
         file.close();
-        file.open(EFileMode_WriteNewBinary);
+        EXPECT_TRUE(file.open(File::Mode::WriteNewBinary));
 
         Int32 newSize = static_cast<Int32>(size < 0 ? fileSize + size : size);
 
-        file.write(reinterpret_cast<ramses_internal::Char*>(data.data()), newSize);
+        EXPECT_TRUE(file.write(reinterpret_cast<ramses_internal::Char*>(data.data()), newSize));
     }
 
     void corruptTestFile(uint32_t offset)
     {
         ramses_internal::File file(m_saveFilePath);
-        file.open(EFileMode_WriteExistingBinary);
         UInt fileSize(0);
-        file.getSizeInBytes(fileSize);
+        EXPECT_TRUE(file.getSizeInBytes(fileSize));
+        EXPECT_TRUE(file.open(File::Mode::WriteExistingBinary));
 
-        file.seek(offset, EFileSeekOrigin_BeginningOfFile);
+        EXPECT_TRUE(file.seek(offset, File::SeekOrigin::BeginningOfFile));
         ramses_internal::Char data = 0;
         UInt                  numBytesRead;
-        file.read(&data, sizeof(data), numBytesRead);
-        file.seek(offset, EFileSeekOrigin_BeginningOfFile);
+        EXPECT_EQ(EStatus::Ok, file.read(&data, sizeof(data), numBytesRead));
+        EXPECT_TRUE(file.seek(offset, File::SeekOrigin::BeginningOfFile));
         data++;
-        file.write(&data, sizeof(data));
+        EXPECT_TRUE(file.write(&data, sizeof(data)));
     }
 
     void corruptVersionInTestFile()
     {
         ramses_internal::File file(m_saveFilePath);
-        file.open(EFileMode_WriteExistingBinary);
         UInt fileSize(0);
-        file.getSizeInBytes(fileSize);
+        EXPECT_TRUE(file.getSizeInBytes(fileSize));
+        EXPECT_TRUE(file.open(File::Mode::WriteExistingBinary));
         const Int transportVersionOffset = offsetof(ramses::DefaultRendererResourceCacheImpl::FileHeader, transportVersion);
-        file.seek(transportVersionOffset, EFileSeekOrigin_BeginningOfFile);
+        EXPECT_TRUE(file.seek(transportVersionOffset, File::SeekOrigin::BeginningOfFile));
         ramses_internal::Char data = 0;
         UInt                  numBytesRead;
-        file.read(&data, sizeof(data), numBytesRead);
-        file.seek(transportVersionOffset, EFileSeekOrigin_BeginningOfFile);
+        EXPECT_EQ(EStatus::Ok, file.read(&data, sizeof(data), numBytesRead));
+        EXPECT_TRUE(file.seek(transportVersionOffset, File::SeekOrigin::BeginningOfFile));
         data++;
-        file.write(&data, sizeof(data));
+        EXPECT_TRUE(file.write(&data, sizeof(data)));
     }
 
 protected:
@@ -284,7 +284,7 @@ TEST_F(ADefaultRendererResourceCache, reportsFailForAnyByteCorruptionInFile)
 
     ramses_internal::File file(m_saveFilePath);
     UInt                  fileSize(0);
-    file.getSizeInBytes(fileSize);
+    EXPECT_TRUE(file.getSizeInBytes(fileSize));
 
     for (size_t offset = 0; offset < fileSize; offset++)
     {

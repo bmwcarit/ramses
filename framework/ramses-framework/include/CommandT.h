@@ -24,7 +24,7 @@ namespace ramses_internal
     {
         typedef COMMAND_TYPE_INFO CommandTypeInfo;
 
-        Command(COMMAND_TYPE_INFO commandType_)
+        explicit Command(COMMAND_TYPE_INFO commandType_)
             : commandType(commandType_)
         {
         }

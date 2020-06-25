@@ -27,7 +27,7 @@ class WindowsCygwinTarget(RemoteTarget):
         self.execute_on_target("cd '" + self.ramsesInstallDir + "/bin/'; chmod +x *.dll")
 
         # Path conversion to windows-style (/c/folder -> C:/folder)
-        # Conversion is needed because screenshopts in RAMSES are using Capu files, which use Windows APIs directly
+        # Conversion is needed because screenshopts in RAMSES use Windows APIs directly
         # and require windows-style paths
         stdout, stderr, returncode = self.execute_on_target("cygpath -am ${HOME}")
         if returncode == 0:

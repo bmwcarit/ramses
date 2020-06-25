@@ -182,7 +182,7 @@ private:
 class RendererEventHandler : public ramses::RendererSceneControlEventHandlerEmpty
 {
 public:
-    RendererEventHandler(StreamSourceViewer& sceneCreator)
+    explicit RendererEventHandler(StreamSourceViewer& sceneCreator)
         : m_sceneCreator(sceneCreator)
     {
     }

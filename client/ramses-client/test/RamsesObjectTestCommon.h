@@ -13,8 +13,6 @@
 #include "RamsesObjectTypeUtils.h"
 #include "Collections/String.h"
 
-using namespace testing;
-
 namespace ramses
 {
     template <typename ObjectType>

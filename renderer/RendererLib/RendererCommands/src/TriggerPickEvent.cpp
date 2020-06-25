@@ -17,7 +17,7 @@ namespace ramses_internal
     TriggerPickEvent::TriggerPickEvent(RendererCommandBuffer& rendererCommandBuffer)
         : m_rendererCommandBuffer(rendererCommandBuffer)
     {
-        description = "Pick scene at X and Y coordinates normalized to -1,1 with bottom left being -1,1";
+        description = "Pick scene at X and Y coordinates normalized to -1,1 with bottom left being -1,-1";
         registerKeyword("pick");
         getArgument<0>().setDescription("scene id");
         getArgument<1>().setDescription("normalized pick coordinate X");

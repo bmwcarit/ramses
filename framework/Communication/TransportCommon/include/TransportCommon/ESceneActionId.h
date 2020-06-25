@@ -210,7 +210,7 @@ namespace ramses_internal
 
     enum ESceneActionFlushBits : uint32_t
     {
-        ESceneActionFlushBits_HasSizeInfo               = BIT(0),
+        ESceneActionFlushBits_HasSizeInfo               = BIT(0u),
     };
 
 #ifndef CreateNameForEnumID

@@ -9,23 +9,31 @@
 #ifndef RAMSES_PLATFORMSTRINGUTILS_H
 #define RAMSES_PLATFORMSTRINGUTILS_H
 
-#include <stdarg.h>
-
-#include <ramses-capu/os/StringUtils.h>
-#include <PlatformAbstraction/PlatformTypes.h>
+#include <cstring>
 
 namespace ramses_internal
 {
     class PlatformStringUtils
     {
     public:
-        static void   Copy(Char* dst   , UInt32 dstSize, const Char* src);
+        static void Copy(char* dst, size_t dstSize, const char* src);
     };
 
     inline
-    void PlatformStringUtils::Copy(Char* dst, UInt32 dstSize, const Char* src)
+    void PlatformStringUtils::Copy(char* dst, size_t dstSize, const char* src)
     {
-        ramses_capu::StringUtils::Strncpy(dst, dstSize, src);
+        // NOTE: disable gcc9 -Wstringop-truncation that warns about potentially missing
+        //       null-termination after strncpy but we ensure termination
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 9
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
+        std::strncpy(dst, src, dstSize - 1);
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 9
+        #pragma GCC diagnostic pop
+#endif
+        // ensure terminating \0
+        dst[dstSize - 1] = 0;
     }
 }
 

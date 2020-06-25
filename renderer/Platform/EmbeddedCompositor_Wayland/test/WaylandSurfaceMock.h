@@ -21,32 +21,31 @@ namespace ramses_internal
     class WaylandSurfaceMock : public IWaylandSurface
     {
     public:
-        MOCK_METHOD0(resourceDestroyed, void());
-        MOCK_METHOD4(surfaceAttach, void(IWaylandClient& client, WaylandBufferResource& bufferResource, int x, int y));
-        MOCK_METHOD1(surfaceDetach, void(IWaylandClient& client));
-        MOCK_METHOD5(surfaceDamage, void(IWaylandClient& client, int x, int y, int width, int height));
-        MOCK_METHOD2(surfaceFrame, void(IWaylandClient& client, uint32_t id));
-        MOCK_METHOD2(surfaceSetOpaqueRegion, void(IWaylandClient& client, IWaylandResource* regionResource));
-        MOCK_METHOD2(surfaceSetInputRegion, void(IWaylandClient& client, IWaylandResource* regionResource));
-        MOCK_METHOD1(surfaceCommit, void(IWaylandClient& client));
-        MOCK_METHOD2(surfaceSetBufferTransform, void(IWaylandClient& client, int32_t transform));
-        MOCK_METHOD2(surfaceSetBufferScale, void(IWaylandClient& client, int32_t scale));
-        MOCK_METHOD5(surfaceDamageBuffer, void(IWaylandClient& client, int32_t x, int32_t y, int32_t width, int32_t height));
-        MOCK_METHOD1(setShellSurface, void(IWaylandShellSurface* shellSurface));
-        MOCK_CONST_METHOD0(hasShellSurface, bool());
-        MOCK_CONST_METHOD1(logInfos, void(RendererLogContext& context));
-        MOCK_CONST_METHOD0(getIviSurfaceId, WaylandIviSurfaceId());
-        MOCK_METHOD1(sendFrameCallbacks, void(UInt32 time));
-        MOCK_CONST_METHOD0(getWaylandBuffer, IWaylandBuffer*());
-        MOCK_CONST_METHOD0(getNumberOfCommitedFrames, UInt64());
-        MOCK_METHOD0(resetNumberOfCommitedFrames, void());
-        MOCK_CONST_METHOD0(getNumberOfCommitedFramesSinceBeginningOfTime, UInt64());
-        MOCK_CONST_METHOD0(hasPendingBuffer, bool());
-        MOCK_CONST_METHOD0(getSurfaceTitle, const String&());
-        MOCK_CONST_METHOD0(getProcessId, pid_t());
-        MOCK_METHOD1(bufferDestroyed, void(IWaylandBuffer& buffer));
-        MOCK_METHOD1(setIviSurface, void(IWaylandIVISurface* iviSurface));
-        MOCK_CONST_METHOD0(hasIviSurface, bool());
+        MOCK_METHOD(void, resourceDestroyed, (), (override));
+        MOCK_METHOD(void, surfaceAttach, (IWaylandClient& client, WaylandBufferResource& bufferResource, int x, int y), (override));
+        MOCK_METHOD(void, surfaceDetach, (IWaylandClient& client), (override));
+        MOCK_METHOD(void, surfaceDamage, (IWaylandClient& client, int x, int y, int width, int height), (override));
+        MOCK_METHOD(void, surfaceFrame, (IWaylandClient& client, uint32_t id), (override));
+        MOCK_METHOD(void, surfaceSetOpaqueRegion, (IWaylandClient& client, IWaylandResource* regionResource), (override));
+        MOCK_METHOD(void, surfaceSetInputRegion, (IWaylandClient& client, IWaylandResource* regionResource), (override));
+        MOCK_METHOD(void, surfaceCommit, (IWaylandClient& client), (override));
+        MOCK_METHOD(void, surfaceSetBufferTransform, (IWaylandClient& client, int32_t transform), (override));
+        MOCK_METHOD(void, surfaceSetBufferScale, (IWaylandClient& client, int32_t scale), (override));
+        MOCK_METHOD(void, surfaceDamageBuffer, (IWaylandClient& client, int32_t x, int32_t y, int32_t width, int32_t height), (override));
+        MOCK_METHOD(void, setShellSurface, (IWaylandShellSurface* shellSurface), (override));
+        MOCK_METHOD(bool, hasShellSurface, (), (const, override));
+        MOCK_METHOD(void, logInfos, (RendererLogContext& context), (const, override));
+        MOCK_METHOD(WaylandIviSurfaceId, getIviSurfaceId, (), (const, override));
+        MOCK_METHOD(void, sendFrameCallbacks, (UInt32 time), (override));
+        MOCK_METHOD(IWaylandBuffer*, getWaylandBuffer, (), (const, override));
+        MOCK_METHOD(UInt64, getNumberOfCommitedFrames, (), (const, override));
+        MOCK_METHOD(void, resetNumberOfCommitedFrames, (), (override));
+        MOCK_METHOD(UInt64, getNumberOfCommitedFramesSinceBeginningOfTime, (), (const, override));
+        MOCK_METHOD(bool, hasPendingBuffer, (), (const, override));
+        MOCK_METHOD(const String&, getSurfaceTitle, (), (const, override));
+        MOCK_METHOD(void, bufferDestroyed, (IWaylandBuffer& buffer), (override));
+        MOCK_METHOD(void, setIviSurface, (IWaylandIVISurface* iviSurface), (override));
+        MOCK_METHOD(bool, hasIviSurface, (), (const, override));
     };
 }
 

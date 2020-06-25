@@ -21,8 +21,8 @@ namespace ramses_internal
     {
     public:
         CommandContainer() = default;
-        CommandContainer(CommandContainer&&) = default;
-        CommandContainer& operator=(CommandContainer&&) = default;
+        CommandContainer(CommandContainer&&) noexcept = default;
+        CommandContainer& operator=(CommandContainer&&) noexcept = default;
 
         template <typename COMMAND_TYPE>
         void addCommand(COMMAND_TYPE_INFO commandType, const COMMAND_TYPE& commandData)

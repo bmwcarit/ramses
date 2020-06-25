@@ -48,7 +48,7 @@ namespace ramses_internal
 
         bool hasValue() const
         {
-            return 0 != m_value.size();
+            return !m_value.empty();
         }
 
         const String& getValue() const

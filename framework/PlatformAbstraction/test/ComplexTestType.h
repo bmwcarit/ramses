@@ -18,7 +18,7 @@ namespace ramses_internal
     class ComplexTestType
     {
     public:
-        ComplexTestType(size_t value_ = 0u)
+        explicit ComplexTestType(size_t value_ = 0u)
             :value(value_)
         {
             ++ctor_count;

@@ -18,7 +18,7 @@ namespace ramses_internal
     class MockIResourceHashUsageCallback : public IResourceHashUsageCallback
     {
     public:
-        MOCK_METHOD1(resourceHashUsageZero, void(const ResourceContentHash& hash));
+        MOCK_METHOD(void, resourceHashUsageZero, (const ResourceContentHash& hash), (override));
     };
 
     TEST(AResourceHashUsage, callsOnZeroCallbackWhenGoingOutOfScope)
@@ -72,6 +72,7 @@ namespace ramses_internal
 
         ResourceHashUsage usage(hash, callback);
         ResourceHashUsage usage2 = usage;
+        (void)usage2;
         EXPECT_EQ(usage, usage2);
     }
 

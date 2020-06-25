@@ -10,7 +10,6 @@
 #include "gtest/gtest.h"
 #include "Utils/Image.h"
 #include "Utils/BinaryFileInputStream.h"
-#include "ramses-capu/os/StringUtils.h"
 #include <array>
 #include <numeric>
 
@@ -192,6 +191,7 @@ TEST(AnImage, CopyConstructedBitmapIsSame)
 
     Image bitmap(10, 10, data, data + sizeof(data));
     Image copied(bitmap);
+    (void)copied;
 
     EXPECT_EQ(bitmap, copied);
 }
@@ -221,6 +221,7 @@ TEST(AnImage, MoveAssignedBitmapIsSame)
     Image image2(1, 1, { 1,  2,  3,  4 });
 
     const Image origImage = image;
+    (void)origImage;
 
     image2 = std::move(image);
     EXPECT_EQ(origImage, image2);

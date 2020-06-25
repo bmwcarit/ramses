@@ -1172,7 +1172,7 @@ TEST_P(ARenderer, marksRenderOncePassesAsRenderedAfterRenderingScene)
 
     auto& scene = rendererScenes.getScene(sceneId);
     TestSceneHelper sceneHelper(scene);
-    const auto dataLayout = sceneHelper.m_sceneAllocator.allocateDataLayout({ {EDataType_Vector2I}, {EDataType_Vector2I} }, ResourceContentHash::Invalid());
+    const auto dataLayout = sceneHelper.m_sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType_Vector2I}, DataFieldInfo{EDataType_Vector2I} }, ResourceContentHash::Invalid());
     const CameraHandle camera = sceneHelper.m_sceneAllocator.allocateCamera(ECameraProjectionType_Orthographic, sceneHelper.m_sceneAllocator.allocateNode(), sceneHelper.m_sceneAllocator.allocateDataInstance(dataLayout));
     const RenderPassHandle pass = sceneHelper.m_sceneAllocator.allocateRenderPass();
     scene.setRenderPassCamera(pass, camera);

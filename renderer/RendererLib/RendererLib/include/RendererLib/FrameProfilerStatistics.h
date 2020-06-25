@@ -24,7 +24,6 @@ namespace ramses_internal
         enum class ERegion
         {
             RendererCommands = 0,
-            ConsolidateSceneActions,
             UpdateClientResources,
             ApplySceneActions,
             UpdateSceneResources,
@@ -157,7 +156,6 @@ namespace ramses_internal
     static const char* RegionNames[] =
     {
         "RendererCommands",
-        "ConsolidateSceneActions",
         "UpdateClientResources",
         "ApplySceneActions",
         "UpdateSceneResources",

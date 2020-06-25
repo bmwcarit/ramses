@@ -17,18 +17,18 @@ namespace ramses_internal
     class WaylandBufferResourceMock : public WaylandBufferResource
     {
     public:
-        MOCK_METHOD0(getVersion, int());
-        MOCK_METHOD2(postError, void(uint32_t code, const String& message));
-        MOCK_METHOD0(getUserData, void*());
-        MOCK_METHOD3(setImplementation, void(const void* implementation, void* data, IWaylandResourceDestroyFuncT destroy));
-        MOCK_METHOD1(addDestroyListener, void(WaylandListener* listener));
-        MOCK_METHOD0(getWaylandNativeResource, void*());
-        MOCK_CONST_METHOD0(bufferGetSharedMemoryWidth, int32_t());
-        MOCK_CONST_METHOD0(bufferGetSharedMemoryHeight, int32_t());
-        MOCK_CONST_METHOD0(bufferGetSharedMemoryData, const void*());
-        MOCK_METHOD0(bufferSendRelease, void());
-        MOCK_METHOD0(disownWaylandResource, void());
-        MOCK_CONST_METHOD0(clone, WaylandBufferResource*());
+        MOCK_METHOD(int, getVersion, (), (override));
+        MOCK_METHOD(void, postError, (uint32_t code, const String& message), (override));
+        MOCK_METHOD(void*, getUserData, (), (override));
+        MOCK_METHOD(void, setImplementation, (const void* implementation, void* data, IWaylandResourceDestroyFuncT destroy), (override));
+        MOCK_METHOD(void, addDestroyListener, (WaylandListener* listener), (override));
+        MOCK_METHOD(void*, getWaylandNativeResource, (), (override));
+        MOCK_METHOD(int32_t, bufferGetSharedMemoryWidth, (), (const, override));
+        MOCK_METHOD(int32_t, bufferGetSharedMemoryHeight, (), (const, override));
+        MOCK_METHOD(const void*, bufferGetSharedMemoryData, (), (const, override));
+        MOCK_METHOD(void, bufferSendRelease, (), (override));
+        MOCK_METHOD(void, disownWaylandResource, (), (override));
+        MOCK_METHOD(WaylandBufferResource*, clone, (), (const, override));
     };
 }
 

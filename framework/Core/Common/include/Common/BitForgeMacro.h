@@ -9,6 +9,6 @@
 #ifndef RAMSES_SCENEAPI_BITFORGEMACRO_H
 #define RAMSES_SCENEAPI_BITFORGEMACRO_H
 
-#define BIT(x)  (1<<(x))
+#define BIT(x)  (1u << (x))
 
 #endif

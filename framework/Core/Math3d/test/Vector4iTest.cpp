@@ -9,6 +9,7 @@
 #include "Math3d/Vector4i.h"
 #include "framework_common_gmock_header.h"
 #include "PlatformAbstraction/PlatformMath.h"
+#include "IOStreamTester.h"
 #include "gmock/gmock.h"
 
 class Vector4iTest: public testing::Test
@@ -223,4 +224,11 @@ TEST_F(Vector4iTest, CanPrintToString)
 {
     EXPECT_EQ("[1 2 3 4]", fmt::to_string(vec1));
     EXPECT_EQ("[1 2 3 4]", ramses_internal::StringOutputStream::ToString(vec1));
+}
+
+TEST_F(Vector4iTest, canBinarySerializeDeserialize)
+{
+    ramses_internal::IOStreamTesterBase::expectSame(ramses_internal::Vector4i());
+    ramses_internal::IOStreamTesterBase::expectSame(ramses_internal::Vector4i(1, 2, 3, 4));
+    ramses_internal::IOStreamTesterBase::expectSame(ramses_internal::Vector4i(std::numeric_limits<int32_t>::max(), std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::max()-1, std::numeric_limits<int32_t>::min()+1));
 }

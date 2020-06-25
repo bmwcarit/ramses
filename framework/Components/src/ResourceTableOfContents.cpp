@@ -109,6 +109,6 @@ namespace ramses_internal
                     }
                 }));
 
-        return instream.getState() == EStatus_RAMSES_OK;
+        return instream.getState() == EStatus::Ok;
     }
 }

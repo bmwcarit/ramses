@@ -22,23 +22,22 @@ namespace ramses_internal
         WindowMock();
         ~WindowMock() override;
 
-        MOCK_METHOD0(init, Bool()); // Does not exist in IWindow, needed for only for testing
-        MOCK_METHOD1(setFullscreen, Bool(Bool));
-        MOCK_CONST_METHOD0(canRenderNewFrame, Bool());
-        MOCK_CONST_METHOD0(isOffscreen, Bool());
-        MOCK_METHOD0(handleEvents, void());
-        MOCK_METHOD0(frameRendered, void());
+        MOCK_METHOD(Bool, init, ()); // Does not exist in IWindow, needed for only for testing
+        MOCK_METHOD(Bool, setFullscreen, (Bool), (override));
+        MOCK_METHOD(Bool, canRenderNewFrame, (), (const, override));
+        MOCK_METHOD(void, handleEvents, (), (override));
+        MOCK_METHOD(void, frameRendered, (), (override));
 
-        MOCK_CONST_METHOD0(getWidth, UInt32());
-        MOCK_CONST_METHOD0(getHeight, UInt32());
-        MOCK_CONST_METHOD0(getAspectRatio, Float());
-        MOCK_CONST_METHOD0(getPosX, Int32());
-        MOCK_CONST_METHOD0(getPosY, Int32());
+        MOCK_METHOD(UInt32, getWidth, (), (const, override));
+        MOCK_METHOD(UInt32, getHeight, (), (const, override));
+        MOCK_METHOD(Float, getAspectRatio, (), (const, override));
+        MOCK_METHOD(Int32, getPosX, (), (const, override));
+        MOCK_METHOD(Int32, getPosY, (), (const, override));
 
-        MOCK_METHOD1(setTitle, void(const String&));
-        MOCK_CONST_METHOD0(getTitle, const String&());
-        MOCK_CONST_METHOD0(hasTitle, bool());
-        MOCK_CONST_METHOD0(getWaylandIviSurfaceID, WaylandIviSurfaceId());
+        MOCK_METHOD(void, setTitle, (const String&), (override));
+        MOCK_METHOD(const String&, getTitle, (), (const, override));
+        MOCK_METHOD(bool, hasTitle, (), (const, override));
+        MOCK_METHOD(WaylandIviSurfaceId, getWaylandIviSurfaceID, (), (const, override));
 
         static const UInt32 FakeWidth = 16u;
         static const UInt32 FakeHeight = 8u;
@@ -52,7 +51,7 @@ namespace ramses_internal
     public:
         WindowMockWithDestructor();
         ~WindowMockWithDestructor() override;
-        MOCK_METHOD0(Die, void());
+        MOCK_METHOD(void, Die, ());
     };
 }
 

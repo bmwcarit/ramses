@@ -51,9 +51,13 @@ namespace ramses
             dispatch();
         }
 
-        void assignContentToConsumer(ContentID id_, SizeInfo size_, AnimationInformation anim_, sceneId_t sceneId_)
+        void assignContentToConsumer(ContentID id_, const CategoryInfoUpdate& size_, AnimationInformation anim_, sceneId_t sceneId_)
         {
-            EXPECT_CALL(provHandler, contentSizeChange(id_, size_, anim_));
+            EXPECT_CALL(provHandler, contentSizeChange(id_, _, anim_)).WillOnce([&](const auto&, const auto& infoupdate, const auto&) {
+                ramses::CategoryInfoUpdate update;
+                update.setCategorySize(size_.getCategorySize());
+                EXPECT_EQ(update, infoupdate);
+                });
             EXPECT_CALL(consHandler, contentDescription(id_, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ sceneId_.getValue() }));
             EXPECT_EQ(consumer.assignContentToConsumer(id_, size_), StatusOK);
             dispatch();
@@ -116,7 +120,7 @@ namespace ramses
         StrictMock<DcsmProviderEventHandlerMock> provHandler;
 
         ContentID id = ContentID(123);
-        SizeInfo size{ 800, 600 };
+        CategoryInfoUpdate size{SizeInfo( 800u, 600u )};
     };
 
     TEST_F(ADcsmSystem, localConsumerReceivesLocalAndLocalAndRemoteOffers)

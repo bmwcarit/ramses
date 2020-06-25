@@ -41,8 +41,8 @@ namespace ramses_internal
     class MockITask : public ITask
     {
     public:
-        MOCK_METHOD0(execute, void());
-        MOCK_METHOD0(destructor, void());
+        MOCK_METHOD(void, execute, (), (override));
+        MOCK_METHOD(void, destructor, ());
         virtual ~MockITask()
         {
             destructor();

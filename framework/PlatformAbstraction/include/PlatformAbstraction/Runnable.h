@@ -11,7 +11,7 @@
 
 #include <atomic>
 
-namespace ramses_capu
+namespace ramses_internal
 {
     class Runnable
     {
@@ -44,4 +44,4 @@ namespace ramses_capu
     };
 }
 
-#endif /* RAMSES_CAPU_RUNNABLE_H */
+#endif

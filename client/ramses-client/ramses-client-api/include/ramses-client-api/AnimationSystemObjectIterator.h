@@ -30,7 +30,7 @@ namespace ramses
         * @param[in] animationSystem AnimationSystem whose objects to iterate through.
         * @param[in] objectType Optional type of objects to iterate through.
         **/
-        AnimationSystemObjectIterator(const AnimationSystem& animationSystem, ERamsesObjectType objectType = ERamsesObjectType_RamsesObject);
+        explicit AnimationSystemObjectIterator(const AnimationSystem& animationSystem, ERamsesObjectType objectType = ERamsesObjectType_RamsesObject);
 
         /**
         *

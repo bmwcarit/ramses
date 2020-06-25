@@ -28,15 +28,14 @@ namespace ramses_internal
             WidgetCarModelView = 7,
             WidgetCarModelVisibility = 8,
             WidgetExclusiveBackground = 9,
-            WidgetFocusRequest = 10,
         };
 
-        constexpr static const uint32_t CurrentMetadataVersion = 1;
+        constexpr const uint32_t CurrentMetadataVersion = 1;
     }
 
-    DcsmMetadata::DcsmMetadata(const Byte* data, uint64_t len)
+    DcsmMetadata::DcsmMetadata(absl::Span<const Byte> data)
     {
-        fromBinary(data, len);
+        fromBinary(data);
     }
 
     bool DcsmMetadata::empty() const
@@ -49,8 +48,7 @@ namespace ramses_internal
             !m_hasCarModel &&
             !m_hasCarModelView &&
             !m_hasCarModelVisibility &&
-            !m_hasExclusiveBackground &&
-            !m_hasFocusRequest;
+            !m_hasExclusiveBackground;
     }
 
     std::vector<Byte> DcsmMetadata::toBinary() const
@@ -65,8 +63,7 @@ namespace ramses_internal
             (m_hasCarModel ? 1 : 0) +
             (m_hasCarModelView ? 1 : 0) +
             (m_hasCarModelVisibility ? 1 : 0) +
-            (m_hasExclusiveBackground ? 1 : 0) +
-            (m_hasFocusRequest ? 1 : 0);
+            (m_hasExclusiveBackground ? 1 : 0) ;
         os << CurrentMetadataVersion
            << numEntries;
 
@@ -115,17 +112,22 @@ namespace ramses_internal
         }
         if (m_hasCarModelView)
         {
-            constexpr uint32_t numberOfViewValues = 6; // pitch, yaw, distance, x,y,z of origin
-            constexpr uint32_t size = static_cast<uint32_t>(sizeof(float) * numberOfViewValues);
-            static_assert(size==sizeof(ramses::CarModelViewMetadata), "size mismatch of CarModelViewMetadata");
+            constexpr size_t numberOfViewValues = 7; // pitch, yaw, distance, x,y,z of origin, fov
+            constexpr size_t sizeData = sizeof(float) * numberOfViewValues;
+            static_assert(sizeData==sizeof(ramses::CarModelViewMetadata), "size mismatch of CarModelViewMetadata");
+            constexpr size_t sizeTiming = sizeof(uint64_t) * 2;
+            static_assert(sizeTiming == sizeof(AnimationInformation), "size mismatch of AnimationInformation");
             os << DcsmMetadataType::WidgetCarModelView
-               << size
+               << uint32_t(sizeData + sizeTiming)
                << m_carModelView.pitch
                << m_carModelView.yaw
                << m_carModelView.distance
                << m_carModelView.origin_x
                << m_carModelView.origin_y
-               << m_carModelView.origin_z;
+               << m_carModelView.origin_z
+               << m_carModelView.cameraFOV
+               << m_carModelViewTiming.startTimeStamp
+               << m_carModelViewTiming.finishedTimeStamp;
         }
         if (m_hasCarModelVisibility)
         {
@@ -143,21 +145,13 @@ namespace ramses_internal
                << size
                << state;
         }
-        if (m_hasFocusRequest)
-        {
-            constexpr uint32_t size = static_cast<uint32_t>(sizeof(int32_t));
-            const int32_t state = m_focusRequest;
-            os << DcsmMetadataType::WidgetFocusRequest
-               << size
-               << state;
-        }
         return os.release();
     }
 
-    void DcsmMetadata::fromBinary(const Byte* data, uint64_t len)
+    void DcsmMetadata::fromBinary(absl::Span<const Byte> data)
     {
-        LOG_INFO(CONTEXT_DCSM, "DcsmMetadata::fromBinary: length " << len);
-        BinaryInputStream is(data);
+        LOG_INFO(CONTEXT_DCSM, "DcsmMetadata::fromBinary: length " << data.size());
+        BinaryInputStream is(data.data());
 
         uint32_t readMetadataVersion = 0;
         is >> readMetadataVersion;
@@ -220,6 +214,9 @@ namespace ramses_internal
                 is >> m_carModelView.origin_x;
                 is >> m_carModelView.origin_y;
                 is >> m_carModelView.origin_z;
+                is >> m_carModelView.cameraFOV;
+                is >> m_carModelViewTiming.startTimeStamp;
+                is >> m_carModelViewTiming.finishedTimeStamp;
                 break;
 
             case DcsmMetadataType::WidgetCarModelVisibility:
@@ -238,14 +235,6 @@ namespace ramses_internal
                 m_exclusiveBackground = (state == 0) ? false : true;
                 break;
             }
-            case DcsmMetadataType::WidgetFocusRequest:
-            {
-                m_hasFocusRequest = true;
-                int32_t state = 0;
-                is >> state;
-                m_focusRequest = state;
-                break;
-            }
 
             default:
                 LOG_WARN(CONTEXT_DCSM, "DcsmMetadata::fromBinary: skip unknown type " << static_cast<uint32_t>(type) << ", size " << size);
@@ -253,8 +242,7 @@ namespace ramses_internal
             }
         }
 
-        assert(is.readPositionUchar() == data + len);
-        UNUSED(len);
+        assert(is.readPositionUchar() == &*data.end());
     }
 
     void DcsmMetadata::updateFromOther(const DcsmMetadata& other)
@@ -294,6 +282,7 @@ namespace ramses_internal
         {
             m_hasCarModelView = true;
             m_carModelView = other.m_carModelView;
+            m_carModelViewTiming = other.m_carModelViewTiming;
         }
         if (other.m_hasCarModelVisibility)
         {
@@ -304,11 +293,6 @@ namespace ramses_internal
         {
             m_hasExclusiveBackground = true;
             m_exclusiveBackground = other.m_exclusiveBackground;
-        }
-        if (other.m_hasFocusRequest)
-        {
-            m_hasFocusRequest = true;
-            m_focusRequest = other.m_focusRequest;
         }
     }
 
@@ -385,11 +369,12 @@ namespace ramses_internal
         return true;
     }
 
-    bool DcsmMetadata::setCarModelView(const ramses::CarModelViewMetadata& values)
+    bool DcsmMetadata::setCarModelView(const ramses::CarModelViewMetadata& values, const AnimationInformation& timingInfo)
     {
-        LOG_INFO(CONTEXT_DCSM, "DcsmMetadata::setCarModelview: " << values.pitch << "," << values.yaw << "," << values.distance << "," << values.origin_x << "," << values.origin_y << "," << values.origin_z);
+        LOG_INFO_P(CONTEXT_DCSM, "DcsmMetadata::setCarModelview: {}, {}, {}, {}, {}, {}, {}, {}, {}", values.pitch, values.yaw, values.distance, values.origin_x, values.origin_y, values.origin_z, values.cameraFOV, timingInfo.startTimeStamp, timingInfo.finishedTimeStamp);
 
         m_carModelView = values;
+        m_carModelViewTiming = timingInfo;
         m_hasCarModelView = true;
         return true;
     }
@@ -409,15 +394,6 @@ namespace ramses_internal
 
         m_exclusiveBackground = state;
         m_hasExclusiveBackground = true;
-        return true;
-    }
-
-    bool DcsmMetadata::setFocusRequested(int focusRequest)
-    {
-        LOG_INFO(CONTEXT_DCSM, "DcsmMetadata::setFocusRequested:" << focusRequest);
-
-        m_focusRequest = focusRequest;
-        m_hasFocusRequest = true;
         return true;
     }
 
@@ -466,11 +442,6 @@ namespace ramses_internal
         return m_hasExclusiveBackground;
     }
 
-    bool DcsmMetadata::hasFocusRequest() const
-    {
-        return m_hasFocusRequest;
-    }
-
     std::vector<unsigned char> DcsmMetadata::getPreviewImagePng() const
     {
         return m_previewImagePng;
@@ -506,6 +477,11 @@ namespace ramses_internal
         return m_carModelView;
     }
 
+    AnimationInformation DcsmMetadata::getCarModelViewAnimationInfo() const
+    {
+        return m_carModelViewTiming;
+    }
+
     bool DcsmMetadata::getCarModelVisibility() const
     {
         return m_carModelVisibility;
@@ -514,11 +490,6 @@ namespace ramses_internal
     bool DcsmMetadata::getExclusiveBackground() const
     {
         return m_exclusiveBackground;
-    }
-
-    int32_t DcsmMetadata::getFocusRequest() const
-    {
-        return m_focusRequest;
     }
 
     bool DcsmMetadata::operator==(const DcsmMetadata& other) const
@@ -537,12 +508,11 @@ namespace ramses_internal
             m_carModel == other.m_carModel &&
             m_hasCarModelView == other.m_hasCarModelView &&
             m_carModelView == other.m_carModelView &&
+            m_carModelViewTiming == other.m_carModelViewTiming &&
             m_hasCarModelVisibility == other.m_hasCarModelVisibility &&
             m_carModelVisibility == other.m_carModelVisibility &&
             m_hasExclusiveBackground == other.m_hasExclusiveBackground &&
-            m_exclusiveBackground == other.m_exclusiveBackground &&
-            m_hasFocusRequest == other.m_hasFocusRequest &&
-            m_focusRequest == other.m_focusRequest;
+            m_exclusiveBackground == other.m_exclusiveBackground;
     }
 
     bool DcsmMetadata::operator!=(const DcsmMetadata& other) const

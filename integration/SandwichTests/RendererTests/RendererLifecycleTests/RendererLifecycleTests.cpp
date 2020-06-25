@@ -599,6 +599,8 @@ namespace ramses_internal
         ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_Three_Triangles"));
 
         testScenesAndRenderer.unpublish(sceneId);
+        testScenesAndRenderer.getTestRenderer().waitForSceneStateChange(sceneId, ramses::RendererSceneState::Unavailable);
+
         testScenesAndRenderer.getScenesRegistry().setSceneState<ramses_internal::MultipleTrianglesScene>(sceneId, ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED);
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
@@ -673,6 +675,79 @@ namespace ramses_internal
 
         testScenesAndRenderer.unpublish(sceneRefId1);
         testScenesAndRenderer.unpublish(sceneRefId2);
+        testScenesAndRenderer.destroyRenderer();
+    }
+
+    TEST_F(ARendererLifecycleTest, ReferencedScenesWithDataLinkAndRenderOrder_Threaded)
+    {
+        testScenesAndRenderer.initializeRenderer();
+        testRenderer.startRendererThread();
+        ramses::displayId_t display = createDisplayForWindow();
+
+        // simulate referenced content published
+        const ramses::sceneId_t sceneRefId1 = testScenesAndRenderer.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_PROVIDER, Vector3(0.0f, 0.0f, 5.0f));
+        const ramses::sceneId_t sceneRefId2 = testScenesAndRenderer.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_CONSUMER, Vector3(-1.5f, 0.0f, 5.0f));
+        testScenesAndRenderer.publish(sceneRefId1);
+        testScenesAndRenderer.publish(sceneRefId2);
+        testScenesAndRenderer.flush(sceneRefId1);
+        testScenesAndRenderer.flush(sceneRefId2);
+
+        const ramses::sceneId_t sceneMasterId = testScenesAndRenderer.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_PROVIDER_WITHOUT_CONTENT);
+        auto& masterScene = testScenesAndRenderer.getScenesRegistry().getScene(sceneMasterId);
+        auto sceneRef1 = masterScene.createSceneReference(sceneRefId1);
+        auto sceneRef2 = masterScene.createSceneReference(sceneRefId2);
+        sceneRef1->requestState(ramses::RendererSceneState::Ready);
+        sceneRef2->requestState(ramses::RendererSceneState::Ready);
+        sceneRef1->setRenderOrder(1);
+        sceneRef2->setRenderOrder(2);
+        testScenesAndRenderer.publish(sceneMasterId);
+        testScenesAndRenderer.flush(sceneMasterId);
+
+        // get master to rendered so refs can request also rendered
+        testRenderer.setSceneMapping(sceneMasterId, display);
+        testRenderer.getSceneToState(sceneMasterId, ramses::RendererSceneState::Rendered);
+        testScenesAndRenderer.flush(sceneMasterId);
+
+        // get ref scenes to rendered
+        // The sequence of operations is intentionally different from non-threaded version of this test
+        // in order to increase chance of detecting any potential race condition by thread sanitizer.
+        // Following code interleaves executing sceneref commands in render thread and dispatching events sent back in main thread.
+        class EventHandler final : public TestClientEventHandler
+        {
+        public:
+            EventHandler(TestScenesAndRenderer& tester_, ramses::sceneId_t sceneMasterId_) : m_tester(tester_), m_sceneMasterId(sceneMasterId_) {}
+            virtual void sceneReferenceStateChanged(ramses::SceneReference& sceneRef, ramses::RendererSceneState state) override
+            {
+                if (state == ramses::RendererSceneState::Ready)
+                    sceneRef.requestState(ramses::RendererSceneState::Rendered);
+                m_tester.flush(m_sceneMasterId);
+                m_states[sceneRef.getReferencedSceneId()] = state;
+            }
+            virtual bool waitCondition() const override
+            {
+                return std::all_of(m_states.cbegin(), m_states.cend(), [](const auto& it) { return it.second == ramses::RendererSceneState::Rendered; });
+            }
+        private:
+            TestScenesAndRenderer& m_tester;
+            ramses::sceneId_t m_sceneMasterId;
+            std::unordered_map<ramses::sceneId_t, ramses::RendererSceneState> m_states;
+        } handler(testScenesAndRenderer, sceneMasterId);
+        EXPECT_TRUE(testScenesAndRenderer.loopTillClientEvent(handler));
+
+        // link data
+        masterScene.linkData(sceneRef1, TransformationLinkScene::transformProviderDataId_Left, sceneRef2, TransformationLinkScene::transformConsumerDataId);
+        testScenesAndRenderer.flush(sceneMasterId);
+
+        // now all rendered
+        ASSERT_TRUE(checkScreenshot(display, "ReferencedScenes"));
+
+        // kill master, nothing rendered
+        testScenesAndRenderer.unpublish(sceneMasterId);
+        ASSERT_TRUE(checkScreenshot(display, "ARendererDisplays_Black"));
+
+        testScenesAndRenderer.unpublish(sceneRefId1);
+        testScenesAndRenderer.unpublish(sceneRefId2);
+        testRenderer.stopRendererThread();
         testScenesAndRenderer.destroyRenderer();
     }
 

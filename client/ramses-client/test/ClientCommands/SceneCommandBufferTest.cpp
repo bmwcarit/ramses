@@ -41,11 +41,11 @@ namespace ramses_internal
                 handleSceneCommandLogResourceMemoryUsage(cmd);
             }
 
-            MOCK_METHOD1(handleSceneCommandForceFallback, void(const SceneCommandForceFallback&));
-            MOCK_METHOD1(handleSceneCommandFlushSceneVersion, void(const SceneCommandFlushSceneVersion&));
-            MOCK_METHOD1(handleSceneCommandValidationRequest, void(const SceneCommandValidationRequest&));
-            MOCK_CONST_METHOD1(handleSceneCommandDumpSceneToFile, void(const SceneCommandDumpSceneToFile&));
-            MOCK_CONST_METHOD1(handleSceneCommandLogResourceMemoryUsage, void(const SceneCommandLogResourceMemoryUsage&));
+            MOCK_METHOD(void, handleSceneCommandForceFallback, (const SceneCommandForceFallback&));
+            MOCK_METHOD(void, handleSceneCommandFlushSceneVersion, (const SceneCommandFlushSceneVersion&));
+            MOCK_METHOD(void, handleSceneCommandValidationRequest, (const SceneCommandValidationRequest&));
+            MOCK_METHOD(void, handleSceneCommandDumpSceneToFile, (const SceneCommandDumpSceneToFile&), (const));
+            MOCK_METHOD(void, handleSceneCommandLogResourceMemoryUsage, (const SceneCommandLogResourceMemoryUsage&), (const));
         };
 
     }

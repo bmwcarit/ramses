@@ -275,7 +275,7 @@ namespace ramses_internal
         class StreamAvailabilityChangeEventHandler : public ramses::RendererSceneControlEventHandlerEmpty
         {
         public:
-            StreamAvailabilityChangeEventHandler(StreamTextureSourceId targetStreamSourceId)
+            explicit StreamAvailabilityChangeEventHandler(StreamTextureSourceId targetStreamSourceId)
                 : m_targetStreamSourceId(targetStreamSourceId)
             {
             }

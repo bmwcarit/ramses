@@ -23,7 +23,7 @@ namespace ramses
         {
         }
 
-        IteratorImpl(const ObjectVector& objects)
+        explicit IteratorImpl(const ObjectVector& objects)
             : m_objects(objects)
             , m_objectIterator(m_objects.begin())
         {

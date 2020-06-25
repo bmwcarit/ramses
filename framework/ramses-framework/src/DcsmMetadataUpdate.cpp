@@ -94,6 +94,11 @@ namespace ramses
         return impl.getCarModelView();
     }
 
+    AnimationInformation DcsmMetadataUpdate::getCarModelViewAnimationInfo() const
+    {
+        return impl.getCarModelViewAnimationInfo();
+    }
+
     bool DcsmMetadataUpdate::hasCarModelVisibility() const
     {
         return impl.hasCarModelVisibility();
@@ -112,16 +117,6 @@ namespace ramses
     bool DcsmMetadataUpdate::getExclusiveBackground() const
     {
         return impl.getExclusiveBackground();
-    }
-
-    bool DcsmMetadataUpdate::hasFocusRequest() const
-    {
-        return impl.hasFocusRequest();
-    }
-
-    int32_t DcsmMetadataUpdate::getFocusRequest() const
-    {
-        return impl.getFocusRequest();
     }
 
 }

@@ -15,7 +15,7 @@ namespace ramses_internal
 {
     struct AnimationSystemSizeInformation
     {
-        AnimationSystemSizeInformation(
+        explicit AnimationSystemSizeInformation(
             UInt32 splines = 0,
             UInt32 dataBinds = 0,
             UInt32 animationInstances = 0,

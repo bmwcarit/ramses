@@ -42,11 +42,11 @@ namespace ramses_internal
         Colormap colormap;
     };
 
-    class Window_X11 : public Window_Base
+    class Window_X11 final : public Window_Base
     {
     public:
         Window_X11(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id);
-        ~Window_X11() final;
+        ~Window_X11();
 
         Bool init();
 

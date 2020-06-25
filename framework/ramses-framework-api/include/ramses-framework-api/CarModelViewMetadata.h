@@ -9,6 +9,8 @@
 #ifndef RAMSES_CARMODELVIEWMETADATA_H
 #define RAMSES_CARMODELVIEWMETADATA_H
 
+#include "ramses-framework-api/DcsmApiTypes.h"
+
 namespace ramses
 {
     /**
@@ -29,7 +31,8 @@ namespace ramses
                 distance == rhs.distance &&
                 origin_x == rhs.origin_x &&
                 origin_y == rhs.origin_y &&
-                origin_z == rhs.origin_z;
+                origin_z == rhs.origin_z &&
+                cameraFOV == rhs.cameraFOV;
         }
 
         /**
@@ -54,6 +57,8 @@ namespace ramses
         float origin_y;
         /// The z value of the origin
         float origin_z;
+        /// the fov of the camera
+        float cameraFOV;
     };
 }
 

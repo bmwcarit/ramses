@@ -6,8 +6,6 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "../../ramses-client/test/SimpleSceneTopology.h"
-
 #include "ramses-hmi-utils.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "RenderGroupImpl.h"
@@ -15,7 +13,11 @@
 #include "ramses-client-api/ResourceFileDescriptionSet.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/UniformInput.h"
+#include "ramses-client-api/Effect.h"
+#include "ramses-client-api/MeshNode.h"
 #include "TestEffects.h"
+#include "gmock/gmock.h"
+#include <fstream>
 
 using namespace testing;
 
@@ -214,4 +216,44 @@ namespace ramses
         EXPECT_TRUE(RamsesHMIUtils::AllResourcesForSceneKnown(*scene));
     }
 
+    TEST_F(ARamsesHmiUtils, canDumpUnrequiredSceneObjects)
+    {
+        SaveSceneAndResourcesToFiles();
+
+        ResourceFileDescriptionSet resSet;
+        ResourceFileDescription resNess("resNecessary.ramres");
+        resSet.add(resNess);
+        ResourceFileDescription resDesc("res1.ramres");
+        resSet.add(resDesc);
+
+        Scene* scene = client.loadSceneFromFile("scene.ramscene", resSet);
+        ASSERT_TRUE(scene != nullptr);
+
+        // method only has side effects, only tests possible is that it does not crash
+        RamsesHMIUtils::DumpUnrequiredSceneObjects(*scene);
+    }
+
+    TEST_F(ARamsesHmiUtils, canDumpUnrequiredSceneObjectsToFile)
+    {
+        SaveSceneAndResourcesToFiles();
+
+        ResourceFileDescriptionSet resSet;
+        ResourceFileDescription resNess("resNecessary.ramres");
+        resSet.add(resNess);
+        ResourceFileDescription resDesc("res1.ramres");
+        resSet.add(resDesc);
+
+        Scene* scene = client.loadSceneFromFile("scene.ramscene", resSet);
+        ASSERT_TRUE(scene != nullptr);
+
+        {
+            std::ofstream outf("unreqObjects.txt", std::ios::out | std::ios::trunc);
+            RamsesHMIUtils::DumpUnrequiredSceneObjectsToFile(*scene, outf);
+        }
+
+        std::ifstream inf("unreqObjects.txt", std::ios::in);
+        std::string   content((std::istreambuf_iterator<char>(inf)), std::istreambuf_iterator<char>());
+        // cannot check whole content because order of entries not deterministic
+        EXPECT_THAT(content, HasSubstr("Not required ERamsesObjectType_TextureSampler name: \"sampler2\" handle: 1"));
+    }
 }

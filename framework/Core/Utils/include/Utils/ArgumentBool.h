@@ -26,7 +26,7 @@ namespace ramses_internal
         String getHelpString() const;
         bool parseFromCmdLine(const CommandLineParser& parser);
 
-        operator bool() const;
+        operator bool() const;  // NOLINT(google-explicit-constructor) implicit conversion is a (questionable) feature
 
     private:
         const char* m_shortName;

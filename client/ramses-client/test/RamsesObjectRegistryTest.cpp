@@ -21,7 +21,7 @@ namespace ramses
     class DummyObject : public Node
     {
     public:
-        DummyObject(SceneImpl& scene)
+        explicit DummyObject(SceneImpl& scene)
             : Node(*new DummyObjectImpl(scene, ERamsesObjectType_Node, ""))
         {
         }

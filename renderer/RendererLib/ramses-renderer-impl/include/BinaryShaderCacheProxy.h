@@ -19,7 +19,7 @@ namespace ramses
     class BinaryShaderCacheProxy final : public ramses_internal::IBinaryShaderCache
     {
     public:
-        BinaryShaderCacheProxy(ramses::IBinaryShaderCache& cache);
+        explicit BinaryShaderCacheProxy(ramses::IBinaryShaderCache& cache);
         virtual ~BinaryShaderCacheProxy() = default;
 
         virtual void deviceSupportsBinaryShaderFormats(const std::vector<ramses_internal::BinaryShaderFormatID>& supportedFormats) override;

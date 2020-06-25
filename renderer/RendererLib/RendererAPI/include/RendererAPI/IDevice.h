@@ -15,14 +15,10 @@
 #include "SceneAPI/RenderState.h"
 #include "SceneAPI/EDataType.h"
 #include "Resource/TextureMetaInfo.h"
-#include "Math3d/Quad.h"
 
 namespace ramses_internal
 {
-    class IShaderLanguage;
-    struct RenderTarget;
     struct RenderBuffer;
-    class IContext;
     class EffectResource;
 
     class Vector2;
@@ -35,10 +31,6 @@ namespace ramses_internal
     class Matrix33f;
     class Matrix44f;
 
-    class Texture2DResource;
-    class Texture3DResource;
-    class TextureCubeResource;
-    struct BinaryShader;
     struct PixelRectangle;
 
     class IDevice

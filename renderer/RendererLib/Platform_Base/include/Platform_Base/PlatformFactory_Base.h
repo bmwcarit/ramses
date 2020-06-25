@@ -31,7 +31,7 @@ namespace ramses_internal
         const IWindowEventsPollingManager* getWindowEventsPollingManager() const override;
 
     protected:
-        PlatformFactory_Base(const RendererConfig& rendererConfig);
+        explicit PlatformFactory_Base(const RendererConfig& rendererConfig);
         ~PlatformFactory_Base() override;
 
         virtual ITextureUploadingAdapter* createTextureUploadingAdapter(IDevice& device, IEmbeddedCompositor& embeddedCompositor, IWindow& window) override;

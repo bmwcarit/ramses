@@ -33,6 +33,7 @@ TEST(String, TestCopyConstructor)
 {
     String str("asdf");
     String copy(str);
+    (void)copy;
     EXPECT_EQ(0, std::strcmp("asdf", str.c_str()));
     EXPECT_STREQ("asdf", str.c_str());
     EXPECT_EQ(str.size(), copy.size());
@@ -720,14 +721,14 @@ TEST(String, ResizeReallyAllocatesEnough)
 
 TEST(String, ReservePreventReallocAndCapacityChange)
 {
-    for (ramses_capu::uint_t i = 5; i < 100; ++i)
+    for (size_t i = 5; i < 100; ++i)
     {
         String s("A");
         s.reserve(i);
-        const ramses_capu::uint_t capacityBefore = s.capacity();
+        const size_t capacityBefore = s.capacity();
         const std::uintptr_t ptrBefore = reinterpret_cast<std::uintptr_t>(s.c_str());
         s.resize(i);
-        const ramses_capu::uint_t capacityAfter = s.capacity();
+        const size_t capacityAfter = s.capacity();
         const std::uintptr_t ptrAfter = reinterpret_cast<std::uintptr_t>(s.c_str());
         EXPECT_EQ(capacityBefore, capacityAfter);
         EXPECT_EQ(ptrBefore, ptrAfter);
@@ -744,8 +745,8 @@ TEST(String, reserveOnEmptyStringSetCapacityOnAtLeastThisValue)
 TEST(String, reserveMoreOnNonOnEmptyStringSetCapacityOnAtLeastThisValue)
 {
     String s("foobar");
-    const ramses_capu::uint_t size = s.size();
-    const ramses_capu::uint_t capacity = s.capacity();
+    const size_t size = s.size();
+    const size_t capacity = s.capacity();
     s.reserve(40);
     EXPECT_EQ(size, s.size());
     EXPECT_GE(s.capacity(), capacity);
@@ -754,8 +755,8 @@ TEST(String, reserveMoreOnNonOnEmptyStringSetCapacityOnAtLeastThisValue)
 TEST(String, reserveLessThanSizeDoesNothing)
 {
     String s("foobar");
-    const ramses_capu::uint_t size = s.size();
-    const ramses_capu::uint_t capacity = s.capacity();
+    const size_t size = s.size();
+    const size_t capacity = s.capacity();
     s.reserve(2);
     EXPECT_EQ(size, s.size());
     EXPECT_EQ(s.capacity(), capacity);

@@ -76,7 +76,7 @@ namespace ramses
     class LocalTestClientWithScene : public LocalTestClient
     {
     public:
-        LocalTestClientWithScene(SceneConfig sceneConfig = SceneConfig())
+        explicit LocalTestClientWithScene(const SceneConfig& sceneConfig = SceneConfig())
             : LocalTestClient()
             , m_scene(*client.createScene(sceneId_t(123u), sceneConfig))
             , m_constRefToScene(m_scene)

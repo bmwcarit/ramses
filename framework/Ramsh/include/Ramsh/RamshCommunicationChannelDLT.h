@@ -9,26 +9,27 @@
 #ifndef RAMSES_RAMSHCOMMUNICATIONCHANNELDLT_H
 #define RAMSES_RAMSHCOMMUNICATIONCHANNELDLT_H
 
-#include "Ramsh/RamshCommunicationChannel.h"
-#include "Collections/String.h"
+#include <cstdint>
 
 namespace ramses_internal
 {
+    class Ramsh;
+    class String;
+
     /**
      * RamshInput from DLT
      */
-    class RamshCommunicationChannelDLT : public RamshCommunicationChannel
+    class RamshCommunicationChannelDLT
     {
     public:
-        /**
-         * Construtctor
-         */
-        RamshCommunicationChannelDLT();
-        virtual ~RamshCommunicationChannelDLT();
+        explicit RamshCommunicationChannelDLT(Ramsh& ramsh);
+        ~RamshCommunicationChannelDLT();
 
     private:
         static int dltInjectionCallbackF(uint32_t sid, void* data, uint32_t length);
-        void processInput(String s);
+        void processInput(const String& s);
+
+        Ramsh& m_ramsh;
 
         /**
          * Static communication Channel instance for DLT
@@ -36,5 +37,6 @@ namespace ramses_internal
         static RamshCommunicationChannelDLT* m_instance;
     };
 
-}// namespace ramses
+}
+
 #endif

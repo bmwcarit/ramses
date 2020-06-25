@@ -91,7 +91,7 @@ bool EffectConfig::parseConfigLine(int lineNumber, const ramses_internal::String
     {
         printErrorInLine(lineNumber, line);
         PRINT_INFO("line beginning with invalid keyword.\n");
-        PRINT_HINT("expected line beginning keywords are: %s, %s, %s\n\n", KEY_WORD_DEFINE, KEY_WORD_UNIFORM_SEMANTIC, KEY_WORD_ATTRIBUTE_SEMANTIC);
+        PRINT_HINT("expected line beginning keywords are: {}, {}, {}\n\n", KEY_WORD_DEFINE, KEY_WORD_UNIFORM_SEMANTIC, KEY_WORD_ATTRIBUTE_SEMANTIC);
         return false;
     }
 }
@@ -102,7 +102,7 @@ bool EffectConfig::parseUniformSemantic(int lineNumber, const ramses_internal::S
     {
         printErrorInLine(lineNumber, line);
         PRINT_INFO("invalid config for Uniform Semantic Definition\n");
-        PRINT_HINT("expected Uniform Semantic Definition: %s input_name EEffectUniformSemantic_XXX\n\n", KEY_WORD_UNIFORM_SEMANTIC);
+        PRINT_HINT("expected Uniform Semantic Definition: {} input_name EEffectUniformSemantic_XXX\n\n", KEY_WORD_UNIFORM_SEMANTIC);
         return false;
     }
 
@@ -112,7 +112,7 @@ bool EffectConfig::parseUniformSemantic(int lineNumber, const ramses_internal::S
     if (semantic == ramses::EEffectUniformSemantic_Invalid)
     {
         printErrorInLine(lineNumber, line);
-        PRINT_INFO("invalid key word for Uniform Semantic: %s\n", semanticStr.c_str());
+        PRINT_INFO("invalid key word for Uniform Semantic: {}\n", semanticStr);
         printUniformSemanticList();
         return false;
     }
@@ -120,7 +120,7 @@ bool EffectConfig::parseUniformSemantic(int lineNumber, const ramses_internal::S
     if (!addUniformSemantic(inputName, semantic))
     {
         printErrorInLine(lineNumber, line);
-        PRINT_INFO("duplicated inputName:%s for Uniform Semantic.\n", inputName.c_str());
+        PRINT_INFO("duplicated inputName:{} for Uniform Semantic.\n", inputName);
         return false;
     }
 
@@ -133,7 +133,7 @@ bool EffectConfig::parseAttributeSemantic(int lineNumber, const ramses_internal:
     {
         printErrorInLine(lineNumber, line);
         PRINT_INFO("invalid config for Attribute Semantic Definition\n");
-        PRINT_HINT("expected Attribute Semantic Definition: %s input_name EEffectAttributeSemantic_XXX\n\n", KEY_WORD_ATTRIBUTE_SEMANTIC);
+        PRINT_HINT("expected Attribute Semantic Definition: {} input_name EEffectAttributeSemantic_XXX\n\n", KEY_WORD_ATTRIBUTE_SEMANTIC);
         return false;
     }
 
@@ -143,7 +143,7 @@ bool EffectConfig::parseAttributeSemantic(int lineNumber, const ramses_internal:
     if (semantic == ramses::EEffectAttributeSemantic_Invalid)
     {
         printErrorInLine(lineNumber, line);
-        PRINT_INFO("invalid key word for Attribute Semantic: %s\n", semanticStr.c_str());
+        PRINT_INFO("invalid key word for Attribute Semantic: {}\n", semanticStr);
         printAttributeSemanticList();
         return false;
     }
@@ -151,7 +151,7 @@ bool EffectConfig::parseAttributeSemantic(int lineNumber, const ramses_internal:
     if (!addAttributeSemantic(inputName, semantic))
     {
         printErrorInLine(lineNumber, line);
-        PRINT_INFO("duplicated inputName:%s for Attribute Semantic.\n", inputName.c_str());
+        PRINT_INFO("duplicated inputName:{} for Attribute Semantic.\n", inputName);
         return false;
     }
 
@@ -164,7 +164,7 @@ bool EffectConfig::parseDefines(int lineNumber, const ramses_internal::String& l
     {
         printErrorInLine(lineNumber, line);
         PRINT_INFO("invalid config for Compiler Define Definition\n");
-        PRINT_HINT("expected Compiler Define Definition: %s compiler_define_name\n\n", KEY_WORD_DEFINE);
+        PRINT_HINT("expected Compiler Define Definition: {} compiler_define_name\n\n", KEY_WORD_DEFINE);
         return false;
     }
 
@@ -172,7 +172,7 @@ bool EffectConfig::parseDefines(int lineNumber, const ramses_internal::String& l
     if (!addCompilerDefine(defineContents))
     {
         printErrorInLine(lineNumber, line);
-        PRINT_INFO("duplicated Compiler Defines:%s.\n", defineContents.c_str());
+        PRINT_INFO("duplicated Compiler Defines:{}.\n", defineContents);
         return false;
     }
 
@@ -256,7 +256,7 @@ ramses::EEffectAttributeSemantic EffectConfig::getAttributeSemanticFromString(co
 
 void EffectConfig::printErrorInLine(int lineNumber, const ramses_internal::String& line) const
 {
-    PRINT_ERROR("effect config file error in line : #%d, \"%s\"\n", lineNumber, line.c_str());
+    PRINT_ERROR("effect config file error in line : #{}, \"{}\"\n", lineNumber, line);
 }
 
 void EffectConfig::printAttributeSemanticList() const
@@ -264,7 +264,7 @@ void EffectConfig::printAttributeSemanticList() const
     PRINT_HINT("valid Attribute Semantics are as Following:\n");
     for(const auto& attribSemantic : m_attributeSemanticNameTable)
     {
-        PRINT_HINT("%s\n", attribSemantic.key.c_str());
+        PRINT_HINT("{}\n", attribSemantic.key);
     }
     PRINT("\n");
 }
@@ -274,7 +274,7 @@ void EffectConfig::printUniformSemanticList() const
     PRINT_HINT("valid Uniform Semantics are as Following:\n");
     for(const auto& uniformSemantic : m_uniformSemanticNameTable)
     {
-        PRINT_HINT("%s\n", uniformSemantic.key.c_str());
+        PRINT_HINT("{}\n", uniformSemantic.key);
     }
     PRINT("\n");
 }

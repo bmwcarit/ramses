@@ -21,7 +21,7 @@ namespace ramses_internal
         class TestRunnable : public Runnable
         {
         public:
-            TestRunnable(ThreadBarrier& barrier_)
+            explicit TestRunnable(ThreadBarrier& barrier_)
                 : barrier(barrier_)
                 , done(false)
             {

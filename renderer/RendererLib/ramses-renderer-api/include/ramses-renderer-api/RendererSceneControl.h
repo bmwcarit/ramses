@@ -116,25 +116,6 @@ namespace ramses
         status_t setSceneDisplayBufferAssignment(sceneId_t sceneId, displayBufferId_t displayBuffer, int32_t sceneRenderOrder = 0);
 
         /**
-        * @brief   Sets clear color of a display buffer (display's framebuffer or offscreen buffer).
-        * @details Clear color is used to clear the whole buffer at the beginning of a rendering cycle (typically every frame).
-        *          Default clear color is (0, 0, 0, 1).
-        *          There is no event callback for this operation, the clear color change can be assumed to be effective
-        *          in the next frame rendered after flushed.
-        *
-        * @param[in] display Id of display that the buffer to set clear color belongs to.
-        * @param[in] displayBuffer Id of display buffer to set clear color,
-        *                          if #ramses::displayBufferId_t::Invalid() is passed then the clear color is set for display's framebuffer.
-        * @param[in] r Clear color red channel value [0,1]
-        * @param[in] g Clear color green channel value [0,1]
-        * @param[in] b Clear color blue channel value [0,1]
-        * @param[in] a Clear color alpha channel value [0,1]
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a);
-
-        /**
         * @brief   Links display's offscreen buffer to a data consumer in scene.
         * @details This is a special case of Ramses data linking where offscreen buffer acts as texture provider.
         *          Offscreen buffer can be used as texture data in one or more scene's texture sampler(s) (#ramses::Scene::createTextureConsumer).
@@ -194,6 +175,31 @@ namespace ramses
         status_t unlinkData(sceneId_t consumerSceneId, dataConsumerId_t consumerId);
 
         /**
+        * @brief Trigger renderer to test if given pick event with coordinates intersects with any instances
+        *        of ramses::PickableObject contained in given scene. If so, the intersected PickableObjects are
+        *        reported to ramses::RendererSceneControl (see ramses::IRendererEventHandler::objectsPicked) using their user IDs
+        *        given at creation time (see ramses::Scene::createPickableObject).
+        *
+        * @details \section PickCoordinates
+        *          Coordinates normalized to range <-1, 1> where (-1, -1) is bottom left corner of the buffer where scene is mapped to
+        *          and (1, 1) is top right corner.
+        *          If the scene to test is rendered directly to framebuffer then display size should be used,
+        *          i.e. (-1, -1) is bottom left corner of the display and (1, 1) top right corner of display.
+        *          If the scene is mapped to an offscreen buffer and rendered as a texture mapped
+        *          on a mesh in another scene, the given coordinates need to be mapped to the offscreen buffer
+        *          dimensions in the same way.
+        *          For example if the scene's offscreen buffer is mapped on a 2D quad placed somewhere on screen
+        *          then the coordinates provided need to be within the region of the 2D quad, i.e. (-1, -1) at bottom left corner of the quad and (1, 1) at top right corner.
+        *
+        * @param sceneId Id of scene to check for intersected PickableObjects.
+        * @param bufferNormalizedCoordX Normalized X pick coordinate within buffer size (see \ref PickCoordinates).
+        * @param bufferNormalizedCoordY Normalized Y pick coordinate within buffer size (see \ref PickCoordinates).
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t handlePickEvent(sceneId_t sceneId, float bufferNormalizedCoordX, float bufferNormalizedCoordY);
+
+        /**
         * @brief Submits scene control commands (API calls on RendererSceneControl)
         *        since previous flush to be executed in the next renderer update loop.
         *        This mechanism allows for 'atomic' changes that are applied within a single update loop, thus a single rendered frame.
@@ -243,7 +249,7 @@ namespace ramses
         friend class RamsesRendererImpl;
 
         /// Constructor
-        RendererSceneControl(RendererSceneControlImpl&);
+        explicit RendererSceneControl(RendererSceneControlImpl&);
 
         /// Hidden destructor
         virtual ~RendererSceneControl();

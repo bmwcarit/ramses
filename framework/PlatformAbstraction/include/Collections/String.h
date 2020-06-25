@@ -13,7 +13,6 @@
 #include "PlatformAbstraction/Macros.h"
 #include "Collections/IOutputStream.h"
 #include "Collections/IInputStream.h"
-#include "ramses-capu/os/StringUtils.h"
 #include "PlatformAbstraction/Hash.h"
 #include "PlatformAbstraction/FmtBase.h"
 #include <string>
@@ -25,7 +24,7 @@ namespace ramses_internal
     {
     public:
         String() = default;
-        String(const Char* data);
+        String(const Char* data);   // NOLINT(google-explicit-constructor) we want implicit conversion compatible to std::string
         String(UInt initialSize, Char character);
         String(const Char* data, UInt start, UInt end);
         explicit String(const std::string& other);
@@ -333,7 +332,8 @@ namespace ramses_internal
     inline String& String::operator=(Char character)
     {
         char tmp[2] = {character, '\0'};
-        return operator=(tmp);
+        operator=(tmp);
+        return *this;
     }
 
     inline String& String::append(const String& other)

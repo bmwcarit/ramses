@@ -26,7 +26,7 @@ namespace ramses
         RamsesClientImpl& client,
         const char* node)
         : ClientObjectImpl(client, type, node)
-        , m_hashUsage(hashUsage)
+        , m_hashUsage(std::move(hashUsage))
     {
         if (m_hashUsage.isValid())
         {

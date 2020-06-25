@@ -15,9 +15,9 @@
 
 namespace
 {
-    constexpr uint32_t AtlasTextureWidth = 12;
-    constexpr uint32_t AtlasTextureHeight = 20;
-    static const ramses::FontInstanceId FakeFontId{ 13u };
+    constexpr const uint32_t AtlasTextureWidth = 12;
+    constexpr const uint32_t AtlasTextureHeight = 20;
+    constexpr const ramses::FontInstanceId FakeFontId{ 13u };
 }
 
 namespace ramses
@@ -32,7 +32,7 @@ namespace ramses
         {
         }
 
-        GlyphGeometry createTestGlyphGeometry(GlyphMetricsVector glyphs)
+        GlyphGeometry createTestGlyphGeometry(const GlyphMetricsVector& glyphs)
         {
             for (const auto& glyph : glyphs)
             {

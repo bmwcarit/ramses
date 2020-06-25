@@ -18,7 +18,7 @@ namespace ramses_internal
     class SceneLinkScene : public TransformationCachedSceneWithExplicitMemory
     {
     public:
-        SceneLinkScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
+        explicit SceneLinkScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
 
         // From IScene
         virtual DataSlotHandle          allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle = DataSlotHandle::Invalid()) override;

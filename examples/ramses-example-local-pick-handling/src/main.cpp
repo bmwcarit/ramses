@@ -15,11 +15,13 @@
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "ramses-client-api/PickableObject.h"
 #include "ramses-client-api/PerspectiveCamera.h"
+#include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "RamsesObjectTypeUtils.h"
 #include <unordered_set>
 #include <thread>
 #include <iostream>
 #include <map>
+#include <random>
 
 /**
  * @example ramses-example-local-pick-handling/src/main.cpp
@@ -34,11 +36,11 @@ constexpr int32_t perspViewportHeight = 240;
 constexpr int32_t perspViewportWidth = 640;
 
 /** \cond HIDDEN_SYMBOLS */
-class SceneStateEventHandler : public ramses::RendererEventHandlerEmpty
+class SceneStateEventHandler : public ramses::RendererEventHandlerEmpty, public ramses::RendererSceneControlEventHandlerEmpty
 {
 public:
-    SceneStateEventHandler(ramses::RamsesRenderer& renderer, ramses::Appearance& appearanceA, ramses::Appearance& appearanceB, ramses::UniformInput& colorInput)
-        : m_renderer(renderer)
+    SceneStateEventHandler(ramses::RendererSceneControl& sceneControlApi, ramses::Appearance& appearanceA, ramses::Appearance& appearanceB, ramses::UniformInput& colorInput)
+        : m_sceneControlApi(sceneControlApi)
         , m_appearanceA(appearanceA)
         , m_appearanceB(appearanceB)
         , m_colorInput(colorInput)
@@ -56,18 +58,17 @@ public:
             const float mouseXNormalized = ((2.0f * static_cast<float>(mousePosX) / DisplayWidth)) - 1.f;
             const float mouseYNormalized = ((2.0f * static_cast<float>(mousePosY) / DisplayHeight)) - 1.f;
 
-            m_renderer.handlePickEvent(ramses::sceneId_t(1u), mouseXNormalized, mouseYNormalized);
+            m_sceneControlApi.handlePickEvent(ramses::sceneId_t(1u), mouseXNormalized, mouseYNormalized);
             std::cout << "Window was clicked at Coordinates: X = " << mousePosX << " Y = " << mousePosY << "\n";
         }
     }
 
-    virtual void objectsPicked(ramses::sceneId_t sceneId, const ramses::pickableObjectId_t* pickedObjects, uint32_t pickedObjectsCount) override
+    virtual void objectsPicked(ramses::sceneId_t /*sceneId*/, const ramses::pickableObjectId_t* pickedObjects, uint32_t pickedObjectsCount) override
     {
-        (void)sceneId;
-
-        const float r = (static_cast<float>(rand()) / (RAND_MAX));
-        const float g = (static_cast<float>(rand()) / (RAND_MAX));
-        const float b = (static_cast<float>(rand()) / (RAND_MAX));
+        std::uniform_real_distribution<float> dist;
+        const float r = dist(m_randomGenerator);
+        const float g = dist(m_randomGenerator);
+        const float b = dist(m_randomGenerator);
 
         // log all picked objects to the console
         for (uint32_t po = 0; po < pickedObjectsCount; ++po)
@@ -88,10 +89,11 @@ public:
     }
 
 private:
-    ramses::RamsesRenderer& m_renderer;
+    ramses::RendererSceneControl& m_sceneControlApi;
     ramses::Appearance& m_appearanceA;
     ramses::Appearance& m_appearanceB;
     ramses::UniformInput& m_colorInput;
+    std::mt19937 m_randomGenerator{std::random_device{}()};
 };
 /** \endcond */
 
@@ -108,12 +110,8 @@ int main(int argc, char* argv[])
     auto& sceneControlAPI = *renderer.getSceneControlAPI();
     renderer.startThread();
 
-    ramses::DisplayConfig displayConfig;
+    ramses::DisplayConfig displayConfig(argc, argv);
     displayConfig.setWindowRectangle(150, 150, DisplayWidth, DisplayHeight);
-    displayConfig.setIntegrityRGLDeviceUnit(0);
-    displayConfig.setWaylandIviSurfaceID(0);
-    displayConfig.setWindowIviVisible();
-    displayConfig.setWaylandIviLayerID(3);
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
     renderer.flush();
 
@@ -213,7 +211,7 @@ int main(int argc, char* argv[])
     clientScene->publish();
     clientScene->flush();
 
-    SceneStateEventHandler eventHandler(renderer, *appearanceA, *appearanceB, colorInput);
+    SceneStateEventHandler eventHandler(sceneControlAPI, *appearanceA, *appearanceB, colorInput);
 
     // show the scene on the renderer
     sceneControlAPI.setSceneMapping(sceneId, display);
@@ -224,8 +222,10 @@ int main(int argc, char* argv[])
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(15));
         renderer.dispatchEvents(eventHandler);
+        sceneControlAPI.dispatchEvents(eventHandler);
         // signal the scene it is in a state that can be rendered
         clientScene->flush();
+        sceneControlAPI.flush();
         renderer.flush();
         /// [Pick Handling Example]
     }

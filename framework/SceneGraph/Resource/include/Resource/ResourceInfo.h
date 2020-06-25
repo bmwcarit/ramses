@@ -32,13 +32,12 @@ namespace ramses_internal
 
         ResourceInfo()
             : type(EResourceType_Invalid)
-            , hash()
             , decompressedSize(0)
             , compressedSize(0)
         {
         }
 
-        ResourceInfo(const IResource* resourceToGetDataFrom)
+        explicit ResourceInfo(const IResource* resourceToGetDataFrom)
             : type(resourceToGetDataFrom->getTypeID())
             , hash(resourceToGetDataFrom->getHash())
             , decompressedSize(resourceToGetDataFrom->getDecompressedDataSize())

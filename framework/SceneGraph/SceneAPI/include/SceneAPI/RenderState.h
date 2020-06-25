@@ -116,22 +116,22 @@ namespace ramses_internal
         NUMBER_OF_ELEMENTS
     };
 
-    enum EColorWriteFlag
+    enum EColorWriteFlag : uint32_t
     {
-        EColorWriteFlag_Red = BIT(0),
-        EColorWriteFlag_Green = BIT(1),
-        EColorWriteFlag_Blue = BIT(2),
-        EColorWriteFlag_Alpha = BIT(3),
+        EColorWriteFlag_Red = BIT(0u),
+        EColorWriteFlag_Green = BIT(1u),
+        EColorWriteFlag_Blue = BIT(2u),
+        EColorWriteFlag_Alpha = BIT(3u),
         EColorWriteFlag_All = (EColorWriteFlag_Red | EColorWriteFlag_Green | EColorWriteFlag_Blue | EColorWriteFlag_Alpha)
     };
     using ColorWriteMask = uint8_t;
 
-    enum EClearFlags
+    enum EClearFlags : uint32_t
     {
         EClearFlags_None     = 0,
-        EClearFlags_Color   = BIT(0),
-        EClearFlags_Depth   = BIT(1),
-        EClearFlags_Stencil = BIT(2),
+        EClearFlags_Color   = BIT(0u),
+        EClearFlags_Depth   = BIT(1u),
+        EClearFlags_Stencil = BIT(2u),
         EClearFlags_All     = EClearFlags_Color | EClearFlags_Depth | EClearFlags_Stencil
     };
 

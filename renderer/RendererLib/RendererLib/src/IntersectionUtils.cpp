@@ -64,7 +64,7 @@ namespace ramses_internal
         assert(std::abs(rayDir.length() - 1) < std::numeric_limits<float>::epsilon() * 10);
 
         const float nDotRay = triangleNormal.dot(rayDir);
-        if (fabs(nDotRay) <= std::numeric_limits<float>::epsilon() * 10) // some epsilon that could still produce valid numbers later on
+        if (std::abs(nDotRay) <= std::numeric_limits<float>::epsilon() * 10) // some epsilon that could still produce valid numbers later on
         {
             return false; // ray and triangle parallel
         }

@@ -17,7 +17,7 @@ namespace ramses_internal
         , m_runner(csvFilename)
         , m_running(false)
     {
-        if (m_runner.file.open(EFileMode_WriteNew) == EStatus_RAMSES_OK)
+        if (m_runner.file.open(File::Mode::WriteNew))
         {
             m_thread.start(m_runner);
         }
@@ -67,7 +67,8 @@ namespace ramses_internal
                     << entry.avgDrawCalls << ", "
                     << entry.gpuMemoryUsed << "\n";
             }
-            file.write(stream.c_str(), stream.size());
+            if (!file.write(stream.c_str(), stream.size()))
+                LOG_WARN(CONTEXT_FRAMEWORK, "Monitor::run: Writing to output file failed");
             file.flush();
 
             PlatformThread::Sleep(100);
