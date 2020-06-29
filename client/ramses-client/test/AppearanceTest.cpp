@@ -19,6 +19,8 @@
 #include "Math3d/Vector2i.h"
 #include "Math3d/Vector3i.h"
 #include "Math3d/Vector4i.h"
+#include "EffectImpl.h"
+#include "DataObjectImpl.h"
 
 namespace ramses
 {
@@ -103,6 +105,10 @@ namespace ramses
     {
         const Effect& effect = appearance->getEffect();
         EXPECT_EQ(&effect, sharedTestState->effect);
+
+        const ramses_internal::DataLayout uniformLayout = sharedTestState->getInternalScene().getDataLayout(appearance->impl.getUniformDataLayout());
+        const ramses_internal::ResourceContentHash& effectHashFromUniformLayout = uniformLayout.getEffectHash();
+        EXPECT_EQ(appearance->getEffect().impl.getLowlevelResourceHash(), effectHashFromUniformLayout);
     }
 
     TEST_F(AAppearanceTest, setGetBlendingFactors)
@@ -297,7 +303,7 @@ namespace ramses
         Texture2D* texture = sharedTestState->getClient().createTexture2D(1u, 1u, ETextureFormat_RGB8, 1u, &mipData, false);
         ASSERT_TRUE(texture != nullptr);
 
-        ramses::Scene& anotherScene = *sharedTestState->getClient().createScene(1u);
+        ramses::Scene& anotherScene = *sharedTestState->getClient().createScene(sceneId_t(1u));
         TextureSampler* textureSampler = anotherScene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
         ASSERT_TRUE(textureSampler != nullptr);
 
@@ -828,9 +834,11 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, appearance->bindInput(inputObject, *dataObject));
         EXPECT_TRUE(appearance->isInputBound(inputObject));
+        EXPECT_EQ(dataObject->impl.getDataReference(), appearance->getDataObjectBoundToInput(inputObject)->impl.getDataReference());
 
         EXPECT_EQ(StatusOK, appearance->unbindInput(inputObject));
         EXPECT_FALSE(appearance->isInputBound(inputObject));
+        EXPECT_EQ(nullptr, appearance->getDataObjectBoundToInput(inputObject));
     }
 
     TEST_F(AAppearanceTest, failsToSetOrGetValueIfInputBound)
@@ -876,7 +884,7 @@ namespace ramses
         UniformInput inputObject;
         EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("floatInput", inputObject));
 
-        ramses::Scene& anotherScene = *sharedTestState->getClient().createScene(1u);
+        ramses::Scene& anotherScene = *sharedTestState->getClient().createScene(sceneId_t(1u));
         DataFloat* dataObject = anotherScene.createDataFloat();
         ASSERT_TRUE(dataObject != nullptr);
 

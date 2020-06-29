@@ -16,6 +16,7 @@
 #include "ComponentMocks.h"
 #include "WindowMock.h"
 #include "Utils/Image.h"
+#include "RendererSceneEventSenderMock.h"
 
 namespace ramses_internal {
 
@@ -23,22 +24,19 @@ class AWindowedRenderer : public ::testing::Test
 {
 public:
     AWindowedRenderer()
-        : m_renderer(m_commandBuffer, m_sceneGraphConsumerComponent, m_platformFactoryMock, m_rendererStatistics)
+        : m_renderer(m_commandBuffer, m_sceneEventSender, m_platformFactoryMock, m_rendererStatistics)
     {
         ON_CALL(m_platformFactoryMock.renderBackendMock.surfaceMock, canRenderNewFrame()).WillByDefault(Return(true));
     }
 
     void update()
     {
-        m_renderer.update();
-        m_renderer.finishFrameStatistics(std::chrono::microseconds{ 0u });
+        m_renderer.doOneLoop(ELoopMode::UpdateOnly);
     }
 
     void updateAndRender()
     {
-        m_renderer.update();
-        m_renderer.render();
-        m_renderer.finishFrameStatistics(std::chrono::microseconds{ 0u });
+        m_renderer.doOneLoop(ELoopMode::UpdateAndRender);
     }
 
     void createDisplay(const DisplayHandle& displayHandle)
@@ -71,7 +69,7 @@ public:
 
 protected:
     PlatformFactoryNiceMock m_platformFactoryMock;
-    StrictMock<SceneGraphConsumerComponentMock> m_sceneGraphConsumerComponent;
+    StrictMock<RendererSceneEventSenderMock> m_sceneEventSender;
     NiceMock<ResourceProviderMock> m_resourceProvider;
     NiceMock<ResourceUploaderMock> m_resourceUploader;
     RendererCommandBuffer m_commandBuffer;
@@ -168,7 +166,7 @@ TEST_F(AWindowedRendererWithDisplay, saveScreenshotToFileWithFullscreenDoesNotGe
     updateAndRender();
 
     // expect file has been written
-    ramses_capu::File screenshotFile(filename.stdRef());
+    File screenshotFile(filename);
     EXPECT_TRUE(screenshotFile.exists());
 
     // expect correct fullScreen size
@@ -180,7 +178,7 @@ TEST_F(AWindowedRendererWithDisplay, saveScreenshotToFileWithFullscreenDoesNotGe
         EXPECT_EQ(displayWidth, bitmap.getWidth());
         EXPECT_EQ(displayHeight, bitmap.getHeight());
     }
-    EXPECT_EQ(ramses_capu::CAPU_OK, screenshotFile.remove());
+    EXPECT_TRUE(screenshotFile.remove());
 
     // Do not expect a renderer event
     RendererEventVector events;
@@ -198,7 +196,7 @@ TEST_F(AWindowedRendererWithDisplay, saveScreenshotToFileOnNotExistentDisplayDoe
     updateAndRender();
 
     // expect no file has been written
-    ramses_capu::File screenshotFile(filename.stdRef());
+    File screenshotFile(filename);
     EXPECT_FALSE(screenshotFile.exists());
 
     RendererEventVector events;
@@ -214,7 +212,7 @@ TEST_F(AWindowedRendererWithDisplay, saveScreenshotToFileFailsAndDoesNotGenerate
     updateAndRender();
 
     // expect no file has been written
-    ramses_capu::File screenshotFile(filename.stdRef());
+    File screenshotFile(filename);
     EXPECT_FALSE(screenshotFile.exists());
 
     // Do not expect a renderer event

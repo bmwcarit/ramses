@@ -296,7 +296,7 @@ namespace ramses
 
     TEST_F(ARenderPass, reportsErrorWhenSetCameraFromAnotherScene)
     {
-        Scene& anotherScene = *client.createScene(12u);
+        Scene& anotherScene = *client.createScene(sceneId_t(12u));
         Camera* camera = anotherScene.createRemoteCamera();
 
         EXPECT_NE(StatusOK, renderpass.setCamera(*camera));
@@ -381,7 +381,7 @@ namespace ramses
 
     TEST_F(ARenderPass, reportsErrorWhenSetRenderTargetFromAnotherScene)
     {
-        Scene& anotherScene = *client.createScene(12u);
+        Scene& anotherScene = *client.createScene(ramses::sceneId_t(12u));
 
         const RenderBuffer* renderBuffer = anotherScene.createRenderBuffer(16u, 12u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
         RenderTargetDescription rtDesc;
@@ -507,7 +507,7 @@ namespace ramses
 
     TEST_F(ARenderPass, reportsErrorWhenAddRenderGroupFromAnotherScene)
     {
-        Scene& anotherScene = *client.createScene(12u);
+        Scene& anotherScene = *client.createScene(ramses::sceneId_t(12u));
         RenderGroup* group = anotherScene.createRenderGroup();
 
         EXPECT_NE(StatusOK, renderpass.addRenderGroup(*group, 3));

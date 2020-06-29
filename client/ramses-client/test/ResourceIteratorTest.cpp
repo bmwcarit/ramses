@@ -49,7 +49,7 @@ namespace ramses
     protected:
     };
 
-    TYPED_TEST_CASE(RamsesClientResourceIteratorTest, ResourceTypes);
+    TYPED_TEST_SUITE(RamsesClientResourceIteratorTest, ResourceTypes);
 
     TYPED_TEST(RamsesClientResourceIteratorTest, getResourceIteratorEmpty)
     {

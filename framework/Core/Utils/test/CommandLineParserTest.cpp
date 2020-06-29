@@ -79,9 +79,9 @@ namespace ramses_internal
         const Char* params[] = { "myExe", "--a", "-b", "--x" };
         CommandLineParser parser(4, params);
 
-        EXPECT_TRUE(ArgumentBool(parser, "", "a", false));
-        EXPECT_TRUE(ArgumentBool(parser, "b", "longParamB", false));
-        EXPECT_TRUE(ArgumentBool(parser, "", "x", false));
+        EXPECT_TRUE(ArgumentBool(parser, "", "a"));
+        EXPECT_TRUE(ArgumentBool(parser, "b", "longParamB"));
+        EXPECT_TRUE(ArgumentBool(parser, "", "x"));
 
         EXPECT_TRUE(parser.getNonOptions().empty());
     }
@@ -91,7 +91,7 @@ namespace ramses_internal
         const Char* params[] = { "myExe", "--v", "-ip", "192.168.1.1", "my/test/scene" };
         CommandLineParser parser(5, params);
 
-        EXPECT_TRUE(ArgumentBool(parser, "", "v", false));
+        EXPECT_TRUE(ArgumentBool(parser, "", "v"));
         EXPECT_EQ(String("192.168.1.1"), String(ArgumentString(parser, "ip", "daemon-ip", "localhost")));
         StringVector files = parser.getNonOptions();
         EXPECT_TRUE(contains_c(files, "my/test/scene"));
@@ -133,7 +133,7 @@ namespace ramses_internal
         const Char* params[] = { "myExe", "--b", "file" };
         CommandLineParser parser(3, params);
 
-        ArgumentBool value(parser, "", "b", false);
+        ArgumentBool value(parser, "", "b");
         UNUSED(value);
 
         StringVector files = parser.getNonOptions();
@@ -160,8 +160,8 @@ namespace ramses_internal
         EXPECT_EQ(String("stringArgument"), String(ArgumentString(parser, "", "longString", "defaultValue")));
         Float val = ArgumentFloat(parser, "", "longFloat", 0.0f);
         EXPECT_FLOAT_EQ(2345.45f, val);
-        EXPECT_TRUE(ArgumentBool(parser, "shortOption", "", false));
-        EXPECT_TRUE(ArgumentBool(parser, "", "longOptioN", false));
+        EXPECT_TRUE(ArgumentBool(parser, "shortOption", ""));
+        EXPECT_TRUE(ArgumentBool(parser, "", "longOptioN"));
 
         StringVector files = parser.getNonOptions();
         EXPECT_TRUE(contains_c(files, "testfileOne"));
@@ -184,7 +184,7 @@ namespace ramses_internal
         Float valZ = ArgumentFloat(parser, "z", "", 0.0f);
         EXPECT_FLOAT_EQ(0.0, valZ);
 
-        EXPECT_TRUE(ArgumentBool(parser, "1x", "", false));
+        EXPECT_TRUE(ArgumentBool(parser, "1x", ""));
 
         Float valW = ArgumentFloat(parser, "w", "", 0.0f);
         EXPECT_FLOAT_EQ(-69, valW);
@@ -287,10 +287,10 @@ namespace ramses_internal
         const Char* params[] = { "myExe", "-x"};
         CommandLineParser parser(2, params);
 
-        Argument<Bool> valX("x", "", false);
+        ArgumentBool valX("x", "");
         EXPECT_FALSE(valX); //default value, not parsed yet
 
-        Bool parsedVal = valX.parseValueFromCmdLine(parser);
+        bool parsedVal = valX.parseFromCmdLine(parser);
         EXPECT_TRUE(parsedVal);
 
         EXPECT_TRUE(parser.getNonOptions().empty());
@@ -393,7 +393,7 @@ namespace ramses_internal
 
     TEST(CommandLineArgumentsTest, ArgumentBoolProvidesGetHelpStringMethod)
     {
-        Argument<Bool> valX("xx", "longx", false, "myDescription");
+        ArgumentBool valX("xx", "longx", "myDescription");
         String result = valX.getHelpString();
 
         Int posShortName = result.find("xx");
@@ -413,5 +413,197 @@ namespace ramses_internal
         Int posDefault = result.find("false");
         EXPECT_NE(-1, posDefault);
         EXPECT_GT(posDefault, posDescription);
+    }
+
+    TEST(CommandLineParserTest, OptionCanBeSetSeveralTimes)
+    {
+        std::vector<const Char*> params({ "myExe", "-s", "ABCDE", "-s", "zzZZzzZZ" });
+        CommandLineParser parser(params.size(), params.data());
+
+        ArgumentString val("s", "", "xyz");
+        EXPECT_EQ("xyz", String(val)); //default value, not parsed yet
+
+        const String parsedVal = val.parseValueFromCmdLine(parser);
+        EXPECT_EQ("ABCDE", parsedVal);
+
+        EXPECT_EQ("ABCDE", String(val));
+        EXPECT_TRUE(val.next());
+        EXPECT_EQ("zzZZzzZZ", String(val));
+        EXPECT_FALSE(val.next());
+    }
+
+    TEST(CommandLineParserTest, OptionCanParsedSeveralTimes)
+    {
+
+        ArgumentString val("s", "", "xyz");
+        std::vector<const Char*> params({ "myExe", "-s", "ABCDE", "-s", "zzZZzzZZ" });
+        CommandLineParser parser(params.size(), params.data());
+
+        const String parsedVal = val.parseValueFromCmdLine(parser);
+        EXPECT_EQ("ABCDE", parsedVal);
+        EXPECT_EQ("ABCDE", String(val));
+        EXPECT_TRUE(val.next());
+        EXPECT_EQ("zzZZzzZZ", String(val));
+        EXPECT_FALSE(val.next());
+
+        std::vector<const Char*> params2({ "myExe", "-s", "xyz", "-s", "qwerty" });
+        CommandLineParser parser2(params2.size(), params2.data());
+
+        const String parsedVal2 = val.parseValueFromCmdLine(parser2);
+        EXPECT_EQ("xyz", parsedVal2);
+        EXPECT_EQ("xyz", String(val));
+        EXPECT_TRUE(val.next());
+        EXPECT_EQ("qwerty", String(val));
+        EXPECT_FALSE(val.next());
+    }
+
+    TEST(CommandLineParserTest, OptionCanBeSetSeveralTimes_DoesNotChangeValueIfNoMoreCanBeFound)
+    {
+        std::vector<const Char*> params({ "myExe", "-s", "ABCDE", "-s", "zzZZzzZZ" });
+        CommandLineParser parser(params.size(), params.data());
+
+        ArgumentString val("s", "", "xyz");
+        EXPECT_EQ("xyz", String(val)); //default value, not parsed yet
+
+        const String parsedVal = val.parseValueFromCmdLine(parser);
+        EXPECT_EQ("ABCDE", parsedVal);
+
+        EXPECT_EQ("ABCDE", String(val));
+        EXPECT_TRUE(val.next());
+        EXPECT_EQ("zzZZzzZZ", String(val));
+        EXPECT_FALSE(val.next());
+
+        //no more changes
+        EXPECT_EQ("zzZZzzZZ", String(val));
+        EXPECT_FALSE(val.next());
+    }
+
+    TEST(CommandLineParserTest, OptionCanBeSetSeveralTimes_BoolOptionIsSetToTrue)
+    {
+        const Char* params[] = { "", "-a", "argForA", "--longParam" };
+        CommandLineParser parser(3, params);
+
+        EXPECT_TRUE(ArgumentBool(parser, "a", "longParamA", "default").wasDefined());
+    }
+
+    TEST(CommandLineParserTest, OptionCanBeSetSeveralTimes_WithouMixingOptions)
+    {
+        std::vector<const Char*> params({ "myExe", "-x", "20", "-x", "100", "-y", "1.0", "-y", "3.0", "-y", "9.0" });
+        CommandLineParser parser(params.size(), params.data());
+
+        ArgumentUInt16 valX("x", "", 10u);
+        ArgumentFloat  valY("y", "", 10.f);
+        EXPECT_EQ(10u, valX); //default value, not parsed yet
+        EXPECT_FLOAT_EQ(10.f, valY); //default value, not parsed yet
+
+        const UInt16 parsedVal = valX.parseValueFromCmdLine(parser);
+        EXPECT_EQ(20u, parsedVal);
+
+        EXPECT_EQ(20u, valX);
+        EXPECT_TRUE(valX.next());
+        EXPECT_EQ(100u, valX);
+        EXPECT_FALSE(valX.next());
+
+        const Float parsedValF = valY.parseValueFromCmdLine(parser);
+        EXPECT_FLOAT_EQ(1.f, parsedValF);
+
+        EXPECT_FLOAT_EQ(1.f, valY);
+        EXPECT_TRUE(valY.next());
+        EXPECT_FLOAT_EQ(3.f, valY);
+        EXPECT_TRUE(valY.next());
+        EXPECT_FLOAT_EQ(9.f, valY);
+        EXPECT_FALSE(valY.next());
+    }
+
+    TEST(CommandLineParserTest, OptionCanBeSetSeveralTimes_WithMixingOptions)
+    {
+        std::vector<const Char*> params({ "myExe", "-x", "20", "-y", "1.0", "-z", "abcd", "-y", "3.0", "-x", "100", "-y", "9.0" });
+        CommandLineParser parser(params.size(), params.data());
+
+        ArgumentUInt16 valX("x", "", 10u);
+        ArgumentFloat  valY("y", "", 10.f);
+        ArgumentString valZ("z", "", "ZZzzzZZ");
+        EXPECT_EQ(10u, valX); //default value, not parsed yet
+        EXPECT_FLOAT_EQ(10.f, valY); //default value, not parsed yet
+        EXPECT_EQ("ZZzzzZZ", String(valZ)); //default value, not parsed yet
+
+        const UInt16 parsedVal = valX.parseValueFromCmdLine(parser);
+        EXPECT_EQ(20u, parsedVal);
+
+        EXPECT_EQ(20u, valX);
+        EXPECT_TRUE(valX.next());
+        EXPECT_EQ(100u, valX);
+        EXPECT_FALSE(valX.next());
+
+        const String parsedValString = valZ.parseValueFromCmdLine(parser);
+        EXPECT_EQ("abcd", parsedValString);
+        EXPECT_FALSE(valZ.next());
+
+        const Float parsedValF = valY.parseValueFromCmdLine(parser);
+        EXPECT_FLOAT_EQ(1.f, parsedValF);
+
+        EXPECT_FLOAT_EQ(1.f, valY);
+        EXPECT_TRUE(valY.next());
+        EXPECT_FLOAT_EQ(3.f, valY);
+        EXPECT_TRUE(valY.next());
+        EXPECT_FLOAT_EQ(9.f, valY);
+        EXPECT_FALSE(valY.next());
+    }
+
+    TEST(CommandLineParserTest, OptionCanBeSetSeveralTimes_WithMixingOptions_AccessInDifferentOrder)
+    {
+        std::vector<const Char*> params({ "myExe", "-x", "20", "-y", "1.0", "-z", "abcd", "-y", "3.0", "-x", "100", "-y", "9.0" });
+        CommandLineParser parser(params.size(), params.data());
+
+        ArgumentUInt16 valX("x", "", 10u);
+        ArgumentFloat  valY("y", "", 10.f);
+        ArgumentString valZ("z", "", "ZZzzzZZ");
+        EXPECT_EQ(10u, valX); //default value, not parsed yet
+        EXPECT_FLOAT_EQ(10.f, valY); //default value, not parsed yet
+        EXPECT_EQ("ZZzzzZZ", String(valZ)); //default value, not parsed yet
+
+        const UInt16 parsedVal = valX.parseValueFromCmdLine(parser);
+        const String parsedValString = valZ.parseValueFromCmdLine(parser);
+        const Float parsedValF = valY.parseValueFromCmdLine(parser);
+
+        EXPECT_EQ(20u, parsedVal);
+        EXPECT_EQ("abcd", parsedValString);
+        EXPECT_FLOAT_EQ(1.f, parsedValF);
+
+        EXPECT_FLOAT_EQ(1.f, valY);
+        EXPECT_TRUE(valY.next());
+
+        EXPECT_EQ(20u, valX);
+        EXPECT_TRUE(valX.next());
+
+        EXPECT_FLOAT_EQ(3.f, valY);
+        EXPECT_TRUE(valY.next());
+
+        EXPECT_EQ(100u, valX);
+        EXPECT_FALSE(valX.next());
+
+        EXPECT_FLOAT_EQ(9.f, valY);
+        EXPECT_FALSE(valY.next());
+
+        EXPECT_FALSE(valZ.next());
+    }
+
+    TEST(CommandLineParserTest, OptionCanBeSetSeveralTimes_IgnoresErroneousOptionsWithNoValueSet)
+    {
+        std::vector<const Char*> params({ "myExe", "-s", "ABCDE", "-s", "-s", "zzZZzzZZ" });
+        CommandLineParser parser(params.size(), params.data());
+
+        ArgumentString val("s", "", "xyz");
+        EXPECT_EQ("xyz", String(val)); //default value, not parsed yet
+
+        const String parsedVal = val.parseValueFromCmdLine(parser);
+        EXPECT_EQ("ABCDE", parsedVal);
+
+        EXPECT_EQ("ABCDE", String(val));
+        EXPECT_TRUE(val.next());
+
+        //gets the next set value correctly
+        EXPECT_EQ("zzZZzzZZ", String(val));
+        EXPECT_FALSE(val.next());
     }
 }

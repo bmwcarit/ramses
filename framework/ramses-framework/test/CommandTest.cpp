@@ -24,11 +24,9 @@ TEST(ACommand, CanBeCreated)
 
 TEST(ACommand, canConvertToItsType)
 {
-    const CustomCommand* c = new DoThisCommand(23u);
+    const auto c = std::make_unique<DoThisCommand>(23u);
     ASSERT_TRUE(c);
 
     const DoThisCommand& dtc = c->convertTo< DoThisCommand >();
     EXPECT_EQ(23u, dtc.value);
-
-    delete c;
 }

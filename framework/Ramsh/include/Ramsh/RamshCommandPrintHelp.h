@@ -19,7 +19,7 @@ namespace ramses_internal
     {
     public:
         explicit RamshCommandPrintHelp(const Ramsh& ramsh);
-        virtual Bool executeInput(const RamshInput& input) override;
+        virtual bool executeInput(const RamshInput& input) override;
 
     protected:
         const Ramsh& m_ramsh;

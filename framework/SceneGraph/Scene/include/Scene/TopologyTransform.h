@@ -23,8 +23,8 @@ namespace ramses_internal
         NodeHandle node;
     };
 
-    static_assert(std::is_nothrow_move_constructible<TopologyTransform>::value &&
-        std::is_nothrow_move_assignable<TopologyTransform>::value, "Transform must be movable");
+    static_assert(std::is_nothrow_move_constructible<TopologyTransform>::value, "Transform must be movable");
+    static_assert(std::is_nothrow_move_assignable<TopologyTransform>::value, "Transform must be movable");
 }
 
 #endif

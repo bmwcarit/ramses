@@ -8,8 +8,9 @@
 
 #include "GaussFilter.h"
 #include "vector"
-#include "math.h"
 #include "stdio.h"
+
+#include <cmath>
 
 GaussFilter::GaussFilter(ramses::RenderBuffer& inputBuffer,
                          EDirection            direction,
@@ -103,8 +104,8 @@ void GaussFilter::setVariance(float variance)
     float normalizationFactor = 1.0f;
     if (variance > 0.0f)
     {
-        const float pi = acos(-1.0f);
-        normalizationFactor = 1.0f / (variance * static_cast<float>(sqrt(2.0 * pi)));
+        const float pi = std::acos(-1.0f);
+        normalizationFactor = 1.0f / (variance * static_cast<float>(std::sqrt(2.0f * pi)));
     }
     kernel[0]           = normalizationFactor;
     float    sum        = kernel[0];
@@ -113,7 +114,7 @@ void GaussFilter::setVariance(float variance)
     {
         kernelSize++;
         kernel[kernelSize] =
-            static_cast<float>(exp(-static_cast<float>(kernelSize * kernelSize) / (2.0f * variance * variance)) * normalizationFactor);
+            static_cast<float>(std::exp(-static_cast<float>(kernelSize * kernelSize) / (2.0f * variance * variance)) * normalizationFactor);
         sum += 2.0f * kernel[kernelSize];
     }
 

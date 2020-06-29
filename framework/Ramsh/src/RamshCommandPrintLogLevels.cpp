@@ -20,22 +20,17 @@ namespace ramses_internal
         description = "print Log Levels";
     }
 
-    Bool RamshCommandPrintLogLevels::executeInput(const RamshInput& input)
+    bool RamshCommandPrintLogLevels::executeInput(const RamshInput& input)
     {
         UNUSED(input);
 
         const RamsesLogger& logger = GetRamsesLogger();
-        const ELogLevel consoleLogLevel = logger.getLogLevelForAppenderType(ELogAppenderType::Console);
-        const ELogLevel dltLogLevel = logger.getLogLevelForAppenderType(ELogAppenderType::Dlt);
+        const ELogLevel consoleLogLevel = logger.getConsoleLogLevel();
 
         LOG_INFO(CONTEXT_RAMSH,"");
         LOG_INFO(CONTEXT_RAMSH,"           Appender Log Levels          ");
         LOG_INFO(CONTEXT_RAMSH,"----------------------------------------");
-        LOG_INFO(CONTEXT_RAMSH, "Console | " << static_cast<Int32>(consoleLogLevel) << " | "
-                << RamsesLogger::GetLogLevelText(consoleLogLevel));
-
-        LOG_INFO(CONTEXT_RAMSH,"DLT     | " << static_cast<Int32>(dltLogLevel) << " | "
-                << RamsesLogger::GetLogLevelText(dltLogLevel));
+        LOG_INFO(CONTEXT_RAMSH,"Console | " << static_cast<Int32>(consoleLogLevel) << " | " << RamsesLogger::GetLogLevelText(consoleLogLevel));
         LOG_INFO(CONTEXT_RAMSH,"");
         LOG_INFO(CONTEXT_RAMSH,"           Context Log Levels           ");
         LOG_INFO(CONTEXT_RAMSH,"ID   | Name                  | V | Level");

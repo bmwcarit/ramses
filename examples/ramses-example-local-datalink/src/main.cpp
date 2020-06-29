@@ -10,7 +10,7 @@
 
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/DisplayConfig.h"
-#include "ramses-renderer-api/IRendererEventHandler.h"
+#include "ramses-renderer-api/RendererSceneControl.h"
 #include "ramses-client-api/DataVector4f.h"
 #include "ramses-utils.h"
 #include <unordered_set>
@@ -18,91 +18,10 @@
 #include <chrono>
 #include <thread>
 
-/** \cond HIDDEN_SYMBOLS */
-class SceneStateEventHandler : public ramses::RendererEventHandlerEmpty
-{
-public:
-    SceneStateEventHandler(ramses::RamsesRenderer& renderer)
-        : m_renderer(renderer)
-    {
-    }
-
-    virtual void scenePublished(ramses::sceneId_t sceneId) override
-    {
-        m_publishedScenes.insert(sceneId);
-    }
-
-    virtual void sceneUnpublished(ramses::sceneId_t sceneId) override
-    {
-        m_publishedScenes.erase(sceneId);
-    }
-
-    virtual void sceneSubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_OK == result)
-        {
-            m_subscribedScenes.insert(sceneId);
-        }
-    }
-
-    virtual void sceneUnsubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_FAIL != result)
-        {
-            m_subscribedScenes.erase(sceneId);
-        }
-    }
-
-    virtual void sceneMapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_OK == result)
-        {
-            m_mappedScenes.insert(sceneId);
-        }
-    }
-
-    virtual void sceneUnmapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_FAIL != result)
-        {
-            m_mappedScenes.erase(sceneId);
-        }
-    }
-
-    void waitForPublication(const ramses::sceneId_t sceneId)
-    {
-        waitForSceneInSet(sceneId, m_publishedScenes);
-    }
-
-    void waitForSubscription(const ramses::sceneId_t sceneId)
-    {
-        waitForSceneInSet(sceneId, m_subscribedScenes);
-    }
-
-    void waitForMapped(const ramses::sceneId_t sceneId)
-    {
-        waitForSceneInSet(sceneId, m_mappedScenes);
-    }
-
-private:
-    typedef std::unordered_set<ramses::sceneId_t> SceneSet;
-
-    void waitForSceneInSet(const ramses::sceneId_t sceneId, const SceneSet& sceneSet)
-    {
-        while (sceneSet.find(sceneId) == sceneSet.end())
-        {
-            m_renderer.doOneLoop();
-            m_renderer.dispatchEvents(*this);
-        }
-    }
-
-    SceneSet m_publishedScenes;
-    SceneSet m_subscribedScenes;
-    SceneSet m_mappedScenes;
-
-    ramses::RamsesRenderer& m_renderer;
-};
-/** \endcond */
+/**
+ * @example ramses-example-local-datalink/src/main.cpp
+ * @brief Local Data Link Example
+ */
 
 // Helper struct for triangle scene
 struct TriangleSceneInfo
@@ -287,21 +206,19 @@ int main(int argc, char* argv[])
     ramses::RamsesFrameworkConfig config(argc, argv);
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);  //needed for automated test of examples
     ramses::RamsesFramework framework(config);
-    ramses::RamsesClient client("ramses-local-datalink-example", framework);
+    ramses::RamsesClient& client(*framework.createClient("ramses-local-datalink-example"));
 
     ramses::RendererConfig rendererConfig(argc, argv);
-    ramses::RamsesRenderer renderer(framework, rendererConfig);
+    ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
 
-    ramses::DisplayConfig displayConfig;
-    displayConfig.setIntegrityRGLDeviceUnit(0);
-    displayConfig.setWaylandIviSurfaceID(0);
-    displayConfig.setWaylandIviLayerID(3);
-    displayConfig.setWindowIviVisible();
+    ramses::DisplayConfig displayConfig(argc, argv);
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
+    renderer.flush();
+    auto& sceneControlAPI = *renderer.getSceneControlAPI();
 
-    const ramses::sceneId_t triangleSceneId = 1u;
-    const ramses::sceneId_t quadSceneId = 2u;
-    const ramses::sceneId_t quadSceneId2 = 3u;
+    const ramses::sceneId_t triangleSceneId{1u};
+    const ramses::sceneId_t quadSceneId{2u};
+    const ramses::sceneId_t quadSceneId2{3u};
     TriangleSceneInfo* triangleInfo = createTriangleSceneContent(client, triangleSceneId);
     QuadSceneInfo* quadInfo = createQuadSceneContent(client, quadSceneId);
     QuadSceneInfo* quadInfo2 = createQuadSceneContent(client, quadSceneId2);
@@ -350,44 +267,32 @@ int main(int argc, char* argv[])
     quadScene->publish();
     quadScene2->publish();
 
-    SceneStateEventHandler eventHandler(renderer);
+    const auto fbId = renderer.getDisplayFramebuffer(display);
 
-    eventHandler.waitForPublication(triangleSceneId);
-    eventHandler.waitForPublication(quadSceneId);
-    eventHandler.waitForPublication(quadSceneId2);
+    sceneControlAPI.setSceneMapping(triangleSceneId, display);
+    sceneControlAPI.setSceneMapping(quadSceneId, display);
+    sceneControlAPI.setSceneMapping(quadSceneId2, display);
+    sceneControlAPI.flush();
 
-    renderer.subscribeScene(triangleSceneId);
-    renderer.subscribeScene(quadSceneId);
-    renderer.subscribeScene(quadSceneId2);
-    renderer.flush();
-    eventHandler.waitForSubscription(triangleSceneId);
-    eventHandler.waitForSubscription(quadSceneId);
-    eventHandler.waitForSubscription(quadSceneId2);
+    sceneControlAPI.setSceneDisplayBufferAssignment(triangleSceneId, fbId, 0);
+    sceneControlAPI.setSceneDisplayBufferAssignment(quadSceneId, fbId, 1);
+    sceneControlAPI.setSceneDisplayBufferAssignment(quadSceneId2, fbId, 2);
 
-    renderer.mapScene(display, triangleSceneId, 0);
-    renderer.mapScene(display, quadSceneId, 1);
-    renderer.mapScene(display, quadSceneId2, 2);
-    renderer.flush();
-    eventHandler.waitForMapped(triangleSceneId);
-    eventHandler.waitForMapped(quadSceneId);
-    eventHandler.waitForMapped(quadSceneId2);
-
-    renderer.showScene(triangleSceneId);
-    renderer.showScene(quadSceneId);
-    renderer.showScene(quadSceneId2);
-    renderer.flush();
+    sceneControlAPI.setSceneState(triangleSceneId, ramses::RendererSceneState::Rendered);
+    sceneControlAPI.setSceneState(quadSceneId, ramses::RendererSceneState::Rendered);
+    sceneControlAPI.setSceneState(quadSceneId2, ramses::RendererSceneState::Rendered);
 
     /// [Data Linking Example Renderer]
     // link transformation
-    renderer.linkData(triangleSceneId, transformationProviderId, quadSceneId, transformationConsumerId);
-    renderer.linkData(triangleSceneId, transformationProviderId, quadSceneId2, transformationConsumerId2);
+    sceneControlAPI.linkData(triangleSceneId, transformationProviderId, quadSceneId, transformationConsumerId);
+    sceneControlAPI.linkData(triangleSceneId, transformationProviderId, quadSceneId2, transformationConsumerId2);
     // link data
-    renderer.linkData(quadSceneId, dataProviderId, triangleSceneId, dataConsumerId);
+    sceneControlAPI.linkData(quadSceneId, dataProviderId, triangleSceneId, dataConsumerId);
     // link texture
-    renderer.linkData(triangleSceneId, textureProviderId, quadSceneId2, textureConsumerId);
+    sceneControlAPI.linkData(triangleSceneId, textureProviderId, quadSceneId2, textureConsumerId);
     /// [Data Linking Example Renderer]
 
-    renderer.flush();
+    sceneControlAPI.flush();
 
     // run animation
     uint32_t textureId = 0;

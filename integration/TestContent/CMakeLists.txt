@@ -31,5 +31,4 @@ ACME_MODULE(
     DEPENDENCIES            ramses-client
                             ramses-framework
                             ramses-renderer-lib
-                            ramses-text
 )

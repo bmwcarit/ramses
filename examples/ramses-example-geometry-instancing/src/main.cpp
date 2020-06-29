@@ -20,11 +20,11 @@ int main(int argc, char* argv[])
 {
     // register at RAMSES daemon
     ramses::RamsesFramework framework(argc, argv);
-    ramses::RamsesClient ramses("ramses-example-geometry-instancing", framework);
+    ramses::RamsesClient& ramses(*framework.createClient("ramses-example-geometry-instancing"));
     framework.connect();
 
     // create a scene for distributing content
-    ramses::Scene* scene = ramses.createScene(123u, ramses::SceneConfig(), "geometry instancing scene");
+    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "geometry instancing scene");
 
     // every scene needs a render pass with camera
     ramses::Camera* camera = scene->createRemoteCamera("my camera");

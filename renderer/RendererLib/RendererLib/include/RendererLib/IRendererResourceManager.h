@@ -12,15 +12,14 @@
 #include "IResourceDeviceHandleAccessor.h"
 #include "RendererLib/EResourceStatus.h"
 #include "SceneAPI/RenderBuffer.h"
-#include "Transfer/ResourceTypes.h"
 #include "SceneAPI/SceneTypes.h"
 #include "SceneAPI/TextureSamplerStates.h"
-#include "Resource/EResourceType.h"
+#include "SceneAPI/EDataType.h"
+#include "Resource/ResourceTypes.h"
 
 namespace ramses_internal
 {
     struct RenderTarget;
-    class RendererLogContext;
     class IRendererResourceCache;
     enum class EDataBufferType : UInt8;
 

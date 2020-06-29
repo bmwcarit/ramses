@@ -12,7 +12,7 @@
 #include "Ramsh/RamshInput.h"
 #include "Ramsh/RamshCommandArgumentsConverter.h"
 #include "Collections/HashSet.h"
-#include "PlatformAbstraction/PlatformTypeInfo.h"
+#include "Ramsh/RamshTypeInfo.h"
 #include "Utils/LogMacros.h"
 
 namespace ramses_internal
@@ -28,7 +28,7 @@ namespace ramses_internal
 
     template<typename T> struct ArgumentConverterProxy;
 
-    class RamshArgumentBase : private StringSet
+    class RamshArgumentBase
     {
     public:
         // returns the description of the argument
@@ -38,7 +38,7 @@ namespace ramses_internal
         String keywords() const;
 
     protected:
-        RamshArgumentBase(const PlatformTypeInfo& typeinfo, void* defaultValue = 0);
+        explicit RamshArgumentBase(const RamshTypeInfo& typeinfo, void* defaultValue = nullptr);
 
         virtual ~RamshArgumentBase()
         {
@@ -53,7 +53,7 @@ namespace ramses_internal
         const RamshArgumentData* forceSet(const String& data) const;
 
         // tries to get the value of the argument (converts the data) with a data object previously retrieved by calling set/forceSet
-        template<typename T> Bool getValue(const RamshArgumentData* data, T& value) const;
+        template<typename T> bool getValue(const RamshArgumentData* data, T& value) const;
 
         virtual String typeString() const = 0;
 
@@ -69,13 +69,14 @@ namespace ramses_internal
 
         template<typename T> inline void cleanup()
         {
-            if(m_defaultValue) delete static_cast<T*>(m_defaultValue);
+            delete static_cast<T*>(m_defaultValue);
         }
 
     private:
+        HashSet<String> m_keywords;
         String m_description;
         void* m_defaultValue;
-        const PlatformTypeInfo m_typeInfo;
+        const RamshTypeInfo m_typeInfo;
 
         friend struct RamshArgumentDataProvider;
         friend class RamshArgumentProvider;
@@ -100,7 +101,7 @@ namespace ramses_internal
     {
     public:
         // construct an argument definition with given default value
-        RamshArgument(const T& defaultValue);
+        explicit RamshArgument(const T& defaultValue);
 
         // construct an argument definition - argument will be mandatory if no default value is set later
         RamshArgument();
@@ -126,7 +127,7 @@ namespace ramses_internal
     class TypedRamshArgument : public RamshArgument<T>
     {
     public:
-        inline TypedRamshArgument(const T& defaultValue)
+        inline explicit TypedRamshArgument(const T& defaultValue)
             : RamshArgument<T>(defaultValue)
         {}
 
@@ -136,15 +137,15 @@ namespace ramses_internal
     };
 
     template<>
-    class TypedRamshArgument<Bool> : public RamshArgument<Bool>
+    class TypedRamshArgument<bool> : public RamshArgument<bool>
     {
     public:
-        inline TypedRamshArgument(const Bool& defaultValue)
-            : RamshArgument<Bool>(defaultValue)
+        inline explicit TypedRamshArgument(const bool& defaultValue)
+            : RamshArgument<bool>(defaultValue)
         {}
 
         inline TypedRamshArgument()
-            : RamshArgument<Bool>()
+            : RamshArgument<bool>()
         {}
 
         UInt32 amountConsumed() const override;
@@ -156,7 +157,7 @@ namespace ramses_internal
         RamshArgumentDataProvider(const ArgumentVector& args, const RamshInput& input);
 
         // try to get the converted data of the argument with index
-        template<typename T> Bool getValue(UInt32 index, T& value) const;
+        template<typename T> bool getValue(UInt32 index, T& value) const;
 
     private:
         const ArgumentVector& m_args;
@@ -193,7 +194,7 @@ namespace ramses_internal
     // RamshArgumentBase
     // -----------------
 
-    inline RamshArgumentBase::RamshArgumentBase(const PlatformTypeInfo& typeinfo, void* defaultValue /*= 0*/)
+    inline RamshArgumentBase::RamshArgumentBase(const RamshTypeInfo& typeinfo, void* defaultValue /*= 0*/)
         : m_defaultValue(defaultValue)
         , m_typeInfo(typeinfo)
     {
@@ -211,8 +212,8 @@ namespace ramses_internal
 
     inline String RamshArgumentBase::keywords() const
     {
-        StringSet::ConstIterator it = StringSet::begin();
-        const StringSet::ConstIterator end = StringSet::end();
+        StringSet::ConstIterator it = m_keywords.begin();
+        const StringSet::ConstIterator end = m_keywords.end();
 
         String s;
         for(;it!=end;++it)
@@ -224,11 +225,11 @@ namespace ramses_internal
 
     inline const RamshArgumentData* RamshArgumentBase::set(const String& keyword, const String& data) const
     {
-        if(StringSet::hasElement(keyword))
+        if(m_keywords.contains(keyword))
         {
             return &data;
         }
-        return 0;
+        return nullptr;
     }
 
     inline const RamshArgumentData* RamshArgumentBase::forceSet(const String& data) const
@@ -241,7 +242,7 @@ namespace ramses_internal
     inline void RamshArgumentBase::setDefaultValueInternal(const T& defaultValue)
     {
         // type safety check because this class is typeless, should be able to resolve at compile-time
-        if(m_typeInfo == PlatformTypeId::id<T>())
+        if(m_typeInfo == RamshTypeId::id<T>())
         {
             // either allocates new memory for default value or copy-assigns new default value
             if(m_defaultValue)
@@ -251,15 +252,16 @@ namespace ramses_internal
         }
         else
         {
-            LOG_ERROR(CONTEXT_RAMSH,"Trying to set default value of argument of type " << typeString() << " with value of wrong type " << TypeName<T>());
+            LOG_ERROR(CONTEXT_RAMSH,"Trying to set default value of argument of type " << typeString() <<
+                      " with value of wrong type " << static_cast<String>(TypeName<T>()));
         }
     }
 
     template<typename T>
-    inline Bool RamshArgumentBase::getValue(const RamshArgumentData* data, T& value) const
+    inline bool RamshArgumentBase::getValue(const RamshArgumentData* data, T& value) const
     {
         // type safety check + check if data matches argument definition
-        if(PlatformTypeId::id<T>() != m_typeInfo)
+        if(RamshTypeId::id<T>() != m_typeInfo)
         {
             return false;
         }
@@ -296,7 +298,7 @@ namespace ramses_internal
 
     inline void RamshArgumentBase::registerKeywordInternal(const String& keyword)
     {
-        StringSet::put(keyword);
+        m_keywords.put(keyword);
     }
 
     inline void RamshArgumentBase::setDescriptionInternal(const String& description)
@@ -340,13 +342,13 @@ namespace ramses_internal
 
     template<typename T>
     inline RamshArgument<T>::RamshArgument(const T& defaultValue)
-        : RamshArgumentBase(PlatformTypeId::id<T>(),new T(defaultValue))
+        : RamshArgumentBase(RamshTypeId::id<T>(),new T(defaultValue))
     {
     }
 
     template<typename T>
     inline RamshArgument<T>::RamshArgument()
-        : RamshArgumentBase(PlatformTypeId::id<T>())
+        : RamshArgumentBase(RamshTypeId::id<T>())
     {
     }
 
@@ -359,7 +361,7 @@ namespace ramses_internal
     template<typename T>
     inline String RamshArgument<T>::typeString() const
     {
-        return TypeName<T>();
+        return static_cast<String>(TypeName<T>());
     }
 
     template<typename T>
@@ -377,10 +379,10 @@ namespace ramses_internal
     }
 
     // -------------------
-    // TypedRamshArgument<Bool>
+    // TypedRamshArgument<bool>
     // -------------------
 
-    inline UInt32 TypedRamshArgument<Bool>::amountConsumed() const
+    inline UInt32 TypedRamshArgument<bool>::amountConsumed() const
     {
         return 1; // data amount consumed by a bool-argument (just flag)
     }
@@ -405,7 +407,7 @@ namespace ramses_internal
         for(UInt j = 0; j < m_args.size(); j++)
         {
             // initialize current argument's data with 0
-            m_data[j] = 0;
+            m_data[j] = nullptr;
             for (UInt pos = 0; pos < in.size(); ++pos)
             {
                 // determine if current raw data is a flag
@@ -420,7 +422,7 @@ namespace ramses_internal
                         {
                             // more data is available, try to set the argument
                             --pos;
-                            const String keyword = in[pos]->substr(1,in[pos]->getLength()-1);
+                            const String keyword = in[pos]->substr(1,in[pos]->size()-1);
                             ++pos;
                             m_data[j] = m_args[j]->set(keyword, *in[pos]);
                         }
@@ -428,13 +430,14 @@ namespace ramses_internal
                     }
                     else if(m_args[j]->amountConsumed() == 1)
                         // only the flag is consumed by the argument
-                        m_data[j] = m_args[j]->set(in[pos]->substr(1,in[pos]->getLength()-1),"");
+                        m_data[j] = m_args[j]->set(in[pos]->substr(1,in[pos]->size()-1),"");
 
                     if(m_data[j])
                     {
                         // if an argument value was found, remove the consumed data
                         in.erase(in.begin() + pos);
-                        if(m_args[j]->amountConsumed() > 1) in.erase(in.begin() + pos);
+                        if(m_args[j]->amountConsumed() > 1)
+                            in.erase(in.begin() + pos);
 
                         break;
                     }
@@ -443,10 +446,10 @@ namespace ramses_internal
         }
 
         // try to set positional values for each unset argument (data without a flag)
-        for(UInt32 j = 0; j < m_args.size(); j++)
+        for(size_t j = 0; j < m_args.size(); j++)
         {
             // only set the data if an argument has no previously found value, if any data is left and if the argument actually consumes any data
-            if(!m_data[j] && in.size() > 0 && m_args[j]->amountConsumed() > 1)
+            if(!m_data[j] && !in.empty() && m_args[j]->amountConsumed() > 1)
             {
                 m_data[j] = m_args[j]->forceSet(**in.begin());
                 in.erase(in.begin());
@@ -455,7 +458,7 @@ namespace ramses_internal
     }
 
     template<typename T>
-    inline Bool RamshArgumentDataProvider::getValue(UInt32 index, T& value) const
+    inline bool RamshArgumentDataProvider::getValue(UInt32 index, T& value) const
     {
         // get the argument data of this index
         const RamshArgumentData* argData = m_data[index];
@@ -523,14 +526,14 @@ namespace ramses_internal
     // ArgumentConverterProxy
     // -------------------
 
-    // proxy needed for Bool-arguments because they aren't converted like other argument types
+    // proxy needed for bool-arguments because they aren't converted like other argument types
     template<>
-    struct ArgumentConverterProxy<Bool>
+    struct ArgumentConverterProxy<bool>
     {
-        static inline Bool tryConvert(const void* defaultValue, const RamshArgumentData&, Bool& value)
+        static inline bool tryConvert(const void* defaultValue, const RamshArgumentData&, bool& value)
         {
             // either flip default value or return true if flag was found
-            value = defaultValue ? !(*static_cast<const Bool*>(defaultValue)) : true;
+            value = defaultValue ? !(*static_cast<const bool*>(defaultValue)) : true;
             return true;
         }
     };
@@ -538,7 +541,7 @@ namespace ramses_internal
     template<typename T>
     struct ArgumentConverterProxy
     {
-        static inline Bool tryConvert(const void*, const RamshArgumentData& data, T& value)
+        static inline bool tryConvert(const void*, const RamshArgumentData& data, T& value)
         {
             return ArgumentConverter<T>::tryConvert(data,value);
         }

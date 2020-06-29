@@ -6,8 +6,8 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-capu/Config.h"
-#include <gtest/gtest.h>
+#include "PlatformAbstraction/PlatformTypes.h"
+#include "gtest/gtest.h"
 #include <limits>
 
 TEST(NumericLimits, ensureAvailableForAlltypes)
@@ -27,8 +27,8 @@ TEST(NumericLimits, ensureAvailableForAlltypes)
     (void)std::numeric_limits<float>::max();
     (void)std::numeric_limits<double>::max();
 
-    (void)std::numeric_limits<ramses_capu::uint_t>::max();
-    (void)std::numeric_limits<ramses_capu::int_t>::max();
+    (void)std::numeric_limits<ramses_internal::UInt>::max();
+    (void)std::numeric_limits<ramses_internal::Int>::max();
 }
 
 TEST(NumericLimits, testLimits)

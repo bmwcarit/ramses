@@ -176,10 +176,10 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    Bool TransformationCachedSceneT<MEMORYPOOL>::markDirty(NodeHandle node) const
+    bool TransformationCachedSceneT<MEMORYPOOL>::markDirty(NodeHandle node) const
     {
         MatrixCacheEntry& cacheEntry = getMatrixCacheEntry(node);
-        const Bool wasDirty = cacheEntry.m_matrixDirty[ETransformationMatrixType_Object] && cacheEntry.m_matrixDirty[ETransformationMatrixType_World];
+        const bool wasDirty = cacheEntry.m_matrixDirty[ETransformationMatrixType_Object] && cacheEntry.m_matrixDirty[ETransformationMatrixType_World];
         cacheEntry.setDirty();
         return wasDirty;
     }
@@ -195,7 +195,7 @@ namespace ramses_internal
             const NodeHandle node = m_dirtyPropagationTraversalBuffer.back();
             m_dirtyPropagationTraversalBuffer.pop_back();
 
-            const Bool wasDirty = markDirty(node);
+            const bool wasDirty = markDirty(node);
 
             // If it was already dirty, no need to propagate further
             if (!wasDirty)
@@ -214,7 +214,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    Bool ramses_internal::TransformationCachedSceneT<MEMORYPOOL>::isMatrixCacheDirty(ETransformationMatrixType matrixType, NodeHandle node) const
+    bool ramses_internal::TransformationCachedSceneT<MEMORYPOOL>::isMatrixCacheDirty(ETransformationMatrixType matrixType, NodeHandle node) const
     {
         return getMatrixCacheEntry(node).m_matrixDirty[matrixType];
     }

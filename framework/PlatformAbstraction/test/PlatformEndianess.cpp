@@ -23,14 +23,12 @@ namespace ramses_internal
         ASSERT_NE(42u, htonl(42));
 
         // Test using bytes of one integer
-        union
-        {
-            UInt32 anInt;
-            char theIntAsByteArray[4];
-        } integerUnion = { 0x01000000 };
+        const uint32_t anInt = 0x01000000;
+        char anIntBuffer[sizeof(anInt)];
+        std::memcpy(anIntBuffer, &anInt, sizeof(anInt));
 
-        const bool isBigEndian = (integerUnion.theIntAsByteArray[0] == 1);
-        const bool isLittleEndian = (integerUnion.theIntAsByteArray[3] == 1);
+        const bool isBigEndian = (anIntBuffer[0] == 1);
+        const bool isLittleEndian = (anIntBuffer[3] == 1);
 
         ASSERT_FALSE(isBigEndian);
         ASSERT_TRUE(isLittleEndian);

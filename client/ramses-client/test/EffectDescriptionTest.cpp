@@ -49,7 +49,7 @@ namespace ramses
         EXPECT_STREQ("", effectDesc.getVertexShader());
         EXPECT_STREQ("", effectDesc.getFragmentShader());
         EXPECT_EQ(0u, effectDesc.getNumberOfCompilerDefines());
-        EXPECT_EQ(0u, effectDesc.impl.getSemanticsMap().count());
+        EXPECT_EQ(0u, effectDesc.impl.getSemanticsMap().size());
     }
 
     TEST_F(EffectDescriptionTest, setShaderWithNULLRetrievesEmptyString)
@@ -107,7 +107,7 @@ namespace ramses
     TEST_F(EffectDescriptionTest, addSemanticNameAsNULLReportsError)
     {
         EXPECT_NE(StatusOK, effectDesc.setUniformSemantic(nullptr, EEffectUniformSemantic_CameraViewMatrix));
-        EXPECT_EQ(0u, effectDesc.impl.getSemanticsMap().count());
+        EXPECT_EQ(0u, effectDesc.impl.getSemanticsMap().size());
     }
 
     TEST_F(EffectDescriptionTest, canAddAndRetrieveSemanticInput)
@@ -121,18 +121,18 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, effectDesc.setUniformSemantic(semantic1, semanticType1));
         EXPECT_EQ(semanticType1, getSemanticForUniform(semantic1));
-        EXPECT_EQ(1u, effectDesc.impl.getSemanticsMap().count());
+        EXPECT_EQ(1u, effectDesc.impl.getSemanticsMap().size());
 
         EXPECT_EQ(StatusOK, effectDesc.setUniformSemantic(semantic2, semanticType2));
         EXPECT_EQ(semanticType1, getSemanticForUniform(semantic1));
         EXPECT_EQ(semanticType2, getSemanticForUniform(semantic2));
-        EXPECT_EQ(2u, effectDesc.impl.getSemanticsMap().count());
+        EXPECT_EQ(2u, effectDesc.impl.getSemanticsMap().size());
 
         EXPECT_EQ(StatusOK, effectDesc.setAttributeSemantic(semantic3, semanticType3));
         EXPECT_EQ(semanticType1, getSemanticForUniform(semantic1));
         EXPECT_EQ(semanticType2, getSemanticForUniform(semantic2));
         EXPECT_EQ(semanticType3, getSemanticForAttribute(semantic3));
-        EXPECT_EQ(3u, effectDesc.impl.getSemanticsMap().count());
+        EXPECT_EQ(3u, effectDesc.impl.getSemanticsMap().size());
     }
 
     TEST_F(EffectDescriptionTest, retrievesUnknownTypeForSemanticNotAdded)

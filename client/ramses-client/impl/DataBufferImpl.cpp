@@ -51,6 +51,12 @@ namespace ramses
         return static_cast<uint32_t>(dataBuffer.data.size()) / EnumToSize(dataBuffer.dataType);
     }
 
+    uint32_t DataBufferImpl::getUsedElementCount() const
+    {
+        const ramses_internal::GeometryDataBuffer& dataBuffer = getIScene().getDataBuffer(m_dataBufferHandle);
+        return static_cast<uint32_t>(dataBuffer.usedSize) / EnumToSize(dataBuffer.dataType);
+    }
+
     EDataType DataBufferImpl::getDataType() const
     {
         const ramses_internal::GeometryDataBuffer& dataBuffer = getIScene().getDataBuffer(m_dataBufferHandle);
@@ -84,9 +90,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t DataBufferImpl::validate(uint32_t indent) const
+    status_t DataBufferImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        status_t status = SceneObjectImpl::validate(indent);
+        status_t status = SceneObjectImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
 
         const auto& iscene = getIScene();
@@ -121,6 +127,12 @@ namespace ramses
                     break;
                 }
             }
+        }
+
+        for (ramses_internal::PickableObjectHandle po(0u); po < iscene.getPickableObjectCount() && !usedAsInput; ++po)
+        {
+            if (iscene.isPickableObjectAllocated(po) && iscene.getPickableObject(po).geometryHandle == getDataBufferHandle())
+                usedAsInput = true;
         }
 
         if (usedAsInput && !isInitialized)

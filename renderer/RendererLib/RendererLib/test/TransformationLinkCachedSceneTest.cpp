@@ -173,6 +173,14 @@ namespace ramses_internal
             EXPECT_TRUE(matrixFloatEquals(worldMatrix.inverse(), scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, nodeToCheck)));
         }
 
+        RendererEventVector consumeSceneControlEvents()
+        {
+            RendererEventVector events;
+            RendererEventVector dummy;
+            rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
+            return events;
+        }
+
         RendererEventCollector rendererEventCollector;
         RendererScenes rendererScenes;
         SceneLinksManager& sceneLinksManager;
@@ -386,13 +394,12 @@ namespace ramses_internal
 
     TEST_F(ATransformationLinkCachedScene, canTriggerCorrectEventWhenAllocateTransformProviderSlot)
     {
-        RendererEventVector events;
-        rendererEventCollector.dispatchEvents(events);
+        consumeSceneControlEvents();
 
         const DataSlotId dataSlotId(123u);
         const DataSlotHandle slotHandle(345u);
         providerSceneAllocator.allocateDataSlot({ EDataSlotType_TransformationProvider, dataSlotId, providerSceneNode, DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), TextureSamplerHandle() }, slotHandle);
-        rendererEventCollector.dispatchEvents(events);
+        const RendererEventVector events = consumeSceneControlEvents();
 
         ASSERT_EQ(1u, events.size());
         EXPECT_EQ(ERendererEventType_SceneDataSlotProviderCreated, events.front().eventType);
@@ -402,12 +409,11 @@ namespace ramses_internal
 
     TEST_F(ATransformationLinkCachedScene, canTriggerCorrectEventWhenReleaseTransformProviderSlot)
     {
-        RendererEventVector events;
-        rendererEventCollector.dispatchEvents(events);
+        consumeSceneControlEvents();
 
         providerScene.releaseDataSlot(providerSceneProviderSlotHandle);
-        rendererEventCollector.dispatchEvents(events);
 
+        const RendererEventVector events = consumeSceneControlEvents();
         ASSERT_EQ(1u, events.size());
         EXPECT_EQ(ERendererEventType_SceneDataSlotProviderDestroyed, events.front().eventType);
         EXPECT_EQ(providerScene.getSceneId(), events.front().providerSceneId);
@@ -416,13 +422,12 @@ namespace ramses_internal
 
     TEST_F(ATransformationLinkCachedScene, canTriggerCorrectEventWhenAllocateTransformConsumerSlot)
     {
-        RendererEventVector events;
-        rendererEventCollector.dispatchEvents(events);
+        consumeSceneControlEvents();
 
         const DataSlotId dataSlotId(123u);
         const DataSlotHandle slotHandle(345u);
         consumer1SceneAllocator.allocateDataSlot({ EDataSlotType_TransformationConsumer, dataSlotId, consumer1SceneNode, DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), TextureSamplerHandle() }, slotHandle);
-        rendererEventCollector.dispatchEvents(events);
+        const RendererEventVector events = consumeSceneControlEvents();
 
         ASSERT_EQ(1u, events.size());
         EXPECT_EQ(ERendererEventType_SceneDataSlotConsumerCreated, events.front().eventType);
@@ -432,11 +437,10 @@ namespace ramses_internal
 
     TEST_F(ATransformationLinkCachedScene, canTriggerCorrectEventWhenReleaseTransformConsumerSlot)
     {
-        RendererEventVector events;
-        rendererEventCollector.dispatchEvents(events);
+        consumeSceneControlEvents();
 
         consumer1Scene.releaseDataSlot(consumer1SceneConsumerSlotHandle);
-        rendererEventCollector.dispatchEvents(events);
+        const RendererEventVector events = consumeSceneControlEvents();
 
         ASSERT_EQ(1u, events.size());
         EXPECT_EQ(ERendererEventType_SceneDataSlotConsumerDestroyed, events.front().eventType);

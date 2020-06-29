@@ -14,7 +14,7 @@
 #include "Line.h"
 #include "SceneAPI/Handles.h"
 #include "ramses-client-api/MeshNode.h"
-#include "TriangleStripQuad.h"
+#include "MultiTriangleGeometry.h"
 
 namespace ramses_internal
 {
@@ -41,7 +41,6 @@ namespace ramses_internal
             STENCIL_TEST_2,
             STENCIL_TEST_3,
             SCISSOR_TEST,
-            STEREO_RENDERING,
             MULTIPLE_DISPLAYS,
             SUBIMAGES,
             PERSPECTIVE_CAMERA,
@@ -58,12 +57,17 @@ namespace ramses_internal
         ramses::MeshNode* m_meshNode3;
         ramses::MeshNode* m_meshNode4;
         ramses::MeshNode* m_meshNode5;
+        ramses::MeshNode* m_meshNode6;
+        ramses::MeshNode* m_meshNode7;
 
         ramses::Triangle m_redTriangle;
         ramses::Triangle m_greenTriangle;
         ramses::Triangle m_blueTriangle;
         ramses::Line     m_yellowLine;
-        ramses::TriangleStripQuad     m_whiteQuad;
+        ramses::MultiTriangleGeometry m_whiteQuad;
+        ramses::MultiTriangleGeometry m_triangleFan;
+        ramses::Line     m_lineStrip;
+        ramses::Line     m_linePoints;
         ramses::Triangle m_redTransparentTriangle;
         ramses::Triangle m_greenTransparentTriangle;
         ramses::Triangle m_blueTransparentTriangle;

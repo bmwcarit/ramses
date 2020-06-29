@@ -8,7 +8,7 @@
 
 #include "TaskFramework/TaskExecutingThreadPool.h"
 #include "TaskFramework/TaskExecutingThread.h"
-#include "PlatformAbstraction/PlatformGuard.h"
+#include "Utils/LogMacros.h"
 
 namespace ramses_internal
 {
@@ -27,7 +27,7 @@ namespace ramses_internal
 
     void TaskExecutingThreadPool::init(UInt16 threadCount, IThreadAliveNotifier& threadAliveHandler)
     {
-        PlatformLightweightGuard mutexGuard(m_mutex);
+        std::lock_guard<std::mutex> mutexGuard(m_mutex);
 
         if (!m_bInitialized)
         {
@@ -48,7 +48,7 @@ namespace ramses_internal
 
     void TaskExecutingThreadPool::deinit()
     {
-        PlatformLightweightGuard mutexGuard(m_mutex);
+        std::lock_guard<std::mutex> mutexGuard(m_mutex);
 
         if (m_bInitialized)
         {
@@ -58,9 +58,9 @@ namespace ramses_internal
     }
 
 
-    void TaskExecutingThreadPool::start(IBlockingTaskQueue& blockingTaskQueue)
+    void TaskExecutingThreadPool::start(ProcessingTaskQueue& blockingTaskQueue)
     {
-        PlatformLightweightGuard mutexGuard(m_mutex);
+        std::lock_guard<std::mutex> mutexGuard(m_mutex);
 
         if (m_bInitialized)
         {
@@ -82,7 +82,7 @@ namespace ramses_internal
 
     void TaskExecutingThreadPool::stop()
     {
-        PlatformLightweightGuard mutexGuard(m_mutex);
+        std::lock_guard<std::mutex> mutexGuard(m_mutex);
 
         if (m_bStarted)
         {

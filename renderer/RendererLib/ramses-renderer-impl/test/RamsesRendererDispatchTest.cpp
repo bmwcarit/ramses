@@ -8,6 +8,7 @@
 
 #include <gtest/gtest.h>
 #include "ramses-renderer-api/RamsesRenderer.h"
+#include "ramses-renderer-api/RendererSceneControl_legacy.h"
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-renderer-api/WarpingMeshData.h"
 
@@ -15,8 +16,10 @@
 #include "RamsesRendererImpl.h"
 #include "Components/ISceneGraphProviderComponent.h"
 #include "Components/FlushTimeInformation.h"
+#include "ComponentMocks.h"
 #include "RendererLib/RendererCommands.h"
 #include "RendererLib/DisplayEventHandler.h"
+#include "RendererLib/EKeyModifier.h"
 #include "Scene/ClientScene.h"
 #include "RendererEventTestHandler.h"
 #include "RamsesRendererUtils.h"
@@ -24,6 +27,7 @@
 //This is needed to abstract from a specific rendering platform
 #include "PlatformFactoryMock.h"
 #include "Platform_Base/PlatformFactory_Base.h"
+#include "ResourceProviderMock.h"
 
 namespace ramses_internal
 {
@@ -42,9 +46,10 @@ namespace ramses_internal
     protected:
         ARamsesRendererDispatch()
             : m_framework()
-            , m_renderer(m_framework, ramses::RendererConfig())
+            , m_renderer(*m_framework.createRenderer(ramses::RendererConfig()))
+            , m_sceneControlAPI(*m_renderer.getSceneControlAPI_legacy())
             , m_sceneId(33u)
-            , m_scene(SceneInfo(SceneId(m_sceneId)))
+            , m_scene(SceneInfo(SceneId(m_sceneId.getValue())))
             , m_sceneGraphProvider(m_framework.impl.getScenegraphComponent())
             , m_sceneGraphSender(m_framework.impl.getScenegraphComponent())
         {
@@ -64,55 +69,57 @@ namespace ramses_internal
 
         ramses::displayId_t createDisplayAndExpectResult(ramses::ERendererEventResult expectedResult = ramses::ERendererEventResult_OK)
         {
-            const ramses::displayId_t m_displayId = addDisplay();
+            const ramses::displayId_t displayId = addDisplay();
             updateAndDispatch(m_handler);
-            m_handler.expectDisplayCreated(m_displayId, expectedResult);
+            m_handler.expectDisplayCreated(displayId, expectedResult);
 
-            return m_displayId;
+            return displayId;
         }
 
         void doUpdateLoop()
         {
-            ramses::RamsesRendererUtils::DoOneLoop(m_renderer.impl.getRenderer(), ramses_internal::ELoopMode_UpdateOnly, std::chrono::microseconds{ 0u });
+            m_renderer.impl.getRenderer().doOneLoop(ramses_internal::ELoopMode::UpdateOnly);
         }
 
-        void updateAndDispatch(ramses::IRendererEventHandler& eventHandler, uint32_t loops = 1u)
+        void updateAndDispatch(RendererEventTestHandler& eventHandler, uint32_t loops = 1u)
         {
             EXPECT_EQ(ramses::StatusOK, m_renderer.flush());
+            EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.flush());
             for (uint32_t i = 0u; i < loops; ++i)
                 doUpdateLoop();
             EXPECT_EQ(ramses::StatusOK, m_renderer.dispatchEvents(eventHandler));
+            EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.dispatchEvents(eventHandler));
         }
 
         void publishScene()
         {
-            m_sceneGraphProvider.handleCreateScene(m_scene, false);
-            m_sceneGraphProvider.handlePublishScene(ramses_internal::SceneId(m_sceneId), EScenePublicationMode_LocalOnly);
+            m_sceneGraphProvider.handleCreateScene(m_scene, false, m_eventConsumer);
+            m_sceneGraphProvider.handlePublishScene(ramses_internal::SceneId(m_sceneId.getValue()), EScenePublicationMode_LocalOnly);
         }
 
         void unpublishScene()
         {
-            m_sceneGraphProvider.handleUnpublishScene(ramses_internal::SceneId(m_sceneId));
+            m_sceneGraphProvider.handleUnpublishScene(ramses_internal::SceneId(m_sceneId.getValue()));
         }
 
         void subscribeScene(ramses::sceneId_t newSceneID)
         {
-            EXPECT_EQ(ramses::StatusOK, m_renderer.subscribeScene(newSceneID));
+            EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.subscribeScene(newSceneID));
             updateAndDispatch(m_handler);
 
             // receive m_scene
-            m_sceneGraphSender.sendCreateScene(m_framework.impl.getParticipantAddress().getParticipantId(), SceneInfo(ramses_internal::SceneId(newSceneID)), EScenePublicationMode_LocalOnly);
+            m_sceneGraphSender.sendCreateScene(m_framework.impl.getParticipantAddress().getParticipantId(), SceneInfo(ramses_internal::SceneId(newSceneID.getValue())), EScenePublicationMode_LocalOnly);
 
             // receive initial flush
             SceneActionCollection initialSceneActions;
             SceneActionCollectionCreator creator(initialSceneActions);
-            creator.flush(1u, false, true, ramses_internal::SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
-            m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(initialSceneActions), ramses_internal::SceneId(newSceneID), EScenePublicationMode_LocalOnly);
+            creator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
+            m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(initialSceneActions), ramses_internal::SceneId(newSceneID.getValue()), EScenePublicationMode_LocalOnly);
         }
 
-        void mapScene(ramses::sceneId_t sceneIdToMap, ramses::displayId_t m_displayId, bool expectSuccess = true)
+        void mapScene(ramses::sceneId_t sceneIdToMap, ramses::displayId_t displayId, bool expectSuccess = true)
         {
-            EXPECT_EQ(ramses::StatusOK, m_renderer.mapScene(m_displayId, sceneIdToMap));
+            EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.mapScene(displayId, sceneIdToMap));
             updateAndDispatch(m_handler, 2u);
             m_handler.expectSceneMapped(sceneIdToMap, expectSuccess ? ramses::ERendererEventResult_OK : ramses::ERendererEventResult_FAIL);
         }
@@ -122,8 +129,8 @@ namespace ramses_internal
             SceneActionCollection sceneActions;
             SceneActionCollectionCreator creator(sceneActions);
             const ramses_internal::SceneVersionTag internalVersionTag(versionTag);
-            creator.flush(1u, false, false, {}, {}, {}, internalVersionTag);
-            m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(sceneActions), ramses_internal::SceneId(newSceneId), EScenePublicationMode_LocalOnly);
+            creator.flush(1u, false, {}, {}, {}, {}, internalVersionTag);
+            m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(sceneActions), ramses_internal::SceneId(newSceneId.getValue()), EScenePublicationMode_LocalOnly);
         }
 
         void flushWithTimeInfo(ramses::sceneId_t newSceneId, FlushTime::Clock::time_point timeStamp, std::chrono::milliseconds limit)
@@ -131,14 +138,13 @@ namespace ramses_internal
             SceneActionCollection sceneActions;
             SceneActionCollectionCreator creator(sceneActions);
             const FlushTimeInformation timeInfo{ limit.count() > 0u ? timeStamp + limit : FlushTime::InvalidTimestamp, {} };
-            creator.flush(1u, false, false, {}, {}, timeInfo);
-            m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(sceneActions), ramses_internal::SceneId(newSceneId), EScenePublicationMode_LocalOnly);
+            creator.flush(1u, false, {}, {}, {}, timeInfo);
+            m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(sceneActions), ramses_internal::SceneId(newSceneId.getValue()), EScenePublicationMode_LocalOnly);
         }
-
         void createPublishedAndSubscribedScene(ramses::sceneId_t newSceneId, ramses_internal::ClientScene& newScene)
         {
-            m_sceneGraphProvider.handleCreateScene(newScene, false);
-            m_sceneGraphProvider.handlePublishScene(ramses_internal::SceneId(newSceneId), EScenePublicationMode_LocalOnly);
+            m_sceneGraphProvider.handleCreateScene(newScene, false, m_eventConsumer);
+            m_sceneGraphProvider.handlePublishScene(ramses_internal::SceneId(newSceneId.getValue()), EScenePublicationMode_LocalOnly);
             updateAndDispatch(m_handler);
             m_handler.expectScenePublished(newSceneId);
 
@@ -147,15 +153,16 @@ namespace ramses_internal
             m_handler.expectSceneSubscribed(newSceneId, ramses::ERendererEventResult_OK);
         }
 
-        void createPublishedAndSubscribedAndMappedScene(ramses::sceneId_t newSceneId, ramses_internal::ClientScene& newScene, ramses::displayId_t m_displayId)
+        void createPublishedAndSubscribedAndMappedScene(ramses::sceneId_t newSceneId, ramses_internal::ClientScene& newScene, ramses::displayId_t displayId)
         {
             createPublishedAndSubscribedScene(newSceneId, newScene);
-            mapScene(newSceneId, m_displayId);
+            mapScene(newSceneId, displayId);
         }
 
     protected:
         ramses::RamsesFramework m_framework;
-        ramses::RamsesRenderer m_renderer;
+        ramses::RamsesRenderer& m_renderer;
+        ramses::RendererSceneControl_legacy& m_sceneControlAPI;
         RendererEventTestHandler m_handler;
 
         const ramses::sceneId_t m_sceneId;
@@ -163,6 +170,7 @@ namespace ramses_internal
 
         ramses_internal::ISceneGraphProviderComponent& m_sceneGraphProvider;
         ramses_internal::ISceneGraphSender& m_sceneGraphSender;
+        StrictMock<SceneProviderEventConsumerMock> m_eventConsumer;
     };
 
     class ARamsesRendererDispatchWithProviderConsumerScenes : public ARamsesRendererDispatch
@@ -176,14 +184,13 @@ namespace ramses_internal
             , m_dataConsumerId(113u)
             , m_sceneProviderId(77u)
             , m_sceneConsumerId(78u)
-            , m_sceneProvider(SceneInfo(SceneId(m_sceneProviderId)))
-            , m_sceneConsumer(SceneInfo(SceneId(m_sceneConsumerId)))
-            , m_displayId(ramses::InvalidDisplayId)
+            , m_sceneProvider(SceneInfo(SceneId(m_sceneProviderId.getValue())))
+            , m_sceneConsumer(SceneInfo(SceneId(m_sceneConsumerId.getValue())))
         {
-            m_displayId = createDisplayAndExpectResult();
+            displayId = createDisplayAndExpectResult();
 
-            createPublishedAndSubscribedAndMappedScene(m_sceneProviderId, m_sceneProvider, m_displayId);
-            createPublishedAndSubscribedAndMappedScene(m_sceneConsumerId, m_sceneConsumer, m_displayId);
+            createPublishedAndSubscribedAndMappedScene(m_sceneProviderId, m_sceneProvider, displayId);
+            createPublishedAndSubscribedAndMappedScene(m_sceneConsumerId, m_sceneConsumer, displayId);
         }
 
     protected:
@@ -194,9 +201,9 @@ namespace ramses_internal
             SceneActionCollection sceneActions;
             SceneActionCollectionCreator creator(sceneActions);
             creator.allocateNode(0u, node);
-            creator.allocateDataSlot({ ramses_internal::EDataSlotType_TransformationProvider, ramses_internal::DataSlotId(m_dataProviderId), node, dataRef, ResourceContentHash::Invalid(), TextureSamplerHandle() }, m_dataProviderHandle);
-            creator.flush(1u, false, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
-            m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(sceneActions), ramses_internal::SceneId(targetSceneId), EScenePublicationMode_LocalOnly);
+            creator.allocateDataSlot({ ramses_internal::EDataSlotType_TransformationProvider, ramses_internal::DataSlotId(m_dataProviderId.getValue()), node, dataRef, ResourceContentHash::Invalid(), TextureSamplerHandle() }, m_dataProviderHandle);
+            creator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
+            m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(sceneActions), ramses_internal::SceneId(targetSceneId.getValue()), EScenePublicationMode_LocalOnly);
         }
 
         void createTransformationDataSlotConsumer(ramses::sceneId_t targetSceneId)
@@ -206,9 +213,9 @@ namespace ramses_internal
             SceneActionCollection sceneActions;
             SceneActionCollectionCreator creator(sceneActions);
             creator.allocateNode(0u, node);
-            creator.allocateDataSlot({ ramses_internal::EDataSlotType_TransformationConsumer, ramses_internal::DataSlotId(m_dataConsumerId), node, dataRef, ramses_internal::ResourceContentHash::Invalid(), ramses_internal::TextureSamplerHandle() }, m_dataConsumerHandle);
-            creator.flush(1u, false, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
-            m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(sceneActions), ramses_internal::SceneId(targetSceneId), EScenePublicationMode_LocalOnly);
+            creator.allocateDataSlot({ ramses_internal::EDataSlotType_TransformationConsumer, ramses_internal::DataSlotId(m_dataConsumerId.getValue()), node, dataRef, ramses_internal::ResourceContentHash::Invalid(), ramses_internal::TextureSamplerHandle() }, m_dataConsumerHandle);
+            creator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u,10u));
+            m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(sceneActions), ramses_internal::SceneId(targetSceneId.getValue()), EScenePublicationMode_LocalOnly);
         }
 
         void createDataSlotProvider(ramses::sceneId_t targetSceneId)
@@ -217,11 +224,11 @@ namespace ramses_internal
             const ramses_internal::DataInstanceHandle dataRef(3u);
             SceneActionCollection sceneActions;
             SceneActionCollectionCreator creator(sceneActions);
-            creator.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, dataLayout);
+            creator.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ramses_internal::ResourceProviderMock::FakeEffectHash, dataLayout);
             creator.allocateDataInstance(dataLayout, dataRef);
-            creator.allocateDataSlot({ ramses_internal::EDataSlotType_DataProvider, ramses_internal::DataSlotId(m_dataProviderId), ramses_internal::NodeHandle(), dataRef, ramses_internal::ResourceContentHash::Invalid(), ramses_internal::TextureSamplerHandle() }, m_dataProviderHandle);
-            creator.flush(1u, false, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
-            m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(sceneActions), ramses_internal::SceneId(targetSceneId), EScenePublicationMode_LocalOnly);
+            creator.allocateDataSlot({ ramses_internal::EDataSlotType_DataProvider, ramses_internal::DataSlotId(m_dataProviderId.getValue()), ramses_internal::NodeHandle(), dataRef, ramses_internal::ResourceContentHash::Invalid(), ramses_internal::TextureSamplerHandle() }, m_dataProviderHandle);
+            creator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
+            m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(sceneActions), ramses_internal::SceneId(targetSceneId.getValue()), EScenePublicationMode_LocalOnly);
         }
 
         void createDataSlotConsumer(ramses::sceneId_t targetSceneId)
@@ -230,20 +237,20 @@ namespace ramses_internal
             const ramses_internal::DataInstanceHandle dataRef(3u);
             SceneActionCollection sceneActions;
             SceneActionCollectionCreator creator(sceneActions);
-            creator.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, dataLayout);
+            creator.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ramses_internal::ResourceProviderMock::FakeEffectHash, dataLayout);
             creator.allocateDataInstance(dataLayout, dataRef);
-            creator.allocateDataSlot({ ramses_internal::EDataSlotType_DataConsumer, ramses_internal::DataSlotId(m_dataConsumerId), ramses_internal::NodeHandle(), dataRef, ramses_internal::ResourceContentHash::Invalid(), ramses_internal::TextureSamplerHandle() }, m_dataConsumerHandle);
-            creator.flush(1u, false, false, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
-            m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(sceneActions), ramses_internal::SceneId(targetSceneId), EScenePublicationMode_LocalOnly);
+            creator.allocateDataSlot({ ramses_internal::EDataSlotType_DataConsumer, ramses_internal::DataSlotId(m_dataConsumerId.getValue()), ramses_internal::NodeHandle(), dataRef, ramses_internal::ResourceContentHash::Invalid(), ramses_internal::TextureSamplerHandle() }, m_dataConsumerHandle);
+            creator.flush(1u, false, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
+            m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(sceneActions), ramses_internal::SceneId(targetSceneId.getValue()), EScenePublicationMode_LocalOnly);
         }
 
         void createTextureSlotProvider(ramses::sceneId_t targetSceneId)
         {
             SceneActionCollection sceneActions;
             SceneActionCollectionCreator creator(sceneActions);
-            creator.allocateDataSlot({ ramses_internal::EDataSlotType_TextureProvider, ramses_internal::DataSlotId(m_dataProviderId), ramses_internal::NodeHandle(), ramses_internal::DataInstanceHandle(), ramses_internal::ResourceContentHash(0x1234, 0), ramses_internal::TextureSamplerHandle() }, m_dataProviderHandle);
-            creator.flush(1u, false, false);
-            m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(sceneActions), ramses_internal::SceneId(targetSceneId), EScenePublicationMode_LocalOnly);
+            creator.allocateDataSlot({ ramses_internal::EDataSlotType_TextureProvider, ramses_internal::DataSlotId(m_dataProviderId.getValue()), ramses_internal::NodeHandle(), ramses_internal::DataInstanceHandle(), ramses_internal::ResourceContentHash(0x1234, 0), ramses_internal::TextureSamplerHandle() }, m_dataProviderHandle);
+            creator.flush(1u, false);
+            m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(sceneActions), ramses_internal::SceneId(targetSceneId.getValue()), EScenePublicationMode_LocalOnly);
         }
 
         void createTextureSlotConsumer(ramses::sceneId_t targetSceneId)
@@ -252,9 +259,9 @@ namespace ramses_internal
             SceneActionCollection sceneActions;
             SceneActionCollectionCreator creator(sceneActions);
             creator.allocateTextureSampler({ {}, ResourceContentHash(1, 2) }, sampler);
-            creator.allocateDataSlot({ ramses_internal::EDataSlotType_TextureConsumer, ramses_internal::DataSlotId(m_dataConsumerId), ramses_internal::NodeHandle(), ramses_internal::DataInstanceHandle(), ramses_internal::ResourceContentHash::Invalid(), sampler }, m_dataConsumerHandle);
-            creator.flush(1u, false, false);
-            m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(sceneActions), ramses_internal::SceneId(targetSceneId), EScenePublicationMode_LocalOnly);
+            creator.allocateDataSlot({ ramses_internal::EDataSlotType_TextureConsumer, ramses_internal::DataSlotId(m_dataConsumerId.getValue()), ramses_internal::NodeHandle(), ramses_internal::DataInstanceHandle(), ramses_internal::ResourceContentHash::Invalid(), sampler }, m_dataConsumerHandle);
+            creator.flush(1u, false);
+            m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(sceneActions), ramses_internal::SceneId(targetSceneId.getValue()), EScenePublicationMode_LocalOnly);
         }
 
         void destroyDataSlot(ramses::sceneId_t targetSceneId, ramses_internal::DataSlotHandle dataSlotHandle)
@@ -262,8 +269,8 @@ namespace ramses_internal
             SceneActionCollection sceneActions;
             SceneActionCollectionCreator creator(sceneActions);
             creator.releaseDataSlot(dataSlotHandle);
-            creator.flush(1u, false, false);
-            m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(sceneActions), ramses_internal::SceneId(targetSceneId), EScenePublicationMode_LocalOnly);
+            creator.flush(1u, false);
+            m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(sceneActions), ramses_internal::SceneId(targetSceneId.getValue()), EScenePublicationMode_LocalOnly);
         }
 
         const ramses_internal::DataSlotHandle m_dataProviderHandle;
@@ -276,7 +283,7 @@ namespace ramses_internal
         ramses_internal::ClientScene m_sceneProvider;
         ramses_internal::ClientScene m_sceneConsumer;
 
-        ramses::displayId_t m_displayId;
+        ramses::displayId_t displayId;
     };
 
     TEST_F(ARamsesRendererDispatch, generatesEventForScenePublish)
@@ -399,14 +406,14 @@ namespace ramses_internal
     {
         createPublishedAndSubscribedScene(m_sceneId, m_scene);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.unsubscribeScene(m_sceneId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.unsubscribeScene(m_sceneId));
         updateAndDispatch(m_handler);
         m_handler.expectSceneUnsubscribed(m_sceneId, ramses::ERendererEventResult_OK);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesFAILEventForSceneUnsubscribe)
     {
-        EXPECT_EQ(ramses::StatusOK, m_renderer.unsubscribeScene(m_sceneId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.unsubscribeScene(m_sceneId));
         updateAndDispatch(m_handler);
         m_handler.expectSceneUnsubscribed(m_sceneId, ramses::ERendererEventResult_FAIL);
     }
@@ -423,50 +430,50 @@ namespace ramses_internal
 
     TEST_F(ARamsesRendererDispatch, generatesOKEventForSceneMap)
     {
-        const ramses::displayId_t m_displayId = createDisplayAndExpectResult();
+        const ramses::displayId_t displayId = createDisplayAndExpectResult();
         createPublishedAndSubscribedScene(m_sceneId, m_scene);
-        mapScene(m_sceneId, m_displayId);
+        mapScene(m_sceneId, displayId);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesFAILEventForMapOfUnknownScene)
     {
-        const ramses::displayId_t m_displayId = createDisplayAndExpectResult();
-        mapScene(m_sceneId, m_displayId, false);
+        const ramses::displayId_t displayId = createDisplayAndExpectResult();
+        mapScene(m_sceneId, displayId, false);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesFAILEventForSceneMapOnInvalidDisplay)
     {
-        const ramses::displayId_t m_displayId(1);
-        mapScene(m_sceneId, m_displayId, false);
+        const ramses::displayId_t displayId(1);
+        mapScene(m_sceneId, displayId, false);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesOKEventForSceneUnmap)
     {
-        const ramses::displayId_t m_displayId = createDisplayAndExpectResult();
+        const ramses::displayId_t displayId = createDisplayAndExpectResult();
 
         createPublishedAndSubscribedScene(m_sceneId, m_scene);
 
-        mapScene(m_sceneId, m_displayId);
+        mapScene(m_sceneId, displayId);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.unmapScene(m_sceneId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.unmapScene(m_sceneId));
         updateAndDispatch(m_handler);
         m_handler.expectSceneUnmapped(m_sceneId, ramses::ERendererEventResult_OK);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesFAILEventForSceneUnmap)
     {
-        EXPECT_EQ(ramses::StatusOK, m_renderer.unmapScene(m_sceneId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.unmapScene(m_sceneId));
         updateAndDispatch(m_handler);
         m_handler.expectSceneUnmapped(m_sceneId, ramses::ERendererEventResult_FAIL);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesINDIRECTEventForSceneUnmapAfterSceneUnpublished)
     {
-        const ramses::displayId_t m_displayId = createDisplayAndExpectResult();
+        const ramses::displayId_t displayId = createDisplayAndExpectResult();
 
         createPublishedAndSubscribedScene(m_sceneId, m_scene);
 
-        mapScene(m_sceneId, m_displayId);
+        mapScene(m_sceneId, displayId);
 
         unpublishScene();
         updateAndDispatch(m_handler);
@@ -477,10 +484,10 @@ namespace ramses_internal
 
     TEST_F(ARamsesRendererDispatch, generatesOKEventForSceneShow)
     {
-        const ramses::displayId_t m_displayId = createDisplayAndExpectResult();
-        createPublishedAndSubscribedAndMappedScene(m_sceneId, m_scene, m_displayId);
+        const ramses::displayId_t displayId = createDisplayAndExpectResult();
+        createPublishedAndSubscribedAndMappedScene(m_sceneId, m_scene, displayId);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.showScene(m_sceneId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.showScene(m_sceneId));
         updateAndDispatch(m_handler);
         m_handler.expectSceneShown(m_sceneId, ramses::ERendererEventResult_OK);
     }
@@ -489,41 +496,41 @@ namespace ramses_internal
     {
         createPublishedAndSubscribedScene(m_sceneId, m_scene);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.showScene(m_sceneId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.showScene(m_sceneId));
         updateAndDispatch(m_handler);
         m_handler.expectSceneShown(m_sceneId, ramses::ERendererEventResult_FAIL);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesOKEventForSceneHide)
     {
-        const ramses::displayId_t m_displayId = createDisplayAndExpectResult();
-        createPublishedAndSubscribedAndMappedScene(m_sceneId, m_scene, m_displayId);
+        const ramses::displayId_t displayId = createDisplayAndExpectResult();
+        createPublishedAndSubscribedAndMappedScene(m_sceneId, m_scene, displayId);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.showScene(m_sceneId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.showScene(m_sceneId));
         updateAndDispatch(m_handler);
         m_handler.expectSceneShown(m_sceneId, ramses::ERendererEventResult_OK);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.hideScene(m_sceneId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.hideScene(m_sceneId));
         updateAndDispatch(m_handler);
         m_handler.expectSceneHidden(m_sceneId, ramses::ERendererEventResult_OK);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesFAILEventForSceneHide)
     {
-        const ramses::displayId_t m_displayId = createDisplayAndExpectResult();
-        createPublishedAndSubscribedAndMappedScene(m_sceneId, m_scene, m_displayId);
+        const ramses::displayId_t displayId = createDisplayAndExpectResult();
+        createPublishedAndSubscribedAndMappedScene(m_sceneId, m_scene, displayId);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.hideScene(m_sceneId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.hideScene(m_sceneId));
         updateAndDispatch(m_handler);
         m_handler.expectSceneHidden(m_sceneId, ramses::ERendererEventResult_FAIL);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesINDIRECTEventForSceneHideAfterSceneUnpublished)
     {
-        const ramses::displayId_t m_displayId = createDisplayAndExpectResult();
-        createPublishedAndSubscribedAndMappedScene(m_sceneId, m_scene, m_displayId);
+        const ramses::displayId_t displayId = createDisplayAndExpectResult();
+        createPublishedAndSubscribedAndMappedScene(m_sceneId, m_scene, displayId);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.showScene(m_sceneId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.showScene(m_sceneId));
         updateAndDispatch(m_handler);
         m_handler.expectSceneShown(m_sceneId, ramses::ERendererEventResult_OK);
 
@@ -548,64 +555,64 @@ namespace ramses_internal
 
     TEST_F(ARamsesRendererDispatch, generatesEventForDisplayDestruction)
     {
-        const ramses::displayId_t m_displayId = createDisplayAndExpectResult();
+        const ramses::displayId_t displayId = createDisplayAndExpectResult();
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.destroyDisplay(m_displayId));
+        EXPECT_EQ(ramses::StatusOK, m_renderer.destroyDisplay(displayId));
         updateAndDispatch(m_handler);
-        m_handler.expectDisplayDestroyed(m_displayId, ramses::ERendererEventResult_OK);
+        m_handler.expectDisplayDestroyed(displayId, ramses::ERendererEventResult_OK);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesFAILEventForInvalidDisplayDestruction)
     {
-        const ramses::displayId_t m_displayId(1u);
-        EXPECT_EQ(ramses::StatusOK, m_renderer.destroyDisplay(m_displayId));
+        const ramses::displayId_t displayId(1u);
+        EXPECT_EQ(ramses::StatusOK, m_renderer.destroyDisplay(displayId));
 
         updateAndDispatch(m_handler);
-        m_handler.expectDisplayDestroyed(m_displayId, ramses::ERendererEventResult_FAIL);
+        m_handler.expectDisplayDestroyed(displayId, ramses::ERendererEventResult_FAIL);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesFAILEventForDisplayDestructionIfAnySceneMappedToIt)
     {
-        const ramses::displayId_t m_displayId = createDisplayAndExpectResult();
-        createPublishedAndSubscribedAndMappedScene(m_sceneId, m_scene, m_displayId);
+        const ramses::displayId_t displayId = createDisplayAndExpectResult();
+        createPublishedAndSubscribedAndMappedScene(m_sceneId, m_scene, displayId);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.destroyDisplay(m_displayId));
+        EXPECT_EQ(ramses::StatusOK, m_renderer.destroyDisplay(displayId));
         updateAndDispatch(m_handler);
-        m_handler.expectDisplayDestroyed(m_displayId, ramses::ERendererEventResult_FAIL);
+        m_handler.expectDisplayDestroyed(displayId, ramses::ERendererEventResult_FAIL);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesEventForDisplayDestructionAfterFailedAttemptDueToMappedScene)
     {
-        const ramses::displayId_t m_displayId = createDisplayAndExpectResult();
-        createPublishedAndSubscribedAndMappedScene(m_sceneId, m_scene, m_displayId);
+        const ramses::displayId_t displayId = createDisplayAndExpectResult();
+        createPublishedAndSubscribedAndMappedScene(m_sceneId, m_scene, displayId);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.destroyDisplay(m_displayId));
+        EXPECT_EQ(ramses::StatusOK, m_renderer.destroyDisplay(displayId));
         updateAndDispatch(m_handler);
-        m_handler.expectDisplayDestroyed(m_displayId, ramses::ERendererEventResult_FAIL);
+        m_handler.expectDisplayDestroyed(displayId, ramses::ERendererEventResult_FAIL);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.unmapScene(m_sceneId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.unmapScene(m_sceneId));
         updateAndDispatch(m_handler);
         m_handler.expectSceneUnmapped(m_sceneId, ramses::ERendererEventResult_OK);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.destroyDisplay(m_displayId));
+        EXPECT_EQ(ramses::StatusOK, m_renderer.destroyDisplay(displayId));
         updateAndDispatch(m_handler);
-        m_handler.expectDisplayDestroyed(m_displayId, ramses::ERendererEventResult_OK);
+        m_handler.expectDisplayDestroyed(displayId, ramses::ERendererEventResult_OK);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesEventForWarpingMeshDataUpdate)
     {
-        ramses::displayId_t m_displayId = addDisplay(true);
+        ramses::displayId_t displayId = addDisplay(true);
         updateAndDispatch(m_handler);
-        m_handler.expectDisplayCreated(m_displayId, ramses::ERendererEventResult_OK);
+        m_handler.expectDisplayCreated(displayId, ramses::ERendererEventResult_OK);
 
         const uint16_t indices[3] = { 0 };
         const float vertices[9] = { 0.f };
         const ramses::WarpingMeshData warpData(3, indices, 3, vertices, vertices);
-        EXPECT_EQ(ramses::StatusOK, m_renderer.updateWarpingMeshData(m_displayId, warpData));
+        EXPECT_EQ(ramses::StatusOK, m_renderer.updateWarpingMeshData(displayId, warpData));
 
         updateAndDispatch(m_handler);
 
-        m_handler.expectWarpingMeshDataUpdated(m_displayId, ramses::ERendererEventResult_OK);
+        m_handler.expectWarpingMeshDataUpdated(displayId, ramses::ERendererEventResult_OK);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesFAILEventForWarpingMeshDataUpdateOfInvalidDisplay)
@@ -623,144 +630,154 @@ namespace ramses_internal
 
     TEST_F(ARamsesRendererDispatch, generatesEventForWarpingMeshDataUpdateOfDisplayWithoutWarping)
     {
-        ramses::displayId_t m_displayId = addDisplay(false);
+        ramses::displayId_t displayId = addDisplay(false);
         updateAndDispatch(m_handler);
-        m_handler.expectDisplayCreated(m_displayId, ramses::ERendererEventResult_OK);
+        m_handler.expectDisplayCreated(displayId, ramses::ERendererEventResult_OK);
 
         const uint16_t indices[3] = { 0 };
         const float vertices[9] = { 0.f };
         const ramses::WarpingMeshData warpData(3, indices, 3, vertices, vertices);
-        EXPECT_EQ(ramses::StatusOK, m_renderer.updateWarpingMeshData(m_displayId, warpData));
+        EXPECT_EQ(ramses::StatusOK, m_renderer.updateWarpingMeshData(displayId, warpData));
 
         updateAndDispatch(m_handler);
 
-        m_handler.expectWarpingMeshDataUpdated(m_displayId, ramses::ERendererEventResult_FAIL);
+        m_handler.expectWarpingMeshDataUpdated(displayId, ramses::ERendererEventResult_FAIL);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesEventForOffscreenBufferCreation)
     {
-        ramses::displayId_t m_displayId = addDisplay();
+        ramses::displayId_t displayId = addDisplay();
         updateAndDispatch(m_handler);
-        m_handler.expectDisplayCreated(m_displayId, ramses::ERendererEventResult_OK);
+        m_handler.expectDisplayCreated(displayId, ramses::ERendererEventResult_OK);
 
-        const ramses::offscreenBufferId_t bufferId = m_renderer.createOffscreenBuffer(m_displayId, 1u, 1u);
+        const ramses::displayBufferId_t bufferId = m_renderer.createOffscreenBuffer(displayId, 1u, 1u);
         updateAndDispatch(m_handler);
-        m_handler.expectOffscreenBufferCreated(m_displayId, bufferId, ramses::ERendererEventResult_OK);
+        m_handler.expectOffscreenBufferCreated(displayId, bufferId, ramses::ERendererEventResult_OK);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesFAILEventForOffscreenBufferCreation)
     {
-        ramses::displayId_t m_displayId(0u);
-        const ramses::offscreenBufferId_t bufferId = m_renderer.createOffscreenBuffer(m_displayId, 1u, 1u);
+        ramses::displayId_t displayId(0u);
+        const ramses::displayBufferId_t bufferId = m_renderer.createOffscreenBuffer(displayId, 1u, 1u);
         updateAndDispatch(m_handler);
-        m_handler.expectOffscreenBufferCreated(m_displayId, bufferId, ramses::ERendererEventResult_FAIL);
+        m_handler.expectOffscreenBufferCreated(displayId, bufferId, ramses::ERendererEventResult_FAIL);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesEventForOffscreenBufferDestruction)
     {
-        ramses::displayId_t m_displayId = addDisplay();
+        ramses::displayId_t displayId = addDisplay();
         updateAndDispatch(m_handler);
-        m_handler.expectDisplayCreated(m_displayId, ramses::ERendererEventResult_OK);
+        m_handler.expectDisplayCreated(displayId, ramses::ERendererEventResult_OK);
 
-        const ramses::offscreenBufferId_t bufferId = m_renderer.createOffscreenBuffer(m_displayId, 1u, 1u);
+        const ramses::displayBufferId_t bufferId = m_renderer.createOffscreenBuffer(displayId, 1u, 1u);
         updateAndDispatch(m_handler);
-        m_handler.expectOffscreenBufferCreated(m_displayId, bufferId, ramses::ERendererEventResult_OK);
+        m_handler.expectOffscreenBufferCreated(displayId, bufferId, ramses::ERendererEventResult_OK);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.destroyOffscreenBuffer(m_displayId, bufferId));
+        EXPECT_EQ(ramses::StatusOK, m_renderer.destroyOffscreenBuffer(displayId, bufferId));
         updateAndDispatch(m_handler);
-        m_handler.expectOffscreenBufferDestroyed(m_displayId, bufferId, ramses::ERendererEventResult_OK);
+        m_handler.expectOffscreenBufferDestroyed(displayId, bufferId, ramses::ERendererEventResult_OK);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesFAILEventForOffscreenBufferDestruction)
     {
-        ramses::displayId_t m_displayId(0u);
-        const ramses::offscreenBufferId_t bufferId(0u);
-        EXPECT_EQ(ramses::StatusOK, m_renderer.destroyOffscreenBuffer(m_displayId, bufferId));
+        ramses::displayId_t displayId(0u);
+        const ramses::displayBufferId_t bufferId(0u);
+        EXPECT_EQ(ramses::StatusOK, m_renderer.destroyOffscreenBuffer(displayId, bufferId));
         updateAndDispatch(m_handler);
-        m_handler.expectOffscreenBufferDestroyed(m_displayId, bufferId, ramses::ERendererEventResult_FAIL);
+        m_handler.expectOffscreenBufferDestroyed(displayId, bufferId, ramses::ERendererEventResult_FAIL);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesEventForSceneAssignedToOffscreenBuffer)
     {
-        const ramses::displayId_t m_displayId = createDisplayAndExpectResult();
-        createPublishedAndSubscribedAndMappedScene(m_sceneId, m_scene, m_displayId);
+        const ramses::displayId_t displayId = createDisplayAndExpectResult();
+        createPublishedAndSubscribedAndMappedScene(m_sceneId, m_scene, displayId);
 
-        const ramses::offscreenBufferId_t bufferId = m_renderer.createOffscreenBuffer(m_displayId, 1u, 1u);
+        const ramses::displayBufferId_t bufferId = m_renderer.createOffscreenBuffer(displayId, 1u, 1u);
         updateAndDispatch(m_handler);
-        m_handler.expectOffscreenBufferCreated(m_displayId, bufferId, ramses::ERendererEventResult_OK);
+        m_handler.expectOffscreenBufferCreated(displayId, bufferId, ramses::ERendererEventResult_OK);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.assignSceneToOffscreenBuffer(m_sceneId, bufferId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.assignSceneToDisplayBuffer(m_sceneId, bufferId, 11));
         updateAndDispatch(m_handler);
-        m_handler.expectSceneAssignedToOffscreenBuffer(m_sceneId, bufferId, ramses::ERendererEventResult_OK);
+        m_handler.expectSceneAssignedToDisplayBuffer(m_sceneId, bufferId, ramses::ERendererEventResult_OK);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesFAILEventForSceneAssignedToOffscreenBuffer)
     {
-        const ramses::offscreenBufferId_t bufferId(2u);
-        EXPECT_EQ(ramses::StatusOK, m_renderer.assignSceneToOffscreenBuffer(m_sceneId, bufferId));
+        const ramses::displayBufferId_t bufferId(2u);
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.assignSceneToDisplayBuffer(m_sceneId, bufferId, 11));
         updateAndDispatch(m_handler);
-        m_handler.expectSceneAssignedToOffscreenBuffer(m_sceneId, bufferId, ramses::ERendererEventResult_FAIL);
+        m_handler.expectSceneAssignedToDisplayBuffer(m_sceneId, bufferId, ramses::ERendererEventResult_FAIL);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesEventForSceneAssignedToFramebuffer)
     {
-        const ramses::displayId_t m_displayId = createDisplayAndExpectResult();
-        createPublishedAndSubscribedAndMappedScene(m_sceneId, m_scene, m_displayId);
+        const ramses::displayId_t displayId = createDisplayAndExpectResult();
+        const auto displayBufferId = m_renderer.getDisplayFramebuffer(displayId);
+        createPublishedAndSubscribedAndMappedScene(m_sceneId, m_scene, displayId);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.assignSceneToFramebuffer(m_sceneId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.assignSceneToDisplayBuffer(m_sceneId, displayBufferId, 11));
         updateAndDispatch(m_handler);
-        m_handler.expectSceneAssignedToFramebuffer(m_sceneId, ramses::ERendererEventResult_OK);
+        m_handler.expectSceneAssignedToDisplayBuffer(m_sceneId, displayBufferId, ramses::ERendererEventResult_OK);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesFAILEventForSceneAssignedToFramebuffer)
     {
-        EXPECT_EQ(ramses::StatusOK, m_renderer.assignSceneToFramebuffer(m_sceneId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.assignSceneToDisplayBuffer(m_sceneId, ramses::displayBufferId_t::Invalid(), 11));
         updateAndDispatch(m_handler);
-        m_handler.expectSceneAssignedToFramebuffer(m_sceneId, ramses::ERendererEventResult_FAIL);
+        m_handler.expectSceneAssignedToDisplayBuffer(m_sceneId, ramses::displayBufferId_t::Invalid(), ramses::ERendererEventResult_FAIL);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesEventForWindowClosed)
     {
-        const ramses::displayId_t m_displayId = createDisplayAndExpectResult();
-        const ramses_internal::DisplayHandle displayHandle(m_displayId);
+        const ramses::displayId_t displayId = createDisplayAndExpectResult();
+        const ramses_internal::DisplayHandle displayHandle(displayId.getValue());
         m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onClose();
         updateAndDispatch(m_handler);
-        m_handler.expectWindowClosed(m_displayId);
+        m_handler.expectWindowClosed(displayId);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesEventForWindowResized)
     {
-        const ramses::displayId_t m_displayId = createDisplayAndExpectResult();
-        const ramses_internal::DisplayHandle displayHandle(m_displayId);
+        const ramses::displayId_t displayId = createDisplayAndExpectResult();
+        const ramses_internal::DisplayHandle displayHandle(displayId.getValue());
         m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onResize(100, 200);
         updateAndDispatch(m_handler);
-        m_handler.expectWindowResized(m_displayId, 100, 200);
+        m_handler.expectWindowResized(displayId, 100, 200);
+    }
+
+    TEST_F(ARamsesRendererDispatch, generatesEventForWindowMoved)
+    {
+        const ramses::displayId_t displayId = createDisplayAndExpectResult();
+        const ramses_internal::DisplayHandle displayHandle(displayId.getValue());
+        m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onWindowMove(100, 200);
+        updateAndDispatch(m_handler);
+        m_handler.expectWindowMoved(displayId, 100, 200);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesEventForKeyPressed)
     {
-        const ramses::displayId_t m_displayId = createDisplayAndExpectResult();
-        const ramses_internal::DisplayHandle displayHandle(m_displayId);
+        const ramses::displayId_t displayId = createDisplayAndExpectResult();
+        const ramses_internal::DisplayHandle displayHandle(displayId.getValue());
         m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onKeyEvent(ramses_internal::EKeyEventType_Pressed,
             ramses_internal::EKeyModifier_Ctrl | ramses_internal::EKeyModifier_Shift, ramses_internal::EKeyCode_E);
         updateAndDispatch(m_handler);
-        m_handler.expectKeyEvent(m_displayId, ramses::EKeyEvent_Pressed, ramses::EKeyModifier_Ctrl | ramses::EKeyModifier_Shift, ramses::EKeyCode_E);
+        m_handler.expectKeyEvent(displayId, ramses::EKeyEvent_Pressed, ramses::EKeyModifier_Ctrl | ramses::EKeyModifier_Shift, ramses::EKeyCode_E);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesEventForKeyReleased)
     {
-        const ramses::displayId_t m_displayId = createDisplayAndExpectResult();
-        const ramses_internal::DisplayHandle displayHandle(m_displayId);
+        const ramses::displayId_t displayId = createDisplayAndExpectResult();
+        const ramses_internal::DisplayHandle displayHandle(displayId.getValue());
         m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onKeyEvent(ramses_internal::EKeyEventType_Released,
             ramses_internal::EKeyModifier_Ctrl | ramses_internal::EKeyModifier_Shift, ramses_internal::EKeyCode_F);
         updateAndDispatch(m_handler);
-        m_handler.expectKeyEvent(m_displayId, ramses::EKeyEvent_Released, ramses::EKeyModifier_Ctrl | ramses::EKeyModifier_Shift, ramses::EKeyCode_F);
+        m_handler.expectKeyEvent(displayId, ramses::EKeyEvent_Released, ramses::EKeyModifier_Ctrl | ramses::EKeyModifier_Shift, ramses::EKeyCode_F);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesEventsForMouseActionsOnDisplay)
     {
-        const ramses::displayId_t m_displayId = createDisplayAndExpectResult();
-        const ramses_internal::DisplayHandle displayHandle(m_displayId);
+        const ramses::displayId_t displayId = createDisplayAndExpectResult();
+        const ramses_internal::DisplayHandle displayHandle(displayId.getValue());
         m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onMouseEvent(ramses_internal::EMouseEventType_RightButtonDown, 20, 30);
         m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onMouseEvent(ramses_internal::EMouseEventType_RightButtonUp, 21, 31);
         m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onMouseEvent(ramses_internal::EMouseEventType_LeftButtonDown, 22, 32);
@@ -773,17 +790,17 @@ namespace ramses_internal
         m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onMouseEvent(ramses_internal::EMouseEventType_WindowEnter, 29, 39);
         m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onMouseEvent(ramses_internal::EMouseEventType_WindowLeave, 30, 40);
         updateAndDispatch(m_handler);
-        m_handler.expectMouseEvent(m_displayId, ramses::EMouseEvent_RightButtonDown, 20, 30);
-        m_handler.expectMouseEvent(m_displayId, ramses::EMouseEvent_RightButtonUp, 21, 31);
-        m_handler.expectMouseEvent(m_displayId, ramses::EMouseEvent_LeftButtonDown, 22, 32);
-        m_handler.expectMouseEvent(m_displayId, ramses::EMouseEvent_LeftButtonUp, 23, 33);
-        m_handler.expectMouseEvent(m_displayId, ramses::EMouseEvent_MiddleButtonDown, 24, 34);
-        m_handler.expectMouseEvent(m_displayId, ramses::EMouseEvent_MiddleButtonUp, 25, 35);
-        m_handler.expectMouseEvent(m_displayId, ramses::EMouseEvent_WheelDown, 26, 36);
-        m_handler.expectMouseEvent(m_displayId, ramses::EMouseEvent_WheelUp, 27, 37);
-        m_handler.expectMouseEvent(m_displayId, ramses::EMouseEvent_Move, 28, 38);
-        m_handler.expectMouseEvent(m_displayId, ramses::EMouseEvent_WindowEnter, 29, 39);
-        m_handler.expectMouseEvent(m_displayId, ramses::EMouseEvent_WindowLeave, 30, 40);
+        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_RightButtonDown, 20, 30);
+        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_RightButtonUp, 21, 31);
+        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_LeftButtonDown, 22, 32);
+        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_LeftButtonUp, 23, 33);
+        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_MiddleButtonDown, 24, 34);
+        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_MiddleButtonUp, 25, 35);
+        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_WheelDown, 26, 36);
+        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_WheelUp, 27, 37);
+        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_Move, 28, 38);
+        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_WindowEnter, 29, 39);
+        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_WindowLeave, 30, 40);
     }
 
     TEST_F(ARamsesRendererDispatchWithProviderConsumerScenes, generatesEventForTransformationProviderCreation)
@@ -821,7 +838,7 @@ namespace ramses_internal
         updateAndDispatch(m_handler);
         m_handler.expectDataConsumerDestroyed(m_sceneConsumerId, m_dataConsumerId);
     }
-    //
+
     TEST_F(ARamsesRendererDispatchWithProviderConsumerScenes, generatesEventForDataProviderCreation)
     {
         createDataSlotProvider(m_sceneProviderId);
@@ -904,7 +921,7 @@ namespace ramses_internal
         updateAndDispatch(m_handler);
         m_handler.expectDataConsumerCreated(m_sceneConsumerId, m_dataConsumerId);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.linkData(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.linkData(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId));
         updateAndDispatch(m_handler);
         m_handler.expectDataLinked(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId, ramses::ERendererEventResult_OK);
     }
@@ -914,7 +931,7 @@ namespace ramses_internal
         const ramses::sceneId_t invalidSceneProviderId(777u);
         const ramses::sceneId_t invalidSceneConsumerId(778u);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.linkData(invalidSceneProviderId, m_dataProviderId, invalidSceneConsumerId, m_dataConsumerId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.linkData(invalidSceneProviderId, m_dataProviderId, invalidSceneConsumerId, m_dataConsumerId));
         updateAndDispatch(m_handler);
         m_handler.expectDataLinked(invalidSceneProviderId, m_dataProviderId, invalidSceneConsumerId, m_dataConsumerId, ramses::ERendererEventResult_FAIL);
     }
@@ -929,11 +946,11 @@ namespace ramses_internal
         updateAndDispatch(m_handler);
         m_handler.expectDataConsumerCreated(m_sceneConsumerId, m_dataConsumerId);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.linkData(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.linkData(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId));
         updateAndDispatch(m_handler);
         m_handler.expectDataLinked(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId, ramses::ERendererEventResult_OK);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.unlinkData(m_sceneConsumerId, m_dataConsumerId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.unlinkData(m_sceneConsumerId, m_dataConsumerId));
         updateAndDispatch(m_handler);
         m_handler.expectDataUnlinked(m_sceneConsumerId, m_dataConsumerId, ramses::ERendererEventResult_OK);
     }
@@ -942,7 +959,7 @@ namespace ramses_internal
     {
         const ramses::sceneId_t invalidSceneConsumerId(778u);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.unlinkData(invalidSceneConsumerId, m_dataConsumerId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.unlinkData(invalidSceneConsumerId, m_dataConsumerId));
         updateAndDispatch(m_handler);
         m_handler.expectDataUnlinked(invalidSceneConsumerId, m_dataConsumerId, ramses::ERendererEventResult_FAIL);
     }
@@ -957,7 +974,7 @@ namespace ramses_internal
         updateAndDispatch(m_handler);
         m_handler.expectDataConsumerCreated(m_sceneConsumerId, m_dataConsumerId);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.linkData(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.linkData(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId));
         updateAndDispatch(m_handler);
         m_handler.expectDataLinked(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId, ramses::ERendererEventResult_OK);
 
@@ -978,7 +995,7 @@ namespace ramses_internal
         updateAndDispatch(m_handler);
         m_handler.expectDataConsumerCreated(m_sceneConsumerId, m_dataConsumerId);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.linkData(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.linkData(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId));
         updateAndDispatch(m_handler);
         m_handler.expectDataLinked(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId, ramses::ERendererEventResult_OK);
     }
@@ -993,11 +1010,11 @@ namespace ramses_internal
         updateAndDispatch(m_handler);
         m_handler.expectDataConsumerCreated(m_sceneConsumerId, m_dataConsumerId);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.linkData(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.linkData(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId));
         updateAndDispatch(m_handler);
         m_handler.expectDataLinked(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId, ramses::ERendererEventResult_OK);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.unlinkData(m_sceneConsumerId, m_dataConsumerId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.unlinkData(m_sceneConsumerId, m_dataConsumerId));
         updateAndDispatch(m_handler);
         m_handler.expectDataUnlinked(m_sceneConsumerId, m_dataConsumerId, ramses::ERendererEventResult_OK);
     }
@@ -1012,7 +1029,7 @@ namespace ramses_internal
         updateAndDispatch(m_handler);
         m_handler.expectDataConsumerCreated(m_sceneConsumerId, m_dataConsumerId);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.linkData(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.linkData(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId));
         updateAndDispatch(m_handler);
         m_handler.expectDataLinked(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId, ramses::ERendererEventResult_OK);
 
@@ -1033,7 +1050,7 @@ namespace ramses_internal
         updateAndDispatch(m_handler);
         m_handler.expectDataConsumerCreated(m_sceneConsumerId, m_dataConsumerId);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.linkData(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.linkData(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId));
         updateAndDispatch(m_handler);
         m_handler.expectDataLinked(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId, ramses::ERendererEventResult_OK);
     }
@@ -1048,11 +1065,11 @@ namespace ramses_internal
         updateAndDispatch(m_handler);
         m_handler.expectDataConsumerCreated(m_sceneConsumerId, m_dataConsumerId);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.linkData(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.linkData(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId));
         updateAndDispatch(m_handler);
         m_handler.expectDataLinked(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId, ramses::ERendererEventResult_OK);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.unlinkData(m_sceneConsumerId, m_dataConsumerId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.unlinkData(m_sceneConsumerId, m_dataConsumerId));
         updateAndDispatch(m_handler);
         m_handler.expectDataUnlinked(m_sceneConsumerId, m_dataConsumerId, ramses::ERendererEventResult_OK);
     }
@@ -1067,7 +1084,7 @@ namespace ramses_internal
         updateAndDispatch(m_handler);
         m_handler.expectDataConsumerCreated(m_sceneConsumerId, m_dataConsumerId);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.linkData(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.linkData(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId));
         updateAndDispatch(m_handler);
         m_handler.expectDataLinked(m_sceneProviderId, m_dataProviderId, m_sceneConsumerId, m_dataConsumerId, ramses::ERendererEventResult_OK);
 
@@ -1080,24 +1097,24 @@ namespace ramses_internal
 
     TEST_F(ARamsesRendererDispatchWithProviderConsumerScenes, generatesOKEventForOffscreenBufferLink)
     {
-        const ramses::offscreenBufferId_t bufferId = m_renderer.createOffscreenBuffer(m_displayId, 1u, 1u);
+        const ramses::displayBufferId_t bufferId = m_renderer.createOffscreenBuffer(displayId, 1u, 1u);
         updateAndDispatch(m_handler);
-        m_handler.expectOffscreenBufferCreated(m_displayId, bufferId, ramses::ERendererEventResult_OK);
+        m_handler.expectOffscreenBufferCreated(displayId, bufferId, ramses::ERendererEventResult_OK);
 
         createTextureSlotConsumer(m_sceneConsumerId);
         updateAndDispatch(m_handler);
         m_handler.expectDataConsumerCreated(m_sceneConsumerId, m_dataConsumerId);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.linkOffscreenBufferToSceneData(bufferId, m_sceneConsumerId, m_dataConsumerId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.linkOffscreenBufferToSceneData(bufferId, m_sceneConsumerId, m_dataConsumerId));
         updateAndDispatch(m_handler);
         m_handler.expectOffscreenBufferLinkedToSceneData(bufferId, m_sceneConsumerId, m_dataConsumerId, ramses::ERendererEventResult_OK);
     }
 
     TEST_F(ARamsesRendererDispatchWithProviderConsumerScenes, generatesFAILEventForOffscreenBufferLink)
     {
-        const ramses::offscreenBufferId_t bufferId(1u);
+        const ramses::displayBufferId_t bufferId(1u);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.linkOffscreenBufferToSceneData(bufferId, m_sceneConsumerId, m_dataConsumerId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.linkOffscreenBufferToSceneData(bufferId, m_sceneConsumerId, m_dataConsumerId));
         updateAndDispatch(m_handler);
         m_handler.expectOffscreenBufferLinkedToSceneData(bufferId, m_sceneConsumerId, m_dataConsumerId, ramses::ERendererEventResult_FAIL);
     }
@@ -1106,28 +1123,28 @@ namespace ramses_internal
     {
         const ramses::sceneId_t customSceneProviderId(777u);
         const ramses::sceneId_t customsceneConsumerId(778u);
-        const ramses_internal::SceneId sceneProviderIdInternal(customSceneProviderId);
-        const ramses_internal::SceneId sceneConsumerIdInternal(customsceneConsumerId);
+        const ramses_internal::SceneId sceneProviderIdInternal(customSceneProviderId.getValue());
+        const ramses_internal::SceneId sceneConsumerIdInternal(customsceneConsumerId.getValue());
         const SceneInfo createInfoProvider(sceneProviderIdInternal);
         const SceneInfo createInfoConsumer(sceneConsumerIdInternal);
         ramses_internal::ClientScene sceneProvider(createInfoProvider);
         ramses_internal::ClientScene sceneConsumer(createInfoConsumer);
 
         // publish scenes
-        m_sceneGraphProvider.handleCreateScene(sceneProvider, false);
-        m_sceneGraphProvider.handleCreateScene(sceneConsumer, false);
-        m_sceneGraphProvider.handlePublishScene(ramses_internal::SceneId(customSceneProviderId), EScenePublicationMode_LocalOnly);
-        m_sceneGraphProvider.handlePublishScene(ramses_internal::SceneId(customsceneConsumerId), EScenePublicationMode_LocalOnly);
+        m_sceneGraphProvider.handleCreateScene(sceneProvider, false, m_eventConsumer);
+        m_sceneGraphProvider.handleCreateScene(sceneConsumer, false, m_eventConsumer);
+        m_sceneGraphProvider.handlePublishScene(ramses_internal::SceneId(customSceneProviderId.getValue()), EScenePublicationMode_LocalOnly);
+        m_sceneGraphProvider.handlePublishScene(ramses_internal::SceneId(customsceneConsumerId.getValue()), EScenePublicationMode_LocalOnly);
         updateAndDispatch(m_handler);
         m_handler.expectScenePublished(customSceneProviderId);
         m_handler.expectScenePublished(customsceneConsumerId);
 
         // subscribe and emulate receive scenes
-        EXPECT_EQ(ramses::StatusOK, m_renderer.subscribeScene(customSceneProviderId));
-        EXPECT_EQ(ramses::StatusOK, m_renderer.subscribeScene(customsceneConsumerId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.subscribeScene(customSceneProviderId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.subscribeScene(customsceneConsumerId));
         updateAndDispatch(m_handler); // needed to process subscription request
-        m_sceneGraphSender.sendCreateScene(m_framework.impl.getParticipantAddress().getParticipantId(), SceneInfo(ramses_internal::SceneId(customSceneProviderId)), EScenePublicationMode_LocalOnly);
-        m_sceneGraphSender.sendCreateScene(m_framework.impl.getParticipantAddress().getParticipantId(), SceneInfo(ramses_internal::SceneId(customsceneConsumerId)), EScenePublicationMode_LocalOnly);
+        m_sceneGraphSender.sendCreateScene(m_framework.impl.getParticipantAddress().getParticipantId(), SceneInfo(ramses_internal::SceneId(customSceneProviderId.getValue())), EScenePublicationMode_LocalOnly);
+        m_sceneGraphSender.sendCreateScene(m_framework.impl.getParticipantAddress().getParticipantId(), SceneInfo(ramses_internal::SceneId(customsceneConsumerId.getValue())), EScenePublicationMode_LocalOnly);
 
         // create data slots
         const ramses_internal::NodeHandle node(7u);
@@ -1136,39 +1153,41 @@ namespace ramses_internal
         SceneActionCollectionCreator creator(sceneActions);
 
         creator.allocateNode(0u, node);
-        creator.allocateDataSlot({ ramses_internal::EDataSlotType_TransformationProvider, ramses_internal::DataSlotId(m_dataProviderId), node, dataRef, ResourceContentHash::Invalid(), TextureSamplerHandle() }, m_dataProviderHandle);
-        creator.flush(1u, false, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
-        m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, sceneActions.copy(), ramses_internal::SceneId(customSceneProviderId), EScenePublicationMode_LocalOnly);
+        creator.allocateDataSlot({ ramses_internal::EDataSlotType_TransformationProvider, ramses_internal::DataSlotId(m_dataProviderId.getValue()), node, dataRef, ResourceContentHash::Invalid(), TextureSamplerHandle() }, m_dataProviderHandle);
+        creator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
+        m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, sceneActions.copy(), ramses_internal::SceneId(customSceneProviderId.getValue()), EScenePublicationMode_LocalOnly);
         sceneActions.clear();
 
         creator.allocateNode(0u, node);
-        creator.allocateDataSlot({ ramses_internal::EDataSlotType_TransformationConsumer, ramses_internal::DataSlotId(m_dataConsumerId), node, dataRef, ResourceContentHash::Invalid(), TextureSamplerHandle() }, m_dataConsumerHandle);
-        creator.flush(1u, false, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
-        m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, sceneActions.copy(), ramses_internal::SceneId(customsceneConsumerId), EScenePublicationMode_LocalOnly);
+        creator.allocateDataSlot({ ramses_internal::EDataSlotType_TransformationConsumer, ramses_internal::DataSlotId(m_dataConsumerId.getValue()), node, dataRef, ResourceContentHash::Invalid(), TextureSamplerHandle() }, m_dataConsumerHandle);
+        creator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
+        m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, sceneActions.copy(), ramses_internal::SceneId(customsceneConsumerId.getValue()), EScenePublicationMode_LocalOnly);
 
         // create data link
         m_renderer.flush();
         doUpdateLoop();
-        EXPECT_EQ(ramses::StatusOK, m_renderer.linkData(customSceneProviderId, m_dataProviderId, customsceneConsumerId, m_dataConsumerId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.linkData(customSceneProviderId, m_dataProviderId, customsceneConsumerId, m_dataConsumerId));
 
         // create display
         const ramses::displayId_t display = addDisplay();
 
         // map scenes
-        EXPECT_EQ(ramses::StatusOK, m_renderer.mapScene(display, customSceneProviderId));
-        EXPECT_EQ(ramses::StatusOK, m_renderer.mapScene(display, customsceneConsumerId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.mapScene(display, customSceneProviderId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.mapScene(display, customsceneConsumerId));
 
         // cleanup
-        m_renderer.flush(); // emulation of client commands via sceneGraphProvider go directly to m_renderer command buffer, to keep order of commands previous m_renderer API calls must be flushed
+        m_renderer.flush();
+        m_sceneControlAPI.flush(); // emulation of client commands via sceneGraphProvider go directly to m_renderer command buffer, to keep order of commands previous m_renderer API calls must be flushed
         doUpdateLoop(); // needed for successfully processing mapped commands
         doUpdateLoop(); // needed for successfully processing mapped commands
 
-        m_sceneGraphProvider.handleUnpublishScene(ramses_internal::SceneId(customSceneProviderId));
-        m_sceneGraphProvider.handleUnpublishScene(ramses_internal::SceneId(customsceneConsumerId));
+        m_sceneGraphProvider.handleUnpublishScene(ramses_internal::SceneId(customSceneProviderId.getValue()));
+        m_sceneGraphProvider.handleUnpublishScene(ramses_internal::SceneId(customsceneConsumerId.getValue()));
         EXPECT_EQ(ramses::StatusOK, m_renderer.destroyDisplay(display));
 
         // process commands
         updateAndDispatch(m_handler);
+        m_handler.expectDisplayDestroyed(display, ramses::ERendererEventResult_OK);
         m_handler.expectSceneSubscribed(customSceneProviderId, ramses::ERendererEventResult_OK);
         m_handler.expectSceneSubscribed(customsceneConsumerId, ramses::ERendererEventResult_OK);
         m_handler.expectDataConsumerCreated(customsceneConsumerId, m_dataConsumerId);
@@ -1183,7 +1202,6 @@ namespace ramses_internal
         m_handler.expectSceneUnmapped(customsceneConsumerId, ramses::ERendererEventResult_INDIRECT);
         m_handler.expectSceneUnsubscribed(customsceneConsumerId, ramses::ERendererEventResult_INDIRECT);
         m_handler.expectSceneUnpublished(customsceneConsumerId);
-        m_handler.expectDisplayDestroyed(display, ramses::ERendererEventResult_OK);
 
         // events for unlink and removal of data slots do not get generated when the whole m_scene is unpublished
     }
@@ -1208,8 +1226,10 @@ namespace ramses_internal
             void updateAndDispatch()
             {
                 m_renderer.flush();
-                ramses::RamsesRendererUtils::DoOneLoop(m_renderer.impl.getRenderer(), ramses_internal::ELoopMode_UpdateOnly, std::chrono::microseconds{ 0u });
+                m_renderer.getSceneControlAPI_legacy()->flush();
+                m_renderer.impl.getRenderer().doOneLoop(ramses_internal::ELoopMode::UpdateOnly);
                 m_renderer.dispatchEvents(*this);
+                m_renderer.getSceneControlAPI_legacy()->dispatchEvents(*this);
             }
 
             virtual void scenePublished(ramses::sceneId_t scnId) override
@@ -1217,15 +1237,15 @@ namespace ramses_internal
                 RendererEventTestHandler::scenePublished(scnId);
                 if (scnId == m_sceneId)
                 {
-                    EXPECT_EQ(ramses::StatusOK, m_renderer.subscribeScene(m_sceneId));
+                    EXPECT_EQ(ramses::StatusOK, m_renderer.getSceneControlAPI_legacy()->subscribeScene(m_sceneId));
                     updateAndDispatch();
                     // receive m_scene
-                    m_sceneGraphSender.sendCreateScene(m_framework.impl.getParticipantAddress().getParticipantId(), SceneInfo(ramses_internal::SceneId(m_sceneId)), EScenePublicationMode_LocalOnly);
+                    m_sceneGraphSender.sendCreateScene(m_framework.impl.getParticipantAddress().getParticipantId(), SceneInfo(ramses_internal::SceneId(m_sceneId.getValue())), EScenePublicationMode_LocalOnly);
                     // receive initial flush
                     SceneActionCollection initialSceneActions;
                     SceneActionCollectionCreator creator(initialSceneActions);
-                    creator.flush(1u, false, false);
-                    m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(initialSceneActions), ramses_internal::SceneId(m_sceneId), EScenePublicationMode_LocalOnly);
+                    creator.flush(1u, false);
+                    m_sceneGraphSender.sendSceneActionList({ m_framework.impl.getParticipantAddress().getParticipantId() }, std::move(initialSceneActions), ramses_internal::SceneId(m_sceneId.getValue()), EScenePublicationMode_LocalOnly);
                     updateAndDispatch();
                 }
             }
@@ -1235,7 +1255,7 @@ namespace ramses_internal
                 RendererEventTestHandler::sceneSubscribed(sceneId, result);
                 if (sceneId == m_sceneId && result == ramses::ERendererEventResult_OK)
                 {
-                    EXPECT_EQ(ramses::StatusOK, m_renderer.mapScene(m_displayId, m_sceneId));
+                    EXPECT_EQ(ramses::StatusOK, m_renderer.getSceneControlAPI_legacy()->mapScene(m_displayId, m_sceneId));
                     updateAndDispatch();
                     updateAndDispatch();
                 }
@@ -1250,20 +1270,20 @@ namespace ramses_internal
         };
 
         //create display first
-        ramses::displayId_t m_displayId = addDisplay(false);
+        ramses::displayId_t displayId = addDisplay(false);
         updateAndDispatch(m_handler);
-        m_handler.expectDisplayCreated(m_displayId, ramses::ERendererEventResult_OK);
+        m_handler.expectDisplayCreated(displayId, ramses::ERendererEventResult_OK);
 
         //m_scene publishing should result in mapped Scene after dispatching events to the recursive m_handler
-        RecursiveRendererEventTestHandler recHandler(m_renderer, m_sceneId, m_displayId, m_sceneGraphSender, m_framework);
+        RecursiveRendererEventTestHandler recHandler(m_renderer, m_sceneId, displayId, m_sceneGraphSender, m_framework);
         publishScene();
         updateAndDispatch(recHandler);
         recHandler.expectScenePublished(m_sceneId);
         recHandler.expectSceneSubscribed(m_sceneId, ramses::ERendererEventResult_OK);
         recHandler.expectSceneMapped(m_sceneId, ramses::ERendererEventResult_OK);
 
-        EXPECT_EQ(ramses::StatusOK, m_renderer.unmapScene(m_sceneId));
-        EXPECT_EQ(ramses::StatusOK, m_renderer.unsubscribeScene(m_sceneId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.unmapScene(m_sceneId));
+        EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.unsubscribeScene(m_sceneId));
         updateAndDispatch(recHandler);
         recHandler.expectSceneUnmapped(m_sceneId, ramses::ERendererEventResult_OK);
         recHandler.expectSceneUnsubscribed(m_sceneId, ramses::ERendererEventResult_OK);

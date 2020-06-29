@@ -6,8 +6,6 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-import time
-
 from ramses_test_framework import test_classes
 from ramses_test_framework import log
 from ramses_test_framework.ramses_test_extensions import with_ramses_process_check
@@ -18,7 +16,7 @@ class TestClass(test_classes.OnAllDefaultTargetsTest):
     @with_ramses_process_check
     def impl_setUp(self):
         applicationName = "ramses-local-client-test-{}".format(self.target.defaultPlatform)
-        self.app = self.target.start_renderer(applicationName, dltAppID="LCLT", args="-nomap")
+        self.app = self.target.start_renderer(applicationName, dltAppID="LCLT")
         self.checkThatApplicationWasStarted(self.app)
         self.addCleanup(self.target.kill_application, self.app)
 

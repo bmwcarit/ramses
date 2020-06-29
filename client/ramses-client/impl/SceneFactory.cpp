@@ -20,10 +20,7 @@ namespace ramses_internal
     {
         for (const auto& item : m_scenes)
         {
-            if(nullptr != item.value)
-            {
-                delete item.value;
-            }
+            delete item.value;
         }
     }
 

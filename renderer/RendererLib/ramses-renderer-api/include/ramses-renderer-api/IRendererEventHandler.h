@@ -11,6 +11,7 @@
 
 #include "Types.h"
 #include "ramses-framework-api/APIExport.h"
+#include <chrono>
 
 namespace ramses
 {
@@ -23,108 +24,13 @@ namespace ramses
     {
     public:
         /**
-        * @brief This method will be called when a scene gets published by the client.
-        * @param sceneId The scene id of the scene on which the event occurred
-        */
-        virtual void scenePublished(sceneId_t sceneId) = 0;
-
-        /**
-        * @brief This method will be called when a scene subscription result is available
-        * @param sceneId The scene id of the scene on which the event occurred
-        * @param result The result of the subscription operation. The value is ERendererEventResult_OK
-        * if subscription was successful or ERendererEventResult_FAIL otherwise
-        */
-        virtual void sceneSubscribed(sceneId_t sceneId, ERendererEventResult result) = 0;
-
-        /**
-        * @brief This method will be called when a scene mapping result is available
-        * @param sceneId The scene id of the scene on which the event occurred
-        * @param result The result of the mapping operation. The value is ERendererEventResult_OK
-        * if mapping was successful or ERendererEventResult_FAIL otherwise
-        */
-        virtual void sceneMapped(sceneId_t sceneId, ERendererEventResult result) = 0;
-
-        /**
-        * @brief This method will be called when a scene show result is available
-        * @param sceneId The scene id of the scene on which the event occurred
-        * @param result The result of the show operation. The value is ERendererEventResult_OK
-        * if mapping was successful or ERendererEventResult_FAIL otherwise
-        */
-        virtual void sceneShown(sceneId_t sceneId, ERendererEventResult result) = 0;
-
-        /**
-        * @brief This method will be called when a scene gets unpublished by the client.
-        * @param sceneId The scene id of the scene on which the event occurred
-        */
-        virtual void sceneUnpublished(sceneId_t sceneId) = 0;
-
-        /**
-        * @brief This method will be called when a scene unsubscription result is available
-        * @param sceneId The scene id of the scene on which the event occurred
-        * @param result The result of the unsubscription operation. The value is ERendererEventResult_OK
-        * if unsubscription was successful as a result of explicit unsubscription request from the renderer, ERendererEventResult_INDIRECT
-        * if unsubscription was successful as a result of unpublish event received from the client or ERendererEventResult_FAIL otherwise
-        */
-        virtual void sceneUnsubscribed(sceneId_t sceneId, ERendererEventResult result) = 0;
-
-        /**
-        * @brief This method will be called when a scene unmapping result is available
-        * @param sceneId The scene id of the scene on which the event occurred
-        * @param result The result of the unmapping operation. The value is ERendererEventResult_OK
-        * if unmapping was successful as a result of explicit unmapping request from the renderer, ERendererEventResult_INDIRECT
-        * if unmapping was successful as a result of unpublish event received from the client or ERendererEventResult_FAIL otherwise
-        */
-        virtual void sceneUnmapped(sceneId_t sceneId, ERendererEventResult result) = 0;
-
-        /**
-        * @brief This method will be called when a scene hide result is available
-        * @param sceneId The scene id of the scene on which the event occurred
-        * @param result The result of the hide operation. The value is ERendererEventResult_OK
-        * if unmapping was successful as a result of explicit unmapping request from the renderer, ERendererEventResult_INDIRECT
-        * if unmapping was successful as a result of unpublish event received from the client or ERendererEventResult_FAIL otherwise
-        */
-        virtual void sceneHidden(sceneId_t sceneId, ERendererEventResult result) = 0;
-
-        /**
-        * @brief This method will be called after a data link is created (or failed to create) as a result of RamsesRenderer API linkData call.
-        *
-        * @param providerScene The id of the scene which provides the data.
-        * @param providerId The id of the data provider within the providerScene.
-        * @param consumerScene The id of the scene which consumes the data.
-        * @param consumerId The id of the data consumer within the consumerScene
-        * @param result Can be ERendererEventResult_OK if succeeded or ERendererEventResult_FAIL if failed.
-        */
-        virtual void dataLinked(sceneId_t providerScene, dataProviderId_t providerId, sceneId_t consumerScene, dataConsumerId_t consumerId, ERendererEventResult result) = 0;
-
-        /**
-        * @brief This method will be called after a data link between offscreen buffer as provider and consumer scene's data is created (or failed to create) as a result of RamsesRenderer API \c linkOffscreenBufferToSceneData call.
-        *        Note: Unlinking offscreen buffer uses the same event as any other type of data linking - \c dataUnlinked.
-        *
-        * @param providerOffscreenBuffer The id of the offscreen buffer which provides the data.
-        * @param consumerScene The id of the scene which consumes the data.
-        * @param consumerId The id of the data consumer within the consumerScene
-        * @param result Can be ERendererEventResult_OK if succeeded or ERendererEventResult_FAIL if failed.
-        */
-        virtual void offscreenBufferLinkedToSceneData(offscreenBufferId_t providerOffscreenBuffer, sceneId_t consumerScene, dataConsumerId_t consumerId, ERendererEventResult result) = 0;
-
-        /**
-        * @brief This method will be called after a data link is removed (or failed to remove) as a result of RamsesRenderer API unlinkData call.
-        *
-        * @param consumerScene The id of the scene which consumes the data.
-        * @param consumerId The id of the data consumer within the consumerScene
-        * @param result Can be ERendererEventResult_OK if succeeded, ERendererEventResult_FAIL if failed,
-        * ERendererEventResult_INDIRECT if the unlink happened as a result of client scene change - eg. node or data provider/consumer that was involved in the data link was deleted on client side.
-        */
-        virtual void dataUnlinked(sceneId_t consumerScene, dataConsumerId_t consumerId, ERendererEventResult result) = 0;
-
-        /**
         * @brief This method will be called after an offscreen buffer is created (or failed to be created) as a result of RamsesRenderer API \c createOffscreenBuffer call.
         *
         * @param displayId Display id of display that the callback refers to.
         * @param offscreenBufferId The id of the offscreen buffer that was created or failed to be created.
         * @param result Can be ERendererEventResult_OK if succeeded, ERendererEventResult_FAIL if failed.
         */
-        virtual void offscreenBufferCreated(displayId_t displayId, offscreenBufferId_t offscreenBufferId, ERendererEventResult result) = 0;
+        virtual void offscreenBufferCreated(displayId_t displayId, displayBufferId_t offscreenBufferId, ERendererEventResult result) = 0;
 
         /**
         * @brief This method will be called after an offscreen buffer is destroyed (or failed to be destroyed) as a result of RamsesRenderer API \c destroyOffscreenBuffer call.
@@ -133,27 +39,10 @@ namespace ramses
         * @param offscreenBufferId The id of the offscreen buffer that was destroyed or failed to be destroyed.
         * @param result Can be ERendererEventResult_OK if succeeded, ERendererEventResult_FAIL if failed.
         */
-        virtual void offscreenBufferDestroyed(displayId_t displayId, offscreenBufferId_t offscreenBufferId, ERendererEventResult result) = 0;
+        virtual void offscreenBufferDestroyed(displayId_t displayId, displayBufferId_t offscreenBufferId, ERendererEventResult result) = 0;
 
         /**
-        * @brief This method will be called after a scene is assigned to an offscreen buffer (or failed to be assigned) as a result of RamsesRenderer API \c assignSceneToOffscreenBuffer call.
-        *
-        * @param sceneId The id of the scene that was assigned to the offscreen buffer (or failed to be assigned).
-        * @param offscreenBufferId The id of the offscreen buffer that the scene was assigned to (or failed to be assigned to).
-        * @param result Can be ERendererEventResult_OK if succeeded, ERendererEventResult_FAIL if failed.
-        */
-        virtual void sceneAssignedToOffscreenBuffer(sceneId_t sceneId, offscreenBufferId_t offscreenBufferId, ERendererEventResult result) = 0;
-
-        /**
-        * @brief This method will be called after a scene is assigned to display's framebuffer (or failed to be assigned) as a result of RamsesRenderer API \c assignSceneToFramebuffer call.
-        *
-        * @param sceneId The id of the scene that was assigned to the framebuffer (or failed to be assigned).
-        * @param result Can be ERendererEventResult_OK if succeeded, ERendererEventResult_FAIL if failed.
-        */
-        virtual void sceneAssignedToFramebuffer(sceneId_t sceneId, ERendererEventResult result) = 0;
-
-        /**
-        * @brief This method will be called when a read back of pixels from framebuffer
+        * @brief This method will be called when a read back of pixels from display buffer
         *        was finished. This is the result of RamsesRenderer::readPixels call which
         *        triggers an asynchronous read back from the internal device.
         * @param pixelData Pointer to the pixel data in uncompressed RGBA8 format.
@@ -163,9 +52,10 @@ namespace ramses
         * @param pixelDataSize The number of elements in the data array pixelData, ie. number of pixels * 4 (color channels).
         *                      The size is 0 in case of failure.
         * @param displayId Display id of display that the callback refers to.
+        * @param displayBuffer Buffer id of buffer that the callback refers to.
         * @param result Can be ERendererEventResult_OK if succeeded or ERendererEventResult_FAIL if failed.
         */
-        virtual void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, displayId_t displayId, ERendererEventResult result) = 0;
+        virtual void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, displayId_t displayId, displayBufferId_t displayBuffer, ERendererEventResult result) = 0;
 
         /**
         * @brief This method will be called when update of warping mesh data was finished.
@@ -191,76 +81,6 @@ namespace ramses
         * @param result Can be ERendererEventResult_OK if succeeded or ERendererEventResult_FAIL if failed.
         */
         virtual void displayDestroyed(displayId_t displayId, ERendererEventResult result) = 0;
-
-        /**
-        * @brief This method will be called when a data provider is created
-        * @param sceneId The scene id of the scene on which the event occurred
-        * @param dataProviderId The created data provider id
-        */
-        virtual void dataProviderCreated(sceneId_t sceneId, dataProviderId_t dataProviderId) = 0;
-
-        /**
-        * @brief This method will be called when a data provider is destroyed
-        * @param sceneId The scene id of the scene on which the event occurred
-        * @param dataProviderId The destroyed data provider id
-        */
-        virtual void dataProviderDestroyed(sceneId_t sceneId, dataProviderId_t dataProviderId) = 0;
-
-        /**
-        * @brief This method will be called when a data consumer is created
-        * @param sceneId The scene id of the scene on which the event occurred
-        * @param dataConsumerId The created data consumer id
-        */
-        virtual void dataConsumerCreated(sceneId_t sceneId, dataConsumerId_t dataConsumerId) = 0;
-
-        /**
-        * @brief This method will be called when a data consumer is destroyed
-        * @param sceneId The scene id of the scene on which the event occurred
-        * @param dataConsumerId The destroyed data consumer id
-        */
-        virtual void dataConsumerDestroyed(sceneId_t sceneId, dataConsumerId_t dataConsumerId) = 0;
-
-        /**
-        * @brief This method will be called when a named scene transaction (aka flush) has been applied
-        * @param sceneId The scene id of the scene on which the event occurred
-        * @param sceneVersionTag The name of the scene transaction
-        * @param resourceStatus The current state of the resources to be fetched/updated for the scene transaction
-        */
-        virtual void sceneFlushed(sceneId_t sceneId, sceneVersionTag_t sceneVersionTag, ESceneResourceStatus resourceStatus) = 0;
-
-        /**
-        * @brief This method will be called if a scene which has an expiration timestamp set (see \c Scene::setExpirationTimestamp)
-        *        is on renderer (rendered or just subscribed) at a state that expired, i.e. current time is after the expiration timestamp.
-        *        This callback is called only once when the scene expires even if scene stays expired in subsequent frames.
-        *        When the scene is updated again with a new valid expiration timestamp, \c sceneRecoveredFromExpiration is called.
-        * @param sceneId The scene id of the scene on which the event occurred
-        */
-        virtual void sceneExpired(sceneId_t sceneId) = 0;
-
-        /**
-        * @brief This method will be called if a scene which previously expired (see \c Scene::setExpirationTimestamp and \c sceneExpired)
-        *        was updated with a new expiration timestamp that is not expired anymore.
-        *        This callback is called only once when the scene switches state from expired to not expired.
-        * @param sceneId The scene id of the scene on which the event occurred
-        */
-        virtual void sceneRecoveredFromExpiration(sceneId_t sceneId) = 0;
-
-        /**
-        * @brief This method will be called when a new IVI video stream becomes available, or when an existing stream disappears
-        * In terms of Wayland protocol, a stream is available if an "ivi_application" exists which has created a wayland surface
-        * (wl_surface) with ivi_id=streamId, and the surface has at least one attached non-nullptr buffer (i.e. renderable content).
-        *
-        * It is possible that the ivi_application does not update its surface (by providing new buffers/frames), but RAMSES has
-        * no way of knowing that, hence a stream is _NOT_ reported unavailable in that case.
-        *
-        * A surface becomes unavailable whenever either the ivi_application is destroyed, or when it crashed, or when it attached
-        * a nullptr buffer to the stream surface with id=streamId (i.e. actively told wayland that it should not render contents to
-        * this ivi surface).
-        *
-        * @param streamId The IVI stream id
-        * @param available True if the stream became available, and false if it disappeared
-        */
-        virtual void streamAvailabilityChanged(streamSource_t streamId, bool available) = 0;
 
         /**
         * @brief This method will be called when a key has been pressed while a display's window was focused
@@ -290,10 +110,29 @@ namespace ramses
         virtual void windowResized(displayId_t displayId, uint32_t width, uint32_t height) = 0;
 
         /**
+        * @brief This method will be called when a display's window has been moved,
+        *        if the renderer uses WGL/Windows or X11/Linux as a window system.
+        *
+        * @param displayId The ramses display whose corresponding window was resized
+        * @param windowPosX The new horizontal position of the window's upper left corner
+        * @param windowPosY The new vertical position of the window's upper left corner
+        */
+        virtual void windowMoved(displayId_t displayId, int32_t windowPosX, int32_t windowPosY) = 0;
+
+        /**
         * @brief This method will be called when a display's window has been closed
         * @param displayId The display on which the event occurred
         */
         virtual void windowClosed(displayId_t displayId) = 0;
+
+        /**
+        * @brief This method will be called in period given to renderer config and provides rough performance indicators.
+        *        It only works when using render thread.
+        *
+        * @param[in] maximumLoopTime The maximum time a loop of the renderthread took since the last event
+        * @param[in] averageLooptime The average time a loop of the renderthread took since the last event
+        */
+        virtual void renderThreadLoopTimings(std::chrono::microseconds maximumLoopTime, std::chrono::microseconds averageLooptime) = 0;
 
         /**
         * @brief Empty destructor
@@ -309,112 +148,9 @@ namespace ramses
     {
     public:
         /**
-        * @copydoc ramses::IRendererEventHandler::scenePublished
-        */
-        virtual void scenePublished(sceneId_t sceneId) override
-        {
-            (void)sceneId;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::sceneSubscribed
-        */
-        virtual void sceneSubscribed(sceneId_t sceneId, ERendererEventResult result) override
-        {
-            (void)sceneId;
-            (void)result;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::sceneMapped
-        */
-        virtual void sceneMapped(sceneId_t sceneId, ERendererEventResult result) override
-        {
-            (void)sceneId;
-            (void)result;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::sceneShown
-        */
-        virtual void sceneShown(sceneId_t sceneId, ERendererEventResult result) override
-        {
-            (void)sceneId;
-            (void)result;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::sceneUnpublished
-        */
-        virtual void sceneUnpublished(sceneId_t sceneId) override
-        {
-            (void)sceneId;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::sceneUnsubscribed
-        */
-        virtual void sceneUnsubscribed(sceneId_t sceneId, ERendererEventResult result) override
-        {
-            (void)sceneId;
-            (void)result;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::sceneUnmapped
-        */
-        virtual void sceneUnmapped(sceneId_t sceneId, ERendererEventResult result) override
-        {
-            (void)sceneId;
-            (void)result;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::sceneHidden
-        */
-        virtual void sceneHidden(sceneId_t sceneId, ERendererEventResult result) override
-        {
-            (void)sceneId;
-            (void)result;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::dataLinked
-        */
-        virtual void dataLinked(sceneId_t providerScene, dataProviderId_t providerId, sceneId_t consumerScene, dataConsumerId_t consumerId, ERendererEventResult result) override
-        {
-            (void)providerScene;
-            (void)providerId;
-            (void)consumerScene;
-            (void)consumerId;
-            (void)result;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::offscreenBufferLinkedToSceneData
-        */
-        virtual void offscreenBufferLinkedToSceneData(offscreenBufferId_t providerOffscreenBuffer, sceneId_t consumerScene, dataConsumerId_t consumerId, ERendererEventResult result) override
-        {
-            (void)providerOffscreenBuffer;
-            (void)consumerScene;
-            (void)consumerId;
-            (void)result;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::dataUnlinked
-        */
-        virtual void dataUnlinked(sceneId_t consumerScene, dataConsumerId_t consumerId, ERendererEventResult result) override
-        {
-            (void)consumerScene;
-            (void)consumerId;
-            (void)result;
-        }
-
-        /**
         * @copydoc ramses::IRendererEventHandler::offscreenBufferCreated
         */
-        virtual void offscreenBufferCreated(displayId_t displayId, offscreenBufferId_t offscreenBufferId, ERendererEventResult result) override
+        virtual void offscreenBufferCreated(displayId_t displayId, displayBufferId_t offscreenBufferId, ERendererEventResult result) override
         {
             (void)displayId;
             (void)offscreenBufferId;
@@ -424,40 +160,22 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::offscreenBufferDestroyed
         */
-        virtual void offscreenBufferDestroyed(displayId_t displayId, offscreenBufferId_t offscreenBufferId, ERendererEventResult result) override
+        virtual void offscreenBufferDestroyed(displayId_t displayId, displayBufferId_t offscreenBufferId, ERendererEventResult result) override
         {
             (void)displayId;
             (void)offscreenBufferId;
-            (void)result;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::sceneAssignedToOffscreenBuffer
-        */
-        virtual void sceneAssignedToOffscreenBuffer(sceneId_t sceneId, offscreenBufferId_t offscreenBufferId, ERendererEventResult result) override
-        {
-            (void)sceneId;
-            (void)offscreenBufferId;
-            (void)result;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::sceneAssignedToFramebuffer
-        */
-        virtual void sceneAssignedToFramebuffer(sceneId_t sceneId, ERendererEventResult result) override
-        {
-            (void)sceneId;
             (void)result;
         }
 
         /**
         * @copydoc ramses::IRendererEventHandler::framebufferPixelsRead
         */
-        virtual void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, displayId_t displayId, ERendererEventResult result) override
+        virtual void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, displayId_t displayId, displayBufferId_t displayBuffer, ERendererEventResult result) override
         {
             (void)pixelData;
             (void)pixelDataSize;
             (void)displayId;
+            (void)displayBuffer;
             (void)result;
         }
 
@@ -486,77 +204,6 @@ namespace ramses
         {
             (void)displayId;
             (void)result;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::dataProviderCreated
-        */
-        virtual void dataProviderCreated(sceneId_t sceneId, dataProviderId_t dataProviderId) override
-        {
-            (void)sceneId;
-            (void)dataProviderId;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::dataProviderDestroyed
-        */
-        virtual void dataProviderDestroyed(sceneId_t sceneId, dataProviderId_t dataProviderId) override
-        {
-            (void)sceneId;
-            (void)dataProviderId;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::dataConsumerCreated
-        */
-        virtual void dataConsumerCreated(sceneId_t sceneId, dataConsumerId_t dataConsumerId) override
-        {
-            (void)sceneId;
-            (void)dataConsumerId;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::dataConsumerDestroyed
-        */
-        virtual void dataConsumerDestroyed(sceneId_t sceneId, dataConsumerId_t dataConsumerId) override
-        {
-            (void)sceneId;
-            (void)dataConsumerId;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::sceneFlushed
-        */
-        virtual void sceneFlushed(sceneId_t sceneId, sceneVersionTag_t sceneVersionTag, ESceneResourceStatus resourceStatus) override
-        {
-            (void)sceneId;
-            (void)sceneVersionTag;
-            (void)resourceStatus;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::sceneExpired
-        */
-        virtual void sceneExpired(sceneId_t sceneId) override
-        {
-            (void)sceneId;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::sceneRecoveredFromExpiration
-        */
-        virtual void sceneRecoveredFromExpiration(sceneId_t sceneId) override
-        {
-            (void)sceneId;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::streamAvailabilityChanged
-        */
-        virtual void streamAvailabilityChanged(streamSource_t streamId, bool available) override
-        {
-            (void)streamId;
-            (void)available;
         }
 
         /**
@@ -592,12 +239,32 @@ namespace ramses
         }
 
         /**
+        * @copydoc ramses::IRendererEventHandler::windowMoved
+        */
+        virtual void windowMoved(displayId_t displayId, int32_t windowPosX, int32_t windowPosY) override
+        {
+            (void)displayId;
+            (void)windowPosX;
+            (void)windowPosY;
+        }
+
+        /**
         * @copydoc ramses::IRendererEventHandler::windowClosed
         */
         virtual void windowClosed(displayId_t displayId) override
         {
             (void)displayId;
         }
+
+        /**
+        * @copydoc ramses::IRendererEventHandler::renderThreadLoopTimings
+        */
+        virtual void renderThreadLoopTimings(std::chrono::microseconds maximumLoopTime, std::chrono::microseconds averageLooptime) override
+        {
+            (void)maximumLoopTime;
+            (void)averageLooptime;
+        }
+
     };
 }
 

@@ -39,7 +39,7 @@ namespace ramses_internal
         RamshCommandArgsBase();
 
         // from RamshCommand
-        Bool executeInput(const RamshInput& in) override;
+        bool executeInput(const RamshInput& in) override;
         String descriptionString() const override;
 
         virtual ~RamshCommandArgsBase()
@@ -48,7 +48,7 @@ namespace ramses_internal
 
     protected:
         // gets implemented by a deriving class, which either tries to get the value of the next argument or executes the command implementation
-        virtual Bool executeInternal(const RamshArgumentDataProvider&,Unused&,Unused&,Unused&,Unused&,Unused&) const = 0;
+        virtual bool executeInternal(const RamshArgumentDataProvider&,Unused&,Unused&,Unused&,Unused&,Unused&) const = 0;
         // initialize the argument definitions
         virtual void init();
     };
@@ -65,10 +65,10 @@ namespace ramses_internal
         using RamshCommandArgsBase<N+1,T1,T2,T3,T4>::executeInternal;
 
         // gets the value of the current (N-th) argument and calls the deriving class' implementation to either get the next argument or execute the command implementation
-        Bool executeInternal(const RamshArgumentDataProvider&,T1&,T2&,T3&,T4&,Unused&) const override;
+        bool executeInternal(const RamshArgumentDataProvider&,T1&,T2&,T3&,T4&,Unused&) const override;
 
         // gets implemented by a deriving class, which either tries to get the value of the next argument or executes the command implementation
-        virtual Bool executeInternal(const RamshArgumentDataProvider&,T0&,T1&,T2&,T3&,T4&) const = 0;
+        virtual bool executeInternal(const RamshArgumentDataProvider&,T0&,T1&,T2&,T3&,T4&) const = 0;
 
         // initializes the current (N-th) argument and call the base class' implementation to initialize the next argument
         virtual void init() override;
@@ -90,10 +90,10 @@ namespace ramses_internal
     //         return *static_cast<TypedRamshArgument<typename ramsh_utils::SelectType<n,T0, ... TN>::type*>(RamshCommandArgsBase<0,T0, ... TN>::RamshArgumentProvider::m_arguments[n]);
     //     }
     //
-    //     virtual Bool execute(T0&, ... TN&) const = 0;
+    //     virtual bool execute(T0&, ... TN&) const = 0;
     //
     // protected:
-    //     inline Bool executeInternal(const RamshArgumentDataProvider&, T0& a0, ... TN& aN&)
+    //     inline bool executeInternal(const RamshArgumentDataProvider&, T0& a0, ... TN& aN&)
     //     {
     //         return execute(a0, ... aN);
     //     }
@@ -142,12 +142,12 @@ struct RamshCommandArgs \
     RAMSH_REPEAT(N, ECHO_SPEC_TYPE) \
     >::RamshArgumentProvider::m_arguments[n]);}\
     \
-    virtual Bool execute(T0& a0\
+    virtual bool execute(T0& a0\
     RAMSH_REPEAT(N, ECHO_FUNC_HEADER) \
     ) const = 0; \
     \
     protected: \
-    inline Bool executeInternal(const RamshArgumentDataProvider&, T0& a0 \
+    inline bool executeInternal(const RamshArgumentDataProvider&, T0& a0 \
     RAMSH_REPEAT2(N, ECHO_FUNC_HEADER, ECHO_FUNC_UNUSED) \
     ) const override { \
     return execute(a0 \
@@ -185,7 +185,7 @@ struct RamshCommandArgs \
     }
 
     template<Int32 N, typename T0,typename T1,typename T2, typename T3, typename T4>
-    inline Bool RamshCommandArgsBase<N,T0,T1,T2,T3,T4>::executeInternal(const RamshArgumentDataProvider& args,T1& a1,T2& a2,T3& a3,T4& a4,Unused&) const
+    inline bool RamshCommandArgsBase<N,T0,T1,T2,T3,T4>::executeInternal(const RamshArgumentDataProvider& args,T1& a1,T2& a2,T3& a3,T4& a4,Unused&) const
     {
         T0 val;
 
@@ -211,7 +211,7 @@ struct RamshCommandArgs \
     }
 
     template<Int32 N>
-    inline Bool RamshCommandArgsBase<N,Unused,Unused,Unused,Unused,Unused>::executeInput(const RamshInput& in)
+    inline bool RamshCommandArgsBase<N,Unused,Unused,Unused,Unused,Unused>::executeInput(const RamshInput& in)
     {
         // parse the raw input data and call downwards with it
         RamshArgumentDataProvider args = RamshArgumentProvider::parse(in);

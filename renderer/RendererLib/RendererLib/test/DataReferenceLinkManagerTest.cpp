@@ -20,7 +20,7 @@ using namespace ramses_internal;
 class ADataReferenceLinkManager : public ::testing::Test
 {
 public:
-    ADataReferenceLinkManager(bool createSlots = true)
+    explicit ADataReferenceLinkManager(bool createSlots = true)
         : rendererScenes(rendererEventCollector)
         , sceneLinksManager(rendererScenes.getSceneLinksManager())
         , dataReferenceLinkManager(sceneLinksManager.getDataReferenceLinkManager())
@@ -37,10 +37,10 @@ public:
     {
         if (createSlots)
         {
-            const DataLayoutHandle providerLayout = providerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Float) });
+            const DataLayoutHandle providerLayout = providerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash::Invalid());
             providerDataRef = providerSceneAllocator.allocateDataInstance(providerLayout, DataInstanceHandle(3u));
 
-            const DataLayoutHandle consumerLayout = consumerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Float) });
+            const DataLayoutHandle consumerLayout = consumerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash::Invalid());
             consumerDataRef = consumerSceneAllocator.allocateDataInstance(consumerLayout, DataInstanceHandle(5u));
 
             providerSceneAllocator.allocateDataSlot({ EDataSlotType_DataProvider, providerId, NodeHandle(), providerDataRef, ResourceContentHash::Invalid(), TextureSamplerHandle() }, providerSlotHandle);
@@ -54,7 +54,8 @@ protected:
     void expectRendererEvent(ERendererEventType event, SceneId providerSId, DataSlotId pId, SceneId consumerSId, DataSlotId cId)
     {
         RendererEventVector events;
-        rendererEventCollector.dispatchEvents(events);
+        RendererEventVector dummy;
+        rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
         ASSERT_EQ(1u, events.size());
         EXPECT_EQ(event, events.front().eventType);
         EXPECT_EQ(providerSId, events.front().providerSceneId);
@@ -63,14 +64,16 @@ protected:
         EXPECT_EQ(cId, events.front().consumerdataId);
     }
 
-    void expectRendererEvent(ERendererEventType event, SceneId consumerSId, DataSlotId cId)
+    void expectRendererEvent(ERendererEventType event, SceneId consumerSId, DataSlotId cId, SceneId providerSId)
     {
         RendererEventVector events;
-        rendererEventCollector.dispatchEvents(events);
+        RendererEventVector dummy;
+        rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
         ASSERT_EQ(1u, events.size());
         EXPECT_EQ(event, events.front().eventType);
         EXPECT_EQ(consumerSId, events.front().consumerSceneId);
         EXPECT_EQ(cId, events.front().consumerdataId);
+        EXPECT_EQ(providerSId, events.front().providerSceneId);
     }
 
     void setDataValue(DataInstanceHandle dataRef, IScene& scene, float value)
@@ -106,7 +109,7 @@ protected:
 
 TEST_F(ADataReferenceLinkManager, failsToCreateLinkOfMismatchingDataTypes)
 {
-    const DataLayoutHandle providerLayout = providerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Int32) });
+    const DataLayoutHandle providerLayout = providerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Int32) }, ResourceContentHash::Invalid());
     const DataInstanceHandle providerDataRef2 = providerSceneAllocator.allocateDataInstance(providerLayout, DataInstanceHandle(9u));
 
     const DataSlotId providerId2(999u);
@@ -134,7 +137,7 @@ TEST_F(ADataReferenceLinkManager, canResolveLinkedData)
 
 TEST_F(ADataReferenceLinkManager, canResolveLinkedDataToMultipleConsumers)
 {
-    const DataLayoutHandle consumerLayout = consumerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Float) });
+    const DataLayoutHandle consumerLayout = consumerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash::Invalid());
     const DataInstanceHandle consumerDataRef2 = consumerSceneAllocator.allocateDataInstance(consumerLayout, DataInstanceHandle(9u));
 
     const DataSlotId consumerId2(999u);
@@ -160,7 +163,7 @@ TEST_F(ADataReferenceLinkManager, canResolveLinkedDataToMultipleConsumers)
 
 TEST_F(ADataReferenceLinkManager, doesNotResolveLinkedDataIfConsumerUnlinked)
 {
-    const DataLayoutHandle consumerLayout = consumerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Float) });
+    const DataLayoutHandle consumerLayout = consumerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash::Invalid());
     const DataInstanceHandle consumerDataRef2 = consumerSceneAllocator.allocateDataInstance(consumerLayout, DataInstanceHandle(9u));
 
     const DataSlotId consumerId2(999u);
@@ -178,7 +181,7 @@ TEST_F(ADataReferenceLinkManager, doesNotResolveLinkedDataIfConsumerUnlinked)
     expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId2);
 
     sceneLinksManager.removeDataLink(consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataUnlinked, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType_SceneDataUnlinked, consumerSceneId, consumerId, providerSceneId);
 
     dataReferenceLinkManager.resolveLinksForConsumerScene(consumerScene);
 
@@ -196,7 +199,7 @@ TEST_F(ADataReferenceLinkManager, confidenceTest_canResolveLinkedWithThreeScenes
     DataInstanceHandle middleProviderDataRef;
     DataInstanceHandle middleConsumerDataRef;
 
-    const DataLayoutHandle layout = middleSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Float) });
+    const DataLayoutHandle layout = middleSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash::Invalid());
     middleProviderDataRef = middleSceneAllocator.allocateDataInstance(layout, DataInstanceHandle(3u));
     middleConsumerDataRef = middleSceneAllocator.allocateDataInstance(layout, DataInstanceHandle(5u));
 
@@ -243,7 +246,7 @@ TEST_F(ADataReferenceLinkManager, unlinkedDataFallsBackToPreviousValue)
     expectDataValue(consumerDataRef, consumerScene, 666.f);
 
     sceneLinksManager.removeDataLink(consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataUnlinked, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType_SceneDataUnlinked, consumerSceneId, consumerId, providerSceneId);
 
     expectDataValue(providerDataRef, providerScene, 666.f);
     expectDataValue(consumerDataRef, consumerScene, -1.f);
@@ -274,7 +277,7 @@ TEST_F(ADataReferenceLinkManager, dataFallsBackToPreviouslySetValueIfProviderSce
 
 TEST_F(ADataReferenceLinkManager, confidenceTest_createTwoLinksChangeValueAndUnlink)
 {
-    const DataLayoutHandle consumerLayout = consumerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Float) });
+    const DataLayoutHandle consumerLayout = consumerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash::Invalid());
     const DataInstanceHandle consumerDataRef2 = consumerSceneAllocator.allocateDataInstance(consumerLayout, DataInstanceHandle(9u));
 
     const DataSlotId consumerId2(999u);
@@ -305,7 +308,7 @@ TEST_F(ADataReferenceLinkManager, confidenceTest_createTwoLinksChangeValueAndUnl
     expectDataValue(providerDataRef, providerScene, 123.f);
 
     sceneLinksManager.removeDataLink(consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataUnlinked, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType_SceneDataUnlinked, consumerSceneId, consumerId, providerSceneId);
 
     expectDataValue(consumerDataRef, consumerScene, -1.f);
     expectDataValue(consumerDataRef2, consumerScene, 123.f);
@@ -336,7 +339,7 @@ typedef ::testing::Types <
     Matrix44f
 > ItemTypes;
 
-TYPED_TEST_CASE(ADataReferenceLinkManagerTyped, ItemTypes);
+TYPED_TEST_SUITE(ADataReferenceLinkManagerTyped, ItemTypes);
 
 template <typename T>
 T GetSomeValue()
@@ -412,10 +415,10 @@ Matrix44f GetSomeValue3<Matrix44f>()
 
 TYPED_TEST(ADataReferenceLinkManagerTyped, confidenceTest_linkAndChangeAndUnlink)
 {
-    const DataLayoutHandle providerLayout = this->providerSceneAllocator.allocateDataLayout({ DataFieldInfo(TypeToEDataTypeTraits<TypeParam>::DataType) });
+    const DataLayoutHandle providerLayout = this->providerSceneAllocator.allocateDataLayout({ DataFieldInfo(TypeToEDataTypeTraits<TypeParam>::DataType) }, ResourceContentHash::Invalid());
     this->providerDataRef = this->providerSceneAllocator.allocateDataInstance(providerLayout, DataInstanceHandle(23u));
 
-    const DataLayoutHandle consumerLayout = this->consumerSceneAllocator.allocateDataLayout({ DataFieldInfo(TypeToEDataTypeTraits<TypeParam>::DataType) });
+    const DataLayoutHandle consumerLayout = this->consumerSceneAllocator.allocateDataLayout({ DataFieldInfo(TypeToEDataTypeTraits<TypeParam>::DataType) }, ResourceContentHash::Invalid());
     this->consumerDataRef = this->consumerSceneAllocator.allocateDataInstance(consumerLayout, DataInstanceHandle(24u));
 
     this->providerSceneAllocator.allocateDataSlot({ EDataSlotType_DataProvider, this->providerId, NodeHandle(), this->providerDataRef, ResourceContentHash::Invalid(), TextureSamplerHandle() }, this->providerSlotHandle);
@@ -450,7 +453,7 @@ TYPED_TEST(ADataReferenceLinkManagerTyped, confidenceTest_linkAndChangeAndUnlink
 
     // remove link
     this->sceneLinksManager.removeDataLink(this->consumerSceneId, this->consumerId);
-    this->expectRendererEvent(ERendererEventType_SceneDataUnlinked, this->consumerSceneId, this->consumerId);
+    this->expectRendererEvent(ERendererEventType_SceneDataUnlinked, this->consumerSceneId, this->consumerId, this->providerSceneId);
 
     actualProviderValue = ISceneDataArrayAccessor::GetDataArray<TypeParam>(&this->providerScene, this->providerDataRef, DataFieldHandle(0u))[0];
     actualConsumerValue = ISceneDataArrayAccessor::GetDataArray<TypeParam>(&this->consumerScene, this->consumerDataRef, DataFieldHandle(0u))[0];

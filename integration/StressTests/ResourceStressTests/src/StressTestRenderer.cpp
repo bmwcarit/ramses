@@ -12,9 +12,16 @@
 namespace ramses_internal
 {
     StressTestRenderer::StressTestRenderer(ramses::RamsesFramework& framework, const ramses::RendererConfig& config)
-        : m_renderer(framework, config)
-        , m_eventHandler(m_renderer, 0)
+        : m_framework(framework)
+        , m_renderer(*framework.createRenderer(config))
+        , m_sceneControlAPI(*m_renderer.getSceneControlAPI())
+        , m_eventHandler(m_renderer, std::chrono::milliseconds{ 0 })
     {
+    }
+
+    StressTestRenderer::~StressTestRenderer()
+    {
+        m_framework.destroyRenderer(m_renderer);
     }
 
     ramses::displayId_t StressTestRenderer::createDisplay(uint32_t offsetX, uint32_t width, uint32_t height, uint32_t displayIndex, int32_t argc, const char* argv[])
@@ -23,9 +30,9 @@ namespace ramses_internal
         displayConfig.setWindowRectangle(offsetX + 50, 50, width, height);
 
         const auto iviSurfaceId = displayConfig.getWaylandIviSurfaceID();
-        displayConfig.setWaylandIviSurfaceID((InvalidWaylandIviSurfaceId.getValue() != iviSurfaceId? iviSurfaceId : 10000)+ displayIndex);
+        displayConfig.setWaylandIviSurfaceID((WaylandIviSurfaceId(iviSurfaceId).isValid() ? iviSurfaceId : 10000) + displayIndex);
 
-        if(InvalidWaylandIviLayerId.getValue() == displayConfig.getWaylandIviLayerID())
+        if(!WaylandIviLayerId(displayConfig.getWaylandIviLayerID()).isValid())
             displayConfig.setWaylandIviLayerID(2);
 
         ramses::displayId_t displayId = m_renderer.createDisplay(displayConfig);
@@ -34,9 +41,9 @@ namespace ramses_internal
         return displayId;
     }
 
-    ramses::offscreenBufferId_t StressTestRenderer::createOffscreenBuffer(ramses::displayId_t displayId, uint32_t width, uint32_t height, bool interruptable)
+    ramses::displayBufferId_t StressTestRenderer::createOffscreenBuffer(ramses::displayId_t displayId, uint32_t width, uint32_t height, bool interruptable)
     {
-        ramses::offscreenBufferId_t offscreenBufferId;
+        ramses::displayBufferId_t offscreenBufferId;
         if (interruptable)
         {
             offscreenBufferId = m_renderer.createInterruptibleOffscreenBuffer(displayId, width, height);
@@ -62,9 +69,9 @@ namespace ramses_internal
         m_renderer.setMaximumFramerate(fpsAsFloatBecauseWhyNot);
     }
 
-    void StressTestRenderer::setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForSceneActionsApply, uint64_t limitForOffscreenBufferRender)
+    void StressTestRenderer::setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender)
     {
-        m_renderer.setFrameTimerLimits(0u, limitForClientResourcesUpload, limitForSceneActionsApply, limitForOffscreenBufferRender);
+        m_renderer.setFrameTimerLimits(0u, limitForClientResourcesUpload, limitForOffscreenBufferRender);
     }
 
     void StressTestRenderer::setSkippingOfUnmodifiedBuffers(bool enabled)
@@ -72,63 +79,33 @@ namespace ramses_internal
         m_renderer.setSkippingOfUnmodifiedBuffers(enabled);
     }
 
-    void StressTestRenderer::subscribeMapShowScene(ramses::displayId_t displayId, ramses::sceneId_t sceneId)
+    void StressTestRenderer::setSceneDisplayAndBuffer(ramses::sceneId_t sceneId, ramses::displayId_t display, ramses::displayBufferId_t displayBuffer)
     {
-        subscribeScene(sceneId);
-        mapScene(displayId, sceneId);
-        showScene(sceneId);
+        m_sceneControlAPI.setSceneMapping(sceneId, display);
+        m_sceneControlAPI.setSceneDisplayBufferAssignment(sceneId, displayBuffer);
+        m_sceneControlAPI.flush();
     }
 
-    void StressTestRenderer::subscribeScene(ramses::sceneId_t sceneId)
+    void StressTestRenderer::setSceneState(ramses::sceneId_t sceneId, ramses::RendererSceneState state)
     {
-        m_eventHandler.waitForPublication(sceneId);
-
-        m_renderer.subscribeScene(sceneId);
-        m_renderer.flush();
-        m_eventHandler.waitForSubscription(sceneId);
+        m_sceneControlAPI.setSceneState(sceneId, state);
+        m_sceneControlAPI.flush();
     }
 
-    void StressTestRenderer::mapScene(ramses::displayId_t displayId, ramses::sceneId_t sceneId)
+    void StressTestRenderer::waitForSceneState(ramses::sceneId_t sceneId, ramses::RendererSceneState state)
     {
-        m_renderer.mapScene(displayId, sceneId);
-        m_renderer.flush();
-
-        m_eventHandler.waitForMapped(sceneId);
+        m_eventHandler.waitForSceneState(sceneId, state);
     }
 
-    void StressTestRenderer::showScene(ramses::sceneId_t sceneId)
+    void StressTestRenderer::waitForFlush(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t flushVersion)
     {
-        m_renderer.showScene(sceneId);
-        m_renderer.flush();
-        m_eventHandler.waitForShown(sceneId);
+        m_eventHandler.waitForFlush(sceneId, flushVersion);
     }
 
-    void StressTestRenderer::showSceneOnOffscreenBuffer(ramses::sceneId_t sceneId, ramses::offscreenBufferId_t offscreenBuffer)
+    void StressTestRenderer::linkOffscreenBufferToSceneTexture(ramses::sceneId_t sceneId, ramses::displayBufferId_t offscreenBuffer, ramses::dataConsumerId_t consumerTexture)
     {
-        m_renderer.assignSceneToOffscreenBuffer(sceneId, offscreenBuffer);
-        showScene(sceneId);
-    }
-
-    void StressTestRenderer::hideAndUnmapScene(ramses::sceneId_t sceneId)
-    {
-        m_renderer.hideScene(sceneId);
-        m_renderer.flush();
-        m_eventHandler.waitForHidden(sceneId);
-
-        m_renderer.unmapScene(sceneId);
-        m_renderer.flush();
-        m_eventHandler.waitForUnmapped(sceneId);
-    }
-
-    void StressTestRenderer::waitForNamedFlush(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t flushName)
-    {
-        m_eventHandler.waitForNamedFlush(sceneId, flushName, true);
-    }
-
-    void StressTestRenderer::linkOffscreenBufferToSceneTexture(ramses::sceneId_t sceneId, ramses::offscreenBufferId_t offscreenBuffer, ramses::dataConsumerId_t consumerTexture)
-    {
-        m_renderer.linkOffscreenBufferToSceneData(offscreenBuffer, sceneId, consumerTexture);
-        m_renderer.flush();
+        m_sceneControlAPI.linkOffscreenBuffer(offscreenBuffer, sceneId, consumerTexture);
+        m_sceneControlAPI.flush();
 
         m_eventHandler.waitForOffscreenBufferLink(offscreenBuffer);
     }

@@ -10,7 +10,7 @@
 #include "ramses-utils.h"
 #include <algorithm>
 
-TextBox::TextBox(std::u32string         string,
+TextBox::TextBox(const std::u32string&  string,
                  ramses::TextCache&     textCache,
                  ramses::FontInstanceId fontInstance,
                  int32_t                lineHeight,
@@ -42,7 +42,7 @@ TextBox::TextBox(std::u32string         string,
     setPosition(0, 0);
 }
 
-void TextBox::createTextNodes(std::u32string             string,
+void TextBox::createTextNodes(const std::u32string&      string,
                               ramses::TextCache&         textCache,
                               ramses::FontInstanceId     fontInstance,
                               int32_t lineHeight,
@@ -50,8 +50,18 @@ void TextBox::createTextNodes(std::u32string             string,
                               ramses::Node&              node,
                               ramses::LayoutUtils::StringBoundingBox& boundingBox)
 {
+    ramses::EffectDescription effectDesc;
+    effectDesc.setVertexShaderFromFile("res/ramses-text-shadow.vert");
+    effectDesc.setFragmentShaderFromFile("res/ramses-text-shadow.frag");
+
+    effectDesc.setAttributeSemantic("a_position", ramses::EEffectAttributeSemantic_TextPositions);
+    effectDesc.setAttributeSemantic("a_texcoord", ramses::EEffectAttributeSemantic_TextTextureCoordinates);
+    effectDesc.setUniformSemantic("u_texture", ramses::EEffectUniformSemantic_TextTexture);
+    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+
+    ramses::Effect* textEffect = client.createEffect(effectDesc);
     ramses::UniformInput colorInput;
-    ramses::Effect&      textEffect = *ramses::RamsesUtils::CreateStandardTextEffect(client, colorInput);
+    textEffect->findUniformInput("u_color", colorInput);
 
     int32_t verticalOffset = 0;
 
@@ -71,7 +81,7 @@ void TextBox::createTextNodes(std::u32string             string,
         const auto line = string.substr(currentOffset, nextNewLine - currentOffset);
 
         const auto positionedGlyphs = textCache.getPositionedGlyphs(line, fontInstance);
-        const auto textLineId = textCache.createTextLine(positionedGlyphs, textEffect);
+        const auto textLineId = textCache.createTextLine(positionedGlyphs, *textEffect);
 
         auto textLine = textCache.getTextLine(textLineId);
 

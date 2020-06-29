@@ -6,11 +6,11 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
+from __future__ import print_function
 import time
 import paramiko
 import socket
 import os
-import subprocess
 import posixpath
 import glob
 
@@ -55,7 +55,7 @@ class RemoteTarget(Target):
         self.executableExistsOnTarget[binaryPath] = result
         return result
 
-    def start_application(self, applicationName, args="", binaryDirectoryOnTarget=None, nameExtension="", env={}, dltAppID=None):
+    def start_application(self, applicationName, args="", binaryDirectoryOnTarget=None, nameExtension="", env={}, dltAppID=None, prepend_unbuffer=False):
         #ensure binary is there
         if binaryDirectoryOnTarget:
             binaryPathOnTarget = binaryDirectoryOnTarget + '/' + applicationName
@@ -66,6 +66,11 @@ class RemoteTarget(Target):
             return Application(None, None, None, applicationName, binaryDirectoryOnTarget, nameExtension)
 
         prefix = helper.get_env_var_setting_string(self._get_merged_env(env))
+        if prepend_unbuffer:
+            if self.supportsUnbuffer:
+                prefix += " unbuffer"
+            else:
+                log.warn("Unbuffer is not supported on this target! Will be ignored.")
 
         #execute application
         if binaryDirectoryOnTarget:
@@ -91,9 +96,9 @@ class RemoteTarget(Target):
         else:
             return ""
 
-    def start_renderer(self, applicationName, args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}, dltAppID='REND', waitForDisplayManagerRamsh=True):
+    def start_renderer(self, applicationName, args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}, dltAppID='REND', waitForDisplayManagerRamsh=True, automap=False, startVisible=True):
         extendedArgs = args + self._get_daemon_args(ramsesDaemonTarget)
-        return Target.start_renderer(self, applicationName, extendedArgs, workingDirectory, ramsesDaemonTarget, nameExtension, env, dltAppID, waitForDisplayManagerRamsh)
+        return Target.start_renderer(self, applicationName, extendedArgs, workingDirectory, ramsesDaemonTarget, nameExtension, env, dltAppID, waitForDisplayManagerRamsh, automap=automap, startVisible=startVisible)
 
     def start_client(self, applicationName, args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}, dltAppID=None):
         extendedArgs = args + self._get_daemon_args(ramsesDaemonTarget)

@@ -13,6 +13,8 @@
 #include "ramses-framework-api/RamsesFramework.h"
 #include "ramses-framework-api/IDcsmProviderEventHandler.h"
 #include "ramses-framework-api/StatusObject.h"
+#include "ramses-framework-api/DcsmMetadataCreator.h"
+#include "ramses-framework-api/EDcsmOfferingMode.h"
 
 namespace ramses
 {
@@ -31,13 +33,54 @@ namespace ramses
          *        could and should currently be shown.
          *        The ramses scene belonging to the scene ID must not exist yet.
          *
+         *        A failing offerContent call might trigger a stopOfferAccepted event,
+         *        which can be safely ignored.
+         *
          * @param contentID The ID of the content to be offered
          * @param category The category the content is made for
          * @param scene The ramses scene ID containing the content.
+         * @param mode Indicates if content should be offered within same process only
          * @return StatusOK for success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().
          */
-        status_t offerContent(ContentID contentID, Category category, sceneId_t scene);
+        status_t offerContent(ContentID contentID, Category category, sceneId_t scene, EDcsmOfferingMode mode);
+
+        /**
+         * @brief Same behavior as offerContent() but additionally send provided
+         *        metadata to consumers that assigned content to themselves.
+         *
+         *        This method should be used to attach metadata immediately on offer to a
+         *        content but is no prerequisite for later calls to updateContentMetadata().
+         *
+         *        A failing offerContentWithMetadata call might trigger a stopOfferAccepted
+         *        event, which can be safely ignored.
+         *
+         * @param contentID The ID of the content to be offered
+         * @param category The category the content is made for
+         * @param scene The ramses scene ID containing the content.
+         * @param mode Indicates if content should be offered within same process only
+         * @param metadata metadata creator filled with metadata
+         * @return StatusOK for success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        status_t offerContentWithMetadata(ContentID contentID, Category category, sceneId_t scene, EDcsmOfferingMode mode, const DcsmMetadataCreator& metadata);
+
+        /**
+         * @brief Send metadata updates to consumers content is assigned to. The content is earliest
+         *        sent to consumer on change change offered to assigned.
+         *
+         * contentID must belong to a content currently offered by this provider. A consumer initially gets
+         * the last combined state of all metadata updates (later updated values overwrite earlier values)
+         * when they become assigned. The initial state is given by offerContentWithMetadata() or
+         * empty if offerContent() is used.
+         * After the initial send updates are directly provided to the assigned consumer.
+         *
+         * @param contentID The ID of the content for which metadata should be updated
+         * @param metadata metadata creator filled with metadata
+         * @return StatusOK for success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        status_t updateContentMetadata(ContentID contentID, const DcsmMetadataCreator& metadata);
 
         /**
          * @brief Request to stop offering a content. A successful request
@@ -70,18 +113,32 @@ namespace ramses
          *        This function does not have to be called to enable a consumer to use this
          *        content, it is only needed when the provider side wants to influence
          *        the consumer application logic concerning which content to use.
+         *        When the logical reason for the focus is no longer valid, the request should be disabled again.
          *
          * @param contentID The ID of the content to request focus for
+         * @param focusRequest An arbitrary identifier for this focusRequest
          *
          * @return StatusOK for success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().
          */
-        status_t requestContentFocus(ContentID contentID);
+        status_t enableFocusRequest(ContentID contentID, int32_t focusRequest);
+
+        /**
+         * @brief No longer request an assigned DcsmConsumer to focus this content for given focusrequest within a category.
+         *        Should be called, when the logical reason for the focus is no longer given.
+         *
+         * @param contentID The ID of the content for which to disable the focus request for
+         * @param focusRequest The focusRequest to disable
+         *
+         * @return StatusOK for success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        status_t disableFocusRequest(ContentID contentID, int32_t focusRequest);
 
         /**
          * @brief Communication from DcsmConsumer will be handled by a
          *        DcsmProvider.  Some of this communication results in
-         *        an event. Calls handler funtions synchronously in
+         *        an event. Calls handler functions synchronously in
          *        the caller context for DCSM events which were
          *        received asynchronously.  This function must be
          *        called regularly to avoid buffer overflow of the
@@ -96,7 +153,7 @@ namespace ramses
         /**
          * @brief Constructor of DcsmProvider
          */
-        DcsmProvider(DcsmProviderImpl&);
+        explicit DcsmProvider(DcsmProviderImpl&);
 
         /**
          * @brief Destructor of DcsmProvider

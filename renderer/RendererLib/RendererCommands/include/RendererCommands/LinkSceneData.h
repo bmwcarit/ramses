@@ -18,7 +18,7 @@ namespace ramses_internal
     class LinkSceneData : public RamshCommandArgs<UInt32, UInt32, UInt32, UInt32>
     {
     public:
-        LinkSceneData(RendererCommandBuffer& rendererCommandBuffer);
+        explicit LinkSceneData(RendererCommandBuffer& rendererCommandBuffer);
         virtual Bool execute(UInt32& providerSceneId, UInt32& providerDataSlotId, UInt32& consumerSceneId, UInt32& consumerDataSlotId) const override;
 
     private:

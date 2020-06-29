@@ -10,6 +10,7 @@
 #define RAMSES_TEXTUREUPLOADINGADAPTER_BASE_H
 
 #include "RendererAPI/ITextureUploadingAdapter.h"
+#include "Resource/TextureMetaInfo.h"
 
 namespace ramses_internal
 {
@@ -18,8 +19,8 @@ namespace ramses_internal
     class TextureUploadingAdapter_Base : public ITextureUploadingAdapter
     {
     public:
-        TextureUploadingAdapter_Base(IDevice& device);
-        virtual void uploadTexture2D(DeviceResourceHandle textureHandle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data) override;
+        explicit TextureUploadingAdapter_Base(IDevice& device);
+        virtual void uploadTexture2D(DeviceResourceHandle textureHandle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data,  const TextureSwizzleArray& swizzle) override;
 
     protected:
         IDevice& m_device;

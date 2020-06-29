@@ -18,7 +18,7 @@ namespace ramses_internal
     class SystemCompositorControllerRemoveSurfaceFromLayer : public RamshCommandArgs<UInt32, UInt32>
     {
     public:
-        SystemCompositorControllerRemoveSurfaceFromLayer(RendererCommandBuffer& rendererCommandBuffer);
+        explicit SystemCompositorControllerRemoveSurfaceFromLayer(RendererCommandBuffer& rendererCommandBuffer);
         virtual Bool execute(UInt32& surfaceId, UInt32& layerId) const override;
 
     private:

@@ -13,7 +13,7 @@ using namespace testing;
 
 namespace ramses_internal
 {
-    TYPED_TEST_CASE(AScene, SceneTypes);
+    TYPED_TEST_SUITE(AScene, SceneTypes);
 
     TYPED_TEST(AScene, ContainsCreatedRenderable)
     {
@@ -37,13 +37,6 @@ namespace ramses_internal
         EXPECT_EQ(node, this->m_scene.getRenderable(renderable).node);
     }
 
-    TYPED_TEST(AScene, ReturnsInvalidEffectResourceForNewRenderable)
-    {
-        const RenderableHandle renderable = this->m_scene.allocateRenderable(this->m_scene.allocateNode());
-
-        EXPECT_EQ(ResourceContentHash::Invalid(), this->m_scene.getRenderable(renderable).effectResource);
-    }
-
     TYPED_TEST(AScene, ReturnsInvalidRenderStateForNewRenderable)
     {
         const RenderableHandle renderable = this->m_scene.allocateRenderable(this->m_scene.allocateNode());
@@ -60,23 +53,15 @@ namespace ramses_internal
         EXPECT_EQ(state, this->m_scene.getRenderable(renderable).renderState);
     }
 
-    TYPED_TEST(AScene, SetsEffectAndGeometryLayoutRenderable)
-    {
-        const ResourceContentHash hash(123u, 0);
-        const RenderableHandle renderable = this->m_scene.allocateRenderable(this->m_scene.allocateNode());
-        this->m_scene.setRenderableEffect(renderable, hash);
-
-        EXPECT_EQ(hash, this->m_scene.getRenderable(renderable).effectResource);
-    }
-
     TYPED_TEST(AScene, SetsDataInstanceToRenderable)
     {
         const RenderableHandle renderable = this->m_scene.allocateRenderable(this->m_scene.allocateNode());
-        const DataLayoutHandle layoutHandle = this->m_scene.allocateDataLayout({});
+        const DataLayoutHandle layoutHandle = this->m_scene.allocateDataLayout({}, ResourceContentHash(123u, 0u));
         const DataInstanceHandle dataInstance1 = this->m_scene.allocateDataInstance(layoutHandle);
         const DataInstanceHandle dataInstance2 = this->m_scene.allocateDataInstance(layoutHandle);
         this->m_scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Uniforms, dataInstance1);
         this->m_scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Geometry, dataInstance2);
+        EXPECT_EQ(this->m_scene.getDataLayout(layoutHandle).getEffectHash(), ResourceContentHash(123u, 0u));
 
         EXPECT_EQ(dataInstance1, this->m_scene.getRenderable(renderable).dataInstances[ERenderableDataSlotType_Uniforms]);
         EXPECT_EQ(dataInstance2, this->m_scene.getRenderable(renderable).dataInstances[ERenderableDataSlotType_Geometry]);
@@ -109,9 +94,12 @@ namespace ramses_internal
     TYPED_TEST(AScene, SetsRenderableVisible)
     {
         const RenderableHandle renderable = this->m_scene.allocateRenderable(this->m_scene.allocateNode());
-        this->m_scene.setRenderableVisibility(renderable, false);
-
-        EXPECT_EQ(false, this->m_scene.getRenderable(renderable).isVisible);
+        this->m_scene.setRenderableVisibility(renderable, EVisibilityMode::Off);
+        EXPECT_EQ(EVisibilityMode::Off, this->m_scene.getRenderable(renderable).visibilityMode);
+        this->m_scene.setRenderableVisibility(renderable, EVisibilityMode::Invisible);
+        EXPECT_EQ(EVisibilityMode::Invisible, this->m_scene.getRenderable(renderable).visibilityMode);
+        this->m_scene.setRenderableVisibility(renderable, EVisibilityMode::Visible);
+        EXPECT_EQ(EVisibilityMode::Visible, this->m_scene.getRenderable(renderable).visibilityMode);
     }
 
     TYPED_TEST(AScene, ContainsZeroTotalRenderablesUponCreation)
@@ -124,5 +112,14 @@ namespace ramses_internal
         this->m_scene.allocateRenderable(this->m_scene.allocateNode());
 
         EXPECT_EQ(1u, this->m_scene.getRenderableCount());
+    }
+
+    TYPED_TEST(AScene, SetsStartVertexOfRenderable)
+    {
+        const RenderableHandle renderable = this->m_scene.allocateRenderable(this->m_scene.allocateNode());
+        EXPECT_EQ(0u, this->m_scene.getRenderable(renderable).startVertex);
+
+        this->m_scene.setRenderableStartVertex(renderable, 132u);
+        EXPECT_EQ(132u, this->m_scene.getRenderable(renderable).startVertex);
     }
 }

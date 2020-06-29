@@ -12,5 +12,5 @@
 find_package(PkgConfig QUIET)
 
 IF(PKG_CONFIG_FOUND)
-    pkg_check_modules(wayland-server wayland-server>=1.9)
+    pkg_check_modules(wayland-server wayland-server>=1.13)
 ENDIF()

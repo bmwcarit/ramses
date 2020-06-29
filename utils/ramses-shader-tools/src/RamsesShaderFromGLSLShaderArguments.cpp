@@ -137,13 +137,13 @@ const ramses_internal::String& RamsesShaderFromGLSLShaderArguments::getOutEffect
 
 void RamsesShaderFromGLSLShaderArguments::printUsage() const
 {
-    PRINT_HINT("usage: program --%s <filename> --%s <filename> --%s <filename> --%s <filename> --%s <filename> --%s {%s|%s} --%s <filename> --%s <optional string>\n",
+    PRINT_HINT("usage: program --{} <filename> --{} <filename> --{} <filename> --{} <filename> --{} <filename> --{} {{{}|{}}} --{} <filename> --{} <optional string>\n",
         IN_VERTEX_SHADER_NAME, IN_FRAGMENT_SHADER_NAME, IN_CONFIG_NAME,
         OUT_VERTEX_SHADER_NAME, OUT_FRAGMENT_SHADER_NAME,
         OUT_EFFECT_ID_TYPE_NAME, OUT_EFFECT_ID_TYPE_CLIENT, OUT_EFFECT_ID_TYPE_RENDERER,
         OUT_EFFECT_ID_NAME,
         OUT_EFFECT_NAME);
-    PRINT_HINT("usage: program -%s <filename> -%s <filename> -%s <filename> -%s <filename> -%s <filename> -%s {%s|%s} -%s <filename>  -%s <optional string>\n\n",
+    PRINT_HINT("usage: program -{} <filename> -{} <filename> -{} <filename> -{} <filename> -{} <filename> -{} {{{}|{}}} -{} <filename>  -{} <optional string>\n\n",
         IN_VERTEX_SHADER_SHORT_NAME, IN_FRAGMENT_SHADER_SHORT_NAME, IN_CONFIG_SHORT_NAME,
         OUT_VERTEX_SHADER_SHORT_NAME, OUT_FRAGMENT_SHADER_SHORT_NAME,
         OUT_EFFECT_ID_TYPE_SHORT_NAME, OUT_EFFECT_ID_TYPE_CLIENT, OUT_EFFECT_ID_TYPE_RENDERER,
@@ -169,7 +169,7 @@ bool RamsesShaderFromGLSLShaderArguments::loadEffectIdType(const ramses_internal
     }
     else
     {
-        PRINT_HINT("valid Effect Id Type Options are as following: %s %s\n", OUT_EFFECT_ID_TYPE_CLIENT, OUT_EFFECT_ID_TYPE_RENDERER);
+        PRINT_HINT("valid Effect Id Type Options are as following: {} {}\n", OUT_EFFECT_ID_TYPE_CLIENT, OUT_EFFECT_ID_TYPE_RENDERER);
         return false;
     }
     return true;

@@ -5,7 +5,6 @@
 #  License, v. 2.0. If a copy of the MPL was not distributed with this
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
-import time, re
 
 from ramses_test_framework import test_classes
 from ramses_test_framework import log
@@ -40,10 +39,10 @@ class TestMoveBetweenIVILayers(test_classes.OnSelectedTargetsTest):
         self.ramsesDaemon = self.target.start_daemon()
         self.checkThatApplicationWasStarted(self.ramsesDaemon)
         self.addCleanup(self.target.kill_application, self.ramsesDaemon)
-        self.renderer = self.target.start_default_renderer("--waylandIviLayerId {0} --waylandIviSurfaceID {1} --wayland-socket-embedded wayland-13 --disableAutoMapping -w 640".format(self.firstLayerIviId, self.rendererSurfaceIviId))
+        self.renderer = self.target.start_default_renderer("--waylandIviLayerId {0} --waylandIviSurfaceID {1} --wayland-socket-embedded wayland-13 -w 640".format(self.firstLayerIviId, self.rendererSurfaceIviId), nameExtension='main')
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
-        self.rendererbackground = self.target.start_default_renderer("--waylandIviLayerId {0} --waylandIviSurfaceID {1} --wayland-socket-embedded wayland-12 --disableAutoMapping -w 640".format(self.backgroundRendererLayerIviId, self.backgroundRendererSurfaceIviId))
+        self.rendererbackground = self.target.start_default_renderer("--waylandIviLayerId {0} --waylandIviSurfaceID {1} --wayland-socket-embedded wayland-12 -w 640".format(self.backgroundRendererLayerIviId, self.backgroundRendererSurfaceIviId), nameExtension='background')
         self.checkThatApplicationWasStarted(self.rendererbackground)
         self.addCleanup(self.target.kill_application, self.rendererbackground)
         self.testClient3Triangles = self.target.start_client("ramses-test-client", "-tn 5 -ts 0 -cz 5")
@@ -58,13 +57,14 @@ class TestMoveBetweenIVILayers(test_classes.OnSelectedTargetsTest):
         self.target.kill_application(self.ramsesDaemon)
         log.info("all applications killed")
         self.save_application_output(self.testClient3Triangles)
+        self.save_application_output(self.rendererbackground)
         self.save_application_output(self.renderer)
         self.save_application_output(self.ramsesDaemon)
         log.info("output saved")
 
     def impl_test(self):
         ensureHasContentOnSurface(self.renderer, self.rendererSurfaceIviId)
-        ensureHasContentOnSurface(self.renderer, self.backgroundRendererSurfaceIviId)
+        ensureHasContentOnSurface(self.rendererbackground, self.backgroundRendererSurfaceIviId)
 
         self.renderer.showScene(26)
         self.renderer.send_ramsh_command("skipUnmodifiedBuffers 0", waitForRendererConfirmation=True)

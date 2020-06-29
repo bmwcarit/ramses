@@ -12,27 +12,25 @@
 #include "SerializationHelper.h"
 #include "Utils/BinaryOutputStream.h"
 #include "Utils/BinaryInputStream.h"
-#include "Collections/StringOutputStream.h"
 #include "Collections/Vector.h"
 #include "Collections/HashSet.h"
 #include "ClientTestUtils.h"
-#include "ramses-capu/os/StringUtils.h"
 
 #include <cstdio>
 
 namespace ramses
 {
-    ::testing::AssertionResult AssertArraysEqual( const char *m, const char *n, uint32_t size)
+    ::testing::AssertionResult AssertArraysEqual( const char *m, const char *n, size_t size)
     {
         char mHexValue[5];
         char nHexValue[5];
 
-        for(uint32_t i = 0; i < size; ++i)
+        for(size_t i = 0; i < size; ++i)
         {
             if(m[i] != n[i])
             {
-                ramses_capu::StringUtils::Sprintf(mHexValue, 5, "0x%02x", m[i]);
-                ramses_capu::StringUtils::Sprintf(nHexValue, 5, "0x%02x", n[i]);
+                std::snprintf(mHexValue, 5, "0x%02x", static_cast<unsigned int>(m[i]));
+                std::snprintf(nHexValue, 5, "0x%02x", static_cast<unsigned int>(n[i]));
                 return ::testing::AssertionFailure()
                     << "Arrays differ at position " << i << ": "
                     << mHexValue << " != " << nHexValue << "\n";
@@ -58,7 +56,7 @@ namespace ramses
     class RamsesObjectDummy : public RamsesObject
     {
     public:
-        RamsesObjectDummy(RamsesObjectImpl& _impl)
+        explicit RamsesObjectDummy(RamsesObjectImpl& _impl)
             : RamsesObject(_impl)
             , impl(static_cast<RamsesObjectImplDummy&>(_impl))
         {
@@ -122,10 +120,10 @@ namespace ramses
     };
 
     typedef ::testing::Types< std::vector<RamsesObject*>, ramses_internal::HashSet<RamsesObject*> > ContainerObjectTypes;
-    TYPED_TEST_CASE(SerializationHelperObjectTest, ContainerObjectTypes);
+    TYPED_TEST_SUITE(SerializationHelperObjectTest, ContainerObjectTypes);
 
     typedef ::testing::Types< std::vector<RamsesObjectImpl*>, ramses_internal::HashSet<RamsesObjectImpl*> > ContainerImplTypes;
-    TYPED_TEST_CASE(SerializationHelperImplTest, ContainerImplTypes);
+    TYPED_TEST_SUITE(SerializationHelperImplTest, ContainerImplTypes);
 
     TYPED_TEST(SerializationHelperObjectTest, CanGetCount)
     {
@@ -152,7 +150,7 @@ namespace ramses
         SerializationHelper::SerializeContainerIDs(this->m_outStream, this->m_serializationContext, this->m_originalContainer);
 
         const char* data = this->m_outStream.getData();
-        uint32_t size    = this->m_outStream.getSize();
+        size_t size    = this->m_outStream.getSize();
 
         EXPECT_TRUE(AssertArraysEqual(SerializationHelperTestBase::firstElementSerialString, data, size));
     }
@@ -164,7 +162,7 @@ namespace ramses
         SerializationHelper::SerializeContainerImplIDs(this->m_outStream, this->m_serializationContext, this->m_originalContainer);
 
         const char* data = this->m_outStream.getData();
-        uint32_t size    = this->m_outStream.getSize();
+        size_t size    = this->m_outStream.getSize();
 
         EXPECT_TRUE(AssertArraysEqual(SerializationHelperTestBase::firstElementSerialString, data, size));
     }

@@ -34,7 +34,7 @@ namespace ramses
         virtual void     deinitializeFrameworkData() override;
         virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
         virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
-        virtual status_t validate(uint32_t indent) const override;
+        virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
 
         status_t setSplineKeyStepBool(splineTimeStamp_t timeStamp, bool value);
         status_t setSplineKeyStepInt32(splineTimeStamp_t timeStamp, int32_t value);

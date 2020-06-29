@@ -95,7 +95,7 @@ namespace ramses_internal
 
     IResource* ResourcePersistation::RetrieveResourceFromStream(BinaryFileInputStream& inStream, const ResourceFileEntry& fileEntry)
     {
-        inStream.seek(fileEntry.offsetInBytes, EFileSeekOrigin_BeginningOfFile);
+        inStream.seek(fileEntry.offsetInBytes, File::SeekOrigin::BeginningOfFile);
 
         IResource* resource = ReadOneResourceFromStream(inStream, fileEntry.resourceInfo.hash);
 

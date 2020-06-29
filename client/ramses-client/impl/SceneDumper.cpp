@@ -96,9 +96,9 @@ namespace ramses
         markAllObjectsOfTypeAsRequired(ERamsesObjectType_AnimationSystemRealTime);
 
         RenderPassSet requiredRenderPasses = markRequiredScreenRenderPasses();
-        while (requiredRenderPasses.count() > 0)
+        while (requiredRenderPasses.size() > 0)
         {
-            output << "SceneDumper::dumpUnrequiredObject number of render passes: " << requiredRenderPasses.count() << "\n";
+            output << "SceneDumper::dumpUnrequiredObject number of render passes: " << requiredRenderPasses.size() << "\n";
 
             RenderGroupSet requiredRenderGroups = markRequiredRenderGroups(requiredRenderPasses);
             MeshNodeSet    requiredMeshNodes    = markRequiredMeshNodes(requiredRenderGroups);
@@ -210,7 +210,7 @@ namespace ramses
 
     bool SceneDumper::addToRequiredObjects(const RamsesObjectImpl& object)
     {
-        if (!m_requiredObjects.hasElement(&object))
+        if (!m_requiredObjects.contains(&object))
         {
             m_requiredObjects.put(&object);
             return true;
@@ -475,7 +475,7 @@ namespace ramses
         return requiredCameras;
     }
 
-    void SceneDumper::markRequiredResourcesFromHash(ResourceContentHashSet requiredResourceHashes)
+    void SceneDumper::markRequiredResourcesFromHash(const ResourceContentHashSet& requiredResourceHashes)
     {
         for (auto requiredResourceHash : requiredResourceHashes)
         {
@@ -654,14 +654,14 @@ namespace ramses
     void SceneDumper::outputNotRequiredObjects(ramses_internal::StringOutputStream& output)
     {
         RamsesObjectSet objects = getSceneAndClientObjects();
-        output << "SceneDumper::outputNotRequiredObjects Unrequired objects: \n";
+        output << "SceneDumper::outputNotRequiredObjects Unrequired objects:\n";
 
         ramses_internal::HashMap<ERamsesObjectType, Counter> typeStatistic;
         for (RamsesObject* object : objects)
         {
             const RamsesObjectImpl* objectImpl = &object->impl;
             ERamsesObjectType type = object->getType();
-            if (false == m_requiredObjects.hasElement(objectImpl))
+            if (false == m_requiredObjects.contains(objectImpl))
             {
                 outputNotRequiredObject(*object, output);
                 typeStatistic[type].unrequired++;
@@ -669,7 +669,7 @@ namespace ramses
             typeStatistic[type].total++;
         }
 
-        output << "\nSceneDumper::outputNotRequiredObjects Statistic of unrequired objects: \n\n";
+        output << "\nSceneDumper::outputNotRequiredObjects Statistic of unrequired objects:\n\n";
 
         AddString("OBEJCT TYPE", output, 39);
 
@@ -708,7 +708,7 @@ namespace ramses
             string << stringToAppend;
         }
 
-        const int32_t n = static_cast<int32_t>(width) - static_cast<int32_t>(stringToAppend.getLength());
+        const int32_t n = static_cast<int32_t>(width) - static_cast<int32_t>(stringToAppend.size());
         for (int32_t i = 0; i < n; i++)
         {
             string << " ";

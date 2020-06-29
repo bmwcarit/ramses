@@ -97,6 +97,27 @@ namespace ramses_internal
         window.handleEvents();
     }
 
+    TEST(Window_Windows, propagatesWindowMoveEvents)
+    {
+        DisplayConfig config;
+        config.setResizable(true);
+        NiceMock<WindowEventHandlerMock> eventHandlerMock;
+        Window_Windows window(config, eventHandlerMock, 0);
+
+        ASSERT_TRUE(window.init());
+        for (UInt32 i = 0; i < 10; i++) // enforce handling of all enqueued window events which will trigger our event handler
+            window.handleEvents();
+
+        const int32_t posX = 15;
+        const int32_t posY = 20;
+        const int packedWindowPos = (static_cast<int>(posY) << 16) | posX;
+        ASSERT_TRUE(PostMessage(window.getNativeWindowHandle(), WM_MOVE, 0, packedWindowPos));
+
+        EXPECT_CALL(eventHandlerMock, onWindowMove(15, 20)).Times(1);
+        window.handleEvents();
+    }
+
+
     TEST_F(AWindowWindows, singleKeyPressEventTriggersKeyPressedEventWithCorrectKeyCode)
     {
         testKeyCode(0x41,        EKeyCode_A);

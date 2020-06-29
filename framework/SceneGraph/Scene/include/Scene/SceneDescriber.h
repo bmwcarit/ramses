@@ -39,6 +39,7 @@ namespace ramses_internal
         static void RecreateRenderGroups(const IScene& source, SceneActionCollectionCreator& collector);
         static void RecreateRenderPasses(const IScene& source, SceneActionCollectionCreator& collector);
         static void RecreateBlitPasses(const IScene& source, SceneActionCollectionCreator& collector);
+        static void RecreatePickableObjects(const IScene& source, SceneActionCollectionCreator& collector);
         static void RecreateDataBuffers(const IScene& source, SceneActionCollectionCreator& collector);
         static void RecreateTextureBuffers(const IScene& source, SceneActionCollectionCreator& collector);
         static void RecreateTextureSamplers(const IScene& source, SceneActionCollectionCreator& collector);
@@ -46,6 +47,7 @@ namespace ramses_internal
         static void RecreateStreamTextures(const IScene& source, SceneActionCollectionCreator& collector);
         static void RecreateDataSlots(const IScene& source, SceneActionCollectionCreator& collector);
         static void RecreateSceneVersionTag(const IScene& source, SceneActionCollectionCreator& collector);
+        static void RecreateSceneReferences(const IScene& source, SceneActionCollectionCreator& collector);
     };
 }
 

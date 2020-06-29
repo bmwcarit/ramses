@@ -25,41 +25,9 @@ MACRO(ACME_INFO)
     MESSAGE(STATUS "${ARGV}")
 ENDMACRO()
 
-MACRO(ACME_DEBUG)
-    IF(${ACME_DEBUG_ENABLED})
-        MESSAGE(STATUS "${ARGV}")
-    ENDIF()
-ENDMACRO()
-
-MACRO(ACME_WARNING)
-    IF(${ACME_WARNING_AS_ERROR})
-        ACME_ERROR("${ARGV}")
-    ELSE()
-        MESSAGE("        ${ARGV}")
-    ENDIF()
-ENDMACRO()
-
 MACRO(ACME_ERROR)
-    ACME_INFO("ERROR: ${ARGV}")
-    MESSAGE(FATAL_ERROR "Cancel Build.")
+    message(FATAL_ERROR "ERROR: ${ARGV}")
 ENDMACRO()
-
-#==============================================================================
-# file list resolver
-#==============================================================================
-MACRO(GET_ALL_FILES var_name directory_list)
-    SET(file_list "")
-    FOREACH(directory ${directory_list})
-        FILE(GLOB directory_content "${directory}")
-        # Only add files to the list, a included folder will cause INSTALL command to produce a cmake error
-        FOREACH(fileOrDir ${directory_content})
-            IF(NOT IS_DIRECTORY "${fileOrDir}/")
-                LIST(APPEND file_list ${fileOrDir})
-            ENDIF()
-        ENDFOREACH()
-    ENDFOREACH()
-    SET(${var_name} ${file_list})
-ENDMACRO(GET_ALL_FILES)
 
 #==============================================================================
 # add_test helper
@@ -86,7 +54,7 @@ ENDMACRO()
 # postprocessing of target
 #==============================================================================
 
-function(ACME_FOLDERIZE_TARGET tgt)
+function(ACME_CURRENT_FOLDER_PATH OUT)
     # extract and set folder name from path
     # first get path relative to ramses root dir
     string(REGEX REPLACE "${ramses-sdk_ROOT_CMAKE_PATH}/" "" ACME_relative_path "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -96,16 +64,29 @@ function(ACME_FOLDERIZE_TARGET tgt)
         string(REGEX REPLACE "${CMAKE_SOURCE_DIR}/" "" ACME_folder_prefix_path "${ramses-sdk_ROOT_CMAKE_PATH}")
         set(ACME_folder_path "${ACME_folder_prefix_path}/${ACME_folder_path}")
     endif()
+    set(${OUT} ${ACME_folder_path} PARENT_SCOPE)
+endfunction()
+
+function(ACME_FOLDERIZE_TARGET tgt)
+    # skip interface libs because VS generator ignore INTERFACE_FOLDER property
+    get_target_property(tgt_type ${tgt} TYPE)
+    if (tgt_type STREQUAL INTERFACE_LIBRARY)
+        return()
+    endif()
+
+    ACME_CURRENT_FOLDER_PATH(ACME_folder_path)
     set_property(TARGET ${tgt} PROPERTY FOLDER "${ACME_folder_path}")
 
     # sort sources in goups
     get_target_property(tgt_content ${tgt} SOURCES)
-    foreach(file_iter ${tgt_content})
-        string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" tmp1 "${file_iter}")
-        string(REGEX REPLACE "/[^/]*$" "" tmp2 "${tmp1}")
-        string(REPLACE "/" "\\" module_internal_path "${tmp2}")
-        source_group(${module_internal_path} FILES ${file_iter})
-    endforeach()
+    if (tgt_content)
+        foreach(file_iter ${tgt_content})
+            string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" tmp1 "${file_iter}")
+            string(REGEX REPLACE "/[^/]*$" "" tmp2 "${tmp1}")
+            string(REPLACE "/" "\\" module_internal_path "${tmp2}")
+            source_group(${module_internal_path} FILES ${file_iter})
+        endforeach()
+    endif()
 endfunction()
 
 function(ACME_FOLDERIZE_TARGETS)

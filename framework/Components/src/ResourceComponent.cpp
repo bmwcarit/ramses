@@ -7,11 +7,9 @@
 //  -------------------------------------------------------------------------
 
 #include "Components/ResourceComponent.h"
-#include "Transfer/ResourceTypes.h"
 #include "Components/ResourceTableOfContents.h"
 #include "Components/ResourceFilesRegistry.h"
 #include "TaskFramework/ITaskQueue.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "PlatformAbstraction/PlatformMath.h"
 #include "Utils/StringUtils.h"
 #include "Utils/LogMacros.h"
@@ -72,7 +70,7 @@ namespace ramses_internal
         return m_resourceStorage.getResources();
     }
 
-    ramses_internal::ManagedResource ResourceComponent::manageResource(const IResource& resource, Bool deletionAllowed)
+    ramses_internal::ManagedResource ResourceComponent::manageResource(const IResource& resource, bool deletionAllowed)
     {
         return m_resourceStorage.manageResource(resource, deletionAllowed);
     }
@@ -97,11 +95,11 @@ namespace ramses_internal
 
         for(const auto& id : ids)
         {
-            LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceComponent::handleResourceRequest: " << StringUtils::HexFromResourceContentHash(id) << " from " << requesterId);
+            LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceComponent::handleResourceRequest: " << id << " from " << requesterId);
             const ManagedResource& resource = m_resourceStorage.getResource(id);
             if (resource.getResourceObject())
             {
-                LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceComponent::handleResourceRequest: sendResource" << StringUtils::HexFromResourceContentHash(id) << " name: " << resource.getResourceObject()->getName());
+                LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceComponent::handleResourceRequest: sendResource" << id << " name: " << resource.getResourceObject()->getName());
                 resourceToSendViaNetwork.push_back(resource);
             }
             else
@@ -109,7 +107,7 @@ namespace ramses_internal
                 // try resource files
                 ResourceLoadInfo loadInfo;
                 const EStatus canLoadFromFile = m_resourceFiles.getEntry(id, loadInfo.resourceStream, loadInfo.fileEntry);
-                if (canLoadFromFile == EStatus_RAMSES_OK)
+                if (canLoadFromFile == EStatus::Ok)
                 {
                     loadInfo.requesterId = requesterId;
                     m_resourcesToBeLoaded.push_back(loadInfo);
@@ -118,13 +116,14 @@ namespace ramses_internal
                 else
                 {
                     unavailableResources.push_back(id);
-                    LOG_WARN(CONTEXT_FRAMEWORK, "ResourceComponent::handleResourceRequest: Could not find or load requested resource: " << StringUtils::HexFromResourceContentHash(id) << " requested by " << requesterId);
+                    LOG_WARN(CONTEXT_FRAMEWORK, "ResourceComponent::handleResourceRequest: Could not find or load requested resource: " << id << " requested by " << requesterId);
                 }
             }
         }
 
         if (!resourceToSendViaNetwork.empty())
         {
+            m_statistics.statResourcesSentNumber.incCounter(static_cast<UInt32>(resourceToSendViaNetwork.size()));
             m_communicationSystem.sendResources(requesterId, resourceToSendViaNetwork);
         }
 
@@ -140,28 +139,28 @@ namespace ramses_internal
             {
                 sos << "send " << resourceToSendViaNetwork.size() << " locally available ";
                 for (const auto& res : resourceToSendViaNetwork)
-                    sos << StringUtils::HexFromResourceContentHash(res.getResourceObject()->getHash()) << " ";
+                    sos << res.getResourceObject()->getHash() << " ";
                 sos << "; ";
             }
             if (!resourcesToBeLoaded.empty())
             {
                 sos << "load " << resourcesToBeLoaded.size() << " from file ";
                 for (const auto& hash : resourcesToBeLoaded)
-                    sos << StringUtils::HexFromResourceContentHash(hash) << " ";
+                    sos << hash << " ";
                 sos << "; ";
             }
             if (!unavailableResources.empty())
             {
                 sos << "send " << unavailableResources.size() << " unavailable ";
                 for (const auto& hash : unavailableResources)
-                    sos << StringUtils::HexFromResourceContentHash(hash) << " ";
+                    sos << hash << " ";
             }
         }));
 
         triggerLoadingResourcesFromFile();
     }
 
-    void ResourceComponent::requestResourceAsynchronouslyFromFramework(const ResourceContentHashVector& resourceHashes, const RequesterID& requesterID, const Guid& providerID)
+    void ResourceComponent::requestResourceAsynchronouslyFromFramework(const ResourceContentHashVector& resourceHashes, const ResourceRequesterID& requesterID, const Guid& providerID)
     {
         ResourceContentHashVector resourcesToBeRetrievedFromProvider;
         ResourceContentHashVector resourcesToBeLoaded;
@@ -169,7 +168,7 @@ namespace ramses_internal
 
         for (const auto hash : resourceHashes)
         {
-            LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceComponent::requestResourceAsynchronouslyFromFramework:" << StringUtils::HexFromResourceContentHash(hash));
+            LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceComponent::requestResourceAsynchronouslyFromFramework:" << hash);
             ManagedResource managedResource = m_resourceStorage.getResource(hash);
 
             if (managedResource.getResourceObject() != nullptr)
@@ -181,23 +180,20 @@ namespace ramses_internal
             else
             {
                 const auto range = m_requestedResources.equal_range(hash);
-                const bool mustRequestResource = range.first == range.second;
-
                 if (FindInRequestsRange(range, requesterID) == range.second)
                 {
                     // add to requests if not yet requested by this requester
                     m_requestedResources.insert(std::make_pair(hash, requesterID));
                 }
 
-                if (mustRequestResource)
                 {
                     // only trigger request from file or network if not already requested by any requester
                     ResourceLoadInfo loadInfo;
                     const EStatus canLoadResource = m_resourceFiles.getEntry(hash, loadInfo.resourceStream, loadInfo.fileEntry);
-                    if (canLoadResource == EStatus_RAMSES_OK)
+                    if (canLoadResource == EStatus::Ok)
                     {
                         m_resourcesToBeLoaded.push_back(loadInfo);
-                        LOG_DEBUG(CONTEXT_FRAMEWORK, "ResourceComponent::requestResourceAsynchronouslyFromFramework: resource found in resource file, will be loaded later:" << StringUtils::HexFromResourceContentHash(hash));
+                        LOG_DEBUG(CONTEXT_FRAMEWORK, "ResourceComponent::requestResourceAsynchronouslyFromFramework: resource found in resource file, will be loaded later:" << hash);
                     }
                     else
                     {
@@ -222,7 +218,7 @@ namespace ramses_internal
                 sos << "ResourceComponent::requestResourceAsynchronouslyFromFramework(provider " << providerID << ", requester " << requesterID
                     << "): " << "request from network " << resourcesToBeRetrievedFromProvider.size() << " resources: ";
                 for (const auto& hash : resourcesToBeRetrievedFromProvider)
-                    sos << StringUtils::HexFromResourceContentHash(hash) << " ";
+                    sos << hash << " ";
                 sos << "; ";
             }));
             m_communicationSystem.sendRequestResources(providerID, resourcesToBeRetrievedFromProvider);
@@ -235,14 +231,14 @@ namespace ramses_internal
             {
                 sos << "locally available " << resourcesLocallyAvailable.size() << " resources: ";
                 for (const auto& hash : resourcesLocallyAvailable)
-                    sos << StringUtils::HexFromResourceContentHash(hash) << " ";
+                    sos << hash << " ";
                 sos << "; ";
             }
             if (!resourcesToBeLoaded.empty())
             {
                 sos << "load from file " << resourcesToBeLoaded.size() << " resources: ";
                 for (const auto& hash : resourcesToBeLoaded)
-                    sos << StringUtils::HexFromResourceContentHash(hash) << " ";
+                    sos << hash << " ";
                 sos << "; ";
             }
         }));
@@ -294,7 +290,7 @@ namespace ramses_internal
         }
     }
 
-    void ResourceComponent::cancelResourceRequest(const ResourceContentHash& resourceHash, const RequesterID& requesterID)
+    void ResourceComponent::cancelResourceRequest(const ResourceContentHash& resourceHash, const ResourceRequesterID& requesterID)
     {
         // remove from arrived
         bool removedFromArrived = false;
@@ -331,12 +327,15 @@ namespace ramses_internal
         }
     }
 
-    ManagedResourceVector ResourceComponent::popArrivedResources(const RequesterID& requesterID)
+    ManagedResourceVector ResourceComponent::popArrivedResources(const ResourceRequesterID& requesterID)
     {
         ManagedResourceVector res;
         m_arrivedResources[requesterID].swap(res);
-        LOG_INFO(CONTEXT_FRAMEWORK, "ResourceComponent::popArrivedResources: " << res.size()
-            << " resources have arrived for requester " << requesterID);
+        if (!res.empty() && m_hasArrivedRemoteResources[requesterID])
+        {
+            m_hasArrivedRemoteResources[requesterID] = false;
+            LOG_INFO(CONTEXT_FRAMEWORK, "ResourceComponent::popArrivedResources: " << res.size() << " resources (>0 remote) have arrived for requester " << requesterID);
+        }
         return res;
     }
 
@@ -346,7 +345,7 @@ namespace ramses_internal
         {
             storeResourceInfo(item.key, item.value.resourceInfo);
         }
-        return m_resourceFiles.registerResourceFile(resourceFileInputStream, toc, m_resourceStorage);
+        m_resourceFiles.registerResourceFile(resourceFileInputStream, toc, m_resourceStorage);
     }
 
     bool ResourceComponent::hasResourceFile(const String& resourceFileName) const
@@ -359,21 +358,33 @@ namespace ramses_internal
         m_resourceFiles.unregisterResourceFile(resourceFileName);
     }
 
-    void ResourceComponent::handleSendResource(const ByteArrayView& receivedResourceData, const Guid& providerID)
+    void ResourceComponent::handleSendResource(const absl::Span<const Byte>& receivedResourceData, const Guid& providerID)
     {
         PlatformGuard guard(m_frameworkLock);
 
         if (!m_resourceDeserializers.contains(providerID))
         {
+            LOG_WARN(CONTEXT_FRAMEWORK, "ResourceComponent::handleSendResource: from unknown provider " << providerID);
             return;
         }
         ResourceStreamDeserializer* deserializer = *m_resourceDeserializers.get(providerID);
         assert(deserializer != nullptr);
 
         const std::vector<IResource*> resources = deserializer->processData(receivedResourceData);
+        if (resources.empty())
+            LOG_WARN(CONTEXT_FRAMEWORK, "ResourceComponent::handleSendResource: no resources deserialized from " << providerID << ", size " << receivedResourceData.size());
         for (const auto& res : resources)
         {
             handleArrivedResource(m_resourceStorage.manageResource(*res, false));
+        }
+        if (!m_unrequestedResources.empty())
+        {
+            LOG_INFO_F(CONTEXT_FRAMEWORK, ([this](ramses_internal::StringOutputStream& sos) {
+                sos << "ResourceComponent::handleArrivedResource: Received unrequested resources with hash:";
+                for (const auto hash : m_unrequestedResources)
+                    sos << " " << hash;
+            }));
+            m_unrequestedResources.clear();
         }
     }
 
@@ -385,15 +396,15 @@ namespace ramses_internal
 
         const auto range = m_requestedResources.equal_range(hash);
         if (range.first == range.second)
-        {
-            LOG_DEBUG(CONTEXT_FRAMEWORK, "ResourceComponent::handleArrivedResource: Received unrequested resource with hash " << StringUtils::HexFromResourceContentHash(hash));
-        }
+            m_unrequestedResources.push_back(hash);
         else
         {
             for (auto it = range.first; it != range.second; ++it)
             {
                 const auto requester = it->second;
                 m_arrivedResources[requester].push_back(resource);
+                m_hasArrivedRemoteResources[requester] = true;
+                m_statistics.statResourcesReceivedNumber.incCounter(1);
             }
             m_requestedResources.erase(range.first, range.second);
         }
@@ -414,7 +425,7 @@ namespace ramses_internal
         managedResources.reserve(loadedResources.size());
         for (const auto& loadedResource : loadedResources)
         {
-            LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceComponent::sendResource: " << StringUtils::HexFromResourceContentHash(loadedResource->getHash()) << " name: " << loadedResource->getName() << " to " << requesterId);
+            LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceComponent::sendResource: " << loadedResource->getHash() << " name: " << loadedResource->getName() << " to " << requesterId);
             managedResources.push_back(m_resourceStorage.manageResource(*loadedResource, true));
         }
         m_bytesScheduledForLoading -= bytesLoaded;
@@ -454,6 +465,8 @@ namespace ramses_internal
 
             if (requesterId.isInvalid())
             {
+                // always decompress locally requested resources in load thread (not later in renderer thread)
+                res->decompress();
                 m_resourceComponent.resourceHasBeenLoadedFromFile(res, resInfo.fileEntry.sizeInBytes);
             }
             else
@@ -515,7 +528,7 @@ namespace ramses_internal
         BinaryFileInputStream* resourceStream(nullptr);
         ResourceFileEntry entry;
         const EStatus canLoadFromFile = m_resourceFiles.getEntry(hash, resourceStream, entry);
-        if (canLoadFromFile == EStatus_RAMSES_OK)
+        if (canLoadFromFile == EStatus::Ok)
         {
             m_statistics.statResourcesLoadedFromFileNumber.incCounter(1);
             m_statistics.statResourcesLoadedFromFileSize.incCounter(entry.sizeInBytes);
@@ -525,7 +538,7 @@ namespace ramses_internal
         }
         else
         {
-            LOG_WARN(CONTEXT_FRAMEWORK, "ResourceComponent::forceLoadResource: Could not find or load requested resource: " << StringUtils::HexFromResourceContentHash(hash));
+            LOG_WARN(CONTEXT_FRAMEWORK, "ResourceComponent::forceLoadResource: Could not find or load requested resource: " << hash);
             return ManagedResource();
         }
     }
@@ -536,7 +549,7 @@ namespace ramses_internal
         return deser && !(*deser)->processingFinished();
     }
 
-    bool ResourceComponent::hasRequestForResource(ResourceContentHash hash, RequesterID requester) const
+    bool ResourceComponent::hasRequestForResource(ResourceContentHash hash, ResourceRequesterID requester) const
     {
         auto range = m_requestedResources.equal_range(hash);
         return FindInRequestsRange(range, requester) != range.second;
@@ -560,7 +573,7 @@ namespace ramses_internal
         }
     }
 
-    ResourceComponent::RequestsMap::const_iterator ResourceComponent::FindInRequestsRange(std::pair<RequestsMap::const_iterator, RequestsMap::const_iterator> range, RequesterID requester)
+    ResourceComponent::RequestsMap::const_iterator ResourceComponent::FindInRequestsRange(std::pair<RequestsMap::const_iterator, RequestsMap::const_iterator> range, ResourceRequesterID requester)
     {
         for (auto it = range.first; it != range.second; ++it)
         {

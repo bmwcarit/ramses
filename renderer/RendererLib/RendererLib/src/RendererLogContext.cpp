@@ -8,6 +8,8 @@
 
 #include "RendererLib/RendererLogContext.h"
 #include "PlatformAbstraction/PlatformMath.h"
+#include "PlatformAbstraction/Macros.h"
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -27,8 +29,8 @@ namespace ramses_internal
 
     void RendererLogContext::unindent()
     {
-        assert(m_indent.getLength() >= 2u);
-        m_indent = m_indent.substr(0u, m_indent.getLength() - 2u);
+        assert(m_indent.size() >= 2u);
+        m_indent = m_indent.substr(0u, m_indent.size() - 2u);
     }
 
     Bool RendererLogContext::isLogLevelFlagEnabled(ERendererLogLevelFlag logLevelFlag) const
@@ -58,9 +60,9 @@ namespace ramses_internal
 
     String RendererLogContext::ExtractStringFromFilter(const String& filter)
     {
-        String resultString = filter.substr(1u, filter.getLength());
+        String resultString = filter.substr(1u, filter.size());
 
-        const UInt lastCharIndex = max<Int>(0, resultString.getLength() - 1);
+        const UInt lastCharIndex = std::max<Int>(0, resultString.size() - 1);
         if (resultString[lastCharIndex] == '*')
         {
             resultString = resultString.substr(0, lastCharIndex);
@@ -76,10 +78,13 @@ namespace ramses_internal
         {
         case ERendererLogLevelFlag_Details:
             activeLogLevels |= ERendererLogLevelFlag_Details;
+            RFALLTHROUGH;
         case ERendererLogLevelFlag_Info:
             activeLogLevels |= ERendererLogLevelFlag_Info;
+            RFALLTHROUGH;
         case ERendererLogLevelFlag_Warn:
             activeLogLevels |= ERendererLogLevelFlag_Warn;
+            RFALLTHROUGH;
         case ERendererLogLevelFlag_Error:
         default:
             activeLogLevels |= ERendererLogLevelFlag_Error;

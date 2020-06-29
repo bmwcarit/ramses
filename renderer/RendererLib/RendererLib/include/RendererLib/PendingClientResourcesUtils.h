@@ -9,7 +9,7 @@
 #ifndef RAMSES_PENDINGCLIENTRESOURCESUTILS_H
 #define RAMSES_PENDINGCLIENTRESOURCESUTILS_H
 
-#include "Transfer/ResourceTypes.h"
+#include "SceneAPI/ResourceContentHash.h"
 
 namespace ramses_internal
 {

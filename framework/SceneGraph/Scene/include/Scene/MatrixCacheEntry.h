@@ -30,8 +30,8 @@ namespace ramses_internal
         }
 
         Matrix44f       m_matrix     [ETransformationMatrixType_COUNT];
-        Bool            m_matrixDirty[ETransformationMatrixType_COUNT];
-        Bool            m_isIdentity;
+        bool            m_matrixDirty[ETransformationMatrixType_COUNT];
+        bool            m_isIdentity;
     };
 }
 

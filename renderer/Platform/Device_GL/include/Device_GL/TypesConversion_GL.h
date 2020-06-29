@@ -12,6 +12,7 @@
 #include "Resource/EffectInputInformation.h"
 #include "SceneAPI/RenderState.h"
 #include "SceneAPI/TextureEnums.h"
+#include "Resource/TextureMetaInfo.h"
 
 namespace ramses_internal
 {
@@ -22,7 +23,7 @@ namespace ramses_internal
         GLenum type = GL_ZERO;
         Bool compressed = false;
         UInt32 byteAlignment = 0u;
-        bool swizzleBGRXtoRGBX = false;
+        TextureSwizzleArray swizzle = {};
     };
 
     class TypesConversion_GL
@@ -41,6 +42,7 @@ namespace ramses_internal
         static GLenum GetCubemapFaceSpecifier(ETextureCubeFace face);
         static GLenum GetASTCFormat(ETextureFormat ramsesEnum);
         static ETextureFormat GetTextureFormatFromCompressedGLTextureFormat(GLenum compressedGLTextureFormat);
+        static GLenum GetGlColorFromTextureChannelColor(ETextureChannelColor color);
         static TextureUploadParams_GL GetTextureUploadParams(ETextureFormat format);
     };
 }

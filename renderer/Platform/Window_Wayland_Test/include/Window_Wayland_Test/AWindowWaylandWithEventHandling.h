@@ -13,7 +13,7 @@
 #include "RendererLib/EKeyEventType.h"
 #include "RendererLib/EKeyModifier.h"
 #include "PlatformAbstraction/PlatformThread.h"
-#include "WindowEventsPollingManager_Wayland/WindowEventsPollingManager_Wayland.h"
+#include "Window_Wayland/WindowEventsPollingManager_Wayland.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -21,13 +21,14 @@
 #include "wayland-egl.h"
 #include <EGL/egl.h>
 
-using namespace testing;
 
 #define EV_RELEASED 0
 #define EV_PRESSED  1
 
 namespace ramses_internal
 {
+    using namespace ::testing;
+
     template <typename WINDOWTYPE>
     class AWindowWaylandWithEventHandling : public AWindowWayland<WINDOWTYPE>
     {
@@ -104,10 +105,10 @@ namespace ramses_internal
             ASSERT_TRUE(num_config == 1);
 
 
-            eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, this->m_window->getNativeWindowHandle(), NULL);
+            eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, this->m_window->getNativeWindowHandle(), nullptr);
             ASSERT_TRUE(eglSurface != EGL_NO_SURFACE);
 
-            eglContext = eglCreateContext(eglDisplay, eglConfig, EGL_NO_CONTEXT, 0);
+            eglContext = eglCreateContext(eglDisplay, eglConfig, EGL_NO_CONTEXT, nullptr);
             ASSERT_TRUE(eglContext != EGL_NO_CONTEXT);
 
             ASSERT_TRUE(eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext) == EGL_TRUE);

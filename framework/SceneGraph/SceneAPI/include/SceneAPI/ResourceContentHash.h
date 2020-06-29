@@ -10,10 +10,13 @@
 #define RAMSES_RESOURCECONTENTHASH_H
 
 #include "PlatformAbstraction/PlatformTypes.h"
+#include "PlatformAbstraction/Hash.h"
 #include "Collections/IOutputStream.h"
 #include "Collections/IInputStream.h"
-#include "ramses-capu/container/Hash.h"
+#include "PlatformAbstraction/FmtBase.h"
+#include <cinttypes>
 #include <functional>
+#include <vector>
 
 namespace ramses_internal
 {
@@ -55,7 +58,7 @@ namespace ramses_internal
         UInt64 highPart;
     };
 
-    constexpr inline Bool operator<(ResourceContentHash const& lhs, ResourceContentHash const& rhs)
+    constexpr inline bool operator<(ResourceContentHash const& lhs, ResourceContentHash const& rhs)
     {
         return lhs.highPart == rhs.highPart ? lhs.lowPart < rhs.lowPart : lhs.highPart < rhs.highPart;
     }
@@ -69,23 +72,21 @@ namespace ramses_internal
     {
         return stream >> value.lowPart >> value.highPart;
     }
+
+    using ResourceContentHashVector = std::vector<ResourceContentHash>;
 }
+
+template <>
+struct fmt::formatter<ramses_internal::ResourceContentHash> : public ramses_internal::SimpleFormatterBase
+{
+    template<typename FormatContext>
+    auto format(const ramses_internal::ResourceContentHash& res, FormatContext& ctx)
+    {
+        return fmt::format_to(ctx.out(), "0x{:016X}{:016X}", res.highPart, res.lowPart);
+    }
+};
 
 // make hashable
-namespace ramses_capu
-{
-    template<>
-    struct Hash<ramses_internal::ResourceContentHash>
-    {
-        uint_t operator()(const ramses_internal::ResourceContentHash& data)
-        {
-            static_assert(sizeof(ramses_internal::ResourceContentHash) == 2*sizeof(uint64_t), "make sure resourceontenthash is just 2 64 values");
-
-            return HashMemoryRange(&data, 2 * sizeof(uint64_t));
-        }
-    };
-}
-
 namespace std
 {
     template <>
@@ -94,7 +95,8 @@ namespace std
     public:
         size_t operator()(const ramses_internal::ResourceContentHash& v) const
         {
-            return ramses_capu::Hash<ramses_internal::ResourceContentHash>()(v);
+            static_assert(sizeof(ramses_internal::ResourceContentHash) == 2*sizeof(uint64_t), "make sure resourceontenthash is just 2 64 values");
+            return ramses_internal::HashMemoryRange(&v, 2 * sizeof(uint64_t));
         }
     };
 }

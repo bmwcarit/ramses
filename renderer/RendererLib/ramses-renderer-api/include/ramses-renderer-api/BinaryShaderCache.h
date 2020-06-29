@@ -32,6 +32,17 @@ namespace ramses
         virtual ~BinaryShaderCache() override;
 
         /**
+        * @brief Provides a list of binary shader formats supported by the device in use.
+        *        The cache implementation should provide only shaders that were compiled and stored with using of those formats.
+        *        The format ID is platform/driver specific, on OpenGL it is equivalent to those retrieved from GL_PROGRAM_BINARY_FORMATS parameter.
+        *        This callback will be called only once, after at least one display is created and at latest before the first IBinaryShaderCache::hasBinaryShader query.
+        *
+        * @param[in] supportedFormats Pointer to first element of a list of supported formats, this array is valid only for in the scope of this callback
+        * @param[in] numSupportedFormats Number of elements in \c supportedFormats array, if zero there is no support for uploading binary shaders
+        */
+        virtual void deviceSupportsBinaryShaderFormats(const binaryShaderFormatId_t* supportedFormats, uint32_t numSupportedFormats) override;
+
+        /**
         * @brief Check if the cache contains the binary shader for the Effect with the given Effect Id.
         * @param effectId Effect Id of the Effect
         * @return true if there is binary shader for the Effect Id
@@ -53,17 +64,18 @@ namespace ramses
         * @return binary shader format for the Effect with the given Effect Id.
         *         0 if there is no binary shader in the cache for the Effect with the Effect Id.
         */
-        virtual uint32_t getBinaryShaderFormat(effectId_t effectId) const override;
+        virtual binaryShaderFormatId_t getBinaryShaderFormat(effectId_t effectId) const override;
 
         /**
-         * @brief      Returns for a specific effect whethe it should be cached.
+         * @brief      Returns for a specific effect whether it should be cached.
          *
          *             This method is called if the shader is not cached yet but could be provided by the renderer.
          *             The cache can decide whether it the shader should be cached.
          * @param[in]  effectId  Effect Id of the Effect
+         * @param[in]  sceneId  ID of scene that uses the effect
          * @return     true if the effect should be cached, false otherwise.
          */
-        virtual bool shouldBinaryShaderBeCached(effectId_t effectId) const override;
+        virtual bool shouldBinaryShaderBeCached(effectId_t effectId, sceneId_t sceneId) const override;
 
         /**
         * @brief Get the binary shader data for the Effect with the given Effect Id.
@@ -76,11 +88,12 @@ namespace ramses
         /**
         * @brief Store the binary shader into the cache.
         * @param effectId Effect Id of the Effect
+        * @param sceneId ID of scene that uses the effect
         * @param binaryShaderData pointer to the binary shader data
         * @param binaryShaderDataSize size of the binary shader data
         * @param binaryShaderFormat format of the binary shader
         */
-        virtual void storeBinaryShader(effectId_t effectId, const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, uint32_t binaryShaderFormat) override;
+        virtual void storeBinaryShader(effectId_t effectId, sceneId_t sceneId, const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, binaryShaderFormatId_t binaryShaderFormat) override;
 
         /**
          * @brief Save all binary shaders in the cache to the file with the given path

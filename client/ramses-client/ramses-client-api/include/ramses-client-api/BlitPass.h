@@ -62,7 +62,7 @@ namespace ramses
         * @brief Get the blitting region in source and destination render buffers.
         *
         * @param[out] sourceX Offset on x-axis for blitting from source render buffer
-        * @param[out] sourceY Offset on u-axis for blitting from source render buffer
+        * @param[out] sourceY Offset on y-axis for blitting from source render buffer
         * @param[out] destinationX Offset on x-axis for blitting to destination render buffer
         * @param[out] destinationY Offset on y-axis for blitting to destination render buffer
         * @param[out] width Width of blitting region, used for source and destination blitting regions

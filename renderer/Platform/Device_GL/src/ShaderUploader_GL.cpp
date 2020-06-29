@@ -14,7 +14,7 @@
 
 namespace ramses_internal
 {
-    Bool ShaderUploader_GL::UploadShaderProgramFromBinary(const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, UInt32 binaryShaderFormat, ShaderProgramInfo& programShaderInfoOut, String& debugErrorLog)
+    Bool ShaderUploader_GL::UploadShaderProgramFromBinary(const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat, ShaderProgramInfo& programShaderInfoOut, String& debugErrorLog)
     {
         LOG_TRACE(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromBinary:  uploading binary data");
 
@@ -25,7 +25,7 @@ namespace ramses_internal
             return false;
         }
 
-        glProgramBinary(programHandle, binaryShaderFormat, binaryShaderData, binaryShaderDataSize);
+        glProgramBinary(programHandle, binaryShaderFormat.getValue(), binaryShaderData, binaryShaderDataSize);
 
         if (CheckShaderProgramLinkStatus(programHandle, debugErrorLog))
         {

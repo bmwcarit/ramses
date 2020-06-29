@@ -8,7 +8,6 @@
 
 #include "TaskFramework/TaskForwardingQueue.h"
 #include "TaskFramework/TaskFinishHandlerDecorator.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 
 namespace ramses_internal
 {
@@ -23,9 +22,9 @@ namespace ramses_internal
     {
     }
 
-    Bool TaskForwardingQueue::enqueue(ITask& task)
+    bool TaskForwardingQueue::enqueue(ITask& task)
     {
-        PlatformGuard guard(m_lock);
+        std::lock_guard<std::recursive_mutex> g(m_lock);
         if (m_acceptNewTasks)
         {
             auto decorator = new TaskFinishHandlerDecorator(*this, task);
@@ -38,26 +37,23 @@ namespace ramses_internal
 
     void TaskForwardingQueue::enableAcceptingTasks()
     {
-        PlatformGuard guard(m_lock);
+        std::lock_guard<std::recursive_mutex> g(m_lock);
         m_acceptNewTasks = true;
     }
 
     void TaskForwardingQueue::disableAcceptingTasksAfterExecutingCurrentQueue()
     {
-        PlatformGuard guard(m_lock);
+        std::lock_guard<std::recursive_mutex> l(m_lock);
         m_acceptNewTasks = false;
-        while (m_ongoingTasks.count() != 0)
-        {
-            m_cond.wait(&m_lock);
-        }
+        m_cond.wait(m_lock, [&]() { return m_ongoingTasks.size() == 0; });
     }
 
     void TaskForwardingQueue::TaskFinished(ITask& task)
     {
-        PlatformGuard guard(m_lock);
-        if (m_ongoingTasks.remove(&task) == EStatus_RAMSES_OK)
+        std::lock_guard<std::recursive_mutex> g(m_lock);
+        if (m_ongoingTasks.remove(&task))
         {
-            m_cond.broadcast();
+            m_cond.notify_all();
         }
     }
 }

@@ -175,7 +175,7 @@ namespace ramses_internal
             const SplineTimeStamp keyTime = spline.getTimeStamp(keyIdx);
             m_splineInit.setTimeStamp(keyTime);
 
-            const SplineKeyIndex endKeyIdx = min(keyIdx + 1u, numKeys - 1u);
+            const SplineKeyIndex endKeyIdx = std::min(keyIdx + 1u, numKeys - 1u);
             EXPECT_EQ(keyIdx, segment.m_startIndex);
             EXPECT_EQ(endKeyIdx, segment.m_endIndex);
             EXPECT_EQ(spline.getTimeStamp(keyIdx), segment.m_startTimeStamp);

@@ -53,7 +53,7 @@ namespace ramses_internal
             Die();
         }
 
-        MOCK_METHOD0(Die, void());
+        MOCK_METHOD(void, Die, ());
     };
 
     TEST_F(AResourceProviderAndConsumerTest, InformOfAvailableResourceCanDeclareLocationOfResource)
@@ -64,7 +64,7 @@ namespace ramses_internal
         resourceProvider.newParticipantHasConnected(consumerGuid);
         resourceConsumer.newParticipantHasConnected(providerGuid);
 
-        RequesterID requesterID(1);
+        ResourceRequesterID requesterID(1);
         ResourceContentHashVector consumerRequestedResources;
         consumerRequestedResources.push_back(resourceHash);
         resourceConsumer.requestResourceAsynchronouslyFromFramework(consumerRequestedResources, requesterID, providerGuid);
@@ -89,7 +89,7 @@ namespace ramses_internal
 
             ResourceContentHashVector consumerRequestedResources;
             consumerRequestedResources.push_back(resourceHash);
-            RequesterID requesterID(1);
+            ResourceRequesterID requesterID(1);
             resourceConsumer.requestResourceAsynchronouslyFromFramework(consumerRequestedResources, requesterID, providerGuid);
 
             EXPECT_CALL(*providerResourceMock, Die());
@@ -121,7 +121,7 @@ namespace ramses_internal
         Mock::VerifyAndClearExpectations(providerResourceMock); //to make sure the dynamically allocated mock resource is destroyed (Die() is called)
         ASSERT_EQ(0u, resourceProvider.getResources().size()); //double check
 
-        RequesterID requesterID(1);
+        ResourceRequesterID requesterID(1);
         ResourceContentHashVector consumerRequestedResources;
         consumerRequestedResources.push_back(resourceHash);
         resourceConsumer.requestResourceAsynchronouslyFromFramework(consumerRequestedResources, requesterID, providerGuid);

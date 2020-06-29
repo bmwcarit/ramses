@@ -21,37 +21,21 @@ using namespace testing;
 
 namespace ramses_internal
 {
-    ACTION_P(ReleaseSyncCall, syncer)
-    {
-        UNUSED(arg9);
-        UNUSED(arg8);
-        UNUSED(arg7);
-        UNUSED(arg6);
-        UNUSED(arg5);
-        UNUSED(arg4);
-        UNUSED(arg3);
-        UNUSED(arg2);
-        UNUSED(arg1);
-        UNUSED(arg0);
-        UNUSED(args);
-        syncer->signal();
-    }
-
     class LongRunningTestTask : public ITask
     {
     public:
-        LongRunningTestTask(UInt32 howLong = 50)
+        explicit LongRunningTestTask(UInt32 howLong = 50)
             : time(howLong)
         {
             ON_CALL(*this, execute()).WillByDefault(Invoke(this, &LongRunningTestTask::doSomethingLong));
         }
         virtual ~LongRunningTestTask(){};
-        MOCK_METHOD0(execute, void());
+        MOCK_METHOD(void, execute, (), (override));
         virtual void doSomethingLong()
         {
-            executeStarted.broadcast();
+            executeStarted.signal();
             PlatformThread::Sleep(time);
-            executeFinished.broadcast();
+            executeFinished.signal();
         }
 
         PlatformEvent executeStarted;
@@ -87,11 +71,12 @@ namespace ramses_internal
         config.setThreadWatchDogCallback(&mockCallback);
         config.setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier_Workers, 100);
 
-        EXPECT_CALL(mockCallback, notifyThread(ramses::ERamsesThreadIdentifier_Workers)).Times(AtLeast(1)).WillRepeatedly(ReleaseSyncCall(&syncWaiter));
+        EXPECT_CALL(mockCallback, notifyThread(ramses::ERamsesThreadIdentifier_Workers))
+            .Times(AtLeast(1))
+            .WillRepeatedly(InvokeWithoutArgs([&]() { syncWaiter.signal(); }));
         ThreadedTaskExecutor ex(2, config);
 
-        const EStatus status = syncWaiter.wait(2000);
-        EXPECT_EQ(EStatus_RAMSES_OK, status);
+        EXPECT_TRUE(syncWaiter.wait(2000));
 
         EXPECT_CALL(mockCallback, unregisterThread(ramses::ERamsesThreadIdentifier_Workers));
     }
@@ -99,7 +84,7 @@ namespace ramses_internal
     class CountingWatchdogNotifier : public ramses::IThreadWatchdogNotification
     {
     public:
-        CountingWatchdogNotifier(std::atomic<uint32_t>& counter)
+        explicit CountingWatchdogNotifier(std::atomic<uint32_t>& counter)
             : m_counter(counter)
         {
         }
@@ -135,8 +120,7 @@ namespace ramses_internal
         taskSystem.enqueue(blockingTask);
 
         // wait for thread to go into blocked state during execution
-        const EStatus status = taskIsBeingWorkedEvent.wait(1000);
-        EXPECT_EQ(EStatus_RAMSES_OK, status);
+        EXPECT_TRUE(taskIsBeingWorkedEvent.wait(1000));
 
         const uint32_t notificationsAtStartOfBlocking = counter;
 
@@ -184,7 +168,9 @@ namespace ramses_internal
         config.setThreadWatchDogCallback(&mockCallback);
         config.setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier_Workers, 10000);
 
-        EXPECT_CALL(mockCallback, notifyThread(ramses::ERamsesThreadIdentifier_Workers)).Times(AtLeast(1)).WillRepeatedly(ReleaseSyncCall(&syncWaiter));
+        EXPECT_CALL(mockCallback, notifyThread(ramses::ERamsesThreadIdentifier_Workers))
+            .Times(AtLeast(1))
+            .WillRepeatedly(InvokeWithoutArgs([&]() { syncWaiter.signal(); }));
         ThreadedTaskExecutor ex(2, config);
 
         std::thread t([&]()
@@ -193,61 +179,10 @@ namespace ramses_internal
             ex.stop();
         });
 
-        const EStatus status = syncWaiter.wait(config.getWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier_Workers));
-        EXPECT_EQ(EStatus_RAMSES_OK, status);
+        EXPECT_TRUE(syncWaiter.wait(config.getWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier_Workers)));
 
         EXPECT_CALL(mockCallback, unregisterThread(ramses::ERamsesThreadIdentifier_Workers));
         t.join();
-    }
-
-    class TimeMeasuringWatchDogNotifier : public ramses::IThreadWatchdogNotification
-    {
-    public:
-        TimeMeasuringWatchDogNotifier() {}
-
-        virtual void notifyThread(ramses::ERamsesThreadIdentifier)
-        {
-            auto time = std::chrono::system_clock::now();
-            if (initialized)
-            {
-                values.push_back(std::chrono::duration_cast<std::chrono::milliseconds>(time - last));
-            }
-
-            initialized = true;
-            last = time;
-        }
-
-        virtual void registerThread(ramses::ERamsesThreadIdentifier) {}
-        virtual void unregisterThread(ramses::ERamsesThreadIdentifier) {}
-
-        std::chrono::system_clock::time_point last;
-        std::vector<std::chrono::milliseconds> values;
-        bool initialized = false;
-    };
-
-    class WatchDogTimeoutTest : public testing::TestWithParam<UInt32> {};
-
-    INSTANTIATE_TEST_CASE_P(testWithDifferentNotificationValues,
-        WatchDogTimeoutTest,
-        testing::Values(300, 800));
-
-    TEST_P(WatchDogTimeoutTest, watchdogConfigTimeoutsAreBaseForAliveNotification)
-    {
-        const auto timeout = GetParam();
-        PlatformEvent syncWaiter;
-        TimeMeasuringWatchDogNotifier watchDog;
-        ThreadWatchdogConfig config;
-        config.setThreadWatchDogCallback(&watchDog);
-        config.setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier_Workers, timeout);
-        ThreadedTaskExecutor ex(3, config);
-        std::this_thread::sleep_for(std::chrono::milliseconds(timeout * 3));
-        ex.stop();
-
-        for (auto const& dur : watchDog.values)
-        {
-            EXPECT_GE(dur.count(), std::chrono::milliseconds(timeout / 4 - 1).count());
-            EXPECT_LE(dur.count(), std::chrono::milliseconds(timeout * 2).count());
-        }
     }
 
     TEST(ThreadedTaskExecutor, stoppingReleasesUnhandledTasks)

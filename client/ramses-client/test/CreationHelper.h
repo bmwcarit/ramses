@@ -9,9 +9,11 @@
 #ifndef RAMSES_CREATIONHELPER_H
 #define RAMSES_CREATIONHELPER_H
 
+#include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Collections/Vector.h"
 #include "Collections/Pair.h"
+#include <cassert>
 
 namespace ramses
 {
@@ -33,7 +35,6 @@ namespace ramses
     class AnimatedProperty;
     class Animation;
     class AnimationSequence;
-    class AnimatedSetter;
     class Appearance;
     class SplineStepBool;
     class SplineStepFloat;
@@ -92,6 +93,8 @@ namespace ramses
     class DataVector3i;
     class DataVector4i;
     class StreamTexture;
+    class PickableObject;
+    class SceneReference;
 
     class CreationHelper
     {
@@ -112,6 +115,7 @@ namespace ramses
 
         void destroyAdditionalAllocatedSceneObjects();
         void destroyAdditionalAllocatedAnimationSystemObjects();
+        size_t getAdditionalAllocatedNodeCount() const;
 
     private:
         Scene* m_scene;
@@ -122,6 +126,7 @@ namespace ramses
         typedef std::vector<ClientAndFramework> RamsesClientAndFrameworkComponentVector;
         RamsesClientAndFrameworkComponentVector m_allocatedClientAndFrameworkComponents;
         std::vector<SceneObject*> m_additionalAllocatedSceneObjects;
+        sceneId_t m_lastReferencedSceneId{ 123u };
         std::vector<AnimationObject*> m_additionalAllocatedAnimationSystemObjects;
     };
 
@@ -138,7 +143,6 @@ namespace ramses
     template <> AnimatedProperty*          CreationHelper::createObjectOfType<AnimatedProperty         >(const char* name);
     template <> Animation*                 CreationHelper::createObjectOfType<Animation                >(const char* name);
     template <> AnimationSequence*         CreationHelper::createObjectOfType<AnimationSequence        >(const char* name);
-    template <> AnimatedSetter*            CreationHelper::createObjectOfType<AnimatedSetter           >(const char* name);
     template <> Appearance*                CreationHelper::createObjectOfType<Appearance               >(const char* name);
     template <> SplineStepBool*            CreationHelper::createObjectOfType<SplineStepBool           >(const char* name);
     template <> SplineStepFloat*           CreationHelper::createObjectOfType<SplineStepFloat          >(const char* name);
@@ -196,6 +200,8 @@ namespace ramses
     template <> IndexDataBuffer*           CreationHelper::createObjectOfType<IndexDataBuffer          >(const char* name);
     template <> VertexDataBuffer*          CreationHelper::createObjectOfType<VertexDataBuffer         >(const char* name);
     template <> Texture2DBuffer*           CreationHelper::createObjectOfType<Texture2DBuffer          >(const char* name);
+    template <> PickableObject*            CreationHelper::createObjectOfType<PickableObject           >(const char* name);
+    template <> SceneReference*            CreationHelper::createObjectOfType<SceneReference           >(const char* name);
 }
 
 #endif

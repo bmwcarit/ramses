@@ -29,6 +29,7 @@ namespace ramses_internal
     EmbeddedCompositorScene::EmbeddedCompositorScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
         : IntegrationScene(ramsesClient, scene, cameraPosition)
         , m_effect(createTestEffect(state))
+        , m_textureCoords(createTextureCoordinates(state))
     {
         const ramses::streamSource_t streamSource1(GetStreamTextureSourceId().getValue());
         const ramses::streamSource_t streamSource2(GetSecondStreamTextureSourceId().getValue());
@@ -38,6 +39,7 @@ namespace ramses_internal
         switch (state)
         {
         case SINGLE_STREAM_TEXTURE:
+        case SINGLE_STREAM_TEXTURE_WITH_TEXCOORDS_OFFSET:
         case SINGLE_STREAM_TEXTURE_WITH_TEXEL_FETCH:
         {
             createQuadWithStreamTexture(-1.0f, -1.0f, 2.0f, 2.0f, streamSource1, *fallbackTexture1);
@@ -57,7 +59,7 @@ namespace ramses_internal
         }
         case SINGLE_STREAM_TEXTURE_ON_THE_LEFT:
         {
-            ramses::Texture2D* leftSceneFallbackTexture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-embedded-compositing-1.png", ramsesClient, "leftSceneFallbackTexture");
+            ramses::Texture2D* leftSceneFallbackTexture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-embedded-compositing-1.png", ramsesClient, {}, "leftSceneFallbackTexture");
             createQuadWithStreamTexture(-2.0f, -1.0f, 2.0f, 2.0f, streamSource1, *leftSceneFallbackTexture);
             break;
         }
@@ -78,8 +80,6 @@ namespace ramses_internal
             createQuadWithStreamTexture(0.0f, -1.0f, 2.0f, 2.0f, streamSource2, leftSceneFallbackTexture);
             break;
         }
-        default:
-            assert(false);
         }
     }
 
@@ -109,15 +109,6 @@ namespace ramses_internal
         };
         const ramses::Vector3fArray* vertexPositions = m_client.createConstVector3fArray(4, vertexPositionsArray);
 
-        const float textureCoordsArray[] =
-        {
-            0.f, 1.f, //A   A-----D
-            0.f, 0.f, //B   |     |
-            1.f, 0.f, //C   |     |
-            1.f, 1.f  //D   B-----C
-        };
-        const ramses::Vector2fArray* textureCoords = m_client.createConstVector2fArray(4, textureCoordsArray);
-
         const uint16_t indicesArray[] =
         {
             0, 2, 1, //ABC
@@ -133,7 +124,7 @@ namespace ramses_internal
         appearance.getEffect().findAttributeInput("a_position", positionsInput);
         appearance.getEffect().findAttributeInput("a_texcoord", texcoordsInput);
         geometry->setInputBuffer(positionsInput, *vertexPositions);
-        geometry->setInputBuffer(texcoordsInput, *textureCoords);
+        geometry->setInputBuffer(texcoordsInput, m_textureCoords);
 
         // create a mesh node to define the triangle with chosen appearance
         ramses::MeshNode* meshNode = m_scene.createMeshNode("textured triangle mesh node");
@@ -168,6 +159,7 @@ namespace ramses_internal
         switch (state)
         {
         case SINGLE_STREAM_TEXTURE:
+        case SINGLE_STREAM_TEXTURE_WITH_TEXCOORDS_OFFSET:
         case TWO_STREAM_TEXTURES_WITH_SAME_SOURCE_ID_AND_DIFFERENT_FALLBACK_TEXTURES:
         case TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SAME_FALLBACK_TEXTURE:
         case SINGLE_STREAM_TEXTURE_ON_THE_LEFT:
@@ -181,16 +173,43 @@ namespace ramses_internal
             effectDesc.setVertexShaderFromFile("res/ramses-test-client-textured-with-texel-fetch.vert");
             effectDesc.setFragmentShaderFromFile("res/ramses-test-client-textured-with-texel-fetch.frag");
             break;
-        default:
-            assert(false);
         }
 
         effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
         const ramses::Effect* effect = m_client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
-        assert(NULL != effect);
+        assert(nullptr != effect);
 
         return *effect;
+    }
+
+    const ramses::Vector2fArray& EmbeddedCompositorScene::createTextureCoordinates(UInt32 state)
+    {
+        switch(state)
+        {
+        case SINGLE_STREAM_TEXTURE_WITH_TEXCOORDS_OFFSET:
+        {
+            const float textureCoordsArray[] =
+            {
+                0.25f, 2.f, //A   A-----D
+                0.25f, -1.f, //B   |     |
+                .75f,  -1.f, //C   |     |
+                .75f,  2.f  //D   B-----C
+            };
+            return *m_client.createConstVector2fArray(4, textureCoordsArray);
+        }
+        default:
+        {
+            const float textureCoordsArray[] =
+            {
+                0.f, 1.f, //A   A-----D
+                0.f, 0.f, //B   |     |
+                1.f, 0.f, //C   |     |
+                1.f, 1.f  //D   B-----C
+            };
+            return *m_client.createConstVector2fArray(4, textureCoordsArray);
+        }
+        }
     }
 
     void EmbeddedCompositorScene::createQuadWithStreamTexture(float xPos, float yPos, float width, float height, ramses::streamSource_t sourceId, const ramses::Texture2D& fallbackTexture)

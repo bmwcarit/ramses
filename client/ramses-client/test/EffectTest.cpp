@@ -6,14 +6,14 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include <gtest/gtest.h>
+#include "EffectImpl.h"
 
 #include "TestEffectCreator.h"
 #include "ClientTestUtils.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "EffectInputImpl.h"
-#include "EffectImpl.h"
+#include "gtest/gtest.h"
 
 using namespace testing;
 
@@ -276,6 +276,65 @@ namespace ramses
 
         /// Can not create ...
         EXPECT_EQ(static_cast<Effect*>(nullptr), sharedTestState->getClient().impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, ""));
+    }
+
+    TEST_F(AnEffect, canRetrieveGLSLErrorMessageFromClient)
+    {
+
+        EffectDescription effectDesc;
+
+        effectDesc.setVertexShader("#version 100\n"
+                                   "attribute float inp;\n"
+                                   "void main(void)\n"
+                                   "{\n"
+                                   "    gl_Position = vec4(0.0)\n"
+                                   "}\n");
+        effectDesc.setFragmentShader("precision highp float;"
+                                     "void main(void)\n"
+                                     "{"
+                                     "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);"
+                                     "}");
+        const Effect* effect = sharedTestState->getClient().createEffect(effectDesc, ResourceCacheFlag_DoNotCache);
+        EXPECT_EQ(nullptr, effect);
+        using namespace ::testing;
+        EXPECT_THAT(sharedTestState->getClient().getLastEffectErrorMessages(),
+                    AnyOf(Eq("[GLSL Compiler] vertex shader Shader Parsing Error:\n"
+                             "ERROR: 2:5: '' :  syntax error\n"
+                             "ERROR: 1 compilation errors.  No code generated.\n\n\n"),
+                          Eq("[GLSL Compiler] vertex shader Shader Parsing Error:\n"
+                             "ERROR: 2:5: '' :  syntax error, unexpected RIGHT_BRACE, expecting COMMA or SEMICOLON\n"
+                             "ERROR: 1 compilation errors.  No code generated.\n\n\n")));
+    }
+
+    TEST_F(AnEffect, clientDeletesEffectErrorMessagesOfLastEffect)
+    {
+        EffectDescription effectDesc;
+
+        effectDesc.setVertexShader("#version 100\n"
+                                   "attribute float inp;\n"
+                                   "void main(void)\n"
+                                   "{\n"
+                                   "    gl_Position = vec4(0.0)\n"
+                                   "}\n");
+        effectDesc.setFragmentShader("precision highp float;"
+                                     "void main(void)\n"
+                                     "{"
+                                     "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);"
+                                     "}");
+        const Effect* effect1 = sharedTestState->getClient().createEffect(effectDesc, ResourceCacheFlag_DoNotCache);
+        EXPECT_EQ(nullptr, effect1);
+        EXPECT_NE("", sharedTestState->getClient().getLastEffectErrorMessages());
+
+        effectDesc.setVertexShader("#version 100\n"
+                                   "attribute float inp;\n"
+                                   "void main(void)\n"
+                                   "{\n"
+                                   "    gl_Position = vec4(0.0)\n;"
+                                   "}\n");
+
+        const Effect* effect2 = sharedTestState->getClient().createEffect(effectDesc, ResourceCacheFlag_DoNotCache);
+        EXPECT_NE(nullptr, effect2);
+        EXPECT_EQ("", sharedTestState->getClient().getLastEffectErrorMessages());
     }
 
     TEST_F(AnEffect, canNotCreateEffectWhenTextTextureCoordinatesSemanticsHasWrongType)

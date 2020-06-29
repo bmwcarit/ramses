@@ -68,6 +68,9 @@ namespace ramses_internal
         void setWindowsWindowHandle(WindowsWindowHandle hwnd);
         WindowsWindowHandle getWindowsWindowHandle() const;
 
+        AndroidNativeWindowPtr getAndroidNativeWindow() const;
+        void setAndroidNativeWindow(AndroidNativeWindowPtr nativeWindowPtr);
+
         Bool getStartVisibleIvi() const;
         void setStartVisibleIvi(bool startVisible);
 
@@ -76,9 +79,6 @@ namespace ramses_internal
 
         Bool getKeepEffectsUploaded() const;
         void setKeepEffectsUploaded(Bool enable);
-
-        Bool isStereoDisplay() const;
-        void setStereoDisplay(Bool enabled);
 
         Bool isResizable() const;
         void setResizable(Bool resizable);
@@ -89,9 +89,6 @@ namespace ramses_internal
         void setClearColor(const Vector4& clearColor);
         const Vector4& getClearColor() const;
 
-        void setOffscreen(Bool offscreenFlag);
-        Bool getOffscreen() const;
-
         Bool operator==(const DisplayConfig& other) const;
         Bool operator!=(const DisplayConfig& other) const;
 
@@ -100,20 +97,20 @@ namespace ramses_internal
         Bool m_borderless = false;
         Bool m_warpingEnabled = false;
         Bool m_resizable = false;
-        Bool m_stereoDisplay = false;
 
         UInt32 m_desiredWindowWidth = 1280;
         UInt32 m_desiredWindowHeight = 480;
-        Int32 m_windowPositionX = 150;
-        Int32 m_windowPositionY = 150;
+        Int32 m_windowPositionX = 0;
+        Int32 m_windowPositionY = 0;
         Vector3 m_cameraPosition{ 0.f, 0.f, 0.f };
         Vector3 m_cameraRotation{ 0.f, 0.f, 0.f };
         ProjectionParams m_projectionParams{ ProjectionParams::Perspective(19.f, 1280.f / 480.f, 0.1f, 1500.f) };
 
-        WaylandIviLayerId m_waylandIviLayerID = InvalidWaylandIviLayerId;
-        WaylandIviSurfaceId m_waylandIviSurfaceID = InvalidWaylandIviSurfaceId;
-        IntegrityRGLDeviceUnit m_integrityRGLDeviceUnit = InvalidIntegrityRGLDeviceUnit;
-        WindowsWindowHandle m_windowsWindowHandle = InvalidWindowsWindowHandle;
+        WaylandIviLayerId m_waylandIviLayerID;
+        WaylandIviSurfaceId m_waylandIviSurfaceID;
+        IntegrityRGLDeviceUnit m_integrityRGLDeviceUnit;
+        WindowsWindowHandle m_windowsWindowHandle;
+        AndroidNativeWindowPtr m_androidNativeWindowPtr;
         Bool m_startVisibleIvi = false;
         String m_waylandDisplay;
 
@@ -123,8 +120,6 @@ namespace ramses_internal
         Bool m_keepEffectsUploaded = true;
         UInt64 m_gpuMemoryCacheSize = 0u;
         Vector4 m_clearColor{ 0.f, 0.f, 0.f, 1.0f };
-
-        Bool m_offscreen = false;
     };
 }
 

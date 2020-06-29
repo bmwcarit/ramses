@@ -23,9 +23,9 @@ namespace ramses
     {
     }
 
-    status_t RenderTargetDescriptionImpl::validate(uint32_t indent) const
+    status_t RenderTargetDescriptionImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        status_t status = StatusObjectImpl::validate(indent);
+        status_t status = StatusObjectImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
 
         if (m_renderBuffers.empty())

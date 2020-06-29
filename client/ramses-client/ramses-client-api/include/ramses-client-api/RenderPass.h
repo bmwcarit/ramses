@@ -34,7 +34,8 @@ namespace ramses
 
     /**
      * @brief The RenderPass is a container used to collect meshes which are supposed
-     * to be rendered together. A RenderPass has a Camera which is used for all MeshNodes
+     * to be rendered together.
+     * @details A RenderPass has a Camera which is used for all MeshNodes
      * rendered in the RenderPass. A MeshNode is rendered only if added to a RenderPass.
      * The RenderPass can optionally have a RenderTarget used to redirect the output
      * of the RenderPass. RenderPass objects are ordered together using a render order,
@@ -60,8 +61,8 @@ namespace ramses
 
         /**
         * @brief Add a RenderGroup to this RenderPass for rendering.
-        *        RenderGroup can be added to multiple RenderPass instances but cannot be added multiple
-        *        times to the same instance.
+        * @details RenderGroup can be added to multiple RenderPass instances but cannot be added multiple
+        *          times to the same instance.
         *
         * @param[in] renderGroup The RenderGroup to be added.
         * @param[in] orderWithinPass Order within the RenderPass that will be used for rendering.
@@ -124,9 +125,9 @@ namespace ramses
 
         /**
         * @brief Set the render order for the render pass.
-        * This order defines the order in which the render pass is executed relative to other render and blit passes.
-        * Render and blit passes with lower render order are executed first. Render and blit passes with same render order
-        * might be executed by the renderer in any order.
+        * @details This order defines the order in which the render pass is executed relative to other render and blit passes.
+        *          Render and blit passes with lower render order are executed first. Render and blit passes with same render order
+        *          might be executed by the renderer in any order.
         *
         * The default render order is Zero.
         *
@@ -145,8 +146,8 @@ namespace ramses
 
         /**
         * @brief Set the clear color for the RenderPass (default: [0,0,0,0])
-        * The clear color will be used to clear a render target assigned to this RenderPass
-        * if clear flag is enabled, see setClearFlag.
+        * @details The clear color will be used to clear a render target assigned to this RenderPass
+        *          if clear flag is enabled, see setClearFlag.
         *
         * @param r,g,b,a color channels of clear color
         * @return StatusOK for success, otherwise the returned status can be used
@@ -163,7 +164,8 @@ namespace ramses
 
         /**
         * @brief Set the clear flags which enable/disable the clearing of the render target assigned to this RenderPass(default: EClearFlags_All)
-        * The clear flags have no effect on render passes with no render target assigned.
+        * @details The clear flags have no effect on render passes with no render target assigned, i.e. it is not allowed to control clearing
+        *          of display buffer (whether it is framebuffer or offscreen buffer) on renderer side from within scene's render pass.
         *
         * @param clearFlags clear flags, which is a bitmask of the EClearFlags enum
         * @return StatusOK for success, otherwise the returned status can be used
@@ -196,17 +198,17 @@ namespace ramses
 
         /**
         * @brief Set/unset render once flag - rendering of the render pass only once.
-        *        By default render pass is rendered every frame, the render once flag
-        *        can be used to tell the renderer to render the render pass just once.
-        *        This can be useful for pre-rendering of heavy content into render targets, etc.
+        * @details By default render pass is rendered every frame, the render once flag
+        *          can be used to tell the renderer to render the render pass just once.
+        *          This can be useful for pre-rendering of heavy content into render targets, etc.
         *
-        *        This flag is orthogonal to all the other states of render pass,
-        *        e.g. render pass is not rendered at all if it is disabled (see \c setEnabled)
-        *        regardless of render once flag set or unset.
+        *          This flag is orthogonal to all the other states of render pass,
+        *          e.g. render pass is not rendered at all if it is disabled (see \c setEnabled)
+        *          regardless of render once flag set or unset.
         *
-        *        When render pass is enabled and render once set it is guaranteed
-        *        to be rendered at least once (can be more if scene is unmapped/mapped
-        *        on renderer side).
+        *          When render pass is enabled and render once set it is guaranteed
+        *          to be rendered at least once (can be more if scene is unmapped/mapped
+        *          on renderer side).
         *
         * @param enable The flag which indicates if the render pass is to be rendered only once (Default:false)
         * @return StatusOK for success, otherwise the returned status can be used
@@ -223,12 +225,12 @@ namespace ramses
 
         /**
         * @brief Will re-render a render once pass.
-        *        If content of the render once pass changes and needs to be rendered once more
-        *        this method will guarantee the render pass to be rendered once more with
-        *        the state of the scene flushed together with this command.
+        * @details If content of the render once pass changes and needs to be rendered once more
+        *          this method will guarantee the render pass to be rendered once more with
+        *          the state of the scene flushed together with this command.
         *
-        *        Note that Ramses does not track changes of render pass content and will not automatically
-        *        re-render a render once pass if its content changed.
+        *          Note that Ramses does not track changes of render pass content and will not automatically
+        *          re-render a render once pass if its content changed.
         *
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().

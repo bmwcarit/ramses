@@ -19,17 +19,17 @@ namespace ramses_internal
         BinaryFileInputStreamTest()
             : m_file("TestInputFile.bin")
         {
-            m_file.open(EFileMode_WriteNewBinary);
+            EXPECT_TRUE(m_file.open(File::Mode::WriteNewBinary));
 
             int32_t intVal = 10;
             float floatVal = 20.f;
             String  stringVal = "Dies ist ein Text";
-            uint32_t strlen = static_cast<uint32_t>(stringVal.getLength());
+            uint32_t strlen = static_cast<uint32_t>(stringVal.size());
 
-            m_file.write(reinterpret_cast<char*>(&intVal), sizeof(int32_t));
-            m_file.write(reinterpret_cast<char*>(&floatVal), sizeof(float));
-            m_file.write(reinterpret_cast<char*>(&strlen), sizeof(uint32_t));
-            m_file.write(stringVal.c_str(), stringVal.getLength());
+            EXPECT_TRUE(m_file.write(reinterpret_cast<char*>(&intVal), sizeof(int32_t)));
+            EXPECT_TRUE(m_file.write(reinterpret_cast<char*>(&floatVal), sizeof(float)));
+            EXPECT_TRUE(m_file.write(reinterpret_cast<char*>(&strlen), sizeof(uint32_t)));
+            EXPECT_TRUE(m_file.write(stringVal.c_str(), stringVal.size()));
 
             m_file.close();
         }
@@ -53,20 +53,20 @@ namespace ramses_internal
 
         inputStream >> intVal;
 
-        EXPECT_EQ(EStatus_RAMSES_OK, inputStream.getState());
+        EXPECT_EQ(EStatus::Ok, inputStream.getState());
 
         inputStream >> floatVal;
 
-        EXPECT_EQ(EStatus_RAMSES_OK, inputStream.getState());
+        EXPECT_EQ(EStatus::Ok, inputStream.getState());
 
         inputStream >> stringVal;
 
-        EXPECT_EQ(EStatus_RAMSES_OK, inputStream.getState());
+        EXPECT_EQ(EStatus::Ok, inputStream.getState());
 
         int32_t errorIntVal = 0;
         inputStream >> errorIntVal;
 
-        EXPECT_EQ(EStatus_RAMSES_EOF, inputStream.getState());
+        EXPECT_EQ(EStatus::Eof, inputStream.getState());
 
         EXPECT_EQ(10, intVal);
         EXPECT_EQ(20.0f, floatVal);
@@ -83,7 +83,7 @@ namespace ramses_internal
 
         inputStream.read(&data, size);
 
-        EXPECT_NE(EStatus_RAMSES_OK, inputStream.getState());
+        EXPECT_NE(EStatus::Ok, inputStream.getState());
     }
 
     TEST_F(BinaryFileInputStreamTest, Matrix44f)
@@ -93,8 +93,8 @@ namespace ramses_internal
 
         {
             ramses_internal::File f("testFile.ram");
-            f.open(EFileMode_WriteNewBinary);
-            f.write(reinterpret_cast<const char*>(data), sizeof(Float) * 16);
+            EXPECT_TRUE(f.open(File::Mode::WriteNewBinary));
+            EXPECT_TRUE(f.write(reinterpret_cast<const char*>(data), sizeof(Float) * 16));
             f.flush();
             f.close();
         }

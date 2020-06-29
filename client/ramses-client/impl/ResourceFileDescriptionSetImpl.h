@@ -11,9 +11,9 @@
 
 #include "ramses-client-api/Resource.h"
 #include "ramses-client-api/ResourceFileDescription.h"
-#include "PlatformAbstraction/PlatformSharedPointer.h"
 #include "Collections/Vector.h"
 #include "Collections/String.h"
+#include <memory>
 
 namespace ramses
 {

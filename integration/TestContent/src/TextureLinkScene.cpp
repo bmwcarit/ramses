@@ -22,6 +22,9 @@
 
 namespace ramses_internal
 {
+    constexpr const ramses::dataProviderId_t TextureLinkScene::DataProviderId;
+    constexpr const ramses::dataConsumerId_t TextureLinkScene::DataConsumerId;
+
     TextureLinkScene::TextureLinkScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
         : IntegrationScene(ramsesClient, scene, cameraPosition)
     {
@@ -87,7 +90,7 @@ namespace ramses_internal
         {
             const std::array<uint8_t, 4> pxData{ {0xff, 0x0, 0x0, 0xff} };
             const ramses::MipLevelData mipLevelData(4, pxData.data());
-            const ramses::Texture2D& texture = *m_client.createTexture2D(1u, 1u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, "ProviderTexture");
+            const ramses::Texture2D& texture = *m_client.createTexture2D(1u, 1u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "ProviderTexture");
             const ramses::TextureSampler& sampler = createSampler(texture);
             setSampler(appearance1, sampler);
             setSampler(appearance2, sampler);
@@ -99,7 +102,7 @@ namespace ramses_internal
         {
             const std::array<uint8_t, 4> pxData{ { 0x0, 0xff, 0x0, 0xff } };
             const ramses::MipLevelData mipLevelData(4, pxData.data());
-            const ramses::Texture2D& texture = *m_client.createTexture2D(1u, 1u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, "ConsumerTexture");
+            const ramses::Texture2D& texture = *m_client.createTexture2D(1u, 1u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "ConsumerTexture");
             const ramses::TextureSampler& sampler = createSampler(texture);
             setSampler(appearance1, sampler);
             setSampler(appearance2, sampler);
@@ -112,7 +115,7 @@ namespace ramses_internal
         {
             const std::array<uint8_t, 4> pxData{ { 0x0, 0x0, 0xff, 0xff } };
             const ramses::MipLevelData mipLevelData(4, pxData.data());
-            const ramses::Texture2D& texture = *m_client.createTexture2D(1u, 1u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, "ConsumerProviderTexture");
+            const ramses::Texture2D& texture = *m_client.createTexture2D(1u, 1u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "ConsumerProviderTexture");
             const ramses::TextureSampler& sampler1 = createSampler(texture);
             const ramses::TextureSampler& sampler2 = createSampler(texture);
             setSampler(appearance1, sampler1);

@@ -9,7 +9,6 @@
 #include "EmbeddedCompositingTestsFramework.h"
 #include "RendererAPI/IEmbeddedCompositor.h"
 #include "RamsesRendererImpl.h"
-#include "RendererTestEventHandler.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "EmbeddedCompositingTestMessages.h"
 #include "TestSignalHandler.h"

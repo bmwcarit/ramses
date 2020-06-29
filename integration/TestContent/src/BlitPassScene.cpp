@@ -16,6 +16,7 @@
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/RenderTargetDescription.h"
 #include "ramses-client-api/BlitPass.h"
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -128,7 +129,7 @@ namespace ramses_internal
 
     void BlitPassScene::initBlittingPass(UInt32 state)
     {
-        ramses::BlitPass* blitPass = NULL;
+        ramses::BlitPass* blitPass = nullptr;
         switch (state)
         {
         case BLITS_COLOR_BUFFER:
@@ -149,7 +150,7 @@ namespace ramses_internal
             break;
         }
 
-        assert(NULL != blitPass);
+        assert(nullptr != blitPass);
 
         blitPass->setRenderOrder(1);
     }

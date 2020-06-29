@@ -20,8 +20,8 @@ namespace ramses_internal
         NodeHandle       parent;
     };
 
-    static_assert(std::is_nothrow_move_constructible<TopologyNode>::value &&
-        std::is_nothrow_move_assignable<TopologyNode>::value, "TopologyNode must be movable");
+    static_assert(std::is_nothrow_move_constructible<TopologyNode>::value, "TopologyNode must be movable");
+    static_assert(std::is_nothrow_move_assignable<TopologyNode>::value, "TopologyNode must be movable");
 }
 
 #endif

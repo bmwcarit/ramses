@@ -62,7 +62,7 @@ namespace ramses_internal
         m_creator.animationSystemAddDataBindingToAnimationInstance(getHandle(), handle, dataBindHandle);
     }
 
-    void ActionCollectingAnimationSystem::setSplineKeyBasicBool(SplineHandle splineHandle, SplineTimeStamp timeStamp, Bool value)
+    void ActionCollectingAnimationSystem::setSplineKeyBasicBool(SplineHandle splineHandle, SplineTimeStamp timeStamp, bool value)
     {
         AnimationSystem::setSplineKeyBasicBool(splineHandle, timeStamp, value);
         m_creator.animationSystemSetSplineKeyBasicBool(getHandle(), splineHandle, timeStamp, value);

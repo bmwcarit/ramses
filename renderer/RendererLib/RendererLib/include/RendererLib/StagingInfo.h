@@ -13,7 +13,7 @@
 #include "SceneAPI/SceneVersionTag.h"
 #include "Scene/SceneActionCollection.h"
 #include "Scene/SceneResourceChanges.h"
-#include "Transfer/ResourceTypes.h"
+#include "SceneReferencing/SceneReferenceAction.h"
 #include "Components/FlushTimeInformation.h"
 #include <deque>
 
@@ -24,34 +24,47 @@ namespace ramses_internal
     struct PendingFlush
     {
         SceneActionCollection sceneActions;
-        UInt                  sceneActionsIt = 0u;
-        Bool                  isSynchronous = false;
         UInt64                flushIndex = 0u;
         FlushTimeInformation  timeInfo;
         SceneVersionTag       versionTag;
-        TimeStampVector       additionalTimestamps;
 
-        // Resource lists below are consolidated for this flush and all previous pending flushes.
-        // When a subset of flushes is to be applied, only the lists of the last one in that set need to be checked/processed.
-        // - client resources that are needed in addition to resources in use by renderer scene
-        ResourceContentHashVector clientResourcesNeeded;
-        // - client resources that will not be needed anymore after pending flushes are applied
-        ResourceContentHashVector clientResourcesUnneeded;
-        // - client resources that were newly needed and then unneeded within the scope of pending flushes,
-        //   they were requested and need to be therefore unrequested after pending flushes are applied
-        ResourceContentHashVector clientResourcesPendingUnneeded;
-        // - scene resource actions to execute after pending flushes are applied
-        SceneResourceActionVector sceneResourceActions;
     };
     typedef std::deque<PendingFlush> PendingFlushes;
 
+    struct PendingData
+    {
+        bool                      allPendingFlushesApplied = false;
+        PendingFlushes            pendingFlushes;
+        // client resources that are needed in addition to resources in use by renderer scene
+        ResourceContentHashVector clientResourcesNeeded;
+        // client resources that will not be needed anymore after pending flushes are applied
+        ResourceContentHashVector clientResourcesUnneeded;
+        // client resources that were newly needed and then unneeded within the scope of pending flushes,
+        // they were requested and need to be therefore unrequested after pending flushes are applied
+        ResourceContentHashVector clientResourcesPendingUnneeded;
+        // scene resource actions to execute after pending flushes are applied
+        SceneResourceActionVector sceneResourceActions;
+        // scene reference actions to execute after pending flushes are applied
+        SceneReferenceActionVector sceneReferenceActions;
+
+        static void Clear(PendingData& pendingData)
+        {
+            pendingData.allPendingFlushesApplied = false;
+            pendingData.pendingFlushes.clear();
+            pendingData.clientResourcesNeeded.clear();
+            pendingData.clientResourcesUnneeded.clear();
+            pendingData.clientResourcesPendingUnneeded.clear();
+            pendingData.sceneResourceActions.clear();
+            pendingData.sceneReferenceActions.clear();
+        }
+    };
+
     struct StagingInfo
     {
-        PendingFlushes            pendingFlushes;
         SceneSizeInformation      sizeInformation;
-
         // client resources referenced by renderer scene (without pending flushes)
         ResourceContentHashVector clientResourcesInUse;
+        PendingData               pendingData;
     };
 }
 

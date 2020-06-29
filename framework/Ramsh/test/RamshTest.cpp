@@ -8,14 +8,13 @@
 
 #include "Ramsh/Ramsh.h"
 #include "Ramsh/RamshCommandArguments.h"
-#include "Ramsh/RamshCommandArgumentsOptionSet.h"
 #include "Ramsh/RamshCommunicationChannelConsole.h"
 #include "framework_common_gmock_header.h"
 #include "gmock/gmock.h"
 #include "Ramsh/RamshTools.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "Utils/RamsesLogger.h"
-
+#include "Utils/CommandLineParser.h"
 
 namespace ramses_internal
 {
@@ -48,7 +47,7 @@ namespace ramses_internal
 
         using RamshCommandArgs<T1, T2, T3, T4>::getArgument;
 
-        Bool execute(T1& arg1, T2& arg2, T3& arg3, T4& arg4) const
+        bool execute(T1& arg1, T2& arg2, T3& arg3, T4& arg4) const
         {
             data->a1 = arg1;
             data->a2 = arg2;
@@ -60,7 +59,7 @@ namespace ramses_internal
 
     class DummyRamshCommand : public RamshCommand
     {
-        virtual Bool executeInput(const RamshInput& /*input*/)
+        virtual bool executeInput(const RamshInput& /*input*/) override
         {
             return true;
         }
@@ -171,12 +170,12 @@ namespace ramses_internal
 
     TEST_F(RamshAPI, typedCommand)
     {
-        TypedTestCommand<BoolLiteral, Bool, String, Float> typedCmd;
+        TypedTestCommand<uint32_t, bool, String, Float> typedCmd;
 
         typedCmd.registerKeyword("typed");
 
         typedCmd.getArgument<0>()
-            .registerKeyword("bool-literal");
+            .registerKeyword("int");
 
         typedCmd.getArgument<1>()
             .registerKeyword("bool");
@@ -192,14 +191,14 @@ namespace ramses_internal
         input.append("typed");
 
         // arguments without flags
-        input.append("true");
+        input.append("44");
         input.append("-bool");
         input.append("foobar");
         input.append("1.337");
 
         EXPECT_TRUE(ramsh.execute(input));
 
-        EXPECT_TRUE(typedCmd.data->a1);
+        EXPECT_EQ(44u, typedCmd.data->a1);
         EXPECT_TRUE(typedCmd.data->a2);
 
         EXPECT_EQ(String("foobar"), typedCmd.data->a3);
@@ -216,12 +215,12 @@ namespace ramses_internal
         input.append("-bool");
         input.append("-float");
         input.append("-1337");
-        input.append("-bool-literal");
-        input.append("false");
+        input.append("-int");
+        input.append("123");
 
         EXPECT_TRUE(ramsh.execute(input));
 
-        EXPECT_FALSE(typedCmd.data->a1);
+        EXPECT_EQ(123u, typedCmd.data->a1);
         EXPECT_TRUE(typedCmd.data->a2);
 
         EXPECT_EQ(String("foo"), typedCmd.data->a3);
@@ -256,13 +255,13 @@ namespace ramses_internal
 
     TEST_F(RamshAPI, typedCommandWithDefaultValues)
     {
-        TypedTestCommand<BoolLiteral, Bool, String, Float> typedCmd;
+        TypedTestCommand<int32_t, bool, String, Float> typedCmd;
 
         typedCmd.registerKeyword("typed");
 
         typedCmd.getArgument<0>()
-            .registerKeyword("bool-literal")
-            .setDefaultValue(false);
+            .registerKeyword("int")
+            .setDefaultValue(-1);
 
         typedCmd.getArgument<1>()
             .registerKeyword("bool")
@@ -283,7 +282,7 @@ namespace ramses_internal
 
         EXPECT_TRUE(ramsh.execute(input));
 
-        EXPECT_FALSE(typedCmd.data->a1);
+        EXPECT_EQ(-1, typedCmd.data->a1);
         EXPECT_TRUE(typedCmd.data->a2);
 
         EXPECT_EQ(String("abcdef"), typedCmd.data->a3);
@@ -298,7 +297,7 @@ namespace ramses_internal
 
         EXPECT_TRUE(ramsh.execute(input));
 
-        EXPECT_FALSE(typedCmd.data->a1);
+        EXPECT_EQ(-1, typedCmd.data->a1);
         EXPECT_FALSE(typedCmd.data->a2);
 
         EXPECT_EQ(String("abcdef"), typedCmd.data->a3);
@@ -314,12 +313,12 @@ namespace ramses_internal
         input.append("-1337.1337");
         input.append("-string");
         input.append("foo");
-        input.append("-bool-literal");
-        input.append("false");
+        input.append("-int");
+        input.append("90000");
 
         EXPECT_TRUE(ramsh.execute(input));
 
-        EXPECT_FALSE(typedCmd.data->a1);
+        EXPECT_EQ(90000, typedCmd.data->a1);
         EXPECT_TRUE(typedCmd.data->a2);
 
         EXPECT_EQ(String("foo"), typedCmd.data->a3);
@@ -330,20 +329,20 @@ namespace ramses_internal
     class MockRamsh : public Ramsh
     {
     public:
-        MOCK_METHOD1(execute, Bool(RamshInput& input));
+        MOCK_METHOD(bool, execute, (const RamshInput& input), (override));
     };
 
     class RamshCommunicationChannelConsoleTest : public ::testing::Test
     {
     public:
         RamshCommunicationChannelConsoleTest()
+            : inputProvider(RamshCommunicationChannelConsole::Construct(ramsh, "noname", false))
         {
-            inputProvider.registerRamsh(ramsh);
         }
 
     protected:
         NiceMock<MockRamsh> ramsh;
-        RamshCommunicationChannelConsole inputProvider;
+        std::unique_ptr<RamshCommunicationChannelConsole> inputProvider;
     };
 
     class RamshCommunicationChannelConsoleTestThread : public ramses_internal::Runnable
@@ -358,7 +357,7 @@ namespace ramses_internal
         {
         }
 
-        virtual void run()
+        virtual void run() override
         {
             logSomeMessage();
         }
@@ -379,11 +378,11 @@ namespace ramses_internal
         RamshInput expectedRamshInput;
         expectedRamshInput.append("help"); //read stops at enter
 
-        EXPECT_CALL(ramsh, execute(Eq(expectedRamshInput))).Times(1);
+        EXPECT_CALL(ramsh, execute(Eq(expectedRamshInput)));
 
-        for (UInt i = 0; i < input.getLength(); i++)
+        for (UInt i = 0; i < input.size(); i++)
         {
-            inputProvider.processInput(input[i]);
+            inputProvider->processInput(input[i]);
         }
     }
 
@@ -398,11 +397,67 @@ namespace ramses_internal
         thread.start(runnable);
 
         String input = "help\n";
-        for (UInt i = 0; i < input.getLength(); i++)
+        for (UInt i = 0; i < input.size(); i++)
         {
-            inputProvider.processInput(input[i]);
+            inputProvider->processInput(input[i]);
         }
 
         thread.join();
     }
+
+    class ARamshAsyncTester : public ::testing::Test
+    {
+    public:
+        static RamshInput CreateInput(std::initializer_list<const char*> inpList)
+        {
+            RamshInput input;
+            for (const auto& inp : inpList)
+                input.append(inp);
+            return input;
+        }
+
+        virtual void TearDown() override
+        {
+            // reset loglevels back to default
+            GetRamsesLogger().initialize(CommandLineParser{0, nullptr}, "RAMS", "ramses", false, true);
+        }
+
+        Ramsh rsh;
+    };
+
+    TEST_F(ARamshAsyncTester, canRunSideEffectCommands)
+    {
+        std::thread([&]() {
+            rsh.execute(CreateInput({"help"}));
+            rsh.execute(CreateInput({"buildConfig"}));
+            rsh.execute(CreateInput({"ramsesVersion"}));
+            rsh.execute(CreateInput({"printLogLevels"}));
+        }).join();
+    }
+
+    TEST_F(ARamshAsyncTester, canSetConsoleLogLevel)
+    {
+        std::thread([&]() {
+            rsh.execute(CreateInput({"setLogLevelConsole", "trace"}));
+            EXPECT_EQ(ELogLevel::Trace, GetRamsesLogger().getConsoleLogLevel());
+        }).join();
+    }
+
+    TEST_F(ARamshAsyncTester, canSetContextLogLevel)
+    {
+        std::thread([&]() {
+            rsh.execute(CreateInput({"setContextLogLevel", "trace"}));
+            EXPECT_EQ(ELogLevel::Trace, CONTEXT_FRAMEWORK.getLogLevel());
+        }).join();
+    }
+
+    TEST_F(ARamshAsyncTester, canSetContextLogLevelFilter)
+    {
+        std::thread([&]() {
+            rsh.execute(CreateInput({"setContextLogLevelFilter", "trace:RFRA,debug:RCLI"}));
+            EXPECT_EQ(ELogLevel::Trace, CONTEXT_FRAMEWORK.getLogLevel());
+            EXPECT_EQ(ELogLevel::Debug, CONTEXT_CLIENT.getLogLevel());
+        }).join();
+    }
+
 }

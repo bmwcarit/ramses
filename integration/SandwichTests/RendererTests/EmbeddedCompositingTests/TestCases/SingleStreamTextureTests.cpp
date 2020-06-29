@@ -11,6 +11,7 @@
 #include "Utils/LogMacros.h"
 #include "RendererLib/RendererLogContext.h"
 #include "RendererAPI/IEmbeddedCompositor.h"
+#include "PlatformAbstraction/PlatformMath.h"
 #include <sstream>
 
 namespace ramses_internal
@@ -24,6 +25,7 @@ namespace ramses_internal
         testFramework.createTestCaseWithDefaultDisplay(ShowFallbackTexture, *this, "ShowFallbackTexture");
         testFramework.createTestCaseWithDefaultDisplay(ShowStreamTexture, *this, "ShowStreamTexture");
         testFramework.createTestCaseWithDefaultDisplay(StreamTextureWithDifferentSizeFromFallbackTexture, *this, "StreamTextureWithDifferentSizeFromFallbackTexture");
+        testFramework.createTestCaseWithDefaultDisplay(ShowStreamTextureWithTexCoordsOffset, *this, "ShowStreamTextureWithTexCoordsOffset");
         testFramework.createTestCaseWithDefaultDisplay(ShowFallbackTextureAfterSurfaceIsDestroyed, *this, "ShowFallbackTextureAfterSurfaceIsDestroyed");
         testFramework.createTestCaseWithDefaultDisplay(StreamTextureContentAvailableBeforeSceneCreated, *this, "StreamTextureCreatedAfterClientUpdate");
         testFramework.createTestCaseWithDefaultDisplay(TestCorrectNumberOfCommitedFrames, *this, "TestCorrectNumberOfCommitedFrames");
@@ -108,6 +110,21 @@ namespace ramses_internal
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
             break;
         }
+        case ShowStreamTextureWithTexCoordsOffset:
+        {
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE_WITH_TEXCOORDS_OFFSET);
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_WithTexCoordsOffset");
+            testFramework.startTestApplicationAndWaitUntilConnected();
+            TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceToTestApplication(3840, 10, 1);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendSetTriangleColorToTestApplication(ETriangleColor::Blue);
+            testFramework.sendRenderOneFrameToTestApplication(surfaceId);
+            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_BlueTriangleStreamTexture_WithTexCoordsOffset");
+
+            testFramework.stopTestApplicationAndWaitUntilDisconnected();
+            break;
+        }
         case ShowFallbackTextureAfterSurfaceIsDestroyed:
         {
             testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
@@ -185,14 +202,12 @@ namespace ramses_internal
         }
         case ShowStreamTextureAfterRecreatingScene:
         {
-            ramses::sceneId_t sceneId = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
             testFramework.sendRenderOneFrameToTestApplication(surfaceId);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
-            testFramework.hideScene(sceneId);
-            testFramework.unmapScene(sceneId);
             testFramework.getScenesRegistry().destroyScenes();
             testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture");
@@ -633,7 +648,7 @@ namespace ramses_internal
             TestApplicationSurfaceId surfaceId  = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
             testFramework.sendRenderOneFrameToTestApplication(surfaceId);
 
-            testResultValue = testFramework.waitUntilNumberOfCommitedFramesForIviSurface(InvalidWaylandIviSurfaceId, 1);
+            testResultValue = testFramework.waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId::Invalid(), 1);
 
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
 
@@ -833,7 +848,7 @@ namespace ramses_internal
 
         // Check, that for first frame one buffer is allocated, for second frame, two buffers are allocated, and that then
         // no more further buffers are needed. Checks if the Embedded Compositor releases the buffers.
-        const UInt32 expectedNumberOfAllocatedSHMBuffer = min(frameCount, 2u);
+        const UInt32 expectedNumberOfAllocatedSHMBuffer = std::min(frameCount, 2u);
         const UInt32 numberOfAllocatedSHMBuffer = testFramework.getNumberOfAllocatedSHMBufferFromTestApplication();
 
         if (numberOfAllocatedSHMBuffer != expectedNumberOfAllocatedSHMBuffer)

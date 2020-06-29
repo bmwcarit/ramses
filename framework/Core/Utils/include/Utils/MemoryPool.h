@@ -11,6 +11,7 @@
 
 #include "Utils/HandlePool.h"
 #include <type_traits>
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -30,7 +31,7 @@ namespace ramses_internal
         // Access
         UInt32                          getTotalCount() const;
         UInt32                          getActualCount() const;
-        Bool                            isAllocated(HANDLE handle) const;
+        bool                            isAllocated(HANDLE handle) const;
 
         // Access to actual memory
         OBJECTTYPE*                     getMemory(HANDLE handle);
@@ -133,7 +134,7 @@ namespace ramses_internal
 
     template <typename OBJECTTYPE, typename HANDLE>
     inline
-    Bool MemoryPool<OBJECTTYPE, HANDLE>::isAllocated(HANDLE handle) const
+    bool MemoryPool<OBJECTTYPE, HANDLE>::isAllocated(HANDLE handle) const
     {
         return m_handlePool.isAcquired(handle);
     }

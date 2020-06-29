@@ -108,8 +108,8 @@ int main(int argc, char* argv[])
     // create a scene and write it to a file
     {
         ramses::RamsesFramework framework(argc, argv);
-        ramses::RamsesClient ramses("ramses-example-file-loading", framework);
-        ramses::Scene* scene = ramses.createScene(23u, ramses::SceneConfig(), "basic scene loading from file");
+        ramses::RamsesClient& ramses(*framework.createClient("ramses-example-file-loading"));
+        ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic scene loading from file");
         // every scene needs a render pass with camera
         ramses::Camera* camera = scene->createRemoteCamera("my camera");
         camera->setTranslation(0.0f, 0.0f, 5.0f);
@@ -193,7 +193,7 @@ int main(int argc, char* argv[])
     // load the saved file
     {
         ramses::RamsesFramework framework(argc, argv);
-        ramses::RamsesClient ramses("ramses-example-file-loading", framework);
+        ramses::RamsesClient& ramses(*framework.createClient("ramses-example-file-loading"));
 
         /// [Basic File Loading Example]
         // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.

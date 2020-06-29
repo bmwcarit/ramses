@@ -22,7 +22,7 @@ namespace ramses_internal
 
     SceneExpirationMonitor::~SceneExpirationMonitor()
     {
-        assert(m_sceneTimestamps.count() == 0u);
+        assert(m_sceneTimestamps.size() == 0u);
     }
 
     void SceneExpirationMonitor::onFlushApplied(SceneId sceneId, FlushTime::Clock::time_point expirationTimestamp, SceneVersionTag versionTag, UInt64 flushIndex)
@@ -75,9 +75,9 @@ namespace ramses_internal
                 expired = true;
             }
 
-            if (!sceneIt.value.stagingInfo->pendingFlushes.empty()) // early out if no pending flushes
+            if (!sceneIt.value.stagingInfo->pendingData.pendingFlushes.empty()) // early out if no pending flushes
             {
-                const auto& pendingFlushes = sceneIt.value.stagingInfo->pendingFlushes;
+                const auto& pendingFlushes = sceneIt.value.stagingInfo->pendingData.pendingFlushes;
                 const auto& lastPendingFlush = pendingFlushes.back();
                 const auto& lastPendingTimeInfo = lastPendingFlush.timeInfo;
 
@@ -119,7 +119,7 @@ namespace ramses_internal
 
             // report event only if state changed from last time
             if (expired != timestamps.inExpiredState)
-                m_eventCollector.addEvent(expired ? ERendererEventType_SceneExpired : ERendererEventType_SceneRecoveredFromExpiration, sceneId);
+                m_eventCollector.addSceneExpirationEvent(expired ? ERendererEventType_SceneExpired : ERendererEventType_SceneRecoveredFromExpiration, sceneId);
             timestamps.inExpiredState = expired;
         }
     }

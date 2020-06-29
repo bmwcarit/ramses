@@ -11,7 +11,6 @@
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "EmbeddedCompositingTestMessages.h"
 #include "Utils/RamsesLogger.h"
-#include "Utils/BinaryOutputStream.h"
 #include <sys/wait.h>
 
 namespace ramses_internal
@@ -24,7 +23,7 @@ namespace ramses_internal
     TestForkingController::~TestForkingController()
     {
         stopForkerApplication();
-        pid_t processEndStatus = ::waitpid(m_testForkerApplicationProcessId, NULL, 0);
+        pid_t processEndStatus = ::waitpid(m_testForkerApplicationProcessId, nullptr, 0);
         UNUSED(processEndStatus)
         assert(m_testForkerApplicationProcessId == processEndStatus);
     }
@@ -74,7 +73,7 @@ namespace ramses_internal
     {
         LOG_INFO(CONTEXT_RENDERER, "TestForkingController::startForkerApplication starting forker");
 
-        if(GetRamsesLogger().isAppenderTypeActive(ELogAppenderType::Dlt))
+        if(GetRamsesLogger().isDltAppenderActive())
         {
             LOG_ERROR(CONTEXT_RENDERER, "TestForkingController::startForkerApplication DLT logging enabled, can not fork test application, will halt and catch fire");
             exit(1);

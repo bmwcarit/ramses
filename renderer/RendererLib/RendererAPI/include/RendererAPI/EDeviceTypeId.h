@@ -14,13 +14,13 @@
 
 namespace ramses_internal
 {
-    enum EDeviceTypeId
+    enum EDeviceTypeId : uint32_t
     {
         EDeviceTypeId_INVALID                       = 0,
-        EDeviceTypeId_GL_ES_3_0                     = BIT(0),
-        EDeviceTypeId_GL_4_2_CORE                   = BIT(1),
-        EDeviceTypeId_GL_4_5                        = BIT(2),
-        EDeviceTypeId_ALL                           = BIT(3) - 1
+        EDeviceTypeId_GL_ES_3_0                     = BIT(0u),
+        EDeviceTypeId_GL_4_2_CORE                   = BIT(1u),
+        EDeviceTypeId_GL_4_5                        = BIT(2u),
+        EDeviceTypeId_ALL                           = BIT(3u) - 1u
     };
 
     inline Bool IsRendererDeviceEnabled(UInt32 deviceMask, EDeviceTypeId deviceIDToCheck)

@@ -59,21 +59,23 @@ namespace ramses_internal
             : startIndex(3u)
             , indexCount(9u)
             , instanceCount(7u)
-            , visibility(false)
+            , visibility(EVisibilityMode::Invisible)
             , state(23u)
             , effectHash(47u, 0u)
             , geoInstanceHandle(37u)
             , uniformInstanceHandle(77u)
+            , startVertex(199u)
             {}
 
             UInt32              startIndex;
             UInt32              indexCount;
             UInt32              instanceCount;
-            Bool                visibility;
+            EVisibilityMode     visibility;
             RenderStateHandle   state;
             ResourceContentHash effectHash;
             DataInstanceHandle  geoInstanceHandle;
             DataInstanceHandle  uniformInstanceHandle;
+            UInt32              startVertex;
         };
 
         void createRenderable(const RenderableCreationData& data = RenderableCreationData())
@@ -85,6 +87,7 @@ namespace ramses_internal
             m_scene.setRenderableRenderState(renderable, data.state);
             m_scene.setRenderableVisibility(renderable, data.visibility);
             m_scene.setRenderableInstanceCount(renderable, data.instanceCount);
+            m_scene.setRenderableStartVertex(renderable, data.startVertex);
             m_scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Geometry, data.geoInstanceHandle);
             m_scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Uniforms, data.uniformInstanceHandle);
         }
@@ -187,20 +190,20 @@ namespace ramses_internal
         const UInt32 dataFieldElementCount = 3u;
         const DataFieldInfoVector dataFieldInfos =
         {
-            { EDataType_Int32,     dataFieldElementCount, EFixedSemantics_Invalid },
-            { EDataType_Float,     dataFieldElementCount, EFixedSemantics_Invalid },
-            { EDataType_Vector2F,  dataFieldElementCount, EFixedSemantics_Invalid },
-            { EDataType_Vector3F,  dataFieldElementCount, EFixedSemantics_Invalid },
-            { EDataType_Vector4F,  dataFieldElementCount, EFixedSemantics_Invalid },
-            { EDataType_Vector2I,  dataFieldElementCount, EFixedSemantics_Invalid },
-            { EDataType_Vector3I,  dataFieldElementCount, EFixedSemantics_Invalid },
-            { EDataType_Vector4I,  dataFieldElementCount, EFixedSemantics_Invalid },
-            { EDataType_Matrix22F, dataFieldElementCount, EFixedSemantics_Invalid },
-            { EDataType_Matrix33F, dataFieldElementCount, EFixedSemantics_Invalid },
-            { EDataType_Matrix44F, dataFieldElementCount, EFixedSemantics_Invalid }
+            DataFieldInfo{ EDataType_Int32,     dataFieldElementCount, EFixedSemantics_Invalid },
+            DataFieldInfo{ EDataType_Float,     dataFieldElementCount, EFixedSemantics_Invalid },
+            DataFieldInfo{ EDataType_Vector2F,  dataFieldElementCount, EFixedSemantics_Invalid },
+            DataFieldInfo{ EDataType_Vector3F,  dataFieldElementCount, EFixedSemantics_Invalid },
+            DataFieldInfo{ EDataType_Vector4F,  dataFieldElementCount, EFixedSemantics_Invalid },
+            DataFieldInfo{ EDataType_Vector2I,  dataFieldElementCount, EFixedSemantics_Invalid },
+            DataFieldInfo{ EDataType_Vector3I,  dataFieldElementCount, EFixedSemantics_Invalid },
+            DataFieldInfo{ EDataType_Vector4I,  dataFieldElementCount, EFixedSemantics_Invalid },
+            DataFieldInfo{ EDataType_Matrix22F, dataFieldElementCount, EFixedSemantics_Invalid },
+            DataFieldInfo{ EDataType_Matrix33F, dataFieldElementCount, EFixedSemantics_Invalid },
+            DataFieldInfo{ EDataType_Matrix44F, dataFieldElementCount, EFixedSemantics_Invalid }
         };
 
-        const DataLayoutHandle dataLayout = m_scene.allocateDataLayout(dataFieldInfos);
+        const DataLayoutHandle dataLayout = m_scene.allocateDataLayout(dataFieldInfos, ResourceContentHash::Invalid());
         const DataInstanceHandle dataInstance = m_scene.allocateDataInstance(dataLayout);
 
         SceneDescriber::describeScene<IScene>(m_scene, creator);
@@ -249,9 +252,9 @@ namespace ramses_internal
 
     TEST_F(SceneDescriberTest, sameAmountOfDataLayoutsCreatedIsSerializedToSceneActions_withoutCompacting)
     {
-        const DataLayoutHandle dataLayout1 = m_scene.allocateDataLayout({ { EDataType_Float },{ EDataType_Float } });
-        const DataLayoutHandle dataLayout2 = m_scene.allocateDataLayout({ { EDataType_Float },{ EDataType_Float } });
-        const DataLayoutHandle dataLayout3 = m_scene.allocateDataLayout({ { EDataType_Float },{ EDataType_Float } });
+        const DataLayoutHandle dataLayout1 = m_scene.allocateDataLayout({ DataFieldInfo{ EDataType_Float }, DataFieldInfo{ EDataType_Float } }, ResourceContentHash(123u, 0u));
+        const DataLayoutHandle dataLayout2 = m_scene.allocateDataLayout({ DataFieldInfo{ EDataType_Float }, DataFieldInfo{ EDataType_Float } }, ResourceContentHash(123u, 0u));
+        const DataLayoutHandle dataLayout3 = m_scene.allocateDataLayout({ DataFieldInfo{ EDataType_Float }, DataFieldInfo{ EDataType_Float } }, ResourceContentHash(123u, 0u));
 
         // the test itself does not need to test that the compacting happened or not
         // but it is actually the main purpose to check that the describer properly expands the actions if compacted
@@ -268,9 +271,9 @@ namespace ramses_internal
     TEST_F(SceneDescriberTest, sameAmountOfDataLayoutsCreatedIsSerializedToSceneActions_compactingUsed)
     {
         ClientScene scene;
-        const DataLayoutHandle dataLayout1 = scene.allocateDataLayout({ { EDataType_Float },{ EDataType_Float } });
-        const DataLayoutHandle dataLayout2 = scene.allocateDataLayout({ { EDataType_Float },{ EDataType_Float } });
-        const DataLayoutHandle dataLayout3 = scene.allocateDataLayout({ { EDataType_Float },{ EDataType_Float } });
+        const DataLayoutHandle dataLayout1 = scene.allocateDataLayout({ DataFieldInfo{ EDataType_Float }, DataFieldInfo{ EDataType_Float } }, ResourceContentHash(123u, 0u));
+        const DataLayoutHandle dataLayout2 = scene.allocateDataLayout({ DataFieldInfo{ EDataType_Float }, DataFieldInfo{ EDataType_Float } }, ResourceContentHash(123u, 0u));
+        const DataLayoutHandle dataLayout3 = scene.allocateDataLayout({ DataFieldInfo{ EDataType_Float }, DataFieldInfo{ EDataType_Float } }, ResourceContentHash(123u, 0u));
 
         // the test itself does not need to test that the compacting happened or not
         // but it is actually the main purpose to check that the describer properly expands the actions if compacted

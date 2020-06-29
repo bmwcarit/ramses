@@ -60,7 +60,7 @@ namespace ramses
     status_t EffectDescriptionImpl::addCompilerDefine(const char* define)
     {
         const ramses_internal::String defineStr(define);
-        if (defineStr.getLength() == 0u)
+        if (defineStr.size() == 0u)
         {
             return addErrorEntry("EffectDescription::addCompilerDefine cannot add empty define!");
         }
@@ -72,7 +72,7 @@ namespace ramses
     status_t EffectDescriptionImpl::setSemantic(const char* semanticName, ramses_internal::EFixedSemantics semanticType)
     {
         const ramses_internal::String semanticNameStr(semanticName);
-        if (semanticNameStr.getLength() == 0u)
+        if (semanticNameStr.size() == 0u)
         {
             return addErrorEntry("EffectDescription::setSemantic cannot set empty semantic name!");
         }
@@ -137,19 +137,23 @@ namespace ramses
             return false;
         }
 
-        inFile.open(ramses_internal::EFileMode_ReadOnly);
+        if (!inFile.open(ramses_internal::File::Mode::ReadOnly))
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "EffectDescriptionImpl::ReadFileContentsToString:  could not open file: " << fileName);
+            return false;
+        }
+
         ramses_internal::UInt fileSize = 0;
         ramses_internal::UInt readBytes = 0;
-        ramses_internal::EStatus stat = inFile.getSizeInBytes(fileSize);
-        if (stat != ramses_internal::EStatus_RAMSES_OK)
+        if (!inFile.getSizeInBytes(fileSize))
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "EffectDescriptionImpl::ReadFileContentsToString:  error reading file info: " << fileName);
             return false;
         }
 
         std::vector<char> charVector(fileSize + 1u);
-        stat = inFile.read(&charVector[0], fileSize, readBytes);
-        if (stat == ramses_internal::EStatus_RAMSES_OK || stat == ramses_internal::EStatus_RAMSES_EOF)
+        const ramses_internal::EStatus stat = inFile.read(&charVector[0], fileSize, readBytes);
+        if (stat == ramses_internal::EStatus::Ok || stat == ramses_internal::EStatus::Eof)
         {
             charVector[readBytes] = '\0';
             fileContents = &charVector[0];

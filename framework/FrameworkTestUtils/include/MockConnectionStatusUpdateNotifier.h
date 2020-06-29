@@ -22,8 +22,8 @@ namespace ramses_internal
         MockConnectionStatusUpdateNotifier();
         ~MockConnectionStatusUpdateNotifier() override;
 
-        MOCK_METHOD1(registerForConnectionUpdates, void(IConnectionStatusListener* listener));
-        MOCK_METHOD1(unregisterForConnectionUpdates, void(IConnectionStatusListener* listener));
+        MOCK_METHOD(void, registerForConnectionUpdates, (IConnectionStatusListener* listener), (override));
+        MOCK_METHOD(void, unregisterForConnectionUpdates, (IConnectionStatusListener* listener), (override));
     };
 }
 

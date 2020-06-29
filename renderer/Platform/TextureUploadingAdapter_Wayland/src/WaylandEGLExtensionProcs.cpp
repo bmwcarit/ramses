@@ -8,6 +8,7 @@
 
 #include "TextureUploadingAdapter_Wayland/WaylandEGLExtensionProcs.h"
 #include "Utils/LogMacros.h"
+#include <cassert>
 
 namespace ramses_internal
 

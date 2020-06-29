@@ -17,7 +17,7 @@
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Texture2D.h"
-#include "TextureUtils.h"
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -110,7 +110,7 @@ namespace ramses_internal
         }
         else if (state == TEXTURE_SIZE)
         {
-            const ramses::Texture2D& texture = *ramses::TextureUtils::CreateTextureResourceFromPng("res/ramses-test-client-file-loading-texture.png", m_client);
+            const ramses::Texture2D& texture = *ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-file-loading-texture.png", m_client);
             ramses::TextureSampler& texSampler = *m_scene.createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Nearest, ramses::ETextureSamplingMethod_Nearest, texture);
 
             const Float textureCoordsArray[] = { 0.f, 1.f, 1.f, 1.f, 0.f, 0.f };

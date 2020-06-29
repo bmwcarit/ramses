@@ -33,8 +33,9 @@ namespace ramses_internal
         const Float p2 = 0.5f;
         const Float p3 = 1.f;
 
-        for (Float frac = 0.f; frac <= 1.f; frac += 0.05f)
+        for (int i = 0; i <= 100; i += 5)
         {
+            const float frac = 0.01f * i;
             const Float fracRes = Interpolator::FindFractionForGivenXOnBezierSpline(p0, p1, p2, p3, frac);
             EXPECT_TRUE(AnimationTestUtils::AreEqual(frac, fracRes));
         }

@@ -17,7 +17,7 @@
 #include "ramses-client-api/Appearance.h"
 
 #include "Scene/ClientScene.h"
-#include "TestScenes/TriangleStripQuad.h"
+#include "TestScenes/MultiTriangleGeometry.h"
 #include "ramses-utils.h"
 
 namespace ramses_internal
@@ -27,9 +27,9 @@ namespace ramses_internal
     {
         m_effectTex = getTestEffect("ramses-test-client-textured");
 
-        ramses::TriangleStripQuad quad1(ramsesClient, scene, *m_effectTex, ramses::TriangleStripQuad::EColor_White);
-        ramses::TriangleStripQuad quad2(ramsesClient, scene, *m_effectTex, ramses::TriangleStripQuad::EColor_White);
-        ramses::TriangleStripQuad quad3(ramsesClient, scene, *m_effectTex, ramses::TriangleStripQuad::EColor_White);
+        ramses::MultiTriangleGeometry quad1(ramsesClient, scene, *m_effectTex, ramses::MultiTriangleGeometry::EColor_White);
+        ramses::MultiTriangleGeometry quad2(ramsesClient, scene, *m_effectTex, ramses::MultiTriangleGeometry::EColor_White);
+        ramses::MultiTriangleGeometry quad3(ramsesClient, scene, *m_effectTex, ramses::MultiTriangleGeometry::EColor_White);
 
         const ramses::Texture2D& texture1 = *ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-embedded-compositing-1.png", m_client);
         const ramses::Texture2D& texture2 = *ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-embedded-compositing-2.png", m_client);
@@ -43,7 +43,7 @@ namespace ramses_internal
         createQuadWithTextureConsumer(quad3, 2, ramses::dataConsumerId_t(3u), texture3, textureCoords);
     }
 
-    void MultiTextureConsumerScene::createQuadWithTextureConsumer(ramses::TriangleStripQuad& quad, uint32_t quadId, ramses::dataConsumerId_t textureConsumerId, const ramses::Texture2D& texture, const ramses::Vector2fArray& textureCoords)
+    void MultiTextureConsumerScene::createQuadWithTextureConsumer(ramses::MultiTriangleGeometry& quad, uint32_t quadId, ramses::dataConsumerId_t textureConsumerId, const ramses::Texture2D& texture, const ramses::Vector2fArray& textureCoords)
     {
         ramses::MeshNode* mesh = m_scene.createMeshNode();
         ramses::Appearance& appearance = quad.GetAppearance();

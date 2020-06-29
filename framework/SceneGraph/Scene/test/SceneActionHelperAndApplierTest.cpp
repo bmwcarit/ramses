@@ -25,30 +25,30 @@ namespace ramses_internal
         SceneForSceneActionApplierTesting()
         {}
 
-        MOCK_METHOD2(allocateRenderable,         RenderableHandle(NodeHandle, RenderableHandle));
-        MOCK_METHOD2(setRenderableStartIndex,    void (RenderableHandle, UInt32));
-        MOCK_METHOD2(setRenderableIndexCount,    void (RenderableHandle, UInt32));
-        MOCK_METHOD2(setRenderableEffect,        void (RenderableHandle, const ResourceContentHash&));
-        MOCK_METHOD2(setRenderableRenderState,   void (RenderableHandle, RenderStateHandle));
-        MOCK_METHOD2(setRenderableVisibility,    void (RenderableHandle, Bool));
-        MOCK_METHOD2(setRenderableInstanceCount, void (RenderableHandle, UInt32));
-        MOCK_METHOD3(setRenderableDataInstance,  void (RenderableHandle, ERenderableDataSlotType, DataInstanceHandle));
+        MOCK_METHOD(RenderableHandle, allocateRenderable, (NodeHandle, RenderableHandle), (override));
+        MOCK_METHOD(void , setRenderableStartIndex, (RenderableHandle, UInt32), (override));
+        MOCK_METHOD(void , setRenderableIndexCount, (RenderableHandle, UInt32), (override));
+        MOCK_METHOD(void , setRenderableRenderState, (RenderableHandle, RenderStateHandle), (override));
+        MOCK_METHOD(void , setRenderableVisibility, (RenderableHandle, EVisibilityMode), (override));
+        MOCK_METHOD(void , setRenderableInstanceCount, (RenderableHandle, UInt32), (override));
+        MOCK_METHOD(void , setRenderableDataInstance, (RenderableHandle, ERenderableDataSlotType, DataInstanceHandle), (override));
+        MOCK_METHOD(void, setRenderableStartVertex, (RenderableHandle, UInt32), (override));
 
-        MOCK_METHOD1(allocateRenderState,           RenderStateHandle(RenderStateHandle));
-        MOCK_METHOD5(setRenderStateBlendFactors,    void (RenderStateHandle, EBlendFactor, EBlendFactor, EBlendFactor, EBlendFactor));
-        MOCK_METHOD3(setRenderStateBlendOperations, void (RenderStateHandle, EBlendOperation, EBlendOperation));
-        MOCK_METHOD2(setRenderStateCullMode,        void (RenderStateHandle, ECullMode));
-        MOCK_METHOD2(setRenderStateDrawMode,        void (RenderStateHandle, EDrawMode));
-        MOCK_METHOD2(setRenderStateDepthWrite,      void (RenderStateHandle, EDepthWrite));
-        MOCK_METHOD2(setRenderStateDepthFunc,       void (RenderStateHandle, EDepthFunc));
-        MOCK_METHOD3(setRenderStateScissorTest,     void(RenderStateHandle, EScissorTest, const RenderState::ScissorRegion&));
-        MOCK_METHOD4(setRenderStateStencilFunc,     void (RenderStateHandle, EStencilFunc, UInt8, UInt8));
-        MOCK_METHOD4(setRenderStateStencilOps,      void (RenderStateHandle, EStencilOp, EStencilOp, EStencilOp));
-        MOCK_METHOD2(setRenderStateColorWriteMask,  void (RenderStateHandle, ColorWriteMask));
+        MOCK_METHOD(RenderStateHandle, allocateRenderState, (RenderStateHandle), (override));
+        MOCK_METHOD(void , setRenderStateBlendFactors, (RenderStateHandle, EBlendFactor, EBlendFactor, EBlendFactor, EBlendFactor), (override));
+        MOCK_METHOD(void , setRenderStateBlendOperations, (RenderStateHandle, EBlendOperation, EBlendOperation), (override));
+        MOCK_METHOD(void , setRenderStateCullMode, (RenderStateHandle, ECullMode), (override));
+        MOCK_METHOD(void , setRenderStateDrawMode, (RenderStateHandle, EDrawMode), (override));
+        MOCK_METHOD(void , setRenderStateDepthWrite, (RenderStateHandle, EDepthWrite), (override));
+        MOCK_METHOD(void , setRenderStateDepthFunc, (RenderStateHandle, EDepthFunc), (override));
+        MOCK_METHOD(void, setRenderStateScissorTest, (RenderStateHandle, EScissorTest, const RenderState::ScissorRegion&), (override));
+        MOCK_METHOD(void , setRenderStateStencilFunc, (RenderStateHandle, EStencilFunc, UInt8, UInt8), (override));
+        MOCK_METHOD(void , setRenderStateStencilOps, (RenderStateHandle, EStencilOp, EStencilOp, EStencilOp), (override));
+        MOCK_METHOD(void , setRenderStateColorWriteMask, (RenderStateHandle, ColorWriteMask), (override));
 
-        MOCK_METHOD2(allocateTextureSampler,    TextureSamplerHandle(const TextureSampler& sampler, TextureSamplerHandle handle));
+        MOCK_METHOD(TextureSamplerHandle, allocateTextureSampler, (const TextureSampler& sampler, TextureSamplerHandle handle), (override));
 
-        MOCK_METHOD1(setAckFlushState, void(bool));
+        MOCK_METHOD(void, setAckFlushState, (bool), (override));
     };
 
     class ASceneActionCreatorAndApplier : public ::testing::Test
@@ -71,10 +71,10 @@ namespace ramses_internal
         renderable.node = NodeHandle{ 45u };
         renderable.startIndex= 37u;
         renderable.indexCount= 87u;
-        renderable.effectResource = { 99u, 24u };
         renderable.renderState = RenderStateHandle{ 33u };
-        renderable.isVisible = false;
+        renderable.visibilityMode = EVisibilityMode::Invisible;
         renderable.instanceCount = 7u;
+        renderable.startVertex = 124u;
         renderable.dataInstances[ERenderableDataSlotType_Geometry] = DataInstanceHandle{ 12u };
         renderable.dataInstances[ERenderableDataSlotType_Uniforms] = DataInstanceHandle{ 32u };
 
@@ -82,9 +82,9 @@ namespace ramses_internal
                                     + sizeof(NodeHandle)
                                     + sizeof(UInt32)
                                     + sizeof(UInt32)
-                                    + sizeof(ResourceContentHash)
                                     + sizeof(RenderStateHandle)
-                                    + sizeof(Bool)
+                                    + sizeof(EVisibilityMode)
+                                    + sizeof(UInt32)
                                     + sizeof(UInt32)
                                     + sizeof(DataInstanceHandle)
                                     + sizeof(DataInstanceHandle));
@@ -96,10 +96,10 @@ namespace ramses_internal
         EXPECT_CALL(scene, allocateRenderable(renderable.node, renderableHandle)).WillOnce(Return(renderableHandle));
         EXPECT_CALL(scene, setRenderableStartIndex(renderableHandle, renderable.startIndex));
         EXPECT_CALL(scene, setRenderableIndexCount(renderableHandle, renderable.indexCount));
-        EXPECT_CALL(scene, setRenderableEffect(renderableHandle, renderable.effectResource));
         EXPECT_CALL(scene, setRenderableRenderState(renderableHandle, renderable.renderState));
-        EXPECT_CALL(scene, setRenderableVisibility(renderableHandle, renderable.isVisible));
+        EXPECT_CALL(scene, setRenderableVisibility(renderableHandle, renderable.visibilityMode));
         EXPECT_CALL(scene, setRenderableInstanceCount(renderableHandle, renderable.instanceCount));
+        EXPECT_CALL(scene, setRenderableStartVertex(renderableHandle, renderable.startVertex));
         EXPECT_CALL(scene, setRenderableDataInstance(renderableHandle, ERenderableDataSlotType_Geometry, renderable.dataInstances[ERenderableDataSlotType_Geometry]));
         EXPECT_CALL(scene, setRenderableDataInstance(renderableHandle, ERenderableDataSlotType_Uniforms, renderable.dataInstances[ERenderableDataSlotType_Uniforms]));
 
@@ -114,10 +114,10 @@ namespace ramses_internal
         renderable.node = NodeHandle{ 23u };
         renderable.startIndex = 0u;
         renderable.indexCount = 87u;
-        renderable.effectResource= {};
         renderable.renderState = RenderStateHandle{ 33u };
-        renderable.isVisible = true;
+        renderable.visibilityMode = EVisibilityMode::Visible;
         renderable.instanceCount = 1u;
+        renderable.startVertex = 0u;
         renderable.dataInstances[ERenderableDataSlotType_Geometry] = DataInstanceHandle{ 12u };
         renderable.dataInstances[ERenderableDataSlotType_Uniforms] = DataInstanceHandle{ 32u };
 
@@ -125,9 +125,9 @@ namespace ramses_internal
                                     + sizeof(NodeHandle)
                                     + sizeof(UInt32)
                                     + sizeof(UInt32)
-                                    + sizeof(ResourceContentHash)
                                     + sizeof(RenderStateHandle)
-                                    + sizeof(Bool)
+                                    + sizeof(EVisibilityMode)
+                                    + sizeof(UInt32)
                                     + sizeof(UInt32)
                                     + sizeof(DataInstanceHandle)
                                     + sizeof(DataInstanceHandle));
@@ -138,12 +138,12 @@ namespace ramses_internal
 
         // default values will not be serialized
         EXPECT_CALL(scene, allocateRenderable(renderable.node, renderableHandle)).WillOnce(Return(renderableHandle));
-        EXPECT_CALL(scene, setRenderableStartIndex(renderableHandle, renderable.startIndex)).Times(0);
+        EXPECT_CALL(scene, setRenderableStartIndex(renderableHandle, _)).Times(0);
         EXPECT_CALL(scene, setRenderableIndexCount(renderableHandle, renderable.indexCount));
-        EXPECT_CALL(scene, setRenderableEffect(renderableHandle, renderable.effectResource)).Times(0);
         EXPECT_CALL(scene, setRenderableRenderState(renderableHandle, renderable.renderState));
-        EXPECT_CALL(scene, setRenderableVisibility(renderableHandle, renderable.isVisible)).Times(0);
-        EXPECT_CALL(scene, setRenderableInstanceCount(renderableHandle, renderable.instanceCount)).Times(0);
+        EXPECT_CALL(scene, setRenderableVisibility(renderableHandle, _)).Times(0);
+        EXPECT_CALL(scene, setRenderableInstanceCount(renderableHandle, _)).Times(0);
+        EXPECT_CALL(scene, setRenderableStartVertex(renderableHandle, _)).Times(0);
         EXPECT_CALL(scene, setRenderableDataInstance(renderableHandle, ERenderableDataSlotType_Geometry, renderable.dataInstances[ERenderableDataSlotType_Geometry]));
         EXPECT_CALL(scene, setRenderableDataInstance(renderableHandle, ERenderableDataSlotType_Uniforms, renderable.dataInstances[ERenderableDataSlotType_Uniforms]));
 
@@ -153,22 +153,19 @@ namespace ramses_internal
     TEST_F(ASceneActionCreatorAndApplier, CanSerializeCompoundRenderableEffectDataWithDefaultValues)
     {
         const RenderableHandle renderable(43u);
-        const ResourceContentHash effectHash;
         const RenderStateHandle stateHandle(33u);
         const DataInstanceHandle uniformInstanceHandle(32u);
 
         const UInt32 sizeOfActionData(sizeof(RenderableHandle)
-            + sizeof(ResourceContentHash)
             + sizeof(RenderStateHandle)
             + sizeof(DataInstanceHandle));
 
-        creator.compoundRenderableEffectData(renderable, uniformInstanceHandle, stateHandle, effectHash);
+        creator.compoundRenderableData(renderable, uniformInstanceHandle, stateHandle);
 
         ASSERT_EQ(sizeOfActionData, collection.collectionData().size());
 
         EXPECT_CALL(scene, setRenderableDataInstance(renderable, ERenderableDataSlotType_Uniforms, uniformInstanceHandle));
         EXPECT_CALL(scene, setRenderableRenderState(renderable, stateHandle));
-        EXPECT_CALL(scene, setRenderableEffect(renderable, effectHash));
 
         SceneActionApplier::ApplyActionsOnScene(scene, collection);
     }
@@ -250,7 +247,7 @@ namespace ramses_internal
         }
     };
 
-    TYPED_TEST_CASE(ASceneActionCreatorAndApplierForResources, ResourceSerializationTestHelper::Types);
+    TYPED_TEST_SUITE(ASceneActionCreatorAndApplierForResources, ResourceSerializationTestHelper::Types);
 
     TYPED_TEST(ASceneActionCreatorAndApplierForResources, writeSingleSmallResource)
     {

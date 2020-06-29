@@ -16,7 +16,7 @@ namespace ramses_internal
 {
     namespace TransportUtilities
     {
-        void SplitToChunks(UInt32 maxNumberOfItemsPerMessage, UInt32 totalNumberOfItems, std::function<void(UInt32, UInt32)> sendChunkFun)
+        void SplitToChunks(UInt32 maxNumberOfItemsPerMessage, UInt32 totalNumberOfItems, const std::function<void(UInt32, UInt32)>& sendChunkFun)
         {
             UInt32 offsetOfItemsInThisMessage = 0;
             while (offsetOfItemsInThisMessage < totalNumberOfItems)

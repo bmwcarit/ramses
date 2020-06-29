@@ -64,9 +64,9 @@ namespace ramses_internal
 
     // Specialization for boolean due to unsupported arithmetic operations
     template <>
-    inline Bool SplineSolverHelper::GetInterpolatedValueBezier(
-        const SplineKeyTangents<Bool>& key1,
-        const SplineKeyTangents<Bool>& key2,
+    inline bool SplineSolverHelper::GetInterpolatedValueBezier(
+        const SplineKeyTangents<bool>& key1,
+        const SplineKeyTangents<bool>& key2,
         SplineTimeStamp key1Time,
         SplineTimeStamp key2Time,
         Float segmentTime)

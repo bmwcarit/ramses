@@ -10,10 +10,10 @@
 
 namespace ramses_internal
 {
-    void SceneStateInfo::addScene(SceneId sceneId, const Guid& clientWhereSceneIsAvailable, EScenePublicationMode mode)
+    void SceneStateInfo::addScene(SceneId sceneId, EScenePublicationMode mode)
     {
         assert(!m_scenesInfo.contains(sceneId));
-        SceneInfo sceneInfo = { clientWhereSceneIsAvailable, ESceneState::Published, mode };
+        SceneInfo sceneInfo = { ESceneState::Published, mode };
         m_scenesInfo.put(sceneId, sceneInfo);
     }
 
@@ -51,17 +51,10 @@ namespace ramses_internal
         return sceneInfo->publicationMode;
     }
 
-    Guid SceneStateInfo::getSceneClientGuid(SceneId sceneId) const
-    {
-        SceneInfo* sceneInfo = m_scenesInfo.get(sceneId);
-        assert(nullptr != sceneInfo);
-        return sceneInfo->clientWhereSceneIsAvailable;
-    }
-
     void SceneStateInfo::getKnownSceneIds(SceneIdVector& knownIds) const
     {
         assert(knownIds.empty());
-        knownIds.reserve(m_scenesInfo.count());
+        knownIds.reserve(m_scenesInfo.size());
         for(const auto& sceneInfo : m_scenesInfo)
         {
             knownIds.push_back(sceneInfo.key);

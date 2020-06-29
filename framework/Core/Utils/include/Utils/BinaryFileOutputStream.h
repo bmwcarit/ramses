@@ -17,7 +17,7 @@ namespace ramses_internal
     class BinaryFileOutputStream: public IOutputStream
     {
     public:
-        BinaryFileOutputStream(File& file, EFileMode mode = EFileMode_WriteNewBinary);
+        explicit BinaryFileOutputStream(File& file, File::Mode mode = File::Mode::WriteNewBinary);
         ~BinaryFileOutputStream();
 
         BinaryFileOutputStream(const BinaryFileOutputStream&) = delete;
@@ -34,9 +34,9 @@ namespace ramses_internal
     };
 
     inline
-    BinaryFileOutputStream::BinaryFileOutputStream(File& file, EFileMode mode)
+    BinaryFileOutputStream::BinaryFileOutputStream(File& file, File::Mode mode)
         : m_file(file)
-        , m_state(m_file.open(mode))
+        , m_state(m_file.open(mode) ? EStatus::Ok : EStatus::Error)
     {
     }
 
@@ -51,9 +51,9 @@ namespace ramses_internal
     IOutputStream&
     BinaryFileOutputStream::write(const void* data, const UInt32 size)
     {
-        if (EStatus_RAMSES_OK == m_state)
+        if (EStatus::Ok == m_state)
         {
-            m_state = m_file.write(reinterpret_cast<const char*>(data), size);
+            m_state = m_file.write(reinterpret_cast<const char*>(data), size) ? EStatus::Ok : EStatus::Error;
         }
         return *this;
     }
@@ -61,7 +61,7 @@ namespace ramses_internal
     inline
     ramses_internal::EStatus BinaryFileOutputStream::getPos(UInt& position)
     {
-        m_state = m_file.getPos(position);
+        m_state = m_file.getPos(position) ? EStatus::Ok : EStatus::Error;
         return m_state;
     }
 

@@ -54,7 +54,7 @@ namespace ramses_internal
             EXPECT_FALSE(m_waylandSurface->hasShellSurface());
             EXPECT_EQ(m_waylandSurface->getSurfaceTitle(), "");
             EXPECT_FALSE(m_waylandSurface->hasIviSurface());
-            EXPECT_EQ(m_waylandSurface->getIviSurfaceId(), InvalidWaylandIviSurfaceId);
+            EXPECT_FALSE(m_waylandSurface->getIviSurfaceId().isValid());
             EXPECT_EQ(m_waylandSurface->getNumberOfCommitedFrames(), 0u);
         }
 
@@ -91,10 +91,7 @@ namespace ramses_internal
 
         void deleteWaylandSurface()
         {
-            if (m_waylandSurface != nullptr)
-            {
-                delete m_waylandSurface;
-            }
+            delete m_waylandSurface;
         }
 
     protected:

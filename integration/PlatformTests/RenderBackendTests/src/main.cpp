@@ -15,9 +15,7 @@
 int main(int argc, char* argv[])
 {
     ramses_internal::CommandLineParser parser(argc, argv);
-    ramses_internal::ArgumentUInt32 waylandIviLayerId(parser, "lid", "waylandIviLayerId", 3);
-
-    RendererTestUtils::SetWaylandIviLayerID(waylandIviLayerId);
+    RendererTestUtils::SetCommandLineParams(argc, argv);
 
     testing::InitGoogleMock(&argc, argv);
 

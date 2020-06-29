@@ -13,17 +13,17 @@
 #include "RendererConfigImpl.h"
 #include "APILoggingMacros.h"
 #include "ramses-renderer-api/IRendererResourceCache.h"
+#include <chrono>
 
 namespace ramses
 {
-    RendererConfig::RendererConfig(int32_t argc, char const* const* argv)
-        : StatusObject(*new RendererConfigImpl(argc, argv))
-        , impl(static_cast<RendererConfigImpl&>(StatusObject::impl))
+    RendererConfig::RendererConfig()
+        : RendererConfig(0, nullptr)
     {
     }
 
-    RendererConfig::RendererConfig(int32_t argc, char* argv[])
-        : StatusObject(*new RendererConfigImpl(argc, const_cast<const char**>(argv)))
+    RendererConfig::RendererConfig(int32_t argc, char const* const* argv)
+        : StatusObject(*new RendererConfigImpl(argc, argv))
         , impl(static_cast<RendererConfigImpl&>(StatusObject::impl))
     {
     }
@@ -66,23 +66,28 @@ namespace ramses
         return status;
     }
 
-    status_t RendererConfig::setWaylandSocketEmbeddedGroup(const char* groupname)
+    status_t RendererConfig::setWaylandEmbeddedCompositingSocketGroup(const char* groupname)
     {
-        const status_t status = impl.setWaylandSocketEmbeddedGroup(groupname);
+        const status_t status = impl.setWaylandEmbeddedCompositingSocketGroup(groupname);
         LOG_HL_RENDERER_API1(status, groupname);
         return status;
     }
 
-    status_t RendererConfig::setWaylandSocketEmbedded(const char* socketname)
+    status_t RendererConfig::setWaylandEmbeddedCompositingSocketName(const char* socketname)
     {
-        const status_t status = impl.setWaylandSocketEmbedded(socketname);
+        const status_t status = impl.setWaylandEmbeddedCompositingSocketName(socketname);
         LOG_HL_RENDERER_API1(status, socketname);
         return status;
     }
 
-    status_t RendererConfig::setWaylandSocketEmbeddedFD(int socketFileDescriptor)
+    const char* RendererConfig::getWaylandEmbeddedCompositingSocketName() const
     {
-        const status_t status = impl.setWaylandSocketEmbeddedFD(socketFileDescriptor);
+        return impl.getWaylandEmbeddedCompositingSocketName();
+    }
+
+    status_t RendererConfig::setWaylandEmbeddedCompositingSocketFD(int socketFileDescriptor)
+    {
+        const status_t status = impl.setWaylandEmbeddedCompositingSocketFD(socketFileDescriptor);
         LOG_HL_RENDERER_API1(status, socketFileDescriptor);
         return status;
     }
@@ -96,4 +101,17 @@ namespace ramses
     {
         return impl.getSystemCompositorWaylandDisplay();
     }
+
+    status_t RendererConfig::setRenderThreadLoopTimingReportingPeriod(std::chrono::milliseconds period)
+    {
+        const status_t status = impl.setRenderThreadLoopTimingReportingPeriod(period);
+        LOG_HL_RENDERER_API1(status, period.count());
+        return status;
+    }
+
+    std::chrono::milliseconds RendererConfig::getRenderThreadLoopTimingReportingPeriod() const
+    {
+        return impl.getRenderThreadLoopTimingReportingPeriod();
+    }
+
 }

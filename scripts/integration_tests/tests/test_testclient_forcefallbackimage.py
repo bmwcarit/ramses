@@ -6,8 +6,6 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-import time
-
 from ramses_test_framework import log
 from tests.embedded_compositor_base import embedded_compositor_base
 

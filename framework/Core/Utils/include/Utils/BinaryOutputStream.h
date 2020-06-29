@@ -9,61 +9,70 @@
 #ifndef RAMSES_BINARYOUTPUTSTREAM_H
 #define RAMSES_BINARYOUTPUTSTREAM_H
 
-#include "PlatformAbstraction/PlatformTypes.h"
-#include "Collections/Vector.h"
 #include "Collections/IOutputStream.h"
+#include <vector>
 
 namespace ramses_internal
 {
-    class BinaryOutputStream: public IOutputStream
+    template <typename T>
+    class BinaryOutputStreamT: public IOutputStream
     {
     public:
-        explicit BinaryOutputStream(UInt32 startSize = 16);
+        static_assert(sizeof(T) == 1, "only works with byte sized types");
 
-        IOutputStream& write(const void* data, const UInt32 size) override;
+        explicit BinaryOutputStreamT(size_t startSize = 16);
 
-        const Char* getData() const;
-        UInt32 getSize() const;
-        UInt32 getCapacity() const;
+        IOutputStream& write(const void* data, const uint32_t size) override;
 
-        std::vector<char> release();
+        const T* getData() const;
+        size_t getSize() const;
+        size_t getCapacity() const;
+
+        std::vector<T> release();
 
     private:
-        std::vector<char> m_buffer;
+        std::vector<T> m_buffer;
     };
 
-    inline
-    BinaryOutputStream::BinaryOutputStream(UInt32 startSize)
+    using BinaryOutputStream = BinaryOutputStreamT<char>;
+
+    template <typename T>
+    inline BinaryOutputStreamT<T>::BinaryOutputStreamT(size_t startSize)
         : m_buffer()
     {
         m_buffer.reserve(startSize);
     }
 
-    inline IOutputStream& BinaryOutputStream::write(const void* data, const UInt32 size)
+    template <typename T>
+    inline IOutputStream& BinaryOutputStreamT<T>::write(const void* data, const uint32_t size)
     {
-        const char* dataCharptr = static_cast<const char*>(data);
+        const T* dataCharptr = static_cast<const T*>(data);
         m_buffer.insert(m_buffer.end(), dataCharptr, dataCharptr+size);
         return *this;
     }
 
-    inline const Char* BinaryOutputStream::getData() const
+    template <typename T>
+    inline const T* BinaryOutputStreamT<T>::getData() const
     {
         return m_buffer.data();
     }
 
-    inline UInt32 BinaryOutputStream::getSize() const
+    template <typename T>
+    inline size_t BinaryOutputStreamT<T>::getSize() const
     {
         return static_cast<uint32_t>(m_buffer.size());
     }
 
-    inline UInt32 BinaryOutputStream::getCapacity() const
+    template <typename T>
+    inline size_t BinaryOutputStreamT<T>::getCapacity() const
     {
         return static_cast<uint32_t>(m_buffer.capacity());
     }
 
-    inline std::vector<char> BinaryOutputStream::release()
+    template <typename T>
+    inline std::vector<T> BinaryOutputStreamT<T>::release()
     {
-        std::vector<char> result;
+        std::vector<T> result;
         result.swap(m_buffer);
         return result;
     }

@@ -37,64 +37,72 @@ namespace ramses_internal
         getDisplayBufferInternal(displayBuffer).needsRerender = rerender;
     }
 
-    void DisplaySetup::mapSceneToDisplayBuffer(SceneId sceneId, DeviceResourceHandle displayBuffer, Int32 sceneOrder)
+    void DisplaySetup::assignSceneToDisplayBuffer(SceneId sceneId, DeviceResourceHandle displayBuffer, Int32 sceneOrder)
     {
-        assert(!findDisplayBufferSceneIsMappedTo(sceneId).isValid());
+        AssignedSceneInfo sceneInfo{ sceneId, sceneOrder, false };
+        const auto displayBufferOld = findDisplayBufferSceneIsAssignedTo(sceneId);
+        if (displayBufferOld.isValid())
+        {
+            sceneInfo.shown = findSceneInfo(sceneId, displayBufferOld).shown;
+            unassignScene(sceneId);
+        }
+
         auto& bufferInfo = getDisplayBufferInternal(displayBuffer);
-        auto& mappedScenes = bufferInfo.mappedScenes;
-        const auto it = std::upper_bound(mappedScenes.begin(), mappedScenes.end(), sceneOrder, [](Int32 order, const MappedSceneInfo& info) { return order < info.globalSceneOrder; });
-        mappedScenes.insert(it, { sceneId, sceneOrder, false });
+        auto& assignedScenes = bufferInfo.scenes;
+        const auto it = std::upper_bound(assignedScenes.begin(), assignedScenes.end(), sceneOrder, [](Int32 order, const AssignedSceneInfo& info) { return order < info.globalSceneOrder; });
+        assignedScenes.insert(it, sceneInfo);
         bufferInfo.needsRerender = true;
     }
 
-    void DisplaySetup::unmapScene(SceneId sceneId)
+    void DisplaySetup::unassignScene(SceneId sceneId)
     {
-        const auto displayBuffer = findDisplayBufferSceneIsMappedTo(sceneId);
-        assert(displayBuffer.isValid());
+        const auto displayBuffer = findDisplayBufferSceneIsAssignedTo(sceneId);
         auto& bufferInfo = getDisplayBufferInternal(displayBuffer);
-        auto& mappedScenes = bufferInfo.mappedScenes;
-        const auto it = std::find_if(mappedScenes.begin(), mappedScenes.end(), [sceneId](const MappedSceneInfo& info) { return info.sceneId == sceneId; });
+        auto& mappedScenes = bufferInfo.scenes;
+        const auto it = std::find_if(mappedScenes.begin(), mappedScenes.end(), [sceneId](const AssignedSceneInfo& info) { return info.sceneId == sceneId; });
         assert(it != mappedScenes.end());
         mappedScenes.erase(it);
         bufferInfo.needsRerender = true;
     }
 
-    DeviceResourceHandle DisplaySetup::findDisplayBufferSceneIsMappedTo(SceneId sceneId) const
+    DeviceResourceHandle DisplaySetup::findDisplayBufferSceneIsAssignedTo(SceneId sceneId) const
     {
-        auto isMappedScene = [sceneId](const MappedSceneInfo& mapInfo) { return mapInfo.sceneId == sceneId; };
-        auto findByMappedScene = [isMappedScene](const DisplayBufferInfo& info)
-        {
-            const auto it = std::find_if(info.mappedScenes.cbegin(), info.mappedScenes.cend(), isMappedScene);
-            return it != info.mappedScenes.cend();
-        };
-
         for (const auto& bufferInfoIt : m_displayBuffers)
         {
-            if (findByMappedScene(bufferInfoIt.second))
+            const DisplayBufferInfo& info = bufferInfoIt.second;
+            const auto it = std::find_if(info.scenes.cbegin(), info.scenes.cend(),
+                [sceneId](const auto& mapInfo) { return mapInfo.sceneId == sceneId; });
+            if (it != info.scenes.cend())
                 return bufferInfoIt.first;
         }
 
         return DeviceResourceHandle::Invalid();
     }
 
+    AssignedSceneInfo& DisplaySetup::findSceneInfo(SceneId sceneId, DeviceResourceHandle displayBuffer)
+    {
+        DisplayBufferInfo& info = getDisplayBufferInternal(displayBuffer);
+        const auto it = std::find_if(info.scenes.begin(), info.scenes.end(),
+            [sceneId](const auto& mapInfo) { return mapInfo.sceneId == sceneId; });
+        assert(it != info.scenes.cend());
+        return *it;
+    }
+
     void DisplaySetup::setSceneShown(SceneId sceneId, Bool show)
     {
-        const auto displayBuffer = findDisplayBufferSceneIsMappedTo(sceneId);
-        assert(displayBuffer.isValid());
-        auto& bufferInfo = getDisplayBufferInternal(displayBuffer);
-        auto& mappedScenes = bufferInfo.mappedScenes;
-        auto it = std::find_if(mappedScenes.begin(), mappedScenes.end(), [sceneId](const MappedSceneInfo& info) { return info.sceneId == sceneId; });
-        assert(it != mappedScenes.end());
-        assert(it->shown != show);
-        it->shown = show;
-        bufferInfo.needsRerender = true;
+        const auto displayBuffer = findDisplayBufferSceneIsAssignedTo(sceneId);
+        findSceneInfo(sceneId, displayBuffer).shown = show;
+        getDisplayBufferInternal(displayBuffer).needsRerender = true;
     }
 
     void DisplaySetup::setClearColor(DeviceResourceHandle displayBuffer, const Vector4& clearColor)
     {
         auto& bufferInfo = getDisplayBufferInternal(displayBuffer);
         bufferInfo.clearColor = clearColor;
-        bufferInfo.needsRerender = true;
+        // for simplicity trigger all buffers on display to re-render
+        // otherwise would have to resolve dependencies via OB links
+        for (auto& dispBufferInfo : m_displayBuffers)
+            dispBufferInfo.second.needsRerender = true;
     }
 
     const DeviceHandleVector& DisplaySetup::getNonInterruptibleOffscreenBuffersToRender() const

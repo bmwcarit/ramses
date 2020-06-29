@@ -16,7 +16,8 @@ import re
 import sys
 import os
 import subprocess
-import common_modules.config
+
+G_WARNING_COUNT = 0
 
 def clean_string_from_regex(s, regex, marker):
     """
@@ -100,7 +101,7 @@ def clean_file_content(file_contents):
     return clean_file_contents, clean_file_lines
 
 
-def get_all_files_with_filter(root, positive, negative):
+def get_all_files_with_filter(sdk_root, root, positive, negative):
     """
     Iterates over targets and gets names of all files that do not match positive and negative filter
     """
@@ -109,15 +110,15 @@ def get_all_files_with_filter(root, positive, negative):
     negative_re = re.compile("|".join(["({})".format(n) for n in negative]))
 
     filenames = []
-    for f in subprocess.check_output(['git', 'ls-files', root], cwd=root, shell=False).decode('utf-8').split('\n'):
-        if os.path.isfile(os.path.join(root, f)):
+    for f in subprocess.check_output(['git', 'ls-files', '--full-name', root], cwd=root, shell=False).decode('utf-8').split('\n'):
+        if os.path.isfile(os.path.join(sdk_root, f)):
             pos_match = False
             neg_match = False
             relative_path = f.replace('\\', '/')
             pos_match = positive_re.search(relative_path)
             neg_match = negative_re.search(relative_path)
             if pos_match and not neg_match:
-                filenames.append(os.path.join(root,relative_path))
+                filenames.append(os.path.join(sdk_root, relative_path))
 
     return filenames
 
@@ -160,12 +161,6 @@ def log_warning(testname, filename, line_number, description, line_content = Non
         print("{0}:{1}: warning: {2}: {3} [{4}]".format(filename, line_number, description, line_content, testname), file=sys.stderr)
 
     print("", file=sys.stderr)
+    global G_WARNING_COUNT
+    G_WARNING_COUNT += 1
 
-    common_modules.config.G_WARNING_COUNT += 1
-
-def get_warning_count():
-    """
-    Returns the number of reported warnings
-
-    """
-    return common_modules.config.G_WARNING_COUNT

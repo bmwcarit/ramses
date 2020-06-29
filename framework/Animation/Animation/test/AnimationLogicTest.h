@@ -23,7 +23,7 @@ namespace ramses_internal
         {
         }
 
-        virtual void init()
+        virtual void init() override
         {
             AnimationTest::init();
             m_logic.addListener(&m_stateListener);

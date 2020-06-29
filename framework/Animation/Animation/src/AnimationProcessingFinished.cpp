@@ -48,7 +48,7 @@ namespace ramses_internal
     {
         const SplineBase* const pSpline = processData.m_spline;
         const SplineTimeStamp splineTime = computeSplineTime(processData.m_animation);
-        const Bool playReverse = (processData.m_animation.m_flags & Animation::EAnimationFlags_Reverse) != 0;
+        const bool playReverse = (processData.m_animation.m_flags & Animation::EAnimationFlags_Reverse) != 0;
 
         processData.m_splineIterator.setTimeStamp(splineTime, pSpline, playReverse);
 

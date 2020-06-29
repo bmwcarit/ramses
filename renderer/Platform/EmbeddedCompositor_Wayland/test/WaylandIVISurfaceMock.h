@@ -19,11 +19,10 @@ namespace ramses_internal
     class WaylandIVISurfaceMock : public IWaylandIVISurface
     {
     public:
-        MOCK_METHOD0(resourceDestroyed, void());
-        MOCK_METHOD1(iviSurfaceDestroy, void(IWaylandClient& client));
-        MOCK_METHOD0(surfaceWasDeleted, void());
-        MOCK_METHOD1(bufferWasSetToSurface, void(IWaylandBuffer* buffer));
-        MOCK_CONST_METHOD0(getIviId, WaylandIviSurfaceId());
+        MOCK_METHOD(void, resourceDestroyed, (), (override));
+        MOCK_METHOD(void, surfaceWasDeleted, (), (override));
+        MOCK_METHOD(void, bufferWasSetToSurface, (IWaylandBuffer* buffer), (override));
+        MOCK_METHOD(WaylandIviSurfaceId, getIviId, (), (const, override));
     };
 }
 

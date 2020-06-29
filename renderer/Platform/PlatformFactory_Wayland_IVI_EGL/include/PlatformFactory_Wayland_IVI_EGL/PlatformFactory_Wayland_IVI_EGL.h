@@ -16,7 +16,7 @@ namespace ramses_internal
     class PlatformFactory_Wayland_IVI_EGL : public PlatformFactory_Wayland_EGL
     {
     protected:
-        PlatformFactory_Wayland_IVI_EGL(const RendererConfig& rendererConfig);
+        explicit PlatformFactory_Wayland_IVI_EGL(const RendererConfig& rendererConfig);
 
         ISystemCompositorController* createSystemCompositorController() override final;
         IWindow*                     createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override final;

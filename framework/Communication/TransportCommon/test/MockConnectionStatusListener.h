@@ -22,8 +22,8 @@ namespace ramses_internal
         MockConnectionStatusListener();
         ~MockConnectionStatusListener() override;
 
-        MOCK_METHOD1(newParticipantHasConnected, void(const Guid& guid));
-        MOCK_METHOD1(participantHasDisconnected, void(const Guid& guid));
+        MOCK_METHOD(void, newParticipantHasConnected, (const Guid& guid), (override));
+        MOCK_METHOD(void, participantHasDisconnected, (const Guid& guid), (override));
     };
 }
 

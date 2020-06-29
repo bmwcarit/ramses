@@ -118,33 +118,4 @@ namespace ramses_internal
         EXPECT_EQ(12345u, asMicroseconds(std::chrono::system_clock::time_point(std::chrono::microseconds(12345))));
         EXPECT_EQ(10000u, asMicroseconds(std::chrono::system_clock::time_point(std::chrono::milliseconds(10))));
     }
-
-    TEST(PlatformTimeMonotonic, DISABLED_getMicrosecondsTestLongTime_Monotonic)
-    {
-        const uint64_t milliSeconds = PlatformTime::GetMicrosecondsMonotonic();
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-        const uint64_t milliSeconds2 = PlatformTime::GetMicrosecondsMonotonic();
-        const uint64_t diff = milliSeconds2 - milliSeconds;
-        EXPECT_GE(diff, 2000000u - 200000u);
-        EXPECT_LE(diff, 2000000u + 200000u);
-    }
-
-    TEST(PlatformTimeAbsolute, DISABLED_getMicrosecondsTestLongTime_Absolute)
-    {
-        const uint64_t milliSeconds = PlatformTime::GetMicrosecondsAbsolute();
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-        const uint64_t milliSeconds2 = PlatformTime::GetMicrosecondsAbsolute();
-        const uint64_t diff = milliSeconds2 - milliSeconds;
-        EXPECT_GE(diff, 2000000u - 200000u);
-        EXPECT_LE(diff, 2000000u + 200000u);
-    }
-
-    TEST(PlatformTimeSynchronized, DISABLED_longerTimeDiffTest)
-    {
-        const auto first = synchronized_clock::now();
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-        const auto second = synchronized_clock::now();
-        EXPECT_GE(second-first, std::chrono::milliseconds(2000u - 50u));
-        EXPECT_LE(second-first, std::chrono::milliseconds(2000u + 50u));
-    }
 }

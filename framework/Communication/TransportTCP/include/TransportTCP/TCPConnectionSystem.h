@@ -32,7 +32,7 @@ namespace ramses_internal
         TCPConnectionSystem(const NetworkParticipantAddress& participantAddress, UInt32 protocolVersion, const NetworkParticipantAddress& daemonAddress, bool pureDaemon,
                             PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection,
                             std::chrono::milliseconds aliveInterval, std::chrono::milliseconds aliveTimeout);
-        ~TCPConnectionSystem();
+        virtual ~TCPConnectionSystem() override;
 
         static Guid GetDaemonId();
 
@@ -63,17 +63,22 @@ namespace ramses_internal
         virtual bool sendInitializeScene(const Guid& to, const SceneInfo& sceneInfo) override;
         virtual uint64_t sendSceneActionList(const Guid& to, const SceneId& sceneId, const SceneActionCollection& actions, const uint64_t& actionListCounter) override;
 
+        virtual bool sendRendererEvent(const Guid& to, const SceneId& sceneId, const std::vector<Byte>& data) override;
+
         // dcsm client -> renderer
         virtual bool sendDcsmBroadcastOfferContent(ContentID contentID, Category) override;
         virtual bool sendDcsmOfferContent(const Guid& to, ContentID contentID, Category) override;
-        virtual bool sendDcsmContentReady(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) override;
-        virtual bool sendDcsmContentFocusRequest(const Guid& to, ContentID contentID) override;
+        virtual bool sendDcsmContentDescription(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) override;
+        virtual bool sendDcsmContentReady(const Guid& to, ContentID contentID) override;
+        virtual bool sendDcsmContentEnableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest) override;
+        virtual bool sendDcsmContentDisableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest) override;
         virtual bool sendDcsmBroadcastRequestStopOfferContent(ContentID contentID) override;
         virtual bool sendDcsmBroadcastForceStopOfferContent(ContentID contentID) override;
+        virtual bool sendDcsmUpdateContentMetadata(const Guid& to, ContentID contentID, const DcsmMetadata& metadata) override;
 
         // dcsm renderer -> client
-        virtual bool sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, SizeInfo sizeinfo, AnimationInformation ai) override;
-        virtual bool sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, SizeInfo si, AnimationInformation ai) override;
+        virtual bool sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, const CategoryInfo& sizeinfo, AnimationInformation ai) override;
+        virtual bool sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, const CategoryInfo& si, AnimationInformation ai) override;
 
         // set service handlers
         void setResourceProviderServiceHandler(IResourceProviderServiceHandler* handler) override;
@@ -119,7 +124,7 @@ namespace ramses_internal
             }
 
             // TODO(tobias) make move only in c++14
-            OutMessage(OutMessage&&) = default;
+            OutMessage(OutMessage&&) noexcept = default;
             OutMessage(const OutMessage&) = default;
             OutMessage& operator=(const OutMessage&) = default;
 
@@ -163,7 +168,6 @@ namespace ramses_internal
             asio::ip::tcp::acceptor m_acceptor;
             asio::ip::tcp::socket   m_acceptorSocket;
         };
-        using RunStatePtr = std::shared_ptr<RunState>;
 
         virtual void run() override;
 
@@ -178,7 +182,7 @@ namespace ramses_internal
         void doAcceptIncomingConnections();
 
         void sendMessageToParticipant(const ParticipantPtr& pp, OutMessage msg);
-        void removeParticipant(const ParticipantPtr& pp);
+        void removeParticipant(const ParticipantPtr& pp, bool reconnectWithBackoff = false);
         void addNewParticipantByAddress(const NetworkParticipantAddress& address);
         void initializeNewlyConnectedParticipant(const ParticipantPtr& pp);
         void handleReceivedMessage(const ParticipantPtr& pp);
@@ -199,14 +203,17 @@ namespace ramses_internal
         void handleRequestResources(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleTransferResources(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleResourcesNotAvailable(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleRendererEvent(const ParticipantPtr& pp, BinaryInputStream& stream);
 
         void handleDcsmCanvasSizeChange(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmContentStatusChange(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmRegisterContent(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleDcsmContentDescription(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmContentAvailable(const ParticipantPtr& pp, BinaryInputStream& stream);
-        void handleDcsmCategoryContentSwitchRequest(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleDcsmCategoryContentSwitchRequest(const ParticipantPtr& pp, BinaryInputStream& stream, size_t size);
         void handleDcsmRequestUnregisterContent(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmForceStopOfferContent(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleDcsmUpdateContentMetadata(const ParticipantPtr& pp, BinaryInputStream& stream);
 
         static const char* EnumToString(EParticipantState e);
         static const char* EnumToString(EParticipantType e);
@@ -236,7 +243,7 @@ namespace ramses_internal
         IDcsmProviderServiceHandler* m_dcsmProviderHandler;
         IDcsmConsumerServiceHandler* m_dcsmConsumerHandler;
 
-        RunStatePtr m_runState;
+        std::unique_ptr<RunState>     m_runState;
         HashSet<ParticipantPtr>       m_connectingParticipants;
         HashMap<Guid, ParticipantPtr> m_establishedParticipants;
     };

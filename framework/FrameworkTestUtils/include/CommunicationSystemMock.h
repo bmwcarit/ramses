@@ -14,6 +14,7 @@
 #include "TransportCommon/ICommunicationSystem.h"
 #include "TransportCommon/IConnectionStatusUpdateNotifier.h"
 #include "Components/ManagedResource.h"
+#include "Components/CategoryInfo.h"
 
 namespace ramses_internal
 {
@@ -23,40 +24,45 @@ namespace ramses_internal
         CommunicationSystemMock();
         ~CommunicationSystemMock() override;
 
-        MOCK_METHOD0(connectServices, bool());
-        MOCK_METHOD0(disconnectServices, bool());
+        MOCK_METHOD(bool, connectServices, (), (override));
+        MOCK_METHOD(bool, disconnectServices, (), (override));
 
-        MOCK_METHOD0(getRamsesConnectionStatusUpdateNotifier, IConnectionStatusUpdateNotifier&());
-        MOCK_METHOD0(getDcsmConnectionStatusUpdateNotifier, IConnectionStatusUpdateNotifier&());
+        MOCK_METHOD(IConnectionStatusUpdateNotifier&, getRamsesConnectionStatusUpdateNotifier, (), (override));
+        MOCK_METHOD(IConnectionStatusUpdateNotifier&, getDcsmConnectionStatusUpdateNotifier, (), (override));
 
         // resource
-        MOCK_METHOD2(sendRequestResources, bool(const Guid& to, const ResourceContentHashVector& resources));
-        MOCK_METHOD2(sendResourcesNotAvailable, bool(const Guid& to, const ResourceContentHashVector& resources));
-        MOCK_METHOD2(sendResources, bool(const Guid& to, const ManagedResourceVector& resources));
+        MOCK_METHOD(bool, sendRequestResources, (const Guid& to, const ResourceContentHashVector& resources), (override));
+        MOCK_METHOD(bool, sendResourcesNotAvailable, (const Guid& to, const ResourceContentHashVector& resources), (override));
+        MOCK_METHOD(bool, sendResources, (const Guid& to, const ManagedResourceVector& resources), (override));
 
         // scene
-        MOCK_METHOD1(broadcastNewScenesAvailable, bool(const SceneInfoVector& newScenes));
-        MOCK_METHOD1(broadcastScenesBecameUnavailable, bool(const SceneInfoVector& unavailableScenes));
-        MOCK_METHOD2(sendScenesAvailable, bool(const Guid& to, const SceneInfoVector& availableScenes));
+        MOCK_METHOD(bool, broadcastNewScenesAvailable, (const SceneInfoVector& newScenes), (override));
+        MOCK_METHOD(bool, broadcastScenesBecameUnavailable, (const SceneInfoVector& unavailableScenes), (override));
+        MOCK_METHOD(bool, sendScenesAvailable, (const Guid& to, const SceneInfoVector& availableScenes), (override));
 
-        MOCK_METHOD2(sendSubscribeScene, bool(const Guid& to, const SceneId& sceneId));
-        MOCK_METHOD2(sendUnsubscribeScene, bool(const Guid& to, const SceneId& sceneId));
-        MOCK_METHOD2(sendSceneNotAvailable, bool(const Guid& to, const SceneId& sceneId));
+        MOCK_METHOD(bool, sendSubscribeScene, (const Guid& to, const SceneId& sceneId), (override));
+        MOCK_METHOD(bool, sendUnsubscribeScene, (const Guid& to, const SceneId& sceneId), (override));
 
-        MOCK_METHOD2(sendInitializeScene, bool(const Guid& to, const SceneInfo& sceneInfo));
-        MOCK_METHOD4(sendSceneActionList, uint64_t(const Guid& to, const SceneId& sceneId, const SceneActionCollection& actions, const uint64_t& actionListCounter));
+        MOCK_METHOD(bool, sendSceneNotAvailable, (const Guid& to, const SceneId& sceneId), (override));
+        MOCK_METHOD(bool, sendInitializeScene, (const Guid& to, const SceneInfo& sceneInfo), (override));
+        MOCK_METHOD(uint64_t, sendSceneActionList, (const Guid& to, const SceneId& sceneId, const SceneActionCollection& actions, const uint64_t& actionListCounter), (override));
 
-        MOCK_METHOD2(sendDcsmBroadcastOfferContent, bool(ContentID contentID, Category));
-        MOCK_METHOD3(sendDcsmOfferContent, bool(const Guid& to, ContentID contentID, Category));
-        MOCK_METHOD4(sendDcsmContentReady, bool(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor));
-        MOCK_METHOD2(sendDcsmContentFocusRequest, bool(const Guid& to, ContentID contentID));
-        MOCK_METHOD1(sendDcsmBroadcastRequestStopOfferContent, bool(ContentID contentID));
-        MOCK_METHOD1(sendDcsmBroadcastForceStopOfferContent, bool(ContentID contentID));
-        MOCK_METHOD4(sendDcsmCanvasSizeChange, bool(const Guid& to, ContentID contentID, SizeInfo sizeinfo, AnimationInformation));
-        MOCK_METHOD5(sendDcsmContentStateChange, bool(const Guid& to, ContentID contentID, EDcsmState status, SizeInfo, AnimationInformation));
+        MOCK_METHOD(bool, sendRendererEvent, (const Guid& to, const SceneId& sceneId, const std::vector<Byte>& data), (override));
 
-        MOCK_METHOD0(logConnectionInfo, void());
-        MOCK_METHOD0(triggerLogMessageForPeriodicLog, void());
+        MOCK_METHOD(bool, sendDcsmBroadcastOfferContent, (ContentID contentID, Category), (override));
+        MOCK_METHOD(bool, sendDcsmOfferContent, (const Guid& to, ContentID contentID, Category), (override));
+        MOCK_METHOD(bool, sendDcsmContentDescription, (const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor), (override));
+        MOCK_METHOD(bool, sendDcsmContentReady, (const Guid& to, ContentID contentID), (override));
+        MOCK_METHOD(bool, sendDcsmContentEnableFocusRequest, (const Guid& to, ContentID contentID, int32_t focusRequest), (override));
+        MOCK_METHOD(bool, sendDcsmContentDisableFocusRequest, (const Guid& to, ContentID contentID, int32_t focusRequest), (override));
+        MOCK_METHOD(bool, sendDcsmBroadcastRequestStopOfferContent, (ContentID contentID), (override));
+        MOCK_METHOD(bool, sendDcsmBroadcastForceStopOfferContent, (ContentID contentID), (override));
+        MOCK_METHOD(bool, sendDcsmUpdateContentMetadata, (const Guid& to, ContentID contentID, const DcsmMetadata& metadata), (override));
+        MOCK_METHOD(bool, sendDcsmCanvasSizeChange, (const Guid& to, ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation), (override));
+        MOCK_METHOD(bool, sendDcsmContentStateChange, (const Guid& to, ContentID contentID, EDcsmState status, const CategoryInfo&, AnimationInformation), (override));
+
+        MOCK_METHOD(void, logConnectionInfo, (), (override));
+        MOCK_METHOD(void, triggerLogMessageForPeriodicLog, (), (override));
 
         virtual CommunicationSendDataSizes getSendDataSizes() const override;
         virtual void setSendDataSizes(const CommunicationSendDataSizes& sizes) override;

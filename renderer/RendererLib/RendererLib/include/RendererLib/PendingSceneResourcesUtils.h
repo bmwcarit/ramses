@@ -20,7 +20,7 @@ namespace ramses_internal
     class PendingSceneResourcesUtils
     {
     public:
-        static SceneResourceActionVector ConsolidateSceneResourceActions(const SceneResourceActionVector& newActions, const SceneResourceActionVector* oldActions = nullptr);
+        static void ConsolidateSceneResourceActions(const SceneResourceActionVector& newActions, SceneResourceActionVector& currentActionsInOut);
         static bool ApplySceneResourceActions(const SceneResourceActionVector& actions, const IScene& scene, IRendererResourceManager& resourceManager, const FrameTimer* frameTimer = nullptr);
 
     private:

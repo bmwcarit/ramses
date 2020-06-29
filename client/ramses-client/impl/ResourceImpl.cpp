@@ -26,8 +26,7 @@ namespace ramses
         RamsesClientImpl& client,
         const char* node)
         : ClientObjectImpl(client, type, node)
-        , m_hashUsage(hashUsage)
-        , m_resourceId(InvalidResourceId)
+        , m_hashUsage(std::move(hashUsage))
     {
         if (m_hashUsage.isValid())
         {
@@ -41,7 +40,7 @@ namespace ramses
 
     resourceId_t ResourceImpl::getResourceId() const
     {
-        assert(m_resourceId != InvalidResourceId);
+        assert(m_resourceId.isValid());
         return m_resourceId;
     }
 
@@ -90,13 +89,13 @@ namespace ramses
         return m_hashUsage.getHash();
     }
 
-    status_t ResourceImpl::validate(uint32_t indent) const
+    status_t ResourceImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        const status_t status = ClientObjectImpl::validate(indent);
+        const status_t status = ClientObjectImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
         ramses_internal::StringOutputStream stringStream;
-        stringStream << "Resource ID: " << ramses_internal::StringUtils::HexFromResourceContentHash({ m_resourceId.lowPart, m_resourceId.highPart });
-        stringStream << "  Resource Hash: " << ramses_internal::StringUtils::HexFromResourceContentHash(m_hashUsage.getHash());
+        stringStream << "Resource ID: " << ramses_internal::ResourceContentHash({ m_resourceId.lowPart, m_resourceId.highPart });
+        stringStream << "  Resource Hash: " << m_hashUsage.getHash();
         addValidationMessage(EValidationSeverity_Info, indent, stringStream.c_str());
         return status;
     }

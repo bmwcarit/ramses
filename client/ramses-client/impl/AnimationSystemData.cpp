@@ -8,7 +8,6 @@
 
 #include "ramses-client-api/Spline.h"
 #include "ramses-client-api/Animation.h"
-#include "ramses-client-api/AnimatedSetter.h"
 #include "ramses-client-api/AnimationSequence.h"
 #include "ramses-client-api/SplineStepBool.h"
 #include "ramses-client-api/SplineStepInt32.h"
@@ -39,7 +38,6 @@
 #include "AnimationSystemData.h"
 #include "AnimationImpl.h"
 #include "AnimationSystemImpl.h"
-#include "AnimatedSetterImpl.h"
 #include "AnimationSequenceImpl.h"
 #include "SplineImpl.h"
 #include "SerializationContext.h"
@@ -57,7 +55,6 @@ namespace ramses
     AnimationSystemData::AnimationSystemData()
         : m_objectRegistry()
         , m_animationSystem(nullptr)
-        , m_animatedSetterDelay(100u)
     {
     }
 
@@ -83,8 +80,6 @@ namespace ramses
 
     status_t AnimationSystemData::serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const
     {
-        outStream << m_animatedSetterDelay;
-
         return SerializationHelper::SerializeObjectsInRegistry<AnimationObject>(outStream, serializationContext, m_objectRegistry);
     }
 
@@ -97,11 +92,6 @@ namespace ramses
     SplineImpl& AnimationSystemData::createImplHelper<SplineImpl>(ERamsesObjectType type)
     {
         return *new SplineImpl(*m_animationSystem, type, "");
-    }
-    template <>
-    AnimatedSetterImpl& AnimationSystemData::createImplHelper<AnimatedSetterImpl>(ERamsesObjectType)
-    {
-        return *new AnimatedSetterImpl(*m_animationSystem, m_animatedSetterDelay, "");
     }
 
     template <typename ObjectType, typename ObjectImplType>
@@ -125,8 +115,6 @@ namespace ramses
 
     status_t AnimationSystemData::deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext)
     {
-        inStream >> m_animatedSetterDelay;
-
         uint32_t totalCount = 0u;
         uint32_t typesCount = 0u;
         SerializationHelper::DeserializeNumberOfObjectTypes(inStream, totalCount, typesCount);
@@ -226,9 +214,6 @@ namespace ramses
             case ERamsesObjectType_AnimationSequence:
                 status = createAndDeserializeObjectImpls<AnimationSequence, AnimationSequenceImpl>(inStream, serializationContext, count);
                 break;
-            case ERamsesObjectType_AnimatedSetter:
-                status = createAndDeserializeObjectImpls<AnimatedSetter, AnimatedSetterImpl>(inStream, serializationContext, count);
-                break;
             default:
                 return m_animationSystem->addErrorEntry("AnimationSystem::deserialize failed, unexpected object type in file stream.");
             }
@@ -259,18 +244,6 @@ namespace ramses
         return nullptr;
     }
 
-    AnimatedSetter* AnimationSystemData::createAnimatedSetter(const AnimatedPropertyImpl& animatedProperty, const char* name)
-    {
-        assert(m_animationSystem != nullptr);
-        AnimatedSetterImpl& pimpl = *new AnimatedSetterImpl(*m_animationSystem, m_animatedSetterDelay, name);
-
-        pimpl.initializeFrameworkData(animatedProperty);
-        AnimatedSetter* animatedSetter = new AnimatedSetter(pimpl);
-        m_objectRegistry.addObject(*animatedSetter);
-
-        return animatedSetter;
-    }
-
     AnimationSequence* AnimationSystemData::createAnimationSequence(const char* name)
     {
         assert(m_animationSystem != nullptr);
@@ -292,17 +265,6 @@ namespace ramses
         delete &object;
 
         return StatusOK;
-    }
-
-    status_t AnimationSystemData::setDelayForAnimatedSetters(timeMilliseconds_t delay)
-    {
-        m_animatedSetterDelay = delay;
-        return StatusOK;
-    }
-
-    timeMilliseconds_t AnimationSystemData::getDelayForAnimatedSetters() const
-    {
-        return m_animatedSetterDelay;
     }
 
     const RamsesObject* AnimationSystemData::findObjectByName(const char* name) const

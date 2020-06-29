@@ -16,7 +16,7 @@
 int main(int argc, char* argv[])
 {
     ramses_internal::CommandLineParser parser(argc, argv);
-    ramses_internal::ArgumentBool helpRequested(parser, "help", "help", false);
+    ramses_internal::ArgumentBool helpRequested(parser, "help", "help");
 
     testing::InitGoogleMock(&argc, argv);
 

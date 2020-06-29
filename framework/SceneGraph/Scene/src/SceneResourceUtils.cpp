@@ -15,6 +15,15 @@
 #include "SceneAPI/TextureBuffer.h"
 #include "Scene/DataLayout.h"
 
+namespace
+{
+    inline void pushBackIfValid(ramses_internal::ResourceContentHashVector& vec, ramses_internal::ResourceContentHash const& hash)
+    {
+        if (hash.isValid())
+            vec.push_back(hash);
+    }
+}
+
 namespace ramses_internal
 {
     namespace SceneResourceUtils
@@ -87,40 +96,41 @@ namespace ramses_internal
 
         void GetAllClientResourcesFromScene(ResourceContentHashVector& resources, const IScene& scene)
         {
-            HashSet<ResourceContentHash> resourceSet;
-            resourceSet.reserve(scene.getDataInstanceCount() + scene.getRenderableCount());
-
-            for (DataInstanceHandle instance(0u); instance < scene.getDataInstanceCount(); ++instance)
+            assert(resources.empty());
+            for (RenderableHandle rend(0); rend < scene.getRenderableCount(); ++rend)
             {
-                if (scene.isDataInstanceAllocated(instance))
-                {
-                    const DataLayoutHandle layoutHandle = scene.getLayoutOfDataInstance(instance);
-                    const DataLayout& layout = scene.getDataLayout(layoutHandle);
+                if (!scene.isRenderableAllocated(rend))
+                    continue;
 
-                    for (DataFieldHandle field(0u); field < layout.getFieldCount(); ++field)
+                const auto& renderable = scene.getRenderable(rend);
+                if (renderable.visibilityMode == EVisibilityMode::Off)
+                    continue;
+
+                for (auto type : {ERenderableDataSlotType_Geometry, ERenderableDataSlotType_Uniforms})
+                {
+                    const auto instanceHandle = renderable.dataInstances[type];
+                    if (!instanceHandle.isValid() || !scene.isDataInstanceAllocated(instanceHandle))
+                        continue;
+
+                    const auto& layout = scene.getDataLayout(scene.getLayoutOfDataInstance(instanceHandle));
+                    pushBackIfValid(resources, layout.getEffectHash());
+
+                    for (DataFieldHandle fieldHandle(0u); fieldHandle < layout.getFieldCount(); ++fieldHandle)
                     {
-                        const EDataType fieldType = layout.getField(field).dataType;
+                        const EDataType fieldType = layout.getField(fieldHandle).dataType;
                         if (IsBufferDataType(fieldType))
                         {
-                            resourceSet.put(scene.getDataResource(instance, field).hash);
+                            pushBackIfValid(resources, scene.getDataResource(instanceHandle, fieldHandle).hash);
+                        }
+                        else if (fieldType == EDataType_TextureSampler)
+                        {
+                            const auto samplerHandle = scene.getDataTextureSamplerHandle(instanceHandle, fieldHandle);
+                            if (scene.isTextureSamplerAllocated(samplerHandle))
+                            {
+                                pushBackIfValid(resources, scene.getTextureSampler(samplerHandle).textureResource);
+                            }
                         }
                     }
-                }
-            }
-
-            for (RenderableHandle renderable(0u); renderable < scene.getRenderableCount(); ++renderable)
-            {
-                if (scene.isRenderableAllocated(renderable))
-                {
-                    resourceSet.put(scene.getRenderable(renderable).effectResource);
-                }
-            }
-
-            for (TextureSamplerHandle sampler(0u); sampler < scene.getTextureSamplerCount(); ++sampler)
-            {
-                if (scene.isTextureSamplerAllocated(sampler))
-                {
-                    resourceSet.put(scene.getTextureSampler(sampler).textureResource);
                 }
             }
 
@@ -128,7 +138,7 @@ namespace ramses_internal
             {
                 if (scene.isStreamTextureAllocated(streamTexture))
                 {
-                    resourceSet.put(scene.getStreamTexture(streamTexture).fallbackTexture);
+                    pushBackIfValid(resources, scene.getStreamTexture(streamTexture).fallbackTexture);
                 }
             }
 
@@ -136,26 +146,18 @@ namespace ramses_internal
             {
                 if (scene.isDataSlotAllocated(slot))
                 {
-                    resourceSet.put(scene.getDataSlot(slot).attachedTexture);
+                    pushBackIfValid(resources, scene.getDataSlot(slot).attachedTexture);
                 }
             }
 
-            resourceSet.remove(ResourceContentHash::Invalid());
-            resources.reserve(resourceSet.count());
-            for (const auto hash : resourceSet)
-            {
-                resources.push_back(hash);
-            }
+            std::sort(resources.begin(), resources.end());
+            resources.erase(std::unique(resources.begin(), resources.end()), resources.end());
         }
 
-        void GetSceneResourceChangesFromScene(SceneResourceChanges& changes, const IScene& scene, size_t& sceneResourcesUsedDataByteSize)
+        void DiffClientResources(ResourceContentHashVector const& old, ResourceContentHashVector const& curr, SceneResourceChanges& changes)
         {
-            assert(changes.m_addedClientResourceRefs.empty());
-            assert(changes.m_removedClientResourceRefs.empty());
-            assert(changes.m_sceneResourceActions.empty());
-
-            GetAllSceneResourcesFromScene(changes.m_sceneResourceActions, scene, sceneResourcesUsedDataByteSize);
-            GetAllClientResourcesFromScene(changes.m_addedClientResourceRefs, scene);
+            std::set_difference(curr.begin(), curr.end(), old.begin(), old.end(), std::back_inserter(changes.m_addedClientResourceRefs));
+            std::set_difference(old.begin(), old.end(), curr.begin(), curr.end(), std::back_inserter(changes.m_removedClientResourceRefs));
         }
     }
 }

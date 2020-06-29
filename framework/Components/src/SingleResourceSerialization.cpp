@@ -33,14 +33,14 @@ namespace ramses_internal
         if (resource.isCompressedAvailable())
         {
             // write compressed data to stream
-            const CompressedSceneResourceData& compressedData = resource.getCompressedResourceData();
-            output.write(compressedData->getRawData(), compressedData->size());
+            const CompressedResouceBlob& compressedData = resource.getCompressedResourceData();
+            output.write(compressedData.data(), static_cast<uint32_t>(compressedData.size()));
         }
         else
         {
             // write uncompressed data to stream
-            const SceneResourceData& data = resource.getResourceData();
-            output.write(data->getRawData(), data->size());
+            const ResourceBlob& data = resource.getResourceData();
+            output.write(data.data(), static_cast<uint32_t>(data.size()));
         }
     }
 
@@ -56,19 +56,16 @@ namespace ramses_internal
             if (header.compressionStatus == EResourceCompressionStatus_Compressed)
             {
                 // read compressed data from stream
-                CompressedSceneResourceData compressedData;
-                //do not use infos.compressedSize as this information might not have been available when resourceInfo was sent if resource was compressed later
-                compressedData.reset(new CompressedMemoryBlob(header.compressedSize, header.decompressedSize));
-                input.read(reinterpret_cast<Char*>(compressedData->getRawData()), header.compressedSize);
-                header.resource->setCompressedResourceData(compressedData, hash);
+                CompressedResouceBlob compressedData(header.compressedSize);
+                input.read(reinterpret_cast<char*>(compressedData.data()), static_cast<uint32_t>(compressedData.size()));
+                header.resource->setCompressedResourceData(std::move(compressedData), header.decompressedSize, hash);
             }
             else
             {
                 // read uncompressed data from stream
-                SceneResourceData uncompressedData;
-                uncompressedData.reset(new MemoryBlob(header.decompressedSize));
-                input.read(reinterpret_cast<Char*>(uncompressedData->getRawData()), header.decompressedSize);
-                header.resource->setResourceData(uncompressedData, hash);
+                ResourceBlob uncompressedData(header.decompressedSize);
+                input.read(reinterpret_cast<char*>(uncompressedData.data()), static_cast<uint32_t>(uncompressedData.size()));
+                header.resource->setResourceData(std::move(uncompressedData), hash);
             }
         }
         return header.resource;

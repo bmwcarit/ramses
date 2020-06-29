@@ -13,7 +13,7 @@ IF(ramses-sdk_ENABLE_WAYLAND_SHELL)
         #==========================================================================
         NAME                    Window_Wayland_Shell
         TYPE                    STATIC_LIBRARY
-        ENABLE_INSTALL          ${ramses-sdk_INSTALL_STATIC_LIBS}
+        ENABLE_INSTALL          OFF
 
         #==========================================================================
         # files of this module

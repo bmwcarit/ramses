@@ -69,9 +69,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t AnimationImpl::validate(uint32_t indent) const
+    status_t AnimationImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        status_t status = AnimationObjectImpl::validate(indent);
+        status_t status = AnimationObjectImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
 
         const ramses_internal::AnimationInstance& animInstance = getIAnimationSystem().getAnimationInstance(m_animationInstanceHandle);
@@ -86,7 +86,7 @@ namespace ramses
                 addValidationMessage(EValidationSeverity_Error, indent, "assigned AnimatedProperty does not exist anymore, was probably destroyed but still used by Animation");
                 status = getValidationErrorStatus();
             }
-            else if (addValidationOfDependentObject(indent, *animProperty) != StatusOK)
+            else if (addValidationOfDependentObject(indent, *animProperty, visitedObjects) != StatusOK)
             {
                 status = getValidationErrorStatus();
             }
@@ -99,7 +99,7 @@ namespace ramses
             addValidationMessage(EValidationSeverity_Error, indent, "assigned Spline does not exist anymore, was probably destroyed but still used by Animation");
             status = getValidationErrorStatus();
         }
-        else if (addValidationOfDependentObject(indent, *spline) != StatusOK)
+        else if (addValidationOfDependentObject(indent, *spline, visitedObjects) != StatusOK)
         {
             status = getValidationErrorStatus();
         }

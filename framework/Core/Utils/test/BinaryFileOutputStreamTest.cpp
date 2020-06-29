@@ -39,51 +39,34 @@ namespace ramses_internal
         m_file.remove();
     }
 
-    TEST_F(BinaryFileOutputStreamTest, WriteSomeData)
+    TEST_F(BinaryFileOutputStreamTest, ReadSomeData)
     {
-        EXPECT_EQ(EStatus_RAMSES_OK, m_file.open(EFileMode_ReadOnlyBinary));
+        EXPECT_TRUE(m_file.open(File::Mode::ReadOnlyBinary));
 
-        char buffer[64] = {};
-        UInt numBytes = 0;
-
-        EXPECT_EQ(EStatus_RAMSES_OK, m_file.read(buffer, sizeof(int32_t), numBytes));
-        ASSERT_EQ(sizeof(int32_t), numBytes);
-
-        union
         {
-            char charVal[4];
-            int32_t int32Val;
-        }int32Convert;
+            UInt    numBytes = 0;
+            int32_t inValue  = 0;
+            EXPECT_EQ(EStatus::Ok, m_file.read(reinterpret_cast<char*>(&inValue), sizeof(int32_t), numBytes));
+            ASSERT_EQ(sizeof(int32_t), numBytes);
+            EXPECT_EQ(10, inValue);
+        }
 
-        int32Convert.charVal[0] = buffer[0];
-        int32Convert.charVal[1] = buffer[1];
-        int32Convert.charVal[2] = buffer[2];
-        int32Convert.charVal[3] = buffer[3];
-
-        EXPECT_EQ(10, int32Convert.int32Val);
-
-        EXPECT_EQ(EStatus_RAMSES_OK, m_file.read(buffer, sizeof(float), numBytes));
-        EXPECT_EQ(sizeof(float), numBytes);
-
-
-        union
         {
-            char charVal[4];
-            float floatVal;
-        } floatConvert;
+            UInt  numBytes = 0;
+            float inValue  = 0.f;
+            EXPECT_EQ(EStatus::Ok, m_file.read(reinterpret_cast<char*>(&inValue), sizeof(float), numBytes));
+            EXPECT_EQ(sizeof(float), numBytes);
+        }
 
-        floatConvert.charVal[0] = buffer[0];
-        floatConvert.charVal[1] = buffer[1];
-        floatConvert.charVal[2] = buffer[2];
-        floatConvert.charVal[3] = buffer[3];
-
-        EXPECT_EQ(20.0f, floatConvert.floatVal);
-
-        EXPECT_EQ(EStatus_RAMSES_OK, m_file.read(buffer, sizeof(uint32_t), numBytes));
-        EXPECT_EQ(EStatus_RAMSES_OK, m_file.read(buffer, sizeof(char) * m_testString.getLength(), numBytes));
-        buffer[m_testString.getLength()] = 0;
-        EXPECT_EQ(sizeof(char) * m_testString.getLength(), numBytes);
-        EXPECT_STREQ("Dies ist ein Text", buffer);
+        {
+            UInt numBytes   = 0;
+            char buffer[40] = {0};
+            EXPECT_EQ(EStatus::Ok, m_file.read(buffer, sizeof(uint32_t), numBytes));
+            EXPECT_EQ(EStatus::Ok, m_file.read(buffer, sizeof(char) * m_testString.size(), numBytes));
+            buffer[m_testString.size()] = 0;
+            EXPECT_EQ(sizeof(char) * m_testString.size(), numBytes);
+            EXPECT_STREQ("Dies ist ein Text", buffer);
+        }
     }
 
     TEST_F(BinaryFileOutputStreamTest, BadFileObj)
@@ -111,11 +94,11 @@ namespace ramses_internal
 
         {
             ramses_internal::File f("testFile.ram");
-            f.open(EFileMode_ReadOnlyBinary);
+            EXPECT_TRUE(f.open(File::Mode::ReadOnlyBinary));
 
             Float data[16] = {0};
             UInt num;
-            f.read(reinterpret_cast<Char*>(&data[0]), sizeof(Float) * 16, num);
+            EXPECT_EQ(EStatus::Ok, f.read(reinterpret_cast<Char*>(&data[0]), sizeof(Float) * 16, num));
             for (UInt32 i = 0; i < 16; i++)
             {
                 EXPECT_EQ(Float(i + 1), data[i]);

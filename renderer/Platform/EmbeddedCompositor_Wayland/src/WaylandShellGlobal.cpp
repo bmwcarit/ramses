@@ -35,7 +35,7 @@ namespace ramses_internal
         // are ALL handled in WaylandShellConnection::Shell_Interface.
         const int maximumSupportedShellInterfaceVersion = 1;
 
-        const int supportedShellInterfaceVersion = min(maximumSupportedShellInterfaceVersion, wl_shell_interface.version);
+        const int supportedShellInterfaceVersion = std::min(maximumSupportedShellInterfaceVersion, wl_shell_interface.version);
         m_waylandGlobal = serverDisplay.createGlobal(&wl_shell_interface, supportedShellInterfaceVersion, this, ShellBindCallback);
 
         if (nullptr == m_waylandGlobal)

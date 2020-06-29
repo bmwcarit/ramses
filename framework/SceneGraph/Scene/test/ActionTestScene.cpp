@@ -45,15 +45,9 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    Bool ActionTestScene::isRenderableAllocated(RenderableHandle renderableHandle) const
+    bool ActionTestScene::isRenderableAllocated(RenderableHandle renderableHandle) const
     {
         return m_scene.isRenderableAllocated(renderableHandle);
-    }
-
-    void ActionTestScene::setRenderableEffect(RenderableHandle renderableHandle, const ResourceContentHash& effectHash)
-    {
-        m_actionCollector.setRenderableEffect(renderableHandle, effectHash);
-        flushPendingSceneActions();
     }
 
     void ActionTestScene::setRenderableDataInstance(RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance)
@@ -80,7 +74,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setRenderableVisibility(RenderableHandle renderableHandle, Bool visible)
+    void ActionTestScene::setRenderableVisibility(RenderableHandle renderableHandle, EVisibilityMode visible)
     {
         m_actionCollector.setRenderableVisibility(renderableHandle, visible);
         flushPendingSceneActions();
@@ -89,6 +83,13 @@ namespace ramses_internal
     void ActionTestScene::setRenderableInstanceCount(RenderableHandle renderableHandle, UInt32 instanceCount)
     {
         m_actionCollector.setRenderableInstanceCount(renderableHandle, instanceCount);
+        flushPendingSceneActions();
+    }
+
+
+    void ActionTestScene::setRenderableStartVertex(RenderableHandle renderableHandle, UInt32 startVertex)
+    {
+        m_actionCollector.setRenderableStartVertex(renderableHandle, startVertex);
         flushPendingSceneActions();
     }
 
@@ -115,7 +116,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    Bool ActionTestScene::isRenderStateAllocated(RenderStateHandle stateHandle) const
+    bool ActionTestScene::isRenderStateAllocated(RenderStateHandle stateHandle) const
     {
         return m_scene.isRenderStateAllocated(stateHandle);
     }
@@ -232,7 +233,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    Bool ActionTestScene::isNodeAllocated(NodeHandle nodeHandle) const
+    bool ActionTestScene::isNodeAllocated(NodeHandle nodeHandle) const
     {
         return m_scene.isNodeAllocated(nodeHandle);
     }
@@ -255,7 +256,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    Bool ActionTestScene::isTransformAllocated(TransformHandle transformHandle) const
+    bool ActionTestScene::isTransformAllocated(TransformHandle transformHandle) const
     {
         return m_scene.isTransformAllocated(transformHandle);
     }
@@ -330,9 +331,9 @@ namespace ramses_internal
         return m_scene.getDataLayoutCount();
     }
 
-    DataLayoutHandle ActionTestScene::allocateDataLayout(const DataFieldInfoVector& dataFields, DataLayoutHandle handle)
+    DataLayoutHandle ActionTestScene::allocateDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle)
     {
-        const DataLayoutHandle actualHandle = m_actionCollector.allocateDataLayout(dataFields, handle);
+        const DataLayoutHandle actualHandle = m_actionCollector.allocateDataLayout(dataFields, effectHash, handle);
         flushPendingSceneActions();
         return actualHandle;
     }
@@ -343,7 +344,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    Bool ActionTestScene::isDataLayoutAllocated(DataLayoutHandle layoutHandle) const
+    bool ActionTestScene::isDataLayoutAllocated(DataLayoutHandle layoutHandle) const
     {
         return m_scene.isDataLayoutAllocated(layoutHandle);
     }
@@ -371,7 +372,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    Bool ActionTestScene::isDataInstanceAllocated(DataInstanceHandle containerHandle) const
+    bool ActionTestScene::isDataInstanceAllocated(DataInstanceHandle containerHandle) const
     {
         return m_scene.isDataInstanceAllocated(containerHandle);
     }
@@ -679,7 +680,7 @@ namespace ramses_internal
         return m_scene.getTextureSampler(handle);
     }
 
-    Bool ActionTestScene::isTextureSamplerAllocated(TextureSamplerHandle samplerHandle) const
+    bool ActionTestScene::isTextureSamplerAllocated(TextureSamplerHandle samplerHandle) const
     {
         return m_scene.isTextureSamplerAllocated(samplerHandle);
     }
@@ -707,7 +708,7 @@ namespace ramses_internal
         return const_cast<Scene&>(m_scene).getAnimationSystem(animSystemHandle);
     }
 
-    Bool ActionTestScene::isAnimationSystemAllocated(AnimationSystemHandle animSystemHandle) const
+    bool ActionTestScene::isAnimationSystemAllocated(AnimationSystemHandle animSystemHandle) const
     {
         return m_scene.isAnimationSystemAllocated(animSystemHandle);
     }
@@ -735,7 +736,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    Bool ActionTestScene::isRenderGroupAllocated(RenderGroupHandle groupHandle) const
+    bool ActionTestScene::isRenderGroupAllocated(RenderGroupHandle groupHandle) const
     {
         return m_scene.isRenderGroupAllocated(groupHandle);
     }
@@ -787,7 +788,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    Bool ActionTestScene::isRenderPassAllocated(RenderPassHandle pass) const
+    bool ActionTestScene::isRenderPassAllocated(RenderPassHandle pass) const
     {
         return m_scene.isRenderPassAllocated(pass);
     }
@@ -845,7 +846,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    Bool ActionTestScene::isRenderBufferAllocated(RenderBufferHandle handle) const
+    bool ActionTestScene::isRenderBufferAllocated(RenderBufferHandle handle) const
     {
         return m_scene.isRenderBufferAllocated(handle);
     }
@@ -873,7 +874,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    Bool ActionTestScene::isStreamTextureAllocated(StreamTextureHandle streamTextureHandle) const
+    bool ActionTestScene::isStreamTextureAllocated(StreamTextureHandle streamTextureHandle) const
     {
         return m_scene.isStreamTextureAllocated(streamTextureHandle);
     }
@@ -883,7 +884,7 @@ namespace ramses_internal
         return m_scene.getStreamTextureCount();
     }
 
-    void ActionTestScene::setForceFallbackImage(StreamTextureHandle streamTextureHandle, Bool forceFallbackImage)
+    void ActionTestScene::setForceFallbackImage(StreamTextureHandle streamTextureHandle, bool forceFallbackImage)
     {
         m_actionCollector.setForceFallbackImage(streamTextureHandle, forceFallbackImage);
         flushPendingSceneActions();
@@ -918,7 +919,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    Bool ActionTestScene::isDataBufferAllocated(DataBufferHandle handle) const
+    bool ActionTestScene::isDataBufferAllocated(DataBufferHandle handle) const
     {
         return m_scene.isDataBufferAllocated(handle);
     }
@@ -957,7 +958,7 @@ namespace ramses_internal
         return m_scene.getTextureBuffer(handle);
     }
 
-    Bool ActionTestScene::isTextureBufferAllocated(TextureBufferHandle handle) const
+    bool ActionTestScene::isTextureBufferAllocated(TextureBufferHandle handle) const
     {
         return m_scene.isTextureBufferAllocated(handle);
     }
@@ -981,7 +982,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    Bool ActionTestScene::isDataSlotAllocated(DataSlotHandle handle) const
+    bool ActionTestScene::isDataSlotAllocated(DataSlotHandle handle) const
     {
         return m_scene.isDataSlotAllocated(handle);
     }
@@ -994,6 +995,52 @@ namespace ramses_internal
     const DataSlot& ActionTestScene::getDataSlot(DataSlotHandle handle) const
     {
         return m_scene.getDataSlot(handle);
+    }
+
+    SceneReferenceHandle ActionTestScene::allocateSceneReference(SceneId sceneId, SceneReferenceHandle handle)
+    {
+        const auto actualHandle = m_actionCollector.allocateSceneReference(sceneId, handle);
+        flushPendingSceneActions();
+        return actualHandle;
+    }
+
+    void ActionTestScene::releaseSceneReference(SceneReferenceHandle handle)
+    {
+        m_actionCollector.releaseSceneReference(handle);
+        flushPendingSceneActions();
+    }
+
+    void ActionTestScene::requestSceneReferenceState(SceneReferenceHandle handle, RendererSceneState state)
+    {
+        m_actionCollector.requestSceneReferenceState(handle, state);
+        flushPendingSceneActions();
+    }
+
+    void ActionTestScene::requestSceneReferenceFlushNotifications(SceneReferenceHandle handle, bool enable)
+    {
+        m_actionCollector.requestSceneReferenceFlushNotifications(handle, enable);
+        flushPendingSceneActions();
+    }
+
+    void ActionTestScene::setSceneReferenceRenderOrder(SceneReferenceHandle handle, int32_t renderOrder)
+    {
+        m_actionCollector.setSceneReferenceRenderOrder(handle, renderOrder);
+        flushPendingSceneActions();
+    }
+
+    bool ActionTestScene::isSceneReferenceAllocated(SceneReferenceHandle handle) const
+    {
+        return m_scene.isSceneReferenceAllocated(handle);
+    }
+
+    UInt32 ActionTestScene::getSceneReferenceCount() const
+    {
+        return m_scene.getSceneReferenceCount();
+    }
+
+    const SceneReference& ActionTestScene::getSceneReference(SceneReferenceHandle handle) const
+    {
+        return m_scene.getSceneReference(handle);
     }
 
     void ActionTestScene::setRenderPassClearFlag(RenderPassHandle handle, UInt32 clearFlag)
@@ -1020,13 +1067,13 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setRenderPassEnabled(RenderPassHandle pass, Bool isEnabled)
+    void ActionTestScene::setRenderPassEnabled(RenderPassHandle pass, bool isEnabled)
     {
         m_actionCollector.setRenderPassEnabled(pass, isEnabled);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setRenderPassRenderOnce(RenderPassHandle pass, Bool enable)
+    void ActionTestScene::setRenderPassRenderOnce(RenderPassHandle pass, bool enable)
     {
         m_actionCollector.setRenderPassRenderOnce(pass, enable);
         flushPendingSceneActions();
@@ -1055,6 +1102,52 @@ namespace ramses_internal
         return m_scene.getRenderPass(passHandle);
     }
 
+    PickableObjectHandle ActionTestScene::allocatePickableObject(DataBufferHandle geometryHandle, NodeHandle nodeHandle, PickableObjectId id, PickableObjectHandle pickableHandle /* = PickableObjectHandle::Invalid() */)
+    {
+        const PickableObjectHandle resultHandle = m_actionCollector.allocatePickableObject(geometryHandle, nodeHandle, id, pickableHandle);
+        flushPendingSceneActions();
+        return resultHandle;
+    }
+
+    void ActionTestScene::releasePickableObject(PickableObjectHandle pickableHandle)
+    {
+        m_actionCollector.releasePickableObject(pickableHandle);
+        flushPendingSceneActions();
+    }
+
+    bool ActionTestScene::isPickableObjectAllocated(PickableObjectHandle pickableHandle) const
+    {
+        return m_scene.isPickableObjectAllocated(pickableHandle);
+    }
+
+    ramses_internal::UInt32 ActionTestScene::getPickableObjectCount() const
+    {
+        return m_scene.getPickableObjectCount();
+    }
+
+    void ActionTestScene::setPickableObjectId(PickableObjectHandle pickableHandle, PickableObjectId id)
+    {
+        m_actionCollector.setPickableObjectId(pickableHandle, id);
+        flushPendingSceneActions();
+    }
+
+    void ActionTestScene::setPickableObjectCamera(PickableObjectHandle pickableHandle, CameraHandle cameraHandle)
+    {
+        m_actionCollector.setPickableObjectCamera(pickableHandle, cameraHandle);
+        flushPendingSceneActions();
+    }
+
+    void ActionTestScene::setPickableObjectEnabled(PickableObjectHandle pickableHandle, bool isEnabled)
+    {
+        m_actionCollector.setPickableObjectEnabled(pickableHandle, isEnabled);
+        flushPendingSceneActions();
+    }
+
+    const PickableObject& ActionTestScene::getPickableObject(PickableObjectHandle pickableHandle) const
+    {
+        return m_scene.getPickableObject(pickableHandle);
+    }
+
     BlitPassHandle ActionTestScene::allocateBlitPass(RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle /*= BlitPassHandle::Invalid()*/)
     {
         const BlitPassHandle resultHandle = m_actionCollector.allocateBlitPass(sourceRenderBufferHandle, destinationRenderBufferHandle, passHandle);
@@ -1069,7 +1162,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    Bool ActionTestScene::isBlitPassAllocated(BlitPassHandle passHandle) const
+    bool ActionTestScene::isBlitPassAllocated(BlitPassHandle passHandle) const
     {
         return m_scene.isBlitPassAllocated(passHandle);
     }
@@ -1085,7 +1178,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setBlitPassEnabled(BlitPassHandle passHandle, Bool isEnabled)
+    void ActionTestScene::setBlitPassEnabled(BlitPassHandle passHandle, bool isEnabled)
     {
         m_actionCollector.setBlitPassEnabled(passHandle, isEnabled);
         flushPendingSceneActions();
@@ -1102,7 +1195,7 @@ namespace ramses_internal
         return m_scene.getBlitPass(passHandle);
     }
 
-    Bool ActionTestScene::isRenderTargetAllocated(RenderTargetHandle targetHandle) const
+    bool ActionTestScene::isRenderTargetAllocated(RenderTargetHandle targetHandle) const
     {
         return m_scene.isRenderTargetAllocated(targetHandle);
     }
@@ -1112,7 +1205,7 @@ namespace ramses_internal
         return m_scene.getRenderTargetCount();
     }
 
-    Bool ActionTestScene::isCameraAllocated(CameraHandle handle) const
+    bool ActionTestScene::isCameraAllocated(CameraHandle handle) const
     {
         return m_scene.isCameraAllocated(handle);
     }

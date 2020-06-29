@@ -12,7 +12,7 @@
 
 namespace ramses_internal
 {
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         TestSyncAtDifferentTimeStamps,
         AnimationSystemSyncTest,
         testing::Values(
@@ -128,8 +128,8 @@ namespace ramses_internal
             m_transformHandle1 = scene.allocateTransform(nodeHandle1);
             m_transformHandle2 = scene.allocateTransform(nodeHandle2);
 
-            scene.setRotation(m_transformHandle1, Vector3::Identity);
-            scene.setTranslation(m_transformHandle2, Vector3::Identity);
+            scene.setRotation(m_transformHandle1, Vector3(1.0f, 1.0f, 1.0f));
+            scene.setTranslation(m_transformHandle2, Vector3(1.0f, 1.0f, 1.0f));
         }
     }
 

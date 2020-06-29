@@ -9,19 +9,21 @@
 #ifndef RAMSES_IRESOURCECONSUMERCOMPONENT_H
 #define RAMSES_IRESOURCECONSUMERCOMPONENT_H
 
-#include "Transfer/ResourceTypes.h"
 #include "ManagedResource.h"
+#include "Components/ResourceRequesterID.h"
 
 namespace ramses_internal
 {
+    class Guid;
+
     class IResourceConsumerComponent
     {
     public:
         virtual ~IResourceConsumerComponent() {}
 
-        virtual void requestResourceAsynchronouslyFromFramework(const ResourceContentHashVector& ids, const RequesterID& requesterID, const Guid& providerID) = 0;
-        virtual void cancelResourceRequest(const ResourceContentHash& resourceHash, const RequesterID& requesterID) = 0;
-        virtual ManagedResourceVector popArrivedResources(const RequesterID& requesterID) = 0;
+        virtual void requestResourceAsynchronouslyFromFramework(const ResourceContentHashVector& ids, const ResourceRequesterID& requesterID, const Guid& providerID) = 0;
+        virtual void cancelResourceRequest(const ResourceContentHash& resourceHash, const ResourceRequesterID& requesterID) = 0;
+        virtual ManagedResourceVector popArrivedResources(const ResourceRequesterID& requesterID) = 0;
     };
 }
 

@@ -10,6 +10,7 @@
 #define RAMSES_COMMUNICATIONSYSTEMFACTORY_H
 
 #include "PlatformAbstraction/PlatformTypes.h"
+#include "PlatformAbstraction/PlatformLock.h"
 #include <memory>
 
 namespace ramses
@@ -22,7 +23,6 @@ namespace ramses_internal
     class ParticipantIdentifier;
     class IDiscoveryDaemon;
     class ICommunicationSystem;
-    class PlatformLock;
     class StatisticCollectionFramework;
     class Ramsh;
 

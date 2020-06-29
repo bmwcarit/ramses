@@ -11,7 +11,6 @@
 
 #include <gmock/gmock.h>
 #include "framework_common_gmock_header.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "CommunicationSystemTestWrapper.h"
 #include "Common/TypedMemoryHandle.h"
 #include "CommunicationSystemTestFactory.h"
@@ -23,7 +22,7 @@ namespace ramses_internal
     class AbstractSenderAndReceiverTest : public ::testing::TestWithParam<ECommunicationSystemType>
     {
     public:
-        AbstractSenderAndReceiverTest(EServiceType serviceType)
+        explicit AbstractSenderAndReceiverTest(EServiceType serviceType)
             : m_state(CommunicationSystemTestFactory::ConstructTestState(GetParam(), serviceType))
             , m_daemon(CommunicationSystemTestFactory::ConstructDiscoveryDaemonTestWrapper(*m_state))
             , m_senderTestWrapper(CommunicationSystemTestFactory::ConstructTestWrapper(*m_state, "sender"))
@@ -50,6 +49,11 @@ namespace ramses_internal
             m_state->event.signal();
         }
 
+        void skipStatisticsTest()
+        {
+            statisticsTestEnabled = false;
+        }
+
     private:
         void SetUp() override
         {
@@ -59,10 +63,21 @@ namespace ramses_internal
 
             // make sure receiver can get broadcasts
             m_receiverTestWrapper->registerAsEventReceiver();
+
+            // record message stats
+            numberMessagesSentBefore = m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue();
+            numberMessagesReceivedBefore = m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue();
         }
 
         void TearDown() override
         {
+            if (statisticsTestEnabled)
+            {
+                // check at least one message sent and received
+                EXPECT_LE(numberMessagesSentBefore + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
+                EXPECT_LE(numberMessagesReceivedBefore + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
+            }
+
             m_state->disconnectAll();
             EXPECT_TRUE(m_daemon->stop());
         }
@@ -80,6 +95,9 @@ namespace ramses_internal
         const Guid& senderId;
         const Guid& receiverId;
         PlatformLock& receiverExpectCallLock;
+        uint32_t numberMessagesSentBefore = 0;
+        uint32_t numberMessagesReceivedBefore = 0;
+        bool statisticsTestEnabled = true;
     };
 }
 

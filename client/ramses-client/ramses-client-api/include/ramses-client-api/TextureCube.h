@@ -13,6 +13,8 @@
 #include "ramses-client-api/TextureEnums.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "ramses-client-api/TextureEnums.h"
+#include "TextureSwizzle.h"
+
 
 namespace ramses
 {
@@ -42,6 +44,13 @@ namespace ramses
         * @return Texture format
         */
         ETextureFormat getTextureFormat() const;
+
+        /**
+        * @brief Gets swizzle description
+        *
+        * @return Swizzle Description
+        */
+        const TextureSwizzle& getTextureSwizzle() const;
 
     protected:
         /**

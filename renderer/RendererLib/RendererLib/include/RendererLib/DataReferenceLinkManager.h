@@ -24,7 +24,7 @@ namespace ramses_internal
         void removeSceneLinks(SceneId sceneId);
 
         Bool createDataLink(SceneId providerSceneId, DataSlotHandle providerSlotHandle, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
-        Bool removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
+        Bool removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle, SceneId* providerSceneIdOut = nullptr);
 
         void resolveLinksForConsumerScene(DataReferenceLinkCachedScene& consumerScene) const;
         void updateFallbackValue(SceneId consumerSceneId, DataInstanceHandle dataInstance) const;

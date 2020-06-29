@@ -16,7 +16,7 @@ namespace ramses_internal
     class RenderTargetGPUResource : public GPUResource
     {
     public:
-        RenderTargetGPUResource(UInt32 gpuAddress);
+        explicit RenderTargetGPUResource(UInt32 gpuAddress);
     };
 }
 

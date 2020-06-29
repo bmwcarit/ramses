@@ -36,5 +36,10 @@ namespace ramses
     {
         return impl.getTextureFormat();
     }
+
+    const TextureSwizzle& Texture2D::getTextureSwizzle() const
+    {
+        return impl.getTextureSwizzle();
+    }
 }
 

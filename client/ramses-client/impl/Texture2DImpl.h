@@ -11,6 +11,7 @@
 
 #include "ramses-client-api/TextureEnums.h"
 #include "ResourceImpl.h"
+#include "ramses-client-api/TextureSwizzle.h"
 
 namespace ramses_internal
 {
@@ -29,18 +30,20 @@ namespace ramses
             ERamsesObjectType overrideType = ERamsesObjectType_Texture2D);
         virtual ~Texture2DImpl();
 
-        void initializeFromFrameworkData(uint32_t width, uint32_t height, ETextureFormat textureFormat);
+        void initializeFromFrameworkData(uint32_t width, uint32_t height, ETextureFormat textureFormat, const TextureSwizzle& swizzle);
         virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
         virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
 
         uint32_t       getWidth() const;
         uint32_t       getHeight() const;
         ETextureFormat getTextureFormat() const;
+        const TextureSwizzle& getTextureSwizzle() const;
 
     private:
         uint32_t m_width;
         uint32_t m_height;
         ETextureFormat m_textureFormat;
+        TextureSwizzle m_swizzle;
     };
 }
 

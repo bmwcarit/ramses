@@ -12,7 +12,6 @@
 #include "Collections/Vector.h"
 #include "ManagedResource.h"
 #include "Collections/Pair.h"
-#include "Transfer/ResourceTypes.h"
 
 namespace ramses_internal
 {

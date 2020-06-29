@@ -379,7 +379,7 @@ namespace ramses
         TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, texture2D);
         ASSERT_NE(nullptr, sampler);
 
-        ASSERT_EQ(StatusOK, this->m_scene.createTextureConsumer(*sampler, 666u));
+        ASSERT_EQ(StatusOK, this->m_scene.createTextureConsumer(*sampler, dataConsumerId_t{666u}));
 
         const auto& texture2Dother = createObject<Texture2D>();
         EXPECT_NE(StatusOK, sampler->setTextureData(texture2Dother));
@@ -399,8 +399,8 @@ namespace ramses
         TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, texture2D);
         ASSERT_NE(nullptr, sampler);
 
-        RamsesClient otherClient("other", this->framework);
-        CreationHelper creationHelper(otherClient.createScene(666u), nullptr, &otherClient);
+        RamsesClient& otherClient(*this->framework.createClient("other"));
+        CreationHelper creationHelper(otherClient.createScene(sceneId_t(666u)), nullptr, &otherClient);
 
         const auto& texture2Dother = *creationHelper.createObjectOfType<Texture2D>(nullptr);
         EXPECT_NE(StatusOK, sampler->setTextureData(texture2Dother));

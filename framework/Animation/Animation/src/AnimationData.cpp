@@ -50,7 +50,7 @@ namespace ramses_internal
         return *m_splinePool.getMemory(splineHandle);
     }
 
-    Bool AnimationData::containsSpline(SplineHandle splineHandle) const
+    bool AnimationData::containsSpline(SplineHandle splineHandle) const
     {
         return m_splinePool.isAllocated(splineHandle);
     }
@@ -83,7 +83,7 @@ namespace ramses_internal
         return const_cast<AnimationDataBindBase*>((const_cast<const AnimationData&>(*this)).getDataBinding(dataBindHandle));
     }
 
-    Bool AnimationData::containsDataBinding(DataBindHandle dataBindHandle) const
+    bool AnimationData::containsDataBinding(DataBindHandle dataBindHandle) const
     {
         return m_dataBindPool.isAllocated(dataBindHandle);
     }
@@ -109,7 +109,7 @@ namespace ramses_internal
         return *m_animationInstancePool.getMemory(instanceHandle);
     }
 
-    Bool AnimationData::containsAnimationInstance(AnimationInstanceHandle instanceHandle) const
+    bool AnimationData::containsAnimationInstance(AnimationInstanceHandle instanceHandle) const
     {
         return m_animationInstancePool.isAllocated(instanceHandle);
     }
@@ -144,7 +144,7 @@ namespace ramses_internal
         return *m_animationPool.getMemory(handle);
     }
 
-    Bool AnimationData::containsAnimation(AnimationHandle handle) const
+    bool AnimationData::containsAnimation(AnimationHandle handle) const
     {
         return m_animationPool.isAllocated(handle);
     }
@@ -185,7 +185,7 @@ namespace ramses_internal
         notifyAnimationTimeRangeChanged(handle);
     }
 
-    void AnimationData::setAnimationPaused(AnimationHandle handle, Bool pause)
+    void AnimationData::setAnimationPaused(AnimationHandle handle, bool pause)
     {
         assert(containsAnimation(handle));
         Animation& animation = getAnimationInternal(handle);
@@ -200,7 +200,7 @@ namespace ramses_internal
     {
         assert(containsAnimation(handle));
         Animation& animation = getAnimationInternal(handle);
-        const Bool changed = (animation.m_playbackSpeed != playbackSpeed)
+        const bool changed = (animation.m_playbackSpeed != playbackSpeed)
             || (animation.m_flags != flags)
             || (animation.m_loopDuration != loopDuration);
 
@@ -228,7 +228,7 @@ namespace ramses_internal
         processData.m_dataComponent = animInst.getVectorComponentFlag();
     }
 
-    Bool AnimationData::isDataBindingCompatibleWithAnimationInstance(const AnimationInstance& animationInstance, DataBindHandle dataBindHandle) const
+    bool AnimationData::isDataBindingCompatibleWithAnimationInstance(const AnimationInstance& animationInstance, DataBindHandle dataBindHandle) const
     {
         const SplineBase* const pSpline = getSpline(animationInstance.getSplineHandle());
         assert(pSpline != nullptr);
@@ -303,9 +303,9 @@ namespace ramses_internal
         return sizeInfo;
     }
 
-    Bool AnimationData::CheckDataTypeCompatibility(EDataTypeID dataTypeID, EDataTypeID accessorDataTypeID, EVectorComponent accessorVectorComponent)
+    bool AnimationData::CheckDataTypeCompatibility(EDataTypeID dataTypeID, EDataTypeID accessorDataTypeID, EVectorComponent accessorVectorComponent)
     {
-        const Bool singleComponentBinding = (accessorVectorComponent != EVectorComponent_All);
+        const bool singleComponentBinding = (accessorVectorComponent != EVectorComponent_All);
         if (singleComponentBinding)
         {
             if (!isTypeMatchingComponentType(dataTypeID, accessorDataTypeID))
@@ -321,7 +321,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool AnimationData::isTypeMatchingComponentType(EDataTypeID compType, EDataTypeID type)
+    bool AnimationData::isTypeMatchingComponentType(EDataTypeID compType, EDataTypeID type)
     {
         switch (type)
         {

@@ -15,6 +15,7 @@
 namespace ramses
 {
     class IDcsmConsumerEventHandler;
+    class CategoryInfoUpdate;
 
     class IDcsmConsumerImpl
     {
@@ -22,8 +23,8 @@ namespace ramses
         virtual ~IDcsmConsumerImpl() = default;
 
         virtual status_t dispatchEvents(IDcsmConsumerEventHandler& handler) = 0;
-        virtual status_t assignContentToConsumer(ContentID contentID, SizeInfo size) = 0;
-        virtual status_t contentSizeChange(ContentID contentID, SizeInfo size, AnimationInformation animationInformation) = 0;
+        virtual status_t assignContentToConsumer(ContentID contentID, const CategoryInfoUpdate& size) = 0;
+        virtual status_t contentSizeChange(ContentID contentID, const CategoryInfoUpdate& size, AnimationInformation animationInformation) = 0;
         virtual status_t contentStateChange(ContentID contentID, EDcsmState status, AnimationInformation animationInformation) = 0;
         virtual status_t acceptStopOffer(ContentID contentID, AnimationInformation animationInformation) = 0;
     };

@@ -10,12 +10,14 @@
 #define RAMSES_INTERNALRENDERERAPI_TYPES_H
 
 #include "SceneAPI/Handles.h"
+#include "SceneAPI/RendererSceneState.h"
 #include "Collections/Vector.h"
 #include "Collections/HashSet.h"
 #include "Collections/String.h"
 #include "Common/StronglyTypedValue.h"
 #include "Common/TypedMemoryHandle.h"
 #include "Common/BitForgeMacro.h"
+#include "Utils/LoggingUtils.h"
 
 namespace ramses_internal
 {
@@ -54,25 +56,23 @@ namespace ramses_internal
 
     struct StreamTextureSourceIdTag {};
     typedef StronglyTypedValue<UInt32, 0xFFFFFFFF, StreamTextureSourceIdTag> StreamTextureSourceId;
-    static const StreamTextureSourceId InvalidStreamTextureSourceId(0xFFFFFFFF);
     typedef HashSet<StreamTextureSourceId> StreamTextureSourceIdSet;
     typedef std::vector<StreamTextureSourceId> StreamTextureSourceIdVector;
 
     // TODO Violin this needs removing - no need for two types for stream texture id...
     typedef StreamTextureSourceId WaylandIviSurfaceId;
-    static const WaylandIviSurfaceId InvalidWaylandIviSurfaceId(0xFFFFFFFF);
 
     struct WaylandIviLayerIdTag {};
     typedef StronglyTypedValue<UInt32, 0xFFFFFFFF, WaylandIviLayerIdTag> WaylandIviLayerId;
-    static const WaylandIviLayerId InvalidWaylandIviLayerId(0xFFFFFFFF);
 
     struct IntegrityEglDisplayIdTag {};
     typedef StronglyTypedValue<UInt32, 0xFFFFFFFF, IntegrityEglDisplayIdTag> IntegrityRGLDeviceUnit;
-    static const IntegrityRGLDeviceUnit InvalidIntegrityRGLDeviceUnit(0xFFFFFFFF);
 
     struct WindowsWindowHandleTag {};
     typedef StronglyTypedValue<void*, nullptr, WindowsWindowHandleTag> WindowsWindowHandle;
-    static const WindowsWindowHandle InvalidWindowsWindowHandle(nullptr);
+
+    struct AndroidNativeWindowPtrTag {};
+    typedef StronglyTypedValue<void*, nullptr, AndroidNativeWindowPtrTag> AndroidNativeWindowPtr;
 
     struct ScreenshotInfo
     {
@@ -91,6 +91,15 @@ namespace ramses_internal
         UInt8Vector   pixelData;
     };
     typedef std::vector<ScreenshotInfo> ScreenshotInfoVector;
+
+    using BinaryShaderFormatID = StronglyTypedValue<UInt32, 0, struct BinaryShaderFormatIDTag>;
 }
+
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::StreamTextureSourceId)
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::WaylandIviLayerId)
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::IntegrityRGLDeviceUnit)
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::WindowsWindowHandle)
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::AndroidNativeWindowPtr)
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::BinaryShaderFormatID)
 
 #endif

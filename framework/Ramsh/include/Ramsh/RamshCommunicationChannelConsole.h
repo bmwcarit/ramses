@@ -9,34 +9,41 @@
 #ifndef RAMSES_RAMSHCOMMUNICATIONCHANNELCONSOLE_H
 #define RAMSES_RAMSHCOMMUNICATIONCHANNELCONSOLE_H
 
-#include "Ramsh/RamshCommunicationChannel.h"
-#include "Collections/StringOutputStream.h"
-#include "RamshInput.h"
+#include "Collections/String.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "PlatformAbstraction/PlatformLock.h"
+#include <vector>
+#include <memory>
 
 namespace ramses_internal
 {
+    class ConsoleInput;
+    class Ramsh;
 
-class RamshCommunicationChannelConsole : public RamshCommunicationChannel, public Runnable
-{
+    class RamshCommunicationChannelConsole : public Runnable
+    {
     public:
-        RamshCommunicationChannelConsole();
-        ~RamshCommunicationChannelConsole();
-        void startThread();
+        static std::unique_ptr<RamshCommunicationChannelConsole> Construct(Ramsh& ramsh, const String& prompt, bool startThread = true);
+        virtual ~RamshCommunicationChannelConsole();
 
-        virtual void registerRamsh(Ramsh& ramsh) override;
-
-        void processInput(Char c);
+        // TODO(tobias) called from RamshCommunicationChannelConsoleSignalHandler from signal handler context
         void stopThread();
-        virtual void cancel() override;
+
+        // for testing only
+        void processInput(Char c);
 
     private:
+        RamshCommunicationChannelConsole(Ramsh& ramsh, const String& prompt, std::unique_ptr<ConsoleInput> consoleInput, bool startThread);
+
+        virtual void cancel() override;
         void run() override;
         void afterSendCallback();
 
+        Ramsh& m_ramsh;
+        String m_prompt;
         mutable PlatformLock m_lock;
         String promptString() const;
+
         String m_input;
         std::atomic<bool> m_pausePrompt;
         PlatformThread m_checkInputThread;
@@ -44,9 +51,9 @@ class RamshCommunicationChannelConsole : public RamshCommunicationChannel, publi
         std::vector<String> m_commandHistory;
         uint32_t m_nextCommandFromHistory;
 
-        const bool m_interactiveMode;
-};
-
-}// namespace ramses_internal
+        bool m_interactiveMode;
+        std::unique_ptr<ConsoleInput> m_console;
+    };
+}
 
 #endif

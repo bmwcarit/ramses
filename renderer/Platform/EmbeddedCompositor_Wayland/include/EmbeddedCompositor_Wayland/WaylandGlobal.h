@@ -16,7 +16,7 @@ namespace ramses_internal
     class WaylandGlobal : public IWaylandGlobal
     {
     public:
-        WaylandGlobal(wl_global* global);
+        explicit WaylandGlobal(wl_global* global);
         virtual ~WaylandGlobal();
 
     private:

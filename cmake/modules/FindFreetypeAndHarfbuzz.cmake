@@ -14,6 +14,23 @@ IF (${PKG_CONFIG_FOUND})
     PKG_CHECK_MODULES(freetype freetype2)
     PKG_CHECK_MODULES(harfbuzz harfbuzz>=${harfbuzz_minversion})
 
+    IF(NOT harfbuzz_FOUND)
+        # try to find directly
+        FIND_PATH(harfbuzz_INCLUDE_DIRS hb.h
+            /usr/include/harfbuzz
+        )
+        FIND_LIBRARY(harfbuzz_LIBRARIES
+            NAMES harfbuzz
+        )
+
+        IF(harfbuzz_LIBRARIES AND harfbuzz_INCLUDE_DIRS)
+            SET(harfbuzz_FOUND 1 CACHE INTERNAL "" FORCE)
+        ELSE()
+            MESSAGE(STATUS "Could not find harfbuzz")
+        ENDIF()
+
+    ENDIF()
+
     IF(NOT(freetype_FOUND AND harfbuzz_FOUND))
         SET(freetype_FOUND 0)
         UNSET(freetype_LIBRARIES)

@@ -11,67 +11,38 @@
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-renderer-api/IRendererEventHandler.h"
+#include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
+#include "ramses-renderer-api/RendererSceneControl.h"
 #include "ramses-utils.h"
 #include <unordered_set>
+#include <unordered_map>
 #include <thread>
 
+/**
+ * @example ramses-example-local-offscreenbuffer/src/main.cpp
+ * @brief Offscreen Buffer Example
+ */
+
 /** \cond HIDDEN_SYMBOLS */
-class SceneStateEventHandler : public ramses::RendererEventHandlerEmpty
+class SceneStateEventHandler : public ramses::RendererEventHandlerEmpty, public ramses::RendererSceneControlEventHandlerEmpty
 {
 public:
-    SceneStateEventHandler(ramses::RamsesRenderer& renderer)
+    explicit SceneStateEventHandler(ramses::RamsesRenderer& renderer)
         : m_renderer(renderer)
     {
     }
 
-    virtual void scenePublished(ramses::sceneId_t sceneId) override
+    virtual void sceneStateChanged(ramses::sceneId_t sceneId, ramses::RendererSceneState state) override
     {
-        m_publishedScenes.insert(sceneId);
+        m_scenes[sceneId].state = state;
     }
 
-    virtual void sceneUnpublished(ramses::sceneId_t sceneId) override
+    virtual void sceneFlushed(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersion) override
     {
-        m_publishedScenes.erase(sceneId);
+        m_scenes[sceneId].version = sceneVersion;
     }
 
-    virtual void sceneSubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_OK == result)
-        {
-            m_subscribedScenes.insert(sceneId);
-        }
-    }
-
-    virtual void sceneUnsubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_FAIL != result)
-        {
-            m_subscribedScenes.erase(sceneId);
-        }
-    }
-
-    virtual void sceneMapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_OK == result)
-        {
-            m_mappedScenes.insert(sceneId);
-        }
-    }
-
-    virtual void sceneUnmapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_FAIL != result)
-        {
-            m_mappedScenes.erase(sceneId);
-        }
-    }
-
-    virtual void dataConsumerCreated(ramses::sceneId_t, ramses::dataConsumerId_t dataConsumerId) override
-    {
-        m_dataConsumers.insert(dataConsumerId);
-    }
-
-    virtual void offscreenBufferCreated(ramses::displayId_t, ramses::offscreenBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
+    virtual void offscreenBufferCreated(ramses::displayId_t, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
     {
         if (ramses::ERendererEventResult_FAIL != result)
         {
@@ -79,61 +50,60 @@ public:
         }
     }
 
-    virtual void sceneAssignedToOffscreenBuffer(ramses::sceneId_t sceneId, ramses::offscreenBufferId_t, ramses::ERendererEventResult result) override
+    virtual void offscreenBufferLinked(ramses::displayBufferId_t, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t, bool success) override
     {
-        if (ramses::ERendererEventResult_FAIL != result)
+        if (success)
         {
-            m_scenesAssignedToOffscreenBuffer.insert(sceneId);
+            m_scenesConsumingOffscreenBuffer[consumerScene].state = ramses::RendererSceneState::Unavailable;
         }
     }
 
-    virtual void offscreenBufferLinkedToSceneData(ramses::offscreenBufferId_t, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_FAIL != result)
-        {
-            m_scenesConsumingOffscreenBuffer.insert(consumerScene);
-        }
-    }
-
-    void waitForPublication(const ramses::sceneId_t sceneId)
-    {
-        waitForElementInSet(sceneId, m_publishedScenes);
-    }
-
-    void waitForSubscription(const ramses::sceneId_t sceneId)
-    {
-        waitForElementInSet(sceneId, m_subscribedScenes);
-    }
-
-    void waitForMapped(const ramses::sceneId_t sceneId)
-    {
-        waitForElementInSet(sceneId, m_mappedScenes);
-    }
-
-    void waitForDataConsumer(const ramses::dataConsumerId_t dataConsumer)
-    {
-        waitForElementInSet(dataConsumer, m_dataConsumers);
-    }
-
-    void waitForOffscreenBufferCreated(const ramses::offscreenBufferId_t offscreenBufferId)
+    void waitForOffscreenBufferCreated(const ramses::displayBufferId_t offscreenBufferId)
     {
         waitForElementInSet(offscreenBufferId, m_createdOffscreenBuffers);
     }
 
-    void waitForSceneAssignedToOffscreenBuffer(const ramses::sceneId_t sceneId)
-    {
-        waitForElementInSet(sceneId, m_scenesAssignedToOffscreenBuffer);
-    }
-
     void waitForOffscreenBufferLinkedToConsumingScene(const ramses::sceneId_t sceneId)
     {
-        waitForElementInSet(sceneId, m_scenesConsumingOffscreenBuffer);
+        waitUntilOrTimeout([&] {return m_scenesConsumingOffscreenBuffer.count(sceneId) > 0; });
+    }
+
+    void waitForSceneState(ramses::sceneId_t sceneId, ramses::RendererSceneState state)
+    {
+        waitUntilOrTimeout([&] { return m_scenes[sceneId].state == state; });
+    }
+
+    bool waitForFlush(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersion)
+    {
+        return waitUntilOrTimeout([&] { return m_scenes[sceneId].version == sceneVersion; });
+    }
+
+    bool waitUntilOrTimeout(const std::function<bool()>& conditionFunction)
+    {
+        const std::chrono::steady_clock::time_point timeoutTS = std::chrono::steady_clock::now() + std::chrono::seconds{ 5 };
+        while (!conditionFunction() && std::chrono::steady_clock::now() < timeoutTS)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds{ 5 });  // will give the renderer time to process changes
+
+            m_renderer.dispatchEvents(*this);
+            m_renderer.getSceneControlAPI()->dispatchEvents(*this);
+        }
+
+        return conditionFunction();
     }
 
 private:
-    typedef std::unordered_set<ramses::sceneId_t> SceneSet;
-    typedef std::unordered_set<ramses::dataProviderId_t> DataProviderSet;
-    typedef std::unordered_set<ramses::offscreenBufferId_t> OffscreenBufferSet;
+    struct SceneInfo
+    {
+        ramses::RendererSceneState state = ramses::RendererSceneState::Unavailable;
+        ramses::sceneVersionTag_t version = ramses::InvalidSceneVersionTag;
+    };
+
+    typedef std::unordered_map<ramses::sceneId_t, SceneInfo> SceneSet;
+    typedef std::unordered_set<ramses::dataConsumerId_t> DataConsumerSet;
+    typedef std::unordered_set<ramses::displayBufferId_t> OffscreenBufferSet;
+
+
 
     template <typename T>
     void waitForElementInSet(const T element, const std::unordered_set<T>& set)
@@ -141,17 +111,16 @@ private:
         while (set.find(element) == set.end())
         {
             m_renderer.dispatchEvents(*this);
+            m_renderer.getSceneControlAPI()->dispatchEvents(*this);
             std::this_thread::sleep_for(std::chrono::milliseconds(10u));
         }
     }
 
-    SceneSet m_publishedScenes;
-    SceneSet m_subscribedScenes;
-    SceneSet m_mappedScenes;
+    SceneSet m_scenes;
     SceneSet m_scenesAssignedToOffscreenBuffer;
     SceneSet m_scenesConsumingOffscreenBuffer;
     OffscreenBufferSet m_createdOffscreenBuffers;
-    DataProviderSet m_dataConsumers;
+    DataConsumerSet m_dataConsumers;
 
     ramses::RamsesRenderer& m_renderer;
 };
@@ -331,58 +300,50 @@ int main(int argc, char* argv[])
     ramses::RamsesFrameworkConfig config(argc, argv);
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);  //needed for automated test of examples
     ramses::RamsesFramework framework(config);
-    ramses::RamsesClient client("ramses-local-client-test", framework);
+    ramses::RamsesClient& client(*framework.createClient("ramses-local-client-test"));
 
     // Ramses renderer
     ramses::RendererConfig rendererConfig(argc, argv);
-    ramses::RamsesRenderer renderer(framework, rendererConfig);
+    ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
+    auto& sceneControlAPI = *renderer.getSceneControlAPI();
     framework.connect();
 
     renderer.setMaximumFramerate(60.0f);
     renderer.startThread();
 
-    ramses::sceneId_t sceneId1 = 1u;
+    ramses::sceneId_t sceneId1{1u};
     ramses::Scene* scene1 = createScene1(client, sceneId1);
     scene1->flush();
     scene1->publish();
 
-    ramses::sceneId_t sceneId2 = 2u;
+    ramses::sceneId_t sceneId2{2u};
     ramses::Scene* scene2 = createScene2(client, sceneId2);
     scene2->flush();
     scene2->publish();
 
     SceneStateEventHandler eventHandler(renderer);
 
-    eventHandler.waitForPublication(sceneId1);
-    eventHandler.waitForPublication(sceneId2);
-
-    renderer.subscribeScene(sceneId1);
-    renderer.subscribeScene(sceneId2);
-    renderer.flush();
-    eventHandler.waitForSubscription(sceneId1);
-    eventHandler.waitForSubscription(sceneId2);
-
     ramses::DisplayConfig displayConfig(argc, argv);
-    displayConfig.setIntegrityRGLDeviceUnit(0);
-    displayConfig.setWaylandIviSurfaceID(0);
-    displayConfig.setWaylandIviLayerID(3);
-    displayConfig.setWindowIviVisible();
     displayConfig.setWindowRectangle(100, 100, 800u, 800u);
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
     renderer.flush();
 
     // Both scenes have to be mapped to same display in order to link them using offscreen buffer
-    renderer.mapScene(display, sceneId1);
-    renderer.flush();
-    eventHandler.waitForMapped(sceneId1);
+    sceneControlAPI.setSceneMapping(sceneId1, display);
+    sceneControlAPI.setSceneState(sceneId1, ramses::RendererSceneState::Ready);
+    sceneControlAPI.flush();
 
-    // When mapping a scene that is going to be rendered to an offscreen buffer
-    // we need to make sure that it is rendered before the scene that uses that
-    // offscreen buffer to read from it.
-    // This is a content dependency and Ramses does not make any implicit ordering.
-    renderer.mapScene(display, sceneId2, -1);
-    renderer.flush();
-    eventHandler.waitForMapped(sceneId2);
+    // Ramses renders all scenes mapped to offscreen buffers (except for interruptible offscreen buffers)
+    // always before rendering scenes mapped to framebuffer.
+    // If consumer scene is rendered into framebuffer, then there does not have to be any explicit render order set.
+    // However should the consumer scene be rendered into offscreen buffer as well, it is recommended to set
+    // explicit render order - provided content before consumer content.
+    sceneControlAPI.setSceneMapping(sceneId2, display);
+    sceneControlAPI.setSceneState(sceneId2, ramses::RendererSceneState::Ready);
+    sceneControlAPI.flush();
+
+    eventHandler.waitForSceneState(sceneId1, ramses::RendererSceneState::Ready);
+    eventHandler.waitForSceneState(sceneId2, ramses::RendererSceneState::Ready);
 
     const ramses::TextureSampler* textureSamplerConsumer = ramses::RamsesUtils::TryConvert<ramses::TextureSampler>(*scene1->findObjectByName("textureSamplerConsumer"));
 
@@ -393,28 +354,31 @@ int main(int argc, char* argv[])
     // Create texture consumer that will use offscreen buffer to sample from
     const ramses::dataConsumerId_t samplerConsumerId(456u);
     scene1->createTextureConsumer(*textureSamplerConsumer, samplerConsumerId);
-    scene1->flush();
-    eventHandler.waitForDataConsumer(samplerConsumerId);
+    // flush with version tag and wait for flush applied to make sure consumer is created
+    ramses::sceneVersionTag_t versionTag{ 42 };
+    scene1->flush(versionTag);
+    eventHandler.waitForFlush(sceneId1, versionTag);
 
     // Create an offscreen buffer - has to be on the same display where both the scene to be rendered into it is mapped and the scene to consume it is mapped
-    const ramses::offscreenBufferId_t offscreenBuffer = renderer.createOffscreenBuffer(display, 200u, 200u);
+    const ramses::displayBufferId_t offscreenBuffer = renderer.createOffscreenBuffer(display, 200u, 200u);
     renderer.flush();
     eventHandler.waitForOffscreenBufferCreated(offscreenBuffer);
 
     // Assign the second scene to the offscreen buffer
     // This means scene is not going to be rendered on the display but to the offscreen buffer instead
-    renderer.assignSceneToOffscreenBuffer(sceneId2, offscreenBuffer);
-    renderer.flush();
-    eventHandler.waitForSceneAssignedToOffscreenBuffer(sceneId2);
+    sceneControlAPI.setSceneDisplayBufferAssignment(sceneId2, offscreenBuffer);
+    sceneControlAPI.flush();
+
 
     // Link the offscreen buffer to first scene texture sampler so that the content will be used as texture
-    renderer.linkOffscreenBufferToSceneData(offscreenBuffer, sceneId1, samplerConsumerId);
-    renderer.flush();
+    sceneControlAPI.linkOffscreenBuffer(offscreenBuffer, sceneId1, samplerConsumerId);
+    sceneControlAPI.flush();
     eventHandler.waitForOffscreenBufferLinkedToConsumingScene(sceneId1);
 
-    renderer.showScene(sceneId1);
-    renderer.showScene(sceneId2);
-    renderer.flush();
+    // Now both scenes can be rendered at the same time
+    sceneControlAPI.setSceneState(sceneId1, ramses::RendererSceneState::Rendered);
+    sceneControlAPI.setSceneState(sceneId2, ramses::RendererSceneState::Rendered);
+    sceneControlAPI.flush();
     /// [Offscreen Buffer Example]
     std::this_thread::sleep_for(std::chrono::seconds(100u));
     renderer.stopThread();

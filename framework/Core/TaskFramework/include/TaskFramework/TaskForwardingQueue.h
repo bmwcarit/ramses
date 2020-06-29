@@ -12,10 +12,9 @@
 
 #include "ITaskQueue.h"
 #include "ITaskFinishHandler.h"
-
 #include "Collections/HashSet.h"
-#include "PlatformAbstraction/PlatformLock.h"
-#include "PlatformAbstraction/PlatformConditionVariable.h"
+#include <mutex>
+#include <condition_variable>
 
 namespace ramses_internal
 {
@@ -26,18 +25,19 @@ namespace ramses_internal
         explicit TaskForwardingQueue(const TaskForwardingQueue&) = delete;
         virtual ~TaskForwardingQueue();
 
-        virtual Bool enqueue(ITask& task) override;
+        virtual bool enqueue(ITask& task) override;
         virtual void enableAcceptingTasks() override;
         virtual void disableAcceptingTasksAfterExecutingCurrentQueue() override;
 
         virtual void TaskFinished(ITask& Task) override;
 
     protected:
-        PlatformLock                m_lock;
-        PlatformConditionVariable   m_cond;
+        // recursive mutex needed for direct task executor: calls TaskFinished from inside enqueue
+        std::recursive_mutex        m_lock;
+        std::condition_variable_any m_cond;
 
         ITaskQueue&                 m_nextQueue;
-        Bool                        m_acceptNewTasks;
+        bool                        m_acceptNewTasks;
         HashSet<ITask*>             m_ongoingTasks;
     };
 }

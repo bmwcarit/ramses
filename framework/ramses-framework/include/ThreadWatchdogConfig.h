@@ -19,7 +19,7 @@ namespace ramses_internal
     {
     public:
         ThreadWatchdogConfig()
-            : m_callback(0)
+            : m_callback(nullptr)
             , m_workerThreadsWatchdogInterval(1000)
             , m_rendererThreadWatchdogInterval(1000)
         {

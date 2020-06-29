@@ -103,7 +103,7 @@ namespace ramses_internal
         File f(filename);
         BinaryFileOutputStream stream(f);
 
-        if (stream.getState() == EStatus_RAMSES_OK)
+        if (stream.getState() == EStatus::Ok)
         {
             ScenePersistation::WriteSceneToStream(stream, scene);
         }
@@ -173,7 +173,7 @@ namespace ramses_internal
         BinaryFileInputStream stream(f);
 
         const EStatus state = stream.getState();
-        if (EStatus_RAMSES_OK == state)
+        if (EStatus::Ok == state)
         {
             ScenePersistation::ReadSceneFromStream(stream, scene, animSystemFactory);
         }

@@ -17,12 +17,12 @@ namespace ramses_internal
 {
     enum EResourceStatus
     {
-        EResourceStatus_Unknown = 0,   /// Resource is not known to renderer
-        EResourceStatus_Registered,    /// Resource has been registered, not requested yet
-        EResourceStatus_Requested,     /// Resource has been requested from provider, not provided yet
-        EResourceStatus_Provided,      /// Resource has been provided, not uploaded yet
-        EResourceStatus_Uploaded,      /// Resource has been uploaded and is ready for rendering
-        EResourceStatus_Broken,        /// Resource failed to be uploaded, it is freed from system memory and will not be attempted to upload again
+        EResourceStatus_Unknown = 0,   ///< Resource is not known to renderer
+        EResourceStatus_Registered,    ///< Resource has been registered, not requested yet
+        EResourceStatus_Requested,     ///< Resource has been requested from provider, not provided yet
+        EResourceStatus_Provided,      ///< Resource has been provided, not uploaded yet
+        EResourceStatus_Uploaded,      ///< Resource has been uploaded and is ready for rendering
+        EResourceStatus_Broken,        ///< Resource failed to be uploaded, it is freed from system memory and will not be attempted to upload again
 
         EResourceStatus_NUMBER_OF_ELEMENTS
     };

@@ -29,13 +29,14 @@ private:
         OffscreenBufferLinkTest_ConsumersLinkedToBufferWithOneScene,
         OffscreenBufferLinkTest_OneOfTwoLinksRemoved,
         OffscreenBufferLinkTest_ConsumerLinkedToBufferWithTwoScenes,
+        OffscreenBufferLinkTest_ConsumerRelinkedToAnotherBuffer,
         OffscreenBufferLinkTest_ProviderBufferDestroyed,
         OffscreenBufferLinkTest_SourceSceneHidden,
-        OffscreenBufferLinkTest_SourceSceneHiddenAndUnmappedInOneFlush,
         OffscreenBufferLinkTest_SourceSceneAssignedToFBWhileShown,
         OffscreenBufferLinkTest_OneOfTwoSourceScenesUnmapped,
         OffscreenBufferLinkTest_ProviderSceneUsesDepthTest,
         OffscreenBufferLinkTest_ProviderSceneUsesStencilTest,
+        OffscreenBufferLinkTest_SetClearColor,
     };
 
     ramses::sceneId_t m_sceneIdProvider;

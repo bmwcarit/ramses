@@ -25,7 +25,6 @@ private:
     bool runSceneRenderOrderInversedTest(RendererTestsFramework& testFramework);
     bool runWarpingTest(RendererTestsFramework& testFramework);
     bool runUpdateWarpingTest(RendererTestsFramework& testFramework);
-    bool runStereoTest(RendererTestsFramework& testFramework);
     bool runSubimageTest(RendererTestsFramework& testFramework);
     bool runRemapSceneTest(RendererTestsFramework& testFramework);
     bool runSwapScenesTest(RendererTestsFramework& testFramework);
@@ -44,7 +43,6 @@ private:
         DisplayTest_SceneRenderOrderInversed,
         DisplayTest_Warping,
         DisplayTest_UpdateWarping,
-        DisplayTest_Stereo,
         DisplayTest_Subimage,
         DisplayTest_RemapScene,
         DisplayTest_SwapScenes,

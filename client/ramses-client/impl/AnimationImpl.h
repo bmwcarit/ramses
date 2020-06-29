@@ -32,7 +32,7 @@ namespace ramses
         virtual void     deinitializeFrameworkData() override;
         virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
         virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
-        virtual status_t validate(uint32_t indent) const override;
+        virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
 
         status_t stop(timeMilliseconds_t delay);
         status_t stopAt(globalTimeStamp_t timeStamp);

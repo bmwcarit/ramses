@@ -18,6 +18,7 @@
 #include "Utils/LogMacros.h"
 #include "Utils/TextureMathUtils.h"
 #include "Components/ManagedResource.h"
+#include "RendererLib/ResourceDescriptor.h"
 
 namespace ramses_internal
 {
@@ -27,8 +28,9 @@ namespace ramses_internal
     {
     }
 
-    DeviceResourceHandle ResourceUploader::uploadResource(IRenderBackend& renderBackend, ManagedResource res, UInt32& outVRAMSize)
+    DeviceResourceHandle ResourceUploader::uploadResource(IRenderBackend& renderBackend, const ResourceDescriptor& rd, UInt32& outVRAMSize)
     {
+        ManagedResource res = rd.resource;
         const IResource& resourceObject = *res.getResourceObject();
         IDevice& device = renderBackend.getDevice();
         outVRAMSize = resourceObject.getDecompressedDataSize();
@@ -39,14 +41,14 @@ namespace ramses_internal
         {
             const ArrayResource* vertArray = resourceObject.convertTo<ArrayResource>();
             const DeviceResourceHandle deviceHandle = device.allocateVertexBuffer(vertArray->getElementType(), vertArray->getDecompressedDataSize());
-            device.uploadVertexBufferData(deviceHandle, vertArray->getResourceData()->getRawData(), vertArray->getDecompressedDataSize());
+            device.uploadVertexBufferData(deviceHandle, vertArray->getResourceData().data(), vertArray->getDecompressedDataSize());
             return deviceHandle;
         }
         case EResourceType_IndexArray:
         {
             const ArrayResource* indexArray = resourceObject.convertTo<ArrayResource>();
             const DeviceResourceHandle deviceHandle = device.allocateIndexBuffer(indexArray->getElementType(), indexArray->getDecompressedDataSize());
-            device.uploadIndexBufferData(deviceHandle, indexArray->getResourceData()->getRawData(), indexArray->getDecompressedDataSize());
+            device.uploadIndexBufferData(deviceHandle, indexArray->getResourceData().data(), indexArray->getDecompressedDataSize());
             return deviceHandle;
         }
         case EResourceType_Texture2D:
@@ -57,7 +59,8 @@ namespace ramses_internal
         {
             const EffectResource* effectRes = resourceObject.convertTo<EffectResource>();
             const ResourceContentHash hash = effectRes->getHash();
-            return queryBinaryShaderCacheAndUploadEffect(renderBackend, *effectRes, hash);
+            const SceneId sceneid = (rd.sceneUsage.empty() ? SceneId::Invalid() : rd.sceneUsage.front());
+            return queryBinaryShaderCacheAndUploadEffect(renderBackend, *effectRes, hash, sceneid);
         }
         default:
             assert(false && "Unexpected resource type");
@@ -102,13 +105,13 @@ namespace ramses_internal
         switch (texture.getTypeID())
         {
         case EResourceType_Texture2D:
-            textureDeviceHandle = device.allocateTexture2D(texture.getWidth(), texture.getHeight(), texture.getTextureFormat(), numMipLevelsToAllocate, vramSize);
+            textureDeviceHandle = device.allocateTexture2D(texture.getWidth(), texture.getHeight(), texture.getTextureFormat(), texture.getTextureSwizzle(), numMipLevelsToAllocate, vramSize);
             break;
         case EResourceType_Texture3D:
             textureDeviceHandle = device.allocateTexture3D(texture.getWidth(), texture.getHeight(), texture.getDepth(), texture.getTextureFormat(), numMipLevelsToAllocate, vramSize);
             break;
         case EResourceType_TextureCube:
-            textureDeviceHandle = device.allocateTextureCube(texture.getWidth(), texture.getTextureFormat(), numMipLevelsToAllocate, vramSize);
+            textureDeviceHandle = device.allocateTextureCube(texture.getWidth(), texture.getTextureFormat(), texture.getTextureSwizzle(), numMipLevelsToAllocate, vramSize);
             break;
         default:
             assert(false);
@@ -121,7 +124,7 @@ namespace ramses_internal
         {
         case EResourceType_Texture2D:
         case EResourceType_Texture3D:
-            for (UInt32 mipLevel = 0u; mipLevel < mipDataSizes.size(); ++mipLevel)
+            for (UInt32 mipLevel = 0u; mipLevel < static_cast<uint32_t>(mipDataSizes.size()); ++mipLevel)
             {
                 const UInt32 width = TextureMathUtils::GetMipSize(mipLevel, texture.getWidth());
                 const UInt32 height = TextureMathUtils::GetMipSize(mipLevel, texture.getHeight());
@@ -134,7 +137,7 @@ namespace ramses_internal
             for (UInt32 i = 0; i < 6u; ++i)
             {
                 const ETextureCubeFace faceId = static_cast<ETextureCubeFace>(i);
-                for (UInt32 mipLevel = 0u; mipLevel < mipDataSizes.size(); ++mipLevel)
+                for (UInt32 mipLevel = 0u; mipLevel < static_cast<uint32_t>(mipDataSizes.size()); ++mipLevel)
                 {
                     const UInt32 faceSize = TextureMathUtils::GetMipSize(mipLevel, texture.getWidth());
                     // texture faceID is encoded in Z offset
@@ -155,7 +158,7 @@ namespace ramses_internal
         return textureDeviceHandle;
     }
 
-    ramses_internal::DeviceResourceHandle ResourceUploader::queryBinaryShaderCacheAndUploadEffect(IRenderBackend& renderBackend, const EffectResource& effect, ResourceContentHash hash)
+    ramses_internal::DeviceResourceHandle ResourceUploader::queryBinaryShaderCacheAndUploadEffect(IRenderBackend& renderBackend, const EffectResource& effect, ResourceContentHash hash, SceneId sceneid)
     {
         LOG_TRACE(CONTEXT_RENDERER, "ResourceUploader::queryBinaryShaderCacheAndUploadEffect: effectid:" << effect.getHash());
         IDevice& device = renderBackend.getDevice();
@@ -165,16 +168,24 @@ namespace ramses_internal
             LOG_TRACE(CONTEXT_RENDERER, "ResourceUploader::queryBinaryShaderCacheAndUploadEffect: no binary shader cache present");
             auto steadyNow = std::chrono::steady_clock::now();
             auto handle = device.uploadShader(effect);
-            int64_t steadyDiff = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - steadyNow).count();
-            m_stats.shaderCompiled(steadyDiff);
+            auto steadyDiff = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - steadyNow);
+            m_stats.shaderCompiled(steadyDiff, effect.getName(), sceneid);
             return handle;
+        }
+
+        if (!m_supportedFormatsReported)
+        {
+            std::vector<BinaryShaderFormatID> supportedFormats;
+            device.getSupportedBinaryProgramFormats(supportedFormats);
+            m_binaryShaderCache->deviceSupportsBinaryShaderFormats(supportedFormats);
+            m_supportedFormatsReported = true;
         }
 
         if (m_binaryShaderCache->hasBinaryShader(hash))
         {
             LOG_TRACE(CONTEXT_RENDERER, "ResourceUploader::queryBinaryShaderCacheAndUploadEffect: Cache has binary shader");
             const UInt32 binaryShaderSize = m_binaryShaderCache->getBinaryShaderSize(hash);
-            const UInt32 binaryShaderFormat = m_binaryShaderCache->getBinaryShaderFormat(hash);
+            const BinaryShaderFormatID binaryShaderFormat = m_binaryShaderCache->getBinaryShaderFormat(hash);
 
             UInt8Vector buffer(binaryShaderSize);
             m_binaryShaderCache->getBinaryShaderData(hash, &buffer.front(), binaryShaderSize);
@@ -197,17 +208,17 @@ namespace ramses_internal
         // If this point is reached, we either have no cache or the cache was broken.
         auto steadyNow = std::chrono::steady_clock::now();
         const DeviceResourceHandle sourceShaderHandle = device.uploadShader(effect);
-        int64_t steadyDiff = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - steadyNow).count();
-        m_stats.shaderCompiled(steadyDiff);
+        auto steadyDiff = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - steadyNow);
+        m_stats.shaderCompiled(steadyDiff, effect.getName(), sceneid);
 
-        if (sourceShaderHandle.isValid() && m_binaryShaderCache->shouldBinaryShaderBeCached(hash))
+        if (sourceShaderHandle.isValid() && m_binaryShaderCache->shouldBinaryShaderBeCached(hash, sceneid))
         {
             UInt8Vector binaryShader;
-            UInt32 format = 0;
+            BinaryShaderFormatID format;
             if (device.getBinaryShader(sourceShaderHandle, binaryShader, format))
             {
                 assert(binaryShader.size() != 0u);
-                m_binaryShaderCache->storeBinaryShader(hash, &binaryShader.front(), static_cast<UInt32>(binaryShader.size()), format);
+                m_binaryShaderCache->storeBinaryShader(hash, sceneid, &binaryShader.front(), static_cast<UInt32>(binaryShader.size()), format);
             }
         }
 

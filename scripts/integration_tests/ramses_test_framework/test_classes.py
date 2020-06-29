@@ -6,6 +6,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
+from __future__ import print_function
 import unittest
 import os
 from ramses_test_framework import log
@@ -38,7 +39,7 @@ class IntegrationTest(unittest.TestCase):
 
     def setUp(self):
         #output separator
-        print ""
+        print("")
         log.separator("=")
 
         log.default_file_logger = log.FileLogger(os.path.join(self._get_result_dir(), "test.log"))

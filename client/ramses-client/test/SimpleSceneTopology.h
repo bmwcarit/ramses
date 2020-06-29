@@ -50,11 +50,10 @@ namespace ramses
             EXPECT_EQ(StatusOK, m_vis2.addChild(m_mesh2b));
 
             //Every Mesh should be visible by default
-            EXPECT_TRUE(m_mesh1a.impl.getFlattenedVisibility());
-            EXPECT_TRUE(m_mesh1b.impl.getFlattenedVisibility());
-            EXPECT_TRUE(m_mesh2a.impl.getFlattenedVisibility());
-            EXPECT_TRUE(m_mesh2b.impl.getFlattenedVisibility());
-
+            EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+            EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+            EXPECT_EQ(m_mesh2a.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+            EXPECT_EQ(m_mesh2b.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
         }
 
         Node& m_root;

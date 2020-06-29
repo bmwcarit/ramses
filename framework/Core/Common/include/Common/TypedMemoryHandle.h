@@ -10,13 +10,12 @@
 #define RAMSES_TYPEDMEMORYHANDLE_H
 
 #include "PlatformAbstraction/PlatformTypes.h"
+#include "PlatformAbstraction/Hash.h"
 #include "Collections/IInputStream.h"
 #include "Collections/IOutputStream.h"
 #include "Collections/StringOutputStream.h"
 #include "Common/MemoryHandle.h"
-
-#include "ramses-capu/util/Traits.h"
-#include "ramses-capu/container/Hash.h"
+#include "PlatformAbstraction/FmtBase.h"
 
 namespace ramses_internal
 {
@@ -39,7 +38,7 @@ namespace ramses_internal
             : m_handle(handle)
         {}
 
-        constexpr Bool isValid() const
+        constexpr bool isValid() const
         {
             return m_handle != Invalid();
         }
@@ -62,7 +61,7 @@ namespace ramses_internal
             return *this;
         }
 
-        constexpr inline TypedMemoryHandle operator++(int)
+        constexpr inline const TypedMemoryHandle operator++(int)
         {
             TypedMemoryHandle res(m_handle);
             ++m_handle;
@@ -75,7 +74,7 @@ namespace ramses_internal
             return *this;
         }
 
-        constexpr inline TypedMemoryHandle operator--(int)
+        constexpr inline const TypedMemoryHandle operator--(int)
         {
             TypedMemoryHandle res(m_handle);
             --m_handle;
@@ -83,94 +82,94 @@ namespace ramses_internal
         }
 
         // operators ==/!=
-        constexpr inline friend Bool operator==(TypedMemoryHandle a, TypedMemoryHandle b)
+        constexpr inline friend bool operator==(TypedMemoryHandle a, TypedMemoryHandle b)
         {
             return a.m_handle == b.m_handle;
         }
 
-        constexpr inline friend Bool operator==(TypedMemoryHandle a, UInt b)
+        constexpr inline friend bool operator==(TypedMemoryHandle a, UInt b)
         {
             return a.m_handle == b;
         }
 
-        constexpr inline friend Bool operator==(UInt a, TypedMemoryHandle b)
+        constexpr inline friend bool operator==(UInt a, TypedMemoryHandle b)
         {
             return a == b.m_handle;
         }
 
-        constexpr inline friend Bool operator!=(TypedMemoryHandle a, TypedMemoryHandle b)
+        constexpr inline friend bool operator!=(TypedMemoryHandle a, TypedMemoryHandle b)
         {
             return a.m_handle != b.m_handle;
         }
 
-        constexpr inline friend Bool operator!=(TypedMemoryHandle a, UInt b)
+        constexpr inline friend bool operator!=(TypedMemoryHandle a, UInt b)
         {
             return a.m_handle != b;
         }
 
-        constexpr inline friend Bool operator!=(UInt a, TypedMemoryHandle b)
+        constexpr inline friend bool operator!=(UInt a, TypedMemoryHandle b)
         {
             return a != b.m_handle;
         }
 
         // operator </<=
-        constexpr inline friend Bool operator<(TypedMemoryHandle a, TypedMemoryHandle b)
+        constexpr inline friend bool operator<(TypedMemoryHandle a, TypedMemoryHandle b)
         {
             return a.m_handle < b.m_handle;
         }
 
-        constexpr inline friend Bool operator<(TypedMemoryHandle a, UInt b)
+        constexpr inline friend bool operator<(TypedMemoryHandle a, UInt b)
         {
             return a.m_handle < b;
         }
 
-        constexpr inline friend Bool operator<(UInt a, TypedMemoryHandle b)
+        constexpr inline friend bool operator<(UInt a, TypedMemoryHandle b)
         {
             return a < b.m_handle;
         }
 
-        constexpr inline friend Bool operator<=(TypedMemoryHandle a, TypedMemoryHandle b)
+        constexpr inline friend bool operator<=(TypedMemoryHandle a, TypedMemoryHandle b)
         {
             return a.m_handle <= b.m_handle;
         }
 
-        constexpr inline friend Bool operator<=(TypedMemoryHandle a, UInt b)
+        constexpr inline friend bool operator<=(TypedMemoryHandle a, UInt b)
         {
             return a.m_handle <= b;
         }
 
-        constexpr inline friend Bool operator<=(UInt a, TypedMemoryHandle b)
+        constexpr inline friend bool operator<=(UInt a, TypedMemoryHandle b)
         {
             return a <= b.m_handle;
         }
 
         // operator >/>=
-        constexpr inline friend Bool operator>(TypedMemoryHandle a, TypedMemoryHandle b)
+        constexpr inline friend bool operator>(TypedMemoryHandle a, TypedMemoryHandle b)
         {
             return a.m_handle > b.m_handle;
         }
 
-        constexpr inline friend Bool operator>(TypedMemoryHandle a, UInt b)
+        constexpr inline friend bool operator>(TypedMemoryHandle a, UInt b)
         {
             return a.m_handle > b;
         }
 
-        constexpr inline friend Bool operator>(UInt a, TypedMemoryHandle b)
+        constexpr inline friend bool operator>(UInt a, TypedMemoryHandle b)
         {
             return a > b.m_handle;
         }
 
-        constexpr inline friend Bool operator>=(TypedMemoryHandle a, TypedMemoryHandle b)
+        constexpr inline friend bool operator>=(TypedMemoryHandle a, TypedMemoryHandle b)
         {
             return a.m_handle >= b.m_handle;
         }
 
-        constexpr inline friend Bool operator>=(TypedMemoryHandle a, UInt b)
+        constexpr inline friend bool operator>=(TypedMemoryHandle a, UInt b)
         {
             return a.m_handle >= b;
         }
 
-        constexpr inline friend Bool operator>=(UInt a, TypedMemoryHandle b)
+        constexpr inline friend bool operator>=(UInt a, TypedMemoryHandle b)
         {
             return a >= b.m_handle;
         }
@@ -240,29 +239,17 @@ namespace ramses_internal
         is >> handle.asMemoryHandleReference();
         return is;
     }
-
-    // StringOutputStream operators
-    template <typename UniqueId>
-    inline StringOutputStream& operator<<(StringOutputStream& os, const TypedMemoryHandle<UniqueId>& handle)
-    {
-        os << handle.asMemoryHandle();
-        return os;
-    }
 }
 
-// make TypedMemoryHandle hash exactly equal to MemoryHandle
-namespace ramses_capu
+template <typename UniqueId>
+struct fmt::formatter<ramses_internal::TypedMemoryHandle<UniqueId>> : public ramses_internal::SimpleFormatterBase
 {
-    template <typename UniqueId>
-    struct Hash<::ramses_internal::TypedMemoryHandle<UniqueId>>
+    template<typename FormatContext>
+    auto format(const ramses_internal::TypedMemoryHandle<UniqueId>& str, FormatContext& ctx)
     {
-        uint_t operator()(const ::ramses_internal::TypedMemoryHandle<UniqueId>& key)
-        {
-            // hasher for primitives
-            return Hash<ramses_internal::MemoryHandle>()(key.asMemoryHandle());
-        }
-    };
-}
+        return fmt::format_to(ctx.out(), "{}", str.asMemoryHandle());
+    }
+};
 
 namespace std
 {

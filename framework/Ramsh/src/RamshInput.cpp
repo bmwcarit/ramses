@@ -15,22 +15,17 @@ namespace ramses_internal
     {
     }
 
-    void RamshInput::append(const Char c)
-    {
-        Char tmp[] = { c, '\0' };
-        this->push_back(tmp);
-    }
-
     void RamshInput::append(const String& c)
     {
         this->push_back(c);
     }
+
     void RamshInput::append(const Char* c)
     {
         this->push_back(c);
     }
 
-    ramses_internal::Bool RamshInput::isValid() const
+    bool RamshInput::isValid() const
     {
         return (this->begin() != this->end());
     }
@@ -59,7 +54,7 @@ namespace ramses_internal
         return StringVector::operator[](index);
     }
 
-    ramses_internal::Bool RamshInput::operator==(const RamshInput& other) const
+    bool RamshInput::operator==(const RamshInput& other) const
     {
         return static_cast<const StringVector&>(*this) == other;
     }

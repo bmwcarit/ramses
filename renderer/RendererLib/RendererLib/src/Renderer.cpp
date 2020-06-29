@@ -18,7 +18,6 @@
 #include "RendererLib/DisplayController.h"
 #include "RendererLib/RendererLogContext.h"
 #include "RendererLib/DisplayConfig.h"
-#include "RendererLib/StereoDisplayController.h"
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/DisplayEventHandler.h"
 #include "RendererLib/SceneExpirationMonitor.h"
@@ -129,7 +128,7 @@ namespace ramses_internal
         }
 
         addDisplayController(*displayController, display);
-        setClearColor(display, displayConfig.getClearColor());
+        setClearColor(display, displayController->getDisplayBuffer(), displayConfig.getClearColor());
 
         LOG_TRACE(CONTEXT_PROFILING, "RamsesRenderer::createDisplayContext finished creating display");
     }
@@ -169,6 +168,12 @@ namespace ramses_internal
         auto renderer = *m_frameProfileRenderer.get(display);
         delete renderer;
         m_frameProfileRenderer.remove(display);
+    }
+
+    const DisplaySetup& Renderer::getDisplaySetup(DisplayHandle displayHandle) const
+    {
+        assert(m_displays.count(displayHandle) > 0);
+        return m_displays.find(displayHandle)->second.buffersSetup;
     }
 
     Bool Renderer::hasDisplayController(DisplayHandle display) const
@@ -337,8 +342,8 @@ namespace ramses_internal
         display.clearBuffer(displayInfo.frameBufferDeviceHandle, displayBufferInfo.clearColor);
 
         m_tempScenesRendered.clear();
-        const MappedScenes& mappedScenes = displayBufferInfo.mappedScenes;
-        for (const auto& sceneInfo : mappedScenes)
+        const auto& assignedScenes = displayBufferInfo.scenes;
+        for (const auto& sceneInfo : assignedScenes)
         {
             if (sceneInfo.shown)
             {
@@ -384,8 +389,8 @@ namespace ramses_internal
             display.clearBuffer(displayBuffer, displayBufferInfo.clearColor);
 
             m_tempScenesRendered.clear();
-            const MappedScenes& mappedScenes = displayBufferInfo.mappedScenes;
-            for (const auto& sceneInfo : mappedScenes)
+            const auto& assignedScenes = displayBufferInfo.scenes;
+            for (const auto& sceneInfo : assignedScenes)
             {
                 if (sceneInfo.shown)
                 {
@@ -432,8 +437,8 @@ namespace ramses_internal
                 LOG_TRACE(CONTEXT_PROFILING, "Renderer::renderToInterruptibleOffscreenBuffers (display " << displayHandle.asMemoryHandle() << ") interruptible OB " << displayBuffer.asMemoryHandle() << " cleared");
             }
 
-            const MappedScenes& mappedScenes = displayBufferInfo.mappedScenes;
-            for (const auto& sceneInfo : mappedScenes)
+            const auto& assignedScenes = displayBufferInfo.scenes;
+            for (const auto& sceneInfo : assignedScenes)
             {
                 if (!sceneInfo.shown)
                     continue;
@@ -448,13 +453,13 @@ namespace ramses_internal
 
                 if (RendererInterruptState::IsInterrupted(interruptState))
                 {
-                    m_rendererInterruptState = { displayHandle, displayBuffer, sceneId, interruptState };
+                    m_rendererInterruptState = RendererInterruptState{ displayHandle, displayBuffer, sceneId, interruptState };
                     LOG_TRACE(CONTEXT_PROFILING, "Renderer::renderToInterruptibleOffscreenBuffers interrupted rendering to OB " << displayBuffer.asMemoryHandle() << " on display " << displayHandle.asMemoryHandle() << ", scene " << sceneId.getValue());
                     interrupted = true;
                     m_statistics.offscreenBufferInterrupted(displayHandle, displayBuffer);
                     break;
                 }
-                m_rendererInterruptState = {};
+                m_rendererInterruptState = RendererInterruptState{};
 
                 onSceneWasRendered(scene);
                 LOG_TRACE(CONTEXT_PROFILING, "Renderer::renderToInterruptibleOffscreenBuffers scene fully rendered to interruptible OB " << displayBuffer.asMemoryHandle() << " on display " << displayHandle.asMemoryHandle() << ", scene " << sceneId.getValue());
@@ -575,59 +580,42 @@ namespace ramses_internal
             std::iter_swap(displays.begin(), displayToStartWithIt);
     }
 
-    void Renderer::mapSceneToDisplayBuffer(SceneId sceneId, DisplayHandle displayHandle, DeviceResourceHandle buffer, Int32 globalSceneOrder)
+    void Renderer::assignSceneToDisplayBuffer(SceneId sceneId, DisplayHandle displayHandle, DeviceResourceHandle buffer, Int32 globalSceneOrder)
     {
         assert(m_displays.find(displayHandle) != m_displays.cend());
         assert(m_rendererScenes.hasScene(sceneId));
 
         auto& displayInfo = m_displays.find(displayHandle)->second;
-        DisplayHandle currentDisplaySceneIsMappedTo;
-        const auto currentDisplayBufferSceneIsMappedTo = getBufferSceneIsMappedTo(sceneId, &currentDisplaySceneIsMappedTo);
-        assert(!currentDisplaySceneIsMappedTo.isValid() || currentDisplaySceneIsMappedTo == displayHandle);
-        Bool wasShown = false;
-        if (currentDisplayBufferSceneIsMappedTo.isValid())
-        {
-            // scene can be assigned from/to FB/OB while shown, transfer the shown state to the new mapped buffer
-            // TODO vaclav - this can and should be removed when mapping and assignment are merged on HL API
-            const auto& bufferInfo = displayInfo.buffersSetup.getDisplayBuffer(currentDisplayBufferSceneIsMappedTo);
-            auto& mappedScenes = bufferInfo.mappedScenes;
-            const auto it = std::find_if(mappedScenes.cbegin(), mappedScenes.cend(), [sceneId](const MappedSceneInfo& info) { return info.sceneId == sceneId; });
-            assert(it != mappedScenes.cend());
-            wasShown = it->shown;
-            //
-
-            displayInfo.buffersSetup.unmapScene(sceneId);
-        }
-        assert(!wasShown || !hasAnyBufferWithInterruptedRendering());
-        displayInfo.buffersSetup.mapSceneToDisplayBuffer(sceneId, buffer, globalSceneOrder);
-        if (wasShown)
-            displayInfo.buffersSetup.setSceneShown(sceneId, wasShown);
+        DisplayHandle currentDisplaySceneIsAssignedTo;
+        getBufferSceneIsAssignedTo(sceneId, &currentDisplaySceneIsAssignedTo);
+        assert(!currentDisplaySceneIsAssignedTo.isValid() || currentDisplaySceneIsAssignedTo == displayHandle);
+        displayInfo.buffersSetup.assignSceneToDisplayBuffer(sceneId, buffer, globalSceneOrder);
     }
 
-    void Renderer::unmapScene(SceneId sceneId)
+    void Renderer::unassignScene(SceneId sceneId)
     {
         assert(m_rendererScenes.hasScene(sceneId));
-        const DisplayHandle displayHandle = getDisplaySceneIsMappedTo(sceneId);
+        const DisplayHandle displayHandle = getDisplaySceneIsAssignedTo(sceneId);
         assert(displayHandle.isValid());
         auto& displayInfo = m_displays.find(displayHandle)->second;
-        displayInfo.buffersSetup.unmapScene(sceneId);
+        displayInfo.buffersSetup.unassignScene(sceneId);
     }
 
     void Renderer::setSceneShown(SceneId sceneId, Bool show)
     {
         assert(m_rendererScenes.hasScene(sceneId));
         DisplayHandle displayHandle;
-        const auto displayBuffer = getBufferSceneIsMappedTo(sceneId, &displayHandle);
+        const auto displayBuffer = getBufferSceneIsAssignedTo(sceneId, &displayHandle);
         assert(displayBuffer.isValid());
         UNUSED(displayBuffer);
         auto& displayInfo = m_displays.find(displayHandle)->second;
         displayInfo.buffersSetup.setSceneShown(sceneId, show);
     }
 
-    void Renderer::markBufferWithMappedSceneAsModified(SceneId sceneId)
+    void Renderer::markBufferWithSceneAsModified(SceneId sceneId)
     {
         DisplayHandle displayHandle;
-        const auto displayBuffer = getBufferSceneIsMappedTo(sceneId, &displayHandle);
+        const auto displayBuffer = getBufferSceneIsAssignedTo(sceneId, &displayHandle);
         assert(displayHandle.isValid());
         assert(displayBuffer.isValid());
         auto& displayInfo = m_displays.find(displayHandle)->second;
@@ -639,19 +627,19 @@ namespace ramses_internal
         m_skipUnmodifiedBuffers = enable;
     }
 
-    DisplayHandle Renderer::getDisplaySceneIsMappedTo(SceneId sceneId) const
+    DisplayHandle Renderer::getDisplaySceneIsAssignedTo(SceneId sceneId) const
     {
         DisplayHandle display;
-        getBufferSceneIsMappedTo(sceneId, &display);
+        getBufferSceneIsAssignedTo(sceneId, &display);
         return display;
     }
 
-    DeviceResourceHandle Renderer::getBufferSceneIsMappedTo(SceneId sceneId, DisplayHandle* displayHandleOut) const
+    DeviceResourceHandle Renderer::getBufferSceneIsAssignedTo(SceneId sceneId, DisplayHandle* displayHandleOut) const
     {
         for (const auto& displayInfoPair : m_displays)
         {
             const auto& buffers = displayInfoPair.second.buffersSetup;
-            const auto displayBuffer = buffers.findDisplayBufferSceneIsMappedTo(sceneId);
+            const auto displayBuffer = buffers.findDisplayBufferSceneIsAssignedTo(sceneId);
             if (displayBuffer.isValid())
             {
                 if (displayHandleOut != nullptr)
@@ -663,10 +651,10 @@ namespace ramses_internal
         return DeviceResourceHandle::Invalid();
     }
 
-    Bool Renderer::isSceneMappedToInterruptibleOffscreenBuffer(SceneId sceneId) const
+    Bool Renderer::isSceneAssignedToInterruptibleOffscreenBuffer(SceneId sceneId) const
     {
         DisplayHandle displayHandle;
-        const auto displayBuffer = getBufferSceneIsMappedTo(sceneId, &displayHandle);
+        const auto displayBuffer = getBufferSceneIsAssignedTo(sceneId, &displayHandle);
         assert(displayHandle.isValid());
         assert(displayBuffer.isValid());
 
@@ -677,14 +665,14 @@ namespace ramses_internal
     Int32 Renderer::getSceneGlobalOrder(SceneId sceneId) const
     {
         DisplayHandle displayHandle;
-        const auto displayBuffer = getBufferSceneIsMappedTo(sceneId, &displayHandle);
+        const auto displayBuffer = getBufferSceneIsAssignedTo(sceneId, &displayHandle);
         assert(displayHandle.isValid());
         assert(displayBuffer.isValid());
 
         const auto& displayBuffers = m_displays.find(displayHandle)->second.buffersSetup;
-        const MappedScenes& mappedScenes = displayBuffers.getDisplayBuffer(displayBuffer).mappedScenes;
-        const auto it = std::find_if(mappedScenes.cbegin(), mappedScenes.cend(), [sceneId](const MappedScenes::value_type& a) { return a.sceneId == sceneId; });
-        assert(it != mappedScenes.cend());
+        const auto& assignedScenes = displayBuffers.getDisplayBuffer(displayBuffer).scenes;
+        const auto it = std::find_if(assignedScenes.cbegin(), assignedScenes.cend(), [sceneId](const auto& a) { return a.sceneId == sceneId; });
+        assert(it != assignedScenes.cend());
         return it->globalSceneOrder;
     }
 
@@ -727,24 +715,16 @@ namespace ramses_internal
             }
 
             systemCompositorSetIviSurfaceVisibility(rendererSurfaceIVIID, config.getStartVisibleIvi());
+            systemCompositorSetIviSurfaceDestRectangle(rendererSurfaceIVIID, config.getWindowPositionX(), config.getWindowPositionY(), config.getDesiredWindowWidth(), config.getDesiredWindowHeight());
         }
 
         // Enable the context of the render backend that was just created
         // The initialization of display controller below needs active context
         renderBackend->getSurface().enable();
 
-        IDisplayController* displayController = nullptr;
-        if (config.isStereoDisplay())
-        {
-            displayController = new StereoDisplayController(*renderBackend);
-        }
-        else
-        {
-            const UInt32 postProcessorEffects = config.isWarpingEnabled() ? EPostProcessingEffect_Warping : EPostProcessingEffect_None;
-            const UInt32 numSamples = (config.getAntialiasingMethod() == EAntiAliasingMethod_MultiSampling) ? config.getAntialiasingSampleCount() : 1u;
-            displayController = new DisplayController(*renderBackend, numSamples, postProcessorEffects);
-        }
-        assert(displayController != nullptr);
+        const UInt32 postProcessorEffects = config.isWarpingEnabled() ? EPostProcessingEffect_Warping : EPostProcessingEffect_None;
+        const UInt32 numSamples = (config.getAntialiasingMethod() == EAntiAliasingMethod_MultiSampling) ? config.getAntialiasingSampleCount() : 1u;
+        IDisplayController* displayController = new DisplayController(*renderBackend, numSamples, postProcessorEffects);
 
         displayController->setViewPosition(config.getCameraPosition());
         displayController->setViewRotation(config.getCameraRotation());
@@ -755,11 +735,11 @@ namespace ramses_internal
         return displayController;
     }
 
-    void Renderer::setClearColor(DisplayHandle displayHandle, const Vector4& clearColor)
+    void Renderer::setClearColor(DisplayHandle displayHandle, DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor)
     {
         assert(m_displays.find(displayHandle) != m_displays.cend());
         auto& displayInfo = m_displays.find(displayHandle)->second;
-        displayInfo.buffersSetup.setClearColor(displayInfo.frameBufferDeviceHandle, clearColor);
+        displayInfo.buffersSetup.setClearColor(bufferDeviceHandle, clearColor);
     }
 
     void Renderer::scheduleScreenshot(const ScreenshotInfo& screenshot)
@@ -807,7 +787,7 @@ namespace ramses_internal
     void Renderer::resetRenderInterruptState()
     {
         LOG_TRACE(CONTEXT_PROFILING, "Renderer::resetRenderInterruptState");
-        m_rendererInterruptState = {};
+        m_rendererInterruptState = RendererInterruptState{};
     }
 
     FrameProfileRenderer& Renderer::getFrameProfileRenderer(DisplayHandle display)

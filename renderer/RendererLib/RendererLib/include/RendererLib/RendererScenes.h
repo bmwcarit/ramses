@@ -12,7 +12,7 @@
 #include "RendererLib/StagingInfo.h"
 #include "RendererLib/RendererCachedScene.h"
 #include "RendererLib/SceneLinksManager.h"
-#include "Utils/ScopedPointer.h"
+#include <memory>
 
 namespace ramses_internal
 {
@@ -23,9 +23,8 @@ namespace ramses_internal
         RendererCachedScene* scene;
         StagingInfo* stagingInfo;
     };
-    typedef HashMap<SceneId, RendererSceneInfo> RendererSceneInfoMap;
 
-    class RendererScenes : private RendererSceneInfoMap
+    class RendererScenes
     {
     public:
         explicit RendererScenes(RendererEventCollector& eventCollector);
@@ -44,13 +43,14 @@ namespace ramses_internal
         const SceneLinksManager&   getSceneLinksManager() const;
         SceneLinksManager&         getSceneLinksManager();
 
-        using RendererSceneInfoMap::begin;
-        using RendererSceneInfoMap::end;
-        using RendererSceneInfoMap::count;
+        HashMap<SceneId, RendererSceneInfo>::ConstIterator begin() const;
+        HashMap<SceneId, RendererSceneInfo>::ConstIterator end() const;
+        size_t size() const;
 
     private:
+        HashMap<SceneId, RendererSceneInfo> m_rendererSceneInfos;
         // Scoped ptr due to dependency on *this which cannot be passed in member initialization list
-        ScopedPointer<SceneLinksManager> m_sceneLinksManager;
+        std::unique_ptr<SceneLinksManager> m_sceneLinksManager;
     };
 }
 

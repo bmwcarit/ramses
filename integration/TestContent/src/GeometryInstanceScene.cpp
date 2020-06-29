@@ -16,13 +16,14 @@
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/MeshNode.h"
+#include <cassert>
 
 namespace ramses_internal
 {
     GeometryInstanceScene::GeometryInstanceScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
         : IntegrationScene(ramsesClient, scene, cameraPosition)
     {
-        ramses::Effect* effect = NULL;
+        ramses::Effect* effect = nullptr;
         switch (state)
         {
         case GEOMETRY_INSTANCE_UNIFORM:

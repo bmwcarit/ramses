@@ -180,6 +180,6 @@ namespace ramses_internal
 
     Bool SceneDependencyChecker::isEmpty() const
     {
-        return m_consumerToProvidersMap.count() == 0u;
+        return m_consumerToProvidersMap.size() == 0u;
     }
 }

@@ -41,8 +41,8 @@ namespace ramses_internal
         String nameEXT = "EGL_EXT_" + extensionName;
         String nameARB = "EGL_ARB_" + extensionName;
 
-        return  m_contextExtensions.hasElement(nameEXT) ||
-                m_contextExtensions.hasElement(nameARB);
+        return  m_contextExtensions.contains(nameEXT) ||
+                m_contextExtensions.contains(nameARB);
     }
 }
 

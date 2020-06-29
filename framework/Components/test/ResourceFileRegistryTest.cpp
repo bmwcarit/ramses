@@ -80,7 +80,7 @@ namespace ramses_internal
 
         ResourceFileEntry storedFileEntry;
         BinaryFileInputStream* storedResourceFileStream(nullptr);
-        EXPECT_EQ(EStatus_RAMSES_OK, registry.getEntry(hash, storedResourceFileStream, storedFileEntry));
+        EXPECT_EQ(EStatus::Ok, registry.getEntry(hash, storedResourceFileStream, storedFileEntry));
         EXPECT_TRUE(storedResourceFileStream != nullptr);
 
         EXPECT_EQ(&resourceFileStream->resourceStream, storedResourceFileStream);

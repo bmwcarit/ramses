@@ -14,29 +14,34 @@
 #include "Collections/Vector.h"
 #include "SceneAPI/TextureEnums.h"
 #include "Collections/Pair.h"
+#include <array>
 
 namespace ramses_internal
 {
     using MipDataSizeVector = std::vector<UInt32>;
+    using TextureSwizzleArray = std::array<ETextureChannelColor, 4>;
+    constexpr TextureSwizzleArray DefaultTextureSwizzleArray{ ETextureChannelColor::Red, ETextureChannelColor::Green, ETextureChannelColor::Blue, ETextureChannelColor::Alpha };
 
     struct TextureMetaInfo
     {
-        TextureMetaInfo(UInt32 width = 0u, UInt32 height = 0u, UInt32 depth = 0u, ETextureFormat format = ETextureFormat_Invalid, Bool generateMipChain = false, const MipDataSizeVector& mipDataSizes = {})
+        explicit TextureMetaInfo(UInt32 width = 0u, UInt32 height = 0u, UInt32 depth = 0u, ETextureFormat format = ETextureFormat_Invalid, bool generateMipChain = false, const TextureSwizzleArray swizzle = {}, const MipDataSizeVector& mipDataSizes = {})
             : m_width(width)
             , m_height(height)
             , m_depth(depth)
             , m_format(format)
             , m_generateMipChain(generateMipChain)
             , m_dataSizes(mipDataSizes)
+            , m_swizzle(swizzle)
         {
         }
 
-        UInt32                  m_width;
-        UInt32                  m_height;
-        UInt32                  m_depth;
-        ETextureFormat          m_format;
-        Bool                    m_generateMipChain;
-        MipDataSizeVector       m_dataSizes;
+        UInt32                      m_width;
+        UInt32                      m_height;
+        UInt32                      m_depth;
+        ETextureFormat              m_format;
+        bool                        m_generateMipChain;
+        MipDataSizeVector           m_dataSizes;
+        TextureSwizzleArray         m_swizzle;
     };
 }
 

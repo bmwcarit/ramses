@@ -11,22 +11,23 @@
 # This file describes the settings to be used by the documentation system
 # doxygen (www.doxygen.org) for a project
 
-PROJECT_NAME           = "@RAMSES_DOCUMENT_NAME@"
+PROJECT_NAME           = "RAMSES Documentation"
 
 PROJECT_NUMBER         = "@RAMSES_VERSION@"
 
-PROJECT_BRIEF          = "@RAMSES_DOCUMENT_DESCRIPTION@"
+PROJECT_BRIEF          = "Information for RAMSES users and developers"
 
-PROJECT_LOGO           = "@RAMSES_LOGO_SMALL@"
+PROJECT_LOGO           = "@DOXYGEN_LOGO@"
 
-OUTPUT_DIRECTORY       = "@RAMSES_DOXYGEN_TARGET_DIR@"
+OUTPUT_DIRECTORY       = "@DOXYGEN_TARGET_DIR@"
 
-EXAMPLE_PATH           = "@RAMSES_EXAMPLE_PATH@"
+EXAMPLE_PATH           = "@DOXYGEN_EXAMPLE_PATH@"
 
-# hide classes in example applications
-EXCLUDE_SYMBOLS        = ColorSwitchingInputHandler RotateInputHandler QuadSceneInfo TriangleSceneInfo
+# hide classes in example applications or fwd declarations
+EXCLUDE_SYMBOLS        = QuadSceneInfo TriangleSceneInfo DCSMProviderExample
 
-@RAMSES_DOXYGEN_INPUT_FILES@
+INPUT                  = @DOXYGEN_INPUT@
+IMAGE_PATH             = @DOXYGEN_IMAGE_PATH@
 
 INPUT_ENCODING         = ISO-8859-1
 
@@ -46,3 +47,8 @@ WARN_IF_DOC_ERROR      = YES
 WARN_NO_PARAMDOC       = YES
 ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = YES
+EXTRACT_ALL            = YES
+
+DOT_GRAPH_MAX_NODES    = 100
+
+WARN_LOGFILE           = DoxygenWarningLog.txt

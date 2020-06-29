@@ -35,7 +35,6 @@ namespace ramses_internal
         surface                     = createMockObjectHelper<SurfaceMockWithDestructor>();
         device                      = createMockObjectHelper<DeviceMockWithDestructor>();
         embeddedCompositor          = createMockObjectHelper<EmbeddedCompositorMockWithDestructor>();
-        textureUploadingAdapter     = createMockObjectHelper<TextureUploadingAdapterMockWithDestructor>();
 
         ON_CALL(*surface, getWindow()).WillByDefault(ReturnRef(*window));
         ON_CALL(*surface, getContext()).WillByDefault(ReturnRef(*context));

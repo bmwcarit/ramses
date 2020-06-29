@@ -9,28 +9,19 @@
 #ifndef RAMSES_UTILS_RAMSESLOGGER_H
 #define RAMSES_UTILS_RAMSESLOGGER_H
 
-#include "PlatformAbstraction/PlatformTypes.h"
-#include "PlatformAbstraction/PlatformLock.h"
 #include "Utils/LogLevel.h"
 #include "Utils/LogContext.h"
 #include "Utils/ConsoleLogAppender.h"
 #include "Utils/LogAppenderBase.h"
 #include "Collections/Vector.h"
 #include "Collections/String.h"
-#include "Utils/Warnings.h"
-#include <functional>
+#include <mutex>
 #include <memory>
 
 namespace ramses_internal
 {
     class CommandLineParser;
     class DltLogAppender;
-
-    enum class ELogAppenderType
-    {
-        Console = 0x1,
-        Dlt
-    };
 
     struct LogContextInformation
     {
@@ -45,13 +36,11 @@ namespace ramses_internal
         RamsesLogger();
         ~RamsesLogger();
 
-        void initialize(const CommandLineParser& parser, const String& idString, const String& descriptionString, Bool disableDLT);
+        void initialize(const CommandLineParser& parser, const String& idString, const String& descriptionString, bool disableDLT, bool enableDLTApplicationRegistration);
 
         LogContext& createContext(const char* name, const char* id);
 
-        void addAppender(LogAppenderBase& appender);
-        void removeAppender(LogAppenderBase& appender);
-        bool isAppenderTypeActive(ELogAppenderType type) const;
+        bool isDltAppenderActive() const;
 
         void log(const LogMessage& msg);
 
@@ -59,10 +48,9 @@ namespace ramses_internal
         std::vector<LogContextInformation> getAllContextsInformation() const;
 
         void setLogLevelForContexts(ELogLevel logLevel);
-        ELogLevel getLogLevelByContextId(const String& contextId) const;
 
-        void setLogLevelForAppenderType(ELogAppenderType type, ELogLevel logLevel);
-        ELogLevel getLogLevelForAppenderType(ELogAppenderType type) const;
+        void setConsoleLogLevel(ELogLevel logLevel);
+        ELogLevel getConsoleLogLevel() const;
 
         void setAfterConsoleLogCallback(const std::function<void()>& callback);
         void removeAfterConsoleLogCallback();
@@ -70,21 +58,19 @@ namespace ramses_internal
         bool transmitFile(const String& path, bool deleteFile) const;
         bool registerInjectionCallback(LogContext& ctx, UInt32 serviceId, int (*callback)(UInt32 serviceId, void* data, UInt32 length));
 
-        static ELogLevel GetLoglevelFromInt(Int32 logLevelInt);
         static const char* GetLogLevelText(ELogLevel logLevel);
 
     private:
         static const ELogLevel LogLevelDefault_Contexts = ELogLevel::Info;
         static const ELogLevel LogLevelDefault_Console = ELogLevel::Info;
-        static const ELogLevel LogLevelDefault_DLT = ELogLevel::Info;
 
-        void createDltContexts(bool pushLogLevel);
+        static void UpdateConsoleLogLevelFromDefine(ELogLevel& loglevel);
+        static void UpdateConsoleLogLevelFromEnvVar(ELogLevel& loglevel);
+
         void dltLogLevelChangeCallback(const String& contextId, int logLevelAsInt);
-        const LogContext* getLogContextById(const String& contextId) const;
         LogContext* getLogContextById(const String& contextId);
-        void updateDltLogAppenderLoglevel();
 
-        PlatformLightweightLock m_appenderLock;
+        std::mutex m_appenderLock;
         bool m_isInitialized;
         ConsoleLogAppender m_consoleLogAppender;
         std::unique_ptr<DltLogAppender> m_dltLogAppender;

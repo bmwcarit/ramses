@@ -41,14 +41,14 @@ namespace ramses_internal
             m_hasBeenUsed = true;
         }
 
-        Bool hasBeenUsed() const
+        bool hasBeenUsed() const
         {
             return m_hasBeenUsed;
         }
 
-        Bool hasValue() const
+        bool hasValue() const
         {
-            return 0 != m_value.getLength();
+            return !m_value.empty();
         }
 
         const String& getValue() const
@@ -59,7 +59,7 @@ namespace ramses_internal
     private:
         String m_name;
         String m_value;
-        Bool m_hasBeenUsed;
+        bool m_hasBeenUsed;
     };
 }
 

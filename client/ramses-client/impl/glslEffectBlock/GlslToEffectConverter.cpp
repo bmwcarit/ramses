@@ -33,7 +33,7 @@ namespace ramses_internal
     ramses_internal::String GlslToEffectConverter::getStatusMessage() const
     {
         String msg = m_message.c_str();
-        if (msg.getLength() == 0)
+        if (msg.size() == 0)
         {
             return String("Ok");
         }
@@ -148,7 +148,7 @@ namespace ramses_internal
         uint32_t elementCount;
         CHECK_RETURN_ERR(getElementCountFromType(type, inputName, elementCount));
 
-        assert(inputName.getLength() != 0);
+        assert(inputName.size() != 0);
         assert(elementCount > 0);
 
         if (!type.isStruct())
@@ -250,7 +250,7 @@ namespace ramses_internal
 
     bool GlslToEffectConverter::setInputTypeFromType(const glslang::TType& type, EffectInputInformation& input) const
     {
-        assert(input.inputName.getLength() != 0);
+        assert(input.inputName.size() != 0);
         assert(!type.isStruct());
 
         const glslang::TBasicType basicType = type.getBasicType();
@@ -292,9 +292,8 @@ namespace ramses_internal
                 case 4:
                     input.dataType = EDataType_Vector4F;
                     return true;
-                default:
-                    break;
                 }
+                break;
             case glslang::EbtInt:
                 switch (vectorSize)
                 {
@@ -307,9 +306,8 @@ namespace ramses_internal
                 case 4:
                     input.dataType = EDataType_Vector4I;
                     return true;
-                default:
-                    break;
                 }
+                break;
             default:
                 break;
             }
@@ -369,7 +367,7 @@ namespace ramses_internal
 
     bool GlslToEffectConverter::setSemanticsOnInput(EffectInputInformation& input) const
     {
-        assert(input.inputName.getLength() != 0);
+        assert(input.inputName.size() != 0);
         assert(input.dataType != EDataType_NUMBER_OF_ELEMENTS);
         if (const EFixedSemantics* semantic = m_semanticInputs.get(input.inputName))
         {

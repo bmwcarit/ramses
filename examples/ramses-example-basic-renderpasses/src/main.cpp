@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 {
     // register at RAMSES daemon
     ramses::RamsesFramework framework(argc, argv);
-    ramses::RamsesClient ramses("ramses-example-basic-renderpasses", framework);
+    ramses::RamsesClient& ramses(*framework.createClient("ramses-example-basic-renderpasses"));
     framework.connect();
 
     // prepare triangle geometry: vertex position array and index array
@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
     //                 This should not be the case for real applications.
 
     // create a scene using explicit render passes
-    ramses::Scene* scene = ramses.createScene(123u, ramses::SceneConfig(), "basic renderpasses scene");
+    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic renderpasses scene");
 
     // every render pass needs a camera to define rendering parameters
     // create camera with perspective projection

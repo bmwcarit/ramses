@@ -11,7 +11,6 @@
 #include "ServiceHandlerMocks.h"
 #include "Components/ManagedResource.h"
 #include "ResourceMock.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "Utils/BinaryOutputStream.h"
 #include "Scene/SceneActionCollectionCreator.h"
 #include "ResourceSerializationTestHelper.h"
@@ -19,7 +18,7 @@
 
 namespace ramses_internal
 {
-    INSTANTIATE_TEST_CASE_P(TypedCommunicationTest, ACommunicationSystem, ::testing::ValuesIn(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()));
+    INSTANTIATE_TEST_SUITE_P(TypedCommunicationTest, ACommunicationSystem, ::testing::ValuesIn(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()));
 
     TEST_P(ACommunicationSystem, canStartStopDiscoveryDaemon)
     {
@@ -39,7 +38,7 @@ namespace ramses_internal
 
     TEST_P(ACommunicationSystem, sendFunctionsFailWhenNotYetConnected)
     {
-        Guid to(true);
+        Guid to(5);
         std::unique_ptr<CommunicationSystemTestWrapper> csw{CommunicationSystemTestFactory::ConstructTestWrapper(*state)};
         EXPECT_FALSE(csw->commSystem->sendRequestResources(to, ResourceContentHashVector()));
         EXPECT_FALSE(csw->commSystem->sendResourcesNotAvailable(to, ResourceContentHashVector()));
@@ -54,17 +53,18 @@ namespace ramses_internal
         EXPECT_EQ(0u, csw->commSystem->sendSceneActionList(to, SceneId(123), SceneActionCollection(), 1));
         EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastOfferContent(ContentID{}, Category{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmOfferContent(to, ContentID{}, Category{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentReady(to, ContentID{}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentFocusRequest(to, ContentID{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentReady(to, ContentID{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentEnableFocusRequest(to, ContentID{}, 32));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentDisableFocusRequest(to, ContentID{}, 32));
         EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastRequestStopOfferContent(ContentID{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastForceStopOfferContent(ContentID{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmCanvasSizeChange(to, ContentID{}, SizeInfo{}, AnimationInformation{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentStateChange(to, ContentID{}, EDcsmState::Offered, SizeInfo{}, AnimationInformation{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmCanvasSizeChange(to, ContentID{}, CategoryInfo{}, AnimationInformation{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentStateChange(to, ContentID{}, EDcsmState::Offered, CategoryInfo{}, AnimationInformation{}));
     }
 
     TEST_P(ACommunicationSystem, sendFunctionsFailAfterCallingDisconnect)
     {
-        Guid to(true);
+        Guid to(5);
         std::unique_ptr<CommunicationSystemTestWrapper> csw{CommunicationSystemTestFactory::ConstructTestWrapper(*state)};
         csw->commSystem->connectServices();
         csw->commSystem->disconnectServices();
@@ -82,21 +82,22 @@ namespace ramses_internal
         EXPECT_EQ(0u, csw->commSystem->sendSceneActionList(to, SceneId(123), SceneActionCollection(), 1));
         EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastOfferContent(ContentID{}, Category{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmOfferContent(to, ContentID{}, Category{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentReady(to, ContentID{}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentFocusRequest(to, ContentID{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentReady(to, ContentID{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentEnableFocusRequest(to, ContentID{}, 32));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentDisableFocusRequest(to, ContentID{}, 32));
         EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastRequestStopOfferContent(ContentID{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastForceStopOfferContent(ContentID{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmCanvasSizeChange(to, ContentID{}, SizeInfo{}, AnimationInformation{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentStateChange(to, ContentID{}, EDcsmState::Offered, SizeInfo{}, AnimationInformation{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmCanvasSizeChange(to, ContentID{}, CategoryInfo{}, AnimationInformation{}));
+        EXPECT_FALSE(csw->commSystem->sendDcsmContentStateChange(to, ContentID{}, EDcsmState::Offered, CategoryInfo{}, AnimationInformation{}));
     }
 
     class ACommunicationSystemWithDaemonConnectionSetup : public ACommunicationSystemWithDaemon
     {
     };
 
-    INSTANTIATE_TEST_CASE_P(TypedCommunicationTest, ACommunicationSystemWithDaemon, TESTING_SERVICETYPE_RAMSES(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()));
-    INSTANTIATE_TEST_CASE_P(TypedCommunicationTest_ramses, ACommunicationSystemWithDaemonConnectionSetup, TESTING_SERVICETYPE_RAMSES(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()));
-    INSTANTIATE_TEST_CASE_P(TypedCommunicationTest_dcsm, ACommunicationSystemWithDaemonConnectionSetup, TESTING_SERVICETYPE_DCSM(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes(ECommunicationSystemType_Tcp)));
+    INSTANTIATE_TEST_SUITE_P(TypedCommunicationTest, ACommunicationSystemWithDaemon, TESTING_SERVICETYPE_RAMSES(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()));
+    INSTANTIATE_TEST_SUITE_P(TypedCommunicationTest_ramses, ACommunicationSystemWithDaemonConnectionSetup, TESTING_SERVICETYPE_RAMSES(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()));
+    INSTANTIATE_TEST_SUITE_P(TypedCommunicationTest_dcsm, ACommunicationSystemWithDaemonConnectionSetup, TESTING_SERVICETYPE_DCSM(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes(ECommunicationSystemType_Tcp)));
 
     TEST_P(ACommunicationSystemWithDaemon, canConnectAndDisconnectWithoutBlocking)
     {
@@ -198,7 +199,7 @@ namespace ramses_internal
         SceneId sceneId;
         {
             PlatformGuard g(receiver->frameworkLock);
-            EXPECT_CALL(handler, handleSubscribeScene(sceneId, sender->id)).WillOnce(SendHandlerCalledEvent(state.get()));
+            EXPECT_CALL(handler, handleSubscribeScene(sceneId, sender->id)).WillOnce(InvokeWithoutArgs([&](){ state->sendEvent(); }));
         }
         sender->commSystem->sendSubscribeScene(receiver->id, sceneId);
         ASSERT_TRUE(state->event.waitForEvents(1));
@@ -206,7 +207,23 @@ namespace ramses_internal
         state->disconnectAll();
     }
 
-    TEST_P(ACommunicationSystemWithDaemon, canConnectAndDisconnectMultipleTimes)
+    class ACommunicationSystemWithDaemonMultiParticipant : public ACommunicationSystemWithDaemon
+    {
+    public:
+    };
+
+    class ACommunicationSystemWithDaemonTcpOnly : public ACommunicationSystemWithDaemon
+    {
+    public:
+    };
+
+    INSTANTIATE_TEST_SUITE_P(TypedCommunicationTest, ACommunicationSystemWithDaemonMultiParticipant,
+                            TESTING_SERVICETYPE_RAMSES(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes(ECommunicationSystemType_Tcp)));
+
+    INSTANTIATE_TEST_SUITE_P(TypedCommunicationTest, ACommunicationSystemWithDaemonTcpOnly,
+                            TESTING_SERVICETYPE_RAMSES(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes(ECommunicationSystemType_Tcp)));
+
+    TEST_P(ACommunicationSystemWithDaemonMultiParticipant, canConnectAndDisconnectMultipleTimes)
     {
         std::unique_ptr<CommunicationSystemTestWrapper> csw{CommunicationSystemTestFactory::ConstructTestWrapper(*state)};
         EXPECT_TRUE(csw->commSystem->connectServices());
@@ -216,14 +233,6 @@ namespace ramses_internal
         EXPECT_TRUE(csw->commSystem->connectServices());
         csw->commSystem->disconnectServices();
     }
-
-    class ACommunicationSystemWithDaemonMultiParticipant : public ACommunicationSystemWithDaemon
-    {
-    public:
-    };
-
-    INSTANTIATE_TEST_CASE_P(TypedCommunicationTest, ACommunicationSystemWithDaemonMultiParticipant,
-                            TESTING_SERVICETYPE_RAMSES(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes(ECommunicationSystemType_Tcp)));
 
     TEST_P(ACommunicationSystemWithDaemonMultiParticipant, canSendMessageInBothDirectionBetweenTwoParticipants)
     {
@@ -240,8 +249,8 @@ namespace ramses_internal
         StrictMock<SceneProviderServiceHandlerMock> handler_2;
         csw_2->commSystem->setSceneProviderServiceHandler(&handler_2);
 
-        EXPECT_CALL(handler_1, handleSubscribeScene(sceneId_2, csw_2->id)).WillOnce(SendHandlerCalledEvent(state.get()));
-        EXPECT_CALL(handler_2, handleSubscribeScene(sceneId_1, csw_1->id)).WillOnce(SendHandlerCalledEvent(state.get()));
+        EXPECT_CALL(handler_1, handleSubscribeScene(sceneId_2, csw_2->id)).WillOnce(InvokeWithoutArgs([&](){ state->sendEvent(); }));
+        EXPECT_CALL(handler_2, handleSubscribeScene(sceneId_1, csw_1->id)).WillOnce(InvokeWithoutArgs([&](){ state->sendEvent(); }));
 
         csw_1->commSystem->sendSubscribeScene(csw_2->id, sceneId_1);
         csw_2->commSystem->sendSubscribeScene(csw_1->id, sceneId_2);
@@ -266,7 +275,7 @@ namespace ramses_internal
 
         SceneId sceneId;
 
-        EXPECT_CALL(handlerOk, handleSubscribeScene(sceneId, sender->id)).WillOnce(SendHandlerCalledEvent(state.get()));
+        EXPECT_CALL(handlerOk, handleSubscribeScene(sceneId, sender->id)).WillOnce(InvokeWithoutArgs([&](){ state->sendEvent(); }));
         sender->commSystem->sendSubscribeScene(receiverOk->id, sceneId);
         ASSERT_TRUE(state->event.waitForEvents(1));
 
@@ -290,20 +299,20 @@ namespace ramses_internal
 
         std::vector<Byte> receivedResourceData;
         std::vector<Byte> sentResourceData;
-        EXPECT_CALL(handler, handleSendResource(_, sender->id)).WillOnce(Invoke([this, &receivedResourceData](const ByteArrayView& resourceData, const Guid&)
+        EXPECT_CALL(handler, handleSendResource(_, sender->id)).WillOnce([this, &receivedResourceData](const auto& resourceData, const Guid&)
         {
             receivedResourceData.insert(receivedResourceData.begin(), resourceData.begin(), resourceData.end());
             state->event.signal();
-        }));
+        });
 
         {
             std::vector<Float> data(60000);  // data size ~250k
             for (UInt i = 0; i < data.size(); ++i)
             {
-                data[i] = 1.1f * (i + 1);
+                data[i] = 1.1f * static_cast<float>(i + 1);
             }
 
-            ScopedPointer<IResource> resource(new ArrayResource(EResourceType_VertexArray, static_cast<UInt32>(data.size()), EDataType_Float, reinterpret_cast<const Byte*>(&data[0]), ResourceCacheFlag(0u), String("resName")));
+            std::unique_ptr<IResource> resource(new ArrayResource(EResourceType_VertexArray, static_cast<UInt32>(data.size()), EDataType_Float, reinterpret_cast<const Byte*>(&data[0]), ResourceCacheFlag(0u), String("resName")));
             resource->compress(IResource::CompressionLevel::REALTIME);
 
             StrictMock<ManagedResourceDeleterCallbackMock> callback;
@@ -327,7 +336,7 @@ namespace ramses_internal
         state->disconnectAll();
     }
 
-    TEST_P(ACommunicationSystemWithDaemonMultiParticipant, canSendAndReceiveLargeMessageInMultipleChunks)
+    TEST_P(ACommunicationSystemWithDaemonTcpOnly, canSendAndReceiveLargeMessageInMultipleChunks)
     {
         const UInt32 numFloatElements  = 512 * 1024;
         const UInt32 floatDataSize     = numFloatElements * sizeof(Float);
@@ -347,22 +356,22 @@ namespace ramses_internal
 
         std::vector<std::vector<Byte>> receivedResourceData;
         std::vector<std::vector<Byte>> sentResourceData;
-        EXPECT_CALL(handler, handleSendResource(_, sender->id)).WillRepeatedly(Invoke([this, &receivedResourceData](const ByteArrayView& resourceData, const Guid&)
+        EXPECT_CALL(handler, handleSendResource(_, sender->id)).WillRepeatedly([this, &receivedResourceData](const auto& resourceData, const Guid&)
         {
             std::vector<Byte> data;
             data.insert(data.begin(), resourceData.begin(), resourceData.end());
             receivedResourceData.push_back(data);
             state->event.signal();
-        }));
+        });
 
         BinaryOutputStream sentResourceDump;
         {
             std::vector<Float> data(numFloatElements);
             for (UInt i = 0; i < data.size(); ++i)
             {
-                data[i] = 1.1f * (i + 1);
+                data[i] = 1.1f * static_cast<float>(i + 1);
             }
-            ScopedPointer<IResource> resource(new ArrayResource(EResourceType_VertexArray, static_cast<UInt32>(data.size()), EDataType_Float, reinterpret_cast<const Byte*>(&data[0]), ResourceCacheFlag(0u), String("resName")));
+            std::unique_ptr<IResource> resource(new ArrayResource(EResourceType_VertexArray, static_cast<UInt32>(data.size()), EDataType_Float, reinterpret_cast<const Byte*>(&data[0]), ResourceCacheFlag(0u), String("resName")));
             resource->compress(IResource::CompressionLevel::REALTIME);
 
             StrictMock<ManagedResourceDeleterCallbackMock> callback;
@@ -400,8 +409,8 @@ namespace ramses_internal
         SceneId sceneId;
         SceneInfoVector unavailableScenes;
         unavailableScenes.push_back(SceneInfo(sceneId));
-        EXPECT_CALL(handler_1, handleScenesBecameUnavailable(unavailableScenes, sender->id)).WillOnce(SendHandlerCalledEvent(state.get()));
-        EXPECT_CALL(handler_2, handleScenesBecameUnavailable(unavailableScenes, sender->id)).WillOnce(SendHandlerCalledEvent(state.get()));
+        EXPECT_CALL(handler_1, handleScenesBecameUnavailable(unavailableScenes, sender->id)).WillOnce(InvokeWithoutArgs([&](){ state->sendEvent(); }));
+        EXPECT_CALL(handler_2, handleScenesBecameUnavailable(unavailableScenes, sender->id)).WillOnce(InvokeWithoutArgs([&](){ state->sendEvent(); }));
         sender->commSystem->broadcastScenesBecameUnavailable(unavailableScenes);
 
         ASSERT_TRUE(state->event.waitForEvents(2));
@@ -450,7 +459,7 @@ namespace ramses_internal
 
         SceneId sceneId;
 
-        EXPECT_CALL(handler, handleSubscribeScene(sceneId, sender->id)).WillOnce(SendHandlerCalledEvent(state.get()));
+        EXPECT_CALL(handler, handleSubscribeScene(sceneId, sender->id)).WillOnce(InvokeWithoutArgs([&]() { state->sendEvent(); }));
         sender->commSystem->sendSubscribeScene(receiver->id, sceneId);
         ASSERT_TRUE(state->event.waitForEvents(1));
 
@@ -459,8 +468,8 @@ namespace ramses_internal
 
     TEST_P(ACommunicationSystemWithDaemonMultiParticipant, canEstablishConnectionToNewParticipantWithSameGuid)
     {
-        const Guid csw1Id("00000000-0000-0000-0000-000000000002");
-        const Guid csw2Id("00000000-0000-0000-0000-000000000001");   // csw2 id MUST be smaller => forces csw1 to initiate connections
+        const Guid csw1Id(2);
+        const Guid csw2Id(1);   // csw2 id MUST be smaller => forces csw1 to initiate connections
 
         std::unique_ptr<CommunicationSystemTestWrapper> csw1{CommunicationSystemTestFactory::ConstructTestWrapper(*state, "csw1", csw1Id)};
         std::unique_ptr<CommunicationSystemTestWrapper> csw2{CommunicationSystemTestFactory::ConstructTestWrapper(*state, "csw2", csw2Id)};

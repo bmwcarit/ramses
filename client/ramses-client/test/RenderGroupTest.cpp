@@ -176,7 +176,7 @@ namespace ramses
 
     TEST_F(ARenderGroup, reportsErrorWhenAddMeshNodeFromAnotherScene)
     {
-        Scene& anotherScene = *client.createScene(12u);
+        Scene& anotherScene = *client.createScene(sceneId_t(12u));
         MeshNode* mesh = anotherScene.createMeshNode();
 
         EXPECT_NE(StatusOK, renderGroup.addMeshNode(*mesh));
@@ -184,7 +184,7 @@ namespace ramses
 
     TEST_F(ARenderGroup, reportsErrorWhenAddRenderGroupFromAnotherScene)
     {
-        Scene& anotherScene = *client.createScene(12u);
+        Scene& anotherScene = *client.createScene(sceneId_t(12u));
         RenderGroup* nestedRenderGroup = anotherScene.createRenderGroup();
 
         EXPECT_NE(StatusOK, renderGroup.addRenderGroup(*nestedRenderGroup));

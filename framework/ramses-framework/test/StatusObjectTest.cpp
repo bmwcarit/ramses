@@ -6,8 +6,8 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "gmock/gmock.h"
 #include "StatusObjectImpl.h"
+#include "gtest/gtest.h"
 
 using namespace ramses;
 using namespace ramses_internal;
@@ -25,62 +25,102 @@ public:
     }
 };
 
-TEST(AStatusObject, allValidationLevelsContainObjectNames)
+class AStatusObject : public ::testing::Test
 {
+public:
     StatusObjectImplDummy dummy;
+};
+
+TEST_F(AStatusObject, canAddAndGetStatusMessage)
+{
+    const status_t s = dummy.addErrorEntry("foobar");
+    EXPECT_STREQ("foobar", dummy.getStatusMessage(s));
+}
+
+TEST_F(AStatusObject, canAddAndGetMultipleStatusMessage)
+{
+    const status_t s1 = dummy.addErrorEntry("foo");
+    const status_t s2 = dummy.addErrorEntry("bar");
+    const status_t s3 = dummy.addErrorEntry("baz");
+    EXPECT_STREQ("baz", dummy.getStatusMessage(s3));
+    EXPECT_STREQ("foo", dummy.getStatusMessage(s1));
+    EXPECT_STREQ("bar", dummy.getStatusMessage(s2));
+}
+
+TEST_F(AStatusObject, canGetInvalidMessage)
+{
+    EXPECT_STREQ("Unknown", dummy.getStatusMessage(999999));
+}
+
+TEST_F(AStatusObject, canGetSuccessMessage)
+{
+    EXPECT_STREQ("OK", dummy.getStatusMessage(StatusOK));
+}
+
+TEST_F(AStatusObject, canAddAndGetStdString)
+{
+    const status_t s = dummy.addErrorEntry(std::string("boo"));
+    EXPECT_STREQ("boo", dummy.getStatusMessage(s));
+}
+
+TEST_F(AStatusObject, canUseWithFmtlib)
+{
+    const status_t s = dummy.addErrorEntry(fmt::format("hello {}", "world"));
+    EXPECT_STREQ("hello world", dummy.getStatusMessage(s));
+}
+
+TEST_F(AStatusObject, allValidationLevelsContainObjectNames)
+{
     dummy.addObjectNameToValidationReport();
 
     const String infoReportAsString(dummy.getValidationReport(EValidationSeverity_Info));
-    EXPECT_NE(0u, infoReportAsString.getLength());
+    EXPECT_NE(0u, infoReportAsString.size());
 
     const String warningReportAsString(dummy.getValidationReport(EValidationSeverity_Warning));
-    EXPECT_NE(0u, warningReportAsString.getLength());
+    EXPECT_NE(0u, warningReportAsString.size());
 
     const String errorReportAsString(dummy.getValidationReport(EValidationSeverity_Error));
-    EXPECT_NE(0u, errorReportAsString.getLength());
+    EXPECT_NE(0u, errorReportAsString.size());
 }
 
-TEST(AStatusObject, filteresValidationInfosCorrectly)
+TEST_F(AStatusObject, filteresValidationInfosCorrectly)
 {
-    StatusObjectImplDummy dummy;
     dummy.addValidationMessageForTesting(EValidationSeverity_Info);
 
     const String infoReportAsString(dummy.getValidationReport(EValidationSeverity_Info));
-    EXPECT_LT(0u, infoReportAsString.getLength());
+    EXPECT_LT(0u, infoReportAsString.size());
 
     const String warningReportAsString(dummy.getValidationReport(EValidationSeverity_Warning));
-    EXPECT_EQ(0u, warningReportAsString.getLength());
+    EXPECT_EQ(0u, warningReportAsString.size());
 
     const String errorReportAsString(dummy.getValidationReport(EValidationSeverity_Error));
-    EXPECT_EQ(0u, errorReportAsString.getLength());
+    EXPECT_EQ(0u, errorReportAsString.size());
 }
 
-TEST(AStatusObject, filteresValidationWarningsCorrectly)
+TEST_F(AStatusObject, filteresValidationWarningsCorrectly)
 {
-    StatusObjectImplDummy dummy;
     dummy.addValidationMessageForTesting(EValidationSeverity_Warning);
 
     const String infoReportAsString(dummy.getValidationReport(EValidationSeverity_Info));
-    EXPECT_LT(0u, infoReportAsString.getLength());
+    EXPECT_LT(0u, infoReportAsString.size());
 
     const String warningReportAsString(dummy.getValidationReport(EValidationSeverity_Warning));
-    EXPECT_LT(0u, warningReportAsString.getLength());
+    EXPECT_LT(0u, warningReportAsString.size());
 
     const String errorReportAsString(dummy.getValidationReport(EValidationSeverity_Error));
-    EXPECT_EQ(0u, errorReportAsString.getLength());
+    EXPECT_EQ(0u, errorReportAsString.size());
 }
 
-TEST(AStatusObject, filteresValidationErrorsCorrectly)
+TEST_F(AStatusObject, filteresValidationErrorsCorrectly)
 {
-    StatusObjectImplDummy dummy;
     dummy.addValidationMessageForTesting(EValidationSeverity_Error);
 
     const String infoReportAsString(dummy.getValidationReport(EValidationSeverity_Info));
-    EXPECT_LT(0u, infoReportAsString.getLength());
+    EXPECT_LT(0u, infoReportAsString.size());
 
     const String warningReportAsString(dummy.getValidationReport(EValidationSeverity_Warning));
-    EXPECT_LT(0u, warningReportAsString.getLength());
+    EXPECT_LT(0u, warningReportAsString.size());
 
     const String errorReportAsString(dummy.getValidationReport(EValidationSeverity_Error));
-    EXPECT_LT(0u, errorReportAsString.getLength());
+    EXPECT_LT(0u, errorReportAsString.size());
 }

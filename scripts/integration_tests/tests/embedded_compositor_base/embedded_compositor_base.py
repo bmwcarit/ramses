@@ -11,10 +11,9 @@ from ramses_test_framework import log
 from ramses_test_framework.ramses_test_extensions import with_ramses_process_check
 from ramses_test_framework import application
 
-
-class EmbeddedCompositorBase(test_classes.OnSelectedTargetsTest):
+class EmbeddedCompositorBase(test_classes.OnAllDefaultTargetsTest):
     def __init__(self, methodName ='runTest', testSceneState=0):
-        test_classes.OnSelectedTargetsTest.__init__(self, methodName)
+        test_classes.OnAllDefaultTargetsTest.__init__(self, methodName)
         self._testSceneState = testSceneState
 
     @with_ramses_process_check
@@ -28,7 +27,8 @@ class EmbeddedCompositorBase(test_classes.OnSelectedTargetsTest):
         self.ramsesDaemon = self.target.start_daemon()
         self.checkThatApplicationWasStarted(self.ramsesDaemon)
         self.addCleanup(self.target.kill_application, self.ramsesDaemon)
-        self.renderer = self.target.start_default_renderer(args="--wayland-socket-embedded wayland-10 --wayland-socket-embedded-groupname wayland -nomap")
+        # start renderer with wayland backend to use embedded compositing features
+        self.renderer = self.target.start_renderer(applicationName="ramses-renderer-wayland-ivi-egl-es-3-0", args="--wayland-socket-embedded wayland-10 --wayland-socket-embedded-groupname wayland")
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
         self.testClient = self.target.start_client("ramses-test-client", "-tn 10 -ts {} -cz 5".format(self._testSceneState))
@@ -37,7 +37,9 @@ class EmbeddedCompositorBase(test_classes.OnSelectedTargetsTest):
         self.flushname = 44
 
     def impl_tearDown(self):
-        self.target.ivi_control.cleanup()
+        if self.target.systemCompositorControllerSupported:
+            #ivi control is supported only on systems with SCC support
+            self.target.ivi_control.cleanup()
         self.target.kill_application(self.testClient)
         self.target.kill_application(self.renderer)
         self.target.kill_application(self.ramsesDaemon)

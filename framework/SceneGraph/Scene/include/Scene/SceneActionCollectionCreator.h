@@ -24,9 +24,14 @@
 #include "SceneAPI/SceneSizeInformation.h"
 #include "SceneAPI/DataFieldInfo.h"
 #include "SceneAPI/MipMapSize.h"
+#include "SceneAPI/PickableObject.h"
+#include "SceneAPI/Renderable.h"
+#include "SceneAPI/SceneId.h"
+#include "SceneAPI/RendererSceneState.h"
 #include "Scene/SceneResourceChanges.h"
 #include "Resource/TextureMetaInfo.h"
 #include "Components/FlushTimeInformation.h"
+#include "SceneReferencing/SceneReferenceAction.h"
 
 
 namespace ramses_internal
@@ -37,14 +42,13 @@ namespace ramses_internal
     struct FlushTimeInformation;
     struct Viewport;
     struct Frustum;
-    struct Renderable;
     struct TextureSampler;
     struct RenderBuffer;
 
     class SceneActionCollectionCreator
     {
     public:
-        SceneActionCollectionCreator(SceneActionCollection& collection_);
+        explicit SceneActionCollectionCreator(SceneActionCollection& collection_);
 
         void preallocateSceneSize(const SceneSizeInformation& sizeInfo);
 
@@ -53,13 +57,13 @@ namespace ramses_internal
         void releaseRenderable(RenderableHandle renderableHandle);
 
         // Renderable data (stuff required for rendering)
-        void setRenderableEffect(RenderableHandle renderableHandle, const ResourceContentHash& effectHash);
         void setRenderableDataInstance(RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance);
         void setRenderableStartIndex(RenderableHandle renderableHandle, UInt32 startIndex);
         void setRenderableIndexCount(RenderableHandle renderableHandle, UInt32 indexCount);
         void setRenderableRenderState(RenderableHandle renderableHandle, RenderStateHandle stateHandle);
-        void setRenderableVisibility(RenderableHandle renderableHandle, Bool visible);
+        void setRenderableVisibility(RenderableHandle renderableHandle, EVisibilityMode visible);
         void setRenderableInstanceCount(RenderableHandle renderableHandle, UInt32 instanceCount);
+        void setRenderableStartVertex(RenderableHandle renderableHandle, UInt32 startVertex);
 
         // Render state allocation
         void allocateRenderState(RenderStateHandle stateHandle);
@@ -97,7 +101,7 @@ namespace ramses_internal
         // Transformation
         void setTransformComponent(ETransformPropertyType propertyChanged, TransformHandle node, const Vector3& newValue);
 
-        void allocateDataLayout(const DataFieldInfoVector& dataFields, DataLayoutHandle handle);
+        void allocateDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle);
         void releaseDataLayout(DataLayoutHandle layoutHandle);
 
         void allocateDataInstance(DataLayoutHandle finishedLayoutHandle, DataInstanceHandle instanceHandle);
@@ -138,8 +142,8 @@ namespace ramses_internal
         void setRenderPassCamera(RenderPassHandle passHandle, CameraHandle cameraHandle);
         void setRenderPassRenderTarget(RenderPassHandle passHandle, RenderTargetHandle targetHandle);
         void setRenderPassRenderOrder(RenderPassHandle passHandle, Int32 renderOrder);
-        void setRenderPassEnabled(RenderPassHandle passHandle, Bool isEnabled);
-        void setRenderPassRenderOnce(RenderPassHandle pass, Bool enabled);
+        void setRenderPassEnabled(RenderPassHandle passHandle, bool isEnabled);
+        void setRenderPassRenderOnce(RenderPassHandle pass, bool enabled);
         void retriggerRenderPassRenderOnce(RenderPassHandle pass);
         void addRenderGroupToRenderPass(RenderPassHandle passHandle, RenderGroupHandle groupHandle, Int32 order);
         void removeRenderGroupFromRenderPass(RenderPassHandle passHandle, RenderGroupHandle groupHandle);
@@ -148,8 +152,15 @@ namespace ramses_internal
         void allocateBlitPass(RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle);
         void releaseBlitPass(BlitPassHandle passHandle);
         void setBlitPassRenderOrder(BlitPassHandle passHandle, Int32 renderOrder);
-        void setBlitPassEnabled(BlitPassHandle passHandle, Bool isEnabled);
+        void setBlitPassEnabled(BlitPassHandle passHandle, bool isEnabled);
         void setBlitPassRegions(BlitPassHandle passHandle, const PixelRectangle& sourceRegion, const PixelRectangle& destinationRegion);
+
+        // Pickable object
+        void allocatePickableObject(DataBufferHandle geometryHandle, NodeHandle nodeHandle, PickableObjectId id, PickableObjectHandle pickableHandle);
+        void releasePickableObject(PickableObjectHandle pickableHandle);
+        void setPickableObjectId(PickableObjectHandle pickableHandle, PickableObjectId id);
+        void setPickableObjectCamera(PickableObjectHandle pickableHandle, CameraHandle cameraHandle);
+        void setPickableObjectEnabled(PickableObjectHandle pickableHandle, bool isEnabled);
 
         // Render targets
         void allocateRenderTarget(RenderTargetHandle targetHandle);
@@ -163,7 +174,7 @@ namespace ramses_internal
         // Stream textures
         void allocateStreamTexture(uint32_t streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle);
         void releaseStreamTexture(StreamTextureHandle streamTextureHandle);
-        void setStreamTextureForceFallback(StreamTextureHandle streamTextureHandle, Bool forceFallbackImage);
+        void setStreamTextureForceFallback(StreamTextureHandle streamTextureHandle, bool forceFallbackImage);
 
         // Data buffers
         void allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle);
@@ -179,6 +190,12 @@ namespace ramses_internal
         void setDataSlotTexture(DataSlotHandle handle, const ResourceContentHash& texture);
         void releaseDataSlot(DataSlotHandle handle);
 
+        void allocateSceneReference(SceneId sceneId, SceneReferenceHandle handle);
+        void releaseSceneReference(SceneReferenceHandle handle);
+        void requestSceneReferenceState(SceneReferenceHandle handle, RendererSceneState state);
+        void requestSceneReferenceFlushNotifications(SceneReferenceHandle handle, bool enable);
+        void setSceneReferenceRenderOrder(SceneReferenceHandle handle, int32_t renderOrder);
+
         void addAnimationSystem(AnimationSystemHandle animSystemhandle, UInt32 flags, const AnimationSystemSizeInformation& sizeInfo);
         void removeAnimationSystem(AnimationSystemHandle animSystemHandle);
 
@@ -188,7 +205,7 @@ namespace ramses_internal
         void animationSystemAllocateAnimationInstance(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, EInterpolationType interpolationType, EVectorComponent vectorComponent, AnimationInstanceHandle handle);
         void animationSystemAllocateAnimation(AnimationSystemHandle animSystemHandle, AnimationInstanceHandle animInstHandle, AnimationHandle handle);
         void animationSystemAddDataBindingToAnimationInstance(AnimationSystemHandle animSystemHandle, AnimationInstanceHandle handle, DataBindHandle dataBindHandle);
-        void animationSystemSetSplineKeyBasicBool(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, Bool value);
+        void animationSystemSetSplineKeyBasicBool(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, bool value);
         void animationSystemSetSplineKeyBasicInt32(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, Int32 value);
         void animationSystemSetSplineKeyBasicFloat(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, Float value);
         void animationSystemSetSplineKeyBasicVector2f(AnimationSystemHandle animSystemHandle, SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector2& value);
@@ -220,19 +237,17 @@ namespace ramses_internal
         void setAckFlushState(bool state);
         void flush(
             UInt64 flushIndex,
-            Bool synchronous,
-            Bool addSizeInfo,
+            bool addSizeInfo,
             const SceneSizeInformation& sizeInfo = SceneSizeInformation(),
             const SceneResourceChanges& resourceChanges = SceneResourceChanges(),
+            const SceneReferenceActionVector& sceneReferences = SceneReferenceActionVector(),
             const FlushTimeInformation& flushTimeInfo = {},
-            SceneVersionTag versionTag = InvalidSceneVersionTag,
-            std::initializer_list<UInt64> additionalTimestamps = {});
+            SceneVersionTag versionTag = SceneVersionTag::Invalid());
 
         // compound actions
-        void compoundRenderableEffectData(RenderableHandle renderableHandle
+        void compoundRenderableData(RenderableHandle renderableHandle
                                             , DataInstanceHandle uniformInstanceHandle
-                                            , RenderStateHandle stateHandle
-                                            , const ResourceContentHash& effectHash);
+                                            , RenderStateHandle stateHandle);
 
         void compoundRenderable(RenderableHandle renderableHandle, const Renderable& renderable);
 

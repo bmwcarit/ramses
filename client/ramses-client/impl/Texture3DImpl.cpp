@@ -16,7 +16,7 @@ namespace ramses
     Texture3DImpl::Texture3DImpl(ramses_internal::ResourceHashUsage resource,
         RamsesClientImpl& client,
         const char* name)
-        : ResourceImpl(ERamsesObjectType_Texture3D, resource, client, name)
+        : ResourceImpl(ERamsesObjectType_Texture3D, std::move(resource), client, name)
         , m_width(0)
         , m_height(0)
         , m_depth(0)

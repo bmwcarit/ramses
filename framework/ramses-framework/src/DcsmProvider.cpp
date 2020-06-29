@@ -11,6 +11,7 @@
 
 #include "DcsmProviderImpl.h"
 #include "RamsesFrameworkImpl.h"
+#include "RamsesFrameworkTypesImpl.h"
 
 #include "APILoggingMacros.h"
 
@@ -27,31 +28,52 @@ namespace ramses
     {
     }
 
-    status_t DcsmProvider::offerContent(ContentID contentID, Category category, sceneId_t scene)
+    status_t DcsmProvider::offerContent(ContentID contentID, Category category, sceneId_t scene, EDcsmOfferingMode mode)
     {
-        auto status = impl.offerContent(contentID, category, scene);
-        LOG_HL_CLIENT_API3(status, contentID.getValue(), category.getValue(), scene);
+        auto status = impl.offerContent(contentID, category, scene, mode);
+        LOG_HL_CLIENT_API4(status, contentID, category, scene, static_cast<int>(mode));
+        return status;
+    }
+
+    status_t DcsmProvider::offerContentWithMetadata(ContentID contentID, Category category, sceneId_t scene, EDcsmOfferingMode mode, const DcsmMetadataCreator& metadata)
+    {
+        const auto status = impl.offerContentWithMetadata(contentID, category, scene, mode, metadata);
+        LOG_HL_CLIENT_API5(status, contentID, category, scene, static_cast<int>(mode), LOG_API_GENERIC_OBJECT_STRING(metadata));
+        return status;
+    }
+
+    status_t DcsmProvider::updateContentMetadata(ContentID contentID, const DcsmMetadataCreator& metadata)
+    {
+        const auto status = impl.updateContentMetadata(contentID, metadata);
+        LOG_HL_CLIENT_API1(status, contentID);
         return status;
     }
 
     status_t DcsmProvider::requestStopOfferContent(ContentID contentID)
     {
         auto status = impl.requestStopOfferContent(contentID);
-        LOG_HL_CLIENT_API1(status, contentID.getValue());
+        LOG_HL_CLIENT_API1(status, contentID);
         return status;
     }
 
     status_t DcsmProvider::markContentReady(ContentID contentID)
     {
         auto status = impl.markContentReady(contentID);
-        LOG_HL_CLIENT_API1(status, contentID.getValue());
+        LOG_HL_CLIENT_API1(status, contentID);
         return status;
     }
 
-    status_t DcsmProvider::requestContentFocus(ContentID contentID)
+    ramses::status_t DcsmProvider::enableFocusRequest(ContentID contentID, int32_t focusRequest)
     {
-        auto status = impl.requestContentFocus(contentID);
-        LOG_HL_CLIENT_API1(status, contentID.getValue());
+        auto status = impl.enableFocusRequest(contentID, focusRequest);
+        LOG_HL_CLIENT_API2(status, contentID, focusRequest);
+        return status;
+    }
+
+    ramses::status_t DcsmProvider::disableFocusRequest(ContentID contentID, int32_t focusRequest)
+    {
+        auto status = impl.disableFocusRequest(contentID, focusRequest);
+        LOG_HL_CLIENT_API2(status, contentID, focusRequest);
         return status;
     }
 

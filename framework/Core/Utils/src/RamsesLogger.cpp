@@ -14,7 +14,7 @@
 #include "Utils/LogMacros.h"
 #include "DltLogAppender/DltLogAppender.h"
 #include "PlatformAbstraction/PlatformEnvironmentVariables.h"
-#include "PlatformAbstraction/PlatformGuard.h"
+#include <cassert>
 
 #ifdef __ANDROID__
     #include <AndroidLogger/AndroidLogAppender.h>
@@ -27,11 +27,17 @@ namespace ramses_internal
         , m_consoleLogAppender()
         , m_fileTransferContext(createContext("File Transfer Context", "FILE"))
     {
-        addAppender(m_consoleLogAppender);
+        // special handling for console loglevel to allow setting console appender level to something
+        // other than info even when initialize() is never called (often in tests)
+        ELogLevel consoleLoglevel = LogLevelDefault_Console;
+        UpdateConsoleLogLevelFromDefine(consoleLoglevel);
+        UpdateConsoleLogLevelFromEnvVar(consoleLoglevel);
+        m_consoleLogAppender.setLogLevel(consoleLoglevel);
+        m_logAppenders.push_back(&m_consoleLogAppender);
 
 #ifdef __ANDROID__
         m_platformLogAppender.reset(new AndroidLogAppender);
-        addAppender(*m_platformLogAppender);
+        m_logAppenders.push_back(m_platformLogAppender.get());
 #endif
     }
 
@@ -43,7 +49,33 @@ namespace ramses_internal
         }
     }
 
-    void RamsesLogger::initialize(const CommandLineParser& parser, const String& idString, const String& descriptionString, Bool disableDLT)
+    void RamsesLogger::UpdateConsoleLogLevelFromDefine(ELogLevel& loglevel)
+    {
+        UNUSED(loglevel);
+#ifdef RAMSES_CONSOLE_LOGLEVEL_DEFAULT
+        // do the macro to string dance
+#define LOG_STRINGIFY1(s) #s
+#define LOG_STRINGIFY2(s)  LOG_STRINGIFY1(s)
+#define LOG_STRINGIFY LOG_STRINGIFY2(RAMSES_CONSOLE_LOGLEVEL_DEFAULT)
+        LogHelper::StringToLogLevel(LOG_STRINGIFY, loglevel);
+#undef LOG_STRINGIFY1
+#undef LOG_STRINGIFY2
+#undef LOG_STRINGIFY
+#endif
+    }
+
+    void RamsesLogger::UpdateConsoleLogLevelFromEnvVar(ELogLevel& loglevel)
+    {
+        String envVarValue;
+        if (PlatformEnvironmentVariables::get("CONSOLE_LOGLEVEL", envVarValue))
+        {
+            ELogLevel consoleLogLevelEnvVar;
+            if (LogHelper::StringToLogLevel(envVarValue, consoleLogLevelEnvVar))
+                loglevel = consoleLogLevelEnvVar;
+        }
+    }
+
+    void RamsesLogger::initialize(const CommandLineParser& parser, const String& idString, const String& descriptionString, bool disableDLT, bool enableDLTApplicationRegistration)
     {
         if (m_isInitialized)
         {
@@ -56,18 +88,8 @@ namespace ramses_internal
 
         ELogLevel logLevelContexts = LogLevelDefault_Contexts;
         ELogLevel logLevelConsole = LogLevelDefault_Console;
-        ELogLevel logLevelDlt = LogLevelDefault_DLT;
 
-#ifdef RAMSES_CONSOLE_LOGLEVEL_DEFAULT
-        // do the macro to string dance
-#define LOG_STRINGIFY1(s) #s
-#define LOG_STRINGIFY2(s)  LOG_STRINGIFY1(s)
-#define LOG_STRINGIFY LOG_STRINGIFY2(RAMSES_CONSOLE_LOGLEVEL_DEFAULT)
-        LogHelper::StringToLogLevel(LOG_STRINGIFY, logLevelConsole);
-#undef LOG_STRINGIFY1
-#undef LOG_STRINGIFY2
-#undef LOG_STRINGIFY
-#endif
+        UpdateConsoleLogLevelFromDefine(logLevelConsole);
 
         // generic "-l" argument applies to all log levels
         ArgumentString logLevelStr(parser, "l", "log-level", "");
@@ -76,7 +98,6 @@ namespace ramses_internal
         {
             logLevelContexts = logLevel;
             logLevelConsole = logLevel;
-            logLevelDlt = logLevel;
             pushLogLevelToDltDaemon = true;
         }
 
@@ -90,36 +111,24 @@ namespace ramses_internal
         ArgumentString logLevelConsoleStr(parser, "lc", "log-level-console", "");
         LogHelper::StringToLogLevel(logLevelConsoleStr, logLevelConsole);
 
-        ArgumentString logLevelDltStr(parser, "ld", "log-level-dlt", "");
-        LogHelper::StringToLogLevel(logLevelDltStr, logLevelDlt);
-
         //same for environment variable
         String envVarValue;
-        ELogLevel ramsesLogLevelEnvVar;
-        ELogLevel consoleLogLevelEnvVar;
-
         if (PlatformEnvironmentVariables::get("RAMSES_LOGLEVEL", envVarValue))
         {
+            ELogLevel ramsesLogLevelEnvVar;
             if (LogHelper::StringToLogLevel(envVarValue, ramsesLogLevelEnvVar))
             {
                 logLevelContexts = ramsesLogLevelEnvVar;
                 logLevelConsole = ramsesLogLevelEnvVar;
-                logLevelDlt = ramsesLogLevelEnvVar;
                 pushLogLevelToDltDaemon = true;
             }
         }
 
-        if (PlatformEnvironmentVariables::get("CONSOLE_LOGLEVEL", envVarValue))
-        {
-            if (LogHelper::StringToLogLevel(envVarValue, consoleLogLevelEnvVar))
-            {
-                logLevelConsole = consoleLogLevelEnvVar;
-            }
-        }
+        UpdateConsoleLogLevelFromEnvVar(logLevelConsole);
 
         // apply loglevels
         setLogLevelForContexts(logLevelContexts);
-        setLogLevelForAppenderType(ELogAppenderType::Console, logLevelConsole);
+        m_consoleLogAppender.setLogLevel(logLevelConsole);
 
         // apply by context filter
         ArgumentString logLevelContextsStr(parser, "clf", "log-level-contexts-filter", "");
@@ -138,20 +147,26 @@ namespace ramses_internal
 
             if (!dltAppIdAsString.empty())
             {
-                DltAdapter* dltAdapter = DltAdapter::getDltAdapter();
-                if (dltAdapter->registerApplication(dltAppIdAsString, dltAppDescription))
-                {
-                    dltAdapter->registerLogLevelChangeCallback([this](const String& contextId_, int logLevel_) {
-                            dltLogLevelChangeCallback(contextId_, logLevel_);
-                        });
-                    createDltContexts(pushLogLevelToDltDaemon);
+                if (!enableDLTApplicationRegistration)
+                    LOG_INFO(CONTEXT_FRAMEWORK, "RamsesLogger::initialize: Reuse exising DLT application registration");
 
+                DltAdapter* dltAdapter = DltAdapter::getDltAdapter();
+                if (dltAdapter->initialize(dltAppIdAsString, dltAppDescription, enableDLTApplicationRegistration,
+                                           [this](const String& contextId_, int logLevel_) {
+                                               dltLogLevelChangeCallback(contextId_, logLevel_);
+                                           },
+                                           m_logContexts, pushLogLevelToDltDaemon))
+                {
                     m_dltLogAppender.reset(new DltLogAppender);
-                    addAppender(*m_dltLogAppender);
+
+                    {
+                        std::lock_guard<std::mutex> guard(m_appenderLock);
+                        m_logAppenders.push_back(m_dltLogAppender.get());
+                    }
                 }
                 else
                 {
-                    LOG_WARN(CONTEXT_FRAMEWORK, "RamsesLogger::initialize: DLT disabled because registerApplication failed");
+                    LOG_WARN(CONTEXT_FRAMEWORK, "RamsesLogger::initialize: DLT disabled because initialize failed");
                 }
             }
             else
@@ -160,17 +175,15 @@ namespace ramses_internal
             }
         }
 
-        setLogLevelForAppenderType(ELogAppenderType::Dlt, logLevelDlt);
-
         ArgumentBool enableSmokeTestContext(parser, "estc", "enableSmokeTestContext", "");
         if (!enableSmokeTestContext.wasDefined())
         {
             CONTEXT_SMOKETEST.setLogLevel(ELogLevel::Off);
+            CONTEXT_SMOKETEST.disableSetLogLevel();
         }
 
         LOG_INFO(CONTEXT_FRAMEWORK, "Ramses log levels: Contexts " << RamsesLogger::GetLogLevelText(logLevelContexts) <<
-                 ", Console " << RamsesLogger::GetLogLevelText(logLevelConsole) <<
-                 ", DLT " << RamsesLogger::GetLogLevelText(logLevelDlt));
+                 ", Console " << RamsesLogger::GetLogLevelText(logLevelConsole));
     }
 
     void RamsesLogger::applyContextFilterCommand(const String& command)
@@ -211,53 +224,25 @@ namespace ramses_internal
         }
     }
 
-    ELogLevel RamsesLogger::getLogLevelByContextId(const String& contextId) const
+    void RamsesLogger::setConsoleLogLevel(ELogLevel logLevel)
     {
-        if (const LogContext* ctx = getLogContextById(contextId))
-        {
-            return ctx->getLogLevel();
-        }
-        return ELogLevel::Off;
+        m_consoleLogAppender.setLogLevel(logLevel);
     }
 
-    void RamsesLogger::setLogLevelForAppenderType(ELogAppenderType type, ELogLevel logLevel)
+    ELogLevel RamsesLogger::getConsoleLogLevel() const
     {
-        switch (type)
-        {
-        case ELogAppenderType::Console:
-            m_consoleLogAppender.setLogLevel(logLevel);
-            break;
-        case ELogAppenderType::Dlt:
-            if (m_dltLogAppender)
-            {
-                m_dltLogAppender->setLogLevel(logLevel);
-            }
-            break;
-        default:
-            break;
-        }
-    }
-
-    ELogLevel RamsesLogger::getLogLevelForAppenderType(ELogAppenderType type) const
-    {
-        switch (type)
-        {
-        case ELogAppenderType::Console:
-            return m_consoleLogAppender.getLogLevel();
-        case ELogAppenderType::Dlt:
-            return m_dltLogAppender ? m_dltLogAppender->getLogLevel() : ELogLevel::Off;
-        default:
-            return ELogLevel::Off;
-        }
+        return m_consoleLogAppender.getLogLevel();
     }
 
     void RamsesLogger::setAfterConsoleLogCallback(const std::function<void()>& callback)
     {
+        std::lock_guard<std::mutex> guard(m_appenderLock);
         m_consoleLogAppender.setAfterLogCallback(callback);
     }
 
     void RamsesLogger::removeAfterConsoleLogCallback()
     {
+        std::lock_guard<std::mutex> guard(m_appenderLock);
         m_consoleLogAppender.removeAfterLogCallback();
     }
 
@@ -281,16 +266,9 @@ namespace ramses_internal
         return true;
     }
 
-    bool RamsesLogger::isAppenderTypeActive(ELogAppenderType type) const
+    bool RamsesLogger::isDltAppenderActive() const
     {
-        switch(type)
-        {
-        case ELogAppenderType::Dlt:
-            return m_dltLogAppender != nullptr;
-        case ELogAppenderType::Console:
-        default:
-            return true;
-        }
+        return m_dltLogAppender != nullptr;
     }
 
     LogContext& RamsesLogger::createContext(const char* name, const char* id)
@@ -305,113 +283,51 @@ namespace ramses_internal
         return *ctx;
     }
 
-    void RamsesLogger::createDltContexts(bool pushLogLevel)
-    {
-        for (auto& ctx : m_logContexts)
-        {
-            assert(ctx->getUserData() == nullptr);
-            DltAdapter::getDltAdapter()->registerContext(ctx, pushLogLevel, ctx->getLogLevel());
-        }
-    }
-
     void RamsesLogger::dltLogLevelChangeCallback(const String& contextId, int logLevelAsInt)
     {
-        const ELogLevel currentLogLevel = getLogLevelByContextId(contextId);
-        const ELogLevel newLogLevel = GetLoglevelFromInt(logLevelAsInt);
+        LogContext* ctx = getLogContextById(contextId);
+        if (!ctx)
+        {
+            LOG_WARN(CONTEXT_RAMSH, "RamsesLogger::dltLogLevelChangeCallback: unknown contextId " << contextId);
+            return;
+        }
+
+        const ELogLevel currentLogLevel = ctx->getLogLevel();
+        const ELogLevel newLogLevel = LogHelper::GetLoglevelFromInt(logLevelAsInt);
 
         if (currentLogLevel != newLogLevel)
         {
-            if (LogContext* ctx = getLogContextById(contextId))
-            {
-                LOG_INFO(CONTEXT_RAMSH, contextId << " | " << ctx->getContextName()
-                         << " | "
-                         << static_cast<Int32>(newLogLevel)
-                         << " | "
-                         << GetLogLevelText(newLogLevel)
-                         << " | "
-                         << " Dlt changed log level from "
-                         << GetLogLevelText(currentLogLevel)
-                         );
-                ctx->setLogLevel(newLogLevel);
-
-                updateDltLogAppenderLoglevel();
-            }
-            else
-            {
-                LOG_WARN(CONTEXT_RAMSH, "RamsesLogger::dltLogLevelChangeCallback: unknown contextId " << contextId);
-            }
+            LOG_INFO(CONTEXT_RAMSH, contextId << " | " << ctx->getContextName()
+                     << " | "
+                     << static_cast<Int32>(newLogLevel)
+                     << " | "
+                     << GetLogLevelText(newLogLevel)
+                     << " | "
+                     << " Dlt changed log level from "
+                     << GetLogLevelText(currentLogLevel)
+                     );
+            ctx->setLogLevel(newLogLevel);
         }
-    }
-
-    void RamsesLogger::updateDltLogAppenderLoglevel()
-    {
-        // update to highest context level
-        if (m_dltLogAppender)
-        {
-            ELogLevel newDltLogLevel = ELogLevel::Off;
-            for (const auto ctx : m_logContexts)
-            {
-                if (ctx->getLogLevel() > newDltLogLevel)
-                {
-                    newDltLogLevel = ctx->getLogLevel();
-                }
-            }
-            m_dltLogAppender->setLogLevel(newDltLogLevel);
-        }
-    }
-
-    const LogContext* RamsesLogger::getLogContextById(const String& contextId) const
-    {
-        for (const auto& ctx : m_logContexts)
-        {
-            if (contextId == ctx->getContextId())
-            {
-                return ctx;
-            }
-        }
-        return nullptr;
     }
 
     LogContext* RamsesLogger::getLogContextById(const String& contextId)
     {
-        // reuse const version
-        return const_cast<LogContext*>(const_cast<const RamsesLogger*>(this)->getLogContextById(contextId));
-    }
-
-    void RamsesLogger::addAppender(LogAppenderBase& appender)
-    {
-        PlatformLightweightGuard guard(m_appenderLock);
-        if (find_c(m_logAppenders, &appender) == m_logAppenders.end())
-        {
-            m_logAppenders.push_back(&appender);
-        }
-    }
-
-    void RamsesLogger::removeAppender(LogAppenderBase& appender)
-    {
-        PlatformLightweightGuard guard(m_appenderLock);
-        auto it = find_c(m_logAppenders, &appender);
-        if (it != m_logAppenders.end())
-        {
-            m_logAppenders.erase(it);
-        }
+        for (const auto& ctx : m_logContexts)
+            if (contextId == ctx->getContextId())
+                return ctx;
+        return nullptr;
     }
 
     void RamsesLogger::log(const LogMessage& msg)
     {
-        if (msg.getStream().length() > 0)
+        if (msg.getStream().size() > 0)
         {
-            PlatformLightweightGuard guard(m_appenderLock);
+            std::lock_guard<std::mutex> guard(m_appenderLock);
             for (auto& appender : m_logAppenders)
             {
                 appender->log(msg);
             }
         }
-    }
-
-    ELogLevel RamsesLogger::GetLoglevelFromInt(Int32 logLevelInt)
-    {
-        return LogHelper::GetLoglevelFromInt(logLevelInt);
     }
 
     const char* RamsesLogger::GetLogLevelText(ELogLevel logLevel)

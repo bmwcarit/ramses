@@ -24,7 +24,7 @@ namespace ramses_internal
     protected:
         void notifyPreAnimationTimeRangeChange(AnimationHandle handle);
         void notifyAnimationTimeRangeChanged(AnimationHandle handle);
-        void notifyAnimationPauseChanged(AnimationHandle handle, Bool pause);
+        void notifyAnimationPauseChanged(AnimationHandle handle, bool pause);
         void notifyAnimationPropertiesChanged(AnimationHandle handle);
         void notifyAnimationInstanceChanged(AnimationInstanceHandle handle);
         void notifySplineChanged(SplineHandle handle);

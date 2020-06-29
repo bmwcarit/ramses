@@ -64,10 +64,24 @@ namespace ramses
         return StatusOK;
     }
 
+    status_t DisplayConfigImpl::getWindowRectangle(int32_t& x, int32_t& y, uint32_t& width, uint32_t& height) const
+    {
+        x = m_internalConfig.getWindowPositionX();
+        y = m_internalConfig.getWindowPositionY();
+        width = m_internalConfig.getDesiredWindowWidth();
+        height = m_internalConfig.getDesiredWindowHeight();
+        return StatusOK;
+    }
+
     status_t DisplayConfigImpl::setFullscreen(bool fullscreen)
     {
         m_internalConfig.setFullscreenState(fullscreen);
         return StatusOK;
+    }
+
+    bool DisplayConfigImpl::isFullscreen() const
+    {
+        return m_internalConfig.getFullscreenState();
     }
 
     status_t DisplayConfigImpl::setBorderless(bool borderless)
@@ -149,12 +163,6 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t DisplayConfigImpl::enableStereoDisplay()
-    {
-        m_internalConfig.setStereoDisplay(true);
-        return StatusOK;
-    }
-
     status_t DisplayConfigImpl::setWaylandIviLayerID(uint32_t waylandIviLayerID)
     {
         m_internalConfig.setWaylandIviLayerID(ramses_internal::WaylandIviLayerId(waylandIviLayerID));
@@ -188,9 +196,20 @@ namespace ramses
         return m_internalConfig.getIntegrityRGLDeviceUnit().getValue();
     }
 
-    status_t DisplayConfigImpl::setWindowIviVisible()
+    void* DisplayConfigImpl::getAndroidNativeWindow() const
     {
-        m_internalConfig.setStartVisibleIvi(true);
+        return m_internalConfig.getAndroidNativeWindow().getValue();
+    }
+
+    status_t DisplayConfigImpl::setAndroidNativeWindow(void * nativeWindowPtr)
+    {
+        m_internalConfig.setAndroidNativeWindow(ramses_internal::AndroidNativeWindowPtr(nativeWindowPtr));
+        return StatusOK;
+    }
+
+    status_t DisplayConfigImpl::setWindowIviVisible(bool visible)
+    {
+        m_internalConfig.setStartVisibleIvi(visible);
         return StatusOK;
     }
 
@@ -218,12 +237,6 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t DisplayConfigImpl::setOffscreen(bool offscreenFlag)
-    {
-        m_internalConfig.setOffscreen(offscreenFlag);
-        return StatusOK;
-    }
-
     status_t DisplayConfigImpl::setWindowsWindowHandle(void* hwnd)
     {
         m_internalConfig.setWindowsWindowHandle(ramses_internal::WindowsWindowHandle(hwnd));
@@ -246,9 +259,9 @@ namespace ramses
         return m_internalConfig.getWaylandDisplay().c_str();
     }
 
-    status_t DisplayConfigImpl::validate(uint32_t indent) const
+    status_t DisplayConfigImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        status_t status = StatusObjectImpl::validate(indent);
+        status_t status = StatusObjectImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
 
         const ramses_internal::ProjectionParams& projParams = m_internalConfig.getProjectionParams();
@@ -267,21 +280,6 @@ namespace ramses
             addValidationMessage(EValidationSeverity_Error, indent, "bottom plane can not be greater than or equal to top plane");
             status = getValidationErrorStatus();
         }
-
-        if (m_internalConfig.isStereoDisplay())
-        {
-            if (m_internalConfig.isWarpingEnabled())
-            {
-                addValidationMessage(EValidationSeverity_Error, indent, "warping is not supported for stereo display");
-                status = getValidationErrorStatus();
-            }
-            if (m_internalConfig.getAntialiasingMethod() != ramses_internal::EAntiAliasingMethod_PlainFramebuffer)
-            {
-                addValidationMessage(EValidationSeverity_Error, indent, "anti aliasing is not supported for stereo display");
-                status = getValidationErrorStatus();
-            }
-        }
-
         return status;
     }
 }

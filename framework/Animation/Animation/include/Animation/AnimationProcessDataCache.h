@@ -20,11 +20,11 @@ namespace ramses_internal
     public:
         typedef HashMap<AnimationHandle, AnimationProcessData> DataProcessMap;
 
-        AnimationProcessDataCache(const AnimationData& animationData);
+        explicit AnimationProcessDataCache(const AnimationData& animationData);
 
         void addProcessData(AnimationHandle handle);
         void removeProcessData(AnimationHandle handle);
-        Bool hasProcessData(AnimationHandle handle) const;
+        bool hasProcessData(AnimationHandle handle) const;
 
         DataProcessMap::ConstIterator begin() const;
         DataProcessMap::Iterator begin();
@@ -56,7 +56,7 @@ namespace ramses_internal
         m_processDataCache.remove(handle);
     }
 
-    inline Bool AnimationProcessDataCache::hasProcessData(AnimationHandle handle) const
+    inline bool AnimationProcessDataCache::hasProcessData(AnimationHandle handle) const
     {
         return ( m_processDataCache.find(handle) != m_processDataCache.end() );
     }

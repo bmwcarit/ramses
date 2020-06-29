@@ -14,6 +14,7 @@
 #include "Collections/Vector.h"
 #include "Collections/String.h"
 #include "Scene/EScenePublicationMode.h"
+#include "Utils/StringOutputSpecialWrapper.h"
 
 namespace ramses_internal
 {
@@ -25,7 +26,7 @@ namespace ramses_internal
     struct SceneInfo
     {
         SceneInfo() {}
-        SceneInfo(const SceneId& sceneID_, const String& friendlyName_ = String(), EScenePublicationMode mode = EScenePublicationMode_LocalAndRemote)
+        explicit SceneInfo(const SceneId& sceneID_, const String& friendlyName_ = String(), EScenePublicationMode mode = EScenePublicationMode_LocalAndRemote)
             : sceneID(sceneID_)
             , friendlyName(friendlyName_)
             , publicationMode(mode)
@@ -47,5 +48,7 @@ namespace ramses_internal
     };
     typedef std::vector<SceneInfo> SceneInfoVector;
 }
+
+MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::SceneId, ramses::sceneId_t)
 
 #endif

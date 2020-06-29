@@ -20,7 +20,7 @@ namespace ramses_internal
         BlockingQueue<int32_t> queue;
         queue.push(3);
         int32_t val = 0;
-        EXPECT_EQ(EStatus_RAMSES_OK, queue.pop(&val));
+        EXPECT_TRUE(queue.pop(&val));
         EXPECT_EQ(3, val);
     }
 
@@ -31,11 +31,11 @@ namespace ramses_internal
         queue.push(4);
         queue.push(5);
         int32_t val = 0;
-        EXPECT_EQ(EStatus_RAMSES_OK, queue.pop(&val));
+        EXPECT_TRUE(queue.pop(&val));
         EXPECT_EQ(3, val);
-        EXPECT_EQ(EStatus_RAMSES_OK, queue.pop(&val));
+        EXPECT_TRUE(queue.pop(&val));
         EXPECT_EQ(4, val);
-        EXPECT_EQ(EStatus_RAMSES_OK, queue.pop(&val));
+        EXPECT_TRUE(queue.pop(&val));
         EXPECT_EQ(5, val);
     }
 
@@ -43,7 +43,7 @@ namespace ramses_internal
     {
         BlockingQueue<int32_t> queue;
         int32_t val;
-        EXPECT_EQ(EStatus_RAMSES_TIMEOUT, queue.pop(&val, 10));
+        EXPECT_FALSE(queue.pop(&val, std::chrono::milliseconds{10}));
     }
 
     TEST(ABlockingQueue, isEmptyIfNoElementsInside)
@@ -109,7 +109,7 @@ namespace ramses_internal
                 for (int32_t i = 0; i < mCount; ++i)
                 {
                     uint32_t tmp = 0;
-                    EXPECT_EQ(EStatus_RAMSES_OK, mQueue.pop(&tmp));
+                    EXPECT_TRUE(mQueue.pop(&tmp));
                     mSum += tmp;
                 }
             }
@@ -131,19 +131,19 @@ namespace ramses_internal
         // this ensures correct test configuration
         ASSERT_EQ(0, countProducer * countPerProducer % countConsumer);
 
-        std::vector<std::pair<ramses_capu::Thread*, ramses_capu::Runnable*>> consumer(countConsumer);
+        std::vector<std::pair<PlatformThread*, Runnable*>> consumer(countConsumer);
         for (int32_t i = 0; i < countConsumer; ++i)
         {
             consumer[i].second = new Consumer(queue, countPerConsumer, i + 20);
-            consumer[i].first = new ramses_capu::Thread();
+            consumer[i].first = new PlatformThread("");
             consumer[i].first->start(*consumer[i].second);
         }
 
-        std::vector<std::pair<ramses_capu::Thread*, ramses_capu::Runnable*>> producer(countProducer);
+        std::vector<std::pair<PlatformThread*, Runnable*>> producer(countProducer);
         for (int32_t i = 0; i < countProducer; ++i)
         {
             producer[i].second = new Producer(queue, countPerProducer, i + 10);
-            producer[i].first = new ramses_capu::Thread();
+            producer[i].first = new PlatformThread("");
             producer[i].first->start(*producer[i].second);
         }
 

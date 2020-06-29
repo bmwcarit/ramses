@@ -15,6 +15,7 @@
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
 #include "Math3d/Vector3.h"
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -54,7 +55,7 @@ namespace ramses_internal
         effectDesc.setAttributeSemantic("a_customTexCoord", ramses::EEffectAttributeSemantic_TextTextureCoordinates);
 
         ramses::Effect* effect = m_client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, nameOrShaderFile.c_str());
-        assert(0 != effect);
+        assert(nullptr != effect);
         return effect;
     }
 

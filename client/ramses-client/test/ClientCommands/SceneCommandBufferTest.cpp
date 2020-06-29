@@ -6,181 +6,166 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include <gtest/gtest.h>
-
 #include "ClientCommands/SceneCommandBuffer.h"
-#include "ClientCommands/SceneCommandTypes.h"
-#include "PlatformAbstraction/PlatformThread.h"
 #include "Utils/ThreadBarrier.h"
-#include "Collections/Vector.h"
-
-using namespace testing;
+#include "gmock/gmock.h"
+#include <thread>
 
 namespace ramses_internal
 {
-    class SceneCommandBufferTest : public ::testing::Test
+    using namespace testing;
+
+    namespace
+    {
+        class MockSceneCommandVisitor
+        {
+        public:
+            void operator()(const SceneCommandForceFallback& cmd)
+            {
+                handleSceneCommandForceFallback(cmd);
+            }
+            void operator()(const SceneCommandFlushSceneVersion& cmd)
+            {
+                handleSceneCommandFlushSceneVersion(cmd);
+            }
+            void operator()(const SceneCommandValidationRequest& cmd)
+            {
+                handleSceneCommandValidationRequest(cmd);
+            }
+            void operator()(const SceneCommandDumpSceneToFile& cmd)
+            {
+                handleSceneCommandDumpSceneToFile(cmd);
+            }
+            void operator()(const SceneCommandLogResourceMemoryUsage& cmd)
+            {
+                handleSceneCommandLogResourceMemoryUsage(cmd);
+            }
+
+            MOCK_METHOD(void, handleSceneCommandForceFallback, (const SceneCommandForceFallback&));
+            MOCK_METHOD(void, handleSceneCommandFlushSceneVersion, (const SceneCommandFlushSceneVersion&));
+            MOCK_METHOD(void, handleSceneCommandValidationRequest, (const SceneCommandValidationRequest&));
+            MOCK_METHOD(void, handleSceneCommandDumpSceneToFile, (const SceneCommandDumpSceneToFile&), (const));
+            MOCK_METHOD(void, handleSceneCommandLogResourceMemoryUsage, (const SceneCommandLogResourceMemoryUsage&), (const));
+        };
+
+    }
+
+    // local comparison operators
+    static bool operator==(const SceneCommandForceFallback& a, const SceneCommandForceFallback& b)
+    {
+        return a.streamTextureName == b.streamTextureName && a.forceFallback == b.forceFallback;
+    }
+
+    static bool operator==(const SceneCommandFlushSceneVersion& a, const SceneCommandFlushSceneVersion& b)
+    {
+        return a.sceneVersion == b.sceneVersion;
+    }
+
+    static bool operator==(const SceneCommandValidationRequest& a, const SceneCommandValidationRequest& b)
+    {
+        return a.severity == b.severity && a.optionalObjectName == b.optionalObjectName;
+    }
+
+    static bool operator==(const SceneCommandDumpSceneToFile& a, const SceneCommandDumpSceneToFile& b)
+    {
+        return a.fileName == b.fileName && a.sendViaDLT == b.sendViaDLT;
+    }
+
+    static bool operator==(const SceneCommandLogResourceMemoryUsage&, const SceneCommandLogResourceMemoryUsage&)
+    {
+        return true;
+    }
+
+
+    class ASceneCommandBuffer : public Test
     {
     public:
+        StrictMock<MockSceneCommandVisitor> visitor;
         SceneCommandBuffer buffer;
     };
 
-    TEST_F(SceneCommandBufferTest, BufferIsInitiallyEmpty)
+    TEST_F(ASceneCommandBuffer, canUseAllCommands)
     {
-        SceneCommandContainer container;
-        buffer.exchangeContainerData(container);
-        EXPECT_EQ(0u, container.getTotalCommandCount());
+        InSequence seq;
+        {
+            SceneCommandForceFallback cmd{"foo", true};
+            buffer.enqueueCommand(cmd);
+            EXPECT_CALL(visitor, handleSceneCommandForceFallback(cmd));
+        }
+        {
+            SceneCommandFlushSceneVersion cmd{12345u};
+            buffer.enqueueCommand(cmd);
+            EXPECT_CALL(visitor, handleSceneCommandFlushSceneVersion(cmd));
+        }
+        {
+            SceneCommandValidationRequest cmd{ramses::EValidationSeverity_Error, "bar"};
+            buffer.enqueueCommand(cmd);
+            EXPECT_CALL(visitor, handleSceneCommandValidationRequest(cmd));
+        }
+        {
+            SceneCommandDumpSceneToFile cmd{"somename", false};
+            buffer.enqueueCommand(cmd);
+            EXPECT_CALL(visitor, handleSceneCommandDumpSceneToFile(cmd));
+        }
+        {
+            SceneCommandLogResourceMemoryUsage cmd{};
+            buffer.enqueueCommand(cmd);
+            EXPECT_CALL(visitor, handleSceneCommandLogResourceMemoryUsage(cmd));
+        }
+        buffer.execute(std::ref(visitor));
     }
 
-
-    TEST_F(SceneCommandBufferTest, CanAddAndGetCommands)
+    TEST_F(ASceneCommandBuffer, canUseSameCommandMultipleTimes)
     {
-        const String name1("cmd1");
-        const String name2("cmd2");
+        buffer.enqueueCommand(SceneCommandFlushSceneVersion{1});
+        buffer.enqueueCommand(SceneCommandFlushSceneVersion{2});
+        buffer.enqueueCommand(SceneCommandFlushSceneVersion{3});
+        buffer.enqueueCommand(SceneCommandFlushSceneVersion{4});
 
-        ForceFallbackCommand ffcCmd1;
-        ffcCmd1.streamTextureName = name1;
-        ffcCmd1.forceFallback     = false;
-
-        ForceFallbackCommand ffcCmd2;
-        ffcCmd2.streamTextureName = name2;
-        ffcCmd2.forceFallback     = true;
-
-        SceneCommand& cmd1 = ffcCmd1;
-        SceneCommand& cmd2 = ffcCmd2;
-
-        buffer.enqueueCommand(cmd1);
-        buffer.enqueueCommand(cmd2);
-
-        SceneCommandContainer container;
-        buffer.exchangeContainerData(container);
-
-        ASSERT_EQ(2u, container.getTotalCommandCount());
-        EXPECT_EQ(ESceneCommand_ForceFallbackImage ,container.getCommandType(0));
-        EXPECT_EQ(name1 ,container.getCommandData<ForceFallbackCommand>(0).streamTextureName);
-        EXPECT_FALSE(container.getCommandData<ForceFallbackCommand>(0).forceFallback);
-        EXPECT_EQ(ESceneCommand_ForceFallbackImage ,container.getCommandType(1));
-        EXPECT_EQ(name2 ,container.getCommandData<ForceFallbackCommand>(1).streamTextureName);
-        EXPECT_TRUE(container.getCommandData<ForceFallbackCommand>(1).forceFallback);
+        InSequence seq;
+        EXPECT_CALL(visitor, handleSceneCommandFlushSceneVersion(SceneCommandFlushSceneVersion{1}));
+        EXPECT_CALL(visitor, handleSceneCommandFlushSceneVersion(SceneCommandFlushSceneVersion{2}));
+        EXPECT_CALL(visitor, handleSceneCommandFlushSceneVersion(SceneCommandFlushSceneVersion{3}));
+        EXPECT_CALL(visitor, handleSceneCommandFlushSceneVersion(SceneCommandFlushSceneVersion{4}));
+        buffer.execute(std::ref(visitor));
     }
 
-    class BufferInserter : public Runnable
+    TEST_F(ASceneCommandBuffer, canBeUsedFromMultipleThreads)
     {
-    public:
-        BufferInserter(SceneCommandBuffer& _buffer, ThreadBarrier& _barrier, uint32_t _iterations)
-        : buffer(_buffer)
-        , iterations(_iterations)
-        , barrier(_barrier)
-        {}
+        ThreadBarrier setupDoneBarrier(3);
+        ThreadBarrier writersDoneBarrier(3);
+        ThreadBarrier allDone(3);
 
-        BufferInserter(const BufferInserter& rhs)
-            : Runnable()
-            , buffer(rhs.buffer)
-            , iterations(rhs.iterations)
-            , barrier(rhs.barrier)
-        {}
-
-        void run()
-        {
-            barrier.wait();
-            for(uint32_t i = 0; i < iterations; ++i)
-            {
-                ForceFallbackCommand cmd;
-                buffer.enqueueCommand(cmd);
-            }
-        }
-
-    private:
-        SceneCommandBuffer& buffer;
-        uint32_t            iterations;
-        ThreadBarrier&      barrier;
-    };
-
-    class BufferSwapper : public Runnable
-    {
-    public:
-        BufferSwapper(SceneCommandBuffer& _buffer, ThreadBarrier& _barrier, uint32_t _iterations = 1u)
-        : buffer(_buffer)
-        , iterations(_iterations)
-        , barrier(_barrier)
-        {}
-
-        BufferSwapper(const BufferSwapper& rhs)
-            : Runnable()
-            , buffer(rhs.buffer)
-            , iterations(rhs.iterations)
-            , barrier(rhs.barrier)
-        {}
-
-        void run()
-        {
-            barrier.wait();
-            while(iterations > 0u)
-            {
-                buffer.exchangeContainerData(container);
-
-                if(--iterations > 0u)
-                {
-                    PlatformThread::Sleep(1u);
-                }
-            }
-        }
-
-        uint32_t getNumberOfCommands() const
-        {
-            return container.getTotalCommandCount();
-        }
-
-    private:
-        SceneCommandBuffer&   buffer;
-        uint32_t              iterations;
-        ThreadBarrier&        barrier;
-        SceneCommandContainer container;
-    };
-
-    TEST_F(SceneCommandBufferTest, AccessBufferFromMultipleThreads)
-    {
-        const uint32_t NumberOfInserterSwapperThreads    = 23u;
-        const uint32_t NumberOfInsertIterationsPerThread = 500u;
-        const uint32_t NumberOfSwapIterationsPerThread   = 9u;
-        const uint32_t NumberOfExpectedCommands          = NumberOfInsertIterationsPerThread * NumberOfInserterSwapperThreads;
-        const uint32_t TotalNumberOfThreads              = 2 * NumberOfInserterSwapperThreads;
-
-        ThreadBarrier barrier(TotalNumberOfThreads);
-        std::vector<BufferInserter> inserter(NumberOfInserterSwapperThreads, BufferInserter(buffer, barrier, NumberOfInsertIterationsPerThread));
-        std::vector<BufferSwapper>  swapper(NumberOfInserterSwapperThreads, BufferSwapper(buffer, barrier, NumberOfSwapIterationsPerThread));
-        PlatformThread* threads[TotalNumberOfThreads];
-        for(uint32_t i = 0; i < TotalNumberOfThreads; ++i)
-        {
-            threads[i] = new PlatformThread("thread");
-        }
-
-        for(uint32_t i = 0; i < NumberOfInserterSwapperThreads; ++i)
-        {
-            threads[i*2]->start(inserter[i]);
-            threads[i*2+1]->start(swapper[i]);
-        }
-
-        for(uint32_t i = 0; i < NumberOfInserterSwapperThreads; ++i)
-        {
-            threads[i*2]->join();
-            threads[i*2+1]->join();
-        }
-
-        uint32_t numberOfCollectedCommands = 0u;
-        for(uint32_t i = 0; i < NumberOfInserterSwapperThreads; ++i)
-        {
-            numberOfCollectedCommands += swapper[i].getNumberOfCommands();
-        }
-
-        BufferSwapper lastSwap(buffer, barrier);
-        lastSwap.run();
-        numberOfCollectedCommands += lastSwap.getNumberOfCommands();
-
-        EXPECT_EQ(NumberOfExpectedCommands, numberOfCollectedCommands);
-
-        for(uint32_t i = 0; i < TotalNumberOfThreads; ++i)
-        {
-            delete threads[i];
-        }
+        std::thread t1([&]() {
+                           setupDoneBarrier.wait();
+                           buffer.enqueueCommand(SceneCommandForceFallback{"foo", true});
+                           buffer.enqueueCommand(SceneCommandFlushSceneVersion{12345u});
+                           writersDoneBarrier.wait();
+                           allDone.wait();
+                       });
+        std::thread t2([&]() {
+                           setupDoneBarrier.wait();
+                           buffer.enqueueCommand(SceneCommandValidationRequest{ramses::EValidationSeverity_Error, "bar"});
+                           buffer.enqueueCommand(SceneCommandDumpSceneToFile{"somename", false});
+                           buffer.enqueueCommand(SceneCommandLogResourceMemoryUsage{});
+                           writersDoneBarrier.wait();
+                           allDone.wait();
+                       });
+        std::thread t3([&]() {
+                           Sequence seqT1;
+                           Sequence seqT2;
+                           EXPECT_CALL(visitor, handleSceneCommandForceFallback(SceneCommandForceFallback{"foo", true})).InSequence(seqT1);
+                           EXPECT_CALL(visitor, handleSceneCommandFlushSceneVersion(SceneCommandFlushSceneVersion{12345u})).InSequence(seqT1);
+                           EXPECT_CALL(visitor, handleSceneCommandValidationRequest(SceneCommandValidationRequest{ramses::EValidationSeverity_Error, "bar"})).InSequence(seqT2);
+                           EXPECT_CALL(visitor, handleSceneCommandDumpSceneToFile(SceneCommandDumpSceneToFile{"somename", false})).InSequence(seqT2);
+                           EXPECT_CALL(visitor, handleSceneCommandLogResourceMemoryUsage(SceneCommandLogResourceMemoryUsage{})).InSequence(seqT2);
+                           setupDoneBarrier.wait();
+                           writersDoneBarrier.wait();
+                           buffer.execute(std::ref(visitor));
+                           allDone.wait();
+                       });
+        t1.join();
+        t2.join();
+        t3.join();
     }
 }

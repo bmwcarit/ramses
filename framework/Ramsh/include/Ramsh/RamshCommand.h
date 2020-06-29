@@ -20,7 +20,7 @@ namespace ramses_internal
     public:
         virtual ~RamshCommand() {}
         void registerKeyword(const String& keyword);
-        virtual Bool executeInput(const RamshInput& input) = 0;
+        virtual bool executeInput(const RamshInput& input) = 0;
 
         String keywordString() const;
         const StringVector& keywords() const;

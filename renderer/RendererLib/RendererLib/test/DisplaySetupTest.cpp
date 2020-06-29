@@ -16,14 +16,14 @@ using namespace ramses_internal;
 class ADisplaySetup : public ::testing::Test
 {
 protected:
-    void expectMappedScenesInOrder(DeviceResourceHandle buffer, std::initializer_list<MappedSceneInfo> mappedScenes)
+    void expectAssignedScenesInOrder(DeviceResourceHandle buffer, std::initializer_list<AssignedSceneInfo> assignedScenes)
     {
-        for (const auto& mappedScene : mappedScenes)
-            EXPECT_EQ(buffer, displaySetup.findDisplayBufferSceneIsMappedTo(mappedScene.sceneId));
+        for (const auto& mappedScene : assignedScenes)
+            EXPECT_EQ(buffer, displaySetup.findDisplayBufferSceneIsAssignedTo(mappedScene.sceneId));
 
-        const MappedScenes& bufferScenes = displaySetup.getDisplayBuffer(buffer).mappedScenes;
-        ASSERT_EQ(mappedScenes.size(), bufferScenes.size());
-        const bool areEqual = std::equal(mappedScenes.begin(), mappedScenes.end(), bufferScenes.cbegin(), [](const MappedSceneInfo& a, const MappedSceneInfo& b)
+        const AssignedScenes& bufferScenes = displaySetup.getDisplayBuffer(buffer).scenes;
+        ASSERT_EQ(assignedScenes.size(), bufferScenes.size());
+        const bool areEqual = std::equal(assignedScenes.begin(), assignedScenes.end(), bufferScenes.cbegin(), [](const AssignedSceneInfo& a, const AssignedSceneInfo& b)
         {
             return a.sceneId == b.sceneId
                 && a.globalSceneOrder == b.globalSceneOrder
@@ -53,7 +53,7 @@ TEST_F(ADisplaySetup, canRegisterFramebufferInfoWithInitialValues)
     const auto& bufferInfo = displaySetup.getDisplayBuffer(bufferHandle);
     EXPECT_EQ(viewport, bufferInfo.viewport);
     EXPECT_EQ(clearColor, bufferInfo.clearColor);
-    EXPECT_TRUE(bufferInfo.mappedScenes.empty());
+    EXPECT_TRUE(bufferInfo.scenes.empty());
     EXPECT_FALSE(bufferInfo.isInterruptible);
     EXPECT_TRUE(bufferInfo.needsRerender);
 
@@ -69,7 +69,7 @@ TEST_F(ADisplaySetup, canRegisterNonInterruptibleOBInfoWithInitialValues)
     const auto& bufferInfo = displaySetup.getDisplayBuffer(bufferHandle);
     EXPECT_EQ(viewport, bufferInfo.viewport);
     EXPECT_EQ(clearColor, bufferInfo.clearColor);
-    EXPECT_TRUE(bufferInfo.mappedScenes.empty());
+    EXPECT_TRUE(bufferInfo.scenes.empty());
     EXPECT_FALSE(bufferInfo.isInterruptible);
     EXPECT_TRUE(bufferInfo.needsRerender);
 
@@ -86,7 +86,7 @@ TEST_F(ADisplaySetup, canRegisterInterruptibleOBInfoWithInitialValues)
     const auto& bufferInfo = displaySetup.getDisplayBuffer(bufferHandle);
     EXPECT_EQ(viewport, bufferInfo.viewport);
     EXPECT_EQ(clearColor, bufferInfo.clearColor);
-    EXPECT_TRUE(bufferInfo.mappedScenes.empty());
+    EXPECT_TRUE(bufferInfo.scenes.empty());
     EXPECT_TRUE(bufferInfo.isInterruptible);
     EXPECT_TRUE(bufferInfo.needsRerender);
 
@@ -185,27 +185,27 @@ TEST_F(ADisplaySetup, canMapAndUnmapSceneToBuffer)
     displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, false);
     displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, true);
 
-    displaySetup.mapSceneToDisplayBuffer(scene1, bufferHandleFB, 0);
-    displaySetup.mapSceneToDisplayBuffer(scene2, bufferHandleOB, 0);
-    displaySetup.mapSceneToDisplayBuffer(scene3, bufferHandleOBint, 0);
+    displaySetup.assignSceneToDisplayBuffer(scene1, bufferHandleFB, 0);
+    displaySetup.assignSceneToDisplayBuffer(scene2, bufferHandleOB, 0);
+    displaySetup.assignSceneToDisplayBuffer(scene3, bufferHandleOBint, 0);
 
-    expectMappedScenesInOrder(bufferHandleFB, { { scene1, 0, false } });
-    expectMappedScenesInOrder(bufferHandleOB, { { scene2, 0, false } });
-    expectMappedScenesInOrder(bufferHandleOBint, { { scene3, 0, false } });
+    expectAssignedScenesInOrder(bufferHandleFB, { { scene1, 0, false } });
+    expectAssignedScenesInOrder(bufferHandleOB, { { scene2, 0, false } });
+    expectAssignedScenesInOrder(bufferHandleOBint, { { scene3, 0, false } });
 
-    displaySetup.unmapScene(scene1);
-    displaySetup.unmapScene(scene2);
-    displaySetup.unmapScene(scene3);
+    displaySetup.unassignScene(scene1);
+    displaySetup.unassignScene(scene2);
+    displaySetup.unassignScene(scene3);
 
-    expectMappedScenesInOrder(bufferHandleFB, {});
-    expectMappedScenesInOrder(bufferHandleOB, {});
-    expectMappedScenesInOrder(bufferHandleOBint, {});
-    EXPECT_FALSE(displaySetup.findDisplayBufferSceneIsMappedTo(scene1).isValid());
-    EXPECT_FALSE(displaySetup.findDisplayBufferSceneIsMappedTo(scene2).isValid());
-    EXPECT_FALSE(displaySetup.findDisplayBufferSceneIsMappedTo(scene3).isValid());
+    expectAssignedScenesInOrder(bufferHandleFB, {});
+    expectAssignedScenesInOrder(bufferHandleOB, {});
+    expectAssignedScenesInOrder(bufferHandleOBint, {});
+    EXPECT_FALSE(displaySetup.findDisplayBufferSceneIsAssignedTo(scene1).isValid());
+    EXPECT_FALSE(displaySetup.findDisplayBufferSceneIsAssignedTo(scene2).isValid());
+    EXPECT_FALSE(displaySetup.findDisplayBufferSceneIsAssignedTo(scene3).isValid());
 }
 
-TEST_F(ADisplaySetup, storesMappedScenesInRenderingOrder)
+TEST_F(ADisplaySetup, storesAssignedScenesInRenderingOrder)
 {
     const SceneId scene1(12u);
     const SceneId scene2(13u);
@@ -213,29 +213,29 @@ TEST_F(ADisplaySetup, storesMappedScenesInRenderingOrder)
     const DeviceResourceHandle bufferHandleOB(34u);
     displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, false);
 
-    displaySetup.mapSceneToDisplayBuffer(scene2, bufferHandleOB, 10);
-    expectMappedScenesInOrder(bufferHandleOB, { { scene2, 10, false } });
+    displaySetup.assignSceneToDisplayBuffer(scene2, bufferHandleOB, 10);
+    expectAssignedScenesInOrder(bufferHandleOB, { { scene2, 10, false } });
 
-    displaySetup.mapSceneToDisplayBuffer(scene3, bufferHandleOB, -10);
-    expectMappedScenesInOrder(bufferHandleOB, { { scene3, -10, false },{ scene2, 10, false } });
+    displaySetup.assignSceneToDisplayBuffer(scene3, bufferHandleOB, -10);
+    expectAssignedScenesInOrder(bufferHandleOB, { { scene3, -10, false },{ scene2, 10, false } });
 
-    displaySetup.mapSceneToDisplayBuffer(scene1, bufferHandleOB, 0);
-    expectMappedScenesInOrder(bufferHandleOB, { { scene3, -10, false },{ scene1, 0, false },{ scene2, 10, false } });
+    displaySetup.assignSceneToDisplayBuffer(scene1, bufferHandleOB, 0);
+    expectAssignedScenesInOrder(bufferHandleOB, { { scene3, -10, false },{ scene1, 0, false },{ scene2, 10, false } });
 
-    displaySetup.unmapScene(scene1);
-    expectMappedScenesInOrder(bufferHandleOB, { { scene3, -10, false },{ scene2, 10, false } });
+    displaySetup.unassignScene(scene1);
+    expectAssignedScenesInOrder(bufferHandleOB, { { scene3, -10, false },{ scene2, 10, false } });
 
-    displaySetup.mapSceneToDisplayBuffer(scene1, bufferHandleOB, 666);
-    expectMappedScenesInOrder(bufferHandleOB, { { scene3, -10, false },{ scene2, 10, false },{ scene1, 666, false } });
+    displaySetup.assignSceneToDisplayBuffer(scene1, bufferHandleOB, 666);
+    expectAssignedScenesInOrder(bufferHandleOB, { { scene3, -10, false },{ scene2, 10, false },{ scene1, 666, false } });
 
-    displaySetup.unmapScene(scene2);
-    expectMappedScenesInOrder(bufferHandleOB, { { scene3, -10, false },{ scene1, 666, false } });
+    displaySetup.unassignScene(scene2);
+    expectAssignedScenesInOrder(bufferHandleOB, { { scene3, -10, false },{ scene1, 666, false } });
 
-    displaySetup.unmapScene(scene3);
-    expectMappedScenesInOrder(bufferHandleOB, { { scene1, 666, false } });
+    displaySetup.unassignScene(scene3);
+    expectAssignedScenesInOrder(bufferHandleOB, { { scene1, 666, false } });
 
-    displaySetup.unmapScene(scene1);
-    expectMappedScenesInOrder(bufferHandleOB, {});
+    displaySetup.unassignScene(scene1);
+    expectAssignedScenesInOrder(bufferHandleOB, {});
 }
 
 TEST_F(ADisplaySetup, triggersRerenderForBufferWithMappedOrUnmappedScene)
@@ -256,9 +256,9 @@ TEST_F(ADisplaySetup, triggersRerenderForBufferWithMappedOrUnmappedScene)
     displaySetup.setDisplayBufferToBeRerendered(bufferHandleOBint, false);
 
     // trigger re-render by mapping
-    displaySetup.mapSceneToDisplayBuffer(scene1, bufferHandleFB, 0);
-    displaySetup.mapSceneToDisplayBuffer(scene2, bufferHandleOB, 0);
-    displaySetup.mapSceneToDisplayBuffer(scene3, bufferHandleOBint, 0);
+    displaySetup.assignSceneToDisplayBuffer(scene1, bufferHandleFB, 0);
+    displaySetup.assignSceneToDisplayBuffer(scene2, bufferHandleOB, 0);
+    displaySetup.assignSceneToDisplayBuffer(scene3, bufferHandleOBint, 0);
     EXPECT_TRUE(displaySetup.getDisplayBuffer(bufferHandleFB).needsRerender);
     EXPECT_TRUE(displaySetup.getDisplayBuffer(bufferHandleOB).needsRerender);
     EXPECT_TRUE(displaySetup.getDisplayBuffer(bufferHandleOBint).needsRerender);
@@ -271,9 +271,9 @@ TEST_F(ADisplaySetup, triggersRerenderForBufferWithMappedOrUnmappedScene)
     displaySetup.setDisplayBufferToBeRerendered(bufferHandleOBint, false);
 
     // trigger re-render by unmapping
-    displaySetup.unmapScene(scene1);
-    displaySetup.unmapScene(scene2);
-    displaySetup.unmapScene(scene3);
+    displaySetup.unassignScene(scene1);
+    displaySetup.unassignScene(scene2);
+    displaySetup.unassignScene(scene3);
     EXPECT_TRUE(displaySetup.getDisplayBuffer(bufferHandleFB).needsRerender);
     EXPECT_TRUE(displaySetup.getDisplayBuffer(bufferHandleOB).needsRerender);
     EXPECT_TRUE(displaySetup.getDisplayBuffer(bufferHandleOBint).needsRerender);
@@ -289,24 +289,24 @@ TEST_F(ADisplaySetup, canSetSceneShown)
     const DeviceResourceHandle bufferHandleOB(34u);
     displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, false);
 
-    displaySetup.mapSceneToDisplayBuffer(scene1, bufferHandleOB, 0);
-    displaySetup.mapSceneToDisplayBuffer(scene2, bufferHandleOB, 10);
-    displaySetup.mapSceneToDisplayBuffer(scene3, bufferHandleOB, -10);
-    expectMappedScenesInOrder(bufferHandleOB, { { scene3, -10, false },{ scene1, 0, false },{ scene2, 10, false } });
+    displaySetup.assignSceneToDisplayBuffer(scene1, bufferHandleOB, 0);
+    displaySetup.assignSceneToDisplayBuffer(scene2, bufferHandleOB, 10);
+    displaySetup.assignSceneToDisplayBuffer(scene3, bufferHandleOB, -10);
+    expectAssignedScenesInOrder(bufferHandleOB, { { scene3, -10, false },{ scene1, 0, false },{ scene2, 10, false } });
 
     displaySetup.setSceneShown(scene1, true);
-    expectMappedScenesInOrder(bufferHandleOB, { { scene3, -10, false },{ scene1, 0, true },{ scene2, 10, false } });
+    expectAssignedScenesInOrder(bufferHandleOB, { { scene3, -10, false },{ scene1, 0, true },{ scene2, 10, false } });
     displaySetup.setSceneShown(scene2, true);
-    expectMappedScenesInOrder(bufferHandleOB, { { scene3, -10, false },{ scene1, 0, true },{ scene2, 10, true } });
+    expectAssignedScenesInOrder(bufferHandleOB, { { scene3, -10, false },{ scene1, 0, true },{ scene2, 10, true } });
     displaySetup.setSceneShown(scene3, true);
-    expectMappedScenesInOrder(bufferHandleOB, { { scene3, -10, true },{ scene1, 0, true },{ scene2, 10, true } });
+    expectAssignedScenesInOrder(bufferHandleOB, { { scene3, -10, true },{ scene1, 0, true },{ scene2, 10, true } });
 
     displaySetup.setSceneShown(scene1, false);
-    expectMappedScenesInOrder(bufferHandleOB, { { scene3, -10, true },{ scene1, 0, false },{ scene2, 10, true } });
+    expectAssignedScenesInOrder(bufferHandleOB, { { scene3, -10, true },{ scene1, 0, false },{ scene2, 10, true } });
     displaySetup.setSceneShown(scene2, false);
-    expectMappedScenesInOrder(bufferHandleOB, { { scene3, -10, true },{ scene1, 0, false },{ scene2, 10, false } });
+    expectAssignedScenesInOrder(bufferHandleOB, { { scene3, -10, true },{ scene1, 0, false },{ scene2, 10, false } });
     displaySetup.setSceneShown(scene3, false);
-    expectMappedScenesInOrder(bufferHandleOB, { { scene3, -10, false },{ scene1, 0, false },{ scene2, 10, false } });
+    expectAssignedScenesInOrder(bufferHandleOB, { { scene3, -10, false },{ scene1, 0, false },{ scene2, 10, false } });
 }
 
 TEST_F(ADisplaySetup, triggersRerenderForBufferWithChangedSceneShowState)
@@ -321,9 +321,9 @@ TEST_F(ADisplaySetup, triggersRerenderForBufferWithChangedSceneShowState)
     displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, false);
     displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, true);
 
-    displaySetup.mapSceneToDisplayBuffer(scene1, bufferHandleFB, 0);
-    displaySetup.mapSceneToDisplayBuffer(scene2, bufferHandleOB, 0);
-    displaySetup.mapSceneToDisplayBuffer(scene3, bufferHandleOBint, 0);
+    displaySetup.assignSceneToDisplayBuffer(scene1, bufferHandleFB, 0);
+    displaySetup.assignSceneToDisplayBuffer(scene2, bufferHandleOB, 0);
+    displaySetup.assignSceneToDisplayBuffer(scene3, bufferHandleOBint, 0);
 
     // reset re-render state
     displaySetup.setDisplayBufferToBeRerendered(bufferHandleFB, false);
@@ -440,4 +440,49 @@ TEST_F(ADisplaySetup, getsListOfInterruptibleBuffersToRerenderStartingFromInterr
     // buffer4 is skipped because it is not marked to re-render
     const DeviceHandleVector expectedBuffersToRerender{ bufferHandle2, bufferHandle3, bufferHandle5 };
     EXPECT_EQ(expectedBuffersToRerender, displaySetup.getInterruptibleOffscreenBuffersToRender(bufferHandle2));
+}
+
+TEST_F(ADisplaySetup, canAssignAnAlreadyAssignedSceneToAnotherBufferAndPreserveShowState)
+{
+    const SceneId scene1(12u);
+    const SceneId scene2(13u);
+    const SceneId scene3(14u);
+    const DeviceResourceHandle bufferHandleFB(33u);
+    const DeviceResourceHandle bufferHandleOB(34u);
+    const DeviceResourceHandle bufferHandleOBint(35u);
+    displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, false);
+    displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, false);
+    displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, true);
+
+    displaySetup.assignSceneToDisplayBuffer(scene1, bufferHandleFB, 1);
+    displaySetup.assignSceneToDisplayBuffer(scene2, bufferHandleOB, 2);
+    displaySetup.assignSceneToDisplayBuffer(scene3, bufferHandleOBint, 3);
+
+    displaySetup.setSceneShown(scene1, true);
+    displaySetup.setSceneShown(scene2, false);
+    displaySetup.setSceneShown(scene3, true);
+
+    expectAssignedScenesInOrder(bufferHandleFB, { { scene1, 1, true } });
+    expectAssignedScenesInOrder(bufferHandleOB, { { scene2, 2, false } });
+    expectAssignedScenesInOrder(bufferHandleOBint, { { scene3, 3, true } });
+
+    // reset re-render states
+    displaySetup.setDisplayBufferToBeRerendered(bufferHandleFB, false);
+    displaySetup.setDisplayBufferToBeRerendered(bufferHandleOB, false);
+    displaySetup.setDisplayBufferToBeRerendered(bufferHandleOBint, false);
+
+    // change scenes assignments
+    displaySetup.assignSceneToDisplayBuffer(scene2, bufferHandleFB, 1);
+    displaySetup.assignSceneToDisplayBuffer(scene3, bufferHandleOB, 2);
+    displaySetup.assignSceneToDisplayBuffer(scene1, bufferHandleOBint, 3);
+
+    expectAssignedScenesInOrder(bufferHandleFB, { { scene2, 1, false } });
+    expectAssignedScenesInOrder(bufferHandleOB, { { scene3, 2, true } });
+    expectAssignedScenesInOrder(bufferHandleOBint, { { scene1, 3, true } });
+
+    EXPECT_TRUE(displaySetup.getDisplayBuffer(bufferHandleFB).needsRerender);
+    EXPECT_TRUE(displaySetup.getDisplayBuffer(bufferHandleOB).needsRerender);
+    EXPECT_TRUE(displaySetup.getDisplayBuffer(bufferHandleOBint).needsRerender);
+    EXPECT_EQ(DeviceHandleVector{ bufferHandleOB }, displaySetup.getNonInterruptibleOffscreenBuffersToRender());
+    EXPECT_EQ(DeviceHandleVector{ bufferHandleOBint }, displaySetup.getInterruptibleOffscreenBuffersToRender(DeviceResourceHandle::Invalid()));
 }

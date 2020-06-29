@@ -9,6 +9,7 @@
 #include "SystemCompositorController_Wayland_IVI/IVIControllerSurface.h"
 #include "SystemCompositorController_Wayland_IVI/SystemCompositorController_Wayland_IVI.h"
 #include "Utils/LogMacros.h"
+#include <cassert>
 
 namespace ramses_internal
 {

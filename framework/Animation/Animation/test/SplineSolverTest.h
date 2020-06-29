@@ -32,7 +32,7 @@ namespace ramses_internal
         void splineSolverVisualTest(EInterpolationType interpolationType);
     };
 
-    template void ASpline::splineSolverInterpolateTest<Bool>(EInterpolationType, const char*);
+    template void ASpline::splineSolverInterpolateTest<bool>(EInterpolationType, const char*);
     template void ASpline::splineSolverInterpolateTest<Int32>(EInterpolationType, const char*);
     template void ASpline::splineSolverInterpolateTest<Int64>(EInterpolationType, const char*);
     template void ASpline::splineSolverInterpolateTest<UInt32>(EInterpolationType, const char*);

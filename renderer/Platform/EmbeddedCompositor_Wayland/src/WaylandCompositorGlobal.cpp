@@ -14,6 +14,7 @@
 #include "EmbeddedCompositor_Wayland/IWaylandGlobal.h"
 #include "PlatformAbstraction/PlatformMath.h"
 #include "Utils/LogMacros.h"
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -31,7 +32,7 @@ namespace ramses_internal
         // are ALL handled in WaylandCompositorConnection::Compositor_Interface.
         const int maximumSupportedCompositorInterfaceVersion = 4;
 
-        const int supportedCompositorInterfaceVersion = min(maximumSupportedCompositorInterfaceVersion,  wl_compositor_interface.version);
+        const int supportedCompositorInterfaceVersion = std::min(maximumSupportedCompositorInterfaceVersion,  wl_compositor_interface.version);
         m_waylandGlobal = serverDisplay.createGlobal(&wl_compositor_interface, supportedCompositorInterfaceVersion, this, CompositorBindCallback);
 
         if (nullptr == m_waylandGlobal)

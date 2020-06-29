@@ -25,7 +25,7 @@ public:
         , allocateHelper(scene)
     {
         allocateHelper.allocateRenderTarget(renderTargetHandle);
-        allocateHelper.allocateRenderBuffer({ 16u, 16u, ERenderBufferType_ColorBuffer, ETextureFormat_BGRA8, ERenderBufferAccessMode_ReadWrite, 0u }, renderBufferHandle);
+        allocateHelper.allocateRenderBuffer({ 16u, 16u, ERenderBufferType_ColorBuffer, ETextureFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 0u }, renderBufferHandle);
         allocateHelper.allocateStreamTexture(0, ResourceContentHash(1u, 2u), streamTextureHandle);
         allocateHelper.allocateBlitPass(RenderBufferHandle(81u), RenderBufferHandle(82u), blitPassHandle);
         allocateHelper.allocateDataBuffer(EDataBufferType::IndexBuffer, EDataType_UInt32, 10u, dataBufferHandle);
@@ -51,7 +51,7 @@ protected:
 
 struct BasicActionSet
 {
-    BasicActionSet(ESceneResourceAction c = ESceneResourceAction_Invalid, ESceneResourceAction d = ESceneResourceAction_Invalid, ESceneResourceAction u = ESceneResourceAction_Invalid)
+    explicit BasicActionSet(ESceneResourceAction c = ESceneResourceAction_Invalid, ESceneResourceAction d = ESceneResourceAction_Invalid, ESceneResourceAction u = ESceneResourceAction_Invalid)
         : create(c)
         , destroy(d)
         , update(u)
@@ -63,12 +63,12 @@ struct BasicActionSet
     ESceneResourceAction update;
 };
 
-static const BasicActionSet ActionSet_RenderTarget = { ESceneResourceAction_CreateRenderTarget, ESceneResourceAction_DestroyRenderTarget };
-static const BasicActionSet ActionSet_RenderBuffer = { ESceneResourceAction_CreateRenderBuffer, ESceneResourceAction_DestroyRenderBuffer };
-static const BasicActionSet ActionSet_BlitPass = { ESceneResourceAction_CreateBlitPass, ESceneResourceAction_DestroyBlitPass };
-static const BasicActionSet ActionSet_StreamTexture = { ESceneResourceAction_CreateStreamTexture, ESceneResourceAction_DestroyStreamTexture };
-static const BasicActionSet ActionSet_DataBuffer = { ESceneResourceAction_CreateDataBuffer, ESceneResourceAction_DestroyDataBuffer, ESceneResourceAction_UpdateDataBuffer };
-static const BasicActionSet ActionSet_TextureBuffer = { ESceneResourceAction_CreateTextureBuffer, ESceneResourceAction_DestroyTextureBuffer, ESceneResourceAction_UpdateTextureBuffer };
+static const BasicActionSet ActionSet_RenderTarget{ ESceneResourceAction_CreateRenderTarget, ESceneResourceAction_DestroyRenderTarget };
+static const BasicActionSet ActionSet_RenderBuffer{ ESceneResourceAction_CreateRenderBuffer, ESceneResourceAction_DestroyRenderBuffer };
+static const BasicActionSet ActionSet_BlitPass{ ESceneResourceAction_CreateBlitPass, ESceneResourceAction_DestroyBlitPass };
+static const BasicActionSet ActionSet_StreamTexture{ ESceneResourceAction_CreateStreamTexture, ESceneResourceAction_DestroyStreamTexture };
+static const BasicActionSet ActionSet_DataBuffer{ ESceneResourceAction_CreateDataBuffer, ESceneResourceAction_DestroyDataBuffer, ESceneResourceAction_UpdateDataBuffer };
+static const BasicActionSet ActionSet_TextureBuffer{ ESceneResourceAction_CreateTextureBuffer, ESceneResourceAction_DestroyTextureBuffer, ESceneResourceAction_UpdateTextureBuffer };
 
 static const BasicActionSet TestSceneResourceActions[] =
 {
@@ -157,18 +157,17 @@ TEST_F(APendingSceneResourcesUtils, cancelsOutCreateAndDeleteDuringConsolidation
 {
     for (const auto& crateDestroyPair : TestSceneResourceActions)
     {
-        SceneResourceActionVector actionsOld;
+        SceneResourceActionVector actions;
         SceneResourceActionVector actionsNew;
-        SceneResourceActionVector actionsConsolidated;
 
         // test create/destroy pair across old/new and also another pair within new only
-        actionsOld.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.create));
+        actions.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.create));
         actionsNew.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.destroy));
         actionsNew.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.create));
         actionsNew.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.destroy));
 
-        actionsConsolidated = PendingSceneResourcesUtils::ConsolidateSceneResourceActions(actionsNew, &actionsOld);
-        EXPECT_TRUE(actionsConsolidated.empty());
+        PendingSceneResourcesUtils::ConsolidateSceneResourceActions(actionsNew, actions);
+        EXPECT_TRUE(actions.empty());
     }
 }
 
@@ -177,15 +176,15 @@ TEST_F(APendingSceneResourcesUtils, doesNotCancelOutDestroyAndCreateDuringConsol
     for (const auto& crateDestroyPair : TestSceneResourceActions)
     {
         SceneResourceActionVector actionsNew;
-        SceneResourceActionVector actionsConsolidated;
+        SceneResourceActionVector actions;
 
         actionsNew.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.destroy));
         actionsNew.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.create));
 
-        actionsConsolidated = PendingSceneResourcesUtils::ConsolidateSceneResourceActions(actionsNew);
-        ASSERT_EQ(2u, actionsConsolidated.size());
-        EXPECT_EQ(crateDestroyPair.destroy, actionsConsolidated.front().action);
-        EXPECT_EQ(crateDestroyPair.create, actionsConsolidated.back().action);
+        PendingSceneResourcesUtils::ConsolidateSceneResourceActions(actionsNew, actions);
+        ASSERT_EQ(2u, actions.size());
+        EXPECT_EQ(crateDestroyPair.destroy, actions.front().action);
+        EXPECT_EQ(crateDestroyPair.create, actions.back().action);
     }
 }
 
@@ -193,20 +192,19 @@ TEST_F(APendingSceneResourcesUtils, doesNotCancelOutCreateAndDeleteOfDifferentHa
 {
     for (const auto& crateDestroyPair : TestSceneResourceActions)
     {
-        SceneResourceActionVector actionsOld;
+        SceneResourceActionVector actions;
         SceneResourceActionVector actionsNew;
-        SceneResourceActionVector actionsConsolidated;
 
         // test create/destroy pair across old/new and also another pair within new only
-        actionsOld.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.create));
+        actions.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.create));
         actionsNew.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.destroy));
         actionsNew.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.create));
         actionsNew.push_back(SceneResourceAction(dummyHandle2, crateDestroyPair.destroy));
 
-        actionsConsolidated = PendingSceneResourcesUtils::ConsolidateSceneResourceActions(actionsNew, &actionsOld);
-        ASSERT_EQ(2u, actionsConsolidated.size());
-        EXPECT_EQ(SceneResourceAction(dummyHandle, crateDestroyPair.create), actionsConsolidated.front());
-        EXPECT_EQ(SceneResourceAction(dummyHandle2, crateDestroyPair.destroy), actionsConsolidated.back());
+        PendingSceneResourcesUtils::ConsolidateSceneResourceActions(actionsNew, actions);
+        ASSERT_EQ(2u, actions.size());
+        EXPECT_EQ(SceneResourceAction(dummyHandle, crateDestroyPair.create), actions.front());
+        EXPECT_EQ(SceneResourceAction(dummyHandle2, crateDestroyPair.destroy), actions.back());
     }
 }
 
@@ -214,21 +212,20 @@ TEST_F(APendingSceneResourcesUtils, keepsAdditionalCreateActionAfterCanceledCrea
 {
     for (const auto& crateDestroyPair : TestSceneResourceActions)
     {
-        SceneResourceActionVector actionsOld;
+        SceneResourceActionVector actions;
         SceneResourceActionVector actionsNew;
-        SceneResourceActionVector actionsConsolidated;
 
         // test create/destroy pair across old/new and also another pair within new only
-        actionsOld.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.create));
+        actions.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.create));
         actionsNew.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.destroy));
         actionsNew.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.create));
         actionsNew.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.destroy));
         // additional create
         actionsNew.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.create));
 
-        actionsConsolidated = PendingSceneResourcesUtils::ConsolidateSceneResourceActions(actionsNew, &actionsOld);
-        ASSERT_EQ(1u, actionsConsolidated.size());
-        EXPECT_EQ(crateDestroyPair.create, actionsConsolidated.front().action);
+        PendingSceneResourcesUtils::ConsolidateSceneResourceActions(actionsNew, actions);
+        ASSERT_EQ(1u, actions.size());
+        EXPECT_EQ(crateDestroyPair.create, actions.front().action);
     }
 }
 
@@ -236,21 +233,20 @@ TEST_F(APendingSceneResourcesUtils, keepsAdditionalDestroyActionAfterCanceledCre
 {
     for (const auto& crateDestroyPair : TestSceneResourceActions)
     {
-        SceneResourceActionVector actionsOld;
+        SceneResourceActionVector actions;
         SceneResourceActionVector actionsNew;
-        SceneResourceActionVector actionsConsolidated;
 
         // test create/destroy pair across old/new and also another pair within new only
-        actionsOld.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.create));
+        actions.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.create));
         actionsNew.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.destroy));
         actionsNew.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.create));
         actionsNew.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.destroy));
         // additional create
         actionsNew.push_back(SceneResourceAction(dummyHandle, crateDestroyPair.destroy));
 
-        actionsConsolidated = PendingSceneResourcesUtils::ConsolidateSceneResourceActions(actionsNew, &actionsOld);
-        ASSERT_EQ(1u, actionsConsolidated.size());
-        EXPECT_EQ(crateDestroyPair.destroy, actionsConsolidated.front().action);
+        PendingSceneResourcesUtils::ConsolidateSceneResourceActions(actionsNew, actions);
+        ASSERT_EQ(1u, actions.size());
+        EXPECT_EQ(crateDestroyPair.destroy, actions.front().action);
     }
 }
 
@@ -258,18 +254,17 @@ TEST_F(APendingSceneResourcesUtils, squashesBufferUpdateActionsToSingleActionDur
 {
     for (const auto& bufferAction : TestSceneResourceActions_Buffers)
     {
-        SceneResourceActionVector actionsOld;
+        SceneResourceActionVector actions;
         SceneResourceActionVector actionsNew;
-        SceneResourceActionVector actionsConsolidated;
 
         // updates both in old and new actions
-        actionsOld.push_back(SceneResourceAction(dummyHandle, bufferAction.update));
+        actions.push_back(SceneResourceAction(dummyHandle, bufferAction.update));
         actionsNew.push_back(SceneResourceAction(dummyHandle, bufferAction.update));
         actionsNew.push_back(SceneResourceAction(dummyHandle, bufferAction.update));
 
-        actionsConsolidated = PendingSceneResourcesUtils::ConsolidateSceneResourceActions(actionsNew, &actionsOld);
-        ASSERT_EQ(1u, actionsConsolidated.size());
-        EXPECT_EQ(bufferAction.update, actionsConsolidated.front().action);
+        PendingSceneResourcesUtils::ConsolidateSceneResourceActions(actionsNew, actions);
+        ASSERT_EQ(1u, actions.size());
+        EXPECT_EQ(bufferAction.update, actions.front().action);
     }
 }
 
@@ -277,21 +272,20 @@ TEST_F(APendingSceneResourcesUtils, removesAnyDataBufferUpdateActionsBeforeDestr
 {
     for (const auto& bufferAction : TestSceneResourceActions_Buffers)
     {
-        SceneResourceActionVector actionsOld;
+        SceneResourceActionVector actions;
         SceneResourceActionVector actionsNew;
-        SceneResourceActionVector actionsConsolidated;
 
         // updates both in old and new actions
-        actionsOld.push_back(SceneResourceAction(dummyHandle, bufferAction.update));
+        actions.push_back(SceneResourceAction(dummyHandle, bufferAction.update));
         actionsNew.push_back(SceneResourceAction(dummyHandle, bufferAction.update));
         actionsNew.push_back(SceneResourceAction(dummyHandle, bufferAction.update));
 
         // destroy buffer
         actionsNew.push_back(SceneResourceAction(dummyHandle, bufferAction.destroy));
 
-        actionsConsolidated = PendingSceneResourcesUtils::ConsolidateSceneResourceActions(actionsNew, &actionsOld);
-        ASSERT_EQ(1u, actionsConsolidated.size());
-        EXPECT_EQ(bufferAction.destroy, actionsConsolidated.front().action);
+        PendingSceneResourcesUtils::ConsolidateSceneResourceActions(actionsNew, actions);
+        ASSERT_EQ(1u, actions.size());
+        EXPECT_EQ(bufferAction.destroy, actions.front().action);
     }
 }
 
@@ -299,14 +293,13 @@ TEST_F(APendingSceneResourcesUtils, keepsDataBufferUpdateActionForNewlyCreatedAf
 {
     for (const auto& bufferAction : TestSceneResourceActions_Buffers)
     {
-        SceneResourceActionVector actionsOld;
+        SceneResourceActionVector actions;
         SceneResourceActionVector actionsNew;
-        SceneResourceActionVector actionsConsolidated;
 
         // create buffer
         actionsNew.push_back(SceneResourceAction(dummyHandle, bufferAction.create));
         // updates both in old and new actions
-        actionsOld.push_back(SceneResourceAction(dummyHandle, bufferAction.update));
+        actions.push_back(SceneResourceAction(dummyHandle, bufferAction.update));
         actionsNew.push_back(SceneResourceAction(dummyHandle, bufferAction.update));
         actionsNew.push_back(SceneResourceAction(dummyHandle, bufferAction.update));
         // destroy buffer
@@ -319,10 +312,10 @@ TEST_F(APendingSceneResourcesUtils, keepsDataBufferUpdateActionForNewlyCreatedAf
         actionsNew.push_back(SceneResourceAction(dummyHandle, bufferAction.update));
         actionsNew.push_back(SceneResourceAction(dummyHandle, bufferAction.update));
 
-        actionsConsolidated = PendingSceneResourcesUtils::ConsolidateSceneResourceActions(actionsNew, &actionsOld);
-        ASSERT_EQ(2u, actionsConsolidated.size());
-        EXPECT_EQ(bufferAction.create, actionsConsolidated.front().action);
-        EXPECT_EQ(bufferAction.update, actionsConsolidated.back().action);
+        PendingSceneResourcesUtils::ConsolidateSceneResourceActions(actionsNew, actions);
+        ASSERT_EQ(2u, actions.size());
+        EXPECT_EQ(bufferAction.create, actions.front().action);
+        EXPECT_EQ(bufferAction.update, actions.back().action);
     }
 }
 }

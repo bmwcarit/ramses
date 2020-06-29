@@ -8,98 +8,124 @@
 
 #include <gtest/gtest.h>
 #include "DltLogAppender/DltAdapter.h"
-#include "ramses-capu/os/Memory.h"
 #include "Utils/LogContext.h"
 #include "Utils/LogMessage.h"
 #include "Collections/String.h"
 
 using namespace ramses_internal;
 
-class DltAdapterWithRegisteredApplication : public ::testing::Test
+class ADltAdapter : public ::testing::Test
 {
 public:
-    DltAdapterWithRegisteredApplication()
+    ADltAdapter()
+        : adapter(DltAdapter::getDltAdapter())
+        , context(new LogContext("RXXX", "Test context"))
+        , logLevelChangeCallback([](const String&, int){})
     {
-        m_dltAdapter = DltAdapter::getDltAdapter();
-        EXPECT_TRUE(m_dltAdapter->registerApplication(String("APP0"), String("appname")));
-    };
-    virtual ~DltAdapterWithRegisteredApplication()
+    }
+
+    void SetUp() override
     {
-        m_dltAdapter->unregisterApplication();
-    };
-protected:
-    DltAdapter* m_dltAdapter;
+        if (DltAdapter::IsDummyAdapter())
+            GTEST_SKIP();
+
+        if (adapter && adapter->isInitialized())
+            adapter->uninitialize();
+    }
+
+    ~ADltAdapter()
+    {
+        if (adapter && adapter->isInitialized())
+            adapter->uninitialize();
+    }
+
+    DltAdapter* adapter;
+    std::unique_ptr<LogContext> context;
+    std::function<void(const String&, int)> logLevelChangeCallback;
 };
 
-TEST(DltAdapter, RegisterAndUnregisterApplication)
-{
-    DltAdapter* m_dltAdapter = DltAdapter::getDltAdapter();
-    m_dltAdapter->unregisterApplication();
-
-    EXPECT_TRUE(m_dltAdapter->registerApplication("TEST", "Test application"));
-    bool dltInitialized = m_dltAdapter->isDltInitialized();
-    EXPECT_TRUE(dltInitialized);
-
-    EXPECT_STREQ(m_dltAdapter->getApplicationName().c_str(), "TEST");
-    EXPECT_STREQ(m_dltAdapter->getApplicationDescription().c_str(), "Test application");
-    EXPECT_EQ(m_dltAdapter->getDltStatus(), EDltError_NO_ERROR);
-
-    m_dltAdapter->unregisterApplication();
-
-    EXPECT_EQ(m_dltAdapter->getDltStatus(), EDltError_NO_ERROR);
-    EXPECT_STREQ(m_dltAdapter->getApplicationName().c_str(), "");
-    EXPECT_STREQ(m_dltAdapter->getApplicationDescription().c_str(), "");
-}
-
-TEST(DltAdapter, RegisterApplicationWithAppNameTooLarge)
-{
-    DltAdapter* m_dltAdapter = DltAdapter::getDltAdapter();
-    EXPECT_FALSE(m_dltAdapter->registerApplication("TESTABC", "Test application"));
-}
-
-TEST(DltAdapter, SingletonNotNull)
+// run always
+TEST(DltAdapter, singletonNotNull)
 {
     EXPECT_TRUE(DltAdapter::getDltAdapter() != nullptr);
 }
 
-TEST_F(DltAdapterWithRegisteredApplication, DltInitialized)
+TEST_F(ADltAdapter, initiallyUninitialized)
 {
-    bool dltInitialized = m_dltAdapter->isDltInitialized();
-    EXPECT_TRUE(dltInitialized);
+    EXPECT_FALSE(adapter->isInitialized());
 }
 
-TEST_F(DltAdapterWithRegisteredApplication, RegisterandUnregisterContext)
+TEST_F(ADltAdapter, initializeAndUninitialize)
 {
-    LogContext con("Test context", "TCTX");
+    EXPECT_TRUE(adapter->initialize("TEST", "Test application", true, logLevelChangeCallback, {context.get()}, true));
+    EXPECT_TRUE(adapter->isInitialized());
 
-    m_dltAdapter->registerContext(&con, false, ELogLevel::Off);
-    EXPECT_EQ(m_dltAdapter->getDltStatus(),EDltError_NO_ERROR);
-
-    m_dltAdapter->unregisterApplication();
-
-    EXPECT_EQ(m_dltAdapter->getDltStatus(),EDltError_NO_ERROR);
+    adapter->uninitialize();
+    EXPECT_FALSE(adapter->isInitialized());
 }
 
-TEST_F(DltAdapterWithRegisteredApplication, LogMessageInDltAdapter)
+TEST_F(ADltAdapter, doubleInitFails)
 {
-    DltAdapter* dltAdapter = DltAdapter::getDltAdapter();
-
-    bool dltInitialized = dltAdapter->isDltInitialized();
-    EXPECT_TRUE(dltInitialized);
-
-    dltAdapter->registerApplication("TEST","Test application");
-
-    LogContext con("Test context", "TCTX");
-
-    dltAdapter->registerContext(&con, false, ELogLevel::Off);
-
-    StringOutputStream stream;
-    stream << "sample message";
-    LogMessage msg(con, ELogLevel::Info, stream);
-
-    dltAdapter->logMessage(msg);
-    EXPECT_EQ(dltAdapter->getDltStatus(),EDltError_NO_ERROR);
-
-    dltAdapter->unregisterApplication();
-    EXPECT_EQ(dltAdapter->getDltStatus(),EDltError_NO_ERROR);
+    EXPECT_TRUE(adapter->initialize("TEST", "Test application", true, logLevelChangeCallback, {context.get()}, true));
+    EXPECT_FALSE(adapter->initialize("TEST", "Test application", true, logLevelChangeCallback, {context.get()}, true));
 }
+
+TEST_F(ADltAdapter, appIdMustBeValid)
+{
+    EXPECT_FALSE(adapter->initialize("", "Test application", true, logLevelChangeCallback, {context.get()}, true));
+    EXPECT_FALSE(adapter->initialize("TEST123", "Test application", true, logLevelChangeCallback, {context.get()}, true));
+}
+
+TEST_F(ADltAdapter, contextListMayNotBeEmpty)
+{
+    EXPECT_FALSE(adapter->initialize("TEST", "Test application", true, logLevelChangeCallback, {}, true));
+}
+
+TEST_F(ADltAdapter, canLogOnContext)
+{
+    EXPECT_TRUE(adapter->initialize("TEST", "Test application", true, logLevelChangeCallback, {context.get()}, true));
+    StringOutputStream sos(std::string("foo"));
+    LogMessage msg(*context, ELogLevel::Info, sos);
+    EXPECT_TRUE(adapter->logMessage(msg));
+}
+
+TEST_F(ADltAdapter, logFailsWithoutInit)
+{
+    StringOutputStream sos(std::string("foo"));
+    LogMessage msg(*context, ELogLevel::Info, sos);
+    EXPECT_FALSE(adapter->logMessage(msg));
+}
+
+TEST_F(ADltAdapter, canLogWithLogLevelOff)
+{
+    EXPECT_TRUE(adapter->initialize("TEST", "Test application", true, logLevelChangeCallback, {context.get()}, true));
+    StringOutputStream sos(std::string("foo"));
+    LogMessage msg(*context, ELogLevel::Off, sos);
+    EXPECT_TRUE(adapter->logMessage(msg));
+}
+
+TEST_F(ADltAdapter, logFailsWithNonDltContext)
+{
+    EXPECT_TRUE(adapter->initialize("TEST", "Test application", true, logLevelChangeCallback, {context.get()}, true));
+
+    std::unique_ptr<LogContext> otherContext(new LogContext("RYYY", "Other test context"));
+    StringOutputStream sos(std::string("foo"));
+    LogMessage msg(*otherContext, ELogLevel::Info, sos);
+    EXPECT_FALSE(adapter->logMessage(msg));
+}
+
+#if defined(DLT_ENABLED)
+
+WARNINGS_PUSH
+WARNING_DISABLE_LINUX(-Wold-style-cast)
+#include <dlt_common_api.h>
+WARNINGS_POP
+
+TEST_F(ADltAdapter, canUseAlreadyRegisteredApp)
+{
+    DLT_REGISTER_APP("RAPP", "Ramses test app");
+    EXPECT_TRUE(adapter->initialize("TEST", "Test application", false, logLevelChangeCallback, {context.get()}, true));
+    adapter->uninitialize();
+    DLT_UNREGISTER_APP();
+}
+#endif

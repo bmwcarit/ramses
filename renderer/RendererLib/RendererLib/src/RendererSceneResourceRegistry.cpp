@@ -16,12 +16,12 @@ namespace ramses_internal
 
     RendererSceneResourceRegistry::~RendererSceneResourceRegistry()
     {
-        assert(m_renderBuffers.count() == 0u);
-        assert(m_renderTargets.count() == 0u);
-        assert(m_streamTextures.count() == 0u);
-        assert(m_blitPasses.count() == 0u);
-        assert(m_dataBuffers.count() == 0u);
-        assert(m_textureBuffers.count() == 0u);
+        assert(m_renderBuffers.size() == 0u);
+        assert(m_renderTargets.size() == 0u);
+        assert(m_streamTextures.size() == 0u);
+        assert(m_blitPasses.size() == 0u);
+        assert(m_dataBuffers.size() == 0u);
+        assert(m_textureBuffers.size() == 0u);
     }
 
     void RendererSceneResourceRegistry::addRenderBuffer(RenderBufferHandle handle, DeviceResourceHandle deviceHandle, UInt32 size, bool writeOnly)
@@ -51,7 +51,7 @@ namespace ramses_internal
     void RendererSceneResourceRegistry::getAllRenderBuffers(RenderBufferHandleVector& renderBuffers) const
     {
         assert(renderBuffers.empty());
-        renderBuffers.reserve(m_renderBuffers.count());
+        renderBuffers.reserve(m_renderBuffers.size());
         for(const auto& renderBuffer : m_renderBuffers)
         {
             renderBuffers.push_back(renderBuffer.key);
@@ -78,7 +78,7 @@ namespace ramses_internal
     void RendererSceneResourceRegistry::getAllRenderTargets(RenderTargetHandleVector& renderTargets) const
     {
         assert(renderTargets.empty());
-        renderTargets.reserve(m_renderTargets.count());
+        renderTargets.reserve(m_renderTargets.size());
         for(const auto& renderTarget : m_renderTargets)
         {
             renderTargets.push_back(renderTarget.key);
@@ -111,7 +111,7 @@ namespace ramses_internal
     void RendererSceneResourceRegistry::getAllBlitPasses(BlitPassHandleVector& blitPasses) const
     {
         assert(blitPasses.empty());
-        blitPasses.reserve(m_streamTextures.count());
+        blitPasses.reserve(m_streamTextures.size());
         for(const auto& blitPass : m_blitPasses)
         {
             blitPasses.push_back(blitPass.key);
@@ -139,7 +139,7 @@ namespace ramses_internal
     void RendererSceneResourceRegistry::getAllStreamTextures(StreamTextureHandleVector& streamTextures) const
     {
         assert(streamTextures.empty());
-        streamTextures.reserve(m_streamTextures.count());
+        streamTextures.reserve(m_streamTextures.size());
         for(const auto& streamTexture : m_streamTextures)
         {
             streamTextures.push_back(streamTexture.key);
@@ -173,7 +173,7 @@ namespace ramses_internal
     void RendererSceneResourceRegistry::getAllDataBuffers(DataBufferHandleVector& dataBuffers) const
     {
         assert(dataBuffers.empty());
-        dataBuffers.reserve(m_dataBuffers.count());
+        dataBuffers.reserve(m_dataBuffers.size());
         for(const auto& db : m_dataBuffers)
         {
             dataBuffers.push_back(db.key);
@@ -213,7 +213,7 @@ namespace ramses_internal
     void RendererSceneResourceRegistry::getAllTextureBuffers(TextureBufferHandleVector& textureBuffers) const
     {
         assert(textureBuffers.empty());
-        textureBuffers.reserve(m_textureBuffers.count());
+        textureBuffers.reserve(m_textureBuffers.size());
         for (const auto& tb : m_textureBuffers)
         {
             textureBuffers.push_back(tb.key);
@@ -241,7 +241,7 @@ namespace ramses_internal
     void RendererSceneResourceRegistry::getAllTextureSamplers(TextureSamplerHandleVector& textureSamplers) const
     {
         assert(textureSamplers.empty());
-        textureSamplers.reserve(m_textureSamplers.count());
+        textureSamplers.reserve(m_textureSamplers.size());
         for(const auto& ts: m_textureSamplers)
         {
             textureSamplers.push_back(ts.key);

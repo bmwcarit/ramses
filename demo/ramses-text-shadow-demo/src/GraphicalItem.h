@@ -14,7 +14,7 @@
 class GraphicalItem
 {
 public:
-    GraphicalItem(ramses::Scene& scene, ramses::RenderGroup* renderGroup = nullptr);
+    explicit GraphicalItem(ramses::Scene& scene, ramses::RenderGroup* renderGroup = nullptr);
 
     void                  initOutputBuffer(uint32_t width, uint32_t height, int32_t renderOrder);
     ramses::RenderBuffer* getOutputBuffer();

@@ -18,9 +18,9 @@ namespace ramses_internal
     class WaylandRegionMock : public IWaylandRegion
     {
     public:
-        MOCK_METHOD0(resourceDestroyed, void());
-        MOCK_METHOD5(regionAdd, void(IWaylandClient& client, int32_t x, int32_t y, int32_t width, int32_t height));
-        MOCK_METHOD5(regionSubtract, void(IWaylandClient& client, int32_t x, int32_t y, int32_t width, int32_t height));
+        MOCK_METHOD(void, resourceDestroyed, (), (override));
+        MOCK_METHOD(void, regionAdd, (IWaylandClient& client, int32_t x, int32_t y, int32_t width, int32_t height), (override));
+        MOCK_METHOD(void, regionSubtract, (IWaylandClient& client, int32_t x, int32_t y, int32_t width, int32_t height), (override));
     };
 }
 

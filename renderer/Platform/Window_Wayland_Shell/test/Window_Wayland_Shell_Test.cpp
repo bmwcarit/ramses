@@ -22,5 +22,5 @@ namespace ramses_internal
         return gPlatformFactoryMock;
     }
 
-    INSTANTIATE_TYPED_TEST_CASE_P(Window_Wayland_Shell_Test, AWindowWayland, Window_Wayland_Shell);
+    INSTANTIATE_TYPED_TEST_SUITE_P(Window_Wayland_Shell_Test, AWindowWayland, Window_Wayland_Shell);
 }

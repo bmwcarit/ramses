@@ -14,57 +14,40 @@ namespace ramses_internal
 {
     String StringUtils::Trim(const Char* nativeString)
     {
-        const UInt32 strLen = PlatformStringUtils::StrLen(nativeString);
-        if (0 == strLen)
-        {
-            return String();
-        }
-
-        UInt32 firstNonSpace = 0;
-        while (firstNonSpace <= strLen - 1 && nativeString[firstNonSpace] == ' ')
-            ++firstNonSpace;
-
-        UInt32 lastNonSpace = strLen - 1;
-        while (lastNonSpace > firstNonSpace && nativeString[lastNonSpace] == ' ')
-            --lastNonSpace;
-
-        if (lastNonSpace <= firstNonSpace)
-        {
-            return String();
-        }
-
-        return String(nativeString, firstNonSpace, lastNonSpace);
+        std::string result(nativeString);
+        result.erase(result.begin(), std::find_if(result.begin(), result.end(),
+                                                      [](int ch) { return !std::isspace(ch); }));
+        result.erase(std::find_if(result.rbegin(), result.rend(),
+                                    [](int ch) { return !std::isspace(ch); }).base(),
+                       result.end());
+        return String(std::move(result));
     }
 
-    void StringUtils::Tokenize(const String& string, StringVector& tokens, const char split)
+    void StringUtils::Tokenize(const String& string, StringVector& tokens, const char splitChar)
     {
-        if (string.getLength() > 0)
+        const Int strLength = static_cast<Int>(string.size());
+        Int nEnd = 0;
+        Int nStart = 0;
+
+        while (nStart < strLength)
         {
-            Int nEnd = 0;
-            Int nStart = 0;
-            const char splitString[2] = { split, 0 };
+            nEnd = string.find(splitChar, nStart);
 
-            const Int strLength = static_cast<Int>(string.getLength());
-            while (nStart < strLength)
+            if (nEnd < 0)
             {
-                nEnd = string.find(splitString, nStart);
-
-                if (nEnd < 0)
-                {
-                    nEnd = string.getLength();
-                }
-
-                if (nEnd > nStart)
-                {
-                    String token = string.substr(nStart, nEnd - nStart);
-                    tokens.push_back(token);
-                }
-
-                nStart = nEnd;
-
-                while (nStart < strLength && string.at(nStart) == split)
-                    ++nStart;
+                nEnd = string.size();
             }
+
+            if (nEnd > nStart)
+            {
+                String token = string.substr(nStart, nEnd - nStart);
+                tokens.push_back(token);
+            }
+
+            nStart = nEnd;
+
+            while (nStart < strLength && string.at(nStart) == splitChar)
+                ++nStart;
         }
     }
 
@@ -78,90 +61,20 @@ namespace ramses_internal
         }
     }
 
-    String StringUtils::HexFromResourceContentHash( const ResourceContentHash& n )
+    void StringUtils::GetLineTokens(const ramses_internal::String& line, char split, std::vector<ramses_internal::String>& tokens)
     {
-        // 2 concatenated uint64_t numbers yield 32 hex chars, prepended by '0x' and a \0 stop byte => 35 chars
-        String str(34u, '\0');
-        ramses_capu::StringUtils::Sprintf(const_cast<char*>(str.c_str()), 35u, "0x%016llx%016llx", n.highPart, n.lowPart);
-        return str;
-    }
+        std::vector<ramses_internal::String> allTokens;
+        ramses_internal::StringUtils::Tokenize(line, allTokens, split);
 
-    String StringUtils::HexFromNumber( uint64_t n )
-    {
-        // uint64_t yields 16 hex chars, prepended by '0x' and a \0 stop byte => 19 chars
-        String str(18u, '\0');
-        ramses_capu::StringUtils::Sprintf(const_cast<char*>(str.c_str()), 19u, "0x%016llx", n);
-        return str;
-    }
-
-    String StringUtils::HexFromNumber( uint32_t n )
-    {
-        // uint32_t yields 8 hex chars, prepended by '0x' and a \0 stop byte => 11 chars
-        String str(10u, '\0');
-        ramses_capu::StringUtils::Sprintf(const_cast<char*>(str.c_str()), 11u, "0x%08x", n);
-        return str;
-    }
-
-    String StringUtils::HexFromNumber( uint8_t n )
-    {
-        // uint8_t yields 2 hex chars, prepended by '0x' and a \0 stop byte => 5 chars
-        String str(4u, '\0');
-        ramses_capu::StringUtils::Sprintf(const_cast<char*>(str.c_str()), 5u, "0x%02x", n);
-        return str;
-    }
-
-    String StringUtils::IToA( int64_t n )
-    {
-        StringOutputStream sStream;
-        sStream << n;
-        return sStream.release();
-    }
-
-    String StringUtils::IToA( int32_t n )
-    {
-        return IToA(static_cast<int64_t>(n));
-    }
-
-    String StringUtils::IToA( int8_t n )
-    {
-        return IToA(static_cast<int64_t>(n));
-    }
-
-    String StringUtils::IToA( uint64_t n )
-    {
-        StringOutputStream sStream;
-        sStream << n;
-        return sStream.release();
-    }
-
-    String StringUtils::IToA( uint32_t n )
-    {
-        return IToA(static_cast<uint64_t>(n));
-    }
-
-    String StringUtils::IToA( uint8_t n )
-    {
-        return IToA(static_cast<uint64_t>(n));
-    }
-
-
-    const String StringUtils::ConvertUTF32ArrayIntoHexString(const std::vector<uint32_t>& data)
-    {
-        ramses_internal::StringOutputStream sStream;
-        sStream.setHexadecimalOutputFormat(ramses_internal::StringOutputStream::EHexadecimalType_HexLeadingZeros);
-        sStream << "utf32-str [ ";
-
-        for(auto charCode : data)
+        // we have to filter out empty tokens
+        tokens.clear();
+        for(const auto& token : allTokens)
         {
-            if(charCode != 0)
+            ramses_internal::String trimmedToken = ramses_internal::StringUtils::Trim(token.c_str());
+            if (trimmedToken.size() > 0)
             {
-                sStream << " ; ";
+                tokens.push_back(trimmedToken);
             }
-
-            sStream << charCode;
         }
-        sStream << " ]";
-
-        return sStream.release();
     }
 }

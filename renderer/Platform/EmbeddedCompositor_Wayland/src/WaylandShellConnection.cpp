@@ -11,6 +11,7 @@
 #include "EmbeddedCompositor_Wayland/IWaylandShellConnection.h"
 #include "EmbeddedCompositor_Wayland/WaylandResource.h"
 #include "Utils/LogMacros.h"
+#include <cassert>
 
 namespace ramses_internal
 {

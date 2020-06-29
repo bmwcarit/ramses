@@ -15,6 +15,7 @@
 #include "ramses-framework-api/IThreadWatchdogNotification.h"
 #include "ThreadWatchdogConfig.h"
 #include "TransportCommon/EConnectionProtocol.h"
+#include "Collections/Guid.h"
 
 namespace ramses
 {
@@ -26,6 +27,9 @@ namespace ramses
         RamsesFrameworkConfigImpl(int32_t argc, char const* const* argv);
         ~RamsesFrameworkConfigImpl();
         const ramses_internal::CommandLineParser& getCommandLineParser() const;
+
+        status_t enableDLTApplicationRegistration(bool state);
+        bool getDltApplicationRegistrationEnabled() const;
 
         void setDLTApplicationID(const char* id);
         const char* getDLTApplicationID() const;
@@ -54,6 +58,7 @@ namespace ramses
         ERamsesShellType m_shellType;
         ramses_internal::ThreadWatchdogConfig m_watchdogConfig;
         bool m_periodicLogsEnabled;
+
     private:
         RamsesFrameworkConfigImpl();
 
@@ -61,6 +66,7 @@ namespace ramses
 
         ramses_internal::EConnectionProtocol m_usedProtocol;
         ramses_internal::CommandLineParser m_parser;
+        bool m_enableDltApplicationRegistration = true;
         ramses_internal::String m_dltAppID;
         ramses_internal::String m_dltAppDescription;
         uint32_t m_maximumTotalBytesForAsyncResourceLoading;

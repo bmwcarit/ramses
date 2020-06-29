@@ -39,7 +39,7 @@ namespace ramses_internal
         virtual void                         setTime(const AnimationTime& globalTime) = 0;
         virtual const AnimationTime&         getTime() const = 0;
         virtual UInt32                       getFlags() const = 0;
-        virtual Bool                         isRealTime() const = 0;
+        virtual bool                         isRealTime() const = 0;
 
         virtual SplineHandle                 allocateSpline(ESplineKeyType keyType, EDataTypeID dataTypeID, SplineHandle handleRequest = SplineHandle::Invalid()) = 0;
         virtual DataBindHandle               allocateDataBinding(IScene& scene, TDataBindID dataBindID, MemoryHandle handle1, MemoryHandle handle2, DataBindHandle handleRequest = DataBindHandle::Invalid()) = 0;
@@ -48,7 +48,7 @@ namespace ramses_internal
 
         virtual void                         addDataBindingToAnimationInstance(AnimationInstanceHandle handle, DataBindHandle dataBindHandle) = 0;
 
-        virtual void                         setSplineKeyBasicBool(SplineHandle splineHandle, SplineTimeStamp timeStamp, Bool value) = 0;
+        virtual void                         setSplineKeyBasicBool(SplineHandle splineHandle, SplineTimeStamp timeStamp, bool value) = 0;
         virtual void                         setSplineKeyBasicInt32(SplineHandle splineHandle, SplineTimeStamp timeStamp, Int32 value) = 0;
         virtual void                         setSplineKeyBasicFloat(SplineHandle splineHandle, SplineTimeStamp timeStamp, Float value) = 0;
         virtual void                         setSplineKeyBasicVector2f(SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector2& value) = 0;
@@ -73,20 +73,20 @@ namespace ramses_internal
         virtual void                         stopAnimationAndRollback(AnimationHandle handle) = 0;
 
         virtual AnimationTime::Duration      getAnimationDurationFromSpline(AnimationHandle handle) const = 0;
-        virtual Bool                         hasActiveAnimations() const = 0;
+        virtual bool                         hasActiveAnimations() const = 0;
 
         virtual const SplineBase*            getSpline(SplineHandle handle) const = 0;
         virtual UInt32                       getTotalSplineCount() const = 0;
-        virtual Bool                         containsSpline(SplineHandle handle) const = 0;
+        virtual bool                         containsSpline(SplineHandle handle) const = 0;
         virtual const AnimationDataBindBase* getDataBinding(DataBindHandle handle) const = 0;
         virtual UInt32                       getTotalDataBindCount() const = 0;
-        virtual Bool                         containsDataBinding(DataBindHandle handle) const = 0;
+        virtual bool                         containsDataBinding(DataBindHandle handle) const = 0;
         virtual const AnimationInstance&     getAnimationInstance(AnimationInstanceHandle handle) const = 0;
         virtual UInt32                       getTotalAnimationInstanceCount() const = 0;
-        virtual Bool                         containsAnimationInstance(AnimationInstanceHandle handle) const = 0;
+        virtual bool                         containsAnimationInstance(AnimationInstanceHandle handle) const = 0;
         virtual const Animation&             getAnimation(AnimationHandle handle) const = 0;
         virtual UInt32                       getTotalAnimationCount() const = 0;
-        virtual Bool                         containsAnimation(AnimationHandle handle) const = 0;
+        virtual bool                         containsAnimation(AnimationHandle handle) const = 0;
 
         virtual void                         removeSpline(SplineHandle handle) = 0;
         virtual void                         removeDataBinding(DataBindHandle handle) = 0;

@@ -7,19 +7,19 @@
 //  -------------------------------------------------------------------------
 
 #include "gmock/gmock.h"
-#include "ramses-renderer-api/DcsmRendererConfig.h"
+#include "ramses-renderer-api/DcsmContentControlConfig.h"
 
 using namespace ramses;
 using namespace testing;
 
-TEST(ADcsmRendererConfig, canBeEmpty)
+TEST(ADcsmContentControlConfig, canBeEmpty)
 {
     static constexpr Category cat1{ 111 };
-    const DcsmRendererConfig config{};
+    const DcsmContentControlConfig config{};
     EXPECT_EQ(nullptr, config.findCategoryInfo(cat1));
 }
 
-TEST(ADcsmRendererConfig, canBeContructedWithCategories)
+TEST(ADcsmContentControlConfig, canBeContructedWithCategories)
 {
     static constexpr Category cat1{ 111 };
     static constexpr Category cat2{ 222 };
@@ -28,7 +28,7 @@ TEST(ADcsmRendererConfig, canBeContructedWithCategories)
     static constexpr SizeInfo size1{ 1, 2 };
     static constexpr SizeInfo size2{ 3, 4 };
 
-    const DcsmRendererConfig config{ { { cat1, { size1, disp1 } }, { cat2, { size2, disp2 } } } };
+    const DcsmContentControlConfig config{ { { cat1, { size1, disp1 } }, { cat2, { size2, disp2 } } } };
     const auto catInfo1 = config.findCategoryInfo(cat1);
     const auto catInfo2 = config.findCategoryInfo(cat2);
 
@@ -41,14 +41,14 @@ TEST(ADcsmRendererConfig, canBeContructedWithCategories)
     EXPECT_EQ(size2, catInfo2->size);
 }
 
-TEST(ADcsmRendererConfig, returnsNullWhenFindingUnregisteredCategory)
+TEST(ADcsmContentControlConfig, returnsNullWhenFindingUnregisteredCategory)
 {
     static constexpr Category cat1{ 111 };
     static constexpr Category cat2{ 222 };
     static constexpr displayId_t disp1{ 1 };
     static constexpr SizeInfo size1{ 1, 2 };
 
-    const DcsmRendererConfig config{ { { cat1, { size1, disp1 } } } };
+    const DcsmContentControlConfig config{ { { cat1, { size1, disp1 } } } };
     const auto catInfo1 = config.findCategoryInfo(cat1);
     const auto catInfo2 = config.findCategoryInfo(cat2);
 
@@ -56,7 +56,7 @@ TEST(ADcsmRendererConfig, returnsNullWhenFindingUnregisteredCategory)
     EXPECT_EQ(nullptr, catInfo2);
 }
 
-TEST(ADcsmRendererConfig, canAddCategoryAfterConstructing)
+TEST(ADcsmContentControlConfig, canAddCategoryAfterConstructing)
 {
     static constexpr Category cat1{ 111 };
     static constexpr Category cat2{ 222 };
@@ -65,7 +65,7 @@ TEST(ADcsmRendererConfig, canAddCategoryAfterConstructing)
     static constexpr SizeInfo size1{ 1, 2 };
     static constexpr SizeInfo size2{ 3, 4 };
 
-    DcsmRendererConfig config{ { { cat1, { size1, disp1 } } } };
+    DcsmContentControlConfig config{ { { cat1, { size1, disp1 } } } };
 
     EXPECT_EQ(StatusOK, config.addCategory(cat2, { size2, disp2 }));
 
@@ -81,7 +81,7 @@ TEST(ADcsmRendererConfig, canAddCategoryAfterConstructing)
     EXPECT_EQ(size2, catInfo2->size);
 }
 
-TEST(ADcsmRendererConfig, ignoresDupliciteCategoryGivenToConstructor)
+TEST(ADcsmContentControlConfig, ignoresDupliciteCategoryGivenToConstructor)
 {
     static constexpr Category cat1{ 111 };
     static constexpr displayId_t disp1{ 1 };
@@ -90,7 +90,7 @@ TEST(ADcsmRendererConfig, ignoresDupliciteCategoryGivenToConstructor)
     static constexpr SizeInfo size2{ 3, 4 };
 
     // passing different category info for same category ID
-    const DcsmRendererConfig config{ { { cat1, { size1, disp1 } }, { cat1, { size2, disp2 } } } };
+    const DcsmContentControlConfig config{ { { cat1, { size1, disp1 } }, { cat1, { size2, disp2 } } } };
 
     const auto catInfo1 = config.findCategoryInfo(cat1);
 
@@ -99,7 +99,7 @@ TEST(ADcsmRendererConfig, ignoresDupliciteCategoryGivenToConstructor)
     EXPECT_EQ(size1, catInfo1->size);
 }
 
-TEST(ADcsmRendererConfig, ignoresDupliciteCategoryAdded)
+TEST(ADcsmContentControlConfig, ignoresDupliciteCategoryAdded)
 {
     static constexpr Category cat1{ 111 };
     static constexpr displayId_t disp1{ 1 };
@@ -107,7 +107,7 @@ TEST(ADcsmRendererConfig, ignoresDupliciteCategoryAdded)
     static constexpr SizeInfo size1{ 1, 2 };
     static constexpr SizeInfo size2{ 3, 4 };
 
-    DcsmRendererConfig config{ { { cat1, { size1, disp1 } } } };
+    DcsmContentControlConfig config{ { { cat1, { size1, disp1 } } } };
     // passing different category info for same category ID
     EXPECT_NE(StatusOK, config.addCategory(cat1, { size2, disp2 }));
 
@@ -116,4 +116,26 @@ TEST(ADcsmRendererConfig, ignoresDupliciteCategoryAdded)
     ASSERT_NE(nullptr, catInfo1);
     EXPECT_EQ(disp1, catInfo1->display);
     EXPECT_EQ(size1, catInfo1->size);
+}
+
+TEST(ADcsmContentControlConfig, ignoresInvalidCategoryGivenToConstructor)
+{
+    static constexpr Category cat1;
+    static constexpr displayId_t disp1{ 1 };
+    static constexpr SizeInfo size1{ 1, 2 };
+
+    const DcsmContentControlConfig config{ { { cat1, { size1, disp1 } } } };
+
+    EXPECT_EQ(nullptr, config.findCategoryInfo(cat1));
+}
+
+TEST(ADcsmContentControlConfig, ignoresInvalidCategoryAdded)
+{
+    static constexpr Category cat1;
+    static constexpr displayId_t disp1{ 1 };
+    static constexpr SizeInfo size1{ 1, 2 };
+
+    DcsmContentControlConfig config;
+    EXPECT_NE(StatusOK, config.addCategory(cat1, { size1, disp1 }));
+    EXPECT_EQ(nullptr, config.findCategoryInfo(cat1));
 }

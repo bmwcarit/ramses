@@ -10,6 +10,7 @@
 #define RAMSES_NODE_H
 
 #include "ramses-client-api/SceneObject.h"
+#include "ramses-client-api/EVisibilityMode.h"
 
 namespace ramses
 {
@@ -233,15 +234,17 @@ namespace ramses
 
         /**
         * @brief Sets the visibility of the Node.
-        *        Visibility of a node determines if a renderable is rendered or not.
-        *        A renderable can only be rendered if none of its ancestor visibility nodes
-        *        has visibility set to false.
+        *        Visibility of a node determines if a renderable is rendered or not and if
+        *        its resources are loaded. See \ref EVisibilityMode for more details.
+        *        Those attributes are propagated down to the node's children recursively. A node
+        *        can only be rendered, if none of its parents are Invisible or Off, the node's
+        *        resources are only loaded if none of its parents are Off.
         *
-        * @param[in] visible Visibility flag for the subtree of this node (true is default)
+        * @param[in] mode Visibility mode for this node (default is Visible)
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setVisibility(bool visible);
+        status_t setVisibility(EVisibilityMode mode);
 
         /**
         * @brief Gets the visibility property of the Node. This is just the visibility
@@ -250,7 +253,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        bool getVisibility() const;
+        EVisibilityMode getVisibility() const;
 
         /**
         * Stores internal data for implementation specifics of Node.

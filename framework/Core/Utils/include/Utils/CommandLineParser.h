@@ -21,7 +21,7 @@ namespace ramses_internal
         CommandLineParser(Int argc, char const* const* argv);
 
         const String& getProgramName() const;
-        const CommandLineArgument* getOption(const String& shortname, const String& longname, Bool canHaveValue) const;
+        const CommandLineArgument* getOption(const String& shortname, const String& longname, bool canHaveValue, UInt32* searchIndexInOut = nullptr) const;
         StringVector getNonOptions() const;
 
 

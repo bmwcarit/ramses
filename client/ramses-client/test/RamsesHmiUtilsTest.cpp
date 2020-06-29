@@ -6,17 +6,47 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "../../ramses-client/test/SimpleSceneTopology.h"
-
 #include "ramses-hmi-utils.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "RenderGroupImpl.h"
 #include "ramses-client-api/ResourceFileDescription.h"
 #include "ramses-client-api/ResourceFileDescriptionSet.h"
 #include "ramses-client-api/Texture2D.h"
+#include "ramses-client-api/UniformInput.h"
+#include "ramses-client-api/Effect.h"
+#include "ramses-client-api/MeshNode.h"
 #include "TestEffects.h"
+#include "gmock/gmock.h"
+#include <fstream>
 
 using namespace testing;
+
+namespace
+{
+    const char* vertexShader =
+        "#version 100                                             \n"
+        "uniform highp mat4 mvpMatrix;                            \n"
+        "attribute vec3 a_position;                               \n"
+        "attribute vec2 a_texcoord;                               \n"
+        "varying vec2 v_texcoord;                                 \n"
+        "                                                         \n"
+        "void main()                                              \n"
+        "{                                                        \n"
+        "    gl_Position = mvpMatrix * vec4(a_position, 1.0);     \n"
+        "    v_texcoord = a_texcoord;                             \n"
+        "}                                                        \n";
+
+    const char* fragmentShader =
+        "#version 100                                                   \n"
+        "uniform sampler2D textureSampler;                              \n"
+        "uniform sampler2D textureSampler2;                             \n"
+        "varying lowp vec2 v_texcoord;                                  \n"
+        "                                                               \n"
+        "void main(void)                                                \n"
+        "{                                                              \n"
+        "    gl_FragColor = texture2D(textureSampler, v_texcoord);      \n"
+        "}                                                              \n";
+}
 
 namespace ramses
 {
@@ -27,7 +57,7 @@ namespace ramses
         {
             uint8_t data[4] = { num };
             MipLevelData mipLevelData(sizeof(data), data);
-            Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, ResourceCacheFlag_DoNotCache);
+            Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache);
             EXPECT_TRUE(texture != nullptr);
             return texture;
         }
@@ -35,22 +65,42 @@ namespace ramses
         static void SaveSceneAndResourcesToFiles()
         {
             RamsesFramework frameworkForSaving;
-            RamsesClient clientForSaving("clientForSaving", frameworkForSaving);
+            RamsesClient& clientForSaving(*frameworkForSaving.createClient("clientForSaving"));
 
             Texture2D* texture1 = CreateTestTexture(clientForSaving, 1u);
             Texture2D* texture2 = CreateTestTexture(clientForSaving, 2u);
             Texture2D* texture3 = CreateTestTexture(clientForSaving, 3u);
 
-            Scene* scene = clientForSaving.createScene(1);
-            scene->createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, *texture1, 1, "sampler1");
-            scene->createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, *texture2, 1, "sampler2");
+            Scene* scene = clientForSaving.createScene(sceneId_t(1));
+            auto sampler1 = scene->createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, *texture1, 1, "sampler1");
+            auto sampler2 = scene->createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, *texture2, 1, "sampler2");
 
+            ramses::EffectDescription effectDesc;
+            effectDesc.setVertexShader(vertexShader);
+            effectDesc.setFragmentShader(fragmentShader);
+            effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+
+            const ramses::Effect* effectTex = clientForSaving.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache);
+            ramses::Appearance* appearance = scene->createAppearance(*effectTex);
+            ramses::UniformInput textureInput;
+            effectTex->findUniformInput("textureSampler", textureInput);
+            appearance->setInputTexture(textureInput, *sampler1);
+            ramses::UniformInput textureInput2;
+            effectTex->findUniformInput("textureSampler2", textureInput2);
+            appearance->setInputTexture(textureInput2, *sampler2);
+
+            ramses::MeshNode* meshNode = scene->createMeshNode();
+            meshNode->setAppearance(*appearance);
+
+            ResourceFileDescription resNecessary("resNecessary.ramres");
+            resNecessary.add(effectTex);
             ResourceFileDescription resDesc1("res1.ramres");
             resDesc1.add(texture1);
             ResourceFileDescription resDesc2("res2.ramres");
             resDesc2.add(texture2);
             resDesc2.add(texture3);
             ResourceFileDescriptionSet resSet;
+            resSet.add(resNecessary);
             resSet.add(resDesc1);
             resSet.add(resDesc2);
 
@@ -59,12 +109,12 @@ namespace ramses
 
         ARamsesHmiUtils()
             : framework()
-            , client("client", framework)
+            , client(*framework.createClient("client"))
         {
         }
 
         RamsesFramework framework;
-        RamsesClient client;
+        RamsesClient& client;
     };
 
     TEST_F(ARamsesHmiUtils, notAllResourcesKnownWhenLoadingNoResources)
@@ -72,6 +122,8 @@ namespace ramses
         SaveSceneAndResourcesToFiles();
 
         ResourceFileDescriptionSet resSet;
+        ResourceFileDescription resNess("resNecessary.ramres");
+        resSet.add(resNess);
         Scene* scene = client.loadSceneFromFile("scene.ramscene", resSet);
         ASSERT_TRUE(scene != nullptr);
 
@@ -83,6 +135,8 @@ namespace ramses
         SaveSceneAndResourcesToFiles();
 
         ResourceFileDescriptionSet resSet;
+        ResourceFileDescription resNess("resNecessary.ramres");
+        resSet.add(resNess);
         ResourceFileDescription resDesc("res1.ramres");
         resSet.add(resDesc);
 
@@ -97,6 +151,8 @@ namespace ramses
         SaveSceneAndResourcesToFiles();
 
         ResourceFileDescriptionSet resSet;
+        ResourceFileDescription resNess("resNecessary.ramres");
+        resSet.add(resNess);
         ResourceFileDescription resDesc("res2.ramres");
         resSet.add(resDesc);
 
@@ -111,6 +167,8 @@ namespace ramses
         SaveSceneAndResourcesToFiles();
 
         ResourceFileDescriptionSet resSet;
+        ResourceFileDescription resNess("resNecessary.ramres");
+        resSet.add(resNess);
         ResourceFileDescription resDesc1("res1.ramres");
         resSet.add(resDesc1);
         ResourceFileDescription resDesc2("res2.ramres");
@@ -127,6 +185,8 @@ namespace ramses
         SaveSceneAndResourcesToFiles();
 
         ResourceFileDescriptionSet resSet;
+        ResourceFileDescription resNess("resNecessary.ramres");
+        resSet.add(resNess);
         ResourceFileDescription resDesc("res1.ramres");
         resSet.add(resDesc);
 
@@ -143,6 +203,8 @@ namespace ramses
         SaveSceneAndResourcesToFiles();
 
         ResourceFileDescriptionSet resSet;
+        ResourceFileDescription resNess("resNecessary.ramres");
+        resSet.add(resNess);
         ResourceFileDescription resDesc("res1.ramres");
         resSet.add(resDesc);
 
@@ -154,4 +216,44 @@ namespace ramses
         EXPECT_TRUE(RamsesHMIUtils::AllResourcesForSceneKnown(*scene));
     }
 
+    TEST_F(ARamsesHmiUtils, canDumpUnrequiredSceneObjects)
+    {
+        SaveSceneAndResourcesToFiles();
+
+        ResourceFileDescriptionSet resSet;
+        ResourceFileDescription resNess("resNecessary.ramres");
+        resSet.add(resNess);
+        ResourceFileDescription resDesc("res1.ramres");
+        resSet.add(resDesc);
+
+        Scene* scene = client.loadSceneFromFile("scene.ramscene", resSet);
+        ASSERT_TRUE(scene != nullptr);
+
+        // method only has side effects, only tests possible is that it does not crash
+        RamsesHMIUtils::DumpUnrequiredSceneObjects(*scene);
+    }
+
+    TEST_F(ARamsesHmiUtils, canDumpUnrequiredSceneObjectsToFile)
+    {
+        SaveSceneAndResourcesToFiles();
+
+        ResourceFileDescriptionSet resSet;
+        ResourceFileDescription resNess("resNecessary.ramres");
+        resSet.add(resNess);
+        ResourceFileDescription resDesc("res1.ramres");
+        resSet.add(resDesc);
+
+        Scene* scene = client.loadSceneFromFile("scene.ramscene", resSet);
+        ASSERT_TRUE(scene != nullptr);
+
+        {
+            std::ofstream outf("unreqObjects.txt", std::ios::out | std::ios::trunc);
+            RamsesHMIUtils::DumpUnrequiredSceneObjectsToFile(*scene, outf);
+        }
+
+        std::ifstream inf("unreqObjects.txt", std::ios::in);
+        std::string   content((std::istreambuf_iterator<char>(inf)), std::istreambuf_iterator<char>());
+        // cannot check whole content because order of entries not deterministic
+        EXPECT_THAT(content, HasSubstr("Not required ERamsesObjectType_TextureSampler name: \"sampler2\" handle: 1"));
+    }
 }

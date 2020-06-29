@@ -21,13 +21,13 @@ public:
         : m_defaultFilename("unnamed.png")
         , m_cmd(m_rendererCommandBuffer)
     {
-        m_rendererCommandBuffer.clear();
     }
 
 protected:
     void expectScreenshotCommand(const String& filename, const DisplayHandle& displayHandle = DisplayHandle(0u), bool autoSize = true)
     {
-        const RendererCommandContainer& commands = m_rendererCommandBuffer.getCommands();
+        RendererCommandContainer commands;
+        m_rendererCommandBuffer.swapCommandContainer(commands);
         EXPECT_EQ(1u, commands.getTotalCommandCount());
         EXPECT_EQ(ERendererCommand_ReadPixels, commands.getCommandType(0u));
         const ReadPixelsCommand& command = commands.getCommandData<ReadPixelsCommand>(0u);

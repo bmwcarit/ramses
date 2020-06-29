@@ -27,8 +27,8 @@ namespace ramses_internal
         RenderGroupOrderVector renderGroups;
     };
 
-    static_assert(std::is_nothrow_move_constructible<RenderGroup>::value &&
-        std::is_nothrow_move_assignable<RenderGroup>::value, "RenderGroup must be movable");
+    static_assert(std::is_nothrow_move_constructible<RenderGroup>::value, "RenderGroup must be movable");
+    static_assert(std::is_nothrow_move_assignable<RenderGroup>::value, "RenderGroup must be movable");
 }
 
 #endif

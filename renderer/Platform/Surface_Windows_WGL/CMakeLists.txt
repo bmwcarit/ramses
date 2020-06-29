@@ -13,7 +13,7 @@ ACME_MODULE(
     #==========================================================================
     NAME                    Surface_Windows_WGL
     TYPE                    STATIC_LIBRARY
-    ENABLE_INSTALL          ${ramses-sdk_INSTALL_STATIC_LIBS}
+    ENABLE_INSTALL          OFF
 
     #==========================================================================
     # files of this module
@@ -26,7 +26,7 @@ ACME_MODULE(
     #==========================================================================
     DEPENDENCIES            Window_Windows
                             Context_WGL
-                            EmbeddedCompositor_Dummy
+                            ramses-renderer-lib
 )
 
 # This module is tested in the renderer sandwich tests (<ramses>/integration/ramses-renderer-tests)

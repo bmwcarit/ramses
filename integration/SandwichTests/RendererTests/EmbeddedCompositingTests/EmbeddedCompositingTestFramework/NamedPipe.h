@@ -17,6 +17,7 @@
 #include <poll.h>
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Utils/LogMacros.h"
+#include <cassert>
 
 namespace ramses_internal
 {

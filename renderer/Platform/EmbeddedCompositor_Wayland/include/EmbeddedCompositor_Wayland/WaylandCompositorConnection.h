@@ -35,7 +35,7 @@ namespace ramses_internal
         IWaylandResource*           m_resource = nullptr;
         uint32_t                    m_version;
         IEmbeddedCompositor_Wayland& m_embeddedCompositor;
-        pid_t                       m_processId;
+        pid_t                       m_processId = 0;
 
         const struct Compositor_Interface : private wl_compositor_interface
         {

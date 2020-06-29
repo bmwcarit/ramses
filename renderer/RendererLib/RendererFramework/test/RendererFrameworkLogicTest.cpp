@@ -29,7 +29,7 @@ namespace ramses_internal
             rendererCommandBuffer,
             frameworkLock
             )
-            , providerID(true)
+            , providerID(20)
             , sceneId(33u)
             , sceneName("scene")
         {
@@ -38,10 +38,10 @@ namespace ramses_internal
     protected:
         void expectSceneCommand(ERendererCommand commandType)
         {
-            const auto& commands = rendererCommandBuffer.getCommands();
+            RendererCommandContainer commands;
+            rendererCommandBuffer.swapCommandContainer(commands);
             ASSERT_EQ(1u, commands.getTotalCommandCount());
             EXPECT_EQ(commandType, commands.getCommandType(0u));
-            rendererCommandBuffer.clear();
         }
 
         SceneActionCollection createFakeSceneActionCollectionFromTypes(const std::vector<ESceneActionId>& types)
@@ -52,6 +52,13 @@ namespace ramses_internal
                 collection.addRawSceneActionInformation(t, 0);
             }
             return collection;
+        }
+
+        RendererCommandContainer dispatchCommands()
+        {
+            RendererCommandContainer cmds;
+            rendererCommandBuffer.swapCommandContainer(cmds);
+            return cmds;
         }
 
         StrictMock<ResourceConsumerComponentMock> resourceComponent;
@@ -88,6 +95,34 @@ namespace ramses_internal
         expectSceneCommand(ERendererCommand_UnpublishedScene);
     }
 
+    TEST_F(ARendererFrameworkLogic, ignoresSecondPublishFromDifferentProvider)
+    {
+        fixture.handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(sceneId, sceneName)), providerID, EScenePublicationMode_LocalAndRemote);
+        fixture.handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(sceneId, sceneName)), Guid(30), EScenePublicationMode_LocalAndRemote);
+        expectSceneCommand(ERendererCommand_PublishedScene);
+    }
+
+    TEST_F(ARendererFrameworkLogic, doesAutomaticUnpublisThenPublishhWhenPublishedAgainFromSameProvider)
+    {
+        fixture.handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(sceneId, sceneName)), providerID, EScenePublicationMode_LocalAndRemote);
+        expectSceneCommand(ERendererCommand_PublishedScene);
+
+        fixture.handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(sceneId, sceneName)), providerID, EScenePublicationMode_LocalAndRemote);
+        RendererCommandContainer commands;
+        rendererCommandBuffer.swapCommandContainer(commands);
+
+        ASSERT_EQ(2u, commands.getTotalCommandCount());
+
+        EXPECT_EQ(ERendererCommand_UnpublishedScene, commands.getCommandType(0u));
+        const auto command_0 = commands.getCommandData<SceneInfoCommand>(0u);
+        EXPECT_EQ(sceneId, command_0.sceneInformation.sceneID);
+
+        EXPECT_EQ(ERendererCommand_PublishedScene, commands.getCommandType(1u));
+        const auto command_1 = commands.getCommandData<SceneInfoCommand>(1u);
+        EXPECT_EQ(sceneId, command_1.sceneInformation.sceneID);
+        EXPECT_EQ(EScenePublicationMode_LocalAndRemote, command_1.sceneInformation.publicationMode);
+    }
+
     TEST_F(ARendererFrameworkLogic, handlesSceneActionListWithFlush)
     {
         fixture.handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(sceneId)), providerID, EScenePublicationMode_LocalAndRemote);
@@ -96,7 +131,8 @@ namespace ramses_internal
         SceneActionCollection actions(createFakeSceneActionCollectionFromTypes({ ESceneActionId_AddChildToNode , ESceneActionId_Flush }));
         fixture.handleSceneActionList(sceneId, std::move(actions), 0u, providerID);
 
-        const RendererCommandContainer& commands = rendererCommandBuffer.getCommands();
+        RendererCommandContainer commands;
+        rendererCommandBuffer.swapCommandContainer(commands);
         ASSERT_EQ(1u, commands.getTotalCommandCount());
         EXPECT_EQ(ERendererCommand_SceneActions, commands.getCommandType(0u));
         const SceneActionsCommand& cmd = commands.getCommandData<SceneActionsCommand>(0u);
@@ -109,9 +145,7 @@ namespace ramses_internal
     {
         SceneActionCollection actions(createFakeSceneActionCollectionFromTypes({ ESceneActionId_AddChildToNode }));
         fixture.handleSceneActionList(sceneId, std::move(actions), 0u, providerID);
-
-        const RendererCommandContainer& commands = rendererCommandBuffer.getCommands();
-        EXPECT_EQ(0u, commands.getTotalCommandCount());
+        EXPECT_EQ(0u, dispatchCommands().getTotalCommandCount());
     }
 
     TEST_F(ARendererFrameworkLogic, buffersSceneActionsUntilFlush)
@@ -119,16 +153,16 @@ namespace ramses_internal
         fixture.handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(sceneId)), providerID, EScenePublicationMode_LocalAndRemote);
         expectSceneCommand(ERendererCommand_PublishedScene);
 
-        const RendererCommandContainer& commands = rendererCommandBuffer.getCommands();
         SceneActionCollection expectedActions(createFakeSceneActionCollectionFromTypes({ ESceneActionId_AddChildToNode, ESceneActionId_SetStateDepthFunc, ESceneActionId_Flush }));
 
         fixture.handleSceneActionList(sceneId, createFakeSceneActionCollectionFromTypes({ ESceneActionId_AddChildToNode }), 0u, providerID);
-        EXPECT_EQ(0u, commands.getTotalCommandCount());
+        EXPECT_EQ(0u, dispatchCommands().getTotalCommandCount());
 
         fixture.handleSceneActionList(sceneId, createFakeSceneActionCollectionFromTypes({ ESceneActionId_SetStateDepthFunc }), 0u, providerID);
-        EXPECT_EQ(0u, commands.getTotalCommandCount());
+        EXPECT_EQ(0u, dispatchCommands().getTotalCommandCount());
 
         fixture.handleSceneActionList(sceneId, createFakeSceneActionCollectionFromTypes({ ESceneActionId_Flush }), 0u, providerID);
+        const auto commands = dispatchCommands();
         ASSERT_EQ(1u, commands.getTotalCommandCount());
         EXPECT_EQ(ERendererCommand_SceneActions, commands.getCommandType(0u));
         const SceneActionsCommand& cmd = commands.getCommandData<SceneActionsCommand>(0u);
@@ -147,21 +181,20 @@ namespace ramses_internal
         fixture.handleNewScenesAvailable({ SceneInfo(sceneId2) }, providerID, EScenePublicationMode_LocalAndRemote);
         expectSceneCommand(ERendererCommand_PublishedScene);
 
-        const RendererCommandContainer& commands = rendererCommandBuffer.getCommands();
-
         SceneActionCollection expectedActionsScene1(createFakeSceneActionCollectionFromTypes({ ESceneActionId_AddChildToNode, ESceneActionId_AllocateRenderable, ESceneActionId_Flush }));
         SceneActionCollection expectedActionsScene2(createFakeSceneActionCollectionFromTypes({ ESceneActionId_SetCameraFrustum, ESceneActionId_SetStateDepthFunc, ESceneActionId_Flush }));
 
         fixture.handleSceneActionList(sceneId1, createFakeSceneActionCollectionFromTypes({ ESceneActionId_AddChildToNode }), 0u, providerID);
-        EXPECT_EQ(0u, commands.getTotalCommandCount());
+        EXPECT_EQ(0u, dispatchCommands().getTotalCommandCount());
 
         fixture.handleSceneActionList(sceneId2, createFakeSceneActionCollectionFromTypes({ ESceneActionId_SetCameraFrustum }), 0u, providerID);
-        EXPECT_EQ(0u, commands.getTotalCommandCount());
+        EXPECT_EQ(0u, dispatchCommands().getTotalCommandCount());
 
         fixture.handleSceneActionList(sceneId2, createFakeSceneActionCollectionFromTypes({ ESceneActionId_SetStateDepthFunc }), 0u, providerID);
-        EXPECT_EQ(0u, commands.getTotalCommandCount());
+        EXPECT_EQ(0u, dispatchCommands().getTotalCommandCount());
 
         fixture.handleSceneActionList(sceneId2, createFakeSceneActionCollectionFromTypes({ ESceneActionId_Flush }), 0u, providerID);
+        auto commands = dispatchCommands();
         ASSERT_EQ(1u, commands.getTotalCommandCount());
         EXPECT_EQ(ERendererCommand_SceneActions, commands.getCommandType(0u));
         const SceneActionsCommand& cmdScene2 = commands.getCommandData<SceneActionsCommand>(0u);
@@ -170,12 +203,13 @@ namespace ramses_internal
         EXPECT_EQ(expectedActionsScene2, cmdScene2.sceneActions);
 
         fixture.handleSceneActionList(sceneId1, createFakeSceneActionCollectionFromTypes({ ESceneActionId_AllocateRenderable }), 0u, providerID);
-        EXPECT_EQ(1u, commands.getTotalCommandCount());
+        EXPECT_EQ(0u, dispatchCommands().getTotalCommandCount());
 
         fixture.handleSceneActionList(sceneId1, createFakeSceneActionCollectionFromTypes({ ESceneActionId_Flush }), 0u, providerID);
-        ASSERT_EQ(2u, commands.getTotalCommandCount());
-        EXPECT_EQ(ERendererCommand_SceneActions, commands.getCommandType(1u));
-        const SceneActionsCommand& cmdScene1 = commands.getCommandData<SceneActionsCommand>(1u);
+        commands = dispatchCommands();
+        ASSERT_EQ(1u, commands.getTotalCommandCount());
+        EXPECT_EQ(ERendererCommand_SceneActions, commands.getCommandType(0u));
+        const SceneActionsCommand& cmdScene1 = commands.getCommandData<SceneActionsCommand>(0u);
         EXPECT_EQ(sceneId1, cmdScene1.sceneId);
         EXPECT_EQ(3u, cmdScene1.sceneActions.numberOfActions());
         EXPECT_EQ(expectedActionsScene1, cmdScene1.sceneActions);
@@ -190,11 +224,11 @@ namespace ramses_internal
         newScenes.push_back(SceneInfo(sceneId1, sceneName));
         newScenes.push_back(SceneInfo(sceneId2, sceneName));
         fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
-        rendererCommandBuffer.clear();
+        dispatchCommands();
 
         fixture.participantHasDisconnected(providerID);
 
-        const auto& commands = rendererCommandBuffer.getCommands();
+        const auto commands = dispatchCommands();
         ASSERT_EQ(2u, commands.getTotalCommandCount());
         EXPECT_EQ(ERendererCommand_UnpublishedScene, commands.getCommandType(0u));
         EXPECT_EQ(ERendererCommand_UnpublishedScene, commands.getCommandType(1u));
@@ -215,12 +249,12 @@ namespace ramses_internal
         newScenes.push_back(SceneInfo(sceneId1, sceneName));
         newScenes.push_back(SceneInfo(sceneId2, sceneName));
         fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
-        fixture.handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(sceneId, sceneName)), Guid(true), EScenePublicationMode_LocalAndRemote);
-        rendererCommandBuffer.clear();
+        fixture.handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(sceneId, sceneName)), Guid(999), EScenePublicationMode_LocalAndRemote);
+        dispatchCommands();
 
         fixture.participantHasDisconnected(providerID);
 
-        const auto& commands = rendererCommandBuffer.getCommands();
+        const auto commands = dispatchCommands();
         ASSERT_EQ(2u, commands.getTotalCommandCount());
         EXPECT_EQ(ERendererCommand_UnpublishedScene, commands.getCommandType(0u));
         EXPECT_EQ(ERendererCommand_UnpublishedScene, commands.getCommandType(1u));
@@ -240,7 +274,7 @@ namespace ramses_internal
         ResourceContentHashVector resources;
         resources.push_back(resource);
 
-        RequesterID requester(1);
+        ResourceRequesterID requester(1);
 
         EXPECT_CALL(resourceComponent, requestResourceAsynchronouslyFromFramework(resources, requester, providerID));
         fixture.requestResourceAsyncronouslyFromFramework(resources, requester, sceneId);
@@ -250,7 +284,7 @@ namespace ramses_internal
     {
         const ResourceContentHash resource(44u, 0);
 
-        RequesterID requester(1);
+        ResourceRequesterID requester(1);
 
         EXPECT_CALL(resourceComponent, cancelResourceRequest(resource, requester));
         fixture.cancelResourceRequest(resource, requester);
@@ -262,22 +296,23 @@ namespace ramses_internal
         newScenes.push_back(SceneInfo(sceneId, sceneName));
         fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
         fixture.handleInitializeScene(SceneInfo(sceneId), providerID);
-        rendererCommandBuffer.clear();
+        dispatchCommands();
 
         // send one correct/normal list
         SceneActionCollection actions(createFakeSceneActionCollectionFromTypes({ ESceneActionId_AddChildToNode , ESceneActionId_Flush }));
         fixture.handleSceneActionList(sceneId, actions.copy(), 1u, providerID);
 
-        const RendererCommandContainer& commandsAfterNormalList = rendererCommandBuffer.getCommands();
-        ASSERT_EQ(1u, commandsAfterNormalList.getTotalCommandCount());
-        EXPECT_EQ(ERendererCommand_SceneActions, commandsAfterNormalList.getCommandType(0u));
+        auto commands = dispatchCommands();
+        ASSERT_EQ(1u, commands.getTotalCommandCount());
+        EXPECT_EQ(ERendererCommand_SceneActions, commands.getCommandType(0u));
 
         // send list with mismatched counter value
         fixture.handleSceneActionList(sceneId, actions.copy(), 3u, providerID);
 
-        const auto& commandsAfterMismatch = rendererCommandBuffer.getCommands();
-        EXPECT_EQ(ERendererCommand_UnsubscribeScene, commandsAfterMismatch.getCommandType(commandsAfterMismatch.getTotalCommandCount()-1));
-        EXPECT_TRUE(commandsAfterMismatch.getCommandData<ramses_internal::SceneInfoCommand>(commandsAfterMismatch.getTotalCommandCount() - 1).indirect);
+        commands = dispatchCommands();
+        ASSERT_EQ(1u, commands.getTotalCommandCount());
+        EXPECT_EQ(ERendererCommand_UnsubscribeScene, commands.getCommandType(0));
+        EXPECT_TRUE(commands.getCommandData<ramses_internal::SceneInfoCommand>(0).indirect);
     }
 
     TEST_F(ARendererFrameworkLogic, expectsCountingSceneActionsFromStartAfterInitializeScene)
@@ -286,24 +321,23 @@ namespace ramses_internal
         newScenes.push_back(SceneInfo(sceneId, sceneName));
         fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
         fixture.handleInitializeScene(SceneInfo(sceneId), providerID);
-
-        rendererCommandBuffer.clear();
+        dispatchCommands();
 
         // send one correct/normal list
         SceneActionCollection actions(createFakeSceneActionCollectionFromTypes({ ESceneActionId_AddChildToNode , ESceneActionId_Flush }));
         fixture.handleSceneActionList(sceneId, actions.copy(), 1u, providerID);
 
-        const RendererCommandContainer& commandsAfterFirstList = rendererCommandBuffer.getCommands();
-        ASSERT_EQ(1u, commandsAfterFirstList.getTotalCommandCount());
-        EXPECT_EQ(ERendererCommand_SceneActions, commandsAfterFirstList.getCommandType(0u));
+        auto cmds = dispatchCommands();
+        ASSERT_EQ(1u, cmds.getTotalCommandCount());
+        EXPECT_EQ(ERendererCommand_SceneActions, cmds.getCommandType(0u));
 
         fixture.handleInitializeScene(SceneInfo(sceneId), providerID);
-        rendererCommandBuffer.clear();
+        dispatchCommands();
         fixture.handleSceneActionList(sceneId, actions.copy(), 1u, providerID);
 
-        const RendererCommandContainer& commandsAfterSecondList = rendererCommandBuffer.getCommands();
-        ASSERT_EQ(1u, commandsAfterSecondList.getTotalCommandCount());
-        EXPECT_EQ(ERendererCommand_SceneActions, commandsAfterSecondList.getCommandType(0u));
+        cmds = dispatchCommands();
+        ASSERT_EQ(1u, cmds.getTotalCommandCount());
+        EXPECT_EQ(ERendererCommand_SceneActions, cmds.getCommandType(0u));
     }
 
     TEST_F(ARendererFrameworkLogic, expectsCountingSceneActionsFromStartAfterRepublish)
@@ -312,27 +346,26 @@ namespace ramses_internal
         newScenes.push_back(SceneInfo(sceneId, sceneName));
         fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
         fixture.handleInitializeScene(SceneInfo(sceneId), providerID);
-
-        rendererCommandBuffer.clear();
+        dispatchCommands();
 
         // send one correct/normal list
         SceneActionCollection actions(createFakeSceneActionCollectionFromTypes({ ESceneActionId_AddChildToNode , ESceneActionId_Flush }));
         fixture.handleSceneActionList(sceneId, actions.copy(), 1u, providerID);
 
-        const RendererCommandContainer& commandsAfterFirstList = rendererCommandBuffer.getCommands();
-        ASSERT_EQ(1u, commandsAfterFirstList.getTotalCommandCount());
-        EXPECT_EQ(ERendererCommand_SceneActions, commandsAfterFirstList.getCommandType(0u));
+        auto cmds = dispatchCommands();
+        ASSERT_EQ(1u, cmds.getTotalCommandCount());
+        EXPECT_EQ(ERendererCommand_SceneActions, cmds.getCommandType(0u));
 
         fixture.handleScenesBecameUnavailable({ SceneInfo(sceneId) }, providerID);
         fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
         fixture.handleInitializeScene(SceneInfo(sceneId), providerID);
 
-        rendererCommandBuffer.clear();
+        dispatchCommands();
         fixture.handleSceneActionList(sceneId, actions.copy(), 1u, providerID);
 
-        const RendererCommandContainer& commandsAfterSecondList = rendererCommandBuffer.getCommands();
-        ASSERT_EQ(1u, commandsAfterSecondList.getTotalCommandCount());
-        EXPECT_EQ(ERendererCommand_SceneActions, commandsAfterSecondList.getCommandType(0u));
+        cmds = dispatchCommands();
+        ASSERT_EQ(1u, cmds.getTotalCommandCount());
+        EXPECT_EQ(ERendererCommand_SceneActions, cmds.getCommandType(0u));
     }
 
 
@@ -342,25 +375,26 @@ namespace ramses_internal
         newScenes.push_back(SceneInfo(sceneId, sceneName));
         fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
         fixture.handleInitializeScene(SceneInfo(sceneId), providerID);
-        rendererCommandBuffer.clear();
+        dispatchCommands();
 
         // send one correct/normal list
         SceneActionCollection actions(createFakeSceneActionCollectionFromTypes({ ESceneActionId_AddChildToNode , ESceneActionId_Flush }));
         fixture.handleSceneActionList(sceneId, actions.copy(), 1u, providerID);
 
-        const RendererCommandContainer& commandsAfterNormalList = rendererCommandBuffer.getCommands();
-        ASSERT_EQ(1u, commandsAfterNormalList.getTotalCommandCount());
-        EXPECT_EQ(ERendererCommand_SceneActions, commandsAfterNormalList.getCommandType(0u));
+        auto cmds = dispatchCommands();
+        ASSERT_EQ(1u, cmds.getTotalCommandCount());
+        EXPECT_EQ(ERendererCommand_SceneActions, cmds.getCommandType(0u));
 
         fixture.handleInitializeScene(SceneInfo(sceneId), providerID);
-        rendererCommandBuffer.clear();
+        dispatchCommands();
 
         // send list with mismatched counter value
         fixture.handleSceneActionList(sceneId, actions.copy(), 2u, providerID);
 
-        const auto& commandsAfterMismatch = rendererCommandBuffer.getCommands();
-        EXPECT_EQ(ERendererCommand_UnsubscribeScene, commandsAfterMismatch.getCommandType(commandsAfterMismatch.getTotalCommandCount()-1));
-        EXPECT_TRUE(commandsAfterMismatch.getCommandData<ramses_internal::SceneInfoCommand>(commandsAfterMismatch.getTotalCommandCount() - 1).indirect);
+        cmds = dispatchCommands();
+        ASSERT_EQ(1u, cmds.getTotalCommandCount());
+        EXPECT_EQ(ERendererCommand_UnsubscribeScene, cmds.getCommandType(0));
+        EXPECT_TRUE(cmds.getCommandData<ramses_internal::SceneInfoCommand>(0).indirect);
     }
 
     TEST_F(ARendererFrameworkLogic, generatesUnpublishRendererCommandsWhenParticipantDisconnectAndStartsAgainWithNewCounter)
@@ -371,30 +405,172 @@ namespace ramses_internal
         newScenes.push_back(SceneInfo(sceneId, sceneName));
         fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
         fixture.handleInitializeScene(SceneInfo(sceneId), providerID);
-        rendererCommandBuffer.clear();
+        dispatchCommands();
 
         // send one correct/normal list
         SceneActionCollection actions(createFakeSceneActionCollectionFromTypes({ ESceneActionId_AddChildToNode , ESceneActionId_Flush }));
         fixture.handleSceneActionList(sceneId, actions.copy(), 1u, providerID);
 
-        const RendererCommandContainer& commandsAfterNormalList = rendererCommandBuffer.getCommands();
-        ASSERT_EQ(1u, commandsAfterNormalList.getTotalCommandCount());
-        EXPECT_EQ(ERendererCommand_SceneActions, commandsAfterNormalList.getCommandType(0u));
+        auto cmds = dispatchCommands();
+        ASSERT_EQ(1u, cmds.getTotalCommandCount());
+        EXPECT_EQ(ERendererCommand_SceneActions, cmds.getCommandType(0u));
 
-        rendererCommandBuffer.clear();
+        dispatchCommands();
         fixture.participantHasDisconnected(providerID);
-        const RendererCommandContainer& commandsAfterDisconnect = rendererCommandBuffer.getCommands();
-        ASSERT_EQ(1u, commandsAfterDisconnect.getTotalCommandCount());
-        EXPECT_EQ(ERendererCommand_UnpublishedScene, commandsAfterDisconnect.getCommandType(0u));
+        cmds = dispatchCommands();
+        ASSERT_EQ(1u, cmds.getTotalCommandCount());
+        EXPECT_EQ(ERendererCommand_UnpublishedScene, cmds.getCommandType(0u));
 
         fixture.newParticipantHasConnected(providerID);
         fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
         fixture.handleInitializeScene(SceneInfo(sceneId), providerID);
-        rendererCommandBuffer.clear();
+        dispatchCommands();
 
         fixture.handleSceneActionList(sceneId, actions.copy(), 1u, providerID);
-        const RendererCommandContainer& commandsAfterReInitialize = rendererCommandBuffer.getCommands();
-        ASSERT_EQ(1u, commandsAfterReInitialize.getTotalCommandCount());
-        EXPECT_EQ(ERendererCommand_SceneActions, commandsAfterReInitialize.getCommandType(0u));
+        cmds = dispatchCommands();
+        ASSERT_EQ(1u, cmds.getTotalCommandCount());
+        EXPECT_EQ(ERendererCommand_SceneActions, cmds.getCommandType(0u));
+    }
+
+    TEST_F(ARendererFrameworkLogic, willNotSendSubscribeMessageWhenProviderUnknown)
+    {
+        fixture.sendSubscribeScene(SceneId{ 123 });
+    }
+
+    TEST_F(ARendererFrameworkLogic, willSendSubscribeMessageToCorrectProvider)
+    {
+        SceneInfoVector newScenes;
+        newScenes.push_back(SceneInfo(sceneId, sceneName));
+        fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
+
+        newScenes.clear();
+        newScenes.push_back(SceneInfo(SceneId{ 123 }, "foo"));
+        fixture.handleNewScenesAvailable(newScenes, Guid{ 456 }, EScenePublicationMode_LocalAndRemote);
+
+        EXPECT_CALL(sceneGraphConsumerComponent, subscribeScene(providerID, sceneId));
+        fixture.sendSubscribeScene(sceneId);
+    }
+
+    TEST_F(ARendererFrameworkLogic, willNotSendUnsubscribeMessageWhenProviderUnknown)
+    {
+        fixture.sendUnsubscribeScene(SceneId{ 123 });
+    }
+
+    TEST_F(ARendererFrameworkLogic, willSendUnsubscribeMessageToCorrectProvider)
+    {
+        SceneInfoVector newScenes;
+        newScenes.push_back(SceneInfo(sceneId, sceneName));
+        fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
+
+        newScenes.clear();
+        newScenes.push_back(SceneInfo(SceneId{ 123 }, "foo"));
+        fixture.handleNewScenesAvailable(newScenes, Guid{ 456 }, EScenePublicationMode_LocalAndRemote);
+
+        EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(providerID, sceneId));
+        fixture.sendUnsubscribeScene(sceneId);
+    }
+
+    TEST_F(ARendererFrameworkLogic, willNotSendSceneStateChangedMessageWhenProviderUnknown)
+    {
+        fixture.sendSceneStateChanged(SceneId{ 123 }, SceneId{ 456 }, RendererSceneState::Available);
+    }
+
+    TEST_F(ARendererFrameworkLogic, willSendCorrectSceneStateChangedMessageToCorrectProvider)
+    {
+        SceneInfoVector newScenes;
+        newScenes.push_back(SceneInfo(sceneId, sceneName));
+        fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
+
+        newScenes.clear();
+        newScenes.push_back(SceneInfo(SceneId{ 123 }, "foo"));
+        fixture.handleNewScenesAvailable(newScenes, Guid{ 456 }, EScenePublicationMode_LocalAndRemote);
+
+        EXPECT_CALL(sceneGraphConsumerComponent, sendSceneReferenceEvent(providerID, _)).WillOnce([this](Guid const&, SceneReferenceEvent const& event)
+            {
+                EXPECT_EQ(event.masterSceneId, sceneId);
+                EXPECT_EQ(event.type, SceneReferenceEventType::SceneStateChanged);
+                EXPECT_EQ(event.referencedScene, SceneId { 456 });
+                EXPECT_EQ(event.sceneState, RendererSceneState::Available);
+            });
+        fixture.sendSceneStateChanged(sceneId, SceneId{ 456 }, RendererSceneState::Available);
+    }
+
+    TEST_F(ARendererFrameworkLogic, willNotSendSceneFlushedMessageWhenProviderUnknown)
+    {
+        fixture.sendSceneFlushed(SceneId{ 123 }, SceneId{ 456 }, SceneVersionTag{ 789 });
+    }
+
+    TEST_F(ARendererFrameworkLogic, willSendCorrectSceneFlushedMessageToCorrectProvider)
+    {
+        SceneInfoVector newScenes;
+        newScenes.push_back(SceneInfo(sceneId, sceneName));
+        fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
+
+        newScenes.clear();
+        newScenes.push_back(SceneInfo(SceneId{ 123 }, "foo"));
+        fixture.handleNewScenesAvailable(newScenes, Guid{ 456 }, EScenePublicationMode_LocalAndRemote);
+
+        EXPECT_CALL(sceneGraphConsumerComponent, sendSceneReferenceEvent(providerID, _)).WillOnce([this](Guid const&, SceneReferenceEvent const& event)
+            {
+                EXPECT_EQ(event.masterSceneId, sceneId);
+                EXPECT_EQ(event.type, SceneReferenceEventType::SceneFlushed);
+                EXPECT_EQ(event.referencedScene, SceneId { 456 });
+                EXPECT_EQ(event.tag, SceneVersionTag { 789 });
+            });
+        fixture.sendSceneFlushed(sceneId, SceneId{ 456 }, SceneVersionTag{ 789 });
+    }
+
+    TEST_F(ARendererFrameworkLogic, willNotSendDataLinkedMessageWhenProviderUnknown)
+    {
+        fixture.sendDataLinked(SceneId{ 123 }, SceneId{ 456 }, DataSlotId{ 12 }, SceneId{ 789 }, DataSlotId{ 34 }, false);
+    }
+
+    TEST_F(ARendererFrameworkLogic, willSendCorrectDataLinkedMessageToCorrectProvider)
+    {
+        SceneInfoVector newScenes;
+        newScenes.push_back(SceneInfo(sceneId, sceneName));
+        fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
+
+        newScenes.clear();
+        newScenes.push_back(SceneInfo(SceneId{ 123 }, "foo"));
+        fixture.handleNewScenesAvailable(newScenes, Guid{ 456 }, EScenePublicationMode_LocalAndRemote);
+
+        EXPECT_CALL(sceneGraphConsumerComponent, sendSceneReferenceEvent(providerID, _)).WillOnce([this](Guid const&, SceneReferenceEvent const& event)
+            {
+                EXPECT_EQ(event.masterSceneId, sceneId);
+                EXPECT_EQ(event.type, SceneReferenceEventType::DataLinked);
+                EXPECT_EQ(event.providerScene, SceneId { 456 });
+                EXPECT_EQ(event.dataProvider, DataSlotId{ 12 });
+                EXPECT_EQ(event.consumerScene, SceneId { 789 });
+                EXPECT_EQ(event.dataConsumer, DataSlotId { 34 });
+                EXPECT_EQ(event.status, false);
+            });
+        fixture.sendDataLinked(sceneId, SceneId{ 456 }, DataSlotId{ 12 }, SceneId{ 789 }, DataSlotId{ 34 }, false);
+    }
+
+    TEST_F(ARendererFrameworkLogic, willNotSendDataUnlinkedMessageWhenProviderUnknown)
+    {
+        fixture.sendDataUnlinked(SceneId{ 123 }, SceneId{ 456 }, DataSlotId{ 12 }, true);
+    }
+
+    TEST_F(ARendererFrameworkLogic, willSendCorrectDataUnlinkedMessageToCorrectProvider)
+    {
+        SceneInfoVector newScenes;
+        newScenes.push_back(SceneInfo(sceneId, sceneName));
+        fixture.handleNewScenesAvailable(newScenes, providerID, EScenePublicationMode_LocalAndRemote);
+
+        newScenes.clear();
+        newScenes.push_back(SceneInfo(SceneId{ 123 }, "foo"));
+        fixture.handleNewScenesAvailable(newScenes, Guid{ 456 }, EScenePublicationMode_LocalAndRemote);
+
+        EXPECT_CALL(sceneGraphConsumerComponent, sendSceneReferenceEvent(providerID, _)).WillOnce([this](Guid const&, SceneReferenceEvent const& event)
+            {
+                EXPECT_EQ(event.masterSceneId, sceneId);
+                EXPECT_EQ(event.type, SceneReferenceEventType::DataUnlinked);
+                EXPECT_EQ(event.consumerScene, SceneId { 456 });
+                EXPECT_EQ(event.dataConsumer, DataSlotId { 12 });
+                EXPECT_EQ(event.status, true);
+            });
+        fixture.sendDataUnlinked(sceneId, SceneId{ 456 }, DataSlotId{ 12 }, true);
     }
 }

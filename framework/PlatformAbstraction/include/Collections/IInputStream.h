@@ -44,7 +44,7 @@ namespace ramses_internal
         return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
     }
 
-    inline IInputStream& operator>>(IInputStream& stream, Bool&  value)
+    inline IInputStream& operator>>(IInputStream& stream, bool&  value)
     {
         return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
     }
@@ -59,11 +59,26 @@ namespace ramses_internal
         return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
     }
 
+    inline IInputStream& operator>>(IInputStream& stream, Int16& value)
+    {
+        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+    }
+
+    inline IInputStream& operator>>(IInputStream& stream, UInt8& value)
+    {
+        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+    }
+
+    inline IInputStream& operator>>(IInputStream& stream, Int8& value)
+    {
+        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+    }
+
     template<typename E,
              typename = typename std::enable_if<std::is_enum<E>::value  && !std::is_convertible<E, int>::value>::type>
     IInputStream& operator>>(IInputStream& stream, E& value)
     {
-        typename std::underlying_type<E>::type valueInUnderlyingType;
+        std::underlying_type_t<E> valueInUnderlyingType;
         stream >> valueInUnderlyingType;
         value = static_cast<E>(valueInUnderlyingType);
 

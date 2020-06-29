@@ -8,6 +8,8 @@
 
 #include "Math3d/ProjectionParams.h"
 #include "Common/TypedMemoryHandle.h"
+#include "PlatformAbstraction/PlatformMath.h"
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -15,7 +17,7 @@ namespace ramses_internal
     {
     }
 
-    Bool ProjectionParams::operator==(const ProjectionParams& other) const
+    bool ProjectionParams::operator==(const ProjectionParams& other) const
     {
         return m_projectionType == other.getProjectionType()
             && leftPlane == other.leftPlane
@@ -26,7 +28,7 @@ namespace ramses_internal
             && farPlane == other.farPlane;
     }
 
-    Bool ProjectionParams::operator!=(const ProjectionParams& other) const
+    bool ProjectionParams::operator!=(const ProjectionParams& other) const
     {
         return !(*this == other);
     }
@@ -38,7 +40,7 @@ namespace ramses_internal
         params.nearPlane = nearPlane;
         params.farPlane = farPlane;
 
-        const Float tangent = PlatformMath::Tan(PlatformMath::Deg2Rad(fieldOfViewY / 2.0f));
+        const Float tangent = std::tan(PlatformMath::Deg2Rad(fieldOfViewY / 2.0f));
         params.topPlane = nearPlane * tangent;
         params.bottomPlane = -params.topPlane;
         params.rightPlane = params.topPlane * aspectRatio;
@@ -67,9 +69,8 @@ namespace ramses_internal
     Float ProjectionParams::GetPerspectiveFovY(const ProjectionParams& projectionParams)
     {
         assert(projectionParams.m_projectionType == ECameraProjectionType_Perspective);
-        return PlatformMath::Rad2Deg(
-            PlatformMath::ArcTan2(PlatformMath::Abs(projectionParams.topPlane), projectionParams.nearPlane) +
-            PlatformMath::ArcTan2(PlatformMath::Abs(projectionParams.bottomPlane), projectionParams.nearPlane));
+        return PlatformMath::Rad2Deg(std::atan2(std::abs(projectionParams.topPlane), projectionParams.nearPlane) +
+                                     std::atan2(std::abs(projectionParams.bottomPlane), projectionParams.nearPlane));
     }
 
     Float ProjectionParams::GetAspectRatio(const ProjectionParams& projectionParams)

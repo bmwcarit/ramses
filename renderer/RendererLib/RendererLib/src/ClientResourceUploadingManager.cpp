@@ -84,7 +84,7 @@ namespace ramses_internal
     void ClientResourceUploadingManager::uploadClientResources(const ResourceContentHashVector& resourcesToUpload)
     {
         UInt32 sizeUploaded = 0u;
-        for (UInt32 i = 0; i < resourcesToUpload.size(); ++i)
+        for (size_t i = 0; i < resourcesToUpload.size(); ++i)
         {
             const ResourceDescriptor& rd = m_clientResources.getResourceDescriptor(resourcesToUpload[i]);
             const UInt32 resourceSize = rd.resource.getResourceObject()->getDecompressedDataSize();
@@ -101,10 +101,10 @@ namespace ramses_internal
                 LOG_INFO_F(CONTEXT_RENDERER, [&](ramses_internal::StringOutputStream& logger)
                 {
                     logger << "Remaining resources in queue to upload:";
-                    for (UInt32 j = numUploaded; j < resourcesToUpload.size() && j < numUploaded + 10; ++j)
+                    for (size_t j = numUploaded; j < resourcesToUpload.size() && j < numUploaded + 10; ++j)
                     {
                         const ResourceDescriptor& interruptedRd = m_clientResources.getResourceDescriptor(resourcesToUpload[j]);
-                        logger << " [" << interruptedRd.hash << "; " << EnumToString(interruptedRd.type) << "; " << interruptedRd.decompressedSize << " B]";
+                        logger << " [" << interruptedRd.hash << "; " << EnumToString(interruptedRd.type) << "]";
                     }
                     if (numRemaining > 10)
                         logger << " ...";
@@ -126,17 +126,17 @@ namespace ramses_internal
 
         const UInt32 resourceSize = pResource->getDecompressedDataSize();
         UInt32 vramSize = 0;
-        const DeviceResourceHandle deviceHandle = m_uploader.uploadResource(m_renderBackend, rd.resource, vramSize);
+        const DeviceResourceHandle deviceHandle = m_uploader.uploadResource(m_renderBackend, rd, vramSize);
         if (deviceHandle.isValid())
         {
             m_clientResourceSizes.put(rd.hash, resourceSize);
             m_clientResourceTotalUploadedSize += resourceSize;
             m_clientResources.setResourceStatus(rd.hash, EResourceStatus_Uploaded);
-            m_clientResources.setResourceSize(rd.hash, pResource->getCompressedDataSize(), resourceSize, vramSize);
+            m_clientResources.setResourceVRAMSize(rd.hash, vramSize);
         }
         else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "ResourceUploadingManager::uploadResource failed to upload resource #" << StringUtils::HexFromResourceContentHash(rd.hash) << " (" << EnumToString(rd.type) << ")");
+            LOG_ERROR(CONTEXT_RENDERER, "ResourceUploadingManager::uploadResource failed to upload resource #" << rd.hash << " (" << EnumToString(rd.type) << ")");
             m_clientResources.setResourceStatus(rd.hash, EResourceStatus_Broken);
         }
 

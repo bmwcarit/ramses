@@ -15,11 +15,11 @@
 
 namespace ramses_internal
 {
-    enum EAnimationSystemFlags
+    enum EAnimationSystemFlags : uint32_t
     {
         EAnimationSystemFlags_Default        = 0,
-        EAnimationSystemFlags_FullProcessing = BIT(0),   /// Full processing of animations is used. If not set only animations are processed only when finished.
-        EAnimationSystemFlags_RealTime       = BIT(1)   /// Hints the renderer to use system time for every frame updates. If not set animation system is fully controlled via setTime calls from client.
+        EAnimationSystemFlags_FullProcessing = BIT(0u),  ///< Full processing of animations is used. If not set only animations are processed only when finished.
+        EAnimationSystemFlags_RealTime       = BIT(1u)   ///< Hints the renderer to use system time for every frame updates. If not set animation system is fully controlled via setTime calls from client.
     };
 
     class AnimationSystem : public IAnimationSystem
@@ -32,7 +32,7 @@ namespace ramses_internal
         virtual void                         setTime(const AnimationTime& globalTime) override;
         virtual const AnimationTime&         getTime() const override;
         virtual UInt32                       getFlags() const override;
-        virtual Bool                         isRealTime() const override;
+        virtual bool                         isRealTime() const override;
 
         virtual SplineHandle                 allocateSpline(ESplineKeyType keyType, EDataTypeID dataTypeID, SplineHandle handleRequest = SplineHandle::Invalid()) override;
         virtual DataBindHandle               allocateDataBinding(IScene& scene, TDataBindID dataBindID, MemoryHandle handle1, MemoryHandle handle2, DataBindHandle handleRequest = DataBindHandle::Invalid()) override;
@@ -41,7 +41,7 @@ namespace ramses_internal
 
         virtual void                         addDataBindingToAnimationInstance(AnimationInstanceHandle handle, DataBindHandle dataBindHandle) override;
 
-        virtual void                         setSplineKeyBasicBool(SplineHandle splineHandle, SplineTimeStamp timeStamp, Bool value) override;
+        virtual void                         setSplineKeyBasicBool(SplineHandle splineHandle, SplineTimeStamp timeStamp, bool value) override;
         virtual void                         setSplineKeyBasicInt32(SplineHandle splineHandle, SplineTimeStamp timeStamp, Int32 value) override;
         virtual void                         setSplineKeyBasicFloat(SplineHandle splineHandle, SplineTimeStamp timeStamp, Float value) override;
         virtual void                         setSplineKeyBasicVector2f(SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector2& value) override;
@@ -66,20 +66,20 @@ namespace ramses_internal
         virtual void                         stopAnimationAndRollback(AnimationHandle handle) override;
 
         virtual AnimationTime::Duration      getAnimationDurationFromSpline(AnimationHandle handle) const override;
-        virtual Bool                         hasActiveAnimations() const override;
+        virtual bool                         hasActiveAnimations() const override;
 
         virtual const SplineBase*            getSpline(SplineHandle handle) const override;
         virtual UInt32                       getTotalSplineCount() const override;
-        virtual Bool                         containsSpline(SplineHandle handle) const override;
+        virtual bool                         containsSpline(SplineHandle handle) const override;
         virtual const AnimationDataBindBase* getDataBinding(DataBindHandle handle) const override;
-        virtual Bool                         containsDataBinding(DataBindHandle handle) const override;
+        virtual bool                         containsDataBinding(DataBindHandle handle) const override;
         virtual UInt32                       getTotalDataBindCount() const override;
         virtual const AnimationInstance&     getAnimationInstance(AnimationInstanceHandle handle) const override;
         virtual UInt32                       getTotalAnimationInstanceCount() const override;
-        virtual Bool                         containsAnimationInstance(AnimationInstanceHandle handle) const override;
+        virtual bool                         containsAnimationInstance(AnimationInstanceHandle handle) const override;
         virtual const Animation&             getAnimation(AnimationHandle handle) const override;
         virtual UInt32                       getTotalAnimationCount() const override;
-        virtual Bool                         containsAnimation(AnimationHandle handle) const override;
+        virtual bool                         containsAnimation(AnimationHandle handle) const override;
 
         virtual void                         removeSpline(SplineHandle handle) override;
         virtual void                         removeDataBinding(DataBindHandle handle) override;
@@ -107,7 +107,7 @@ namespace ramses_internal
         AnimationLogicListener*  m_animationProcessing;
         const UInt32             m_flags;
 
-        static const UInt64 LoopingLengthMultiplier = 1u << 20;
+        static const UInt64 LoopingLengthMultiplier = 1u << 20u;
     private:
         AnimationSystemHandle    m_handle;
     };

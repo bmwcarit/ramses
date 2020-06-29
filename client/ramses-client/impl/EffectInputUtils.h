@@ -18,29 +18,6 @@ namespace ramses
     class EffectInputUtils
     {
     public:
-        static ramses_internal::EDataType GetDataTypeInternal(EEffectInputDataType dataType)
-        {
-            switch (dataType)
-            {
-            case EEffectInputDataType_Int32          : return ramses_internal::EDataType_Int32;
-            case EEffectInputDataType_UInt16         : return ramses_internal::EDataType_UInt16;
-            case EEffectInputDataType_UInt32         : return ramses_internal::EDataType_UInt32;
-            case EEffectInputDataType_Float          : return ramses_internal::EDataType_Float;
-            case EEffectInputDataType_Vector2F       : return ramses_internal::EDataType_Vector2F;
-            case EEffectInputDataType_Vector3F       : return ramses_internal::EDataType_Vector3F;
-            case EEffectInputDataType_Vector4F       : return ramses_internal::EDataType_Vector4F;
-            case EEffectInputDataType_Vector2I       : return ramses_internal::EDataType_Vector2I;
-            case EEffectInputDataType_Vector3I       : return ramses_internal::EDataType_Vector3I;
-            case EEffectInputDataType_Vector4I       : return ramses_internal::EDataType_Vector4I;
-            case EEffectInputDataType_Matrix22F      : return ramses_internal::EDataType_Matrix22F;
-            case EEffectInputDataType_Matrix33F      : return ramses_internal::EDataType_Matrix33F;
-            case EEffectInputDataType_Matrix44F      : return ramses_internal::EDataType_Matrix44F;
-            case EEffectInputDataType_TextureSampler : return ramses_internal::EDataType_TextureSampler;
-            default:
-                assert(false);
-                return ramses_internal::EDataType_Invalid;
-            }
-        }
 
         static EEffectInputDataType GetEffectInputDataType(ramses_internal::EDataType dataType)
         {

@@ -15,12 +15,12 @@
 
 void Arguments::PrintMissingParameter(const char* parameter)
 {
-    PRINT_ERROR("missing --%s\n", parameter);
+    PRINT_ERROR("missing --{}\n", parameter);
 }
 
 void Arguments::PrintMissingFile(const char* argmentName, const char* filePath)
 {
-    PRINT_ERROR("file:\"%s\" for input argument %s does not exist!\n", filePath, argmentName);
+    PRINT_ERROR("file:\"{}\" for input argument {} does not exist!\n", filePath, argmentName);
 }
 
 bool Arguments::LoadMandatoryEffectConfig(const ramses_internal::CommandLineParser& parser, const char* argName, const char* argShortName, EffectConfig& effectConfig)

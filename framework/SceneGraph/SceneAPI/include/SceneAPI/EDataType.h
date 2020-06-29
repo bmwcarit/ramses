@@ -169,7 +169,7 @@ namespace ramses_internal
         };
     }
 
-    inline static Bool IsBufferDataType(EDataType dataType)
+    inline static bool IsBufferDataType(EDataType dataType)
     {
         return dataType == EDataType_Indices
             || dataType == EDataType_UInt16Buffer

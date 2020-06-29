@@ -30,6 +30,7 @@
 #include "Resource/EffectResource.h"
 #include "ramses-client-api/EDataType.h"
 #include "SceneAPI/EDataType.h"
+#include "SceneAPI/ResourceContentHash.h"
 
 using namespace testing;
 
@@ -197,6 +198,22 @@ namespace ramses
         sharedTestState->getClient().destroy(*emptyEffect);
     }
 
+    TEST_F(GeometryBindingTest, dataLayoutHasRightEffectHash)
+    {
+        Effect* emptyEffect = TestEffects::CreateTestEffect(sharedTestState->getClient());
+
+        GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*emptyEffect, "geometry");
+        ASSERT_TRUE(geometry != nullptr);
+
+        const ramses_internal::DataLayout geometryLayout = sharedTestState->getInternalScene().getDataLayout(geometry->impl.getAttributeDataLayout());
+        const ramses_internal::ResourceContentHash& effectHashFromGeometryLayout = geometryLayout.getEffectHash();
+
+        EXPECT_EQ(emptyEffect->impl.getLowlevelResourceHash(), effectHashFromGeometryLayout);
+
+        sharedTestState->getScene().destroy(*geometry);
+        sharedTestState->getClient().destroy(*emptyEffect);
+    }
+
     TEST_F(GeometryBindingTest, indicesFieldIsCreatedAtFixedSlot)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
@@ -266,7 +283,7 @@ namespace ramses
         ASSERT_TRUE(geometry != nullptr);
 
         float verts[8] = { 0.f };
-        RamsesClient anotherClient("anotherLocalTestClient", sharedTestState->getFramework());
+        RamsesClient& anotherClient(*sharedTestState->getFramework().createClient("anotherLocalTestClient"));
         const Vector2fArray* const vertices = anotherClient.createConstVector2fArray(4u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec2Vertices");
         ASSERT_TRUE(vertices != nullptr);
 
@@ -283,7 +300,7 @@ namespace ramses
         ASSERT_TRUE(geometry != nullptr);
 
         float verts[9] = { 0.f };
-        RamsesClient anotherClient("anotherLocalTestClient", sharedTestState->getFramework());
+        RamsesClient& anotherClient(*sharedTestState->getFramework().createClient("anotherLocalTestClient"));
         const Vector3fArray* const vertices = anotherClient.createConstVector3fArray(3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec3Vertices");
         ASSERT_TRUE(vertices != nullptr);
 
@@ -300,7 +317,7 @@ namespace ramses
         ASSERT_TRUE(geometry != nullptr);
 
         float verts[8] = { 0.f };
-        RamsesClient anotherClient("anotherLocalTestClient", sharedTestState->getFramework());
+        RamsesClient& anotherClient(*sharedTestState->getFramework().createClient("anotherLocalTestClient"));
         const Vector4fArray* const vertices = anotherClient.createConstVector4fArray(2u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec2Vertices");
         ASSERT_TRUE(vertices != nullptr);
 
@@ -316,7 +333,7 @@ namespace ramses
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
         ASSERT_TRUE(geometry != nullptr);
 
-        Scene* otherScene = sharedTestState->getClient().createScene(777u);
+        Scene* otherScene = sharedTestState->getClient().createScene(sceneId_t(777u));
         ASSERT_NE(nullptr, otherScene);
 
         IndexDataBuffer* const indices = otherScene->createIndexDataBuffer(3 * sizeof(uint32_t), EDataType_UInt32, "indices");
@@ -334,7 +351,7 @@ namespace ramses
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
         ASSERT_TRUE(geometry != nullptr);
 
-        Scene* otherScene = sharedTestState->getClient().createScene(777u);
+        Scene* otherScene = sharedTestState->getClient().createScene(sceneId_t(777u));
         ASSERT_NE(nullptr, otherScene);
 
         VertexDataBuffer* const vertices = otherScene->createVertexDataBuffer(3 * sizeof(float), EDataType_Float, "vertices");
@@ -355,7 +372,7 @@ namespace ramses
         ASSERT_TRUE(geometry != nullptr);
 
         float verts[8] = { 0.f };
-        RamsesClient anotherClient("anotherLocalTestClient", sharedTestState->getFramework());
+        RamsesClient& anotherClient(*sharedTestState->getFramework().createClient("anotherLocalTestClient"));
         const FloatArray* const vertices = anotherClient.createConstFloatArray(8u, verts, ResourceCacheFlag_DoNotCache, "floatVertices");
         ASSERT_TRUE(vertices != nullptr);
 
@@ -372,7 +389,7 @@ namespace ramses
         ASSERT_TRUE(geometry != nullptr);
 
         uint16_t inds[3] = { 0u };
-        RamsesClient anotherClient("anotherLocalTestClient", sharedTestState->getFramework());
+        RamsesClient& anotherClient(*sharedTestState->getFramework().createClient("anotherLocalTestClient"));
         const UInt16Array* const indices = anotherClient.createConstUInt16Array(3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
         ASSERT_TRUE(indices != nullptr);
 
@@ -388,7 +405,7 @@ namespace ramses
         ASSERT_TRUE(geometry != nullptr);
 
         uint32_t inds[3] = { 0u };
-        RamsesClient anotherClient("anotherLocalTestClient", sharedTestState->getFramework());
+        RamsesClient& anotherClient(*sharedTestState->getFramework().createClient("anotherLocalTestClient"));
         const UInt32Array* const indices = anotherClient.createConstUInt32Array(3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
         ASSERT_TRUE(indices != nullptr);
 

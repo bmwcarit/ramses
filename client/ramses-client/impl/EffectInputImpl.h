@@ -21,7 +21,6 @@
 #include "SceneAPI/EDataType.h"
 #include "SceneAPI/EFixedSemantics.h"
 #include "Collections/String.h"
-#include "SerializationContext.h"
 
 namespace ramses
 {

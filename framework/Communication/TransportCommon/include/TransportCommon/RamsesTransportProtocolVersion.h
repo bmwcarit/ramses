@@ -9,9 +9,6 @@
 #ifndef RAMSES_RAMSESTRANSPORTPROTOCOLVERSION_H
 #define RAMSES_RAMSESTRANSPORTPROTOCOLVERSION_H
 
-#define RAMSES_TRANSPORT_PROTOCOL_VERSION_MAJOR 84
-
-// use minor to implement features in backward compatible way by checking remote minor version
-#define RAMSES_TRANSPORT_PROTOCOL_VERSION_MINOR 0
+#define RAMSES_TRANSPORT_PROTOCOL_VERSION_MAJOR 103
 
 #endif

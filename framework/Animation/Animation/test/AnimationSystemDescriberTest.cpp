@@ -49,7 +49,7 @@ namespace ramses_internal
         IScene& m_scene;
     };
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         TestCopyAtDifferentTimeStamps,
         AnAnimationSystemDescriber,
         testing::Values(0u, 2000u, 5000u, 7000u, 10000u, 50000u, 99000u, 99500u, 100000u, 101000u));

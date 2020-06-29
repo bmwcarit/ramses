@@ -11,7 +11,7 @@
 
 #include "TransportCommon/ServiceHandlerInterfaces.h"
 #include "SceneAPI/SceneId.h"
-#include "Transfer/ResourceTypes.h"
+#include "SceneAPI/SceneTypes.h"
 #include "Components/ManagedResource.h"
 #include "Utils/IPeriodicLogSupplier.h"
 #include "Components/DcsmTypes.h"
@@ -57,22 +57,27 @@ namespace ramses_internal
 
         virtual bool sendSubscribeScene(const Guid& to, const SceneId& sceneId) = 0;
         virtual bool sendUnsubscribeScene(const Guid& to, const SceneId& sceneId) = 0;
-        virtual bool sendSceneNotAvailable(const Guid& to, const SceneId& sceneId) = 0;
 
+        virtual bool sendSceneNotAvailable(const Guid& to, const SceneId& sceneId) = 0;
         virtual bool sendInitializeScene(const Guid& to, const SceneInfo& sceneInfo) = 0;
         virtual uint64_t sendSceneActionList(const Guid& to, const SceneId& sceneId, const SceneActionCollection& actions, const uint64_t& actionListCounter) = 0;
+
+        virtual bool sendRendererEvent(const Guid& to, const SceneId& sceneId, const std::vector<Byte>& data) = 0;
 
         // dcsm provider -> consumer
         virtual bool sendDcsmBroadcastOfferContent(ContentID contentID, Category) = 0;
         virtual bool sendDcsmOfferContent(const Guid& to, ContentID contentID, Category) = 0;
-        virtual bool sendDcsmContentReady(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) = 0;
-        virtual bool sendDcsmContentFocusRequest(const Guid& to, ContentID contentID) = 0;
+        virtual bool sendDcsmContentDescription(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) = 0;
+        virtual bool sendDcsmContentReady(const Guid& to, ContentID contentID) = 0;
+        virtual bool sendDcsmContentEnableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest) = 0;
+        virtual bool sendDcsmContentDisableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest) = 0;
         virtual bool sendDcsmBroadcastRequestStopOfferContent(ContentID contentID) = 0;
         virtual bool sendDcsmBroadcastForceStopOfferContent(ContentID contentID) = 0;
+        virtual bool sendDcsmUpdateContentMetadata(const Guid& to, ContentID contentID, const DcsmMetadata& metadata) = 0;
 
         // dcsm consumer -> provider
-        virtual bool sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, SizeInfo sizeinfo, AnimationInformation) = 0;
-        virtual bool sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, SizeInfo, AnimationInformation) = 0;
+        virtual bool sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation) = 0;
+        virtual bool sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, const CategoryInfo&, AnimationInformation) = 0;
 
 
         // message limits configuration

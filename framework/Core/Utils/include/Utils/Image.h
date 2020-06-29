@@ -10,6 +10,7 @@
 #define RAMSES_IMAGE_H
 
 #include "PlatformAbstraction/PlatformTypes.h"
+#include "PlatformAbstraction/Macros.h"
 #include <vector>
 #include <array>
 #include <assert.h>
@@ -27,10 +28,10 @@ namespace ramses_internal
         Image(UInt32 width, UInt32 height, std::vector<UInt8>&& data);
 
         Image(const Image& other) = default;
-        Image(Image&& other) = default;
+        Image(Image&& other) noexcept = default;
 
         Image& operator=(const Image& other) = default;
-        Image& operator=(Image&& other) = default;
+        Image& operator=(Image&& other) noexcept = default;
 
         void loadFromFilePNG(const String& filename);
         void saveToFilePNG(const String& filename) const;
@@ -46,14 +47,17 @@ namespace ramses_internal
 
         const std::vector<UInt8>& getData() const;
 
-        Bool operator==(const Image& other) const;
-        Bool operator!=(const Image& other) const;
+        bool operator==(const Image& other) const;
+        bool operator!=(const Image& other) const;
 
     private:
         UInt32 m_width = 0u;
         UInt32 m_height = 0u;
         std::vector<UInt8> m_data;
     };
+
+    static_assert(std::is_nothrow_move_constructible<Image>::value, "Image must be movable");
+    static_assert(std::is_nothrow_move_assignable<Image>::value, "Image must be movable");
 
     template <typename Iter>
     Image::Image(UInt32 width, UInt32 height, Iter begin, Iter end, bool flipVertically /*= false*/)

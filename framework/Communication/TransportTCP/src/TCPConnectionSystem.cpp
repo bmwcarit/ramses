@@ -9,13 +9,14 @@
 #include "TransportTCP/TCPConnectionSystem.h"
 
 #include "Components/ResourceStreamSerialization.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "Scene/SceneActionCollection.h"
 #include "TransportCommon/TransportUtilities.h"
 #include "Utils/BinaryInputStream.h"
 #include "Utils/RawBinaryOutputStream.h"
 #include "Utils/StatisticCollection.h"
+#include "Utils/LogMacros.h"
 #include <thread>
+#include "Components/CategoryInfo.h"
 
 namespace ramses_internal
 {
@@ -79,23 +80,24 @@ namespace ramses_internal
                                                    << m_participantAddress.getParticipantId() << "/" << m_participantAddress.getParticipantName()
                                                    << " at " << m_participantAddress.getIp() << ":" << m_participantAddress.getPort()
                                                    << ", type " << EnumToString(m_participantType)
-                                                   << ", aliveInterval " << static_cast<int64_t>(m_aliveInterval.count()) << "ms, aliveTimeout " << static_cast<int64_t>(m_aliveIntervalTimeout.count()) << "ms";
+                                                   << ", aliveInterval " << m_aliveInterval.count() << "ms, aliveTimeout " << m_aliveIntervalTimeout.count() << "ms";
                                                if (m_hasOtherDaemon)
                                                    sos << ", other daemon at " << m_daemonAddress.getIp() << ":" << m_daemonAddress.getPort();
                                            }));
         if (m_aliveIntervalTimeout < m_aliveInterval + std::chrono::milliseconds{100})
         {
             LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << "): Alive timeout very low, expect issues " <<
-                     "(alive " << static_cast<int64_t>(m_aliveInterval.count()) << ", timeout " << static_cast<int64_t>(m_aliveIntervalTimeout.count()) << ")");
+                     "(alive " << m_aliveInterval.count() << ", timeout " << m_aliveIntervalTimeout.count() << ")");
         }
 
+        PlatformGuard guard(m_frameworkLock);
         if (m_runState)
         {
             LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::connectServices: called more than once");
             return false;
         }
 
-        m_runState.reset(new RunState{});
+        m_runState = std::make_unique<RunState>();
         m_thread.start(*this);
 
         return true;
@@ -104,6 +106,8 @@ namespace ramses_internal
     bool TCPConnectionSystem::disconnectServices()
     {
         LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::disconnectServices");
+
+        PlatformGuard guard(m_frameworkLock);
         if (!m_runState)
         {
             LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::disconnectServices: called without being connected");
@@ -112,21 +116,13 @@ namespace ramses_internal
 
         // Signal context to exit run and join thread
         m_runState->m_io.stop();
-        m_thread.join();
-
-        // Clear shared pointer and wait for possible concurrent users to disappear (guarantees that it is really destructed)
-        std::weak_ptr<RunState> weakRunState(m_runState);
+        {
+            // must release lock to let things finish in thread
+            m_frameworkLock.unlock();
+            m_thread.join();
+            m_frameworkLock.lock();
+        }
         m_runState.reset();
-        for (int i = 0; i < 20; ++i)
-        {
-            if (!weakRunState.lock())
-                break;
-            std::this_thread::sleep_for(std::chrono::milliseconds{100});
-        }
-        if (weakRunState.lock())
-        {
-            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::disconnectServices: could not properly delete asio::io_service, may cause further problems");
-        }
 
         LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::disconnectServices: done");
         return true;
@@ -299,7 +295,7 @@ namespace ramses_internal
 
         asio::ip::tcp::endpoint ep(asioIp, pp->address.getPort());
         std::array<asio::ip::tcp::endpoint, 1> endpointSequence = {ep};
-        asio::async_connect(pp->socket, endpointSequence, [this, pp](asio::error_code e, asio::ip::tcp::endpoint usedEndpoint) {
+        asio::async_connect(pp->socket, endpointSequence, [this, pp](asio::error_code e, const asio::ip::tcp::endpoint& usedEndpoint) {
                 if (e)
                 {
                     // connect failed, try again after timeout
@@ -330,7 +326,7 @@ namespace ramses_internal
     void TCPConnectionSystem::initializeNewlyConnectedParticipant(const ParticipantPtr& pp)
     {
         LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::initializeNewlyConnectedParticipant: " << pp->address.getParticipantId());
-        assert(m_connectingParticipants.hasElement(pp));
+        assert(m_connectingParticipants.contains(pp));
 
         // Set send buffer to resource chunk size to allow maximum one resource chunk to use up send buffer. This
         // is needed to allow high prio data to be sent as fast as possible.
@@ -469,20 +465,25 @@ namespace ramses_internal
     {
         pp->lastReceived = std::chrono::steady_clock::now();
         pp->checkReceivedAliveTimer.expires_after(m_aliveIntervalTimeout);
-        pp->checkReceivedAliveTimer.async_wait([this, pp](asio::error_code e) {
+        pp->checkReceivedAliveTimer.async_wait([this, pp, originalLastReceived = pp->lastReceived](asio::error_code e) {
                                                    if (!e)
                                                    {
-                                                       const auto now = std::chrono::steady_clock::now();
-                                                       LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::updateLastReceivedTime: alive message from " <<
-                                                                pp->address.ParticipantIdentifier::getParticipantId() << " too old. lastReceived " <<
-                                                                (std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(now - pp->lastReceived).count()) << "ms ago, expected alive " <<
-                                                                (std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(now - pp->lastReceived - m_aliveInterval).count()) << "ms ago");
+                                                       LOG_WARN_F(CONTEXT_COMMUNICATION, ([&](ramses_internal::StringOutputStream& sos) {
+                                                           const auto now = std::chrono::steady_clock::now();
+                                                           const auto lastRecvMs = std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(now - originalLastReceived).count();
+                                                           const auto expectedMs = std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(now - originalLastReceived - m_aliveInterval).count();
+                                                           const auto expectLatest = std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(now - originalLastReceived - m_aliveIntervalTimeout).count();
+
+                                                           sos << "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::updateLastReceivedTime: alive message from " <<
+                                                               pp->address.ParticipantIdentifier::getParticipantId() << " too old. lastReceived " <<
+                                                               lastRecvMs << "ms ago, expected alive " << expectedMs << "ms ago, latest " << expectLatest << "ms ago";
+                                                       }));
                                                        removeParticipant(pp);
                                                    }
                                                });
     }
 
-    void TCPConnectionSystem::removeParticipant(const ParticipantPtr& pp)
+    void TCPConnectionSystem::removeParticipant(const ParticipantPtr& pp, bool reconnectWithBackoff)
     {
         if (pp->state == EParticipantState::Invalid)
             return;
@@ -511,7 +512,20 @@ namespace ramses_internal
         }
 
         // check if should be tried again
-        addNewParticipantByAddress(pp->address);
+        if (reconnectWithBackoff)
+        {
+            const std::chrono::milliseconds backoffTime{2000};
+            LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::removeParticipant: will delay reconnect by " << backoffTime.count() << "ms");
+            pp->connectTimer.expires_after(backoffTime);
+            pp->connectTimer.async_wait([this, pp](asio::error_code ee) {
+                if (ee)
+                    LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::removeParticipant: Backoff timer got canceled.");
+                else
+                    addNewParticipantByAddress(pp->address);
+            });
+        }
+        else
+            addNewParticipantByAddress(pp->address);
     }
 
     const char* TCPConnectionSystem::EnumToString(EParticipantState e)
@@ -543,7 +557,7 @@ namespace ramses_internal
         // TODO: what if both daemon? guid? remember who connected/should connect (in pp)
 
         const bool otherIsDaemon = (m_hasOtherDaemon && address.getIp() == m_daemonAddress.getIp() && address.getPort() == m_daemonAddress.getPort());
-        const bool shouldConnectbasedOnGuid = PlatformMemory::Compare(&m_participantAddress.getParticipantId().getGuidData(), &address.getParticipantId().getGuidData(), sizeof(generic_uuid_t)) > 0;
+        const bool shouldConnectbasedOnGuid = m_participantAddress.getParticipantId().get() > address.getParticipantId().get();
 
         if (!m_actAsDaemon && (otherIsDaemon || (!address.getParticipantId().isInvalid() && shouldConnectbasedOnGuid)))
         {
@@ -565,14 +579,15 @@ namespace ramses_internal
 
     bool TCPConnectionSystem::postMessageForSending(OutMessage msg, bool hasPrio)
     {
-        // Keep RunState alive between check and use
-        RunStatePtr rs = m_runState;
-        if (!rs)
+        // expect framework lock to be held
+        if (!m_runState)
+        {
+            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::postMessageForSending: called without being connected");
             return false;
+        }
 
         m_statisticCollection.statMessagesSent.incCounter(1);
-
-        asio::post(rs->m_io, [this, msg, hasPrio]() {
+        asio::post(m_runState->m_io, [this, msg = std::move(msg), hasPrio]() mutable {
                             const bool broadcast = msg.to.isInvalid();
                             if (broadcast)
                             {
@@ -593,7 +608,7 @@ namespace ramses_internal
                             else
                             {
                                 ParticipantPtr pp;
-                                if (m_establishedParticipants.get(msg.to, pp) != EStatus_RAMSES_OK)
+                                if (m_establishedParticipants.get(msg.to, pp) != EStatus::Ok)
                                 {
                                     LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::postMessageForSending: post message " << GetNameForMessageId(msg.messageType) <<
                                              " to not (fully) connected participant " << msg.to);
@@ -666,6 +681,9 @@ namespace ramses_internal
         case EMessageId_CreateScene:
             handleCreateScene(pp, stream);
             break;
+        case EMessageId_RendererEvent:
+            handleRendererEvent(pp, stream);
+            break;
         case EMessageId_DcsmRegisterContent:
             handleDcsmRegisterContent(pp, stream);
             break;
@@ -675,17 +693,23 @@ namespace ramses_internal
         case EMessageId_DcsmContentStatusChange:
             handleDcsmContentStatusChange(pp, stream);
             break;
+        case EMessageId_DcsmContentDescription:
+            handleDcsmContentDescription(pp, stream);
+            break;
         case EMessageId_DcsmContentAvailable:
             handleDcsmContentAvailable(pp, stream);
             break;
         case EMessageId_DcsmCategoryContentSwitchRequest:
-            handleDcsmCategoryContentSwitchRequest(pp, stream);
+            handleDcsmCategoryContentSwitchRequest(pp, stream, pp->receiveBuffer.size());
             break;
         case EMessageId_DcsmRequestUnregisterContent:
             handleDcsmRequestUnregisterContent(pp, stream);
             break;
         case EMessageId_DcsmForceUnregisterContent:
             handleDcsmForceStopOfferContent(pp, stream);
+            break;
+        case EMessageId_DcsmUpdateContentMetadata:
+            handleDcsmUpdateContentMetadata(pp, stream);
             break;
         default:
             LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleReceivedMessage: Invalid messagetype " << messageType << " From " << pp->address.getParticipantId());
@@ -718,7 +742,7 @@ namespace ramses_internal
         {
             LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleConnectionDescriptionMessage: Unexpected connection description from " << pp->address.getParticipantId() <<
                       " in state " << EnumToString(pp->state));
-            removeParticipant(pp);
+            removeParticipant(pp, true);
             return;
         }
 
@@ -729,7 +753,7 @@ namespace ramses_internal
         {
             LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleConnectionDescriptionMessage: Invalid protocol version (expected "
                      << m_protocolVersion << ", got " << protocolVersion << ") on new connection. Drop connection");
-            removeParticipant(pp);
+            removeParticipant(pp, true);
             return;
         }
 
@@ -803,7 +827,7 @@ namespace ramses_internal
             }
 
             // send new participant to all others, inc daemons
-            for (const auto p : m_establishedParticipants)
+            for (const auto& p : m_establishedParticipants)
             {
                 if (newPp != p.value)
                 {
@@ -1047,7 +1071,7 @@ namespace ramses_internal
                                                 sos << "]";
                                             }));
 
-        OutMessage msg(Guid(false), EMessageId_PublishScene);
+        OutMessage msg(Guid(), EMessageId_PublishScene);
         msg.stream << static_cast<uint32_t>(newScenes.size());
         for (const auto& s : newScenes)
         {
@@ -1116,7 +1140,7 @@ namespace ramses_internal
                                                 sos << "]";
                                             }));
 
-        OutMessage msg(Guid(false), EMessageId_UnpublishScene);
+        OutMessage msg(Guid(), EMessageId_UnpublishScene);
         msg.stream << static_cast<uint32_t>(unavailableScenes.size());
         for (const auto& s : unavailableScenes)
         {
@@ -1277,7 +1301,7 @@ namespace ramses_internal
             stream >> dataSize;
 
             const char* receiveBufferEnd = pp->receiveBuffer.data() + pp->receiveBuffer.size();
-            ByteArrayView resourceData(reinterpret_cast<const Byte*>(stream.readPosition()), static_cast<uint32_t>(receiveBufferEnd - stream.readPosition()));
+            absl::Span<const Byte> resourceData(reinterpret_cast<const Byte*>(stream.readPosition()), static_cast<uint32_t>(receiveBufferEnd - stream.readPosition()));
 
             LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleTransferResources: from " << pp->address.getParticipantId() << ", dataSize " << dataSize);
             PlatformGuard guard(m_frameworkLock);
@@ -1295,7 +1319,7 @@ namespace ramses_internal
                                                 sos << "]";
                                             }));
 
-        OutMessage msg(Guid(false), EMessageId_ResourcesNotAvailable);
+        OutMessage msg(Guid(), EMessageId_ResourcesNotAvailable);
         msg.stream << static_cast<uint32_t>(resources.size());
         for (const auto& r : resources)
         {
@@ -1328,14 +1352,52 @@ namespace ramses_internal
     }
 
     // --
-    bool TCPConnectionSystem::sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, SizeInfo sizeinfo, AnimationInformation ai)
+    bool TCPConnectionSystem::sendRendererEvent(const Guid& to, const SceneId& sceneId, const std::vector<Byte>& data)
+    {
+        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendRendererEvent: to " << to << ", size " << data.size());
+        if (data.size() > 32000)  // really 32768
+        {
+            LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendRendererEvent: to " << to << " failed because size too large " << data.size());
+            return false;
+        }
+        OutMessage msg(to, EMessageId_RendererEvent);
+        msg.stream << sceneId.getValue()
+                   << static_cast<uint32_t>(data.size());
+        msg.stream.write(data.data(), static_cast<uint32_t>(data.size()));
+        return postMessageForSending(std::move(msg), true);
+    }
+
+    void TCPConnectionSystem::handleRendererEvent(const ParticipantPtr& pp, BinaryInputStream& stream)
+    {
+        if (m_sceneProviderHandler)
+        {
+            SceneId sceneId;
+            stream >> sceneId.getReference();
+
+            uint32_t dataSize = 0;
+            stream >> dataSize;
+
+            std::vector<Byte> data(dataSize);
+
+            stream.read(data.data(), dataSize);
+
+            LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleRendererEvent: from " << pp->address.getParticipantId() << ", size " << dataSize);
+            PlatformGuard guard(m_frameworkLock);
+            m_sceneProviderHandler->handleRendererEvent(sceneId, std::move(data), pp->address.getParticipantId());
+        }
+    }
+
+    // --
+    bool TCPConnectionSystem::sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation ai)
     {
         OutMessage msg(to, EMessageId_DcsmCanvasSizeChange);
+        const auto blob = categoryInfo.toBinary();
+        const uint64_t blobSize = blob.size();
         msg.stream << contentID.getValue()
-                   << sizeinfo.width
-                   << sizeinfo.height
                    << ai.startTimeStamp
-                   << ai.finishedTimeStamp;
+                   << ai.finishedTimeStamp
+                   << blobSize;
+        msg.stream.write(blob.data(), static_cast<uint32_t>(blobSize));
         return postMessageForSending(std::move(msg), true);
     }
 
@@ -1346,29 +1408,34 @@ namespace ramses_internal
             ContentID contentID;
             stream >> contentID.getReference();
 
-            SizeInfo sizeInfo;
-            stream >> sizeInfo.width;
-            stream >> sizeInfo.height;
 
             AnimationInformation ai;
             stream >> ai.startTimeStamp;
             stream >> ai.finishedTimeStamp;
 
+            uint64_t blobSize = 0;
+            stream >> blobSize;
+
+            CategoryInfo categoryInfo({stream.readPositionUchar(), static_cast<size_t>(blobSize)});
+            stream.skip(blobSize);
+
             PlatformGuard guard(m_frameworkLock);
-            m_dcsmProviderHandler->handleCanvasSizeChange(contentID, sizeInfo, ai, pp->address.getParticipantId());
+            m_dcsmProviderHandler->handleCanvasSizeChange(contentID, categoryInfo, ai, pp->address.getParticipantId());
         }
     }
 
     // --
-    bool TCPConnectionSystem::sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, SizeInfo si, AnimationInformation ai)
+    bool TCPConnectionSystem::sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, const CategoryInfo& categoryInfo, AnimationInformation ai)
     {
         OutMessage msg(to, EMessageId_DcsmContentStatusChange);
+        const auto blob = categoryInfo.toBinary();
+        const uint64_t blobSize = blob.size();
         msg.stream << contentID.getValue()
                    << status
-                   << si.width
-                   << si.height
                    << ai.startTimeStamp
-                   << ai.finishedTimeStamp;
+                   << ai.finishedTimeStamp
+                   << blobSize;
+        msg.stream.write(blob.data(), static_cast<uint32_t>(blobSize));
         return postMessageForSending(std::move(msg), true);
     }
 
@@ -1382,23 +1449,25 @@ namespace ramses_internal
             EDcsmState statusInfo;
             stream >> statusInfo;
 
-            SizeInfo si;
-            stream >> si.width;
-            stream >> si.height;
-
             AnimationInformation ai;
             stream >> ai.startTimeStamp;
             stream >> ai.finishedTimeStamp;
 
+            uint64_t blobSize = 0;
+            stream >> blobSize;
+
+            CategoryInfo categoryInfo({stream.readPositionUchar(), static_cast<size_t>(blobSize)});
+            stream.skip(blobSize);
+
             PlatformGuard guard(m_frameworkLock);
-            m_dcsmProviderHandler->handleContentStateChange(contentID, statusInfo, si, ai, pp->address.getParticipantId());
+            m_dcsmProviderHandler->handleContentStateChange(contentID, statusInfo, categoryInfo, ai, pp->address.getParticipantId());
         }
     }
 
     // --
     bool TCPConnectionSystem::sendDcsmBroadcastOfferContent(ContentID contentID, Category category)
     {
-        OutMessage msg(Guid(false), EMessageId_DcsmRegisterContent);
+        OutMessage msg(Guid(), EMessageId_DcsmRegisterContent);
         msg.stream << contentID.getValue()
                    << category.getValue();
         return postMessageForSending(std::move(msg), true);
@@ -1428,16 +1497,16 @@ namespace ramses_internal
     }
 
     // --
-    bool TCPConnectionSystem::sendDcsmContentReady(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor)
+    bool TCPConnectionSystem::sendDcsmContentDescription(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor)
     {
-        OutMessage msg(to, EMessageId_DcsmContentAvailable);
+        OutMessage msg(to, EMessageId_DcsmContentDescription);
         msg.stream << contentID.getValue()
                    << technicalContentType
                    << technicalContentDescriptor.getValue();
         return postMessageForSending(std::move(msg), true);
     }
 
-    void TCPConnectionSystem::handleDcsmContentAvailable(const ParticipantPtr& pp, BinaryInputStream& stream)
+    void TCPConnectionSystem::handleDcsmContentDescription(const ParticipantPtr& pp, BinaryInputStream& stream)
     {
         if (m_dcsmConsumerHandler)
         {
@@ -1451,19 +1520,19 @@ namespace ramses_internal
             stream >> technicalContentDescriptor.getReference();
 
             PlatformGuard guard(m_frameworkLock);
-            m_dcsmConsumerHandler->handleContentReady(contentID, technicalContentType, technicalContentDescriptor, pp->address.getParticipantId());
+            m_dcsmConsumerHandler->handleContentDescription(contentID, technicalContentType, technicalContentDescriptor, pp->address.getParticipantId());
         }
     }
 
     // --
-    bool TCPConnectionSystem::sendDcsmContentFocusRequest(const Guid& to, ContentID contentID)
+    bool TCPConnectionSystem::sendDcsmContentReady(const Guid& to, ContentID contentID)
     {
-        OutMessage msg(to, EMessageId_DcsmCategoryContentSwitchRequest);
+        OutMessage msg(to, EMessageId_DcsmContentAvailable);
         msg.stream << contentID.getValue();
         return postMessageForSending(std::move(msg), true);
     }
 
-    void TCPConnectionSystem::handleDcsmCategoryContentSwitchRequest(const ParticipantPtr& pp, BinaryInputStream& stream)
+    void TCPConnectionSystem::handleDcsmContentAvailable(const ParticipantPtr& pp, BinaryInputStream& stream)
     {
         if (m_dcsmConsumerHandler)
         {
@@ -1471,14 +1540,62 @@ namespace ramses_internal
             stream >> contentID.getReference();
 
             PlatformGuard guard(m_frameworkLock);
-            m_dcsmConsumerHandler->handleContentFocusRequest(contentID, pp->address.getParticipantId());
+            m_dcsmConsumerHandler->handleContentReady(contentID, pp->address.getParticipantId());
+        }
+    }
+
+    // --
+    bool TCPConnectionSystem::sendDcsmContentEnableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest)
+    {
+        OutMessage msg(to, EMessageId_DcsmCategoryContentSwitchRequest);
+        msg.stream << contentID.getValue();
+        msg.stream << true;
+        msg.stream << focusRequest;
+        return postMessageForSending(std::move(msg), true);
+    }
+
+    bool TCPConnectionSystem::sendDcsmContentDisableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest)
+    {
+        OutMessage msg(to, EMessageId_DcsmCategoryContentSwitchRequest);
+        msg.stream << contentID.getValue();
+        msg.stream << false;
+        msg.stream << focusRequest;
+        return postMessageForSending(std::move(msg), true);
+    }
+
+    void TCPConnectionSystem::handleDcsmCategoryContentSwitchRequest(const ParticipantPtr& pp, BinaryInputStream& stream, size_t size)
+    {
+        if (m_dcsmConsumerHandler)
+        {
+            ContentID contentID;
+            stream >> contentID.getReference();
+            if (size > stream.getCurrentReadBytes())
+            {
+                bool isEnable = false;
+                int32_t focusRequest = 0;
+                stream >> isEnable;
+                stream >> focusRequest;
+                PlatformGuard guard(m_frameworkLock);
+                if (isEnable)
+                {
+                    m_dcsmConsumerHandler->handleContentEnableFocusRequest(contentID, focusRequest, pp->address.getParticipantId());
+                }
+                else
+                {
+                    m_dcsmConsumerHandler->handleContentDisableFocusRequest(contentID, focusRequest, pp->address.getParticipantId());
+                }
+            }
+            else
+            {
+                LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem::handleDcsmCategoryContentSwitchRequest received deprecated contentSwitchRequest");
+            }
         }
     }
 
     // --
     bool TCPConnectionSystem::sendDcsmBroadcastRequestStopOfferContent(ContentID contentID)
     {
-        OutMessage msg(Guid(false), EMessageId_DcsmRequestUnregisterContent);
+        OutMessage msg(Guid(), EMessageId_DcsmRequestUnregisterContent);
         msg.stream << contentID.getValue();
         return postMessageForSending(std::move(msg), true);
     }
@@ -1498,7 +1615,7 @@ namespace ramses_internal
     // --
     bool TCPConnectionSystem::sendDcsmBroadcastForceStopOfferContent(ContentID contentID)
     {
-        OutMessage msg(Guid(false), EMessageId_DcsmForceUnregisterContent);
+        OutMessage msg(Guid(), EMessageId_DcsmForceUnregisterContent);
         msg.stream << contentID.getValue();
         return postMessageForSending(std::move(msg), true);
     }
@@ -1515,77 +1632,108 @@ namespace ramses_internal
         }
     }
 
+    // --
+    bool TCPConnectionSystem::sendDcsmUpdateContentMetadata(const Guid& to, ContentID contentID, const DcsmMetadata& metadata)
+    {
+        OutMessage msg(to, EMessageId_DcsmUpdateContentMetadata);
+        const auto blob = metadata.toBinary();
+        const uint64_t blobSize = blob.size();
+        msg.stream << contentID.getValue()
+                   << blobSize;
+        msg.stream.write(blob.data(), static_cast<uint32_t>(blobSize));
+        return postMessageForSending(std::move(msg), true);
+    }
+
+    void TCPConnectionSystem::handleDcsmUpdateContentMetadata(const ParticipantPtr& pp, BinaryInputStream& stream)
+    {
+        if (m_dcsmConsumerHandler)
+        {
+            ContentID contentID;
+            stream >> contentID.getReference();
+
+            uint64_t blobSize = 0;
+            stream >> blobSize;
+
+            DcsmMetadata metadata({stream.readPositionUchar(), static_cast<size_t>(blobSize)});
+            stream.skip(blobSize);
+
+            PlatformGuard guard(m_frameworkLock);
+            m_dcsmConsumerHandler->handleUpdateContentMetadata(contentID, std::move(metadata), pp->address.getParticipantId());
+        }
+    }
 
     // --- ramsh command handling ---
     void TCPConnectionSystem::logConnectionInfo()
     {
-        // Keep RunState alive between check and use
-        RunStatePtr rs = m_runState;
-        if (!rs)
-            return;
+        PlatformGuard guard(m_frameworkLock);
+        auto logFunction =
+            [this]() {
+                LOG_INFO_F(CONTEXT_PERIODIC,
+                           ([&](StringOutputStream& sos)
+                            {
+                                // general info
+                                sos << "TCPConnectionSystem:\n";
+                                sos << "  Self: " << m_participantAddress.getParticipantName() << " / " << m_participantAddress.getParticipantId() << "\n";
+                                sos << "  Connected: " << (m_runState ? "Yes" : "No") << "\n";
+                                sos << "  Protocol version: " << m_protocolVersion << "\n";
+                                sos << "  Type: " << EnumToString(m_participantType) << "\n";
+                                if (m_hasOtherDaemon)
+                                    sos << "  Upstram daemon at " << m_daemonAddress.getIp() << ":" << m_daemonAddress.getPort() << "\n";
 
-        asio::post(rs->m_io, [this]() {
-                            LOG_INFO_F(CONTEXT_PERIODIC,
-                                       ([&](StringOutputStream& sos)
-                                        {
-                                            // general info
-                                            sos << "TCPConnectionSystem:\n";
-                                            sos << "  Self: " << m_participantAddress.getParticipantName() << " / " << m_participantAddress.getParticipantId() << "\n";
-                                            sos << "  Protocol version: " << m_protocolVersion << "\n";
-                                            sos << "  Type: " << EnumToString(m_participantType) << "\n";
-                                            if (m_hasOtherDaemon)
-                                                sos << "  Upstram daemon at " << m_daemonAddress.getIp() << ":" << m_daemonAddress.getPort() << "\n";
+                                // established connections
+                                sos << "Established connections:\n";
+                                for (const auto& p : m_establishedParticipants)
+                                {
+                                    const auto& addr = p.value->address;
+                                    sos << "  "  << addr.getParticipantId() << " / " << addr.getParticipantName() << " at " << addr.getIp() << ":" << addr.getPort();
+                                    if (m_hasOtherDaemon && addr.getIp() == m_daemonAddress.getIp() && addr.getPort() == m_daemonAddress.getPort())
+                                        sos << " (daemon)";
+                                    sos << "\n";
+                                }
 
-                                            // established connections
-                                            sos << "Established connections:\n";
-                                            for (const auto& p : m_establishedParticipants)
-                                            {
-                                                const auto& addr = p.value->address;
-                                                sos << "  "  << addr.getParticipantId() << " / " << addr.getParticipantName() << " at " << addr.getIp() << ":" << addr.getPort();
-                                                if (m_hasOtherDaemon && addr.getIp() == m_daemonAddress.getIp() && addr.getPort() == m_daemonAddress.getPort())
-                                                    sos << " (daemon)";
-                                                sos << "\n";
-                                            }
+                                // connection ongoing
+                                sos << "Connection attempts:\n";
+                                for (const auto& p : m_connectingParticipants)
+                                {
+                                    const auto& addr = p->address;
+                                    sos << "  "  << addr.getIp() << ":" << addr.getPort() << " " << EnumToString(p->state);
+                                    if (m_hasOtherDaemon && addr.getIp() == m_daemonAddress.getIp() && addr.getPort() == m_daemonAddress.getPort())
+                                        sos << " (daemon)";
+                                    sos << "\n";
+                                }
+                            }));
+                    };
 
-                                            // connection ongoing
-                                            sos << "Connection attempts:\n";
-                                            for (const auto& p : m_connectingParticipants)
-                                            {
-                                                const auto& addr = p->address;
-                                                sos << "  "  << addr.getIp() << ":" << addr.getPort() << " " << EnumToString(p->state);
-                                                if (m_hasOtherDaemon && addr.getIp() == m_daemonAddress.getIp() && addr.getPort() == m_daemonAddress.getPort())
-                                                    sos << " (daemon)";
-                                                sos << "\n";
-                                            }
-                                        }));
-            });
+        if (m_runState)
+            asio::post(m_runState->m_io, logFunction);
+        else
+            logFunction();
     }
 
     void TCPConnectionSystem::triggerLogMessageForPeriodicLog()
     {
-        // Keep RunState alive between check and use
-        RunStatePtr rs = m_runState;
-        if (!rs)
-            return;
-
-        asio::post(rs->m_io, [this]() {
-                            LOG_INFO_F(CONTEXT_PERIODIC,
-                                       ([&](StringOutputStream& sos)
+        // expect framework lock to be held
+        if (m_runState)
+            asio::post(m_runState->m_io, [this]() {
+                    LOG_INFO_F(CONTEXT_PERIODIC,
+                               ([&](StringOutputStream& sos)
+                                {
+                                    sos << "Connected Participant(s): ";
+                                    if (m_establishedParticipants.size() == 0)
+                                    {
+                                        sos << "None";
+                                    }
+                                    else
+                                    {
+                                        for (const auto& p : m_establishedParticipants)
                                         {
-                                            sos << "Connected Participant(s): ";
-                                            if (m_establishedParticipants.count() == 0)
-                                            {
-                                                sos << "None";
-                                            }
-                                            else
-                                            {
-                                                for (const auto& p : m_establishedParticipants)
-                                                {
-                                                    sos << p.key << "; ";
-                                                }
-                                            }
-                                        }));
-            });
+                                            sos << p.key << "; ";
+                                        }
+                                    }
+                                }));
+                });
+        else
+            LOG_INFO(CONTEXT_PERIODIC, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << "): Not connected");
     }
 
     // --- TCPConnectionSystem::Participant ---

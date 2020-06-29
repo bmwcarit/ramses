@@ -13,11 +13,6 @@ SET(ramses-shared-lib_VERSION @RAMSES_VERSION@)
 
 FIND_PACKAGE(PkgConfig QUIET)
 
-#find include dir
-FIND_PATH(ramses-shared-lib_INCLUDE_DIRS ramses-client.h
-    HINTS @PACKAGE_PROJECT_INSTALL_HEADER@
-)
-
 # Process COMPONENT parameters
 
 LIST(GET ramses-shared-lib_FIND_COMPONENTS 0 RENDERER_PLATFORM)
@@ -28,6 +23,19 @@ ELSE()
     SET(GL_VERSION NOTFOUND)
 ENDIF()
 
+# find include dir
+IF("${RENDERER_PLATFORM}" STREQUAL "ANDROID")
+    FIND_PATH(ramses-shared-lib_INCLUDE_DIRS ramses-client.h
+        HINTS @PACKAGE_PROJECT_INSTALL_HEADER@
+        CMAKE_FIND_ROOT_PATH_BOTH
+    )
+ELSE()
+    FIND_PATH(ramses-shared-lib_INCLUDE_DIRS ramses-client.h
+        HINTS @PACKAGE_PROJECT_INSTALL_HEADER@
+    )
+ENDIF()
+
+# find library
 IF("${RENDERER_PLATFORM}" STREQUAL "WINDOWS")
 
     IF(NOT GL_VERSION)
@@ -48,7 +56,7 @@ IF("${RENDERER_PLATFORM}" STREQUAL "WINDOWS")
     # no shlib versioning support on windows
     FIND_LIBRARY(ramses-shared-lib_LIBRARIES
         NAMES "${RAMSES_GL_LIB}"
-        HINTS @PACKAGE_PROJECT_INSTALL_SHARED_LIB@
+        HINTS @PACKAGE_PROJECT_INSTALL_BINARY@
     )
 
 ELSEIF("${RENDERER_PLATFORM}" STREQUAL "LINUX-X11")
@@ -71,8 +79,19 @@ ELSEIF("${RENDERER_PLATFORM}" STREQUAL "LINUX-WAYLAND")
         HINTS @PACKAGE_PROJECT_INSTALL_SHARED_LIB@
     )
 
+ELSEIF("${RENDERER_PLATFORM}" STREQUAL "ANDROID")
+
+    MESSAGE("Using OpenGL ES 3.0. Ignoring GL_VERSION")
+
+    # no shlib versioning support on Android
+    FIND_LIBRARY(ramses-shared-lib_LIBRARIES
+        NAMES "libramses-shared-lib-android-egl-es-3-0.so"
+        HINTS @PACKAGE_PROJECT_INSTALL_SHARED_LIB@
+        CMAKE_FIND_ROOT_PATH_BOTH
+    )
+
 ELSE()
-    MESSAGE("please use component syntax, choose one of WINDOWS, LINUX-X11, LINUX-WAYLAND")
+    MESSAGE("please use component syntax, choose one of WINDOWS, LINUX-X11, LINUX-WAYLAND, ANDROID")
 ENDIF()
 
 

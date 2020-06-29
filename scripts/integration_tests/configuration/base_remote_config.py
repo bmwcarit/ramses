@@ -6,6 +6,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
+from __future__ import print_function
 import re
 from configuration.local_config import Config
 
@@ -50,11 +51,11 @@ class BaseRemoteConfig(Config):
         # filter testTotargetConfig
         filtered_testToTargetConfig = {}
         all_targets_set = set(self.allTargetsList)
-        for target, configs in self.testToTargetConfig.iteritems():
+        for target, configs in self.testToTargetConfig.items():
             filtered_configs = [c for c in configs if len(set(c) - all_targets_set) == 0]
             if len(filtered_configs) > 0:
                 filtered_testToTargetConfig[target] = filtered_configs
         self.testToTargetConfig = filtered_testToTargetConfig
 
-        print "Filtered list of targets:", [t.name for t in self.allTargetsList]
-        print "Filtered list of default test targets:", [t.name for t in self.defaultTestTargetsList]
+        print("Filtered list of targets:", [t.name for t in self.allTargetsList])
+        print("Filtered list of default test targets:", [t.name for t in self.defaultTestTargetsList])

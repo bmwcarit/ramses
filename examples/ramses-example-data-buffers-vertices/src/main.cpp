@@ -23,11 +23,11 @@ int main(int argc, char* argv[])
 {
     // register at RAMSES daemon
     ramses::RamsesFramework framework(argc, argv);
-    ramses::RamsesClient ramses("ramses-example-data-buffers-vertices", framework);
+    ramses::RamsesClient& ramses(*framework.createClient("ramses-example-data-buffers-vertices"));
     framework.connect();
 
     // create a scene for distributing content
-    ramses::Scene* scene = ramses.createScene(123u, ramses::SceneConfig(), "triangle scene");
+    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "triangle scene");
 
     // every scene needs a render pass with camera
     ramses::Camera* camera = scene->createRemoteCamera("my camera");
@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
 
     /// [Data Buffer Example Setup]
     /// Creating a shape with DataBuffer vertices and constantly changing them afterwards
-    ///
+    //
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
     //                 This should not be the case for real applications.
 

@@ -14,7 +14,7 @@ using namespace testing;
 
 namespace ramses_internal
 {
-    TYPED_TEST_CASE(AScene, SceneTypes);
+    TYPED_TEST_SUITE(AScene, SceneTypes);
 
     TYPED_TEST(AScene, ContainsCreatedAnimationSystem_ClientVersion)
     {
@@ -58,8 +58,8 @@ namespace ramses_internal
         auto id1 = this->m_scene.addAnimationSystem(animSystem1);
         auto id2 = this->m_scene.addAnimationSystem(animSystem2);
 
-        Bool id1Found = false;
-        Bool id2Found = false;
+        bool id1Found = false;
+        bool id2Found = false;
         for (auto handle = AnimationSystemHandle(0); handle < this->m_scene.getAnimationSystemCount(); ++handle)
         {
             if (this->m_scene.isAnimationSystemAllocated(handle))
@@ -94,8 +94,8 @@ namespace ramses_internal
 
         EXPECT_EQ(nullptr, this->m_scene.getAnimationSystem(id2));
 
-        Bool id1Found = false;
-        Bool id2Found = false;
+        bool id1Found = false;
+        bool id2Found = false;
         for (auto handle = AnimationSystemHandle(0); handle < this->m_scene.getAnimationSystemCount(); ++handle)
         {
             if (this->m_scene.isAnimationSystemAllocated(handle))

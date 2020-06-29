@@ -12,6 +12,8 @@ extends: default
 ignore: |
     /external/googletest/
     /external/asio/
+    /external/fmt/
+    /external/imgui/
 
 rules:
     line-length: disable

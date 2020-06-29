@@ -11,6 +11,7 @@
 
 // internal
 #include "StatusObjectImpl.h"
+#include "Collections/HashSet.h"
 
 namespace ramses
 {
@@ -26,7 +27,9 @@ namespace ramses
 
     status_t StatusObject::validate() const
     {
-        return impl.validate(0u);
+        StatusObjectImpl::StatusObjectSet visitedObjects;
+        visitedObjects.put(&impl);
+        return impl.validate(0u, visitedObjects);
     }
 
     const char* StatusObject::getValidationReport(EValidationSeverity severity) const

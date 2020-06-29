@@ -6,8 +6,9 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include <gtest/gtest.h>
 #include "Math3d/ProjectionParams.h"
+#include "PlatformAbstraction/PlatformMath.h"
+#include <gtest/gtest.h>
 
 namespace ramses_internal
 {
@@ -160,7 +161,7 @@ namespace ramses_internal
         EXPECT_GT(45.0f, ProjectionParams::GetPerspectiveFovY(params)); // total opening angle should be smaller now
 
         // calculate expected opening angle
-        float expectedAngle = 45.f / 2.0f + PlatformMath::Rad2Deg(PlatformMath::ArcTan2(PlatformMath::Abs(params.bottomPlane), params.nearPlane));
+        float expectedAngle = 45.f / 2.0f + PlatformMath::Rad2Deg(std::atan2(std::abs(params.bottomPlane), params.nearPlane));
         EXPECT_FLOAT_EQ(expectedAngle, ProjectionParams::GetPerspectiveFovY(params));
     }
 

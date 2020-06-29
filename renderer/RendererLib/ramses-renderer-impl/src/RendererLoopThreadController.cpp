@@ -15,15 +15,16 @@
 
 namespace ramses_internal
 {
-    RendererLoopThreadController::RendererLoopThreadController(WindowedRenderer& windowedRenderer, PlatformWatchdog& watchdog)
+    RendererLoopThreadController::RendererLoopThreadController(WindowedRenderer& windowedRenderer, PlatformWatchdog& watchdog, std::chrono::milliseconds loopCountPeriod)
         : m_windowedRenderer(&windowedRenderer)
         , m_watchdog(watchdog)
         , m_thread("R_RendererThrd")
         , m_lock()
         , m_doRendering(false)
-        , m_minimumFrameDuration(std::chrono::microseconds(std::chrono::seconds(1)) / 60)  // 60fps
+        , m_targetMinimumFrameDuration(std::chrono::microseconds(std::chrono::seconds(1)) / 60)  // 60fps
         , m_threadStarted(false)
         , m_destroyRenderer(false)
+        , m_loopCountPeriod(loopCountPeriod)
     {
     }
 
@@ -32,7 +33,7 @@ namespace ramses_internal
         if (m_threadStarted)
         {
             m_thread.cancel();
-            m_sleepConditionVar.signal();
+            m_sleepConditionVar.notify_one();
             m_thread.join();
         }
     }
@@ -40,7 +41,7 @@ namespace ramses_internal
     Bool RendererLoopThreadController::startRendering()
     {
         {
-            PlatformLightweightGuard guard(m_lock);
+            std::lock_guard<std::mutex> guard(m_lock);
             if (m_doRendering)
             {
                 return false;
@@ -54,20 +55,20 @@ namespace ramses_internal
             m_thread.start(*this);
             m_threadStarted = true;
         }
-        m_sleepConditionVar.signal();
+        m_sleepConditionVar.notify_one();
 
         return true;
     }
 
     Bool RendererLoopThreadController::isRendering() const
     {
-        PlatformLightweightGuard guard(m_lock);
+        std::lock_guard<std::mutex> guard(m_lock);
         return m_doRendering;
     }
 
     Bool RendererLoopThreadController::stopRendering()
     {
-        PlatformLightweightGuard guard(m_lock);
+        std::lock_guard<std::mutex> guard(m_lock);
         if (!m_doRendering)
         {
             return false;
@@ -87,10 +88,10 @@ namespace ramses_internal
             Bool doRendering = false;
             Bool destroyRenderer = false;
             std::chrono::microseconds minimumFrameDuration{ 0 };
-            ELoopMode loopMode = ELoopMode_UpdateAndRender;
+            ELoopMode loopMode = ELoopMode::UpdateAndRender;
             {
-                PlatformLightweightGuard guard(m_lock);
-                minimumFrameDuration = m_minimumFrameDuration;
+                std::lock_guard<std::mutex> guard(m_lock);
+                minimumFrameDuration = m_targetMinimumFrameDuration;
                 doRendering = m_doRendering;
                 destroyRenderer = m_destroyRenderer;
                 loopMode = m_loopMode;
@@ -98,31 +99,51 @@ namespace ramses_internal
 
             if (destroyRenderer)
             {
-                PlatformLightweightGuard guard(m_lock);
+                std::lock_guard<std::mutex> guard(m_lock);
                 delete m_windowedRenderer;
                 m_windowedRenderer = nullptr;
                 m_destroyRenderer = false;
-                m_rendererDestroyedCondVar.signal();
+                m_rendererDestroyedCondVar.notify_one();
             }
             else if (!doRendering)
             {
-                PlatformLightweightGuard guard(m_lock);
-                m_sleepConditionVar.wait(&m_lock, m_watchdog.calculateTimeout());
+                std::unique_lock<std::mutex> l(m_lock);
+                m_sleepConditionVar.wait_for(l, std::chrono::milliseconds{m_watchdog.calculateTimeout()});
             }
             else
             {
                 assert(m_windowedRenderer != nullptr);
-                ramses::RamsesRendererUtils::DoOneLoop(*m_windowedRenderer, loopMode, lastLoopSleepTime);
+                m_windowedRenderer->doOneLoop(loopMode, lastLoopSleepTime);
 
                 const UInt64 loopEndTime = PlatformTime::GetMicrosecondsMonotonic();
                 assert(loopEndTime >= loopStartTime);
-                const std::chrono::microseconds loopDuration{ loopEndTime - loopStartTime };
-                lastLoopSleepTime = sleepToControlFramerate(loopDuration, minimumFrameDuration);
-
+                const std::chrono::microseconds currentLoopDuration{ loopEndTime - loopStartTime };
+                lastLoopSleepTime = sleepToControlFramerate(currentLoopDuration, minimumFrameDuration);
+                calculateLooptimeAverage(currentLoopDuration + lastLoopSleepTime, loopEndTime);
                 loopStartTime = PlatformTime::GetMicrosecondsMonotonic();
             }
 
             m_watchdog.notifyWatchdog();
+        }
+    }
+
+    void RendererLoopThreadController::calculateLooptimeAverage(const std::chrono::microseconds currentLoopDuration, const uint64_t loopEndTime)
+    {
+        if (m_loopCountPeriod.count() > 0)
+        {
+            m_sumOfLoopTimeInPeriod += currentLoopDuration;
+            m_numberOfLoopsInPeriod++;
+            m_maximumLoopTimeInPeriod = std::max(m_maximumLoopTimeInPeriod, currentLoopDuration);
+
+
+            if (loopEndTime >= m_lastPeriodLoopCountReportingTimeMicroseconds + std::chrono::microseconds(m_loopCountPeriod).count())
+            {
+                m_windowedRenderer->fireLoopTimingReportRendererEvent(m_maximumLoopTimeInPeriod, std::chrono::microseconds(m_sumOfLoopTimeInPeriod.count() / m_numberOfLoopsInPeriod));
+                m_sumOfLoopTimeInPeriod = std::chrono::microseconds(0);
+                m_numberOfLoopsInPeriod = 0;
+                m_maximumLoopTimeInPeriod = std::chrono::microseconds(0);
+                m_lastPeriodLoopCountReportingTimeMicroseconds = loopEndTime;
+            }
         }
     }
 
@@ -145,33 +166,29 @@ namespace ramses_internal
 
     void RendererLoopThreadController::setMaximumFramerate(Float maximumFramerate)
     {
-        PlatformLightweightGuard guard(m_lock);
-        m_minimumFrameDuration = std::chrono::microseconds(static_cast<UInt>(1e6f / maximumFramerate));
+        std::lock_guard<std::mutex> guard(m_lock);
+        m_targetMinimumFrameDuration = std::chrono::microseconds(static_cast<UInt>(1e6f / maximumFramerate));
     }
 
 
     Float RendererLoopThreadController::getMaximumFramerate() const
     {
-        PlatformLightweightGuard guard(m_lock);
+        std::lock_guard<std::mutex> guard(m_lock);
         using float_seconds = std::chrono::duration<float, std::ratio<1>>;
-        return 1.0f / std::chrono::duration_cast<float_seconds>(m_minimumFrameDuration).count();
+        return 1.0f / std::chrono::duration_cast<float_seconds>(m_targetMinimumFrameDuration).count();
     }
 
     void RendererLoopThreadController::setLoopMode(ELoopMode loopMode)
     {
-        PlatformLightweightGuard guard(m_lock);
+        std::lock_guard<std::mutex> guard(m_lock);
         m_loopMode = loopMode;
     }
 
     void RendererLoopThreadController::destroyRenderer()
     {
-        PlatformLightweightGuard guard(m_lock);
+        std::unique_lock<std::mutex> l(m_lock);
         m_destroyRenderer = true;
-        m_sleepConditionVar.signal();
-
-        while (m_windowedRenderer)
-        {
-            m_rendererDestroyedCondVar.wait(&m_lock);
-        }
+        m_sleepConditionVar.notify_one();
+        m_rendererDestroyedCondVar.wait(l, [&]() { return !m_windowedRenderer; });
     }
 }

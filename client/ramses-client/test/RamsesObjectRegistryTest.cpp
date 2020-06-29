@@ -21,7 +21,7 @@ namespace ramses
     class DummyObject : public Node
     {
     public:
-        DummyObject(SceneImpl& scene)
+        explicit DummyObject(SceneImpl& scene)
             : Node(*new DummyObjectImpl(scene, ERamsesObjectType_Node, ""))
         {
         }
@@ -124,33 +124,33 @@ namespace ramses
 
     TEST_F(ARamsesObjectRegistry, hasNoDirtyNodesAfterInitialization)
     {
-        EXPECT_EQ(0u, m_registry.getDirtyNodes().count());
+        EXPECT_EQ(0u, m_registry.getDirtyNodes().size());
     }
 
     TEST_F(ARamsesObjectRegistry, marksNodeDirty)
     {
         m_registry.addObject(m_dummyObject);
         m_registry.setNodeDirty(m_dummyObject.impl, true);
-        EXPECT_EQ(1u, m_registry.getDirtyNodes().count());
-        EXPECT_TRUE(m_registry.getDirtyNodes().hasElement(&m_dummyObject.impl));
+        EXPECT_EQ(1u, m_registry.getDirtyNodes().size());
+        EXPECT_TRUE(m_registry.getDirtyNodes().contains(&m_dummyObject.impl));
         EXPECT_TRUE(m_registry.isNodeDirty(m_dummyObject.impl));
     }
 
     TEST_F(ARamsesObjectRegistry, marksNodeClean)
     {
-        ramses_internal::ScopedPointer<DummyObject> object1(createDummyObject());
+        std::unique_ptr<DummyObject> object1(createDummyObject());
         m_registry.addObject(*object1);
         m_registry.setNodeDirty(object1->impl, true);
 
-        ramses_internal::ScopedPointer<DummyObject> object2(createDummyObject());
+        std::unique_ptr<DummyObject> object2(createDummyObject());
         m_registry.addObject(*object2);
         m_registry.setNodeDirty(object2->impl, true);
 
-        EXPECT_EQ(2u, m_registry.getDirtyNodes().count());
+        EXPECT_EQ(2u, m_registry.getDirtyNodes().size());
 
         m_registry.setNodeDirty(object1->impl, false);
-        EXPECT_EQ(1u, m_registry.getDirtyNodes().count());
-        EXPECT_FALSE(m_registry.getDirtyNodes().hasElement(&object1->impl));
+        EXPECT_EQ(1u, m_registry.getDirtyNodes().size());
+        EXPECT_FALSE(m_registry.getDirtyNodes().contains(&object1->impl));
         EXPECT_FALSE(m_registry.isNodeDirty(object1->impl));
     }
 
@@ -159,7 +159,7 @@ namespace ramses
         m_registry.addObject(m_dummyObject);
         m_registry.setNodeDirty(m_dummyObject.impl, true);
         m_registry.clearDirtyNodes();
-        EXPECT_EQ(0u, m_registry.getDirtyNodes().count());
+        EXPECT_EQ(0u, m_registry.getDirtyNodes().size());
         EXPECT_FALSE(m_registry.isNodeDirty(m_dummyObject.impl));
     }
 
@@ -168,15 +168,15 @@ namespace ramses
         m_registry.addObject(m_dummyObject);
         m_registry.setNodeDirty(m_dummyObject.impl, true);
         m_registry.removeObject(m_dummyObject);
-        EXPECT_EQ(0u, m_registry.getDirtyNodes().count());
+        EXPECT_EQ(0u, m_registry.getDirtyNodes().size());
     }
 
     TEST_F(ARamsesObjectRegistry, nodeAppearsInDirtyListAfterMarkedDirty)
     {
         m_registry.addObject(m_dummyObject);
         m_registry.setNodeDirty(m_dummyObject.impl, true);
-        EXPECT_EQ(1u, m_registry.getDirtyNodes().count());
-        EXPECT_TRUE(m_registry.getDirtyNodes().hasElement(&m_dummyObject.impl));
+        EXPECT_EQ(1u, m_registry.getDirtyNodes().size());
+        EXPECT_TRUE(m_registry.getDirtyNodes().contains(&m_dummyObject.impl));
         EXPECT_TRUE(m_registry.isNodeDirty(m_dummyObject.impl));
     }
 }

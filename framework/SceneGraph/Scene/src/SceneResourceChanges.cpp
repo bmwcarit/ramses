@@ -19,7 +19,7 @@ namespace ramses_internal
         m_sceneResourceActions.clear();
     }
 
-    Bool SceneResourceChanges::empty() const
+    bool SceneResourceChanges::empty() const
     {
         return m_addedClientResourceRefs.empty()
             && m_removedClientResourceRefs.empty()
@@ -110,14 +110,14 @@ namespace ramses_internal
         str << "\n[ new client resources:";
         for (const auto& res : m_addedClientResourceRefs)
         {
-            str << " " << StringUtils::HexFromResourceContentHash(res);
+            str << " " << res;
         }
         str << "]";
 
         str << "\n[ obsolete client resources:";
         for (const auto& res : m_removedClientResourceRefs)
         {
-            str << " " << StringUtils::HexFromResourceContentHash(res);
+            str << " " << res;
         }
         str << "]";
 

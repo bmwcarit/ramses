@@ -6,8 +6,8 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-import test_classes
-import log
+from ramses_test_framework import test_classes
+from ramses_test_framework import log
 import re
 
 

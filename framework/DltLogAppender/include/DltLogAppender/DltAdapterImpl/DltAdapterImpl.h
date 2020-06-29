@@ -39,80 +39,32 @@ namespace ramses_internal
         */
         static DltAdapterImpl* getDltAdapter();
 
-        virtual void logMessage(const LogMessage& msg) override;
-        virtual void* registerContext(LogContext* ctx, bool pushLogLevel, ELogLevel logLevel) override;
-        virtual bool registerApplication(const String& id, const String& desc) override;
-        virtual void unregisterApplication() override;
-        virtual void registerInjectionCallback(LogContext* ctx,uint32_t sid,int (*dltInjectionCallback)(uint32_t service_id, void *data, uint32_t length)) override;
-        virtual Bool transmitFile(LogContext& ctx, const String& uri, Bool deleteFile) override;
+        bool initialize(const String& id, const String& description, bool registerApplication,
+                        const std::function<void(const String&, int)>& logLevelChangeCallback,
+                        const std::vector<LogContext*>& contexts, bool pushLogLevelsToDaemon) override;
+        void uninitialize() override;
 
-        virtual void registerLogLevelChangeCallback(const std::function<void(const String&, int)>& callback) override;
+        virtual bool logMessage(const LogMessage& msg) override;
+        virtual bool registerInjectionCallback(LogContext* ctx, uint32_t sid, int (*dltInjectionCallback)(uint32_t service_id, void *data, uint32_t length)) override;
+        virtual bool transmitFile(LogContext& ctx, const String& uri, bool deleteFile) override;
 
-        virtual const String& getApplicationName() override
+        virtual bool isInitialized() override;
+
+        static bool IsDummyAdapter()
         {
-            return m_appName;
-        }
-
-        virtual const String& getApplicationDescription() override
-        {
-            return m_appDesc;
-        }
-
-        virtual bool isDltInitialized() override
-        {
-            return m_dltInitialized;
-        }
-
-        virtual EDltError getDltStatus() override
-        {
-            EDltError cur = m_dltError;
-            m_dltError = EDltError_NO_ERROR;
-            return cur;
+            return false;
         }
 
     private:
-
         static void DltLogLevelChangedCallback(char context_id[DLT_ID_SIZE], uint8_t log_level, uint8_t trace_status);
 
-        /**
-        * Private constructor
-        */
         DltAdapterImpl();
-
-        /**
-        * Private destructor
-        */
         ~DltAdapterImpl();
 
-        /**
-         * Name of the application,4 char string
-         */
-        String m_appName;
+        bool m_initialized = false;
+        bool m_appRegistered = false;
 
-        /**
-         * More detailed description of the application
-         */
-        String m_appDesc;
-
-        /**
-         * Bool to check if DLT was initialized correctly
-         * if dlt libs are not there applications will not start due to linker failure
-         * if dlt libs are there but dlt-daemon is not running dlt_init return negative
-         * values, in which case this variable stays false
-         */
-        bool m_dltInitialized;
-
-        /**
-         * Internal flag to track errors
-         */
-        EDltError m_dltError;
-
-        typedef std::pair<DltContext*, LogContext*> ContextPair;
-        /**
-         * Vector of all created contexts.
-         */
-        std::vector< ContextPair > m_dltContextList;
-
+        std::vector<LogContext*> m_contexts;
         std::function<void(const String&, int)> m_logLevelChangeCallback;
     };
 }

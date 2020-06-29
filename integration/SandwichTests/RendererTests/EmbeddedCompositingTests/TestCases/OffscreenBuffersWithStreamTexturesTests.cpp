@@ -38,7 +38,7 @@ namespace ramses_internal
             const auto sceneIdConsumer = testFramework.createAndShowScene<TextureLinkScene>(TextureLinkScene::DATA_CONSUMER);
 
             const auto offscreenBuffer = testFramework.createOffscreenBuffer(0, 256, 256, false);
-            testFramework.assignSceneToOffscreenBuffer(sceneIdProvider, offscreenBuffer);
+            testFramework.assignSceneToDisplayBuffer(sceneIdProvider, offscreenBuffer);
             testFramework.createBufferDataLink(offscreenBuffer, sceneIdConsumer, TextureLinkScene::DataConsumerId);
 
             testFramework.startTestApplicationAndWaitUntilConnected();

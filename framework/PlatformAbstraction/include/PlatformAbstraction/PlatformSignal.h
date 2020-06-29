@@ -9,26 +9,30 @@
 #ifndef RAMSES_PLATFORMABSTRACTION_PLATFORMSIGNAL_H
 #define RAMSES_PLATFORMABSTRACTION_PLATFORMSIGNAL_H
 
-#include <ramses-capu/os/Signal.h>
+#include <cstdint>
+#include <signal.h>
 
 namespace ramses_internal
 {
-    class Signal : public ramses_capu::os::Signal
+    enum class ESignal
     {
-    public:
-        typedef void (*SignalHandlerFunction)(int32_t);
-
-        using ramses_capu::os::Signal::signal;
-        using ramses_capu::os::Signal::raise;
-
-        static void SetSignalHandler(ramses_capu::ESignal sig, SignalHandlerFunction handler, bool chainPreviousHandler);
-        static void RestoreSignalHandlers();
-        static const char* SignalToString(ramses_capu::ESignal sig);
-
-        static void DisableSigPipe();
+        ABRT = SIGABRT,
+        FPE = SIGFPE,
+        ILL = SIGILL,
+        INT = SIGINT,
+        SEGV = SIGSEGV,
+        TERM = SIGTERM
     };
 
-    typedef ramses_capu::ESignal ESignal;
+    class PlatformSignal
+    {
+    public:
+        using SignalHandlerFunction = void(*)(int32_t);
+
+        static void SetSignalHandler(ESignal sig, SignalHandlerFunction handler, bool chainPreviousHandler);
+        static void RestoreSignalHandlers();
+        static const char* SignalToString(ESignal sig);
+    };
 }
 
 #endif

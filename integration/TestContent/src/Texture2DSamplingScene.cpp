@@ -18,6 +18,7 @@
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/OrthographicCamera.h"
+#include <cassert>
 
 // The magic of these tests is that they must show a significant difference in the output picture, when the wrong sampling mode is
 // enabled. On the other side they must be stable across different OpenGL implementations in different platforms.
@@ -122,7 +123,7 @@ namespace ramses_internal
     void Texture2DSamplingScene::createMesh(const ramses::TextureSampler& sampler, EState state)
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-textured");
-        assert(effect != 0);
+        assert(effect != nullptr);
 
         ramses::AttributeInput positionsInput;
         ramses::AttributeInput texCoordsInput;

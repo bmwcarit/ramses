@@ -21,7 +21,7 @@ namespace ramses_internal
     class WaylandIVIApplicationGlobal: public IWaylandIVIApplicationGlobal
     {
     public:
-        WaylandIVIApplicationGlobal(EmbeddedCompositor_Wayland& compositor);
+        explicit WaylandIVIApplicationGlobal(EmbeddedCompositor_Wayland& compositor);
         ~WaylandIVIApplicationGlobal();
 
         bool init(WaylandDisplay& serverDisplay);

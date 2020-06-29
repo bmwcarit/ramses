@@ -30,6 +30,7 @@
 #include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/BlitPass.h"
+#include "ramses-client-api/PickableObject.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/DataFloat.h"
 #include "ramses-client-api/DataVector2f.h"
@@ -51,6 +52,7 @@
 #include "EffectImpl.h"
 #include "TextureSamplerImpl.h"
 #include "Utils/StringUtils.h"
+#include "RamsesFrameworkTypesImpl.h"
 
 namespace ramses
 {
@@ -102,7 +104,7 @@ namespace ramses
     StreamTexture* Scene::createStreamTexture(const Texture2D& fallbackTexture, streamSource_t source, const char* name)
     {
         StreamTexture* tex = impl.createStreamTexture(fallbackTexture, source, name);
-        LOG_HL_CLIENT_API3(LOG_API_RAMSESOBJECT_PTR_STRING(tex), LOG_API_RAMSESOBJECT_STRING(fallbackTexture), source.getValue(), name);
+        LOG_HL_CLIENT_API3(LOG_API_RAMSESOBJECT_PTR_STRING(tex), LOG_API_RAMSESOBJECT_STRING(fallbackTexture), source, name);
         return tex;
     }
 
@@ -200,6 +202,27 @@ namespace ramses
         return texture2DBuffer;
     }
 
+    SceneReference* Scene::createSceneReference(sceneId_t referencedScene, const char* name /*= nullptr*/)
+    {
+        SceneReference* sceneReference = impl.createSceneReference(referencedScene, name);
+        LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(sceneReference), referencedScene, name);
+        return sceneReference;
+    }
+
+    status_t Scene::linkData(SceneReference* providerReference, dataProviderId_t providerId, SceneReference* consumerReference, dataConsumerId_t consumerId)
+    {
+        auto status = impl.linkData(providerReference, providerId, consumerReference, consumerId);
+        LOG_HL_CLIENT_API4(status, LOG_API_RAMSESOBJECT_PTR_STRING(providerReference), providerId, LOG_API_RAMSESOBJECT_PTR_STRING(consumerReference), consumerId);
+        return status;
+    }
+
+    ramses::status_t Scene::unlinkData(SceneReference* consumerReference, dataConsumerId_t consumerId)
+    {
+        auto status = impl.unlinkData(consumerReference, consumerId);
+        LOG_HL_CLIENT_API2(status, LOG_API_RAMSESOBJECT_PTR_STRING(consumerReference), consumerId);
+        return status;
+    }
+
     const RamsesObject* Scene::findObjectByName(const char* name) const
     {
         return impl.findObjectByName(name);
@@ -229,6 +252,13 @@ namespace ramses
         BlitPass* blitPass = impl.createBlitPass(sourceRenderBuffer, destinationRenderBuffer, name);
         LOG_HL_CLIENT_API3(LOG_API_RAMSESOBJECT_PTR_STRING(blitPass), LOG_API_RAMSESOBJECT_STRING(sourceRenderBuffer), LOG_API_RAMSESOBJECT_STRING(destinationRenderBuffer), name);
         return blitPass;
+    }
+
+    PickableObject* Scene::createPickableObject(const VertexDataBuffer& geometryBuffer, const pickableObjectId_t id, const char* name /* = nullptr */)
+    {
+        PickableObject* pickableObject = impl.createPickableObject(geometryBuffer, id, name);
+        LOG_HL_CLIENT_API3(LOG_API_RAMSESOBJECT_PTR_STRING(pickableObject), LOG_API_RAMSESOBJECT_STRING(geometryBuffer), id, name);
+        return pickableObject;
     }
 
     RenderBuffer* Scene::createRenderBuffer(uint32_t width, uint32_t height, ERenderBufferType bufferType, ERenderBufferFormat bufferFormat, ERenderBufferAccessMode accessMode, uint32_t sampleCount, const char* name)
@@ -454,4 +484,8 @@ namespace ramses
         return dataObject;
     }
 
+    RamsesClient& Scene::getRamsesClient()
+    {
+        return impl.getHlRamsesClient();
+    }
 }

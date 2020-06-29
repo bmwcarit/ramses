@@ -10,16 +10,17 @@
 #define RAMSES_CLIENTSCENE_H
 
 #include "Scene/DataLayoutCachedScene.h"
-#include "Utils/MemoryPoolExplicit.h"
+#include "SceneReferencing/SceneReferenceAction.h"
 #include "Utils/StatisticCollection.h"
 
 namespace ramses_internal
 {
-    // The client scene is just a wrapper for concrete implementation of a low level scene used in client side logic
+    // The client scene is just a wrapper for concrete implementation of a low level scene
+    // together with some additional data used in client side logic
     class ClientScene final : public DataLayoutCachedScene
     {
     public:
-        ClientScene(const SceneInfo& sceneInfo = {})
+        explicit ClientScene(const SceneInfo& sceneInfo = {})
             : DataLayoutCachedScene(sceneInfo)
         {
         }
@@ -30,8 +31,6 @@ namespace ramses_internal
         }
 
     private:
-        //unfortunately this has to be part of the low-level scene, as some statistics are only generated in the context of the low-level scene (like scene actions)
-        //storing it outside of the scene would require additional logging for scene operations
         StatisticCollectionScene m_statisticCollection;
     };
 }

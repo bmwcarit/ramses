@@ -69,7 +69,6 @@ TEST_F(ADisplayConfig, hasDefaultValuesUponConstruction)
     EXPECT_EQ(defaultDisplayConfig.getBorderlessState(), displayConfig.getBorderlessState());
     EXPECT_EQ(defaultDisplayConfig.isWarpingEnabled(), displayConfig.isWarpingEnabled());
     EXPECT_EQ(defaultDisplayConfig.getKeepEffectsUploaded(), displayConfig.getKeepEffectsUploaded());
-    EXPECT_EQ(defaultDisplayConfig.isStereoDisplay(), displayConfig.isStereoDisplay());
 
     EXPECT_EQ(defaultDisplayConfig.getAntialiasingMethod(), displayConfig.getAntialiasingMethod());
     EXPECT_EQ(defaultDisplayConfig.getAntialiasingSampleCount(), displayConfig.getAntialiasingSampleCount());
@@ -85,9 +84,11 @@ TEST_F(ADisplayConfig, setsFullscreenState)
 {
     EXPECT_EQ(ramses::StatusOK, config.setWindowFullscreen(true));
     EXPECT_TRUE(config.impl.getInternalDisplayConfig().getFullscreenState());
+    EXPECT_TRUE(config.isWindowFullscreen());
 
     EXPECT_EQ(ramses::StatusOK, config.setWindowFullscreen(false));
     EXPECT_FALSE(config.impl.getInternalDisplayConfig().getFullscreenState());
+    EXPECT_FALSE(config.isWindowFullscreen());
 }
 
 TEST_F(ADisplayConfig, setsBorderlessState)
@@ -102,10 +103,15 @@ TEST_F(ADisplayConfig, setsBorderlessState)
 TEST_F(ADisplayConfig, setsWindowRect)
 {
     EXPECT_EQ(ramses::StatusOK, config.setWindowRectangle(15, 16, 123u, 345u));
-    EXPECT_EQ(15, config.impl.getInternalDisplayConfig().getWindowPositionX());
-    EXPECT_EQ(16, config.impl.getInternalDisplayConfig().getWindowPositionY());
-    EXPECT_EQ(123u, config.impl.getInternalDisplayConfig().getDesiredWindowWidth());
-    EXPECT_EQ(345u, config.impl.getInternalDisplayConfig().getDesiredWindowHeight());
+    int32_t x;
+    int32_t y;
+    uint32_t width;
+    uint32_t height;
+    config.getWindowRectangle(x, y, width, height);
+    EXPECT_EQ(15, x);
+    EXPECT_EQ(16, y);
+    EXPECT_EQ(123u, width);
+    EXPECT_EQ(345u, height);
 }
 
 TEST_F(ADisplayConfig, failsToSetInvalidWindowRect)
@@ -182,12 +188,6 @@ TEST_F(ADisplayConfig, disablesKeepingOfEffectsInVRAM)
 {
     EXPECT_EQ(ramses::StatusOK, config.keepEffectsUploaded(false));
     EXPECT_FALSE(config.impl.getInternalDisplayConfig().getKeepEffectsUploaded());
-}
-
-TEST_F(ADisplayConfig, enablesStereoDisplay)
-{
-    EXPECT_EQ(ramses::StatusOK, config.enableStereoDisplay());
-    EXPECT_TRUE(config.impl.getInternalDisplayConfig().isStereoDisplay());
 }
 
 TEST_F(ADisplayConfig, setsNativeDisplayID)
@@ -318,26 +318,6 @@ TEST_F(ADisplayConfig, doesPerspectiveProjectionParamsValidationOnSetting)
     EXPECT_EQ(ramses::StatusOK, config.validate());
 }
 
-TEST_F(ADisplayConfig, validatesStereoDisplay)
-{
-    EXPECT_EQ(ramses::StatusOK, config.enableStereoDisplay());
-    EXPECT_EQ(ramses::StatusOK, config.validate());
-}
-
-TEST_F(ADisplayConfig, failsValidationOfStereoDisplayWithWarping)
-{
-    EXPECT_EQ(ramses::StatusOK, config.enableStereoDisplay());
-    EXPECT_EQ(ramses::StatusOK, config.enableWarpingPostEffect());
-    EXPECT_NE(ramses::StatusOK, config.validate());
-}
-
-TEST_F(ADisplayConfig, failsValidationOfStereoDisplayWithAntialiasing)
-{
-    EXPECT_EQ(ramses::StatusOK, config.enableStereoDisplay());
-    EXPECT_EQ(ramses::StatusOK, config.setMultiSampling(4u));
-    EXPECT_NE(ramses::StatusOK, config.validate());
-}
-
 TEST_F(ADisplayConfig, failsValidationIfCLIParamsForPerspectiveCameraAreInvalid)
 {
     const char *args[] = { "renderer", "-fov", "-45.4" };
@@ -398,12 +378,4 @@ TEST_F(ADisplayConfig, setClearColor)
     EXPECT_EQ(clearColor.g, green);
     EXPECT_EQ(clearColor.b, blue);
     EXPECT_EQ(clearColor.a, alpha);
-}
-
-TEST_F(ADisplayConfig, setOffscreen)
-{
-    const bool newOffscreenFlag = !config.impl.getInternalDisplayConfig().getOffscreen();
-
-    EXPECT_EQ(ramses::StatusOK, config.setOffscreen(newOffscreenFlag));
-    EXPECT_EQ(newOffscreenFlag, config.impl.getInternalDisplayConfig().getOffscreen());
 }

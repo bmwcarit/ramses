@@ -10,7 +10,6 @@
 #define RAMSES_RENDERERCLIENTRESOURCEREGISTRY_H
 
 #include "RendererLib/ResourceDescriptor.h"
-#include "Transfer/ResourceTypes.h"
 #include <array>
 
 namespace ramses_internal
@@ -30,7 +29,8 @@ namespace ramses_internal
         const ResourceDescriptor&  getResourceDescriptor(const ResourceContentHash& hash) const;
 
         void                       setResourceData      (const ResourceContentHash& hash, ManagedResource resourceObject, DeviceResourceHandle deviceHandle, EResourceType resourceType);
-        void                       setResourceSize      (const ResourceContentHash& hash, UInt32 compressedSize, UInt32 decompressedSize, UInt32 vramSize);
+        void                       setResourceSize      (const ResourceContentHash& hash, UInt32 compressedSize, UInt32 decompressedSize);
+        void                       setResourceVRAMSize  (const ResourceContentHash& hash, UInt32 vramSize);
 
         const ResourceDescriptors& getAllResourceDescriptors() const;
 

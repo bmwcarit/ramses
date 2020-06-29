@@ -18,6 +18,7 @@
 #include "Components/ResourceStreamSerialization.h"
 #include "ResourceSerializationTestHelper.h"
 #include "Components/SingleResourceSerialization.h"
+#include "Resource/ResourceInfo.h"
 #include "TestRandom.h"
 
 namespace ramses_internal
@@ -44,8 +45,6 @@ namespace ramses_internal
         template<typename IRESOURCE>
         const IRESOURCE* sendAndReceiveResource(IRESOURCE& resource)
         {
-            uint32_t numberMessagesSent = m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue();
-            uint32_t numberMessagesReceived = m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue();
             uint32_t sizeResourcesSent = m_receiverTestWrapper->statisticCollection.statResourcesSentSize.getCounterValue();
 
             ManagedResource managedRes(resource, deleterMock);
@@ -54,11 +53,11 @@ namespace ramses_internal
             std::vector<Byte> receivedResourceData;
             {
                 PlatformGuard g(receiverExpectCallLock);
-                EXPECT_CALL(handler, handleSendResource(_, senderId)).WillOnce(Invoke([this, &receivedResourceData](const ByteArrayView& view, const Guid&)
+                EXPECT_CALL(handler, handleSendResource(_, senderId)).WillOnce([this, &receivedResourceData](const auto& view, const Guid&)
                 {
                     receivedResourceData.insert(receivedResourceData.begin(), view.begin(), view.end());
                     sendEvent();
-                }));
+                });
             }
 
             EXPECT_TRUE(sender.sendResources(receiverId, { managedRes }));
@@ -71,7 +70,7 @@ namespace ramses_internal
             }
 
             ResourceStreamDeserializer deserializer;
-            ByteArrayView view(receivedResourceData.data(), static_cast<UInt32>(receivedResourceData.size()));
+            absl::Span<const Byte> view(receivedResourceData.data(), static_cast<UInt32>(receivedResourceData.size()));
             std::vector<IResource*> receivedRecources = deserializer.processData(view);
             EXPECT_TRUE(deserializer.processingFinished());
             EXPECT_EQ(1u, receivedRecources.size());
@@ -91,8 +90,6 @@ namespace ramses_internal
             EXPECT_TRUE(checkResourceDataEqual(resource, *typedResourceToTest));
             EXPECT_EQ(resource.getName(), typedResourceToTest->getName());
 
-            EXPECT_LE(numberMessagesSent + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
-            EXPECT_LE(numberMessagesReceived + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
             EXPECT_LE(sizeResourcesSent + SingleResourceSerialization::SizeOfSerializedResource(resource), m_senderTestWrapper->statisticCollection.statResourcesSentSize.getCounterValue());
 
             return typedResourceToTest;
@@ -101,30 +98,32 @@ namespace ramses_internal
         void fillResourceData(IResource& res)
         {
             const uint8_t seed = static_cast<UInt8>(TestRandom::Get(0, 256));
-            MemoryBlob& blob = *res.getResourceData();
-            for (UInt32 i = 0; i < blob.size(); ++i)
+            ResourceBlob blob(res.getResourceData().size());
+            for (size_t i = 0; i < blob.size(); ++i)
             {
-                blob[i] = static_cast<uint8_t>(i+seed);
+                blob.data()[i] = static_cast<uint8_t>(i+seed);
             }
+            res.setResourceData(std::move(blob));
         }
 
         bool checkResourceDataEqual(const IResource& resA, const IResource& resB)
         {
-            if (!resA.getResourceData() || !resB.getResourceData() ||
-                resA.getResourceData()->size() != resB.getResourceData()->size())
+            if (!resA.getResourceData().data() || !resB.getResourceData().data() ||
+                resA.getResourceData().size() != resB.getResourceData().size())
             {
                 return false;
             }
-            return PlatformMemory::Compare(resA.getResourceData()->getRawData(), resB.getResourceData()->getRawData(), resA.getResourceData()->size()) == 0;
+            return PlatformMemory::Compare(resA.getResourceData().data(), resB.getResourceData().data(), resA.getResourceData().size()) == 0;
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(TypedCommunicationTest, AResourceSenderAndReceiverTest,
+    INSTANTIATE_TEST_SUITE_P(TypedCommunicationTest, AResourceSenderAndReceiverTest,
                             ::testing::ValuesIn(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()));
 
     TEST_P(AResourceSenderAndReceiverTest, ReceivesTheSameTexture2DSentByTheSender)
     {
-        const TextureMetaInfo texDesc(16u, 17u, 1u, ETextureFormat_RGBA16, false, { 1u, 2u });
+        const TextureSwizzleArray swizzle = { ETextureChannelColor::Blue, ETextureChannelColor::Red, ETextureChannelColor::Alpha, ETextureChannelColor::Red };
+        const TextureMetaInfo texDesc(16u, 17u, 1u, ETextureFormat_RGBA16, false, swizzle, { 1u, 2u });
         const ResourceCacheFlag flag(15u);
         TextureResource textureres(EResourceType_Texture2D, texDesc, flag, "resName");
         fillResourceData(textureres);
@@ -136,6 +135,7 @@ namespace ramses_internal
         ASSERT_EQ(16u, typedResourceToTest->getWidth());
         ASSERT_EQ(17u, typedResourceToTest->getHeight());
         ASSERT_EQ(1u, typedResourceToTest->getDepth());
+        ASSERT_EQ(swizzle, typedResourceToTest->getTextureSwizzle());
         ASSERT_EQ(ETextureFormat_RGBA16, typedResourceToTest->getTextureFormat());
         ASSERT_EQ(texDesc.m_dataSizes, typedResourceToTest->getMipDataSizes());
         ASSERT_EQ(flag, typedResourceToTest->getCacheFlag());
@@ -147,7 +147,7 @@ namespace ramses_internal
 
     TEST_P(AResourceSenderAndReceiverTest, ReceivesTheSameTexture3DSentByTheSender)
     {
-        const TextureMetaInfo texDesc(16u, 17u, 3u, ETextureFormat_RGBA16, false, { 1u, 2u });
+        const TextureMetaInfo texDesc(16u, 17u, 3u, ETextureFormat_RGBA16, false, {}, { 1u, 2u });
         const ResourceCacheFlag flag(15u);
         TextureResource textureres(EResourceType_Texture3D, texDesc, flag, "resName");
         fillResourceData(textureres);
@@ -170,7 +170,7 @@ namespace ramses_internal
 
     TEST_P(AResourceSenderAndReceiverTest, ReceivesTheSameTextureCubeSentByTheSender)
     {
-        const TextureMetaInfo texDesc(16u, 1u, 1u, ETextureFormat_RGBA16, false, { 1u, 2u });
+        const TextureMetaInfo texDesc(16u, 1u, 1u, ETextureFormat_RGBA16, false, {}, { 1u, 2u });
         const ResourceCacheFlag flag(15u);
         TextureResource textureres(EResourceType_TextureCube, texDesc, flag, "resName");
         fillResourceData(textureres);
@@ -228,40 +228,20 @@ namespace ramses_internal
 
     TEST_P(AResourceSenderAndReceiverTest, SendResourceNotAvailable)
     {
-        uint32_t numberMessagesSent = m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue();
-        uint32_t numberMessagesReceived = m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue();
-
         ResourceContentHashVector resourceHashes;
         resourceHashes.push_back(ResourceContentHash(123u, 0));
 
-        ResourceContentHashVector receivedResourceHashes;
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(handler, handleResourcesNotAvailable(_, senderId)).WillOnce(DoAll(SaveArg<0>(&receivedResourceHashes), SendHandlerCalledEvent(this)));
+            EXPECT_CALL(handler, handleResourcesNotAvailable(_, senderId))
+                .WillOnce([&](const auto& receivedResourceHashes, auto) {
+                              EXPECT_EQ(resourceHashes, receivedResourceHashes);
+                              sendEvent();
+                          });
         }
 
         EXPECT_TRUE(sender.sendResourcesNotAvailable(receiverId, resourceHashes));
         ASSERT_TRUE(waitForEvent());
-
-        EXPECT_EQ(resourceHashes, receivedResourceHashes);
-
-        EXPECT_LE(numberMessagesSent + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
-        EXPECT_LE(numberMessagesReceived + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
-    }
-
-    ACTION_P(AppendArg0ToVector, destVector)
-    {
-        UNUSED(arg9);
-        UNUSED(arg8);
-        UNUSED(arg7);
-        UNUSED(arg6);
-        UNUSED(arg5);
-        UNUSED(arg4);
-        UNUSED(arg3);
-        UNUSED(arg2);
-        UNUSED(arg1);
-        UNUSED(args);
-        destVector->push_back(arg0);
     }
 
     TEST_P(AResourceSenderAndReceiverTest, ResourceRequestIsSplitInSeveralMessages)
@@ -282,7 +262,11 @@ namespace ramses_internal
         std::vector<ResourceContentHashVector> receivedResourceRequests;
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(providerHandler, handleRequestResources(_, _, senderId)).Times(expectedNumberOfMessages).WillRepeatedly(DoAll(AppendArg0ToVector(&receivedResourceRequests), SendHandlerCalledEvent(this)));
+            EXPECT_CALL(providerHandler, handleRequestResources(_, _, senderId)) .Times(expectedNumberOfMessages) .WillRepeatedly([&](const auto& res, auto, auto)
+            {
+                receivedResourceRequests.push_back(res);
+                sendEvent();
+            });
         }
 
         EXPECT_TRUE(sender.sendRequestResources(receiverId, resourceRequestVector));
@@ -311,13 +295,13 @@ namespace ramses_internal
         std::vector<std::vector<Byte>> receivedResourceData;
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(handler, handleSendResource(_, senderId)).Times(1).WillRepeatedly(Invoke([this, &receivedResourceData](const ByteArrayView& resourceData, const Guid&)
+            EXPECT_CALL(handler, handleSendResource(_, senderId)).Times(1).WillRepeatedly([this, &receivedResourceData](const auto& resourceData, const Guid&)
             {
                 std::vector<Byte> data;
                 data.insert(data.begin(), resourceData.begin(), resourceData.end());
                 receivedResourceData.push_back(data);
                 sendEvent();
-            }));
+            });
         }
 
         EXPECT_TRUE(sender.sendResources(receiverId, managedResources));
@@ -339,13 +323,13 @@ namespace ramses_internal
         std::vector<std::vector<Byte>> receivedResourceData;
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(handler, handleSendResource(_, senderId)).Times(1).WillRepeatedly(Invoke([this, &receivedResourceData](const ByteArrayView& resourceData, const Guid&)
+            EXPECT_CALL(handler, handleSendResource(_, senderId)).Times(1).WillRepeatedly([this, &receivedResourceData](const auto& resourceData, const Guid&)
             {
                 std::vector<Byte> data;
                 data.insert(data.begin(), resourceData.begin(), resourceData.end());
                 receivedResourceData.push_back(data);
                 sendEvent();
-            }));
+            });
         }
 
         EXPECT_TRUE(sender.sendResources(receiverId, managedResources));

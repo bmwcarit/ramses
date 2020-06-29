@@ -19,15 +19,14 @@ class RamshInput : private StringVector
 public:
     RamshInput();
 
-    Bool isValid() const;
+    bool isValid() const;
     String toString() const;
     const String& operator[](const UInt index) const;
     String& operator[](const UInt index);
-    Bool operator==(const RamshInput& other) const;
+    bool operator==(const RamshInput& other) const;
 
     void append(const String& c);
     void append(const Char* c);
-    void append(const Char c);
 
     using StringVector::size;
     using StringVector::clear;

@@ -10,8 +10,10 @@
 #define RAMSES_SCENEIMPL_H
 
 #include "ramses-client-api/EScenePublicationMode.h"
+#include "ramses-client-api/EVisibilityMode.h"
 #include "ramses-client-api/EDataType.h"
 #include "ramses-client-api/TextureEnums.h"
+#include "ramses-client-api/SceneReference.h"
 
 // internal
 #include "ClientObjectImpl.h"
@@ -74,6 +76,7 @@ namespace ramses
     class SceneConfigImpl;
     class RenderTargetDescriptionImpl;
     class BlitPass;
+    class PickableObject;
     class TextureSampler;
     class StreamTexture;
     class Texture2D;
@@ -85,18 +88,19 @@ namespace ramses
     class VertexDataBufferImpl;
     class Texture2DBuffer;
     class Texture2DBufferImpl;
+    class RamsesClient;
 
     class SceneImpl final : public ClientObjectImpl
     {
     public:
-        SceneImpl(ramses_internal::ClientScene& scene, const SceneConfigImpl& sceneConfig, RamsesClientImpl& ramsesClient);
+        SceneImpl(ramses_internal::ClientScene& scene, const SceneConfigImpl& sceneConfig, RamsesClient& ramsesClient);
         virtual ~SceneImpl();
 
         void             initializeFrameworkData();
         virtual void     deinitializeFrameworkData() override final;
         virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override final;
         virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override final;
-        virtual status_t validate(uint32_t indent) const override;
+        virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
 
         status_t            publish(EScenePublicationMode publicationMode = EScenePublicationMode_LocalAndRemote);
         status_t            unpublish();
@@ -120,6 +124,8 @@ namespace ramses
         ramses::RenderGroup*  createRenderGroup(const char* name);
         ramses::RenderPass*   createRenderPass(const char* name);
         ramses::BlitPass*     createBlitPass(const RenderBuffer& sourceRenderBuffer, const RenderBuffer& destinationRenderBuffer, const char* name);
+
+        ramses::PickableObject* createPickableObject(const VertexDataBuffer& geometryBuffer, const pickableObjectId_t id, const char* name);
 
         ramses::RenderBuffer* createRenderBuffer(uint32_t width, uint32_t height, ERenderBufferType bufferType, ERenderBufferFormat bufferFormat, ERenderBufferAccessMode accessMode, uint32_t sampleCount, const char* name);
         ramses::RenderTarget* createRenderTarget(const RenderTargetDescriptionImpl& rtDesc, const char* name);
@@ -177,19 +183,6 @@ namespace ramses
             const StreamTexture& streamTexture,
             const char* name);
 
-        TextureSamplerImpl& createTextureSamplerImpl(
-            ETextureAddressMode wrapUMode,
-            ETextureAddressMode wrapVMode,
-            ETextureAddressMode wrapRMode,
-            ETextureSamplingMethod minSamplingMethod,
-            ETextureSamplingMethod magSamplingMethod,
-            uint32_t anisotropyLevel,
-            ERamsesObjectType samplerType,
-            ramses_internal::TextureSampler::ContentType contentType,
-            ramses_internal::ResourceContentHash textureResourceHash,    // The sampler stores either a texture, or...
-            ramses_internal::MemoryHandle contentHandle,                 // a render target's color buffer, or a texture buffer, or a stream texture
-            const char* name /*= 0*/);
-
         DataFloat*     createDataFloat(const char* name);
         DataVector2f*  createDataVector2f(const char* name);
         DataVector3f*  createDataVector3f(const char* name);
@@ -222,6 +215,10 @@ namespace ramses
         Texture2DBuffer*        createTexture2DBuffer (uint32_t mipLevels, uint32_t width, uint32_t height, ETextureFormat textureFormat, const char* name);
         Texture2DBufferImpl*    createTexture2DBufferImpl (uint32_t mipLevels, uint32_t width, uint32_t height, ETextureFormat textureFormat, const char* name);
 
+        SceneReference* createSceneReference(sceneId_t referencedScene, const char* name);
+        status_t linkData(SceneReference* providerReference, dataProviderId_t providerId, SceneReference* consumerReference, dataConsumerId_t consumerId);
+        status_t unlinkData(SceneReference* consumerReference, dataConsumerId_t consumerId);
+
         status_t destroy(SceneObject& object);
 
         status_t setExpirationTimestamp(uint64_t ptpExpirationTimestampInMilliseconds);
@@ -238,12 +235,30 @@ namespace ramses
         RamsesObjectRegistry&       getObjectRegistry();
         const RamsesObjectRegistry& getObjectRegistry() const;
 
-        void enqueueSceneCommand( const ramses_internal::SceneCommand& command );
         void setSceneVersionForNextFlush(sceneVersionTag_t sceneVersion);
 
         ramses_internal::StatisticCollectionScene& getStatisticCollection();
+        SceneReference* getSceneReference(sceneId_t referencedSceneId);
+
+        RamsesClient& getHlRamsesClient();
+
+        template <typename T>
+        void enqueueSceneCommand(T commands);
 
     private:
+        ramses::TextureSampler* createTextureSamplerImpl(
+            ETextureAddressMode wrapUMode,
+            ETextureAddressMode wrapVMode,
+            ETextureAddressMode wrapRMode,
+            ETextureSamplingMethod minSamplingMethod,
+            ETextureSamplingMethod magSamplingMethod,
+            uint32_t anisotropyLevel,
+            ERamsesObjectType samplerType,
+            ramses_internal::TextureSampler::ContentType contentType,
+            ramses_internal::ResourceContentHash textureResourceHash,    // The sampler stores either a texture, or...
+            ramses_internal::MemoryHandle contentHandle,                 // a render target's color buffer, or a texture buffer, or a stream texture
+            const char* name /*= 0*/);
+
         RenderPass* createRenderPassInternal(const char* name);
         void registerCreatedObject(SceneObject& object);
         AnimationSystemImpl& createAnimationSystemImpl(uint32_t flags, ERamsesObjectType type, const char* name);
@@ -269,13 +284,12 @@ namespace ramses
         status_t destroyTextureSampler(TextureSampler& sampler);
         status_t destroyObject(SceneObject& object);
 
-        typedef std::pair<NodeImpl*, bool> NodeVisibilityPair;
+        typedef std::pair<NodeImpl*, EVisibilityMode> NodeVisibilityPair;
         typedef std::vector<NodeVisibilityPair> NodeVisibilityInfoVector;
 
-        void applyVisibilityToSubtree(NodeImpl& node, bool visibilityToApply);
+        void applyVisibilityToSubtree(NodeImpl& node, EVisibilityMode visibilityToApply);
         void prepareListOfDirtyNodesForHierarchicalVisibility(NodeVisibilityInfoVector& nodesToProcess);
         void applyHierarchicalVisibility();
-
         ramses_internal::ClientScene&           m_scene;
         ramses_internal::SceneCommandBuffer     m_commandBuffer;
         sceneVersionTag_t                       m_nextSceneVersion;
@@ -288,6 +302,10 @@ namespace ramses
         EScenePublicationMode m_futurePublicationMode;
 
         ramses_internal::FlushTime::Clock::time_point m_expirationTimestamp;
+
+        ramses_internal::HashMap<sceneId_t, SceneReference*> m_sceneReferences;
+
+        RamsesClient& m_hlClient;
     };
 
     // define here to allow inlining
@@ -300,6 +318,13 @@ namespace ramses
     {
         return m_scene;
     }
+
+    template <typename T>
+    void SceneImpl::enqueueSceneCommand(T cmd)
+    {
+        m_commandBuffer.enqueueCommand(std::move(cmd));
+    }
+
 }
 
 #endif

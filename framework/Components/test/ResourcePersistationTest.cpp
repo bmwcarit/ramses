@@ -53,12 +53,12 @@ namespace ramses_internal
 
         void checkRawResourceData(const IResource& createdResource, const IResource* loadedResource)
         {
-            const SceneResourceData& referenceResourceData = createdResource.getResourceData();
-            void* referenceData = referenceResourceData->getRawData();
-            void* loadedData = loadedResource->getResourceData()->getRawData();
+            const ResourceBlob& referenceResourceData = createdResource.getResourceData();
+            const Byte* referenceData = referenceResourceData.data();
+            const Byte* loadedData = loadedResource->getResourceData().data();
 
-            EXPECT_EQ(referenceResourceData->size(), loadedResource->getResourceData()->size());
-            EXPECT_EQ(0, PlatformMemory::Compare(referenceData, loadedData, referenceResourceData->size()));
+            ASSERT_EQ(referenceResourceData.size(), loadedResource->getResourceData().size());
+            EXPECT_EQ(0, PlatformMemory::Compare(referenceData, loadedData, referenceResourceData.size()));
         }
 
         template <typename ResourceType>
@@ -83,16 +83,17 @@ namespace ramses_internal
 
     TEST_F(AResourcePersistation, WriteRead_TextureResource)
     {
-        const TextureMetaInfo texDesc(2u, 3u, 1u, ETextureFormat_RGB8, false, { 1u, 2u });
+        const TextureSwizzleArray swizzle{ETextureChannelColor::Blue, ETextureChannelColor::Red, ETextureChannelColor::Alpha, ETextureChannelColor::Green};
+        const TextureMetaInfo texDesc(2u, 3u, 1u, ETextureFormat_RGB8, false, swizzle, { 1u, 2u });
         const ResourceCacheFlag flag(15u);
         TextureResource res(EResourceType_Texture3D, texDesc, flag, "resName");
-        SceneResourceData pixels(new MemoryBlob(std::accumulate(texDesc.m_dataSizes.cbegin(), texDesc.m_dataSizes.cend(), 0u)));
-        for (UInt8 i = 0; i < pixels->size(); ++i)
+        ResourceBlob pixels(std::accumulate(texDesc.m_dataSizes.cbegin(), texDesc.m_dataSizes.cend(), 0u));
+        for (size_t i = 0; i < pixels.size(); ++i)
         {
-            (*pixels)[i] = i;
+            pixels.data()[i] = static_cast<uint8_t>(i);
         }
-        ASSERT_EQ(pixels->size(), res.getResourceData()->size());
-        res.setResourceData(pixels);
+        ASSERT_EQ(pixels.size(), res.getResourceData().size());
+        res.setResourceData(std::move(pixels));
 
         const TextureResource* loadedTextureResource = createLoadedResource<TextureResource>(res, EResourceType_Texture3D);
 
@@ -100,6 +101,10 @@ namespace ramses_internal
         ASSERT_EQ(res.getHeight(), loadedTextureResource->getHeight());
         ASSERT_EQ(res.getDepth(), loadedTextureResource->getDepth());
         ASSERT_EQ(ETextureFormat_RGB8, loadedTextureResource->getTextureFormat());
+        ASSERT_EQ(ETextureChannelColor::Blue, loadedTextureResource->getTextureSwizzle()[0]);
+        ASSERT_EQ(ETextureChannelColor::Red, loadedTextureResource->getTextureSwizzle()[1]);
+        ASSERT_EQ(ETextureChannelColor::Alpha, loadedTextureResource->getTextureSwizzle()[2]);
+        ASSERT_EQ(ETextureChannelColor::Green, loadedTextureResource->getTextureSwizzle()[3]);
         ASSERT_EQ(res.getGenerateMipChainFlag(), loadedTextureResource->getGenerateMipChainFlag());
         ASSERT_EQ(texDesc.m_dataSizes, loadedTextureResource->getMipDataSizes());
         ASSERT_EQ(flag, loadedTextureResource->getCacheFlag());
@@ -110,16 +115,16 @@ namespace ramses_internal
 
     TEST_F(AResourcePersistation, WriteRead_TextureResourceCube)
     {
-        const TextureMetaInfo texDesc(2u, 1u, 1u, ETextureFormat_RGB8, false, { 1u, 2u });
+        const TextureMetaInfo texDesc(2u, 1u, 1u, ETextureFormat_RGB8, false, {}, { 1u, 2u });
         const ResourceCacheFlag flag(15u);
         TextureResource res(EResourceType_TextureCube, texDesc, flag, "resName");
-        SceneResourceData pixels(new MemoryBlob(6u * std::accumulate(texDesc.m_dataSizes.cbegin(), texDesc.m_dataSizes.cend(), 0u)));
-        for (UInt8 i = 0; i < pixels->size(); ++i)
+        ResourceBlob pixels(6u * std::accumulate(texDesc.m_dataSizes.cbegin(), texDesc.m_dataSizes.cend(), 0u));
+        for (size_t i = 0; i < pixels.size(); ++i)
         {
-            (*pixels)[i] = i;
+            pixels.data()[i] = static_cast<uint8_t>(i);
         }
-        ASSERT_EQ(pixels->size(), res.getResourceData()->size());
-        res.setResourceData(pixels);
+        ASSERT_EQ(pixels.size(), res.getResourceData().size());
+        res.setResourceData(std::move(pixels));
 
         const TextureResource* loadedTextureResource = createLoadedResource<TextureResource>(res, EResourceType_TextureCube);
 
@@ -139,12 +144,12 @@ namespace ramses_internal
         const ResourceCacheFlag flag(15u);
 
         ArrayResource res(EResourceType_VertexArray, cnt, EDataType_Vector2F, nullptr, flag, "resName");
-        SceneResourceData vertices(new MemoryBlob(cnt * EnumToSize(EDataType_Vector2F)));
+        ResourceBlob vertices(cnt * EnumToSize(EDataType_Vector2F));
         for (UInt i = 0; i < 2*cnt; ++i)
         {
-            reinterpret_cast<Float*>(vertices->getRawData())[i] = i*.1f;
+            reinterpret_cast<Float*>(vertices.data())[i] = i*.1f;
         }
-        res.setResourceData(vertices);
+        res.setResourceData(std::move(vertices));
 
         const ArrayResource* loadedVertexArrayResource = createLoadedResource<ArrayResource>(res, EResourceType_VertexArray);
 
@@ -162,12 +167,12 @@ namespace ramses_internal
         const ResourceCacheFlag flag(15u);
 
         ArrayResource res(EResourceType_IndexArray, cnt, EDataType_UInt16, nullptr, flag, "resName");
-        SceneResourceData indices(new MemoryBlob(cnt * EnumToSize(EDataType_UInt16)));
+        ResourceBlob indices(cnt * EnumToSize(EDataType_UInt16));
         for (UInt i = 0; i < cnt; ++i)
         {
-            reinterpret_cast<UInt16*>(indices->getRawData())[i] = static_cast<UInt16>(i);
+            reinterpret_cast<UInt16*>(indices.data())[i] = static_cast<UInt16>(i);
         }
-        res.setResourceData(indices);
+        res.setResourceData(std::move(indices));
 
         const ArrayResource* loadedIndexArrayResource = createLoadedResource<ArrayResource>(res, EResourceType_IndexArray);
 
@@ -185,12 +190,12 @@ namespace ramses_internal
         const ResourceCacheFlag flag(15u);
 
         ArrayResource res(EResourceType_IndexArray, cnt, EDataType_UInt32, nullptr, flag, "resName");
-        SceneResourceData indices(new MemoryBlob(cnt * EnumToSize(EDataType_UInt32)));
+        ResourceBlob indices(cnt * EnumToSize(EDataType_UInt32));
         for (UInt i = 0; i < cnt; ++i)
         {
-            reinterpret_cast<UInt32*>(indices->getRawData())[i] = static_cast<UInt32>(i);
+            reinterpret_cast<UInt32*>(indices.data())[i] = static_cast<UInt32>(i);
         }
-        res.setResourceData(indices);
+        res.setResourceData(std::move(indices));
 
         const ArrayResource* loadedIndexArrayResource = createLoadedResource<ArrayResource>(res, EResourceType_IndexArray);
 
@@ -265,14 +270,14 @@ namespace ramses_internal
 
         ASSERT_TRUE(loadedTOC.containsResource(hash));
         IResource* loadedResource = ResourcePersistation::RetrieveResourceFromStream(instream, loadedTOC.getEntryForHash(hash));
-        ASSERT_EQ(0, PlatformMemory::Compare(dataA, loadedResource->getResourceData()->getRawData(), 36));
+        ASSERT_EQ(0, PlatformMemory::Compare(dataA, loadedResource->getResourceData().data(), 36));
         ASSERT_EQ(flag1, loadedResource->getCacheFlag());
         EXPECT_EQ(String("res1"), loadedResource->getName());
         delete loadedResource;
 
         ASSERT_TRUE(loadedTOC.containsResource(hash2));
         loadedResource = ResourcePersistation::RetrieveResourceFromStream(instream, loadedTOC.getEntryForHash(hash2));
-        ASSERT_EQ(0, PlatformMemory::Compare(dataB, loadedResource->getResourceData()->getRawData(), 72));
+        ASSERT_EQ(0, PlatformMemory::Compare(dataB, loadedResource->getResourceData().data(), 72));
         ASSERT_EQ(flag2, loadedResource->getCacheFlag());
         EXPECT_EQ(String("res2"), loadedResource->getName());
         delete loadedResource;

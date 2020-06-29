@@ -11,7 +11,6 @@
 #include "TransportCommon/TransportUtilities.h"
 #include "PlatformAbstraction/PlatformMemory.h"
 #include "Scene/SceneActionCollectionCreator.h"
-#include "gmock/gmock-generated-nice-strict.h"
 
 namespace ramses_internal
 {
@@ -20,7 +19,7 @@ namespace ramses_internal
     struct SplitSceneActionsToChunksMock
     {
         virtual ~SplitSceneActionsToChunksMock() = default;
-        MOCK_METHOD3(call, void(std::pair<UInt32, UInt32>, std::pair<const Byte*, const Byte*>, bool));
+        MOCK_METHOD(void, call, ((std::pair<UInt32, UInt32>), (std::pair<const Byte*, const Byte*>), bool));
     };
 
     class TransportUtilitiesTest : public ::testing::Test

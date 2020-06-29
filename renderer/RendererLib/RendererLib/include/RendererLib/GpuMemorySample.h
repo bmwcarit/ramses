@@ -10,7 +10,7 @@
 #define RAMSES_GPUMEMORYSAMPLE_H
 
 #include "SceneAPI/SceneId.h"
-#include "Resource/EResourceType.h"
+#include "Resource/ResourceTypes.h"
 #include "Collections/HashMap.h"
 #include <array>
 
@@ -21,7 +21,7 @@ namespace ramses_internal
     class GpuMemorySample
     {
     public:
-        GpuMemorySample(const RendererSceneUpdater& updater);
+        explicit GpuMemorySample(const RendererSceneUpdater& updater);
 
         UInt64 getTotalMemoryUsage() const;
         UInt64 getTextureMemoryUsage() const;

@@ -25,6 +25,13 @@
 
 namespace ramses_internal
 {
+    constexpr const ramses::dataProviderId_t MultiTypeLinkScene::TransformationProviderId;
+    constexpr const ramses::dataConsumerId_t MultiTypeLinkScene::TransformationConsumerId;
+    constexpr const ramses::dataProviderId_t MultiTypeLinkScene::DataProviderId;
+    constexpr const ramses::dataConsumerId_t MultiTypeLinkScene::DataConsumerId;
+    constexpr const ramses::dataProviderId_t MultiTypeLinkScene::TextureProviderId;
+    constexpr const ramses::dataConsumerId_t MultiTypeLinkScene::TextureConsumerId;
+
     MultiTypeLinkScene::MultiTypeLinkScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
         : IntegrationScene(ramsesClient, scene, cameraPosition)
     {
@@ -84,7 +91,7 @@ namespace ramses_internal
 
             const std::array<uint8_t, 4> pxData{ {0xff, 0x0, 0x0, 0xff} };
             const ramses::MipLevelData mipLevelData(4, pxData.data());
-            const ramses::Texture2D& texture = *m_client.createTexture2D(1u, 1u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache);
+            const ramses::Texture2D& texture = *m_client.createTexture2D(1u, 1u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache);
             const ramses::TextureSampler& sampler = createSampler(texture);
             setSampler(appearance2, sampler);
 
@@ -103,7 +110,7 @@ namespace ramses_internal
 
             const std::array<uint8_t, 4> pxData{ { 0x0, 0xff, 0x0, 0xff } };
             const ramses::MipLevelData mipLevelData(4, pxData.data());
-            const ramses::Texture2D& texture = *m_client.createTexture2D(1u, 1u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache);
+            const ramses::Texture2D& texture = *m_client.createTexture2D(1u, 1u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache);
             const ramses::TextureSampler& sampler = createSampler(texture);
             setSampler(appearance2, sampler);
 

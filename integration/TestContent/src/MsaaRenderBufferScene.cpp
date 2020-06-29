@@ -20,6 +20,7 @@
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/GeometryBinding.h"
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -97,7 +98,7 @@ namespace ramses_internal
 
     void MsaaRenderBufferScene::initBlittingPass(UInt32 state)
     {
-        ramses::BlitPass* blitPass = NULL;
+        ramses::BlitPass* blitPass = nullptr;
         switch (state)
         {
         case SAMPLE_COUNT_2:
@@ -111,7 +112,7 @@ namespace ramses_internal
             break;
         }
 
-        assert(NULL != blitPass);
+        assert(nullptr != blitPass);
 
         blitPass->setRenderOrder(1);
     }

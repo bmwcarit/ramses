@@ -21,30 +21,39 @@ namespace ramses_internal
     class IResourceProvider;
     class IResourceUploader;
 
-    class RendererCommandBuffer : public RendererCommands
+    class RendererCommandBuffer
     {
     public:
-        RendererCommandBuffer();
-
-        // overwrite methods from RendererCommands
-        void publishScene(SceneId sceneId, const Guid& clientID, EScenePublicationMode mode);
+        void publishScene(SceneId sceneId, EScenePublicationMode mode);
         void unpublishScene(SceneId sceneId);
         void receiveScene(const SceneInfo& sceneInfo);
+
+        void setSceneState(SceneId sceneId, RendererSceneState state);
+        void setSceneMapping(SceneId sceneId, DisplayHandle display);
+        void setSceneDisplayBufferAssignment(SceneId sceneId, OffscreenBufferHandle displayBuffer, int32_t sceneRenderOrder);
+
         void subscribeScene(SceneId sceneId);
         void unsubscribeScene(SceneId sceneId, bool indirect);
+        void mapSceneToDisplay(SceneId sceneId, DisplayHandle displayHandle);
+        void unmapScene(SceneId sceneId);
+        void showScene(SceneId sceneId);
+        void hideScene(SceneId sceneId);
+
         void enqueueActionsForScene(SceneId sceneId, SceneActionCollection&& newActions);
 
         void createDisplay(const DisplayConfig& displayConfig, IResourceProvider& resourceProvider, IResourceUploader& resourceUploader, DisplayHandle handle);
         void destroyDisplay(DisplayHandle handle);
 
-        void mapSceneToDisplay(SceneId sceneId, DisplayHandle displayHandle, Int32 sceneRenderOrder);
-        void unmapScene(SceneId sceneId);
+        void createOffscreenBuffer(OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, bool interruptible);
+        void destroyOffscreenBuffer(OffscreenBufferHandle buffer, DisplayHandle display);
+        void assignSceneToDisplayBuffer(SceneId sceneId, OffscreenBufferHandle buffer, Int32 sceneRenderOrder);
 
         void updateWarpingData(DisplayHandle displayHandle, const WarpingMeshData& warpingData);
         void readPixels(DisplayHandle displayHandle, const String& filename, Bool fullScreen, UInt32 x, UInt32 y, UInt32 width, UInt32 height, Bool sendViaDLT = false);
-        void setClearColor(DisplayHandle displayHandle, const Vector4& color);
+        void setClearColor(DisplayHandle displayHandle, OffscreenBufferHandle obHandle, const Vector4& color);
 
         void linkSceneData(SceneId providerSceneId, DataSlotId providerDataSlotId, SceneId consumerSceneId, DataSlotId consumerDataSlotId);
+        void linkBufferToSceneData(OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerDataSlotId);
         void unlinkSceneData(SceneId consumerSceneId, DataSlotId consumerDataSlotId);
 
         void moveView       (const Vector3& offset);
@@ -73,19 +82,18 @@ namespace ramses_internal
         void setFrameProfilerCounterGraphHeight(UInt32 height);
         void setFrameProfilerFilteredRegionFlags(UInt32 flags);
 
-        void setFrameTimerLimits(UInt64 limitForSceneResourcesUploadMicrosec, UInt64 limitForClientResourcesUploadMicrosec, UInt64 limitForSceneActionsApplyMicrosec, UInt64 limitForOffscreenBufferRenderMicrosec);
+        void setFrameTimerLimits(UInt64 limitForSceneResourcesUploadMicrosec, UInt64 limitForClientResourcesUploadMicrosec, UInt64 limitForOffscreenBufferRenderMicrosec);
         void setLimitsFlushesForceApply(UInt limitFlushesForceApply);
         void setLimitsFlushesForceUnsubscribe(UInt limitFlushesForceUnsubscribe);
         void setSkippingOfUnmodifiedBuffers(Bool enable);
-
-        // own functions
-        void lock();
-        void unlock();
+        void handlePickEvent(SceneId sceneId, Vector2 sceneViewportCoords);
 
         void addCommands(const RendererCommands& commands);
+        void swapCommandContainer(RendererCommandContainer& commandContainer);
 
     private:
-        PlatformLock m_lock;
+        mutable PlatformLock m_lock;
+        RendererCommands m_commands;
     };
 }
 

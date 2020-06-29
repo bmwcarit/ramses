@@ -11,6 +11,7 @@
 
 #include "RendererAPI/Types.h"
 #include "SceneAPI/RenderState.h"
+#include "SceneAPI/Handles.h"
 #include "Math3d/Vector2.h"
 #include "Math3d/Vector4.h"
 #include "Math3d/Matrix44f.h"

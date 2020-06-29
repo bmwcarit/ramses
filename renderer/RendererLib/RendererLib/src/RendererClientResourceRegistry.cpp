@@ -13,10 +13,10 @@ namespace ramses_internal
 {
     void RendererClientResourceRegistry::registerResource(const ResourceContentHash& hash)
     {
-        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::registerResource Registering resource #" << StringUtils::HexFromResourceContentHash(hash));
+        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::registerResource Registering resource #" << hash);
         if (m_resources.contains(hash))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::registerResource Resource already registered! #" << StringUtils::HexFromResourceContentHash(hash) << " (" << EnumToString(getResourceDescriptor(hash).type) << " : " << EnumToString(getResourceDescriptor(hash).status) << ")");
+            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::registerResource Resource already registered! #" << hash << " (" << EnumToString(getResourceDescriptor(hash).type) << " : " << EnumToString(getResourceDescriptor(hash).status) << ")");
             assert(false);
             return;
         }
@@ -31,16 +31,16 @@ namespace ramses_internal
 
     void RendererClientResourceRegistry::unregisterResource(const ResourceContentHash& hash)
     {
-        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::unregisterResource Unregistering resource #" << StringUtils::HexFromResourceContentHash(hash));
+        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::unregisterResource Unregistering resource #" << hash);
         if (!m_resources.contains(hash))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::unregisterResource Resource not registered! #" << StringUtils::HexFromResourceContentHash(hash));
+            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::unregisterResource Resource not registered! #" << hash);
             assert(false);
             return;
         }
         if (!m_resources.get(hash)->sceneUsage.empty())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::unregisterResource Resource is still being referenced by one or more scenes! #" << StringUtils::HexFromResourceContentHash(hash));
+            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::unregisterResource Resource is still being referenced by one or more scenes! #" << hash);
             assert(false);
             return;
         }
@@ -58,10 +58,10 @@ namespace ramses_internal
 
     void RendererClientResourceRegistry::addResourceRef(const ResourceContentHash& hash, SceneId sceneId)
     {
-        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::addResourceRef for scene (" << sceneId.getValue() << ") resource #" << StringUtils::HexFromResourceContentHash(hash));
+        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::addResourceRef for scene (" << sceneId.getValue() << ") resource #" << hash);
         if (!m_resources.contains(hash))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::addResourceRef Resource not registered! #" << StringUtils::HexFromResourceContentHash(hash));
+            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::addResourceRef Resource not registered! #" << hash);
             assert(false);
             return;
         }
@@ -69,7 +69,7 @@ namespace ramses_internal
         ResourceDescriptor& rd = *m_resources.get(hash);
         if (contains_c(rd.sceneUsage, sceneId))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::addResourceRef Resource already referenced by scene (" << sceneId.getValue() << ")! #" << StringUtils::HexFromResourceContentHash(hash) << " (" << EnumToString(rd.type) << " : " << EnumToString(rd.status) << ")");
+            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::addResourceRef Resource already referenced by scene (" << sceneId.getValue() << ")! #" << hash << " (" << EnumToString(rd.type) << " : " << EnumToString(rd.status) << ")");
             assert(false);
             return;
         }
@@ -80,10 +80,10 @@ namespace ramses_internal
 
     void RendererClientResourceRegistry::removeResourceRef(const ResourceContentHash& hash, SceneId sceneId)
     {
-        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::removeResourceRef for scene (" << sceneId.getValue() << ") resource #" << StringUtils::HexFromResourceContentHash(hash));
+        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::removeResourceRef for scene (" << sceneId.getValue() << ") resource #" << hash);
         if (!m_resources.contains(hash))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::removeResourceRef Resource not registered! #" << StringUtils::HexFromResourceContentHash(hash));
+            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::removeResourceRef Resource not registered! #" << hash);
             assert(false);
             return;
         }
@@ -91,7 +91,7 @@ namespace ramses_internal
         ResourceDescriptor& rd = *m_resources.get(hash);
         if (!contains_c(rd.sceneUsage, sceneId))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::removeResourceRef Resource not referenced by scene (" << sceneId.getValue() << ")! #" << StringUtils::HexFromResourceContentHash(hash));
+            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::removeResourceRef Resource not referenced by scene (" << sceneId.getValue() << ")! #" << hash);
             assert(false);
             return;
         }
@@ -105,7 +105,7 @@ namespace ramses_internal
         const auto res = m_resources.get(hash);
         if (res == nullptr)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::getResourceDescriptor Resource not registered! #" << StringUtils::HexFromResourceContentHash(hash));
+            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::getResourceDescriptor Resource not registered! #" << hash);
             assert(false);
             static const ResourceDescriptor DummyRD = {};
             return DummyRD;
@@ -117,18 +117,23 @@ namespace ramses_internal
     {
         assert(m_resources.contains(hash));
         ResourceDescriptor& rd = *m_resources.get(hash);
-        rd.resource = resourceObject;
+        rd.resource = std::move(resourceObject);
         rd.deviceHandle = deviceHandle;
         rd.type = resourceType;
     }
 
-    void RendererClientResourceRegistry::setResourceSize(const ResourceContentHash& hash, UInt32 compressedSize, UInt32 decompressedSize, UInt32 vramSize)
+    void RendererClientResourceRegistry::setResourceSize(const ResourceContentHash& hash, UInt32 compressedSize, UInt32 decompressedSize)
     {
         assert(m_resources.contains(hash));
         ResourceDescriptor& rd = *m_resources.get(hash);
         rd.compressedSize = compressedSize;
         rd.decompressedSize = decompressedSize;
-        rd.vramSize = vramSize;
+    }
+
+    void RendererClientResourceRegistry::setResourceVRAMSize(const ResourceContentHash& hash, UInt32 vramSize)
+    {
+        assert(m_resources.contains(hash));
+        m_resources.get(hash)->vramSize = vramSize;
     }
 
     void RendererClientResourceRegistry::setResourceStatus(const ResourceContentHash& hash, EResourceStatus status, UInt64 updateFrameCounter)
@@ -138,7 +143,7 @@ namespace ramses_internal
         rd.lastStatusChangeFrameIdx = updateFrameCounter;
         if (status == EResourceStatus_Requested)
             rd.lastRequestFrameIdx = updateFrameCounter;
-        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::setResourceStatus resource #" << StringUtils::HexFromResourceContentHash(hash) << " status change: " << EnumToString(rd.status) << " -> " << EnumToString(status));
+        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::setResourceStatus resource #" << hash << " status change: " << EnumToString(rd.status) << " -> " << EnumToString(status));
         assert(ValidateStatusChange(rd.status, status));
 
         updateCachedLists(hash, rd.status, status);

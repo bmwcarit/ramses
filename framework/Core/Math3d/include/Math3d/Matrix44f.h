@@ -10,18 +10,15 @@
 #define RAMSES_MATH3D_MATRIX44F_H
 
 #include "PlatformAbstraction/PlatformTypes.h"
-#include "PlatformAbstraction/PlatformMemory.h"
 #include "Math3d/Matrix33f.h"
 #include "Math3d/Vector4.h"
 #include "Math3d/Vector3.h"
 #include "Collections/IOutputStream.h"
 #include "Collections/IInputStream.h"
+#include "PlatformAbstraction/FmtBase.h"
 
 namespace ramses_internal
 {
-    /**
-     * Class for matrix computations
-     */
     class Matrix44f
     {
     public:
@@ -51,43 +48,27 @@ namespace ramses_internal
             Float data[16];
         };
 
-        /**
-        * Special Identity matrix
-        * 1 0 0 0
-        * 0 1 0 0
-        * 0 0 1 0
-        * 0 0 0 1
-        */
+        /// Identity matrix
         static const Matrix44f Identity;
 
-        /**
-         * Special Empty matrix
-         * 0 0 0 0
-         * 0 0 0 0
-         * 0 0 0 0
-         * 0 0 0 0
-         */
+        /// Zero matrix
         static const Matrix44f Empty;
 
-        static Matrix44f Translation(const Vector3& translation);
-        static Matrix44f Translation(const Float x, const Float y, const Float z);
+        static constexpr Matrix44f Translation(const Vector3& translation);
+        static constexpr Matrix44f Translation(const Float x, const Float y, const Float z);
         static Matrix44f RotationEulerXYZ(const Vector3& rotationXYZ);
         static Matrix44f RotationEulerXYZ(const Float x, const Float y, const Float z);
         static Matrix44f RotationEulerZYX(const Vector3& rotationXYZ);
         static Matrix44f RotationEulerZYX(const Float x, const Float y, const Float z);
-        static Matrix44f Scaling(const Vector3& scaling);
-        static Matrix44f Scaling(const Float x, const Float y, const Float z);
-        static Matrix44f Scaling(const Float uniScale);
+        static constexpr Matrix44f Scaling(const Vector3& scaling);
+        static constexpr Matrix44f Scaling(const Float x, const Float y, const Float z);
+        static constexpr Matrix44f Scaling(const Float uniScale);
 
-        /**
-        * Default constructor for matrix. Initializes with identity matrix
-        */
-        Matrix44f();
-
+        constexpr Matrix44f();
         /**
          * Constructor for initialize matrix with 16 single values
          */
-        Matrix44f(  const Float _m11, const Float _m12, const Float _m13, const Float _m14,
+        constexpr Matrix44f(  const Float _m11, const Float _m12, const Float _m13, const Float _m14,
                     const Float _m21, const Float _m22, const Float _m23, const Float _m24,
                     const Float _m31, const Float _m32, const Float _m33, const Float _m34,
                     const Float _m41, const Float _m42, const Float _m43, const Float _m44);
@@ -95,7 +76,7 @@ namespace ramses_internal
         /**
         * Constructor for initialize matrix with 16 values array (row-wise)
         */
-        explicit Matrix44f(const float (&matrixElements)[16]);
+        explicit constexpr Matrix44f(const float (&matrixElements)[16]);
 
         /**
          * Constructor to initialize matrix with one vector for each row
@@ -104,24 +85,24 @@ namespace ramses_internal
          * @param v3 Vector4 for third row
          * @param v4 Vector4 for forth row
          */
-        Matrix44f(const Vector4& v1, const Vector4& v2, const Vector4& v3, const Vector4& v4);
+        constexpr Matrix44f(const Vector4& v1, const Vector4& v2, const Vector4& v3, const Vector4& v4);
 
-        Matrix44f(const Matrix44f& other) = default;
-        Matrix44f(Matrix44f&& other) = default;
-        Matrix44f& operator=(const Matrix44f& other);
-        Matrix44f& operator=(Matrix44f&& other) = default;
+        constexpr Matrix44f(const Matrix44f& other) = default;
+        constexpr Matrix44f(Matrix44f&& other) noexcept = default;
+        constexpr Matrix44f& operator=(const Matrix44f& other);
+        constexpr Matrix44f& operator=(Matrix44f&& other) noexcept = default;
 
         /**
          * Constructor to create Matrix44 from other matrix33.
          * Initializes element m44 with 1.f, all the rest untouched elements with 0.f
          * @param other Matrix33 to copy data from
          */
-        explicit Matrix44f(const Matrix33f& otherMat33);
+        explicit constexpr Matrix44f(const Matrix33f& otherMat33);
 
         /**
          * Sets matrix elements to the given values
          */
-        void set(     const Float _m11, const Float _m12, const Float _m13, const Float _m14
+        constexpr void set(     const Float _m11, const Float _m12, const Float _m13, const Float _m14
                     , const Float _m21, const Float _m22, const Float _m23, const Float _m24
                     , const Float _m31, const Float _m32, const Float _m33, const Float _m34
                     , const Float _m41, const Float _m42, const Float _m43, const Float _m44);
@@ -129,7 +110,7 @@ namespace ramses_internal
         /**
          *  Sets all matrix elements to the given value
          */
-        void set(const Float val);
+        constexpr void set(const Float val);
 
         /**
          * Multiplies the matrix with the given Vector
@@ -143,61 +124,59 @@ namespace ramses_internal
          * @param mat Matrix44 to multiply with the matrix
          * @return the resulting Matrix44
          */
-        Matrix44f operator*(const Matrix44f& mat) const;
+        constexpr Matrix44f operator*(const Matrix44f& mat) const;
 
         /**
          * Multiplies the matrix with another matrix and assigns the result
          * @param mat Matrix44 to multiply with the matrix
          */
-        void operator*=(const Matrix44f& mat);
+        constexpr void operator*=(const Matrix44f& mat);
 
         /**
          * Check if two matrices are equal
          * @param other Matrix44 to compare with
          * @return true if matrices are equal false otherwise
          */
-        Bool operator==(const Matrix44f& other) const;
+        constexpr bool operator==(const Matrix44f& other) const;
 
         /**
          * Check if two matrices are not equal
          * @param other Matrix44 to compare with
          * @return true if matrices are equal false otherwise
          */
-        Bool operator!=(const Matrix44f& other) const;
+        constexpr bool operator!=(const Matrix44f& other) const;
 
         /**
          * Returns a pointer to the row specified by index
          * @param the index of the row to return
          * @return a pointer to the row specified by index
          */
-        Float& m(const UInt32 i, const UInt32 j);
-        //Float* operator[](const UInt32 index);
+        constexpr Float& m(const UInt32 i, const UInt32 j);
 
         /**
          * Returns a const pointer to the row specified by index
          * @param the index of the row to return
          * @return a pointer to the row specified by index
          */
-        const Float& m(const UInt32 i, const UInt32 j) const;
-        //const Float* operator[](const UInt32 index) const;
+        constexpr const Float& m(const UInt32 i, const UInt32 j) const;
 
         /**
          * Transposes and returns a matrix
          * @return A transposed version of the current Matrix
          */
-        Matrix44f transpose() const;
+        constexpr Matrix44f transpose() const;
 
         /**
          * Computes the determinant of the matrix
          * @ return the determinant of the matrix
          */
-        Float determinant() const;
+        constexpr Float determinant() const;
 
         /**
          * Computes the inverse matrix and returns it as result
          * @ return the inverse matrix
          */
-        Matrix44f inverse() const;
+        constexpr Matrix44f inverse() const;
 
         /**
          * Rotates the given point with the rotation information from upper 3x3 matrix
@@ -205,9 +184,6 @@ namespace ramses_internal
          * @return The rotated point
          */
         Vector3 rotate(const Vector3& point) const;
-
-    protected:
-    private:
     };
 
     inline IOutputStream& operator<<(IOutputStream& stream, const Matrix44f& value)
@@ -220,16 +196,16 @@ namespace ramses_internal
         return stream.read(reinterpret_cast<Char*>(value.data), sizeof(value.data));
     }
 
-    inline
+    constexpr inline
     Matrix44f::Matrix44f()
-    : m11(1.f), m21(0.f), m31(0.f), m41(0.f)
-    , m12(0.f), m22(1.f), m32(0.f), m42(0.f)
-    , m13(0.f), m23(0.f), m33(1.f), m43(0.f)
-    , m14(0.f), m24(0.f), m34(0.f), m44(1.f)
+        : m11(1.f), m21(0.f), m31(0.f), m41(0.f)
+        , m12(0.f), m22(1.f), m32(0.f), m42(0.f)
+        , m13(0.f), m23(0.f), m33(1.f), m43(0.f)
+        , m14(0.f), m24(0.f), m34(0.f), m44(1.f)
     {
     }
 
-    inline
+    constexpr inline
     Matrix44f::Matrix44f(   const Float _m11, const Float _m12, const Float _m13, const Float _m14
                         , const Float _m21, const Float _m22, const Float _m23, const Float _m24
                         , const Float _m31, const Float _m32, const Float _m33, const Float _m34
@@ -242,7 +218,7 @@ namespace ramses_internal
     {
     }
 
-    inline
+    constexpr inline
     Matrix44f::Matrix44f(const float(&matrixElements)[16])
         : m11(matrixElements[0]), m21(matrixElements[4]), m31(matrixElements[8]),  m41(matrixElements[12])
         , m12(matrixElements[1]), m22(matrixElements[5]), m32(matrixElements[9]),  m42(matrixElements[13])
@@ -251,31 +227,31 @@ namespace ramses_internal
     {
     }
 
-    inline
+    constexpr inline
     Matrix44f::Matrix44f(const Vector4& v1, const Vector4& v2, const Vector4& v3, const Vector4& v4)
+        : m11(v1.x)
+        , m21(v2.x)
+        , m31(v3.x)
+        , m41(v4.x)
+
+        , m12(v1.y)
+        , m22(v2.y)
+        , m32(v3.y)
+        , m42(v4.y)
+
+        , m13(v1.z)
+        , m23(v2.z)
+        , m33(v3.z)
+        , m43(v4.z)
+
+        , m14(v1.w)
+        , m24(v2.w)
+        , m34(v3.w)
+        , m44(v4.w)
     {
-        m11 = v1.x;
-        m12 = v1.y;
-        m13 = v1.z;
-        m14 = v1.w;
-
-        m21 = v2.x;
-        m22 = v2.y;
-        m23 = v2.z;
-        m24 = v2.w;
-
-        m31 = v3.x;
-        m32 = v3.y;
-        m33 = v3.z;
-        m34 = v3.w;
-
-        m41 = v4.x;
-        m42 = v4.y;
-        m43 = v4.z;
-        m44 = v4.w;
     }
 
-    inline
+    constexpr inline
     void
     Matrix44f::set(const Float _m11, const Float _m12, const Float _m13, const Float _m14
                 , const Float _m21, const Float _m22, const Float _m23, const Float _m24
@@ -300,7 +276,7 @@ namespace ramses_internal
         m44 = _m44;
     }
 
-    inline
+    constexpr inline
     void
     Matrix44f::set(Float val)
     {
@@ -311,11 +287,26 @@ namespace ramses_internal
         = val;
     }
 
-    inline
+    constexpr inline
     Matrix44f&
     Matrix44f::operator=(const Matrix44f& other)
     {
-        PlatformMemory::Copy(&m11, &other.m11, 16 * sizeof(Float));
+        m11 = other.m11;
+        m12 = other.m12;
+        m13 = other.m13;
+        m14 = other.m14;
+        m21 = other.m21;
+        m22 = other.m22;
+        m23 = other.m23;
+        m24 = other.m24;
+        m31 = other.m31;
+        m32 = other.m32;
+        m33 = other.m33;
+        m34 = other.m34;
+        m41 = other.m41;
+        m42 = other.m42;
+        m43 = other.m43;
+        m44 = other.m44;
         return *this;
     }
 
@@ -329,7 +320,7 @@ namespace ramses_internal
                         , m41 * vec.x + m42 * vec.y + m43 * vec.z + m44 * vec.w);
     }
 
-    inline
+    constexpr inline
     Matrix44f
     Matrix44f::operator*(const Matrix44f& mat) const
     {
@@ -339,15 +330,14 @@ namespace ramses_internal
                         , m41 * mat.m11 + m42 * mat.m21 + m43 * mat.m31 + m44 * mat.m41, m41 * mat.m12 + m42 * mat.m22 + m43 * mat.m32 + m44 * mat.m42, m41 * mat.m13 + m42 * mat.m23 + m43 * mat.m33 + m44 * mat.m43, m41 * mat.m14 + m42 * mat.m24 + m43 * mat.m34 + m44 * mat.m44);
     }
 
-    inline
+    constexpr inline
     void
     Matrix44f::operator*=(const Matrix44f& mat)
     {
-        const Matrix44f& result = operator*(mat);
-        PlatformMemory::Copy(&m11, &result.m11, 16 * sizeof(Float));
+        *this = operator*(mat);
     }
 
-    inline
+    constexpr inline
     Matrix44f
     Matrix44f::transpose() const
     {
@@ -357,7 +347,7 @@ namespace ramses_internal
                         , m14, m24, m34, m44);
     }
 
-    inline
+    constexpr inline
     Float
     Matrix44f::determinant() const
     {
@@ -396,7 +386,7 @@ namespace ramses_internal
                 - m14m21 * m32m43 - m14m22 * m33m41 - m14m23 * m31m42;
     }
 
-    inline
+    constexpr inline
     Matrix44f
     Matrix44f::inverse() const
     {
@@ -427,28 +417,43 @@ namespace ramses_internal
                         -(-m33 * m11 * m22 + m33 * m21 * m12 + m31 * m13 * m22 + m32 * m11 * m23 - m32 * m21 * m13 - m31 * m12 * m23) * invDet);
     }
 
-    inline
+    constexpr inline
     Bool
     Matrix44f::operator==(const Matrix44f& other) const
     {
-        return PlatformMemory::Compare(&m11, &other.m11, 16 * sizeof(Float)) == 0;
+        return m11 == other.m11 &&
+            m12 == other.m12 &&
+            m13 == other.m13 &&
+            m14 == other.m14 &&
+            m21 == other.m21 &&
+            m22 == other.m22 &&
+            m23 == other.m23 &&
+            m24 == other.m24 &&
+            m31 == other.m31 &&
+            m32 == other.m32 &&
+            m33 == other.m33 &&
+            m34 == other.m34 &&
+            m41 == other.m41 &&
+            m42 == other.m42 &&
+            m43 == other.m43 &&
+            m44 == other.m44;
     }
 
-    inline
+    constexpr inline
     Bool
     Matrix44f::operator!=(const Matrix44f& other) const
     {
         return !operator==(other);
     }
 
-    inline
+    constexpr inline
     Float&
     Matrix44f::m(const UInt32 i, const UInt32 j)
     {
         return (&m11)[4 * j + i];
     }
 
-    inline
+    constexpr inline
     const Float&
     Matrix44f::m(const UInt32 i, const UInt32 j) const
     {
@@ -467,8 +472,92 @@ namespace ramses_internal
         return RotationEulerZYX(Vector3(x, y, z));
     }
 
-    static_assert(std::is_nothrow_move_constructible<Matrix44f>::value &&
-        std::is_nothrow_move_assignable<Matrix44f>::value, "Matrix44f must be movable");
+    constexpr inline
+    Matrix44f::Matrix44f(const Matrix33f& otherMat33)
+        : m11(otherMat33.m11)
+        , m21(otherMat33.m21)
+        , m31(otherMat33.m31)
+        , m41(0.f)
+        , m12(otherMat33.m12)
+        , m22(otherMat33.m22)
+        , m32(otherMat33.m32)
+        , m42(0.f)
+        , m13(otherMat33.m13)
+        , m23(otherMat33.m23)
+        , m33(otherMat33.m33)
+        , m43(0.f)
+        , m14(0.f)
+        , m24(0.f)
+        , m34(0.f)
+        , m44(1.f)
+    {
+    }
+
+    constexpr inline
+    Matrix44f Matrix44f::Translation(const Vector3& translation)
+    {
+        return Matrix44f(
+            1.0f, 0.0f, 0.0f, translation.x,
+            0.0f, 1.0f, 0.0f, translation.y,
+            0.0f, 0.0f, 1.0f, translation.z,
+            0.0f, 0.0f, 0.0f, 1.0f);
+    }
+
+    constexpr inline
+    Matrix44f Matrix44f::Translation(const Float x, const Float y, const Float z)
+    {
+        return Translation(Vector3(x, y, z));
+    }
+
+    constexpr inline
+    Matrix44f Matrix44f::Scaling(const Vector3& scaling)
+    {
+        return Matrix44f(
+            scaling.x,  0.0f,       0.0f,       0.0f,
+            0.0f,       scaling.y,  0.0f,       0.0f,
+            0.0f,       0.0f,       scaling.z,  0.0f,
+            0.0f,       0.0f,       0.0f,       1.0f);
+    }
+
+    constexpr inline
+    Matrix44f Matrix44f::Scaling(const Float x, const Float y, const Float z)
+    {
+        return Scaling(Vector3(x, y, z));
+    }
+
+    constexpr inline
+    Matrix44f Matrix44f::Scaling(const Float uniScale)
+    {
+        return Scaling(Vector3(uniScale, uniScale, uniScale));
+    }
+
+    inline
+    Vector3 Matrix44f::rotate(const Vector3& point) const
+    {
+        const Matrix44f rotationMatrix(Matrix33f(*this));
+        const Vector4 extPoint(point.x, point.y, point.z, 1.0f);
+        const Vector4 rotatedExtPoint = rotationMatrix * extPoint;
+
+        return Vector3(rotatedExtPoint.x, rotatedExtPoint.y, rotatedExtPoint.z);
+    }
+
+    static_assert(std::is_nothrow_move_constructible<Matrix44f>::value, "Matrix44f must be movable");
+    static_assert(std::is_nothrow_move_assignable<Matrix44f>::value, "Matrix44f must be movable");
 }
+
+template <>
+struct fmt::formatter<ramses_internal::Matrix44f> : public ramses_internal::SimpleFormatterBase
+{
+    template<typename FormatContext>
+    auto format(const ramses_internal::Matrix44f& m, FormatContext& ctx)
+    {
+        return fmt::format_to(ctx.out(),
+                              "[{} {} {} {}; {} {} {} {}; {} {} {} {}; {} {} {} {}]",
+                              m.data[0], m.data[4], m.data[8],  m.data[12],
+                              m.data[1], m.data[5], m.data[9],  m.data[13],
+                              m.data[2], m.data[6], m.data[10], m.data[14],
+                              m.data[3], m.data[7], m.data[11], m.data[15]);
+    }
+};
 
 #endif

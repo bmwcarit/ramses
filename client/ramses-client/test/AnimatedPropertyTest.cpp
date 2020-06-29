@@ -17,6 +17,7 @@
 #include "ramses-client-api/DataVector2f.h"
 #include "ramses-client-api/DataVector3f.h"
 #include "ramses-client-api/DataMatrix44f.h"
+#include "ramses-client-api/PickableObject.h"
 
 #include "Collections/Vector.h"
 
@@ -198,7 +199,7 @@ namespace ramses
 
     TEST_F(AnAnimatedProperty, failsToCreateIfPropertyIsFromAnotherScene_Node)
     {
-        Scene* otherScene = sharedEffectCreator->getClient().createScene(12u);
+        Scene* otherScene = sharedEffectCreator->getClient().createScene(sceneId_t(12u));
         Node& animatable = *otherScene->createNode();
 
         AnimatedProperty* prop = sharedAnimationSystem->createAnimatedProperty(animatable, EAnimatedProperty_Translation);
@@ -210,7 +211,7 @@ namespace ramses
         UniformInput animatable;
         getValidUniformInput(animatable, "vec4fInput");
 
-        Scene* otherScene = sharedEffectCreator->getClient().createScene(13u);
+        Scene* otherScene = sharedEffectCreator->getClient().createScene(sceneId_t(13u));
         AnimationSystem* otherAnimationSystem = otherScene->createAnimationSystem();
 
         AnimatedProperty* prop = otherAnimationSystem->createAnimatedProperty(animatable, *sharedEffectCreator->appearance);
@@ -221,7 +222,7 @@ namespace ramses
     {
         DataVector3f& animatable = sharedEffectCreator->createObject<DataVector3f>("animatable");
 
-        Scene* otherScene = sharedEffectCreator->getClient().createScene(14u);
+        Scene* otherScene = sharedEffectCreator->getClient().createScene(sceneId_t(14u));
         AnimationSystem* otherAnimationSystem = otherScene->createAnimationSystem();
 
         AnimatedProperty* prop = otherAnimationSystem->createAnimatedProperty(animatable);
@@ -292,7 +293,7 @@ namespace ramses
     }
 
     // templated tests for all node types
-    TYPED_TEST_CASE(AnimatedPropertyTest, NodeTypes);
+    TYPED_TEST_SUITE(AnimatedPropertyTest, NodeTypes);
 
     TYPED_TEST(AnimatedPropertyTest, createNodeAnimatedPropertyWithAllCombinationsOfValidParams)
     {

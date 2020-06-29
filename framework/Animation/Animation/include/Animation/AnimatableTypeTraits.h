@@ -17,6 +17,7 @@
 #include "Math3d/Vector2i.h"
 #include "Math3d/Vector3i.h"
 #include "Math3d/Vector4i.h"
+#include <assert.h>
 
 namespace ramses_internal
 {
@@ -33,13 +34,13 @@ namespace ramses_internal
     };
 
     template <>
-    class AnimatableTypeTraits < Bool >
+    class AnimatableTypeTraits < bool >
     {
     public:
-        static const Bool IsIntegralType = true;
+        static const bool IsIntegralType = true;
         static const UInt32 NumComponents = 1u;
-        typedef Bool DataType;
-        typedef Bool ComponentType;
+        typedef bool DataType;
+        typedef bool ComponentType;
         typedef Float CorrespondingFloatType;
 
         static ComponentType GetComponent(const DataType& val, EVectorComponent compIdx)
@@ -68,7 +69,7 @@ namespace ramses_internal
     class AnimatableTypeTraits < Int32 >
     {
     public:
-        static const Bool IsIntegralType = true;
+        static const bool IsIntegralType = true;
         static const UInt32 NumComponents = 1u;
         typedef Int32 DataType;
         typedef Int32 ComponentType;
@@ -100,7 +101,7 @@ namespace ramses_internal
     class AnimatableTypeTraits < Int64 >
     {
     public:
-        static const Bool IsIntegralType = true;
+        static const bool IsIntegralType = true;
         static const UInt32 NumComponents = 1u;
         typedef Int64 DataType;
         typedef Int64 ComponentType;
@@ -132,7 +133,7 @@ namespace ramses_internal
     class AnimatableTypeTraits < UInt32 >
     {
     public:
-        static const Bool IsIntegralType = true;
+        static const bool IsIntegralType = true;
         static const UInt32 NumComponents = 1u;
         typedef UInt32 DataType;
         typedef UInt32 ComponentType;
@@ -164,7 +165,7 @@ namespace ramses_internal
     class AnimatableTypeTraits < UInt64 >
     {
     public:
-        static const Bool IsIntegralType = true;
+        static const bool IsIntegralType = true;
         static const UInt32 NumComponents = 1u;
         typedef UInt64 DataType;
         typedef UInt64 ComponentType;
@@ -196,7 +197,7 @@ namespace ramses_internal
     class AnimatableTypeTraits < Float >
     {
     public:
-        static const Bool IsIntegralType = false;
+        static const bool IsIntegralType = false;
         static const UInt32 NumComponents = 1u;
         typedef Float DataType;
         typedef Float ComponentType;
@@ -228,7 +229,7 @@ namespace ramses_internal
     class AnimatableTypeTraits < Double >
     {
     public:
-        static const Bool IsIntegralType = false;
+        static const bool IsIntegralType = false;
         static const UInt32 NumComponents = 1u;
         typedef Double DataType;
         typedef Double ComponentType;
@@ -260,7 +261,7 @@ namespace ramses_internal
     class AnimatableTypeTraits < Vector2 >
     {
     public:
-        static const Bool IsIntegralType = false;
+        static const bool IsIntegralType = false;
         static const Int32 NumComponents = 2;
         typedef Vector2 DataType;
         typedef Float ComponentType;
@@ -299,7 +300,7 @@ namespace ramses_internal
     class AnimatableTypeTraits < Vector3 >
     {
     public:
-        static const Bool IsIntegralType = false;
+        static const bool IsIntegralType = false;
         static const Int32 NumComponents = 3;
         typedef Vector3 DataType;
         typedef Float ComponentType;
@@ -347,7 +348,7 @@ namespace ramses_internal
     class AnimatableTypeTraits < Vector4 >
     {
     public:
-        static const Bool IsIntegralType = false;
+        static const bool IsIntegralType = false;
         static const Int32 NumComponents = 4;
         typedef Vector4 DataType;
         typedef Float ComponentType;
@@ -399,7 +400,7 @@ namespace ramses_internal
     class AnimatableTypeTraits < Vector2i >
     {
     public:
-        static const Bool IsIntegralType = true;
+        static const bool IsIntegralType = true;
         static const Int32 NumComponents = 2;
         typedef Vector2i DataType;
         typedef Int32 ComponentType;
@@ -438,7 +439,7 @@ namespace ramses_internal
     class AnimatableTypeTraits < Vector3i >
     {
     public:
-        static const Bool IsIntegralType = true;
+        static const bool IsIntegralType = true;
         static const Int32 NumComponents = 3;
         typedef Vector3i DataType;
         typedef Int32 ComponentType;
@@ -486,7 +487,7 @@ namespace ramses_internal
     class AnimatableTypeTraits < Vector4i >
     {
     public:
-        static const Bool IsIntegralType = true;
+        static const bool IsIntegralType = true;
         static const Int32 NumComponents = 4;
         typedef Vector4i DataType;
         typedef Int32 ComponentType;

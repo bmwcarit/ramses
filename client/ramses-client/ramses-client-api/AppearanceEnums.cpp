@@ -127,6 +127,8 @@ namespace ramses
         "LineLoop",
         "Triangles",
         "TriangleStrip",
+        "TriangleFan",
+        "LineStrip",
     };
 
     ENUM_TO_STRING(EInputType, InputTypeNames, EInputType_NUMBER_OF_ELEMENTS);

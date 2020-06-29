@@ -18,14 +18,14 @@ namespace ramses_internal
 {
     struct TestParam
     {
-        TestParam(const AnimationTime timeStamp = 0u, Bool testOnlyFullProcessingSystems = false)
+        explicit TestParam(const AnimationTime timeStamp = 0u, bool testOnlyFullProcessingSystems = false)
             : m_timeStamp(timeStamp)
             , m_testOnlyFullProcessingSystems(testOnlyFullProcessingSystems)
         {
         }
 
         AnimationTime m_timeStamp;
-        Bool          m_testOnlyFullProcessingSystems;
+        bool          m_testOnlyFullProcessingSystems;
     };
 
     // This is a custom printer for gtest.

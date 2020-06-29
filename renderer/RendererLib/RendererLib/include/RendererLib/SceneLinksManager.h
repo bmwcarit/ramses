@@ -41,6 +41,7 @@ namespace ramses_internal
     private:
         template <typename LINKMANAGER>
         void removeLinksToProvider(SceneId sceneId, DataSlotHandle providerSlotHandle, LINKMANAGER& manager) const;
+        void removeAnyDataLinkFromConsumer(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
 
         const RendererScenes&     m_rendererScenes;
         RendererEventCollector&   m_rendererEventCollector;

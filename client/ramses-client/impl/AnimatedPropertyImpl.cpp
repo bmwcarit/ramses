@@ -70,9 +70,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t AnimatedPropertyImpl::validate(uint32_t indent) const
+    status_t AnimatedPropertyImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        status_t status = AnimationObjectImpl::validate(indent);
+        status_t status = AnimationObjectImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
 
         if (!getIAnimationSystem().getDataBinding(m_dataBindHandle)->isPropertyValid())

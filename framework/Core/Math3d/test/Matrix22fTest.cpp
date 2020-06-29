@@ -8,6 +8,7 @@
 
 #include "gtest/gtest.h"
 #include "Math3d/Matrix22f.h"
+#include "Collections/StringOutputStream.h"
 
 namespace ramses_internal
 {
@@ -108,14 +109,14 @@ namespace ramses_internal
     TEST_F(Matrix22fTest, Equality)
     {
         const Matrix22f mat2(1.0f, 2.0f, 4.0f, 5.0f);
-        const Bool equal = (mat1 == mat2);
+        const bool equal = (mat1 == mat2);
         EXPECT_EQ(true, equal);
     }
 
     TEST_F(Matrix22fTest, UnEquality)
     {
         const Matrix22f mat2(1.0f, 2.0f, 3.0f, 5.0f);
-        const Bool unequal = (mat1 != mat2);
+        const bool unequal = (mat1 != mat2);
         EXPECT_EQ(true, unequal);
     }
 
@@ -137,5 +138,11 @@ namespace ramses_internal
         EXPECT_EQ(42.0f, mat1.m12);
         EXPECT_EQ(42.0f, mat1.m21);
         EXPECT_EQ(42.0f, mat1.m22);
+    }
+
+    TEST_F(Matrix22fTest, CanPrintToString)
+    {
+        EXPECT_EQ("[1.0 2.0; 4.0 5.0]", fmt::to_string(mat1));
+        EXPECT_EQ("[1.0 2.0; 4.0 5.0]", StringOutputStream::ToString(mat1));
     }
 }

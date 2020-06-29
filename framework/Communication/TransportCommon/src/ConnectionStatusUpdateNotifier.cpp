@@ -8,7 +8,6 @@
 
 #include "TransportCommon/ConnectionStatusUpdateNotifier.h"
 #include "TaskFramework/ITask.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "TransportCommon/IConnectionStatusListener.h"
 #include "Utils/LogMacros.h"
 

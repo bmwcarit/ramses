@@ -18,13 +18,14 @@ namespace ramses_internal
     class ISceneGraphConsumerComponent;
     class RendererEventCollector;
     class RendererScenes;
+    class IRendererSceneEventSender;
 
     class SceneStateExecutor
     {
     public:
-        SceneStateExecutor(const Renderer& renderer, ISceneGraphConsumerComponent& sceneGraphConsumerComponent, RendererEventCollector& rendererEventCollector);
+        SceneStateExecutor(const Renderer& renderer, IRendererSceneEventSender& rendererSceneSender, RendererEventCollector& rendererEventCollector);
 
-        void setPublished                     (SceneId sceneId, const Guid& clientWhereSceneIsAvailable, EScenePublicationMode mode);
+        void setPublished                     (SceneId sceneId, EScenePublicationMode mode);
         void setUnpublished                   (SceneId sceneId);
         void setSubscriptionRequested         (SceneId sceneId);
         void setSubscriptionPending           (SceneId sceneId);
@@ -69,9 +70,8 @@ namespace ramses_internal
         Bool canBeHidden               (SceneId sceneId) const;
 
         const Renderer&               m_renderer;
-        ISceneGraphConsumerComponent& m_sceneGraphConsumerComponent;
         RendererEventCollector&       m_rendererEventCollector;
-
+        IRendererSceneEventSender&    m_rendererSceneEventSender;
         SceneStateInfo                m_scenesStateInfo;
 
         friend class RendererLogger;

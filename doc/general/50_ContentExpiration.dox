@@ -55,7 +55,7 @@ What it means is that the flushed state of scene will expire at the set point in
 
 The renderer has an asynchroneous event callback which reports whenever
 the scene's expiration time is passed (see IRendererEventHandler::sceneExpired)
-and also when it catches up and recovers from expiration (see \ref ramses::IRendererEventHandler::sceneRecoveredFromExpiration()).
+and also when it catches up and recovers from expiration (see \ref ramses::IRendererSceneControlEventHandler::sceneRecoveredFromExpiration()).
 
 ## Example
 A simple example how to use the latency/expiration API of RAMSES is to define

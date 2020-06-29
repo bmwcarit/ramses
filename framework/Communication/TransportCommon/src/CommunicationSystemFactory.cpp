@@ -53,7 +53,6 @@ namespace ramses_internal
             return std::make_unique<TCPConnectionSystem>(participantNetworkAddress, config.getProtocolVersion(), daemonNetworkAddress, false, frameworkLock, statisticCollection, config.m_tcpConfig.getAliveInterval(), config.m_tcpConfig.getAliveTimeout());
         }
 #endif
-
     }
 
     IDiscoveryDaemon* CommunicationSystemFactory::ConstructDiscoveryDaemon(const ramses::RamsesFrameworkConfigImpl& config, PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection, Ramsh* optionalRamsh)
@@ -66,7 +65,7 @@ namespace ramses_internal
         IDiscoveryDaemon* constructedDaemon = nullptr;
         switch(config.getUsedProtocol())
         {
-            case EConnectionProtocol_TCP:
+            case EConnectionProtocol::TCP:
             {
 #if defined(HAS_TCP_COMM)
                 constructedDaemon = new TcpDiscoveryDaemon(config, frameworkLock, statisticCollection, optionalRamsh);
@@ -74,7 +73,7 @@ namespace ramses_internal
 #endif
             }
 
-            case EConnectionProtocol_Fake:
+            case EConnectionProtocol::Fake:
                 constructedDaemon = new FakeDiscoveryDaemon();
                 break;
 
@@ -94,19 +93,19 @@ namespace ramses_internal
         switch (config.getUsedProtocol())
         {
 #if defined(HAS_TCP_COMM)
-        case EConnectionProtocol_TCP:
+        case EConnectionProtocol::TCP:
         {
             return ConstructTCPConnectionManager(config, participantIdentifier, frameworkLock, statisticCollection);
         }
 #endif
-        case EConnectionProtocol_Fake:
+        case EConnectionProtocol::Fake:
         {
             LOG_INFO(CONTEXT_COMMUNICATION, "Using no connection system");
             return std::make_unique<FakeConnectionSystem>();
         }
         default:
-            assert(false && "Unable to construct connection system for given protocol");
             LOG_FATAL(CONTEXT_COMMUNICATION, "Unable to construct connection system for given protocol: " << config.getUsedProtocol());
+            assert(false && "Unable to construct connection system for given protocol");
             return nullptr;
         }
     }

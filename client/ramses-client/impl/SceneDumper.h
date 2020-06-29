@@ -47,7 +47,7 @@ namespace ramses
     class SceneDumper
     {
     public:
-        SceneDumper(const ramses::SceneImpl& scene);
+        explicit SceneDumper(const ramses::SceneImpl& scene);
         void dumpUnrequiredObjects(ramses_internal::StringOutputStream& output);
     private:
         typedef ramses_internal::HashSet<const GeometryBindingImpl*> GeometryBindingSet;
@@ -107,7 +107,7 @@ namespace ramses
         void               markRequiredTextureBuffer(const TextureSamplerSet& requiredTextureSamplers);
         StreamTextureSet   markRequiredStreamTextures(const TextureSamplerSet& requiredTextureSamplers);
         RenderBufferSet    getRequiredRenderBuffers(RenderBufferSet& requiredRenderBuffers);
-        void               markRequiredResourcesFromHash(ResourceContentHashSet requiredBufferResourceHashes);
+        void               markRequiredResourcesFromHash(const ResourceContentHashSet& requiredBufferResourceHashes);
 
         template <class T> void markAllParentNodesAsRequired(const T& requiredNodes);
 

@@ -25,16 +25,16 @@ namespace ramses_internal
         SurfaceMock();
         ~SurfaceMock() override;
 
-        MOCK_METHOD0(enable, Bool());
-        MOCK_METHOD0(disable, Bool());
-        MOCK_METHOD0(swapBuffers, ramses_internal::Bool());
-        MOCK_METHOD0(frameRendered, void());
-        MOCK_CONST_METHOD0(canRenderNewFrame, Bool());
+        MOCK_METHOD(Bool, enable, (), (override));
+        MOCK_METHOD(Bool, disable, (), (override));
+        MOCK_METHOD(ramses_internal::Bool, swapBuffers, (), (override));
+        MOCK_METHOD(void, frameRendered, (), (override));
+        MOCK_METHOD(Bool, canRenderNewFrame, (), (const, override));
 
-        MOCK_METHOD0(getWindow, IWindow&());
-        MOCK_CONST_METHOD0(getWindow, const IWindow&());
-        MOCK_METHOD0(getContext, IContext&());
-        MOCK_CONST_METHOD0(getContext, const IContext&());
+        MOCK_METHOD(IWindow&, getWindow, (), (override));
+        MOCK_METHOD(const IWindow&, getWindow, (), (const, override));
+        MOCK_METHOD(IContext&, getContext, (), (override));
+        MOCK_METHOD(const IContext&, getContext, (), (const, override));
 
         MOCK_TYPE<ContextMock> contextMock;
         MOCK_TYPE<WindowMock>  windowMock;
@@ -46,7 +46,7 @@ namespace ramses_internal
         SurfaceMockWithDestructor();
         ~SurfaceMockWithDestructor();
 
-        MOCK_METHOD0(Die, void());
+        MOCK_METHOD(void, Die, ());
     };
 
     typedef SurfaceMock< ::testing::NiceMock> SurfaceNiceMock;

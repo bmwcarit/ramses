@@ -48,7 +48,7 @@ namespace ramses_internal
         enqueueAnimation(handle);
     }
 
-    void AnimationLogic::onAnimationPauseChanged(AnimationHandle handle, Bool pause)
+    void AnimationLogic::onAnimationPauseChanged(AnimationHandle handle, bool pause)
     {
         if (isAnimationActive(handle))
         {
@@ -129,12 +129,12 @@ namespace ramses_internal
         return m_time;
     }
 
-    Bool AnimationLogic::isAnimationActive(AnimationHandle handle) const
+    bool AnimationLogic::isAnimationActive(AnimationHandle handle) const
     {
         return std::find(m_activeAnimations.begin(), m_activeAnimations.end(), handle) != m_activeAnimations.end();
     }
 
-    Bool AnimationLogic::isAnimationPending(AnimationHandle handle) const
+    bool AnimationLogic::isAnimationPending(AnimationHandle handle) const
     {
         return std::find(m_pendingAnimations.begin(), m_pendingAnimations.end(), handle) != m_pendingAnimations.end();
     }
@@ -285,7 +285,7 @@ namespace ramses_internal
         m_animationProperties.remove(handle);
     }
 
-    Bool AnimationLogic::isAnimationTimeRangeValid(const AnimationProperties& animProps)
+    bool AnimationLogic::isAnimationTimeRangeValid(const AnimationProperties& animProps)
     {
         return animProps.m_startTime.isValid()
             && animProps.m_stopTime.isValid()

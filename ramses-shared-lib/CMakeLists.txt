@@ -8,16 +8,19 @@
 
 ADD_DEFINITIONS(-DRAMSES_LINK_SHARED_EXPORT)
 
-IF (NOT ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB)
+if (ramses-sdk_BUILD_FULL_SHARED_LIB)
 
     RENDERER_MODULE_PER_CONFIG_STATIC(ramses-shared-lib
         TYPE                    SHARED_LIBRARY
         ENABLE_INSTALL          ON
 
         ${ramses-shared-lib-MIXIN}
+        ${ramses-shared-lib-renderer-MIXIN}
         )
+endif()
 
-ELSE()
+if (ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB)
+
     # build shared library without renderer
     SET(ramses-sdk_CLIENT_ONLY_LIB_NAME "ramses-shared-lib-client-only")
 
@@ -32,4 +35,5 @@ ELSE()
     SET_TARGET_PROPERTIES(${ramses-sdk_CLIENT_ONLY_LIB_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR})
     GET_TARGET_PROPERTY(MYMODULE_SOVERSION ${ramses-sdk_CLIENT_ONLY_LIB_NAME} SOVERSION)
     ACME_INFO("    setting shared library version to ${MYMODULE_SOVERSION}")
-ENDIF()
+
+endif()

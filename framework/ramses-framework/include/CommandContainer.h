@@ -12,30 +12,25 @@
 #include "Collections/Vector.h"
 #include <cstdint>
 #include <cassert>
+#include <memory>
 
 namespace ramses_internal
 {
-
     template< typename COMMAND_TYPE_INFO, typename COMMAND_BASE_TYPE >
     class CommandContainer
     {
     public:
-        CommandContainer()
-        {
-        }
-
-        ~CommandContainer()
-        {
-            clear();
-        }
+        CommandContainer() = default;
+        CommandContainer(CommandContainer&&) noexcept = default;
+        CommandContainer& operator=(CommandContainer&&) noexcept = default;
 
         template <typename COMMAND_TYPE>
         void addCommand(COMMAND_TYPE_INFO commandType, const COMMAND_TYPE& commandData)
         {
             Command cmd;
             cmd.m_commandType = commandType;
-            cmd.m_commandData = new COMMAND_TYPE(commandData);
-            m_commands.push_back(cmd);
+            cmd.m_commandData.reset(new COMMAND_TYPE(commandData));
+            m_commands.push_back(std::move(cmd));
         }
 
         template <typename COMMAND_TYPE>
@@ -43,8 +38,8 @@ namespace ramses_internal
         {
             Command cmd;
             cmd.m_commandType = commandType;
-            cmd.m_commandData = new typename std::remove_reference<COMMAND_TYPE>::type(std::forward<COMMAND_TYPE>(commandData));
-            m_commands.push_back(cmd);
+            cmd.m_commandData.reset(new typename std::remove_reference<COMMAND_TYPE>::type(std::forward<COMMAND_TYPE>(commandData)));
+            m_commands.push_back(std::move(cmd));
         }
 
         template <typename COMMAND_TYPE>
@@ -76,10 +71,6 @@ namespace ramses_internal
 
         void clear()
         {
-            for(const auto& cmd : m_commands)
-            {
-                delete cmd.m_commandData;
-            }
             m_commands.clear();
         }
 
@@ -88,14 +79,14 @@ namespace ramses_internal
             m_commands.swap(commandContainer.m_commands);
         }
 
-    private:
-        CommandContainer(const CommandContainer&);
-        CommandContainer operator=(const CommandContainer&);
+        CommandContainer(const CommandContainer&) = delete;
+        CommandContainer& operator=(const CommandContainer&) = delete;
 
+    private:
         struct Command
         {
             COMMAND_TYPE_INFO m_commandType;
-            COMMAND_BASE_TYPE* m_commandData;
+            std::unique_ptr<COMMAND_BASE_TYPE> m_commandData;
         };
 
         std::vector<Command> m_commands;

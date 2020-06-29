@@ -66,7 +66,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool TransformationLinkManager::removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle)
+    Bool TransformationLinkManager::removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle, SceneId* providerSceneIdOut)
     {
         assert(EDataSlotType_TransformationConsumer == DataLinkUtils::GetDataSlot(consumerSceneId, consumerSlotHandle, m_scenes).type);
 
@@ -75,6 +75,9 @@ namespace ramses_internal
         {
             const TransformationLinkCachedScene& consumerScene = m_scenes.getScene(consumerSceneId);
             consumerScene.propagateDirtyToConsumers(consumerNodeHandle);
+
+            if (providerSceneIdOut)
+                *providerSceneIdOut = getSceneLinks().getLinkedProvider(consumerSceneId, consumerSlotHandle).providerSceneId;
         }
 
         if (LinkManagerBase::removeDataLink(consumerSceneId, consumerSlotHandle))

@@ -9,8 +9,6 @@
 import shutil
 import os
 from PIL import Image
-from urllib2 import urlopen, HTTPError
-import re
 import codecs
 
 from ramses_test_framework import image_utils
@@ -72,6 +70,6 @@ def save_text_file(filePath, content):
 
 def get_env_var_setting_string(env):
     result=""
-    for vname, vvalue in env.iteritems():
+    for vname, vvalue in env.items():
         result += vname + "=" + vvalue +" "
     return result

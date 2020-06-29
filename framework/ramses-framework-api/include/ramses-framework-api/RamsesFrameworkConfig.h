@@ -23,12 +23,9 @@ namespace ramses
     {
     public:
         /**
-        * @brief Constructor of RamsesFrameworkConfig using command line parameters
-        *
-        * @param[in] argc Number of strings in argv array
-        * @param[in] argv Command line parameters as array of string
+        * @brief Default constructor of RamsesFrameworkConfig
         */
-        explicit RamsesFrameworkConfig(int32_t argc = 0, char const* const* argv = 0);
+        RamsesFrameworkConfig();
 
         /**
         * @brief Constructor of RamsesFrameworkConfig using command line parameters
@@ -36,7 +33,7 @@ namespace ramses
         * @param[in] argc Number of strings in argv array
         * @param[in] argv Command line parameters as array of string
         */
-        RamsesFrameworkConfig(int32_t argc, char * argv[]);
+        RamsesFrameworkConfig(int32_t argc, char const* const* argv);
 
         /**
         * @brief Destructor of RamsesFrameworkConfig
@@ -73,6 +70,20 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t setWatchdogNotificationCallBack(IThreadWatchdogNotification* callback);
+
+        /**
+         * @brief Disable DLT application registration
+         *
+         * When set and DLT is enabled ramses expects DLT_REGISTER_APP beeing called before
+         * RamsesFramework construction and DLT_UNREGISTER_APP after RamsesFramework destruction.
+         * Ramses will add its context to the existing application.
+         *
+         * When not disabled, ramses will manage DLT application registration itself.
+         *
+         * @return StatusOK on success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        status_t disableDLTApplicationRegistration();
 
         /**
         * @brief Set the application ID name for DLT (4 chars)

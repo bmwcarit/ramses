@@ -12,7 +12,6 @@
 #include "SceneAPI/Handles.h"
 #include "Collections/String.h"
 #include "SceneAPI/EDataType.h"
-#include "SceneAPI/EFixedSemantics.h"
 #include "Collections/Vector.h"
 #include "Resource/EffectInputInformation.h"
 
@@ -25,11 +24,11 @@ namespace ramses_internal
     class DataLayoutCreationHelper
     {
     public:
-        static DataLayoutHandle CreateUniformDataLayoutMatchingEffectInputs(IScene& scene, const EffectInputInformationVector& uniformsInputInfo, InputIndexVector& referencedInputs, DataLayoutHandle handle = DataLayoutHandle::Invalid());
+        static DataLayoutHandle CreateUniformDataLayoutMatchingEffectInputs(IScene& scene, const EffectInputInformationVector& uniformsInputInfo, InputIndexVector& referencedInputs, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid());
         static DataInstanceHandle CreateAndBindDataReference(IScene& scene, DataInstanceHandle dataInstance, DataFieldHandle dataField, EDataType dataType, DataLayoutHandle dataRefLayout = DataLayoutHandle::Invalid(), DataInstanceHandle dataRefInstance = DataInstanceHandle::Invalid());
 
     private:
-        static Bool IsBindableInput(const EffectInputInformation& inputInfo);
+        static bool IsBindableInput(const EffectInputInformation& inputInfo);
     };
 }
 

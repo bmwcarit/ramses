@@ -19,7 +19,7 @@ namespace ramses_internal
     class RendererCachedScene final : public TextureLinkCachedScene
     {
     public:
-        RendererCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
+        explicit RendererCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
 
         void updateRenderablesAndResourceCache(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager);
         void updateRenderableWorldMatrices();
@@ -28,7 +28,7 @@ namespace ramses_internal
         void retriggerAllRenderOncePasses();
         void markAllRenderOncePassesAsRendered() const;
 
-        virtual void                        setRenderableVisibility         (RenderableHandle renderableHandle, Bool visible) override;
+        virtual void                        setRenderableVisibility         (RenderableHandle renderableHandle, EVisibilityMode visible) override;
 
         virtual void                        releaseRenderGroup              (RenderGroupHandle groupHandle) override;
         virtual void                        addRenderableToRenderGroup      (RenderGroupHandle groupHandle, RenderableHandle renderableHandle, Int32 order) override;

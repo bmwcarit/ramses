@@ -33,9 +33,9 @@ namespace ramses
         "ERamsesObjectType_AnimatedProperty",
         "ERamsesObjectType_Animation",
         "ERamsesObjectType_AnimationSequence",
-        "ERamsesObjectType_AnimatedSetter",
         "ERamsesObjectType_Appearance",
         "ERamsesObjectType_Geometry",
+        "ERamsesObjectType_PickableObject",
         "ERamsesObjectType_Spline",
         "ERamsesObjectType_SplineStepBool",
         "ERamsesObjectType_SplineStepFloat",
@@ -96,7 +96,8 @@ namespace ramses
         "ERamsesObjectType_DataVector2i",
         "ERamsesObjectType_DataVector3i",
         "ERamsesObjectType_DataVector4i",
-        "ERamsesObjectType_StreamTexture"
+        "ERamsesObjectType_StreamTexture",
+        "ERamsesObjectType_SceneReference"
     };
 
     ENUM_TO_STRING(ERamsesObjectType, RamsesObjectTypeNames, ERamsesObjectType_NUMBER_OF_TYPES);

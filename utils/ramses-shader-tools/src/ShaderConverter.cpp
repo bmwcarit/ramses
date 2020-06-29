@@ -19,12 +19,17 @@
 bool ShaderConverter::Convert(const RamsesShaderFromGLSLShaderArguments& arguments)
 {
     ramses::RamsesFramework framework;
-    ramses::RamsesClient ramsesClient("ramses client", framework);
+    ramses::RamsesClient* ramsesClient(framework.createClient("ramses client"));
+    if (!ramsesClient)
+    {
+        PRINT_ERROR("Failed to create ramses client.\n");
+        return false;
+    }
 
     ramses::EffectDescription effectDesc;
     SetEffectDescription(arguments, effectDesc);
 
-    ramses::Effect* effect = ramsesClient.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, arguments.getOutEffectName().c_str());
+    ramses::Effect* effect = ramsesClient->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, arguments.getOutEffectName().c_str());
     if (!effect)
     {
         PRINT_ERROR("ramses can not create effect from given files.\n");
@@ -32,7 +37,7 @@ bool ShaderConverter::Convert(const RamsesShaderFromGLSLShaderArguments& argumen
     }
 
     WriteoutRamsesEffectHash(arguments, *effect);
-    WriteoutRamsesShaders(arguments, ramsesClient, *effect);
+    WriteoutRamsesShaders(arguments, *ramsesClient, *effect);
     return true;
 }
 
@@ -61,7 +66,7 @@ void ShaderConverter::WriteoutRamsesEffectHash(const RamsesShaderFromGLSLShaderA
 void ShaderConverter::WriteoutRamsesShaders(const RamsesShaderFromGLSLShaderArguments& arguments, ramses::RamsesClient& ramsesClient, ramses::Effect& effect)
 {
     const ramses_internal::EffectResource* effectData = ramsesClient.impl.getResourceData<ramses_internal::EffectResource>(effect.impl.getLowlevelResourceHash());
-    assert(effectData != NULL);
+    assert(effectData != nullptr);
     effectData->decompress();
 
     const ramses_internal::String outVertexShader(effectData->getVertexShader());

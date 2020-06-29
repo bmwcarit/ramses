@@ -47,9 +47,9 @@ namespace ramses_internal
     template<> const RenderPassHandle          ASceneActionCollectionBasicTypes<RenderPassHandle>::m_value = RenderPassHandle();
     template<> const TextureSamplerHandle      ASceneActionCollectionBasicTypes<TextureSamplerHandle>::m_value = TextureSamplerHandle();
     template<> const RenderTargetHandle        ASceneActionCollectionBasicTypes<RenderTargetHandle>::m_value = RenderTargetHandle();
-    template<> const QueueHandle               ASceneActionCollectionBasicTypes<QueueHandle>::m_value = QueueHandle();
     template<> const DataFieldHandle           ASceneActionCollectionBasicTypes<DataFieldHandle>::m_value = DataFieldHandle();
     template<> const SceneVersionTag           ASceneActionCollectionBasicTypes<SceneVersionTag>::m_value = SceneVersionTag();
+    template<> const SceneReferenceHandle      ASceneActionCollectionBasicTypes<SceneReferenceHandle>::m_value = SceneReferenceHandle();
 
     // types to test
     typedef ::testing::Types <
@@ -77,13 +77,13 @@ namespace ramses_internal
         RenderPassHandle,
         TextureSamplerHandle,
         RenderTargetHandle,
-        QueueHandle,
         DataFieldHandle,
-        SceneVersionTag
+        SceneVersionTag,
+        SceneReferenceHandle
     > SceneActionCollectionBasicTypes;
 
 
-    TYPED_TEST_CASE(ASceneActionCollectionBasicTypes, SceneActionCollectionBasicTypes);
+    TYPED_TEST_SUITE(ASceneActionCollectionBasicTypes, SceneActionCollectionBasicTypes);
 
     TYPED_TEST(ASceneActionCollectionBasicTypes, WriteSingleElementAndCheckBufferSize)
     {

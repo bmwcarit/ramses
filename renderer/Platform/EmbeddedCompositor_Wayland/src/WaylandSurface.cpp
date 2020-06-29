@@ -16,6 +16,7 @@
 #include "EmbeddedCompositor_Wayland/WaylandCallbackResource.h"
 #include "EmbeddedCompositor_Wayland/WaylandBufferResource.h"
 #include "Utils/LogMacros.h"
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -136,7 +137,7 @@ namespace ramses_internal
         }
         else
         {
-            return InvalidWaylandIviSurfaceId;
+            return {};
         }
     }
 

@@ -165,7 +165,7 @@ namespace ramses_internal
             tempFraction = (tempX - P0) * fracCoeff;
 
             const Float tempResult = InterpolateCubicBezierCoeffs(coeffA, coeffB, coeffC, coeffD, tempFraction);
-            delta = PlatformMath::Abs(tempResult - Px);
+            delta = std::abs(tempResult - Px);
 
             if (tempResult > Px)
             {
@@ -182,17 +182,17 @@ namespace ramses_internal
 
     // Specializations for boolean due to unsupported arithmetic operations
     template <>
-    inline Bool Interpolator::InterpolateLinear<Bool>(const Bool& startValue, const Bool& endValue, Float segmentTime)
+    inline bool Interpolator::InterpolateLinear<bool>(const bool& startValue, const bool& endValue, Float segmentTime)
     {
         return (segmentTime < 0.5f ? startValue : endValue);
     }
 
     template <>
-    inline Bool Interpolator::InterpolateCubicBezier<Bool>(
-        const Bool& startValue,
-        const Bool& endValue,
-        const Bool& startTangent,
-        const Bool& endTangent,
+    inline bool Interpolator::InterpolateCubicBezier<bool>(
+        const bool& startValue,
+        const bool& endValue,
+        const bool& startTangent,
+        const bool& endTangent,
         Float segmentTime)
     {
         UNUSED(startTangent);

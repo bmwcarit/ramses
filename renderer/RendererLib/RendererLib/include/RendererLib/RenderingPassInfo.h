@@ -21,13 +21,13 @@ namespace ramses_internal
 
     struct RenderingPassInfo
     {
-        RenderingPassInfo(RenderPassHandle handle)
+        explicit RenderingPassInfo(RenderPassHandle handle)
             : m_type(ERenderingPassType::RenderPass)
             , m_handle(handle.asMemoryHandle())
         {
         }
 
-        RenderingPassInfo(BlitPassHandle handle)
+        explicit RenderingPassInfo(BlitPassHandle handle)
             : m_type(ERenderingPassType::BlitPass)
             , m_handle(handle.asMemoryHandle())
         {

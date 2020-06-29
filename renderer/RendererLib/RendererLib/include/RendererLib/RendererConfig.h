@@ -23,9 +23,9 @@ namespace ramses_internal
         const String& getWaylandSocketEmbedded() const;
         const String& getWaylandSocketEmbeddedGroup() const;
         int getWaylandSocketEmbeddedFD() const;
-        void setWaylandSocketEmbedded(const String& socket);
-        void setWaylandSocketEmbeddedGroup(const String& groupNameForSocketPermissions);
-        void setWaylandSocketEmbeddedFD(int fd);
+        void setWaylandEmbeddedCompositingSocketName(const String& socket);
+        void setWaylandEmbeddedCompositingSocketGroup(const String& groupNameForSocketPermissions);
+        void setWaylandEmbeddedCompositingSocketFD(int fd);
         void setWaylandDisplayForSystemCompositorController(const String& wd);
         const String& getWaylandDisplayForSystemCompositorController() const;
 
@@ -37,7 +37,8 @@ namespace ramses_internal
 
         std::chrono::microseconds getFrameCallbackMaxPollTime() const;
         void setFrameCallbackMaxPollTime(std::chrono::microseconds pollTime);
-
+        void setRenderthreadLooptimingReportingPeriod(std::chrono::milliseconds period);
+        std::chrono::milliseconds getRenderThreadLoopTimingReportingPeriod() const;
     private:
         String m_waylandSocketEmbedded;
         String m_waylandSocketEmbeddedGroupName;
@@ -46,6 +47,7 @@ namespace ramses_internal
         Bool m_systemCompositorEnabled = false;
         String m_kpiFilename;
         std::chrono::microseconds m_frameCallbackMaxPollTime{10000u};
+        std::chrono::milliseconds m_renderThreadLoopTimingReportingPeriod { 0 }; // zero deactivates reporting
     };
 }
 

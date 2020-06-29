@@ -12,28 +12,30 @@
 #include "Components/ISceneGraphConsumerComponent.h"
 #include "RendererEventCollector.h"
 #include "Utils/LogMacros.h"
+#include "PlatformAbstraction/Macros.h"
+#include "RendererFramework/IRendererSceneEventSender.h"
 
 namespace ramses_internal
 {
-    SceneStateExecutor::SceneStateExecutor(const Renderer& renderer, ISceneGraphConsumerComponent& sceneGraphConsumerComponent, RendererEventCollector& rendererEventCollector)
+    SceneStateExecutor::SceneStateExecutor(const Renderer& renderer, IRendererSceneEventSender& rendererSceneSender, RendererEventCollector& rendererEventCollector)
         : m_renderer(renderer)
-        , m_sceneGraphConsumerComponent(sceneGraphConsumerComponent)
         , m_rendererEventCollector(rendererEventCollector)
+        , m_rendererSceneEventSender(rendererSceneSender)
     {
     }
 
-    void SceneStateExecutor::setPublished(SceneId sceneId, const Guid& clientWhereSceneIsAvailable, EScenePublicationMode mode)
+    void SceneStateExecutor::setPublished(SceneId sceneId, EScenePublicationMode mode)
     {
         assert(checkIfCanBePublished(sceneId));
-        m_scenesStateInfo.addScene(sceneId, clientWhereSceneIsAvailable, mode);
-        m_rendererEventCollector.addEvent(ERendererEventType_ScenePublished, sceneId);
+        m_scenesStateInfo.addScene(sceneId, mode);
+        m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_ScenePublished, sceneId);
         LOG_INFO(CONTEXT_RENDERER, "Scene "<< sceneId.getValue() << " is in state PUBLISHED");
     }
 
     void SceneStateExecutor::setSubscriptionRequested(SceneId sceneId)
     {
         assert(checkIfCanBeSubscriptionRequested(sceneId));
-        m_sceneGraphConsumerComponent.subscribeScene(m_scenesStateInfo.getSceneClientGuid(sceneId), sceneId);
+        m_rendererSceneEventSender.sendSubscribeScene(sceneId);
         m_scenesStateInfo.setSceneState(sceneId, ESceneState::SubscriptionRequested);
         LOG_INFO(CONTEXT_RENDERER, "Scene " << sceneId.getValue() << " is in state SUBSCRIPTION REQUESTED");
     }
@@ -49,7 +51,7 @@ namespace ramses_internal
     {
         assert(checkIfCanBeSubscribed(sceneId));
         m_scenesStateInfo.setSceneState(sceneId, ESceneState::Subscribed);
-        m_rendererEventCollector.addEvent(ERendererEventType_SceneSubscribed, sceneId);
+        m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneSubscribed, sceneId);
         LOG_INFO(CONTEXT_RENDERER, "Scene " << sceneId.getValue() << " is in state SUBSCRIBED caused by SCENE FLUSH");
     }
 
@@ -58,30 +60,38 @@ namespace ramses_internal
         switch (sceneState)
         {
         case ESceneState::Rendered:
-            m_rendererEventCollector.addEvent(ERendererEventType_SceneHiddenIndirect, sceneId);
+            m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneHiddenIndirect, sceneId);
+            RFALLTHROUGH;
+
         case ESceneState::RenderRequested:
             if (sceneState == ESceneState::RenderRequested)
             {
-                m_rendererEventCollector.addEvent(ERendererEventType_SceneShowFailed, sceneId);
+                m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneShowFailed, sceneId);
             }
+            RFALLTHROUGH;
+
         case ESceneState::Mapped:
-            m_rendererEventCollector.addEvent(ERendererEventType_SceneUnmappedIndirect, sceneId);
+            m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneUnmappedIndirect, sceneId);
+            RFALLTHROUGH;
         case ESceneState::MappingAndUploading:
         case ESceneState::MapRequested:
             if (sceneState == ESceneState::MapRequested || sceneState == ESceneState::MappingAndUploading)
             {
-                m_rendererEventCollector.addEvent(ERendererEventType_SceneMapFailed, sceneId);
+                m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneMapFailed, sceneId);
             }
+            RFALLTHROUGH;
         case ESceneState::Subscribed:
-            m_rendererEventCollector.addEvent(ERendererEventType_SceneUnsubscribedIndirect, sceneId);
+            m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneUnsubscribedIndirect, sceneId);
+            RFALLTHROUGH;
         case ESceneState::SubscriptionPending:
         case ESceneState::SubscriptionRequested:
             if (sceneState == ESceneState::SubscriptionPending || sceneState == ESceneState::SubscriptionRequested)
             {
-                m_rendererEventCollector.addEvent(ERendererEventType_SceneSubscribeFailed, sceneId);
+                m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneSubscribeFailed, sceneId);
             }
             // explicitly unsubscribe to avoid race in case client re-published scene while previous subscription was being processed
-            m_sceneGraphConsumerComponent.unsubscribeScene(m_scenesStateInfo.getSceneClientGuid(sceneId), sceneId);
+            m_rendererSceneEventSender.sendUnsubscribeScene(sceneId);
+            break;
         default:
             break;
         }
@@ -95,7 +105,7 @@ namespace ramses_internal
         if (m_scenesStateInfo.hasScene(sceneId))
         {
             m_scenesStateInfo.removeScene(sceneId);
-            m_rendererEventCollector.addEvent(ERendererEventType_SceneUnpublished, sceneId);
+            m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneUnpublished, sceneId);
         }
         else
         {
@@ -116,19 +126,8 @@ namespace ramses_internal
         else
         {
             assert(canBeUnsubscribed(sceneId));
-            const ESceneState sceneState = m_scenesStateInfo.getSceneState(sceneId);
-            switch (sceneState)
-            {
-            case ESceneState::SubscriptionRequested:
-            case ESceneState::SubscriptionPending:
-                m_rendererEventCollector.addEvent(ERendererEventType_SceneSubscribeFailed, sceneId);
-            case ESceneState::Subscribed:
-                m_rendererEventCollector.addEvent(ERendererEventType_SceneUnsubscribed, sceneId);
-                break;
-            default:
-                assert(false);
-            }
-            m_sceneGraphConsumerComponent.unsubscribeScene(m_scenesStateInfo.getSceneClientGuid(sceneId), sceneId);
+            m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneUnsubscribed, sceneId);
+            m_rendererSceneEventSender.sendUnsubscribeScene(sceneId);
         }
 
         m_scenesStateInfo.setSceneState(sceneId, ESceneState::Published);
@@ -155,7 +154,7 @@ namespace ramses_internal
     {
         assert(checkIfCanBeMapped(sceneId));
         m_scenesStateInfo.setSceneState(sceneId, ESceneState::Mapped);
-        m_rendererEventCollector.addEvent(ERendererEventType_SceneMapped, sceneId);
+        m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneMapped, sceneId);
         LOG_INFO(CONTEXT_RENDERER, "Scene " << sceneId.getValue() << " is in state MAPPED caused by command MAP");
     }
 
@@ -163,7 +162,7 @@ namespace ramses_internal
     {
         assert(canBeUnmapped(sceneId));
         m_scenesStateInfo.setSceneState(sceneId, ESceneState::Subscribed);
-        m_rendererEventCollector.addEvent(ERendererEventType_SceneUnmapped, sceneId);
+        m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneUnmapped, sceneId);
         LOG_INFO(CONTEXT_RENDERER, "Scene " << sceneId.getValue() << " is in state SUBSCRIBED caused by command UNMAP");
     }
 
@@ -178,7 +177,7 @@ namespace ramses_internal
     {
         assert(canBeShown(sceneId));
         m_scenesStateInfo.setSceneState(sceneId, ESceneState::Rendered);
-        m_rendererEventCollector.addEvent(ERendererEventType_SceneShown, sceneId);
+        m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneShown, sceneId);
         LOG_INFO(CONTEXT_RENDERER, "Scene " << sceneId.getValue() << " is in state RENDERED caused by command SHOW");
     }
 
@@ -186,7 +185,7 @@ namespace ramses_internal
     {
         assert(canBeHidden(sceneId));
         m_scenesStateInfo.setSceneState(sceneId, ESceneState::Mapped);
-        m_rendererEventCollector.addEvent(ERendererEventType_SceneHidden, sceneId);
+        m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneHidden, sceneId);
         LOG_INFO(CONTEXT_RENDERER, "Scene " << sceneId.getValue() << " is in state MAPPED caused by command HIDE");
     }
 
@@ -246,7 +245,7 @@ namespace ramses_internal
         if (!canBeSubscriptionRequested(sceneId))
         {
             LOG_ERROR(CONTEXT_RENDERER, "Failed subscription request for scene with id :" << sceneId.getValue() << " because it was not in published state!");
-            m_rendererEventCollector.addEvent(ERendererEventType_SceneSubscribeFailed, sceneId);
+            m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneSubscribeFailed, sceneId);
             return false;
         }
 
@@ -258,7 +257,7 @@ namespace ramses_internal
         if (!canBeUnsubscribed(sceneId))
         {
             LOG_ERROR(CONTEXT_RENDERER, "Failed to unsubscribe from scene with id :" << sceneId.getValue() << " because it is not in the subscribed/subscribing state!");
-            m_rendererEventCollector.addEvent(ERendererEventType_SceneUnsubscribeFailed, sceneId);
+            m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneUnsubscribeFailed, sceneId);
             return false;
         }
 
@@ -275,7 +274,7 @@ namespace ramses_internal
             }
             else
             {
-                m_rendererEventCollector.addEvent(ERendererEventType_SceneMapFailed, sceneId);
+                m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneMapFailed, sceneId);
                 LOG_ERROR(CONTEXT_RENDERER, "Failed to map scene with id :" << sceneId.getValue() << " because scene is not in subscribed state (state is " << EnumToString(getSceneState(sceneId)) << ")!");
             }
             return false;
@@ -288,7 +287,7 @@ namespace ramses_internal
     {
         if (!canBeMappingAndUploading(sceneId))
         {
-            m_rendererEventCollector.addEvent(ERendererEventType_SceneMapFailed, sceneId);
+            m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneMapFailed, sceneId);
             LOG_ERROR(CONTEXT_RENDERER, "Failed map for scene with id :" << sceneId.getValue() << " because scene is not in map requested state (state is " << EnumToString(getSceneState(sceneId)) << ")!");
             return false;
         }
@@ -300,7 +299,7 @@ namespace ramses_internal
     {
         if (!canBeMapped(sceneId))
         {
-            m_rendererEventCollector.addEvent(ERendererEventType_SceneMapFailed, sceneId);
+            m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneMapFailed, sceneId);
             LOG_ERROR(CONTEXT_RENDERER, "Failed map for scene with id :" << sceneId.getValue() << " because scene is not in mapping_and_uploading state (state is " << EnumToString(getSceneState(sceneId)) << ")!");
             return false;
         }
@@ -313,7 +312,7 @@ namespace ramses_internal
         if (!canBeUnmapped(sceneId))
         {
             LOG_ERROR(CONTEXT_RENDERER, "Failed unmap for scene with id :" << sceneId.getValue() << " because it is not in mapped or mapping state  (state is " << EnumToString(getSceneState(sceneId)) << ")!");
-            m_rendererEventCollector.addEvent(ERendererEventType_SceneUnmapFailed, sceneId);
+            m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneUnmapFailed, sceneId);
             return false;
         }
 
@@ -324,7 +323,7 @@ namespace ramses_internal
     {
         if (!canBeRenderedRequested(sceneId))
         {
-            m_rendererEventCollector.addEvent(ERendererEventType_SceneShowFailed, sceneId);
+            m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneShowFailed, sceneId);
             LOG_ERROR(CONTEXT_RENDERER, "Failed show for scene with id :" << sceneId.getValue() << " because scene is not in mapped state  (state is " << EnumToString(getSceneState(sceneId)) << ")!");
             return false;
         }
@@ -336,7 +335,7 @@ namespace ramses_internal
     {
         if (!canBeShown(sceneId))
         {
-            m_rendererEventCollector.addEvent(ERendererEventType_SceneShowFailed, sceneId);
+            m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneShowFailed, sceneId);
             LOG_ERROR(CONTEXT_RENDERER, "Failed show for scene with id :" << sceneId.getValue() << " because scene is not in mapped state  (state is " << EnumToString(getSceneState(sceneId)) << ")!");
             return false;
         }
@@ -349,7 +348,7 @@ namespace ramses_internal
         if (!canBeHidden(sceneId))
         {
             LOG_ERROR(CONTEXT_RENDERER, "Failed hiding scene with id :" << sceneId.getValue() << " because it is not in a shown state (state is " << EnumToString(getSceneState(sceneId)) << ")!");
-            m_rendererEventCollector.addEvent(ERendererEventType_SceneHideFailed, sceneId);
+            m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneHideFailed, sceneId);
             return false;
         }
 

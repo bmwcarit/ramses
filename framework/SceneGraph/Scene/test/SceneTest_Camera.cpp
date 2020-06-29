@@ -13,11 +13,11 @@ using namespace testing;
 
 namespace ramses_internal
 {
-    TYPED_TEST_CASE(AScene, SceneTypes);
+    TYPED_TEST_SUITE(AScene, SceneTypes);
 
     static DataInstanceHandle AllocDummyDataInstance(IScene& scene)
     {
-        const auto dataLayout = scene.allocateDataLayout({ {ramses_internal::EDataType_Vector2I}, {ramses_internal::EDataType_Vector2I} });
+        const auto dataLayout = scene.allocateDataLayout({ DataFieldInfo{ramses_internal::EDataType_Vector2I}, DataFieldInfo{ramses_internal::EDataType_Vector2I} }, ResourceContentHash(123u, 0u));
         return scene.allocateDataInstance(dataLayout);
     }
 
@@ -78,7 +78,7 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, SetsOrthoCameraPlanes)
     {
-        const CameraHandle camera = this->m_scene.allocateCamera(ECameraProjectionType_Orthographic, this->m_scene.allocateNode(), this->m_scene.allocateDataInstance(this->m_scene.allocateDataLayout({})));
+        const CameraHandle camera = this->m_scene.allocateCamera(ECameraProjectionType_Orthographic, this->m_scene.allocateNode(), this->m_scene.allocateDataInstance(this->m_scene.allocateDataLayout({}, ResourceContentHash(123u, 0u))));
         EXPECT_EQ(ECameraProjectionType_Orthographic, this->m_scene.getCamera(camera).projectionType);
 
         this->m_scene.setCameraFrustum(camera, { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f });
@@ -94,7 +94,7 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, SetsPerspectiveCameraPlanes)
     {
-        const CameraHandle camera = this->m_scene.allocateCamera(ECameraProjectionType_Perspective, this->m_scene.allocateNode(), this->m_scene.allocateDataInstance(this->m_scene.allocateDataLayout({})));
+        const CameraHandle camera = this->m_scene.allocateCamera(ECameraProjectionType_Perspective, this->m_scene.allocateNode(), this->m_scene.allocateDataInstance(this->m_scene.allocateDataLayout({}, ResourceContentHash(123u, 0u))));
         EXPECT_EQ(ECameraProjectionType_Perspective, this->m_scene.getCamera(camera).projectionType);
 
         this->m_scene.setCameraFrustum(camera, { 1.1f, 1.2f, 1.3f, 1.4f, 1.5f, 10.f });

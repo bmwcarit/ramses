@@ -16,7 +16,7 @@ namespace ramses_internal
     struct StreamTexture
     {
         ResourceContentHash fallbackTexture;
-        Bool forceFallbackTexture = false;
+        bool forceFallbackTexture = false;
         uint32_t source = 0u;
     };
 }

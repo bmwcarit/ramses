@@ -7,37 +7,3 @@
 //  -------------------------------------------------------------------------
 
 #include "SceneCommandBuffer.h"
-
-namespace ramses_internal
-{
-    void SceneCommandBuffer::enqueueCommand(const SceneCommand& command)
-    {
-        switch(command.commandType)
-        {
-        case ESceneCommand_ForceFallbackImage:
-            enqueueCommandInternal(command.convertTo<ForceFallbackCommand>());
-            break;
-        case ESceneCommand_FlushSceneVersion:
-            enqueueCommandInternal(command.convertTo<FlushSceneVersionCommand>());
-            break;
-        case ESceneCommand_ValidationRequest:
-            enqueueCommandInternal(command.convertTo<ValidationRequestCommand>());
-            break;
-        case ESceneCommand_DumpSceneToFile:
-            enqueueCommandInternal(command.convertTo<DumpSceneToFileCommand>());
-            break;
-        case ESceneCommand_LogResourceMemoryUsage:
-            enqueueCommandInternal(command.convertTo<LogResourceMemoryUsageCommand>());
-            break;
-        default:
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "SceneCommandBuffer::enqueueCommand Trying to enqueue unknown command \"" << getSceneCommandName(command.commandType) << "\"" );
-            break;
-        }
-    }
-
-    void SceneCommandBuffer::exchangeContainerData(SceneCommandContainer& container)
-    {
-        PlatformLightweightGuard guard(m_lock);
-        m_container.swap(container);
-    }
-}

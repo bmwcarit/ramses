@@ -22,15 +22,6 @@ const ResourceContentHash ARendererSceneUpdater::InvalidResource2(0xff00ff02, 0)
 // General tests
 ///////////////////////////
 
-TEST_F(ARendererSceneUpdater, processesAsynchronousFlushForSubscribedScene)
-{
-    createPublishAndSubscribeScene();
-    const NodeHandle nodeHandle = performFlushWithCreateNodeAction();
-    update();
-    const IScene& scene = rendererScenes.getScene(stagingScene[0]->getSceneId());
-    EXPECT_TRUE(scene.isNodeAllocated(nodeHandle));
-}
-
 TEST_F(ARendererSceneUpdater, doesNotGenerateRendererEventForUnnamedFlush)
 {
     createPublishAndSubscribeScene();
@@ -48,11 +39,12 @@ TEST_F(ARendererSceneUpdater, generatesRendererEventForNamedFlush)
     expectNoEvent();
 
     const SceneVersionTag version(15u);
-    performFlush(0u, false, version);
+    performFlush(0u, version);
     update();
 
     RendererEventVector events;
-    rendererEventCollector.dispatchEvents(events);
+    RendererEventVector dummy;
+    rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
     ASSERT_EQ(1u, events.size());
     EXPECT_EQ(ERendererEventType_SceneFlushed, events[0].eventType);
     EXPECT_EQ(EResourceStatus_Unknown, events[0].resourceStatus);
@@ -67,7 +59,7 @@ TEST_F(ARendererSceneUpdater, preallocatesSceneForSizesProvidedInFlushInfo)
     // perform empty flush only with notification of scene size change
     SceneSizeInformation sizeInfo;
     sizeInfo.renderableCount = 12u;
-    performFlush(0u, false, SceneVersionTag::DefaultValue(), &sizeInfo);
+    performFlush(0u, SceneVersionTag::Invalid(), &sizeInfo);
     update();
 
     const IScene& rendererScene = rendererScenes.getScene(getSceneId());
@@ -79,9 +71,10 @@ TEST_F(ARendererSceneUpdater, ignoresSceneActionsForNotSubscribedScene)
     createStagingScene();
     publishScene();
 
-    performFlushWithCreateNodeAction();
+    performFlush(0u, SceneVersionTag(1u));
     update();
     // there is no scene to apply actions to
+    expectNoEvent();
 }
 
 TEST_F(ARendererSceneUpdater, ignoresSceneActionsForNotReceivedScene)
@@ -90,54 +83,61 @@ TEST_F(ARendererSceneUpdater, ignoresSceneActionsForNotReceivedScene)
     publishScene();
     requestSceneSubscription();
 
-    performFlushWithCreateNodeAction();
+    performFlush(0u, SceneVersionTag(1u));
     update();
     // there is no scene to apply actions to
+    expectNoEvent();
 }
 
 TEST_F(ARendererSceneUpdater, ignoresSceneActionsAddedAfterSceneWasUnsubscribed)
 {
     createPublishAndSubscribeScene();
 
-    EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(_, getSceneId()));
+    EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(getSceneId()));
     rendererSceneUpdater->handleSceneUnsubscriptionRequest(getSceneId(), false);
-    ASSERT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(getSceneId()));
-
+    EXPECT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(getSceneId()));
+    expectInternalSceneStateEvent(ERendererEventType_SceneUnsubscribed);
     EXPECT_FALSE(rendererScenes.hasScene(getSceneId()));
+
+    performFlush(0u, SceneVersionTag(1u));
+    update();
+    // there is no scene to apply actions to
+    expectNoEvent();
 }
 
 TEST_F(ARendererSceneUpdater, ignoresSceneActionsAddedAfterSceneWasUnsubscribedByError)
 {
     createPublishAndSubscribeScene();
 
-    EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(_, getSceneId()));
+    EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(getSceneId()));
     rendererSceneUpdater->handleSceneUnsubscriptionRequest(getSceneId(), true);
-    ASSERT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(getSceneId()));
-
+    EXPECT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(getSceneId()));
+    expectInternalSceneStateEvent(ERendererEventType_SceneUnsubscribedIndirect);
     EXPECT_FALSE(rendererScenes.hasScene(getSceneId()));
+
+    performFlush(0u, SceneVersionTag(1u));
+    update();
+    // there is no scene to apply actions to
+    expectNoEvent();
 }
 
 TEST_F(ARendererSceneUpdater, ignoresSceneActionsAddedBetweenUnsubscriptionAndResubscription)
 {
     createPublishAndSubscribeScene();
 
-    EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(_, getSceneId()));
+    EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(getSceneId()));
     rendererSceneUpdater->handleSceneUnsubscriptionRequest(getSceneId(), false);
-    ASSERT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(getSceneId()));
+    EXPECT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(getSceneId()));
+    expectInternalSceneStateEvent(ERendererEventType_SceneUnsubscribed);
 
-    performFlush(0u, false, SceneVersionTag(1u));
+    performFlush(0u, SceneVersionTag(1u));
 
-    EXPECT_CALL(sceneGraphConsumerComponent, subscribeScene(_, getSceneId()));
+    EXPECT_CALL(sceneEventSender, sendSubscribeScene(getSceneId()));
     rendererSceneUpdater->handleSceneSubscriptionRequest(getSceneId());
     rendererSceneUpdater->handleSceneReceived(SceneInfo(getSceneId()));
 
     // named flush ignored
-    RendererEventVector events;
-    rendererEventCollector.dispatchEvents(events);
-    for (const auto& event : events)
-    {
-        EXPECT_NE(ERendererEventType_SceneFlushed, event.eventType);
-    }
+    expectNoEvent();
 }
 
 TEST_F(ARendererSceneUpdater, canCreateAndDestroyDisplayContext)
@@ -227,7 +227,7 @@ TEST_F(ARendererSceneUpdater, destroyingSceneUpdaterUnmapsAnyMappedSceneFromRend
 
     destroySceneUpdater();
 
-    EXPECT_FALSE(renderer.getDisplaySceneIsMappedTo(getSceneId()).isValid());
+    EXPECT_FALSE(renderer.getDisplaySceneIsAssignedTo(getSceneId()).isValid());
 }
 
 TEST_F(ARendererSceneUpdater, destroyingSceneUpdaterDestroysAllDisplayContexts)
@@ -289,7 +289,7 @@ TEST_F(ARendererSceneUpdater, renderOncePassesAreRetriggeredWhenSceneMapped)
 
     auto& stageScene = *stagingScene[0];
     const RenderPassHandle pass = stageScene.allocateRenderPass();
-    const auto dataLayout = stageScene.allocateDataLayout({ {EDataType_Vector2I}, {EDataType_Vector2I} });
+    const auto dataLayout = stageScene.allocateDataLayout({ DataFieldInfo{EDataType_Vector2I}, DataFieldInfo{EDataType_Vector2I} }, ResourceContentHash::Invalid());
     const CameraHandle camera = stageScene.allocateCamera(ECameraProjectionType_Orthographic, stageScene.allocateNode(), stageScene.allocateDataInstance(dataLayout));
     stageScene.setRenderPassCamera(pass, camera);
     stageScene.setRenderPassRenderOnce(pass, true);
@@ -346,7 +346,7 @@ TEST_F(ARendererSceneUpdater, canHideSceneIfNotShownYet)
     // request show and hide within same frame
     rendererSceneUpdater->handleSceneShowRequest(getSceneId());
     rendererSceneUpdater->handleSceneHideRequest(getSceneId());
-    expectEvents({ ERendererEventType_SceneShowFailed, ERendererEventType_SceneHidden });
+    expectInternalSceneStateEvents({ ERendererEventType_SceneShowFailed, ERendererEventType_SceneHidden });
     EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
 
     // show failed (was canceled) and scene is still in mapped state
@@ -371,11 +371,11 @@ TEST_F(ARendererSceneUpdater, canNotUnmapSceneWhichWasRequestedToBeShown)
     rendererSceneUpdater->handleSceneShowRequest(getSceneId());
 
     rendererSceneUpdater->handleSceneUnmappingRequest(getSceneId());
-    expectEvents({ ERendererEventType_SceneUnmapFailed });
+    expectInternalSceneStateEvents({ ERendererEventType_SceneUnmapFailed });
     EXPECT_EQ(ESceneState::RenderRequested, sceneStateExecutor.getSceneState(getSceneId()));
 
     update();
-    expectEvents({ ERendererEventType_SceneShown });
+    expectInternalSceneStateEvent(ERendererEventType_SceneShown);
     EXPECT_EQ(ESceneState::Rendered, sceneStateExecutor.getSceneState(getSceneId()));
 
     // unmap scene
@@ -394,10 +394,10 @@ TEST_F(ARendererSceneUpdater, canUnsubscribeSceneIfSubscriptionRequested)
     // scene is now in subscription requested state, waiting for scene to arrive
     update();
 
-    // request unsubscribe should cancel the subscription and report subscription fail and unsubscribed events
-    EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(_, getSceneId()));
+    // request unsubscribe cancels the subscription and reports unsubscribed
+    EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(getSceneId()));
     rendererSceneUpdater->handleSceneUnsubscriptionRequest(getSceneId(), false);
-    expectEvents({ ERendererEventType_SceneSubscribeFailed, ERendererEventType_SceneUnsubscribed });
+    expectInternalSceneStateEvent(ERendererEventType_SceneUnsubscribed);
     EXPECT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(getSceneId()));
 
     update();
@@ -414,10 +414,10 @@ TEST_F(ARendererSceneUpdater, canUnsubscribeSceneIfSubscriptionPending)
     // scene is now in subscription pending state, scene arrived, waiting for initial flush
     update();
 
-    // request unsubscribe should cancel the subscription and report subscription fail and unsubscribed events
-    EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(_, getSceneId()));
+    // request unsubscribe cancels the subscription and reports unsubscribed
+    EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(getSceneId()));
     rendererSceneUpdater->handleSceneUnsubscriptionRequest(getSceneId(), false);
-    expectEvents({ ERendererEventType_SceneSubscribeFailed, ERendererEventType_SceneUnsubscribed });
+    expectInternalSceneStateEvent(ERendererEventType_SceneUnsubscribed);
     EXPECT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(getSceneId()));
 
     update();
@@ -536,7 +536,7 @@ TEST_F(ARendererSceneUpdater, canAssignSceneToOffscreenBuffer)
 
     createPublishAndSubscribeScene();
     mapScene(0u);
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(0, buffer));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(0, buffer, 11));
 
     expectContextEnable();
     unmapScene(0u);
@@ -556,9 +556,9 @@ TEST_F(ARendererSceneUpdater, canAssignSceneToFramebuffer_MultipleTimes)
     createPublishAndSubscribeScene();
     mapScene(0u);
     // Scene can be always assigned to framebuffer
-    EXPECT_TRUE(assignSceneToFramebuffer(0));
-    EXPECT_TRUE(assignSceneToFramebuffer(0));
-    EXPECT_TRUE(assignSceneToFramebuffer(0));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(0));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(0));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(0));
 
     expectContextEnable();
     unmapScene(0u);
@@ -577,11 +577,11 @@ TEST_F(ARendererSceneUpdater, confidence_failsToDestroyOffscreenBufferIfScenesAr
 
     createPublishAndSubscribeScene();
     mapScene(0u);
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(0, buffer));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(0, buffer));
 
     EXPECT_FALSE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
 
-    EXPECT_TRUE(assignSceneToFramebuffer(0));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(0));
 
     expectContextEnable();
     expectRenderTargetDeleted();
@@ -589,6 +589,54 @@ TEST_F(ARendererSceneUpdater, confidence_failsToDestroyOffscreenBufferIfScenesAr
 
     expectContextEnable();
     unmapScene(0u);
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, setsClearColorForOB)
+{
+    createDisplayAndExpectSuccess();
+
+    const OffscreenBufferHandle buffer(1u);
+    expectContextEnable();
+    expectRenderTargetUploaded(DisplayHandle1, true);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+
+    EXPECT_CALL(renderer, setClearColor(DisplayHandle1, DeviceMock::FakeRenderTargetDeviceHandle, Vector4{ 1, 2, 3, 4 }));
+    rendererSceneUpdater->handleSetClearColor(DisplayHandle1, buffer, { 1, 2, 3, 4 });
+
+    expectContextEnable();
+    expectRenderTargetDeleted();
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, setsClearColorForFBIfNoOBSpecified)
+{
+    createDisplayAndExpectSuccess();
+
+    const OffscreenBufferHandle buffer(1u);
+    expectContextEnable();
+    expectRenderTargetUploaded(DisplayHandle1, true);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+
+    EXPECT_CALL(renderer, setClearColor(DisplayHandle1, renderer.getDisplayController(DisplayHandle1).getDisplayBuffer(), Vector4{ 1, 2, 3, 4 }));
+    rendererSceneUpdater->handleSetClearColor(DisplayHandle1, OffscreenBufferHandle::Invalid(), { 1, 2, 3, 4 });
+
+    expectContextEnable();
+    expectRenderTargetDeleted();
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, doesNotSetClearColorIfOBSpecifiedButNotFound)
+{
+    createDisplayAndExpectSuccess();
+
+    EXPECT_CALL(renderer, setClearColor(_, _, _)).Times(0u);
+    rendererSceneUpdater->handleSetClearColor(DisplayHandle1, OffscreenBufferHandle{ 1234u }, { 1, 2, 3, 4 });
+
     destroyDisplay();
 }
 
@@ -702,6 +750,8 @@ TEST_F(ARendererSceneUpdater, removesTextureLinkWhenProviderSceneUnmapped)
     showScene(1u);
 
     expectResourceRequest();
+    expectContextEnable();
+    expectTextureUploaded();
     createTextureSlotsAndLinkThem();
     update();
 
@@ -716,6 +766,7 @@ TEST_F(ARendererSceneUpdater, removesTextureLinkWhenProviderSceneUnmapped)
 
     hideScene(1u);
     expectContextEnable();
+    expectTextureDeleted();
     unmapScene(1u);
     destroyDisplay();
 }
@@ -734,6 +785,8 @@ TEST_F(ARendererSceneUpdater, removesTextureLinkWhenConsumerSceneUnmapped)
     showScene(1u);
 
     expectResourceRequest();
+    expectContextEnable();
+    expectTextureUploaded();
     createTextureSlotsAndLinkThem();
     update();
 
@@ -748,6 +801,7 @@ TEST_F(ARendererSceneUpdater, removesTextureLinkWhenConsumerSceneUnmapped)
 
     hideScene(0u);
     expectContextEnable();
+    expectTextureDeleted();
     unmapScene(0u);
     destroyDisplay();
 }
@@ -787,6 +841,8 @@ TEST_F(ARendererSceneUpdater, failsToCreateTextureLinkIfConsumerSceneNotMapped)
     showScene(0u);
 
     expectResourceRequest();
+    expectContextEnable();
+    expectTextureUploaded();
     createTextureSlotsAndLinkThem(nullptr, 0u, 1u, false);
     update();
 
@@ -797,6 +853,7 @@ TEST_F(ARendererSceneUpdater, failsToCreateTextureLinkIfConsumerSceneNotMapped)
 
     hideScene(0u);
     expectContextEnable();
+    expectTextureDeleted();
     unmapScene(0u);
     destroyDisplay();
 }
@@ -827,6 +884,8 @@ TEST_F(ARendererSceneUpdater, failsToCreateTextureLinkIfProviderSceneMappedToDif
     mapScene(1u, DisplayHandle2);
 
     expectResourceRequest();
+    expectContextEnable();
+    expectTextureUploaded();
     createTextureSlotsAndLinkThem(nullptr, 0u, 1u, false);
     update();
 
@@ -836,6 +895,7 @@ TEST_F(ARendererSceneUpdater, failsToCreateTextureLinkIfProviderSceneMappedToDif
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getSceneLinks().hasAnyLinksToProvider(getSceneId(1u)));
 
     expectContextEnable(DisplayHandle1);
+    expectTextureDeleted();
     unmapScene(0u);
     expectContextEnable(DisplayHandle2);
     unmapScene(1u);
@@ -990,392 +1050,6 @@ TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfProviderBufferIsFromAnoth
 }
 
 /////////////////////////////////////////////
-// Partial scene actions applying tests
-/////////////////////////////////////////////
-
-TEST_F(ARendererSceneUpdater, doesNotApplySceneActionsIfUpdateTimeBudgetExceeded)
-{
-    createPublishAndSubscribeScene();
-    createPublishAndSubscribeScene(); // need 2 scenes to allow partial flush processing
-
-    performFlush();
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    // simulate no time left for update operations
-    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
-
-    performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply + 1);
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-}
-
-TEST_F(ARendererSceneUpdater, interruptsApplyingBigFlushWithLimitedBudgetAndFinishesAfterSeveralUpdates)
-{
-    createPublishAndSubscribeScene();
-    createPublishAndSubscribeScene(); // need 2 scenes to allow partial flush processing
-
-    performFlush();
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    // simulate no time left for update operations
-    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
-
-    performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply * 3);
-
-    for (int i = 0; i < 6; ++i)
-    {
-        update();
-        EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-    }
-
-    // eventually applies last chunk of big flush
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-}
-
-TEST_F(ARendererSceneUpdater, interruptsApplyingManySmallFlushesWithLimitedBudgetAndFinishesAfterSeveralUpdates)
-{
-    createPublishAndSubscribeScene();
-    createPublishAndSubscribeScene(); // need 2 scenes to allow partial flush processing
-
-    performFlush();
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    // simulate no time left for update operations
-    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
-
-    // make sure there will be no force apply or unsubscribe
-    rendererSceneUpdater->setLimitFlushesForceApply(999999);
-    rendererSceneUpdater->setLimitFlushesForceUnsubscribe(999999);
-
-    for (int i = 0; i < 3; ++i)
-        performFlush();
-
-    for (int i = 0; i < 2; ++i)
-    {
-        // due to 0 limit at most one small flush is applied per update
-        update();
-        EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-    }
-
-    // eventually applies last flush
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-}
-
-TEST_F(ARendererSceneUpdater, interruptsApplyingSeveralBigFlushesWithLimitedBudgetAndFinishesAfterSeveralUpdates)
-{
-    createPublishAndSubscribeScene();
-    createPublishAndSubscribeScene(); // need 2 scenes to allow partial flush processing
-
-    performFlush();
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    // simulate no time left for update operations
-    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
-
-    for (int i = 0; i < 3; ++i)
-        performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply);
-
-    for (int i = 0; i < 8; ++i)
-    {
-        update();
-        EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-    }
-
-    // eventually applies last chunk of last big flush
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-}
-
-TEST_F(ARendererSceneUpdater, continuesApplyingPendingSceneActionsNextUpdateAfterUpdateTimeBudgetExceeded)
-{
-    createPublishAndSubscribeScene();
-    createPublishAndSubscribeScene(); // need 2 scenes to allow partial flush processing
-
-    // simulate no time left for update operations
-    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
-
-    performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply * 3);
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-
-    // simulate some time left to continue with applying scene actions
-    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 10000000u);
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-}
-
-TEST_F(ARendererSceneUpdater, continuesApplyingPendingSceneActionsNextUpdateAfterUpdateTimeBudgetExceeded_inMappedState)
-{
-    createDisplayAndExpectSuccess();
-
-    createPublishAndSubscribeScene();
-    createPublishAndSubscribeScene(); // need 2 scenes to allow partial flush processing
-
-    mapScene();
-
-    // simulate no time left for update operations
-    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
-
-    performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply * 3);
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-
-    // simulate some time left to continue with applying scene actions
-    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 10000000u);
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    expectContextEnable();
-    unmapScene();
-
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, ignoresUpdateTimeBudgetIfThereIsNoOtherSceneToBlock)
-{
-    createPublishAndSubscribeScene();
-
-    performFlush();
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    // simulate no time left for update operations
-    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
-
-    performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply + 1);
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-}
-
-TEST_F(ARendererSceneUpdater, ignoresUpdateTimeBudgetIfSceneIsShown)
-{
-    createPublishAndSubscribeScene();
-    createPublishAndSubscribeScene(); // need 2 scenes to allow partial flush processing
-
-    performFlush();
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    createDisplayAndExpectSuccess();
-    mapScene();
-    showScene();
-
-    // simulate no time left for update operations
-    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
-
-    performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply + 1);
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    hideScene();
-    expectContextEnable();
-    unmapScene();
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, willMapSceneOnlyAfterAllPartialFlushesApplied)
-{
-    createDisplayAndExpectSuccess();
-
-    createPublishAndSubscribeScene();
-    createPublishAndSubscribeScene(); // need 2 scenes to allow partial flush processing
-
-    // simulate no time left for update operations
-    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
-
-    performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply * 10); // will call multiple updates -> make sure there's enough actions to interrupt
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-    // now has pending flush
-
-    requestMapScene();
-
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-    expectNoEvent();
-
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-    expectNoEvent();
-
-    // simulate some time left to continue with applying scene actions
-    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 10000000u);
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    // needs one more update to progress through mapping states to final mapped state
-    update();
-    expectEvent(ERendererEventType_SceneMapped);
-
-    expectContextEnable();
-    unmapScene();
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, willShowSceneOnlyAfterAllPartialFlushesApplied)
-{
-    createDisplayAndExpectSuccess();
-
-    createPublishAndSubscribeScene();
-    createPublishAndSubscribeScene(); // need 2 scenes to allow partial flush processing
-
-    mapScene();
-
-    // simulate no time left for update operations
-    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
-
-    performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply * 10); // will call multiple updates -> make sure there's enough actions to interrupt
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-    // now has pending flush
-
-    // request show
-    rendererSceneUpdater->handleSceneShowRequest(getSceneId(0u));
-
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-    expectNoEvent();
-
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-    expectNoEvent();
-
-    // simulate some time left to continue with applying scene actions
-    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 10000000u);
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-    // only now is scene shown
-    expectEvent(ERendererEventType_SceneShown);
-
-    hideScene();
-    expectContextEnable();
-    unmapScene();
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, willShowSceneAsSoonAsPartialFlushAppliedEvenIfOtherFlushesPending)
-{
-    createDisplayAndExpectSuccess();
-
-    createPublishAndSubscribeScene();
-    createPublishAndSubscribeScene(); // need 2 scenes to allow partial flush processing
-
-    mapScene();
-    update();
-
-    // simulate no time left for update operations
-    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
-
-    // big flush
-    performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply * 3);
-    // small flushes
-    performFlush();
-    performFlush();
-    performFlush();
-
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-    // now has pending flushes
-
-    // request show
-    rendererSceneUpdater->handleSceneShowRequest(getSceneId(0u));
-
-    for (UInt i = 0; i < 5; ++i)
-    {
-        update();
-        EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-        expectNoEvent();
-    }
-
-    // this update applies last chunk of big flush
-    update();
-    // now scene could be shown
-    expectEvent(ERendererEventType_SceneShown);
-    // but there are still pending (not interrupted) flushes
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-
-    // scene is shown now, partial applying not allowed -> rest of flushes are applied right away
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    hideScene();
-    expectContextEnable();
-    unmapScene();
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, confidenceTest_appliesMultipleConsecutiveFlushesBasedOnUpdateTimeBudget)
-{
-    createPublishAndSubscribeScene();
-    createPublishAndSubscribeScene(); // need 2 scenes to allow partial flush processing
-
-    for (UInt i = 0u; i < 5u; ++i)
-    {
-        performFlushWithCreateNodeAction(0, RendererSceneUpdater::SceneActionsPerChunkToApply * 3);
-
-        // no time for update
-        frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
-        update();
-        expectNoEvent();
-        EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-
-        // enough time to apply flush scene actions
-        frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 10000000u);
-        update();
-        EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-    }
-}
-
-TEST_F(ARendererSceneUpdater, generatesNamedFlushEventAfterItIsFullyAppliedWhenInterrupted)
-{
-    createPublishAndSubscribeScene();
-    createPublishAndSubscribeScene(); // need 2 scenes to allow partial flush processing
-
-    performFlush();
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    // no budget for actions applying
-    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneActionsApply, 0u);
-
-    const SceneVersionTag versionTag(333);
-    IScene& scene = *stagingScene[0];
-
-    // generate big enough flush so that it contains multiple chunks and will be interrupted at least once
-    SceneAllocateHelper sceneAllocator(scene);
-    for (int i = 0; i < 1000; ++i)
-        sceneAllocator.allocateNode();
-
-    performFlush(0, false, versionTag);
-
-    // check it was really interrupted
-    update();
-    expectNoEvent();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-
-    // wait for it to be finished
-    while (!lastFlushWasAppliedOnRendererScene())
-    {
-        // expect no event till flush fully applied
-        expectNoEvent();
-        update();
-    }
-
-    // expect named flush to be reported after flush fully applied
-    RendererEventVector events;
-    rendererEventCollector.dispatchEvents(events);
-    ASSERT_EQ(1u, events.size());
-    EXPECT_EQ(ERendererEventType_SceneFlushed, events[0].eventType);
-    EXPECT_EQ(versionTag, events[0].sceneVersionTag);
-}
-
-/////////////////////////////////////////////
 // Other tests
 /////////////////////////////////////////////
 
@@ -1395,7 +1069,8 @@ TEST_F(ARendererSceneUpdater, updateSceneStreamTexturesDirtinessGeneratesEventsF
     update();
 
     RendererEventVector resultEvents;
-    rendererEventCollector.dispatchEvents(resultEvents);
+    RendererEventVector dummy;
+    rendererEventCollector.appendAndConsumePendingEvents(dummy, resultEvents);
     ASSERT_EQ(2u, resultEvents.size());
     EXPECT_EQ(ERendererEventType_StreamSurfaceAvailable, resultEvents[0].eventType);
     EXPECT_EQ(newStreamId, resultEvents[0].streamSourceId);
@@ -1403,6 +1078,53 @@ TEST_F(ARendererSceneUpdater, updateSceneStreamTexturesDirtinessGeneratesEventsF
     EXPECT_EQ(obsoleteStreamId, resultEvents[1].streamSourceId);
 
     destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, willShowSceneEvenIfFlushesPending)
+{
+    createDisplayAndExpectSuccess();
+
+    createPublishAndSubscribeScene();
+    performFlushWithCreateNodeAction();
+
+    mapScene();
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    const ResourceContentHash nonExistingResource{ 0u, 123u };
+    createRenderable();
+    setRenderableResources(0u, nonExistingResource);
+    expectResourceRequest();
+    expectContextEnable();
+    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
+    rendererSceneUpdater->handleSceneShowRequest(getSceneId(0u));
+    update();
+    //expect scene shown despite having a pending flush
+    expectInternalSceneStateEvent(ERendererEventType_SceneShown);
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+
+    hideScene();
+    expectContextEnable();
+    expectRenderableResourcesDeleted(DisplayHandle1, true, false);
+    unmapScene();
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, appliesBigPendingWithinOneUpdate)
+{
+    createPublishAndSubscribeScene();
+    createPublishAndSubscribeScene();
+
+    performFlushWithCreateNodeAction(0, 10000);
+    performFlushWithCreateNodeAction(1, 10000);
+    performFlushWithCreateNodeAction(0, 10000);
+    performFlushWithCreateNodeAction(1, 10000);
+    performFlushWithCreateNodeAction(0, 10000);
+    performFlushWithCreateNodeAction(1, 10000);
+
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene(0u));
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene(1u));
 }
 
 /////////////////////////////////////////////
@@ -1425,8 +1147,8 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfStreamTextureStateIsN
     {
         EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfStreamTexturesAndSources(_, _, _));
 
+        expectNoModifiedScenesReportedToRenderer();
         update();
-        expectNoScenesModified();
     }
 
     hideScene();
@@ -1457,14 +1179,14 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamTextureStateIsUpdated
         EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfStreamTexturesAndSources(_, _, _)).WillOnce(SetArgReferee<0>(updatedStreamTextures));
         expectEmbeddedCompositingManagerReturnsDeviceHandle(fakeDeviceResourceHandle);
 
+        expectModifiedScenesReportedToRenderer();
         update();
-        expectScenesModified();
     }
     {
         EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfStreamTexturesAndSources(_, _, _));
 
+        expectNoModifiedScenesReportedToRenderer();
         update();
-        expectNoScenesModified();
     }
 
     hideScene();
@@ -1495,15 +1217,15 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceContentIsUpdate
         EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, uploadResourcesAndGetUpdates(_, _)).WillOnce(SetArgReferee<0>(updatedScenes));
 
         expectContextEnable();
+        expectModifiedScenesReportedToRenderer();
         update();
-        expectScenesModified();
     }
     {
         //SS not updated
         EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, hasUpdatedContentFromStreamSourcesToUpload()).WillOnce(Return(false));
 
+        expectNoModifiedScenesReportedToRenderer();
         update();
-        expectNoScenesModified();
     }
 
     hideScene();
@@ -1519,16 +1241,14 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfNonEmptyFlushApplied)
     createPublishAndSubscribeScene();
     mapScene();
     showScene();
-
     update();
-    expectNoScenesModified();
 
     performFlushWithCreateNodeAction();
+    expectModifiedScenesReportedToRenderer();
     update();
-    expectScenesModified();
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     hideScene();
     expectContextEnable();
@@ -1536,7 +1256,7 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfNonEmptyFlushApplied)
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfEmptyAsynchFlushAppliedOnEmptyScene)
+TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfEmptyFlushAppliedOnEmptyScene)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
@@ -1544,11 +1264,9 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfEmptyAsynchFlushAppli
     showScene();
     update();
 
-    expectNoScenesModified();
-
-    performFlush();
+    expectNoModifiedScenesReportedToRenderer();
+    performFlush(0u);
     update();
-    expectNoScenesModified();
 
     hideScene();
     expectContextEnable();
@@ -1556,27 +1274,7 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfEmptyAsynchFlushAppli
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfEmptySynchFlushAppliedOnEmptyScene)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    mapScene();
-    showScene();
-    update();
-
-    expectNoScenesModified();
-
-    performFlush(0u, true);
-    update();
-    expectNoScenesModified();
-
-    hideScene();
-    expectContextEnable();
-    unmapScene();
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfEmptyAsynchFlushAppliedOnNonEmptyScene)
+TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfEmptyFlushAppliedOnNonEmptyScene)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
@@ -1584,33 +1282,12 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfEmptyAsynchFlushAppli
     showScene();
 
     performFlushWithCreateNodeAction();
+    expectModifiedScenesReportedToRenderer();
     update();
-    expectScenesModified();
 
-    performFlush();
+    expectNoModifiedScenesReportedToRenderer();
+    performFlush(0u);
     update();
-    expectNoScenesModified();
-
-    hideScene();
-    expectContextEnable();
-    unmapScene();
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfEmptySynchFlushAppliedOnNonEmptyScene)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    mapScene();
-    showScene();
-
-    performFlushWithCreateNodeAction();
-    update();
-    expectScenesModified();
-
-    performFlush(0u, true);
-    update();
-    expectNoScenesModified();
 
     hideScene();
     expectContextEnable();
@@ -1632,12 +1309,12 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfSynchFlushAppliedWithExisti
     setRenderableResources();
     expectContextEnable();
     expectRenderableResourcesUploaded();
+    expectModifiedScenesReportedToRenderer();
     update();
     expectRenderableResourcesClean();
-    expectScenesModified();
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     hideScene();
     expectContextEnable();
@@ -1660,21 +1337,21 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfSynchFlushCouldNotBeA
         setRenderableResources();
         expectContextEnable();
         expectRenderableResourcesUploaded();
+        expectModifiedScenesReportedToRenderer();
         update();
         expectRenderableResourcesClean();
-        expectScenesModified();
         EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
     }
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     {
         resourceProvider1.setIndexArrayAvailability(false);
-        setRenderableResources(0u, ResourceProviderMock::FakeIndexArrayHash2, true);
+        setRenderableResources(0u, ResourceProviderMock::FakeIndexArrayHash2);
         expectResourceRequest();
+        expectNoModifiedScenesReportedToRenderer();
         update();
-        expectNoScenesModified();
         EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
     }
 
@@ -1694,7 +1371,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_IfSynchFlushAppliedAfterMissin
 
     const ResourceContentHash missingResourceHash = ResourceProviderMock::FakeIndexArrayHash;
     createRenderable();
-    setRenderableResources(0u, missingResourceHash, true);
+    setRenderableResources(0u, missingResourceHash);
 
     {
         resourceProvider1.setIndexArrayAvailability(false);
@@ -1706,23 +1383,23 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_IfSynchFlushAppliedAfterMissin
         EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
     }
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     {
         resourceProvider1.setIndexArrayAvailability(true);
 
         expectContextEnable();
         expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+        expectModifiedScenesReportedToRenderer();
         update();
         ASSERT_TRUE(lastFlushWasAppliedOnRendererScene());
         expectRenderableResourcesClean();
-        expectScenesModified();
     }
 
     EXPECT_CALL(resourceProvider1, popArrivedResources(_)).Times(AnyNumber()).WillRepeatedly(Return(ManagedResourceVector()));
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     hideScene();
     expectContextEnable();
@@ -1738,27 +1415,31 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_DataLinking_IfSceneIsConsumerA
 
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
+    mapScene(0u);
     mapScene(1u);
+    showScene(0u);
     showScene(1u);
-
 
     DataInstanceHandle consumerDataRef;
     DataInstanceHandle providerDataRef;
     createDataSlotsAndLinkThem(consumerDataRef, 333.f, &providerDataRef);
     update();
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     updateProviderDataSlot(0u, providerDataRef, 777.f);
     performFlush();
+    expectModifiedScenesReportedToRenderer({0u, 1u});
     update();
-    expectScenesModified({0u, 1u});
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
+    hideScene(0u);
     hideScene(1u);
+    expectContextEnable();
+    unmapScene(0u);
     expectContextEnable();
     unmapScene(1u);
     destroyDisplay();
@@ -1780,16 +1461,16 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_DataLinking_IfSceneIsPr
     createDataSlotsAndLinkThem(consumerDataRef, providedValue);
     update();
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     stagingScene[1u]->setDataSingleFloat(consumerDataRef, DataFieldHandle(0u), 324.f);
     performFlush(1u);
+    expectModifiedScenesReportedToRenderer({1u}); //only consumer if marked as modified
     update();
-    expectScenesModified({1u}); //only consumer if marked as modified
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     hideScene(1u);
     expectContextEnable();
@@ -1805,7 +1486,11 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_DataLinking_IndirectlyDependan
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
+    mapScene(0u);
+    mapScene(1u);
     mapScene(2u);
+    showScene(0u);
+    showScene(1u);
     showScene(2u);
 
     DataInstanceHandle providerDataRef;
@@ -1823,18 +1508,24 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_DataLinking_IndirectlyDependan
         update();
     }
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     updateProviderDataSlot(0u, providerDataRef, 1.0f);
     performFlush();
+    expectModifiedScenesReportedToRenderer({0u, 1u, 2u});
     update();
-    expectScenesModified({0u, 1u, 2u});
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
+    hideScene(0u);
+    hideScene(1u);
     hideScene(2u);
+    expectContextEnable();
+    unmapScene(0u);
+    expectContextEnable();
+    unmapScene(1u);
     expectContextEnable();
     unmapScene(2u);
     destroyDisplay();
@@ -1848,7 +1539,11 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_DataLinking_OnlyDependantConsu
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
+    mapScene(0u);
+    mapScene(1u);
     mapScene(2u);
+    showScene(0u);
+    showScene(1u);
     showScene(2u);
 
     {
@@ -1866,18 +1561,24 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_DataLinking_OnlyDependantConsu
         update();
     }
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     updateProviderDataSlot(1u, providerDataRef, 1.0f);
     performFlush(1u);
+    expectModifiedScenesReportedToRenderer({1u, 2u});
     update();
-    expectScenesModified({1u, 2u});
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
+    hideScene(0u);
+    hideScene(1u);
     hideScene(2u);
+    expectContextEnable();
+    unmapScene(0u);
+    expectContextEnable();
+    unmapScene(1u);
     expectContextEnable();
     unmapScene(2u);
     destroyDisplay();
@@ -1895,11 +1596,15 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_DataLinking_IfSceneConsumesFro
     mapScene(0u);
     mapScene(1u);
     mapScene(2u);
+    showScene(0u);
+    showScene(1u);
     showScene(2u);
 
     {
         //tex. link scene 1 to scene 0
         expectResourceRequest();
+        expectContextEnable();
+        expectTextureUploaded();
         createTextureSlotsAndLinkThem();
         update();
     }
@@ -1912,22 +1617,27 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_DataLinking_IfSceneConsumesFro
         update();
     }
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     updateProviderDataSlot(1u, providerDataRef, 1.0f);
     performFlush(1u);
+    expectModifiedScenesReportedToRenderer({1u, 2u});
     update();
-    expectScenesModified({1u, 2u});
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
+    hideScene(0u);
+    hideScene(1u);
     hideScene(2u);
-    expectContextEnable(DisplayHandle1, 3u);
-    unmapScene(2u);
-    unmapScene(1u);
+    expectContextEnable();
+    expectTextureDeleted();
     unmapScene(0u);
+    expectContextEnable();
+    unmapScene(1u);
+    expectContextEnable();
+    unmapScene(2u);
     destroyDisplay();
 }
 
@@ -1940,7 +1650,11 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_DataLinking_ConfidenceTest)
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
+    mapScene(1u);
+    mapScene(2u);
     mapScene(3u);
+    showScene(1u);
+    showScene(2u);
     showScene(3u);
 
     {
@@ -1965,18 +1679,24 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_DataLinking_ConfidenceTest)
         update();
     }
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     updateProviderDataSlot(1u, providerDataRef, 1.0f);
     performFlush(1u);
+    expectModifiedScenesReportedToRenderer({1u, 2u, 3u});
     update();
-    expectScenesModified({1u, 2u, 3u});
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
+    hideScene(1u);
+    hideScene(2u);
     hideScene(3u);
+    expectContextEnable();
+    unmapScene(1u);
+    expectContextEnable();
+    unmapScene(2u);
     expectContextEnable();
     unmapScene(3u);
     destroyDisplay();
@@ -1990,29 +1710,35 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_TextureLinking_IfSceneIsConsum
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
     mapScene(0u);
+    showScene(0u);
     mapScene(1u);
     showScene(1u);
 
     DataSlotHandle providerDataSlotHandle;
     expectResourceRequest();
+    expectContextEnable();
+    expectTextureUploaded();
     createTextureSlotsAndLinkThem(&providerDataSlotHandle);
     update();
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     expectResourceRequest();
-    updateProviderTextureSlot(0u, providerDataSlotHandle, ResourceContentHash(0x9976u, 0));
+    expectContextEnable();
+    expectTextureUploaded();
+    updateProviderTextureSlot(0u, providerDataSlotHandle, ResourceProviderMock::FakeTextureHash2);
     performFlush();
+    expectModifiedScenesReportedToRenderer({0u, 1u});
     update();
-    expectScenesModified({0u, 1u});
 
-    expectResourceRequestCancel(ResourceContentHash(0x1234u, 0));
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
+    hideScene(0u);
     hideScene(1u);
     expectContextEnable(DisplayHandle1, 2u);
+    expectTextureDeleted().Times(2);
     unmapScene(0u);
     unmapScene(1u);
     destroyDisplay();
@@ -2031,11 +1757,15 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_TextureLinking_ConfidenceTest)
     mapScene(1u);
     mapScene(2u);
     mapScene(3u);
+    showScene(1u);
+    showScene(2u);
     showScene(3u);
 
     {
         //link scene 1 to scene 0
         expectResourceRequest();
+        expectContextEnable();
+        expectTextureUploaded();
         createTextureSlotsAndLinkThem();
         update();
     }
@@ -2053,20 +1783,25 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_TextureLinking_ConfidenceTest)
         update();
     }
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     expectResourceRequest(DisplayHandle1, 1u);
-    updateProviderTextureSlot(1u, providerDataSlotHandle, ResourceContentHash(0x9976u, 0));
+    expectContextEnable();
+    expectTextureUploaded();
+    updateProviderTextureSlot(1u, providerDataSlotHandle, ResourceProviderMock::FakeTextureHash2);
     performFlush(1u);
+    expectModifiedScenesReportedToRenderer({1u, 2u, 3u});
     update();
-    expectScenesModified({1u, 2u, 3u});
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
+    hideScene(1u);
+    hideScene(2u);
     hideScene(3u);
     expectContextEnable(DisplayHandle1, 4u);
+    expectTextureDeleted().Times(2);
     unmapScene();
     unmapScene(1u);
     unmapScene(2u);
@@ -2083,23 +1818,25 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_TransformationLinking_IfSceneI
     createPublishAndSubscribeScene();
     mapScene(0u);
     mapScene(1u);
+    showScene(0u);
     showScene(1u);
 
     TransformHandle providerTransformHandle;
     createTransformationSlotsAndLinkThem(&providerTransformHandle);
     update();
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     stagingScene[0]->setTranslation(providerTransformHandle, {0.f, 1.f, 2.f});
     performFlush();
+    expectModifiedScenesReportedToRenderer({0u, 1u});
     update();
-    expectScenesModified({0u, 1u});
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
+    hideScene(0u);
     hideScene(1u);
     expectContextEnable(DisplayHandle1, 2u);
     unmapScene(0u);
@@ -2120,6 +1857,8 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_TransformationLinking_Confiden
     mapScene(1u);
     mapScene(2u);
     mapScene(3u);
+    showScene(1u);
+    showScene(2u);
     showScene(3u);
 
     {
@@ -2141,17 +1880,19 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_TransformationLinking_Confiden
         update();
     }
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     stagingScene[1]->setTranslation(providerTransformHandle, {0.f, 1.f, 2.f});
     performFlush(1u);
+    expectModifiedScenesReportedToRenderer({1u, 2u, 3u});
     update();
-    expectScenesModified({1u, 2u, 3u});
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
+    hideScene(1u);
+    hideScene(2u);
     hideScene(3u);
     expectContextEnable(DisplayHandle1, 4u);
     unmapScene();
@@ -2178,23 +1919,23 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_IfScene
     showScene(0u);
     showScene(1u);
 
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(0, buffer));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(0, buffer));
 
     const DataSlotId consumerId = createTextureConsumer(1u);
     createBufferLink(buffer, stagingScene[1u]->getSceneId() , consumerId);
     update();
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     //update scene mapped to buffer
     performFlushWithCreateNodeAction(0u);
     //expect both scenes modified
+    expectModifiedScenesReportedToRenderer({0u, 1u});
     update();
-    expectScenesModified({0u, 1u});
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     hideScene(0u);
     hideScene(1u);
@@ -2227,24 +1968,24 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_IfScene
     showScene(1u);
     showScene(2u);
 
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(0, buffer));
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(1, buffer));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(0, buffer));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(1, buffer));
 
     const DataSlotId consumerId = createTextureConsumer(2u);
     createBufferLink(buffer, getSceneId(2u), consumerId);
     update();
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     //update scene mapped to buffer
     performFlushWithCreateNodeAction(1u);
 
+    expectModifiedScenesReportedToRenderer({ 1u, 2u });
     update();
-    expectScenesModified({ 1u, 2u });
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     hideScene(0u);
     hideScene(1u);
@@ -2274,23 +2015,23 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_OffscreenBufferLinking_
     showScene(0u);
     showScene(1u);
 
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(0, buffer));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(0, buffer));
 
     const DataSlotId consumerId = createTextureConsumer(1u);
     createBufferLink(buffer, stagingScene[1u]->getSceneId(), consumerId);
     update();
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     //update consumer
     performFlushWithCreateNodeAction(1u);
     //expect only consumer modified
+    expectModifiedScenesReportedToRenderer({ 1u });
     update();
-    expectScenesModified({ 1u });
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     hideScene(0u);
     hideScene(1u);
@@ -2323,7 +2064,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_TwoCons
     showScene(1u);
     showScene(2u);
 
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(0, buffer));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(0, buffer));
 
     {
         const DataSlotId consumerId = createTextureConsumer(1u);
@@ -2336,17 +2077,17 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_TwoCons
         update();
     }
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     //update scene mapped to buffer
     performFlushWithCreateNodeAction(0u);
     //expect both scenes modified
+    expectModifiedScenesReportedToRenderer({0u, 1u, 2u});
     update();
-    expectScenesModified({0u, 1u, 2u});
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     hideScene(0u);
     hideScene(1u);
@@ -2385,10 +2126,10 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Indirec
     showScene(1u);
     showScene(2u);
 
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(0, buffer1));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(0, buffer1));
 
     {
-        EXPECT_TRUE(assignSceneToOffscreenBuffer(1, buffer2));
+        EXPECT_TRUE(assignSceneToDisplayBuffer(1, buffer2));
         const DataSlotId consumerId = createTextureConsumer(1u);
         createBufferLink(buffer1, stagingScene[1u]->getSceneId() , consumerId);
         update();
@@ -2399,17 +2140,17 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Indirec
         update();
     }
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     //update scene mapped to buffer 1
     performFlushWithCreateNodeAction(0u);
     //expect all scenes modified
+    expectModifiedScenesReportedToRenderer({0u, 1u, 2u});
     update();
-    expectScenesModified({0u, 1u, 2u});
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     hideScene(0u);
     hideScene(1u);
@@ -2449,24 +2190,24 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_OffscreenBufferLinking_
     showScene(1u);
     showScene(2u);
 
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(0, buffer1));
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(1, buffer2));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(0, buffer1));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(1, buffer2));
 
     const DataSlotId consumerId = createTextureConsumer(2u);
     createBufferLink(buffer2, stagingScene[2u]->getSceneId() , consumerId);
     update();
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     //update scene mapped to buffer 1
     performFlushWithCreateNodeAction(0u);
     //expect only this scene to be modified
+    expectModifiedScenesReportedToRenderer({0u});
     update();
-    expectScenesModified({0u});
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     hideScene(0u);
     hideScene(1u);
@@ -2503,9 +2244,9 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Confide
         showScene(i);
     }
 
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(0, buffers[0]));
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(2, buffers[1]));
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(4, buffers[2]));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(0, buffers[0]));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(2, buffers[1]));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(4, buffers[2]));
 
     {
         const DataSlotId consumerId = createTextureConsumer(1u);
@@ -2529,17 +2270,17 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Confide
     }
     update();
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     //update s2
     performFlushWithCreateNodeAction(2u);
 
+    expectModifiedScenesReportedToRenderer({ 2u, 3u, 4u, 5u });
     update();
-    expectScenesModified({ 2u, 3u, 4u, 5u });
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
 
     expectContextEnable(DisplayHandle1, 6u);
@@ -2577,10 +2318,10 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Confide
         showScene(i);
     }
 
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(0, buffers[0]));
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(1, buffers[0]));
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(2, buffers[1]));
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(3, buffers[2]));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(0, buffers[0]));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(1, buffers[0]));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(2, buffers[1]));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(3, buffers[2]));
 
     {
         const DataSlotId consumerId = createTextureConsumer(2u);
@@ -2596,17 +2337,17 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Confide
     }
     update();
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     //update s3
     performFlushWithCreateNodeAction(3u);
 
+    expectModifiedScenesReportedToRenderer({ 3u, 4u });
     update();
-    expectScenesModified({ 3u, 4u });
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
 
     expectContextEnable(DisplayHandle1, 5u);
@@ -2628,18 +2369,19 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfRealTimeAnimationIsActive)
     showScene();
 
     const auto animationHandle = createRealTimeActiveAnimation();
+    PlatformThread::Sleep(1u);
+    expectModifiedScenesReportedToRenderer();
+    update();
 
     PlatformThread::Sleep(1u);
+    expectModifiedScenesReportedToRenderer();
     update();
-    expectScenesModified();
 
-    PlatformThread::Sleep(1u);
-    update();
-    expectScenesModified();
-
+    expectModifiedScenesReportedToRenderer();
     stopAnimation(animationHandle);
+
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     hideScene();
     expectContextEnable();
@@ -2659,21 +2401,22 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfOffscreenBufferLinkedToScen
     expectContextEnable();
     expectRenderTargetUploaded(DisplayHandle1, true);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(scene2, buffer));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(scene2, buffer));
 
     const DataSlotId consumer = createTextureConsumer(scene1);
 
     showScene(scene1);
     showScene(scene2);
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     createBufferLink(buffer, getSceneId(scene1), consumer);
-    expectScenesModified({ scene1 });
-
+    expectModifiedScenesReportedToRenderer({ scene1 });
     update();
-    expectNoScenesModified();
+
+    expectNoModifiedScenesReportedToRenderer();
+    update();
 
     hideScene(scene1);
     hideScene(scene2);
@@ -2701,27 +2444,29 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfOffscreenBufferUnlinkedFrom
     expectContextEnable();
     expectRenderTargetUploaded(DisplayHandle1, true);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(scene2, buffer));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(scene2, buffer));
 
     const DataSlotId consumer = createTextureConsumer(scene1);
 
     showScene(scene1);
     showScene(scene2);
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     createBufferLink(buffer, getSceneId(scene1), consumer);
-    expectScenesModified({ scene1 });
-
+    expectModifiedScenesReportedToRenderer({ scene1 });
     update();
-    expectNoScenesModified();
+
+    expectNoModifiedScenesReportedToRenderer();
+    update();
 
     unlinkConsumer(getSceneId(scene1), consumer);
-    expectScenesModified({ scene1 });
-
+    expectModifiedScenesReportedToRenderer({ scene1 });
     update();
-    expectNoScenesModified();
+
+    expectNoModifiedScenesReportedToRenderer();
+    update();
 
     hideScene(scene1);
     hideScene(scene2);
@@ -2751,22 +2496,23 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_WhenProviderSceneAssignedToOB
     expectContextEnable();
     expectRenderTargetUploaded(DisplayHandle1, true);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(scene2, buffer));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(scene2, buffer));
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     createBufferLink(buffer, getSceneId(scene1), consumer);
-    expectScenesModified({ scene1 });
-
+    expectModifiedScenesReportedToRenderer({ scene1 });
     update();
-    expectNoScenesModified();
 
+    expectNoModifiedScenesReportedToRenderer();
+    update();
+
+    expectModifiedScenesReportedToRenderer({ scene1, scene2 });
     showScene(scene2);
-    expectScenesModified({ scene1, scene2 });
 
+    expectNoModifiedScenesReportedToRenderer();
     update();
-    expectNoScenesModified();
 
     hideScene(scene1);
     hideScene(scene2);
@@ -2795,19 +2541,20 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_IfTransformationConsumerAndPro
 
     const auto providerConsumer = createTransformationSlots(nullptr, providerScene, consumerScene);
     update();
-    expectNoScenesModified();
 
     linkProviderToConsumer(getSceneId(providerScene), providerConsumer.first, getSceneId(consumerScene), providerConsumer.second);
-    expectScenesModified({ consumerScene });
-
+    expectModifiedScenesReportedToRenderer({ consumerScene });
     update();
-    expectNoScenesModified();
+
+    expectNoModifiedScenesReportedToRenderer();
+    update();
 
     unlinkConsumer(getSceneId(consumerScene), providerConsumer.second);
-    expectScenesModified({ consumerScene });
-
+    expectModifiedScenesReportedToRenderer({ consumerScene });
     update();
-    expectNoScenesModified();
+
+    expectNoModifiedScenesReportedToRenderer();
+    update();
 
     hideScene(providerScene);
     hideScene(consumerScene);
@@ -2832,19 +2579,20 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_IfDataConsumerAndProviderLinke
     DataInstanceHandle dataRef;
     const auto providerConsumer = createDataSlots(dataRef, 1.f, nullptr, providerScene, consumerScene);
     update();
-    expectNoScenesModified();
 
     linkProviderToConsumer(getSceneId(providerScene), providerConsumer.first, getSceneId(consumerScene), providerConsumer.second);
-    expectScenesModified({ consumerScene });
-
+    expectModifiedScenesReportedToRenderer({ consumerScene });
     update();
-    expectNoScenesModified();
+
+    expectNoModifiedScenesReportedToRenderer();
+    update();
 
     unlinkConsumer(getSceneId(consumerScene), providerConsumer.second);
-    expectScenesModified({ consumerScene });
-
+    expectModifiedScenesReportedToRenderer({ consumerScene });
     update();
-    expectNoScenesModified();
+
+    expectNoModifiedScenesReportedToRenderer();
+    update();
 
     hideScene(providerScene);
     hideScene(consumerScene);
@@ -2867,25 +2615,29 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_IfTextureConsumerAndProviderLi
     showScene(consumerScene);
 
     expectResourceRequest();
+    expectContextEnable();
+    expectTextureUploaded();
     const auto providerConsumer = createTextureSlots(nullptr, providerScene, consumerScene);
     update();
-    expectNoScenesModified();
 
     linkProviderToConsumer(getSceneId(providerScene), providerConsumer.first, getSceneId(consumerScene), providerConsumer.second);
-    expectScenesModified({ consumerScene });
-
+    expectModifiedScenesReportedToRenderer({ consumerScene });
     update();
-    expectNoScenesModified();
+
+    expectNoModifiedScenesReportedToRenderer();
+    update();
 
     unlinkConsumer(getSceneId(consumerScene), providerConsumer.second);
-    expectScenesModified({ consumerScene });
-
+    expectModifiedScenesReportedToRenderer({ consumerScene });
     update();
-    expectNoScenesModified();
+
+    expectNoModifiedScenesReportedToRenderer();
+    update();
 
     hideScene(providerScene);
     hideScene(consumerScene);
     expectContextEnable();
+    expectTextureDeleted();
     unmapScene(providerScene);
     expectContextEnable();
     unmapScene(consumerScene);
@@ -3049,7 +2801,7 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfInterruptedSceneAssign
     showAndInitiateInterruptedRendering(scene, sceneInterrupted);
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
 
-    EXPECT_TRUE(assignSceneToFramebuffer(sceneInterrupted));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(sceneInterrupted));
     EXPECT_FALSE(renderer.hasAnyBufferWithInterruptedRendering());
 
     hideScene(scene);
@@ -3079,12 +2831,12 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneAssignedTo
     expectContextEnable();
     expectRenderTargetUploaded(DisplayHandle1, true, DeviceResourceHandle(321u));
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(sceneToAssign, buffer));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(sceneToAssign, buffer));
 
     showAndInitiateInterruptedRendering(scene, sceneInterrupted);
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
 
-    EXPECT_TRUE(assignSceneToFramebuffer(sceneToAssign));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(sceneToAssign));
     EXPECT_FALSE(renderer.hasAnyBufferWithInterruptedRendering());
 
     hideScene(scene);
@@ -3117,7 +2869,7 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneAssignedTo
     const OffscreenBufferHandle buffer = showAndInitiateInterruptedRendering(scene, sceneInterrupted);
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
 
-    EXPECT_TRUE(assignSceneToOffscreenBuffer(scene, buffer));
+    EXPECT_TRUE(assignSceneToDisplayBuffer(scene, buffer));
     EXPECT_FALSE(renderer.hasAnyBufferWithInterruptedRendering());
 
     hideScene(scene);
@@ -3338,6 +3090,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfTexturesLinked)
 
     // provider/consumer order does not matter here
     expectResourceRequest();
+    expectContextEnable();
+    expectTextureUploaded();
     const auto providerConsumerId = createTextureSlots(nullptr, scene, sceneInterrupted);
 
     showAndInitiateInterruptedRendering(scene, sceneInterrupted);
@@ -3349,6 +3103,7 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfTexturesLinked)
     hideScene(scene);
     hideScene(sceneInterrupted);
     expectContextEnable();
+    expectTextureDeleted();
     unmapScene(scene);
     expectContextEnable();
     unmapScene(sceneInterrupted);
@@ -3369,6 +3124,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfTexturesUnlinked)
 
     // provider/consumer order does not matter here
     expectResourceRequest();
+    expectContextEnable();
+    expectTextureUploaded();
     const auto providerConsumerId = createTextureSlots(nullptr, scene, sceneInterrupted);
     linkProviderToConsumer(getSceneId(scene), providerConsumerId.first, getSceneId(sceneInterrupted), providerConsumerId.second);
 
@@ -3381,6 +3138,7 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfTexturesUnlinked)
     hideScene(scene);
     hideScene(sceneInterrupted);
     expectContextEnable();
+    expectTextureDeleted();
     unmapScene(scene);
     expectContextEnable();
     unmapScene(sceneInterrupted);
@@ -3538,11 +3296,11 @@ TEST_F(ARendererSceneUpdater, blocksFlushesForSceneAssignedToInterruptibleOBWhen
     showAndInitiateInterruptedRendering(scene, sceneInterrupted);
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
 
-    performFlush(sceneInterrupted); //async flush
+    performFlush(sceneInterrupted);
     update();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene(sceneInterrupted));
 
-    performFlush(sceneInterrupted, true); //sync flush
+    performFlush(sceneInterrupted);
     update();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene(sceneInterrupted));
 
@@ -3579,11 +3337,11 @@ TEST_F(ARendererSceneUpdater, doesNotBlockFlushesForSceneAssignedToNormalOBWhenT
     showAndInitiateInterruptedRendering(scene, sceneInterrupted);
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
 
-    performFlush(scene); //async flush
+    performFlush(scene);
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene(sceneInterrupted));
 
-    performFlush(scene, true); //sync flush
+    performFlush(scene);
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene(sceneInterrupted));
 
@@ -3624,24 +3382,24 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfMaximumNumberOfPending
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
 
     // add blocking sync flush so that upcoming flushes are queuing up
-    setRenderableResources(sceneInterrupted, InvalidResource1, true);
+    setRenderableResources(sceneInterrupted, InvalidResource1);
     expectResourceRequest(DisplayHandle1, sceneInterrupted);
     update();
 
     // flushes are blocked due to unresolved resource
     const SceneVersionTag pendingFlushTag(124u);
-    performFlush(sceneInterrupted, true, pendingFlushTag);
+    performFlush(sceneInterrupted, pendingFlushTag);
     update();
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
 
     for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
     {
-        performFlush(sceneInterrupted, true);
+        performFlush(sceneInterrupted);
         update();
     }
 
     // after maximum of pending flushes was reached the flushes were applied regardless of missing resource
-    expectEvent(ERendererEventType_SceneFlushed);
+    expectSceneEvent(ERendererEventType_SceneFlushed);
     EXPECT_FALSE(renderer.hasAnyBufferWithInterruptedRendering());
 
     hideScene(scene);
@@ -3661,7 +3419,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForSubscribedSceneButWithNoFurthe
     const UInt32 scene = createPublishAndSubscribeScene(false);
     // initial flush to init monitoring
     performFlushWithExpiration(scene, 1000u + 1u);
-    expectEvents({ ERendererEventType_SceneSubscribed });
+    expectInternalSceneStateEvent(ERendererEventType_SceneSubscribed);
 
     // no further flush, no expiration updates
     for (UInt32 i = 0u; i < 10u; ++i)
@@ -3670,7 +3428,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForSubscribedSceneButWithNoFurthe
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
 
-    expectEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType_SceneExpired);
 }
 
 TEST_F(ARendererSceneUpdater, doesNotReportExpirationForNotShownSceneBeingFlushedRegularly)
@@ -3701,7 +3459,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForNotShownSceneNotBeingFlushed)
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
 
-    expectEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType_SceneExpired);
 }
 
 TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiredForNotShownScene)
@@ -3718,7 +3476,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiredForNotShownScene)
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
     // expect exactly one event
-    expectEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType_SceneExpired);
 
     for (UInt32 i = 10u; i < 20u; ++i)
     {
@@ -3727,7 +3485,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiredForNotShownScene)
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
     // expect exactly one event
-    expectEvent(ERendererEventType_SceneRecoveredFromExpiration);
+    expectSceneEvent(ERendererEventType_SceneRecoveredFromExpiration);
 }
 
 TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedAndRenderedRegularly)
@@ -3777,7 +3535,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForSceneBeingFlushedButNotRendere
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType_SceneExpired);
 
     hideScene();
     expectContextEnable();
@@ -3834,7 +3592,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForSceneNotBeingFlushedOnlyRender
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
 
-    expectEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType_SceneExpired);
 }
 
 TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRenderedRegularly_byRenderingRegularlyAgain)
@@ -3862,7 +3620,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRend
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType_SceneExpired);
 
     for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
     {
@@ -3871,7 +3629,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRend
         expirationMonitor.onRendered(getSceneId());
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneRecoveredFromExpiration);
+    expectSceneEvent(ERendererEventType_SceneRecoveredFromExpiration);
 
     hideScene();
     expectContextEnable();
@@ -3904,7 +3662,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRend
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType_SceneExpired);
 
     hideScene();
 
@@ -3915,7 +3673,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRend
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneRecoveredFromExpiration);
+    expectSceneEvent(ERendererEventType_SceneRecoveredFromExpiration);
 
     expectContextEnable();
     unmapScene();
@@ -3954,7 +3712,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForNotShownSceneBeingFlushedButBl
     update();
 
     createRenderable(scene);
-    setRenderableResources(scene, InvalidResource1, true);
+    setRenderableResources(scene, InvalidResource1);
     expectResourceRequest();
     expectContextEnable();
     expectRenderableResourcesUploaded(DisplayHandle1, true, false);
@@ -3966,7 +3724,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForNotShownSceneBeingFlushedButBl
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType_SceneExpired);
 
     expectContextEnable();
     expectRenderableResourcesDeleted(DisplayHandle1, true, false);
@@ -3986,7 +3744,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationSceneBeingFlushedAndRenderedButBl
     update();
 
     createRenderable(scene);
-    setRenderableResources(scene, InvalidResource1, true);
+    setRenderableResources(scene, InvalidResource1);
     expectResourceRequest();
     expectContextEnable();
     expectRenderableResourcesUploaded(DisplayHandle1, true, false);
@@ -3999,7 +3757,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationSceneBeingFlushedAndRenderedButBl
         expirationMonitor.onRendered(getSceneId());
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType_SceneExpired);
 
     hideScene();
     expectContextEnable();
@@ -4020,7 +3778,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneBeingFlushed
     update();
 
     createRenderable(scene);
-    setRenderableResources(scene, InvalidResource1, true);
+    setRenderableResources(scene, InvalidResource1);
     expectResourceRequest();
     expectContextEnable();
     expectRenderableResourcesUploaded(DisplayHandle1, true, false);
@@ -4033,7 +3791,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneBeingFlushed
         expirationMonitor.onRendered(getSceneId());
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType_SceneExpired);
 
     setRenderableResources(); // simulate upload
     expectResourceRequest();
@@ -4049,7 +3807,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneBeingFlushed
         expirationMonitor.onRendered(getSceneId());
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneRecoveredFromExpiration);
+    expectSceneEvent(ERendererEventType_SceneRecoveredFromExpiration);
 
     hideScene();
     expectContextEnable();
@@ -4458,7 +4216,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiration_byDisablingExpirati
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType_SceneExpired);
 
     // disable expiration
     performFlushWithExpiration(scene, 0u);
@@ -4468,7 +4226,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiration_byDisablingExpirati
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneRecoveredFromExpiration);
+    expectSceneEvent(ERendererEventType_SceneRecoveredFromExpiration);
 }
 
 TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationOfRenderedContent_byDisablingExpiration)
@@ -4484,7 +4242,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationOfRenderedContent_by
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType_SceneExpired);
 
     // disable expiration
     performFlushWithExpiration(scene, 0u);
@@ -4494,7 +4252,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationOfRenderedContent_by
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneRecoveredFromExpiration);
+    expectSceneEvent(ERendererEventType_SceneRecoveredFromExpiration);
 
     hideScene(scene);
     expectContextEnable();
@@ -4512,7 +4270,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiration_byDisablingExpirati
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType_SceneExpired);
 
     // disable expiration together with some scene changes
     const NodeHandle nodeHandle(10u);
@@ -4526,7 +4284,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiration_byDisablingExpirati
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneRecoveredFromExpiration);
+    expectSceneEvent(ERendererEventType_SceneRecoveredFromExpiration);
 }
 
 TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationOfRenderedContent_byDisablingExpirationWithNonEmptyFlush)
@@ -4543,7 +4301,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationOfRenderedContent_by
         doRenderLoop();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType_SceneExpired);
 
     // disable expiration together with some scene changes
     const NodeHandle nodeHandle(10u);
@@ -4558,11 +4316,219 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationOfRenderedContent_by
         doRenderLoop();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectEvent(ERendererEventType_SceneRecoveredFromExpiration);
+    expectSceneEvent(ERendererEventType_SceneRecoveredFromExpiration);
 
     hideScene(scene);
     expectContextEnable();
     unmapScene(scene);
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, ignoresPickEventForUnknownScene)
+{
+    rendererSceneUpdater->handlePickEvent(SceneId{ 123u }, { 0, 0 });
+    expectNoEvent();
+}
+
+TEST_F(ARendererSceneUpdater, reportsNoPickedObjectsForSceneWithNoPickableObjects)
+{
+    createPublishAndSubscribeScene();
+    rendererSceneUpdater->handlePickEvent(getSceneId(), { 0, 0 });
+    expectNoEvent();
+}
+
+TEST_F(ARendererSceneUpdater, reportsPickedObjects)
+{
+    const DisplayHandle display = DisplayHandle1;
+    DisplayConfig config;
+    config.setDesiredWindowWidth(1280u);
+    config.setDesiredWindowHeight(480u);
+    createDisplayAndExpectSuccess(display, config);
+    const auto sceneIdx = createPublishAndSubscribeScene();
+    mapScene();
+
+    // create scene with 2 pickable triangles around origin
+    IScene& iscene = *stagingScene[sceneIdx];
+    SceneAllocateHelper sceneAllocator(iscene);
+    const NodeHandle nodeHandle(0u);
+    sceneAllocator.allocateNode(0u, nodeHandle);
+    const std::array<float, 9> geomData{ -1.f, 0.f, -0.5f, 0.f, 1.f, -0.5f, 0.f, 0.f, -0.5f };
+    const auto geomHandle = sceneAllocator.allocateDataBuffer(EDataBufferType::VertexBuffer, EDataType_Vector3F, UInt32(geomData.size() * sizeof(float)));
+    iscene.updateDataBuffer(geomHandle, 0, UInt32(geomData.size() * sizeof(float)), reinterpret_cast<const Byte*>(geomData.data()));
+
+    const auto viewportDataLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType_DataReference}, DataFieldInfo{EDataType_DataReference} }, ResourceContentHash::Invalid());
+    const auto viewportDataInstance = sceneAllocator.allocateDataInstance(viewportDataLayout);
+    const auto viewportDataReferenceLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType_Vector2I} }, ResourceContentHash::Invalid());
+    const auto viewportOffsetDataReference = sceneAllocator.allocateDataInstance(viewportDataReferenceLayout);
+    const auto viewportSizeDataReference = sceneAllocator.allocateDataInstance(viewportDataReferenceLayout);
+    const auto cameraHandle = sceneAllocator.allocateCamera(ECameraProjectionType_Orthographic, nodeHandle, viewportDataInstance);
+
+    iscene.setDataReference(viewportDataInstance, Camera::ViewportOffsetField, viewportOffsetDataReference);
+    iscene.setDataReference(viewportDataInstance, Camera::ViewportSizeField, viewportSizeDataReference);
+    iscene.setDataSingleVector2i(viewportOffsetDataReference, ramses_internal::DataFieldHandle{ 0 }, { 0, 0 });
+    iscene.setDataSingleVector2i(viewportSizeDataReference, ramses_internal::DataFieldHandle{ 0 }, { 1280, 480 });
+
+    Frustum frustum(-1.f, 1.f, -1.f, 1.f, 0.1f, 100.f );
+    iscene.setCameraFrustum(cameraHandle, frustum);
+    const PickableObjectId id1{ 666u };
+    const PickableObjectId id2{ 667u };
+    const auto pickableHandle1 = sceneAllocator.allocatePickableObject(geomHandle, nodeHandle, id1);
+    const auto pickableHandle2 = sceneAllocator.allocatePickableObject(geomHandle, nodeHandle, id2);
+    iscene.setPickableObjectCamera(pickableHandle1, cameraHandle);
+    iscene.setPickableObjectCamera(pickableHandle2, cameraHandle);
+    performFlush();
+
+    expectContextEnable();
+    EXPECT_CALL(renderer.getDisplayMock(display).m_renderBackend->deviceMock, allocateVertexBuffer(_, _));
+    EXPECT_CALL(renderer.getDisplayMock(display).m_renderBackend->deviceMock, uploadVertexBufferData(_, _, _));
+    update();
+
+    rendererSceneUpdater->handlePickEvent(getSceneId(), { -0.375000f, 0.250000f });
+    expectSceneEvent(ERendererEventType_ObjectsPicked);
+
+    expectContextEnable();
+    EXPECT_CALL(renderer.getDisplayMock(display).m_renderBackend->deviceMock, deleteVertexBuffer(_));
+    unmapScene();
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, emitsSequenceOfSceneStateChangesWhenRepublished_fromSubscribed)
+{
+    createPublishAndSubscribeScene();
+
+    const SceneId sceneId = stagingScene[0]->getSceneId();
+    EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(getSceneId()));
+    rendererSceneUpdater->handleSceneUnpublished(sceneId);
+    rendererSceneUpdater->handleScenePublished(sceneId, EScenePublicationMode_LocalAndRemote);
+    expectInternalSceneStateEvents({ ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished, ERendererEventType_ScenePublished });
+}
+
+TEST_F(ARendererSceneUpdater, emitsSequenceOfSceneStateChangesWhenRepublished_fromMapped)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    mapScene();
+
+    expectContextEnable();
+    const SceneId sceneId = stagingScene[0]->getSceneId();
+    EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(sceneId));
+    rendererSceneUpdater->handleSceneUnpublished(sceneId);
+    rendererSceneUpdater->handleScenePublished(sceneId, EScenePublicationMode_LocalAndRemote);
+    expectInternalSceneStateEvents({ ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished, ERendererEventType_ScenePublished });
+    EXPECT_FALSE(renderer.getDisplaySceneIsAssignedTo(sceneId).isValid());
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, emitsSequenceOfSceneStateChangesWhenRepublished_fromShown)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    mapScene();
+    showScene();
+
+    expectContextEnable();
+    const SceneId sceneId = stagingScene[0]->getSceneId();
+    EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(sceneId));
+    rendererSceneUpdater->handleSceneUnpublished(sceneId);
+    rendererSceneUpdater->handleScenePublished(sceneId, EScenePublicationMode_LocalAndRemote);
+    expectInternalSceneStateEvents({ ERendererEventType_SceneHiddenIndirect, ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished, ERendererEventType_ScenePublished });
+    EXPECT_FALSE(renderer.getDisplaySceneIsAssignedTo(sceneId).isValid());
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, propagatesGeneratedSceneReferenceActionsToSceneReferenceControl)
+{
+    createPublishAndSubscribeScene();
+
+    constexpr SceneReferenceAction action1{ SceneReferenceActionType::LinkData, SceneReferenceHandle{1}, DataSlotId{2}, SceneReferenceHandle{3}, DataSlotId{4} };
+    constexpr SceneReferenceAction action2{ SceneReferenceActionType::UnlinkData, SceneReferenceHandle{5}, DataSlotId{6}, SceneReferenceHandle{7}, DataSlotId{8} };
+    const SceneReferenceActionVector sceneRefActions{ action1, action2 };
+
+    performFlush(0u, {}, nullptr, {}, sceneRefActions);
+
+    EXPECT_CALL(sceneReferenceLogic, addActions(getSceneId(), _)).WillOnce([&](auto, const auto& actions)
+    {
+        ASSERT_EQ(2u, actions.size());
+        EXPECT_EQ(action1.type, actions[0].type);
+        EXPECT_EQ(action1.providerScene, actions[0].providerScene);
+        EXPECT_EQ(action1.providerId, actions[0].providerId);
+        EXPECT_EQ(action1.consumerScene, actions[0].consumerScene);
+        EXPECT_EQ(action1.consumerId, actions[0].consumerId);
+        EXPECT_EQ(action2.type, actions[1].type);
+        EXPECT_EQ(action2.providerScene, actions[1].providerScene);
+        EXPECT_EQ(action2.providerId, actions[1].providerId);
+        EXPECT_EQ(action2.consumerScene, actions[1].consumerScene);
+        EXPECT_EQ(action2.consumerId, actions[1].consumerId);
+    });
+    update();
+
+    //make empty flush to make sure actions were consumed
+    performFlush(0u, {}, nullptr, {}, {});
+    EXPECT_CALL(sceneReferenceLogic, addActions(_, _)).Times(0u);
+    update();
+}
+
+TEST_F(ARendererSceneUpdater, propagatesGeneratedSceneReferenceActionsToSceneReferenceControlOnlyAfterFlushApplied)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    mapScene();
+    showScene();
+
+    // simulate blocking flush on missing resource
+    createRenderable(0u);
+    setRenderableResources(0u, InvalidResource1);
+
+    expectResourceRequest();
+    expectContextEnable();
+    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
+    update();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+
+    // send scene reference actions in flush
+    constexpr SceneReferenceAction action1{ SceneReferenceActionType::LinkData, SceneReferenceHandle{1}, DataSlotId{2}, SceneReferenceHandle{3}, DataSlotId{4} };
+    constexpr SceneReferenceAction action2{ SceneReferenceActionType::UnlinkData, SceneReferenceHandle{5}, DataSlotId{6}, SceneReferenceHandle{7}, DataSlotId{8} };
+    const SceneReferenceActionVector sceneRefActions{ action1, action2 };
+    performFlush(0u, {}, nullptr, {}, sceneRefActions);
+    EXPECT_CALL(sceneReferenceLogic, addActions(_, _)).Times(0);
+    update();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+
+    // unblock pending flushes by providing resource
+    setRenderableResources();
+    expectResourceRequest();
+    expectContextEnable();
+    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+
+    EXPECT_CALL(sceneReferenceLogic, addActions(getSceneId(), _)).WillOnce([&](auto, const auto& actions)
+    {
+        ASSERT_EQ(2u, actions.size());
+        EXPECT_EQ(action1.type, actions[0].type);
+        EXPECT_EQ(action1.providerScene, actions[0].providerScene);
+        EXPECT_EQ(action1.providerId, actions[0].providerId);
+        EXPECT_EQ(action1.consumerScene, actions[0].consumerScene);
+        EXPECT_EQ(action1.consumerId, actions[0].consumerId);
+        EXPECT_EQ(action2.type, actions[1].type);
+        EXPECT_EQ(action2.providerScene, actions[1].providerScene);
+        EXPECT_EQ(action2.providerId, actions[1].providerId);
+        EXPECT_EQ(action2.consumerScene, actions[1].consumerScene);
+        EXPECT_EQ(action2.consumerId, actions[1].consumerId);
+    });
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    //make empty flush to make sure actions were consumed
+    performFlush(0u, {}, nullptr, {}, {});
+    EXPECT_CALL(sceneReferenceLogic, addActions(_, _)).Times(0u);
+    expectResourceRequestCancel(InvalidResource1);
+    update();
+
+    hideScene();
+    expectContextEnable();
+    expectRenderableResourcesDeleted();
+    unmapScene();
     destroyDisplay();
 }
 

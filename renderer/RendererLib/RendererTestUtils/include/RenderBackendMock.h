@@ -16,7 +16,7 @@
 #include "EmbeddedCompositorMock.h"
 #include "DeviceMock.h"
 #include "SurfaceMock.h"
-#include "TextureUploadingAdapterMock.h"
+#include "Platform_Base/TextureUploadingAdapter_Base.h"
 
 namespace ramses_internal
 {
@@ -28,15 +28,15 @@ namespace ramses_internal
     public:
         RenderBackendMock();
         virtual ~RenderBackendMock();
-        MOCK_CONST_METHOD0(getSurface, ramses_internal::ISurface&());
-        MOCK_CONST_METHOD0(getDevice, ramses_internal::IDevice&());
-        MOCK_CONST_METHOD0(getEmbeddedCompositor, ramses_internal::IEmbeddedCompositor&());
-        MOCK_CONST_METHOD0(getTextureUploadingAdapter, ramses_internal::ITextureUploadingAdapter&());
+        MOCK_METHOD(ramses_internal::ISurface&, getSurface, (), (const, override));
+        MOCK_METHOD(ramses_internal::IDevice&, getDevice, (), (const, override));
+        MOCK_METHOD(ramses_internal::IEmbeddedCompositor&, getEmbeddedCompositor, (), (const, override));
+        MOCK_METHOD(ramses_internal::ITextureUploadingAdapter&, getTextureUploadingAdapter, (), (const, override));
 
         MOCK_TYPE< DeviceMock >              deviceMock;
         MOCK_TYPE< SurfaceMock<MOCK_TYPE> >  surfaceMock;
         MOCK_TYPE< EmbeddedCompositorMock >  embeddedCompositorMock;
-        MOCK_TYPE< TextureUploadingAdapterMock >  textureUploadingAdapterMock;
+        TextureUploadingAdapter_Base                  textureUploadingAdapter = TextureUploadingAdapter_Base(deviceMock);
     };
 
     typedef RenderBackendMock< ::testing::NiceMock>   RenderBackendNiceMock;

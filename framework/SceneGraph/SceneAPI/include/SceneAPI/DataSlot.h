@@ -30,4 +30,6 @@ namespace ramses_internal
     };
 }
 
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::DataSlotId)
+
 #endif

@@ -42,10 +42,9 @@ namespace ramses_internal
         precision highp float;                              \n\
                                                             \n\
         flat in int colorId;                                \n\
-        const vec4 colors[17] = vec4[17](                   \n\
+        const vec4 colors[16] = vec4[16](                   \n\
             vec4(0.0, 0.0, 0.0, 1.0),                       \n\
             vec4(0.5, 1.0, 0.0, 0.5),        // RendererCommands                   \n\
-            vec4(0.0, 0.0, 0.0, 0.5),        // ConsolidateSceneActions            \n\
             vec4(1.0, 0.0, 0.0, 0.5),        // UpdateClientResources              \n\
             vec4(0.0, 0.0, 1.0, 0.5),        // ApplySceneActions                  \n\
             vec4(1.0, 0.0, 1.0, 0.5),        // UpdateSceneResources               \n\
@@ -78,12 +77,12 @@ namespace ramses_internal
         void main()                                         \n\
         {                                                   \n\
             vec4 pos;                                       \n\
-            pos.x = float(gl_VertexID / 17);                \n\
+            pos.x = float(gl_VertexID / 16);                \n\
             pos.y = a_position;                             \n\
             pos.z = 0.0;                                    \n\
             pos.w = 1.0;                                    \n\
             gl_Position = mvpMatrix * pos;                  \n\
-            colorId = gl_VertexID % 17;                     \n\
+            colorId = gl_VertexID % 16;                     \n\
         }";
 
     static const char* TimingLineVertexShader = "           \n\
@@ -217,7 +216,7 @@ namespace ramses_internal
 
         const ArrayResource indexArray(EResourceType_IndexArray, indexCount, EDataType_UInt16, reinterpret_cast<const Byte*>(&indices[0]), ResourceCacheFlag_DoNotCache, String());
         const DeviceResourceHandle deviceHandle = m_device->allocateIndexBuffer(indexArray.getElementType(), indexArray.getDecompressedDataSize());
-        m_device->uploadIndexBufferData(deviceHandle, indexArray.getResourceData()->getRawData(), indexArray.getDecompressedDataSize());
+        m_device->uploadIndexBufferData(deviceHandle, indexArray.getResourceData().data(), indexArray.getDecompressedDataSize());
 
         return deviceHandle;
     }
@@ -240,7 +239,7 @@ namespace ramses_internal
 
         const ArrayResource indexArray(EResourceType_IndexArray, indexCount, EDataType_UInt16, reinterpret_cast<const Byte*>(&indices[0]), ResourceCacheFlag_DoNotCache, String());
         const DeviceResourceHandle deviceHandle = m_device->allocateIndexBuffer(indexArray.getElementType(), indexArray.getDecompressedDataSize());
-        m_device->uploadIndexBufferData(deviceHandle, indexArray.getResourceData()->getRawData(), indexArray.getDecompressedDataSize());
+        m_device->uploadIndexBufferData(deviceHandle, indexArray.getResourceData().data(), indexArray.getDecompressedDataSize());
 
         return deviceHandle;
     }
@@ -252,7 +251,7 @@ namespace ramses_internal
         {
             geometry.vertexBufferHandle = m_device->allocateVertexBuffer(res.getElementType(), res.getDecompressedDataSize());
         }
-        m_device->uploadVertexBufferData(geometry.vertexBufferHandle, res.getResourceData()->getRawData(), res.getDecompressedDataSize());
+        m_device->uploadVertexBufferData(geometry.vertexBufferHandle, res.getResourceData().data(), res.getDecompressedDataSize());
     }
 
     void FrameProfileRenderer::updateCounterLineVertexBuffer(Geometry& geometry, const FrameProfilerStatistics::CounterValues& counterValues)
@@ -262,7 +261,7 @@ namespace ramses_internal
         {
             geometry.vertexBufferHandle = m_device->allocateVertexBuffer(res.getElementType(), res.getDecompressedDataSize());
         }
-        m_device->uploadVertexBufferData(geometry.vertexBufferHandle, res.getResourceData()->getRawData(), res.getDecompressedDataSize());
+        m_device->uploadVertexBufferData(geometry.vertexBufferHandle, res.getResourceData().data(), res.getDecompressedDataSize());
     }
 
     FrameProfileRenderer::Geometry FrameProfileRenderer::createBoxGeometry(bool filled = true)
@@ -283,11 +282,11 @@ namespace ramses_internal
 
         const ArrayResource res(EResourceType_VertexArray, 4, EDataType::EDataType_Vector2F, reinterpret_cast<const Byte*>(vertices), ResourceCacheFlag_DoNotCache, String());
         geometry.vertexBufferHandle = m_device->allocateVertexBuffer(res.getElementType(), res.getDecompressedDataSize());
-        m_device->uploadVertexBufferData(geometry.vertexBufferHandle, res.getResourceData()->getRawData(), res.getDecompressedDataSize());
+        m_device->uploadVertexBufferData(geometry.vertexBufferHandle, res.getResourceData().data(), res.getDecompressedDataSize());
 
         const ArrayResource indexArray(EResourceType_IndexArray, geometry.indexCount, EDataType_UInt16, reinterpret_cast<const Byte*>(filled ? indicesFilled : indicesLines), ResourceCacheFlag_DoNotCache, String());
         geometry.indexBufferHandle = m_device->allocateIndexBuffer(indexArray.getElementType(), indexArray.getDecompressedDataSize());
-        m_device->uploadIndexBufferData(geometry.indexBufferHandle, indexArray.getResourceData()->getRawData(), indexArray.getDecompressedDataSize());
+        m_device->uploadIndexBufferData(geometry.indexBufferHandle, indexArray.getResourceData().data(), indexArray.getDecompressedDataSize());
 
         return geometry;
     }
@@ -307,11 +306,11 @@ namespace ramses_internal
 
         const ArrayResource res(EResourceType_VertexArray, 2, EDataType::EDataType_Vector2F, reinterpret_cast<const Byte*>(vertices), ResourceCacheFlag_DoNotCache, String());
         geometry.vertexBufferHandle = m_device->allocateVertexBuffer(res.getElementType(), res.getDecompressedDataSize());
-        m_device->uploadVertexBufferData(geometry.vertexBufferHandle, res.getResourceData()->getRawData(), res.getDecompressedDataSize());
+        m_device->uploadVertexBufferData(geometry.vertexBufferHandle, res.getResourceData().data(), res.getDecompressedDataSize());
 
         const ArrayResource indexArray(EResourceType_IndexArray, 2, EDataType_UInt16, reinterpret_cast<const Byte*>(indices), ResourceCacheFlag_DoNotCache, String());
         geometry.indexBufferHandle = m_device->allocateIndexBuffer(indexArray.getElementType(), indexArray.getDecompressedDataSize());
-        m_device->uploadIndexBufferData(geometry.indexBufferHandle, indexArray.getResourceData()->getRawData(), indexArray.getDecompressedDataSize());
+        m_device->uploadIndexBufferData(geometry.indexBufferHandle, indexArray.getResourceData().data(), indexArray.getDecompressedDataSize());
 
         return geometry;
     }
@@ -331,11 +330,11 @@ namespace ramses_internal
 
         const ArrayResource res(EResourceType_VertexArray, 2, EDataType::EDataType_Vector2F, reinterpret_cast<const Byte*>(vertices), ResourceCacheFlag_DoNotCache, String());
         geometry.vertexBufferHandle = m_device->allocateVertexBuffer(res.getElementType(), res.getDecompressedDataSize());
-        m_device->uploadVertexBufferData(geometry.vertexBufferHandle, res.getResourceData()->getRawData(), res.getDecompressedDataSize());
+        m_device->uploadVertexBufferData(geometry.vertexBufferHandle, res.getResourceData().data(), res.getDecompressedDataSize());
 
         const ArrayResource indexArray(EResourceType_IndexArray, 2, EDataType_UInt16, reinterpret_cast<const Byte*>(indices), ResourceCacheFlag_DoNotCache, String());
         geometry.indexBufferHandle = m_device->allocateIndexBuffer(indexArray.getElementType(), indexArray.getDecompressedDataSize());
-        m_device->uploadIndexBufferData(geometry.indexBufferHandle, indexArray.getResourceData()->getRawData(), indexArray.getDecompressedDataSize());
+        m_device->uploadIndexBufferData(geometry.indexBufferHandle, indexArray.getResourceData().data(), indexArray.getDecompressedDataSize());
 
         return geometry;
     }
@@ -473,16 +472,14 @@ namespace ramses_internal
         const Look graphLook = createLookFromEffect(*m_timingLineEffect, m_timingLineShaderHandle);
         const Look stackedGraphLook = createLookFromEffect(*m_stackedTimingLineEffect, m_stackedTimingLineShaderHandle);
         const Vector4 backgroundColor(1.0f, 1.0f, 1.0f, 0.2f);
-        const Vector4 redColor(1.0f, 0.0f, 0.0f, 0.5f);
         const Vector4 greenColor(0.0f, 1.0f, 0.0f, 0.5f);
         const Vector4 blueColor(0.0f, 0.0f, 1.0f, 0.5f);
         const Vector4 whiteColor(1.0f, 1.0f, 1.0f, 0.5f);
         const Vector4 blackColor(0.0f, 0.0f, 0.0f, 0.5f);
         const Vector4 violetColor(1.0f, 0.0f, 1.0f, 0.5f);
-        const Vector4 cyanColor(0.0f, 1.0f, 1.0f, 0.5f);
 
         // timing graphs
-        const Float VerticalTimingScale(TimingGridlinePixelDistance / (m_timingGraphHeight * 1000)); // convert into microseconds
+        const Float VerticalTimingScale(TimingGridlinePixelDistance / static_cast<float>(m_timingGraphHeight * 1000)); // convert into microseconds
         const Vector2 timingScale(1.0f, VerticalTimingScale);
         const Vector2 timingTranslation(10.f, 10.f);
 
@@ -544,7 +541,7 @@ namespace ramses_internal
         m_device->setConstant(drawable.look.mvpHandle, 1, &drawable.mvpMatrix);
 
         m_device->drawMode(drawable.geometry.drawMode);
-        m_device->activateVertexBuffer(drawable.geometry.vertexBufferHandle, drawable.look.positionHandle, 0);
+        m_device->activateVertexBuffer(drawable.geometry.vertexBufferHandle, drawable.look.positionHandle, 0u, 0u);
         m_device->activateIndexBuffer(drawable.geometry.indexBufferHandle);
         m_device->drawIndexedTriangles(0, drawable.geometry.indexCount, 0);
     }

@@ -9,61 +9,45 @@
 #ifndef RAMSES_PLATFORMEVENT_H
 #define RAMSES_PLATFORMEVENT_H
 
-#include <PlatformAbstraction/PlatformTypes.h>
-#include <PlatformAbstraction/PlatformError.h>
-#include <PlatformAbstraction/PlatformConditionVariable.h>
-#include <PlatformAbstraction/PlatformLock.h>
-
+#include <mutex>
+#include <condition_variable>
 
 namespace ramses_internal
 {
     class PlatformEvent
     {
     public:
-        PlatformEvent();
+        PlatformEvent() = default;
+
+        PlatformEvent(const PlatformEvent&) = delete;
+        PlatformEvent& operator=(const PlatformEvent&) = delete;
 
         void signal();
-        EStatus wait(UInt32 millisec = 0);
-        void broadcast();
+        bool wait(uint32_t millisec = 0);
 
     private:
-        PlatformLightweightLock mMutex;
-        PlatformConditionVariable mCondVar;
-        bool mBool;
+        std::mutex m_mutex;
+        std::condition_variable m_condVar;
+        bool m_triggered = false;
     };
-
-    inline PlatformEvent::PlatformEvent()
-        : mBool(false)
-    {
-    }
 
     inline void PlatformEvent::signal()
     {
-        mMutex.lock();
-        mBool = true;
-        mCondVar.signal();
-        mMutex.unlock();
+        std::lock_guard<std::mutex> g(m_mutex);
+        m_triggered = true;
+        m_condVar.notify_all();
     }
 
-    inline void PlatformEvent::broadcast()
+    inline bool PlatformEvent::wait(uint32_t millisec)
     {
-        mMutex.lock();
-        mBool = true;
-        mCondVar.broadcast();
-        mMutex.unlock();
-    }
-
-    inline EStatus PlatformEvent::wait(UInt32 millisec)
-    {
-        mMutex.lock();
-        EStatus s = EStatus_RAMSES_OK;
-        if (!mBool)
-        {
-            s = mCondVar.wait(&mMutex, millisec);
-        }
-        mBool = false;
-        mMutex.unlock();
-        return s;
+        std::unique_lock<std::mutex> l(m_mutex);
+        bool result = true;
+        if (millisec == 0)
+            m_condVar.wait(l, [&](){ return m_triggered; });
+        else
+            result = m_condVar.wait_for(l, std::chrono::milliseconds{millisec}, [&](){ return m_triggered; });
+        m_triggered = false;
+        return result;
     }
 }
 

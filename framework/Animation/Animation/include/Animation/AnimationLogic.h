@@ -28,7 +28,7 @@ namespace ramses_internal
         // AnimationDataListener interface
         virtual void preAnimationTimeRangeChange(AnimationHandle handle) override;
         virtual void onAnimationTimeRangeChanged(AnimationHandle handle) override;
-        virtual void onAnimationPauseChanged(AnimationHandle handle, Bool pause) override;
+        virtual void onAnimationPauseChanged(AnimationHandle handle, bool pause) override;
         virtual void onAnimationPropertiesChanged(AnimationHandle handle) override;
         virtual void onAnimationInstanceChanged(AnimationInstanceHandle handle) override;
         virtual void onSplineChanged(SplineHandle handle) override;
@@ -38,8 +38,8 @@ namespace ramses_internal
         void setTime(const AnimationTime& time);
         const AnimationTime& getTime() const;
 
-        Bool isAnimationActive(AnimationHandle handle) const;
-        Bool isAnimationPending(AnimationHandle handle) const;
+        bool isAnimationActive(AnimationHandle handle) const;
+        bool isAnimationPending(AnimationHandle handle) const;
         UInt getNumActiveAnimations() const;
         UInt getNumPendingAnimations() const;
 
@@ -67,7 +67,7 @@ namespace ramses_internal
         void addAnimationToQueue(AnimationHandle handle);
         void removeAnimationFromQueue(AnimationHandle handle);
 
-        static Bool isAnimationTimeRangeValid(const AnimationProperties& animProps);
+        static bool isAnimationTimeRangeValid(const AnimationProperties& animProps);
 
         typedef HashMap<AnimationHandle, AnimationProperties> AnimationPropertiesMap;
 

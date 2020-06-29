@@ -13,6 +13,7 @@
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Platform_Base/GpuResource.h"
 #include "Utils/MemoryPool.h"
+#include <cassert>
 
 namespace ramses_internal
 {

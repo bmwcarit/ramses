@@ -26,7 +26,7 @@ protected:
 TEST_F(ARendererResourceRegistry, doesNotContainAnythingInitially)
 {
     const ResourceContentHash resource(123u, 0u);
-    EXPECT_EQ(0u, registry.getAllResourceDescriptors().count());
+    EXPECT_EQ(0u, registry.getAllResourceDescriptors().size());
     EXPECT_FALSE(registry.containsResource(resource));
 
     EXPECT_TRUE(registry.getAllRegisteredResources().empty());
@@ -41,7 +41,7 @@ TEST_F(ARendererResourceRegistry, canRegisterResource)
     const ResourceContentHash resource(123u, 0u);
     registry.registerResource(resource);
 
-    EXPECT_EQ(1u, registry.getAllResourceDescriptors().count());
+    EXPECT_EQ(1u, registry.getAllResourceDescriptors().size());
     EXPECT_TRUE(registry.containsResource(resource));
 
     const ResourceDescriptor& rd = registry.getResourceDescriptor(resource);
@@ -74,7 +74,7 @@ TEST_F(ARendererResourceRegistry, unregisteredResourceIsNotContainedAnymore)
     registry.registerResource(resource);
     registry.unregisterResource(resource);
 
-    EXPECT_EQ(0u, registry.getAllResourceDescriptors().count());
+    EXPECT_EQ(0u, registry.getAllResourceDescriptors().size());
     EXPECT_FALSE(registry.containsResource(resource));
 
     EXPECT_TRUE(registry.getAllRegisteredResources().empty());

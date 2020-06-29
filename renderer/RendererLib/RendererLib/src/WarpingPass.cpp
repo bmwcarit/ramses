@@ -38,18 +38,18 @@ namespace ramses_internal
         const ArrayResource vertexArrayRes(EResourceType_VertexArray, vertexCount, EDataType_Vector3F, reinterpret_cast<const Byte*>(&warpingMeshData.getVertexPositions()[0]), ResourceCacheFlag_DoNotCache, String());
         m_vertexBufferResource = m_device.allocateVertexBuffer(vertexArrayRes.getElementType(), vertexArrayRes.getDecompressedDataSize());
         assert(m_vertexBufferResource.isValid());
-        m_device.uploadVertexBufferData(m_vertexBufferResource, vertexArrayRes.getResourceData()->getRawData(), vertexArrayRes.getDecompressedDataSize());
+        m_device.uploadVertexBufferData(m_vertexBufferResource, vertexArrayRes.getResourceData().data(), vertexArrayRes.getDecompressedDataSize());
 
         const ArrayResource texcoordArrayRes(EResourceType_VertexArray, vertexCount, EDataType_Vector2F, reinterpret_cast<const Byte*>(&warpingMeshData.getTextureCoordinates()[0]), ResourceCacheFlag_DoNotCache, String());
         m_texcoordBufferResource = m_device.allocateVertexBuffer(texcoordArrayRes.getElementType(), texcoordArrayRes.getDecompressedDataSize());
         assert(m_texcoordBufferResource.isValid());
-        m_device.uploadVertexBufferData(m_texcoordBufferResource, texcoordArrayRes.getResourceData()->getRawData(), texcoordArrayRes.getDecompressedDataSize());
+        m_device.uploadVertexBufferData(m_texcoordBufferResource, texcoordArrayRes.getResourceData().data(), texcoordArrayRes.getDecompressedDataSize());
 
         assert(0 != m_indexCount);
         const ArrayResource indexArrayRes(EResourceType_IndexArray, m_indexCount, EDataType_UInt16, reinterpret_cast<const Byte*>(&warpingMeshData.getIndices()[0]), ResourceCacheFlag_DoNotCache, String());
         m_indexBufferResource = m_device.allocateIndexBuffer(indexArrayRes.getElementType(), indexArrayRes.getDecompressedDataSize());
         assert(m_indexBufferResource.isValid());
-        m_device.uploadIndexBufferData(m_indexBufferResource, indexArrayRes.getResourceData()->getRawData(), indexArrayRes.getDecompressedDataSize());
+        m_device.uploadIndexBufferData(m_indexBufferResource, indexArrayRes.getResourceData().data(), indexArrayRes.getDecompressedDataSize());
     }
 
     void WarpingPass::initEffect()
@@ -129,8 +129,8 @@ namespace ramses_internal
             EWrapMethod::Clamp, EWrapMethod::Clamp, EWrapMethod::Clamp, ESamplingMethod::Linear, ESamplingMethod::Linear, isotropicFilteringLevel);
 
         m_device.activateIndexBuffer(m_indexBufferResource);
-        m_device.activateVertexBuffer(m_vertexBufferResource, m_vertexPositionField, 0u);
-        m_device.activateVertexBuffer(m_texcoordBufferResource, m_texcoordField, 0u);
+        m_device.activateVertexBuffer(m_vertexBufferResource, m_vertexPositionField, 0u, 0u);
+        m_device.activateVertexBuffer(m_texcoordBufferResource, m_texcoordField, 0u, 0u);
         m_device.drawIndexedTriangles(0, m_indexCount, 1u);
     }
 }

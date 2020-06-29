@@ -9,10 +9,10 @@
 #ifndef RAMSES_SCENEACTIONAPPLIER_H
 #define RAMSES_SCENEACTIONAPPLIER_H
 
-#include "Transfer/ResourceTypes.h"
 #include "SceneActionCollection.h"
 #include "SceneAPI/SceneVersionTag.h"
 #include "Collections/Vector.h"
+#include "SceneReferencing/SceneReferenceAction.h"
 #include <memory>
 
 namespace ramses_internal
@@ -30,17 +30,15 @@ namespace ramses_internal
         using ResourceVector = std::vector<std::unique_ptr<IResource>>;
 
         static void ApplyActionsOnScene(IScene& scene, const SceneActionCollection& actions, AnimationSystemFactory* animSystemFactory = nullptr, ResourceVector* resources = nullptr);
-        static void ApplyActionRangeOnScene(IScene& scene, const SceneActionCollection& actions, UInt startIdx, UInt endIdx, AnimationSystemFactory* animSystemFactory = nullptr, ResourceVector* resources = nullptr);
         static void ReadParameterForFlushAction(
             SceneActionCollection::SceneActionReader action,
             UInt64& flushIndex,
-            Bool& isSync,
-            Bool& hasSizeInfo,
+            bool& hasSizeInfo,
             SceneSizeInformation& sizeInfo,
             SceneResourceChanges& resourceChanges,
+            SceneReferenceActionVector& sceneReferenceActions,
             FlushTimeInformation& flushTimeInfo,
-            SceneVersionTag& versionTag,
-            TimeStampVector* timestamps);
+            SceneVersionTag& versionTag);
 
     private:
         static void GetSceneSizeInformation(SceneActionCollection::SceneActionReader& action, SceneSizeInformation& sizeInfo);

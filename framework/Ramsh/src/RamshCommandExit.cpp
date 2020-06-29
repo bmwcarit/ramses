@@ -19,16 +19,16 @@ namespace ramses_internal
         description = "exit program";
     }
 
-    Bool RamshCommandExit::executeInput(const RamshInput& input)
+    bool RamshCommandExit::executeInput(const RamshInput& input)
     {
         UNUSED(input);
         LOG_INFO(CONTEXT_RAMSH, "Received ramsh command exit");
         m_exitRequested = true;
-        m_exitEvent.broadcast();
+        m_exitEvent.signal();
         return true;
     }
 
-    Bool RamshCommandExit::exitRequested()
+    bool RamshCommandExit::exitRequested()
     {
         return m_exitRequested.load();
     }

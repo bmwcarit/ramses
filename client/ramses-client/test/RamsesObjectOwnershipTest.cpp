@@ -21,7 +21,6 @@
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Spline.h"
 #include "ramses-client-api/Animation.h"
-#include "ramses-client-api/AnimatedSetter.h"
 #include "ramses-client-api/AnimationSequence.h"
 #include "ramses-client-api/SplineStepBool.h"
 #include "ramses-client-api/SplineStepInt32.h"
@@ -75,6 +74,7 @@
 #include "ramses-client-api/IndexDataBuffer.h"
 #include "ramses-client-api/VertexDataBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
+#include "ramses-client-api/PickableObject.h"
 
 #include "RamsesClientImpl.h"
 #include "SceneImpl.h"
@@ -181,9 +181,9 @@ namespace ramses
     template <typename ResourceType>
     class ClientOwnershipTest : public LocalTestClientWithScene, public testing::Test{};
 
-    TYPED_TEST_CASE(SceneOwnershipTest, SceneObjectTypes);
-    TYPED_TEST_CASE(AnimationSystemOwnershipTest, AnimationObjectTypes);
-    TYPED_TEST_CASE(ClientOwnershipTest, ClientObjectTypes);
+    TYPED_TEST_SUITE(SceneOwnershipTest, SceneObjectTypes);
+    TYPED_TEST_SUITE(AnimationSystemOwnershipTest, AnimationObjectTypes);
+    TYPED_TEST_SUITE(ClientOwnershipTest, ClientObjectTypes);
 
     TYPED_TEST(SceneOwnershipTest, sceneObjectsAreOfTypeSceneObject)
     {

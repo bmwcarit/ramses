@@ -9,11 +9,11 @@
 #ifndef RAMSES_RESOURCESTREAMSERIALIZATION_H
 #define RAMSES_RESOURCESTREAMSERIALIZATION_H
 
-#include "PlatformAbstraction/PlatformTypeInfo.h"
+#include "PlatformAbstraction/PlatformTypes.h"
 #include "Collections/Pair.h"
 #include "SceneAPI/ResourceContentHash.h"
 #include "Components/ManagedResource.h"
-#include "Collections/ArrayView.h"
+#include "absl/types/span.h"
 
 namespace ramses_internal
 {
@@ -33,7 +33,7 @@ namespace ramses_internal
             ResourceContentHash hash;
             HeapArray<Byte> metadata;
             UInt32 blobSize;
-            Byte* blobData;
+            const Byte* blobData;
         };
 
         struct PacketInfo
@@ -73,7 +73,7 @@ namespace ramses_internal
     public:
         ResourceStreamDeserializer();
 
-        std::vector<IResource*> processData(const ByteArrayView& data);
+        std::vector<IResource*> processData(const absl::Span<const Byte>& data);
         bool processingFinished() const;
         bool processingFailed() const;
 

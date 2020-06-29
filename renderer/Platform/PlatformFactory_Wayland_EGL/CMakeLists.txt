@@ -13,7 +13,7 @@ ACME_MODULE(
     #==========================================================================
     NAME                    PlatformFactory_Wayland_EGL
     TYPE                    STATIC_LIBRARY
-    ENABLE_INSTALL          ${ramses-sdk_INSTALL_STATIC_LIBS}
+    ENABLE_INSTALL          OFF
 
     #==========================================================================
     # files of this module
@@ -24,15 +24,12 @@ ACME_MODULE(
     #==========================================================================
     # dependencies
     #==========================================================================
-    DEPENDENCIES            Surface_Wayland_EGL
-                            Surface_EGL_Offscreen
+    DEPENDENCIES            Window_Wayland
                             Context_EGL
                             Window_Wayland
-                            EmbeddedCompositor_Dummy
+                            ramses-renderer-lib
                             EmbeddedCompositor_Wayland
                             TextureUploadingAdapter_Wayland
-                            WindowEventsPollingManager_Wayland
-                            Logger_Wayland
 )
 
 # This module is tested in the renderer sandwich tests (<ramses>/integration/ramses-renderer-tests)

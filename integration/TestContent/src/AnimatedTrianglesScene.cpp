@@ -196,7 +196,7 @@ namespace ramses_internal
     ramses::AnimationSequence& AnimatedTrianglesScene::createSequence(ramses::Scene& scene, ramses::AnimationSystem& animationSystem, ramses::Appearance& appearance, ramses::GeometryBinding& geometry)
     {
         ramses::AnimationSequence* sequence = animationSystem.createAnimationSequence();
-        ramses::Animation* prevAnimation = 0;
+        ramses::Animation* prevAnimation = nullptr;
         for (int i = 0; i < 6; ++i)
         {
             ramses::MeshNode* meshNode = scene.createMeshNode("seq mesh");

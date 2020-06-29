@@ -10,10 +10,12 @@
 
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/DisplayConfig.h"
-#include "ramses-renderer-api/IRendererEventHandler.h"
+#include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
+#include "ramses-renderer-api/RendererSceneControl.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include <unordered_set>
 #include <thread>
+#include <unordered_map>
 #include "ramses-utils.h"
 
 /**
@@ -21,98 +23,42 @@
  * @brief Example of linking viewport parameters to control scene position on screen
  */
 
+uint64_t nowMs()
+{
+    auto now = std::chrono::system_clock::now();
+    return std::chrono::time_point_cast<std::chrono::milliseconds>(now).time_since_epoch().count();
+}
+
 /** \cond HIDDEN_SYMBOLS */
-class SceneStateEventHandler : public ramses::RendererEventHandlerEmpty
+class SceneStateEventHandler : public ramses::RendererSceneControlEventHandlerEmpty
 {
 public:
-    SceneStateEventHandler(ramses::RamsesRenderer& renderer)
+    explicit SceneStateEventHandler(ramses::RamsesRenderer& renderer)
         : m_renderer(renderer)
     {
     }
 
-    virtual void scenePublished(ramses::sceneId_t sceneId) override
+    virtual void sceneStateChanged(ramses::sceneId_t sceneId, ramses::RendererSceneState state) override
     {
-        m_publishedScenes.insert(sceneId);
+        m_scenes[sceneId] = state;
     }
 
-    virtual void sceneUnpublished(ramses::sceneId_t sceneId) override
+    void waitForSceneState(ramses::sceneId_t sceneId, ramses::RendererSceneState state)
     {
-        m_publishedScenes.erase(sceneId);
-    }
-
-    virtual void sceneSubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_OK == result)
+        while (m_scenes.count(sceneId) == 0 || m_scenes.find(sceneId)->second != state)
         {
-            m_subscribedScenes.insert(sceneId);
+            m_renderer.doOneLoop();
+            m_renderer.getSceneControlAPI()->dispatchEvents(*this);
         }
-    }
-
-    virtual void sceneUnsubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_FAIL != result)
-        {
-            m_subscribedScenes.erase(sceneId);
-        }
-    }
-
-    virtual void sceneMapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_OK == result)
-        {
-            m_mappedScenes.insert(sceneId);
-        }
-    }
-
-    virtual void sceneUnmapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_FAIL != result)
-        {
-            m_mappedScenes.erase(sceneId);
-        }
-    }
-
-    void waitForPublication(const ramses::sceneId_t sceneId)
-    {
-        waitForSceneInSet(sceneId, m_publishedScenes);
-    }
-
-    void waitForSubscription(const ramses::sceneId_t sceneId)
-    {
-        waitForSceneInSet(sceneId, m_subscribedScenes);
-    }
-
-    void waitForMapped(const ramses::sceneId_t sceneId)
-    {
-        waitForSceneInSet(sceneId, m_mappedScenes);
     }
 
 private:
-    typedef std::unordered_set<ramses::sceneId_t> SceneSet;
-
-    void waitForSceneInSet(const ramses::sceneId_t sceneId, const SceneSet& sceneSet)
-    {
-        while (sceneSet.find(sceneId) == sceneSet.end())
-        {
-            m_renderer.doOneLoop();
-            m_renderer.dispatchEvents(*this);
-        }
-    }
-
-    SceneSet m_publishedScenes;
-    SceneSet m_subscribedScenes;
-    SceneSet m_mappedScenes;
+    typedef std::unordered_map<ramses::sceneId_t, ramses::RendererSceneState> SceneSet;
 
     ramses::RamsesRenderer& m_renderer;
+    SceneSet m_scenes;
 };
 /** \endcond */
-
-uint64_t nowMs()
-{
-    const auto now = std::chrono::system_clock::now();
-    return std::chrono::time_point_cast<std::chrono::milliseconds>(now).time_since_epoch().count();
-}
-
 static constexpr unsigned VPWidth = 600;
 static constexpr unsigned VPHeight = 400;
 static constexpr unsigned DispWidth  = 1280;
@@ -271,16 +217,17 @@ int main(int argc, char* argv[])
     ramses::RamsesFrameworkConfig config(argc, argv);
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);  //needed for automated test of examples
     ramses::RamsesFramework framework(config);
-    ramses::RamsesClient client("ramses-local-client-test", framework);
+    ramses::RamsesClient& client(*framework.createClient("ramses-local-client-test"));
 
     // Ramses renderer
     ramses::RendererConfig rendererConfig(argc, argv);
-    ramses::RamsesRenderer renderer(framework, rendererConfig);
+    ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
+    auto& sceneControlAPI = *renderer.getSceneControlAPI();
     framework.connect();
 
-    const ramses::sceneId_t sceneId1 = 1u;
-    const ramses::sceneId_t sceneId2 = 2u;
-    const ramses::sceneId_t sceneIdMaster = 3u;
+    const ramses::sceneId_t sceneId1(1u);
+    const ramses::sceneId_t sceneId2(2u);
+    const ramses::sceneId_t sceneIdMaster(3u);
 
     ramses::Scene* scene1 = createContentProviderScene(client, sceneId1);
     ramses::Scene* scene2 = createContentProviderScene(client, sceneId2);
@@ -295,55 +242,41 @@ int main(int argc, char* argv[])
     sceneMaster->publish();
 
     SceneStateEventHandler eventHandler(renderer);
-    eventHandler.waitForPublication(sceneId1);
-    eventHandler.waitForPublication(sceneId2);
-    eventHandler.waitForPublication(sceneIdMaster);
 
-    renderer.subscribeScene(sceneId1);
-    renderer.subscribeScene(sceneId2);
-    renderer.subscribeScene(sceneIdMaster);
+    ramses::DisplayConfig displayConfig(argc, argv);
+    displayConfig.setWindowRectangle(50, 50, DispWidth, DispHeight);
+    const ramses::displayId_t display = renderer.createDisplay(displayConfig);
     renderer.flush();
 
-    eventHandler.waitForSubscription(sceneId1);
-    eventHandler.waitForSubscription(sceneId2);
-    eventHandler.waitForSubscription(sceneIdMaster);
+    sceneControlAPI.setSceneMapping(sceneId1, display);
+    sceneControlAPI.setSceneMapping(sceneId2, display);
+    sceneControlAPI.setSceneState(sceneId1, ramses::RendererSceneState::Rendered);
+    sceneControlAPI.setSceneState(sceneId2, ramses::RendererSceneState::Rendered);
+    // Master scene does not need to be rendered, it only provides data to the other 2 scenes,
+    // it must be at least in Available state meaning its data is on renderer
+    sceneControlAPI.setSceneState(sceneIdMaster, ramses::RendererSceneState::Available);
+    sceneControlAPI.flush();
 
-    ramses::DisplayConfig displayConfig1(argc, argv);
-    displayConfig1.setIntegrityRGLDeviceUnit(0);
-    displayConfig1.setWaylandIviSurfaceID(0);
-    displayConfig1.setWaylandIviLayerID(3);
-    displayConfig1.setWindowIviVisible();
-    displayConfig1.setWindowRectangle(50, 50, DispWidth, DispHeight);
-    const ramses::displayId_t display1 = renderer.createDisplay(displayConfig1);
-
-    renderer.mapScene(display1, sceneId1);
-    renderer.flush();
-    eventHandler.waitForMapped(sceneId1);
-    renderer.showScene(sceneId1);
-
-    renderer.mapScene(display1, sceneId2);
-    renderer.flush();
-    eventHandler.waitForMapped(sceneId2);
-    renderer.showScene(sceneId2);
-
-    renderer.flush();
+    eventHandler.waitForSceneState(sceneId1, ramses::RendererSceneState::Rendered);
+    eventHandler.waitForSceneState(sceneId2, ramses::RendererSceneState::Rendered);
+    eventHandler.waitForSceneState(sceneIdMaster, ramses::RendererSceneState::Available);
 
 #if 1
     /// [Viewport Link Example]
     // Link master scene's data objects to other scenes cameras' viewports
-    renderer.linkData(sceneIdMaster, VP1OffsetProviderId, sceneId1, VPOffsetConsumerId);
-    renderer.linkData(sceneIdMaster, VP1SizeProviderId, sceneId1, VPSizeConsumerId);
-    renderer.linkData(sceneIdMaster, VP2OffsetProviderId, sceneId2, VPOffsetConsumerId);
-    renderer.linkData(sceneIdMaster, VP2SizeProviderId, sceneId2, VPSizeConsumerId);
-    renderer.flush();
+    sceneControlAPI.linkData(sceneIdMaster, VP1OffsetProviderId, sceneId1, VPOffsetConsumerId);
+    sceneControlAPI.linkData(sceneIdMaster, VP1SizeProviderId, sceneId1, VPSizeConsumerId);
+    sceneControlAPI.linkData(sceneIdMaster, VP2OffsetProviderId, sceneId2, VPOffsetConsumerId);
+    sceneControlAPI.linkData(sceneIdMaster, VP2SizeProviderId, sceneId2, VPSizeConsumerId);
+    sceneControlAPI.flush();
     /// [Viewport Link Example]
 
     // Link master scene's data objects to scene1 and scene2 colors
-    renderer.linkData(sceneIdMaster, Color1ProviderId, sceneId1, Color1ConsumerId);
-    renderer.linkData(sceneIdMaster, Color2ProviderId, sceneId1, Color2ConsumerId);
-    renderer.linkData(sceneIdMaster, Color3ProviderId, sceneId2, Color1ConsumerId);
-    renderer.linkData(sceneIdMaster, Color4ProviderId, sceneId2, Color2ConsumerId);
-    renderer.flush();
+    sceneControlAPI.linkData(sceneIdMaster, Color1ProviderId, sceneId1, Color1ConsumerId);
+    sceneControlAPI.linkData(sceneIdMaster, Color2ProviderId, sceneId1, Color2ConsumerId);
+    sceneControlAPI.linkData(sceneIdMaster, Color3ProviderId, sceneId2, Color1ConsumerId);
+    sceneControlAPI.linkData(sceneIdMaster, Color4ProviderId, sceneId2, Color2ConsumerId);
+    sceneControlAPI.flush();
 #endif
 
     // These are master scene's data objects linked to scene1 and scene2 cameras' viewports

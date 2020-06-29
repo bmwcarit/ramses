@@ -9,7 +9,7 @@
 #ifndef RAMSES_PLATFORMTYPES_H
 #define RAMSES_PLATFORMTYPES_H
 
-#include <ramses-capu/Config.h>
+#include <cstdint>
 
 #define UNUSED(x) {(void)(x);}
 
@@ -23,8 +23,8 @@ namespace ramses_internal
     typedef uint16_t UInt16;
     typedef uint32_t UInt32;
     typedef uint64_t UInt64;
-    typedef ramses_capu::uint_t   UInt;
-    typedef ramses_capu::int_t    Int;
+    typedef std::uintptr_t UInt;
+    typedef std::intptr_t  Int;
     typedef unsigned char  UChar;
     typedef float  Float;
     typedef double Double;

@@ -16,10 +16,10 @@ namespace ramses_internal
     {
     }
 
-    DataLayoutHandle DataLayoutCachedScene::allocateDataLayout(const DataFieldInfoVector& dataFields, DataLayoutHandle handle)
+    DataLayoutHandle DataLayoutCachedScene::allocateDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle)
     {
         DataLayoutCacheEntry* cacheEntry = nullptr;
-        const DataLayoutHandle cachedHandle = findDataLayoutEntry(dataFields, cacheEntry);
+        const DataLayoutHandle cachedHandle = findDataLayoutEntry(dataFields, effectHash, cacheEntry);
         if (cachedHandle.isValid())
         {
             assert(cacheEntry != nullptr);
@@ -27,7 +27,7 @@ namespace ramses_internal
             return cachedHandle;
         }
 
-        return allocateAndCacheDataLayout(dataFields, handle);
+        return allocateAndCacheDataLayout(dataFields, effectHash, handle);
     }
 
     void DataLayoutCachedScene::releaseDataLayout(DataLayoutHandle handle)
@@ -48,9 +48,9 @@ namespace ramses_internal
         }
     }
 
-    DataLayoutHandle DataLayoutCachedScene::allocateAndCacheDataLayout(const DataFieldInfoVector& dataFields, DataLayoutHandle handle)
+    DataLayoutHandle DataLayoutCachedScene::allocateAndCacheDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle)
     {
-        const DataLayoutHandle actualHandle = ActionCollectingScene::allocateDataLayout(dataFields, handle);
+        const DataLayoutHandle actualHandle = ActionCollectingScene::allocateDataLayout(dataFields, effectHash, handle);
 
         const UInt fieldCount = dataFields.size();
         if (m_dataLayoutCache.size() <= fieldCount)
@@ -62,12 +62,13 @@ namespace ramses_internal
         DataLayoutCacheEntry newEntry;
         newEntry.m_dataFields = dataFields;
         newEntry.m_usageCount = 1u;
+        newEntry.m_effectHash = effectHash;
         dataLayouts.put(actualHandle, newEntry);
 
         return actualHandle;
     }
 
-    DataLayoutHandle DataLayoutCachedScene::findDataLayoutEntry(const DataFieldInfoVector& dataFields, DataLayoutCacheEntry*& entryOut)
+    DataLayoutHandle DataLayoutCachedScene::findDataLayoutEntry(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutCacheEntry*& entryOut)
     {
         const UInt fieldCount = dataFields.size();
         if (fieldCount >= m_dataLayoutCache.size())
@@ -76,9 +77,10 @@ namespace ramses_internal
         }
 
         DataLayoutCacheGroup& dataLayouts = m_dataLayoutCache[fieldCount];
+
         for (auto& entry : dataLayouts)
         {
-            if (dataFields == entry.value.m_dataFields)
+            if (effectHash == entry.value.m_effectHash && dataFields == entry.value.m_dataFields)
             {
                 entryOut = &entry.value;
                 return entry.key;

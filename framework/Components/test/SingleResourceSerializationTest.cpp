@@ -32,7 +32,7 @@ namespace ramses_internal
     {
     };
 
-    TYPED_TEST_CASE(ASingleResourceSerializationTyped, ResourceSerializationTestHelper::Types);
+    TYPED_TEST_SUITE(ASingleResourceSerializationTyped, ResourceSerializationTestHelper::Types);
 
     TYPED_TEST(ASingleResourceSerializationTyped, canSerializeDeserializeToSameResource)
     {

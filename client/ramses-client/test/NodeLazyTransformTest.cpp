@@ -13,6 +13,7 @@
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/RemoteCamera.h"
+#include "ramses-client-api/PickableObject.h"
 #include "RamsesObjectTestTypes.h"
 
 namespace ramses
@@ -43,7 +44,7 @@ namespace ramses
         T* m_node;
     };
 
-    TYPED_TEST_CASE(NodeLazyTransformTest, NodeTypes);
+    TYPED_TEST_SUITE(NodeLazyTransformTest, NodeTypes);
 
     TYPED_TEST(NodeLazyTransformTest, instantiationCreatesNoTransform)
     {

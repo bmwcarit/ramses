@@ -10,6 +10,7 @@
 #include "EmbeddedCompositor_Wayland/IEmbeddedCompositor_Wayland.h"
 #include "Utils/LogMacros.h"
 #include "Utils/Warnings.h"
+#include <cassert>
 
 namespace ramses_internal
 {

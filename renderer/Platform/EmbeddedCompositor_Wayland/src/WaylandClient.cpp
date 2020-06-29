@@ -9,6 +9,7 @@
 #include "EmbeddedCompositor_Wayland/WaylandClient.h"
 #include "EmbeddedCompositor_Wayland/WaylandResource.h"
 #include "EmbeddedCompositor_Wayland/WaylandCallbackResource.h"
+#include <cassert>
 
 namespace ramses_internal
 {

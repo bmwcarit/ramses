@@ -11,7 +11,8 @@
 
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/DisplayConfig.h"
-#include "ramses-renderer-api/IRendererEventHandler.h"
+#include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
+#include "ramses-renderer-api/RendererSceneControl.h"
 #include <unordered_set>
 
 #include <Utils/CommandLineParser.h>
@@ -22,6 +23,36 @@
 #include <vector>
 #include <algorithm>
 #include <assert.h>
+
+
+constexpr const char* const vertexShader = R"##(
+#version 300 es
+
+in vec2 a_position;
+void main()
+{
+    gl_Position = vec4(a_position, 0.0, 1.0);
+}
+)##";
+
+constexpr const char* const fragmentShader = R"##(
+#version 300 es
+
+uniform sampler2D textureSampler;
+out highp vec4 fragColor;
+void main(void)
+{
+    highp vec2 ts = vec2(textureSize(textureSampler, 0));
+    if(gl_FragCoord.x < ts.x && gl_FragCoord.y < ts.y)
+    {
+        fragColor = texelFetch(textureSampler, ivec2(gl_FragCoord.xy), 0);
+    }
+    else
+    {
+        fragColor = vec4(0.5, 0.3, 0.1, 0.2);
+    }
+}
+)##";
 
 
 class StreamSourceViewer
@@ -49,53 +80,13 @@ public:
 
         static const uint8_t textureData[] = {1u, 1u, 1u, 1u};
         const ramses::MipLevelData mipLevelData(sizeof(textureData), textureData);
-        m_texture = ramsesClient.createTexture2D(1u, 1u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, "");
+        m_texture = ramsesClient.createTexture2D(1u, 1u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "");
 
         ramses::EffectDescription effectDesc;
 
-        effectDesc.setVertexShaderFromFile("res/ramses-stream-viewer.vert");
-        effectDesc.setFragmentShaderFromFile("res/ramses-stream-viewer.frag");
+        effectDesc.setVertexShader(vertexShader);
+        effectDesc.setFragmentShader(fragmentShader);
         m_effect = m_ramsesClient.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
-
-        if(nullptr == m_effect)
-        {
-            printf("\nFailed to create effect using provided shader files. Will use default shaders.\n");
-
-            effectDesc.setVertexShader(R"shaderCode("
-
-                                        #version 300 es
-                                        in vec2 a_position;
-                                        void main()
-                                        {
-                                            gl_Position = vec4(a_position, 0.0, 1.0);
-                                        }
-
-                                        )shaderCode");
-
-            effectDesc.setFragmentShader(R"shaderCode(
-
-                                        #version 300 es
-                                        uniform sampler2D textureSampler;
-                                        out highp vec4 fragColor;
-                                        void main(void)
-                                        {
-                                            highp vec2 ts = vec2(textureSize(textureSampler, 0));
-                                            if(gl_FragCoord.x < ts.x && gl_FragCoord.y < ts.y)
-                                            {
-                                                fragColor = texelFetch(textureSampler, ivec2(gl_FragCoord.xy), 0);
-                                            }
-                                            else
-                                            {
-                                                fragColor = vec4(0.5, 0.3, 0.1, 0.2);
-                                            }
-                                        }
-
-
-                                        )shaderCode");
-
-            m_effect = m_ramsesClient.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
-        }
-
         m_scene->flush();
         m_scene->publish();
     }
@@ -188,70 +179,12 @@ private:
     MeshEntries m_meshes;
 };
 
-class RendererEventHandler : public ramses::RendererEventHandlerEmpty
+class RendererEventHandler : public ramses::RendererSceneControlEventHandlerEmpty
 {
 public:
-    RendererEventHandler(ramses::RamsesRenderer& renderer, StreamSourceViewer& sceneCreator)
-        : m_renderer(renderer)
-        , m_sceneCreator(sceneCreator)
+    explicit RendererEventHandler(StreamSourceViewer& sceneCreator)
+        : m_sceneCreator(sceneCreator)
     {
-    }
-
-    virtual void scenePublished(ramses::sceneId_t sceneId) override
-    {
-        m_publishedScenes.insert(sceneId);
-    }
-
-    virtual void sceneUnpublished(ramses::sceneId_t sceneId) override
-    {
-        m_publishedScenes.erase(sceneId);
-    }
-
-    virtual void sceneSubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_OK == result)
-        {
-            m_subscribedScenes.insert(sceneId);
-        }
-    }
-
-    virtual void sceneUnsubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_FAIL != result)
-        {
-            m_subscribedScenes.erase(sceneId);
-        }
-    }
-
-    virtual void sceneMapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_OK == result)
-        {
-            m_mappedScenes.insert(sceneId);
-        }
-    }
-
-    virtual void sceneUnmapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_FAIL != result)
-        {
-            m_mappedScenes.erase(sceneId);
-        }
-    }
-
-    void waitForPublication(const ramses::sceneId_t sceneId)
-    {
-        waitForSceneInSet(sceneId, m_publishedScenes);
-    }
-
-    void waitForSubscription(const ramses::sceneId_t sceneId)
-    {
-        waitForSceneInSet(sceneId, m_subscribedScenes);
-    }
-
-    void waitForMapped(const ramses::sceneId_t sceneId)
-    {
-        waitForSceneInSet(sceneId, m_mappedScenes);
     }
 
     virtual void streamAvailabilityChanged(ramses::streamSource_t streamId, bool available) override
@@ -269,29 +202,13 @@ public:
     }
 
 private:
-    typedef std::unordered_set<ramses::sceneId_t> SceneSet;
-
-    void waitForSceneInSet(const ramses::sceneId_t sceneId, const SceneSet& sceneSet)
-    {
-        while (sceneSet.find(sceneId) == sceneSet.end())
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            m_renderer.dispatchEvents(*this);
-        }
-    }
-
-    SceneSet m_publishedScenes;
-    SceneSet m_subscribedScenes;
-    SceneSet m_mappedScenes;
-
-    ramses::RamsesRenderer& m_renderer;
     StreamSourceViewer& m_sceneCreator;
 };
 
 int main(int argc, char* argv[])
 {
     ramses_internal::CommandLineParser parser(argc, argv);
-    ramses_internal::ArgumentBool      helpRequested(parser, "help", "help", false);
+    ramses_internal::ArgumentBool      helpRequested(parser, "help", "help");
     ramses_internal::ArgumentFloat     maxFps(parser, "fps", "framesPerSecond", 60.0f);
 
     if (helpRequested)
@@ -304,40 +221,40 @@ int main(int argc, char* argv[])
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);
     ramses::RamsesFramework framework(config);
 
-    ramses::RamsesClient ramsesClient("stream viewer", framework);
+    ramses::RamsesClient* ramsesClient(framework.createClient("stream viewer"));
 
     ramses::RendererConfig rendererConfig(argc, argv);
-    ramses::RamsesRenderer renderer(framework, rendererConfig);
-    renderer.setMaximumFramerate(maxFps);
-    renderer.startThread();
+    ramses::RamsesRenderer* renderer(framework.createRenderer(rendererConfig));
+    auto sceneControlAPI = renderer->getSceneControlAPI();
+
+    if (!ramsesClient || !renderer)
+    {
+        printf("\nFailed to create either ramses client or ramses renderer.\n");
+        return 1;
+    }
+
+    renderer->setMaximumFramerate(maxFps);
+    renderer->startThread();
 
     ramses::DisplayConfig displayConfig(argc, argv);
     displayConfig.setClearColor(0.5f, 0.f, 0.f, 1.f);
-    const ramses::displayId_t display = renderer.createDisplay(displayConfig);
+    const ramses::displayId_t display = renderer->createDisplay(displayConfig);
+    renderer->flush();
 
     framework.connect();
 
-    const ramses::sceneId_t sceneId = 1u;
-    StreamSourceViewer sceneCreator(ramsesClient, sceneId);
+    const ramses::sceneId_t sceneId{1u};
+    StreamSourceViewer sceneCreator(*ramsesClient, sceneId);
 
-    RendererEventHandler eventHandler(renderer, sceneCreator);
+    RendererEventHandler eventHandler(sceneCreator);
 
-    eventHandler.waitForPublication(sceneId);
-
-    renderer.subscribeScene(sceneId);
-    renderer.flush();
-    eventHandler.waitForSubscription(sceneId);
-
-    renderer.mapScene(display, sceneId);
-    renderer.flush();
-    eventHandler.waitForMapped(sceneId);
-
-    renderer.showScene(sceneId);
-    renderer.flush();
+    sceneControlAPI->setSceneMapping(sceneId, display);
+    sceneControlAPI->setSceneState(sceneId, ramses::RendererSceneState::Rendered);
+    sceneControlAPI->flush();
 
     for (;;)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        renderer.dispatchEvents(eventHandler);
+        sceneControlAPI->dispatchEvents(eventHandler);
     }
 }

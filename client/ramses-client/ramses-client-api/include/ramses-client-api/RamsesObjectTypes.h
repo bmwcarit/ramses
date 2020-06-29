@@ -36,9 +36,9 @@ namespace ramses
         ERamsesObjectType_AnimatedProperty,
         ERamsesObjectType_Animation,
         ERamsesObjectType_AnimationSequence,
-        ERamsesObjectType_AnimatedSetter,
         ERamsesObjectType_Appearance,
         ERamsesObjectType_GeometryBinding,
+        ERamsesObjectType_PickableObject,
         ERamsesObjectType_Spline, // base type
         ERamsesObjectType_SplineStepBool,
         ERamsesObjectType_SplineStepFloat,
@@ -100,11 +100,12 @@ namespace ramses
         ERamsesObjectType_DataVector3i,
         ERamsesObjectType_DataVector4i,
         ERamsesObjectType_StreamTexture,
+        ERamsesObjectType_SceneReference,
 
         // Whenever new type of object is added
         // its traits must be registered in RamsesObjectTypeTraits.h using helper macros
         // and added to appropriate test type list(s) in RamsesObjectTestTypes.h
-        // and added a conversion template instantiation in RamsesUtils.cpp
+        // and added a conversion template instantiation in RamsesObjectTypeUtils.cpp
         ERamsesObjectType_NUMBER_OF_TYPES
     };
 }

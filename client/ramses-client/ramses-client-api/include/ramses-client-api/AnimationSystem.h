@@ -42,13 +42,13 @@ namespace ramses
     class SplineBezierVector3i;
     class SplineBezierVector4i;
     class Animation;
-    class AnimatedSetter;
     class AnimationSequence;
     class Node;
     class UniformInput;
     class DataObject;
     class Appearance;
     class AnimationObject;
+    class PickableObject;
 
     /**
     * @brief The AnimationSystem holds all animation related data.
@@ -82,7 +82,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineStepBool* createSplineStepBool(const char* name = 0);
+        SplineStepBool* createSplineStepBool(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using int32_t data type and step interpolation
@@ -90,7 +90,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineStepInt32* createSplineStepInt32(const char* name = 0);
+        SplineStepInt32* createSplineStepInt32(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using float data type and step interpolation
@@ -98,7 +98,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineStepFloat* createSplineStepFloat(const char* name = 0);
+        SplineStepFloat* createSplineStepFloat(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using Vector2f data type and step interpolation
@@ -106,7 +106,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineStepVector2f* createSplineStepVector2f(const char* name = 0);
+        SplineStepVector2f* createSplineStepVector2f(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using Vector3f data type and step interpolation
@@ -114,7 +114,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineStepVector3f* createSplineStepVector3f(const char* name = 0);
+        SplineStepVector3f* createSplineStepVector3f(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using Vector4f data type and step interpolation
@@ -122,7 +122,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineStepVector4f* createSplineStepVector4f(const char* name = 0);
+        SplineStepVector4f* createSplineStepVector4f(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using Vector2i data type and step interpolation
@@ -130,7 +130,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineStepVector2i* createSplineStepVector2i(const char* name = 0);
+        SplineStepVector2i* createSplineStepVector2i(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using Vector3i data type and step interpolation
@@ -138,7 +138,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineStepVector3i* createSplineStepVector3i(const char* name = 0);
+        SplineStepVector3i* createSplineStepVector3i(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using Vector4i data type and step interpolation
@@ -146,7 +146,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineStepVector4i* createSplineStepVector4i(const char* name = 0);
+        SplineStepVector4i* createSplineStepVector4i(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using int32_t data type and linear interpolation
@@ -154,7 +154,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineLinearInt32* createSplineLinearInt32(const char* name = 0);
+        SplineLinearInt32* createSplineLinearInt32(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using float data type and linear interpolation
@@ -162,7 +162,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineLinearFloat* createSplineLinearFloat(const char* name = 0);
+        SplineLinearFloat* createSplineLinearFloat(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using Vector2f data type and linear interpolation
@@ -170,7 +170,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineLinearVector2f* createSplineLinearVector2f(const char* name = 0);
+        SplineLinearVector2f* createSplineLinearVector2f(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using Vector3f data type and linear interpolation
@@ -178,7 +178,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineLinearVector3f* createSplineLinearVector3f(const char* name = 0);
+        SplineLinearVector3f* createSplineLinearVector3f(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using Vector4f data type and linear interpolation
@@ -186,7 +186,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineLinearVector4f* createSplineLinearVector4f(const char* name = 0);
+        SplineLinearVector4f* createSplineLinearVector4f(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using Vector2i data type and linear interpolation
@@ -194,7 +194,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineLinearVector2i* createSplineLinearVector2i(const char* name = 0);
+        SplineLinearVector2i* createSplineLinearVector2i(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using Vector3i data type and linear interpolation
@@ -202,7 +202,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineLinearVector3i* createSplineLinearVector3i(const char* name = 0);
+        SplineLinearVector3i* createSplineLinearVector3i(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using Vector4i data type and linear interpolation
@@ -210,7 +210,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineLinearVector4i* createSplineLinearVector4i(const char* name = 0);
+        SplineLinearVector4i* createSplineLinearVector4i(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using int32_t data type and Bezier interpolation
@@ -218,7 +218,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineBezierInt32* createSplineBezierInt32(const char* name = 0);
+        SplineBezierInt32* createSplineBezierInt32(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using float data type and Bezier interpolation
@@ -226,7 +226,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineBezierFloat* createSplineBezierFloat(const char* name = 0);
+        SplineBezierFloat* createSplineBezierFloat(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using Vector2f data type and Bezier interpolation
@@ -234,7 +234,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineBezierVector2f* createSplineBezierVector2f(const char* name = 0);
+        SplineBezierVector2f* createSplineBezierVector2f(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using Vector3f data type and Bezier interpolation
@@ -242,7 +242,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineBezierVector3f* createSplineBezierVector3f(const char* name = 0);
+        SplineBezierVector3f* createSplineBezierVector3f(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using Vector4f data type and Bezier interpolation
@@ -250,7 +250,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineBezierVector4f* createSplineBezierVector4f(const char* name = 0);
+        SplineBezierVector4f* createSplineBezierVector4f(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using Vector2i data type and Bezier interpolation
@@ -258,7 +258,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineBezierVector2i* createSplineBezierVector2i(const char* name = 0);
+        SplineBezierVector2i* createSplineBezierVector2i(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using Vector3i data type and Bezier interpolation
@@ -266,7 +266,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineBezierVector3i* createSplineBezierVector3i(const char* name = 0);
+        SplineBezierVector3i* createSplineBezierVector3i(const char* name = nullptr);
 
         /**
         * @brief Creates a spline in this animation system using Vector4i data type and Bezier interpolation
@@ -274,7 +274,7 @@ namespace ramses
         * @param[in] name The optional name of the spline
         * @return Pointer to the created spline, null on failure
         */
-        SplineBezierVector4i* createSplineBezierVector4i(const char* name = 0);
+        SplineBezierVector4i* createSplineBezierVector4i(const char* name = nullptr);
 
         /**
         * @brief Creates Animation that can animate given property using given spline
@@ -284,28 +284,7 @@ namespace ramses
         * @param[in] name The optional name of the Animation
         * @return Pointer to the created Animation, null on failure
         */
-        Animation* createAnimation(const AnimatedProperty& animatedProperty, const Spline& spline, const char* name = 0);
-
-        /**
-        * @brief Creates AnimatedSetter that can animate given property to a user specified target value with delay (see setDelayForAnimatedSetters) using linear interpolation.
-        *
-        * @param[in] animatedProperty AnimatedProperty to animate with this AnimatedSetter
-        * @param[in] name The optional name of the AnimatedSetter
-        * @return Pointer to the created AnimatedSetter, null on failure
-        */
-        AnimatedSetter* createAnimatedSetter(const AnimatedProperty& animatedProperty, const char* name = 0);
-
-        /**
-        * @brief Set a fixed delay to be used with all AnimatedSetter instances within this AnimationSystem.
-        *        Setting a new value on an AnimatedSetter will trigger animation towards the new value,
-        *        reaching the new value with this delay.
-        *        Delay can be changed dynamically however any previous set calls on existing AnimatedSetter instances will not be modified.
-        *
-        * @param[in] delay Delay for AnimatedSetter instances.
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t setDelayForAnimatedSetters(timeMilliseconds_t delay);
+        Animation* createAnimation(const AnimatedProperty& animatedProperty, const Spline& spline, const char* name = nullptr);
 
         /**
         * @brief Creates AnimationSequence that can hold references to multiple animations and control them together.
@@ -313,7 +292,7 @@ namespace ramses
         * @param[in] name The optional name of the AnimationSequence
         * @return Pointer to the created AnimationSequence, null on failure
         */
-        AnimationSequence* createAnimationSequence(const char* name = 0);
+        AnimationSequence* createAnimationSequence(const char* name = nullptr);
 
         /**
         * @brief Release an animation system object and its data.
@@ -335,7 +314,7 @@ namespace ramses
         * @param[in] name The optional name of the AnimatedProperty.
         * @return AnimatedProperty referring to Node's property, null on failure
         */
-        AnimatedProperty* createAnimatedProperty(const Node& propertyOwner, EAnimatedProperty property, EAnimatedPropertyComponent propertyComponent = EAnimatedPropertyComponent_All, const char* name = 0);
+        AnimatedProperty* createAnimatedProperty(const Node& propertyOwner, EAnimatedProperty property, EAnimatedPropertyComponent propertyComponent = EAnimatedPropertyComponent_All, const char* name = nullptr);
 
         /**
         * @brief Create a new animated property for Appearance's input
@@ -346,7 +325,7 @@ namespace ramses
         * @param[in] name The optional name of the AnimatedProperty.
         * @return AnimatedProperty referring to Appearance input, null on failure
         */
-        AnimatedProperty* createAnimatedProperty(const UniformInput& propertyOwner, const Appearance& appearance, EAnimatedPropertyComponent propertyComponent = EAnimatedPropertyComponent_All, const char* name = 0);
+        AnimatedProperty* createAnimatedProperty(const UniformInput& propertyOwner, const Appearance& appearance, EAnimatedPropertyComponent propertyComponent = EAnimatedPropertyComponent_All, const char* name = nullptr);
 
         /**
         * @brief Create a new animated property for a DataObject
@@ -356,7 +335,7 @@ namespace ramses
         * @param[in] name The optional name of the AnimatedProperty.
         * @return AnimatedProperty referring to DataObject, null on failure
         */
-        AnimatedProperty* createAnimatedProperty(const DataObject& propertyOwner, EAnimatedPropertyComponent propertyComponent = EAnimatedPropertyComponent_All, const char* name = 0);
+        AnimatedProperty* createAnimatedProperty(const DataObject& propertyOwner, EAnimatedPropertyComponent propertyComponent = EAnimatedPropertyComponent_All, const char* name = nullptr);
 
         /**
         * @brief Get number of animations that were finished in current update round.

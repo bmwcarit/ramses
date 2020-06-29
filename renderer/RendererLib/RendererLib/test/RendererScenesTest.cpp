@@ -30,14 +30,14 @@ protected:
 TEST_F(ARendererScenes, isEmptyInitially)
 {
     EXPECT_EQ(rendererScenes.begin(), rendererScenes.end());
-    EXPECT_EQ(0u, rendererScenes.count());
+    EXPECT_EQ(0u, rendererScenes.size());
 }
 
 TEST_F(ARendererScenes, isEmptyInitiallyConst)
 {
     const RendererScenes rendererScenesConst(eventCollector);
     EXPECT_EQ(rendererScenesConst.begin(), rendererScenesConst.end());
-    EXPECT_EQ(0u, rendererScenesConst.count());
+    EXPECT_EQ(0u, rendererScenesConst.size());
 }
 
 TEST_F(ARendererScenes, createsSceneAndStagingInfo)
@@ -47,10 +47,10 @@ TEST_F(ARendererScenes, createsSceneAndStagingInfo)
     SceneInfo sceneInfo(sceneID, sceneName);
     IScene& createdScene = rendererScenes.createScene(sceneInfo);
 
-    SceneSizeInformation sceneSizeInfo(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18);
+    SceneSizeInformation sceneSizeInfo(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20);
     createdScene.preallocateSceneSize(sceneSizeInfo);
 
-    EXPECT_EQ(1u, rendererScenes.count());
+    EXPECT_EQ(1u, rendererScenes.size());
     EXPECT_NE(rendererScenes.begin(), rendererScenes.end());
     EXPECT_TRUE(rendererScenes.hasScene(sceneID));
     EXPECT_EQ(&createdScene, &rendererScenes.getScene(sceneID));
@@ -67,7 +67,7 @@ TEST_F(ARendererScenes, destroysSceneAndStagingInfo)
 
     rendererScenes.destroyScene(sceneID);
 
-    EXPECT_EQ(0u, rendererScenes.count());
+    EXPECT_EQ(0u, rendererScenes.size());
     EXPECT_EQ(rendererScenes.begin(), rendererScenes.end());
     EXPECT_FALSE(rendererScenes.hasScene(sceneID));
 }
@@ -83,7 +83,7 @@ TEST_F(ARendererScenes, canIterateOverScenes)
     const SceneId sceneID3(14u);
     rendererScenes.createScene(SceneInfo(sceneID3));
 
-    EXPECT_EQ(3u, rendererScenes.count());
+    EXPECT_EQ(3u, rendererScenes.size());
     EXPECT_NE(rendererScenes.begin(), rendererScenes.end());
     EXPECT_TRUE(rendererScenes.hasScene(sceneID1));
     EXPECT_TRUE(rendererScenes.hasScene(sceneID2));

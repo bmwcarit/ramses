@@ -19,13 +19,11 @@ namespace ramses
 
 namespace ramses_internal
 {
-    class RamsesObject;
-
-    class FlushSceneVersion : public RamshCommandArgs<ramses::sceneVersionTag_t, ramses::sceneId_t>
+    class FlushSceneVersion : public RamshCommandArgs<ramses::sceneVersionTag_t, uint64_t>
     {
     public:
         explicit FlushSceneVersion(ramses::RamsesClientImpl& client);
-        virtual Bool execute(ramses::sceneVersionTag_t& sceneVersion, ramses::sceneId_t& sceneId) const override;
+        virtual Bool execute(ramses::sceneVersionTag_t& sceneVersion, uint64_t& sceneId) const override;
 
     private:
         ramses::RamsesClientImpl& m_client;

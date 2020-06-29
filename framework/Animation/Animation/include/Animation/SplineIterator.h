@@ -21,7 +21,7 @@ namespace ramses_internal
     public:
         SplineIterator();
 
-        void setTimeStamp(SplineTimeStamp timeStamp, const SplineBase* spline, Bool reverse = false);
+        void setTimeStamp(SplineTimeStamp timeStamp, const SplineBase* spline, bool reverse = false);
         SplineTimeStamp getTimeStamp() const;
         const SplineSegment& getSegment() const;
         Float getSegmentLocalTime() const;

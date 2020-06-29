@@ -92,12 +92,12 @@ TEST_F(ARendererStatistics, untracksScene)
 
 TEST_F(ARendererStatistics, tracksSceneArrivedFlushesIndependentlyFromFrames)
 {
-    stats.trackArrivedFlush(sceneId1, 1, 2, 3, 4);
-    stats.trackArrivedFlush(sceneId2, 1, 2, 3, 4);
-    stats.trackArrivedFlush(sceneId1, 1, 2, 3, 4);
-    stats.trackArrivedFlush(sceneId2, 1, 2, 3, 4);
+    stats.trackArrivedFlush(sceneId1, 1, 2, 3, 4, std::chrono::milliseconds{0});
+    stats.trackArrivedFlush(sceneId2, 1, 2, 3, 4, std::chrono::milliseconds{0});
+    stats.trackArrivedFlush(sceneId1, 1, 2, 3, 4, std::chrono::milliseconds{0});
+    stats.trackArrivedFlush(sceneId2, 1, 2, 3, 4, std::chrono::milliseconds{0});
     stats.frameFinished(0u);
-    stats.trackArrivedFlush(sceneId1, 1, 2, 3, 4);
+    stats.trackArrivedFlush(sceneId1, 1, 2, 3, 4, std::chrono::milliseconds{0});
 
     EXPECT_TRUE(logOutputContains("Scene 11:"));
     EXPECT_TRUE(logOutputContains("FArrived 3"));
@@ -107,11 +107,11 @@ TEST_F(ARendererStatistics, tracksSceneArrivedFlushesIndependentlyFromFrames)
 
 TEST_F(ARendererStatistics, tracksFramesWhereSceneFlushArrived)
 {
-    stats.trackArrivedFlush(sceneId1, 1, 2, 3, 4);
-    stats.trackArrivedFlush(sceneId1, 1, 2, 3, 4);
-    stats.trackArrivedFlush(sceneId1, 1, 2, 3, 4);
+    stats.trackArrivedFlush(sceneId1, 1, 2, 3, 4, std::chrono::milliseconds{0});
+    stats.trackArrivedFlush(sceneId1, 1, 2, 3, 4, std::chrono::milliseconds{0});
+    stats.trackArrivedFlush(sceneId1, 1, 2, 3, 4, std::chrono::milliseconds{0});
     stats.frameFinished(0u);
-    stats.trackArrivedFlush(sceneId1, 1, 2, 3, 4);
+    stats.trackArrivedFlush(sceneId1, 1, 2, 3, 4, std::chrono::milliseconds{0});
     stats.frameFinished(0u);
     stats.frameFinished(0u);
     stats.frameFinished(0u);
@@ -271,26 +271,6 @@ TEST_F(ARendererStatistics, untracksStreamTextureSource)
     EXPECT_FALSE(logOutputContains("SourceId 99"));
 }
 
-TEST_F(ARendererStatistics, tracksInterruptedFlushes)
-{
-    stats.flushApplyInterrupted(sceneId1);
-    stats.flushApplyInterrupted(sceneId1);
-    stats.flushApplyInterrupted(sceneId1);
-    stats.frameFinished(0u);
-
-    EXPECT_TRUE(logOutputContains("FApplyInterrupted 3"));
-}
-
-TEST_F(ARendererStatistics, doesNotLogInterruptedFlushesIfThereAreNone)
-{
-    stats.flushApplyInterrupted(sceneId1);
-    stats.frameFinished(0u);
-    EXPECT_TRUE(logOutputContains("FApplyInterrupted"));
-
-    stats.reset();
-    EXPECT_FALSE(logOutputContains("FApplyInterrupted"));
-}
-
 TEST_F(ARendererStatistics, tracksClientResourceUploads)
 {
     stats.clientResourceUploaded(2u);
@@ -332,7 +312,7 @@ TEST_F(ARendererStatistics, tracksSceneResourceUploads)
 
 TEST_F(ARendererStatistics, tracksShaderCompilationAndTimes)
 {
-    stats.shaderCompiled(2u);
+    stats.shaderCompiled(std::chrono::microseconds(2u), "some effect", SceneId(123));
     stats.frameFinished(0u);
     EXPECT_TRUE(logOutputContains("shadersCompiled 1"));
     EXPECT_TRUE(logOutputContains("for total ms:0"));
@@ -340,12 +320,15 @@ TEST_F(ARendererStatistics, tracksShaderCompilationAndTimes)
     stats.reset();
     EXPECT_FALSE(logOutputContains("shadersCompiled"));
 
-    stats.shaderCompiled(3000u);
-    stats.shaderCompiled(5000u);
-    stats.shaderCompiled(7000u);
+    stats.shaderCompiled(std::chrono::microseconds(3000u), "some effect name", SceneId(123));
+    stats.shaderCompiled(std::chrono::microseconds(5000u), "some effect name", SceneId(124));
+    stats.shaderCompiled(std::chrono::microseconds(7000u), "longest effect name", SceneId(125));
     stats.frameFinished(0u);
     EXPECT_TRUE(logOutputContains("shadersCompiled 3"));
     EXPECT_TRUE(logOutputContains("for total ms:15"));
+    EXPECT_TRUE(logOutputContains("longest: longest effect name"));
+    EXPECT_TRUE(logOutputContains("from scene:125"));
+    EXPECT_TRUE(logOutputContains("ms:7"));
 
     stats.reset();
     EXPECT_FALSE(logOutputContains("shadersCompiled"));
@@ -355,8 +338,8 @@ TEST_F(ARendererStatistics, confidenceTest_fullLogOutput)
 {
     for (size_t period = 0u; period < 2u; ++period)
     {
-        stats.trackArrivedFlush(sceneId1, 123, 5, 3, 4);
-        stats.trackArrivedFlush(sceneId2, 6, 7, 8, 9);
+        stats.trackArrivedFlush(sceneId1, 123, 5, 3, 4, std::chrono::milliseconds{2});
+        stats.trackArrivedFlush(sceneId2, 6, 7, 8, 9, std::chrono::milliseconds{5});
         stats.flushBlocked(sceneId1);
         stats.flushApplied(sceneId2);
         stats.framebufferSwapped(disp1);
@@ -364,17 +347,17 @@ TEST_F(ARendererStatistics, confidenceTest_fullLogOutput)
 
         stats.clientResourceUploaded(2u);
         stats.clientResourceUploaded(77u);
-        stats.shaderCompiled(0u);
-        stats.shaderCompiled(1000u);
+        stats.shaderCompiled(std::chrono::microseconds(0u), "", SceneId(54321));
+        stats.shaderCompiled(std::chrono::microseconds(1000u), "slow effect", SceneId(12345));
 
-        stats.trackArrivedFlush(sceneId1, 123, 5, 3, 4);
+        stats.trackArrivedFlush(sceneId1, 123, 5, 3, 4, std::chrono::milliseconds{3});
         stats.flushBlocked(sceneId1);
         stats.sceneRendered(sceneId2);
         stats.framebufferSwapped(disp2);
         stats.frameFinished(100);
 
-        stats.trackArrivedFlush(sceneId1, 123, 5, 3, 4);
-        stats.trackArrivedFlush(sceneId2, 6, 7, 8, 9);
+        stats.trackArrivedFlush(sceneId1, 123, 5, 3, 4, std::chrono::milliseconds{6});
+        stats.trackArrivedFlush(sceneId2, 6, 7, 8, 9, std::chrono::milliseconds{11});
         stats.flushApplied(sceneId1);
         stats.flushBlocked(sceneId2);
         stats.sceneRendered(sceneId1);
@@ -402,9 +385,9 @@ TEST_F(ARendererStatistics, confidenceTest_fullLogOutput)
         EXPECT_TRUE(logOutputContains("for total ms:1"));
         EXPECT_TRUE(logOutputContains("FB1: 3; OB11: 1 (intr: 1)"));
         EXPECT_TRUE(logOutputContains("FB2: 2"));
-        EXPECT_TRUE(logOutputContains("Scene 11: rendered 2, framesFArrived 3, framesFApplied 1, framesFBlocked 2, maxFramesWithNoFApplied 2, maxFramesFBlocked 2, FArrived 3, FApplied 1, actions/F (123/123/123.000000), RC+/F (5/5/5.000000), RC-/F (3/3/3.000000), RS/F (4/4/4.000000), RSUploaded 2 (80 B)"));
-        EXPECT_TRUE(logOutputContains("Scene 22: rendered 2, framesFArrived 2, framesFApplied 1, framesFBlocked 1, maxFramesWithNoFApplied 3, maxFramesFBlocked 1, FArrived 2, FApplied 1, actions/F (6/6/6.000000), RC+/F (7/7/7.000000), RC-/F (8/8/8.000000), RS/F (9/9/9.000000), RSUploaded 1 (200 B)"));
-
+        EXPECT_TRUE(logOutputContains("Scene 11: rendered 2, framesFArrived 3, framesFApplied 1, framesFBlocked 2, maxFramesWithNoFApplied 2, maxFramesFBlocked 2, FArrived 3, FApplied 1, actions/F (123/123/123.0), dt/F (2/6/3.6666667), RC+/F (5/5/5.0), RC-/F (3/3/3.0), RS/F (4/4/4.0), RSUploaded 2 (80 B)"));
+        EXPECT_TRUE(logOutputContains("Scene 22: rendered 2, framesFArrived 2, framesFApplied 1, framesFBlocked 1, maxFramesWithNoFApplied 3, maxFramesFBlocked 1, FArrived 2, FApplied 1, actions/F (6/6/6.0), dt/F (5/11/8.0), RC+/F (7/7/7.0), RC-/F (8/8/8.0), RS/F (9/9/9.0), RSUploaded 1 (200 B)"));
+        EXPECT_TRUE(logOutputContains("slow effect"));
         stats.reset();
     }
 }

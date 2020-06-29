@@ -28,6 +28,7 @@ namespace ramses_internal
         virtual void onMouseEvent(EMouseEventType event, Int32 posX, Int32 posY) override;
         virtual void onClose() override;
         virtual void onResize(UInt32 width, UInt32 height) override;
+        virtual void onWindowMove(Int32 posX, Int32 posY) override;
 
     private:
         const DisplayHandle     m_displayHandle;

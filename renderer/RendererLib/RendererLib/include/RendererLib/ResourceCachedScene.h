@@ -22,12 +22,13 @@ namespace ramses_internal
     class ResourceCachedScene : public DataReferenceLinkCachedScene
     {
     public:
-        ResourceCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& creationInfo = SceneInfo());
+        explicit ResourceCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& creationInfo = SceneInfo());
 
         virtual void                        preallocateSceneSize(const SceneSizeInformation& sizeInfo) override;
         // Renderable allocation
         virtual RenderableHandle            allocateRenderable          (NodeHandle nodeHandle, RenderableHandle handle = RenderableHandle::Invalid()) override;
         virtual void                        releaseRenderable           (RenderableHandle renderableHandle) override;
+        virtual void                        setRenderableVisibility     (RenderableHandle renderableHandle, EVisibilityMode visibility) override;
         virtual DataInstanceHandle          allocateDataInstance        (DataLayoutHandle handle, DataInstanceHandle instanceHandle = DataInstanceHandle::Invalid()) override;
         virtual void                        releaseDataInstance         (DataInstanceHandle dataInstanceHandle) override;
         virtual TextureSamplerHandle        allocateTextureSampler      (const TextureSampler& sampler, TextureSamplerHandle handle) override;
@@ -35,8 +36,6 @@ namespace ramses_internal
         virtual void                        releaseStreamTexture        (StreamTextureHandle handle) override;
 
         // Renderable data (stuff required for rendering)
-        virtual void                        setRenderableEffect         (RenderableHandle renderableHandle, const ResourceContentHash& effectHash) override;
-
         virtual void                        setRenderableDataInstance   (RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance) override;
         virtual void                        setDataResource             (DataInstanceHandle dataInstanceHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor) override;
         virtual void                        setDataTextureSamplerHandle (DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) override;

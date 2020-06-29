@@ -9,24 +9,26 @@
 #ifndef RAMSES_PLATFORMERROR_H
 #define RAMSES_PLATFORMERROR_H
 
-#include <ramses-capu/Error.h>
+#include "Utils/LoggingUtils.h"
 
 namespace ramses_internal
 {
-    enum EStatus
+    enum class EStatus
     {
-        EStatus_RAMSES_OK              = ramses_capu::CAPU_OK             ,
-        EStatus_RAMSES_EINVAL          = ramses_capu::CAPU_EINVAL         ,
-        EStatus_RAMSES_SOCKET_EADDR    = ramses_capu::CAPU_SOCKET_EADDR   ,
-        EStatus_RAMSES_SOCKET_ESOCKET  = ramses_capu::CAPU_SOCKET_ESOCKET ,
-        EStatus_RAMSES_SOCKET_ECONNECT = ramses_capu::CAPU_SOCKET_ECONNECT,
-        EStatus_RAMSES_TIMEOUT         = ramses_capu::CAPU_ETIMEOUT       ,
-        EStatus_RAMSES_ENO_MEMORY      = ramses_capu::CAPU_ENO_MEMORY     ,
-        EStatus_RAMSES_ERROR           = ramses_capu::CAPU_ERROR          ,
-        EStatus_RAMSES_NOT_EXIST       = ramses_capu::CAPU_ENOT_EXIST     ,
-        EStatus_RAMSES_ERANGE          = ramses_capu::CAPU_ERANGE         ,
-        EStatus_RAMSES_EOF             = ramses_capu::CAPU_EOF
+        Ok       = 0,
+        Error    = 1,
+        NotExist = 2,
+        Eof      = 3
+    };
+
+    static constexpr const char* EStatusNames[] = {
+        "EStatus::Ok",
+        "EStatus::Error",
+        "EStatus::NotExist",
+        "EStatus::Eof"
     };
 }
+
+MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses_internal::EStatus, ramses_internal::EStatusNames, ramses_internal::EStatus::Eof);
 
 #endif

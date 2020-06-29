@@ -10,7 +10,7 @@
 #define RAMSES_RESOURCEDESCRIPTOR_H
 
 #include "RendererLib/EResourceStatus.h"
-#include "Resource/EResourceType.h"
+#include "Resource/ResourceTypes.h"
 #include "RendererAPI/Types.h"
 #include "SceneAPI/SceneId.h"
 #include "SceneAPI/ResourceContentHash.h"

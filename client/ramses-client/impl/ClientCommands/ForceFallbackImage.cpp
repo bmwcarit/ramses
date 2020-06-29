@@ -8,7 +8,7 @@
 
 #include "ForceFallbackImage.h"
 #include "RamsesClientImpl.h"
-#include "SceneCommandTypes.h"
+#include "SceneCommandBuffer.h"
 
 namespace ramses_internal
 {
@@ -22,13 +22,13 @@ namespace ramses_internal
         getArgument<2>().setDescription("stream texture name");
     }
 
-    Bool ForceFallbackImage::execute(UInt32& forceFallback, ramses::sceneId_t& sceneId, String& streamTextureName) const
+    Bool ForceFallbackImage::execute(UInt32& forceFallback, uint64_t& sceneId, String& streamTextureName) const
     {
-        ForceFallbackCommand command;
+        SceneCommandForceFallback command;
         command.streamTextureName = streamTextureName;
         command.forceFallback     = forceFallback != 0u;
 
-        m_client.enqueueSceneCommand(sceneId, command);
+        m_client.enqueueSceneCommand(ramses::sceneId_t(sceneId), std::move(command));
         return true;
     }
 }

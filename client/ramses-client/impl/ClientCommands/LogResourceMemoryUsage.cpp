@@ -21,11 +21,11 @@ namespace ramses_internal
         registerKeyword("lm");
     }
 
-    Bool LogResourceMemoryUsage::execute(ramses::sceneId_t& sceneId) const
+    Bool LogResourceMemoryUsage::execute(uint64_t& sceneId) const
     {
         LOG_INFO(CONTEXT_CLIENT,"LogResourceMemoryUsage");
-        LogResourceMemoryUsageCommand command;
-        m_client.enqueueSceneCommand(sceneId, command);
+        SceneCommandLogResourceMemoryUsage command;
+        m_client.enqueueSceneCommand(ramses::sceneId_t(sceneId), std::move(command));
         return true;
     }
 }

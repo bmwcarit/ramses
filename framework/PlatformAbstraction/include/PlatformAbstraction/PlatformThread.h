@@ -9,117 +9,104 @@
 #ifndef RAMSES_PLATFORMTHREAD_H
 #define RAMSES_PLATFORMTHREAD_H
 
-#include <PlatformAbstraction/PlatformTypes.h>
-#include <PlatformAbstraction/PlatformError.h>
-
-#include <ramses-capu/os/Thread.h>
-#include "Utils/LogMacros.h"
 #include "Collections/String.h"
+#include "PlatformAbstraction/Runnable.h"
+#include <cassert>
 
+#ifdef _WIN32
+#include "PlatformAbstraction/internal/Thread_std.h"
+#else
+#include "PlatformAbstraction/internal/Thread_Posix.h"
+#endif
 
 namespace ramses_internal
 {
-    /**
-     * Type definition for a Runnable;
-     */
-    typedef ramses_capu::Runnable Runnable;
-
-    //typedef long(*ThreadFunc)(void*);
-
-    /**
-     * A thread class which performs the thread execution within a supplied runnable.
-     * Todo:    Something like thread CPU affinity would be useful here.
-     */
     class PlatformThread
     {
     public:
-        /**
-         * Default constructor. A further call createThread is required in order that the thread knows the runnable.
-         */
-        PlatformThread(const String& threadName);
-
-        /**
-         * Destructor.
-         */
+        explicit PlatformThread(const String& threadName);
         ~PlatformThread();
 
-        /**
-         * Start the thread and call the specified runnable instance.
-         */
-        void start(Runnable& runnable);
+        PlatformThread(const PlatformThread&) = delete;
+        PlatformThread(PlatformThread&&) = delete;
+        PlatformThread& operator=(const PlatformThread&) = delete;
+        PlatformThread& operator=(PlatformThread&&) = delete;
 
-        /**
-         * Joins the thread. Returns when the thread ends.
-         * Todo:    a join function with a timeout value would be useful.
-         */
+        void start(Runnable& runnable);
         void join();
 
         void cancel();
+        bool isRunning() const;
+        bool joinable() const;
 
-        Bool isRunning() const;
-
-        /**
-         * Sleep for the specified amount of milli seconds.
-         * @param   msec    The time in milli seconds to sleep.
-         * @return  RAMSES_OK if the sleep was successful or an according error code otherwise.
-         */
-        static EStatus Sleep(UInt32 msec);
+        static void Sleep(uint32_t msec);
 
     private:
-        /**
-         * Underlaying CAPU thread.
-         */
-        ramses_capu::Thread  m_thread;
+        std::string m_name;
+        internal::Thread  m_thread;
+        std::atomic<bool> m_isRunning {false};
+        Runnable* m_runnable = nullptr;
     };
 
     inline
     PlatformThread::PlatformThread(const String& threadName)
-        : m_thread(threadName.stdRef())
+        : m_name(threadName.stdRef())
     {
-        assert(threadName.indexOf(' ') == -1 && "PlatformThread name may not contain spaces");
-        assert(threadName.getLength() < 16u);
+        assert(threadName.find(' ') == -1 && "PlatformThread name may not contain spaces");
+        assert(threadName.size() < 16u);
     }
 
-    inline
-    PlatformThread::~PlatformThread()
+    inline PlatformThread::~PlatformThread()
     {
+        if (m_thread.joinable())
+            join();
     }
 
     inline
     void PlatformThread::cancel()
     {
-        m_thread.cancel();
+        if (m_runnable)
+            m_runnable->cancel();
     }
 
     inline
-    Bool PlatformThread::isRunning() const
+    bool PlatformThread::isRunning() const
     {
-        return m_thread.getState() == ramses_capu::TS_RUNNING;
+        return m_isRunning;
+    }
+
+    inline
+    bool PlatformThread::joinable() const
+    {
+        return m_thread.joinable();
     }
 
     inline
     void PlatformThread::start(Runnable& runnable)
     {
-        const ramses_capu::status_t status = m_thread.start(runnable);
-        if (status != ramses_capu::CAPU_OK)
-        {
-            LOG_ERROR(CONTEXT_FRAMEWORK, "Could not start platform thread. Error code: " << status << " " << ramses_capu::StatusConversion::GetStatusText(status));
-        }
+        if (m_thread.joinable())
+            std::terminate();
+
+        m_runnable = &runnable;
+        m_isRunning = true;
+        m_thread = internal::Thread(m_name, [&]()
+                                            {
+                                                m_runnable->run();
+                                                m_isRunning = false;
+                                            });
     }
 
     inline void PlatformThread::join()
     {
-        const ramses_capu::status_t status = m_thread.join();
-        if (status != ramses_capu::CAPU_OK)
-        {
-            LOG_ERROR(CONTEXT_FRAMEWORK, "Could not join platform thread. Error code: " << status << " " << ramses_capu::StatusConversion::GetStatusText(status));
-        }
+        if (m_thread.joinable())
+            m_thread.join();
+        m_runnable = nullptr;
     }
 
     inline
-    EStatus PlatformThread::Sleep(UInt32 msec)
+    void PlatformThread::Sleep(uint32_t msec)
     {
-        return static_cast<EStatus>(ramses_capu::Thread::Sleep(msec));
+        std::this_thread::sleep_for(std::chrono::milliseconds{msec});
     }
 }
 

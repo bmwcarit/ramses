@@ -9,6 +9,7 @@
 #include "Animation/SplineIterator.h"
 #include "Animation/SplineBase.h"
 #include "PlatformAbstraction/PlatformMath.h"
+#include <assert.h>
 
 namespace ramses_internal
 {
@@ -21,7 +22,7 @@ namespace ramses_internal
     {
     }
 
-    void SplineIterator::setTimeStamp(SplineTimeStamp timeStamp, const SplineBase* spline, Bool reverse)
+    void SplineIterator::setTimeStamp(SplineTimeStamp timeStamp, const SplineBase* spline, bool reverse)
     {
         if (m_spline != spline)
         {
@@ -74,7 +75,7 @@ namespace ramses_internal
 
         if (!m_segment.IsValid())
         {
-            m_segment = findSegmentInRange(m_timeStamp, 0, min(currSegmentStart, numKeys - 1u));
+            m_segment = findSegmentInRange(m_timeStamp, 0, std::min(currSegmentStart, numKeys - 1u));
             if (!m_segment.IsValid())
             {
                 m_segment = getSegmentClampedToValidRange(m_timeStamp);

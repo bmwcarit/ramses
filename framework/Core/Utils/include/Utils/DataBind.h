@@ -29,14 +29,14 @@ namespace ramses_internal
 
         EDataType    getValue() const;
         void         setValue(const EDataType& value) const;
-        Bool         isPropertyValid() const;
+        bool         isPropertyValid() const;
         TDataBindID  getBindID() const;
 
     private:
         typedef typename DataTypeReferenceSelector<EDataType>::PossibleReferenceType GetSetType;
         typedef GetSetType(ContainerType::*TGetterFunc)();
         typedef void (ContainerType::*TSetterFunc)(GetSetType);
-        typedef Bool(ContainerType::*TCheckerFunc)();
+        typedef bool(ContainerType::*TCheckerFunc)();
 
         ContainerType& m_instance;
         const TDataBindID m_bindID;
@@ -55,7 +55,7 @@ namespace ramses_internal
 
         EDataType   getValue() const;
         void        setValue(const EDataType& value) const;
-        Bool        isPropertyValid() const;
+        bool        isPropertyValid() const;
         TDataBindID getBindID() const;
         HandleType  getHandle() const;
 
@@ -63,7 +63,7 @@ namespace ramses_internal
         typedef typename DataTypeReferenceSelector<EDataType>::PossibleReferenceType GetSetType;
         typedef GetSetType(ContainerType::*TGetterFunc)(HandleType);
         typedef void (ContainerType::*TSetterFunc)(HandleType, GetSetType);
-        typedef Bool(ContainerType::*TCheckerFunc)(HandleType);
+        typedef bool(ContainerType::*TCheckerFunc)(HandleType);
 
         ContainerType& m_instance;
         const TDataBindID m_bindID;
@@ -83,7 +83,7 @@ namespace ramses_internal
 
         EDataType   getValue() const;
         void        setValue(const EDataType& value) const;
-        Bool        isPropertyValid() const;
+        bool        isPropertyValid() const;
         TDataBindID getBindID() const;
         HandleType  getHandle() const;
         HandleType2 getHandle2() const;
@@ -92,7 +92,7 @@ namespace ramses_internal
         typedef typename DataTypeReferenceSelector<EDataType>::PossibleReferenceType GetSetType;
         typedef GetSetType(ContainerType::*TGetterFunc)(HandleType, HandleType2);
         typedef void (ContainerType::*TSetterFunc)(HandleType, HandleType2, GetSetType);
-        typedef Bool(ContainerType::*TCheckerFunc)(HandleType); // checker func has always maximum 1 handle accessor
+        typedef bool(ContainerType::*TCheckerFunc)(HandleType); // checker func has always maximum 1 handle accessor
 
         ContainerType& m_instance;
         const TDataBindID m_bindID;
@@ -135,7 +135,7 @@ namespace ramses_internal
     }
 
     template <typename ContainerType, typename EDataType>
-    Bool DataBind<ContainerType, EDataType, TypeNone, TypeNone>::isPropertyValid() const
+    bool DataBind<ContainerType, EDataType, TypeNone, TypeNone>::isPropertyValid() const
     {
         return (m_instance.*m_pCheckerFunc)();
     }
@@ -178,7 +178,7 @@ namespace ramses_internal
     }
 
     template <typename ContainerType, typename EDataType, typename HandleType>
-    Bool DataBind<ContainerType, EDataType, HandleType, TypeNone>::isPropertyValid() const
+    bool DataBind<ContainerType, EDataType, HandleType, TypeNone>::isPropertyValid() const
     {
         return (m_instance.*m_pCheckerFunc)(m_handle);
     }
@@ -228,7 +228,7 @@ namespace ramses_internal
     }
 
     template <typename ContainerType, typename EDataType, typename HandleType, typename HandleType2>
-    Bool DataBind<ContainerType, EDataType, HandleType, HandleType2>::isPropertyValid() const
+    bool DataBind<ContainerType, EDataType, HandleType, HandleType2>::isPropertyValid() const
     {
         return (m_instance.*m_pCheckerFunc)(m_handle);
     }

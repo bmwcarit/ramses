@@ -7,8 +7,8 @@
 #  -------------------------------------------------------------------------
 
 RENDERER_MODULE_PER_CONFIG_STATIC(RenderBackendTests
-    TYPE                    TEST
-    TEST_SUFFIX             RNDSANDWICHTEST
+    TYPE                    BINARY
+    ENABLE_INSTALL          ON
 
     FILES_PRIVATE_HEADER    src/*.h
     FILES_SOURCE            src/*.cpp
@@ -25,6 +25,10 @@ SET(GATE_PLATFORMS
 IF (ramses-sdk_BUILD_TESTS)
     FOREACH(TEST_PLATFORM ${RENDERER_CONFIG_LIST})
         IF(TARGET platform-${TEST_PLATFORM})
+            ACME_ADD_TEST(RenderBackendTests-${TEST_PLATFORM}
+                RNDSANDWICHTEST
+                -lid 3
+            )
             # These tests don't work specifically on the build slaves, because binary shaders are not supported there
             SET(GATE_FILTER "-ADeviceSupportingBinaryShaders*")
 
@@ -32,7 +36,7 @@ IF (ramses-sdk_BUILD_TESTS)
             IF(NOT ${_INDEX} LESS 0)
                 ACME_ADD_TEST(RenderBackendTests-${TEST_PLATFORM}
                     RNDSANDWICHTEST_SWRAST
-                    --gtest_filter=${GATE_FILTER}
+                    --gtest_filter=${GATE_FILTER} -lid 3
                 )
             ENDIF()
         ENDIF()

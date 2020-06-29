@@ -99,7 +99,7 @@ namespace ramses
         serializationContext.resolveDependencyIDImplAndStoreAsPointer(m_cameraImpl);
         serializationContext.resolveDependencyIDImplAndStoreAsPointer(m_renderTargetImpl);
 
-        for (uint32_t i = 0; i < m_renderGroups.size(); ++i)
+        for (size_t i = 0; i < m_renderGroups.size(); ++i)
         {
             RenderGroupImpl* group = const_cast<RenderGroupImpl*>(m_renderGroups[i]);
             serializationContext.resolveDependencyIDImplAndStoreAsPointer(group);
@@ -109,9 +109,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t RenderPassImpl::validate(uint32_t indent) const
+    status_t RenderPassImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        status_t status = SceneObjectImpl::validate(indent);
+        status_t status = SceneObjectImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
 
         if (nullptr == m_cameraImpl)
@@ -129,7 +129,7 @@ namespace ramses
         {
             for(const auto& renderGroup : m_renderGroups)
             {
-                if (addValidationOfDependentObject(indent, *renderGroup) != StatusOK)
+                if (addValidationOfDependentObject(indent, *renderGroup, visitedObjects) != StatusOK)
                 {
                     status = getValidationErrorStatus();
                 }
@@ -138,7 +138,7 @@ namespace ramses
 
         if (nullptr != m_renderTargetImpl)
         {
-            if (addValidationOfDependentObject(indent, *m_renderTargetImpl) != StatusOK)
+            if (addValidationOfDependentObject(indent, *m_renderTargetImpl, visitedObjects) != StatusOK)
             {
                 status = getValidationErrorStatus();
             }
@@ -181,7 +181,8 @@ namespace ramses
             return addErrorEntry("RenderPass::setCamera failed - can't render into render target with a remote camera. Use perspective or orthographic camera instead.");
         }
 
-        const status_t cameraValidity = cameraImpl.validate(0u);
+        StatusObjectSet visitedObjects;
+        const status_t cameraValidity = cameraImpl.validate(0u, visitedObjects);
         if (StatusOK == cameraValidity)
         {
             m_cameraImpl = &cameraImpl;

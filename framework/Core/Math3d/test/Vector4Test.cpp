@@ -6,16 +6,17 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "Vector4Test.h"
+#include "Math3d/Vector4.h"
+#include "framework_common_gmock_header.h"
+#include "PlatformAbstraction/PlatformMath.h"
+#include "IOStreamTester.h"
+#include "gmock/gmock.h"
 
-void Vector4Test::SetUp()
+class Vector4Test: public testing::Test
 {
-    vec1 = ramses_internal::Vector4(1.f, 2.f, 3.f, 4.f);
-}
-
-void Vector4Test::TearDown()
-{
-}
+public:
+    ramses_internal::Vector4 vec1{1.f, 2.f, 3.f, 4.f};
+};
 
 TEST_F(Vector4Test, DefaultConstructor)
 {
@@ -112,6 +113,16 @@ TEST_F(Vector4Test, MulOperator)
     EXPECT_EQ(8.f, vec2.w);
 }
 
+TEST_F(Vector4Test, DivOperator)
+{
+    ramses_internal::Vector4 vec2 = vec1 / 2.f;
+
+    EXPECT_FLOAT_EQ(.5f, vec2.x);
+    EXPECT_FLOAT_EQ(1.f, vec2.y);
+    EXPECT_FLOAT_EQ(1.5f, vec2.z);
+    EXPECT_FLOAT_EQ(2.f, vec2.w);
+}
+
 TEST_F(Vector4Test, MulFriendOperator)
 {
     ramses_internal::Vector4 vec2 = 2.f * vec1;
@@ -154,10 +165,20 @@ TEST_F(Vector4Test, MulAssignVector)
     EXPECT_EQ(16.f, vec1.w);
 }
 
+TEST_F(Vector4Test, DivAssignVectorByScalar)
+{
+    ramses_internal::Vector4 vecTest(2.f, 6.f, 12.f, 14.f);
+    vecTest /= 2.f;
+    EXPECT_EQ(1.f, vecTest.x);
+    EXPECT_EQ(3.f, vecTest.y);
+    EXPECT_EQ(6.f, vecTest.z);
+    EXPECT_EQ(7.f, vecTest.w);
+}
+
 TEST_F(Vector4Test, Equality)
 {
     ramses_internal::Vector4 vec2(1.f, 2.f, 3.f, 4.f);
-    ramses_internal::Bool equal = vec1 == vec2;
+    bool equal = vec1 == vec2;
 
     EXPECT_EQ(true, equal);
 }
@@ -165,7 +186,7 @@ TEST_F(Vector4Test, Equality)
 TEST_F(Vector4Test, UnEquality)
 {
     ramses_internal::Vector4 vec2(0.f, 2.f, 3.f, 4.f);
-    ramses_internal::Bool unequal = vec1 != vec2;
+    bool unequal = vec1 != vec2;
 
     EXPECT_EQ(true, unequal);
 }
@@ -203,13 +224,6 @@ TEST_F(Vector4Test, Angle)
     EXPECT_FLOAT_EQ(90.f, angle);
 }
 
-TEST_F(Vector4Test, Empty)
-{
-    ramses_internal::Vector4 vec2(0.0f, 0.0f, 0.0f, 0.0f);
-
-    EXPECT_EQ(vec2, ramses_internal::Vector4::Empty);
-}
-
 TEST_F(Vector4Test, SetSingleValues)
 {
     vec1.set(3.0f, 4.0f, 7.0f, 5.0f);
@@ -224,4 +238,17 @@ TEST_F(Vector4Test, SetAllValues)
     ramses_internal::Vector4 vec2(5.0f, 5.0f, 5.0f, 5.0f);
 
     EXPECT_EQ(vec2, vec1);
+}
+
+TEST_F(Vector4Test, CanPrintToString)
+{
+    EXPECT_EQ("[1.0 2.0 3.0 4.0]", fmt::to_string(vec1));
+    EXPECT_EQ("[1.0 2.0 3.0 4.0]", ramses_internal::StringOutputStream::ToString(vec1));
+}
+
+TEST_F(Vector4Test, canBinarySerializeDeserialize)
+{
+    ramses_internal::IOStreamTesterBase::expectSame(ramses_internal::Vector4());
+    ramses_internal::IOStreamTesterBase::expectSame(ramses_internal::Vector4(1.f, 2.f, 3.f, 4.f));
+    ramses_internal::IOStreamTesterBase::expectSame(ramses_internal::Vector4(std::numeric_limits<float>::max(), std::numeric_limits<float>::min(), std::numeric_limits<float>::max()-0.1f, std::numeric_limits<float>::min()+0.1f));
 }

@@ -10,18 +10,14 @@
 #include "Utils/LogMacros.h"
 #include "RendererLib/RendererCommandTypes.h"
 #include "RendererLib/EKeyModifier.h"
+#include "Math3d/Vector2i.h"
 
 namespace ramses_internal
 {
-    RendererCommands::RendererCommands()
-    {
-    }
-
-    void RendererCommands::publishScene(SceneId sceneId, const Guid& clientID, EScenePublicationMode mode)
+    void RendererCommands::publishScene(SceneId sceneId, EScenePublicationMode mode)
     {
         SceneInfoCommand cmd;
         cmd.sceneInformation.sceneID = sceneId;
-        cmd.clientID = clientID;
         cmd.sceneInformation.publicationMode = mode;
         m_commands.addCommand(ERendererCommand_PublishedScene, cmd);
     }
@@ -38,6 +34,31 @@ namespace ramses_internal
         SceneInfoCommand cmd;
         cmd.sceneInformation = sceneInfo;
         m_commands.addCommand(ERendererCommand_ReceivedScene, cmd);
+    }
+
+    void RendererCommands::setSceneState(SceneId sceneId, RendererSceneState state)
+    {
+        SceneStateCommand cmd;
+        cmd.sceneId = sceneId;
+        cmd.state = state;
+        m_commands.addCommand(ERendererCommand_SetSceneState, cmd);
+    }
+
+    void RendererCommands::setSceneMapping(SceneId sceneId, DisplayHandle display)
+    {
+        SceneMappingCommand cmd;
+        cmd.sceneId = sceneId;
+        cmd.displayHandle = display;
+        m_commands.addCommand(ERendererCommand_SetSceneMapping, cmd);
+    }
+
+    void RendererCommands::setSceneDisplayBufferAssignment(SceneId sceneId, OffscreenBufferHandle displayBuffer, int32_t sceneRenderOrder)
+    {
+        SceneMappingCommand cmd;
+        cmd.sceneId = sceneId;
+        cmd.offscreenBuffer = displayBuffer;
+        cmd.sceneRenderOrder = sceneRenderOrder;
+        m_commands.addCommand(ERendererCommand_SetSceneDisplayBufferAssignment, cmd);
     }
 
     void RendererCommands::subscribeScene(SceneId sceneId)
@@ -80,12 +101,11 @@ namespace ramses_internal
         m_commands.addCommand(ERendererCommand_DestroyDisplay, cmd);
     }
 
-    void RendererCommands::mapSceneToDisplay(SceneId sceneId, DisplayHandle displayHandle, const Int32 sceneRenderOrder)
+    void RendererCommands::mapSceneToDisplay(SceneId sceneId, DisplayHandle displayHandle)
     {
         SceneMappingCommand cmd;
         cmd.sceneId = sceneId;
         cmd.displayHandle = displayHandle;
-        cmd.sceneRenderOrder = sceneRenderOrder;
         m_commands.addCommand(ERendererCommand_MapSceneToDisplay, cmd);
     }
 
@@ -93,21 +113,19 @@ namespace ramses_internal
     {
         SceneMappingCommand cmd;
         cmd.sceneId = sceneId;
-        cmd.displayHandle = DisplayHandle::Invalid();
-        cmd.sceneRenderOrder = 0;
         m_commands.addCommand(ERendererCommand_UnmapSceneFromDisplays, cmd);
     }
 
     void RendererCommands::showScene(SceneId sceneId)
     {
-        SceneRenderCommand cmd;
+        SceneStateCommand cmd;
         cmd.sceneId = sceneId;
         m_commands.addCommand(ERendererCommand_ShowScene, cmd);
     }
 
     void RendererCommands::hideScene(SceneId sceneId)
     {
-        SceneRenderCommand cmd;
+        SceneStateCommand cmd;
         cmd.sceneId = sceneId;
         m_commands.addCommand(ERendererCommand_HideScene, cmd);
     }
@@ -134,10 +152,11 @@ namespace ramses_internal
         m_commands.addCommand(ERendererCommand_ReadPixels, cmd);
     }
 
-    void RendererCommands::setClearColor(DisplayHandle displayHandle, const Vector4& color)
+    void RendererCommands::setClearColor(DisplayHandle displayHandle, OffscreenBufferHandle obHandle, const Vector4& color)
     {
         SetClearColorCommand cmd;
         cmd.displayHandle = displayHandle;
+        cmd.obHandle = obHandle;
         cmd.clearColor = color;
         m_commands.addCommand(ERendererCommand_SetClearColor, cmd);
     }
@@ -190,19 +209,13 @@ namespace ramses_internal
         m_commands.addCommand(ERendererCommand_DestroyOffscreenBuffer, cmd);
     }
 
-    void RendererCommands::assignSceneToOffscreenBuffer(SceneId sceneId, OffscreenBufferHandle buffer)
+    void RendererCommands::assignSceneToDisplayBuffer(SceneId sceneId, OffscreenBufferHandle buffer, Int32 sceneRenderOrder)
     {
-        OffscreenBufferCommand cmd;
-        cmd.bufferHandle = buffer;
-        cmd.assignedScene = sceneId;
-        m_commands.addCommand(ERendererCommand_AssignSceneToOffscreenBuffer, cmd);
-    }
-
-    void RendererCommands::assignSceneToFramebuffer(SceneId sceneId)
-    {
-        OffscreenBufferCommand cmd;
-        cmd.assignedScene = sceneId;
-        m_commands.addCommand(ERendererCommand_AssignSceneToFramebuffer, cmd);
+        SceneMappingCommand cmd;
+        cmd.sceneId = sceneId;
+        cmd.sceneRenderOrder = sceneRenderOrder;
+        cmd.offscreenBuffer = buffer;
+        m_commands.addCommand(ERendererCommand_AssignSceneToDisplayBuffer, cmd);
     }
 
     void RendererCommands::moveView(const Vector3& offset)
@@ -364,12 +377,11 @@ namespace ramses_internal
         m_commands.addCommand(ERendererCommand_FrameProfiler_RegionFilterFlags, cmd);
     }
 
-    void RendererCommands::setFrameTimerLimits(UInt64 limitForSceneResourcesUpload, UInt64 limitForClientResourcesUploadMicrosec, UInt64 limitForSceneActionsApplyMicrosec, UInt64 limitForOffscreenBufferRenderMicrosec)
+    void RendererCommands::setFrameTimerLimits(UInt64 limitForSceneResourcesUpload, UInt64 limitForClientResourcesUploadMicrosec, UInt64 limitForOffscreenBufferRenderMicrosec)
     {
         SetFrameTimerLimitsCommmand cmd;
         cmd.limitForSceneResourcesUploadMicrosec = limitForSceneResourcesUpload;
         cmd.limitForClientResourcesUploadMicrosec = limitForClientResourcesUploadMicrosec;
-        cmd.limitForSceneActionsApplyMicrosec = limitForSceneActionsApplyMicrosec;
         cmd.limitForOffscreenBufferRenderMicrosec = limitForOffscreenBufferRenderMicrosec;
         m_commands.addCommand(ERendererCommand_SetFrameTimerLimits, cmd);
     }
@@ -393,6 +405,14 @@ namespace ramses_internal
         SetFeatureCommand cmd;
         cmd.enable = enable;
         m_commands.addCommand(ERendererCommand_SetSkippingOfUnmodifiedBuffers, cmd);
+    }
+
+    void RendererCommands::handlePickEvent(SceneId sceneId, Vector2 coordsNormalizedToBufferSize)
+    {
+        PickingCommand cmd;
+        cmd.sceneId = sceneId;
+        cmd.coordsNormalizedToBufferSize = coordsNormalizedToBufferSize;
+        m_commands.addCommand(ERendererCommand_PickEvent, std::move(cmd));
     }
 
     const RendererCommandContainer& RendererCommands::getCommands() const

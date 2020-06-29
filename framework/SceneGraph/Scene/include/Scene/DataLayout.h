@@ -17,12 +17,6 @@ namespace ramses_internal
     class DataLayout
     {
     public:
-        DataLayout() = default;
-        DataLayout(const DataLayout&) = default;
-        DataLayout& operator=(const  DataLayout&) = default;
-        DataLayout(DataLayout&&) = default;
-        DataLayout& operator=(DataLayout&&) = default;
-
         void setDataFields(const DataFieldInfoVector& fields)
         {
             assert(m_fields.empty());
@@ -68,10 +62,21 @@ namespace ramses_internal
             return m_totalSize;
         }
 
+        void setEffectHash(ResourceContentHash newHash)
+        {
+            effectHash = newHash;
+        }
+
+        ResourceContentHash getEffectHash() const
+        {
+            return effectHash;
+        }
+
     private:
         DataFieldInfoVector m_fields;
         std::vector<UInt32> m_fieldOffsets;
         UInt32 m_totalSize = 0u;
+        ResourceContentHash effectHash;
     };
 }
 

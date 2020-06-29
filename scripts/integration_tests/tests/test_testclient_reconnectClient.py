@@ -6,8 +6,6 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-import time
-
 from ramses_test_framework import test_classes
 from ramses_test_framework import log
 from ramses_test_framework.ramses_test_extensions import with_ramses_process_check
@@ -21,7 +19,7 @@ class TestClass(test_classes.OnAllDefaultTargetsTest):
         self.checkThatApplicationWasStarted(self.ramsesDaemon)
 
         self.addCleanup(self.target.kill_application, self.ramsesDaemon)
-        self.renderer = self.target.start_default_renderer(args="-nomap")
+        self.renderer = self.target.start_default_renderer()
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
 
@@ -55,5 +53,6 @@ class TestClass(test_classes.OnAllDefaultTargetsTest):
         self.testClient2 = self.target.start_client("ramses-test-client", "-tn 5 -ts 0 -cx -2 -cz 5", nameExtension='2nd')
         self.checkThatApplicationWasStarted(self.testClient2)
         self.addCleanup(self.target.kill_application, self.testClient2)
+        self.renderer.showScene(26) # must explicitly trigger new ramp up to rendered
         self.renderer.wait_for_msg_in_stdout(watchId, "Scene 26 is in state RENDERED caused by command SHOW", 30)
         self.validateScreenshot(self.renderer, "testClient_disconnectedClient.png")

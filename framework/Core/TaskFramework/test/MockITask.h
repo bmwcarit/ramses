@@ -18,11 +18,11 @@ namespace ramses_internal
     {
     public:
         TaskHelper()
-            : m_Task(0)
+            : m_Task(nullptr)
         {
         }
 
-        Bool enqueue(ITask& Task)
+        bool enqueue(ITask& Task)
         {
             m_Task = &Task;
             m_Task->addRef();
@@ -30,6 +30,7 @@ namespace ramses_internal
         }
         void execute()
         {
+            assert(m_Task);
             m_Task->execute();
             m_Task->release();
         }
@@ -40,8 +41,8 @@ namespace ramses_internal
     class MockITask : public ITask
     {
     public:
-        MOCK_METHOD0(execute, void());
-        MOCK_METHOD0(destructor, void());
+        MOCK_METHOD(void, execute, (), (override));
+        MOCK_METHOD(void, destructor, ());
         virtual ~MockITask()
         {
             destructor();

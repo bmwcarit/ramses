@@ -14,6 +14,7 @@
 #include "TestScenes/IntegrationScene.h"
 #include "Collections/HashMap.h"
 #include "Math3d/Vector3.h"
+#include <cassert>
 
 class TestScenes
 {
@@ -32,7 +33,8 @@ public:
     template <typename INTEGRATION_SCENE>
     ramses::sceneId_t createScene(uint32_t state, const ramses_internal::Vector3& cameraPosition = ramses_internal::Vector3(0.0f), const ramses::SceneConfig& sceneConfig = ramses::SceneConfig())
     {
-        const ramses::sceneId_t sceneId = m_nextSceneId++;
+        const ramses::sceneId_t sceneId = m_nextSceneId;
+        m_nextSceneId.getReference()++;
         createScene<INTEGRATION_SCENE>(state, sceneId, cameraPosition, sceneConfig);
         return sceneId;
     }
@@ -62,7 +64,7 @@ private:
     typedef ramses_internal::HashMap< ramses::sceneId_t, SceneData > SceneMap;
 
     ramses::RamsesClient& m_client;
-    ramses::sceneId_t m_nextSceneId = 1u;
+    ramses::sceneId_t m_nextSceneId{1u};
     SceneMap m_scenes;
 };
 

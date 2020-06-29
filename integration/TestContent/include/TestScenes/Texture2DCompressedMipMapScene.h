@@ -45,7 +45,7 @@ namespace ramses_internal
         const ramses::Vector3fArray* m_vertexPositions;
         const ramses::Vector2fArray* m_textureCoords;
 
-        uint32_t m_numMipMaps;
+        static constexpr uint32_t NumMipMaps = 2u;
         uint32_t m_textureWidth;
         uint32_t m_textureHeight;
     };

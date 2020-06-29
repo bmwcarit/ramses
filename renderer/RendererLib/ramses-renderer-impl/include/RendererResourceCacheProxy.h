@@ -10,7 +10,6 @@
 #define RAMSES_RENDERERRESOURCECACHEPROXY_H
 
 #include "RendererAPI/IRendererResourceCache.h"
-#include "SceneAPI/SceneResourceData.h"
 #include "SceneAPI/SceneId.h"
 #include "SceneAPI/ResourceContentHash.h"
 #include "ramses-renderer-api/Types.h"
@@ -21,7 +20,7 @@ namespace ramses
     class RendererResourceCacheProxy : public ramses_internal::IRendererResourceCache
     {
     public:
-        RendererResourceCacheProxy(ramses::IRendererResourceCache& cache);
+        explicit RendererResourceCacheProxy(ramses::IRendererResourceCache& cache);
         virtual ~RendererResourceCacheProxy();
 
         virtual bool hasResource(ramses_internal::ResourceContentHash resourceId, uint32_t& size) const override;

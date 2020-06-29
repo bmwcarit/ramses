@@ -191,18 +191,19 @@ namespace ramses_internal
         m_logContext << "delete vertex buffer [handle: " << handle << "]" << RendererLogContext::NewLine;
     }
 
-    void LoggingDevice::activateVertexBuffer(DeviceResourceHandle handle, DataFieldHandle field, UInt32 instancingDivisor)
+    void LoggingDevice::activateVertexBuffer(DeviceResourceHandle handle, DataFieldHandle field, UInt32 instancingDivisor, UInt32 offset)
     {
         if (m_logContext.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
         {
-            m_logContext << "activate vertex buffer [handle: " << handle << "]";
+            m_logContext << "activate vertex buffer [handle: " << handle;
 
             if (field.isValid())
             {
-                m_logContext << " for input [" << field << "]";
+                m_logContext << " for input: " << field;
             }
 
-            m_logContext << " [divisor: " << instancingDivisor << "]";
+            m_logContext << " divisor: " << instancingDivisor;
+            m_logContext << " offset: " << offset << "]";
 
             m_logContext << RendererLogContext::NewLine;
         }
@@ -235,7 +236,7 @@ namespace ramses_internal
         return DeviceResourceHandle::Invalid();
     }
 
-    DeviceResourceHandle LoggingDevice::uploadBinaryShader(const EffectResource& effect, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, UInt32 binaryShaderFormat)
+    DeviceResourceHandle LoggingDevice::uploadBinaryShader(const EffectResource& effect, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat)
     {
         UNUSED(binaryShaderData);
 
@@ -243,7 +244,7 @@ namespace ramses_internal
         return DeviceResourceHandle::Invalid();
     }
 
-    Bool LoggingDevice::getBinaryShader(DeviceResourceHandle handle, UInt8Vector& binaryShader, UInt32& binaryShaderFormat)
+    Bool LoggingDevice::getBinaryShader(DeviceResourceHandle handle, UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat)
     {
         UNUSED(binaryShader);
         UNUSED(binaryShaderFormat);
@@ -262,9 +263,9 @@ namespace ramses_internal
         m_logContext << "activate shader [handle: " << handle << "]" << RendererLogContext::NewLine;
     }
 
-    DeviceResourceHandle LoggingDevice::allocateTexture2D(UInt32 width, UInt32 height, ETextureFormat format, UInt32 mipLevelCount, UInt32 totalSizeInBytes)
+    DeviceResourceHandle LoggingDevice::allocateTexture2D(UInt32 width, UInt32 height, ETextureFormat format, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes)
     {
-        m_logContext << "allocate texture2d [ (w,h):(" << width << "," << height << ") mipLevelCount:" << mipLevelCount << " format:" << EnumToString(format) << " totalSizeInBytes:" << totalSizeInBytes << "]" << RendererLogContext::NewLine;
+        m_logContext << "allocate texture2d [ (w,h):(" << width << "," << height << ") mipLevelCount:" << mipLevelCount << " format:" << EnumToString(format) << "textureSwizzle:"<< EnumToString(swizzle[0]) << ";" << EnumToString(swizzle[1]) << ";" << EnumToString(swizzle[2]) << ";" << EnumToString(swizzle[3]) << ";" << " totalSizeInBytes:" << totalSizeInBytes << "]" << RendererLogContext::NewLine;
         return DeviceResourceHandle::Invalid();
     }
 
@@ -274,9 +275,9 @@ namespace ramses_internal
         return DeviceResourceHandle::Invalid();
     }
 
-    DeviceResourceHandle LoggingDevice::allocateTextureCube(UInt32 faceSize, ETextureFormat format, UInt32 mipLevelCount, UInt32)
+    DeviceResourceHandle LoggingDevice::allocateTextureCube(UInt32 faceSize, ETextureFormat format, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32)
     {
-        m_logContext << "allocate textureCube [ faceSize:" << faceSize << " mipLevelCount:" << mipLevelCount << " format:" << EnumToString(format) << "]" << RendererLogContext::NewLine;
+        m_logContext << "allocate textureCube [ faceSize:" << faceSize << " mipLevelCount:" << mipLevelCount << " format:" << EnumToString(format) << "textureSwizzle:"<< EnumToString(swizzle[0]) << ";" << EnumToString(swizzle[1]) << ";" << EnumToString(swizzle[2]) << ";" << EnumToString(swizzle[3]) <<  "]" << RendererLogContext::NewLine;
         return DeviceResourceHandle::Invalid();
     }
 
@@ -295,9 +296,9 @@ namespace ramses_internal
         m_logContext << "update texture data [handle:" << handle << " mipLevel:" << mipLevel << " (x,y,z):(" << x << "," << y << "," << z << ") (w,h,d):(" << width << "," << height << "," << depth << ") dataSize:" << dataSize << "]" << RendererLogContext::NewLine;
     }
 
-    DeviceResourceHandle LoggingDevice::uploadStreamTexture2D(DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat, const UInt8*)
+    DeviceResourceHandle LoggingDevice::uploadStreamTexture2D(DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat, const UInt8*, const TextureSwizzleArray& swizzle)
     {
-        m_logContext << "upload stream texture2d [textureHandle: " << handle << " (w,h):(" << width << "," << height << ")]" << RendererLogContext::NewLine;
+        m_logContext << "upload stream texture2d [textureHandle: " << handle << " (w,h):(" << width << "," << height << ") " << "textureSwizzle: " << EnumToString(swizzle[0]) << "," << EnumToString(swizzle[1]) << "," << EnumToString(swizzle[2]) << "," << EnumToString(swizzle[3])    << "]" << RendererLogContext::NewLine;
         return DeviceResourceHandle::Invalid();
     }
 
@@ -442,6 +443,10 @@ namespace ramses_internal
         return true;
     }
 
+    void LoggingDevice::getSupportedBinaryProgramFormats(std::vector<BinaryShaderFormatID>&) const
+    {
+    }
+
     ramses_internal::UInt32 LoggingDevice::getDrawCallCount() const
     {
         return 0;
@@ -454,5 +459,4 @@ namespace ramses_internal
     void LoggingDevice::finish()
     {
     }
-
 }

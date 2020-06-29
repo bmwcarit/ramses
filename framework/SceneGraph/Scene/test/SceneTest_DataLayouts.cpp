@@ -12,7 +12,7 @@ using namespace testing;
 
 namespace ramses_internal
 {
-    TYPED_TEST_CASE(AScene, SceneTypes);
+    TYPED_TEST_SUITE(AScene, SceneTypes);
 
     TYPED_TEST(AScene, ContainsZeroTotalDataLayoutsUponCreation)
     {
@@ -21,34 +21,43 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, CreatingDataLayoutIncreasesDataLayoutCount)
     {
-        this->m_scene.allocateDataLayout({});
+        this->m_scene.allocateDataLayout({}, ResourceContentHash(123u, 0u));
         EXPECT_EQ(1u, this->m_scene.getDataLayoutCount());
+    }
+
+    TYPED_TEST(AScene, CanGetAndSetEffectHash)
+    {
+        ResourceContentHash effectHash(123u, 0u);
+        //This will internally call setEffectHash
+        const DataLayoutHandle dataLayoutHandle = this->m_scene.allocateDataLayout({}, effectHash);
+        const DataLayout& dataLayout = this->m_scene.getDataLayout(dataLayoutHandle);
+        EXPECT_EQ(effectHash, dataLayout.getEffectHash());
     }
 
     TYPED_TEST(AScene, CanGetNumberOfDataFieldsInLayout)
     {
-        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({});
+        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({}, ResourceContentHash(123u, 0u));
         EXPECT_EQ(0u, this->m_scene.getDataLayout(dataLayout).getFieldCount());
 
-        const DataLayoutHandle dataLayout2 = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType_Float), DataFieldInfo(EDataType_Int32) });
+        const DataLayoutHandle dataLayout2 = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType_Float), DataFieldInfo(EDataType_Int32) }, ResourceContentHash(456u, 0u));
         EXPECT_EQ(2u, this->m_scene.getDataLayout(dataLayout2).getFieldCount());
     }
 
     TYPED_TEST(AScene, ReturnsCorrectDataFieldType)
     {
-        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType_Float) });
+        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash(123u, 0u));
         EXPECT_EQ(EDataType_Float, this->m_scene.getDataLayout(dataLayout).getField(DataFieldHandle(0u)).dataType);
     }
 
     TYPED_TEST(AScene, ReturnsCorrectDataFieldElements)
     {
-        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType_Float, 3u) });
+        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType_Float, 3u) }, ResourceContentHash(123u, 0u));
         EXPECT_EQ(3u, this->m_scene.getDataLayout(dataLayout).getField(DataFieldHandle(0u)).elementCount);
     }
 
     TYPED_TEST(AScene, SemanticCanBeSetAndRetrieved)
     {
-        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType_Float), DataFieldInfo(EDataType_Matrix33F, 1u, EFixedSemantics_ModelViewMatrix33) });
+        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType_Float), DataFieldInfo(EDataType_Matrix33F, 1u, EFixedSemantics_ModelViewMatrix33) }, ResourceContentHash(123u, 0u));
 
         EXPECT_EQ(EFixedSemantics_Invalid, this->m_scene.getDataLayout(dataLayout).getField(DataFieldHandle(0u)).semantics);
         EXPECT_EQ(EFixedSemantics_ModelViewMatrix33, this->m_scene.getDataLayout(dataLayout).getField(DataFieldHandle(1u)).semantics);

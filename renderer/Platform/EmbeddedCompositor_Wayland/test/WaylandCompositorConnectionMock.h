@@ -18,9 +18,9 @@ namespace ramses_internal
     class WaylandCompositorConnectionMock : public IWaylandCompositorConnection
     {
     public:
-        MOCK_METHOD0(resourceDestroyed, void());
-        MOCK_METHOD2(compositorCreateSurface, void(IWaylandClient& client, uint32_t id));
-        MOCK_METHOD2(compositorCreateRegion, void(IWaylandClient& client, uint32_t id));
+        MOCK_METHOD(void, resourceDestroyed, (), (override));
+        MOCK_METHOD(void, compositorCreateSurface, (IWaylandClient& client, uint32_t id), (override));
+        MOCK_METHOD(void, compositorCreateRegion, (IWaylandClient& client, uint32_t id), (override));
     };
 }
 

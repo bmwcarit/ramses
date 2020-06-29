@@ -46,7 +46,8 @@ protected:
     void expectRendererEvent(ERendererEventType event, SceneId providerSId, DataSlotId pId, SceneId consumerSId, DataSlotId cId)
     {
         RendererEventVector events;
-        rendererEventCollector.dispatchEvents(events);
+        RendererEventVector dummy;
+        rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
         ASSERT_EQ(1u, events.size());
         EXPECT_EQ(event, events.front().eventType);
         EXPECT_EQ(providerSId, events.front().providerSceneId);
@@ -55,14 +56,16 @@ protected:
         EXPECT_EQ(cId, events.front().consumerdataId);
     }
 
-    void expectRendererEvent(ERendererEventType event, SceneId consumerSId, DataSlotId cId)
+    void expectRendererEvent(ERendererEventType event, SceneId consumerSId, DataSlotId cId, SceneId providerSId)
     {
         RendererEventVector events;
-        rendererEventCollector.dispatchEvents(events);
+        RendererEventVector dummy;
+        rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
         ASSERT_EQ(1u, events.size());
         EXPECT_EQ(event, events.front().eventType);
         EXPECT_EQ(consumerSId, events.front().consumerSceneId);
         EXPECT_EQ(cId, events.front().consumerdataId);
+        EXPECT_EQ(providerSId, events.front().providerSceneId);
     }
 
     void expectConsumerLinkedToProvider()
@@ -80,7 +83,8 @@ protected:
     void expectRendererEventUnlinkedAndDestroyedSlot(bool slotIsProvider, SceneId sceneIdOfDestroyedSlot, DataSlotId destroyedSlotId, SceneId consumerSId, DataSlotId cId, SceneId consumerSceneId2 = SceneId(0u), DataSlotId consumerId2 = DataSlotId(0u))
     {
         RendererEventVector events;
-        rendererEventCollector.dispatchEvents(events);
+        RendererEventVector dummy;
+        rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
 
         const bool hasTwoLinksRemoved = (consumerId2.getValue() != 0u);
         if (hasTwoLinksRemoved)
@@ -143,7 +147,7 @@ typedef ::testing::Types <
     TextureLinkManager
 > ManagerTypes;
 
-TYPED_TEST_CASE(ASceneLinksManager, ManagerTypes);
+TYPED_TEST_SUITE(ASceneLinksManager, ManagerTypes);
 
 TYPED_TEST(ASceneLinksManager, reportsLinkCreationEvent)
 {
@@ -157,7 +161,7 @@ TYPED_TEST(ASceneLinksManager, reportsLinkRemovalEvent)
     this->sceneLinksManager.createDataLink(this->providerSceneId, this->providerId, this->consumerSceneId, this->consumerId);
     this->expectRendererEvent(ERendererEventType_SceneDataLinked, this->providerSceneId, this->providerId, this->consumerSceneId, this->consumerId);
     this->sceneLinksManager.removeDataLink(this->consumerSceneId, this->consumerId);
-    this->expectRendererEvent(ERendererEventType_SceneDataUnlinked, this->consumerSceneId, this->consumerId);
+    this->expectRendererEvent(ERendererEventType_SceneDataUnlinked, this->consumerSceneId, this->consumerId, this->providerSceneId);
 }
 
 TYPED_TEST(ASceneLinksManager, reportsProviderSlotRemoved)
@@ -194,7 +198,7 @@ TYPED_TEST(ASceneLinksManager, removesLinkForSceneWithRemovedConsumerSlot)
     EXPECT_FALSE(this->concreteLinkManager.getDependencyChecker().hasDependencyAsConsumer(this->consumerSceneId));
 }
 
-TYPED_TEST(ASceneLinksManager, failsToCreateSecondLinkToConsumer)
+TYPED_TEST(ASceneLinksManager, secondLinkToConsumerOverwritesPreviousLink)
 {
     const DataSlotId providerId2(999u);
     const DataSlotHandle slotHandle(43u);
@@ -204,7 +208,7 @@ TYPED_TEST(ASceneLinksManager, failsToCreateSecondLinkToConsumer)
     this->sceneLinksManager.createDataLink(this->providerSceneId, this->providerId, this->consumerSceneId, this->consumerId);
     this->expectRendererEvent(ERendererEventType_SceneDataLinked, this->providerSceneId, this->providerId, this->consumerSceneId, this->consumerId);
     this->sceneLinksManager.createDataLink(this->providerSceneId, providerId2, this->consumerSceneId, this->consumerId);
-    this->expectRendererEvent(ERendererEventType_SceneDataLinkFailed, this->providerSceneId, providerId2, this->consumerSceneId, this->consumerId);
+    this->expectRendererEvent(ERendererEventType_SceneDataLinked, this->providerSceneId, providerId2, this->consumerSceneId, this->consumerId);
 }
 
 TYPED_TEST(ASceneLinksManager, failsToCreateLinkForInvalidSceneId)
@@ -237,12 +241,12 @@ TYPED_TEST(ASceneLinksManager, failsToCreateLinkForSwappedConsumerAndProvider)
     this->expectRendererEvent(ERendererEventType_SceneDataLinkFailed, this->consumerSceneId, this->consumerId, this->providerSceneId, this->providerId);
 }
 
-TYPED_TEST(ASceneLinksManager, failsToCreateLinkTwiceForSameConsumer)
+TYPED_TEST(ASceneLinksManager, canCreateLinkTwiceForSameConsumer)
 {
     this->sceneLinksManager.createDataLink(this->providerSceneId, this->providerId, this->consumerSceneId, this->consumerId);
     this->expectRendererEvent(ERendererEventType_SceneDataLinked, this->providerSceneId, this->providerId, this->consumerSceneId, this->consumerId);
     this->sceneLinksManager.createDataLink(this->providerSceneId, this->providerId, this->consumerSceneId, this->consumerId);
-    this->expectRendererEvent(ERendererEventType_SceneDataLinkFailed, this->providerSceneId, this->providerId, this->consumerSceneId, this->consumerId);
+    this->expectRendererEvent(ERendererEventType_SceneDataLinked, this->providerSceneId, this->providerId, this->consumerSceneId, this->consumerId);
 }
 
 TYPED_TEST(ASceneLinksManager, failsToRemoveLinkForInvalidSceneId)
@@ -250,7 +254,7 @@ TYPED_TEST(ASceneLinksManager, failsToRemoveLinkForInvalidSceneId)
     this->sceneLinksManager.createDataLink(this->providerSceneId, this->providerId, this->consumerSceneId, this->consumerId);
     this->expectRendererEvent(ERendererEventType_SceneDataLinked, this->providerSceneId, this->providerId, this->consumerSceneId, this->consumerId);
     this->sceneLinksManager.removeDataLink(SceneId(0u), this->consumerId);
-    this->expectRendererEvent(ERendererEventType_SceneDataUnlinkFailed, SceneId(0u), this->consumerId);
+    this->expectRendererEvent(ERendererEventType_SceneDataUnlinkFailed, SceneId(0u), this->consumerId, SceneId::Invalid());
 }
 
 TYPED_TEST(ASceneLinksManager, failsToRemoveLinkForInvalidDataSlotId)
@@ -258,7 +262,7 @@ TYPED_TEST(ASceneLinksManager, failsToRemoveLinkForInvalidDataSlotId)
     this->sceneLinksManager.createDataLink(this->providerSceneId, this->providerId, this->consumerSceneId, this->consumerId);
     this->expectRendererEvent(ERendererEventType_SceneDataLinked, this->providerSceneId, this->providerId, this->consumerSceneId, this->consumerId);
     this->sceneLinksManager.removeDataLink(this->consumerSceneId, DataSlotId());
-    this->expectRendererEvent(ERendererEventType_SceneDataUnlinkFailed, this->consumerSceneId, DataSlotId());
+    this->expectRendererEvent(ERendererEventType_SceneDataUnlinkFailed, this->consumerSceneId, DataSlotId(), SceneId::Invalid());
 }
 
 TYPED_TEST(ASceneLinksManager, failsToRemoveLinkWhenProvidingProviderInsteadOfConsumer)
@@ -266,13 +270,13 @@ TYPED_TEST(ASceneLinksManager, failsToRemoveLinkWhenProvidingProviderInsteadOfCo
     this->sceneLinksManager.createDataLink(this->providerSceneId, this->providerId, this->consumerSceneId, this->consumerId);
     this->expectRendererEvent(ERendererEventType_SceneDataLinked, this->providerSceneId, this->providerId, this->consumerSceneId, this->consumerId);
     this->sceneLinksManager.removeDataLink(this->providerSceneId, this->providerId);
-    this->expectRendererEvent(ERendererEventType_SceneDataUnlinkFailed, this->providerSceneId, this->providerId);
+    this->expectRendererEvent(ERendererEventType_SceneDataUnlinkFailed, this->providerSceneId, this->providerId, SceneId::Invalid());
 }
 
 TYPED_TEST(ASceneLinksManager, failsToRemoveLinkIfThereIsNoLink)
 {
     this->sceneLinksManager.removeDataLink(this->consumerSceneId, this->consumerId);
-    this->expectRendererEvent(ERendererEventType_SceneDataUnlinkFailed, this->consumerSceneId, this->consumerId);
+    this->expectRendererEvent(ERendererEventType_SceneDataUnlinkFailed, this->consumerSceneId, this->consumerId, SceneId::Invalid());
 }
 
 TYPED_TEST(ASceneLinksManager, failsToCreateLinksCausingCyclicDependency)
@@ -298,7 +302,7 @@ TYPED_TEST(ASceneLinksManager, canLinkUnlinkAndLinkAgain)
     this->sceneLinksManager.createDataLink(this->providerSceneId, this->providerId, this->consumerSceneId, this->consumerId);
     this->expectRendererEvent(ERendererEventType_SceneDataLinked, this->providerSceneId, this->providerId, this->consumerSceneId, this->consumerId);
     this->sceneLinksManager.removeDataLink(this->consumerSceneId, this->consumerId);
-    this->expectRendererEvent(ERendererEventType_SceneDataUnlinked, this->consumerSceneId, this->consumerId);
+    this->expectRendererEvent(ERendererEventType_SceneDataUnlinked, this->consumerSceneId, this->consumerId, this->providerSceneId);
     this->sceneLinksManager.createDataLink(this->providerSceneId, this->providerId, this->consumerSceneId, this->consumerId);
     this->expectRendererEvent(ERendererEventType_SceneDataLinked, this->providerSceneId, this->providerId, this->consumerSceneId, this->consumerId);
     this->expectConsumerLinkedToProvider();

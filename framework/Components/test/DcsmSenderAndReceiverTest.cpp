@@ -8,7 +8,6 @@
 
 #include "AbstractSenderAndReceiverTest.h"
 #include "ServiceHandlerMocks.h"
-#include "SenderAndReceiverTestUtils.h"
 #include "PlatformAbstraction/PlatformThread.h"
 
 namespace ramses_internal
@@ -28,152 +27,138 @@ namespace ramses_internal
         StrictMock<DcsmProviderServiceHandlerMock> providerHandler;
     };
 
-    //TODO(tobias) change to run on all communication system once someip stubs for dcsm are in
-    INSTANTIATE_TEST_CASE_P(TypedCommunicationTest, ADcsmSenderAndReceiverTest,
-                            ::testing::ValuesIn(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes(ECommunicationSystemType_Tcp)));
+    INSTANTIATE_TEST_SUITE_P(TypedCommunicationTest, ADcsmSenderAndReceiverTest,
+                            ::testing::ValuesIn(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()));
 
     TEST_P(ADcsmSenderAndReceiverTest, broadcastOfferContent)
     {
-        uint32_t numberMessagesSent = m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue();
-        uint32_t numberMessagesReceived = m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue();
-
         ContentID contentID(987);
         Category category(567);
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleOfferContent(contentID, category, senderId)).WillOnce(SendHandlerCalledEvent(this));
+            EXPECT_CALL(consumerHandler, handleOfferContent(contentID, category, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
         EXPECT_TRUE(sender.sendDcsmBroadcastOfferContent(contentID, category));
         ASSERT_TRUE(waitForEvent());
-
-        EXPECT_LE(numberMessagesSent + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
-        EXPECT_LE(numberMessagesReceived + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
     }
 
     TEST_P(ADcsmSenderAndReceiverTest, sendOfferContent)
     {
-        uint32_t numberMessagesSent = m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue();
-        uint32_t numberMessagesReceived = m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue();
-
         ContentID contentID(987);
         Category category(567);
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleOfferContent(contentID, category, senderId)).WillOnce(SendHandlerCalledEvent(this));
+            EXPECT_CALL(consumerHandler, handleOfferContent(contentID, category, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
         EXPECT_TRUE(sender.sendDcsmOfferContent(receiverId, contentID, category));
         ASSERT_TRUE(waitForEvent());
-
-        EXPECT_LE(numberMessagesSent + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
-        EXPECT_LE(numberMessagesReceived + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
     }
 
-    TEST_P(ADcsmSenderAndReceiverTest, sendContentReady)
+    TEST_P(ADcsmSenderAndReceiverTest, sendContentDescription)
     {
-        uint32_t numberMessagesSent = m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue();
-        uint32_t numberMessagesReceived = m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue();
-
         ContentID contentID(987);
         ETechnicalContentType techtype = ETechnicalContentType::RamsesSceneID;
         TechnicalContentDescriptor descriptor(123);
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleContentReady(contentID, techtype, descriptor, senderId)).WillOnce(SendHandlerCalledEvent(this));
+            EXPECT_CALL(consumerHandler, handleContentDescription(contentID, techtype, descriptor, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
-        EXPECT_TRUE(sender.sendDcsmContentReady(receiverId, contentID, techtype, descriptor));
+        EXPECT_TRUE(sender.sendDcsmContentDescription(receiverId, contentID, techtype, descriptor));
         ASSERT_TRUE(waitForEvent());
+    }
 
-        EXPECT_LE(numberMessagesSent + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
-        EXPECT_LE(numberMessagesReceived + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
+    TEST_P(ADcsmSenderAndReceiverTest, sendContentReady)
+    {
+        ContentID contentID(987);
+        {
+            PlatformGuard g(receiverExpectCallLock);
+            EXPECT_CALL(consumerHandler, handleContentReady(contentID, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
+        }
+        EXPECT_TRUE(sender.sendDcsmContentReady(receiverId, contentID));
+        ASSERT_TRUE(waitForEvent());
     }
 
     TEST_P(ADcsmSenderAndReceiverTest, sendBroadcastRequestStopOfferContent)
     {
-        uint32_t numberMessagesSent = m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue();
-        uint32_t numberMessagesReceived = m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue();
-
         ContentID contentID(987);
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleRequestStopOfferContent(contentID, senderId)).WillOnce(SendHandlerCalledEvent(this));
+            EXPECT_CALL(consumerHandler, handleRequestStopOfferContent(contentID, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
         EXPECT_TRUE(sender.sendDcsmBroadcastRequestStopOfferContent(contentID));
         ASSERT_TRUE(waitForEvent());
-
-        EXPECT_LE(numberMessagesSent + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
-        EXPECT_LE(numberMessagesReceived + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
     }
 
     TEST_P(ADcsmSenderAndReceiverTest, sendBroadcastForceStopOfferContent)
     {
-        uint32_t numberMessagesSent = m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue();
-        uint32_t numberMessagesReceived = m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue();
-
         ContentID contentID(987);
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleForceStopOfferContent(contentID, senderId)).WillOnce(SendHandlerCalledEvent(this));
+            EXPECT_CALL(consumerHandler, handleForceStopOfferContent(contentID, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
         EXPECT_TRUE(sender.sendDcsmBroadcastForceStopOfferContent(contentID));
         ASSERT_TRUE(waitForEvent());
-
-        EXPECT_LE(numberMessagesSent + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
-        EXPECT_LE(numberMessagesReceived + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
     }
 
-    TEST_P(ADcsmSenderAndReceiverTest, sendContentFocusRequest)
+    TEST_P(ADcsmSenderAndReceiverTest, sendContentEnableFocusRequest)
     {
-        uint32_t numberMessagesSent = m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue();
-        uint32_t numberMessagesReceived = m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue();
-
         ContentID contentID(987);
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleContentFocusRequest(contentID, senderId)).WillOnce(SendHandlerCalledEvent(this));
+            EXPECT_CALL(consumerHandler, handleContentEnableFocusRequest(contentID, 32, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
-        EXPECT_TRUE(sender.sendDcsmContentFocusRequest(receiverId, contentID));
+        EXPECT_TRUE(sender.sendDcsmContentEnableFocusRequest(receiverId, contentID, 32));
         ASSERT_TRUE(waitForEvent());
+    }
 
-        EXPECT_LE(numberMessagesSent + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
-        EXPECT_LE(numberMessagesReceived + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
+    TEST_P(ADcsmSenderAndReceiverTest, sendContentDisableFocusRequest)
+    {
+        ContentID contentID(987);
+        {
+            PlatformGuard g(receiverExpectCallLock);
+            EXPECT_CALL(consumerHandler, handleContentDisableFocusRequest(contentID, 32, senderId)).WillOnce(InvokeWithoutArgs([&] { sendEvent(); }));
+        }
+        EXPECT_TRUE(sender.sendDcsmContentDisableFocusRequest(receiverId, contentID, 32));
+        ASSERT_TRUE(waitForEvent());
+    }
+
+    TEST_P(ADcsmSenderAndReceiverTest, sendUpdateContentMetadata)
+    {
+        ContentID contentID(987);
+        DcsmMetadata dm;
+        EXPECT_TRUE(dm.setPreviewDescription(U"hello world"));
+        {
+            PlatformGuard g(receiverExpectCallLock);
+            EXPECT_CALL(consumerHandler, handleUpdateContentMetadata(contentID, dm, senderId)).WillOnce(InvokeWithoutArgs([&] { sendEvent(); }));
+        }
+        EXPECT_TRUE(sender.sendDcsmUpdateContentMetadata(receiverId, contentID, dm));
+        ASSERT_TRUE(waitForEvent());
     }
 
     TEST_P(ADcsmSenderAndReceiverTest, sendCanvasSizeChange)
     {
-        uint32_t numberMessagesSent = m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue();
-        uint32_t numberMessagesReceived = m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue();
-
         ContentID contentID(987);
-        SizeInfo si{ 780, 480 };
+        CategoryInfo si{ 780, 480 };
         AnimationInformation ai{ 678,789 };
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(providerHandler, handleCanvasSizeChange(contentID, si, ai, senderId)).WillOnce(SendHandlerCalledEvent(this));
+            EXPECT_CALL(providerHandler, handleCanvasSizeChange(contentID, si, ai, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
         EXPECT_TRUE(sender.sendDcsmCanvasSizeChange(receiverId, contentID, si, ai));
         ASSERT_TRUE(waitForEvent());
-
-        EXPECT_LE(numberMessagesSent + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
-        EXPECT_LE(numberMessagesReceived + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
     }
 
     TEST_P(ADcsmSenderAndReceiverTest, sendContentStateChange)
     {
-        uint32_t numberMessagesSent = m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue();
-        uint32_t numberMessagesReceived = m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue();
-
         ContentID contentID(987);
         EDcsmState status(EDcsmState::Shown);
-        SizeInfo si{123, 432};
+        CategoryInfo si{123, 432};
         AnimationInformation ai{ 678,789 };
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(providerHandler, handleContentStateChange(contentID, status, si, ai, senderId)).WillOnce(SendHandlerCalledEvent(this));
+            EXPECT_CALL(providerHandler, handleContentStateChange(contentID, status, si, ai, senderId)).WillOnce(InvokeWithoutArgs([&] { sendEvent(); }));
         }
         EXPECT_TRUE(sender.sendDcsmContentStateChange(receiverId, contentID, status, si, ai));
         ASSERT_TRUE(waitForEvent());
-
-        EXPECT_LE(numberMessagesSent + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
-        EXPECT_LE(numberMessagesReceived + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
     }
 }

@@ -12,7 +12,7 @@
 #include "SHMTriangleDrawer.h"
 #include "TestScenes/MultipleTrianglesScene.h"
 
-#include "RendererTestInstance.h"
+#include "TestScenesAndRenderer.h"
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-framework-api/RamsesFrameworkConfig.h"
@@ -467,50 +467,50 @@ namespace ramses_internal
         const char* systemCompositorDisplay = "wayland-0";
         //start renderer with two displays that show content on the system compositor (not the RAMSES renderer's EC)
         ramses::RamsesFrameworkConfig config;
-        RendererTestInstance testRenderer(config);
-        RendererTestUtils::SetWaylandIviLayerID(waylandIviLayerId.getValue());
+        TestScenesAndRenderer testScenesAndRenderer(config);
+        TestRenderer& testRenderer = testScenesAndRenderer.getTestRenderer();
         RendererTestUtils::SetWaylandDisplayForSystemCompositorController(systemCompositorDisplay);
-        testRenderer.initializeRenderer();
+        testScenesAndRenderer.initializeRenderer();
 
         ramses::DisplayConfig displayConfig1 = RendererTestUtils::CreateTestDisplayConfig(iviSurfaceIdOffset);
         displayConfig1.setWindowRectangle(0, 0, windowWidth, windowHeight);
         displayConfig1.setPerspectiveProjection(19.f, static_cast<float>(windowWidth) / windowHeight, 0.1f, 1500.f);
         displayConfig1.impl.setWaylandDisplay(systemCompositorDisplay);
+        displayConfig1.setWaylandIviLayerID(waylandIviLayerId.getValue());
 
         ramses::DisplayConfig displayConfig2 = RendererTestUtils::CreateTestDisplayConfig(iviSurfaceIdOffset + 1);
         displayConfig2.setWindowRectangle(windowWidth, 0, windowWidth, windowHeight);
         displayConfig2.setPerspectiveProjection(19.f, static_cast<float>(windowWidth) / windowHeight, 0.1f, 1500.f);
         displayConfig2.impl.setWaylandDisplay(systemCompositorDisplay);
+        displayConfig2.setWaylandIviLayerID(waylandIviLayerId.getValue());
 
         const auto displayHandle1 = testRenderer.createDisplay(displayConfig1);
         const auto displayHandle2 = testRenderer.createDisplay(displayConfig2);
 
         //create two scenes and map a scene to each display
-        const ramses::sceneId_t sceneId1 = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
+        const ramses::sceneId_t sceneId1 = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
 
-        testRenderer.publish(sceneId1);
-        testRenderer.flush(sceneId1);
-        testRenderer.subscribeScene(sceneId1);
-        testRenderer.mapScene(displayHandle1, sceneId1);
-        testRenderer.showScene(sceneId1);
+        testScenesAndRenderer.publish(sceneId1);
+        testScenesAndRenderer.flush(sceneId1);
+        testRenderer.setSceneMapping(sceneId1, displayHandle1);
+        testRenderer.getSceneToState(sceneId1, ramses::RendererSceneState::Rendered);
 
-        const ramses::sceneId_t sceneId2 = testRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED, ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
-        testRenderer.publish(sceneId2);
-        testRenderer.flush(sceneId2);
-        testRenderer.subscribeScene(sceneId2);
-        testRenderer.mapScene(displayHandle2, sceneId2);
-        testRenderer.showScene(sceneId2);
+        const ramses::sceneId_t sceneId2 = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED, ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
+        testScenesAndRenderer.publish(sceneId2);
+        testScenesAndRenderer.flush(sceneId2);
+        testRenderer.setSceneMapping(sceneId2, displayHandle2);
+        testRenderer.getSceneToState(sceneId2, ramses::RendererSceneState::Rendered);
 
         //take screenshots and perform check to make sure that the renderer created here does render the scenes on the system compositor's surfaces
         bool testResult = testRenderer.performScreenshotCheck(displayHandle1, 0u, 0u, windowWidth, windowHeight, "ARendererInstance_Three_Triangles");
         testResult &= testRenderer.performScreenshotCheck(displayHandle2, 0u, 0u, windowWidth, windowHeight, "ARendererInstance_Triangles_reordered");
 
         //cleanup
-        testRenderer.unpublish(sceneId1);
-        testRenderer.unpublish(sceneId2);
+        testScenesAndRenderer.unpublish(sceneId1);
+        testScenesAndRenderer.unpublish(sceneId2);
         testRenderer.destroyDisplay(displayHandle1);
         testRenderer.destroyDisplay(displayHandle2);
-        testRenderer.destroyRenderer();
+        testScenesAndRenderer.destroyRenderer();
 
         return testResult;
     }

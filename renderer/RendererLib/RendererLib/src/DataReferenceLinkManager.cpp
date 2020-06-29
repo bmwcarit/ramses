@@ -48,9 +48,12 @@ namespace ramses_internal
         return LinkManagerBase::createDataLink(providerSceneId, providerSlotHandle, consumerSceneId, consumerSlotHandle);
     }
 
-    Bool DataReferenceLinkManager::removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle)
+    Bool DataReferenceLinkManager::removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle, SceneId* providerSceneIdOut)
     {
         assert(EDataSlotType_DataConsumer == DataLinkUtils::GetDataSlot(consumerSceneId, consumerSlotHandle, m_scenes).type);
+
+        if (providerSceneIdOut && getSceneLinks().hasLinkedProvider(consumerSceneId, consumerSlotHandle))
+            *providerSceneIdOut = getSceneLinks().getLinkedProvider(consumerSceneId, consumerSlotHandle).providerSceneId;
 
         if (!LinkManagerBase::removeDataLink(consumerSceneId, consumerSlotHandle))
         {
@@ -78,7 +81,7 @@ namespace ramses_internal
             const IScene& providerScene = m_scenes.getScene(link.providerSceneId);
             const DataInstanceHandle providerDataRef = providerScene.getDataSlot(link.providerSlot).attachedDataReference;
 
-            Variant value;
+            DataInstanceValueVariant value;
             DataInstanceHelper::GetInstanceFieldData(providerScene, providerDataRef, DataFieldHandle(0u), value);
             consumerScene.setValueWithoutUpdatingFallbackValue(consumerDataRef, DataFieldHandle(0u), value);
         }

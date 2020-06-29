@@ -24,20 +24,21 @@ namespace ramses_internal
     public:
         explicit EnqueueOnlyOneAtATimeQueue(ITaskQueue& nextQueue);
         virtual ~EnqueueOnlyOneAtATimeQueue();
-        virtual Bool enqueue(ITask& Task) override;
+        virtual bool enqueue(ITask& Task) override;
         virtual void TaskFinished(ITask& Task) override;
         virtual void enableAcceptingTasks() override;
         virtual void disableAcceptingTasksAfterExecutingCurrentQueue() override;
 
+        EnqueueOnlyOneAtATimeQueue(const EnqueueOnlyOneAtATimeQueue&) = delete;
+        EnqueueOnlyOneAtATimeQueue& operator=(const EnqueueOnlyOneAtATimeQueue&) = delete;
+
     protected:
         ITaskQueue& m_nextQueue;
         std::deque<ITask*> m_waitingTasks;
-        Bool m_hasOutstandingTask;
+        bool m_hasOutstandingTask;
         PlatformLock mlock;
-        Bool m_acceptingTasks;
+        bool m_acceptingTasks;
 
-    private:
-        explicit EnqueueOnlyOneAtATimeQueue(const EnqueueOnlyOneAtATimeQueue&);
         void moveTaskToNextQueue(ITask& task);
     };
 }

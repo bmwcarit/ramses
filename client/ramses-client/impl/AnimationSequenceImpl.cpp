@@ -37,7 +37,7 @@ namespace ramses
     {
         CHECK_RETURN_ERR(AnimationObjectImpl::serialize(outStream, serializationContext));
 
-        outStream << static_cast<uint32_t>(m_animations.count());
+        outStream << static_cast<uint32_t>(m_animations.size());
         for (const auto& item : m_animations)
         {
             outStream << item.key;
@@ -82,12 +82,12 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t AnimationSequenceImpl::validate(uint32_t indent) const
+    status_t AnimationSequenceImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        status_t status = AnimationObjectImpl::validate(indent);
+        status_t status = AnimationObjectImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
 
-        if (m_animations.count() == 0u)
+        if (m_animations.size() == 0u)
         {
             addValidationMessage(EValidationSeverity_Warning, indent, "sequence does not contain any animations");
             status = getValidationErrorStatus();
@@ -101,7 +101,7 @@ namespace ramses
                 addValidationMessage(EValidationSeverity_Error, indent, "animation contained in sequence does not exist anymore, was probably destroyed but still used by it");
                 status = getValidationErrorStatus();
             }
-            else if (addValidationOfDependentObject(indent, *anim) != StatusOK)
+            else if (addValidationOfDependentObject(indent, *anim, visitedObjects) != StatusOK)
             {
                 status = getValidationErrorStatus();
             }
@@ -384,7 +384,7 @@ namespace ramses
 
     uint32_t AnimationSequenceImpl::getNumAnimations() const
     {
-        return static_cast<uint32_t>(m_animations.count());
+        return static_cast<uint32_t>(m_animations.size());
     }
 
     bool AnimationSequenceImpl::containsAnimation(const Animation& animation) const

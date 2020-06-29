@@ -87,9 +87,9 @@ namespace ramses
     DEFINE_RAMSES_OBJECT_TRAITS(AnimatedProperty, ERamsesObjectType_AnimatedProperty, ERamsesObjectType_AnimationObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(Animation, ERamsesObjectType_Animation, ERamsesObjectType_AnimationObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(AnimationSequence, ERamsesObjectType_AnimationSequence, ERamsesObjectType_AnimationObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(AnimatedSetter, ERamsesObjectType_AnimatedSetter, ERamsesObjectType_AnimationObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(Appearance, ERamsesObjectType_Appearance, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(GeometryBinding, ERamsesObjectType_GeometryBinding, ERamsesObjectType_SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(PickableObject, ERamsesObjectType_PickableObject, ERamsesObjectType_Node, true);
     DEFINE_RAMSES_OBJECT_TRAITS(SplineStepBool, ERamsesObjectType_SplineStepBool, ERamsesObjectType_Spline, true);
     DEFINE_RAMSES_OBJECT_TRAITS(SplineStepFloat, ERamsesObjectType_SplineStepFloat, ERamsesObjectType_Spline, true);
     DEFINE_RAMSES_OBJECT_TRAITS(SplineStepInt32, ERamsesObjectType_SplineStepInt32, ERamsesObjectType_Spline, true);
@@ -157,6 +157,7 @@ namespace ramses
     DEFINE_RAMSES_OBJECT_TRAITS(IndexDataBuffer, ERamsesObjectType_IndexDataBuffer, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(VertexDataBuffer, ERamsesObjectType_VertexDataBuffer, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(Texture2DBuffer, ERamsesObjectType_Texture2DBuffer, ERamsesObjectType_SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SceneReference, ERamsesObjectType_SceneReference, ERamsesObjectType_SceneObject, true);
 
     struct RamsesObjectTraitsEntry
     {
@@ -198,9 +199,9 @@ namespace ramses
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_AnimatedProperty)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Animation)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_AnimationSequence)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_AnimatedSetter)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Appearance)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_GeometryBinding)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_PickableObject)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Spline)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineStepBool)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineStepFloat)
@@ -262,6 +263,7 @@ namespace ramses
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataVector3i)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataVector4i)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_StreamTexture)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SceneReference)
         DATA_BIND_DEFINE_END()
 }
 

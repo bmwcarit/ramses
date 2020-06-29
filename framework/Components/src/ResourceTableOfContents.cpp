@@ -16,7 +16,7 @@
 namespace ramses_internal
 {
 
-    Bool ResourceTableOfContents::containsResource(const ResourceContentHash& hash) const
+    bool ResourceTableOfContents::containsResource(const ResourceContentHash& hash) const
     {
         return m_fileContents.contains(hash);
     }
@@ -37,7 +37,7 @@ namespace ramses_internal
 
     void ResourceTableOfContents::writeTOCToStream(IOutputStream& outstream)
     {
-        const uint32_t numberOfEntries = static_cast<uint32_t>(m_fileContents.count());
+        const uint32_t numberOfEntries = static_cast<uint32_t>(m_fileContents.size());
         outstream << numberOfEntries;
 
         // sort resources to get deterministic file
@@ -69,7 +69,7 @@ namespace ramses_internal
         return m_fileContents;
     }
 
-    Bool ResourceTableOfContents::readTOCPosAndTOCFromStream(BinaryFileInputStream& instream)
+    bool ResourceTableOfContents::readTOCPosAndTOCFromStream(BinaryFileInputStream& instream)
     {
         uint32_t numberOfEntries = 0;
         instream >> numberOfEntries;
@@ -109,6 +109,6 @@ namespace ramses_internal
                     }
                 }));
 
-        return instream.getState() == EStatus_RAMSES_OK;
+        return instream.getState() == EStatus::Ok;
     }
 }

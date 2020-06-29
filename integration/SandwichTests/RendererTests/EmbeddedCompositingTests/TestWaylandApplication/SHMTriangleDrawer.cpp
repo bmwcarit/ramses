@@ -8,6 +8,7 @@
 
 #include "SHMTriangleDrawer.h"
 #include "SHMBuffer.h"
+#include <cassert>
 
 namespace ramses_internal
 {

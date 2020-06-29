@@ -13,7 +13,6 @@
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/Animation.h"
-#include "ramses-client-api/AnimatedSetter.h"
 #include "ramses-client-api/AnimationSequence.h"
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/SplineLinearVector3f.h"
@@ -65,8 +64,11 @@
 #include "ramses-client-api/DataVector4i.h"
 #include "ramses-client-api/RenderTargetDescription.h"
 #include "ramses-client-api/BlitPass.h"
+#include "ramses-client-api/PickableObject.h"
+#include "ramses-client-api/LocalCamera.h"
 #include "ramses-client-api/IndexDataBuffer.h"
 #include "ramses-client-api/VertexDataBuffer.h"
+#include "ramses-client-api/PerspectiveCamera.h"
 
 namespace ramses
 {
@@ -81,7 +83,7 @@ namespace ramses
     {
         for(const auto& component : m_allocatedClientAndFrameworkComponents)
         {
-            delete component.first;
+            component.second->destroyClient(*component.first);
             delete component.second;
         }
 
@@ -116,6 +118,17 @@ namespace ramses
         m_additionalAllocatedSceneObjects.clear();
     }
 
+    size_t CreationHelper::getAdditionalAllocatedNodeCount() const
+    {
+        size_t nodeCount = 0;
+        for (auto obj : m_additionalAllocatedSceneObjects)
+        {
+            if (obj->isOfType(ERamsesObjectType_Node))
+                ++nodeCount;
+        }
+        return nodeCount;
+    }
+
     void CreationHelper::destroyAdditionalAllocatedAnimationSystemObjects()
     {
         assert(m_animationSystem != nullptr);
@@ -129,13 +142,14 @@ namespace ramses
     template <> RamsesClient* CreationHelper::createObjectOfType<RamsesClient>(const char* name)
     {
         ramses::RamsesFramework* framework = new ramses::RamsesFramework;
-        RamsesClient* allocatedClient = new RamsesClient(name, *framework);
-        m_allocatedClientAndFrameworkComponents.push_back(ClientAndFramework(allocatedClient, framework));
+        RamsesClient* allocatedClient = framework->createClient(name);
+        if (allocatedClient)
+            m_allocatedClientAndFrameworkComponents.push_back(ClientAndFramework(allocatedClient, framework));
         return allocatedClient;
     }
     template <> Scene* CreationHelper::createObjectOfType<Scene>(const char* name)
     {
-        return m_ramsesClient->createScene(999u, ramses::SceneConfig(), name);
+        return m_ramsesClient->createScene(sceneId_t(999u), ramses::SceneConfig(), name);
     }
     template <> AnimationSystem* CreationHelper::createObjectOfType<AnimationSystem>(const char* name)
     {
@@ -191,14 +205,6 @@ namespace ramses
     template <> AnimationSequence* CreationHelper::createObjectOfType<AnimationSequence>(const char* name)
     {
         return m_animationSystem->createAnimationSequence(name);
-    }
-    template <> AnimatedSetter* CreationHelper::createObjectOfType<AnimatedSetter>(const char* name)
-    {
-        Node& node = *m_scene->createNode("node");
-        m_additionalAllocatedSceneObjects.push_back(&node);
-        AnimatedProperty& prop = *m_animationSystem->createAnimatedProperty(node, EAnimatedProperty_Translation);
-        m_additionalAllocatedAnimationSystemObjects.push_back(&prop);
-        return m_animationSystem->createAnimatedSetter(prop, name);
     }
     template <> Appearance* CreationHelper::createObjectOfType<Appearance>(const char* name)
     {
@@ -308,7 +314,7 @@ namespace ramses
     {
         uint8_t data[4] = { 0u };
         MipLevelData mipLevelData(sizeof(data), data);
-        return m_ramsesClient->createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, ResourceCacheFlag_DoNotCache, name);
+        return m_ramsesClient->createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, name);
     }
     template <> Texture3D* CreationHelper::createObjectOfType<Texture3D>(const char* name)
     {
@@ -320,7 +326,7 @@ namespace ramses
     {
         uint8_t data[4] = { 0u };
         CubeMipLevelData mipLevelData(sizeof(data), data, data, data, data, data, data);
-        return m_ramsesClient->createTextureCube(1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, ResourceCacheFlag_DoNotCache, name);
+        return m_ramsesClient->createTextureCube(1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, name);
     }
     template <> UInt16Array* CreationHelper::createObjectOfType<UInt16Array>(const char* name)
     {
@@ -373,7 +379,7 @@ namespace ramses
     {
         uint8_t data[4] = { 0u };
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture2D* texture = m_ramsesClient->createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, ResourceCacheFlag_DoNotCache, "texture");
+        Texture2D* texture = m_ramsesClient->createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, "texture");
         return m_scene->createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Mirror, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Nearest, *texture, 1u, name);
     }
     template <> RenderBuffer* CreationHelper::createObjectOfType<RenderBuffer>(const char* name)
@@ -466,7 +472,7 @@ namespace ramses
     {
         uint8_t data[4] = { 0u };
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture2D* fallback = m_ramsesClient->createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, ResourceCacheFlag_DoNotCache, "fallbackTex");
+        Texture2D* fallback = m_ramsesClient->createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, "fallbackTex");
         StreamTexture* streamTexture = m_scene->createStreamTexture(*fallback, streamSource_t(0), name);
         return streamTexture;
     }
@@ -485,4 +491,23 @@ namespace ramses
         return m_scene->createTexture2DBuffer(2, 3, 4, ETextureFormat_RGBA8, name);
     }
 
+    template <> PickableObject* CreationHelper::createObjectOfType<PickableObject>(const char* name)
+    {
+        const auto vb = m_scene->createVertexDataBuffer(3 * sizeof(DataVector3f), EDataType_Vector3F, "vb");
+        m_additionalAllocatedSceneObjects.push_back(vb);
+        PerspectiveCamera* camera =  m_scene->createPerspectiveCamera("pickableCamera");
+        m_additionalAllocatedSceneObjects.push_back(camera);
+        camera->setFrustum(-1.4f, 1.4f, -1.4f, 1.4f, 1.f, 100.f);
+        camera->setViewport(0, 0, 200, 200);
+        PickableObject* pickableObject =  m_scene->createPickableObject(*vb, pickableObjectId_t{ 123u }, name);
+        pickableObject->setCamera(*camera);
+        return pickableObject;
+    }
+
+    template <> SceneReference* CreationHelper::createObjectOfType<SceneReference>(const char* name)
+    {
+        // SceneReference cannot refer to same sceneID, create a different one every time
+        ++m_lastReferencedSceneId.getReference();
+        return m_scene->createSceneReference(m_lastReferencedSceneId, name);
+    }
 }

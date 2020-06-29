@@ -29,12 +29,6 @@ namespace ramses_internal
 
     struct TextureBuffer
     {
-        TextureBuffer() = default;
-        TextureBuffer(const TextureBuffer&) = default;
-        TextureBuffer& operator=(const  TextureBuffer&) = default;
-        TextureBuffer(TextureBuffer&&) = default;
-        TextureBuffer& operator=(TextureBuffer&&) = default;
-
         ETextureFormat      textureFormat = ETextureFormat_Invalid;
         MipMaps             mipMaps;
 
@@ -44,8 +38,8 @@ namespace ramses_internal
         }
     };
 
-    static_assert(std::is_nothrow_move_constructible<TextureBuffer>::value &&
-        std::is_nothrow_move_assignable<TextureBuffer>::value, "TextureBuffer must be movable");
+    static_assert(std::is_nothrow_move_constructible<TextureBuffer>::value, "TextureBuffer must be movable");
+    static_assert(std::is_nothrow_move_assignable<TextureBuffer>::value, "TextureBuffer must be movable");
 }
 
 #endif

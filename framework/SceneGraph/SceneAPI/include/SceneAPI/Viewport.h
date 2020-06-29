@@ -15,7 +15,11 @@ namespace ramses_internal
 {
     struct Viewport
     {
-        Viewport(Int32 x = 0, Int32 y = 0, UInt32 w = 0, UInt32 h = 0)
+        Viewport()
+            : Viewport(0, 0, 0, 0)
+        {}
+
+        Viewport(Int32 x, Int32 y, UInt32 w, UInt32 h)
             : posX(x)
             , posY(y)
             , width(w)
@@ -28,7 +32,7 @@ namespace ramses_internal
         UInt32 width;
         UInt32 height;
 
-        Bool operator==(const Viewport& other) const
+        bool operator==(const Viewport& other) const
         {
             return  posX == other.posX &&
                     posY == other.posY &&
@@ -36,7 +40,7 @@ namespace ramses_internal
                     height == other.height;
         }
 
-        Bool operator!=(const Viewport& other) const
+        bool operator!=(const Viewport& other) const
         {
             return !operator==(other);
         }

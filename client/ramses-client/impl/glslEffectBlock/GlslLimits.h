@@ -54,7 +54,7 @@ namespace ramses_internal
             Char buffer[16];
             UInt32 n = 0;
 
-            for (UInt32 i = 0; i < glslVersion.getLength(); i++)
+            for (size_t i = 0; i < glslVersion.size(); i++)
             {
                 const Char& c = glslVersion[i];
 

@@ -19,7 +19,7 @@ using namespace testing;
 
 namespace ramses_internal
 {
-    template void AnimationProcessDataDispatch::dispatchDataBind< AnimationDataBindTestBool,     Bool     >(const AnimationDataBind< AnimationDataBindTestBool,     Bool   >&) const;
+    template void AnimationProcessDataDispatch::dispatchDataBind< AnimationDataBindTestBool,     bool     >(const AnimationDataBind< AnimationDataBindTestBool,     bool   >&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind< AnimationDataBindTestInt32,    Int32    >(const AnimationDataBind< AnimationDataBindTestInt32,    Int32  >&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind< AnimationDataBindTestFloat,    Float    >(const AnimationDataBind< AnimationDataBindTestFloat,    Float  >&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind< AnimationDataBindTestVector2,  Vector2  >(const AnimationDataBind< AnimationDataBindTestVector2,  Vector2>&) const;
@@ -29,7 +29,7 @@ namespace ramses_internal
     template void AnimationProcessDataDispatch::dispatchDataBind< AnimationDataBindTestVector3i, Vector3i >(const AnimationDataBind< AnimationDataBindTestVector3i, Vector3i>&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind< AnimationDataBindTestVector4i, Vector4i >(const AnimationDataBind< AnimationDataBindTestVector4i, Vector4i>&) const;
 
-    template void AnimationProcessDataDispatch::dispatchDataBind< AnimationDataBindTestBool,     Bool,     MemoryHandle >(const AnimationDataBind< AnimationDataBindTestBool,     Bool,     MemoryHandle>&) const;
+    template void AnimationProcessDataDispatch::dispatchDataBind< AnimationDataBindTestBool,     bool,     MemoryHandle >(const AnimationDataBind< AnimationDataBindTestBool,     bool,     MemoryHandle>&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind< AnimationDataBindTestInt32,    Int32,    MemoryHandle >(const AnimationDataBind< AnimationDataBindTestInt32,    Int32,    MemoryHandle>&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind< AnimationDataBindTestFloat,    Float,    MemoryHandle >(const AnimationDataBind< AnimationDataBindTestFloat,    Float,    MemoryHandle>&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind< AnimationDataBindTestVector2,  Vector2,  MemoryHandle >(const AnimationDataBind< AnimationDataBindTestVector2,  Vector2,  MemoryHandle>&) const;
@@ -39,7 +39,7 @@ namespace ramses_internal
     template void AnimationProcessDataDispatch::dispatchDataBind< AnimationDataBindTestVector3i, Vector3i, MemoryHandle >(const AnimationDataBind< AnimationDataBindTestVector3i, Vector3i, MemoryHandle>&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind< AnimationDataBindTestVector4i, Vector4i, MemoryHandle >(const AnimationDataBind< AnimationDataBindTestVector4i, Vector4i, MemoryHandle>&) const;
 
-    template void AnimationProcessDataDispatch::dispatchDataBind< AnimationDataBindTestBool,     Bool,     MemoryHandle, MemoryHandle >(const AnimationDataBind< AnimationDataBindTestBool,     Bool,     MemoryHandle, MemoryHandle>&) const;
+    template void AnimationProcessDataDispatch::dispatchDataBind< AnimationDataBindTestBool,     bool,     MemoryHandle, MemoryHandle >(const AnimationDataBind< AnimationDataBindTestBool,     bool,     MemoryHandle, MemoryHandle>&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind< AnimationDataBindTestInt32,    Int32,    MemoryHandle, MemoryHandle >(const AnimationDataBind< AnimationDataBindTestInt32,    Int32,    MemoryHandle, MemoryHandle>&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind< AnimationDataBindTestFloat,    Float,    MemoryHandle, MemoryHandle >(const AnimationDataBind< AnimationDataBindTestFloat,    Float,    MemoryHandle, MemoryHandle>&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind< AnimationDataBindTestVector2,  Vector2,  MemoryHandle, MemoryHandle >(const AnimationDataBind< AnimationDataBindTestVector2,  Vector2,  MemoryHandle, MemoryHandle>&) const;
@@ -169,7 +169,7 @@ namespace ramses_internal
 
     TEST_F(AnimationDataBindTest, DataTypeID)
     {
-        AnimationDataBindTestHelper::testDataTypeID<Bool>();
+        AnimationDataBindTestHelper::testDataTypeID<bool>();
         AnimationDataBindTestHelper::testDataTypeID<Int32>();
         AnimationDataBindTestHelper::testDataTypeID<Float>();
         AnimationDataBindTestHelper::testDataTypeID<Vector2>();
@@ -182,7 +182,7 @@ namespace ramses_internal
 
     TEST_F(AnimationDataBindTest, ContainerTypeID)
     {
-        AnimationDataBindTestHelper::testContainerTypeID<AnimationDataBindTestContainer<Bool>, Bool>();
+        AnimationDataBindTestHelper::testContainerTypeID<AnimationDataBindTestContainer<bool>, bool>();
         AnimationDataBindTestHelper::testContainerTypeID<AnimationDataBindTestContainer<Int32>, Int32>();
         AnimationDataBindTestHelper::testContainerTypeID<AnimationDataBindTestContainer<Float>, Float>();
         AnimationDataBindTestHelper::testContainerTypeID<AnimationDataBindTestContainer<Vector2>, Vector2>();
@@ -265,7 +265,7 @@ namespace ramses_internal
 
         virtual GetSetType getValue(UInt32 handle) const = 0;
         virtual void setValue(UInt32 handle, GetSetType data) = 0;
-        virtual Bool isPropertyValid(UInt32 handle) const = 0;
+        virtual bool isPropertyValid(UInt32 handle) const = 0;
     };
 
     template <typename EDataType>
@@ -284,7 +284,7 @@ namespace ramses_internal
             m_data[handle] = data;
         }
 
-        virtual Bool isPropertyValid(UInt32 handle) const override
+        virtual bool isPropertyValid(UInt32 handle) const override
         {
             return handle < 10u;
         }

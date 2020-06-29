@@ -9,23 +9,26 @@
 #ifndef RAMSES_SERVICEHANDLERINTERFACES_H
 #define RAMSES_SERVICEHANDLERINTERFACES_H
 
-#include "Transfer/ResourceTypes.h"
-#include "Resource/ResourceInfo.h"
 #include "SceneAPI/SceneId.h"
-#include "Collections/ArrayView.h"
+#include "SceneAPI/SceneTypes.h"
+#include "SceneAPI/ResourceContentHash.h"
 #include "Components/DcsmTypes.h"
+#include "Components/DcsmMetadata.h"
+#include "absl/types/span.h"
 
 namespace ramses_internal
 {
     class Guid;
     class SceneActionCollection;
+    struct SceneReferenceEvent;
+    class CategoryInfo;
 
     class IResourceConsumerServiceHandler
     {
     public:
         virtual ~IResourceConsumerServiceHandler() {}
 
-        virtual void handleSendResource(const ByteArrayView& data, const Guid& providerID) = 0;
+        virtual void handleSendResource(const absl::Span<const Byte>& data, const Guid& providerID) = 0;
         virtual void handleResourcesNotAvailable(const ResourceContentHashVector& resources, const Guid& providerID) = 0;
     };
 
@@ -44,6 +47,7 @@ namespace ramses_internal
 
         virtual void handleSubscribeScene(const SceneId& sceneId, const Guid& consumerID) = 0;
         virtual void handleUnsubscribeScene(const SceneId& sceneId, const Guid& consumerID) = 0;
+        virtual void handleRendererEvent(const SceneId& sceneId, std::vector<Byte> data, const Guid& rendererId) = 0;
     };
 
     class ISceneRendererServiceHandler
@@ -64,8 +68,8 @@ namespace ramses_internal
     {
     public:
         virtual ~IDcsmProviderServiceHandler() {};
-        virtual void handleCanvasSizeChange(ContentID contentID, SizeInfo sizeinfo, AnimationInformation, const Guid& consumerID) = 0;
-        virtual void handleContentStateChange(ContentID contentID, EDcsmState status, SizeInfo, AnimationInformation, const Guid& consumerID) = 0;
+        virtual void handleCanvasSizeChange(ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation, const Guid& consumerID) = 0;
+        virtual void handleContentStateChange(ContentID contentID, EDcsmState status, const CategoryInfo& categoryInfo, AnimationInformation, const Guid& consumerID) = 0;
     };
 
     class IDcsmConsumerServiceHandler
@@ -73,10 +77,13 @@ namespace ramses_internal
     public:
         virtual ~IDcsmConsumerServiceHandler() {};
         virtual void handleOfferContent(ContentID contentID, Category, const Guid& providerID) = 0;
-        virtual void handleContentReady(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID) = 0;
-        virtual void handleContentFocusRequest(ContentID contentID, const Guid& providerID) = 0;
+        virtual void handleContentDescription(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID) = 0;
+        virtual void handleContentReady(ContentID contentID, const Guid& providerID) = 0;
+        virtual void handleContentEnableFocusRequest(ContentID contentID, int32_t focusRequest, const Guid& providerID) = 0;
+        virtual void handleContentDisableFocusRequest(ContentID contentID, int32_t focusRequest, const Guid& providerID) = 0;
         virtual void handleRequestStopOfferContent(ContentID contentID, const Guid& providerID) = 0;
         virtual void handleForceStopOfferContent(ContentID contentID, const Guid& providerID) = 0;
+        virtual void handleUpdateContentMetadata(ContentID contentID, DcsmMetadata metadata, const Guid& providerID) = 0;
     };
 }
 

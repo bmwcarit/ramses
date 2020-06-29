@@ -30,7 +30,7 @@ namespace ramses_internal
         static EDataType GetRandom();
 
         template <typename EDataType>
-        static Bool AreEqual(const EDataType& a, const EDataType& b);
+        static bool AreEqual(const EDataType& a, const EDataType& b);
     };
 
     template <typename EDataType>
@@ -40,7 +40,7 @@ namespace ramses_internal
     }
 
     template <>
-    inline Bool AnimationTestUtils::GetRandom<Bool>()
+    inline bool AnimationTestUtils::GetRandom<bool>()
     {
         return GetRandom<UInt32>() > (RANDOM_RANGE / 2u);
     }
@@ -48,7 +48,7 @@ namespace ramses_internal
     template <>
     inline Float AnimationTestUtils::GetRandom<Float>()
     {
-        return Float(GetRandom<UInt32>()) - Float(RANDOM_RANGE / 2u);
+        return Float(GetRandom<UInt32>()) - (RANDOM_RANGE / 2.f);
     }
 
     template <>
@@ -70,62 +70,62 @@ namespace ramses_internal
     }
 
     template <typename EDataType>
-    inline Bool AnimationTestUtils::AreEqual(const EDataType& a, const EDataType& b)
+    inline bool AnimationTestUtils::AreEqual(const EDataType& a, const EDataType& b)
     {
         return a == b;
     }
 
     template <>
-    inline Bool AnimationTestUtils::AreEqual(const Float& a, const Float& b)
+    inline bool AnimationTestUtils::AreEqual(const Float& a, const Float& b)
     {
-        const Float fDelta = PlatformMath::Abs(a - b);
+        const Float fDelta = std::abs(a - b);
         if (fDelta < 1e-5f)
         {
             return true;
         }
 
         Float relativeError = 0.f;
-        if (PlatformMath::Abs(b) > PlatformMath::Abs(a))
+        if (std::abs(b) > std::abs(a))
         {
-            relativeError = PlatformMath::Abs((a - b) / b);
+            relativeError = std::abs((a - b) / b);
         }
         else
         {
-            relativeError = PlatformMath::Abs((a - b) / a);
+            relativeError = std::abs((a - b) / a);
         }
         return relativeError < 0.0001f;
     }
 
     template <>
-    inline Bool AnimationTestUtils::AreEqual(const Double& a, const Double& b)
+    inline bool AnimationTestUtils::AreEqual(const Double& a, const Double& b)
     {
-        const Double dDelta = PlatformMath::Abs(a - b);
+        const Double dDelta = std::abs(a - b);
         if (dDelta < 1e-9)
         {
             return true;
         }
 
         Double relativeError = 0.0;
-        if (PlatformMath::Abs(b) > PlatformMath::Abs(a))
+        if (std::abs(b) > std::abs(a))
         {
-            relativeError = PlatformMath::Abs((a - b) / b);
+            relativeError = std::abs((a - b) / b);
         }
         else
         {
-            relativeError = PlatformMath::Abs((a - b) / a);
+            relativeError = std::abs((a - b) / a);
         }
         return relativeError < 0.00001;
     }
 
     template <>
-    inline Bool AnimationTestUtils::AreEqual<Vector2>(const Vector2& vecA, const Vector2& vecB)
+    inline bool AnimationTestUtils::AreEqual<Vector2>(const Vector2& vecA, const Vector2& vecB)
     {
         return AreEqual(vecA.x, vecB.x)
             && AreEqual(vecA.y, vecB.y);
     }
 
     template <>
-    inline Bool AnimationTestUtils::AreEqual<Vector3>(const Vector3& vecA, const Vector3& vecB)
+    inline bool AnimationTestUtils::AreEqual<Vector3>(const Vector3& vecA, const Vector3& vecB)
     {
         return AreEqual(vecA.x, vecB.x)
             && AreEqual(vecA.y, vecB.y)
@@ -133,7 +133,7 @@ namespace ramses_internal
     }
 
     template <>
-    inline Bool AnimationTestUtils::AreEqual<Vector4>(const Vector4& vecA, const Vector4& vecB)
+    inline bool AnimationTestUtils::AreEqual<Vector4>(const Vector4& vecA, const Vector4& vecB)
     {
         return AreEqual(vecA.x, vecB.x)
             && AreEqual(vecA.y, vecB.y)
@@ -146,12 +146,12 @@ namespace ramses_internal
     public:
         MockAnimationDataListener();
         virtual ~MockAnimationDataListener();
-        MOCK_METHOD1(preAnimationTimeRangeChange, void(AnimationHandle handle));
-        MOCK_METHOD1(onAnimationTimeRangeChanged, void(AnimationHandle handle));
-        MOCK_METHOD2(onAnimationPauseChanged, void(AnimationHandle handle, Bool pause));
-        MOCK_METHOD1(onAnimationPropertiesChanged, void(AnimationHandle handle));
-        MOCK_METHOD1(onAnimationInstanceChanged, void(AnimationInstanceHandle handle));
-        MOCK_METHOD1(onSplineChanged, void(SplineHandle handle));
+        MOCK_METHOD(void, preAnimationTimeRangeChange, (AnimationHandle handle), (override));
+        MOCK_METHOD(void, onAnimationTimeRangeChanged, (AnimationHandle handle), (override));
+        MOCK_METHOD(void, onAnimationPauseChanged, (AnimationHandle handle, bool pause), (override));
+        MOCK_METHOD(void, onAnimationPropertiesChanged, (AnimationHandle handle), (override));
+        MOCK_METHOD(void, onAnimationInstanceChanged, (AnimationInstanceHandle handle), (override));
+        MOCK_METHOD(void, onSplineChanged, (SplineHandle handle), (override));
     };
 
     class MockAnimationStateListener : public AnimationLogicListener
@@ -159,13 +159,13 @@ namespace ramses_internal
     public:
         MockAnimationStateListener();
         virtual ~MockAnimationStateListener();
-        MOCK_METHOD1(onAnimationStarted, void(AnimationHandle handle));
-        MOCK_METHOD1(onAnimationFinished, void(AnimationHandle handle));
-        MOCK_METHOD1(onAnimationPaused, void(AnimationHandle handle));
-        MOCK_METHOD1(onAnimationResumed, void(AnimationHandle handle));
-        MOCK_METHOD1(onAnimationPropertiesChanged, void(AnimationHandle handle));
-        MOCK_METHOD1(onAnimationSplineDataChanged, void(AnimationHandle handle));
-        MOCK_METHOD1(onTimeChanged, void(const AnimationTime& time));
+        MOCK_METHOD(void, onAnimationStarted, (AnimationHandle handle), (override));
+        MOCK_METHOD(void, onAnimationFinished, (AnimationHandle handle), (override));
+        MOCK_METHOD(void, onAnimationPaused, (AnimationHandle handle), (override));
+        MOCK_METHOD(void, onAnimationResumed, (AnimationHandle handle), (override));
+        MOCK_METHOD(void, onAnimationPropertiesChanged, (AnimationHandle handle), (override));
+        MOCK_METHOD(void, onAnimationSplineDataChanged, (AnimationHandle handle), (override));
+        MOCK_METHOD(void, onTimeChanged, (const AnimationTime& time), (override));
     };
 
     class AnimationTest : public testing::Test

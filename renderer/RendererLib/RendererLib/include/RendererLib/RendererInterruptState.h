@@ -18,7 +18,7 @@ namespace ramses_internal
     class RendererInterruptState
     {
     public:
-        RendererInterruptState(DisplayHandle display = DisplayHandle::Invalid(), DeviceResourceHandle displayBuffer = DeviceResourceHandle::Invalid(), SceneId sceneId = SceneId::DefaultValue(), const SceneRenderExecutionIterator& executorState = {})
+        explicit RendererInterruptState(DisplayHandle display = DisplayHandle::Invalid(), DeviceResourceHandle displayBuffer = DeviceResourceHandle::Invalid(), SceneId sceneId = SceneId::Invalid(), const SceneRenderExecutionIterator& executorState = {})
             : m_display(display)
             , m_displayBuffer(displayBuffer)
             , m_sceneId(sceneId)

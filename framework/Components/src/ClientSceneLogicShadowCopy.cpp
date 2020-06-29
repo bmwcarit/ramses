@@ -12,8 +12,6 @@
 #include "Scene/SceneDescriber.h"
 #include "Scene/SceneActionApplier.h"
 #include "Scene/SceneActionCollectionCreator.h"
-#include "Scene/SceneResourceUtils.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "Utils/LogMacros.h"
 #include "Utils/StatisticCollection.h"
@@ -33,7 +31,7 @@ namespace ramses_internal
         sendShadowCopySceneToWaitingSubscribers();
     }
 
-    void ClientSceneLogicShadowCopy::flushSceneActions(ESceneFlushMode flushMode, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag)
+    void ClientSceneLogicShadowCopy::flushSceneActions(const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag)
     {
         const SceneSizeInformation sceneSizes(m_scene.getSceneSizeInformation());
 
@@ -56,6 +54,16 @@ namespace ramses_internal
                     }));
         }
 
+        updateResourceChanges(hasNewActions);
+
+        const bool skipSceneActionSend =
+            m_flushCounter != 0 &&      // never skip first flush (might block renderer side transition subscription pending -> subscibed)
+            m_resourceChanges.empty() &&   // no resource changes (client+scene)
+            collection.empty() &&  // no other sceneactions yet
+            m_scene.getSceneReferenceActions().empty() &&  // no scenereference updates
+            flushTimeInfo.expirationTimestamp == FlushTime::InvalidTimestamp &&  // no expiration monitoring enabled (otherwise must always send to keep scene valid)
+            versionTag == SceneVersionTag::Invalid();  // no scene version
+
         ++m_flushCounter;
 
         if (isPublished())
@@ -63,10 +71,10 @@ namespace ramses_internal
             SceneActionCollectionCreator creator(collection);
             creator.flush(
                 m_flushCounter,
-                flushMode == ESceneFlushMode_Synchronous,
                 sceneSizes > m_sceneShadowCopy.getSceneSizeInformation(),
                 sceneSizes,
-                m_scene.getResourceChanges(),
+                m_resourceChanges,
+                m_scene.getSceneReferenceActions(),
                 flushTimeInfo,
                 versionTag);
         }
@@ -82,19 +90,28 @@ namespace ramses_internal
             m_scene.getStatisticCollection().statSceneActionsGeneratedSize.incCounter(static_cast<UInt32>(collection.collectionData().size()));
         }
 
-        LOG_DEBUG_F(CONTEXT_CLIENT, ([&](StringOutputStream& sos) { printFlushInfo(sos, "ClientSceneLogicShadowCopy::flushSceneActions", collection, flushMode); }));
+        LOG_DEBUG_F(CONTEXT_CLIENT, ([&](StringOutputStream& sos) { printFlushInfo(sos, "ClientSceneLogicShadowCopy::flushSceneActions", collection); }));
 
         if (isPublished() && !m_subscribersActive.empty())
         {
-            m_scene.getStatisticCollection().statSceneActionsSent.incCounter(collection.numberOfActions()*static_cast<UInt32>(m_subscribersActive.size()));
-            m_scenegraphSender.sendSceneActionList(m_subscribersActive, std::move(collection), m_sceneId, m_scenePublicationMode);
+            if (skipSceneActionSend)
+            {
+                LOG_DEBUG(CONTEXT_CLIENT, "ClientSceneLogicShadowCopy::flushSceneActions: skip flush for sceneId " << m_sceneId << ", cnt " << m_flushCounter << " because empty");
+                m_scene.getStatisticCollection().statSceneActionsSentSkipped.incCounter(1);
+            }
+            else
+            {
+                m_scene.getStatisticCollection().statSceneActionsSent.incCounter(collection.numberOfActions() * static_cast<UInt32>(m_subscribersActive.size()));
+                m_scenegraphSender.sendSceneActionList(m_subscribersActive, std::move(collection), m_sceneId, m_scenePublicationMode);
+            }
         }
 
-        m_scene.clearResourceChanges();
+        m_scene.resetResourceChanges();
+        m_scene.resetSceneReferenceActions();
 
         // store flush time info and version for async new subscribers, scene validity must also be guaranteed for them
         m_flushTimeInfoOfLastFlush = flushTimeInfo;
-        if (versionTag != InvalidSceneVersionTag)
+        if (versionTag.isValid())
             m_lastVersionTag = versionTag;
 
         // send to subscribers if flushed for first time

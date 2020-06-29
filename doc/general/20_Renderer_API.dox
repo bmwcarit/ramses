@@ -10,38 +10,34 @@
 @page RendererAPI RAMSES Renderer API
 
 The RAMSES Renderer API allows to
-* setup the rendering infrastructure
-* control the graphical content, which is to be displayed
-* render the content to be displayed
-* access/control to the system compositor controller
+- create displays and offscreen buffers
+- control rendering states of scenes
+- link data between scenes
+- control render looping, timing, limits
+- access/control to the system compositor controller
 
-# Setup rendering infrastructure
 
-The renderer setup consists of a RamsesRenderer object and a set of displays belonging to it.
-Every display can be configured through an individual display configuration, described below.
+# Display Management
 
-## Display configuration options
-- Display Size
-- Viewport settings
-- Camera parameters
-- Stereo rendering support
-- Warping support
-- Multi-sampling
+The renderer setup consists of a #ramses::RamsesRenderer object and a set of displays belonging to it.
+Every display can be configured through an individual ramses::DisplayConfig.
 
-# Display Graphical Content
 
-## Scene States
-In order to show graphical content (i.e. scenes created by RAMSES clients) on a certain display, the renderer has to
--# check if the scene is published
--# subscribe to the scene
--# map the scene to a display
--# show the scene
+# Scene Rendering States
+Graphical content (a #ramses::Scene provided from #ramses::RamsesClient) is always in a certain state,
+a state in the context of single #ramses::RamsesRenderer instance.
+Typically the desired state to reach is that the scene is rendered, however the scene has to go through
+several other states to reach that:
+-# scene is published, i.e. client announced that the scene can be requested from one or more renderers
+-# renderer requests scene and its data, any change to scene data will be transferred to renderer
+-# renderer maps scene to a display, assigns to framebuffer or offscreen buffer and uploads all scene resources
+-# renderer starts to render scene
 
-@image html renderer_scene_states.png "Renderer Scene States"
+These states and other parameters can be set/requested using #ramses::RendererSceneControl, see its documentation
+for more details.
 
-<b>Important:</b>
-- Resource handling as described in the state descriptions of the state diagram above is not yet implemented.
-- A scene can only be "mapped" to ONE display of a renderer at the same time.
+@image html renderer_scene_states.png "Renderer Scene States: These are internal states that aren't exposed to the high level, but can be found on renderer log output."
+
 
 ## Data Linking
 
@@ -56,46 +52,39 @@ Data links are dynamic so any change to provider data (including animations) wil
 
 ### Transformation Linking
 
-For transformation data linking the provided scene content is the transformation matrix of a scenegraph node (any Node typed object in scene), which can be consumed by Node(s) of consumer scene(s).
+For transformation data linking the provided scene content is the transformation matrix of a scenegraph node (any #ramses::Node typed object in scene),
+which can be consumed by node(s) of consumer scene(s).
 The consumer node (and all its children in scenegraph topology) will transform using the provider node's transformation.
 
 ### DataObject Linking
 
-DataObjects can be used to set values to Appearance's uniforms or Camera parameters and these can be linked as well across scenes. As long as data type is matched a data value stored in a DataObject of one scene
-can be used as uniform input of an Appearance in another scene.
+#ramses::DataObject can be used to set values of #ramses::Appearance uniforms or #ramses::LocalCamera parameters which can also be linked across scenes.
+As long as data type is matched a data value stored in a ramses::DataObject of one scene can be used as uniform input of an #ramses::Appearance in another scene.
 
 ### Texture Linking
 
-Texture resources can be tagged as data providers and can be consumed in another scene by TextureSampler. In order to be able to successfully link textures both the provider and consumer scenes
-have to be mapped to the same display as they are going to share a GPU resource.
+Texture resources can be tagged as data providers and can be consumed in another scene by #ramses::TextureSampler. In order to be able to successfully link
+textures both the provider and consumer scenes have to be mapped to the same display as they are going to share a GPU resource.
 
 # Renderer API calls & Events
 
 Renderer API calls are handled asynchronously. This means that the result or information about success of the requested renderer operation is not available
 immediately after the API call.
-The result of the API call will be delivered via renderer events. The RAMSES renderer offers an event dispatching mechanism, such that an object implementing
-the ramses::IRendererEventHandler interface can handle and process renderer events.
+The result of the API call will be delivered via renderer events. The ramses::RamsesRenderer and ramses::RendererSceneControl each offer its own event dispatching mechanism,
+such that an object implementing ramses::IRendererEventHandler/#ramses::IRendererSceneControlEventHandler interface can handle and process renderer/scene control events.
 
-There are callbacks for the following events:
-- display created/destroyed
-- scene un/published
-- scene un/subscribed
-- scene un/mapped
-- scene shown/hidden
-- data un/linked
-- data provider/consumer created/destroyed
-- framebuffer-pixel read
-
-Check ramses::IRendererEventHandler for the full list of events and corresponding callbacks.
-
-Events generated as a result of a Renderer API call will have a result parameter stating whether:
+Events generated as a result of a #ramses::RamsesRenderer or #ramses::RendererSceneControl API call can have different statuses reported:
 - [OK] the Renderer API call was successful
-- [FAIL] the Renderer API call was unsuccessful
-- [INDIRECT] the event was implicitly generated by another Renderer API call/Event or a scene state change caused by a RAMSES client
+- [FAIL] the Renderer API call was unsuccessful, check logs for error message
+- [INDIRECT] the event was generated as consequence of another event from Ramses client side (e.g. scene unpublish or disconnect) or some other internal event
+- A special case of status report is 'no status' - scene state change requests (#ramses::RendererSceneControl::setSceneState) might not generate any event
+in case that a condition to reach desired state is not met (e.g. scene not published, display not created, etc.). Note that these will not timeout explicitly,
+it is responsibility of the application to implement timeout logic.
 
 ## Renderer API transactions
 
-The RAMSES Renderer only executes committed Renderer API calls. To commit a transaction of Renderer API calls, call ramses::RamsesRenderer::flush().<br>
-All Renderer API calls since the last flush will then be executed on the next ramses::RamsesRenderer::doOneLoop() function call or when there is new frame processed if using render thread.
+The #ramses::RamsesRenderer and #ramses::RendererSceneControl calls are queued and only executed when committed. To commit a batch of calls use #ramses::RamsesRenderer::flush()
+and #ramses::RendererSceneControl::flush() respectively. All calls since the last flush will then be executed together (preserving order) in the very next
+renderer update loop (either #ramses::RamsesRenderer::doOneLoop() or in render thread).
 
 */

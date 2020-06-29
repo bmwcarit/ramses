@@ -19,7 +19,7 @@ namespace ramses_internal
     {
     public:
         explicit RamshCommandPrintRamsesVersion(const char* const configStrings);
-        virtual Bool executeInput(const RamshInput& input) override;
+        virtual bool executeInput(const RamshInput& input) override;
 
     protected:
         const char* const m_versionString;

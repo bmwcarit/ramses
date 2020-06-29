@@ -62,7 +62,7 @@ namespace ramses
     template <typename SplineType>
     class SplineInitTest : public LocalTestClientWithSceneAndAnimationSystem, public testing::Test {};
 
-    TYPED_TEST_CASE(SplineInitTest, SplineTypes);
+    TYPED_TEST_SUITE(SplineInitTest, SplineTypes);
 
     TYPED_TEST(SplineInitTest, splineCreatedWithNoKeys)
     {

@@ -36,7 +36,7 @@ namespace ramses
         virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
         virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
         virtual status_t resolveDeserializationDependencies(DeserializationContext& serializationContext) override;
-        virtual status_t validate(uint32_t indent) const override;
+        virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
 
         status_t setAppearance(AppearanceImpl& appearanceImpl);
         status_t setGeometryBinding(GeometryBindingImpl& geometryImpl);
@@ -45,10 +45,12 @@ namespace ramses
         uint32_t getStartIndex() const;
         status_t setIndexCount(uint32_t indexCount);
         uint32_t getIndexCount() const;
-        status_t setFlattenedVisibility(bool visible);
-        bool     getFlattenedVisibility() const;
+        status_t setFlattenedVisibility(EVisibilityMode mode);
+        EVisibilityMode getFlattenedVisibility() const;
         status_t setInstanceCount(uint32_t instanceCount);
         uint32_t getInstanceCount() const;
+        status_t setStartVertex(uint32_t startVertex);
+        uint32_t getStartVertex() const;
 
         ramses_internal::RenderableHandle   getRenderableHandle() const;
 

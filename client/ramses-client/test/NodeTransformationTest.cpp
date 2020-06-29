@@ -12,6 +12,7 @@
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/RemoteCamera.h"
+#include "ramses-client-api/PickableObject.h"
 
 #include "ClientTestUtils.h"
 #include "Math3d/Vector3.h"
@@ -33,7 +34,7 @@ namespace ramses
         T* m_node;
     };
 
-    TYPED_TEST_CASE(NodeTransformationTest, NodeTypes);
+    TYPED_TEST_SUITE(NodeTransformationTest, NodeTypes);
 
     TYPED_TEST(NodeTransformationTest, setTranslate)
     {
@@ -156,19 +157,19 @@ namespace ramses
         virtual void TearDown()
         {
             EXPECT_CALL(this->sceneActionsCollector, handleScenesBecameUnavailable(
-                ramses_internal::SceneInfoVector(1, ramses_internal::SceneInfo(ramses_internal::SceneId(this->m_scene.impl.getSceneId()))), _));
+                        ramses_internal::SceneInfoVector(1, ramses_internal::SceneInfo(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()))), _));
             EXPECT_EQ(StatusOK, m_scene.unpublish());
         }
 
         T* m_node;
     };
 
-    TYPED_TEST_CASE(NodeTransformationTestWithPublishedScene, NodeTypes);
+    TYPED_TEST_SUITE(NodeTransformationTestWithPublishedScene, NodeTypes);
 
     TYPED_TEST(NodeTransformationTestWithPublishedScene, setTranslateWithValuesEqualToCurrentValuesDoesNotCreateSceneActions)
     {
         ramses_internal::Vector3 translationVector(1.2f, 2.3f, 4.5f);
-        EXPECT_CALL(this->sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId()), _, _, _));
+        EXPECT_CALL(this->sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()), _, _, _));
         EXPECT_EQ(StatusOK, this->m_node->setTranslation(translationVector.x, translationVector.y, translationVector.z));
         this->m_scene.flush();
         EXPECT_LE(1u, this->sceneActionsCollector.getNumberOfActions());
@@ -176,16 +177,15 @@ namespace ramses
         Mock::VerifyAndClearExpectations(this);
         this->sceneActionsCollector.resetCollecting();
 
-        EXPECT_CALL(this->sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId()), _, _, _));
         EXPECT_EQ(StatusOK, this->m_node->setTranslation(translationVector.x, translationVector.y, translationVector.z));
         this->m_scene.flush();
-        EXPECT_EQ(1u, this->sceneActionsCollector.getNumberOfActions());  //only flush, no scene actions for setting translation
+        EXPECT_EQ(0u, this->sceneActionsCollector.getNumberOfActions());  // flush empty and optimized away
     }
 
     TYPED_TEST(NodeTransformationTestWithPublishedScene, setRotationWithValuesEqualToCurrentValuesDoesNotCreateSceneActions)
     {
         ramses_internal::Vector3 rotationVector(1.2f, 2.3f, 4.5f);
-        EXPECT_CALL(this->sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId()), _, _, _));
+        EXPECT_CALL(this->sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()), _, _, _));
         EXPECT_EQ(StatusOK, this->m_node->setRotation(rotationVector.x, rotationVector.y, rotationVector.z));
         this->m_scene.flush();
         EXPECT_LE(1u, this->sceneActionsCollector.getNumberOfActions());
@@ -193,16 +193,15 @@ namespace ramses
         Mock::VerifyAndClearExpectations(this);
         this->sceneActionsCollector.resetCollecting();
 
-        EXPECT_CALL(this->sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId()), _, _, _));
         EXPECT_EQ(StatusOK, this->m_node->setRotation(rotationVector.x, rotationVector.y, rotationVector.z));
         this->m_scene.flush();
-        EXPECT_EQ(1u, this->sceneActionsCollector.getNumberOfActions());  //only flush, no scene actions for setting rotation
+        EXPECT_EQ(0u, this->sceneActionsCollector.getNumberOfActions());  // flush empty and optimized away
     }
 
     TYPED_TEST(NodeTransformationTestWithPublishedScene, setScalingWithValuesEqualToCurrentValuesDoesNotCreateSceneActions)
     {
         ramses_internal::Vector3 scalingVector(1.2f, 2.3f, 4.5f);
-        EXPECT_CALL(this->sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId()), _, _, _));
+        EXPECT_CALL(this->sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()), _, _, _));
         EXPECT_EQ(StatusOK, this->m_node->setScaling(scalingVector.x, scalingVector.y, scalingVector.z));
         this->m_scene.flush();
         EXPECT_LE(1u, this->sceneActionsCollector.getNumberOfActions());
@@ -210,9 +209,8 @@ namespace ramses
         Mock::VerifyAndClearExpectations(this);
         this->sceneActionsCollector.resetCollecting();
 
-        EXPECT_CALL(this->sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId()), _, _, _));
         EXPECT_EQ(StatusOK, this->m_node->setScaling(scalingVector.x, scalingVector.y, scalingVector.z));
         this->m_scene.flush();
-        EXPECT_EQ(1u, this->sceneActionsCollector.getNumberOfActions());  //only flush, no scene actions for setting scaling
+        EXPECT_EQ(0u, this->sceneActionsCollector.getNumberOfActions());  // flush empty and optimized away
     }
 }

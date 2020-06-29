@@ -84,7 +84,7 @@ bool RamsesEffectFromGLSLShaderArguments::parseArguments(int argc, char const*co
         }
     }
 
-    m_outCompression = ramses_internal::ArgumentBool(parser, OUT_COMPRESSION_SHORT, OUT_COMPRESSION, false);
+    m_outCompression = ramses_internal::ArgumentBool(parser, OUT_COMPRESSION_SHORT, OUT_COMPRESSION);
 
     return true;
 }
@@ -133,14 +133,14 @@ bool RamsesEffectFromGLSLShaderArguments::getUseCompression() const
 void RamsesEffectFromGLSLShaderArguments::printUsage() const
 {
     PRINT_HINT( "usage: program\n"
-                "--%s (-%s) <filename>\n"
-                "--%s (-%s) <filename>\n"
-                "--%s (-%s) <filename>\n"
-                "--%s (-%s) <filename>\n"
-                "--%s (-%s) <optional string>\n"
-                "--%s (-%s) <optional filename>\n"
-                "--%s (-%s) {optional: %s|%s}\n"
-                "--%s (-%s) {optional}\n\n",
+                "--{} (-{}) <filename>\n"
+                "--{} (-{}) <filename>\n"
+                "--{} (-{}) <filename>\n"
+                "--{} (-{}) <filename>\n"
+                "--{} (-{}) <optional string>\n"
+                "--{} (-{}) <optional filename>\n"
+                "--{} (-{}) {{optional: {}|{}}}\n"
+                "--{} (-{}) {{optional}}\n\n",
                 IN_VERTEX_SHADER_NAME, IN_VERTEX_SHADER_SHORT_NAME,
                 IN_FRAGMENT_SHADER_NAME, IN_FRAGMENT_SHADER_SHORT_NAME,
                 IN_CONFIG_NAME, IN_CONFIG_SHORT_NAME,
@@ -177,7 +177,7 @@ bool RamsesEffectFromGLSLShaderArguments::loadEffectIdType(const ramses_internal
     }
     else
     {
-        PRINT_HINT("valid Effect Id Type Options are as following: %s %s\n", OUT_EFFECT_ID_TYPE_CLIENT, OUT_EFFECT_ID_TYPE_RENDERER);
+        PRINT_HINT("valid Effect Id Type Options are as following: {} {}\n", OUT_EFFECT_ID_TYPE_CLIENT, OUT_EFFECT_ID_TYPE_RENDERER);
         return false;
     }
     return true;

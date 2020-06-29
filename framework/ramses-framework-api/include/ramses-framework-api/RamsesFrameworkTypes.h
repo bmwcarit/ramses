@@ -9,8 +9,9 @@
 #ifndef RAMSES_RAMSESFRAMEWORKTYPES_H
 #define RAMSES_RAMSESFRAMEWORKTYPES_H
 
-#include "stdint.h"
 #include "ramses-framework-api/StronglyTypedValue.h"
+#include "stdint.h"
+#include <limits>
 
 namespace ramses
 {
@@ -21,74 +22,96 @@ namespace ramses
     * return a status. This is a handle to request a full status message
     * using getStatusMessage() function.
     */
-    typedef uint32_t status_t;
+    using status_t = uint32_t;
 
     /**
     * @brief Status returned from RAMSES client API methods that succeeded.
     *
     */
-    const status_t StatusOK = 0u;
+    constexpr const status_t StatusOK = 0u;
 
     /**
-    * @brief Scene identifier used to refer to scenes created using client API
-    *        and then manage their mapping using renderer API
+    * @brief Struct used as unique id for the strongly typed scene id.
     */
-    typedef uint64_t sceneId_t;
+    struct SceneIdTag {};
+
+    /**
+     * @brief Scene identifier used to refer to scenes created using client API
+     *        and then manage their mapping using renderer API
+     */
+    using sceneId_t = StronglyTypedValue<uint64_t, 0, struct SceneIdTag>;
 
     /**
     * @brief Scene version tag used to refer to content versions of a scene.
     *        A scene version may be updated along with a scene transaction.
     */
-    typedef uint64_t sceneVersionTag_t;
+    using sceneVersionTag_t = uint64_t;
 
     /**
     * @brief Scene version tag used to refer to an invalid scene version
     */
-    const sceneVersionTag_t InvalidSceneVersionTag = static_cast<sceneVersionTag_t>(-1);
+    constexpr const sceneVersionTag_t InvalidSceneVersionTag = static_cast<sceneVersionTag_t>(-1);
 
-    /**
-    * @brief Display identifier used to refer to display in renderer events during dispatching
-    */
-    typedef uint32_t displayId_t;
+    /// Display identifier used to refer to display in renderer API and dispatched callbacks
+    using displayId_t = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), struct DisplayIdTag>;
 
-    /**
-    * @brief Display id used to refer to non-existing display
-    */
-    const displayId_t InvalidDisplayId = static_cast<displayId_t>(-1);
-
-    /**
-    * @brief Offscreen buffer identifier referring to a buffer created on a display.
-    *        The \c offscreenBufferId_t is valid in the scope of display, therefore has to be
-    *        always used together with \c diplayId_t in RamsesRenderer API.
-    */
-    typedef uint32_t offscreenBufferId_t;
-
-    /**
-    * @brief Offscreen buffer id used to refer to non-existing buffer
-    */
-    const displayId_t InvalidOffscreenBufferId = static_cast<offscreenBufferId_t>(-1);
+    /// Display buffer identifier referring to either a display's framebuffer or a created offscreen buffer.
+    using displayBufferId_t = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), struct DisplayBufferIdTag>;
 
     /**
     * @brief Data identifier used to refer to data provider
     *        and then manage their linkage to data consumer using renderer API
     */
-    typedef uint32_t dataProviderId_t;
+    using dataProviderId_t = StronglyTypedValue<uint32_t, 0, struct DataProviderIdTag>;
 
     /**
     * @brief Data link identifier used to refer to data consumer
     *        and then manage their linkage to data provider using renderer API
     */
-    typedef uint32_t dataConsumerId_t;
+    using dataConsumerId_t = StronglyTypedValue<uint32_t, 0, struct DataConsumerIdTag>;
 
     /**
     * @brief Resource identifier used to refer to a resource
     */
     struct resourceId_t
     {
-        /// Low bits
-        uint64_t lowPart;
-        /// High bits
-        uint64_t highPart;
+        /**
+         * @brief Default constructor initialized to Invalid
+         */
+        constexpr resourceId_t()
+            : lowPart(0)
+            , highPart(0)
+        {
+        }
+
+        /**
+         * @brief Construct with low and high part
+         * @param low low part of resource id
+         * @param high high part of resource id
+         */
+        constexpr resourceId_t(uint64_t low, uint64_t high)
+            : lowPart(low)
+            , highPart(high)
+        {
+        }
+
+        /**
+         * @brief Create invalid resource Id
+         * @return Invalid resource id
+         */
+        constexpr static resourceId_t Invalid()
+        {
+            return resourceId_t();
+        }
+
+        /**
+         * @brief Check if resource is valid
+         * @return true when resource id has a valid value, false otherwise
+         */
+        constexpr bool isValid() const
+        {
+            return *this != Invalid();
+        }
 
         /**
         * @brief Equal compare operator
@@ -97,7 +120,7 @@ namespace ramses
         *
         * @return true of resourceId is the same as other resourceId
         */
-        bool operator==(const resourceId_t& other) const
+        constexpr bool operator==(const resourceId_t& other) const
         {
             return highPart == other.highPart && lowPart == other.lowPart;
         }
@@ -109,16 +132,16 @@ namespace ramses
         *
         * @return true of resourceId is not the same as other resourceId
         */
-        bool operator!=(const resourceId_t& other) const
+        constexpr bool operator!=(const resourceId_t& other) const
         {
             return !(*this == other);
         }
-    };
 
-    /**
-    * @brief Invalid resource identifier
-    */
-    const resourceId_t InvalidResourceId = {0, 0};
+        /// Low bits
+        uint64_t lowPart;
+        /// High bits
+        uint64_t highPart;
+    };
 
     /**
     * @brief Struct used as unique id for the strongly typed node Id.
@@ -128,7 +151,7 @@ namespace ramses
     /**
     * @brief Node identifier used to refer to a node
     */
-    typedef StronglyTypedValue<uint32_t, nodeIdTag> nodeId_t;
+    using nodeId_t = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), nodeIdTag>;
 
     /**
     * @brief Struct used as unique id for the strongly typed stream Id.
@@ -139,7 +162,7 @@ namespace ramses
     * @brief The "ivi ID" of a stream source attached to a stream texture
     * The value refers to a surface ID in Wayland (extended by IVI extensions)
     */
-    typedef StronglyTypedValue<uint32_t, streamIdTag> streamSource_t;
+    using streamSource_t = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), streamIdTag>;
 
     /**
     * @brief Type of Ramses Shell
@@ -159,12 +182,21 @@ namespace ramses
     /**
     * @brief Cache flag value used for passing a strong-typed flag value to a renderer.
     */
-    typedef StronglyTypedValue<uint32_t, resourceCacheFlagTag> resourceCacheFlag_t;
+    using resourceCacheFlag_t = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), resourceCacheFlagTag>;
 
     /**
     * @brief Requests the render to not cache a resource. This is the default value.
     */
-    const resourceCacheFlag_t ResourceCacheFlag_DoNotCache = resourceCacheFlag_t(static_cast<uint32_t>(-1));
+    constexpr const resourceCacheFlag_t ResourceCacheFlag_DoNotCache = resourceCacheFlag_t::Invalid();
+
+    /// Dummy struct to uniquely define ramses::pickableObjectId_t
+    struct pickableObjectTag {};
+
+    /// User ID of a pickable object to be provided when creating ramses::PickableObject
+    using pickableObjectId_t = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), pickableObjectTag>;
+
+    /// Binary shader format identifier used in ramses::IBinaryShaderCache
+    using binaryShaderFormatId_t = StronglyTypedValue<uint32_t, 0, struct binaryShaderFormatIdTag>;
 }
 
 #endif

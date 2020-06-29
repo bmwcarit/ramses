@@ -24,8 +24,8 @@ namespace ramses_internal
     class MockAnimationStartStopListener : public AnimationLogicListener
     {
     public:
-        MOCK_METHOD1(onAnimationStarted, void(AnimationHandle handle));
-        MOCK_METHOD1(onAnimationFinished, void(AnimationHandle handle));
+        MOCK_METHOD(void, onAnimationStarted, (AnimationHandle handle), (override));
+        MOCK_METHOD(void, onAnimationFinished, (AnimationHandle handle), (override));
     };
 
     class AnimationSystemTest : public testing::Test

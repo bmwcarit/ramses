@@ -11,8 +11,9 @@
 
 namespace ramses_internal
 {
+    using namespace ::testing;
 
-    TYPED_TEST_CASE_P(AWindowWaylandWithEventHandling);
+    TYPED_TEST_SUITE_P(AWindowWaylandWithEventHandling);
 
     TYPED_TEST_P(AWindowWaylandWithEventHandling, singleKeyPressEventTriggersKeyPressedEventWithCorrectKeyCode)
     {
@@ -123,7 +124,7 @@ namespace ramses_internal
         this->processAllEvents();
     }
 
-    REGISTER_TYPED_TEST_CASE_P(AWindowWaylandWithEventHandling,
+    REGISTER_TYPED_TEST_SUITE_P(AWindowWaylandWithEventHandling,
             singleKeyPressEventTriggersKeyPressedEventWithCorrectKeyCode,
             leftMouseButtonDownEventTriggersLeftButtonDownEvent,
             leftMouseButtonUpEventTriggersLeftButtonUpEvent,
@@ -136,7 +137,7 @@ namespace ramses_internal
             mouseMoveEventTriggersMouseMoveEvent
             );
 
-    TYPED_TEST_CASE_P(AWindowWayland);
+    TYPED_TEST_SUITE_P(AWindowWayland);
 
     TYPED_TEST_P(AWindowWayland, canInitAWindow)
     {
@@ -161,7 +162,7 @@ namespace ramses_internal
 
         WaylandEnvironmentUtils::UnsetVariable(WaylandEnvironmentVariable::XDGRuntimeDir);
 
-        String fileDescriptor = StringUtils::IToA(socket.createConnectedFileDescriptor(true));
+        String fileDescriptor = StringOutputStream::ToString(socket.createConnectedFileDescriptor(true));
         WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, fileDescriptor.c_str());
 
         EXPECT_TRUE(this->m_window->init());
@@ -177,7 +178,7 @@ namespace ramses_internal
     {
         UnixDomainSocket socket = UnixDomainSocket("wayland-0", WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir));
 
-        String fileDescriptor = StringUtils::IToA(socket.createConnectedFileDescriptor(true));
+        String fileDescriptor = StringOutputStream::ToString(socket.createConnectedFileDescriptor(true));
         WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, fileDescriptor.c_str());
 
         EXPECT_TRUE(this->m_window->init());
@@ -200,14 +201,14 @@ namespace ramses_internal
     {
         UnixDomainSocket socket = UnixDomainSocket("wayland-0", WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir));
 
-        String fileDescriptor = StringUtils::IToA(socket.createConnectedFileDescriptor(false));
+        String fileDescriptor = StringOutputStream::ToString(socket.createConnectedFileDescriptor(false));
         WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, fileDescriptor.c_str());
         WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandDisplay, "wayland-0");
 
         EXPECT_FALSE(this->m_window->init());
     }
 
-    REGISTER_TYPED_TEST_CASE_P(AWindowWayland,
+    REGISTER_TYPED_TEST_SUITE_P(AWindowWayland,
             canInitAWindow,
             IfXdgRuntimeDirIsNotSetInitWillFail,
             IfXdgRuntimeDirIsNotCorrectInitWillFail,

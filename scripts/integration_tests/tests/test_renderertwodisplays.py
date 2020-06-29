@@ -6,8 +6,6 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-import time
-
 from ramses_test_framework import test_classes
 from ramses_test_framework import log
 from ramses_test_framework.ramses_test_extensions import with_ramses_process_check
@@ -24,7 +22,7 @@ class TestRendererTwoDisplays(test_classes.OnAllDefaultTargetsTest):
         #The test needs 3 displays on wayland in order to use a display as a dummy black background
         #those wayland ivi surface ids depend on workaround in standalone renderer that increments the ivi surface id by 1 for every created display
         self.displaysIviSurfaceIds = [DEFAULT_TEST_SURFACE, DEFAULT_TEST_SURFACE + 1, DEFAULT_TEST_SURFACE + 2]
-        self.renderer = self.target.start_default_renderer("--numDisplays 3 --disableAutoMapping -sid {0}".format(self.displaysIviSurfaceIds[0]))
+        self.renderer = self.target.start_default_renderer("--numDisplays 3 -sid {0}".format(self.displaysIviSurfaceIds[0]))
         self.renderer.send_ramsh_command("skub 0", waitForRendererConfirmation=True)
 
         self.checkThatApplicationWasStarted(self.renderer)
@@ -34,6 +32,8 @@ class TestRendererTwoDisplays(test_classes.OnAllDefaultTargetsTest):
         self.addCleanup(self.target.kill_application, self.testClient)
 
     def impl_tearDown(self):
+        if self.target.systemCompositorControllerSupported:
+            self.target.ivi_control.cleanup()
         self.target.kill_application(self.testClient)
         self.target.kill_application(self.renderer)
         self.target.kill_application(self.ramsesDaemon)

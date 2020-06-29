@@ -29,7 +29,7 @@ namespace ramses_internal
         {
             m_val[0][0] = val;
         }
-        Bool checkProperty0() const
+        bool checkProperty0() const
         {
             return true;
         }
@@ -42,7 +42,7 @@ namespace ramses_internal
         {
             m_val[0][handle] = val;
         }
-        Bool checkProperty1(HandleType handle) const
+        bool checkProperty1(HandleType handle) const
         {
             return handle < NumHandles;
         }
@@ -55,7 +55,7 @@ namespace ramses_internal
         {
             m_val[handle2][handle] = val;
         }
-        Bool checkProperty2(HandleType handle) const
+        bool checkProperty2(HandleType handle) const
         {
             return handle < NumHandles;
         }

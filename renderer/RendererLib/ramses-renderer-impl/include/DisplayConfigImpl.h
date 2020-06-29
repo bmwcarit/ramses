@@ -25,14 +25,15 @@ namespace ramses
         status_t setViewRotation(float x, float y, float z);
         status_t getViewRotation(float& x, float& y, float& z) const;
         status_t setWindowRectangle(int32_t x, int32_t y, uint32_t width, uint32_t height);
+        status_t getWindowRectangle(int32_t& x, int32_t& y, uint32_t& width, uint32_t& height) const;
         status_t setFullscreen(bool fullscreen);
+        bool     isFullscreen() const;
         status_t setBorderless(bool borderless);
         status_t setPerspectiveProjection(float fieldOfViewY, float aspectRatio, float nearPlane, float farPlane);
         status_t setProjection(float leftPlane, float rightPlane, float bottomPlane, float topPlane, float nearPlane, float farPlane, bool isOrthographic);
         status_t setMultiSampling(uint32_t numSamples);
         status_t getMultiSamplingSamples(uint32_t& numSamples) const;
         status_t enableWarpingPostEffect();
-        status_t enableStereoDisplay();
         status_t setWaylandIviSurfaceID(uint32_t waylandIviSurfaceID);
         uint32_t getWaylandIviSurfaceID() const;
         status_t setWaylandIviLayerID(uint32_t waylandIviLayerID);
@@ -41,7 +42,9 @@ namespace ramses
         const char* getWaylandDisplay() const;
         status_t setIntegrityRGLDeviceUnit(uint32_t rglDeviceUnit);
         uint32_t getIntegrityRGLDeviceUnit() const;
-        status_t setWindowIviVisible();
+        void* getAndroidNativeWindow() const;
+        status_t setAndroidNativeWindow(void * nativeWindowPtr);
+        status_t setWindowIviVisible(bool visible);
         status_t setResizable(bool resizable);
         status_t keepEffectsUploaded(bool enable);
         status_t setGPUMemoryCacheSize(uint64_t size);
@@ -50,7 +53,7 @@ namespace ramses
         status_t setWindowsWindowHandle(void* hwnd);
         void*    getWindowsWindowHandle() const;
 
-        virtual status_t validate(uint32_t indent = 0u) const override;
+        virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
 
         //impl methods
         const ramses_internal::DisplayConfig& getInternalDisplayConfig() const;

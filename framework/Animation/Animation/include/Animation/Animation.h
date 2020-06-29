@@ -19,16 +19,16 @@ namespace ramses_internal
     {
     public:
         typedef UInt32 Flags;
-        enum EAnimationFlags
+        enum EAnimationFlags : uint32_t
         {
-            EAnimationFlags_Looping            = BIT(0), /// Enable looping, must set also m_loopDuration to non-zero value
-            EAnimationFlags_Relative           = BIT(1), /// Add values from spline keys to initial value of animated property
-            EAnimationFlags_ApplyInitialValue  = BIT(2), /// Set animated data to initial value instead of spline keys data (used to rollback animation)
-            EAnimationFlags_Reverse            = BIT(3)
+            EAnimationFlags_Looping            = BIT(0u), ///< Enable looping, must set also m_loopDuration to non-zero value
+            EAnimationFlags_Relative           = BIT(1u), ///< Add values from spline keys to initial value of animated property
+            EAnimationFlags_ApplyInitialValue  = BIT(2u), ///< Set animated data to initial value instead of spline keys data (used to rollback animation)
+            EAnimationFlags_Reverse            = BIT(3u)
         };
 
         explicit Animation(AnimationInstanceHandle animInstHandle = AnimationInstanceHandle::Invalid(), Flags flags = 0u);
-        Bool isPlaying(const AnimationTime& time) const;
+        bool isPlaying(const AnimationTime& time) const;
 
         AnimationInstanceHandle  m_animationInstanceHandle;
         Flags                    m_flags;
@@ -36,10 +36,10 @@ namespace ramses_internal
         AnimationTime::Duration  m_loopDuration;
         AnimationTime            m_startTime;
         AnimationTime            m_stopTime;
-        Bool                     m_paused;
+        bool                     m_paused;
     };
 
-    inline Bool Animation::isPlaying(const AnimationTime& time) const
+    inline bool Animation::isPlaying(const AnimationTime& time) const
     {
         return time >= m_startTime
             && time < m_stopTime

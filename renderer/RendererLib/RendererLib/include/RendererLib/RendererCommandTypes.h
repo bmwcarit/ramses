@@ -16,6 +16,7 @@
 #include "CommandT.h"
 #include "Scene/SceneActionCollection.h"
 #include "Math3d/Vector3.h"
+#include "Math3d/Vector2i.h"
 #include "RendererLogger.h"
 #include "EKeyCode.h"
 #include "EKeyEventType.h"
@@ -39,12 +40,12 @@ namespace ramses_internal
         ERendererCommandType_RendererView,
         ERendererCommandType_Log,
         ERendererCommandType_Screenshot,
-        ERendererCommandType_WindowEvent,
+        ERendererCommandType_Picking,
         ERendererCommandType_Compositor,
         ERendererCommandType_ConfirmationEcho,
         ERendererCommandType_FrameProfiler,
         ERendererCommandType_FrameTimerLimits,
-        ERendererCommandType_SetFeature
+        ERendererCommandType_SetFeature,
     };
 
     enum ERendererCommand
@@ -70,14 +71,16 @@ namespace ramses_internal
         ERendererCommand_ReadPixels,
         ERendererCommand_SetClearColor,
         ERendererCommand_SceneActions,
+        ERendererCommand_SetSceneState,
+        ERendererCommand_SetSceneMapping,
+        ERendererCommand_SetSceneDisplayBufferAssignment,
         // Data linking
         ERendererCommand_LinkSceneData,
         ERendererCommand_LinkBufferToSceneData,
         ERendererCommand_UnlinkSceneData,
         ERendererCommand_CreateOffscreenBuffer,
         ERendererCommand_DestroyOffscreenBuffer,
-        ERendererCommand_AssignSceneToOffscreenBuffer,
-        ERendererCommand_AssignSceneToFramebuffer,
+        ERendererCommand_AssignSceneToDisplayBuffer,
         // Logging
         ERendererCommand_LogRendererStatistics,
         ERendererCommand_LogRendererInfo,
@@ -96,6 +99,7 @@ namespace ramses_internal
         ERendererCommand_SetLimits_FlushesForceApply,
         ERendererCommand_SetLimits_FlushesForceUnsubscribe,
         ERendererCommand_SetSkippingOfUnmodifiedBuffers,
+        ERendererCommand_PickEvent,
 
         // THINK THREE TIMES BEFORE ADDING SOMETHING HERE!
         // This is not a bucket for junk to pass to the renderer because it is convenient
@@ -104,7 +108,6 @@ namespace ramses_internal
         ERendererCommand_FrameProfiler_TimingGraphHeight,
         ERendererCommand_FrameProfiler_CounterGraphHeight,
         ERendererCommand_FrameProfiler_RegionFilterFlags,
-
 
         ERendererCommand_COUNT
     };
@@ -119,7 +122,6 @@ namespace ramses_internal
         DEFINE_COMMAND_TYPE(SceneInfoCommand, ERendererCommandType_Scene);
 
         SceneInfo sceneInformation;
-        Guid clientID;
         Bool indirect = false;
     };
 
@@ -147,14 +149,16 @@ namespace ramses_internal
 
         SceneId                 sceneId;
         DisplayHandle           displayHandle;
-        Int32                   sceneRenderOrder;
+        OffscreenBufferHandle   offscreenBuffer;
+        Int32                   sceneRenderOrder = 0;
     };
 
-    struct SceneRenderCommand : public RendererCommand
+    struct SceneStateCommand : public RendererCommand
     {
-        DEFINE_COMMAND_TYPE(SceneRenderCommand, ERendererCommandType_SceneRendering);
+        DEFINE_COMMAND_TYPE(SceneStateCommand, ERendererCommandType_SceneRendering);
 
-        SceneId                 sceneId;
+        SceneId sceneId;
+        RendererSceneState state = RendererSceneState::Unavailable;
     };
 
     struct WarpingDataCommand : public RendererCommand
@@ -184,6 +188,7 @@ namespace ramses_internal
         DEFINE_COMMAND_TYPE(SetClearColorCommand, ERendererCommandType_SetClearColor);
 
         DisplayHandle           displayHandle;
+        OffscreenBufferHandle   obHandle;
         Vector4                 clearColor;
     };
 
@@ -206,7 +211,6 @@ namespace ramses_internal
         OffscreenBufferHandle  bufferHandle;
         UInt32                 bufferWidth = 0u;
         UInt32                 bufferHeight = 0u;
-        SceneId                assignedScene;
         Bool                   interruptible = false;
     };
 
@@ -221,24 +225,17 @@ namespace ramses_internal
     {
         DEFINE_COMMAND_TYPE(LogCommand, ERendererCommandType_Log);
 
-        ERendererLogTopic       topic;
-        Bool                    verbose;
+        ERendererLogTopic       topic = ERendererLogTopic_All;
+        Bool                    verbose = false;
         NodeHandle              nodeHandleFilter;
     };
 
-    struct WindowEventCommand : public RendererCommand
+    struct PickingCommand : public RendererCommand
     {
-        DEFINE_COMMAND_TYPE(WindowEventCommand, ERendererCommandType_WindowEvent);
+        DEFINE_COMMAND_TYPE(PickingCommand, ERendererCommandType_Picking);
 
-        DisplayHandle           display;
-
-        EKeyEventType           keyEvent;
-        UInt32                  keyModifier;
-        EKeyCode                keyCode;
-
-        EMouseEventType         mouseAction;
-        Int32                   mousePosX;
-        Int32                   mousePosY;
+        SceneId                 sceneId;
+        Vector2                 coordsNormalizedToBufferSize;
     };
 
     struct CompositorCommand : public RendererCommand
@@ -281,7 +278,6 @@ namespace ramses_internal
 
         UInt64 limitForClientResourcesUploadMicrosec = 0u;
         UInt64 limitForSceneResourcesUploadMicrosec = 0u;
-        UInt64 limitForSceneActionsApplyMicrosec = 0u;
         UInt64 limitForOffscreenBufferRenderMicrosec = 0u;
         UInt limitForPendingFlushesForceApply = 0u;
         UInt limitForPendingFlushesForceUnsubscribe = 0u;
@@ -316,13 +312,15 @@ namespace ramses_internal
         "ERendererCommand_ReadPixels",
         "ERendererCommand_SetClearColor",
         "ERendererCommand_SceneActions",
+        "ERendererCommand_SetSceneState",
+        "ERendererCommand_SetSceneMapping",
+        "ERendererCommand_SetSceneDisplayBufferAssignment",
         "ERendererCommand_LinkSceneData",
         "ERendererCommand_LinkBufferToSceneData",
         "ERendererCommand_UnlinkSceneData",
         "ERendererCommand_CreateOffscreenBuffer",
         "ERendererCommand_DestroyOffscreenBuffer",
-        "ERendererCommand_AssignSceneToOffscreenBuffer",
-        "ERendererCommand_AssignSceneToFramebuffer",
+        "ERendererCommand_AssignSceneToDisplayBuffer",
         "ERendererCommand_LogRendererStatistics",
         "ERendererCommand_LogRendererInfo",
         "ERendererCommand_SystemCompositorControllerListIviSurfaces",
@@ -342,7 +340,8 @@ namespace ramses_internal
         "ERendererCommand_FrameProfiler_Toggle",
         "ERendererCommand_FrameProfiler_TimingGraphHeight",
         "ERendererCommand_FrameProfiler_CounterGraphHeight",
-        "ERendererCommand_FrameProfiler_RegionFilterFlags"
+        "ERendererCommand_FrameProfiler_RegionFilterFlags",
+        "ERendererCommand_Picking"
     };
 
     ENUM_TO_STRING(ERendererCommand, RendererCommandNames, ERendererCommand_COUNT);

@@ -19,6 +19,7 @@
 #include "AppearanceImpl.h"
 #include "GeometryBindingImpl.h"
 #include "RamsesObjectTypeUtils.h"
+#include "VisibilityModeUtils.h"
 
 // internal
 #include "Resource/IResource.h"
@@ -86,9 +87,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t MeshNodeImpl::validate(uint32_t indent) const
+    status_t MeshNodeImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        status_t status = NodeImpl::validate(indent);
+        status_t status = NodeImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
         if (nullptr == m_appearanceImpl)
         {
@@ -97,7 +98,7 @@ namespace ramses
         }
         else
         {
-            if (addValidationOfDependentObject(indent, *m_appearanceImpl) != StatusOK)
+            if (addValidationOfDependentObject(indent, *m_appearanceImpl, visitedObjects) != StatusOK)
             {
                 status = getValidationErrorStatus();
             }
@@ -110,7 +111,7 @@ namespace ramses
         }
         else
         {
-            if (addValidationOfDependentObject(indent, *m_geometryImpl) != StatusOK)
+            if (addValidationOfDependentObject(indent, *m_geometryImpl, visitedObjects) != StatusOK)
             {
                 status = getValidationErrorStatus();
             }
@@ -165,8 +166,7 @@ namespace ramses
 
         m_appearanceImpl = &appearance;
 
-        const ramses_internal::ResourceContentHash effectHash = appearance.getEffectImpl()->getLowlevelResourceHash();
-        getIScene().setRenderableDataInstanceAndStateAndEffect(m_renderableHandle, appearance.getUniformDataInstance(), appearance.getRenderStateHandle(), effectHash);
+        getIScene().setRenderableUniformsDataInstanceAndState(m_renderableHandle, appearance.getUniformDataInstance(), appearance.getRenderStateHandle());
 
         return StatusOK;
     }
@@ -206,7 +206,7 @@ namespace ramses
     {
         m_appearanceImpl = nullptr;
 
-        getIScene().setRenderableDataInstanceAndStateAndEffect(m_renderableHandle, ramses_internal::DataInstanceHandle::Invalid(), ramses_internal::RenderStateHandle::Invalid(), ramses_internal::ResourceContentHash::Invalid());
+        getIScene().setRenderableUniformsDataInstanceAndState(m_renderableHandle, ramses_internal::DataInstanceHandle::Invalid(), ramses_internal::RenderStateHandle::Invalid());
 
         m_geometryImpl = nullptr;
 
@@ -226,9 +226,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t MeshNodeImpl::setFlattenedVisibility(bool visible)
+    status_t MeshNodeImpl::setFlattenedVisibility(EVisibilityMode mode)
     {
-        getIScene().setRenderableVisibility(m_renderableHandle, visible);
+        getIScene().setRenderableVisibility(m_renderableHandle, VisibilityModeUtils::ConvertToLL(mode));
         return StatusOK;
     }
 
@@ -240,6 +240,12 @@ namespace ramses
         }
 
         getIScene().setRenderableInstanceCount(m_renderableHandle, instanceCount);
+        return StatusOK;
+    }
+
+    ramses::status_t MeshNodeImpl::setStartVertex(uint32_t startVertex)
+    {
+        getIScene().setRenderableStartVertex(m_renderableHandle, startVertex);
         return StatusOK;
     }
 
@@ -300,9 +306,9 @@ namespace ramses
         return getIScene().getRenderable(m_renderableHandle).indexCount;
     }
 
-    bool MeshNodeImpl::getFlattenedVisibility() const
+    EVisibilityMode MeshNodeImpl::getFlattenedVisibility() const
     {
-        return getIScene().getRenderable(m_renderableHandle).isVisible;
+        return VisibilityModeUtils::ConvertToHL(getIScene().getRenderable(m_renderableHandle).visibilityMode);
     }
 
     uint32_t MeshNodeImpl::getInstanceCount() const
@@ -313,5 +319,10 @@ namespace ramses
     bool MeshNodeImpl::AreGeometryAndAppearanceCompatible(const GeometryBindingImpl& geometry, const AppearanceImpl& appearance)
     {
         return geometry.getEffectHash() == appearance.getEffectImpl()->getLowlevelResourceHash();
+    }
+
+    uint32_t MeshNodeImpl::getStartVertex() const
+    {
+        return getIScene().getRenderable(m_renderableHandle).startVertex;
     }
 }

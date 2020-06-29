@@ -25,7 +25,7 @@ namespace ramses_internal
         }
     }
 
-    Bool AnimationInstance::hasDataBinding(DataBindHandle handle) const
+    bool AnimationInstance::hasDataBinding(DataBindHandle handle) const
     {
         return contains_c(m_dataBindHandles, handle);
     }

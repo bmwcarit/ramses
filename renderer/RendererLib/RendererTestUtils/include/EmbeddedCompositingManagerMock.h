@@ -22,15 +22,15 @@ namespace ramses_internal
     {
     public:
         EmbeddedCompositingManagerMock();
-        MOCK_METHOD3(uploadStreamTexture, void(StreamTextureHandle handle, StreamTextureSourceId source, SceneId sceneId));
-        MOCK_METHOD3(deleteStreamTexture, void(StreamTextureHandle handle, StreamTextureSourceId source, SceneId sceneId));
-        MOCK_METHOD3(dispatchStateChangesOfStreamTexturesAndSources, void(SceneStreamTextures& updatedStreamTextures, StreamTextureSourceIdVector& newStreams, StreamTextureSourceIdVector& obsoleteStreams));
-        MOCK_METHOD0(processClientRequests, void());
-        MOCK_CONST_METHOD0(hasUpdatedContentFromStreamSourcesToUpload, bool());
-        MOCK_METHOD2(uploadResourcesAndGetUpdates, void(UpdatedSceneIdSet& updatedScenes, StreamTextureBufferUpdates& updatedStreamTextures));
-        MOCK_METHOD0(notifyClients, void());
-        MOCK_CONST_METHOD1(getCompositedTextureDeviceHandleForStreamTexture, DeviceResourceHandle(StreamTextureSourceId source));
-        MOCK_CONST_METHOD0(hasRealCompositor, bool()); //TODO Mohamed: remove this as soon as EC dummy is removed
+        MOCK_METHOD(void, uploadStreamTexture, (StreamTextureHandle handle, StreamTextureSourceId source, SceneId sceneId), (override));
+        MOCK_METHOD(void, deleteStreamTexture, (StreamTextureHandle handle, StreamTextureSourceId source, SceneId sceneId), (override));
+        MOCK_METHOD(void, dispatchStateChangesOfStreamTexturesAndSources, (SceneStreamTextures& updatedStreamTextures, StreamTextureSourceIdVector& newStreams, StreamTextureSourceIdVector& obsoleteStreams), (override));
+        MOCK_METHOD(void, processClientRequests, (), (override));
+        MOCK_METHOD(bool, hasUpdatedContentFromStreamSourcesToUpload, (), (const, override));
+        MOCK_METHOD(void, uploadResourcesAndGetUpdates, (UpdatedSceneIdSet& updatedScenes, StreamTextureBufferUpdates& updatedStreamTextures), (override));
+        MOCK_METHOD(void, notifyClients, (), (override));
+        MOCK_METHOD(DeviceResourceHandle, getCompositedTextureDeviceHandleForStreamTexture, (StreamTextureSourceId source), (const, override));
+        MOCK_METHOD(bool, hasRealCompositor, (), (const, override)); //TODO Mohamed: remove this as soon as EC dummy is removed
     };
 
     typedef ::testing::NiceMock<EmbeddedCompositingManagerMock> EmbeddedCompositingManagerMockNiceMock;

@@ -18,15 +18,12 @@ extern "C"
 #include "Utils/LogLevel.h"
 #include "Utils/LogMessage.h"
 #include "Utils/InplaceStringTokenizer.h"
+#include <cassert>
 
 namespace ramses_internal
 {
     DltAdapterImpl::DltAdapterImpl()
-        : m_appName()
-        , m_appDesc()
-        , m_dltInitialized(false)
-        , m_dltError(EDltError_NO_ERROR)
-        , m_logLevelChangeCallback([](const String&, int) {})
+        : m_logLevelChangeCallback([](const String&, int) {})
     {
     }
 
@@ -38,7 +35,7 @@ namespace ramses_internal
 
     DltAdapterImpl::~DltAdapterImpl()
     {
-#ifndef OS_WINDOWS
+#ifndef _WIN32
         //DLTAdapter is a static object that is destructed on process or DLL exit.
         //In case of DLL destruction Windows already destroys all threads before executing
         //static destructors.
@@ -50,7 +47,7 @@ namespace ramses_internal
         //already or have been explicitly terminated by a call to the ExitProcess
         //function."
         //https://msdn.microsoft.com/en-us/library/windows/desktop/ms682583(v=vs.85).aspx
-        DltAdapterImpl::unregisterApplication();
+        DltAdapterImpl::uninitialize();
 #endif
     }
 
@@ -60,24 +57,18 @@ namespace ramses_internal
         return &dltAdapter;
     }
 
-    void DltAdapterImpl::logMessage(const LogMessage& msg)
+    bool DltAdapterImpl::logMessage(const LogMessage& msg)
     {
-        if(!m_dltInitialized)
+        if(!m_initialized)
         {
-            return;
-        }
-
-        if((&msg.getContext()) == nullptr)
-        {
-            m_dltError = EDltError_CONTEXT_INVALID;
-            return;
+            return false;
         }
 
         DltContext* dltContext = static_cast<DltContext*>(msg.getContext().getUserData());
         if (dltContext == nullptr)
         {
-            m_dltError = EDltError_MISSING_DLT_CONTEXT;
-            return;
+            fprintf(stderr, "DltAdapterImpl::logMessage: missing dlt context\n");
+            return false;
         }
 
         //DLT_LOG_OFF indicates that message is not logged
@@ -107,7 +98,7 @@ namespace ramses_internal
             break;
         case ELogLevel::Off:
             // no need to continue
-            return;
+            return true;
         }
 
         UInt maxLineCapacity = 130u;
@@ -120,7 +111,7 @@ namespace ramses_internal
         maxLineCapacity -= 30u; //30 subtracted to have some buffer
 
         const char* msgData = msg.getStream().c_str();
-        uint32_t msgLength = msg.getStream().length();
+        uint32_t msgLength = msg.getStream().size();
         const char* msgDataEnd = msgData + msgLength;
 
         // check if shortcut is possible: short enough line and no linebreaks
@@ -138,7 +129,8 @@ namespace ramses_internal
             String s(msgData, 0, msgLength);
             InplaceStringTokenizer::TokenizeToCStrings(s, maxLineCapacity, '\n',
                 [&](const char* tok) {
-                    if (tok && *tok != 0) {
+                    if (tok && *tok != 0)
+                    {
                         WARNINGS_PUSH
                         WARNING_DISABLE_LINUX(-Wold-style-cast)
                         DLT_LOG1((*dltContext), ll, DLT_STRING(tok));
@@ -146,122 +138,122 @@ namespace ramses_internal
                     }
                 });
         }
-    }
-
-    bool DltAdapterImpl::registerApplication(const String& id,const String& description)
-    {
-        if (m_dltInitialized || id.getLength() < 1 || id.getLength() > 4)
-        {
-            return false;
-        }
-
-        m_appName = id;
-        m_appDesc = description;
-
-        DLT_REGISTER_APP(m_appName.c_str(), m_appDesc.c_str());
-
-        m_dltInitialized = true;
         return true;
     }
 
-    void DltAdapterImpl::unregisterApplication()
+    bool DltAdapterImpl::initialize(const String& appId, const String& appDescription, bool registerApplication,
+                                    const std::function<void(const String&, int)>& logLevelChangeCallback,
+                                    const std::vector<LogContext*>& contexts, bool pushLogLevelsToDaemon)
     {
-        if(!m_dltInitialized)
+        if (m_initialized)
+        {
+            fprintf(stderr, "DltAdapterImpl::initialize: already initialized\n");
+            return false;
+        }
+
+        if (registerApplication && (appId.size() < 1 || appId.size() > 4))
+        {
+            fprintf(stderr, "DltAdapterImpl::initialize: dlt app id must be set\n");
+            return false;
+        }
+
+        if (contexts.empty())
+        {
+            fprintf(stderr, "DltAdapterImpl::initialize: contexts may not be empty\n");
+            return false;
+        }
+
+        // register application if requested
+        if (registerApplication)
+        {
+            DLT_REGISTER_APP(appId.c_str(), appDescription.c_str());
+            m_appRegistered = true;
+        }
+
+        // register callback before creating contexts (they might call it already
+        m_logLevelChangeCallback = logLevelChangeCallback;
+
+        // register contexts
+        for (auto ctx : contexts)
+        {
+            assert(!ctx->getUserData());
+            DltContext* dltContext = new DltContext;
+            ctx->setUserData(dltContext);
+
+            if (pushLogLevelsToDaemon)
+            {
+                dlt_register_context_ll_ts(dltContext,
+                                           ctx->getContextId(),
+                                           ctx->getContextName(),
+                                           static_cast<int>(ctx->getLogLevel()),
+                                           DLT_TRACE_STATUS_OFF);
+            }
+            else
+            {
+                DLT_REGISTER_CONTEXT((*dltContext), ctx->getContextId(), ctx->getContextName());
+            }
+
+            if (dlt_register_log_level_changed_callback(dltContext, &DltAdapterImpl::DltLogLevelChangedCallback) < 0)
+            {
+                fprintf(stderr, "DltAdapterImpl::initialize: set loglevel changed callback failure\n");
+            }
+        }
+
+        m_contexts = contexts;
+        m_initialized = true;
+        return true;
+    }
+
+    void DltAdapterImpl::uninitialize()
+    {
+        if(!m_initialized)
         {
             return;
         }
 
-        for(uint32_t i = 0; i < m_dltContextList.size(); i++ )
+        for (auto ctx : m_contexts)
         {
-            ContextPair& context = m_dltContextList[i];
-            LogContext* logContext = context.second;
-            logContext->setUserData(nullptr);
+            DltContext* dltContext = static_cast<DltContext*>(ctx->getUserData());
+            ctx->setUserData(nullptr);
 
-            DltContext* dltContext = context.first;
             DLT_UNREGISTER_CONTEXT((*dltContext));
             delete dltContext;
         }
+        m_contexts.clear();
 
-        m_dltContextList.clear();
-
-        DLT_UNREGISTER_APP();
-
-        m_dltInitialized = false;
-
-        m_appName.truncate(0);
-        m_appDesc.truncate(0);
-    }
-
-    void* DltAdapterImpl::registerContext(LogContext* ctx, bool pushLogLevel, ELogLevel logLevel)
-    {
-        if(!m_dltInitialized)
+        if (m_appRegistered)
         {
-            return nullptr;
+            DLT_UNREGISTER_APP();
         }
 
+        m_logLevelChangeCallback = [](const String&, int) {};
+        m_appRegistered = false;
+        m_initialized = false;
+    }
+
+    bool DltAdapterImpl::registerInjectionCallback(LogContext* ctx, uint32_t sid, int (*dlt_injection_callback)(uint32_t service_id, void *data, uint32_t length))
+    {
+        if(!m_initialized)
+        {
+            return false;
+        }
         DltContext* dltContext = static_cast<DltContext*>(ctx->getUserData());
-        if(dltContext)
+        if (!dltContext)
         {
-            // if pointer is set context is already initialized
-            return static_cast<void*>(dltContext);
+            fprintf(stderr, "DltAdapterImpl::registerInjectionCallback: no dlt context\n");
+            return false;
         }
-
-        dltContext = new DltContext;
-        m_dltContextList.push_back(ContextPair(dltContext, ctx));
-
-#ifdef DLT_EMBEDDED
-        UNUSED(pushLogLevel)
-        UNUSED(logLevel)
-        DLT_REGISTER_CONTEXT_APP((*dltContext), ctx->getContextId(), m_appName.c_str(), ctx->getContextName());
-#else
-        if (pushLogLevel)
+        if (dlt_register_injection_callback(dltContext, sid, dlt_injection_callback) < 0)
         {
-            dlt_register_context_ll_ts(dltContext,
-                ctx->getContextId(),
-                ctx->getContextName(),
-                static_cast<int>(logLevel),
-                DLT_TRACE_STATUS_OFF);
+            fprintf(stderr, "DltAdapterImpl::registerInjectionCallback: failed\n");
+            return false;
         }
-        else
-        {
-            DLT_REGISTER_CONTEXT_APP((*dltContext), ctx->getContextId(), m_appName.c_str(), ctx->getContextName());
-        }
-
-        if (dlt_register_log_level_changed_callback(dltContext, &DltAdapterImpl::DltLogLevelChangedCallback) < 0)
-        {
-            m_dltError = EDltError_LOGLEVEL_CHANGED_CALLBACK_FAILURE;
-        }
-#endif
-        ctx->setUserData(dltContext);
-        return dltContext;
+        return true;
     }
 
-    void DltAdapterImpl::registerInjectionCallback(LogContext* ctx, uint32_t sid, int (*dlt_injection_callback)(uint32_t service_id, void *data, uint32_t length))
+    bool DltAdapterImpl::transmitFile(LogContext& ctx, const String& uri, bool deleteFile)
     {
-        if(!m_dltInitialized)
-        {
-            return;
-        }
-
-#ifdef DLT_EMBEDDED
-        UNUSED(ctx);
-        UNUSED(sid);
-        UNUSED(dlt_injection_callback);
-#else
-        DltContext* dltContext = static_cast<DltContext*>(ctx->getUserData());
-        if (dltContext)
-        {
-            if (dlt_register_injection_callback(dltContext, sid, dlt_injection_callback) < 0)
-            {
-                m_dltError = EDltError_INJECTION_CALLBACK_FAILURE;
-            }
-        }
-#endif
-    }
-
-    Bool DltAdapterImpl::transmitFile(LogContext& ctx, const String& uri, Bool deleteFile)
-    {
-        if(!m_dltInitialized || uri.getLength() == 0 || ctx.getUserData() == nullptr)
+        if(!m_initialized || uri.size() == 0 || ctx.getUserData() == nullptr)
         {
             return false;
         }
@@ -280,15 +272,14 @@ namespace ramses_internal
         DltContext* fileContext = static_cast<DltContext*>(ctx.getUserData());
         if (dlt_user_log_file_complete(fileContext, uri.c_str(), deleteFileAsInt, timeoutInMS) < 0)
         {
-            m_dltError = EDltError_FILETRANSFER_FAILURE;
             return false;
         }
         return true;
 #endif
     }
 
-    void DltAdapterImpl::registerLogLevelChangeCallback(const std::function<void(const String&, int)>& callback)
+    bool DltAdapterImpl::isInitialized()
     {
-        m_logLevelChangeCallback = callback;
+        return m_initialized;
     }
 }

@@ -37,7 +37,7 @@ private:
         float boxX, float boxY, float boxWidth, float boxHeight);
 
     ramses::RamsesFramework m_framework;
-    ramses::RamsesClient m_client;
+    ramses::RamsesClient& m_client;
     ramses::Scene& m_scene;
 
     ramses::FontRegistry    m_fontRegistry;

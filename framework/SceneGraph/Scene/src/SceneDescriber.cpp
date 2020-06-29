@@ -17,6 +17,9 @@
 #include "Animation/AnimationSystemDescriber.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Utils/MemoryUtils.h"
+#include "Math3d/Matrix22f.h"
+#include "Math3d/Matrix33f.h"
+#include "Math3d/Matrix44f.h"
 
 namespace ramses_internal
 {
@@ -42,12 +45,14 @@ namespace ramses_internal
         RecreateRenderGroups(            source, collector);
         RecreateRenderPasses(            source, collector);
         RecreateBlitPasses(              source, collector);
+        RecreatePickableObjects(         source, collector);
         RecreateDataBuffers(             source, collector);
         RecreateTextureBuffers(          source, collector);
         RecreateTextureSamplers(         source, collector);
         RecreateRenderBuffersAndTargets( source, collector);
         RecreateStreamTextures(          source, collector);
         RecreateDataSlots(               source, collector);
+        RecreateSceneReferences(         source, collector);
     }
 
     void SceneDescriber::RecreateNodes(const IScene& source, SceneActionCollectionCreator& collector)
@@ -111,17 +116,17 @@ namespace ramses_internal
             if (source.isTransformAllocated(t))
             {
                 const Vector3& translation = source.getTranslation(t);
-                if (translation != Vector3::Empty)
+                if (translation != Vector3(0.f))
                 {
                     collector.setTransformComponent(ETransformPropertyType_Translation, t, translation);
                 }
                 const Vector3& rotation = source.getRotation(t);
-                if (rotation != Vector3::Empty)
+                if (rotation != Vector3(0.f))
                 {
                     collector.setTransformComponent(ETransformPropertyType_Rotation, t, rotation);
                 }
                 const Vector3& scaling = source.getScaling(t);
-                if (scaling != Vector3::Identity)
+                if (scaling != Vector3(1.0f))
                 {
                     collector.setTransformComponent(ETransformPropertyType_Scaling, t, scaling);
                 }
@@ -161,7 +166,7 @@ namespace ramses_internal
             if (source.isDataLayoutAllocated(l))
             {
                 const DataLayout& layout = source.getDataLayout(l);
-                collector.allocateDataLayout(layout.getDataFields(), l);
+                collector.allocateDataLayout(layout.getDataFields(), layout.getEffectHash(), l);
             }
         }
     }
@@ -174,12 +179,14 @@ namespace ramses_internal
         {
             if (source.isDataLayoutAllocated(l))
             {
-                const DataFieldInfoVector& layoutFields = source.getDataLayout(l).getDataFields();
+                const DataLayout& layout = source.getDataLayout(l);
+                const DataFieldInfoVector& layoutFields = layout.getDataFields();
+                const ResourceContentHash& effectHash = layout.getEffectHash();
 
                 const UInt32 numRefs = source.getNumDataLayoutReferences(l);
                 for (UInt32 r = 0u; r < numRefs; ++r)
                 {
-                    collector.allocateDataLayout(layoutFields, l);
+                    collector.allocateDataLayout(layoutFields, effectHash, l);
                 }
             }
         }
@@ -411,6 +418,21 @@ namespace ramses_internal
         }
     }
 
+    void SceneDescriber::RecreatePickableObjects(const IScene& source, SceneActionCollectionCreator& collector)
+    {
+        const UInt32 pickableObjectTotalCount = source.getPickableObjectCount();
+        for (PickableObjectHandle handle(0u); handle < pickableObjectTotalCount; ++handle)
+        {
+            if (source.isPickableObjectAllocated(handle))
+            {
+                const PickableObject& pickableObject = source.getPickableObject(handle);
+                collector.allocatePickableObject(pickableObject.geometryHandle, pickableObject.nodeHandle, pickableObject.id, handle);
+                collector.setPickableObjectCamera(handle, pickableObject.cameraHandle);
+                collector.setPickableObjectEnabled(handle, pickableObject.isEnabled);
+            }
+        }
+    }
+
     void SceneDescriber::RecreateDataBuffers(const IScene& source, SceneActionCollectionCreator& collector)
     {
         const UInt32 dataBufferTotalCount = source.getDataBufferCount();
@@ -449,7 +471,7 @@ namespace ramses_internal
 
                 collector.allocateTextureBuffer(textureBuffer.textureFormat, mipMapDimensions, textureBufferHandle);
 
-                for (UInt32 mipMapLevel = 0u; mipMapLevel < mipMapDimensions.size(); ++mipMapLevel)
+                for (UInt32 mipMapLevel = 0u; mipMapLevel < static_cast<uint32_t>(mipMapDimensions.size()); ++mipMapLevel)
                 {
                     const auto& mip = textureBuffer.mipMaps[mipMapLevel];
                     const auto& usedRegion = mip.usedRegion;
@@ -559,6 +581,22 @@ namespace ramses_internal
             if (source.isDataSlotAllocated(dltHandle))
             {
                 collector.allocateDataSlot(source.getDataSlot(dltHandle), dltHandle);
+            }
+        }
+    }
+
+    void SceneDescriber::RecreateSceneReferences(const IScene& source, SceneActionCollectionCreator& collector)
+    {
+        const UInt32 count = source.getSceneReferenceCount();
+        for (SceneReferenceHandle handle{ 0u }; handle < count; ++handle)
+        {
+            if (source.isSceneReferenceAllocated(handle))
+            {
+                const auto& sr = source.getSceneReference(handle);
+                collector.allocateSceneReference(sr.sceneId, handle);
+                collector.requestSceneReferenceState(handle, sr.requestedState);
+                collector.requestSceneReferenceFlushNotifications(handle, sr.flushNotifications);
+                collector.setSceneReferenceRenderOrder(handle, sr.renderOrder);
             }
         }
     }

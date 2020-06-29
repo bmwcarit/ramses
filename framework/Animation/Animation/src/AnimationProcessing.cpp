@@ -79,7 +79,7 @@ namespace ramses_internal
     {
         const SplineBase* const pSpline = processData.m_spline;
         const SplineTimeStamp splineTime = ComputeSplineTime(processData.m_animation, m_timeStamp);
-        const Bool playReverse = (processData.m_animation.m_flags & Animation::EAnimationFlags_Reverse) != 0;
+        const bool playReverse = (processData.m_animation.m_flags & Animation::EAnimationFlags_Reverse) != 0;
 
         processData.m_splineIterator.setTimeStamp(splineTime, pSpline, playReverse);
 
@@ -100,7 +100,7 @@ namespace ramses_internal
     {
         const AnimationTime::Duration elapsedFromStartToNow = globalTime.getDurationSince(animation.m_startTime);
         const AnimationTime::Duration animDuration = animation.m_stopTime.getDurationSince(animation.m_startTime);
-        AnimationTime::Duration elapsedTime = min(elapsedFromStartToNow, animDuration);
+        AnimationTime::Duration elapsedTime = std::min(elapsedFromStartToNow, animDuration);
         elapsedTime = static_cast<AnimationTime::Duration>(elapsedTime * animation.m_playbackSpeed);
         if (animation.m_flags & Animation::EAnimationFlags_Looping)
         {

@@ -12,8 +12,7 @@ file(GLOB
 
 file(GLOB
     RAMSES_RENDERER_FILES_SOURCE
-    ramses-renderer-impl/src/*.cpp
-    ramses-renderer-impl/src/DisplayManager/*.cpp)
+    ramses-renderer-impl/src/*.cpp)
 
 
 add_library(ramses-renderer-api INTERFACE)
@@ -26,7 +25,7 @@ ACME_MODULE(
     #==========================================================================
     NAME                    ramses-renderer-lib
     TYPE                    STATIC_LIBRARY
-    ENABLE_INSTALL          ${ramses-sdk_INSTALL_STATIC_LIBS}
+    ENABLE_INSTALL          OFF
 
     #==========================================================================
     # files of this module
@@ -39,7 +38,6 @@ ACME_MODULE(
     # Not possible to solve now, without splitting in two libs (which is the correct solution)
     INCLUDE_BASE            ramses-renderer-impl/include
     FILES_PRIVATE_HEADER    ramses-renderer-impl/include/*.h
-                            ramses-renderer-impl/include/DisplayManager/*.h
     FILES_SOURCE            ${RAMSES_RENDERER_FILES_SOURCE}
 
     INCLUDE_BASE            RendererAPI/include
@@ -69,6 +67,7 @@ ACME_MODULE(
     #==========================================================================
     DEPENDENCIES            ramses-renderer-api
                             ramses-framework
+                            imgui
 )
 
 INSTALL(DIRECTORY ramses-renderer-api/include/ DESTINATION "${PROJECT_INSTALL_HEADER}" COMPONENT ramses-sdk-devel)
@@ -77,14 +76,12 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     target_compile_options(ramses-renderer-lib PRIVATE "-Wsuggest-override")
 endif()
 
-IF (NOT ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB)
-    set(ramses-shared-lib-MIXIN
-        ${ramses-shared-lib-MIXIN}
-        INCLUDE_BASE ${RAMSES_RENDERER_API_INCLUDE_BASE}
-        FILES_SOURCE ${RAMSES_RENDERER_FILES_SOURCE}
-        DEPENDENCIES  ramses-renderer-lib
-        CACHE INTERNAL "")
-endif()
+set(ramses-shared-lib-renderer-MIXIN
+    ${ramses-shared-lib-renderer-MIXIN}
+    INCLUDE_BASE ${RAMSES_RENDERER_API_INCLUDE_BASE}
+    FILES_SOURCE ${RAMSES_RENDERER_FILES_SOURCE}
+    DEPENDENCIES  ramses-renderer-lib
+    CACHE INTERNAL "")
 
 
 IF (${ramses-sdk_BUILD_TESTS})
@@ -133,29 +130,7 @@ ACME_MODULE(
                             ShaderLanguage_Base/test/*.h
                             RendererCommands/test/*.cpp
                             RendererCommands/test/*.h
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
-    DEPENDENCIES            ramses-renderer-lib
-                            ramses-gmock-main
-                            RendererTestUtils
-                            FrameworkTestUtils
-)
-
-ACME_MODULE(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
-    NAME                    ramses-renderer-test
-    TYPE                    TEST
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-
-    FILES_SOURCE            ramses-renderer-impl/test/*.h
+                            ramses-renderer-impl/test/*.h
                             ramses-renderer-impl/test/*.cpp
 
     #==========================================================================

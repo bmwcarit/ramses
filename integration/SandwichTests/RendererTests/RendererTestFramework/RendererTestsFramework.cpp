@@ -12,52 +12,50 @@
 #include "DisplayConfigImpl.h"
 #include "IRendererTest.h"
 #include "DisplayConfigImpl.h"
-#include "RendererAPI/IDisplayController.h"
-#include "RendererAPI/IDevice.h"
 #include "Utils/LogMacros.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "RendererTestUtils.h"
-#include "RendererTestEventHandler.h"
 
 RendererTestsFramework::RendererTestsFramework(bool generateScreenshots, const ramses::RamsesFrameworkConfig& config)
     : m_generateScreenshots(generateScreenshots)
-    , m_testRenderer(config)
-    , m_activeTestCase(NULL)
+    , m_testScenesAndRenderer(config)
+    , m_testRenderer(m_testScenesAndRenderer.getTestRenderer())
+    , m_activeTestCase(nullptr)
     , m_elapsedTime(0u)
 {
 }
 
 RendererTestsFramework::~RendererTestsFramework()
 {
-    assert(m_activeTestCase == NULL);
+    assert(m_activeTestCase == nullptr);
     for(const auto& testCase : m_testCases)
     {
         delete testCase;
     }
 
     destroyDisplays();
-    m_testRenderer.destroyRenderer();
+    m_testScenesAndRenderer.destroyRenderer();
 }
 
 void RendererTestsFramework::initializeRenderer()
 {
-    m_testRenderer.initializeRenderer();
+    m_testScenesAndRenderer.initializeRenderer();
 }
 
 void RendererTestsFramework::initializeRenderer(const ramses::RendererConfig& rendererConfig)
 {
-    m_testRenderer.initializeRenderer(rendererConfig);
+    m_testScenesAndRenderer.initializeRenderer(rendererConfig);
 }
 
 void RendererTestsFramework::destroyRenderer()
 {
-    m_testRenderer.destroyRenderer();
+    m_testScenesAndRenderer.destroyRenderer();
 }
 
-ramses::displayId_t RendererTestsFramework::createDisplay(ramses::DisplayConfig displayConfig)
+ramses::displayId_t RendererTestsFramework::createDisplay(const ramses::DisplayConfig& displayConfig)
 {
     const ramses::displayId_t displayId = m_testRenderer.createDisplay(displayConfig);
-    if (displayId != ramses::InvalidDisplayId)
+    if (displayId != ramses::displayId_t::Invalid())
     {
         m_displays.push_back({displayId, displayConfig, OffscreenBufferVector()});
     }
@@ -65,7 +63,14 @@ ramses::displayId_t RendererTestsFramework::createDisplay(ramses::DisplayConfig 
     return displayId;
 }
 
-RendererTestInstance& RendererTestsFramework::getTestRenderer()
+ramses::displayBufferId_t RendererTestsFramework::getDisplayFramebufferId(uint32_t testDisplayIdx) const
+{
+    assert(testDisplayIdx < m_displays.size());
+    const ramses::displayId_t displayId = m_displays[testDisplayIdx].displayId;
+    return m_testRenderer.getDisplayFramebufferId(displayId);
+}
+
+ramses_internal::TestRenderer& RendererTestsFramework::getTestRenderer()
 {
     return m_testRenderer;
 }
@@ -101,74 +106,45 @@ RenderingTestCase& RendererTestsFramework::createTestCaseWithoutRenderer(ramses_
 
 TestScenes& RendererTestsFramework::getScenesRegistry()
 {
-    return m_testRenderer.getScenesRegistry();
+    return m_testScenesAndRenderer.getScenesRegistry();
 }
 
 ramses::RamsesClient& RendererTestsFramework::getClient()
 {
-    return m_testRenderer.getClient();
+    return m_testScenesAndRenderer.getClient();
 }
 
-void RendererTestsFramework::subscribeScene(ramses::sceneId_t sceneId)
+void RendererTestsFramework::setSceneMapping(ramses::sceneId_t sceneId, uint32_t testDisplayIdx)
 {
-    // subscription consists of two steps - sending a request and receiving a scene
-    // subscription is followed by scene map in most tests
-    // map command execution would fail if scene was not received
-    m_testRenderer.subscribeScene(sceneId);
+    m_testRenderer.setSceneMapping(sceneId, m_displays[testDisplayIdx].displayId);
 }
 
-void RendererTestsFramework::unsubscribeScene(ramses::sceneId_t sceneId)
+bool RendererTestsFramework::getSceneToState(ramses::sceneId_t sceneId, ramses::RendererSceneState state)
 {
-    m_testRenderer.unsubscribeScene(sceneId);
+    return m_testRenderer.getSceneToState(sceneId, state);
 }
 
-void RendererTestsFramework::mapScene(ramses::sceneId_t sceneId, uint32_t testDisplayIdx, ramses_internal::Int32 sceneRenderOrder)
+bool RendererTestsFramework::getSceneToRendered(ramses::sceneId_t sceneId, uint32_t testDisplayIdx)
 {
-    assert(testDisplayIdx < m_displays.size());
-    const ramses::displayId_t displayId = m_displays[testDisplayIdx].displayId;
-
-    // mapping consists of two steps - sending a request and uploading resources of the scene
-    // mapping is followed by scene show in most tests
-    // show command execution would fail if scene was not mapped before
-    // Ensure scene is in mapped state after this function has ended
-    m_testRenderer.mapScene(displayId, sceneId, sceneRenderOrder);
+    setSceneMapping(sceneId, testDisplayIdx);
+    return getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
 }
 
-void RendererTestsFramework::unmapScene(ramses::sceneId_t sceneId)
+void RendererTestsFramework::dispatchRendererEvents(ramses::IRendererEventHandler& eventHandler, ramses::IRendererSceneControlEventHandler& sceneControlEventHandler)
 {
-    m_testRenderer.unmapScene(sceneId);
+    m_testRenderer.dispatchEvents(eventHandler, sceneControlEventHandler);
 }
 
-void RendererTestsFramework::showScene(ramses::sceneId_t sceneId)
-{
-    m_testRenderer.showScene(sceneId);
-}
-
-void RendererTestsFramework::hideScene(ramses::sceneId_t sceneId)
-{
-    m_testRenderer.hideScene(sceneId);
-}
-
-void RendererTestsFramework::hideAndUnmap(ramses::sceneId_t sceneId)
-{
-    m_testRenderer.hideAndUnmapScene(sceneId);
-}
-
-void RendererTestsFramework::dispatchRendererEvents(ramses::IRendererEventHandler& eventHandler)
-{
-    m_testRenderer.dispatchRendererEvents(eventHandler);
-}
-
-ramses::offscreenBufferId_t RendererTestsFramework::createOffscreenBuffer(uint32_t testDisplayIdx, uint32_t width, uint32_t height, bool interruptible)
+ramses::displayBufferId_t RendererTestsFramework::createOffscreenBuffer(uint32_t testDisplayIdx, uint32_t width, uint32_t height, bool interruptible)
 {
     assert(testDisplayIdx < m_displays.size());
     const ramses::displayId_t displayId = m_displays[testDisplayIdx].displayId;
-    ramses::offscreenBufferId_t buffer = m_testRenderer.createOffscreenBuffer(displayId, width, height, interruptible);
+    ramses::displayBufferId_t buffer = m_testRenderer.createOffscreenBuffer(displayId, width, height, interruptible);
     m_displays[testDisplayIdx].offscreenBuffers.push_back(buffer);
     return buffer;
 }
 
-void RendererTestsFramework::destroyOffscreenBuffer(uint32_t testDisplayIdx, ramses::offscreenBufferId_t buffer)
+void RendererTestsFramework::destroyOffscreenBuffer(uint32_t testDisplayIdx, ramses::displayBufferId_t buffer)
 {
     assert(testDisplayIdx < m_displays.size());
     const ramses::displayId_t displayId = m_displays[testDisplayIdx].displayId;
@@ -181,17 +157,12 @@ void RendererTestsFramework::destroyOffscreenBuffer(uint32_t testDisplayIdx, ram
     m_testRenderer.destroyOffscreenBuffer(displayId, buffer);
 }
 
-void RendererTestsFramework::assignSceneToOffscreenBuffer(ramses::sceneId_t sceneId, ramses::offscreenBufferId_t buffer)
+void RendererTestsFramework::assignSceneToDisplayBuffer(ramses::sceneId_t sceneId, ramses::displayBufferId_t buffer, int32_t renderOrder)
 {
-    m_testRenderer.assignSceneToOffscreenBuffer(sceneId, buffer);
+    m_testRenderer.assignSceneToDisplayBuffer(sceneId, buffer, renderOrder);
 }
 
-void RendererTestsFramework::assignSceneToFramebuffer(ramses::sceneId_t sceneId)
-{
-    m_testRenderer.assignSceneToFramebuffer(sceneId);
-}
-
-void RendererTestsFramework::createBufferDataLink(ramses::offscreenBufferId_t providerBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag)
+void RendererTestsFramework::createBufferDataLink(ramses::displayBufferId_t providerBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag)
 {
     m_testRenderer.createBufferDataLink(providerBuffer, consumerScene, consumerTag);
 }
@@ -209,14 +180,21 @@ void RendererTestsFramework::removeDataLink(ramses::sceneId_t consumerScene, ram
 void RendererTestsFramework::setWarpingMeshData(const ramses::WarpingMeshData& meshData, uint32_t testDisplayIdx)
 {
     assert(testDisplayIdx < m_displays.size());
-    const ramses::displayId_t displayId = m_displays[testDisplayIdx].displayId;
-    m_testRenderer.updateWarpingMeshData(displayId, meshData);
+    m_testRenderer.updateWarpingMeshData(m_displays[testDisplayIdx].displayId, meshData);
+}
+
+void RendererTestsFramework::setClearColor(uint32_t testDisplayIdx, ramses::displayBufferId_t ob, const ramses_internal::Vector4& clearColor)
+{
+    assert(testDisplayIdx < m_displays.size());
+    m_testRenderer.setClearColor(m_displays[testDisplayIdx].displayId, ob, clearColor);
+    // clear color change is persistent if display kept for next test, force re-init
+    m_forceDisplaysReinitForNextTestCase = true;
 }
 
 void RendererTestsFramework::publishAndFlushScene(ramses::sceneId_t sceneId)
 {
-    m_testRenderer.flush(sceneId);
-    m_testRenderer.publish(sceneId);
+    m_testScenesAndRenderer.flush(sceneId);
+    m_testScenesAndRenderer.publish(sceneId);
 }
 
 void RendererTestsFramework::flushRendererAndDoOneLoop()
@@ -225,7 +203,7 @@ void RendererTestsFramework::flushRendererAndDoOneLoop()
     m_testRenderer.doOneLoop();
 }
 
-bool RendererTestsFramework::renderAndCompareScreenshot(const ramses_internal::String& expectedImageName, uint32_t testDisplayIdx, float maxAveragePercentErrorPerPixel)
+bool RendererTestsFramework::renderAndCompareScreenshot(const ramses_internal::String& expectedImageName, uint32_t testDisplayIdx, float maxAveragePercentErrorPerPixel, bool readPixelsTwice)
 {
     assert(testDisplayIdx < m_displays.size());
     const ramses::displayId_t displayId = m_displays[testDisplayIdx].displayId;
@@ -238,17 +216,18 @@ bool RendererTestsFramework::renderAndCompareScreenshot(const ramses_internal::S
         0u,
         0u,
         displayConfig.impl.getInternalDisplayConfig().getDesiredWindowWidth(),
-        displayConfig.impl.getInternalDisplayConfig().getDesiredWindowHeight());
+        displayConfig.impl.getInternalDisplayConfig().getDesiredWindowHeight(),
+        readPixelsTwice);
 }
 
-bool RendererTestsFramework::renderAndCompareScreenshotSubimage(const ramses_internal::String& expectedImageName, ramses_internal::UInt32 subimageX, ramses_internal::UInt32 subimageY, ramses_internal::UInt32 subimageWidth, ramses_internal::UInt32 subimageHeight, float maxAveragePercentErrorPerPixel)
+bool RendererTestsFramework::renderAndCompareScreenshotSubimage(const ramses_internal::String& expectedImageName, ramses_internal::UInt32 subimageX, ramses_internal::UInt32 subimageY, ramses_internal::UInt32 subimageWidth, ramses_internal::UInt32 subimageHeight, float maxAveragePercentErrorPerPixel, bool readPixelsTwice)
 {
-    return compareScreenshotInternal(expectedImageName, m_displays[0].displayId, maxAveragePercentErrorPerPixel, subimageX, subimageY, subimageWidth, subimageHeight);
+    return compareScreenshotInternal(expectedImageName, m_displays[0].displayId, maxAveragePercentErrorPerPixel, subimageX, subimageY, subimageWidth, subimageHeight, readPixelsTwice);
 }
 
-void RendererTestsFramework::setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForSceneActionsApply, uint64_t limitForOffscreenBufferRender)
+void RendererTestsFramework::setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender)
 {
-    m_testRenderer.setFrameTimerLimits(limitForClientResourcesUpload, limitForSceneActionsApply, limitForOffscreenBufferRender);
+    m_testRenderer.setFrameTimerLimits(limitForClientResourcesUpload, limitForOffscreenBufferRender);
     m_testRenderer.flushRenderer();
 }
 
@@ -259,7 +238,8 @@ bool RendererTestsFramework::compareScreenshotInternal(
     ramses_internal::UInt32 subimageX,
     ramses_internal::UInt32 subimageY,
     ramses_internal::UInt32 subimageWidth,
-    ramses_internal::UInt32 subimageHeight)
+    ramses_internal::UInt32 subimageHeight,
+    bool readPixelsTwice)
 {
     if (m_generateScreenshots)
     {
@@ -267,11 +247,11 @@ bool RendererTestsFramework::compareScreenshotInternal(
         return true;
     }
 
-    bool comparisonResult = m_testRenderer.performScreenshotCheck(displayId, subimageX, subimageY, subimageWidth, subimageHeight, expectedImageName, maxAveragePercentErrorPerPixel);
+    bool comparisonResult = m_testRenderer.performScreenshotCheck(displayId, subimageX, subimageY, subimageWidth, subimageHeight, expectedImageName, maxAveragePercentErrorPerPixel, readPixelsTwice);
 
     if (!comparisonResult)
     {
-        assert(m_activeTestCase != NULL);
+        assert(m_activeTestCase != nullptr);
         LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "Screenshot comparison failed for rendering test case: " << m_activeTestCase->m_name << " -> expected screenshot: " << expectedImageName);
     }
 
@@ -333,7 +313,7 @@ bool areEqual(const DisplayConfigVector& a, const DisplayConfigVector& b)
         return false;
     }
 
-    for (ramses_internal::UInt32 i = 0u; i < a.size(); ++i)
+    for (size_t i = 0; i < a.size(); ++i)
     {
         const ramses_internal::DisplayConfig& displayConfigA = a[i].impl.getInternalDisplayConfig();
         const ramses_internal::DisplayConfig& displayConfigB = b[i].impl.getInternalDisplayConfig();
@@ -428,7 +408,7 @@ bool RendererTestsFramework::applyRendererAndDisplaysConfigurationForTest(const 
     if(!m_testRenderer.isRendererInitialized())
         initializeRenderer();
 
-    if (currentDisplaySetupMatchesTestCase(testCase))
+    if (!m_forceDisplaysReinitForNextTestCase && currentDisplaySetupMatchesTestCase(testCase))
     {
         return true;
     }
@@ -439,10 +419,8 @@ bool RendererTestsFramework::applyRendererAndDisplaysConfigurationForTest(const 
     {
         const ramses::displayId_t displayId = createDisplay(displayConfig);
 
-        if (displayId == ramses::InvalidDisplayId)
-        {
+        if (displayId == ramses::displayId_t::Invalid())
             return false;
-        }
 
         if (displayConfig.impl.getInternalDisplayConfig().isWarpingEnabled())
         {
@@ -450,6 +428,7 @@ bool RendererTestsFramework::applyRendererAndDisplaysConfigurationForTest(const 
             m_testRenderer.updateWarpingMeshData(displayId, RendererTestUtils::CreateTestWarpingMesh());
         }
     }
+    m_forceDisplaysReinitForNextTestCase = false;
 
     return true;
 }
@@ -465,7 +444,7 @@ void RendererTestsFramework::destroyDisplays()
 
 void RendererTestsFramework::destroyScenes()
 {
-    m_testRenderer.getScenesRegistry().destroyScenes();
+    m_testScenesAndRenderer.getScenesRegistry().destroyScenes();
 }
 
 void RendererTestsFramework::destroyOffscreenBuffers()
@@ -488,7 +467,7 @@ bool RendererTestsFramework::runAllTests()
 
     const ramses_internal::UInt64 startTime = ramses_internal::PlatformTime::GetMillisecondsMonotonic();
 
-    assert(m_activeTestCase == NULL);
+    assert(m_activeTestCase == nullptr);
     m_passedTestCases.clear();
     m_failedTestCases.clear();
 
@@ -496,8 +475,8 @@ bool RendererTestsFramework::runAllTests()
 
     for(const auto& testCase : m_testCases)
     {
-        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "Running rendering test case: " << testCase->m_name);
-        printf("Running rendering test case: %s\n", testCase->m_name.c_str());
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "====== Running rendering test case: " << testCase->m_name << " ======");
+        printf("======\nRunning rendering test case: %s\n======\n", testCase->m_name.c_str());
         fflush(stdout);
 
         if (applyRendererAndDisplaysConfigurationForTest(*testCase))
@@ -534,7 +513,7 @@ bool RendererTestsFramework::runTestCase(RenderingTestCase& testCase)
         m_failedTestCases.push_back(m_activeTestCase);
     }
 
-    m_activeTestCase = NULL;
+    m_activeTestCase = nullptr;
 
     return testResult;
 }
@@ -572,7 +551,6 @@ ramses_internal::String RendererTestsFramework::generateReport() const
             str << "\n  !!!!!!!!!!!!!!!!!!!!";
         }
 
-        str.setDecimalDigits(2u);
         str << "\n\n  Total time elapsed: " << static_cast<float>(m_elapsedTime) * 0.001f << " s";
     }
     str << "\n\n--- End of rendering test report ---\n\n";

@@ -20,7 +20,7 @@ namespace ramses_internal
 
         virtual void preAnimationTimeRangeChange(AnimationHandle handle);
         virtual void onAnimationTimeRangeChanged(AnimationHandle handle);
-        virtual void onAnimationPauseChanged(AnimationHandle handle, Bool pause);
+        virtual void onAnimationPauseChanged(AnimationHandle handle, bool pause);
         virtual void onAnimationPropertiesChanged(AnimationHandle handle);
         virtual void onAnimationInstanceChanged(AnimationInstanceHandle handle);
         virtual void onSplineChanged(SplineHandle handle);
@@ -34,7 +34,7 @@ namespace ramses_internal
     {
         UNUSED(handle);
     }
-    inline void AnimationDataListener::onAnimationPauseChanged(AnimationHandle handle, Bool pause)
+    inline void AnimationDataListener::onAnimationPauseChanged(AnimationHandle handle, bool pause)
     {
         UNUSED(handle);
         UNUSED(pause);

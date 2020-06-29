@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "ramses-renderer-api/IRendererEventHandler.h"
-
+#include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "StreamTextureRendererEventTests.h"
 #include "TestScenes/EmbeddedCompositorScene.h"
 #include "Utils/LogMacros.h"
@@ -272,10 +272,10 @@ namespace ramses_internal
 
     BoolVector StreamTextureRendererEventTests::renderAndGetSurfaceAvailabilityChangeEvents(EmbeddedCompositingTestsFramework& testFramework, StreamTextureSourceId streamSourceId)
     {
-        class StreamAvailabilityChangeEventHandler: public ramses::RendererEventHandlerEmpty
+        class StreamAvailabilityChangeEventHandler : public ramses::RendererSceneControlEventHandlerEmpty
         {
         public:
-            StreamAvailabilityChangeEventHandler(StreamTextureSourceId targetStreamSourceId)
+            explicit StreamAvailabilityChangeEventHandler(StreamTextureSourceId targetStreamSourceId)
                 : m_targetStreamSourceId(targetStreamSourceId)
             {
             }
@@ -300,9 +300,9 @@ namespace ramses_internal
 
         testFramework.renderOneFrame();
 
+        ramses::RendererEventHandlerEmpty dummy;
         StreamAvailabilityChangeEventHandler handler(streamSourceId);
-        testFramework.dispatchRendererEvents(handler);
+        testFramework.dispatchRendererEvents(dummy, handler);
         return handler.getStreamAvailabilityChanged();
-
     }
 }

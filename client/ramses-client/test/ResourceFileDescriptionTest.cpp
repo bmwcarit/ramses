@@ -6,9 +6,10 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ClientTestUtils.h"
 #include "ramses-client-api/ResourceFileDescription.h"
-#include "ResourceFileDescriptionUtils.h"
+#include "ramses-client-api/ResourceFileDescriptionSet.h"
+#include "ClientTestUtils.h"
+#include "RamsesClientTypesImpl.h"
 #include "ramses-client-api/FloatArray.h"
 #include "ramses-client-api/Vector2fArray.h"
 #include "ramses-client-api/Vector3fArray.h"
@@ -33,7 +34,7 @@ namespace ramses
     {
     };
 
-    TYPED_TEST_CASE(AResourceFileDescriptionTestTyped, ResourceTypes);
+    TYPED_TEST_SUITE(AResourceFileDescriptionTestTyped, ResourceTypes);
 
     TEST_F(AResourceFileDescriptionTest, FilenameIsSet)
     {
@@ -80,8 +81,8 @@ namespace ramses
     TEST(SimpleResourceIDStreamOperatorTest, Zeros)
     {
         ramses_internal::StringOutputStream zeros;
-        zeros << InvalidResourceId;
-        EXPECT_STREQ(zeros.c_str(), "0x0000000000000000:0x0000000000000000");
+        zeros << resourceId_t::Invalid();
+        EXPECT_STREQ(zeros.c_str(), "0x0000000000000000:0000000000000000");
     }
 
     TEST(SimpleResourceIDStreamOperatorTest, Values)
@@ -91,7 +92,7 @@ namespace ramses
         val.lowPart  = 0xFEDCBA9876543210;
         ramses_internal::StringOutputStream values;
         values << val;
-        EXPECT_STREQ(values.c_str(), "0x0123456789ABCDEF:0xFEDCBA9876543210");
+        EXPECT_STREQ(values.c_str(), "0x0123456789ABCDEF:FEDCBA9876543210");
     }
 
     TEST_F(AResourceFileDescriptionTest, emptyDescriptionUtilsTest)
@@ -102,10 +103,10 @@ namespace ramses
         ResourceFileDescription someFileDescription(firstPath.c_str());
         ResourceFileDescription otherFileDescription(secondPath.c_str());
 
-        EXPECT_EQ(ramses_internal::ResourceFileDescriptionUtils::MakeLoggingString(someFileDescription),
-            ramses_internal::String("Filename: ") + someFileDescription.getFilename() + " ; Resource count 0: [  ]");
-        EXPECT_EQ(ramses_internal::ResourceFileDescriptionUtils::MakeLoggingString(otherFileDescription),
-            ramses_internal::String("Filename: ") + otherFileDescription.getFilename() + " ; Resource count 0: [  ]");
+        EXPECT_EQ(ramses_internal::StringOutputStream::ToString(someFileDescription),
+                  ramses_internal::String("Filename: /home/carit/res/building.ramres; Resource count 0: []"));
+        EXPECT_EQ(ramses_internal::StringOutputStream::ToString(otherFileDescription),
+                  ramses_internal::String("Filename: res/car.ramres; Resource count 0: []"));
     }
 
     TYPED_TEST(AResourceFileDescriptionTestTyped, multiResourceDescriptionUtilsTest)
@@ -119,16 +120,16 @@ namespace ramses
         fileDescription.add(secondRamsesObject);
 
         ramses_internal::StringOutputStream verifyStream;
-        verifyStream << "[ " << firstRamsesObject->getResourceId() << " ; " << secondRamsesObject->getResourceId() << " ]";
+        verifyStream << "[" << firstRamsesObject->getResourceId() << " " << secondRamsesObject->getResourceId() << " ]";
 
-        EXPECT_EQ(ramses_internal::ResourceFileDescriptionUtils::MakeLoggingString(fileDescription),
-            ramses_internal::String("Filename: res/car.ramres ; Resource count 2: ") + verifyStream.c_str());
+        EXPECT_EQ(ramses_internal::StringOutputStream::ToString(fileDescription),
+            ramses_internal::String("Filename: res/car.ramres; Resource count 2: ") + verifyStream.c_str());
     }
 
     TEST_F(AResourceFileDescriptionTest, emptySetMultiResourceDescriptionUtilsTest)
     {
         ResourceFileDescriptionSet descSet;
-        EXPECT_EQ(ramses_internal::ResourceFileDescriptionUtils::MakeLoggingString(descSet), ramses_internal::String("0 Resource File Descriptions: [  ]"));
+        EXPECT_EQ(ramses_internal::StringOutputStream::ToString(descSet), ramses_internal::String("0 Resource File Descriptions: []"));
     }
 
     TYPED_TEST(AResourceFileDescriptionTestTyped, multiEntrySetMultiResourceDescriptionUtilsTest)
@@ -150,11 +151,11 @@ namespace ramses
         descSet.add(otherFileDescription);
 
         ramses_internal::StringOutputStream verifyStream;
-        verifyStream << "[ " << firstRamsesObject->getResourceId() << " ; " << secondRamsesObject->getResourceId() << " ]";
+        verifyStream << "[" << firstRamsesObject->getResourceId() << " " << secondRamsesObject->getResourceId() << " ]";
 
-        EXPECT_EQ(ramses_internal::ResourceFileDescriptionUtils::MakeLoggingString(descSet),
-            ramses_internal::String("2 Resource File Descriptions: [ Filename: /home/carit/res/building.ramres ; Resource count 2: ")
-                    + verifyStream.c_str() + " ; Filename: res/car.ramres ; Resource count 0: [  ] ]");
+        EXPECT_EQ(ramses_internal::StringOutputStream::ToString(descSet),
+            ramses_internal::String("2 Resource File Descriptions: [Filename: /home/carit/res/building.ramres; Resource count 2: ")
+                    + verifyStream.c_str() + "; Filename: res/car.ramres; Resource count 0: []; ]");
     }
 
     TYPED_TEST(AResourceFileDescriptionTestTyped, DuplicateResourcesAreNotAddedTwice)

@@ -20,7 +20,7 @@ namespace ramses_internal
         description = "help command. lists all available commands.";
     }
 
-    Bool RamshCommandPrintHelp::executeInput(const RamshInput& input)
+    bool RamshCommandPrintHelp::executeInput(const RamshInput& input)
     {
         UNUSED(input);
         HashSet<RamshCommand*> alreadyListed;
@@ -29,7 +29,7 @@ namespace ramses_internal
         for (; iter != end; ++iter)
         {
             RamshCommand* cmd = iter->value;
-            if (!alreadyListed.hasElement(cmd))
+            if (!alreadyListed.contains(cmd))
             {
                 LOG_INFO(CONTEXT_RAMSH,(String(iter->value->keywordString())));
                 LOG_INFO(CONTEXT_RAMSH,(String("\t\t").append(iter->value->descriptionString())));

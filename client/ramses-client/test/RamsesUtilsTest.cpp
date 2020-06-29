@@ -12,6 +12,8 @@
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/MipLevelData.h"
 #include "Texture2DImpl.h"
+#include "Utils/File.h"
+#include "ramses-client-api/TextureEnums.h"
 
 using namespace testing;
 
@@ -19,6 +21,18 @@ namespace ramses
 {
     class ARamsesUtilsTest : public ::testing::Test, public LocalTestClient
     {
+    public:
+        static void LoadFileToVector(const char* fname, std::vector<unsigned char>& data)
+        {
+            ramses_internal::File f(fname);
+            ASSERT_TRUE(f.open(ramses_internal::File::Mode::ReadOnlyBinary));
+            ramses_internal::UInt filesize = 0;
+            ASSERT_TRUE(f.getSizeInBytes(filesize));
+            data.resize(filesize);
+            ramses_internal::UInt numread = 0;
+            ASSERT_EQ(ramses_internal::EStatus::Ok, f.read(reinterpret_cast<char*>(data.data()), filesize, numread));
+            ASSERT_EQ(filesize, numread);
+        }
     };
 
     // texture from file: valid uses
@@ -26,20 +40,58 @@ namespace ramses
     {
         Texture2D* texture = RamsesUtils::CreateTextureResourceFromPng("res/sampleTexture.png", client);
         ASSERT_TRUE(nullptr != texture);
-        if(texture)
-        {
-            EXPECT_EQ(StatusOK, client.destroy(*texture));
-        }
+        EXPECT_EQ(StatusOK, client.destroy(*texture));
     }
 
     TEST_F(ARamsesUtilsTest, createTextureResourceFromPng_withName)
     {
-        Texture2D* texture = RamsesUtils::CreateTextureResourceFromPng("res/sampleTexture.png", client, "mytesttexturename");
+        Texture2D* texture = RamsesUtils::CreateTextureResourceFromPng("res/sampleTexture.png", client, {}, "mytesttexturename");
         ASSERT_TRUE(nullptr != texture);
-        if(texture)
-        {
-            ASSERT_STREQ("mytesttexturename", texture->getName());
-        }
+        ASSERT_STREQ("mytesttexturename", texture->getName());
+    }
+
+    TEST_F(ARamsesUtilsTest, createTextureResourceFromPng_withSwizzle)
+    {
+        const TextureSwizzle swizzle {ramses::ETextureChannelColor::Blue, ramses::ETextureChannelColor::Alpha, ramses::ETextureChannelColor::Green, ramses::ETextureChannelColor::Red};
+        Texture2D* texture = RamsesUtils::CreateTextureResourceFromPng("res/sampleTexture.png", client, swizzle);
+        ASSERT_TRUE(nullptr != texture);
+        EXPECT_EQ(swizzle.channelRed, texture->getTextureSwizzle().channelRed);
+        EXPECT_EQ(swizzle.channelGreen, texture->getTextureSwizzle().channelGreen);
+        EXPECT_EQ(swizzle.channelBlue, texture->getTextureSwizzle().channelBlue);
+        EXPECT_EQ(swizzle.channelAlpha, texture->getTextureSwizzle().channelAlpha);
+    }
+
+    // texture from memory png: valid uses
+    TEST_F(ARamsesUtilsTest, createTextureResourceFromPngBuffer)
+    {
+        std::vector<unsigned char> buffer;
+        LoadFileToVector("res/sampleTexture.png", buffer);
+        Texture2D* texture = RamsesUtils::CreateTextureResourceFromPngBuffer(buffer, client);
+        ASSERT_TRUE(nullptr != texture);
+        EXPECT_EQ(StatusOK, client.destroy(*texture));
+    }
+
+    TEST_F(ARamsesUtilsTest, createTextureResourceFromPngBuffer_withSwizzle)
+    {
+        const TextureSwizzle swizzle {ramses::ETextureChannelColor::Blue, ramses::ETextureChannelColor::Alpha, ramses::ETextureChannelColor::Green, ramses::ETextureChannelColor::Red};
+        std::vector<unsigned char> buffer;
+        LoadFileToVector("res/sampleTexture.png", buffer);
+        Texture2D* texture = RamsesUtils::CreateTextureResourceFromPngBuffer(buffer, client, swizzle);
+        ASSERT_TRUE(nullptr != texture);
+        EXPECT_EQ(swizzle.channelRed, texture->getTextureSwizzle().channelRed);
+        EXPECT_EQ(swizzle.channelGreen, texture->getTextureSwizzle().channelGreen);
+        EXPECT_EQ(swizzle.channelBlue, texture->getTextureSwizzle().channelBlue);
+        EXPECT_EQ(swizzle.channelAlpha, texture->getTextureSwizzle().channelAlpha);
+        EXPECT_EQ(StatusOK, client.destroy(*texture));
+    }
+
+    TEST_F(ARamsesUtilsTest, createTextureResourceFromPngBuffer_withName)
+    {
+        std::vector<unsigned char> buffer;
+        LoadFileToVector("res/sampleTexture.png", buffer);
+        Texture2D* texture = RamsesUtils::CreateTextureResourceFromPngBuffer(buffer, client, {}, "mytesttexturename");
+        ASSERT_TRUE(nullptr != texture);
+        ASSERT_STREQ("mytesttexturename", texture->getName());
     }
 
     // texture from file: invalid uses
@@ -58,6 +110,21 @@ namespace ramses
     TEST_F(ARamsesUtilsTest, createTextureResourceFromPng_NULLFile)
     {
         Texture2D* texture = RamsesUtils::CreateTextureResourceFromPng(nullptr, client);
+        EXPECT_TRUE(nullptr == texture);
+    }
+
+    // texture from memory png: invalid uses
+    TEST_F(ARamsesUtilsTest, createTextureResourceFromPngBuffer_EmptyBuffer)
+    {
+        std::vector<unsigned char> buffer;
+        Texture2D* texture = RamsesUtils::CreateTextureResourceFromPngBuffer(buffer, client);
+        EXPECT_TRUE(nullptr == texture);
+    }
+
+    TEST_F(ARamsesUtilsTest, createTextureResourceFromPngBuffer_InvalidBuffer)
+    {
+        std::vector<unsigned char> buffer(10, 1);
+        Texture2D* texture = RamsesUtils::CreateTextureResourceFromPngBuffer(buffer, client);
         EXPECT_TRUE(nullptr == texture);
     }
 

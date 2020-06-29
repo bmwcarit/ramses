@@ -12,6 +12,7 @@
 #include "RendererAPI/Types.h"
 #include "Utils/File.h"
 #include <sys/stat.h>
+#include <array>
 
 using namespace ramses_internal;
 
@@ -39,15 +40,15 @@ public:
 
         UInt8                    shaderData1[]   = {12u, 34u, 56u, 78u};
         const UInt32             shaderDataSize1 = sizeof(shaderData1) / sizeof(UInt8);
-        const UInt32             format1         = 123u;
+        const ramses::binaryShaderFormatId_t format1{ 123u };
         const ramses::effectId_t effectHash1     = {11u, 0};
-        cache.storeBinaryShader(effectHash1, shaderData1, shaderDataSize1, format1);
+        cache.storeBinaryShader(effectHash1, ramses::sceneId_t(1u), shaderData1, shaderDataSize1, format1);
 
         UInt8                    shaderData2[]   = {13u, 14u, 66u, 7u, 89u, 10u};
         const UInt32             shaderDataSize2 = sizeof(shaderData2) / sizeof(UInt8);
-        const UInt32             format2         = 112u;
+        const ramses::binaryShaderFormatId_t format2{ 112u };
         const ramses::effectId_t effectHash2     = {12u, 0};
-        cache.storeBinaryShader(effectHash2, shaderData2, shaderDataSize2, format2);
+        cache.storeBinaryShader(effectHash2, ramses::sceneId_t(2u), shaderData2, shaderDataSize2, format2);
 
         cache.saveToFile(m_binaryShaderFilePath.c_str());
     }
@@ -55,63 +56,63 @@ public:
     void enlargeTestFile()
     {
         ramses_internal::File file(m_binaryShaderFilePath.c_str());
-        file.open(EFileMode_WriteExistingBinary);
         UInt fileSize(0);
-        file.getSizeInBytes(fileSize);
-        file.seek(fileSize, EFileSeekOrigin_BeginningOfFile);
+        EXPECT_TRUE(file.getSizeInBytes(fileSize));
+        EXPECT_TRUE(file.open(File::Mode::WriteExistingBinary));
+        EXPECT_TRUE(file.seek(fileSize, File::SeekOrigin::BeginningOfFile));
         ramses_internal::Char data(33);
-        file.write(&data, sizeof(data));
+        EXPECT_TRUE(file.write(&data, sizeof(data)));
     }
 
     void truncateTestFile(Int32 size)
     {
-        ramses_internal::File            file(m_binaryShaderFilePath.c_str());
-        file.open(EFileMode_ReadOnlyBinary);
+        ramses_internal::File file(m_binaryShaderFilePath.c_str());
+        EXPECT_TRUE(file.open(File::Mode::ReadOnlyBinary));
         UInt fileSize(0);
-        file.getSizeInBytes(fileSize);
+        EXPECT_TRUE(file.getSizeInBytes(fileSize));
         std::vector<uint8_t> data(fileSize);
 
         UInt numReadBytes;
-        file.read(reinterpret_cast<ramses_internal::Char*>(data.data()), fileSize, numReadBytes);
+        EXPECT_EQ(EStatus::Ok, file.read(reinterpret_cast<ramses_internal::Char*>(data.data()), fileSize, numReadBytes));
 
         file.close();
-        file.open(EFileMode_WriteNewBinary);
+        EXPECT_TRUE(file.open(File::Mode::WriteNewBinary));
 
         Int32 newSize = (size < 0) ?  static_cast<Int32>(fileSize) + size : size;
 
-        file.write(reinterpret_cast<ramses_internal::Char*>(data.data()), newSize);
+        EXPECT_TRUE(file.write(reinterpret_cast<ramses_internal::Char*>(data.data()), newSize));
     }
 
     void corruptTestFile()
     {
         ramses_internal::File file(m_binaryShaderFilePath);
-        file.open(EFileMode_WriteExistingBinary);
         UInt fileSize(0);
-        file.getSizeInBytes(fileSize);
+        EXPECT_TRUE(file.getSizeInBytes(fileSize));
+        EXPECT_TRUE(file.open(File::Mode::WriteExistingBinary));
         const Int offset = sizeof(ramses::BinaryShaderCacheImpl::FileHeader);
-        file.seek(offset, EFileSeekOrigin_BeginningOfFile);
+        EXPECT_TRUE(file.seek(offset, File::SeekOrigin::BeginningOfFile));
         ramses_internal::Char data = 0;
         UInt numBytesRead;
-        file.read(&data, sizeof(data), numBytesRead);
-        file.seek(offset, EFileSeekOrigin_BeginningOfFile);
+        EXPECT_EQ(EStatus::Ok, file.read(&data, sizeof(data), numBytesRead));
+        EXPECT_TRUE(file.seek(offset, File::SeekOrigin::BeginningOfFile));
         data++;
-        file.write(&data, sizeof(data));
+        EXPECT_TRUE(file.write(&data, sizeof(data)));
     }
 
     void corruptVersionInTestFile()
     {
         ramses_internal::File file(m_binaryShaderFilePath);
-        file.open(EFileMode_WriteExistingBinary);
         UInt fileSize(0);
-        file.getSizeInBytes(fileSize);
+        EXPECT_TRUE(file.getSizeInBytes(fileSize));
+        EXPECT_TRUE(file.open(File::Mode::WriteExistingBinary));
         const Int transportVersionOffset = offsetof(ramses::BinaryShaderCacheImpl::FileHeader, transportVersion);
-        file.seek(transportVersionOffset, EFileSeekOrigin_BeginningOfFile);
+        EXPECT_TRUE(file.seek(transportVersionOffset, File::SeekOrigin::BeginningOfFile));
         ramses_internal::Char data = 0;
         UInt                  numBytesRead;
-        file.read(&data, sizeof(data), numBytesRead);
-        file.seek(transportVersionOffset, EFileSeekOrigin_BeginningOfFile);
+        EXPECT_EQ(EStatus::Ok, file.read(&data, sizeof(data), numBytesRead));
+        EXPECT_TRUE(file.seek(transportVersionOffset, File::SeekOrigin::BeginningOfFile));
         data++;
-        file.write(&data, sizeof(data));
+        EXPECT_TRUE(file.write(&data, sizeof(data)));
     }
 
 protected:
@@ -123,10 +124,11 @@ TEST_F(ABinaryShaderCache, canStoreAndGetBinaryShader)
 {
     UInt8 shaderData[] = { 12u, 34u, 56u, 78u };
     const UInt32 shaderDataSize = sizeof(shaderData) / sizeof(UInt8);
-    const UInt32 format = 123u;
+    const ramses::binaryShaderFormatId_t format{ 123u };
     const ramses::effectId_t effectHash1 = { 11u, 0 };
-    m_cache.storeBinaryShader(effectHash1, shaderData, shaderDataSize, format);
+    m_cache.storeBinaryShader(effectHash1, ramses::sceneId_t(1u), shaderData, shaderDataSize, format);
 
+    m_cache.deviceSupportsBinaryShaderFormats(&format, 1u);
     EXPECT_TRUE(m_cache.hasBinaryShader(effectHash1));
     EXPECT_EQ(shaderDataSize, m_cache.getBinaryShaderSize(effectHash1));
     EXPECT_EQ(format, m_cache.getBinaryShaderFormat(effectHash1));
@@ -141,17 +143,37 @@ TEST_F(ABinaryShaderCache, canStoreAndGetBinaryShader)
     }
 }
 
+TEST_F(ABinaryShaderCache, reportsNoShaderAvailableIfShaderCachedButWithWrongFormat)
+{
+    std::array<UInt8, 4> shaderData{ 12u, 34u, 56u, 78u };
+    const ramses::binaryShaderFormatId_t format{ 123u };
+    const ramses::effectId_t effectHash1 = { 11u, 0 };
+    m_cache.storeBinaryShader(effectHash1, ramses::sceneId_t(1u), shaderData.data(), uint32_t(shaderData.size()), format);
+
+    const ramses::binaryShaderFormatId_t supportedFormat{ 124u };
+    m_cache.deviceSupportsBinaryShaderFormats(&supportedFormat, 1u);
+    EXPECT_FALSE(m_cache.hasBinaryShader(effectHash1));
+}
+
+TEST_F(ABinaryShaderCache, reportsNoShaderAvailableIfShaderNotCachedAndDeviceReportsFormatZeroSupported) // zero format is used as invalid format in cache impl
+{
+    const ramses::binaryShaderFormatId_t supportedFormat{ 0u };
+    m_cache.deviceSupportsBinaryShaderFormats(&supportedFormat, 1u);
+    const ramses::effectId_t effectHash1 = { 11u, 0 };
+    EXPECT_FALSE(m_cache.hasBinaryShader(effectHash1));
+}
+
 TEST_F(ABinaryShaderCache, canReturnFalseWhenBinaryShaderNotInCache)
 {
     UInt8 shaderData[] = { 12u, 34u, 56u, 78u };
     const UInt32 shaderDataSize = sizeof(shaderData) / sizeof(UInt8);
-    const UInt32 format = 123u;
+    const ramses::binaryShaderFormatId_t format{ 123u };
     const ramses::effectId_t effectHash1 = { 11u, 0 };
-    m_cache.storeBinaryShader(effectHash1, shaderData, shaderDataSize, format);
+    m_cache.storeBinaryShader(effectHash1, ramses::sceneId_t(1u), shaderData, shaderDataSize, format);
 
     ramses::effectId_t nonExistEffectHash = { 13u, 0 };
     EXPECT_FALSE(m_cache.hasBinaryShader(nonExistEffectHash));
-    EXPECT_EQ(0u, m_cache.getBinaryShaderFormat(nonExistEffectHash));
+    EXPECT_EQ(ramses::binaryShaderFormatId_t{ 0u }, m_cache.getBinaryShaderFormat(nonExistEffectHash));
     EXPECT_EQ(0u, m_cache.getBinaryShaderSize(nonExistEffectHash));
 }
 
@@ -159,20 +181,24 @@ TEST_F(ABinaryShaderCache, canSaveToAndLoadFromBinaryShaderFile)
 {
     UInt8 shaderData1[] = { 12u, 34u, 56u, 78u };
     const UInt32 shaderDataSize1 = sizeof(shaderData1) / sizeof(UInt8);
-    const UInt32 format1 = 123u;
+    const ramses::binaryShaderFormatId_t format1{ 123u };
     const ramses::effectId_t effectHash1 = { 11u, 0 };
-    m_cache.storeBinaryShader(effectHash1, shaderData1, shaderDataSize1, format1);
+    m_cache.storeBinaryShader(effectHash1, ramses::sceneId_t(1u), shaderData1, shaderDataSize1, format1);
 
     UInt8 shaderData2[] = { 13u, 14u, 66u, 7u, 89u, 10u };
     const UInt32 shaderDataSize2 = sizeof(shaderData2) / sizeof(UInt8);
-    const UInt32 format2 = 112u;
+    const ramses::binaryShaderFormatId_t format2{ 112u };
     const ramses::effectId_t effectHash2 = { 12u, 0 };
-    m_cache.storeBinaryShader(effectHash2, shaderData2, shaderDataSize2, format2);
+    m_cache.storeBinaryShader(effectHash2, ramses::sceneId_t(2u), shaderData2, shaderDataSize2, format2);
 
     m_cache.saveToFile(m_binaryShaderFilePath.c_str());
 
     ramses::BinaryShaderCache newCache;
     EXPECT_TRUE(newCache.loadFromFile(m_binaryShaderFilePath.c_str()));
+
+    // need to init with supported formats in order to report cached shaders
+    std::array<ramses::binaryShaderFormatId_t, 2> supportedFormats = { format1, format2 };
+    newCache.deviceSupportsBinaryShaderFormats(supportedFormats.data(), uint32_t(supportedFormats.size()));
 
     // check shader data 1
     EXPECT_TRUE(newCache.hasBinaryShader(effectHash1));

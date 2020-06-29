@@ -12,6 +12,7 @@
 #include "Common/TypedMemoryHandle.h"
 #include "Collections/Vector.h"
 #include <limits>
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -26,7 +27,7 @@ namespace ramses_internal
         // Creation/Deletion
         HANDLE                          acquire(HANDLE handle = InvalidMemoryHandle());
         void                            release(HANDLE handle);
-        Bool                            isAcquired(HANDLE handle) const;
+        bool                            isAcquired(HANDLE handle) const;
         UInt32                          getNumberOfAcquired() const;
 
         UInt32                          size() const;
@@ -114,7 +115,7 @@ namespace ramses_internal
     }
 
     template <typename HANDLE>
-    Bool HandlePool<HANDLE>::isAcquired(HANDLE handle) const
+    bool HandlePool<HANDLE>::isAcquired(HANDLE handle) const
     {
         const MemoryHandle memoryHandle = AsMemoryHandle(handle);
         return (memoryHandle < m_handlePool.size()) && (m_handlePool[memoryHandle] != 0);

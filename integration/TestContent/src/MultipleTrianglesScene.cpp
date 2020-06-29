@@ -13,22 +13,28 @@
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/DataVector4f.h"
+#include <cassert>
 
 namespace ramses_internal
 {
     MultipleTrianglesScene::MultipleTrianglesScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
         : IntegrationScene(ramsesClient, scene, cameraPosition)
         , m_Effect(getTestEffect("ramses-test-client-basic"))
-        , m_meshNode1(0)
-        , m_meshNode2(0)
-        , m_meshNode3(0)
-        , m_meshNode4(0)
-        , m_meshNode5(0)
-        , m_redTriangle             (ramsesClient, scene, *m_Effect, ramses::TriangleAppearance::EColor_Red)
-        , m_greenTriangle           (ramsesClient, scene, *m_Effect, ramses::TriangleAppearance::EColor_Green)
-        , m_blueTriangle            (ramsesClient, scene, *m_Effect, ramses::TriangleAppearance::EColor_Blue)
-        , m_yellowLine              (ramsesClient, scene, *m_Effect, ramses::Line::EColor_Yellow)
-        , m_whiteQuad               (ramsesClient, scene, *m_Effect, ramses::TriangleStripQuad::EColor_White)
+        , m_meshNode1(nullptr)
+        , m_meshNode2(nullptr)
+        , m_meshNode3(nullptr)
+        , m_meshNode4(nullptr)
+        , m_meshNode5(nullptr)
+        , m_meshNode6(nullptr)
+        , m_meshNode7(nullptr)
+        , m_redTriangle(ramsesClient, scene, *m_Effect, ramses::TriangleAppearance::EColor_Red)
+        , m_greenTriangle(ramsesClient, scene, *m_Effect, ramses::TriangleAppearance::EColor_Green)
+        , m_blueTriangle(ramsesClient, scene, *m_Effect, ramses::TriangleAppearance::EColor_Blue)
+        , m_yellowLine(ramsesClient, scene, *m_Effect, ramses::Line::EColor_Yellow, ramses::EDrawMode_Lines)
+        , m_whiteQuad(ramsesClient, scene, *m_Effect, ramses::MultiTriangleGeometry::EColor_White)
+        , m_triangleFan(ramsesClient, scene, *m_Effect, ramses::MultiTriangleGeometry::EColor_Red, 1.f, ramses::MultiTriangleGeometry::EGeometryType_TriangleFan)
+        , m_lineStrip               (ramsesClient, scene, *m_Effect, ramses::Line::EColor_Red, ramses::EDrawMode_LineStrip)
+        , m_linePoints              (ramsesClient, scene, *m_Effect, ramses::Line::EColor_White, ramses::EDrawMode_Points)
         , m_redTransparentTriangle  (ramsesClient, scene, *m_Effect, ramses::TriangleAppearance::EColor_Red, 0.6f)
         , m_greenTransparentTriangle(ramsesClient, scene, *m_Effect, ramses::TriangleAppearance::EColor_Green, 0.6f)
         , m_blueTransparentTriangle (ramsesClient, scene, *m_Effect, ramses::TriangleAppearance::EColor_Blue, 0.6f)
@@ -49,6 +55,8 @@ namespace ramses_internal
         m_meshNode3 = m_scene.createMeshNode("blue triangle mesh node");
         m_meshNode4 = m_scene.createMeshNode("White quad mesh node");
         m_meshNode5 = m_scene.createMeshNode("Yellow triangle mesh node");
+        m_meshNode6 = m_scene.createMeshNode("trianglefan mesh node");
+        m_meshNode7 = m_scene.createMeshNode("line strip mesh node");
         addMeshNodeToDefaultRenderGroup(*m_meshNode1);
         addMeshNodeToDefaultRenderGroup(*m_meshNode2);
         addMeshNodeToDefaultRenderGroup(*m_meshNode3);
@@ -58,32 +66,41 @@ namespace ramses_internal
         m_meshNode3->setGeometryBinding(m_blueTriangle.GetGeometry());
         m_meshNode4->setGeometryBinding(m_whiteQuad.GetGeometry());
         m_meshNode5->setGeometryBinding(m_yellowLine.GetGeometry());
+        m_meshNode6->setGeometryBinding(m_triangleFan.GetGeometry());
+        m_meshNode7->setGeometryBinding(m_lineStrip.GetGeometry());
 
         ramses::Node* transNode1 = m_scene.createNode();
         ramses::Node* transNode2 = m_scene.createNode();
         ramses::Node* transNode3 = m_scene.createNode();
         ramses::Node* transNode4 = m_scene.createNode();
         ramses::Node* transNode5 = m_scene.createNode();
+        ramses::Node* transNode6 = m_scene.createNode();
+        ramses::Node* transNode7 = m_scene.createNode();
 
         transNode1->setTranslation(0.f, -0.2f, -12.f);
         transNode2->setTranslation(-0.2f, 0.f, -11.f);
         transNode3->setTranslation(0.2f, 0.2f, -10.f);
         transNode4->setTranslation(-0.2f, -0.2f, -9.f);
         transNode5->setTranslation(-0.3f, -0.2f, -8.f);
+        transNode6->setTranslation(2.0f, -0.6f, -12.f);
+        transNode7->setTranslation(1.0f, 0.6f, -12.f);
 
         m_meshNode1->setParent(*transNode1);
         m_meshNode2->setParent(*transNode2);
         m_meshNode3->setParent(*transNode3);
         m_meshNode4->setParent(*transNode4);
         m_meshNode5->setParent(*transNode5);
+        m_meshNode6->setParent(*transNode6);
+        m_meshNode7->setParent(*transNode7);
+
 
         setState(state);
     }
 
     void MultipleTrianglesScene::setState(UInt32 state)
     {
-        ramses::Node* rotate = 0;
-        ramses::Node* translate = 0;
+        ramses::Node* rotate = nullptr;
+        ramses::Node* translate = nullptr;
 
         switch (state)
         {
@@ -202,15 +219,20 @@ namespace ramses_internal
             m_redTriangle.GetAppearance().setDrawMode(ramses::EDrawMode_Triangles);
             m_yellowLine.GetAppearance().setDrawMode(ramses::EDrawMode_Lines);
             m_greenTriangle.GetAppearance().setDrawMode(ramses::EDrawMode_LineLoop);
-            m_blueTriangle.GetAppearance().setDrawMode(ramses::EDrawMode_Points);
             addMeshNodeToDefaultRenderGroup(*m_meshNode4);
             addMeshNodeToDefaultRenderGroup(*m_meshNode5);
             m_whiteQuad.GetAppearance().setDrawMode(ramses::EDrawMode_TriangleStrip);
             m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
-            m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
+            m_meshNode3->removeAppearanceAndGeometry();
+            m_meshNode3->setAppearance(m_linePoints.GetAppearance());
+            m_meshNode3->setGeometryBinding(m_linePoints.GetGeometry());
             m_meshNode4->setAppearance(m_whiteQuad.GetAppearance());
             m_meshNode5->setAppearance(m_yellowLine.GetAppearance());
+            m_meshNode6->setAppearance(m_triangleFan.GetAppearance());
+            m_meshNode7->setAppearance(m_lineStrip.GetAppearance());
+            addMeshNodeToDefaultRenderGroup(*m_meshNode6);
+            addMeshNodeToDefaultRenderGroup(*m_meshNode7);
             break;
         case STENCIL_TEST_1:
             m_greenTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc_Always, 0, 0xff);
@@ -266,11 +288,6 @@ namespace ramses_internal
             addMeshNodeToDefaultRenderGroup(*m_meshNode2, 1);
             addMeshNodeToDefaultRenderGroup(*m_meshNode3, 2);
             break;
-        case STEREO_RENDERING:
-            m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
-            m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
-            m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
-            break;
         case PERSPECTIVE_CAMERA:
         {
             m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
@@ -300,7 +317,7 @@ namespace ramses_internal
             m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
             m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
             ramses::DataVector4f* colorData = m_scene.createDataVector4f();
-            assert(colorData != NULL);
+            assert(colorData != nullptr);
             colorData->setValue(0.f, 0.f, 0.f, 1.f);
             m_redTriangle.bindColor(*colorData);
             m_greenTriangle.bindColor(*colorData);
@@ -314,7 +331,7 @@ namespace ramses_internal
             m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
             m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
             ramses::DataVector4f* colorData = m_scene.createDataVector4f();
-            assert(colorData != NULL);
+            assert(colorData != nullptr);
             m_redTriangle.bindColor(*colorData);
             m_greenTriangle.bindColor(*colorData);
             m_blueTriangle.bindColor(*colorData);

@@ -9,7 +9,13 @@
 #ifndef RAMSES_ANIMATIONPROCESSDATADISPATCH_H
 #define RAMSES_ANIMATIONPROCESSDATADISPATCH_H
 
-#include "Utils/Variant.h"
+#include "Math3d/Vector2.h"
+#include "Math3d/Vector3.h"
+#include "Math3d/Vector4.h"
+#include "Math3d/Vector2i.h"
+#include "Math3d/Vector3i.h"
+#include "Math3d/Vector4i.h"
+#include "absl/types/variant.h"
 
 namespace ramses_internal
 {
@@ -35,6 +41,21 @@ namespace ramses_internal
 
     private:
         const AnimationProcessData& m_processData;
+        using Variant = absl::variant<
+            absl::monostate,
+            bool,
+            int32_t,
+            int64_t,
+            uint32_t,
+            uint64_t,
+            float,
+            double,
+            Vector2,
+            Vector3,
+            Vector4,
+            Vector2i,
+            Vector3i,
+            Vector4i>;
         Variant m_interpolatedValue;
 
         template <typename ClassType, typename EDataType, typename HandleType, typename HandleType2>
@@ -47,7 +68,7 @@ namespace ramses_internal
     template <typename EDataType>
     inline EDataType AnimationProcessDataDispatch::getInterpolatedValue(const EDataType& offset) const
     {
-        const EDataType& interpolatedValue = m_interpolatedValue.getValue<EDataType>();
+        const EDataType& interpolatedValue = absl::get<EDataType>(m_interpolatedValue);
         return offset + interpolatedValue;
     }
 }

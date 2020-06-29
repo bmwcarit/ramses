@@ -10,11 +10,11 @@
 #define RAMSES_RENDERERAPI_DEFAULTRENDERERRESOURCECACHEIMPL_H
 
 #include "Collections/Vector.h"
-#include "PlatformAbstraction/PlatformSharedPointer.h"
 #include "RendererAPI/Types.h"
 #include "ramses-renderer-api/Types.h"
 #include "ramses-renderer-api/IRendererResourceCache.h"
 #include <deque>
+#include <memory>
 
 namespace ramses
 {
@@ -23,7 +23,7 @@ namespace ramses
     class DefaultRendererResourceCacheImpl : public IRendererResourceCache
     {
     public:
-        DefaultRendererResourceCacheImpl(uint32_t maxCacheSizeInBytes);
+        explicit DefaultRendererResourceCacheImpl(uint32_t maxCacheSizeInBytes);
         virtual ~DefaultRendererResourceCacheImpl();
 
         bool virtual hasResource(rendererResourceId_t resourceId, uint32_t& size) const override;

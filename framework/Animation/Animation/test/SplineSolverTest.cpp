@@ -131,7 +131,7 @@ namespace ramses_internal
         if (interpolationType != EInterpolationType_Bezier)
         {
             // Too complex to evaluate without using solver
-            splineSolverInterpolateTest<Bool>(interpolationType, "Bool");
+            splineSolverInterpolateTest<bool>(interpolationType, "bool");
             splineSolverInterpolateTest<Vector2>(interpolationType, "Vector2");
             splineSolverInterpolateTest<Vector3>(interpolationType, "Vector3");
             splineSolverInterpolateTest<Vector4>(interpolationType, "Vector4");
@@ -165,7 +165,7 @@ namespace ramses_internal
         return T(val);
     }
     template <>
-    Bool FromFloat(Float val)
+    bool FromFloat(Float val)
     {
         return val > 0.5f;
     }
@@ -232,7 +232,7 @@ namespace ramses_internal
         static const UInt32 WIDTH = 80u;
         static const UInt32 HEIGHT = 40u;
         static const Float TANGENT_MAG = 20.f;
-        Bool matrix[WIDTH + 1u][HEIGHT + 1u];
+        bool matrix[WIDTH + 1u][HEIGHT + 1u];
         PlatformMemory::Set(matrix, 0, sizeof(matrix));
 
         Spline<SplineKeyTangents, Int32> spline;
@@ -277,7 +277,7 @@ namespace ramses_internal
             }
             line[WIDTH + 1u] = '\n';
             line[WIDTH + 2u] = '\0';
-            Console::Print(line);
+            Console::Print(ConsoleColor::Default, "{}", line);
         }
     }
 }

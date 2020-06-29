@@ -16,14 +16,13 @@
 
 // framework
 #include "RamsesObjectRegistry.h"
-#include "Utils/ScopedPointer.h"
+#include <memory>
 
 namespace ramses
 {
     class Spline;
     class AnimatedProperty;
     class Animation;
-    class AnimatedSetter;
     class AnimationSequence;
     class EffectInputImpl;
     class AppearanceImpl;
@@ -43,14 +42,10 @@ namespace ramses
         template <typename SplineType>
         SplineType*        createSpline(ramses_internal::EInterpolationType interpolationType, ramses_internal::EDataTypeID dataType, ERamsesObjectType objectType, const char* name);
         Animation*         createAnimation(const AnimatedPropertyImpl& animatedProperty, const Spline& spline, const char* name);
-        AnimatedSetter*    createAnimatedSetter(const AnimatedPropertyImpl& animatedProperty, const char* name);
         AnimationSequence* createAnimationSequence(const char* name);
         template <typename PropertyOwnerType>
         AnimatedProperty*  createAnimatedProperty(const PropertyOwnerType& propertyOwner, EAnimatedPropertyComponent ePropertyComponent, ramses_internal::TDataBindID bindID, const char* name);
         AnimatedProperty*  createAnimatedProperty(const EffectInputImpl& propertyOwner, const AppearanceImpl& appearance, EAnimatedPropertyComponent ePropertyComponent, ramses_internal::TDataBindID bindID, const char* name);
-
-        status_t           setDelayForAnimatedSetters(timeMilliseconds_t delay);
-        timeMilliseconds_t getDelayForAnimatedSetters() const;
 
         status_t destroy(AnimationObject& object);
 
@@ -66,15 +61,14 @@ namespace ramses
 
         RamsesObjectRegistry               m_objectRegistry;
         AnimationSystemImpl*               m_animationSystem;
-        timeMilliseconds_t                 m_animatedSetterDelay;
 
-        ramses_internal::ScopedPointer<AnimatedPropertyFactory> m_animatedPropertyFactory;
+        std::unique_ptr<AnimatedPropertyFactory> m_animatedPropertyFactory;
     };
 
     template <typename SplineType>
     SplineType* AnimationSystemData::createSpline(ramses_internal::EInterpolationType interpolationType, ramses_internal::EDataTypeID dataType, ERamsesObjectType objectType, const char* name)
     {
-        assert(m_animationSystem != NULL);
+        assert(m_animationSystem != nullptr);
         SplineImpl& splineImpl = *new SplineImpl(*m_animationSystem, objectType, name);
         splineImpl.initializeFrameworkData(interpolationType, dataType);
         SplineType* spline = new SplineType(splineImpl);
@@ -86,7 +80,7 @@ namespace ramses
     AnimatedProperty* AnimationSystemData::createAnimatedProperty(const PropertyOwnerType& propertyOwner, EAnimatedPropertyComponent ePropertyComponent, ramses_internal::TDataBindID bindID, const char* name)
     {
         AnimatedProperty* animProperty = m_animatedPropertyFactory->createAnimatedProperty(propertyOwner, ePropertyComponent, bindID, name);
-        if (animProperty != NULL)
+        if (animProperty != nullptr)
         {
             m_objectRegistry.addObject(*animProperty);
         }

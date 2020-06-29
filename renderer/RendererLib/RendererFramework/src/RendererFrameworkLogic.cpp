@@ -11,11 +11,11 @@
 #include "Components/IResourceConsumerComponent.h"
 #include "RendererLib/RendererCommandBuffer.h"
 #include "Math3d/CameraMatrixHelper.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "Utils/LogMacros.h"
 #include "TransportCommon/IConnectionStatusUpdateNotifier.h"
 #include "Components/ManagedResource.h"
 #include "Components/SceneGraphComponent.h"
+#include "SceneReferencing/SceneReferenceEvent.h"
 
 namespace ramses_internal
 {
@@ -45,11 +45,18 @@ namespace ramses_internal
     {
         for(const auto& newScene : newScenes)
         {
+            auto existingSceneIt = m_sceneClients.find(newScene.sceneID);
+            if (existingSceneIt != m_sceneClients.end() && existingSceneIt->value.first == providerID)
+            {
+                LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::handleNewScenesAvailable: duplicate publish ofscene: " << newScene.sceneID.getValue() << " @ " << providerID << " name:" << newScene.friendlyName << ". Will unpublish first");
+                doHandleSceneBecameUnavailable(newScene.sceneID, providerID);
+            }
+
             if (!m_sceneClients.contains(newScene.sceneID))
             {
                 LOG_INFO(CONTEXT_RENDERER, "RendererFrameworkLogic::handleNewScenesAvailable: scene published: " << newScene.sceneID.getValue() << " @ " << providerID << " name:" << newScene.friendlyName << " publicationmode: " << EnumToString(newScene.publicationMode));
 
-                m_rendererCommands.publishScene(newScene.sceneID, providerID, mode);
+                m_rendererCommands.publishScene(newScene.sceneID, mode);
                 m_sceneClients.put(newScene.sceneID, std::make_pair(providerID, newScene.friendlyName));
             }
             else
@@ -65,18 +72,24 @@ namespace ramses_internal
         {
             if (m_sceneClients.contains(scene.sceneID))
             {
-                LOG_INFO(CONTEXT_RENDERER, "RendererFrameworkLogic::handleScenesBecameUnavailable: scene unpublished: " << scene.sceneID.getValue() << " by " << providerID);
-
-                m_rendererCommands.unpublishScene(scene.sceneID);
-                m_bufferedSceneActionsPerScene.erase(scene.sceneID);
-                m_sceneClients.remove(scene.sceneID);
-                m_lastReceivedListCounter.erase(scene.sceneID);
+                doHandleSceneBecameUnavailable(scene.sceneID, providerID);
             }
             else
             {
                 LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::handleScenesBecameUnavailable: ignore unpublish for unknown scene: " << scene.sceneID.getValue() << " by " << providerID);
             }
         }
+    }
+
+    void RendererFrameworkLogic::doHandleSceneBecameUnavailable(const SceneId& sceneId, const Guid& providerID)
+    {
+        LOG_INFO(CONTEXT_RENDERER, "RendererFrameworkLogic::doHandleSceneBecameUnavailable: scene unpublished: " << sceneId.getValue() << " by " << providerID);
+        assert(m_sceneClients.contains(sceneId));
+
+        m_rendererCommands.unpublishScene(sceneId);
+        m_bufferedSceneActionsPerScene.erase(sceneId);
+        m_sceneClients.remove(sceneId);
+        m_lastReceivedListCounter.erase(sceneId);
     }
 
     void RendererFrameworkLogic::handleInitializeScene(const SceneInfo& sceneInfo, const Guid& providerID)
@@ -99,7 +112,7 @@ namespace ramses_internal
         // TODO(tobias) report up to renderer API
     }
 
-    void RendererFrameworkLogic::requestResourceAsyncronouslyFromFramework(const ResourceContentHashVector& ids, const RequesterID& requesterID, const SceneId& sceneId)
+    void RendererFrameworkLogic::requestResourceAsyncronouslyFromFramework(const ResourceContentHashVector& ids, const ResourceRequesterID& requesterID, const SceneId& sceneId)
     {
         PlatformGuard guard(m_frameworkLock);
 
@@ -116,13 +129,13 @@ namespace ramses_internal
         }
     }
 
-    void RendererFrameworkLogic::cancelResourceRequest(const ResourceContentHash& resourceHash, const RequesterID& requesterID)
+    void RendererFrameworkLogic::cancelResourceRequest(const ResourceContentHash& resourceHash, const ResourceRequesterID& requesterID)
     {
         PlatformGuard guard(m_frameworkLock);
         m_resourceComponent.cancelResourceRequest(resourceHash, requesterID);
     }
 
-    ManagedResourceVector RendererFrameworkLogic::popArrivedResources(const RequesterID& requesterID)
+    ManagedResourceVector RendererFrameworkLogic::popArrivedResources(const ResourceRequesterID& requesterID)
     {
         PlatformGuard guard(m_frameworkLock);
         return m_resourceComponent.popArrivedResources(requesterID);
@@ -199,6 +212,118 @@ namespace ramses_internal
         {
             handleScenesBecameUnavailable(unavailableScenes, clientID);
         }
+    }
+
+    void RendererFrameworkLogic::sendSubscribeScene(SceneId sceneId)
+    {
+        PlatformGuard guard(m_frameworkLock);
+        auto it = m_sceneClients.find(sceneId);
+        if (it == m_sceneClients.end())
+        {
+            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::subscribeScene: can't send subscribe scene " << sceneId << " because provider unknown");
+            return;
+        }
+        m_sceneGraphConsumerComponent.subscribeScene(it->value.first, sceneId);
+    }
+
+    void RendererFrameworkLogic::sendUnsubscribeScene(SceneId sceneId)
+    {
+        PlatformGuard guard(m_frameworkLock);
+        auto it = m_sceneClients.find(sceneId);
+        if (it == m_sceneClients.end())
+        {
+            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::subscribeScene: can't send subscribe scene " << sceneId << " because provider unknown");
+            return;
+        }
+        m_sceneGraphConsumerComponent.unsubscribeScene(it->value.first, sceneId);
+    }
+
+    void RendererFrameworkLogic::sendSceneStateChanged(SceneId masterScene, SceneId referencedScene, RendererSceneState newState)
+    {
+        SceneReferenceEvent event(masterScene);
+        event.type = SceneReferenceEventType::SceneStateChanged;
+        event.referencedScene = referencedScene;
+        event.sceneState = newState;
+
+        PlatformGuard guard(m_frameworkLock);
+        auto it = m_sceneClients.find(masterScene);
+        if (it == m_sceneClients.end())
+        {
+            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::sendSceneStateChanged: can't send scene state changed event for scene " << masterScene << " because provider unknown");
+            return;
+        }
+
+        LOG_INFO_P(CONTEXT_FRAMEWORK,
+            "RendererFrameworkLogic::sendSceneStateChanged: sending scene state changed event (state {} / master {} / reffed {}) to {}",
+            EnumToString(newState), masterScene, referencedScene, it->value.first);
+        m_sceneGraphConsumerComponent.sendSceneReferenceEvent(it->value.first, event);
+    }
+
+    void RendererFrameworkLogic::sendSceneFlushed(SceneId masterScene, SceneId referencedScene, SceneVersionTag tag)
+    {
+        SceneReferenceEvent event(masterScene);
+        event.type = SceneReferenceEventType::SceneFlushed;
+        event.referencedScene = referencedScene;
+        event.tag = tag;
+
+        PlatformGuard guard(m_frameworkLock);
+        auto it = m_sceneClients.find(masterScene);
+        if (it == m_sceneClients.end())
+        {
+            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::sendSceneFlushed: can't send scene state changed event for scene " << masterScene << " because provider unknown");
+            return;
+        }
+
+        LOG_INFO_P(CONTEXT_FRAMEWORK,
+            "RendererFrameworkLogic::sendSceneFlushed: sending scene flushed event (tag {} / master {} / reffed {}) to {}",
+            tag, masterScene, referencedScene, it->value.first);
+        m_sceneGraphConsumerComponent.sendSceneReferenceEvent(it->value.first, event);
+    }
+
+    void RendererFrameworkLogic::sendDataLinked(SceneId masterScene, SceneId providerScene, DataSlotId provider, SceneId consumerScene, DataSlotId consumer, bool success)
+    {
+        SceneReferenceEvent event(masterScene);
+        event.type = SceneReferenceEventType::DataLinked;
+        event.providerScene = providerScene;
+        event.dataProvider = provider;
+        event.consumerScene = consumerScene;
+        event.dataConsumer = consumer;
+        event.status = success;
+
+        PlatformGuard guard(m_frameworkLock);
+        auto it = m_sceneClients.find(masterScene);
+        if (it == m_sceneClients.end())
+        {
+            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::sendDataLinked: can't send scene state changed event for scene " << masterScene << " because provider unknown");
+            return;
+        }
+
+        LOG_INFO_P(CONTEXT_FRAMEWORK,
+            "RendererFrameworkLogic::sendDataLinked: sending data linked event (master {} / providerScene {} / provider {} / consumerScene {} / consumer {} / success {}) to {}",
+            masterScene, providerScene, provider, consumerScene, consumer, success, it->value.first);
+        m_sceneGraphConsumerComponent.sendSceneReferenceEvent(it->value.first, event);
+    }
+
+    void RendererFrameworkLogic::sendDataUnlinked(SceneId masterScene, SceneId consumerScene, DataSlotId consumer, bool success)
+    {
+        SceneReferenceEvent event(masterScene);
+        event.type = SceneReferenceEventType::DataUnlinked;
+        event.consumerScene = consumerScene;
+        event.dataConsumer = consumer;
+        event.status = success;
+
+        PlatformGuard guard(m_frameworkLock);
+        auto it = m_sceneClients.find(masterScene);
+        if (it == m_sceneClients.end())
+        {
+            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::sendDataUnlinked: can't send scene state changed event for scene " << masterScene << " because provider unknown");
+            return;
+        }
+
+        LOG_INFO_P(CONTEXT_FRAMEWORK,
+            "RendererFrameworkLogic::sendDataLinked: sending data linked event (master {} / consumerScene {} / consumer {} / success {}) to {}",
+            masterScene, consumerScene, consumer, success, it->value.first);
+        m_sceneGraphConsumerComponent.sendSceneReferenceEvent(it->value.first, event);
     }
 
     bool RendererFrameworkLogic::isSceneActionListCounterValid(const SceneId& sceneId, const uint64_t& counter)

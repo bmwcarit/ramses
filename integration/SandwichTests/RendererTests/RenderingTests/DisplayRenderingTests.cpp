@@ -43,8 +43,6 @@ void DisplayRenderingTests::setUpTestCases(RendererTestsFramework& testFramework
     testCaseWarp.m_displayConfigs.front().enableWarpingPostEffect();
     RenderingTestCase& testCaseWarp2 = testFramework.createTestCaseWithDefaultDisplay(DisplayTest_UpdateWarping, *this, "DisplayRendererTest_UpdateWarping");
     testCaseWarp2.m_displayConfigs.front().enableWarpingPostEffect();
-    RenderingTestCase& stereoDisplayTest = testFramework.createTestCaseWithDefaultDisplay(DisplayTest_Stereo, *this, "DisplayRendererTest_Stereo");
-    stereoDisplayTest.m_displayConfigs.front().enableStereoDisplay();
     testFramework.createTestCaseWithDefaultDisplay(DisplayTest_Subimage, *this, "DisplayRendererTest_Subimage");
 
     RenderingTestCase& testCaseRemap = testFramework.createTestCase(DisplayTest_RemapScene, *this, "DisplayRendererTest_RemapScene");
@@ -92,8 +90,6 @@ bool DisplayRenderingTests::run(RendererTestsFramework& testFramework, const Ren
         return runWarpingTest(testFramework);
     case DisplayTest_UpdateWarping:
         return runUpdateWarpingTest(testFramework);
-    case DisplayTest_Stereo:
-        return runStereoTest(testFramework);
     case DisplayTest_Subimage:
         return runSubimageTest(testFramework);
     case DisplayTest_RemapScene:
@@ -125,12 +121,8 @@ bool DisplayRenderingTests::runTwoScenesTest(RendererTestsFramework& testFramewo
 
     testFramework.publishAndFlushScene(sceneId);
     testFramework.publishAndFlushScene(otherId);
-    testFramework.subscribeScene(sceneId);
-    testFramework.subscribeScene(otherId);
-    testFramework.mapScene(sceneId, 0u);
-    testFramework.mapScene(otherId, 0u);
-    testFramework.showScene(sceneId);
-    testFramework.showScene(otherId);
+    testFramework.getSceneToRendered(sceneId);
+    testFramework.getSceneToRendered(otherId);
 
     return testFramework.renderAndCompareScreenshot("ARendererDisplays_TwoScenes");
 }
@@ -144,12 +136,8 @@ bool DisplayRenderingTests::runUnpublishTest(RendererTestsFramework& testFramewo
 
     testFramework.publishAndFlushScene(sceneId);
     testFramework.publishAndFlushScene(otherId);
-    testFramework.subscribeScene(sceneId);
-    testFramework.subscribeScene(otherId);
-    testFramework.mapScene(sceneId, 0u);
-    testFramework.mapScene(otherId, 0u);
-    testFramework.showScene(sceneId);
-    testFramework.showScene(otherId);
+    testFramework.getSceneToRendered(sceneId);
+    testFramework.getSceneToRendered(otherId);
 
     bool testResult = testFramework.renderAndCompareScreenshot("ARendererDisplays_TwoScenes");
 
@@ -168,16 +156,12 @@ bool DisplayRenderingTests::runHideTest(RendererTestsFramework& testFramework)
 
     testFramework.publishAndFlushScene(sceneId);
     testFramework.publishAndFlushScene(otherId);
-    testFramework.subscribeScene(sceneId);
-    testFramework.subscribeScene(otherId);
-    testFramework.mapScene(sceneId, 0u);
-    testFramework.mapScene(otherId, 0u);
-    testFramework.showScene(sceneId);
-    testFramework.showScene(otherId);
+    testFramework.getSceneToRendered(sceneId);
+    testFramework.getSceneToRendered(otherId);
 
     bool testResult = testFramework.renderAndCompareScreenshot("ARendererDisplays_TwoScenes");
 
-    testFramework.hideScene(sceneId);
+    testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Ready);
     testResult &= testFramework.renderAndCompareScreenshot("ARendererDisplays_HiddenScene");
 
     return testResult;
@@ -192,12 +176,10 @@ bool DisplayRenderingTests::runSceneRenderOrderTest(RendererTestsFramework& test
 
     testFramework.publishAndFlushScene(sceneId);
     testFramework.publishAndFlushScene(otherId);
-    testFramework.subscribeScene(sceneId);
-    testFramework.subscribeScene(otherId);
-    testFramework.mapScene(sceneId, 0u, 1);
-    testFramework.mapScene(otherId, 0u, 2);
-    testFramework.showScene(sceneId);
-    testFramework.showScene(otherId);
+    testFramework.getSceneToRendered(sceneId);
+    testFramework.getSceneToRendered(otherId);
+    testFramework.assignSceneToDisplayBuffer(sceneId, testFramework.getDisplayFramebufferId(0u), 1);
+    testFramework.assignSceneToDisplayBuffer(otherId, testFramework.getDisplayFramebufferId(0u), 2);
 
     return testFramework.renderAndCompareScreenshot("ARendererDisplays_TwoScenesOrdered");
 }
@@ -211,12 +193,10 @@ bool DisplayRenderingTests::runSceneRenderOrderInversedTest(RendererTestsFramewo
 
     testFramework.publishAndFlushScene(sceneId);
     testFramework.publishAndFlushScene(otherId);
-    testFramework.subscribeScene(sceneId);
-    testFramework.subscribeScene(otherId);
-    testFramework.mapScene(sceneId, 0u, 2);
-    testFramework.mapScene(otherId, 0u, 1);
-    testFramework.showScene(sceneId);
-    testFramework.showScene(otherId);
+    testFramework.getSceneToRendered(sceneId);
+    testFramework.getSceneToRendered(otherId);
+    testFramework.assignSceneToDisplayBuffer(sceneId, testFramework.getDisplayFramebufferId(0u), 2);
+    testFramework.assignSceneToDisplayBuffer(otherId, testFramework.getDisplayFramebufferId(0u), 1);
 
     return testFramework.renderAndCompareScreenshot("ARendererDisplays_TwoScenesInverseOrdered");
 }
@@ -226,9 +206,7 @@ bool DisplayRenderingTests::runWarpingTest(RendererTestsFramework& testFramework
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::RenderTargetScene>(ramses_internal::RenderTargetScene::ORTHOGRAPHIC_PROJECTION,
         ramses_internal::Vector3(0.0f, 0.2f, 2.0f));
     testFramework.publishAndFlushScene(sceneId);
-    testFramework.subscribeScene(sceneId);
-    testFramework.mapScene(sceneId, 0u);
-    testFramework.showScene(sceneId);
+    testFramework.getSceneToRendered(sceneId);
     return testFramework.renderAndCompareScreenshot("RenderTargetScene_Warping");
 }
 
@@ -237,9 +215,7 @@ bool DisplayRenderingTests::runUpdateWarpingTest(RendererTestsFramework& testFra
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::RenderTargetScene>(ramses_internal::RenderTargetScene::ORTHOGRAPHIC_PROJECTION,
         ramses_internal::Vector3(0.0f, 0.2f, 2.0f));
     testFramework.publishAndFlushScene(sceneId);
-    testFramework.subscribeScene(sceneId);
-    testFramework.mapScene(sceneId, 0u);
-    testFramework.showScene(sceneId);
+    testFramework.getSceneToRendered(sceneId);
     if (!testFramework.renderAndCompareScreenshot("RenderTargetScene_Warping"))
         return false;
 
@@ -267,23 +243,11 @@ bool DisplayRenderingTests::runUpdateWarpingTest(RendererTestsFramework& testFra
     return testFramework.renderAndCompareScreenshot("RenderTargetScene_Warping");
 }
 
-bool DisplayRenderingTests::runStereoTest(RendererTestsFramework& testFramework)
-{
-    const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::STEREO_RENDERING);
-    testFramework.publishAndFlushScene(sceneId);
-    testFramework.subscribeScene(sceneId);
-    testFramework.mapScene(sceneId);
-    testFramework.showScene(sceneId);
-    return testFramework.renderAndCompareScreenshot("MultipleTrianglesScene_StereoRendering");
-}
-
 bool DisplayRenderingTests::runSubimageTest(RendererTestsFramework& testFramework)
 {
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::SUBIMAGES);
     testFramework.publishAndFlushScene(sceneId);
-    testFramework.subscribeScene(sceneId);
-    testFramework.mapScene(sceneId);
-    testFramework.showScene(sceneId);
+    testFramework.getSceneToRendered(sceneId);
     return testFramework.renderAndCompareScreenshotSubimage("MultipleTrianglesScene_Subimages_middle", 89u, 69u, 30u, 102u);
 }
 
@@ -292,16 +256,14 @@ bool DisplayRenderingTests::runRemapSceneTest(RendererTestsFramework& testFramew
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES,
         ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
     testFramework.publishAndFlushScene(sceneId);
-    testFramework.subscribeScene(sceneId);
-    testFramework.mapScene(sceneId, 0u);
-    testFramework.showScene(sceneId);
+    testFramework.getSceneToRendered(sceneId, 0u);
     bool testResult = testFramework.renderAndCompareScreenshot("ARendererInstance_Three_Triangles", 0u);
     testResult &= testFramework.renderAndCompareScreenshot("ARendererDisplays_Black", 1u);
 
-    testFramework.hideScene(sceneId);
-    testFramework.unmapScene(sceneId);
-    testFramework.mapScene(sceneId, 1u);
-    testFramework.showScene(sceneId);
+    testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Available);
+    testFramework.setSceneMapping(sceneId, 1u);
+    testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
+
     testResult &= testFramework.renderAndCompareScreenshot("ARendererDisplays_Black", 0u);
     testResult &= testFramework.renderAndCompareScreenshot("ARendererInstance_Three_Triangles", 1u);
 
@@ -317,25 +279,21 @@ bool DisplayRenderingTests::runSwapScenesTest(RendererTestsFramework& testFramew
 
     testFramework.publishAndFlushScene(sceneId1);
     testFramework.publishAndFlushScene(sceneId2);
-    testFramework.subscribeScene(sceneId1);
-    testFramework.subscribeScene(sceneId2);
-
-    testFramework.mapScene(sceneId1, 0u);
-    testFramework.mapScene(sceneId2, 1u);
-    testFramework.showScene(sceneId1);
-    testFramework.showScene(sceneId2);
+    testFramework.setSceneMapping(sceneId1, 0u);
+    testFramework.setSceneMapping(sceneId2, 1u);
+    testFramework.getSceneToState(sceneId1, ramses::RendererSceneState::Rendered);
+    testFramework.getSceneToState(sceneId2, ramses::RendererSceneState::Rendered);
 
     bool testResult = testFramework.renderAndCompareScreenshot("ARendererInstance_Three_Triangles", 0u);
     testResult &= testFramework.renderAndCompareScreenshot("ARendererInstance_Triangles_reordered", 1u);
 
-    testFramework.hideScene(sceneId1);
-    testFramework.hideScene(sceneId2);
-    testFramework.unmapScene(sceneId1);
-    testFramework.unmapScene(sceneId2);
-    testFramework.mapScene(sceneId2, 0u);
-    testFramework.mapScene(sceneId1, 1u);
-    testFramework.showScene(sceneId1);
-    testFramework.showScene(sceneId2);
+    testFramework.getSceneToState(sceneId1, ramses::RendererSceneState::Available);
+    testFramework.getSceneToState(sceneId2, ramses::RendererSceneState::Available);
+    testFramework.setSceneMapping(sceneId1, 1u);
+    testFramework.setSceneMapping(sceneId2, 0u);
+    testFramework.getSceneToState(sceneId1, ramses::RendererSceneState::Rendered);
+    testFramework.getSceneToState(sceneId2, ramses::RendererSceneState::Rendered);
+
     testResult &= testFramework.renderAndCompareScreenshot("ARendererInstance_Triangles_reordered", 0u);
     testResult &= testFramework.renderAndCompareScreenshot("ARendererInstance_Three_Triangles", 1u);
 
@@ -347,16 +305,14 @@ bool DisplayRenderingTests::runRemapSceneWithRenderTargetTest(RendererTestsFrame
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::RenderTargetScene>(ramses_internal::RenderTargetScene::PERSPECTIVE_PROJECTION,
         ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
     testFramework.publishAndFlushScene(sceneId);
-    testFramework.subscribeScene(sceneId);
-    testFramework.mapScene(sceneId, 0u);
-    testFramework.showScene(sceneId);
+    testFramework.getSceneToRendered(sceneId, 0u);
     bool testResult = testFramework.renderAndCompareScreenshot("ARendererDisplays_RenderTarget", 0u);
     testResult &= testFramework.renderAndCompareScreenshot("ARendererDisplays_Black", 1u);
 
-    testFramework.hideScene(sceneId);
-    testFramework.unmapScene(sceneId);
-    testFramework.mapScene(sceneId, 1u);
-    testFramework.showScene(sceneId);
+    testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Available);
+    testFramework.setSceneMapping(sceneId, 1u);
+    testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
+
     testResult &= testFramework.renderAndCompareScreenshot("ARendererDisplays_Black", 0u);
     testResult &= testFramework.renderAndCompareScreenshot("ARendererDisplays_RenderTarget", 1u);
 
@@ -368,16 +324,13 @@ bool DisplayRenderingTests::runRemapSceneWithTextTest(RendererTestsFramework& te
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::TextScene>(ramses_internal::TextScene::EState_INITIAL_128_BY_64_VIEWPORT,
         ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
     testFramework.publishAndFlushScene(sceneId);
-    testFramework.subscribeScene(sceneId);
-    testFramework.mapScene(sceneId, 0u);
-    testFramework.showScene(sceneId);
+    testFramework.getSceneToRendered(sceneId);
     bool testResult = testFramework.renderAndCompareScreenshot("ARendererInstance_SimpleText", 0u);
     testResult &= testFramework.renderAndCompareScreenshot("ARendererDisplays_Black", 1u);
 
-    testFramework.hideScene(sceneId);
-    testFramework.unmapScene(sceneId);
-    testFramework.mapScene(sceneId, 1u);
-    testFramework.showScene(sceneId);
+    testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Available);
+    testFramework.setSceneMapping(sceneId, 1u);
+    testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
     testResult &= testFramework.renderAndCompareScreenshot("ARendererDisplays_Black", 0u);
     testResult &= testFramework.renderAndCompareScreenshot("ARendererInstance_SimpleText", 1u);
 
@@ -389,16 +342,13 @@ bool DisplayRenderingTests::runRemapSceneToWarpedDisplayTest(RendererTestsFramew
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::RenderTargetScene>(ramses_internal::RenderTargetScene::PERSPECTIVE_PROJECTION,
         ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
     testFramework.publishAndFlushScene(sceneId);
-    testFramework.subscribeScene(sceneId);
-    testFramework.mapScene(sceneId, 0u);
-    testFramework.showScene(sceneId);
+    testFramework.getSceneToRendered(sceneId);
     bool testResult = testFramework.renderAndCompareScreenshot("ARendererDisplays_RenderTarget", 0u);
     testResult &= testFramework.renderAndCompareScreenshot("ARendererDisplays_Black", 1u);
 
-    testFramework.hideScene(sceneId);
-    testFramework.unmapScene(sceneId);
-    testFramework.mapScene(sceneId, 1u);
-    testFramework.showScene(sceneId);
+    testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Available);
+    testFramework.setSceneMapping(sceneId, 1u);
+    testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
     testResult &= testFramework.renderAndCompareScreenshot("ARendererDisplays_Black", 0u);
     testResult &= testFramework.renderAndCompareScreenshot("ARendererDisplays_Warped", 1u);
 
@@ -414,22 +364,15 @@ bool DisplayRenderingTests::runRemapSceneWithChangedContentTest(RendererTestsFra
 
     testFramework.publishAndFlushScene(sceneId1);
     testFramework.publishAndFlushScene(sceneId2);
-    testFramework.subscribeScene(sceneId1);
-    testFramework.subscribeScene(sceneId2);
-
-    testFramework.mapScene(sceneId1, 0u);
-    testFramework.mapScene(sceneId2, 0u);
-    testFramework.showScene(sceneId1);
-    testFramework.showScene(sceneId2);
+    testFramework.getSceneToRendered(sceneId1, 0u);
+    testFramework.getSceneToRendered(sceneId2, 0u);
 
     bool testResult = testFramework.renderAndCompareScreenshot("ARendererDisplays_ModifiedScenes1", 0u);
     testResult &= testFramework.renderAndCompareScreenshot("ARendererDisplays_Black", 1u);
 
     // unmap scenes
-    testFramework.hideScene(sceneId1);
-    testFramework.hideScene(sceneId2);
-    testFramework.unmapScene(sceneId1);
-    testFramework.unmapScene(sceneId2);
+    testFramework.getSceneToState(sceneId1, ramses::RendererSceneState::Available);
+    testFramework.getSceneToState(sceneId2, ramses::RendererSceneState::Available);
 
     // modify scenes
     testFramework.getScenesRegistry().setSceneState<ramses_internal::MultipleTrianglesScene>(sceneId1, ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED);
@@ -441,10 +384,10 @@ bool DisplayRenderingTests::runRemapSceneWithChangedContentTest(RendererTestsFra
     testResult &= testFramework.renderAndCompareScreenshot("ARendererDisplays_Black", 1u);
 
     // map scenes to second display
-    testFramework.mapScene(sceneId1, 1u);
-    testFramework.mapScene(sceneId2, 1u);
-    testFramework.showScene(sceneId1);
-    testFramework.showScene(sceneId2);
+    testFramework.setSceneMapping(sceneId1, 1u);
+    testFramework.setSceneMapping(sceneId2, 1u);
+    testFramework.getSceneToState(sceneId1, ramses::RendererSceneState::Rendered);
+    testFramework.getSceneToState(sceneId2, ramses::RendererSceneState::Rendered);
 
     testResult &= testFramework.renderAndCompareScreenshot("ARendererDisplays_Black", 0u);
     testResult &= testFramework.renderAndCompareScreenshot("ARendererDisplays_ModifiedScenes2", 1u);
@@ -457,19 +400,13 @@ bool DisplayRenderingTests::runResubscribeSceneTest(RendererTestsFramework& test
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES,
         ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
     testFramework.publishAndFlushScene(sceneId);
-    testFramework.subscribeScene(sceneId);
-    testFramework.mapScene(sceneId, 0u);
-    testFramework.showScene(sceneId);
+    testFramework.getSceneToRendered(sceneId);
     bool testResult = testFramework.renderAndCompareScreenshot("ARendererInstance_Three_Triangles", 0u);
 
-    testFramework.hideScene(sceneId);
-    testFramework.unmapScene(sceneId);
-    testFramework.unsubscribeScene(sceneId);
+    testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Unavailable);
     testResult &= testFramework.renderAndCompareScreenshot("ARendererDisplays_Black", 0u);
 
-    testFramework.subscribeScene(sceneId);
-    testFramework.mapScene(sceneId, 0u);
-    testFramework.showScene(sceneId);
+    testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
     testResult &= testFramework.renderAndCompareScreenshot("ARendererInstance_Three_Triangles", 0u);
 
     return testResult;

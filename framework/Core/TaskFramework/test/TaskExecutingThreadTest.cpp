@@ -20,27 +20,11 @@ using namespace testing;
 
 namespace ramses_internal
 {
-    ACTION_P(ReleaseSyncCall, syncer)
-    {
-        UNUSED(arg9);
-        UNUSED(arg8);
-        UNUSED(arg7);
-        UNUSED(arg6);
-        UNUSED(arg5);
-        UNUSED(arg4);
-        UNUSED(arg3);
-        UNUSED(arg2);
-        UNUSED(arg1);
-        UNUSED(arg0);
-        UNUSED(args);
-        syncer->signal();
-    }
-
     class AliveHandlerMock : public IThreadAliveNotifier
     {
     public:
-        MOCK_METHOD1(notifyAlive, void(UInt16 threadIndex));
-        MOCK_CONST_METHOD0(calculateTimeout, UInt32());
+        MOCK_METHOD(void, notifyAlive, (UInt16 threadIndex), (override));
+        MOCK_METHOD(UInt32, calculateTimeout, (), (const, override));
     };
 
     TEST(ATaskExecutingThread, callsAliveNotificationWithGivenThreadID)
@@ -50,12 +34,14 @@ namespace ramses_internal
         ProcessingTaskQueue q;
         TaskExecutingThread thread(13, handlerMock);
 
-        EXPECT_CALL(handlerMock, notifyAlive(13)).Times(AtLeast(2)).WillOnce(Return()).WillRepeatedly(ReleaseSyncCall(&syncWaiter));
+        EXPECT_CALL(handlerMock, notifyAlive(13))
+            .Times(AtLeast(2))
+            .WillOnce(Return())
+            .WillRepeatedly(InvokeWithoutArgs([&]() { syncWaiter.signal(); }));
         EXPECT_CALL(handlerMock, calculateTimeout()).Times(AtLeast(1)).WillRepeatedly(Return(100));
         thread.start(q);
 
-        const EStatus status = syncWaiter.wait(1000);
-        EXPECT_EQ(EStatus_RAMSES_OK, status);
+        EXPECT_TRUE(syncWaiter.wait(1000));
     }
 
     TEST(ATaskExecutingThread, stopThreadWorks)
@@ -89,7 +75,10 @@ namespace ramses_internal
         ProcessingTaskQueue q;
         TaskExecutingThread thread(13, handlerMock);
 
-        EXPECT_CALL(handlerMock, notifyAlive(13)).Times(AtLeast(2)).WillOnce(Return()).WillRepeatedly(ReleaseSyncCall(&syncWaiter));
+        EXPECT_CALL(handlerMock, notifyAlive(13))
+            .Times(AtLeast(2))
+            .WillOnce(Return())
+            .WillRepeatedly(InvokeWithoutArgs([&]() { syncWaiter.signal(); }));
         EXPECT_CALL(handlerMock, calculateTimeout()).Times(AtLeast(1)).WillRepeatedly(Return(2000));
         thread.start(q);
 
@@ -102,8 +91,7 @@ namespace ramses_internal
             }
         });
 
-        const EStatus status = syncWaiter.wait(1000);
-        EXPECT_EQ(EStatus_RAMSES_OK, status);
+        EXPECT_TRUE(syncWaiter.wait(1000));
         thread.stop();
         t.join();
     }

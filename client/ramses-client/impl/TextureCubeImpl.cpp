@@ -14,7 +14,7 @@
 namespace ramses
 {
     TextureCubeImpl::TextureCubeImpl(ramses_internal::ResourceHashUsage texture, RamsesClientImpl& client, const char* name)
-        : ResourceImpl(ERamsesObjectType_TextureCube, texture, client, name)
+        : ResourceImpl(ERamsesObjectType_TextureCube, std::move(texture), client, name)
         , m_size(0)
         , m_textureFormat(ETextureFormat_Invalid)
     {
@@ -24,10 +24,11 @@ namespace ramses
     {
     }
 
-    void TextureCubeImpl::initializeFromFrameworkData(uint32_t size, ETextureFormat textureFormat)
+    void TextureCubeImpl::initializeFromFrameworkData(uint32_t size, ETextureFormat textureFormat, const TextureSwizzle& swizzle)
     {
         m_size = size;
         m_textureFormat = textureFormat;
+        m_swizzle = swizzle;
     }
 
     status_t TextureCubeImpl::serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const
@@ -36,6 +37,10 @@ namespace ramses
 
         outStream << m_size;
         outStream << static_cast<uint32_t>(m_textureFormat);
+        outStream << m_swizzle.channelRed;
+        outStream << m_swizzle.channelGreen;
+        outStream << m_swizzle.channelBlue;
+        outStream << m_swizzle.channelAlpha;
 
         return StatusOK;
     }
@@ -48,6 +53,10 @@ namespace ramses
         uint32_t enumInt = 0u;
         inStream >> enumInt;
         m_textureFormat = static_cast<ETextureFormat>(enumInt);
+        inStream >> m_swizzle.channelRed;
+        inStream >> m_swizzle.channelGreen;
+        inStream >> m_swizzle.channelBlue;
+        inStream >> m_swizzle.channelAlpha;
 
         return StatusOK;
     }
@@ -60,5 +69,10 @@ namespace ramses
     ETextureFormat TextureCubeImpl::getTextureFormat() const
     {
         return m_textureFormat;
+    }
+
+    const TextureSwizzle& TextureCubeImpl::getTextureSwizzle() const
+    {
+        return m_swizzle;
     }
 }

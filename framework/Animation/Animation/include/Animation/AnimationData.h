@@ -25,7 +25,7 @@ namespace ramses_internal
     class AnimationData : public AnimationDataNotifier
     {
     public:
-        AnimationData(const AnimationSystemSizeInformation& sizeInfo = AnimationSystemSizeInformation());
+        explicit AnimationData(const AnimationSystemSizeInformation& sizeInfo = AnimationSystemSizeInformation());
         virtual ~AnimationData();
 
         template <template<typename> class Key, typename EDataType>
@@ -33,7 +33,7 @@ namespace ramses_internal
         template <template<typename> class Key, typename EDataType>
         SplineHandle                 allocateSpline                      (SplineHandle handle = SplineHandle::Invalid());
         const SplineBase*            getSpline                           (SplineHandle splineHandle) const;
-        Bool                         containsSpline                      (SplineHandle splineHandle) const;
+        bool                         containsSpline                      (SplineHandle splineHandle) const;
         UInt32                       getTotalSplineCount() const;
         // KeyIndex is not guaranteed to refer to the same key after more keys added due to reordering
         template <template<typename> class Key, typename EDataType>
@@ -45,22 +45,22 @@ namespace ramses_internal
         DataBindHandle               allocateDataBinding                 (const AnimationDataBind<ClassType, EDataType, HandleType, HandleType2>& dataBind, DataBindHandle handle = DataBindHandle::Invalid());
         const AnimationDataBindBase* getDataBinding                      (DataBindHandle dataBindHandle) const;
         AnimationDataBindBase*       getDataBinding                      (DataBindHandle dataBindHandle);
-        Bool                         containsDataBinding                 (DataBindHandle dataBindHandle) const;
+        bool                         containsDataBinding                 (DataBindHandle dataBindHandle) const;
         UInt32                       getTotalDataBindCount               () const;
 
         AnimationInstanceHandle      allocateAnimationInstance           (SplineHandle splineHandle, EInterpolationType interpolationType, EVectorComponent vectorComponent = EVectorComponent_All, AnimationInstanceHandle handle = AnimationInstanceHandle::Invalid());
         const AnimationInstance&     getAnimationInstance                (AnimationInstanceHandle instanceHandle) const;
-        Bool                         containsAnimationInstance           (AnimationInstanceHandle instanceHandle) const;
+        bool                         containsAnimationInstance           (AnimationInstanceHandle instanceHandle) const;
         UInt32                       getTotalAnimationInstanceCount      () const;
         void                         addDataBindingToAnimationInstance(AnimationInstanceHandle handle, DataBindHandle dataBindHandle);
 
         AnimationHandle              allocateAnimation                   (AnimationInstanceHandle animationInstanceHandle, AnimationHandle handle = AnimationHandle::Invalid());
         const Animation&             getAnimation                        (AnimationHandle handle) const;
-        Bool                         containsAnimation                   (AnimationHandle handle) const;
+        bool                         containsAnimation                   (AnimationHandle handle) const;
         UInt32                       getTotalAnimationCount              () const;
         void                         getAnimationHandles                 (AnimationHandleVector& handles) const;
         void                         setAnimationTimeRange               (AnimationHandle handle, const AnimationTime& startTime, const AnimationTime& stopTime);
-        void                         setAnimationPaused                  (AnimationHandle handle, Bool pause);
+        void                         setAnimationPaused                  (AnimationHandle handle, bool pause);
         void                         setAnimationProperties              (AnimationHandle handle, Float playbackSpeed, Animation::Flags flags, AnimationTime::Duration loopDuration);
         void                         getAnimationProcessData             (AnimationHandle handle, AnimationProcessData& processData) const;
 
@@ -71,7 +71,7 @@ namespace ramses_internal
         void                         removeAnimationInstance             (AnimationInstanceHandle handle);
         void                         removeAnimation                     (AnimationHandle handle);
 
-        static Bool                  CheckDataTypeCompatibility(EDataTypeID dataTypeID, EDataTypeID accessorDataTypeID, EVectorComponent accessorVectorComponent);
+        static bool                  CheckDataTypeCompatibility(EDataTypeID dataTypeID, EDataTypeID accessorDataTypeID, EVectorComponent accessorVectorComponent);
 
     private:
         AnimationData(const AnimationData&);
@@ -79,7 +79,7 @@ namespace ramses_internal
 
         AnimationInstance&           getAnimationInstanceInternal(AnimationInstanceHandle handle);
         AnimationInstanceHandle      findAnimationInstance(const AnimationInstance& animationInstance) const;
-        Bool                         isDataBindingCompatibleWithAnimationInstance(const AnimationInstance& animationInstance, DataBindHandle dataBindHandle) const;
+        bool                         isDataBindingCompatibleWithAnimationInstance(const AnimationInstance& animationInstance, DataBindHandle dataBindHandle) const;
         AnimationHandle              findAnimation(const Animation& animation) const;
         Animation&                   getAnimationInternal(AnimationHandle handle);
 
@@ -87,7 +87,7 @@ namespace ramses_internal
 
         void                         getDataBindingsForAnimationInstance(AnimationInstanceHandle instanceHandle, ConstDataBindVector& dataBinds) const;
 
-        static Bool                  isTypeMatchingComponentType(EDataTypeID compType, EDataTypeID type);
+        static bool                  isTypeMatchingComponentType(EDataTypeID compType, EDataTypeID type);
 
         MemoryPool<SplineBase*, SplineHandle>                  m_splinePool;
         MemoryPool<AnimationDataBindBase*, DataBindHandle>     m_dataBindPool;
@@ -117,7 +117,7 @@ namespace ramses_internal
     SplineKeyIndex AnimationData::setSplineKey(SplineHandle handle, SplineTimeStamp timeStamp, const Key<EDataType>& key)
     {
         SplineBase* pSpline = getSplineInternal(handle);
-        assert(pSpline != 0);
+        assert(pSpline != nullptr);
         assert(pSpline->getDataType() == DataTypeToDataIDSelector<EDataType>::DataTypeID);
         assert(pSpline->getKeyType() == SplineKeyToSplineKeyIDSelector<Key>::SplineKeyID);
 

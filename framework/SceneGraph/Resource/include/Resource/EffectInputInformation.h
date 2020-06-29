@@ -15,8 +15,6 @@
 
 namespace ramses_internal
 {
-    class Effect;
-
     enum EEffectInputTextureType
     {
         EEffectInputTextureType_Texture2D = 0,
@@ -47,8 +45,7 @@ namespace ramses_internal
 
 
     EffectInputInformation::EffectInputInformation()
-        : inputName()
-        , elementCount(1)
+        : elementCount(1)
         , dataType(EDataType_Invalid)
         , semantics(EFixedSemantics_Invalid)
         , textureType(EEffectInputTextureType_Invalid)

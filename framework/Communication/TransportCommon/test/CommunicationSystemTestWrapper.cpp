@@ -11,7 +11,6 @@
 #include "Common/ParticipantIdentifier.h"
 #include "Utils/CommandLineParser.h"
 #include "Utils/File.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "TransportCommon/IDiscoveryDaemon.h"
 #include "TransportCommon/IConnectionStatusUpdateNotifier.h"
 #include "PlatformAbstraction/PlatformEnvironmentVariables.h"
@@ -41,32 +40,28 @@ namespace ramses_internal
 
     void AsyncEventCounter::signal()
     {
-        PlatformLightweightGuard g(lock);
+        std::lock_guard<std::mutex> g(lock);
         ++m_eventCounter;
-        cond.signal();
+        cond.notify_one();
     }
 
     testing::AssertionResult AsyncEventCounter::waitForEvents(UInt32 numberEventsToWaitFor, UInt32 waitTimeMsOverride)
     {
-        PlatformLightweightGuard g(lock);
-        bool abortWaiting = false;
-        UInt32 waitMs = (waitTimeMsOverride > 0 ? waitTimeMsOverride : m_waitTimeMs);
-
-        while (m_eventCounter < numberEventsToWaitFor && !abortWaiting)
-        {
-            abortWaiting = (cond.wait(&lock, waitMs) != EStatus_RAMSES_OK);
-        }
-        if (abortWaiting)
-        {
-            // clear all events on timeout
-            m_eventCounter = 0;
-            return testing::AssertionFailure() << "Timeout while waiting for SyncEvents (waitForEvents)";
-        }
-        else
+        std::unique_lock<std::mutex> l(lock);
+        if (cond.wait_for(l,
+                          std::chrono::milliseconds{(waitTimeMsOverride > 0 ? waitTimeMsOverride : m_waitTimeMs)},
+                          [&]() { return m_eventCounter >= numberEventsToWaitFor; }))
         {
             // only consume requested number of events
             m_eventCounter -= numberEventsToWaitFor;
             return testing::AssertionSuccess();
+        }
+        else
+        {
+            // clear all events on timeout
+            const auto currentEventCounter = m_eventCounter;
+            m_eventCounter = 0;
+            return testing::AssertionFailure() << "Timeout while waiting for SyncEvents (waitForEvents): Expected " << numberEventsToWaitFor << ", got " << currentEventCounter;
         }
     }
 
@@ -79,7 +74,7 @@ namespace ramses_internal
         {
             initializedLogger = true;
             std::array<const char *const, 3> args{"", "-l", "warn"};
-            GetRamsesLogger().initialize(CommandLineParser{static_cast<Int>(args.size()), args.data()}, "TEST", "TEST", true);
+            GetRamsesLogger().initialize(CommandLineParser{static_cast<Int>(args.size()), args.data()}, "TEST", "TEST", true, true);
         }
     }
 
@@ -173,8 +168,15 @@ namespace ramses_internal
         state.knownCommunicationSystems.push_back(this);
 
         // trigger event on mock call
-        ON_CALL(statusUpdateListener, newParticipantHasConnected(_)).WillByDefault(SendHandlerCalledEvent(&state));
-        ON_CALL(statusUpdateListener, participantHasDisconnected(_)).WillByDefault(SendHandlerCalledEvent(&state));
+        ON_CALL(statusUpdateListener, newParticipantHasConnected(_)).WillByDefault(InvokeWithoutArgs([&]() { state.sendEvent(); }));
+        ON_CALL(statusUpdateListener, participantHasDisconnected(_)).WillByDefault(InvokeWithoutArgs([&]() { state.sendEvent(); }));
+
+        // set dummy dcsm handler when testing ramses
+        if (state.serviceType == EServiceType::Ramses)
+        {
+            commSystem->setDcsmProviderServiceHandler(&dcsmProviderMock);
+            commSystem->setDcsmConsumerServiceHandler(&dcsmConsumerMock);
+        }
     }
 
     CommunicationSystemTestWrapper::~CommunicationSystemTestWrapper()

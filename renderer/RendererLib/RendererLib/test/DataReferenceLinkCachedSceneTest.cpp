@@ -24,7 +24,7 @@ public:
         , scene(rendererScenes.createScene(SceneInfo(SceneId(3u))))
         , sceneAllocator(scene)
     {
-        const DataLayoutHandle layout = sceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Int32) });
+        const DataLayoutHandle layout = sceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Int32) }, ResourceContentHash::Invalid());
         dataRef = sceneAllocator.allocateDataInstance(layout);
 
         dataSlot = sceneAllocator.allocateDataSlot({ EDataSlotType_DataConsumer, DataSlotId(1u), NodeHandle(), dataRef, ResourceContentHash::Invalid(), TextureSamplerHandle() });
@@ -48,9 +48,7 @@ TEST_F(ADataReferenceLinkCachedScene, canSetAndGetValue)
 
 TEST_F(ADataReferenceLinkCachedScene, canSetValueDirectlyWithoutUpdatingFallbackValue)
 {
-    Variant value;
-    value.setValue(33);
-    scene.setValueWithoutUpdatingFallbackValue(dataRef, DataFieldHandle(0u), value);
+    scene.setValueWithoutUpdatingFallbackValue(dataRef, DataFieldHandle(0u), DataInstanceValueVariant(33));
     EXPECT_EQ(33, scene.getDataSingleInteger(dataRef, DataFieldHandle(0u)));
 }
 
@@ -58,9 +56,7 @@ TEST_F(ADataReferenceLinkCachedScene, canRestoreFallbackValue)
 {
     scene.setDataSingleInteger(dataRef, DataFieldHandle(0u), 13);
 
-    Variant value;
-    value.setValue(33);
-    scene.setValueWithoutUpdatingFallbackValue(dataRef, DataFieldHandle(0u), value);
+    scene.setValueWithoutUpdatingFallbackValue(dataRef, DataFieldHandle(0u), DataInstanceValueVariant(33));
 
     scene.restoreFallbackValue(dataRef, DataFieldHandle(0u));
     EXPECT_EQ(13, scene.getDataSingleInteger(dataRef, DataFieldHandle(0u)));

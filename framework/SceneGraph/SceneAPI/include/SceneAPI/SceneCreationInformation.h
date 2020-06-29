@@ -17,7 +17,7 @@ namespace ramses_internal
 {
     struct SceneCreationInformation
     {
-        SceneCreationInformation(
+        explicit SceneCreationInformation(
             SceneId id = SceneId(),
             const String& name = String(),
             const SceneSizeInformation& sizeInfo = SceneSizeInformation())

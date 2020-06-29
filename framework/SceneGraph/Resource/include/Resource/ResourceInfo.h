@@ -9,7 +9,7 @@
 #ifndef RAMSES_RESOURCEINFO_H
 #define RAMSES_RESOURCEINFO_H
 
-#include "EResourceType.h"
+#include "Resource/ResourceTypes.h"
 #include "SceneAPI/ResourceContentHash.h"
 #include "IResource.h"
 
@@ -32,13 +32,12 @@ namespace ramses_internal
 
         ResourceInfo()
             : type(EResourceType_Invalid)
-            , hash()
             , decompressedSize(0)
             , compressedSize(0)
         {
         }
 
-        ResourceInfo(const IResource* resourceToGetDataFrom)
+        explicit ResourceInfo(const IResource* resourceToGetDataFrom)
             : type(resourceToGetDataFrom->getTypeID())
             , hash(resourceToGetDataFrom->getHash())
             , decompressedSize(resourceToGetDataFrom->getDecompressedDataSize())

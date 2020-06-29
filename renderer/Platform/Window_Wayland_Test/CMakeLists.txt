@@ -27,6 +27,4 @@ ACME_MODULE(
                             LinuxInput
                             RendererTestUtils
                             WaylandTestUtils
-                            WindowEventsPollingManager_Wayland
 )
-

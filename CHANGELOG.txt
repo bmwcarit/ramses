@@ -1,0 +1,140 @@
+25.0.0
+-------------------
+        API changes
+        ------------------------------------------------------------------------
+        - Remove AnimatedSetter
+        - Rework API class constructors: Make explicit and/or remove misleading default arguments
+        - RamsesRenderer::createDcsmContentControl will fail if given DcsmContentControlConfig has no DCSM category
+        - Removed DcsmContentControl::setDisplayBufferClearColor, RendererSceneControl::setDisplayBufferClearColor
+          and added RamsesRenderer::setDisplayBufferClearColor instead
+            - behavior and arguments unchanged
+        - Added DcsmContentControl::unlinkData to break data link between consumer and provider
+        - Removed RamsesRenderer::handlePickEvent and IRendererEventHandler::objectsPicked and addded
+          RendererSceneControl::handlePickEvent and IRendererSceneControlEventHandler::objectsPicked instead
+            - behavior and arguments unchanged
+        - Added DcsmContentControl::handlePickEvent and IDcsmContentControlEventHandler::objectsPicked
+        - Added event callbacks for data provider/consumer creation/destruction
+          to both IRendererSceneControlEventHandler and IDcsmContentControlEventHandler
+            - dataProviderCreated, dataProviderDestroyed, dataConsumerCreated, dataConsumerDestroyed
+        - Dcsm metadata for 3d vehicle now also takes camera FOV, see struct CarModelViewMetadata
+        - Animation timing must be set together with Dcsm metadata for 3d vehicle via DcsmMetadataCreator::setCarModelView
+            - animation timing can be retrieved using DcsmMetadataUpdate::getCarModelViewAnimationInfo()
+        - Make RamsesFrameWork::createClient/destroyClient/createRenderer/destroyRenderer fail when connected
+        - DcsmProvider callbacks give CategoryInfo instead of SizeInfo. This object can be queried for multiple sets of values
+        - Removed DcsmProvider::requestContentFocus and callbacks in IDcsmConsumerEventHandler and IDcsmContentControlEventHandler in favour of enableContentFocusRequest
+        - Removed FocusRequest from DcsmMetadata in DcsmMetadataCreator and DcsmMetadataUpdate
+        - Added parameter "displayBuffer" to RamsesRenderer::readPixels to allow reading from offscreen buffers
+            -  Added parameter "displayBuffer" to IRendererEventHandler::framebufferPixelsRead that corresponds to
+            the buffer for which read pixels event was generted
+        - Added RenderSize and SafeArea to CategoryInfo
+
+        General changes
+        ------------------------------------------------------------------------
+        - Change display default XY position to (0,0) instead of (150,150)
+            - Leads to change of placement of created display window on Windows and X11 platforms if default values are used
+        - LZ4 compress compressed texture formats like ASTC for file or network
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Set ivi surface destination rectangle on display creation on Wayland IVI platform
+
+24.0.3
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Added DcsmContentControlEventHandlerEmpty for convenience when only subset of handlers need implementation
+        - Remove usage of capu library
+        - Unbreak windows OSS abseil build due to incompatible flags
+        - Update glslang 8.13.3743
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Make File tests more stable when shuffled
+        - Properly handle shift key in windows console input
+
+        API changes
+        ------------------------------------------------------------------------
+        - New FocusRequest handling:
+          - Added DCSMProvider::enableFocusRequest and disableFocusRequest
+          - Added IDcsmConsumerEventHandler and IDcsmContentControlEventHandler callbacks
+              contentEnableFocusRequest and contentDisableFocusRequest if compiled with ENABLE_NEW_FOCUSREQUEST_API defined
+          This allows backwards compatible integration on ramses 24.x versions. For future major version this will be integrated
+          as usual.
+
+24.0.1
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Switch freetype to open files itself instead of from memory
+        - added imgui open source library
+        - Added Abseil open source library
+
+         API changes
+         ------------------------------------------------------------------------
+        - Added IFontInstance::getAllSupportedCharacters that returns a set with all supported UTF32 char codes
+        - RendererConfig changes
+            - Rename setWaylandSocketEmbedded -> setWaylandEmbeddedCompositingSocketName
+            - Rename setWaylandSocketEmbeddedGroup -> setWaylandEmbeddedCompositingSocketGroup
+            - Rename setWaylandSocketEmbeddedFD -> setWaylandEmbeddedCompositingSocketFD
+            - Add getWaylandEmbeddedCompositingSocketName
+        - Remove partial applying of scene flush
+            - Remove parameter limitForSceneActionsApply from RamsesRenderer::setFrameTimerLimits
+        - IDcsmConsumerEventHandler: moved TechnicalDescription from contentReady to new contentDescription callback, which is issued before contentReady
+        - DcsmRenderer changes
+            - Renamed all *DcsmRenderer* symbols and files to *DcsmContentControl*
+                - It does not wrap or replace RamsesRenderer as the old name suggests, instead it is alternative to RendererSceneControl
+            - Added mandatory argument to DcsmContentControl::setDisplayBufferClearColor to specify display ID in addition to display buffer ID
+            - Removed custom renderer event handling from DcsmContentControl::update
+                - DcsmContentControl is now acting as alternative to RendererSceneControl, it does not replace or wrap RamsesRenderer, it lives alongside with it
+                - How to port your code if you were using custom renderer event handler in DcsmContentControl::update
+                    - dispatch the renderer events via RamsesRenderer::dispatchEvents instead, no need to change anything in the handler implementation
+                - Side effect of this change that could cause problems: if you in your code do not properly flush renderer commands using RamsesRenderer::flush(),
+                these commands will not be executed, this was not an issue previously due to internal DcsmContentControl logic (arguably wrongly)
+                flushing the RamsesRenderer implicitly
+            - Added missing event callbacks to IDcsmContentControlEventHandler: contentFlushed, contentExpired, contentRecoveredFromExpiration
+                - These were previously available only in IRendererSceneControlEventHandler (scene events)
+                and their DcsmContentControl version (content events) were missing
+            - Removed redundant event callbacks IDcsmContentControlEventHandler::contentHidden and IDcsmContentControlEventHandler::contentReleased
+                - contentHidden is equivalent to contentReady, in sense that content state dropped to state ready
+                - contentReleased is equivalent to contentAvailable, in sense that content state dropped to state available
+        - Add RamsesFrameworkConfig::disableDLTApplicationRegistrationg
+        - Add Scene::getRamsesClient to retrieve parent client of a scene
+        - Added new API to control scene states on renderer RendererSceneControl to replace deprecated RendererSceneControl_legacy API
+            - the main difference is simplified scene state management and automatic transition to target state
+            - typical use case when simply getting scene rendered:
+                - api.setSceneMapping(scene, display);              // regardless of whether scene already published or not
+                - api.setSceneState(RendererSceneState::Rendered);  // regardless of whether scene already published or not
+                - api.flush();
+                - ... sceneStateChanged(scene, RendererSceneState::Rendered) will be emitted when rendered state reached
+            - how to port old code:
+                - generally any state transition previously needing strict step by step approach can now be done in a single command
+                    - subscribe + waitForSubscription, map + waitForMapped, show + waitForShown  ->  setState(rendered) + waitForRendered
+                - step by step transitions can still be achieved with new API if needed (e.g. for controlling timing of scene appearance)
+        - Split legacy scene control API from RamsesRenderer (this API is now deprecated, use RendererSceneControl instead)
+            - the methods below were moved from RamsesRenderer to a new class RendererSceneControl_legacy:
+                - subscribeScene, unsubscribeScene, mapScene, unmapScene, showScene, hideScene, assignSceneToDisplayBuffer,
+                  setDisplayBufferClearColor, linkData, linkOffscreenBufferToSceneData, unlinkData
+            - RendererSceneControl_legacy can be obtained via RamsesRenderer::getSceneControlAPI_legacy, there is just one instance per RamsesRenderer
+            - RendererSceneControl_legacy has its own flush and dispatchEvents, RamsesRenderer::flush/dispatchEvents has no effect for the new API
+            - how to port old code:
+                - renderer->mapScene -> renderer->getSceneControlAPI_legacy()->mapScene (same for any method from above)
+                - any call on RendererSceneControl_legacy must be additionally submitted by calling RendererSceneControl_legacy::flush
+                - events have to be dispatched additionally via RendererSceneControl_legacy::dispatchEvents using IRendererSceneControlEventHandler_legacy
+                - split your implementation of IRendererEventHandler accordingly
+                  or let your implementation derive from both IRendererEventHandler and the new IRendererSceneControlEventHandler_legacy
+        - DcsmRenderer can only be instantiated using RamsesRenderer::createDcsmRenderer
+        - There can be only one API for scene/content control at a time, either RendererSceneControl, RendererSceneControl_legacy or DcsmRenderer
+        - Add FontCascade to ramses-text-api
+        - dataConsumerId_t, dataProviderId_t are now strongly typed value
+        - Remove DisplayConfig::enableStereoDisplay: stereo rendering can be fully set up using existing ramses featuers
+        - Remove DisplayConfig::setOffscreen
+        - Added scene referencing feature, which allows to remotely control rendering states of other scenes
+            - Added SceneReference and Scene::createSceneReference to obtain a Ramses object referring to a another scene
+            - Added Scene::linkData/unlinkData functions which allow to create/destroy data links between master and referenced scenes
+            - Added IClientEventHandler methods for callbacks related to scene referencing and their data linking
+        - linkData and linkOffscreenBuffer in all currently available APIs (RendererSceneControl, DcsmRenderer, Scene, RendererSceneControl_legacy)
+          do not fail anymore if consumer slot already linked to a provider, instead the link is updated to link to the new provider, discarding the previous link.
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Improve handling of empty CMAKE_RUNTIME_OUTPUT_DIRECTORY or CMAKE_LIBRARY_OUTPUT_DIRECTORY

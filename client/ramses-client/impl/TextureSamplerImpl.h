@@ -12,13 +12,11 @@
 #include "ramses-client-api/TextureEnums.h"
 
 // internal
-#include "Resource/TextureMetaInfo.h"
 #include "SceneObjectImpl.h"
 
 // ramses framework
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/ResourceContentHash.h"
-#include "SceneAPI/TextureSamplerStates.h"
 #include "SceneAPI/TextureSampler.h"
 
 namespace ramses
@@ -46,7 +44,7 @@ namespace ramses
         virtual void     deinitializeFrameworkData() override;
         virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
         virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
-        virtual status_t validate(uint32_t indent) const override;
+        virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
 
         ETextureAddressMode getWrapUMode() const;
         ETextureAddressMode getWrapVMode() const;
@@ -71,10 +69,10 @@ namespace ramses
             ramses_internal::ResourceContentHash textureHash,
             ramses_internal::MemoryHandle contentHandle);
 
-        status_t validateRenderBuffer(ramses_internal::RenderBufferHandle renderBufferHandle, uint32_t indent) const;
-        status_t validateStreamTexture(ramses_internal::StreamTextureHandle streamTextureHandle, uint32_t indent) const;
-        status_t validateTextureBuffer(ramses_internal::TextureBufferHandle textureBufferHandle, uint32_t indent) const;
-        status_t validateResource(const Resource* resource, uint32_t indent) const;
+        status_t validateRenderBuffer(ramses_internal::RenderBufferHandle renderBufferHandle, uint32_t indent, StatusObjectSet& visitedObjects) const;
+        status_t validateStreamTexture(ramses_internal::StreamTextureHandle streamTextureHandle, uint32_t indent, StatusObjectSet& visitedObjects) const;
+        status_t validateTextureBuffer(ramses_internal::TextureBufferHandle textureBufferHandle, uint32_t indent, StatusObjectSet& visitedObjects) const;
+        status_t validateResource(const Resource* resource, uint32_t indent, StatusObjectSet& visitedObjects) const;
 
         ERamsesObjectType m_textureType;
 

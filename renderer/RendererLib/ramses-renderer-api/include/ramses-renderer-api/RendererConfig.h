@@ -11,6 +11,7 @@
 
 #include "ramses-renderer-api/Types.h"
 #include "ramses-framework-api/StatusObject.h"
+#include <chrono>
 
 namespace ramses
 {
@@ -25,12 +26,9 @@ namespace ramses
     {
     public:
         /**
-        * @brief Constructor of RendererConfig that takes command line parameters
-        * and parses them to initialize the parameters.
-        * @param[in] argc Number of arguments in arguments array parameter
-        * @param[in] argv Array of arguments as strings
+        * @brief Default constructor of RendererConfig
         */
-        RendererConfig(int32_t argc = 0, char const* const* argv = 0);
+        RendererConfig();
 
         /**
         * @brief Constructor of RendererConfig that takes command line parameters
@@ -38,7 +36,7 @@ namespace ramses
         * @param[in] argc Number of arguments in arguments array parameter
         * @param[in] argv Array of arguments as strings
         */
-        RendererConfig(int32_t argc, char* argv[]);
+        RendererConfig(int32_t argc, char const* const* argv);
 
         /**
         * @brief Copy constructor of RendererConfig
@@ -95,7 +93,7 @@ namespace ramses
 
         /**
          * @brief      Set the name to be used for the embedded compositing
-         *             socket.
+         *             display socket name.
          *
          *             The embedded compositor communicates with its clients via
          *             a socket file. There are two distinct ways to connect the
@@ -112,7 +110,7 @@ namespace ramses
          *
          *             Be aware that the socket file name is only used if the
          *             file descriptor is set to an invalid value (default), see
-         *             RendererConfig::setWaylandSocketEmbeddedFD
+         *             RendererConfig::setWaylandEmbeddedCompositingSocketFD
          *
          *             If neither filename nor file descriptor is set display
          *             creation will fail.
@@ -125,21 +123,28 @@ namespace ramses
          *             be used to resolve error message using
          *             getStatusMessage().
          */
-        status_t setWaylandSocketEmbedded(const char* socketname);
+        status_t setWaylandEmbeddedCompositingSocketName(const char* socketname);
 
         /**
-        * @brief Request that the embedded compositing socket obtains the group permissions given
+        * @brief Get the current setting of embedded compositing display socket name
+        *
+        * @return Wayland display name to use for embedded compositing socket
+        */
+        const char* getWaylandEmbeddedCompositingSocketName() const;
+
+        /**
+        * @brief Request that the embedded compositing display socket obtains the group permissions given
         *        by the given name.
         *
         * @param[in] groupname The group name of the socket.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setWaylandSocketEmbeddedGroup(const char* groupname);
+        status_t setWaylandEmbeddedCompositingSocketGroup(const char* groupname);
 
         /**
          * @brief      Set the file descriptor for the embedded compositor
-         *             socket.
+         *             display socket.
          *
          *             The embedded compositor communicates with its clients via
          *             a socket file. There are two distinct ways to connect the
@@ -167,7 +172,7 @@ namespace ramses
          *             be used to resolve error message using
          *             getStatusMessage().
          */
-        status_t setWaylandSocketEmbeddedFD(int socketFileDescriptor);
+        status_t setWaylandEmbeddedCompositingSocketFD(int socketFileDescriptor);
 
         /**
         * @brief Set the Wayland display name to connect system compositor to.
@@ -185,6 +190,24 @@ namespace ramses
         * @return Wayland display name to use for connection, empty means default
         */
         const char* getSystemCompositorWaylandDisplay() const;
+
+        /**
+        * @brief Set the desired reporting period for renderThread loop timings
+        *        The values are reported via the renderer event 'RenderThreadPeriodicLoopTimes'
+        *        A value of zero disables reporting and is the default.
+        *
+        * @param[in] period Cyclic time period after which timing information should be reported
+        * @return StatusOK on success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setRenderThreadLoopTimingReportingPeriod(std::chrono::milliseconds period);
+
+        /**
+        * @brief Get the current reporting period for renderThread loop timings
+        *
+        * @return Reporting period for renderThread loop timings
+        */
+        std::chrono::milliseconds getRenderThreadLoopTimingReportingPeriod() const;
 
         /**
         * Stores internal data for implementation specifics of RendererConfig.

@@ -10,329 +10,157 @@
 #ifndef RAMSES_VECTOR2_H
 #define RAMSES_VECTOR2_H
 
-#include <PlatformAbstraction/PlatformTypes.h>
-#include <PlatformAbstraction/PlatformMemory.h>
-#include <PlatformAbstraction/PlatformMath.h>
-
 #include "Collections/IInputStream.h"
 #include "Collections/IOutputStream.h"
-#include "Collections/StringOutputStream.h"
-#include "Utils/Warnings.h"
+#include "PlatformAbstraction/FmtBase.h"
 
 namespace ramses_internal
 {
-    /**
-     *  Allows storing of 2d-vector data and operations
-     */
     class Vector2
     {
     public:
-
-        /**
-         * Vector with all values set to 0.0
-         */
-        static const Vector2 Empty;
-
-        /*
-         *  Vector with all values set to 1.0
-         */
-        static const Vector2 Identity;
-
-        /**
-         *  Direct access to vector data in different ways
-         */
         union
         {
-            /**
-             * Vector2 vec;
-             * vec.x = 1;
-             * vec.y = 2;
-             */
             struct
             {
                 Float x;
                 Float y;
             };
-
-            /**
-            * Vector2 vec;
-            * vec.data[0] = 1;
-            * vec.data[1] = 2;
-             */
             Float data[2];
         };
 
-        /**
-         *  Default constructor initializes elements with 0.0f
-         */
-        Vector2();
+        constexpr Vector2();
+        constexpr Vector2(const Float _x, const Float _y);
+        explicit constexpr Vector2(const Float value);
 
-        /**
-         *  Copy constructor
-         * @param other Vector2 to copy from
-         */
-        Vector2(const Vector2& other) = default;
+        constexpr Vector2(const Vector2& other) = default;
+        constexpr Vector2& operator=(const Vector2& other) = default;
 
-        /**
-         *  Constructor to initialize the vector with single values
-         * @param _x value of x element
-         * @param _y value of y element
-         */
-        Vector2(const Float _x, const Float _y);
+        constexpr void set(const Float _x, const Float _y);
+        constexpr void set(const Float xy);
 
-        Vector2(Vector2&& other) = default;
-        Vector2& operator=(Vector2&& other) = default;
+        constexpr Vector2 operator+(const Vector2& other) const;
+        constexpr Vector2 operator-(const Vector2& other) const;
+        constexpr void operator+=(const Vector2& other);
+        constexpr void operator-=(const Vector2& other);
 
-        /**
-        *  Constructor to initialize the vector with one value
-        * @param value for all elements
-        */
-        explicit Vector2(const Float value);
+        constexpr Vector2 operator-() const;
 
-        /**
-         * Sets the vector elements
-         * @param x value of x element
-         * @param y value of y element
-         */
-        void set(const Float _x, const Float _y);
+        constexpr Vector2 operator*(const Float scalar) const;
+        constexpr Vector2 operator*(const Vector2& vec) const;
+        constexpr void operator*=(const Float scalar);
+        constexpr void operator*=(const Vector2& vec);
+        constexpr void operator/=(const Float scalar);
 
-        /**
-         * Sets all elements of the vector to the given value
-         * @param val for all elements
-         */
-        void set(const Float xy);
+        constexpr bool operator==(const Vector2& other) const;
+        constexpr bool operator!=(const Vector2& other) const;
 
-        /**
-         *  Assignment operator to overwrite vector data with other vector data
-         * @param other Vector2 to copy from
-         */
-        Vector2& operator=(const Vector2& other);
+        constexpr Float& operator[](const UInt32 index);
+        constexpr const Float& operator[](const UInt32 index) const;
 
-        /**
-         *  Add operator to add two Vector2 by elements
-         * @param other Vector2 with the elements to add
-         * @return Vector2 with the result
-         */
-        Vector2 operator+(const Vector2& other) const;
-
-        /**
-         *  Add and assign operator to add other Vector2 elements to local elements
-         * @param other Vector2 with the elements to add
-         */
-        void operator+=(const Vector2& other);
-
-        /**
-         *  Sub operator to substract two Vector2 by elements
-         * @param other Vector2 with the elements to sub
-         * @return Vector2 with the result
-         */
-        Vector2 operator-(const Vector2& other) const;
-
-        /**
-         * Returns the inverse of the Vector
-         * @return the inverse of the Vector
-         */
-        Vector2 operator-() const;
-
-        /**
-         *  Sub and assign operator to sub other Vector2 elements from local elements
-         * @param other Vector2 with the elements to sub
-         */
-        void operator-=(const Vector2& other);
-
-        /**
-         *  Operator to multiply a scalar to the vector elements
-         * @param the scalar for multiplication
-         * @return Vector2 with the multiplied result
-         */
-        Vector2 operator*(const Float scalar) const;
-
-        /**
-        *  Operator to multiply a scalar and assign the result to the local vector elements
-        * @param the scalar for multiplication
-        */
-        void operator*=(const Float scalar);
-
-        /**
-         * Operator to devide a scalar and assign the result to the local vector elements
-         * @param the scalar for devision
-         */
-        void operator/=(const Float scalar);
-
-        /**
-         * Operator to scale each vector element with the elements of the given vector
-         * @param vec Vector2 to scale with
-         * @return scaled Vector2
-         */
-        Vector2 operator*(const Vector2& vec) const;
-
-        /**
-         * Operator to scale each vector element with the elements of the given vector
-         * @param vec Vector2 to scale with
-         */
-        void operator*=(const Vector2& vec);
-
-        /**
-         * Compares each element to check if two vectors are equal
-         * @param other Vector2 to compare to
-         * @return true if both vectors are equal false otherwise
-         */
-        Bool operator==(const Vector2& other) const;
-
-        /**
-         * Compares each element to check if two vectors are not equal
-         * @param other Vector2 to compare to
-         * @return false if both vectors are equal true otherwise
-         */
-        Bool operator!=(const Vector2& other) const;
-
-        /**
-         * Returns the element of the given index
-         * @return the element of the given index
-         */
-        Float& operator[](const UInt32 index);
-
-        /**
-         * Returns the element of the given index
-         * @return the element of the given index
-         */
-        const Float& operator[](const UInt32 index) const;
-
-
-        /**
-         *  Computes the dot product of two Vector2
-         * @other Vector2 for the computation of the dot product
-         * @return the resulting dot product
-         */
-        Float dot(const Vector2& other) const;
-
-        /**
-         *  Computes the euclidean length of the vector
-         * @return the euclidean length of the vector
-         */
+        constexpr Float dot(const Vector2& other) const;
         Float length() const;
-
-        /**
-         *  Computes the angle between two vectors in radians.
-         * @param other Vector2 to compute the angle with
-         * @return the angle in radians between the vectors
-         */
-        Float angle(const Vector2& other) const;
-
-        /**
-         * Normalizes the vector to the length of 1
-         * @return Vector2 normalized vector
-         */
+        Float angle(const Vector2& other) const; ///< in radians
         Vector2 normalize() const;
 
-        friend Vector2 operator*(const Float scalar, const Vector2&);
-
-    protected:
-    private:
+        friend constexpr Vector2 operator*(const Float scalar, const Vector2&);
     };
 
-    inline Vector2::Vector2()
+    constexpr inline Vector2::Vector2()
+        : x(0)
+        , y(0)
     {
-        PlatformMemory::Set(data, 0, sizeof(data));
     }
 
-    inline Vector2::Vector2(const Float _x, const Float _y)
+    constexpr inline Vector2::Vector2(const Float _x, const Float _y)
         : x(_x)
         , y(_y)
     {
     }
 
-    inline Vector2::Vector2(const Float xy)
+    constexpr inline Vector2::Vector2(const Float xy)
         : x(xy)
         , y(xy)
     {
     }
 
-    inline void Vector2::set(const Float _x, const float _y)
+    constexpr inline void Vector2::set(const Float _x, const float _y)
     {
         x = _x;
         y = _y;
     }
 
-    inline void Vector2::set(const Float xy)
+    constexpr inline void Vector2::set(const Float xy)
     {
         x = y = xy;
     }
 
     inline Float Vector2::length() const
     {
-        return PlatformMath::Sqrt(PlatformMath::Pow2(x) + PlatformMath::Pow2(y));
+        return std::sqrt(x*x + y*y);
     }
 
-    inline Vector2& Vector2::operator=(const Vector2& other)
-    {
-        PlatformMemory::Copy(data, other.data, sizeof(data));
-        return *this;
-    }
-
-    inline Vector2 Vector2::operator+(const Vector2& other) const
+    constexpr inline Vector2 Vector2::operator+(const Vector2& other) const
     {
         return Vector2( x + other.x
                         , y + other.y);
     }
 
-    inline void Vector2::operator+=(const Vector2& other)
+    constexpr inline void Vector2::operator+=(const Vector2& other)
     {
         x += other.x;
         y += other.y;
     }
 
-    inline Vector2 Vector2::operator-(const Vector2& other) const
+    constexpr inline Vector2 Vector2::operator-(const Vector2& other) const
     {
-        return Vector2( x - other.x
-                        , y - other.y);
+        return Vector2(x - other.x, y - other.y);
     }
 
-    inline void Vector2::operator-=(const Vector2& other)
+    constexpr inline void Vector2::operator-=(const Vector2& other)
     {
         x -= other.x;
         y -= other.y;
     }
 
-    inline Bool Vector2::operator==(const Vector2& other) const
+    constexpr inline bool Vector2::operator==(const Vector2& other) const
     {
-        return PlatformMemory::Compare(data, other.data, sizeof(data)) == 0;
+        return x == other.x && y == other.y;
     }
 
-    inline Bool Vector2::operator!=(const Vector2& other) const
+    constexpr inline bool Vector2::operator!=(const Vector2& other) const
     {
         return !operator==(other);
     }
 
-    inline Float Vector2::dot(const Vector2& other) const
+    constexpr inline Float Vector2::dot(const Vector2& other) const
     {
         return x * other.x + y * other.y;
     }
 
-    inline void Vector2::operator*=(const Float scalar)
+    constexpr inline void Vector2::operator*=(const Float scalar)
     {
         x *= scalar;
         y *= scalar;
     }
 
-    inline void Vector2::operator/=(const Float scalar)
+    constexpr inline void Vector2::operator/=(const Float scalar)
     {
         x /= scalar;
         y /= scalar;
     }
 
-    inline Vector2 Vector2::operator*(const Float scalar) const
+    constexpr inline Vector2 Vector2::operator*(const Float scalar) const
     {
-        return Vector2( x * scalar
-                        , y * scalar);
+        return Vector2(x * scalar, y * scalar);
     }
 
-    inline Vector2 Vector2::operator*(const Vector2& vec) const
+    constexpr inline Vector2 Vector2::operator*(const Vector2& vec) const
     {
         return Vector2(x * vec.x, y * vec.y);
     }
 
-    inline void Vector2::operator*=(const Vector2& vec)
+    constexpr inline void Vector2::operator*=(const Vector2& vec)
     {
         x *= vec.x;
         y *= vec.y;
@@ -340,7 +168,7 @@ namespace ramses_internal
 
     inline Float Vector2::angle(const Vector2& other) const
     {
-        return PlatformMath::ArcCos(dot(other) / (length() * other.length()));
+        return std::acos(dot(other) / (length() * other.length()));
     }
 
     inline
@@ -351,19 +179,19 @@ namespace ramses_internal
         return Vector2(x / len, y / len);
     }
 
-    inline
+    constexpr inline
     Float& Vector2::operator[](const UInt32 index)
     {
         return data[index];
     }
 
-    inline
+    constexpr inline
     const Float& Vector2::operator[](const UInt32 index) const
     {
         return data[index];
     }
 
-    inline
+    constexpr inline
     Vector2 Vector2::operator-() const
     {
         return Vector2(-x, -y);
@@ -383,19 +211,23 @@ namespace ramses_internal
         return inputStream.read(reinterpret_cast<Char*>(vector.data), sizeof(vector.data));
     }
 
-    inline
-    StringOutputStream& operator<<(StringOutputStream& outputStream, const Vector2& vec4)
-    {
-        return outputStream << vec4.x << "/" << vec4.y;
-    }
-
-    inline Vector2 operator*(const Float scalar, const Vector2& vec)
+    constexpr inline Vector2 operator*(const Float scalar, const Vector2& vec)
     {
         return Vector2(vec.x * scalar, vec.y * scalar);
     }
 
-    static_assert(std::is_nothrow_move_constructible<Vector2>::value &&
-        std::is_nothrow_move_assignable<Vector2>::value, "Vector2 must be movable");
+    static_assert(std::is_nothrow_move_constructible<Vector2>::value, "Vector2 must be movable");
+    static_assert(std::is_nothrow_move_assignable<Vector2>::value, "Vector2 must be movable");
 }
+
+template <>
+struct fmt::formatter<ramses_internal::Vector2> : public ramses_internal::SimpleFormatterBase
+{
+    template<typename FormatContext>
+    auto format(const ramses_internal::Vector2& m, FormatContext& ctx)
+    {
+        return fmt::format_to(ctx.out(), "[{} {}]", m.data[0], m.data[1]);
+    }
+};
 
 #endif

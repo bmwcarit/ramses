@@ -19,11 +19,10 @@ namespace ramses_internal
     struct RendererCommandLineArguments
     {
         explicit RendererCommandLineArguments(const RendererConfig& config)
-            : waylandSocketEmbedded     ("wse"          , "wayland-socket-embedded" , config.getWaylandSocketEmbedded(),
-                "set socket name clients use to connect to the compositor embedded in the renderer")
-            , waylandSocketEmbeddedGroup("wsegn"        , "wayland-socket-embedded-groupname" , config.getWaylandSocketEmbeddedGroup(), "groupname for permissions of embedded compositing socket")
-            , systemCompositorControllerEnabled("scc"   , "enable-system-compositor-controller", false                      , "enable system compositor controller")
-            , kpiFilename               ("kpi"          , "kpioutputfile"           , config.getKPIFileName()               , "KPI filename")
+            : waylandSocketEmbedded("wse", "wayland-socket-embedded", config.getWaylandSocketEmbedded(), "set socket name clients use to connect to the compositor embedded in the renderer")
+            , waylandSocketEmbeddedGroup("wsegn", "wayland-socket-embedded-groupname", config.getWaylandSocketEmbeddedGroup(), "groupname for permissions of embedded compositing socket")
+            , systemCompositorControllerEnabled("scc", "enable-system-compositor-controller", "enable system compositor controller")
+            , kpiFilename("kpi", "kpioutputfile", config.getKPIFileName(), "KPI filename")
         {
         }
 
@@ -55,7 +54,7 @@ namespace ramses_internal
             , cameraRotationX("crx", "cameraRotationX", config.getCameraRotation().x, "set x value of camera rotation")
             , cameraRotationY("cry", "cameraRotationY", config.getCameraRotation().y, "set y value of camera rotation")
             , cameraRotationZ("crz", "cameraRotationZ", config.getCameraRotation().z, "set z value of camera rotation")
-            , orthographicProjection("ortho", "orthographic-projection", false, "enable orthographic projection mode")
+            , orthographicProjection("ortho", "orthographic-projection", "enable orthographic projection mode")
             , fov("fov", "camera-field-of-view", ramses_internal::ProjectionParams::GetPerspectiveFovY(config.getProjectionParams()), "set camera field of view")
             , nearPlane("np", "camera-near-plane", config.getProjectionParams().nearPlane, "set camera near plane")
             , farPlane("fp", "camera-far-plane", config.getProjectionParams().farPlane, "set camera far plane")
@@ -67,18 +66,17 @@ namespace ramses_internal
             , windowPositionY("y", "position-y", config.getWindowPositionY(), "set y position of window")
             , windowWidth("w", "width", config.getDesiredWindowWidth(), "set window width")
             , windowHeight("h", "height", config.getDesiredWindowHeight(), "set window height")
-            , fullscreen("f", "fullscreen", config.getFullscreenState(), "enable fullscreen mode")
-            , borderless("bl", "borderless", config.getBorderlessState(), "disable window borders")
-            , enableWarping("warp", "enable-warping", config.isWarpingEnabled(), "enable warping")
-            , deleteEffects("de", "delete-effects", !config.getKeepEffectsUploaded(), "do not keep effects uploaded")
+            , fullscreen("f", "fullscreen", "enable fullscreen mode")
+            , borderless("bl", "borderless", "disable window borders")
+            , enableWarping("warp", "enable-warping", "enable warping")
+            , deleteEffects("de", "delete-effects", "do not keep effects uploaded")
             , antialiasingMethod("aa", "antialiasing-method", "", "set antialiasing method (options: MSAA)")
             , antialiasingSampleCount("as", "aa-samples", config.getAntialiasingSampleCount(), "set antialiasing sample count")
             , waylandIviLayerId("lid", "waylandIviLayerId", config.getWaylandIviLayerID().getValue(), "set id of IVI layer the display surface will be added to")
             , waylandIviSurfaceID("sid", "waylandIviSurfaceID", config.getWaylandIviSurfaceID().getValue(), "set id of IVI surface the display will be composited on")
             , integrityRGLDeviceUnit("rglDeviceUnit", "integrityRGLDeviceUnit", config.getIntegrityRGLDeviceUnit().getValue(), "set id of the device unit to use on Integrity")
-            , startVisible("startVisible", "startVisible", config.getStartVisibleIvi(), "set IVI surface visible when created")
-            , resizable("resizableWindow", "resizable window", config.isResizable(), "enables resizable renderer window")
-            , offscreen("off", "offscreen", config.getOffscreen(), "renders offscreen, no window gets created, no output visible, screenshots possible though")
+            , startVisible("startVisible", "startVisible", "set IVI surface visible when created")
+            , resizable("resizableWindow", "resizable window", "enables resizable renderer window")
             , clearColorR("ccr", "clearColorR", config.getClearColor().r, "set r component of clear color")
             , clearColorG("ccg", "clearColorG", config.getClearColor().g, "set g component of clear color")
             , clearColorB("ccb", "clearColorB", config.getClearColor().b, "set b component of clear color")
@@ -116,7 +114,6 @@ namespace ramses_internal
         ArgumentUInt32 integrityRGLDeviceUnit;
         ArgumentBool startVisible;
         ArgumentBool resizable;
-        ArgumentBool offscreen;
         ArgumentFloat clearColorR;
         ArgumentFloat clearColorG;
         ArgumentFloat clearColorB;
@@ -151,7 +148,6 @@ namespace ramses_internal
                         sos << waylandIviSurfaceID.getHelpString();
                         sos << integrityRGLDeviceUnit.getHelpString();
                         sos << startVisible.getHelpString();
-                        sos << offscreen.getHelpString();
                         sos << clearColorR.getHelpString();
                         sos << clearColorG.getHelpString();
                         sos << clearColorB.getHelpString();
@@ -171,11 +167,11 @@ namespace ramses_internal
     void RendererConfigUtils::ApplyValuesFromCommandLine(const CommandLineParser& parser, RendererConfig& config)
     {
         RendererCommandLineArguments rendererArgs(config);
-        config.setWaylandSocketEmbedded(rendererArgs.waylandSocketEmbedded.parseValueFromCmdLine(parser));
-        config.setWaylandSocketEmbeddedGroup(rendererArgs.waylandSocketEmbeddedGroup.parseValueFromCmdLine(parser));
+        config.setWaylandEmbeddedCompositingSocketName(rendererArgs.waylandSocketEmbedded.parseValueFromCmdLine(parser));
+        config.setWaylandEmbeddedCompositingSocketGroup(rendererArgs.waylandSocketEmbeddedGroup.parseValueFromCmdLine(parser));
         config.setKPIFileName(rendererArgs.kpiFilename.parseValueFromCmdLine(parser));
 
-        if(rendererArgs.systemCompositorControllerEnabled.parseValueFromCmdLine(parser))
+        if(rendererArgs.systemCompositorControllerEnabled.parseFromCmdLine(parser))
         {
             config.enableSystemCompositorControl();
         }
@@ -185,10 +181,10 @@ namespace ramses_internal
     {
         DisplayCommandLineArguments rendererArgs(config);
 
-        config.setFullscreenState(rendererArgs.fullscreen.parseValueFromCmdLine(parser));
-        config.setBorderlessState(rendererArgs.borderless.parseValueFromCmdLine(parser));
-        config.setWarpingEnabled(rendererArgs.enableWarping.parseValueFromCmdLine(parser));
-        config.setKeepEffectsUploaded(!rendererArgs.deleteEffects.parseValueFromCmdLine(parser));
+        config.setFullscreenState(rendererArgs.fullscreen.parseFromCmdLine(parser));
+        config.setBorderlessState(rendererArgs.borderless.parseFromCmdLine(parser));
+        config.setWarpingEnabled(rendererArgs.enableWarping.parseFromCmdLine(parser));
+        config.setKeepEffectsUploaded(!rendererArgs.deleteEffects.parseFromCmdLine(parser));
         config.setDesiredWindowWidth(rendererArgs.windowWidth.parseValueFromCmdLine(parser));
         config.setDesiredWindowHeight(rendererArgs.windowHeight.parseValueFromCmdLine(parser));
         config.setWindowPositionX(rendererArgs.windowPositionX.parseValueFromCmdLine(parser));
@@ -212,7 +208,7 @@ namespace ramses_internal
         const Float nearPlane(rendererArgs.nearPlane.parseValueFromCmdLine(parser));
         const Float farPlane(rendererArgs.farPlane.parseValueFromCmdLine(parser));
 
-        const Bool orthographicProjection = rendererArgs.orthographicProjection.parseValueFromCmdLine(parser);
+        const Bool orthographicProjection = rendererArgs.orthographicProjection.parseFromCmdLine(parser);
         if (orthographicProjection)
         {
             const Float leftPlane(rendererArgs.leftPlane.parseValueFromCmdLine(parser));
@@ -251,9 +247,8 @@ namespace ramses_internal
         config.setWaylandIviLayerID(WaylandIviLayerId(rendererArgs.waylandIviLayerId.parseValueFromCmdLine(parser)));
         config.setWaylandIviSurfaceID(WaylandIviSurfaceId(rendererArgs.waylandIviSurfaceID.parseValueFromCmdLine(parser)));
         config.setIntegrityRGLDeviceUnit(IntegrityRGLDeviceUnit(rendererArgs.integrityRGLDeviceUnit.parseValueFromCmdLine(parser)));
-        config.setStartVisibleIvi(rendererArgs.startVisible.parseValueFromCmdLine(parser));
-        config.setResizable(rendererArgs.resizable.parseValueFromCmdLine(parser));
-        config.setOffscreen(rendererArgs.offscreen.parseValueFromCmdLine(parser));
+        config.setStartVisibleIvi(rendererArgs.startVisible.parseFromCmdLine(parser));
+        config.setResizable(rendererArgs.resizable.parseFromCmdLine(parser));
 
         const Vector4 clearColor = Vector4(
             rendererArgs.clearColorR.parseValueFromCmdLine(parser),

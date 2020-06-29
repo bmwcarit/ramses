@@ -30,7 +30,7 @@ namespace ramses
         * @param[in] scene Scene whose objects to iterate through
         * @param[in] objectType Optional type of objects to iterate through.
         **/
-        SceneObjectIterator(const Scene& scene, ERamsesObjectType objectType = ERamsesObjectType_RamsesObject);
+        explicit SceneObjectIterator(const Scene& scene, ERamsesObjectType objectType = ERamsesObjectType_RamsesObject);
 
         /**
         * @brief Destructor

@@ -28,7 +28,8 @@ namespace ramses_internal
         const ramses::FontId lightFont = m_fontRegistry.createFreetype2Font("res/ramses-test-client-Roboto-Light.ttf");
         const ramses::FontId arabicFont = m_fontRegistry.createFreetype2Font("res/ramses-test-client-DroidKufi-Regular.ttf");
 
-        m_font = m_fontRegistry.createFreetype2FontInstance(font, 64u);
+        m_font = m_fontRegistry.createFreetype2FontInstance(font, 60u);
+        m_fontSmall = m_fontRegistry.createFreetype2FontInstance(font, 40u);
         m_chineseFont = m_fontRegistry.createFreetype2FontInstance(chineseFont, 32u);
         m_lightFont = m_fontRegistry.createFreetype2FontInstance(lightFont, 26u);
         m_lightAutoHintFont = m_fontRegistry.createFreetype2FontInstance(lightFont, 26u, true);
@@ -36,9 +37,18 @@ namespace ramses_internal
         m_shapingArabicFont = m_fontRegistry.createFreetype2FontInstanceWithHarfBuzz(arabicFont, 26u);
         m_shapingArabicAutoHintFont = m_fontRegistry.createFreetype2FontInstanceWithHarfBuzz(arabicFont, 26u, true);
 
-        /// Set appearance uniforms
+        ramses::EffectDescription effectDesc;
+        effectDesc.setVertexShaderFromFile("res/ramses-test-client-text.vert");
+        effectDesc.setFragmentShaderFromFile("res/ramses-test-client-text.frag");
+
+        effectDesc.setAttributeSemantic("a_position", ramses::EEffectAttributeSemantic_TextPositions);
+        effectDesc.setAttributeSemantic("a_texcoord", ramses::EEffectAttributeSemantic_TextTextureCoordinates);
+        effectDesc.setUniformSemantic("u_texture", ramses::EEffectUniformSemantic_TextTexture);
+        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+
+        ramses::Effect* textEffect = m_client.createEffect(effectDesc);
         ramses::UniformInput colorInput;
-        ramses::Effect* textEffect = ramses::RamsesUtils::CreateStandardTextEffect(m_client, colorInput);
+        textEffect->findUniformInput("u_color", colorInput);
 
         /// Create text lines
         //const std::u32string str = U"ÄÖÜß";
@@ -51,7 +61,7 @@ namespace ramses_internal
         m_textASCII = m_textCache.createTextLine(glyphMetrics, *textEffect);
         m_meshASCII = m_textCache.getTextLine(m_textASCII)->meshNode;
 
-        glyphMetrics = m_textCache.getPositionedGlyphs(U"12345", m_font);
+        glyphMetrics = m_textCache.getPositionedGlyphs(U"12345", m_fontSmall);
         m_textDigits = m_textCache.createTextLine(glyphMetrics, *textEffect);
         m_meshDigits = m_textCache.getTextLine(m_textDigits)->meshNode;
 
@@ -194,7 +204,49 @@ namespace ramses_internal
             addMeshNodeToDefaultRenderGroup(*m_meshShapingAutoHint, 0);
             break;
         }
+        case EState_SMOKE_TEST:
+            m_textOrthoCamera->setViewport(0, 0, 480, 480);
+            float scalingFactor = 0.5f;
+            m_meshUTF->setScaling(scalingFactor, scalingFactor, scalingFactor);
+            m_meshASCII->setScaling(scalingFactor, scalingFactor, scalingFactor);
+            m_meshDigits->setScaling(scalingFactor, scalingFactor, scalingFactor);
+            m_meshChinese->setScaling(scalingFactor, scalingFactor, scalingFactor);
+            m_meshLight->setScaling(scalingFactor, scalingFactor, scalingFactor);
+            m_meshLightAutoHinting->setScaling(scalingFactor, scalingFactor, scalingFactor);
+            m_meshFontCascade->setScaling(scalingFactor, scalingFactor, scalingFactor);
+            m_meshFontCascadeWithVerticalOffset->setScaling(scalingFactor, scalingFactor, scalingFactor);
+            m_meshShaping->setScaling(scalingFactor, scalingFactor, scalingFactor);
+            m_meshShapingAutoHint->setScaling(scalingFactor, scalingFactor, scalingFactor);
 
+            m_meshUTF->translate(0.f, 110.f, 0.f);
+            addMeshNodeToDefaultRenderGroup(*m_meshUTF, 0);
+
+            m_meshASCII->translate(0.f, 95.f, 0.f);
+            addMeshNodeToDefaultRenderGroup(*m_meshASCII, 0);
+
+            m_meshDigits->translate(0.f, -10.f, 0.f);
+            addMeshNodeToDefaultRenderGroup(*m_meshDigits, 0);
+
+            m_meshChinese->translate(0.f, 0.f, 0.f);
+            addMeshNodeToDefaultRenderGroup(*m_meshChinese, 0);
+
+            m_meshLight->translate(0.f, -15.f, 0.f);
+            addMeshNodeToDefaultRenderGroup(*m_meshLight, 0);
+
+            m_meshLightAutoHinting->translate(0.f, 0.f, 0.f);
+            addMeshNodeToDefaultRenderGroup(*m_meshLightAutoHinting, 0);
+
+            m_meshFontCascade->translate(0.f, -50.f, 0.f);
+            addMeshNodeToDefaultRenderGroup(*m_meshFontCascade, 0);
+
+            m_meshFontCascadeWithVerticalOffset->translate(0.f, -85.f, 0.f);
+            addMeshNodeToDefaultRenderGroup(*m_meshFontCascadeWithVerticalOffset, 0);
+
+            m_meshShaping->translate(0.f, 38.f, 0.f);
+            addMeshNodeToDefaultRenderGroup(*m_meshShaping, 0);
+
+            m_meshShapingAutoHint->translate(0.f, -43.f, 0.f);
+            addMeshNodeToDefaultRenderGroup(*m_meshShapingAutoHint, 0);
         }
 
         if (EState_INITIAL_128_BY_64_VIEWPORT == state)

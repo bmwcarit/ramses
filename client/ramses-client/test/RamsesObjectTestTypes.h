@@ -51,6 +51,9 @@ namespace ramses
     class Texture2D;
     class Texture3D;
     class TextureCube;
+    class AnimatedProperty;
+    class Animation;
+    class AnimationSequence;
     class Spline;
     class SplineStepBool;
     class SplineStepInt32;
@@ -77,10 +80,14 @@ namespace ramses
     class SplineBezierVector2i;
     class SplineBezierVector3i;
     class SplineBezierVector4i;
-    class AnimatedProperty;
-    class Animation;
-    class AnimatedSetter;
-    class AnimationSequence;
+    class PickableObject;
+    class SceneReference;
+    class UInt16Array;
+    class UInt32Array;
+    class FloatArray;
+    class Vector2fArray;
+    class Vector3fArray;
+    class Vector4fArray;
 
     // Objects derived from Node class
     typedef ::testing::Types
@@ -89,7 +96,8 @@ namespace ramses
         MeshNode,
         RemoteCamera,
         PerspectiveCamera,
-        OrthographicCamera
+        OrthographicCamera,
+        PickableObject
         > NodeTypes;
 
     // Objects derived from Resource class
@@ -139,7 +147,9 @@ namespace ramses
         StreamTexture,
         IndexDataBuffer,
         VertexDataBuffer,
-        Texture2DBuffer
+        Texture2DBuffer,
+        PickableObject,
+        SceneReference
         > SceneObjectTypes;
 
     // Objects owned by AnimationSystem
@@ -148,7 +158,6 @@ namespace ramses
         AnimatedProperty,
         Animation,
         AnimationSequence,
-        AnimatedSetter,
         SplineStepBool,
         SplineStepFloat,
         SplineStepInt32,
@@ -206,7 +215,6 @@ namespace ramses
         AnimatedProperty,
         Animation,
         AnimationSequence,
-        AnimatedSetter,
         Appearance,
         SplineStepBool,
         SplineStepFloat,
@@ -267,7 +275,9 @@ namespace ramses
         DataInt32,
         DataVector2i,
         DataVector3i,
-        DataVector4i
+        DataVector4i,
+        PickableObject,
+        SceneReference
         > RamsesObjectTypes2;
 
     // Spline types

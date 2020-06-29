@@ -18,7 +18,7 @@ namespace ramses_internal
             m_programName = argv[0];
             for (Int index = 1; index < argc; ++index)
             {
-                const Bool startsWithDash = (argv[index] && argv[index][0] == '-');
+                const bool startsWithDash = (argv[index] && argv[index][0] == '-');
 
                 CommandLineArgument cmdLineArg;
                 cmdLineArg.setName(startsWithDash ? StringUtils::Trim(argv[index]) : argv[index]);
@@ -31,8 +31,8 @@ namespace ramses_internal
                     const Double unusedValue = strtod(nextElement.c_str(), &endptr);
                     UNUSED(unusedValue);
 
-                    const Bool isNumber = endptr && (*endptr == 0);
-                    const Bool doesNotStartWithDash = (nextElement.at(0) != '-');
+                    const bool isNumber = endptr && (*endptr == 0);
+                    const bool doesNotStartWithDash = (nextElement.at(0) != '-');
 
                     if (doesNotStartWithDash || isNumber)
                     {
@@ -63,11 +63,14 @@ namespace ramses_internal
         return m_programName;
     }
 
-    const CommandLineArgument* CommandLineParser::getOption(const String& shortname, const String& longname, Bool canHaveValue) const
+    const CommandLineArgument* CommandLineParser::getOption(const String& shortname, const String& longname, bool canHaveValue, UInt32* searchIndexInOut) const
     {
         CommandLineArgument* argument = nullptr;
-        for (auto& current : m_args)
+        const UInt32 searchIndex = (searchIndexInOut == nullptr ? 0u : *searchIndexInOut);
+
+        for (size_t i = searchIndex; i < m_args.size(); ++ i)
         {
+            auto& current = m_args[i];
             if (current.getName() == shortname || current.getName() == longname)
             {
                 current.setUsed();
@@ -85,10 +88,14 @@ namespace ramses_internal
             m_args.push_back(newArgument);
         }
 
-        for (auto& current : m_args)
+        for (size_t i = searchIndex; i < m_args.size(); ++i)
         {
+            auto& current = m_args[i];
             if (current.getName() == shortname || current.getName() == longname)
             {
+                if (nullptr != searchIndexInOut)
+                    *searchIndexInOut = static_cast<uint32_t>(i) + 1;
+
                 return &current;
             }
         }

@@ -9,33 +9,85 @@
 #ifndef RAMSES_SCENECOMMANDBUFFER_H
 #define RAMSES_SCENECOMMANDBUFFER_H
 
-#include "SceneCommandContainer.h"
-#include "PlatformAbstraction/PlatformLock.h"
-#include "PlatformAbstraction/PlatformGuard.h"
-#include "Utils/LogMacros.h"
-
+#include "ramses-framework-api/EValidationSeverity.h"
+#include "ramses-framework-api/RamsesFrameworkTypes.h"
+#include "Collections/String.h"
+#include "absl/types/variant.h"
+#include <mutex>
+#include <vector>
 
 namespace ramses_internal
 {
+    // Commands
+    struct SceneCommandForceFallback
+    {
+        String streamTextureName;
+        bool   forceFallback;
+    };
+
+    struct SceneCommandFlushSceneVersion
+    {
+        ramses::sceneVersionTag_t sceneVersion;
+    };
+
+    struct SceneCommandValidationRequest
+    {
+        ramses::EValidationSeverity severity = ramses::EValidationSeverity_Info;
+        String optionalObjectName;
+    };
+
+    struct SceneCommandDumpSceneToFile
+    {
+        String fileName;
+        bool sendViaDLT;
+    };
+
+    struct SceneCommandLogResourceMemoryUsage
+    {
+        // work around unsolved gcc bug https://bugzilla.redhat.com/show_bug.cgi?id=1507359
+        bool _dummyValue = false;
+    };
+
+
+    // Command buffer
     class SceneCommandBuffer
     {
     public:
-        void enqueueCommand(const SceneCommand& command);
-        void exchangeContainerData(SceneCommandContainer& container);
-    private:
-        template< typename COMMAND_TYPE >
-        void enqueueCommandInternal(const COMMAND_TYPE& command);
+        template <typename T>
+        void enqueueCommand(T cmd);
 
-        PlatformLightweightLock m_lock;
-        SceneCommandContainer m_container;
+        template <typename V>
+        void execute(V&& visitor);
+
+    private:
+        using CommandVariant = absl::variant<SceneCommandForceFallback,
+                                           SceneCommandFlushSceneVersion,
+                                           SceneCommandValidationRequest,
+                                           SceneCommandDumpSceneToFile,
+                                           SceneCommandLogResourceMemoryUsage>;
+
+        std::mutex m_lock;
+        std::vector<CommandVariant> m_buffer;
     };
 
-    template< typename COMMAND_TYPE >
-    void SceneCommandBuffer::enqueueCommandInternal(const COMMAND_TYPE& command)
+    template <typename T>
+    void SceneCommandBuffer::enqueueCommand(T cmd)
     {
-        PlatformLightweightGuard guard(m_lock);
-        m_container.addCommand(command.commandType, command);
+        std::lock_guard<std::mutex> lock(m_lock);
+        m_buffer.push_back(std::move(cmd));
+    }
+
+    template <typename V>
+    void SceneCommandBuffer::execute(V&& visitor)
+    {
+        std::vector<CommandVariant> localBuffer;
+        {
+            std::lock_guard<std::mutex> lock(m_lock);
+            localBuffer.swap(m_buffer);
+        }
+
+        for (const auto& v : localBuffer)
+            absl::visit(visitor, v);
     }
 }
-
 #endif

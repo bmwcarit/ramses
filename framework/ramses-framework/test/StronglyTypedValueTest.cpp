@@ -16,9 +16,24 @@ namespace ramses
     namespace
     {
         struct UInt32Tag {};
-        typedef StronglyTypedValue<uint32_t, UInt32Tag> StronglyTypedUInt32;
+        typedef StronglyTypedValue<uint32_t, 10u, UInt32Tag> StronglyTypedUInt32;
 
-        typedef StronglyTypedValue<void*, struct VoidPtrTag> StronglyTypedPtr;
+        typedef StronglyTypedValue<void*, nullptr, struct VoidPtrTag> StronglyTypedPtr;
+    }
+
+    TEST(AStronglyTypedValue, CanBeCreatedWithDefaultValue)
+    {
+        StronglyTypedUInt32 stronglyTypedUInt;
+        EXPECT_EQ(10u, stronglyTypedUInt.getValue());
+
+        StronglyTypedPtr stronglyTypedPtr;
+        EXPECT_EQ(nullptr, stronglyTypedPtr.getValue());
+    }
+
+    TEST(AStronglyTypedValue, ReturnsInvalidValueFromInvalid)
+    {
+        EXPECT_EQ(10u, StronglyTypedUInt32::Invalid().getValue());
+        EXPECT_EQ(nullptr, StronglyTypedPtr::Invalid().getValue());
     }
 
     TEST(AStronglyTypedValue, CanBeCreatedWithUInt32)
@@ -129,4 +144,25 @@ namespace ramses
         EXPECT_TRUE(sp.find(p2) != sp.end());
         EXPECT_FALSE(sp.find(p3) != sp.end());
     }
+
+    TEST(AStronglyTypedValue, canBeCheckedForValid)
+    {
+        EXPECT_FALSE(StronglyTypedUInt32().isValid());
+        EXPECT_FALSE(StronglyTypedUInt32::Invalid().isValid());
+        EXPECT_FALSE(StronglyTypedUInt32(10u).isValid());
+
+        EXPECT_FALSE(StronglyTypedPtr().isValid());
+        EXPECT_FALSE(StronglyTypedPtr::Invalid().isValid());
+        EXPECT_FALSE(StronglyTypedPtr(nullptr).isValid());
+
+        EXPECT_TRUE(StronglyTypedUInt32(123).isValid());
+        EXPECT_TRUE(StronglyTypedUInt32(0).isValid());
+
+        EXPECT_TRUE(StronglyTypedPtr(reinterpret_cast<void*>(123u)).isValid());
+        EXPECT_TRUE(StronglyTypedPtr(reinterpret_cast<void*>(1u)).isValid());
+    }
+
+    // enforce performance guarantees
+    static_assert(std::is_trivially_copyable<StronglyTypedUInt32>::value, "expectation failed");
+    static_assert(std::is_trivially_destructible<StronglyTypedUInt32>::value, "expectation failed");
 }

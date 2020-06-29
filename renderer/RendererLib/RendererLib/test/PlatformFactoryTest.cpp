@@ -75,13 +75,11 @@ namespace ramses_internal
             Mock::VerifyAndClearExpectations(platformFactory.surface);
             Mock::VerifyAndClearExpectations(platformFactory.device);
             Mock::VerifyAndClearExpectations(platformFactory.embeddedCompositor);
-            Mock::VerifyAndClearExpectations(platformFactory.textureUploadingAdapter);
         }
 
         void destroyRenderBackend(PlatformFactory_BaseMock& platformFactory, IRenderBackend& renderBackend)
         {
             InSequence s;
-            EXPECT_CALL(*platformFactory.textureUploadingAdapter, Die());
             EXPECT_CALL(*platformFactory.embeddedCompositor, Die());
             EXPECT_CALL(*platformFactory.device, Die());
             EXPECT_CALL(*platformFactory.surface, Die());
@@ -97,7 +95,6 @@ namespace ramses_internal
             platformFactory.surface                 = nullptr;
             platformFactory.device                  = nullptr;
             platformFactory.embeddedCompositor      = nullptr;
-            platformFactory.textureUploadingAdapter = nullptr;
         }
 
         void destroyPerRendererComponents(PlatformFactory_BaseMock& platformFactory)
@@ -144,7 +141,6 @@ namespace ramses_internal
         }
 
         //delete the rest of un-used mock objects
-        EXPECT_CALL(static_cast<TextureUploadingAdapterMockWithDestructor&>(*platformFactory.textureUploadingAdapter), Die());
         EXPECT_CALL(static_cast<EmbeddedCompositorMockWithDestructor&>(*platformFactory.embeddedCompositor), Die());
         EXPECT_CALL(static_cast<DeviceMockWithDestructor&>(*platformFactory.device), Die());
         EXPECT_CALL(static_cast<SurfaceMockWithDestructor&>(*platformFactory.surface), Die());
@@ -153,7 +149,6 @@ namespace ramses_internal
         delete platformFactory.surface;
         delete platformFactory.device;
         delete platformFactory.embeddedCompositor;
-        delete platformFactory.textureUploadingAdapter;
     }
 
     TEST_F(APlatformFactoryTest, RenderBackendCreationFailsIfContextFailsInitialization)
@@ -180,14 +175,12 @@ namespace ramses_internal
         }
 
         //delete the rest of un-used mock objects
-        EXPECT_CALL(static_cast<TextureUploadingAdapterMockWithDestructor&>(*platformFactory.textureUploadingAdapter), Die());
         EXPECT_CALL(static_cast<EmbeddedCompositorMockWithDestructor&>(*platformFactory.embeddedCompositor), Die());
         EXPECT_CALL(static_cast<DeviceMockWithDestructor&>(*platformFactory.device), Die());
         EXPECT_CALL(static_cast<SurfaceMockWithDestructor&>(*platformFactory.surface), Die());
         delete platformFactory.surface;
         delete platformFactory.device;
         delete platformFactory.embeddedCompositor;
-        delete platformFactory.textureUploadingAdapter;
     }
 
     TEST_F(APlatformFactoryTest, RenderBackendCreationFailsIfDeviceFailsInitialization)
@@ -223,10 +216,8 @@ namespace ramses_internal
         }
 
         //delete the rest of un-used mock objects
-        EXPECT_CALL(static_cast<TextureUploadingAdapterMockWithDestructor&>(*platformFactory.textureUploadingAdapter), Die());
         EXPECT_CALL(static_cast<EmbeddedCompositorMockWithDestructor&>(*platformFactory.embeddedCompositor), Die());
         delete platformFactory.embeddedCompositor;
-        delete platformFactory.textureUploadingAdapter;
     }
 
 
@@ -265,10 +256,6 @@ namespace ramses_internal
 
             verifyAndClearExpectationsOnRenderBackendMockObjects(platformFactory);
         }
-
-        //delete the rest of un-used mock objects
-        EXPECT_CALL(static_cast<TextureUploadingAdapterMockWithDestructor&>(*platformFactory.textureUploadingAdapter), Die());
-        delete platformFactory.textureUploadingAdapter;
     }
 
     TEST_F(APlatformFactoryTest, CanCreateAndDestroyPerRendererComponents_WithoutSystemCompositorController)

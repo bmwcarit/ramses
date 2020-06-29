@@ -27,25 +27,23 @@ TEST_F(AInternalDisplayConfig, hasDefaultValues)
     EXPECT_EQ(1u, m_config.getAntialiasingSampleCount());
     EXPECT_EQ(1280u, m_config.getDesiredWindowWidth());
     EXPECT_EQ(480u, m_config.getDesiredWindowHeight());
-    EXPECT_EQ(150, m_config.getWindowPositionX());
-    EXPECT_EQ(150, m_config.getWindowPositionY());
+    EXPECT_EQ(0, m_config.getWindowPositionX());
+    EXPECT_EQ(0, m_config.getWindowPositionY());
     EXPECT_EQ(ramses_internal::Vector3(0.0f), m_config.getCameraRotation());
     EXPECT_EQ(ramses_internal::Vector3(0.0f), m_config.getCameraPosition());
     EXPECT_FALSE(m_config.isWarpingEnabled());
     EXPECT_TRUE(m_config.getKeepEffectsUploaded());
-    EXPECT_FALSE(m_config.isStereoDisplay());
-    EXPECT_TRUE(ramses_internal::InvalidWaylandIviLayerId == m_config.getWaylandIviLayerID());
-    EXPECT_TRUE(ramses_internal::InvalidIntegrityRGLDeviceUnit == m_config.getIntegrityRGLDeviceUnit());
+    EXPECT_TRUE(!m_config.getWaylandIviLayerID().isValid());
+    EXPECT_TRUE(!m_config.getIntegrityRGLDeviceUnit().isValid());
     EXPECT_FALSE(m_config.getStartVisibleIvi());
     EXPECT_FALSE(m_config.isResizable());
     EXPECT_EQ(ramses_internal::ProjectionParams::Perspective(19.0f, 1280.f / 480.f, 0.1f, 1500.f), m_config.getProjectionParams());
     EXPECT_EQ(0u, m_config.getGPUMemoryCacheSize());
     EXPECT_EQ(ramses_internal::Vector4(0.f,0.f,0.f,1.f), m_config.getClearColor());
-    EXPECT_FALSE(m_config.getOffscreen());
     EXPECT_STREQ("", m_config.getWaylandDisplay().c_str());
 
     // this value is used in HL API, so test that value does not change unnoticed
-    EXPECT_TRUE(ramses_internal::InvalidIntegrityRGLDeviceUnit.getValue() == 0xFFFFFFFF);
+    EXPECT_TRUE(ramses_internal::IntegrityRGLDeviceUnit::Invalid().getValue() == 0xFFFFFFFF);
 }
 
 TEST_F(AInternalDisplayConfig, setAndGetValues)
@@ -95,9 +93,6 @@ TEST_F(AInternalDisplayConfig, setAndGetValues)
     m_config.setKeepEffectsUploaded(false);
     EXPECT_FALSE(m_config.getKeepEffectsUploaded());
 
-    m_config.setStereoDisplay(true);
-    EXPECT_TRUE(m_config.isStereoDisplay());
-
     m_config.setGPUMemoryCacheSize(256u);
     EXPECT_EQ(256u, m_config.getGPUMemoryCacheSize());
 
@@ -116,9 +111,6 @@ TEST_F(AInternalDisplayConfig, setAndGetValues)
     const ramses_internal::Vector4 clearColor(0.1f, 0.2f, 0.3f, 0.4f);
     m_config.setClearColor(clearColor);
     EXPECT_EQ(clearColor, m_config.getClearColor());
-
-    m_config.setOffscreen(true);
-    EXPECT_TRUE(m_config.getOffscreen());
 
     m_config.setWaylandDisplay("ramses display");
     EXPECT_STREQ("ramses display", m_config.getWaylandDisplay().c_str());
@@ -196,7 +188,6 @@ TEST_F(AInternalDisplayConfig, getsValuesAssignedFromCommandLine)
     EXPECT_TRUE(config.isWarpingEnabled());
     EXPECT_FALSE(config.getKeepEffectsUploaded());
     EXPECT_TRUE(config.isResizable());
-    EXPECT_TRUE(config.getOffscreen());
 }
 
 TEST_F(AInternalDisplayConfig, getsOrthoParamsAssignedFromCommandLine)
@@ -231,15 +222,4 @@ TEST_F(AInternalDisplayConfig, canBeCompared)
 
     config1.setAntialiasingSampleCount(4u);
     EXPECT_NE(config1, config2);
-}
-
-TEST_F(AInternalDisplayConfig, canBeCompared_Offscreen)
-{
-    ramses_internal::DisplayConfig configDefault;
-    ramses_internal::DisplayConfig configOffscreen;
-
-    ASSERT_EQ(configDefault, configOffscreen);
-
-    configOffscreen.setOffscreen(true);
-    EXPECT_NE(configDefault, configOffscreen);
 }

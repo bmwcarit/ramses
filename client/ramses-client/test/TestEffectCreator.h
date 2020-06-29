@@ -19,13 +19,13 @@ namespace ramses
     class TestEffectCreator : public LocalTestClientWithScene
     {
     public:
-        TestEffectCreator(bool withSemantics = false)
+        explicit TestEffectCreator(bool withSemantics = false)
             : LocalTestClientWithScene()
         {
             effect = createEffect(client, withSemantics);
-            EXPECT_TRUE(effect != NULL);
+            EXPECT_TRUE(effect != nullptr);
             appearance = this->m_scene.createAppearance(*effect);
-            EXPECT_TRUE(appearance != NULL);
+            EXPECT_TRUE(appearance != nullptr);
         }
 
         virtual ~TestEffectCreator()

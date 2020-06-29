@@ -18,8 +18,11 @@
 #include "Collections/Vector.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "PlatformAbstraction/PlatformMemory.h"
+#include "PlatformAbstraction/Macros.h"
+#include <type_traits>
 #include <algorithm>
 #include <iterator>
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -32,8 +35,8 @@ namespace ramses_internal
         SceneActionCollection(const SceneActionCollection&) = delete;
         SceneActionCollection& operator=(const SceneActionCollection&) = delete;
 
-        SceneActionCollection(SceneActionCollection&&) = default;
-        SceneActionCollection& operator=(SceneActionCollection&&) = default;
+        SceneActionCollection(SceneActionCollection&&) noexcept = default;
+        SceneActionCollection& operator=(SceneActionCollection&&) noexcept = default;
 
         SceneActionCollection copy() const;
 
@@ -43,8 +46,8 @@ namespace ramses_internal
 
         void append(const SceneActionCollection& other);
 
-        Bool operator==(const SceneActionCollection& rhs) const;
-        Bool operator!=(const SceneActionCollection& rhs) const;
+        bool operator==(const SceneActionCollection& rhs) const;
+        bool operator!=(const SceneActionCollection& rhs) const;
 
         void swap(SceneActionCollection& second);
         friend void swap(SceneActionCollection& first, SceneActionCollection& second);
@@ -54,7 +57,6 @@ namespace ramses_internal
 
         // concrete types
         void write(const String& str);
-        void write(const generic_uuid_t& guid);
         void write(const Guid& guid);
         void write(const ResourceContentHash& hash);
         template <typename T>
@@ -107,7 +109,6 @@ namespace ramses_internal
 
             // concrete types
             void read(String& str);
-            void read(generic_uuid_t& guid);
             void read(Guid& guid);
             void read(ResourceContentHash& hash);
             template <typename T>
@@ -165,7 +166,7 @@ namespace ramses_internal
             const SceneActionReader* operator->() const;
         private:
             friend class SceneActionCollection;
-            Iterator(const SceneActionReader& reader);
+            explicit Iterator(const SceneActionReader& reader);
 
             SceneActionReader m_reader;
         };
@@ -191,8 +192,8 @@ namespace ramses_internal
         std::vector<ActionInfo> m_actionInfo;
     };
 
-    static_assert(std::is_nothrow_move_constructible<SceneActionCollection>::value &&
-                  std::is_nothrow_move_assignable<SceneActionCollection>::value, "SceneActionCollection must be movable");
+    static_assert(std::is_nothrow_move_constructible<SceneActionCollection>::value, "SceneActionCollection must be movable");
+    static_assert(std::is_nothrow_move_assignable<SceneActionCollection>::value, "SceneActionCollection must be movable");
 
     inline SceneActionCollection::SceneActionCollection()
     {
@@ -268,19 +269,19 @@ namespace ramses_internal
         m_data.insert(m_data.end(), other.m_data.begin(), other.m_data.end());
     }
 
-    inline Bool SceneActionCollection::operator==(const SceneActionCollection& rhs) const
+    inline bool SceneActionCollection::operator==(const SceneActionCollection& rhs) const
     {
         return m_data == rhs.m_data && m_actionInfo == rhs.m_actionInfo;
     }
 
-    inline Bool SceneActionCollection::operator!=(const SceneActionCollection& rhs) const
+    inline bool SceneActionCollection::operator!=(const SceneActionCollection& rhs) const
     {
         return m_data != rhs.m_data || m_actionInfo != rhs.m_actionInfo;
     }
 
     inline void SceneActionCollection::swap(SceneActionCollection& second)
     {
-        using ramses_capu::swap;
+        using std::swap;
         swap(m_data, second.m_data);
         swap(m_actionInfo, second.m_actionInfo);
     }
@@ -299,21 +300,16 @@ namespace ramses_internal
     inline void SceneActionCollection::write(const String& str)
     {
         // check for MaxStringLength
-        const UInt32 truncatedLength = std::min(MaxStringLength, static_cast<UInt32>(str.getLength()));
+        const UInt32 truncatedLength = std::min(MaxStringLength, static_cast<UInt32>(str.size()));
 
         reserveAdditionalDataCapacity(sizeof(UInt32) + truncatedLength);
         writeAsByteBlob(static_cast<UInt32>(truncatedLength));
         writeAsByteBlob(str.c_str(), truncatedLength);
     }
 
-    inline void SceneActionCollection::write(const generic_uuid_t& guid)
-    {
-        writeAsByteBlob(guid);
-    }
-
     inline void SceneActionCollection::write(const Guid& guid)
     {
-        writeAsByteBlob(guid.getGuidData());
+        writeAsByteBlob(guid.get());
     }
 
     inline void SceneActionCollection::write(const ResourceContentHash& hash)
@@ -413,13 +409,13 @@ namespace ramses_internal
 
     inline SceneActionCollection::SceneActionReader SceneActionCollection::front() const
     {
-        assert(m_actionInfo.size() > 0);
+        assert(!m_actionInfo.empty());
         return SceneActionCollection::SceneActionReader(this, 0);
     }
 
     inline SceneActionCollection::SceneActionReader SceneActionCollection::back() const
     {
-        assert(m_actionInfo.size() > 0);
+        assert(!m_actionInfo.empty());
         return SceneActionCollection::SceneActionReader(this, m_actionInfo.size() - 1);
     }
 
@@ -508,14 +504,9 @@ namespace ramses_internal
             data = nullptr;
     }
 
-    inline void SceneActionCollection::SceneActionReader::read(generic_uuid_t& guid)
-    {
-        readFromByteBlob(guid);
-    }
-
     inline void SceneActionCollection::SceneActionReader::read(Guid& guid)
     {
-        generic_uuid_t data;
+        uint64_t data;
         readFromByteBlob(data);
         guid = Guid(data);
     }

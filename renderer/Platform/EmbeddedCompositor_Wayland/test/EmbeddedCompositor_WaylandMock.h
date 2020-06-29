@@ -22,14 +22,14 @@ namespace ramses_internal
     class EmbeddedCompositor_WaylandMock : public IEmbeddedCompositor_Wayland
     {
     public:
-        MOCK_METHOD1(handleBufferDestroyed, void(IWaylandBuffer& buffer));
-        MOCK_METHOD1(addWaylandSurface, void(IWaylandSurface& waylandSurface));
-        MOCK_METHOD1(removeWaylandSurface, void(IWaylandSurface& waylandSurface));
-        MOCK_METHOD1(getOrCreateBuffer, IWaylandBuffer&(WaylandBufferResource& bufferResource));
-        MOCK_METHOD1(addWaylandCompositorConnection, void(IWaylandCompositorConnection& waylandCompositorConnection));
-        MOCK_METHOD1(removeWaylandCompositorConnection, void(IWaylandCompositorConnection& waylandCompositorConnection));
-        MOCK_METHOD1(addWaylandRegion, void(IWaylandRegion& waylandRegion));
-        MOCK_METHOD1(removeWaylandRegion, void(IWaylandRegion& waylandRegion));
+        MOCK_METHOD(void, handleBufferDestroyed, (IWaylandBuffer& buffer), (override));
+        MOCK_METHOD(void, addWaylandSurface, (IWaylandSurface& waylandSurface), (override));
+        MOCK_METHOD(void, removeWaylandSurface, (IWaylandSurface& waylandSurface), (override));
+        MOCK_METHOD(IWaylandBuffer&, getOrCreateBuffer, (WaylandBufferResource& bufferResource), (override));
+        MOCK_METHOD(void, addWaylandCompositorConnection, (IWaylandCompositorConnection& waylandCompositorConnection), (override));
+        MOCK_METHOD(void, removeWaylandCompositorConnection, (IWaylandCompositorConnection& waylandCompositorConnection), (override));
+        MOCK_METHOD(void, addWaylandRegion, (IWaylandRegion& waylandRegion), (override));
+        MOCK_METHOD(void, removeWaylandRegion, (IWaylandRegion& waylandRegion), (override));
     };
 }
 

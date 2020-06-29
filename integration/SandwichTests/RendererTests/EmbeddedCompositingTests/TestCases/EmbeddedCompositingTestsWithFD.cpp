@@ -30,9 +30,9 @@ namespace ramses_internal
         UnixDomainSocket socket(m_waylandSocket, WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir));
 
         ramses::RendererConfig rendererConfig = RendererTestUtils::CreateTestRendererConfig();
-        rendererConfig.setWaylandSocketEmbedded("");
-        rendererConfig.setWaylandSocketEmbeddedGroup("");
-        rendererConfig.setWaylandSocketEmbeddedFD(socket.createBoundFileDescriptor());
+        rendererConfig.setWaylandEmbeddedCompositingSocketName("");
+        rendererConfig.setWaylandEmbeddedCompositingSocketGroup("");
+        rendererConfig.setWaylandEmbeddedCompositingSocketFD(socket.createBoundFileDescriptor());
 
         const UInt32 displayWidth = ramses_internal::IntegrationScene::DefaultDisplayWidth;
         const UInt32 displayHeight = ramses_internal::IntegrationScene::DefaultDisplayHeight;

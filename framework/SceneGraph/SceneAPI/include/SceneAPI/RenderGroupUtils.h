@@ -27,7 +27,7 @@ namespace ramses_internal
             return std::find_if(rg.renderables.begin(), rg.renderables.end(), [handle](const RenderableOrderEntry& r) { return r.renderable == handle; });
         }
 
-        static Bool ContainsRenderable(RenderableHandle handle, const RenderGroup& rg)
+        static bool ContainsRenderable(RenderableHandle handle, const RenderGroup& rg)
         {
             return std::find_if(rg.renderables.cbegin(), rg.renderables.cend(), [handle](const RenderableOrderEntry& r) { return r.renderable == handle; }) != rg.renderables.cend();
         }
@@ -42,7 +42,7 @@ namespace ramses_internal
             return std::find_if(rg.renderGroups.begin(), rg.renderGroups.end(), [handle](const RenderGroupOrderEntry& r) { return r.renderGroup == handle; });
         }
 
-        static Bool ContainsRenderGroup(RenderGroupHandle handle, const RenderGroup& rg)
+        static bool ContainsRenderGroup(RenderGroupHandle handle, const RenderGroup& rg)
         {
             return std::find_if(rg.renderGroups.cbegin(), rg.renderGroups.cend(), [handle](const RenderGroupOrderEntry& r) { return r.renderGroup == handle; }) != rg.renderGroups.cend();
         }
@@ -57,7 +57,7 @@ namespace ramses_internal
             return std::find_if(rp.renderGroups.begin(), rp.renderGroups.end(), [handle](const RenderGroupOrderEntry& r) { return r.renderGroup == handle; });
         }
 
-        static Bool ContainsRenderGroup(RenderGroupHandle handle, const RenderPass& rp)
+        static bool ContainsRenderGroup(RenderGroupHandle handle, const RenderPass& rp)
         {
             return std::find_if(rp.renderGroups.cbegin(), rp.renderGroups.cend(), [handle](const RenderGroupOrderEntry& r) { return r.renderGroup == handle; }) != rp.renderGroups.cend();
         }

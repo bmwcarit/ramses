@@ -35,6 +35,8 @@
 #include "ramses-client-api/IndexDataBuffer.h"
 #include "ramses-client-api/VertexDataBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
+#include "ramses-client-api/PickableObject.h"
+#include "ramses-client-api/SceneReference.h"
 #include "ramses-utils.h"
 
 #include "ClientTestUtils.h"
@@ -59,7 +61,7 @@ namespace ramses
         }
     };
 
-    TYPED_TEST_CASE(SceneObjectIteratorTest, SceneObjectTypes);
+    TYPED_TEST_SUITE(SceneObjectIteratorTest, SceneObjectTypes);
 
     TYPED_TEST(SceneObjectIteratorTest, ObjectIteratorReturnsMultipleObjects)
     {

@@ -9,7 +9,7 @@
 #ifndef RAMSES_RENDERERAPI_IBINARYSHADERCACHE_H
 #define RAMSES_RENDERERAPI_IBINARYSHADERCACHE_H
 
-#include "Types.h"
+#include "ramses-renderer-api/Types.h"
 #include "ramses-framework-api/APIExport.h"
 
 namespace ramses
@@ -77,6 +77,17 @@ namespace ramses
         virtual ~IBinaryShaderCache() = default;
 
         /**
+        * @brief Provides a list of binary shader formats supported by the device in use.
+        *        The cache implementation should provide only shaders that were compiled and stored with using of those formats.
+        *        The format ID is platform/driver specific, on OpenGL it is equivalent to those retrieved from GL_PROGRAM_BINARY_FORMATS parameter.
+        *        This callback will be called only once, after at least one display is created and at latest before the first IBinaryShaderCache::hasBinaryShader query.
+        *
+        * @param[in] supportedFormats Pointer to first element of a list of supported formats, this array is valid only for in the scope of this callback
+        * @param[in] numSupportedFormats Number of elements in \c supportedFormats array, if zero there is no support for uploading binary shaders
+        */
+        virtual void deviceSupportsBinaryShaderFormats(const binaryShaderFormatId_t* supportedFormats, uint32_t numSupportedFormats) = 0;
+
+        /**
          * @brief Used by RamsesRenderer to ask the application if it provides binary data for the Effect with the given effectId.
          *
          * @param effectId Effect Id of the Effect
@@ -110,17 +121,22 @@ namespace ramses
          * binary shaders from an offline shader compiler with storage format from an online shader compiler or vice-versa,
          * as they may differ and using them wrongly can cause surprising driver crashes at unsuspected places!
          */
-        virtual uint32_t getBinaryShaderFormat(effectId_t effectId) const = 0;
+        virtual binaryShaderFormatId_t getBinaryShaderFormat(effectId_t effectId) const = 0;
 
         /**
          * @brief      Used by RamsesRenderer to ask the application whether a specific effect should be cached.
          *
          *             This method is called if the shader is not cached yet but could be provided by the renderer.
          *             The cache can decide whether it the shader should be cached.
+         *             ID of scene that requires the given effect is provided to allow caching for certain scenes only.
+         *             Note that the scene ID is simply the first scene that needs this effect for rendering, there can
+         *             however be more scenes using the same effect.
+         *
          * @param[in]  effectId  Effect Id of the Effect
+         * @param[in]  sceneId  ID of scene that uses the effect.
          * @return     true if the effect should be cached, false otherwise.
          */
-        virtual bool shouldBinaryShaderBeCached(effectId_t effectId) const = 0;
+        virtual bool shouldBinaryShaderBeCached(effectId_t effectId, sceneId_t sceneId) const = 0;
 
         /**
          * @brief Used by RamsesRenderer to ask the application to provide the binary shader data for the given effectId
@@ -143,14 +159,19 @@ namespace ramses
          *  call storeBinaryShader() whenever a new shader was compiled, to provide the application with the corresponding data
          *  Ramses will _not_ cache this data itself - so if the effect is deleted and used again later, RamsesRenderer
          *  will compile it again, but before it does it will ask the application if a cache is available by calling
-         *  hasBinaryShader(). So use storeBinaryShader() to cache shaders if they are not supposed to be recompiled
+         *  hasBinaryShader(). So use storeBinaryShader() to cache shaders if they are not supposed to be recompiled.
          *
-         * @param effectId Effect Id of the Effect
-         * @param binaryShaderData pointer to the binary shader data
-         * @param binaryShaderDataSize size of the binary shader data
-         * @param binaryShaderFormat format of the binary shader
+         *  ID of scene that requires the given effect is provided to allow caching for certain scenes only.
+         *  Note that the scene ID is simply the first scene that needs this effect for rendering, there can
+         *  however be more scenes using the same effect.
+         *
+         * @param[in] effectId Effect Id of the Effect
+         * @param[in] sceneId ID of scene that uses the effect.
+         * @param[in] binaryShaderData pointer to the binary shader data
+         * @param[in] binaryShaderDataSize size of the binary shader data
+         * @param[in] binaryShaderFormat format of the binary shader - platform/driver specific binary shader format ID
          */
-        virtual void storeBinaryShader(effectId_t effectId, const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, uint32_t binaryShaderFormat) = 0;
+        virtual void storeBinaryShader(effectId_t effectId, sceneId_t sceneId, const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, binaryShaderFormatId_t binaryShaderFormat) = 0;
 
         /**
         * @brief Used by RamsesRenderer to provide a callback with information on the result of a binary shader upload operation.

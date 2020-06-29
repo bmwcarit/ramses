@@ -9,7 +9,7 @@
 #ifndef RAMSES_IRENDERERRESOURCECACHE_H
 #define RAMSES_IRENDERERRESOURCECACHE_H
 
-#include "SceneAPI/SceneResourceData.h"
+#include "Resource/IResource.h"
 #include "SceneAPI/SceneId.h"
 #include "SceneAPI/ResourceContentHash.h"
 #include "RendererAPI/Types.h"

@@ -56,7 +56,7 @@ namespace ramses_internal
             }
         }
 
-        auto createMemInfo = [](const String& logMessage, uint32_t numElements, std::function< size_t(uint32_t) >sizeOfIndividualElement){
+        auto createMemInfo = [](const String& logMessage, uint32_t numElements, const std::function< size_t(uint32_t) >& sizeOfIndividualElement){
             StringOutputStream stream;
             stream << numElements << " " << logMessage << " allocated";
 

@@ -20,7 +20,7 @@ namespace ramses_internal
     {
     }
 
-    void RendererCachedScene::setRenderableVisibility(RenderableHandle renderableHandle, Bool visible)
+    void RendererCachedScene::setRenderableVisibility(RenderableHandle renderableHandle, EVisibilityMode visible)
     {
         TextureLinkCachedScene::setRenderableVisibility(renderableHandle, visible);
         m_renderableOrderingDirty = true;
@@ -233,7 +233,7 @@ namespace ramses_internal
 
     static void AddRenderable(const IScene& scene, RenderableVector& orderedRenderables, RenderableHandle renderable)
     {
-        if (scene.getRenderable(renderable).isVisible)
+        if (scene.getRenderable(renderable).visibilityMode == EVisibilityMode::Visible)
         {
             orderedRenderables.push_back(renderable);
         }
@@ -326,7 +326,7 @@ namespace ramses_internal
             return false;
         }
 
-        return !rp.isRenderOnce || m_renderOncePassesToRender.hasElement(handle);
+        return !rp.isRenderOnce || m_renderOncePassesToRender.contains(handle);
     }
 
     void RendererCachedScene::retriggerAllRenderOncePasses()
@@ -349,7 +349,7 @@ namespace ramses_internal
 
     void RendererCachedScene::markAllRenderOncePassesAsRendered() const
     {
-        if (m_renderOncePassesToRender.count() > 0u)
+        if (m_renderOncePassesToRender.size() > 0u)
         {
             // some render once passes were rendered, remove them from list
             // and force update of cached render pass list for next update

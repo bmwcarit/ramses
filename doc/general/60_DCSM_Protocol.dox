@@ -22,7 +22,8 @@ transition animations into new sizes and new content states.
 
 The Consumer is the part of the system, which owns the display and is able to show received Content on that display. The Provider is the
 part of the system, which owns and controls the actual graphical content and makes it available to the Consumer. The design of the
-protocol puts the Consumer in charge of what is being shown when and in which size. The Provider controls, what is available for being shown and how the graphical content looks.
+protocol puts the Consumer in charge of what is being shown when and in which size. The Provider controls, what is available for being shown
+and how the graphical content looks.
 
 There can be multiple Consumers and Providers in a DCSM system. Providers offer their Content to all Consumers, but a Content might only
 be assigned to one Consumer at a time.
@@ -89,19 +90,21 @@ This message is sent from the Consumer to the Provider, when the size of the con
 <i>SizeInfo</i>. It contains the new size as viewport width and height. Additionally, it has <i>AnimationInformation</i>, which carries
 information for the Provider about when to animate the size change.
 
-<b>ContentReady(<i>ContentID, TechnicalContentType, TechnicalContentDescriptor</i>)</b><br>
-This message is a direct reply of the Provider to to a ContentStateChange message from the Consumer which switches from Assigned to
-Ready state. It carries the <i>ContentID</i> and information about how to be able to receive the actual graphical content.
+<b>ContentDescription(<i>ContentID, TechnicalContentType, TechnicalContentDescriptor</i>)</b><br>
+This message carries the <i>ContentID</i> and information about how to be able to receive the actual graphical content.
 <i>TechnicalContentType</i> is an application defined value which imforms about what kind of mechanism is used to distribute or stream
 the graphical content, in case there are multiple mechanism available. <i>TechnicalContentDescriptor</i> can be used by the application
 to communicate about which identifier, address or descriptor shall be used to receive the graphical content.
-
-When this message is being sent, the Provider has to have the graphical content fully available for use by the Consumer.
+This message is sent from Provider to Consumer, after Consumer is assigned to the Content and before the ContentReady message.
 
 The same TechnicalContentDescriptor might be used for different Contents, if they are within the same Category. This would mean that
 there are multiple logical contexts which this technical content can offer. A switch from one Content with a TechnicalContentDescriptor
 to another one with the same descriptor would make the Provider trigger a change of the graphical content from one logical context to
 another, the Provider may animate a transition between the two contexts according to the AnimationInformation provided.
+
+<b>ContentReady(<i>ContentID)</b><br>
+This message is a direct reply of the Provider to to a ContentStateChange message from the Consumer which switches from Assigned to
+Ready state. When this message is being sent, the Provider has to have the graphical content fully available for use by the Consumer.
 
 <b>ContentFocusRequest(<i>ContentID</i>)</b><br>
 The Provider sends this message to the Consumer, if it wants to request the Consumer to switch to the Content <i>ContentID</i> as
@@ -117,6 +120,13 @@ the Content is in state Shown and needs to be hidden with an animation (see abov
 After this ContentStateChange message has been received and the transition animation has been executed and the Content is hidden, the
 Provider and previously assigned Consumer may release the Content and graphical content.
 
+<b>UpdateContentMetadata(<i>ContentID, Metadata</i>)</b><br>
+This message carries arbitrary <i>Metadata</i> related to the Content from the Provider to the assigned Consumer. This message can be sent
+multiple times, as often as the <i>Metadata</i> needs to be updated, but only after sending the ContentDescription.
+
+DCSM does not define a <i>Metadata</i> format and leaves this for the Consumer and Provider to agree upon by other means. It just carries the
+<i>Metadata</i> as data blob.
+
 # Implementation
 
 In the Ramses solution there is a DCSM Implementation. It implements the DCSM protocol specifically to control Ramses scenes.
@@ -127,8 +137,8 @@ There are four major components in this implementation:
   of DCSM in a generic way.
 - The DcsmProvider is a simplified API which can be used by a content provider application to provide Ramses scenes as content.
 - The DcsmConsumer is an API which can be used by a consumer application to receive Ramses scenes as Content and render it.
-- The DcsmRenderer is a simplified API which unifies calls to a renderer and DCSM. It is based on DcsmConsumer and RamsesRenderer and
-  is used to render Content in form of Ramses Scenes.
+- The DcsmContentControl is an API which combines DcsmConsumer control and content rendering state control. It is based on DcsmConsumer and RendererSceneControl and
+  is used to render DCSM content in form of Ramses scenes.
 
 Refer to the API documentation for details about usage of the last three API classes.
 

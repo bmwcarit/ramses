@@ -129,18 +129,6 @@ namespace ramses
         EXPECT_TRUE(anim == nullptr);
     }
 
-    TEST_F(AnimationSystemTest, createAnimatedSetterWithAnimatedPropertyFromDifferentAnimationSystemFails)
-    {
-        AnimationSystem* otherAnimationSystem = this->getScene().createAnimationSystem();
-        Node* node = this->m_scene.createNode("node");
-        EXPECT_FALSE(node == nullptr);
-        AnimatedProperty* prop = otherAnimationSystem->createAnimatedProperty(*node, EAnimatedProperty_Translation);
-        EXPECT_FALSE(prop == nullptr);
-
-        AnimatedSetter* anim = this->animationSystem.createAnimatedSetter(*prop, "anim");
-        EXPECT_TRUE(anim == nullptr);
-    }
-
     TEST_F(AnimationSystemTest, createAnimationWithSplineAndPropertyDataMismatchFails)
     {
         SplineLinearFloat* spline = this->animationSystem.createSplineLinearFloat("spline");
@@ -237,7 +225,6 @@ namespace ramses
         EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_Animation instances: 2") >= 0);
         EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_AnimationSequence instances: 1") >= 0);
         EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_AnimatedProperty instances: 3") >= 0);
-        EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_AnimatedSetter instances: 0") >= 0);
         EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_SplineLinearVector3f instances: 4") >= 0);
     }
 
@@ -255,7 +242,6 @@ namespace ramses
         EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_Animation instances: 0") >= 0);
         EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_AnimationSequence instances: 1") >= 0);
         EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_AnimatedProperty instances: 1") >= 0);
-        EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_AnimatedSetter instances: 0") >= 0);
         EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_SplineLinearVector3f instances: 1") >= 0);
     }
 

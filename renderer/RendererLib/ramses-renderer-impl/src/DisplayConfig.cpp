@@ -14,14 +14,13 @@
 
 namespace ramses
 {
-    DisplayConfig::DisplayConfig(int32_t argc, char const* const* argv)
-        : StatusObject(*new DisplayConfigImpl(argc, argv))
-        , impl(static_cast<DisplayConfigImpl&>(StatusObject::impl))
+    DisplayConfig::DisplayConfig()
+        : DisplayConfig(0, nullptr)
     {
     }
 
-    DisplayConfig::DisplayConfig(int32_t argc, char* argv[])
-        : StatusObject(*new DisplayConfigImpl(argc, const_cast<char const* const*>(argv)))
+    DisplayConfig::DisplayConfig(int32_t argc, char const* const* argv)
+        : StatusObject(*new DisplayConfigImpl(argc, argv))
         , impl(static_cast<DisplayConfigImpl&>(StatusObject::impl))
     {
     }
@@ -67,11 +66,21 @@ namespace ramses
         return status;
     }
 
+    status_t DisplayConfig::getWindowRectangle(int32_t& x, int32_t& y, uint32_t& width, uint32_t& height) const
+    {
+        return impl.getWindowRectangle(x, y, width, height);
+    }
+
     status_t DisplayConfig::setWindowFullscreen(bool fullscreen)
     {
         const status_t status = impl.setFullscreen(fullscreen);
         LOG_HL_RENDERER_API1(status, fullscreen);
         return status;
+    }
+
+    bool DisplayConfig::isWindowFullscreen() const
+    {
+        return impl.isFullscreen();
     }
 
     status_t DisplayConfig::setWindowBorderless(bool borderless)
@@ -117,13 +126,6 @@ namespace ramses
     status_t DisplayConfig::enableWarpingPostEffect()
     {
         const status_t status = impl.enableWarpingPostEffect();
-        LOG_HL_RENDERER_API_NOARG(status);
-        return status;
-    }
-
-    status_t DisplayConfig::enableStereoDisplay()
-    {
-        const status_t status = impl.enableStereoDisplay();
         LOG_HL_RENDERER_API_NOARG(status);
         return status;
     }
@@ -174,9 +176,19 @@ namespace ramses
         return impl.getIntegrityRGLDeviceUnit();
     }
 
+    void* DisplayConfig::getAndroidNativeWindow() const
+    {
+        return impl.getAndroidNativeWindow();
+    }
+
+    status_t DisplayConfig::setAndroidNativeWindow(void* nativeWindowPtr)
+    {
+        return impl.setAndroidNativeWindow(nativeWindowPtr);
+    }
+
     status_t DisplayConfig::setWindowIviVisible()
     {
-        const status_t status = impl.setWindowIviVisible();
+        const status_t status = impl.setWindowIviVisible(true);
         LOG_HL_RENDERER_API_NOARG(status);
         return status;
     }
@@ -206,13 +218,6 @@ namespace ramses
     {
         const status_t status = impl.setClearColor(red, green, blue, alpha);
         LOG_HL_RENDERER_API4(status, red, green, blue, alpha);
-        return status;
-    }
-
-    status_t DisplayConfig::setOffscreen(bool offscreenFlag)
-    {
-        const status_t status = impl.setOffscreen(offscreenFlag);
-        LOG_HL_RENDERER_API1(status, offscreenFlag);
         return status;
     }
 

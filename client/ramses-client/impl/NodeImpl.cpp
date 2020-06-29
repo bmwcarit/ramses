@@ -23,7 +23,7 @@ namespace ramses
     NodeImpl::NodeImpl(SceneImpl& scene, ERamsesObjectType type, const char* nodeName)
         : SceneObjectImpl(scene, type, nodeName)
         , m_parent(nullptr)
-        , m_visibility(true)
+        , m_visibilityMode(EVisibilityMode::Visible)
     {
     }
 
@@ -36,7 +36,7 @@ namespace ramses
         CHECK_RETURN_ERR(SceneObjectImpl::serialize(outStream, serializationContext));
 
         outStream << m_nodeHandle;
-        outStream << static_cast<ramses_internal::UInt32>(m_visibility);
+        outStream << m_visibilityMode;
         outStream << m_transformHandle;
 
         return StatusOK;
@@ -47,9 +47,7 @@ namespace ramses
         CHECK_RETURN_ERR(SceneObjectImpl::deserialize(inStream, serializationContext));
 
         inStream >> m_nodeHandle;
-        ramses_internal::UInt32 intToBool;
-        inStream >> intToBool;
-        m_visibility = (intToBool != 0);
+        inStream >> m_visibilityMode;
         inStream >> m_transformHandle;
 
         serializationContext.addForDependencyResolve(this);
@@ -445,19 +443,19 @@ namespace ramses
         return m_transformHandle;
     }
 
-    status_t NodeImpl::setVisibility(bool visible)
+    status_t NodeImpl::setVisibility(EVisibilityMode mode)
     {
-        if (m_visibility != visible)
+        if (m_visibilityMode != mode)
         {
-            m_visibility = visible;
+            m_visibilityMode = mode;
             markDirty();
         }
 
         return StatusOK;
     }
 
-    bool NodeImpl::getVisibility() const
+    EVisibilityMode NodeImpl::getVisibility() const
     {
-        return m_visibility;
+        return m_visibilityMode;
     }
 }

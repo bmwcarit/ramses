@@ -23,11 +23,11 @@ public:
         : rendererScenes(eventCollector)
         , expirationMonitor(rendererScenes, eventCollector)
     {
-        rendererScenes.createScene({ scene1 });
-        rendererScenes.createScene({ scene2 });
-        rendererScenes.createScene({ scene3 });
-        rendererScenes.createScene({ scene4 });
-        rendererScenes.createScene({ scene5 });
+        rendererScenes.createScene(SceneInfo{ scene1 });
+        rendererScenes.createScene(SceneInfo{ scene2 });
+        rendererScenes.createScene(SceneInfo{ scene3 });
+        rendererScenes.createScene(SceneInfo{ scene4 });
+        rendererScenes.createScene(SceneInfo{ scene5 });
     }
 
     ~ASceneExpirationMonitor()
@@ -49,7 +49,8 @@ protected:
     void expectNoEvent()
     {
         RendererEventVector events;
-        eventCollector.dispatchEvents(events);
+        RendererEventVector dummy;
+        eventCollector.appendAndConsumePendingEvents(dummy, events);
         EXPECT_TRUE(events.empty());
         for (const auto& e : events)
         {
@@ -61,7 +62,8 @@ protected:
     void expectEvents(std::initializer_list< std::pair<SceneId, ERendererEventType> > expectedEvents)
     {
         RendererEventVector events;
-        eventCollector.dispatchEvents(events);
+        RendererEventVector dummy;
+        eventCollector.appendAndConsumePendingEvents(dummy, events);
         EXPECT_EQ(expectedEvents.size(), events.size());
         for (const auto& expectedEvent : expectedEvents)
         {
@@ -248,7 +250,7 @@ TEST_F(ASceneExpirationMonitor, generatesEventIfLastAppliedFlushTSExpiredEvenIfR
 TEST_F(ASceneExpirationMonitor, generatesEventIfLastPendingFlushExpired)
 {
     // create some pending flushes
-    auto& pendingFlushes = rendererScenes.getStagingInfo(scene1).pendingFlushes;
+    auto& pendingFlushes = rendererScenes.getStagingInfo(scene1).pendingData.pendingFlushes;
     pendingFlushes.resize(3u);
     pendingFlushes[0].timeInfo.expirationTimestamp = FlushTime::InvalidTimestamp;
     pendingFlushes[1].timeInfo.expirationTimestamp = currentFakeTime;
@@ -268,7 +270,7 @@ TEST_F(ASceneExpirationMonitor, generatesEventIfAnyOfPendingFlushesExpiredEvenIf
     expirationMonitor.onRendered(scene1);
 
     // create some pending flushes
-    auto& pendingFlushes = rendererScenes.getStagingInfo(scene1).pendingFlushes;
+    auto& pendingFlushes = rendererScenes.getStagingInfo(scene1).pendingData.pendingFlushes;
     pendingFlushes.resize(3u);
     pendingFlushes[0].timeInfo.expirationTimestamp = FlushTime::InvalidTimestamp;
     pendingFlushes[1].timeInfo.expirationTimestamp = currentFakeTime;

@@ -16,7 +16,7 @@ namespace ramses_internal
     class TransformationLinkCachedScene : public SceneLinkScene
     {
     public:
-        TransformationLinkCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
+        explicit TransformationLinkCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
 
         // From IScene
         virtual void                    addChildToNode(NodeHandle parent, NodeHandle child) override;

@@ -28,7 +28,7 @@ namespace ramses
         : StatusObjectImpl()
         , m_shellType(ERamsesShellType_Default)
         , m_periodicLogsEnabled(true)
-        , m_usedProtocol(EConnectionProtocol_Invalid)
+        , m_usedProtocol(EConnectionProtocol::Invalid)
         , m_parser(argc, argv)
         , m_dltAppID("RAMS")
         , m_dltAppDescription("RAMS-DESC")
@@ -111,10 +111,10 @@ namespace ramses
 
     void RamsesFrameworkConfigImpl::parseCommandLine()
     {
-        const ArgumentBool useFakeConnection( m_parser, "fakeConnection", "fakeConnection", false);
-        const ArgumentBool isRamshEnabled(    m_parser, "ramsh", "ramsh", false);
-        const ArgumentBool enableOffsetPlatformProtocolVersion(m_parser, "pvo", "protocolVersionOffset", false);
-        const ArgumentBool disablePeriodicLogs(m_parser, "disablePeriodicLogs", "disablePeriodicLogs", false);
+        const ArgumentBool useFakeConnection( m_parser, "fakeConnection", "fakeConnection");
+        const ArgumentBool isRamshEnabled(m_parser, "ramsh", "ramsh");
+        const ArgumentBool enableOffsetPlatformProtocolVersion(m_parser, "pvo", "protocolVersionOffset");
+        const ArgumentBool disablePeriodicLogs(m_parser, "disablePeriodicLogs", "disablePeriodicLogs");
         const ArgumentString userProvidedGuid(m_parser, "guid", "guid", "");
 
         if (enableOffsetPlatformProtocolVersion)
@@ -133,11 +133,11 @@ namespace ramses
 
         if (useFakeConnection || !gHasTCPComm)
         {
-            m_usedProtocol = EConnectionProtocol_Fake;
+            m_usedProtocol = EConnectionProtocol::Fake;
         }
         else
         {
-            m_usedProtocol = EConnectionProtocol_TCP;
+            m_usedProtocol = EConnectionProtocol::TCP;
             ArgumentUInt16 port(m_parser, "myport", "myportnumber", m_tcpConfig.getPort());
             if( port.wasDefined() )
             {
@@ -156,6 +156,17 @@ namespace ramses
         {
             m_userProvidedGuid = Guid(userProvidedGuid);
         }
+    }
+
+    status_t RamsesFrameworkConfigImpl::enableDLTApplicationRegistration(bool state)
+    {
+        m_enableDltApplicationRegistration = state;
+        return StatusOK;
+    }
+
+    bool RamsesFrameworkConfigImpl::getDltApplicationRegistrationEnabled() const
+    {
+        return m_enableDltApplicationRegistration;
     }
 
     void RamsesFrameworkConfigImpl::setDLTApplicationID(const char* id)

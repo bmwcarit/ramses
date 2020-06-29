@@ -55,7 +55,7 @@ namespace ramses_internal
             return false;
         }
 
-        if (!setEnabled(true))
+        if (!enable())
         {
             LOG_ERROR(CONTEXT_RENDERER, "Enabling context failed");
             return false;
@@ -76,23 +76,27 @@ namespace ramses_internal
     {
         LOG_DEBUG(CONTEXT_RENDERER, "Surface_Windows_WGL::~Surface_Windows_WGL:");
 
-        setEnabled(false);
+        disable();
         wglDeleteContext(m_wglContextHandle);
     }
 
-    Bool Context_WGL::setEnabled(Bool enabled)
+    Bool Context_WGL::swapBuffers()
     {
-        Bool result = false;
-        if (enabled)
-        {
-            result = (TRUE == wglMakeCurrent(m_displayHandle, m_wglContextHandle));
-        }
-        else
-        {
-            result = (TRUE == wglMakeCurrent(NULL, NULL));
-        }
+        return SwapBuffers(m_displayHandle) == TRUE;
+    }
 
-        return result;
+    bool Context_WGL::enable()
+    {
+        if (!wglMakeCurrent(m_displayHandle, m_wglContextHandle))
+            return false;
+        return true;
+    }
+
+    Bool Context_WGL::disable()
+    {
+        if (!wglMakeCurrent(NULL, NULL))
+            return false;
+        return true;
     }
 
     Bool Context_WGL::initCustomPixelFormat()

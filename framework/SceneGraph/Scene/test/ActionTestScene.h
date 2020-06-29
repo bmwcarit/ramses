@@ -33,21 +33,21 @@ namespace ramses_internal
         // Renderable
         virtual RenderableHandle            allocateRenderable              (NodeHandle nodeHandle, RenderableHandle handle = RenderableHandle::Invalid()) override;
         virtual void                        releaseRenderable               (RenderableHandle renderableHandle) override;
-        virtual Bool                        isRenderableAllocated           (RenderableHandle renderableHandle) const override;
+        virtual bool                        isRenderableAllocated           (RenderableHandle renderableHandle) const override;
         virtual UInt32                      getRenderableCount              () const override;
-        virtual void                        setRenderableEffect             (RenderableHandle renderableHandle, const ResourceContentHash& effectHash) override;
         virtual void                        setRenderableDataInstance       (RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance) override;
         virtual void                        setRenderableStartIndex         (RenderableHandle renderableHandle, UInt32 startIndex) override;
         virtual void                        setRenderableIndexCount         (RenderableHandle renderableHandle, UInt32 indexCount) override;
         virtual void                        setRenderableRenderState        (RenderableHandle renderableHandle, RenderStateHandle stateHandle) override;
-        virtual void                        setRenderableVisibility         (RenderableHandle renderableHandle, Bool visible) override;
+        virtual void                        setRenderableVisibility         (RenderableHandle renderableHandle, EVisibilityMode visible) override;
         virtual void                        setRenderableInstanceCount      (RenderableHandle renderableHandle, UInt32 instanceCount) override;
+        virtual void                        setRenderableStartVertex        (RenderableHandle renderableHandle, UInt32 startVertex) override;
         virtual const Renderable&           getRenderable                   (RenderableHandle renderableHandle) const override;
 
         // Render state
         virtual RenderStateHandle           allocateRenderState             (RenderStateHandle stateHandle = RenderStateHandle::Invalid()) override;
         virtual void                        releaseRenderState              (RenderStateHandle stateHandle) override;
-        virtual Bool                        isRenderStateAllocated          (RenderStateHandle stateHandle) const override;
+        virtual bool                        isRenderStateAllocated          (RenderStateHandle stateHandle) const override;
         virtual UInt32                      getRenderStateCount             () const override;
         virtual void                        setRenderStateBlendFactors            (RenderStateHandle stateHandle, EBlendFactor srcColor, EBlendFactor destColor, EBlendFactor srcAlpha, EBlendFactor destAlpha) override;
         virtual void                        setRenderStateBlendOperations         (RenderStateHandle stateHandle, EBlendOperation operationColor, EBlendOperation operationAlpha) override;
@@ -64,7 +64,7 @@ namespace ramses_internal
         // Camera
         virtual CameraHandle                allocateCamera                  (ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle viewportDataInstance, CameraHandle handle = CameraHandle::Invalid()) override;
         virtual void                        releaseCamera                   (CameraHandle cameraHandle) override;
-        virtual Bool                        isCameraAllocated               (CameraHandle handle) const override;
+        virtual bool                        isCameraAllocated               (CameraHandle handle) const override;
         virtual UInt32                      getCameraCount                  () const override;
         // Camera Viewport
         virtual void                        setCameraFrustum                (CameraHandle cameraHandle, const Frustum& frustum) override;
@@ -73,12 +73,12 @@ namespace ramses_internal
         // Creation/Deletion
         virtual NodeHandle                  allocateNode                    (UInt32 childrenCount = 0u, NodeHandle handle = NodeHandle::Invalid()) override;
         virtual void                        releaseNode                     (NodeHandle nodeHandle) override;
-        virtual Bool                        isNodeAllocated                 (NodeHandle node) const override;
+        virtual bool                        isNodeAllocated                 (NodeHandle node) const override;
         virtual UInt32                      getNodeCount                    () const override;
 
         virtual TransformHandle             allocateTransform               (NodeHandle nodeHandle, TransformHandle handle = TransformHandle::Invalid()) override;
         virtual void                        releaseTransform                (TransformHandle transform) override;
-        virtual Bool                        isTransformAllocated            (TransformHandle transformHandle) const override;
+        virtual bool                        isTransformAllocated            (TransformHandle transformHandle) const override;
         virtual UInt32                      getTransformCount               () const override;
         virtual NodeHandle                  getTransformNode                (TransformHandle handle) const override;
 
@@ -97,16 +97,16 @@ namespace ramses_internal
         virtual void                        setRotation                     (TransformHandle handle, const Vector3& rotation) override;
         virtual void                        setScaling                      (TransformHandle handle, const Vector3& scaling) override;
 
-        virtual DataLayoutHandle            allocateDataLayout              (const DataFieldInfoVector& dataFields, DataLayoutHandle handle = DataLayoutHandle::Invalid()) override;
+        virtual DataLayoutHandle            allocateDataLayout              (const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid()) override;
         virtual void                        releaseDataLayout               (DataLayoutHandle layoutHandle) override;
-        virtual Bool                        isDataLayoutAllocated           (DataLayoutHandle layoutHandle) const override;
+        virtual bool                        isDataLayoutAllocated           (DataLayoutHandle layoutHandle) const override;
         virtual UInt32                      getDataLayoutCount              () const override;
 
         virtual const DataLayout&           getDataLayout                   (DataLayoutHandle layoutHandle) const override;
 
         virtual DataInstanceHandle          allocateDataInstance            (DataLayoutHandle finishedLayoutHandle, DataInstanceHandle instanceHandle = DataInstanceHandle::Invalid()) override;
         virtual void                        releaseDataInstance             (DataInstanceHandle containerHandle) override;
-        virtual Bool                        isDataInstanceAllocated         (DataInstanceHandle containerHandle) const override;
+        virtual bool                        isDataInstanceAllocated         (DataInstanceHandle containerHandle) const override;
         virtual UInt32                      getDataInstanceCount            () const override;
         virtual DataLayoutHandle            getLayoutOfDataInstance         (DataInstanceHandle containerHandle) const override;
 
@@ -168,14 +168,14 @@ namespace ramses_internal
         // Texture sampler description
         virtual TextureSamplerHandle        allocateTextureSampler          (const TextureSampler& sampler, TextureSamplerHandle handle = TextureSamplerHandle::Invalid()) override;
         virtual void                        releaseTextureSampler           (TextureSamplerHandle handle) override;
-        virtual Bool                        isTextureSamplerAllocated       (TextureSamplerHandle handle) const override;
+        virtual bool                        isTextureSamplerAllocated       (TextureSamplerHandle handle) const override;
         virtual UInt32                      getTextureSamplerCount          () const override;
         virtual const TextureSampler&       getTextureSampler               (TextureSamplerHandle handle) const override;
 
         // Render groups
         virtual RenderGroupHandle           allocateRenderGroup             (UInt32 renderableCount = 0u, UInt32 nestedGroupCount = 0u, RenderGroupHandle groupHandle = RenderGroupHandle::Invalid()) override;
         virtual void                        releaseRenderGroup              (RenderGroupHandle groupHandle) override;
-        virtual Bool                        isRenderGroupAllocated          (RenderGroupHandle groupHandle) const override;
+        virtual bool                        isRenderGroupAllocated          (RenderGroupHandle groupHandle) const override;
         virtual UInt32                      getRenderGroupCount             () const override;
         virtual void                        addRenderableToRenderGroup      (RenderGroupHandle groupHandle, RenderableHandle renderableHandle, Int32 order) override;
         virtual void                        removeRenderableFromRenderGroup (RenderGroupHandle groupHandle, RenderableHandle renderableHandle) override;
@@ -186,15 +186,15 @@ namespace ramses_internal
         // Render passes
         virtual RenderPassHandle            allocateRenderPass              (UInt32 renderGroupCount = 0u, RenderPassHandle passHandle = RenderPassHandle::Invalid()) override;
         virtual void                        releaseRenderPass               (RenderPassHandle passHandle) override;
-        virtual Bool                        isRenderPassAllocated           (RenderPassHandle passHandle) const override;
+        virtual bool                        isRenderPassAllocated           (RenderPassHandle passHandle) const override;
         virtual UInt32                      getRenderPassCount              () const override;
         virtual void                        setRenderPassClearColor         (RenderPassHandle passHandle, const Vector4& clearColor) override;
         virtual void                        setRenderPassClearFlag          (RenderPassHandle passHandle, UInt32 clearFlag) override;
         virtual void                        setRenderPassCamera             (RenderPassHandle passHandle, CameraHandle cameraHandle) override;
         virtual void                        setRenderPassRenderTarget       (RenderPassHandle passHandle, RenderTargetHandle targetHandle) override;
         virtual void                        setRenderPassRenderOrder        (RenderPassHandle passHandle, Int32 renderOrder) override;
-        virtual void                        setRenderPassEnabled            (RenderPassHandle passHandle, Bool isEnabled) override;
-        virtual void                        setRenderPassRenderOnce         (RenderPassHandle passHandle, Bool enable) override;
+        virtual void                        setRenderPassEnabled            (RenderPassHandle passHandle, bool isEnabled) override;
+        virtual void                        setRenderPassRenderOnce         (RenderPassHandle passHandle, bool enable) override;
         virtual void                        retriggerRenderPassRenderOnce   (RenderPassHandle passHandle) override;
         virtual void                        addRenderGroupToRenderPass      (RenderPassHandle passHandle, RenderGroupHandle groupHandle, Int32 order) override;
         virtual void                        removeRenderGroupFromRenderPass (RenderPassHandle passHandle, RenderGroupHandle groupHandle) override;
@@ -203,19 +203,27 @@ namespace ramses_internal
         //Blit passes
         virtual BlitPassHandle              allocateBlitPass                (RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle = BlitPassHandle::Invalid()) override;
         virtual void                        releaseBlitPass                 (BlitPassHandle passHandle) override;
-        virtual Bool                        isBlitPassAllocated             (BlitPassHandle passHandle) const override;
+        virtual bool                        isBlitPassAllocated             (BlitPassHandle passHandle) const override;
         virtual UInt32                      getBlitPassCount                () const override;
         virtual void                        setBlitPassRenderOrder          (BlitPassHandle passHandle, Int32 renderOrder) override;
-        virtual void                        setBlitPassEnabled              (BlitPassHandle passHandle, Bool isEnabled) override;
+        virtual void                        setBlitPassEnabled              (BlitPassHandle passHandle, bool isEnabled) override;
         virtual void                        setBlitPassRegions              (BlitPassHandle passHandle, const PixelRectangle& sourceRegion, const PixelRectangle& destinationRegion) override;
         virtual const BlitPass&             getBlitPass                     (BlitPassHandle passHandle) const override;
 
-        virtual SceneSizeInformation        getSceneSizeInformation         () const override;
+        //Pickable object
+        virtual PickableObjectHandle        allocatePickableObject          (DataBufferHandle geometryHandle, NodeHandle nodeHandle, PickableObjectId id, PickableObjectHandle pickableHandle = PickableObjectHandle::Invalid()) override;
+        virtual void                        releasePickableObject           (PickableObjectHandle pickableHandle) override;
+        virtual bool                        isPickableObjectAllocated       (PickableObjectHandle pickableHandle) const override final;
+        virtual UInt32                      getPickableObjectCount          () const override final;
+        virtual void                        setPickableObjectId             (PickableObjectHandle pickableHandle, PickableObjectId id) override;
+        virtual void                        setPickableObjectCamera         (PickableObjectHandle pickableHandle, CameraHandle cameraHandle) override;
+        virtual void                        setPickableObjectEnabled        (PickableObjectHandle pickableHandle, bool isEnabled) override;
+        virtual const PickableObject&       getPickableObject               (PickableObjectHandle pickableHandle) const override;
 
         // Render targets
         virtual RenderTargetHandle          allocateRenderTarget            (RenderTargetHandle targetHandle = RenderTargetHandle::Invalid()) override;
         virtual void                        releaseRenderTarget             (RenderTargetHandle targetHandle) override;
-        virtual Bool                        isRenderTargetAllocated         (RenderTargetHandle targetHandle) const override;
+        virtual bool                        isRenderTargetAllocated         (RenderTargetHandle targetHandle) const override;
         virtual UInt32                      getRenderTargetCount            () const  override;
         virtual void                        addRenderTargetRenderBuffer     (RenderTargetHandle targetHandle, RenderBufferHandle bufferHandle) override;
         virtual UInt32                      getRenderTargetRenderBufferCount(RenderTargetHandle targetHandle) const override;
@@ -224,16 +232,16 @@ namespace ramses_internal
         // Render buffers
         virtual RenderBufferHandle          allocateRenderBuffer            (const RenderBuffer& renderBuffer, RenderBufferHandle handle = RenderBufferHandle::Invalid()) override;
         virtual void                        releaseRenderBuffer             (RenderBufferHandle handle) override;
-        virtual Bool                        isRenderBufferAllocated         (RenderBufferHandle handle) const override;
+        virtual bool                        isRenderBufferAllocated         (RenderBufferHandle handle) const override;
         virtual UInt32                      getRenderBufferCount            () const override;
         virtual const RenderBuffer&         getRenderBuffer                 (RenderBufferHandle handle) const override;
 
         // stream texture
         virtual StreamTextureHandle         allocateStreamTexture           (uint32_t streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle = StreamTextureHandle::Invalid()) override;
         virtual void                        releaseStreamTexture            (StreamTextureHandle streamTextureHandle) override;
-        virtual Bool                        isStreamTextureAllocated        (StreamTextureHandle streamTextureHandle) const override;
+        virtual bool                        isStreamTextureAllocated        (StreamTextureHandle streamTextureHandle) const override;
         virtual UInt32                      getStreamTextureCount           () const override;
-        virtual void                        setForceFallbackImage           (StreamTextureHandle streamTextureHandle, Bool forceFallbackImage) override;
+        virtual void                        setForceFallbackImage           (StreamTextureHandle streamTextureHandle, bool forceFallbackImage) override;
         virtual const StreamTexture&        getStreamTexture                (StreamTextureHandle streamTextureHandle) const override;
 
         // Data buffers
@@ -241,13 +249,13 @@ namespace ramses_internal
         virtual void                        releaseDataBuffer               (DataBufferHandle handle) override;
         virtual UInt32                      getDataBufferCount              () const override;
         virtual void                        updateDataBuffer                (DataBufferHandle handle, UInt32 offsetInBytes, UInt32 dataSizeInBytes, const Byte* data) override;
-        virtual Bool                        isDataBufferAllocated           (DataBufferHandle handle) const override;
+        virtual bool                        isDataBufferAllocated           (DataBufferHandle handle) const override;
         virtual const GeometryDataBuffer&   getDataBuffer                   (DataBufferHandle handle) const override;
 
         //Texture buffers
         virtual TextureBufferHandle         allocateTextureBuffer           (ETextureFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle = TextureBufferHandle::Invalid()) override;
         virtual void                        releaseTextureBuffer            (TextureBufferHandle handle) override;
-        virtual Bool                        isTextureBufferAllocated        (TextureBufferHandle handle) const override;
+        virtual bool                        isTextureBufferAllocated        (TextureBufferHandle handle) const override;
         virtual UInt32                      getTextureBufferCount           () const override;
         virtual void                        updateTextureBuffer             (TextureBufferHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const Byte* data) override;
         virtual const TextureBuffer&        getTextureBuffer                (TextureBufferHandle handle) const override;
@@ -255,21 +263,29 @@ namespace ramses_internal
         virtual DataSlotHandle              allocateDataSlot                (const DataSlot& dataSlot, DataSlotHandle handle = DataSlotHandle::Invalid()) override;
         virtual void                        setDataSlotTexture              (DataSlotHandle handle, const ResourceContentHash& texture) override;
         virtual void                        releaseDataSlot                 (DataSlotHandle handle) override;
-        virtual Bool                        isDataSlotAllocated             (DataSlotHandle handle) const override;
+        virtual bool                        isDataSlotAllocated             (DataSlotHandle handle) const override;
         virtual UInt32                      getDataSlotCount                () const override;
         virtual const DataSlot&             getDataSlot                     (DataSlotHandle handle) const override;
 
+        virtual SceneReferenceHandle        allocateSceneReference          (SceneId sceneId, SceneReferenceHandle handle = {}) override;
+        virtual void                        releaseSceneReference           (SceneReferenceHandle handle) override;
+        virtual void                        requestSceneReferenceState      (SceneReferenceHandle handle, RendererSceneState state) override;
+        virtual void                        requestSceneReferenceFlushNotifications(SceneReferenceHandle handle, bool enable) override;
+        virtual void                        setSceneReferenceRenderOrder    (SceneReferenceHandle handle, int32_t renderOrder) override;
+        virtual bool                        isSceneReferenceAllocated       (SceneReferenceHandle handle) const override final;
+        virtual UInt32                      getSceneReferenceCount          () const override final;
+        virtual const SceneReference&       getSceneReference               (SceneReferenceHandle handle) const override final;
         //Animation system
         virtual AnimationSystemHandle       addAnimationSystem              (IAnimationSystem* animationSystem, AnimationSystemHandle animSystemHandle = AnimationSystemHandle::Invalid()) override;
         virtual void                        removeAnimationSystem           (AnimationSystemHandle animSystemHandle) override;
         virtual IAnimationSystem*           getAnimationSystem              (AnimationSystemHandle animSystemHandle) override;
         virtual const IAnimationSystem*     getAnimationSystem              (AnimationSystemHandle animSystemHandle) const override;
-        virtual Bool                        isAnimationSystemAllocated      (AnimationSystemHandle animSystemHandle) const override;
+        virtual bool                        isAnimationSystemAllocated      (AnimationSystemHandle animSystemHandle) const override;
         virtual UInt32                      getAnimationSystemCount         () const override;
 
         void flushPendingSceneActions();
 
-
+        virtual SceneSizeInformation getSceneSizeInformation() const override;
         virtual void preallocateSceneSize(const SceneSizeInformation& sizeInfo) override;
 
     private:

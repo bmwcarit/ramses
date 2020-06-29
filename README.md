@@ -11,7 +11,9 @@ RAMSES is an abbreviation for "Rendering Architecture for Multi-Screen
 EnvironmentS". It implements a distributed system for rendering 3D content
 with focus on bandwidth and resource efficiency.
 
-For more details, see the Wiki pages.
+For more details, see the Wiki pages or this showcase video:
+
+[![RAMSES Distributed Rendering Engine Showcase](https://img.youtube.com/vi/tyzvEI25BMg/0.jpg)](https://www.youtube.com/watch?v=tyzvEI25BMg)
 
 ## Obtaining the source code
 RAMSES can be cloned from its Genivi repository using git:
@@ -89,9 +91,9 @@ You can also check the docker container setup scripts for a reference how to bui
 ```
 
 ## License
-RAMSES original code is copyright BMW Car IT
+RAMSES original code is copyright BMW Car IT or BMW AG
 
-```Copyright (C) 2018 BMW Car IT GmbH```
+```Copyright (C) 20xx BMW Car IT GmbH``` or ```Copyright (C) 20xx BMW AG```
 
 The source code is licensed under the Mozilla Public License 2.0, please find a
 copy of that license in the [LICENSE.txt](https://github.com/GENIVI/ramses/blob/master/LICENSE.txt) file.
@@ -102,7 +104,6 @@ RAMSES also includes some assets (e.g. font files) which are licensed under diff
 
 Directly included:
 - ACME2 (Licensed under Apache 2.0)
-- CAPU (Licensed under Apache 2.0)
 - cityhash (Licensed under MIT License)
 - Khronos Headers (Licensed under Khronos Group License)
 - lodepng (Licensed under zlib License)
@@ -116,6 +117,9 @@ Submodule reference:
 - Harfbuzz (Licensed under MIT and ISC; see external/harfbuzz/COPYING)
 - Asio (Boost Software License - Version 1.0)
 - LZ4 (Licensed under BSD-2; see also external/lz4/LICENSE for more details)
+- {fmt} (Licensed under MIT License)
+- ImGui (Licensed under MIT License)
+- Abseil (Licensed under Apache 2.0; see also external/abseil/LICENSE for more details)
 
 Included Assets:
 - Roboto Font (Licensed under Apache 2.0)

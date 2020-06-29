@@ -10,144 +10,125 @@
 #define RAMSES_GUID_H
 
 #include "PlatformAbstraction/PlatformTypes.h"
-#include "PlatformAbstraction/PlatformMemory.h"
 #include "Collections/String.h"
 #include "Collections/IOutputStream.h"
 #include "Collections/IInputStream.h"
-#include "ramses-capu/container/Hash.h"
-#include "ramses-capu/os/StringUtils.h"
+#include "fmt/format.h"
+#include <functional>
 
 namespace ramses_internal
 {
     class String;
 
-    struct generic_uuid_t
-    {
-        uint32_t  Data1;
-        uint16_t Data2;
-        uint16_t Data3;
-        uint8_t Data4[8];
-    };
-
-
     class Guid
     {
     public:
-        explicit Guid(bool valid = false);
+        using value_type = uint64_t;
 
-        explicit Guid(const generic_uuid_t& data);
+        constexpr Guid() = default;
         explicit Guid(const char* guid);
         explicit Guid(const String& guid);
 
-        Guid(const Guid&) = default;
-        Guid& operator=(const Guid&) = default;
+        template <typename T,
+                  typename = std::enable_if_t<std::is_integral<T>::value && !std::is_same<char, T>::value && !std::is_same<bool, T>::value>>
+        constexpr explicit Guid(T value)
+            : m_value(value)
+        {}
+
+        constexpr Guid(const Guid&) = default;
+        constexpr Guid& operator=(const Guid&) = default;
 
         String toString() const;
 
-        const generic_uuid_t& getGuidData() const;
+        constexpr uint64_t get() const;
 
-        bool isInvalid() const;
+        constexpr bool isInvalid() const;
+        constexpr bool isValid() const;
 
-        bool operator==(const Guid& other) const;
-        bool operator!=(const Guid& other) const;
+        constexpr bool operator==(const Guid& other) const;
+        constexpr bool operator!=(const Guid& other) const;
 
     private:
-        void createNew();
-        void createFromString(const char* guid, size_t len);
+        uint64_t getFromString(const char* guid, size_t len) const;
 
-        generic_uuid_t m_data;
-
-        friend IInputStream& operator>>(IInputStream& stream, Guid& value);
+        uint64_t m_value = 0;
     };
 
-    inline Guid::Guid(bool valid)
-    {
-        if (valid)
-            createNew();
-        else
-            PlatformMemory::Set(&m_data, 0, sizeof(generic_uuid_t));
-    }
-
-    inline Guid::Guid(const generic_uuid_t& data)
-        : m_data(data)
-    {
-    }
-
     inline Guid::Guid(const char* guid)
+        : m_value(getFromString(guid, std::strlen(guid)))
     {
-        createFromString(guid, ramses_capu::StringUtils::Strlen(guid));
     }
 
     inline Guid::Guid(const String& guid)
-        : Guid(guid.c_str())
+        : m_value(getFromString(guid.c_str(), guid.size()))
     {
-        createFromString(guid.c_str(), guid.getLength());
     }
 
-    inline String Guid::toString() const
+    constexpr inline uint64_t Guid::get() const
     {
-        String res;
-        res.resize(36);
-        ramses_capu::StringUtils::Sprintf(res.data(), 37, "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-                             m_data.Data1,
-                             m_data.Data2,
-                             m_data.Data3,
-                             m_data.Data4[0],
-                             m_data.Data4[1],
-                             m_data.Data4[2],
-                             m_data.Data4[3],
-                             m_data.Data4[4],
-                             m_data.Data4[5],
-                             m_data.Data4[6],
-                             m_data.Data4[7]);
-        return res;
+        return m_value;
     }
 
-    inline const generic_uuid_t& Guid::getGuidData() const
+    constexpr inline bool Guid::isInvalid() const
     {
-        return m_data;
+        return m_value == 0;
     }
 
-    inline bool Guid::isInvalid() const
+    constexpr inline bool Guid::isValid() const
     {
-        return *this == Guid(false);
+        return m_value != 0;
     }
 
-    inline bool Guid::operator==(const Guid& other) const
+    constexpr inline bool Guid::operator==(const Guid& other) const
     {
-        return PlatformMemory::Compare(&m_data, &other.m_data, sizeof(generic_uuid_t)) == 0;
+        return m_value == other.m_value;
     }
 
-    inline bool Guid::operator!=(const Guid& other) const
+    constexpr inline bool Guid::operator!=(const Guid& other) const
     {
-        return !operator==(other);
+        return m_value != other.m_value;
     }
 
-    inline IOutputStream& operator<<(IOutputStream& stream, const Guid& value)
+    inline IOutputStream& operator<<(IOutputStream& stream, const Guid& guid)
     {
-        return stream.write(&value.getGuidData(), sizeof(generic_uuid_t));
+        const uint64_t value{guid.get()};
+        return stream.write(&value, sizeof(value));
     }
 
-    inline IInputStream& operator>>(IInputStream& stream, Guid& value)
+    inline IInputStream& operator>>(IInputStream& stream, Guid& guid)
     {
-        return stream.read(reinterpret_cast<char*>(&value.m_data), sizeof(generic_uuid_t));
+        uint64_t value = 0;
+        stream.read(reinterpret_cast<char*>(&value), sizeof(value));
+        guid = Guid(value);
+        return stream;
     }
 }
 
-namespace ramses_capu
+template <>
+struct fmt::formatter<ramses_internal::Guid>
 {
-    /**
-     * Hash code generation for a Guid instance. Necessary e. g. for using a Guid as a key in a hash map.
-     */
-    template<>
-    struct Hash<ramses_internal::Guid>
+    template<typename ParseContext>
+    constexpr auto parse(ParseContext& ctx)
     {
-        uint_t operator()(const ramses_internal::Guid& key)
+        return ctx.begin();
+    }
+
+    template<typename FormatContext>
+    auto format(const ramses_internal::Guid& guid, FormatContext& ctx)
+    {
+        const uint64_t v = guid.get();
+        if (v < 256)
         {
-            return HashMemoryRange(&(key.getGuidData()), sizeof(ramses_internal::generic_uuid_t));
+            return fmt::format_to(ctx.out(), "00{:02X}", v);
         }
-    };
-}
+        else
+        {
+            const uint64_t upper = (v >> 48u) & 0xFFFFu;
+            const uint64_t lower = v & 0xFFFFFFFFFFFFu;
+            return fmt::format_to(ctx.out(), "{:04X}-{:012X}", upper, lower);
+        }
+    }
+};
 
 namespace std
 {
@@ -156,7 +137,7 @@ namespace std
     {
         size_t operator()(const ramses_internal::Guid& key) const
         {
-            return ramses_capu::HashMemoryRange(&(key.getGuidData()), sizeof(ramses_internal::generic_uuid_t));
+            return std::hash<uint64_t>()(key.get());
         }
     };
 }

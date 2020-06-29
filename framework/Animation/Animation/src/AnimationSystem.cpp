@@ -23,7 +23,7 @@ namespace ramses_internal
     {
         m_animationData.addListener(&m_animationLogic);
 
-        const Bool fullProcessing = (flags & EAnimationSystemFlags_FullProcessing) != 0u;
+        const bool fullProcessing = (flags & EAnimationSystemFlags_FullProcessing) != 0u;
         if (fullProcessing)
         {
             // Animation system with full data processing
@@ -73,7 +73,7 @@ namespace ramses_internal
         return m_flags;
     }
 
-    Bool AnimationSystem::isRealTime() const
+    bool AnimationSystem::isRealTime() const
     {
         return (m_flags & EAnimationSystemFlags_RealTime) != 0;
     }
@@ -125,9 +125,9 @@ namespace ramses_internal
         m_animationData.addDataBindingToAnimationInstance(handle, dataBindHandle);
     }
 
-    void AnimationSystem::setSplineKeyBasicBool(SplineHandle splineHandle, SplineTimeStamp timeStamp, Bool value)
+    void AnimationSystem::setSplineKeyBasicBool(SplineHandle splineHandle, SplineTimeStamp timeStamp, bool value)
     {
-        SplineKey<Bool> key(value);
+        SplineKey<bool> key(value);
         m_animationData.setSplineKey(splineHandle, timeStamp, key);
     }
 
@@ -266,7 +266,7 @@ namespace ramses_internal
             setAnimationPlaybackSpeed(handle, playbackSpeed, animation, timeStamp);
         }
 
-        const Bool loopEnabled = ((flags ^ animation.m_flags) & Animation::EAnimationFlags_Looping) != 0;
+        const bool loopEnabled = ((flags ^ animation.m_flags) & Animation::EAnimationFlags_Looping) != 0;
         if (loopEnabled || (loopDuration != animation.m_loopDuration))
         {
             setAnimationLoopDuration(handle, loopDuration, animation);
@@ -300,7 +300,7 @@ namespace ramses_internal
         return m_animationData.getTotalSplineCount();
     }
 
-    Bool AnimationSystem::containsSpline(SplineHandle handle) const
+    bool AnimationSystem::containsSpline(SplineHandle handle) const
     {
         return m_animationData.containsSpline(handle);
     }
@@ -315,7 +315,7 @@ namespace ramses_internal
         return m_animationData.getTotalDataBindCount();
     }
 
-    Bool AnimationSystem::containsDataBinding(DataBindHandle handle) const
+    bool AnimationSystem::containsDataBinding(DataBindHandle handle) const
     {
         return m_animationData.containsDataBinding(handle);
     }
@@ -330,7 +330,7 @@ namespace ramses_internal
         return m_animationData.getTotalAnimationInstanceCount();
     }
 
-    Bool AnimationSystem::containsAnimationInstance(AnimationInstanceHandle handle) const
+    bool AnimationSystem::containsAnimationInstance(AnimationInstanceHandle handle) const
     {
         return m_animationData.containsAnimationInstance(handle);
     }
@@ -345,7 +345,7 @@ namespace ramses_internal
         return m_animationData.getTotalAnimationCount();
     }
 
-    Bool AnimationSystem::containsAnimation(AnimationHandle handle) const
+    bool AnimationSystem::containsAnimation(AnimationHandle handle) const
     {
         return m_animationData.containsAnimation(handle);
     }
@@ -384,7 +384,7 @@ namespace ramses_internal
         switch (dataTypeID)
         {
         case EDataTypeID_Boolean:
-            return m_animationData.allocateSpline<SplineKey, Bool>(handleRequest);
+            return m_animationData.allocateSpline<SplineKey, bool>(handleRequest);
         case EDataTypeID_Int32:
             return m_animationData.allocateSpline<SplineKey, Int32>(handleRequest);
         case EDataTypeID_Float:
@@ -411,7 +411,7 @@ namespace ramses_internal
         switch (dataTypeID)
         {
         case EDataTypeID_Boolean:
-            return m_animationData.allocateSpline<SplineKeyTangents, Bool>(handleRequest);
+            return m_animationData.allocateSpline<SplineKeyTangents, bool>(handleRequest);
         case EDataTypeID_Int32:
             return m_animationData.allocateSpline<SplineKeyTangents, Int32>(handleRequest);
         case EDataTypeID_Float:
@@ -438,7 +438,7 @@ namespace ramses_internal
         switch (dataTypeID)
         {
         case EDataTypeID_Boolean:
-            return m_animationData.allocateDataBinding(AnimationDataBind<IScene, Bool>(scene, dataBindID), handleRequest);
+            return m_animationData.allocateDataBinding(AnimationDataBind<IScene, bool>(scene, dataBindID), handleRequest);
         case EDataTypeID_Int32:
             return m_animationData.allocateDataBinding(AnimationDataBind<IScene, Int32>(scene, dataBindID), handleRequest);
         case EDataTypeID_Float:
@@ -465,7 +465,7 @@ namespace ramses_internal
         switch (dataTypeID)
         {
         case EDataTypeID_Boolean:
-            return m_animationData.allocateDataBinding(AnimationDataBind<IScene, Bool, MemoryHandle>(scene, handle1, dataBindID), handleRequest);
+            return m_animationData.allocateDataBinding(AnimationDataBind<IScene, bool, MemoryHandle>(scene, handle1, dataBindID), handleRequest);
         case EDataTypeID_Int32:
             return m_animationData.allocateDataBinding(AnimationDataBind<IScene, Int32, MemoryHandle>(scene, handle1, dataBindID), handleRequest);
         case EDataTypeID_Float:
@@ -492,7 +492,7 @@ namespace ramses_internal
         switch (dataTypeID)
         {
         case EDataTypeID_Boolean:
-            return m_animationData.allocateDataBinding(AnimationDataBind<IScene, Bool, MemoryHandle, MemoryHandle>(scene, handle1, handle2, dataBindID), handleRequest);
+            return m_animationData.allocateDataBinding(AnimationDataBind<IScene, bool, MemoryHandle, MemoryHandle>(scene, handle1, handle2, dataBindID), handleRequest);
         case EDataTypeID_Int32:
             return m_animationData.allocateDataBinding(AnimationDataBind<IScene, Int32, MemoryHandle, MemoryHandle>(scene, handle1, handle2, dataBindID), handleRequest);
         case EDataTypeID_Float:
@@ -559,7 +559,7 @@ namespace ramses_internal
         return animDuration;
     }
 
-    Bool AnimationSystem::hasActiveAnimations() const
+    bool AnimationSystem::hasActiveAnimations() const
     {
         return m_animationLogic.getNumActiveAnimations() > 0u;
     }

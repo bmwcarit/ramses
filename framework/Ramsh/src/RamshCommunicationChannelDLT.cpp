@@ -31,7 +31,8 @@ namespace ramses_internal
         return 0;
     }
 
-    RamshCommunicationChannelDLT::RamshCommunicationChannelDLT()
+    RamshCommunicationChannelDLT::RamshCommunicationChannelDLT(Ramsh& ramsh)
+        : m_ramsh(ramsh)
     {
         m_instance = this;
         const UInt32 serviceId = 5000u;
@@ -46,12 +47,9 @@ namespace ramses_internal
         }
     }
 
-    void RamshCommunicationChannelDLT::processInput(String s)
+    void RamshCommunicationChannelDLT::processInput(const String& s)
     {
         RamshInput input = RamshTools::parseCommandString(s);
-        if (m_ramsh)
-        {
-            m_ramsh->execute(input);
-        }
+        m_ramsh.execute(input);
     }
 }

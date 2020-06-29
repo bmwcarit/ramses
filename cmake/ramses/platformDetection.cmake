@@ -10,18 +10,16 @@
 
 # exclude unsupported platforms
 IF (${CMAKE_SYSTEM_NAME} MATCHES "Windows" AND MSVC)
-    IF (NOT MSVC_VERSION GREATER 1899)
-        MESSAGE(FATAL_ERROR "Only Visual Studio 2015 and later supported")
+    IF (NOT MSVC_VERSION GREATER 1909)  # VS2017 is 1910 - 1919
+        MESSAGE(FATAL_ERROR "Visual Studio 2017 or later is required to build ramses")
     ENDIF()
 ENDIF()
 
-# guess TARGET_OS if not given
-IF (NOT TARGET_OS)
-    IF ((CMAKE_SYSTEM_NAME STREQUAL "Windows") OR (CMAKE_SYSTEM_NAME STREQUAL "Linux") OR (CMAKE_SYSTEM_NAME STREQUAL "Integrity") OR (CMAKE_SYSTEM_NAME STREQUAL "Android"))
-        SET(TARGET_OS "${CMAKE_SYSTEM_NAME}")
-    ELSE()
-        MESSAGE(FATAL_ERROR "No TARGET_OS given and unknown CMAKE_SYSTEM_NAME '${CMAKE_SYSTEM_NAME}'")
-    ENDIF()
+# guess TARGET_OS
+IF ((CMAKE_SYSTEM_NAME STREQUAL "Windows") OR (CMAKE_SYSTEM_NAME STREQUAL "Linux") OR (CMAKE_SYSTEM_NAME STREQUAL "Integrity") OR (CMAKE_SYSTEM_NAME STREQUAL "Android"))
+    SET(TARGET_OS "${CMAKE_SYSTEM_NAME}")
+ELSE()
+    MESSAGE(FATAL_ERROR "Unknown CMAKE_SYSTEM_NAME '${CMAKE_SYSTEM_NAME}'")
 ENDIF()
 
 # guess target bitness

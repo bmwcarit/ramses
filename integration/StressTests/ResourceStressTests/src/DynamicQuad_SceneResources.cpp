@@ -30,7 +30,7 @@ namespace ramses_internal
 {
     DynamicQuad_SceneResources::DynamicQuad_SceneResources(ramses::RamsesClient& client, ramses::Scene& scene, const ScreenspaceQuad& screenspaceQuad)
         : DynamicQuad_Base(client, scene, screenspaceQuad)
-        , m_textureBuffer   (m_scene.createTexture2DBuffer(1u, DynamicTextureWidth, DynamicTextureHeight, ramses::ETextureFormat_BGR8))
+        , m_textureBuffer   (m_scene.createTexture2DBuffer(1u, DynamicTextureWidth, DynamicTextureHeight, ramses::ETextureFormat_RGB8))
         , m_textureSampler  (m_scene.createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Linear_MipMapLinear, ramses::ETextureSamplingMethod_Linear, *m_textureBuffer))
         , m_indices         (m_scene.createIndexDataBuffer(sizeof(uint16_t) * 4, ramses::EDataType_UInt16))
         , m_texCoords       (m_scene.createVertexDataBuffer(sizeof(float) * 8, ramses::EDataType_Vector2F))
@@ -107,7 +107,7 @@ namespace ramses_internal
             0.f, 1.f
         };
 
-        for (uint32_t t = 0; t < sizeof(vertexTexcoordsData) / sizeof(float); ++t)
+        for (size_t t = 0; t < sizeof(vertexTexcoordsData) / sizeof(float); ++t)
         {
             vertexTexcoordsData[t] += 0.01f * static_cast<float>(TestRandom::Get(0, 10));
         }

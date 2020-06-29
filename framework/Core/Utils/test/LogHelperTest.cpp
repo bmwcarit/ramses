@@ -44,6 +44,20 @@ namespace ramses_internal
         }
     }
 
+    TEST(ALogHelper_StringToLogLevel, TrimsString)
+    {
+        {
+            ELogLevel ll;
+            EXPECT_TRUE(LogHelper::StringToLogLevel("trace ", ll));
+            EXPECT_EQ(ELogLevel::Trace, ll);
+        }
+        {
+            ELogLevel ll;
+            EXPECT_TRUE(LogHelper::StringToLogLevel("  info ", ll));
+            EXPECT_EQ(ELogLevel::Info, ll);
+        }
+    }
+
     TEST(ALogHelper_StringToLogLevel, ReturnFalseOnInvalidLogLevels)
     {
         ELogLevel ll = ELogLevel::Info;

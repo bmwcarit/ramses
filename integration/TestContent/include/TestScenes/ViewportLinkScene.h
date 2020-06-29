@@ -26,10 +26,10 @@ namespace ramses_internal
             VIEWPORT_CONSUMER,
         };
 
-        static const ramses::dataProviderId_t ViewportOffsetProviderId = 151u;
-        static const ramses::dataProviderId_t ViewportSizeProviderId = 152u;
-        static const ramses::dataConsumerId_t ViewportOffsetConsumerId = 153u;
-        static const ramses::dataConsumerId_t ViewportSizeConsumerId = 154u;
+        static constexpr const ramses::dataProviderId_t ViewportOffsetProviderId{151u};
+        static constexpr const ramses::dataProviderId_t ViewportSizeProviderId{152u};
+        static constexpr const ramses::dataConsumerId_t ViewportOffsetConsumerId{153u};
+        static constexpr const ramses::dataConsumerId_t ViewportSizeConsumerId{154u};
 
     private:
         void setUpConsumerScene();

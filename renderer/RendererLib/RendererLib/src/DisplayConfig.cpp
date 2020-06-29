@@ -46,6 +46,16 @@ namespace ramses_internal
         m_integrityRGLDeviceUnit = rglDeviceUnit;
     }
 
+    AndroidNativeWindowPtr DisplayConfig::getAndroidNativeWindow() const
+    {
+        return m_androidNativeWindowPtr;
+    }
+
+    void DisplayConfig::setAndroidNativeWindow(AndroidNativeWindowPtr nativeWindowPtr)
+    {
+        m_androidNativeWindowPtr = nativeWindowPtr;
+    }
+
     Bool DisplayConfig::getStartVisibleIvi() const
     {
         return m_startVisibleIvi;
@@ -174,16 +184,6 @@ namespace ramses_internal
         return m_keepEffectsUploaded;
     }
 
-    Bool DisplayConfig::isStereoDisplay() const
-    {
-        return m_stereoDisplay;
-    }
-
-    void DisplayConfig::setStereoDisplay(Bool enabled)
-    {
-        m_stereoDisplay = enabled;
-    }
-
     void DisplayConfig::setProjectionParams(const ProjectionParams& params)
     {
         m_projectionParams = params;
@@ -224,16 +224,6 @@ namespace ramses_internal
         return m_clearColor;
     }
 
-    void DisplayConfig::setOffscreen(Bool offscreenFlag)
-    {
-        m_offscreen = offscreenFlag;
-    }
-
-    Bool DisplayConfig::getOffscreen() const
-    {
-        return m_offscreen;
-    }
-
     void DisplayConfig::setWaylandDisplay(const String& waylandDisplay)
     {
         m_waylandDisplay = waylandDisplay;
@@ -260,7 +250,6 @@ namespace ramses_internal
             m_fullscreen                 == other.m_fullscreen &&
             m_borderless                 == other.m_borderless &&
             m_warpingEnabled             == other.m_warpingEnabled &&
-            m_stereoDisplay              == other.m_stereoDisplay &&
             m_antiAliasingMethod         == other.m_antiAliasingMethod &&
             m_antiAliasingSamples        == other.m_antiAliasingSamples &&
             m_desiredWindowWidth         == other.m_desiredWindowWidth &&
@@ -277,7 +266,6 @@ namespace ramses_internal
             m_resizable                  == other.m_resizable &&
             m_gpuMemoryCacheSize         == other.m_gpuMemoryCacheSize &&
             m_clearColor                 == other.m_clearColor &&
-            m_offscreen                  == other.m_offscreen &&
             m_windowsWindowHandle        == other.m_windowsWindowHandle &&
             m_waylandDisplay             == other.m_waylandDisplay;
     }

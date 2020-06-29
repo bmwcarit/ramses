@@ -26,13 +26,14 @@ void TextureRenderingTests::setUpTestCases(RendererTestsFramework& testFramework
 {
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_R8, *this, "TextureTest_Texture2D_Format_R8");
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_RG8, *this, "TextureTest_Texture2D_Format_RG8");
+    testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_Swizzled_Luminance_Alpha, *this, "TextureTest_Texture2D_Format_Swizzled_Luminance_Alpha");
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_RGB8, *this, "TextureTest_Texture2D_Format_RGB8");
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_RGB565, *this, "TextureTest_Texture2D_Format_RGB565");
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_RGBA8, *this, "TextureTest_Texture2D_Format_RGBA8");
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_RGBA4, *this, "TextureTest_Texture2D_Format_RGBA4");
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_RGBA5551, *this, "TextureTest_Texture2D_Format_RGBA5551");
-    testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_BGR8, *this, "TextureTest_Texture2D_Format_BGR8");
-    testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_BGRA8, *this, "TextureTest_Texture2D_Format_BGRA8");
+    testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_Swizzled_BGR8, *this, "TextureTest_Texture2D_Format_Swizzled_BGR8");
+    testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_Swizzled_BGRA8, *this, "TextureTest_Texture2D_Format_Swizzled_BGRA8");
 
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_R16F, *this, "TextureTest_Texture2D_Format_R16F");
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture2D_Format_R32F, *this, "TextureTest_Texture2D_Format_R32F");
@@ -68,6 +69,7 @@ void TextureRenderingTests::setUpTestCases(RendererTestsFramework& testFramework
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_Texture3D_RGBA8, *this, "TextureTest_Texture3D_RGBA8");
 
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_CubeMap_RGBA8, *this, "TextureTest_CubeMap_RGBA8");
+    testFramework.createTestCaseWithDefaultDisplay(TextureTest_CubeMap_BGRA_Swizzled, *this, "TextureTest_CubeMap_BGRA_Swizzled");
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_CubeMap_Float, *this, "TextureTest_CubeMap_Float");
 
     testFramework.createTestCaseWithDefaultDisplay(TextureTest_TextureCube_AnisotropicFilter, *this, "TextureTest_TextureCube_AnisotropicFilter");
@@ -98,6 +100,8 @@ bool TextureRenderingTests::run(RendererTestsFramework& testFramework, const Ren
         return runBasicTest<Texture2DFormatScene>(testFramework, Texture2DFormatScene::EState_R8, "Texture2DFormatScene_R8");
     case TextureTest_Texture2D_Format_RG8:
         return runBasicTest<Texture2DFormatScene>(testFramework, Texture2DFormatScene::EState_RG8, "Texture2DFormatScene_RG8");
+    case TextureTest_Texture2D_Format_Swizzled_Luminance_Alpha:
+        return runBasicTest<Texture2DFormatScene>(testFramework, Texture2DFormatScene::EState_Swizzled_Luminance_Alpha, "Texture2DFormatScene_Swizzled_Luminance_Alpha");
     case TextureTest_Texture2D_Format_RGB8:
         return runBasicTest<Texture2DFormatScene>(testFramework, Texture2DFormatScene::EState_RGB8, "Texture2DFormatScene_RGB8");
     case TextureTest_Texture2D_Format_RGB565:
@@ -134,10 +138,10 @@ bool TextureRenderingTests::run(RendererTestsFramework& testFramework, const Ren
     case TextureTest_Texture2D_Format_ASTC_SRGB_ALPHA_4x4:
         return runBasicTest<Texture2DFormatScene>(testFramework, Texture2DFormatScene::EState_ASTC_SRGB_ALPHA_4x4, "Texture2DFormatScene_ASTC_SRGB_ALPHA_4x4");
 
-    case TextureTest_Texture2D_Format_BGR8:
-        return runBasicTest<Texture2DFormatScene>(testFramework, Texture2DFormatScene::EState_BGR8, "Texture2DFormatScene_BGR8");
-    case TextureTest_Texture2D_Format_BGRA8:
-        return runBasicTest<Texture2DFormatScene>(testFramework, Texture2DFormatScene::EState_BGRA8, "Texture2DFormatScene_BGRA8");
+    case TextureTest_Texture2D_Format_Swizzled_BGR8:
+        return runBasicTest<Texture2DFormatScene>(testFramework, Texture2DFormatScene::EState_Swizzled_BGR8, "Texture2DFormatScene_Swizzled_BGR8");
+    case TextureTest_Texture2D_Format_Swizzled_BGRA8:
+        return runBasicTest<Texture2DFormatScene>(testFramework, Texture2DFormatScene::EState_Swizzled_BGRA8, "Texture2DFormatScene_Swizzled_BGRA8");
     case TextureTest_Texture2D_Format_ETC2RGB:
         return runBasicTest<Texture2DFormatScene>(testFramework, Texture2DFormatScene::EState_ETC2RGB, "Texture2DFormatScene_ETC2RGB");
     case TextureTest_Texture2D_Format_ETC2RGBA:
@@ -171,6 +175,8 @@ bool TextureRenderingTests::run(RendererTestsFramework& testFramework, const Ren
         return runBasicTest<Texture3DScene>(testFramework, Texture3DScene::SLICES_4, "Texture3DScene_4Slices");
     case TextureTest_CubeMap_RGBA8:
         return runBasicTest<CubeTextureScene>(testFramework, CubeTextureScene::EState_RGBA8, "CubeTextureScene_CubeMap");
+    case TextureTest_CubeMap_BGRA_Swizzled:
+        return runBasicTest<CubeTextureScene>(testFramework, CubeTextureScene::EState_BGRA_Swizzled, "CubeTextureScene_CubeMapSwizzled");
     case TextureTest_CubeMap_Float:
         return runBasicTest<CubeTextureScene>(testFramework, CubeTextureScene::EState_Float, "CubeTextureScene_CubeMapFloat");
     case TextureTest_TextureCube_AnisotropicFilter:
@@ -227,12 +233,11 @@ bool TextureRenderingTests::run(RendererTestsFramework& testFramework, const Ren
         const ramses::sceneId_t sceneId = createAndShowScene<TextureBufferScene>(testFramework, TextureBufferScene::EState_RGBA8_OneMip);
         const Bool beforeRemapping = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMip", 0u);
 
-        testFramework.hideAndUnmap(sceneId);
+        testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Available);
         // just for confidence (reuse existing black image)
         const Bool blackAfterUnmap = testFramework.renderAndCompareScreenshot("DistributedScene_UnpublishedScene", 0u);
 
-        testFramework.mapScene(sceneId);
-        testFramework.showScene(sceneId);
+        testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
         const Bool afterRemapping = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMip", 0u);
 
         return beforeRemapping && blackAfterUnmap && afterRemapping;
@@ -295,9 +300,7 @@ ramses::sceneId_t TextureRenderingTests::createAndShowScene(RendererTestsFramewo
 {
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<INTEGRATION_SCENE>(sceneState);
     testFramework.publishAndFlushScene(sceneId);
-    testFramework.subscribeScene(sceneId);
-    testFramework.mapScene(sceneId);
-    testFramework.showScene(sceneId);
+    testFramework.getSceneToRendered(sceneId);
 
     return sceneId;
 }

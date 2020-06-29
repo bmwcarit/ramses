@@ -20,11 +20,11 @@ namespace ramses
 
 namespace ramses_internal
 {
-    class ValidateCommand : public RamshCommandArgs<ramses::sceneId_t, String, String>
+    class ValidateCommand : public RamshCommandArgs<uint64_t, String, String>
     {
     public:
         explicit ValidateCommand(ramses::RamsesClientImpl& client);
-        virtual Bool execute(ramses::sceneId_t& sceneId, String& severity, String& objectName) const override;
+        virtual Bool execute(uint64_t& sceneId, String& severity, String& objectName) const override;
     private:
         ramses::RamsesClientImpl& m_client;
     };

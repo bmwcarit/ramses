@@ -37,7 +37,7 @@ namespace ramses_internal
         {
         }
 
-        virtual void execute()
+        virtual void execute() override
         {
             mq.enqueue(task);
         }
@@ -49,23 +49,23 @@ namespace ramses_internal
     class DirectTaskExecutor : public ITaskQueue
     {
     public:
-        virtual Bool enqueue(ITask& Task)
+        virtual bool enqueue(ITask& Task) override
         {
             Task.execute();
             return true;
         }
 
-        virtual void enableAcceptingTasks()
+        virtual void enableAcceptingTasks() override
         {
         }
 
-        virtual void disableAcceptingTasksAfterExecutingCurrentQueue()
+        virtual void disableAcceptingTasksAfterExecutingCurrentQueue() override
         {
         }
     };
 
     typedef ::testing::Types<EnqueueOnlyOneAtATimeQueue, TaskForwardingQueue> TestedQueues;
-    TYPED_TEST_CASE(TaskForwardingQueuesTest, TestedQueues);
+    TYPED_TEST_SUITE(TaskForwardingQueuesTest, TestedQueues);
 
     TYPED_TEST(TaskForwardingQueuesTest, EnqueueCorrrectNumberOfTasksAtATime)
     {
@@ -134,12 +134,12 @@ namespace ramses_internal
         std::vector<ITask*> mockQ;
         std::atomic<bool> unlocked(false);
 
-        EXPECT_CALL(successor, enqueue(_)).Times(2).WillRepeatedly(Invoke([&](ITask& task)
+        EXPECT_CALL(successor, enqueue(_)).Times(2).WillRepeatedly([&](ITask& task)
         {
             task.addRef();
             mockQ.push_back(&task);
             return true;
-        }));
+        });
 
         queue.enqueue(task1);
         queue.enqueue(task2);
@@ -161,21 +161,5 @@ namespace ramses_internal
         EXPECT_TRUE(unlocked);
         EXPECT_CALL(task2, destructor());
         EXPECT_CALL(task1, destructor());
-    }
-
-    ACTION_P(PrintAB, n)
-    {
-        UNUSED(args);
-        UNUSED(arg0);
-        UNUSED(arg1);
-        UNUSED(arg2);
-        UNUSED(arg3);
-        UNUSED(arg4);
-        UNUSED(arg5);
-        UNUSED(arg6);
-        UNUSED(arg7);
-        UNUSED(arg8);
-        UNUSED(arg9);
-        printf("Task %s\n", n);
     }
 }

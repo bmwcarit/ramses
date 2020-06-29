@@ -28,7 +28,6 @@ namespace ramses_internal
         uint32_t sceneSetsPerDisplay;
         bool disableSkippingOfFrames;
         UInt32 perFrameBudgetMSec_ClientRes;
-        UInt32 perFrameBudgetMSec_SceneActions;
         UInt32 perFrameBudgetMSec_Rendering;
         UInt32 renderablesBatchSizeForRenderingInterruption;
     };
@@ -71,7 +70,7 @@ namespace ramses_internal
 
     private:
 
-        ResourceStressTests(const StressTestConfig& config);
+        explicit ResourceStressTests(const StressTestConfig& config);
 
         Int32 runTest(EStressTestCaseId testToRun);
 
@@ -87,12 +86,12 @@ namespace ramses_internal
 
         const StressTestConfig  m_testConfig;
         ramses::RamsesFramework m_framework;
-        ramses::RamsesClient    m_client;
+        ramses::RamsesClient&   m_client;
         StressTestRenderer      m_testRenderer;
 
         struct OffscreenBufferData
         {
-            ramses::offscreenBufferId_t bufferId;
+            ramses::displayBufferId_t   bufferId;
             uint32_t                    width;
             uint32_t                    height;
             bool                        isInterruptable;

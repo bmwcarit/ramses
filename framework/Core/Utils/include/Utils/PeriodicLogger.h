@@ -12,6 +12,7 @@
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "PlatformAbstraction/PlatformEvent.h"
+#include "PlatformAbstraction/PlatformLock.h"
 #include "PlatformAbstraction/synchronized_clock.h"
 #include "Collections/Vector.h"
 #include "Utils/IPeriodicLogSupplier.h"

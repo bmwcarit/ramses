@@ -71,6 +71,7 @@ namespace ramses_internal
         void handleKeyEvent(UInt32 windowsMsg, WPARAM wParam, LPARAM lParam);
         void handleMouseEvent(EMouseEventType type, Int32 posX, Int32 posY);
         void handleWindowCloseEvent();
+        void handleWindowMoveEvent(Int32 posX, Int32 posY);
 
         Bool setVisibility(Bool visible);
 

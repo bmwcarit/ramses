@@ -23,17 +23,17 @@
 
 // private
 #include "RamsesClientImpl.h"
-#include "ResourceFileDescriptionUtils.h"
 #include "ramses-client-api/SceneConfig.h"
 #include "SceneConfigImpl.h"
+#include "RamsesClientTypesImpl.h"
 
 namespace ramses
 {
-    RamsesClient::RamsesClient(const char* name, RamsesFramework& framework)
-        : RamsesObject(RamsesClientImpl::createImpl(name, framework.impl))
-        , impl(static_cast<RamsesClientImpl&>(RamsesObject::impl))
+    RamsesClient::RamsesClient(RamsesClientImpl& impl_)
+    : RamsesObject(impl_)
+    , impl(impl_)
     {
-        LOG_HL_CLIENT_API2(LOG_API_VOID, name, LOG_API_GENERIC_OBJECT_STRING(framework));
+        impl.setHLObject(this);
     }
 
     RamsesClient::~RamsesClient()
@@ -51,28 +51,33 @@ namespace ramses
     Effect* RamsesClient::createEffect(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag, const char* name)
     {
         Effect* effect = impl.createEffect(effectDesc, cacheFlag, name);
-        LOG_HL_CLIENT_API3(LOG_API_RESOURCE_PTR_STRING(effect), LOG_API_GENERIC_OBJECT_STRING(effectDesc), cacheFlag.getValue(), name);
+        LOG_HL_CLIENT_API3(LOG_API_RESOURCE_PTR_STRING(effect), LOG_API_GENERIC_OBJECT_STRING(effectDesc), cacheFlag, name);
         return effect;
+    }
+
+    std::string RamsesClient::getLastEffectErrorMessages() const
+    {
+        return impl.getLastEffectErrorMessages();
     }
 
     const Vector3fArray* RamsesClient::createConstVector3fArray(uint32_t count, const float* arrayData, resourceCacheFlag_t cacheFlag, const char* name)
     {
         const Vector3fArray* arr = impl.createConstVector3fArray(count, arrayData, cacheFlag, name);
-        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag.getValue(), name);
+        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag, name);
         return arr;
     }
 
     const UInt16Array* RamsesClient::createConstUInt16Array(uint32_t count, const uint16_t* arrayData, resourceCacheFlag_t cacheFlag, const char* name)
     {
         const UInt16Array* arr = impl.createConstUInt16Array(count, arrayData, cacheFlag, name);
-        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag.getValue(), name);
+        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag, name);
         return arr;
     }
 
     const UInt32Array* RamsesClient::createConstUInt32Array(uint32_t count, const uint32_t* arrayData, resourceCacheFlag_t cacheFlag, const char* name)
     {
         const UInt32Array* arr = impl.createConstUInt32Array(count, arrayData, cacheFlag, name);
-        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag.getValue(), name);
+        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag, name);
         return arr;
     }
 
@@ -93,63 +98,63 @@ namespace ramses
     const FloatArray* RamsesClient::createConstFloatArray(uint32_t count, const float* arrayData, resourceCacheFlag_t cacheFlag, const char* name)
     {
         const FloatArray* arr = impl.createConstFloatArray(count, arrayData, cacheFlag, name);
-        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag.getValue(), name);
+        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag, name);
         return arr;
     }
 
     const Vector2fArray* RamsesClient::createConstVector2fArray(uint32_t count, const float* arrayData, resourceCacheFlag_t cacheFlag, const char* name)
     {
         const Vector2fArray* arr = impl.createConstVector2fArray(count, arrayData, cacheFlag, name);
-        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag.getValue(), name);
+        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag, name);
         return arr;
     }
 
     const Vector4fArray* RamsesClient::createConstVector4fArray(uint32_t count, const float* arrayData, resourceCacheFlag_t cacheFlag, const char* name)
     {
         const Vector4fArray* arr = impl.createConstVector4fArray(count, arrayData, cacheFlag, name);
-        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag.getValue(), name);
+        LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), count, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag, name);
         return arr;
     }
 
-    Texture2D* RamsesClient::createTexture2D(uint32_t width, uint32_t height, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name /* = 0 */)
+    Texture2D* RamsesClient::createTexture2D(uint32_t width, uint32_t height, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name /* = 0 */)
     {
-        Texture2D* tex = impl.createTexture2D(width, height, format, mipMapCount, mipLevelData, generateMipChain, cacheFlag, name);
-        LOG_HL_CLIENT_API8(LOG_API_RESOURCE_PTR_STRING(tex), width, height, format, mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, cacheFlag.getValue(), name);
+        Texture2D* tex = impl.createTexture2D(width, height, format, mipMapCount, mipLevelData, generateMipChain, swizzle, cacheFlag, name);
+        LOG_HL_CLIENT_API9(LOG_API_RESOURCE_PTR_STRING(tex), width, height, format, mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, swizzle, cacheFlag, name);
         return tex;
     }
 
     Texture3D* RamsesClient::createTexture3D(uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name /* = 0 */)
     {
         Texture3D* tex = impl.createTexture3D(width, height, depth, format, mipMapCount, mipLevelData, generateMipChain, cacheFlag, name);
-        LOG_HL_CLIENT_API9(LOG_API_RESOURCE_PTR_STRING(tex), width, height, depth, format, mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, cacheFlag.getValue(), name);
+        LOG_HL_CLIENT_API9(LOG_API_RESOURCE_PTR_STRING(tex), width, height, depth, format, mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, cacheFlag, name);
         return tex;
     }
 
-    TextureCube* RamsesClient::createTextureCube(uint32_t size, ETextureFormat format, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name /* = 0 */)
+    TextureCube* RamsesClient::createTextureCube(uint32_t size, ETextureFormat format, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name /* = 0 */)
     {
-        TextureCube* tex = impl.createTextureCube(size, format, cacheFlag, name, mipMapCount, mipLevelData, generateMipChain);
-        LOG_HL_CLIENT_API7(LOG_API_RESOURCE_PTR_STRING(tex), size, format, mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, cacheFlag.getValue(), name);
+        TextureCube* tex = impl.createTextureCube(size, format, cacheFlag, name, mipMapCount, mipLevelData, generateMipChain, swizzle);
+        LOG_HL_CLIENT_API8(LOG_API_RESOURCE_PTR_STRING(tex), size, format, mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, swizzle, cacheFlag, name);
         return tex;
     }
 
     status_t RamsesClient::saveSceneToFile(const Scene& scene, const char* fileName, const ResourceFileDescriptionSet& resourceFileInformation, bool compress) const
     {
         auto status = impl.saveSceneToFile(scene.impl, fileName, resourceFileInformation, compress);
-        LOG_HL_CLIENT_API4(status, LOG_API_GENERIC_OBJECT_STRING(scene), fileName, ramses_internal::ResourceFileDescriptionUtils::MakeLoggingString(resourceFileInformation), compress);
+        LOG_HL_CLIENT_API4(status, LOG_API_GENERIC_OBJECT_STRING(scene), fileName, resourceFileInformation, compress);
         return status;
     }
 
     ramses::Scene* RamsesClient::loadSceneFromFile(const char* fileName, const ResourceFileDescriptionSet& resourceFileInformation)
     {
         auto scene = impl.loadSceneFromFile(fileName, resourceFileInformation);
-        LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(scene), fileName, ramses_internal::ResourceFileDescriptionUtils::MakeLoggingString(resourceFileInformation));
+        LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(scene), fileName, resourceFileInformation);
         return scene;
     }
 
     status_t RamsesClient::loadSceneFromFileAsync(const char* fileName, const ResourceFileDescriptionSet& resourceFileInformation)
     {
         auto status = impl.loadSceneFromFileAsync(fileName, resourceFileInformation);
-        LOG_HL_CLIENT_API2(status, fileName, ramses_internal::ResourceFileDescriptionUtils::MakeLoggingString(resourceFileInformation));
+        LOG_HL_CLIENT_API2(status, fileName, resourceFileInformation);
         return status;
     }
 
@@ -163,56 +168,56 @@ namespace ramses
     status_t RamsesClient::saveResources(const ResourceFileDescription& fileDescription, bool compress) const
     {
         auto status = impl.saveResources(fileDescription, compress);
-        LOG_HL_CLIENT_API2(status, ramses_internal::ResourceFileDescriptionUtils::MakeLoggingString(fileDescription), compress);
+        LOG_HL_CLIENT_API2(status, fileDescription, compress);
         return status;
     }
 
     status_t RamsesClient::saveResources(const ResourceFileDescriptionSet& fileDescriptions, bool compress) const
     {
         auto status = impl.saveResources(fileDescriptions, compress);
-        LOG_HL_CLIENT_API2(status, ramses_internal::ResourceFileDescriptionUtils::MakeLoggingString(fileDescriptions), compress);
+        LOG_HL_CLIENT_API2(status, fileDescriptions, compress);
         return status;
     }
 
     status_t RamsesClient::loadResources(const ResourceFileDescription& fileDescription) const
     {
         auto status = impl.loadResources(fileDescription);
-        LOG_HL_CLIENT_API1(status, ramses_internal::ResourceFileDescriptionUtils::MakeLoggingString(fileDescription));
+        LOG_HL_CLIENT_API1(status, fileDescription);
         return status;
     }
 
     status_t RamsesClient::loadResources(const ResourceFileDescriptionSet& fileDescriptions) const
     {
         auto status = impl.loadResources(fileDescriptions);
-        LOG_HL_CLIENT_API1(status, ramses_internal::ResourceFileDescriptionUtils::MakeLoggingString(fileDescriptions));
+        LOG_HL_CLIENT_API1(status, fileDescriptions);
         return status;
     }
 
     status_t RamsesClient::loadResourcesAsync(const ResourceFileDescription& fileDescription)
     {
         auto status = impl.loadResourcesAsync(fileDescription);
-        LOG_HL_CLIENT_API1(status, ramses_internal::ResourceFileDescriptionUtils::MakeLoggingString(fileDescription));
+        LOG_HL_CLIENT_API1(status, fileDescription);
         return status;
     }
 
     status_t RamsesClient::loadResourcesAsync(const ResourceFileDescriptionSet& resourceFileInformation)
     {
         auto status = impl.loadResourcesAsync(resourceFileInformation);
-        LOG_HL_CLIENT_API1(status, ramses_internal::ResourceFileDescriptionUtils::MakeLoggingString(resourceFileInformation));
+        LOG_HL_CLIENT_API1(status, resourceFileInformation);
         return status;
     }
 
     status_t RamsesClient::forceCloseResourceFileAsync(const ResourceFileDescription& fileDescription) const
     {
         auto status = impl.closeResourceFile(fileDescription);
-        LOG_HL_CLIENT_API1(status, ramses_internal::ResourceFileDescriptionUtils::MakeLoggingString(fileDescription));
+        LOG_HL_CLIENT_API1(status, fileDescription);
         return status;
     }
 
     status_t RamsesClient::forceCloseResourceFilesAsync(const ResourceFileDescriptionSet& fileDescriptions) const
     {
         auto status = impl.closeResourceFiles(fileDescriptions);
-        LOG_HL_CLIENT_API1(status, ramses_internal::ResourceFileDescriptionUtils::MakeLoggingString(fileDescriptions));
+        LOG_HL_CLIENT_API1(status, fileDescriptions);
         return status;
     }
 
@@ -242,5 +247,4 @@ namespace ramses
         LOG_HL_RENDERER_API1(status, LOG_API_GENERIC_OBJECT_STRING(clientEventHandler));
         return status;
     }
-
 }

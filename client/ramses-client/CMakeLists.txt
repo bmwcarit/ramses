@@ -11,10 +11,13 @@ file(GLOB
     impl/*.cpp
     impl/glslEffectBlock/*.cpp
     impl/ClientCommands/*.cpp
-    ramses-client-api/*.cpp)
+    ramses-client-api/*.cpp
+    impl/ramses-text/*.cpp
+    ramses-text-api/*.cpp)
 file(GLOB
     RAMSES_CLIENT_API_INCLUDE_BASE
-    ramses-client-api/include)
+    ramses-client-api/include
+    ramses-text-api/include)
 
 
 add_library(ramses-client-api INTERFACE)
@@ -27,7 +30,7 @@ ACME_MODULE(
     #==========================================================================
     NAME                    ramses-client
     TYPE                    STATIC_LIBRARY
-    ENABLE_INSTALL          ${ramses-sdk_INSTALL_STATIC_LIBS}
+    ENABLE_INSTALL          OFF
 
     #==========================================================================
     # files of this module
@@ -39,16 +42,21 @@ ACME_MODULE(
                             ramses-client-api/include/*.h
                             ramses-client-api/include/ramses-client-api/*.h
     FILES_SOURCE            ${RAMSES_CLIENT_FILES_SOURCE}
-
+                            impl/ramses-text/*.h
+                            ramses-text-api/include/*.h
+                            ramses-text-api/include/ramses-text-api/*.h
     #==========================================================================
     # dependencies
     #==========================================================================
     DEPENDENCIES            ramses-client-api
                             ramses-framework
                             ramses-glslang
+                            freetype
+                            harfbuzz
 )
 
 INSTALL(DIRECTORY ramses-client-api/include/ DESTINATION "${PROJECT_INSTALL_HEADER}" COMPONENT ramses-sdk-devel)
+INSTALL(DIRECTORY ramses-text-api/include/ DESTINATION "${PROJECT_INSTALL_HEADER}" COMPONENT ramses-sdk-devel)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     target_compile_options(ramses-client PRIVATE "-Wsuggest-override")

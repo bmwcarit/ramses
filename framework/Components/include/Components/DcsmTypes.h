@@ -11,12 +11,18 @@
 
 #include "Common/StronglyTypedValue.h"
 #include "Utils/LoggingUtils.h"
+#include "Utils/StringOutputSpecialWrapper.h"
 
 namespace ramses_internal
 {
-    using ContentID = StronglyTypedValue<uint64_t, 0, struct ContentIDTag>;
-    using Category = StronglyTypedValue<uint64_t, 0, struct CategoryTag> ;
-    using ProviderID = StronglyTypedValue<uint64_t, 0, struct ProviderIDTag> ;
+    struct ContentIDTag;
+    using ContentID = StronglyTypedValue<uint64_t, 0, ContentIDTag>;
+
+    struct CategoryTag;
+    using Category = StronglyTypedValue<uint64_t, 0, CategoryTag>;
+
+    struct ProviderIDTag;
+    using ProviderID = StronglyTypedValue<uint64_t, 0, ProviderIDTag>;
 
     enum class ETechnicalContentType : uint32_t
     {
@@ -32,25 +38,10 @@ namespace ramses_internal
         return "ETechnicalContentType::<UNKNOWN>";
     }
 
-    using TechnicalContentDescriptor = StronglyTypedValue<uint64_t, 0, struct TechnicalContentDescriptorTag>;
+    struct TechnicalContentDescriptorTag;
+    using TechnicalContentDescriptor = StronglyTypedValue<uint64_t, 0, TechnicalContentDescriptorTag>;
 
-    struct SizeInfo
-    {
-        uint32_t width;
-        uint32_t height;
-
-        bool operator==(const SizeInfo& rhs) const
-        {
-            return width == rhs.width && height == rhs.height;
-        }
-
-        bool operator!=(const SizeInfo& rhs) const
-        {
-            return !(*this == rhs);
-        }
-    };
-
-    enum class EDcsmState : uint32_t
+    enum class EDcsmState : uint64_t
     {
         Offered,
         Assigned,
@@ -83,5 +74,11 @@ namespace ramses_internal
         }
     };
 }
+
+MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::ContentID, ramses::ContentID)
+MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::Category, ramses::Category)
+
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::ProviderID)
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::TechnicalContentDescriptor)
 
 #endif

@@ -14,7 +14,7 @@ using namespace testing;
 
 namespace ramses_internal
 {
-    TYPED_TEST_CASE(AScene, SceneTypes);
+    TYPED_TEST_SUITE(AScene, SceneTypes);
 
     TYPED_TEST(AScene, RenderPassCreated)
     {
@@ -51,7 +51,7 @@ namespace ramses_internal
     TYPED_TEST(AScene, setsCameraToRenderPass)
     {
         const RenderPassHandle renderPass = this->m_scene.allocateRenderPass();
-        const auto dataLayout = this->m_scene.allocateDataLayout({{ramses_internal::EDataType_Vector2I}, {ramses_internal::EDataType_Vector2I}});
+        const auto dataLayout = this->m_scene.allocateDataLayout({DataFieldInfo{ramses_internal::EDataType_Vector2I}, DataFieldInfo{ramses_internal::EDataType_Vector2I}}, ResourceContentHash(123u, 0u));
         const CameraHandle camera = this->m_scene.allocateCamera(ECameraProjectionType_Renderer, this->m_scene.allocateNode(), this->m_scene.allocateDataInstance(dataLayout));
         EXPECT_FALSE(this->m_scene.getRenderPass(renderPass).camera.isValid());
 
@@ -98,8 +98,6 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, AssignsDefaultClearValuesToRenderPass)
     {
-        const Vector4 clearColor(0.5f, 0.0f, 1.f, 0.25f);
-
         const RenderPassHandle pass = this->m_scene.allocateRenderPass();
 
         const RenderPass& rp = this->m_scene.getRenderPass(pass);

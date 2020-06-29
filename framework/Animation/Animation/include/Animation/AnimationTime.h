@@ -19,19 +19,20 @@ namespace ramses_internal
         typedef UInt64 TimeStamp;
         typedef UInt64 Duration;
 
-        AnimationTime(TimeStamp timeStamp = InvalidTimeStamp);
-        AnimationTime(const AnimationTime& other);
+        AnimationTime(TimeStamp timeStamp = InvalidTimeStamp);  //NOLINT(google-explicit-constructor) allow implcit conversion for convenience
+        AnimationTime(const AnimationTime& other) = default;
+        AnimationTime& operator=(const AnimationTime&) = default;
 
-        Bool isValid() const;
+        bool isValid() const;
         Duration getDurationSince(const AnimationTime& other) const;
         TimeStamp getTimeStamp() const;
 
-        Bool operator==(const AnimationTime& other) const;
-        Bool operator!=(const AnimationTime& other) const;
-        Bool operator<(const AnimationTime& other) const;
-        Bool operator>(const AnimationTime& other) const;
-        Bool operator<=(const AnimationTime& other) const;
-        Bool operator>=(const AnimationTime& other) const;
+        bool operator==(const AnimationTime& other) const;
+        bool operator!=(const AnimationTime& other) const;
+        bool operator<(const AnimationTime& other) const;
+        bool operator>(const AnimationTime& other) const;
+        bool operator<=(const AnimationTime& other) const;
+        bool operator>=(const AnimationTime& other) const;
         AnimationTime operator+(const AnimationTime& other) const;
         AnimationTime& operator+=(const AnimationTime& other);
 
@@ -46,12 +47,7 @@ namespace ramses_internal
     {
     }
 
-    inline AnimationTime::AnimationTime(const AnimationTime& other)
-        : m_time(other.m_time)
-    {
-    }
-
-    inline Bool AnimationTime::isValid() const
+    inline bool AnimationTime::isValid() const
     {
         return m_time != InvalidTimeStamp;
     }
@@ -71,32 +67,32 @@ namespace ramses_internal
         return m_time;
     }
 
-    inline Bool AnimationTime::operator==(const AnimationTime& other) const
+    inline bool AnimationTime::operator==(const AnimationTime& other) const
     {
         return m_time == other.m_time;
     }
 
-    inline Bool AnimationTime::operator!=(const AnimationTime& other) const
+    inline bool AnimationTime::operator!=(const AnimationTime& other) const
     {
         return m_time != other.m_time;
     }
 
-    inline Bool AnimationTime::operator<(const AnimationTime& other) const
+    inline bool AnimationTime::operator<(const AnimationTime& other) const
     {
         return m_time < other.m_time;
     }
 
-    inline Bool AnimationTime::operator>(const AnimationTime& other) const
+    inline bool AnimationTime::operator>(const AnimationTime& other) const
     {
         return m_time > other.m_time;
     }
 
-    inline Bool AnimationTime::operator<=(const AnimationTime& other) const
+    inline bool AnimationTime::operator<=(const AnimationTime& other) const
     {
         return m_time <= other.m_time;
     }
 
-    inline Bool AnimationTime::operator>=(const AnimationTime& other) const
+    inline bool AnimationTime::operator>=(const AnimationTime& other) const
     {
         return m_time >= other.m_time;
     }

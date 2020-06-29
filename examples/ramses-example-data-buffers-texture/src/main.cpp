@@ -45,11 +45,11 @@ int main(int argc, char* argv[])
 {
     // register at RAMSES daemon
     ramses::RamsesFramework framework(argc, argv);
-    ramses::RamsesClient ramses("ramses-example-data-buffers-texture", framework);
+    ramses::RamsesClient& ramses(*framework.createClient("ramses-example-data-buffers-texture"));
     framework.connect();
 
     // create a scene for distributing content
-    ramses::Scene* scene = ramses.createScene(123u, ramses::SceneConfig(), "basic texturing scene");
+    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic texturing scene");
 
     // every scene needs a render pass with camera
     ramses::Camera* camera = scene->createRemoteCamera("my camera");
@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
     ramses::RenderGroup* renderGroup = scene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
 
-    // prepare triangle geometry: vertex position array and index array
+    // prepare quad geometry: vertex position array and index array
     // Two different vertex arrays, to show two different mipmap levels of the texture
     // The ...Near quad will show mipmap level 0, the ...Far quad will show mipmap level 1
     float vertexPositionsNearArray[] = { -1.f, -1.f, -1.f,  1.f, -1.f, -1.f,  -1.f, 1.f, -1.f,  1.f, 1.f, -1.f };
@@ -163,8 +163,8 @@ int main(int argc, char* argv[])
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
     const ramses::Effect* effectTex = ramses.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
-    ramses::Appearance* appearanceNear = scene->createAppearance(*effectTex, "triangle appearance (near)");
-    ramses::Appearance* appearanceFar  = scene->createAppearance(*effectTex, "triangle appearance (far)");
+    ramses::Appearance* appearanceNear = scene->createAppearance(*effectTex, "quad appearance (near)");
+    ramses::Appearance* appearanceFar  = scene->createAppearance(*effectTex, "quad appearance (far)");
 
     // set vertex positions directly in geometry
     ramses::AttributeInput positionsInput;
@@ -176,12 +176,12 @@ int main(int argc, char* argv[])
     // a specific mipmap level has been added to the fragment shader
     effectTex->findUniformInput("mipmapLevel", mipmapLevelInput);
 
-    ramses::GeometryBinding* geometryNear = scene->createGeometryBinding(*effectTex, "triangle geometry (near)");
+    ramses::GeometryBinding* geometryNear = scene->createGeometryBinding(*effectTex, "quad geometry (near)");
     geometryNear->setInputBuffer(positionsInput, *vertexPositionsNear);
     geometryNear->setInputBuffer(texcoordsInput, *textureCoords);
     geometryNear->setIndices(*indices);
 
-    ramses::GeometryBinding* geometryFar = scene->createGeometryBinding(*effectTex, "triangle geometry (far)");
+    ramses::GeometryBinding* geometryFar = scene->createGeometryBinding(*effectTex, "quad geometry (far)");
     geometryFar->setInputBuffer(positionsInput, *vertexPositionsFar);
     geometryFar->setInputBuffer(texcoordsInput, *textureCoords);
     geometryFar->setIndices(*indices);
@@ -193,12 +193,12 @@ int main(int argc, char* argv[])
 
     appearanceNear->setInputValueInt32(mipmapLevelInput, 0);
     appearanceFar->setInputValueInt32(mipmapLevelInput, 1);
-    // create a mesh node to define the triangle with chosen appearance
-    ramses::MeshNode* meshNodeNear = scene->createMeshNode("textured triangle mesh node (near)");
+    // create a mesh node to define the quad with chosen appearance
+    ramses::MeshNode* meshNodeNear = scene->createMeshNode("textured quad mesh node (near)");
     meshNodeNear->setAppearance(*appearanceNear);
     meshNodeNear->setGeometryBinding(*geometryNear);
 
-    ramses::MeshNode* meshNodeFar = scene->createMeshNode("textured triangle mesh node (far)");
+    ramses::MeshNode* meshNodeFar = scene->createMeshNode("textured quad mesh node (far)");
     meshNodeFar->setAppearance(*appearanceFar);
     meshNodeFar->setGeometryBinding(*geometryFar);
 

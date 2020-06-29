@@ -20,7 +20,7 @@ namespace ramses_internal
     {
     public:
         explicit LogConnectionInfo(ICommunicationSystem& communicationSystem);
-        virtual Bool executeInput(const RamshInput& input) override;
+        virtual bool executeInput(const RamshInput& input) override;
 
     private:
         ICommunicationSystem& m_communicationSystem;

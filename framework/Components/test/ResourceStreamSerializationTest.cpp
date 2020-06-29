@@ -38,8 +38,8 @@ namespace ramses_internal
                     resources);
             }
 
-            MOCK_METHOD1(preparePacket_cb, UInt32(UInt32));
-            MOCK_METHOD1(finishedPacket_cb, void(UInt32));
+            MOCK_METHOD(UInt32, preparePacket_cb, (UInt32));
+            MOCK_METHOD(void, finishedPacket_cb, (UInt32));
 
             std::vector<std::vector<Byte>> packets;
 
@@ -72,12 +72,15 @@ namespace ramses_internal
                 {
                     metadata.push_back(static_cast<Byte>(1 + seed + i * 3));
                 }
-                SceneResourceData data(new MemoryBlob(blobSize));
-                for (UInt32 i = 0; i < data->size(); ++i)
+                if (blobSize)
                 {
-                    (*data)[i] = static_cast<uint8_t>(i + seed);
+                    ResourceBlob data(blobSize);
+                    for (size_t i = 0; i < data.size(); ++i)
+                    {
+                        data.data()[i] = static_cast<uint8_t>(i + seed);
+                    }
+                    setResourceData(std::move(data));
                 }
-                setResourceData(data);
             }
 
             virtual void serializeResourceMetadataToStream(IOutputStream& output) const override
@@ -110,10 +113,10 @@ namespace ramses_internal
 
             ASSERT_TRUE(a.isDeCompressedAvailable());
             ASSERT_TRUE(b.isDeCompressedAvailable());
-            ASSERT_TRUE(a.getResourceData().get() != nullptr);
-            ASSERT_TRUE(b.getResourceData().get() != nullptr);
-            ASSERT_EQ(a.getResourceData()->size(), b.getResourceData()->size());
-            EXPECT_EQ(0, PlatformMemory::Compare(a.getResourceData()->getRawData(), b.getResourceData()->getRawData(), a.getResourceData()->size()));
+            ASSERT_TRUE(a.getResourceData().data() != nullptr);
+            ASSERT_TRUE(b.getResourceData().data() != nullptr);
+            ASSERT_EQ(a.getResourceData().size(), b.getResourceData().size());
+            EXPECT_EQ(0, PlatformMemory::Compare(a.getResourceData().data(), b.getResourceData().data(), a.getResourceData().size()));
         }
     }
 
@@ -145,7 +148,7 @@ namespace ramses_internal
             std::vector<std::unique_ptr<IResource>> result;
             for (const auto& pkt : serializer.packets)
             {
-                ByteArrayView resourceData(pkt.data(), static_cast<UInt32>(pkt.size()));
+                absl::Span<const Byte> resourceData(pkt.data(), static_cast<UInt32>(pkt.size()));
                 std::vector<IResource*> resVec = deserializer.processData(resourceData);
                 for (const auto& res : resVec)
                 {
@@ -200,17 +203,6 @@ namespace ramses_internal
         serializer.serialize(inRes);
     }
 
-    TEST_F(AResourceStreamSerialization, canSerializeSingleResourceWithoutBlob)
-    {
-        EXPECT_CALL(serializer, preparePacket_cb(_)).WillOnce(Return(500));
-        EXPECT_CALL(serializer, finishedPacket_cb(_));
-        ManagedResourceVector inRes = { createTestResource(40, 0) };
-        serializer.serialize(inRes);
-        ResourceVector outRes = deserializeAll();
-        Compare(inRes, outRes);
-        EXPECT_TRUE(deserializer.processingFinished());
-    }
-
     TEST_F(AResourceStreamSerialization, canSerializeMultipleResourceIntoLargerPacket)
     {
         InSequence seq;
@@ -241,23 +233,12 @@ namespace ramses_internal
         serializer.serialize(inRes);
     }
 
-    TEST_F(AResourceStreamSerialization, canSerializeMultipleResourcesWithoutBlob)
-    {
-        EXPECT_CALL(serializer, preparePacket_cb(_)).WillOnce(Return(500));
-        EXPECT_CALL(serializer, finishedPacket_cb(_));
-        ManagedResourceVector inRes = { createTestResource(41, 0), createTestResource(42, 0), createTestResource(43, 0), createTestResource(44, 0) };
-        serializer.serialize(inRes);
-        ResourceVector outRes = deserializeAll();
-        Compare(inRes, outRes);
-        EXPECT_TRUE(deserializer.processingFinished());
-    }
-
     TEST_F(AResourceStreamSerialization, canSerializeMultipleResourcesIntoMultiplePackets)
     {
         EXPECT_CALL(serializer, preparePacket_cb(_)).WillRepeatedly(Return(100));
         EXPECT_CALL(serializer, finishedPacket_cb(_)).Times(AnyNumber());
         ManagedResourceVector inRes = { createTestResource(50, 100),
-            createTestResource(40, 0),
+            createTestResource(40, 1),
             createTestResource(200, 20000),
             createTestResource(45, 10),
             createTestResource(200, 200) };
@@ -282,7 +263,7 @@ namespace ramses_internal
     {
         EXPECT_CALL(serializer, preparePacket_cb(_)).WillRepeatedly(Return(100));
         EXPECT_CALL(serializer, finishedPacket_cb(_)).Times(AnyNumber());
-        ManagedResourceVector inRes = { createTestResource(200, 20000), createTestResource(40, 0), createTestResource(41, 0), createTestResource(42, 0) };
+        ManagedResourceVector inRes = { createTestResource(200, 20000), createTestResource(40, 1), createTestResource(41, 1), createTestResource(42, 1) };
         serializer.serialize(inRes);
         ResourceVector outRes = deserializeAll();
         Compare(inRes, outRes);
@@ -293,7 +274,7 @@ namespace ramses_internal
     {
         EXPECT_CALL(serializer, preparePacket_cb(_)).WillRepeatedly(Return(100));
         EXPECT_CALL(serializer, finishedPacket_cb(_)).Times(AnyNumber());
-        ManagedResourceVector inRes = { createTestResource(40, 0), createTestResource(200, 20000) };
+        ManagedResourceVector inRes = { createTestResource(40, 1), createTestResource(200, 20000) };
         serializer.serialize(inRes);
         ResourceVector outRes = deserializeAll();
         Compare(inRes, outRes);
@@ -348,7 +329,7 @@ namespace ramses_internal
     TEST_F(AResourceStreamSerialization, serializeDoesNotFullyUsePacketIfFrameInfoWouldBeSplit)
     {
         ManagedResource res1 = createTestResource(41, 50);
-        ManagedResource res2 = createTestResource(40, 0);
+        ManagedResource res2 = createTestResource(40, 1);
         const UInt32 sizeWithoutRes2 = sizeof(UInt32) + TestResourceStreamSerializer::FrameSize + SingleResourceSerialization::SizeOfSerializedResource(*res1.getResourceObject());
         const UInt32 sizeRes2 = sizeof(UInt32) + TestResourceStreamSerializer::FrameSize + SingleResourceSerialization::SizeOfSerializedResource(*res2.getResourceObject());
 
@@ -366,7 +347,7 @@ namespace ramses_internal
     TEST_F(AResourceStreamSerialization, serializeSplitsExactlyAfterFrameInfo)
     {
         ManagedResource res1 = createTestResource(41, 50);
-        ManagedResource res2 = createTestResource(40, 0);
+        ManagedResource res2 = createTestResource(40, 1);
         const UInt32 sizeRes1AndFrameOfRes2 = sizeof(UInt32) + 2*TestResourceStreamSerializer::FrameSize + SingleResourceSerialization::SizeOfSerializedResource(*res1.getResourceObject());
         const UInt32 sizeRestOfRes2 = sizeof(UInt32) + SingleResourceSerialization::SizeOfSerializedResource(*res2.getResourceObject());
 
@@ -383,7 +364,7 @@ namespace ramses_internal
 
     TEST_F(AResourceStreamSerialization, splitSerializeInResourceMetadata)
     {
-        ManagedResource res = createTestResource(41, 0);
+        ManagedResource res = createTestResource(41, 1);
         const UInt32 resSize = sizeof(UInt32) + TestResourceStreamSerializer::FrameSize + SingleResourceSerialization::SizeOfSerializedResource(*res.getResourceObject());
 
         EXPECT_CALL(serializer, preparePacket_cb(_)).WillOnce(Return(resSize - 10)).WillOnce(Return(100));
@@ -482,7 +463,7 @@ namespace ramses_internal
         EXPECT_CALL(serializer, finishedPacket_cb(_)).Times(AnyNumber());
 
         ManagedResourceVector inRes1 = { createTestResource(1000, 20000) };
-        ManagedResourceVector inRes2 = { createTestResource(40, 0) };
+        ManagedResourceVector inRes2 = { createTestResource(40, 1) };
 
         serializer.serialize(inRes1);
         ASSERT_GT(serializer.packets.size(), 5u);
@@ -535,7 +516,7 @@ namespace ramses_internal
         }
     };
 
-    TYPED_TEST_CASE(AResourceStreamSerializationTyped, ResourceSerializationTestHelper::Types);
+    TYPED_TEST_SUITE(AResourceStreamSerializationTyped, ResourceSerializationTestHelper::Types);
 
     TYPED_TEST(AResourceStreamSerializationTyped, canSerializeDeserializeToSameResources)
     {

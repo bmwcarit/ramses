@@ -55,9 +55,9 @@ namespace ramses_internal
     };
 
     template <>
-    struct DataTypeReferenceSelector < Bool >
+    struct DataTypeReferenceSelector < bool >
     {
-        typedef Bool PossibleReferenceType;
+        typedef bool PossibleReferenceType;
     };
 
     template <>

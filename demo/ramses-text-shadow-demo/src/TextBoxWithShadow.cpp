@@ -9,7 +9,7 @@
 #include "TextBoxWithShadow.h"
 #include <algorithm>
 
-TextBoxWithShadow::TextBoxWithShadow(std::u32string         string,
+TextBoxWithShadow::TextBoxWithShadow(const std::u32string&  string,
                                      ramses::TextCache&     textCache,
                                      ramses::FontInstanceId fontInstance,
                                      int32_t                lineHeight,

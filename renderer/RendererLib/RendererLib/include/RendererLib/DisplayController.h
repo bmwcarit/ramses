@@ -31,7 +31,7 @@ namespace ramses_internal
         friend class RendererLogger;
 
     public:
-        DisplayController(IRenderBackend& renderer, UInt32 samples = 1, UInt32 postProcessingEffectIds = EPostProcessingEffect_None);
+        explicit DisplayController(IRenderBackend& renderer, UInt32 samples = 1, UInt32 postProcessingEffectIds = EPostProcessingEffect_None);
 
         virtual void                    handleWindowEvents() override;
         virtual Bool                    canRenderNewFrame() const override;

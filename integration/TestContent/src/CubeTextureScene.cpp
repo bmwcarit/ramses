@@ -27,8 +27,8 @@ namespace ramses_internal
     CubeTextureScene::CubeTextureScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
         : IntegrationScene(ramsesClient, scene, cameraPosition)
         , m_effect(getTestEffect("ramses-test-client-cubeSphere"))
-        , m_sphereMesh(0)
-        , m_transformNode(0)
+        , m_sphereMesh(nullptr)
+        , m_transformNode(nullptr)
     {
         init(static_cast<EState>(state));
     }
@@ -152,6 +152,30 @@ namespace ramses_internal
 
             return m_client.createTextureCube(imageNY.getWidth(), ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false);
         }
+        case EState_BGRA_Swizzled:
+        {
+            ramses::TextureSwizzle bgraSwizzle = {ramses::ETextureChannelColor::Blue, ramses::ETextureChannelColor::Green, ramses::ETextureChannelColor::Red, ramses::ETextureChannelColor::Alpha};
+            ramses_internal::Image imagePX;
+            imagePX.loadFromFilePNG("res/ramses-test-client-cube-px.png");
+            ramses_internal::Image imageNX;
+            imageNX.loadFromFilePNG("res/ramses-test-client-cube-nx.png");
+            ramses_internal::Image imagePY;
+            imagePY.loadFromFilePNG("res/ramses-test-client-cube-py.png");
+            ramses_internal::Image imageNY;
+            imageNY.loadFromFilePNG("res/ramses-test-client-cube-ny.png");
+            ramses_internal::Image imagePZ;
+            imagePZ.loadFromFilePNG("res/ramses-test-client-cube-pz.png");
+            ramses_internal::Image imageNZ;
+            imageNZ.loadFromFilePNG("res/ramses-test-client-cube-nz.png");
+
+            ramses::CubeMipLevelData mipLevelData(
+                static_cast<uint32_t>(imagePX.getData().size()),
+                imagePX.getData().data(), imageNX.getData().data(),
+                imagePY.getData().data(), imageNY.getData().data(),
+                imagePZ.getData().data(), imageNZ.getData().data());
+
+            return m_client.createTextureCube(imageNY.getWidth(), ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, bgraSwizzle);
+        }
         case EState_Float:
         {
             // 2x2 texture with RGB + white.
@@ -167,7 +191,7 @@ namespace ramses_internal
         }
         default:
             assert(!"Invalid texture type");
-            return 0;
+            return nullptr;
         }
     }
 }

@@ -9,7 +9,6 @@
 #include "SceneUtils/DataInstanceHelper.h"
 #include "SceneAPI/IScene.h"
 #include "SceneUtils/ISceneDataArrayAccessor.h"
-#include "Utils/Variant.h"
 #include "Scene/DataLayout.h"
 
 namespace ramses_internal
@@ -87,13 +86,13 @@ namespace ramses_internal
     }
 
     template <typename T>
-    void getAndStoreInstanceFieldData(const IScene& scene, DataInstanceHandle dataInstance, DataFieldHandle dataField, Variant& value)
+    void getAndStoreInstanceFieldData(const IScene& scene, DataInstanceHandle dataInstance, DataFieldHandle dataField, DataInstanceValueVariant& value)
     {
         const T* data = ISceneDataArrayAccessor::GetDataArray<T>(&scene, dataInstance, dataField);
-        value.setValue<T>(data[0]);
+        value = data[0];
     }
 
-    void DataInstanceHelper::GetInstanceFieldData(const IScene& scene, DataInstanceHandle dataInstance, DataFieldHandle dataField, Variant& value)
+    void DataInstanceHelper::GetInstanceFieldData(const IScene& scene, DataInstanceHandle dataInstance, DataFieldHandle dataField, DataInstanceValueVariant& value)
     {
         const ramses_internal::DataLayoutHandle dataLayoutHandle = scene.getLayoutOfDataInstance(dataInstance);
         const ramses_internal::DataLayout& layout = scene.getDataLayout(dataLayoutHandle);
@@ -142,13 +141,13 @@ namespace ramses_internal
     }
 
     template <typename T>
-    void setInstanceFieldData(IScene& scene, DataInstanceHandle dataInstance, DataFieldHandle dataField, const Variant& value)
+    void setInstanceFieldData(IScene& scene, DataInstanceHandle dataInstance, DataFieldHandle dataField, const DataInstanceValueVariant& value)
     {
-        const T typedValue = value.getValue<T>();
+        const T typedValue = absl::get<T>(value);
         ISceneDataArrayAccessor::SetDataArray<T>(&scene, dataInstance, dataField, 1u, &typedValue);
     }
 
-    void DataInstanceHelper::SetInstanceFieldData(IScene& scene, DataInstanceHandle dataInstance, DataFieldHandle dataField, const Variant& value)
+    void DataInstanceHelper::SetInstanceFieldData(IScene& scene, DataInstanceHandle dataInstance, DataFieldHandle dataField, const DataInstanceValueVariant& value)
     {
         const ramses_internal::DataLayoutHandle dataLayoutHandle = scene.getLayoutOfDataInstance(dataInstance);
         const ramses_internal::DataLayout& layout = scene.getDataLayout(dataLayoutHandle);

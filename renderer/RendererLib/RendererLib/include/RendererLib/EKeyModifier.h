@@ -15,17 +15,17 @@
 namespace ramses_internal
 {
 
-    enum EKeyModifier
+    enum EKeyModifier : uint32_t
     {
         EKeyModifier_NoModifier = 0,
-        EKeyModifier_Ctrl       = BIT(0),
-        EKeyModifier_Shift      = BIT(1),
-        EKeyModifier_Alt        = BIT(2),
-        EKeyModifier_Function   = BIT(3),
-        EKeyModifier_Numpad     = BIT(4)
+        EKeyModifier_Ctrl       = BIT(0u),
+        EKeyModifier_Shift      = BIT(1u),
+        EKeyModifier_Alt        = BIT(2u),
+        EKeyModifier_Function   = BIT(3u),
+        EKeyModifier_Numpad     = BIT(4u)
     };
 
-    static inline const Char* KeyModifierToString(UInt32 flags)
+    static inline String KeyModifierToString(UInt32 flags)
     {
         String s = "(";
         if (flags == EKeyModifier_NoModifier)
@@ -57,7 +57,7 @@ namespace ramses_internal
         }
         s.append(")");
 
-        return s.c_str();
+        return s;
     };
 
 }

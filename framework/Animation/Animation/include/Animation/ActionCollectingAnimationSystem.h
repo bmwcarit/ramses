@@ -31,7 +31,7 @@ namespace ramses_internal
 
         virtual void                        addDataBindingToAnimationInstance(AnimationInstanceHandle handle, DataBindHandle dataBindHandle) override;
 
-        virtual void                        setSplineKeyBasicBool(SplineHandle splineHandle, SplineTimeStamp timeStamp, Bool value) override;
+        virtual void                        setSplineKeyBasicBool(SplineHandle splineHandle, SplineTimeStamp timeStamp, bool value) override;
         virtual void                        setSplineKeyBasicInt32(SplineHandle splineHandle, SplineTimeStamp timeStamp, Int32 value) override;
         virtual void                        setSplineKeyBasicFloat(SplineHandle splineHandle, SplineTimeStamp timeStamp, Float value) override;
         virtual void                        setSplineKeyBasicVector2f(SplineHandle splineHandle, SplineTimeStamp timeStamp, const Vector2& value) override;

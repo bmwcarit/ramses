@@ -10,32 +10,31 @@
 #define RAMSES_INTERNAL_STRONGLYTYPEDVALUE_H
 
 #include "Utils/Warnings.h"
-#include "ramses-capu/util/Traits.h"
-#include "ramses-capu/container/Hash.h"
+#include "PlatformAbstraction/Hash.h"
 #include "Collections/StringOutputStream.h"
 #include <type_traits>
 #include <functional>
 
 namespace ramses_internal
 {
-    template <typename _BaseType, _BaseType _DefaultValue, typename _UniqueId>
+    template <typename _baseType, _baseType _invalid, typename _uniqueId>
     class StronglyTypedValue final
     {
     public:
-        typedef _BaseType BaseType;
+        typedef _baseType BaseType;
 
-        constexpr static StronglyTypedValue DefaultValue()
+        constexpr static StronglyTypedValue Invalid() noexcept
         {
-            return StronglyTypedValue(_DefaultValue);
+            return StronglyTypedValue(_invalid);
         }
 
-        constexpr explicit StronglyTypedValue(BaseType value)
+        constexpr explicit StronglyTypedValue(BaseType value) noexcept
             : m_value(value)
         {
         }
 
-        constexpr StronglyTypedValue()
-            : m_value(_DefaultValue)
+        constexpr StronglyTypedValue() noexcept
+            : m_value(_invalid)
         {
         }
 
@@ -59,19 +58,31 @@ namespace ramses_internal
             return m_value != other.m_value;
         }
 
+        constexpr bool isValid() const
+        {
+            return m_value != _invalid;
+        }
+
         static_assert(std::is_arithmetic<BaseType>::value || std::is_pointer<BaseType>::value, "expected arithmetic or pointer basetype");
     private:
         BaseType m_value;
     };
 
-    // StringOutputStream operator
-    template <typename _BaseType, _BaseType _DefaultValue, typename _UniqueId>
-    inline StringOutputStream& operator<<(StringOutputStream& os, const StronglyTypedValue<_BaseType, _DefaultValue, _UniqueId>& value)
-    {
-        os << value.getValue();
-        return os;
-    }
 }
+
+#define MAKE_STRONGLYTYPEDVALUE_PRINTABLE(stronglyType) \
+    template <> \
+    struct fmt::formatter<::stronglyType> {    \
+        template<typename ParseContext> \
+        constexpr auto parse(ParseContext& ctx)  { \
+            return ctx.begin(); \
+        } \
+        template<typename FormatContext> \
+        auto format(const ::stronglyType& str, FormatContext& ctx) {    \
+            return fmt::format_to(ctx.out(), "{}", str.getValue()); \
+        } \
+    };
+
 
 namespace std
 {
@@ -86,16 +97,4 @@ namespace std
     };
 }
 
-// make StronglyTypedValue hash correctly
-namespace ramses_capu
-{
-    template<typename _BaseType, _BaseType _DefaultValue, typename _UniqueId>
-    struct Hash<::ramses_internal::StronglyTypedValue<_BaseType, _DefaultValue, _UniqueId>>
-    {
-        uint_t operator()(const ::ramses_internal::StronglyTypedValue<_BaseType, _DefaultValue, _UniqueId>& key)
-        {
-            return Hash<_BaseType>()(key.getValue());
-        }
-    };
-}
 #endif

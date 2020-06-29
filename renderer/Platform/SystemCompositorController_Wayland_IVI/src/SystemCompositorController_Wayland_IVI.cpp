@@ -15,8 +15,9 @@
 #include "Collections/StringOutputStream.h"
 #include "Utils/StringUtils.h"
 #include "Utils/LogMacros.h"
-#include "Utils/FileUtils.h"
 #include "poll.h"
+#include <algorithm>
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -125,7 +126,7 @@ namespace ramses_internal
     void SystemCompositorController_Wayland_IVI::listIVISurfaces() const
     {
         std::vector<uint32_t> sortedList;
-        sortedList.reserve(m_controllerSurfaces.count());
+        sortedList.reserve(m_controllerSurfaces.size());
         for (auto controllerSurface : m_controllerSurfaces)
         {
             sortedList.push_back(controllerSurface->getIVIId().getValue());
@@ -172,7 +173,7 @@ namespace ramses_internal
         IVIControllerSurface& controllerSurface = getOrCreateControllerSurface(surfaceId);
 
         // clamp opacity to valid range, convert it to fixed point representation, and set it
-        opacity = clamp(opacity, 0.0f, 1.0f);
+        opacity = std::min(std::max(0.f, opacity), 1.f);
         controllerSurface.setOpacity(opacity);
 
         commitAndFlushControllerChanges();
@@ -202,10 +203,10 @@ namespace ramses_internal
         if (screenIviId == -1)
         {
             // expect single screen
-            if (m_controllerScreens.count() != 1)
+            if (m_controllerScreens.size() != 1)
             {
                 LOG_WARN(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::screenshot fileName " << fileName << " for screenId " << screenIviId <<
-                         " failed because found " << m_controllerScreens.count() << " screens");
+                         " failed because found " << m_controllerScreens.size() << " screens");
                 return false;
             }
             screen = *m_controllerScreens.begin();
@@ -372,7 +373,7 @@ namespace ramses_internal
 
     void SystemCompositorController_Wayland_IVI::deleteControllerSurface(IVIControllerSurface& controllerSurface)
     {
-        if (EStatus_RAMSES_OK == m_controllerSurfaces.remove(&controllerSurface))
+        if (m_controllerSurfaces.remove(&controllerSurface))
         {
             delete &controllerSurface;
         }
@@ -421,12 +422,7 @@ namespace ramses_internal
 
             controllerSurface = new IVIControllerSurface(nativeControllerSurface, iviId, *this);
 
-            EStatus status = m_controllerSurfaces.put(controllerSurface);
-            if (EStatus_RAMSES_OK != status)
-            {
-                LOG_ERROR(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::addControllerSurface failed !");
-                assert(false);
-            }
+            m_controllerSurfaces.put(controllerSurface);
         }
         return *controllerSurface;
     }
@@ -481,12 +477,7 @@ namespace ramses_internal
 
         IVIControllerScreen* controllerScreen = new IVIControllerScreen(*nativeControllerScreen, id_screen);
 
-        EStatus status = m_controllerScreens.put(controllerScreen);
-        if (EStatus_RAMSES_OK != status)
-        {
-            LOG_ERROR(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::iviControllerHandleScreen failed !");
-            assert(false);
-        }
+        m_controllerScreens.put(controllerScreen);
     }
 
     void SystemCompositorController_Wayland_IVI::iviControllerHandleLayer(ivi_controller* controller, uint32_t id_layer)

@@ -6,16 +6,17 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "Vector4iTest.h"
+#include "Math3d/Vector4i.h"
+#include "framework_common_gmock_header.h"
+#include "PlatformAbstraction/PlatformMath.h"
+#include "IOStreamTester.h"
+#include "gmock/gmock.h"
 
-void Vector4iTest::SetUp()
+class Vector4iTest: public testing::Test
 {
-    vec1 = ramses_internal::Vector4i(1, 2, 3, 4);
-}
-
-void Vector4iTest::TearDown()
-{
-}
+public:
+    ramses_internal::Vector4i vec1{1, 2, 3, 4};
+};
 
 TEST_F(Vector4iTest, DefaultConstructor)
 {
@@ -157,7 +158,7 @@ TEST_F(Vector4iTest, MulAssignVector)
 TEST_F(Vector4iTest, Equality)
 {
     ramses_internal::Vector4i vec2(1, 2, 3, 4);
-    ramses_internal::Bool equal = vec1 == vec2;
+    bool equal = vec1 == vec2;
 
     EXPECT_EQ(true, equal);
 }
@@ -165,7 +166,7 @@ TEST_F(Vector4iTest, Equality)
 TEST_F(Vector4iTest, UnEquality)
 {
     ramses_internal::Vector4i vec2(0, 2, 3, 4);
-    ramses_internal::Bool unequal = vec1 != vec2;
+    bool unequal = vec1 != vec2;
 
     EXPECT_EQ(true, unequal);
 }
@@ -203,13 +204,6 @@ TEST_F(Vector4iTest, Angle)
     EXPECT_FLOAT_EQ(90, angle);
 }
 
-TEST_F(Vector4iTest, Empty)
-{
-    ramses_internal::Vector4i vec2(0, 0, 0, 0);
-
-    EXPECT_EQ(vec2, ramses_internal::Vector4i::Empty);
-}
-
 TEST_F(Vector4iTest, SetSingleValues)
 {
     vec1.set(3, 4, 7, 5);
@@ -224,4 +218,17 @@ TEST_F(Vector4iTest, SetAllValues)
     ramses_internal::Vector4i vec2(5, 5, 5, 5);
 
     EXPECT_EQ(vec2, vec1);
+}
+
+TEST_F(Vector4iTest, CanPrintToString)
+{
+    EXPECT_EQ("[1 2 3 4]", fmt::to_string(vec1));
+    EXPECT_EQ("[1 2 3 4]", ramses_internal::StringOutputStream::ToString(vec1));
+}
+
+TEST_F(Vector4iTest, canBinarySerializeDeserialize)
+{
+    ramses_internal::IOStreamTesterBase::expectSame(ramses_internal::Vector4i());
+    ramses_internal::IOStreamTesterBase::expectSame(ramses_internal::Vector4i(1, 2, 3, 4));
+    ramses_internal::IOStreamTesterBase::expectSame(ramses_internal::Vector4i(std::numeric_limits<int32_t>::max(), std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::max()-1, std::numeric_limits<int32_t>::min()+1));
 }

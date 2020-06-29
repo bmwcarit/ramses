@@ -8,6 +8,7 @@
 
 #include "SystemCompositorController_Wayland_IVI/WaylandOutput.h"
 #include "Utils/LogMacros.h"
+#include <cassert>
 
 namespace ramses_internal
 {

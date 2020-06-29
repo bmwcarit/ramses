@@ -27,7 +27,7 @@ namespace ramses_internal
     class TransformationCachedSceneT : public SceneT<MEMORYPOOL>
     {
     public:
-        TransformationCachedSceneT(const SceneInfo& sceneInfo = SceneInfo());
+        explicit TransformationCachedSceneT(const SceneInfo& sceneInfo = SceneInfo());
 
         virtual void                    preallocateSceneSize(const SceneSizeInformation& sizeInfo) override;
 
@@ -46,11 +46,11 @@ namespace ramses_internal
         virtual void                    setScaling(TransformHandle transform, const Vector3& scaling) override;
 
         Matrix44f                       updateMatrixCache(ETransformationMatrixType matrixType, NodeHandle node) const;
-        Bool                            isMatrixCacheDirty(ETransformationMatrixType matrixType, NodeHandle node) const;
+        bool                            isMatrixCacheDirty(ETransformationMatrixType matrixType, NodeHandle node) const;
 
     protected:
         MatrixCacheEntry&           getMatrixCacheEntry(NodeHandle nodeHandle) const;
-        Bool                        markDirty(NodeHandle node) const;
+        bool                        markDirty(NodeHandle node) const;
 
         const Matrix44f&            findCleanAncestorMatrixAndCollectDirtyNodesOnTheWay(ETransformationMatrixType matrixType, NodeHandle node, NodeHandleVector& dirtyNodes) const;
         void                        computeMatrixForNode(ETransformationMatrixType matrixType, NodeHandle node, Matrix44f& chainMatrix) const;

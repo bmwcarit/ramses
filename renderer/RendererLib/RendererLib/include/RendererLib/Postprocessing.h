@@ -33,6 +33,9 @@ namespace ramses_internal
 
         void setWarpingMeshData(const WarpingMeshData& warpingMeshData);
 
+        Postprocessing(const Postprocessing&) = delete;
+        Postprocessing& operator=(const Postprocessing&) = delete;
+
     private:
         const UInt32            m_postEffectsMask;
         IDevice&                m_device;

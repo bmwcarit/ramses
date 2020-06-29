@@ -9,14 +9,11 @@
 #ifndef RAMSES_CONTAINER_BLOCKINGQUEUE_H
 #define RAMSES_CONTAINER_BLOCKINGQUEUE_H
 
-#include "PlatformAbstraction/PlatformTypes.h"
-#include "PlatformAbstraction/PlatformError.h"
-#include "PlatformAbstraction/PlatformLock.h"
-#include "PlatformAbstraction/PlatformGuard.h"
-#include "PlatformAbstraction/PlatformConditionVariable.h"
-#include "PlatformAbstraction/PlatformTime.h"
 #include <deque>
-#include <assert.h>
+#include <mutex>
+#include <condition_variable>
+#include <cassert>
+#include <chrono>
 
 namespace ramses_internal
 {
@@ -25,59 +22,44 @@ namespace ramses_internal
     {
     public:
         void push(const T& element);
-        EStatus pop(T* pElement, UInt32 timeoutMillis = 0);
-        Bool empty() const;
+        bool pop(T* pElement, std::chrono::milliseconds timeout = std::chrono::milliseconds{0});
+        bool empty() const;
 
     private:
         std::deque<T> m_queue;
-        mutable PlatformLock m_mutex;
-        PlatformConditionVariable m_condvar;
+        mutable std::mutex m_mutex;
+        std::condition_variable m_condvar;
     };
 
     template <typename T>
     inline void BlockingQueue<T>::push(const T& element)
     {
-        PlatformGuard g(m_mutex);
+        std::lock_guard<std::mutex> g(m_mutex);
         m_queue.push_back(element);
-        m_condvar.broadcast();
+        m_condvar.notify_all();
     }
 
     template <typename T>
-    inline EStatus BlockingQueue<T>::pop(T* pElement, UInt32 timeoutMillis)
+    inline bool BlockingQueue<T>::pop(T* pElement, std::chrono::milliseconds timeout)
     {
         assert(pElement);
-
-        PlatformGuard g(m_mutex);
-        UInt64 startTime = PlatformTime::GetMillisecondsMonotonic();
-        UInt32 spentTime = 0u;
-        while (m_queue.empty())
+        std::unique_lock<std::mutex> l(m_mutex);
+        if (timeout == std::chrono::milliseconds{0})
+            m_condvar.wait(l, [&](){ return !m_queue.empty(); });
+        else
         {
-            if (m_condvar.wait(&m_mutex, timeoutMillis - spentTime) == EStatus_RAMSES_TIMEOUT)
-            {
-                return EStatus_RAMSES_TIMEOUT;
-            }
-
-            if (timeoutMillis == 0)
-            {
-                continue;
-            }
-
-            spentTime = static_cast<UInt32>(PlatformTime::GetMillisecondsMonotonic() - startTime);
-            if (timeoutMillis <= (spentTime + 1) && m_queue.empty()) // in case we are off by 1ms, we assume a rounding error and time out
-            {
-                return EStatus_RAMSES_TIMEOUT;
-            }
+            if (!m_condvar.wait_for(l, timeout, [&](){ return !m_queue.empty(); }))
+                return false;
         }
-
         *pElement = m_queue.front();
         m_queue.pop_front();
-        return EStatus_RAMSES_OK;
+        return true;
     }
 
     template <typename T>
     inline bool BlockingQueue<T>::empty() const
     {
-        PlatformGuard g(m_mutex);
+        std::lock_guard<std::mutex> g(m_mutex);
         return m_queue.empty();
     }
 }

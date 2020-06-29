@@ -71,6 +71,7 @@ void SceneRenderingTests::setUpTestCases(RendererTestsFramework& testFramework)
     testFramework.createTestCaseWithDefaultDisplay(GeometryTest_InstancingWithUniform, *this, "GeometryTest_InstancingWithUniform");
     testFramework.createTestCaseWithDefaultDisplay(GeometryTest_InstancingWithVertexArray, *this, "GeometryTest_InstancingWithVertexArray");
     testFramework.createTestCaseWithDefaultDisplay(GeometryTest_InstancingAndNotInstancing, *this, "GeometryTest_InstancingAndNotInstancing");
+    testFramework.createTestCaseWithDefaultDisplay(GeometryTest_VertexArraysWithOffset, *this, "GeometryTest_VertexArraysWithOffset");
 
     testFramework.createTestCaseWithDefaultDisplay(RenderPassTest_MeshesNotInPassNotRendered, *this, "RenderPassTest_MeshesNotInPassNotRendered");
     testFramework.createTestCaseWithDefaultDisplay(RenderPassTest_DifferentCameras, *this, "RenderPassTest_DifferentCameras");
@@ -207,6 +208,8 @@ bool SceneRenderingTests::run(RendererTestsFramework& testFramework, const Rende
         return runBasicTest<GeometryInstanceScene>(testFramework, GeometryInstanceScene::GEOMETRY_INSTANCE_VERTEX, "GeometryInstanceScene_Instancing");
     case GeometryTest_InstancingAndNotInstancing:
         return runBasicTest<GeometryInstanceScene>(testFramework, GeometryInstanceScene::GEOMETRY_INSTANCE_AND_NOT_INSTANCE, "GeometryInstanceScene_InstancingAndNotInstancing");
+    case GeometryTest_VertexArraysWithOffset:
+        return runBasicTest<MultipleGeometryScene>(testFramework, MultipleGeometryScene::VERTEX_ARRAYS_WITH_OFFSET, "MultipleGeometryScene_MultipleGeometry");
 
     case RenderPassTest_MeshesNotInPassNotRendered:
         return runBasicTest<RenderPassScene>(testFramework, RenderPassScene::MESHES_NOT_IN_PASS, "RenderPassScene_MeshNotInPass");
@@ -341,6 +344,6 @@ bool SceneRenderingTests::runBasicTest(
     const Vector3& cameraTranslation,
     const ramses::SceneConfig& sceneConfig)
 {
-    testFramework.createAndShowScene<INTEGRATION_SCENE>(sceneState, cameraTranslation, 0, sceneConfig);
+    testFramework.createAndShowScene<INTEGRATION_SCENE>(sceneState, cameraTranslation, sceneConfig);
     return testFramework.renderAndCompareScreenshot(expectedImageName, 0u, maxAveragePercentErrorPerPixel);
 }

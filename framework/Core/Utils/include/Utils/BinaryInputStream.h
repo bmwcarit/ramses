@@ -28,13 +28,18 @@ namespace ramses_internal
         virtual EStatus getState() const  override;
 
         const char* readPosition() const;
+        const unsigned char* readPositionUchar() const;
+        size_t getCurrentReadBytes() const;
+        void skip(int64_t offset);
 
     private:
         const char* m_current;
+        const char* m_start;
     };
 
     inline BinaryInputStream::BinaryInputStream(const Char* input)
         : m_current(input)
+        , m_start(input)
     {
     }
 
@@ -57,12 +62,27 @@ namespace ramses_internal
 
     inline EStatus BinaryInputStream::getState() const
     {
-        return EStatus_RAMSES_OK;
+        return EStatus::Ok;
+    }
+
+    inline size_t BinaryInputStream::getCurrentReadBytes() const
+    {
+        return m_current - m_start;
     }
 
     inline const char* BinaryInputStream::readPosition() const
     {
         return m_current;
+    }
+
+    inline const unsigned char* BinaryInputStream::readPositionUchar() const
+    {
+        return reinterpret_cast<const unsigned char*>(m_current);
+    }
+
+    inline void BinaryInputStream::skip(int64_t offset)
+    {
+        m_current += offset;
     }
 }
 

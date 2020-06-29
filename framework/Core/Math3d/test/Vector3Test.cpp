@@ -6,17 +6,18 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "Vector3Test.h"
+#include "Math3d/Vector3.h"
 #include "Math3d/Vector4.h"
+#include "framework_common_gmock_header.h"
+#include "PlatformAbstraction/PlatformMath.h"
+#include "IOStreamTester.h"
+#include "gtest/gtest.h"
 
-void Vector3Test::SetUp()
+class Vector3Test: public testing::Test
 {
-    vec1 = ramses_internal::Vector3(1.f, 2.f, 3.f);
-}
-
-void Vector3Test::TearDown()
-{
-}
+public:
+    ramses_internal::Vector3 vec1{1.f, 2.f, 3.f};
+};
 
 TEST_F(Vector3Test, DefaultConstructor)
 {
@@ -181,7 +182,7 @@ TEST_F(Vector3Test, Angle)
 TEST_F(Vector3Test, Equality)
 {
     ramses_internal::Vector3 vec2(1.f, 2.f, 3.f);
-    ramses_internal::Bool equal = vec1 == vec2;
+    bool equal = vec1 == vec2;
 
     EXPECT_EQ(true, equal);
 }
@@ -189,16 +190,9 @@ TEST_F(Vector3Test, Equality)
 TEST_F(Vector3Test, UnEquality)
 {
     ramses_internal::Vector3 vec2(0.f, 2.f, 3.f);
-    ramses_internal::Bool unequal = vec1 != vec2;
+    bool unequal = vec1 != vec2;
 
     EXPECT_EQ(true, unequal);
-}
-
-TEST_F(Vector3Test, Empty)
-{
-    ramses_internal::Vector3 vec2(0.0f, 0.0f, 0.0f);
-
-    EXPECT_EQ(vec2, ramses_internal::Vector3::Empty);
 }
 
 TEST_F(Vector3Test, SetSingleValues)
@@ -232,4 +226,17 @@ TEST_F(Vector3Test, Normalize)
     EXPECT_FLOAT_EQ( 0.26726124f, normalized.x);
     EXPECT_FLOAT_EQ( 0.53452247f, normalized.y);
     EXPECT_FLOAT_EQ( 0.80178368f, normalized.z);
+}
+
+TEST_F(Vector3Test, CanPrintToString)
+{
+    EXPECT_EQ("[1.0 2.0 3.0]", fmt::to_string(vec1));
+    EXPECT_EQ("[1.0 2.0 3.0]", ramses_internal::StringOutputStream::ToString(vec1));
+}
+
+TEST_F(Vector3Test, canBinarySerializeDeserialize)
+{
+    ramses_internal::IOStreamTesterBase::expectSame(ramses_internal::Vector3());
+    ramses_internal::IOStreamTesterBase::expectSame(ramses_internal::Vector3(1.f, 2.f, 3.f));
+    ramses_internal::IOStreamTesterBase::expectSame(ramses_internal::Vector3(std::numeric_limits<float>::max(), std::numeric_limits<float>::min(), std::numeric_limits<float>::max()-0.1f));
 }

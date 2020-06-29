@@ -9,6 +9,7 @@
 #ifndef RAMSES_SHADERUPLOADER_GL_H
 #define RAMSES_SHADERUPLOADER_GL_H
 
+#include "RendererAPI/Types.h"
 #include "Utils/LogMacros.h"
 #include "Types_GL.h"
 
@@ -21,7 +22,7 @@ namespace ramses_internal
     {
     public:
         static Bool UploadShaderProgramFromSource(const EffectResource& effect, ShaderProgramInfo& programShaderInfoOut, String& debugErrorLog);
-        static Bool UploadShaderProgramFromBinary(const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, UInt32 binaryShaderFormat, ShaderProgramInfo& programShaderInfoOut, String& debugErrorLog);
+        static Bool UploadShaderProgramFromBinary(const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat, ShaderProgramInfo& programShaderInfoOut, String& debugErrorLog);
 
     private:
         static GLHandle CompileShaderStage(const char* stageSource, GLenum shaderType, String& errorLogOut);

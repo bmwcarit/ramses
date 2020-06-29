@@ -10,6 +10,8 @@
 #define RAMSES_COMMUNICATION_COMMUNICATIONSYSTEMTESTFACTORY_H
 
 #include "CommunicationSystemTestWrapper.h"
+#include "TestRandom.h"
+#include <limits>
 
 namespace ramses_internal
 {
@@ -25,11 +27,9 @@ namespace ramses_internal
             return std::unique_ptr<CommunicationSystemDiscoveryDaemonTestWrapper>{new CommunicationSystemDiscoveryDaemonTestWrapper(state)};
         }
 
-        inline std::unique_ptr<CommunicationSystemTestWrapper> ConstructTestWrapper(CommunicationSystemTestState& state_, const String& name = String(), const Guid& id_ = Guid(true),
-            ECommunicationSystemTestConfiguration commSysConfig_ = ECommunicationSystemTestConfiguration_Default,
-            bool allowObjectDestructionICOnly = true)
+        inline std::unique_ptr<CommunicationSystemTestWrapper> ConstructTestWrapper(CommunicationSystemTestState& state_, const String& name = String(), const Guid& id_ = Guid(TestRandom::Get(255, std::numeric_limits<size_t>::max())),
+            ECommunicationSystemTestConfiguration commSysConfig_ = ECommunicationSystemTestConfiguration_Default)
         {
-            UNUSED(allowObjectDestructionICOnly);
             return std::unique_ptr<CommunicationSystemTestWrapper>{new CommunicationSystemTestWrapper(state_, name, id_, commSysConfig_)};
         }
     }

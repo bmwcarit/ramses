@@ -36,13 +36,13 @@ namespace ramses_internal
     void AnimationProcessDataDispatch::dispatchSpline(const Spline<Key, EDataType>& spline)
     {
         const SplineSolver<Key, EDataType> splineSolver(spline, m_processData.m_splineIterator, m_processData.m_interpolationType);
-        m_interpolatedValue.setValue(splineSolver.getInterpolatedValue());
+        m_interpolatedValue = splineSolver.getInterpolatedValue();
     }
 
     template <typename ClassType, typename EDataType, typename HandleType, typename HandleType2>
     void AnimationProcessDataDispatch::dispatchDataBind(const AnimationDataBind<ClassType, EDataType, HandleType, HandleType2>& dataBind) const
     {
-        const Bool setInitialValue = (m_processData.m_animation.m_flags & Animation::EAnimationFlags_ApplyInitialValue) != 0;
+        const bool setInitialValue = (m_processData.m_animation.m_flags & Animation::EAnimationFlags_ApplyInitialValue) != 0;
         const EDataType finalValue = ( setInitialValue ? dataBind.getInitialValue() : getFinalValue(dataBind) );
         dataBind.setValue(finalValue);
     }
@@ -50,7 +50,7 @@ namespace ramses_internal
     template <typename ClassType, typename EDataType, typename HandleType, typename HandleType2>
     EDataType AnimationProcessDataDispatch::getFinalValue(const AnimationDataBind<ClassType, EDataType, HandleType, HandleType2> &dataBind) const
     {
-        const Bool relativeAnim = (m_processData.m_animation.m_flags & Animation::EAnimationFlags_Relative) != 0;
+        const bool relativeAnim = (m_processData.m_animation.m_flags & Animation::EAnimationFlags_Relative) != 0;
         const EDataType offsetValue = (relativeAnim ? dataBind.getInitialValue() : EDataType(0));
         EDataType finalValue;
 
@@ -71,13 +71,13 @@ namespace ramses_internal
     }
 
     template <>
-    Bool AnimationProcessDataDispatch::getInterpolatedValue(const Bool& offset) const
+    bool AnimationProcessDataDispatch::getInterpolatedValue(const bool& offset) const
     {
-        const Bool interpolatedValue = m_interpolatedValue.getValue<Bool>();
+        const bool interpolatedValue = absl::get<bool>(m_interpolatedValue);
         return offset ^ interpolatedValue;
     }
 
-    template void AnimationProcessDataDispatch::dispatchSpline<SplineKey, Bool>(const Spline<SplineKey, Bool>&);
+    template void AnimationProcessDataDispatch::dispatchSpline<SplineKey, bool>(const Spline<SplineKey, bool>&);
     template void AnimationProcessDataDispatch::dispatchSpline<SplineKey, Int32>(const Spline<SplineKey, Int32>&);
     template void AnimationProcessDataDispatch::dispatchSpline<SplineKey, Int64>(const Spline<SplineKey, Int64>&);
     template void AnimationProcessDataDispatch::dispatchSpline<SplineKey, UInt32>(const Spline<SplineKey, UInt32>&);
@@ -91,7 +91,7 @@ namespace ramses_internal
     template void AnimationProcessDataDispatch::dispatchSpline<SplineKey, Vector3i>(const Spline<SplineKey, Vector3i>&);
     template void AnimationProcessDataDispatch::dispatchSpline<SplineKey, Vector4i>(const Spline<SplineKey, Vector4i>&);
 
-    template void AnimationProcessDataDispatch::dispatchSpline<SplineKeyTangents, Bool>(const Spline<SplineKeyTangents, Bool>&);
+    template void AnimationProcessDataDispatch::dispatchSpline<SplineKeyTangents, bool>(const Spline<SplineKeyTangents, bool>&);
     template void AnimationProcessDataDispatch::dispatchSpline<SplineKeyTangents, Int32>(const Spline<SplineKeyTangents, Int32>&);
     template void AnimationProcessDataDispatch::dispatchSpline<SplineKeyTangents, Int64>(const Spline<SplineKeyTangents, Int64>&);
     template void AnimationProcessDataDispatch::dispatchSpline<SplineKeyTangents, UInt32>(const Spline<SplineKeyTangents, UInt32>&);
@@ -105,7 +105,7 @@ namespace ramses_internal
     template void AnimationProcessDataDispatch::dispatchSpline<SplineKeyTangents, Vector3i>(const Spline<SplineKeyTangents, Vector3i>&);
     template void AnimationProcessDataDispatch::dispatchSpline<SplineKeyTangents, Vector4i>(const Spline<SplineKeyTangents, Vector4i>&);
 
-    template void AnimationProcessDataDispatch::dispatchDataBind<IScene, Bool   >(const AnimationDataBind<IScene, Bool   >&) const;
+    template void AnimationProcessDataDispatch::dispatchDataBind<IScene, bool   >(const AnimationDataBind<IScene, bool   >&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind<IScene, Int32  >(const AnimationDataBind<IScene, Int32  >&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind<IScene, Int64  >(const AnimationDataBind<IScene, Int64  >&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind<IScene, UInt32 >(const AnimationDataBind<IScene, UInt32 >&) const;
@@ -119,7 +119,7 @@ namespace ramses_internal
     template void AnimationProcessDataDispatch::dispatchDataBind<IScene, Vector3i>(const AnimationDataBind<IScene, Vector3i>&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind<IScene, Vector4i>(const AnimationDataBind<IScene, Vector4i>&) const;
 
-    template void AnimationProcessDataDispatch::dispatchDataBind<IScene, Bool   , MemoryHandle>(const AnimationDataBind<IScene, Bool   , MemoryHandle>&) const;
+    template void AnimationProcessDataDispatch::dispatchDataBind<IScene, bool   , MemoryHandle>(const AnimationDataBind<IScene, bool   , MemoryHandle>&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind<IScene, Int32  , MemoryHandle>(const AnimationDataBind<IScene, Int32  , MemoryHandle>&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind<IScene, Int64  , MemoryHandle>(const AnimationDataBind<IScene, Int64  , MemoryHandle>&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind<IScene, UInt32 , MemoryHandle>(const AnimationDataBind<IScene, UInt32 , MemoryHandle>&) const;
@@ -133,7 +133,7 @@ namespace ramses_internal
     template void AnimationProcessDataDispatch::dispatchDataBind<IScene, Vector3i, MemoryHandle>(const AnimationDataBind<IScene, Vector3i, MemoryHandle>&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind<IScene, Vector4i, MemoryHandle>(const AnimationDataBind<IScene, Vector4i, MemoryHandle>&) const;
 
-    template void AnimationProcessDataDispatch::dispatchDataBind<IScene, Bool,    MemoryHandle, MemoryHandle>(const AnimationDataBind<IScene, Bool,    MemoryHandle, MemoryHandle>&) const;
+    template void AnimationProcessDataDispatch::dispatchDataBind<IScene, bool,    MemoryHandle, MemoryHandle>(const AnimationDataBind<IScene, bool,    MemoryHandle, MemoryHandle>&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind<IScene, Int32,   MemoryHandle, MemoryHandle>(const AnimationDataBind<IScene, Int32,   MemoryHandle, MemoryHandle>&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind<IScene, Int64,   MemoryHandle, MemoryHandle>(const AnimationDataBind<IScene, Int64,   MemoryHandle, MemoryHandle>&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind<IScene, UInt32,  MemoryHandle, MemoryHandle>(const AnimationDataBind<IScene, UInt32,  MemoryHandle, MemoryHandle>&) const;
@@ -147,7 +147,7 @@ namespace ramses_internal
     template void AnimationProcessDataDispatch::dispatchDataBind<IScene, Vector3i, MemoryHandle, MemoryHandle>(const AnimationDataBind<IScene, Vector3i, MemoryHandle, MemoryHandle>&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind<IScene, Vector4i, MemoryHandle, MemoryHandle>(const AnimationDataBind<IScene, Vector4i, MemoryHandle, MemoryHandle>&) const;
 
-    template void AnimationProcessDataDispatch::dispatchDataBind<IScene, Bool   , NodeHandle>(const AnimationDataBind<IScene, Bool   , NodeHandle>&) const;
+    template void AnimationProcessDataDispatch::dispatchDataBind<IScene, bool   , NodeHandle>(const AnimationDataBind<IScene, bool   , NodeHandle>&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind<IScene, Int32  , NodeHandle>(const AnimationDataBind<IScene, Int32  , NodeHandle>&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind<IScene, Int64  , NodeHandle>(const AnimationDataBind<IScene, Int64  , NodeHandle>&) const;
     template void AnimationProcessDataDispatch::dispatchDataBind<IScene, UInt32 , NodeHandle>(const AnimationDataBind<IScene, UInt32 , NodeHandle>&) const;

@@ -17,8 +17,8 @@
 SHMBuffer::SHMBuffer(wl_shm* shm, uint32_t width, uint32_t height, uint32_t id)
     : m_width(width)
     , m_height(height)
-    , m_buffer(0)
-    , m_pixelData(0)
+    , m_buffer(nullptr)
+    , m_pixelData(nullptr)
     , m_id(id)
     , m_isFree(true)
 {
@@ -34,7 +34,7 @@ SHMBuffer::SHMBuffer(wl_shm* shm, uint32_t width, uint32_t height, uint32_t id)
         return;
     }
 
-    m_pixelData = static_cast<uint8_t*>(mmap(0, m_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
+    m_pixelData = static_cast<uint8_t*>(mmap(nullptr, m_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
     if (m_pixelData == MAP_FAILED)
     {
         LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "SHMBuffer::SHMBuffer mmap failed!");

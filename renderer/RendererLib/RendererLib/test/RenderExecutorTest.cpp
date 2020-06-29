@@ -18,6 +18,7 @@
 #include "SceneUtils/DataLayoutCreationHelper.h"
 #include "RendererEventCollector.h"
 #include "SceneAllocateHelper.h"
+#include "PlatformAbstraction/PlatformMath.h"
 
 namespace ramses_internal {
 using namespace testing;
@@ -36,6 +37,7 @@ namespace
 
     const UInt32 startIndex = 12u;
     const UInt32 indexCount = 13;
+    const UInt32 startVertex = 14u;
 }
 
 typedef std::pair<DataInstanceHandle, DataInstanceHandle> DataInstances;
@@ -52,17 +54,17 @@ MATCHER_P(PermissiveMatrixEq, other, "")
         const Float a = arg.data[index];
         const Float b = other.data[index];
 
-        const Float fDelta = PlatformMath::Abs(a - b);
+        const Float fDelta = std::abs(a - b);
         if (fDelta > 1e-5f)
         {
             Float relativeError = 0.f;
-            if (PlatformMath::Abs(b) > PlatformMath::Abs(a))
+            if (std::abs(b) > std::abs(a))
             {
-                relativeError = PlatformMath::Abs((a - b) / b);
+                relativeError = std::abs((a - b) / b);
             }
             else
             {
-                relativeError = PlatformMath::Abs((a - b) / a);
+                relativeError = std::abs((a - b) / a);
             }
             if (relativeError > 1.e-7f)
             {
@@ -136,14 +138,14 @@ public:
         , fieldProjMatrix         (fakeEffectInputs.fieldProjMatrix        )
     {
         InputIndexVector referencedInputs;
-        scene.preallocateSceneSize(SceneSizeInformation(0u, 0u, 0u, 0u, 0u, 1u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u));
-        uniformLayout = DataLayoutCreationHelper::CreateUniformDataLayoutMatchingEffectInputs(scene, fakeEffectInputs.uniformInputs, referencedInputs, DataLayoutHandle(0u));
+        scene.preallocateSceneSize(SceneSizeInformation(0u, 0u, 0u, 0u, 0u, 1u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u));
+        uniformLayout = DataLayoutCreationHelper::CreateUniformDataLayoutMatchingEffectInputs(scene, fakeEffectInputs.uniformInputs, referencedInputs, ResourceProviderMock::FakeEffectHash, DataLayoutHandle(0u));
 
         DataFieldInfoVector dataFields(3u);
         dataFields[indicesField.asMemoryHandle()] = DataFieldInfo(EDataType_Indices, 1u, EFixedSemantics_Indices);
         dataFields[vertPosField.asMemoryHandle()] = DataFieldInfo(EDataType_Vector3Buffer, 1u, EFixedSemantics_VertexPositionAttribute);
         dataFields[vertTexcoordField.asMemoryHandle()] = DataFieldInfo(EDataType_Vector2Buffer, 1u, EFixedSemantics_VertexTexCoordAttribute);
-        geometryLayout = sceneAllocator.allocateDataLayout(dataFields, DataLayoutHandle(2u));
+        geometryLayout = sceneAllocator.allocateDataLayout(dataFields, ResourceProviderMock::FakeEffectHash, DataLayoutHandle(2u));
     }
 
 protected:
@@ -180,8 +182,8 @@ protected:
     {
         const RenderPassHandle pass = sceneAllocator.allocateRenderPass();
         const NodeHandle cameraNode = sceneAllocator.allocateNode();
-        const auto vpDataLayout = sceneAllocator.allocateDataLayout({ {EDataType_DataReference}, {EDataType_DataReference} });
-        const auto vpDataRefLayout = sceneAllocator.allocateDataLayout({ {EDataType_Vector2I} });
+        const auto vpDataLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType_DataReference}, DataFieldInfo{EDataType_DataReference} }, ResourceProviderMock::FakeEffectHash);
+        const auto vpDataRefLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType_Vector2I} }, ResourceProviderMock::FakeEffectHash);
         const auto vpDataInstance = sceneAllocator.allocateDataInstance(vpDataLayout);
         const auto vpOffsetInstance = sceneAllocator.allocateDataInstance(vpDataRefLayout);
         const auto vpSizeInstance = sceneAllocator.allocateDataInstance(vpDataRefLayout);
@@ -237,8 +239,8 @@ protected:
         // create referenced data instance
         // explicit preallocation needed because here we use DataLayoutCreationHelper which allocates inside,
         // we cannot use scene allocation helper
-        MemoryHandle nextHandle = max(scene.getDataInstanceCount(), scene.getDataLayoutCount());
-        scene.preallocateSceneSize(SceneSizeInformation(0u, 0u, 0u, 0u, 0u, nextHandle + 3u, nextHandle + 3u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u));
+        MemoryHandle nextHandle = std::max(scene.getDataInstanceCount(), scene.getDataLayoutCount());
+        scene.preallocateSceneSize(SceneSizeInformation(0u, 0u, 0u, 0u, 0u, nextHandle + 3u, nextHandle + 3u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u));
         dataRef1 = ramses_internal::DataLayoutCreationHelper::CreateAndBindDataReference(scene, dataInstances.first, fakeEffectInputs.dataRefField1, EDataType_Float, DataLayoutHandle(nextHandle), DataInstanceHandle(nextHandle));
         dataRef2 = ramses_internal::DataLayoutCreationHelper::CreateAndBindDataReference(scene, dataInstances.first, fakeEffectInputs.dataRefField2, EDataType_Float, DataLayoutHandle(nextHandle + 1u), DataInstanceHandle(nextHandle + 1u));
         dataRefMatrix22f = ramses_internal::DataLayoutCreationHelper::CreateAndBindDataReference(scene, dataInstances.first, fakeEffectInputs.dataRefFieldMatrix22f, EDataType_Matrix22F, DataLayoutHandle(nextHandle + 2u), DataInstanceHandle(nextHandle + 2u));
@@ -280,10 +282,9 @@ protected:
         scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Geometry, dataInstances.second);
         scene.setRenderableRenderState(renderable, sceneAllocator.allocateRenderState());
 
-        scene.setRenderableEffect(renderable, ResourceProviderMock::FakeEffectHash);
-
         scene.setRenderableStartIndex(renderable, startIndex);
         scene.setRenderableIndexCount(renderable, indexCount);
+        scene.setRenderableStartVertex(renderable, startVertex);
 
         if (group.isValid())
         {
@@ -377,8 +378,8 @@ protected:
         {
             EXPECT_CALL(device, activateShader(FakeShaderDeviceHandle))                                                                           .RetiresOnSaturation();
         }
-        EXPECT_CALL(device, activateVertexBuffer(FakeVertexBufferDeviceHandle, fakeEffectInputs.vertPosField, 3u))                                                                 .RetiresOnSaturation();
-        EXPECT_CALL(device, activateVertexBuffer(FakeVertexBufferDeviceHandle, fakeEffectInputs.vertTexcoordField, 4u))                                                            .RetiresOnSaturation();
+        EXPECT_CALL(device, activateVertexBuffer(FakeVertexBufferDeviceHandle, fakeEffectInputs.vertPosField, 3u, startVertex))                                                                 .RetiresOnSaturation();
+        EXPECT_CALL(device, activateVertexBuffer(FakeVertexBufferDeviceHandle, fakeEffectInputs.vertTexcoordField, 4u, startVertex))                                                            .RetiresOnSaturation();
         EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefField1, 1, Matcher<const Float*>(Pointee(Eq(0.1f)))))                                             .RetiresOnSaturation();
         EXPECT_CALL(device, setConstant(fieldModelMatrix, 1, Matcher<const Matrix44f*>(Pointee(PermissiveMatrixEq(expectedModelMatrix)))))                  .RetiresOnSaturation();
         EXPECT_CALL(device, setConstant(fieldRendererViewMatrix, 1, Matcher<const Matrix44f*>(Pointee(PermissiveMatrixEq(expectedRendererViewMatrix)))))    .RetiresOnSaturation();

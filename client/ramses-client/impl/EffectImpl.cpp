@@ -20,7 +20,7 @@
 namespace ramses
 {
     EffectImpl::EffectImpl(ramses_internal::ResourceHashUsage hashUsage, RamsesClientImpl& client, const char* effectname)
-        : ResourceImpl(ERamsesObjectType_Effect, hashUsage, client, effectname)
+        : ResourceImpl(ERamsesObjectType_Effect, std::move(hashUsage), client, effectname)
     {
     }
 
@@ -171,9 +171,7 @@ namespace ramses
     {
         const uint32_t index = getEffectInputIndex(m_effectUniformInputs, inputName);
         if (index == InvalidInputIndex)
-        {
-            return inputNotFoundVerboseError("findUniformInput", "uniform", inputName);
-        }
+            return addErrorEntry((ramses_internal::StringOutputStream() << "Effect::findUniformInput: failed, uniform input '" << inputName << "' could not be found in effect '" << getName()).c_str());
 
         const ramses_internal::EffectInputInformation& effectInputInfo = m_effectUniformInputs[index];
         initializeEffectInputData(inputImpl, effectInputInfo, index);
@@ -185,21 +183,12 @@ namespace ramses
     {
         const uint32_t index = getEffectInputIndex(m_effectAttributeInputs, inputName);
         if (index == InvalidInputIndex)
-        {
-            return inputNotFoundVerboseError("findAttributeInput", "attribute", inputName);
-        }
+            return addErrorEntry((ramses_internal::StringOutputStream() << "Effect::findAttributeInput: failed, attribute input '" << inputName << "' could not be found in effect '" << getName()).c_str());
 
         const ramses_internal::EffectInputInformation& effectInputInfo = m_effectAttributeInputs[index];
         initializeEffectInputData(inputImpl, effectInputInfo, index);
 
         return StatusOK;
-    }
-
-    status_t EffectImpl::inputNotFoundVerboseError(const char* sourceMethod, const char* inputType, const char* inputName) const
-    {
-        ramses_internal::StringOutputStream error;
-        error << "Effect: " << sourceMethod << " failed, " << inputType << " input '" << inputName << "' could not be found in effect '" << getName() << "'!";
-        return addStatusEntry(error.c_str());
     }
 
     const ramses_internal::EffectInputInformationVector& EffectImpl::getUniformInputInformation() const

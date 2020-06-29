@@ -11,6 +11,7 @@
 #include "Collections/IOutputStream.h"
 #include "Collections/IInputStream.h"
 #include "Collections/StringOutputStream.h"
+#include "PlatformAbstraction/PlatformStringUtils.h"
 #include "Utils/LogMacros.h"
 #include "ramses-sdk-build-config.h"
 
@@ -23,7 +24,7 @@ namespace ramses_internal
             LOG_INFO(CONTEXT_CLIENT, "RamsesVersion::WriteToStream: Version: " << versionString << " Git Hash: " << gitHash);
             StringOutputStream out;
             out << "[RamsesVersion:" << versionString << "]\n[GitHash:" << gitHash << "]\n";
-            stream.write(out.c_str(), out.length());
+            stream.write(out.c_str(), out.size());
         }
 
         static bool ReadUntilNewline(IInputStream& stream, UInt32 readLimit, String& out)
@@ -33,7 +34,7 @@ namespace ramses_internal
             {
                 Char character = 0;
                 stream.read(&character, 1);
-                if (stream.getState() != EStatus_RAMSES_OK)
+                if (stream.getState() != EStatus::Ok)
                 {
                     break;
                 }
@@ -48,8 +49,8 @@ namespace ramses_internal
 
         static bool ExpectString(const String& inputString, UInt& matchIndexInOut, const char* expectedString)
         {
-            const UInt expectedLength = PlatformStringUtils::StrLen(expectedString);
-            if (expectedLength + matchIndexInOut > inputString.getLength())
+            const UInt expectedLength = std::strlen(expectedString);
+            if (expectedLength + matchIndexInOut > inputString.size())
                 return false;
 
             for (UInt i = 0; i < expectedLength; ++i)
@@ -76,7 +77,7 @@ namespace ramses_internal
         static bool ExpectHexString(const String& inputString, UInt& matchIndexInOut)
         {
             const UInt startIdx = matchIndexInOut;
-            while (matchIndexInOut < inputString.getLength() && std::isxdigit(inputString[matchIndexInOut]))
+            while (matchIndexInOut < inputString.size() && std::isxdigit(inputString[matchIndexInOut]))
                 ++matchIndexInOut;
             return startIdx != matchIndexInOut;
         }
@@ -94,14 +95,14 @@ namespace ramses_internal
                 return false;
 
             const UInt trailingVersionStart = idx;
-            while (idx < versionString.getLength() && versionString[idx] != ']')
+            while (idx < versionString.size() && versionString[idx] != ']')
                 ++idx;
             if (idx == trailingVersionStart)  // may not be empty
                 return false;
             outVersion.versionString = versionString.substr(versionStart, idx - versionStart);
 
             if (!ExpectString(versionString, idx, "]") ||
-                idx != versionString.getLength())
+                idx != versionString.size())
                 return false;
 
             return true;
@@ -119,7 +120,7 @@ namespace ramses_internal
             outVersion.gitHash = gitHashString.substr(hashStart, idx - hashStart);
 
             if (!ExpectString(gitHashString, idx, "]") ||
-                idx != gitHashString.getLength())
+                idx != gitHashString.size())
                 return false;
 
             return true;

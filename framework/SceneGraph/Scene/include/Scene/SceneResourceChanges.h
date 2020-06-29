@@ -11,8 +11,6 @@
 
 #include "SceneAPI/SceneTypes.h"
 #include "Scene/SceneActionCollection.h"
-#include "Transfer/ResourceTypes.h"
-#include "Collections/Vector.h"
 #include "Collections/String.h"
 
 namespace ramses_internal
@@ -48,19 +46,23 @@ namespace ramses_internal
 
     struct SceneResourceAction
     {
-        SceneResourceAction(MemoryHandle handle_ = InvalidMemoryHandle, ESceneResourceAction action_ = ESceneResourceAction_Invalid)
+        SceneResourceAction()
+            : SceneResourceAction(InvalidMemoryHandle, ESceneResourceAction_Invalid)
+        {}
+
+        SceneResourceAction(MemoryHandle handle_, ESceneResourceAction action_)
             : handle(handle_)
             , action(action_)
         {
         }
 
-        Bool operator!=(const SceneResourceAction& other) const
+        bool operator!=(const SceneResourceAction& other) const
         {
             return handle != other.handle
                 || action != other.action;
         }
 
-        Bool operator==(const SceneResourceAction& other) const
+        bool operator==(const SceneResourceAction& other) const
         {
             return !(*this != other);
         }
@@ -74,7 +76,7 @@ namespace ramses_internal
     struct SceneResourceChanges
     {
         void   clear();
-        Bool   empty() const;
+        bool   empty() const;
         void   putToSceneAction(SceneActionCollection& action) const;
         void   getFromSceneAction(SceneActionCollection::SceneActionReader& action);
         String asString() const;

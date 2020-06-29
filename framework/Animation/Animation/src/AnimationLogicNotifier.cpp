@@ -8,6 +8,7 @@
 
 #include "Animation/AnimationLogicNotifier.h"
 #include "Animation/AnimationLogicListener.h"
+#include <assert.h>
 
 namespace ramses_internal
 {

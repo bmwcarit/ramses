@@ -30,7 +30,7 @@ namespace ramses_internal
         {
             m_val[0][0] = val;
         }
-        Bool isPropertyValid0() const
+        bool isPropertyValid0() const
         {
             return true;
         }
@@ -43,7 +43,7 @@ namespace ramses_internal
         {
             m_val[0][handle] = val;
         }
-        Bool isPropertyValid1(HandleType handle) const
+        bool isPropertyValid1(HandleType handle) const
         {
             return handle < NumHandles;
         }
@@ -56,7 +56,7 @@ namespace ramses_internal
         {
             m_val[handle2][handle] = val;
         }
-        Bool isPropertyValid2(HandleType handle) const
+        bool isPropertyValid2(HandleType handle) const
         {
             return handle < NumHandles;
         }
@@ -175,7 +175,7 @@ namespace ramses_internal
         }
     };
 
-    typedef AnimationDataBindTestContainer<Bool>    AnimationDataBindTestBool;
+    typedef AnimationDataBindTestContainer<bool>    AnimationDataBindTestBool;
     typedef AnimationDataBindTestContainer<Int32>   AnimationDataBindTestInt32;
     typedef AnimationDataBindTestContainer<Float>   AnimationDataBindTestFloat;
     typedef AnimationDataBindTestContainer<Vector2> AnimationDataBindTestVector2;

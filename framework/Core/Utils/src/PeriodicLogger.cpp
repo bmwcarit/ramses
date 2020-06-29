@@ -10,7 +10,6 @@
 #include "Utils/LogMacros.h"
 #include "ramses-sdk-build-config.h"
 #include "PlatformAbstraction/PlatformLock.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "PlatformAbstraction/PlatformTime.h"
 
 namespace ramses_internal
@@ -130,7 +129,7 @@ namespace ramses_internal
 
         LOG_INFO(CONTEXT_PERIODIC, "Version: " << ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING << " Hash:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH
             << " Commit:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_COUNT << " Type:" << ::ramses_sdk::RAMSES_SDK_CMAKE_BUILD_TYPE
-            << " Env:" << ::ramses_sdk::RAMSES_SDK_BUILD_ENV_VERSION_INFO_FULL_ESCAPED
+            << " Env:" << ::ramses_sdk::RAMSES_SDK_BUILD_ENV_VERSION_INFO_FULL
             << " SyncT:" << asMilliseconds(syncNow) << "ms (dtSteady:" << steadyDiff << " - dtSync:" << syncDiff << " -> " << (steadyDiff - syncDiff) << ")"
             << " PUp:" << pUp <<  " RUp:" << rUp
             << " RInit:" << m_numberOfRamsesInstancesStartedInProcess << " RParallel:" << m_numberOfRamsesInstancesCurrentlyActive);
@@ -145,6 +144,10 @@ namespace ramses_internal
                     UInt32 numberTimeIntervals = m_statisticCollection.getNumberTimeIntervalsSinceLastSummaryReset();
                     output << "msgIn ";
                     logStatisticSummaryEntry(output, m_statisticCollection.statMessagesReceived.getSummary(), numberTimeIntervals);
+                    output << " srMsgIn ";
+                    logStatisticSummaryEntry(output, m_statisticCollection.statSendResourceMessagesReceived.getSummary(), numberTimeIntervals);
+                    output << " rrMsgIn ";
+                    logStatisticSummaryEntry(output, m_statisticCollection.statRequestResourceMessagesReceived.getSummary(), numberTimeIntervals);
                     output << " msgO ";
                     logStatisticSummaryEntry(output, m_statisticCollection.statMessagesSent.getSummary(), numberTimeIntervals);
                     output << " res+ ";
@@ -155,6 +158,10 @@ namespace ramses_internal
                     logStatisticSummaryEntry(output, m_statisticCollection.statResourcesNumber.getSummary(), numberTimeIntervals);
                     output << " resOS ";
                     logStatisticSummaryEntry(output, m_statisticCollection.statResourcesSentSize.getSummary(), numberTimeIntervals);
+                    output << " resONr ";
+                    logStatisticSummaryEntry(output, m_statisticCollection.statResourcesSentNumber.getSummary(), numberTimeIntervals);
+                    output << " resINr ";
+                    logStatisticSummaryEntry(output, m_statisticCollection.statResourcesReceivedNumber.getSummary(), numberTimeIntervals);
                     output << " resF ";
                     logStatisticSummaryEntry(output, m_statisticCollection.statResourcesLoadedFromFileNumber.getSummary(), numberTimeIntervals);
                     output << " resFS ";
@@ -163,7 +170,7 @@ namespace ramses_internal
 
         m_statisticCollection.resetSummaries();
 
-        if (m_statisticCollectionScenes.count() > 0)
+        if (m_statisticCollectionScenes.size() > 0)
         {
             LOG_INFO_F(CONTEXT_PERIODIC, ([&](ramses_internal::StringOutputStream& output) {
                         for (auto entry : m_statisticCollectionScenes)
@@ -184,6 +191,8 @@ namespace ramses_internal
                             logStatisticSummaryEntry(output, entry.value->statSceneActionsGeneratedSize.getSummary(), numberTimeIntervals);
                             output << " actO ";
                             logStatisticSummaryEntry(output, entry.value->statSceneActionsSent.getSummary(), numberTimeIntervals);
+                            output << " actSkp ";
+                            logStatisticSummaryEntry(output, entry.value->statSceneActionsSentSkipped.getSummary(), numberTimeIntervals);
                             output << " ";
 
                             entry.value->resetSummaries();

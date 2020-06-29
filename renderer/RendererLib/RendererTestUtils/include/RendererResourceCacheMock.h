@@ -20,10 +20,10 @@ class RendererResourceCacheMock : public IRendererResourceCache
 {
 public:
 
-    MOCK_CONST_METHOD2(hasResource, bool(ResourceContentHash, UInt32&));
-    MOCK_CONST_METHOD3(getResourceData, bool(ResourceContentHash, UInt8*, UInt32));
-    MOCK_CONST_METHOD4(shouldResourceBeCached, bool(ResourceContentHash, UInt32, ResourceCacheFlag, SceneId));
-    MOCK_METHOD5(storeResource, void(ResourceContentHash, const UInt8*, UInt32, ResourceCacheFlag, SceneId));
+    MOCK_METHOD(bool, hasResource, (ResourceContentHash, UInt32&), (const, override));
+    MOCK_METHOD(bool, getResourceData, (ResourceContentHash, UInt8*, UInt32), (const, override));
+    MOCK_METHOD(bool, shouldResourceBeCached, (ResourceContentHash, UInt32, ResourceCacheFlag, SceneId), (const, override));
+    MOCK_METHOD(void, storeResource, (ResourceContentHash, const UInt8*, UInt32, ResourceCacheFlag, SceneId), (override));
 };
 }
 #endif

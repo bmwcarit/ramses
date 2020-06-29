@@ -26,7 +26,7 @@ namespace ramses_internal
         virtual TDataBindID getBindID() const = 0;
         virtual MemoryHandle getHandle() const = 0;
         virtual MemoryHandle getHandle2() const = 0;
-        virtual Bool isPropertyValid() const = 0;
+        virtual bool isPropertyValid() const = 0;
         virtual void setInitialValue() = 0;
         virtual void dispatch(const AnimationProcessDataDispatch& dispatcher) const = 0;
     };
@@ -48,7 +48,7 @@ namespace ramses_internal
         virtual TDataBindID getBindID() const override;
         virtual MemoryHandle getHandle() const override;
         virtual MemoryHandle getHandle2() const override;
-        virtual Bool isPropertyValid() const override;
+        virtual bool isPropertyValid() const override;
         virtual void setInitialValue() override;
         virtual void dispatch(const AnimationProcessDataDispatch& dispatcher) const override;
 
@@ -74,7 +74,7 @@ namespace ramses_internal
         virtual TDataBindID getBindID() const override;
         virtual MemoryHandle getHandle() const override;
         virtual MemoryHandle getHandle2() const override;
-        virtual Bool isPropertyValid() const override;
+        virtual bool isPropertyValid() const override;
         virtual void setInitialValue() override;
         virtual void dispatch(const AnimationProcessDataDispatch& dispatcher) const override;
 
@@ -100,7 +100,7 @@ namespace ramses_internal
         virtual TDataBindID getBindID() const override;
         virtual MemoryHandle getHandle() const override;
         virtual MemoryHandle getHandle2() const override;
-        virtual Bool isPropertyValid() const override;
+        virtual bool isPropertyValid() const override;
         virtual void setInitialValue() override;
         virtual void dispatch(const AnimationProcessDataDispatch& dispatcher) const override;
 
@@ -159,7 +159,7 @@ namespace ramses_internal
     }
 
     template < typename ContainerType, typename EDataType >
-    inline Bool AnimationDataBind<ContainerType, EDataType, TypeNone, TypeNone>::isPropertyValid() const
+    inline bool AnimationDataBind<ContainerType, EDataType, TypeNone, TypeNone>::isPropertyValid() const
     {
         return m_dataBind.isPropertyValid();
     }
@@ -240,7 +240,7 @@ namespace ramses_internal
     }
 
     template < typename ContainerType, typename EDataType, typename HandleType >
-    inline Bool AnimationDataBind<ContainerType, EDataType, HandleType, TypeNone>::isPropertyValid() const
+    inline bool AnimationDataBind<ContainerType, EDataType, HandleType, TypeNone>::isPropertyValid() const
     {
         return m_dataBind.isPropertyValid();
     }
@@ -321,7 +321,7 @@ namespace ramses_internal
     }
 
     template < typename ContainerType, typename EDataType, typename HandleType, typename HandleType2 >
-    inline Bool AnimationDataBind<ContainerType, EDataType, HandleType, HandleType2>::isPropertyValid() const
+    inline bool AnimationDataBind<ContainerType, EDataType, HandleType, HandleType2>::isPropertyValid() const
     {
         return m_dataBind.isPropertyValid();
     }

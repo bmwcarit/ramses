@@ -31,21 +31,20 @@
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/UniformInput.h"
 #include "RamsesObjectTypeUtils.h"
-#include "TextureUtils.h"
 #include "Math3d/Vector3.h"
 #include "Utils/File.h"
 
 namespace ramses_internal
 {
     FileLoadingScene::FileLoadingScene(ramses::RamsesClient& clientForLoading, UInt32 state, ramses::sceneId_t sceneId, const Vector3& cameraPosition, const String& folder, const ramses::RamsesFrameworkConfig& config)
-        : m_createdScene(NULL)
+        : m_createdScene(nullptr)
     {
         switch (state)
         {
         case CREATE_SAVE_DESTROY_LOAD_USING_SEPARATE_CLIENT:
         {
             ramses::RamsesFramework separateFramework(config);
-            ramses::RamsesClient separateClient("ramses-test-client-fileLoadingScene-createFiles", separateFramework);
+            ramses::RamsesClient& separateClient(*separateFramework.createClient("ramses-test-client-fileLoadingScene-createFiles"));
             createFiles(separateClient, sceneId, cameraPosition, folder);
             loadFromFiles(clientForLoading, folder);
             cleanupFiles(folder);
@@ -92,8 +91,8 @@ namespace ramses_internal
 
         uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
         const ramses::UInt16Array* indices = client.createConstUInt16Array(6, indicesArray);
-        ramses::Texture2D* texture = ramses::TextureUtils::CreateTextureResourceFromPng("res/ramses-test-client-file-loading-texture.png", client);
-        assert(texture != NULL);
+        ramses::Texture2D* texture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-file-loading-texture.png", client);
+        assert(texture != nullptr);
 
         textureAssets.add(indices);
         textureAssets.add(texture);

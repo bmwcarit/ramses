@@ -406,9 +406,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t SplineImpl::validate(uint32_t indent) const
+    status_t SplineImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        status_t status = AnimationObjectImpl::validate(indent);
+        status_t status = AnimationObjectImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
 
         const ramses_internal::SplineBase& spline = *getIAnimationSystem().getSpline(m_splineHandle);

@@ -10,7 +10,6 @@
 #define RAMSES_CLIENTRESOURCEUPLOADINGMANAGER_H
 
 #include "RendererLib/ResourceDescriptor.h"
-#include "Transfer/ResourceTypes.h"
 #include "Collections/HashMap.h"
 
 namespace ramses_internal

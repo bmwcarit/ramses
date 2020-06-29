@@ -66,6 +66,7 @@ class Target:
         self.unique_screenshot_prefix = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
         self.target_screenshot_counter = 0
         self.main_screen_id = -1
+        self.supportsUnbuffer = False
 
         if targetInfo.systemMonitorClassname is not None:
             self.systemMonitor = targetInfo.systemMonitorClassname(resultDir)
@@ -123,17 +124,22 @@ class Target:
         daemon.initialisation_message_to_look_for("Ramsh commands registered")
         return daemon
 
-    def start_renderer(self, applicationName, args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}, dltAppID='REND', waitForDisplayManagerRamsh=True):
-        extendedArgs = "--startVisible -scc " + args
+    def start_renderer(self, applicationName, args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}, dltAppID='REND', waitForDisplayManagerRamsh=True, automap=False, startVisible=True):
+        extendedArgs = args
+        if startVisible:
+            extendedArgs += " --startVisible"
+        if self.systemCompositorControllerSupported:
+            extendedArgs += "  -scc "
         if "--waylandIviLayerId" not in args and "-lid" not in args:
-                extendedArgs += " -lid {}".format(DEFAULT_TEST_LAYER)
-
+            extendedArgs += " -lid {}".format(DEFAULT_TEST_LAYER)
         if "--waylandIviSurfaceID" not in args and "-sid" not in args:
-                extendedArgs += " -sid {}".format(DEFAULT_TEST_SURFACE)
+            extendedArgs += " -sid {}".format(DEFAULT_TEST_SURFACE)
+        if not automap:
+            extendedArgs += " -nomap"
 
         renderer = self._start_ramses_application(applicationName, extendedArgs, workingDirectory, nameExtension, env, dltAppID)
         if (waitForDisplayManagerRamsh):
-            renderer.initialisation_message_to_look_for("Ramsh commands registered from DisplayManager")
+            renderer.initialisation_message_to_look_for("Ramsh commands registered from RendererMate")
         else:
             renderer.initialisation_message_to_look_for("Ramsh commands registered from RamsesRenderer")
         return renderer
@@ -170,7 +176,7 @@ class Target:
         return application
 
     @abstractmethod
-    def start_application(self, applicationName, args="", binaryDirectoryOnTarget=None, nameExtension="", env={}, dltAppID=None):
+    def start_application(self, applicationName, args="", binaryDirectoryOnTarget=None, nameExtension="", env={}, dltAppID=None, prepend_unbuffer=False):
         """ Starts an application
         binaryDirectoryOnTarget: use None for applications in system path
         :param dltAppID dlt app id that can be used to capture the output of the application and to send dlt injections.

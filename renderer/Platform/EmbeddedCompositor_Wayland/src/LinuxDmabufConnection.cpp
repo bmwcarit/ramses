@@ -19,6 +19,7 @@
 #include "EmbeddedCompositor_Wayland/LinuxDmabufConnection.h"
 #include "EmbeddedCompositor_Wayland/LinuxDmabufParams.h"
 #include "Utils/LogMacros.h"
+#include "Utils/Warnings.h"
 
 namespace ramses_internal
 {

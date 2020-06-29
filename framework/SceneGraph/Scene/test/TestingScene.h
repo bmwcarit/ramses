@@ -28,7 +28,7 @@ namespace ramses_internal
         {
             if (preallocate)
             {
-                scene.preallocateSceneSize(SceneSizeInformation(100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u));
+                scene.preallocateSceneSize(SceneSizeInformation(100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u));
             }
 
             scene.allocateNode(0u, parent);
@@ -69,8 +69,9 @@ namespace ramses_internal
             scene.setRenderableStartIndex(renderable, startIndex);
             scene.setRenderableIndexCount(renderable, indexCount);
             scene.setRenderableRenderState(renderable, renderState);
-            scene.setRenderableVisibility(renderable, false);
+            scene.setRenderableVisibility(renderable, EVisibilityMode::Invisible);
             scene.setRenderableInstanceCount(renderable, renderableInstanceCount);
+            scene.setRenderableStartVertex(renderable, startVertex);
 
             scene.allocateRenderable(child, renderable2);
 
@@ -82,7 +83,7 @@ namespace ramses_internal
                 DataFieldInfo(EDataType_TextureSampler),
                 DataFieldInfo(EDataType_DataReference)
             };
-            scene.allocateDataLayout(uniformLayoutDataFields, uniformLayout);
+            scene.allocateDataLayout(uniformLayoutDataFields, effectHash, uniformLayout);
 
             DataFieldInfoVector geometryLayoutDataFields{
                 DataFieldInfo(EDataType_Indices),
@@ -90,9 +91,10 @@ namespace ramses_internal
                 DataFieldInfo(EDataType_FloatBuffer),
                 DataFieldInfo(EDataType_Vector2Buffer) //unused
             };
-            scene.allocateDataLayout(geometryLayoutDataFields, vertexLayout);
+            scene.allocateDataLayout(geometryLayoutDataFields, effectHash, vertexLayout);
 
-            scene.allocateDataInstance(scene.allocateDataLayout({ {ramses_internal::EDataType_Vector2I}, {ramses_internal::EDataType_Vector2I} }), cameraVPDataInstance);
+            scene.allocateDataInstance(scene.allocateDataLayout({ ramses_internal::DataFieldInfo{ramses_internal::EDataType_Vector2I}, ramses_internal::DataFieldInfo{ramses_internal::EDataType_Vector2I} },
+                                                                ResourceContentHash::Invalid()), cameraVPDataInstance);
 
             scene.allocateStreamTexture(87u, ResourceContentHash(234, 0), streamTexture);
             scene.setForceFallbackImage(streamTexture, true);
@@ -117,7 +119,6 @@ namespace ramses_internal
             scene.setDataResource(geometryData, DataFieldHandle(1u), vertexArrayHash, DataBufferHandle::Invalid(), vertexArrayDivisor);
             scene.setDataResource(geometryData, DataFieldHandle(2u), ResourceContentHash::Invalid(), vertexDataBuffer, vertexArrayDivisor);
 
-            scene.setRenderableEffect(renderable, effectHash);
             scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Uniforms, uniformData);
             scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Geometry, geometryData);
 
@@ -171,10 +172,20 @@ namespace ramses_internal
             scene.allocateDataBuffer(EDataBufferType::VertexBuffer, EDataType_Float, 32, vertexDataBuffer);
             scene.updateDataBuffer(vertexDataBuffer, 0u, 3u, std::array<Byte, 3>{{0x0A, 0x1B, 0x2C}}.data());
 
+            scene.allocatePickableObject(vertexDataBuffer, child, PickableObjectId{ 0u }, pickableHandle);
+            scene.setPickableObjectId(pickableHandle, pickableId);
+            scene.setPickableObjectCamera(pickableHandle, camera);
+            scene.setPickableObjectEnabled(pickableHandle, false);
+
             scene.allocateTextureBuffer(ETextureFormat_R8, { {8u, 8u}, {4u, 4u}, {2u, 2u} }, texture2DBuffer);
             scene.updateTextureBuffer(texture2DBuffer, 0u, 3u, 4u, 1u, 3u, std::array<Byte, 3>{ {34u, 35u, 36u}}.data()); //partial update level 0
             scene.updateTextureBuffer(texture2DBuffer, 0u, 3u, 4u, 1u, 2u, std::array<Byte, 2>{ {134u, 135u}}.data()); //override partial update level 0
             scene.updateTextureBuffer(texture2DBuffer, 2u, 0u, 0u, 2u, 2u, std::array<Byte, 4>{ {00u, 10u, 01u, 11u}}.data()); //full update level 2
+
+            scene.allocateSceneReference(sceneRefSceneId, sceneRef);
+            scene.requestSceneReferenceState(sceneRef, RendererSceneState::Ready);
+            scene.requestSceneReferenceFlushNotifications(sceneRef, true);
+            scene.setSceneReferenceRenderOrder(sceneRef, -13);
         }
 
         const SCENE& getScene() const
@@ -201,6 +212,8 @@ namespace ramses_internal
             CheckDataBuffersEquivalentTo<OTHERSCENE>(otherScene);
             CheckTextureBuffersEquivalentTo<OTHERSCENE>(otherScene);
             CheckDataSlotsEquivalentTo<OTHERSCENE>(otherScene);
+            CheckPickableObjectsEquivalentTo<OTHERSCENE>(otherScene);
+            CheckSceneReferencesEquivalentTo<OTHERSCENE>(otherScene);
         }
 
         template <typename OTHERSCENE>
@@ -250,12 +263,12 @@ namespace ramses_internal
             EXPECT_EQ(childChild2, renderableData.node);
             EXPECT_EQ(startIndex, renderableData.startIndex);
             EXPECT_EQ(indexCount, renderableData.indexCount);
-            EXPECT_EQ(effectHash, renderableData.effectResource);
             EXPECT_EQ(uniformData, renderableData.dataInstances[ERenderableDataSlotType_Uniforms]);
             EXPECT_EQ(geometryData, renderableData.dataInstances[ERenderableDataSlotType_Geometry]);
             EXPECT_EQ(renderState, renderableData.renderState);
-            EXPECT_FALSE(renderableData.isVisible);
+            EXPECT_EQ(EVisibilityMode::Invisible, renderableData.visibilityMode);
             EXPECT_EQ(renderableInstanceCount, renderableData.instanceCount);
+            EXPECT_EQ(startVertex, renderableData.startVertex);
         }
 
         template <typename OTHERSCENE>
@@ -300,10 +313,12 @@ namespace ramses_internal
             EXPECT_EQ(EDataType_Matrix44F, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(3)).dataType);
             EXPECT_EQ(EDataType_TextureSampler, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(4)).dataType);
             EXPECT_EQ(EDataType_DataReference, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(5)).dataType);
+            EXPECT_EQ(effectHash, otherScene.getDataLayout(uniformLayout).getEffectHash());
             EXPECT_EQ(EDataType_Indices, otherScene.getDataLayout(vertexLayout).getField(DataFieldHandle(0)).dataType);
             EXPECT_EQ(EDataType_Vector4Buffer, otherScene.getDataLayout(vertexLayout).getField(DataFieldHandle(1)).dataType);
             EXPECT_EQ(EDataType_FloatBuffer, otherScene.getDataLayout(vertexLayout).getField(DataFieldHandle(2)).dataType);
             EXPECT_EQ(EDataType_Vector2Buffer, otherScene.getDataLayout(vertexLayout).getField(DataFieldHandle(3)).dataType);
+            EXPECT_EQ(effectHash, otherScene.getDataLayout(vertexLayout).getEffectHash());
             // check element counts
             EXPECT_EQ(1u, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(0)).elementCount);
             EXPECT_EQ(2u, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(1)).elementCount);
@@ -580,6 +595,29 @@ namespace ramses_internal
             EXPECT_EQ(samplerWithTextureResource, dataSlot.attachedTextureSampler);
         }
 
+        template <typename OTHERSCENE>
+        void CheckPickableObjectsEquivalentTo(const OTHERSCENE& otherScene) const
+        {
+            EXPECT_TRUE(otherScene.isPickableObjectAllocated(pickableHandle));
+            const PickableObject& pickableObject = otherScene.getPickableObject(pickableHandle);
+            EXPECT_EQ(vertexDataBuffer, pickableObject.geometryHandle);
+            EXPECT_EQ(child, pickableObject.nodeHandle);
+            EXPECT_EQ(camera, pickableObject.cameraHandle);
+            EXPECT_EQ(pickableId, pickableObject.id);
+            EXPECT_FALSE(pickableObject.isEnabled);
+        }
+
+        template <typename OTHERSCENE>
+        void CheckSceneReferencesEquivalentTo(const OTHERSCENE& otherScene) const
+        {
+            EXPECT_TRUE(otherScene.isSceneReferenceAllocated(sceneRef));
+            const auto& sr = otherScene.getSceneReference(sceneRef);
+            EXPECT_EQ(sceneRefSceneId, sr.sceneId);
+            EXPECT_EQ(RendererSceneState::Ready, sr.requestedState);
+            EXPECT_EQ(-13, sr.renderOrder);
+            EXPECT_TRUE(sr.flushNotifications);
+        }
+
         SCENE                       scene;
 
         const ResourceContentHash   indexArrayHash                  {111u, 0};
@@ -590,6 +628,7 @@ namespace ramses_internal
         const UInt32                vertexArrayDivisor              = 6u;
         const UInt32                startIndex                      = 12u;
         const UInt32                indexCount                      = 13u;
+        const UInt32                startVertex                     = 14u;
         const Vector3               t1Translation                   {1, 2, 3};
         const Vector3               t1Rotation                      {4, 5, 6};
         const Vector3               t1Scaling                       {7,8, 9};
@@ -643,6 +682,10 @@ namespace ramses_internal
         const DataBufferHandle       indexDataBuffer                { 65u };
         const DataBufferHandle       vertexDataBuffer               { 66u };
         const TextureBufferHandle    texture2DBuffer                { 67u };
+        const PickableObjectHandle   pickableHandle                 { 68u };
+        const PickableObjectId       pickableId                     { 69u };
+        const SceneReferenceHandle   sceneRef                       { 70u };
+        const SceneId                sceneRefSceneId                { 123 };
     };
 }
 

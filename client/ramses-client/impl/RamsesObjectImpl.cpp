@@ -108,9 +108,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t RamsesObjectImpl::validate(uint32_t indent) const
+    status_t RamsesObjectImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        const status_t status = StatusObjectImpl::validate(indent);
+        const status_t status = StatusObjectImpl::validate(indent, visitedObjects);
         ramses_internal::StringOutputStream msg;
         msg << RamsesObjectTypeUtils::GetRamsesObjectTypeName(getType()) << ": '" << getName() << "'";
         addValidationObjectName(indent, msg.c_str());

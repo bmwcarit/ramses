@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "TaskFramework/EnqueueOnlyOneAtATimeQueue.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "TaskFramework/TaskFinishHandlerDecorator.h"
 #include "PlatformAbstraction/PlatformThread.h"
 
@@ -30,7 +29,7 @@ namespace ramses_internal
         }
     }
 
-    Bool EnqueueOnlyOneAtATimeQueue::enqueue(ITask& Task)
+    bool EnqueueOnlyOneAtATimeQueue::enqueue(ITask& Task)
     {
         PlatformGuard guard(mlock);
         if (m_acceptingTasks)

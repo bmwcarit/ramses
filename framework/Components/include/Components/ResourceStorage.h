@@ -16,7 +16,6 @@
 #include "SceneAPI/ResourceContentHash.h"
 #include "Collections/HashMap.h"
 #include "Resource/ResourceInfo.h"
-#include "Transfer/ResourceTypes.h"
 
 namespace ramses_internal
 {
@@ -31,15 +30,15 @@ namespace ramses_internal
             ResourceContentHash* hash;
             const IResource* resource;
             ResourceInfo resourceInfo;
-            Bool deletionAllowed;
+            bool deletionAllowed;
         };
     public:
-        ResourceStorage(PlatformLock& lockToUse);
+        explicit ResourceStorage(PlatformLock& lockToUse);
         virtual ~ResourceStorage();
 
         void setListener(IResourceStorageChangeListener& listener);
         ResourceInfoVector getAllResourceInfo() const;
-        ManagedResource manageResource(const IResource& resource, Bool deletionAllowed = false);
+        ManagedResource manageResource(const IResource& resource, bool deletionAllowed = false);
         ManagedResourceVector getResources();
         ManagedResource getResource(ResourceContentHash hash);
         ResourceHashUsage getResourceHashUsage(const ResourceContentHash& hash);

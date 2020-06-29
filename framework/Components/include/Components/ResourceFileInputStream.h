@@ -17,7 +17,7 @@ namespace ramses_internal
     class ResourceFileInputStream
     {
     public:
-        ResourceFileInputStream(const String& resourceFileName)
+        explicit ResourceFileInputStream(const String& resourceFileName)
             : resourceFile(resourceFileName)
             , resourceStream(resourceFile)
         {}
@@ -34,7 +34,7 @@ namespace ramses_internal
         BinaryFileInputStream resourceStream;
     };
 
-    typedef PlatformSharedPointer<ResourceFileInputStream> ResourceFileInputStreamSPtr;
+    typedef std::shared_ptr<ResourceFileInputStream> ResourceFileInputStreamSPtr;
 }
 
 #endif

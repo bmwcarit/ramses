@@ -66,7 +66,7 @@ namespace ramses
     status_t GeometryBindingImpl::serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const
     {
         CHECK_RETURN_ERR(SceneObjectImpl::serialize(outStream, serializationContext));
-        resourceId_t effectResID = InvalidResourceId;
+        resourceId_t effectResID;
         if (nullptr != m_effectImpl)
         {
             effectResID = m_effectImpl->getResourceId();
@@ -86,7 +86,7 @@ namespace ramses
         resourceId_t effectResID;
         inStream >> effectResID.highPart;
         inStream >> effectResID.lowPart;
-        if (effectResID != InvalidResourceId)
+        if (effectResID.isValid())
         {
             Resource* rImpl = getClientImpl().getHLResource_Threadsafe(effectResID);
             if (rImpl)
@@ -106,17 +106,17 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t GeometryBindingImpl::validate(uint32_t indent) const
+    status_t GeometryBindingImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        status_t status = SceneObjectImpl::validate(indent);
+        status_t status = SceneObjectImpl::validate(indent, visitedObjects);
 
-        const status_t effectStatus = validateEffect(indent);
+        const status_t effectStatus = validateEffect(indent, visitedObjects);
         if (StatusOK != effectStatus)
         {
             status = effectStatus;
         }
 
-        const status_t attributeStatus = validateAttribute(indent);
+        const status_t attributeStatus = validateAttribute(indent, visitedObjects);
         if (StatusOK != attributeStatus)
         {
             status = attributeStatus;
@@ -125,7 +125,7 @@ namespace ramses
         return status;
     }
 
-    status_t GeometryBindingImpl::validateEffect(uint32_t indent) const
+    status_t GeometryBindingImpl::validateEffect(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
         ResourceIteratorImpl iter(getClientImpl(), ERamsesObjectType_Effect);
         RamsesObject* ramsesObject = iter.getNext();
@@ -134,7 +134,7 @@ namespace ramses
             const Effect& effect = RamsesObjectTypeUtils::ConvertTo<Effect>(*ramsesObject);
             if (&effect.impl == m_effectImpl)
             {
-                return addValidationOfDependentObject(indent, *m_effectImpl);
+                return addValidationOfDependentObject(indent, *m_effectImpl, visitedObjects);
             }
 
             ramsesObject = iter.getNext();
@@ -144,7 +144,7 @@ namespace ramses
         return getValidationErrorStatus();
     }
 
-    status_t GeometryBindingImpl::validateAttribute(uint32_t indent) const
+    status_t GeometryBindingImpl::validateAttribute(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
         status_t status = StatusOK;
         const ramses_internal::DataLayout& layout = getIScene().getDataLayout(m_attributeLayout);
@@ -158,7 +158,7 @@ namespace ramses
             {
                 const ramses_internal::EDataType fieldDataType = layout.getField(fieldIndex).dataType;
                 const status_t dataBufferStatus =
-                    validateDataBuffer(indent, dataResource.dataBuffer, fieldDataType);
+                    validateDataBuffer(indent, dataResource.dataBuffer, fieldDataType, visitedObjects);
                 if (StatusOK != dataBufferStatus)
                 {
                     status = dataBufferStatus;
@@ -168,7 +168,7 @@ namespace ramses
             {
                 if (dataResource.hash.isValid())
                 {
-                    const status_t resourceStatus = validateResource(indent, dataResource.hash);
+                    const status_t resourceStatus = validateResource(indent, dataResource.hash, visitedObjects);
                     if (StatusOK != resourceStatus)
                     {
                         status = resourceStatus;
@@ -180,7 +180,7 @@ namespace ramses
         return status;
     }
 
-    status_t GeometryBindingImpl::validateResource(uint32_t indent, ramses_internal::ResourceContentHash resourceHash) const
+    status_t GeometryBindingImpl::validateResource(uint32_t indent, ramses_internal::ResourceContentHash resourceHash, StatusObjectSet& visitedObjects) const
     {
         const Resource* resource = getClientImpl().scanForResourceWithHash(resourceHash);
         if (nullptr == resource)
@@ -189,10 +189,10 @@ namespace ramses
             return getValidationErrorStatus();
         }
 
-        return addValidationOfDependentObject(indent, resource->impl);
+        return addValidationOfDependentObject(indent, resource->impl, visitedObjects);
     }
 
-    status_t GeometryBindingImpl::validateDataBuffer(uint32_t indent, ramses_internal::DataBufferHandle dataBuffer, ramses_internal::EDataType fieldDataType) const
+    status_t GeometryBindingImpl::validateDataBuffer(uint32_t indent, ramses_internal::DataBufferHandle dataBuffer, ramses_internal::EDataType fieldDataType, StatusObjectSet& visitedObjects) const
     {
         if (!getIScene().isDataBufferAllocated(dataBuffer))
         {
@@ -209,7 +209,7 @@ namespace ramses
         const DataBufferImpl* dataBufferImpl = findDataBuffer(dataBuffer);
         assert(nullptr != dataBufferImpl);
 
-        return addValidationOfDependentObject(indent, *dataBufferImpl);
+        return addValidationOfDependentObject(indent, *dataBufferImpl, visitedObjects);
     }
 
     ramses::DataBufferImpl* GeometryBindingImpl::findDataBuffer(ramses_internal::DataBufferHandle dataBufferHandle) const
@@ -244,13 +244,13 @@ namespace ramses
         dataFields.reserve(attributesList.size());
 
         // Indices are always stored at fixed data slot with index IndicesDataFieldIndex
-        dataFields.push_back({ ramses_internal::EDataType_Indices, 1u, ramses_internal::EFixedSemantics_Indices });
+        dataFields.push_back(ramses_internal::DataFieldInfo{ ramses_internal::EDataType_Indices, 1u, ramses_internal::EFixedSemantics_Indices });
         for (const auto& attribInfo : attributesList)
         {
-            dataFields.push_back({ attribInfo.dataType, attribInfo.elementCount, attribInfo.semantics });
+            dataFields.push_back(ramses_internal::DataFieldInfo{ attribInfo.dataType, attribInfo.elementCount, attribInfo.semantics });
         }
 
-        m_attributeLayout = getIScene().allocateDataLayout(dataFields);
+        m_attributeLayout = getIScene().allocateDataLayout(dataFields, m_effectImpl->getLowlevelResourceHash());
         m_attributeInstance = getIScene().allocateDataInstance(m_attributeLayout);
     }
 

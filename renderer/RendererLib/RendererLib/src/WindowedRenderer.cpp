@@ -19,19 +19,16 @@
 #include "PlatformAbstraction/PlatformTime.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "Utils/LogMacros.h"
-#include "Monitoring/Monitor.h"
 #include "RendererLib/RendererCachedScene.h"
 #include "Ramsh/Ramsh.h"
 #include "Utils/Image.h"
 #include "Utils/RamsesLogger.h"
 
-
-
 namespace ramses_internal
 {
     WindowedRenderer::WindowedRenderer(
         RendererCommandBuffer& commandBuffer,
-        ISceneGraphConsumerComponent& sceneGraphConsumerComponent,
+        IRendererSceneEventSender& rendererSceneSender,
         IPlatformFactory& platformFactory,
         RendererStatistics& rendererStatistics,
         const String& monitorFilename)
@@ -39,13 +36,16 @@ namespace ramses_internal
         , m_rendererScenes(m_rendererEventCollector)
         , m_expirationMonitor(m_rendererScenes, m_rendererEventCollector)
         , m_renderer(platformFactory, m_rendererScenes, m_rendererEventCollector, m_frameTimer, m_expirationMonitor, rendererStatistics)
-        , m_sceneStateExecutor(m_renderer, sceneGraphConsumerComponent, m_rendererEventCollector)
+        , m_sceneStateExecutor(m_renderer, rendererSceneSender, m_rendererEventCollector)
         , m_rendererSceneUpdater(m_renderer, m_rendererScenes, m_sceneStateExecutor, m_rendererEventCollector, m_frameTimer, m_expirationMonitor)
-        , m_rendererCommandExecutor(m_renderer, m_rendererCommandBuffer, m_rendererSceneUpdater, m_rendererEventCollector, m_frameTimer)
+        , m_sceneControlLogic(m_rendererSceneUpdater)
+        , m_rendererCommandExecutor(m_renderer, m_rendererCommandBuffer, m_rendererSceneUpdater, m_sceneControlLogic, m_rendererEventCollector, m_frameTimer)
+        , m_sceneReferenceLogic(m_rendererScenes, m_sceneControlLogic, m_rendererSceneUpdater, rendererSceneSender)
         , m_cmdScreenshot                                  (m_rendererCommandBuffer)
         , m_cmdLogRendererInfo                             (m_rendererCommandBuffer)
         , m_cmdShowFrameProfiler                           (m_rendererCommandBuffer)
         , m_cmdPrintStatistics                             (m_rendererCommandBuffer)
+        , m_cmdTriggerPickEvent                            (m_rendererCommandBuffer)
         , m_cmdSetClearColor                               (m_rendererCommandBuffer)
         , m_cmdSkippingOfUnmodifiedBuffers                 (m_rendererCommandBuffer)
         , m_cmdLinkSceneData                               (m_rendererCommandBuffer)
@@ -62,7 +62,71 @@ namespace ramses_internal
         , m_kpiMonitor(monitorFilename.empty() ? nullptr : new Monitor(monitorFilename))
         , m_cmdSetFrametimerValues(m_frameTimer)
     {
+        m_rendererSceneUpdater.setSceneReferenceLogicHandler(m_sceneReferenceLogic);
         m_cmdShowSceneOnDisplayInternal.reset(new ShowSceneCommand(*this));
+    }
+
+    void WindowedRenderer::doOneLoop(ELoopMode loopMode, std::chrono::microseconds sleepTime)
+    {
+        switch (loopMode)
+        {
+        case ELoopMode::UpdateOnly:
+            update();
+            break;
+        case ELoopMode::UpdateAndRender:
+            update();
+            render();
+            break;
+        }
+
+        collectEvents();
+        finishFrameStatistics(sleepTime);
+    }
+
+    void WindowedRenderer::update()
+    {
+        LOG_TRACE(CONTEXT_PROFILING, "WindowedRenderer::update() start update section of frame");
+        m_frameTimer.startFrame();
+
+        m_rendererCommandExecutor.executePendingCommands();
+        updateSceneControlLogic();
+        m_rendererSceneUpdater.updateScenes();
+        m_renderer.updateSystemCompositorController();
+
+        m_expirationMonitor.checkExpiredScenes(FlushTime::Clock::now());
+
+        LOG_TRACE(CONTEXT_PROFILING, "WindowedRenderer::update() end update section of frame");
+    }
+
+    void WindowedRenderer::render()
+    {
+        LOG_TRACE(CONTEXT_PROFILING, "WindowedRenderer::render() start render section of frame");
+
+        for (DisplayHandle handle(0u); handle < m_renderer.getDisplayControllerCount(); ++handle)
+        {
+            if (m_renderer.hasDisplayController(handle))
+            {
+                m_renderer.getDisplayController(handle).getRenderBackend().getDevice().resetDrawCallCount();
+            }
+        }
+
+        m_renderer.doOneRenderLoop();
+        processScreenshotResults();
+
+        LOG_TRACE(CONTEXT_PROFILING, "WindowedRenderer::render() end render section of frame");
+    }
+
+    void WindowedRenderer::collectEvents()
+    {
+        std::lock_guard<std::mutex> g{ m_eventsLock };
+        m_rendererEventCollector.appendAndConsumePendingEvents(m_rendererEvents, m_sceneControlEvents);
+
+        if (std::max(m_rendererEvents.size(), m_sceneControlEvents.size()) > 1e6)
+            LOG_ERROR(CONTEXT_RENDERER, "WindowedRenderer::collectEvents event queue has too many entries. "
+                << "It seems application is not dispatching renderer events. Possible buffer overflow of the event queue! "
+                << m_rendererEvents.size() << " renderer events, " << m_sceneControlEvents.size() << " scene events.");
+
+        m_sceneReferenceLogic.extractAndSendSceneReferenceEvents(m_sceneControlEvents);
     }
 
     void WindowedRenderer::finishFrameStatistics(std::chrono::microseconds sleepTime)
@@ -111,6 +175,48 @@ namespace ramses_internal
         }
     }
 
+    void WindowedRenderer::updateSceneControlLogic()
+    {
+        InternalSceneStateEvents internalSceneEvents;
+        m_rendererEventCollector.dispatchInternalSceneStateEvents(internalSceneEvents);
+
+        // pass only un/published events while inactive
+        // if it ever becomes active then it will already know all the published scenes
+        // if it does not become active then it will not interfere with legacy scene control
+        if (!m_sceneControlLogicActive)
+        {
+            const auto it = std::remove_if(internalSceneEvents.begin(), internalSceneEvents.end(), [](const InternalSceneStateEvent& e)
+            {
+                return e.type != ERendererEventType_ScenePublished && e.type != ERendererEventType_SceneUnpublished;
+            });
+            internalSceneEvents.erase(it, internalSceneEvents.end());
+
+            // Scene referencing cannot work properly with legacy control API.
+            // If there is any active scene reference but not m_sceneControlLogicActive, it means legacy API was used
+            if (m_sceneReferenceLogic.hasAnyReferencedScenes())
+                LOG_ERROR(CONTEXT_RENDERER, "Scene referencing is used by some scene but deprecated API is used to control scene states - use RendererSceneControl instead of RendererSceneControl_legacy!");
+        }
+
+        for (const auto& evt : internalSceneEvents)
+            m_sceneControlLogic.processInternalEvent(evt);
+
+        RendererSceneControlLogic::Events outSceneEvents;
+        m_sceneControlLogic.consumeEvents(outSceneEvents);
+        for (const auto& evt : outSceneEvents)
+        {
+            switch (evt.type)
+            {
+            case RendererSceneControlLogic::Event::Type::ScenePublished:
+                // TODO vaclav published is the only 'shared' event, it is already in general queue for legacy scene control, remove when legacy support gone
+                //m_rendererEventCollector.addSceneEvent(ERendererEventType_ScenePublished, evt.sceneId, RendererSceneState::Unavailable);
+                break;
+            case RendererSceneControlLogic::Event::Type::SceneStateChanged:
+                m_rendererEventCollector.addSceneEvent(ERendererEventType_SceneStateChanged, evt.sceneId, evt.state);
+                break;
+            }
+        }
+    }
+
     void WindowedRenderer::updateWindowTitles()
     {
         for (DisplayHandle handle(0u); handle < m_renderer.getDisplayControllerCount(); ++handle)
@@ -137,10 +243,6 @@ namespace ramses_internal
         }
     }
 
-    WindowedRenderer::~WindowedRenderer()
-    {
-    }
-
     const Renderer& WindowedRenderer::getRenderer() const
     {
         return m_renderer;
@@ -156,6 +258,11 @@ namespace ramses_internal
         return m_rendererCommandBuffer;
     }
 
+    RendererEventCollector& WindowedRenderer::getEventCollector()
+    {
+        return m_rendererEventCollector;
+    }
+
     const SceneStateExecutor& WindowedRenderer::getSceneStateExecutor() const
     {
         return m_sceneStateExecutor;
@@ -164,6 +271,7 @@ namespace ramses_internal
     void WindowedRenderer::registerRamshCommands(Ramsh& ramsh)
     {
         ramsh.add(m_cmdPrintStatistics);
+        ramsh.add(m_cmdTriggerPickEvent);
         ramsh.add(m_cmdSetClearColor);
         ramsh.add(m_cmdSkippingOfUnmodifiedBuffers);
         ramsh.add(m_cmdScreenshot);
@@ -188,39 +296,16 @@ namespace ramses_internal
 
     void WindowedRenderer::dispatchRendererEvents(RendererEventVector& events)
     {
-        m_rendererEventCollector.dispatchEvents(events);
+        std::lock_guard<std::mutex> g{ m_eventsLock };
+        events.swap(m_rendererEvents);
+        m_rendererEvents.clear();
     }
 
-    void WindowedRenderer::update()
+    void WindowedRenderer::dispatchSceneControlEvents(RendererEventVector& events)
     {
-        LOG_TRACE(CONTEXT_PROFILING, "WindowedRenderer::update() start update section of frame");
-        m_frameTimer.startFrame();
-
-        m_rendererCommandExecutor.executePendingCommands();
-        m_rendererSceneUpdater.updateScenes();
-        m_renderer.updateSystemCompositorController();
-
-        m_expirationMonitor.checkExpiredScenes(FlushTime::Clock::now());
-
-        LOG_TRACE(CONTEXT_PROFILING, "WindowedRenderer::update() end update section of frame");
-    }
-
-    void WindowedRenderer::render()
-    {
-        LOG_TRACE(CONTEXT_PROFILING, "WindowedRenderer::render() start render section of frame");
-
-        for (DisplayHandle handle(0u); handle < m_renderer.getDisplayControllerCount(); ++handle)
-        {
-            if (m_renderer.hasDisplayController(handle))
-            {
-                m_renderer.getDisplayController(handle).getRenderBackend().getDevice().resetDrawCallCount();
-            }
-        }
-
-        m_renderer.doOneRenderLoop();
-        processScreenshotResults();
-
-        LOG_TRACE(CONTEXT_PROFILING, "WindowedRenderer::render() end render section of frame");
+        std::lock_guard<std::mutex> g{ m_eventsLock };
+        events.swap(m_sceneControlEvents);
+        m_sceneControlEvents.clear();
     }
 
     void WindowedRenderer::processScreenshotResults()
@@ -230,7 +315,7 @@ namespace ramses_internal
 
         for(auto& screenshot : screenshots)
         {
-            if (screenshot.filename.getLength() > 0u)
+            if (screenshot.filename.size() > 0u)
             {
                 if (screenshot.success)
                 {
@@ -259,14 +344,16 @@ namespace ramses_internal
             else
             {
                 if (screenshot.success)
-                {
-                    m_rendererEventCollector.addEvent(ERendererEventType_ReadPixelsFromFramebuffer, screenshot.display, std::move(screenshot.pixelData));
-                }
+                    m_rendererEventCollector.addReadPixelsEvent(ERendererEventType_ReadPixelsFromFramebuffer, screenshot.display, std::move(screenshot.pixelData));
                 else
-                {
-                    m_rendererEventCollector.addEvent(ERendererEventType_ReadPixelsFromFramebufferFailed, screenshot.display);
-                }
+                    m_rendererEventCollector.addReadPixelsEvent(ERendererEventType_ReadPixelsFromFramebufferFailed, screenshot.display, {});
             }
         }
     }
+
+    void WindowedRenderer::fireLoopTimingReportRendererEvent(std::chrono::microseconds maximumLoopTimeInPeriod, std::chrono::microseconds renderthreadAverageLooptime)
+    {
+        m_rendererEventCollector.addRenderStatsEvent(ERendererEventType_RenderThreadPeriodicLoopTimes, maximumLoopTimeInPeriod, renderthreadAverageLooptime);
+    }
+
 }

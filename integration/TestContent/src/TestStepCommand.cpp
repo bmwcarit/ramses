@@ -21,7 +21,7 @@ namespace ramses_internal
     Bool TestStepCommand::execute(Int& testStep) const
     {
         m_testStep = testStep;
-        m_testStepSetEvent.broadcast();
+        m_testStepSetEvent.signal();
         return true;
     }
 

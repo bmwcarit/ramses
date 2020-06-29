@@ -28,7 +28,7 @@ namespace ramses
 
         void initializeFrameworkData(streamSource_t source, const Texture2DImpl& fallbackTexture);
         virtual void deinitializeFrameworkData() override;
-        virtual status_t validate(uint32_t indent) const override;
+        virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
 
         status_t forceFallbackImage(bool forceFallbackImage);
         bool getForceFallbackImage() const;

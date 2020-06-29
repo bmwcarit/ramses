@@ -18,19 +18,19 @@ namespace ramses_internal
     class WaylandShellSurfaceMock : public IWaylandShellSurface
     {
     public:
-        MOCK_METHOD0(resourceDestroyed, void());
-        MOCK_METHOD2(shellSurfacePong, void(IWaylandClient& client, uint32_t serial));
-        MOCK_METHOD3(shellSurfaceMove, void(IWaylandClient& client, IWaylandResource& seatResource, uint32_t serial));
-        MOCK_METHOD4(shellSurfaceResize, void(IWaylandClient& client, IWaylandResource& seatResource, uint32_t serial, uint32_t edges));
-        MOCK_METHOD1(shellSurfaceSetToplevel, void(IWaylandClient& client));
-        MOCK_METHOD5(shellSurfaceSetTransient, void(IWaylandClient& client, IWaylandResource& parentSurfaceResource, int32_t x, int32_t y, uint32_t flags));
-        MOCK_METHOD3(shellSurfaceSetFullscreen, void(IWaylandClient& client, uint32_t method, uint32_t framerate));
-        MOCK_METHOD7(shellSurfaceSetPopup, void(IWaylandClient& client, IWaylandResource& seatResource, uint32_t serial, IWaylandResource& parentSurfaceResource, int32_t x, int32_t y, uint32_t flags));
-        MOCK_METHOD1(shellSurfaceSetMaximized, void(IWaylandClient& client));
-        MOCK_METHOD2(shellSurfaceSetTitle, void(IWaylandClient& client, const char* title));
-        MOCK_METHOD2(shellSurfaceSetClass, void(IWaylandClient& client, const char* className));
-        MOCK_METHOD0(surfaceWasDeleted, void());
-        MOCK_CONST_METHOD0(getTitle, String&());
+        MOCK_METHOD(void, resourceDestroyed, (), (override));
+        MOCK_METHOD(void, shellSurfacePong, (IWaylandClient& client, uint32_t serial), (override));
+        MOCK_METHOD(void, shellSurfaceMove, (IWaylandClient& client, IWaylandResource& seatResource, uint32_t serial), (override));
+        MOCK_METHOD(void, shellSurfaceResize, (IWaylandClient& client, IWaylandResource& seatResource, uint32_t serial, uint32_t edges), (override));
+        MOCK_METHOD(void, shellSurfaceSetToplevel, (IWaylandClient& client), (override));
+        MOCK_METHOD(void, shellSurfaceSetTransient, (IWaylandClient& client, IWaylandResource& parentSurfaceResource, int32_t x, int32_t y, uint32_t flags), (override));
+        MOCK_METHOD(void, shellSurfaceSetFullscreen, (IWaylandClient& client, uint32_t method, uint32_t framerate), (override));
+        MOCK_METHOD(void, shellSurfaceSetPopup, (IWaylandClient& client, IWaylandResource& seatResource, uint32_t serial, IWaylandResource& parentSurfaceResource, int32_t x, int32_t y, uint32_t flags), (override));
+        MOCK_METHOD(void, shellSurfaceSetMaximized, (IWaylandClient& client), (override));
+        MOCK_METHOD(void, shellSurfaceSetTitle, (IWaylandClient& client, const char* title), (override));
+        MOCK_METHOD(void, shellSurfaceSetClass, (IWaylandClient& client, const char* className), (override));
+        MOCK_METHOD(void, surfaceWasDeleted, (), (override));
+        MOCK_METHOD(String&, getTitle, (), (const, override));
     };
 }
 

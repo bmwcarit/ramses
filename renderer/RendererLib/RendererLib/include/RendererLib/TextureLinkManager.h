@@ -25,7 +25,7 @@ namespace ramses_internal
 
         Bool createDataLink(SceneId providerSceneId, DataSlotHandle providerSlotHandle, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
         Bool createBufferLink(OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
-        Bool removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
+        Bool removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle, SceneId* providerSceneIdOut = nullptr);
 
         Bool                hasLinkedTexture(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
         ResourceContentHash getLinkedTexture(SceneId consumerSceneId, TextureSamplerHandle sampler) const;

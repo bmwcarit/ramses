@@ -18,17 +18,17 @@ namespace ramses_internal
     class AnimationInstance
     {
     public:
-        AnimationInstance(SplineHandle splineHandle = SplineHandle::Invalid(), EInterpolationType interpolationType = EInterpolationType_Invalid, EVectorComponent vectorComponent = EVectorComponent_All);
+        explicit AnimationInstance(SplineHandle splineHandle = SplineHandle::Invalid(), EInterpolationType interpolationType = EInterpolationType_Invalid, EVectorComponent vectorComponent = EVectorComponent_All);
 
         SplineHandle getSplineHandle() const;
         EInterpolationType getInterpolationType() const;
         EVectorComponent getVectorComponentFlag() const;
         void addDataBinding(DataBindHandle handle);
-        Bool hasDataBinding(DataBindHandle handle) const;
+        bool hasDataBinding(DataBindHandle handle) const;
         const DataBindHandleVector& getDataBindings() const;
 
-        Bool operator==(const AnimationInstance& other) const;
-        Bool operator!=(const AnimationInstance& other) const;
+        bool operator==(const AnimationInstance& other) const;
+        bool operator!=(const AnimationInstance& other) const;
 
         static const AnimationInstance& InvalidInstance();
 
@@ -59,7 +59,7 @@ namespace ramses_internal
         return m_dataBindHandles;
     }
 
-    inline Bool AnimationInstance::operator==(const AnimationInstance& other) const
+    inline bool AnimationInstance::operator==(const AnimationInstance& other) const
     {
         return m_splineHandle == other.m_splineHandle
             && m_interpolationType == other.m_interpolationType
@@ -67,7 +67,7 @@ namespace ramses_internal
             && m_dataBindHandles == m_dataBindHandles;
     }
 
-    inline Bool AnimationInstance::operator!=(const AnimationInstance& other) const
+    inline bool AnimationInstance::operator!=(const AnimationInstance& other) const
     {
         return !operator==(other);
     }

@@ -30,23 +30,24 @@ namespace ramses_internal
     {
         const unsigned int ret = lodepng::decode(m_data, m_width, m_height, filename.c_str());
         if (ret != 0)
-            LOG_ERROR(CONTEXT_FRAMEWORK, "Error while loading PNG file: " << filename << " (error code " << ret << ")");
+            LOG_ERROR(CONTEXT_FRAMEWORK, "Error while loading PNG file: " << filename << " (error " << ret << ": " << lodepng_error_text(ret) << ")");
     }
 
     void Image::saveToFilePNG(const String& filename) const
     {
-        if (lodepng::encode(filename.c_str(), m_data, m_width, m_height) != 0)
-            LOG_ERROR(CONTEXT_FRAMEWORK, "Error while saving PNG file: " << filename);
+        const unsigned int ret = lodepng::encode(filename.c_str(), m_data, m_width, m_height);
+        if (ret != 0)
+            LOG_ERROR(CONTEXT_FRAMEWORK, "Error while saving PNG file: " << filename << " (error " << ret << ": " << lodepng_error_text(ret) << ")");
     }
 
-    Bool Image::operator==(const Image& other) const
+    bool Image::operator==(const Image& other) const
     {
         return m_width == other.m_width
             && m_height == other.m_height
             && m_data == other.m_data;
     }
 
-    Bool Image::operator!=(const Image& other) const
+    bool Image::operator!=(const Image& other) const
     {
         return !operator==(other);
     }
@@ -124,7 +125,7 @@ namespace ramses_internal
     UInt32 Image::getNumberOfNonBlackPixels(UInt8 maxDiffPerColorChannel) const
     {
         UInt32 result = 0;
-        for (UInt32 px = 0; px < m_data.size() / 4; ++px)
+        for (size_t px = 0; px < m_data.size() / 4; ++px)
         {
             const UInt8* pxData = &m_data[4 * px];
             if (pxData[0] > maxDiffPerColorChannel ||

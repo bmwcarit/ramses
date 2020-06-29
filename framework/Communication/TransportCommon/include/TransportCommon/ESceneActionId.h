@@ -74,6 +74,7 @@ namespace ramses_internal
         ESceneActionId_SetRenderableVisibility,
         ESceneActionId_SetRenderableDataInstance,
         ESceneActionId_SetRenderableInstanceCount,
+        ESceneActionId_SetRenderableStartVertex,
 
         // render states
         ESceneActionId_ReleaseState,
@@ -124,6 +125,13 @@ namespace ramses_internal
         ESceneActionId_SetBlitPassEnabled,
         ESceneActionId_SetBlitPassRegions,
 
+        // pickable object
+        ESceneActionId_AllocatePickableObject,
+        ESceneActionId_ReleasePickableObject,
+        ESceneActionId_SetPickableObjectId,
+        ESceneActionId_SetPickableObjectCamera,
+        ESceneActionId_SetPickableObjectEnabled,
+
         // render target/buffer/sampler
         ESceneActionId_AllocateTextureSampler,
         ESceneActionId_ReleaseTextureSampler,
@@ -138,6 +146,12 @@ namespace ramses_internal
         ESceneActionId_SetDataSlotTexture,
         ESceneActionId_ReleaseDataSlot,
 
+        // scene references
+        ESceneActionId_AllocateSceneReference,
+        ESceneActionId_ReleaseSceneReference,
+        ESceneActionId_RequestSceneReferenceState,
+        ESceneActionId_SetSceneReferenceRenderOrder,
+        ESceneActionId_RequestSceneReferenceFlushNotifications,
         //animation
         ESceneActionId_AddAnimationSystem,
         ESceneActionId_RemoveAnimationSystem,
@@ -193,13 +207,10 @@ namespace ramses_internal
     };
 
     typedef std::vector<ESceneActionId> SceneActionIdVector;
-    typedef std::vector<UInt64> TimeStampVector;
 
     enum ESceneActionFlushBits : uint32_t
     {
-        ESceneActionFlushBits_Synchronous               = BIT(0),
-        ESceneActionFlushBits_HasSizeInfo               = BIT(1),
-        ESceneActionFlushBits_HasTimestamps             = BIT(2)
+        ESceneActionFlushBits_HasSizeInfo               = BIT(0u),
     };
 
 #ifndef CreateNameForEnumID
@@ -265,6 +276,7 @@ case ENUMVALUE: return #ENUMVALUE
             CreateNameForEnumID(ESceneActionId_SetRenderableVisibility);
             CreateNameForEnumID(ESceneActionId_SetRenderableDataInstance);
             CreateNameForEnumID(ESceneActionId_SetRenderableInstanceCount);
+            CreateNameForEnumID(ESceneActionId_SetRenderableStartVertex);
 
             // render states
             CreateNameForEnumID(ESceneActionId_ReleaseState);
@@ -315,6 +327,13 @@ case ENUMVALUE: return #ENUMVALUE
             CreateNameForEnumID(ESceneActionId_SetBlitPassEnabled);
             CreateNameForEnumID(ESceneActionId_SetBlitPassRegions);
 
+            // pickable object
+            CreateNameForEnumID(ESceneActionId_AllocatePickableObject);
+            CreateNameForEnumID(ESceneActionId_ReleasePickableObject);
+            CreateNameForEnumID(ESceneActionId_SetPickableObjectId);
+            CreateNameForEnumID(ESceneActionId_SetPickableObjectCamera);
+            CreateNameForEnumID(ESceneActionId_SetPickableObjectEnabled);
+
             // render target/buffer/sampler
             CreateNameForEnumID(ESceneActionId_AllocateTextureSampler);
             CreateNameForEnumID(ESceneActionId_ReleaseTextureSampler);
@@ -329,6 +348,11 @@ case ENUMVALUE: return #ENUMVALUE
             CreateNameForEnumID(ESceneActionId_SetDataSlotTexture);
             CreateNameForEnumID(ESceneActionId_ReleaseDataSlot);
 
+            CreateNameForEnumID(ESceneActionId_AllocateSceneReference);
+            CreateNameForEnumID(ESceneActionId_ReleaseSceneReference);
+            CreateNameForEnumID(ESceneActionId_RequestSceneReferenceState);
+            CreateNameForEnumID(ESceneActionId_SetSceneReferenceRenderOrder);
+            CreateNameForEnumID(ESceneActionId_RequestSceneReferenceFlushNotifications);
             //animation
             CreateNameForEnumID(ESceneActionId_AddAnimationSystem);
             CreateNameForEnumID(ESceneActionId_RemoveAnimationSystem);

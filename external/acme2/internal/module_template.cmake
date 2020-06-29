@@ -18,7 +18,6 @@
 ############################################################################
 
 SET(TARGET_CONTENT
-    ${ACME_FILES_PRIVATE_HEADER}
     ${ACME_FILES_SOURCE}
     ${ACME_FILES_RESOURCE}
 )
@@ -35,13 +34,6 @@ ENDIF()
 IF("${ACME_TYPE}" STREQUAL "STATIC_LIBRARY")
     #==============================================================================================
     ADD_LIBRARY(${ACME_NAME} STATIC ${TARGET_CONTENT})
-    IF(ACME_ENABLE_INSTALL)
-        INSTALL(TARGETS ${ACME_NAME} DESTINATION ${ACME_INSTALL_STATIC_LIB} COMPONENT "${ACME_PACKAGE_NAME}-devel")
-        if (MSVC)
-            SET_TARGET_PROPERTIES(${ACME_NAME} PROPERTIES COMPILE_PDB_NAME ${ACME_NAME})
-            INSTALL(FILES $<TARGET_FILE_DIR:${ACME_NAME}>/${ACME_NAME}.pdb DESTINATION ${ACME_INSTALL_STATIC_LIB} CONFIGURATIONS Debug RelWithDebInfo)
-        endif()
-    ENDIF()
 
     #==============================================================================================
 ELSEIF("${ACME_TYPE}" STREQUAL "BINARY")
@@ -83,9 +75,11 @@ ELSEIF("${ACME_TYPE}" STREQUAL "SHARED_LIBRARY")
     #==============================================================================================
     ADD_LIBRARY(${ACME_NAME} SHARED ${TARGET_CONTENT})
     IF(ACME_ENABLE_INSTALL)
-        INSTALL(TARGETS ${ACME_NAME} DESTINATION ${ACME_INSTALL_SHARED_LIB} COMPONENT "${ACME_PACKAGE_NAME}")
         if (MSVC)
-            INSTALL(FILES $<TARGET_PDB_FILE:${ACME_NAME}> DESTINATION ${ACME_INSTALL_SHARED_LIB} CONFIGURATIONS Debug RelWithDebInfo)
+            INSTALL(TARGETS ${ACME_NAME} DESTINATION ${ACME_INSTALL_BINARY} COMPONENT "${ACME_PACKAGE_NAME}")
+            INSTALL(FILES $<TARGET_PDB_FILE:${ACME_NAME}> DESTINATION ${ACME_INSTALL_BINARY} CONFIGURATIONS Debug RelWithDebInfo)
+        else()
+            INSTALL(TARGETS ${ACME_NAME} DESTINATION ${ACME_INSTALL_SHARED_LIB} COMPONENT "${ACME_PACKAGE_NAME}")
         endif()
     ENDIF()
 
@@ -111,6 +105,7 @@ IF(DEFINED ACME_FILES_RESOURCE)
     ENDIF()
 
     SET(FILES_RESOURCE_BINARYDIR "")
+    SET(TARGETS_FOR_FILES_RESOURCE_BINARYDIR)
 
     FOREACH(FILE_FROM_USER ${ACME_FILES_RESOURCE})
         GET_FILENAME_COMPONENT(file "${FILE_FROM_USER}" ABSOLUTE)
@@ -125,6 +120,8 @@ IF(DEFINED ACME_FILES_RESOURCE)
         endif()
 
         SET(TARGET_FILEPATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/res/${ONLY_FILENAME}")
+        string(MD5 ONLY_FILENAME_HASH "${ONLY_FILENAME}")
+        SET(TARGET_NAME "copyres-${ONLY_FILENAME_HASH}")
         if (MUST_ADD_COPY_COMMAND)
             # no copy command yet, add one
             set_property(DIRECTORY "${PROJECT_BASE_DIR}" APPEND PROPERTY ACME_COPIED_RESOURCE_NAMES_TO_DIRECTORY "${ONLY_FILENAME}")
@@ -136,6 +133,8 @@ IF(DEFINED ACME_FILES_RESOURCE)
                 DEPENDS "${file}"
                 COMMENT "Copying ${file} -> ${TARGET_FILEPATH}"
                 )
+            add_custom_target(${TARGET_NAME} DEPENDS ${TARGET_FILEPATH})
+            SET_PROPERTY(TARGET ${TARGET_NAME} PROPERTY FOLDER "CMakePredefinedTargets/rescopy/all")
         else()
             # already copied, ensure it is the same full path and not a different file with same name
             get_property(RESOURCE_PATHS_IN_DIRECTORY DIRECTORY "${PROJECT_BASE_DIR}" PROPERTY ACME_COPIED_RESOURCE_PATHS_TO_DIRECTORY)
@@ -146,16 +145,19 @@ IF(DEFINED ACME_FILES_RESOURCE)
         endif()
 
         LIST(APPEND FILES_RESOURCE_BINARYDIR "${TARGET_FILEPATH}")
+        LIST(APPEND TARGETS_FOR_FILES_RESOURCE_BINARYDIR "${TARGET_NAME}")
     ENDFOREACH()
 
-    # files are only copied if a target depends on them
-    add_custom_target(RESCOPY_${ACME_NAME} DEPENDS
-        ${FILES_RESOURCE_BINARYDIR}
-        COMMENT "copy resource files to build folder (if changed)"
-    )
-    ADD_DEPENDENCIES(${ACME_NAME} RESCOPY_${ACME_NAME})
+    if (TARGETS_FOR_FILES_RESOURCE_BINARYDIR)
+        # files are only copied if a target depends on them
+        add_custom_target(RESCOPY_${ACME_NAME} COMMENT "copy resource files to build folder (if changed)" )
+        if (TARGETS_FOR_FILES_RESOURCE_BINARYDIR)
+            ADD_DEPENDENCIES(RESCOPY_${ACME_NAME} ${TARGETS_FOR_FILES_RESOURCE_BINARYDIR})
+        endif()
+        ADD_DEPENDENCIES(${ACME_NAME} RESCOPY_${ACME_NAME})
 
-    SET_PROPERTY(TARGET RESCOPY_${ACME_NAME} PROPERTY FOLDER "CMakePredefinedTargets/ACME2_COPY_RESOURCES")
+        SET_PROPERTY(TARGET RESCOPY_${ACME_NAME} PROPERTY FOLDER "CMakePredefinedTargets/rescopy")
+    endif()
 ENDIF()
 
 #==============================================================================================

@@ -17,9 +17,9 @@ namespace ramses_internal
 
     RendererScenes::~RendererScenes()
     {
-        while (count() != 0u)
+        while (m_rendererSceneInfos.size() != 0u)
         {
-            destroyScene(begin()->key);
+            destroyScene(m_rendererSceneInfos.begin()->key);
         }
     }
 
@@ -31,7 +31,7 @@ namespace ramses_internal
         RendererSceneInfo rendererSceneInfo;
         rendererSceneInfo.scene = new RendererCachedScene(*m_sceneLinksManager, sceneInfo);
         rendererSceneInfo.stagingInfo = new StagingInfo;
-        put(sceneID, rendererSceneInfo);
+        m_rendererSceneInfos.put(sceneID, rendererSceneInfo);
 
         return *rendererSceneInfo.scene;
     }
@@ -42,40 +42,40 @@ namespace ramses_internal
 
         m_sceneLinksManager->handleSceneRemoved(sceneID);
 
-        RendererSceneInfo& sceneInfo = *get(sceneID);
+        RendererSceneInfo& sceneInfo = *m_rendererSceneInfos.get(sceneID);
         delete(sceneInfo.stagingInfo);
         delete(sceneInfo.scene);
 
-        remove(sceneID);
+        m_rendererSceneInfos.remove(sceneID);
     }
 
     Bool RendererScenes::hasScene(SceneId sceneID) const
     {
-        return contains(sceneID);
+        return m_rendererSceneInfos.contains(sceneID);
     }
 
     const RendererCachedScene& RendererScenes::getScene(SceneId sceneID) const
     {
         assert(hasScene(sceneID));
-        return *get(sceneID)->scene;
+        return *m_rendererSceneInfos.get(sceneID)->scene;
     }
 
     RendererCachedScene& RendererScenes::getScene(SceneId sceneID)
     {
         assert(hasScene(sceneID));
-        return *get(sceneID)->scene;
+        return *m_rendererSceneInfos.get(sceneID)->scene;
     }
 
     const StagingInfo& RendererScenes::getStagingInfo(SceneId sceneID) const
     {
         assert(hasScene(sceneID));
-        return *get(sceneID)->stagingInfo;
+        return *m_rendererSceneInfos.get(sceneID)->stagingInfo;
     }
 
     StagingInfo& RendererScenes::getStagingInfo(SceneId sceneID)
     {
         assert(hasScene(sceneID));
-        return *get(sceneID)->stagingInfo;
+        return *m_rendererSceneInfos.get(sceneID)->stagingInfo;
     }
 
     const SceneLinksManager& RendererScenes::getSceneLinksManager() const
@@ -86,5 +86,20 @@ namespace ramses_internal
     SceneLinksManager& RendererScenes::getSceneLinksManager()
     {
         return *m_sceneLinksManager;
+    }
+
+    HashMap<SceneId, RendererSceneInfo>::ConstIterator RendererScenes::begin() const
+    {
+        return m_rendererSceneInfos.begin();
+    }
+
+    HashMap<SceneId, RendererSceneInfo>::ConstIterator RendererScenes::end() const
+    {
+        return m_rendererSceneInfos.end();
+    }
+
+    size_t RendererScenes::size() const
+    {
+        return m_rendererSceneInfos.size();
     }
 }

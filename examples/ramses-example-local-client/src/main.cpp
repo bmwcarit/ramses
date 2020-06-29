@@ -10,95 +10,14 @@
 
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/DisplayConfig.h"
-#include "ramses-renderer-api/IRendererEventHandler.h"
+#include "ramses-renderer-api/RendererSceneControl.h"
 #include <unordered_set>
 #include <thread>
 
-/** \cond HIDDEN_SYMBOLS */
-class SceneStateEventHandler : public ramses::RendererEventHandlerEmpty
-{
-public:
-    SceneStateEventHandler(ramses::RamsesRenderer& renderer)
-        : m_renderer(renderer)
-    {
-    }
-
-    virtual void scenePublished(ramses::sceneId_t sceneId) override
-    {
-        m_publishedScenes.insert(sceneId);
-    }
-
-    virtual void sceneUnpublished(ramses::sceneId_t sceneId) override
-    {
-        m_publishedScenes.erase(sceneId);
-    }
-
-    virtual void sceneSubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_OK == result)
-        {
-            m_subscribedScenes.insert(sceneId);
-        }
-    }
-
-    virtual void sceneUnsubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_FAIL != result)
-        {
-            m_subscribedScenes.erase(sceneId);
-        }
-    }
-
-    virtual void sceneMapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_OK == result)
-        {
-            m_mappedScenes.insert(sceneId);
-        }
-    }
-
-    virtual void sceneUnmapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override
-    {
-        if (ramses::ERendererEventResult_FAIL != result)
-        {
-            m_mappedScenes.erase(sceneId);
-        }
-    }
-
-    void waitForPublication(const ramses::sceneId_t sceneId)
-    {
-        waitForSceneInSet(sceneId, m_publishedScenes);
-    }
-
-    void waitForSubscription(const ramses::sceneId_t sceneId)
-    {
-        waitForSceneInSet(sceneId, m_subscribedScenes);
-    }
-
-    void waitForMapped(const ramses::sceneId_t sceneId)
-    {
-        waitForSceneInSet(sceneId, m_mappedScenes);
-    }
-
-private:
-    typedef std::unordered_set<ramses::sceneId_t> SceneSet;
-
-    void waitForSceneInSet(const ramses::sceneId_t sceneId, const SceneSet& sceneSet)
-    {
-        while (sceneSet.find(sceneId) == sceneSet.end())
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            m_renderer.dispatchEvents(*this);
-        }
-    }
-
-    SceneSet m_publishedScenes;
-    SceneSet m_subscribedScenes;
-    SceneSet m_mappedScenes;
-
-    ramses::RamsesRenderer& m_renderer;
-};
-/** \endcond */
+/**
+ * @example ramses-example-local-client/src/main.cpp
+ * @brief Local Client Example
+ */
 
 int main(int argc, char* argv[])
 {
@@ -106,23 +25,21 @@ int main(int argc, char* argv[])
     ramses::RamsesFrameworkConfig config(argc, argv);
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);  //needed for automated test of examples
     ramses::RamsesFramework framework(config);
-    ramses::RamsesClient client("ramses-local-client-test", framework);
+    ramses::RamsesClient& client(*framework.createClient("ramses-local-client-test"));
 
     ramses::RendererConfig rendererConfig(argc, argv);
-    ramses::RamsesRenderer renderer(framework, rendererConfig);
+    ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
+    ramses::RendererSceneControl& sceneControlAPI = *renderer.getSceneControlAPI();
     renderer.startThread();
 
-    ramses::DisplayConfig displayConfig;
-    displayConfig.setIntegrityRGLDeviceUnit(0);
-    displayConfig.setWaylandIviSurfaceID(0);
-    displayConfig.setWindowIviVisible();
-    displayConfig.setWaylandIviLayerID(3);
+    ramses::DisplayConfig displayConfig(argc, argv);
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
+    renderer.flush();
 
     framework.connect();
 
     //client scene
-    const ramses::sceneId_t sceneId = 1u;
+    const ramses::sceneId_t sceneId(1u);
     ramses::Scene* clientScene = client.createScene(sceneId, ramses::SceneConfig(), "local client example scene");
 
     // every scene needs a render pass with camera
@@ -196,20 +113,9 @@ int main(int argc, char* argv[])
     clientScene->flush();
 
     // show the scene on the renderer
-    SceneStateEventHandler eventHandler(renderer);
-
-    eventHandler.waitForPublication(sceneId);
-
-    renderer.subscribeScene(sceneId);
-    renderer.flush();
-    eventHandler.waitForSubscription(sceneId);
-
-    renderer.mapScene(display, sceneId);
-    renderer.flush();
-    eventHandler.waitForMapped(sceneId);
-
-    renderer.showScene(sceneId);
-    renderer.flush();
+    sceneControlAPI.setSceneMapping(sceneId, display);
+    sceneControlAPI.setSceneState(sceneId, ramses::RendererSceneState::Rendered);
+    sceneControlAPI.flush();
 
     for (;;)
     {

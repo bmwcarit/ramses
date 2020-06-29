@@ -63,7 +63,7 @@ namespace ramses_internal
             switch (splineSource->getDataType())
             {
             case EDataTypeID_Boolean:
-                collector.animationSystemSetSplineKeyBasicBool(animSystemHandle, splineTarget, timeStamp, GetSplineKeyValue<Bool>(splineSource, i));
+                collector.animationSystemSetSplineKeyBasicBool(animSystemHandle, splineTarget, timeStamp, GetSplineKeyValue<bool>(splineSource, i));
                 break;
             case EDataTypeID_Int32:
                 collector.animationSystemSetSplineKeyBasicInt32(animSystemHandle, splineTarget, timeStamp, GetSplineKeyValue<Int32>(splineSource, i));

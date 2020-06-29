@@ -12,8 +12,6 @@
 #include "Scene/SceneDescriber.h"
 #include "Scene/SceneActionApplier.h"
 #include "Scene/SceneActionCollectionCreator.h"
-#include "Scene/SceneResourceUtils.h"
-#include "PlatformAbstraction/PlatformGuard.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "Utils/LogMacros.h"
 #include "Utils/StatisticCollection.h"
@@ -27,7 +25,7 @@ namespace ramses_internal
     {
     }
 
-    void ClientSceneLogicDirect::flushSceneActions(ESceneFlushMode flushMode, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag)
+    void ClientSceneLogicDirect::flushSceneActions(const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag)
     {
         const SceneSizeInformation sceneSizes(m_scene.getSceneSizeInformation());
 
@@ -54,15 +52,17 @@ namespace ramses_internal
 
         ++m_flushCounter;
 
+        updateResourceChanges(hasNewActions);
+
         if (isPublished())
         {
             SceneActionCollectionCreator creator(collection);
             creator.flush(
                 m_flushCounter,
-                flushMode == ESceneFlushMode_Synchronous,
                 sceneSizes > m_previousSceneSizes,
                 sceneSizes,
-                m_scene.getResourceChanges(),
+                m_resourceChanges,
+                m_scene.getSceneReferenceActions(),
                 flushTimeInfo,
                 versionTag);
 
@@ -78,7 +78,7 @@ namespace ramses_internal
             m_scene.getStatisticCollection().statSceneActionsGeneratedSize.incCounter(static_cast<UInt32>(collection.collectionData().size()));
         }
 
-        LOG_DEBUG_F(CONTEXT_CLIENT, ([&](StringOutputStream& sos) { printFlushInfo(sos, "ClientSceneLogicDirect::flushSceneActions", collection, flushMode); }));
+        LOG_DEBUG_F(CONTEXT_CLIENT, ([&](StringOutputStream& sos) { printFlushInfo(sos, "ClientSceneLogicDirect::flushSceneActions", collection); }));
 
         if (isPublished() && !m_subscribersActive.empty())
         {
@@ -86,7 +86,8 @@ namespace ramses_internal
             m_scenegraphSender.sendSceneActionList(m_subscribersActive, std::move(collection), m_sceneId, m_scenePublicationMode);
         }
 
-        m_scene.clearResourceChanges();
+        m_scene.resetResourceChanges();
+        m_scene.resetSceneReferenceActions();
 
         if (isPublished())
         {

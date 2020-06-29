@@ -9,6 +9,7 @@
 #include "TestScenes.h"
 #include "ramses-client-api/ResourceIterator.h"
 #include "TestScenes/FileLoadingScene.h"
+#include <cassert>
 
 TestScenes::TestScenes(ramses::RamsesClient& client)
     : m_client(client)
@@ -46,15 +47,15 @@ ramses::Scene& TestScenes::getScene(ramses::sceneId_t sceneId)
 
 void TestScenes::destroyScenes()
 {
-    while (m_scenes.count() != 0u)
+    while (m_scenes.size() != 0u)
     {
         destroyScene(m_scenes.begin()->key);
     }
 
     ramses::ResourceIterator resources(m_client);
-    ramses::Resource* resource = 0;
+    ramses::Resource* resource = nullptr;
     std::vector<ramses::Resource*> resourcesToDestroy;
-    while ((resource = resources.getNext()) != 0)
+    while ((resource = resources.getNext()) != nullptr)
     {
         resourcesToDestroy.push_back(resource);
     }

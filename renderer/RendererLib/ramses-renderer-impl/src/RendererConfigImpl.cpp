@@ -26,9 +26,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t RendererConfigImpl::setWaylandSocketEmbeddedGroup(const char* groupname)
+    status_t RendererConfigImpl::setWaylandEmbeddedCompositingSocketGroup(const char* groupname)
     {
-        m_internalConfig.setWaylandSocketEmbeddedGroup(groupname);
+        m_internalConfig.setWaylandEmbeddedCompositingSocketGroup(groupname);
         return StatusOK;
     }
 
@@ -49,20 +49,20 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t RendererConfigImpl::setWaylandSocketEmbedded(const char* socketname)
+    status_t RendererConfigImpl::setWaylandEmbeddedCompositingSocketName(const char* socketname)
     {
-        m_internalConfig.setWaylandSocketEmbedded(socketname);
+        m_internalConfig.setWaylandEmbeddedCompositingSocketName(socketname);
         return StatusOK;
     }
 
-    const char* RendererConfigImpl::getWaylandSocketEmbedded() const
+    const char* RendererConfigImpl::getWaylandEmbeddedCompositingSocketName() const
     {
         return m_internalConfig.getWaylandSocketEmbedded().c_str();
     }
 
-    status_t RendererConfigImpl::setWaylandSocketEmbeddedFD(int fd)
+    status_t RendererConfigImpl::setWaylandEmbeddedCompositingSocketFD(int fd)
     {
-        m_internalConfig.setWaylandSocketEmbeddedFD(fd);
+        m_internalConfig.setWaylandEmbeddedCompositingSocketFD(fd);
         return StatusOK;
     }
 
@@ -98,25 +98,36 @@ namespace ramses
         return m_rendererResourceCache;
     }
 
+    status_t RendererConfigImpl::setRenderThreadLoopTimingReportingPeriod(std::chrono::milliseconds period)
+    {
+        m_internalConfig.setRenderthreadLooptimingReportingPeriod(period);
+        return StatusOK;
+    }
+
+    std::chrono::milliseconds RendererConfigImpl::getRenderThreadLoopTimingReportingPeriod() const
+    {
+        return m_internalConfig.getRenderThreadLoopTimingReportingPeriod();
+    }
+
     const ramses_internal::RendererConfig& RendererConfigImpl::getInternalRendererConfig() const
     {
         return m_internalConfig;
     }
 
-    status_t RendererConfigImpl::validate(uint32_t indent) const
+    status_t RendererConfigImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        status_t status = StatusObjectImpl::validate(indent);
+        status_t status = StatusObjectImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
 
         const ramses_internal::String& embeddedCompositorFilename = m_internalConfig.getWaylandSocketEmbedded();
         int embeddedCompositorFileDescriptor                      = m_internalConfig.getWaylandSocketEmbeddedFD();
 
-        if(embeddedCompositorFilename.getLength() == 0u && embeddedCompositorFileDescriptor < 0)
+        if(embeddedCompositorFilename.size() == 0u && embeddedCompositorFileDescriptor < 0)
         {
             addValidationMessage(EValidationSeverity_Warning, indent, "no socket information for EmbeddedCompositor set (neither file descriptor nor file name). No embedded compositor available.");
             status = getValidationErrorStatus();
         }
-        else if(embeddedCompositorFilename.getLength() > 0u && embeddedCompositorFileDescriptor >= 0)
+        else if(embeddedCompositorFilename.size() > 0u && embeddedCompositorFileDescriptor >= 0)
         {
             addValidationMessage(EValidationSeverity_Warning, indent, "Competing settings for EmbeddedCompositor are set (file descriptor and file name). File descriptor setting will be preferred.");
             status = getValidationErrorStatus();
@@ -124,4 +135,5 @@ namespace ramses
 
         return status;
     }
+
 }

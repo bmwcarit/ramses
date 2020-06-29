@@ -10,7 +10,8 @@
 #define RAMSES_RESOURCESTRESSTESTSCENEARRAY_H
 
 #include "ResourceStressTestScene.h"
-#include "Collections/Vector.h"
+#include "ramses-framework-api/RendererSceneState.h"
+#include <vector>
 #include <memory>
 
 namespace ramses_internal
@@ -21,7 +22,7 @@ namespace ramses_internal
     {
         ramses::sceneId_t sceneId;
         ramses::displayId_t displayId;
-        ramses::offscreenBufferId_t offscreenBufferId;
+        ramses::displayBufferId_t offscreenBufferId;
         ScreenspaceQuad targetScreenQuad;
         TextureConsumerDataIds textureConsumerIds;
         ramses::sceneId_t consumerSceneId;
@@ -35,14 +36,11 @@ namespace ramses_internal
     public:
         ResourceStressTestSceneArray(ramses::RamsesClient& client, StressTestRenderer& renderer, const SceneArrayConfig& sceneArrayConfig);
 
-        void subscribeAll();
-        void mapAndShowAll();
-        void hideAndUnmapAll();
-
+        void getAllToState(ramses::RendererSceneState state);
         void doExpensiveFlushOnAll(ramses::sceneVersionTag_t flushName);
         void waitForFlushOnAll(ramses::sceneVersionTag_t flushName);
-    private:
 
+    private:
         StressTestRenderer& m_renderer;
         SceneArrayConfig m_sceneConfigs;
         std::vector<std::unique_ptr<ResourceStressTestScene>> m_scenes;

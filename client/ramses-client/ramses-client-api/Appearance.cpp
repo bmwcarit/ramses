@@ -445,6 +445,11 @@ namespace ramses
         return impl.isInputBound(input.impl);
     }
 
+    const DataObject* Appearance::getDataObjectBoundToInput(const UniformInput& input) const
+    {
+        return impl.getBoundDataObject(input.impl);
+    }
+
     const Effect& Appearance::getEffect() const
     {
         return impl.getEffect();

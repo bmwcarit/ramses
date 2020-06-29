@@ -9,8 +9,6 @@
 #ifndef RAMSES_RENDERTARGETIMPL_H
 #define RAMSES_RENDERTARGETIMPL_H
 
-#include "ramses-client-api/TextureEnums.h"
-
 // internal
 #include "SceneObjectImpl.h"
 

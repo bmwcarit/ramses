@@ -21,13 +21,14 @@
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/RenderTargetDescription.h"
 #include "Math3d/Vector3.h"
+#include <cassert>
 
 namespace ramses_internal
 {
     MultipleRenderTargetScene::MultipleRenderTargetScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
         : CommonRenderBufferTestScene(ramsesClient, scene, cameraPosition)
         , m_renderBuffer1(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_ReadWrite))
-        , m_renderBuffer2(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_ReadWrite))
+        , m_renderBuffer2(initRenderBuffer(scene, state))
         , m_depthBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Depth, ramses::ERenderBufferFormat_Depth24, ramses::ERenderBufferAccessMode_ReadWrite))
     {
         initClearPass();
@@ -45,6 +46,7 @@ namespace ramses_internal
         switch (state)
         {
         case TWO_COLOR_BUFFERS:
+        case TWO_COLOR_BUFFERS_RGBA8_AND_RGBA4:
         case SHADER_WRITES_TWO_COLOR_BUFFERS_RT_HAS_ONE:
             return getEffectRenderTwoBuffers();
         case SHADER_WRITES_ONE_COLOR_BUFFER_RT_HAS_TWO:
@@ -58,6 +60,14 @@ namespace ramses_internal
         }
     }
 
+    ramses::RenderBuffer& MultipleRenderTargetScene::initRenderBuffer(ramses::Scene& scene, UInt32 state)
+    {
+        if (state == TWO_COLOR_BUFFERS_RGBA8_AND_RGBA4)
+            return *scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA4, ramses::ERenderBufferAccessMode_ReadWrite);
+        else
+            return *scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_ReadWrite);
+    }
+
     ramses::RenderTarget& MultipleRenderTargetScene::createMRTRenderTarget(UInt32 state)
     {
         ramses::RenderTargetDescription rtDesc;
@@ -65,6 +75,7 @@ namespace ramses_internal
         switch (state)
         {
         case TWO_COLOR_BUFFERS:
+        case TWO_COLOR_BUFFERS_RGBA8_AND_RGBA4:
         case SHADER_WRITES_ONE_COLOR_BUFFER_RT_HAS_TWO:
             rtDesc.addRenderBuffer(m_renderBuffer1);
             rtDesc.addRenderBuffer(m_renderBuffer2);
@@ -219,8 +230,8 @@ namespace ramses_internal
 
     void MultipleRenderTargetScene::initFinalRenderPass(UInt32 state)
     {
-        const ramses::MeshNode* quad1 = NULL;
-        const ramses::MeshNode* quad2 = NULL;
+        const ramses::MeshNode* quad1 = nullptr;
+        const ramses::MeshNode* quad2 = nullptr;
 
         if (state != DEPTH_WRITTEN_AND_READ)
         {

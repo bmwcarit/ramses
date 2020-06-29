@@ -15,11 +15,14 @@
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/EffectDescription.h"
 #include "ramses-client-api/MipLevelData.h"
+#include "ramses-client-api/PickableObject.h"
+#include "ramses-client-api/TextureSwizzle.h"
 
 #include "EffectImpl.h"
 #include "MeshNodeImpl.h"
 #include "RamsesClientImpl.h"
 #include "RamsesObjectTypeUtils.h"
+#include "PickableObjectImpl.h"
 
 #include "Utils/File.h"
 #include "Utils/LogMacros.h"
@@ -51,7 +54,7 @@ namespace ramses
         return nullptr;
     }
 
-    Texture2D* RamsesUtils::CreateTextureResourceFromPng(const char* pngFilePath, RamsesClient& ramsesClient, const char* name/* = 0*/)
+    Texture2D* RamsesUtils::CreateTextureResourceFromPng(const char* pngFilePath, RamsesClient& ramsesClient, const TextureSwizzle& swizzle, const char* name/* = 0*/)
     {
         if (!pngFilePath)
         {
@@ -66,50 +69,30 @@ namespace ramses
         const unsigned int ret = lodepng::decode(data, width, height, pngFilePath);
         if (ret != 0)
         {
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesUtils::CreateTextureResourceFromPng: Could not load PNG. File not found or invalid format: " << pngFilePath << " (error code " << ret << ")");
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesUtils::CreateTextureResourceFromPng: Could not load PNG. File not found or invalid format: " <<
+                      pngFilePath << " (error " << ret << ": " << lodepng_error_text(ret) << ")");
             return nullptr;
         }
 
         MipLevelData mipLevelData(static_cast<uint32_t>(data.size()), data.data());
-        return ramsesClient.createTexture2D(width, height, ETextureFormat_RGBA8, 1, &mipLevelData, false, ResourceCacheFlag_DoNotCache, name);
+        return ramsesClient.createTexture2D(width, height, ETextureFormat_RGBA8, 1, &mipLevelData, false, swizzle, ResourceCacheFlag_DoNotCache, name);
     }
 
-    Effect* RamsesUtils::CreateStandardTextEffect(RamsesClient& client, UniformInput& colorInput)
+    Texture2D* RamsesUtils::CreateTextureResourceFromPngBuffer(const std::vector<unsigned char>& pngData, RamsesClient& ramsesClient, const TextureSwizzle& swizzle, const char* name)
     {
-        EffectDescription effectDesc;
-        effectDesc.setVertexShader(
-            "precision highp float;\n"
-            "uniform highp mat4 mvpMatrix;\n"
-            "attribute vec2 a_position; \n"
-            "attribute vec2 a_texcoord; \n"
-            "\n"
-            "varying vec2 v_texcoord; \n"
-            "\n"
-            "void main()\n"
-            "{\n"
-            "  v_texcoord = a_texcoord; \n"
-            "  gl_Position = mvpMatrix * vec4(a_position, 0.0, 1.0); \n"
-            "}\n");
-        effectDesc.setFragmentShader(
-            "precision highp float;\n"
-            "uniform sampler2D u_texture; \n"
-            "uniform vec4 u_color; \n"
-            "varying vec2 v_texcoord; \n"
-            "\n"
-            "void main(void)\n"
-            "{\n"
-            "  float a = texture2D(u_texture, v_texcoord).r; \n"
-            "  gl_FragColor = vec4(u_color.x, u_color.y, u_color.z, a); \n"
-            "}\n");
+        unsigned int width = 0;
+        unsigned int height = 0;
+        std::vector<unsigned char> data;
 
-        effectDesc.setAttributeSemantic("a_position", EEffectAttributeSemantic_TextPositions);
-        effectDesc.setAttributeSemantic("a_texcoord", EEffectAttributeSemantic_TextTextureCoordinates);
-        effectDesc.setUniformSemantic("u_texture", EEffectUniformSemantic_TextTexture);
-        effectDesc.setUniformSemantic("mvpMatrix", EEffectUniformSemantic_ModelViewProjectionMatrix);
+        const unsigned int ret = lodepng::decode(data, width, height, pngData);
+        if (ret != 0)
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesUtils::CreateTextureResourceFromPngBuffer: Could not load PNG. Invalid format (error " << ret << ": " << lodepng_error_text(ret) << ")");
+            return nullptr;
+        }
 
-        Effect* effect = client.impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, "");
-        effect->findUniformInput("u_color", colorInput);
-        return effect;
+        MipLevelData mipLevelData(static_cast<uint32_t>(data.size()), data.data());
+        return ramsesClient.createTexture2D(width, height, ETextureFormat_RGBA8, 1, &mipLevelData, false, swizzle, ResourceCacheFlag_DoNotCache, name);
     }
 
     bool IsPowerOfTwo(uint32_t val)
@@ -148,7 +131,7 @@ namespace ramses
         }
         else
         {
-            mipMapCount = ramses_internal::max(Log2(originalWidth), Log2(originalHeight)) + 1u;
+            mipMapCount = std::max(Log2(originalWidth), Log2(originalHeight)) + 1u;
         }
 
         // prepare mip data generation
@@ -160,8 +143,8 @@ namespace ramses
         uint32_t currentMipMapIndex = 1u;
         while (currentMipMapIndex < mipMapCount)
         {
-            uint32_t nextWidth = ramses_internal::max(originalWidth >> 1, 1u);
-            uint32_t nextHeight = ramses_internal::max(originalHeight >> 1, 1u);
+            uint32_t nextWidth = std::max(originalWidth >> 1, 1u);
+            uint32_t nextHeight = std::max(originalHeight >> 1, 1u);
             uint32_t nextSize = nextWidth * nextHeight * bytesPerPixel;
             uint8_t* nextData = new uint8_t[nextSize];
 
@@ -265,7 +248,7 @@ namespace ramses
 
     void RamsesUtils::DeleteGeneratedMipMaps(CubeMipLevelData*& data, uint32_t numMipMaps)
     {
-        for (uint8_t level = 0u; level < numMipMaps; level++)
+        for (size_t level = 0u; level < numMipMaps; level++)
         {
             delete[] data[level].m_dataPX;
             delete[] data[level].m_dataNX;
@@ -286,7 +269,6 @@ namespace ramses
 
 // include all RamsesObject to instantiate conversion templates
 #include "ramses-client-api/AnimatedProperty.h"
-#include "ramses-client-api/AnimatedSetter.h"
 #include "ramses-client-api/Animation.h"
 #include "ramses-client-api/AnimationSequence.h"
 #include "ramses-client-api/AnimationSystem.h"
@@ -317,6 +299,8 @@ namespace ramses
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
 #include "ramses-client-api/RenderTarget.h"
+#include "ramses-client-api/PickableObject.h"
+#include "ramses-client-api/SceneReference.h"
 #include "ramses-client-api/SplineBezierFloat.h"
 #include "ramses-client-api/SplineBezierInt32.h"
 #include "ramses-client-api/SplineBezierVector2f.h"
@@ -379,9 +363,9 @@ INSTANTIATE_CONVERT_TEMPLATE(Effect)
 INSTANTIATE_CONVERT_TEMPLATE(AnimatedProperty)
 INSTANTIATE_CONVERT_TEMPLATE(Animation)
 INSTANTIATE_CONVERT_TEMPLATE(AnimationSequence)
-INSTANTIATE_CONVERT_TEMPLATE(AnimatedSetter)
 INSTANTIATE_CONVERT_TEMPLATE(Appearance)
 INSTANTIATE_CONVERT_TEMPLATE(GeometryBinding)
+INSTANTIATE_CONVERT_TEMPLATE(PickableObject)
 INSTANTIATE_CONVERT_TEMPLATE(Spline)
 INSTANTIATE_CONVERT_TEMPLATE(SplineStepBool)
 INSTANTIATE_CONVERT_TEMPLATE(SplineStepFloat)
@@ -440,3 +424,4 @@ INSTANTIATE_CONVERT_TEMPLATE(IndexDataBuffer)
 INSTANTIATE_CONVERT_TEMPLATE(VertexDataBuffer)
 INSTANTIATE_CONVERT_TEMPLATE(Texture2DBuffer)
 INSTANTIATE_CONVERT_TEMPLATE(StreamTexture)
+INSTANTIATE_CONVERT_TEMPLATE(SceneReference)

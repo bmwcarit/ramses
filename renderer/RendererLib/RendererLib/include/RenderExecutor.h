@@ -27,8 +27,8 @@ namespace ramses_internal
         SceneRenderExecutionIterator executeScene(const RendererCachedScene& scene, const Matrix44f& rendererViewMatrix) const;
 
         // This is exposed and can be modified but acts as a global parameter
+        static constexpr const UInt32 DefaultNumRenderablesToRenderInBetweenTimeBudgetChecks = 10u;
         static UInt32 NumRenderablesToRenderInBetweenTimeBudgetChecks;
-        static const UInt32 DefaultNumRenderablesToRenderInBetweenTimeBudgetChecks = 10u;
 
     protected:
         mutable RenderExecutorInternalState m_state;

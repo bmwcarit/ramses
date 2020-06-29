@@ -9,6 +9,7 @@
 #include "ramses-client-api/Scene.h"
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/DisplayConfig.h"
+#include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "ramses-framework-api/RamsesFramework.h"
 
 #include "TestScenes/TransformationLinkScene.h"
@@ -17,24 +18,24 @@
 #include "TestStepCommand.h"
 #include "Utils/Argument.h"
 #include "Math3d/Vector3.h"
-#include "DisplayManager/DisplayManager.h"
+#include "RendererMate.h"
+#include "Ramsh/Ramsh.h"
 
 int main(int argc, const char* argv[])
 {
     ramses_internal::CommandLineParser parser(argc, argv);
     ramses_internal::ArgumentUInt32 testNrArgument(parser, "tn", "test-nr", 1u);
-    ramses_internal::ArgumentBool disableAutoMapping(parser, "nomap", "disableAutoMapping", false);
+    ramses_internal::ArgumentBool disableAutoMapping(parser, "nomap", "disableAutoMapping");
 
     //Ramses client
     ramses::RamsesFrameworkConfig frameworkConfig(argc, argv);
     frameworkConfig.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);
     ramses::RamsesFramework framework(frameworkConfig);
 
-    ramses::RamsesClient client("ramses-local-client-test", framework);
+    ramses::RamsesClient& client(*framework.createClient("ramses-local-client-test"));
 
     ramses::RendererConfig rendererConfig(argc, argv);
-    ramses::RamsesRenderer renderer(framework, rendererConfig);
-    ramses_display_manager::DisplayManager displayManager(renderer, framework, !disableAutoMapping.wasDefined());
+    ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
 
     framework.connect();
 
@@ -47,24 +48,28 @@ int main(int argc, const char* argv[])
         displayConfig.setClearColor(0.0, 0.0, 1.0, 1.0);
     }
     renderer.createDisplay(displayConfig);
+    renderer.flush();
+
+    ramses::RendererMate rendererMate(renderer.impl, framework.impl);
+    ramses::RendererMateAutoShowHandler dmEventHandler(rendererMate, !disableAutoMapping.wasDefined());
 
     if (testNrArgument == 1 || testNrArgument == 2)
     {
         // host scene contains provider nodes
-        const ramses::sceneId_t hostSceneId = 12u;
+        const ramses::sceneId_t hostSceneId(12u);
         ramses::Scene* hostScene = client.createScene(hostSceneId);
         ramses_internal::TransformationLinkScene transformationProviderScene(client, *hostScene, ramses_internal::TransformationLinkScene::TRANSFORMATION_PROVIDER_WITHOUT_CONTENT, ramses_internal::Vector3(0.0f));
         hostScene->flush();
         hostScene->publish(ramses::EScenePublicationMode_LocalOnly);
 
         //client scene
-        const ramses::sceneId_t localSceneId = 42u;
+        const ramses::sceneId_t localSceneId(42u);
         ramses::Scene* clientScene = client.createScene(localSceneId);
         ramses_internal::TransformationLinkScene redTriangleScene(client, *clientScene, ramses_internal::TransformationLinkScene::TRANSFORMATION_CONSUMER, ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
         clientScene->flush();
         clientScene->publish(ramses::EScenePublicationMode_LocalOnly);
 
-        const ramses::sceneId_t remoteSceneId = 67u;
+        const ramses::sceneId_t remoteSceneId(67u);
 
         if (testNrArgument == 1)
         {
@@ -83,9 +88,9 @@ int main(int argc, const char* argv[])
             printf("receiver mode\n");
         }
 
-        while (displayManager.isRunning())
+        while (rendererMate.isRunning())
         {
-            displayManager.dispatchAndFlush();
+            rendererMate.dispatchAndFlush(dmEventHandler);
             renderer.doOneLoop();
             ramses_internal::PlatformThread::Sleep(16);
         }
@@ -101,10 +106,10 @@ int main(int argc, const char* argv[])
                 ramses::Scene* scene = fileLoadingScene.getCreatedScene();
                 scene->publish();
 
-                while (displayManager.getLastReportedSceneState(sceneId) != ramses_display_manager::SceneState::Rendered)
+                while (rendererMate.getLastReportedSceneState(sceneId) != ramses::RendererSceneState::Rendered)
                 {
                     renderer.doOneLoop();
-                    displayManager.dispatchAndFlush();
+                    rendererMate.dispatchAndFlush(dmEventHandler);
                     ramses_internal::PlatformThread::Sleep(16);
                 }
             }
@@ -115,7 +120,7 @@ int main(int argc, const char* argv[])
                 ramses_internal::TestStepCommand testStepCommand;
                 framework.impl.getRamsh().add(testStepCommand);
 
-                const ramses::sceneId_t sceneId     = 1u;
+                const ramses::sceneId_t sceneId(1u);
                 ramses::Scene&          clientScene = *client.createScene(sceneId);
 
                 ramses_internal::TransformationLinkScene redTriangleScene(
@@ -126,10 +131,10 @@ int main(int argc, const char* argv[])
 
                 clientScene.publish();
                 clientScene.flush();
-                while (displayManager.getLastReportedSceneState(sceneId) != ramses_display_manager::SceneState::Rendered)
+                while (rendererMate.getLastReportedSceneState(sceneId) != ramses::RendererSceneState::Rendered)
                 {
                     renderer.doOneLoop();
-                    displayManager.dispatchAndFlush();
+                    rendererMate.dispatchAndFlush(dmEventHandler);
                     ramses_internal::PlatformThread::Sleep(16);
                 }
                 LOG_INFO(ramses_internal::CONTEXT_SMOKETEST, "Surface should be still invisible");

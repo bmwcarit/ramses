@@ -34,6 +34,7 @@ namespace ramses
     class RenderPass;
     class RenderBuffer;
     class BlitPass;
+    class PickableObject;
     class RenderTarget;
     class RenderTargetDescription;
     class TextureSampler;
@@ -57,7 +58,9 @@ namespace ramses
     class IndexDataBuffer;
     class VertexDataBuffer;
     class Texture2DBuffer;
+    class SceneReference;
     class SceneObject;
+    class RamsesClient;
 
     /**
      * @brief The Scene holds a scene graph.
@@ -116,7 +119,7 @@ namespace ramses
         * @param[in] name The optional name of the Remote Camera
         * @return Pointer to the created RemoteCamera, null on failure
         */
-        RemoteCamera* createRemoteCamera(const char* name = 0);
+        RemoteCamera* createRemoteCamera(const char* name = nullptr);
 
         /**
         * @brief Creates a Perspective Camera in this Scene
@@ -124,7 +127,7 @@ namespace ramses
         * @param[in] name The optional name of the Camera
         * @return Pointer to the created Camera, null on failure
         */
-        PerspectiveCamera* createPerspectiveCamera(const char* name = 0);
+        PerspectiveCamera* createPerspectiveCamera(const char* name = nullptr);
 
         /**
         * @brief Creates a Orthographic Camera in this Scene
@@ -132,7 +135,7 @@ namespace ramses
         * @param[in] name The optional name of the Camera
         * @return Pointer to the created Camera, null on failure
         */
-        OrthographicCamera* createOrthographicCamera(const char* name = 0);
+        OrthographicCamera* createOrthographicCamera(const char* name = nullptr);
 
         /**
         * @brief Creates a new Appearance.
@@ -141,7 +144,7 @@ namespace ramses
         * @param[in] name The optional name of the created Appearance.
         * @return A pointer to the created Appearance, null on failure
         */
-        Appearance* createAppearance(const Effect& effect, const char* name = 0);
+        Appearance* createAppearance(const Effect& effect, const char* name = nullptr);
 
         /**
         * @brief Creates a new GeometryBinding.
@@ -150,7 +153,7 @@ namespace ramses
         * @param[in] name The optional name of the created GeometryBinding.
         * @return A pointer to the created GeometryBinding, null on failure
         */
-        GeometryBinding* createGeometryBinding(const Effect& effect, const char* name = 0);
+        GeometryBinding* createGeometryBinding(const Effect& effect, const char* name = nullptr);
 
         /**
         * @brief Create a Stream Texture
@@ -160,7 +163,7 @@ namespace ramses
         * @param[in] name The name of the Stream Texture.
         * @return A pointer to the created Stream Texture, null on failure.
         */
-        StreamTexture* createStreamTexture(const Texture2D& fallbackTexture, streamSource_t source, const char* name = 0);
+        StreamTexture* createStreamTexture(const Texture2D& fallbackTexture, streamSource_t source, const char* name = nullptr);
 
         /**
         * @brief Creates a scene graph node.
@@ -175,7 +178,7 @@ namespace ramses
         * @param[in] name Optional name of the object.
         * @return Pointer to the created Node, nullptr on failure.
         **/
-        Node* createNode(const char* name = 0);
+        Node* createNode(const char* name = nullptr);
 
         /**
          * @brief Creates a scene graph MeshNode.
@@ -185,7 +188,7 @@ namespace ramses
          * @param[in] name The optional name of the MeshNode.
          * @return Pointer to the created MeshNode, null on failure.
         */
-        MeshNode* createMeshNode(const char* name = 0);
+        MeshNode* createMeshNode(const char* name = nullptr);
 
         /**
         * @brief Destroys a previously created object using this scene
@@ -256,7 +259,7 @@ namespace ramses
         * @param[in] name The optional name of the created RenderGroup instance.
         * @return A pointer to the created RenderGroup, null on failure
         **/
-        RenderGroup* createRenderGroup(const char* name = 0);
+        RenderGroup* createRenderGroup(const char* name = nullptr);
 
         /**
         * @brief Create a render pass in the scene.
@@ -264,7 +267,7 @@ namespace ramses
         * @param[in] name The optional name of the created render pass.
         * @return A render pass.
         **/
-        RenderPass* createRenderPass(const char* name = 0);
+        RenderPass* createRenderPass(const char* name = nullptr);
 
         /**
         * @brief Create a blit pass in the scene.
@@ -276,7 +279,7 @@ namespace ramses
         * @param[in] name The optional name of the created blit pass.
         * @return A pointer to a BlitPass if successful or nullptr on failure.
         **/
-        BlitPass* createBlitPass(const RenderBuffer& sourceRenderBuffer, const RenderBuffer& destinationRenderBuffer, const char* name = 0);
+        BlitPass* createBlitPass(const RenderBuffer& sourceRenderBuffer, const RenderBuffer& destinationRenderBuffer, const char* name = nullptr);
 
         /**
         * @brief Create a RenderBuffer to be used with RenderTarget for rendering into and TextureSampler for sampling from.
@@ -292,7 +295,26 @@ namespace ramses
         * @param[in] name Optional name of the object.
         * @return Pointer to the created RenderBuffer, null on failure.
         **/
-        RenderBuffer* createRenderBuffer(uint32_t width, uint32_t height, ERenderBufferType bufferType, ERenderBufferFormat bufferFormat, ERenderBufferAccessMode accessMode, uint32_t sampleCount = 0u, const char* name = 0);
+        RenderBuffer* createRenderBuffer(uint32_t width, uint32_t height, ERenderBufferType bufferType, ERenderBufferFormat bufferFormat, ERenderBufferAccessMode accessMode, uint32_t sampleCount = 0u, const char* name = nullptr);
+
+        /**
+        * @brief Create a PickableObject.
+        * @details PickableObject provides a way to specify a 'pickable' area, when this area is picked (see ramses::RamsesRenderer API)
+        *          a message is sent to RamsesClient with list of picked objects, these can be dispatched and handled using ramses::IRendererEventHandler::objectsPicked.
+        *          Geometry to specify PickableObject has to be of data type ramses::EDataType::EDataType_Vector3F and every 3 elements are vertices forming a triangle.
+        *          Geometry will be interpreted as triangle list (no indices used) - it should be a simplified representation of the actual renderable geometry
+        *          that it is assigned to, typically a bounding box.
+        *          PickableObject is a ramses::Node and as such can be placed in scene transformation topology,
+        *          the vertices should therefore be in local (model) space and transformations will be applied according node topology when calculating picking.
+        *          Geometry is defined in 3D coordinates but does not have to be volumetric, in fact when combined with the right camera (ramses::PickableObject::setCamera)
+        *          it can represent a screen space area.
+        *
+        * @param[in] geometryBuffer Vertex buffer containing triangles defining geometry of PickableObject.
+        * @param[in] id User ID assigned to PickableObject, it will be used in callback ramses::IRendererEventHandler::objectsPicked when this PickableObject is picked.
+        * @param[in] name Name of the PickableObject.
+        * @return Pointer to the created PickableObject, nullptr on failure.
+        **/
+        PickableObject* createPickableObject(const VertexDataBuffer& geometryBuffer, const pickableObjectId_t id, const char* name = nullptr);
 
         /**
         * @brief Create a render target providing a set of RenderBuffers.
@@ -301,7 +323,7 @@ namespace ramses
         * @param[in] name Optional name of the object.
         * @return Pointer to the created RenderTarget, null on failure.
         **/
-        RenderTarget* createRenderTarget(const RenderTargetDescription& rtDesc, const char* name = 0);
+        RenderTarget* createRenderTarget(const RenderTargetDescription& rtDesc, const char* name = nullptr);
 
         /**
         * @brief Creates a texture sampler object.
@@ -323,7 +345,7 @@ namespace ramses
             ETextureSamplingMethod magSamplingMethod,
             const Texture2D& texture,
             uint32_t anisotropyLevel = 1,
-            const char* name = 0);
+            const char* name = nullptr);
 
         /**
         * @brief Creates a texture sampler object.
@@ -343,7 +365,7 @@ namespace ramses
             ETextureSamplingMethod minSamplingMethod,
             ETextureSamplingMethod magSamplingMethod,
             const Texture3D& texture,
-            const char* name = 0);
+            const char* name = nullptr);
 
         /**
         * @brief Creates a texture sampler object.
@@ -365,7 +387,7 @@ namespace ramses
             ETextureSamplingMethod magSamplingMethod,
             const TextureCube& texture,
             uint32_t anisotropyLevel = 1,
-            const char* name = 0);
+            const char* name = nullptr);
 
         /**
         * @brief Creates a texture sampler object.
@@ -387,7 +409,7 @@ namespace ramses
             ETextureSamplingMethod magSamplingMethod,
             const RenderBuffer& renderBuffer,
             uint32_t anisotropyLevel = 1,
-            const char* name = 0);
+            const char* name = nullptr);
 
         /**
         * @brief Creates a texture sampler object for mutable texture.
@@ -409,7 +431,7 @@ namespace ramses
             ETextureSamplingMethod magSamplingMethod,
             const Texture2DBuffer& texture2DBuffer,
             uint32_t anisotropyLevel = 1,
-            const char* name = 0);
+            const char* name = nullptr);
 
         /**
         * @brief Creates a texture sampler object.
@@ -427,84 +449,84 @@ namespace ramses
             ETextureSamplingMethod minSamplingMethod,
             ETextureSamplingMethod magSamplingMethod,
             const StreamTexture& streamTexture,
-            const char* name = 0);
+            const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type float.
         * @param[in] name optional name of the object.
         * @return Pointer to the created DataFloat, null on failure.
         */
-        DataFloat* createDataFloat(const char* name = 0);
+        DataFloat* createDataFloat(const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type Vector2f.
         * @param[in] name optional name of the object.
         * @return Pointer to the created DataVector2f, null on failure.
         */
-        DataVector2f* createDataVector2f(const char* name = 0);
+        DataVector2f* createDataVector2f(const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type Vector3f.
         * @param[in] name optional name of the object.
         * @return Pointer to the created DataVector3f, null on failure.
         */
-        DataVector3f* createDataVector3f(const char* name = 0);
+        DataVector3f* createDataVector3f(const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type Vector4f.
         * @param[in] name optional name of the object.
         * @return Pointer to the created DataVector4f, null on failure.
         */
-        DataVector4f* createDataVector4f(const char* name = 0);
+        DataVector4f* createDataVector4f(const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type Matrix22f.
         * @param[in] name optional name of the object.
         * @return Pointer to the created Matrix22f, null on failure.
         */
-        DataMatrix22f* createDataMatrix22f(const char* name = 0);
+        DataMatrix22f* createDataMatrix22f(const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type Matrix33f.
         * @param[in] name optional name of the object.
         * @return Pointer to the created Matrix33f, null on failure.
         */
-        DataMatrix33f* createDataMatrix33f(const char* name = 0);
+        DataMatrix33f* createDataMatrix33f(const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type Matrix44f.
         * @param[in] name optional name of the object.
         * @return Pointer to the created Matrix44f, null on failure.
         */
-        DataMatrix44f* createDataMatrix44f(const char* name = 0);
+        DataMatrix44f* createDataMatrix44f(const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type int32.
         * @param[in] name optional name of the object.
         * @return Pointer to the created DataInt32, null on failure.
         */
-        DataInt32* createDataInt32(const char* name = 0);
+        DataInt32* createDataInt32(const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type Vector2i.
         * @param[in] name optional name of the object.
         * @return Pointer to the created DataVector2i, null on failure.
         */
-        DataVector2i* createDataVector2i(const char* name = 0);
+        DataVector2i* createDataVector2i(const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type Vector3i.
         * @param[in] name optional name of the object.
         * @return Pointer to the created DataVector3i, null on failure.
         */
-        DataVector3i* createDataVector3i(const char* name = 0);
+        DataVector3i* createDataVector3i(const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type Vector4i.
         * @param[in] name optional name of the object.
         * @return Pointer to the created DataVector4i, null on failure.
         */
-        DataVector4i* createDataVector4i(const char* name = 0);
+        DataVector4i* createDataVector4i(const char* name = nullptr);
 
         /**
         * @brief Annotates a Node as a transformation data provider.
@@ -597,7 +619,7 @@ namespace ramses
         * @param[in] name The optional name of the created animation system.
         * @return A reference to the created animation system.
         */
-        AnimationSystem* createAnimationSystem(uint32_t flags = EAnimationSystemFlags_Default, const char* name = 0);
+        AnimationSystem* createAnimationSystem(uint32_t flags = EAnimationSystemFlags_Default, const char* name = nullptr);
 
         /**
         * @brief Create a new animation system that is designed to work with system
@@ -614,7 +636,7 @@ namespace ramses
         * @param[in] name The optional name of the created animation system.
         * @return A reference to the created animation system.
         */
-        AnimationSystemRealTime* createRealTimeAnimationSystem(uint32_t flags = EAnimationSystemFlags_Default, const char* name = 0);
+        AnimationSystemRealTime* createRealTimeAnimationSystem(uint32_t flags = EAnimationSystemFlags_Default, const char* name = nullptr);
 
         /**
         * @brief Create a new IndexDataBuffer. The created object can be used as a mutable resource
@@ -625,9 +647,9 @@ namespace ramses
         * @param[in] maximumSizeInBytes Maximum size of the resource data.
         * @param[in] dataType Data type of the resource data. Must be an integral data type.
         * @param[in] name The optional name of the created index data buffer.
-        * @return A reference to the created index data buffer.
+        * @return A pointer to the created index data buffer.
         */
-        IndexDataBuffer* createIndexDataBuffer(uint32_t maximumSizeInBytes, EDataType dataType, const char* name = 0);
+        IndexDataBuffer* createIndexDataBuffer(uint32_t maximumSizeInBytes, EDataType dataType, const char* name = nullptr);
 
         /**
         * @brief Create a new VertexDataBuffer. The created object can be used as a mutable resource
@@ -638,9 +660,9 @@ namespace ramses
         * @param[in] maximumSizeInBytes Maximum size of the resource data.
         * @param[in] dataType Data type of the resource data. Must be a float or float vector data type.
         * @param[in] name The optional name of the created vertex data buffer.
-        * @return A reference to the created vertex data buffer.
+        * @return A pointer to the created vertex data buffer.
         */
-        VertexDataBuffer* createVertexDataBuffer(uint32_t maximumSizeInBytes, EDataType dataType, const char* name = 0);
+        VertexDataBuffer* createVertexDataBuffer(uint32_t maximumSizeInBytes, EDataType dataType, const char* name = nullptr);
 
         /**
         * @brief Create a new Texture2DBuffer. The created object can be used as a mutable resource
@@ -656,9 +678,78 @@ namespace ramses
         * @param[in] height height of the first and largest mipmap level.
         * @param[in] textureFormat texture format. Only uncompressed texture formats are supported
         * @param[in] name The optional name of the created Texture2DBuffer.
-        * @return A reference to the created Texture2DBuffer.
+        * @return A pointer to the created Texture2DBuffer.
         */
-        Texture2DBuffer* createTexture2DBuffer(uint32_t mipLevelCount, uint32_t width, uint32_t height, ETextureFormat textureFormat, const char* name = 0);
+        Texture2DBuffer* createTexture2DBuffer(uint32_t mipLevelCount, uint32_t width, uint32_t height, ETextureFormat textureFormat, const char* name = nullptr);
+
+        /**
+        * @brief Creates a new SceneReference object.
+        * @details The SceneReference object references a scene, which might be unknown
+        *          to this RamsesClient, but is known to the RamsesRenderer rendering this scene.
+        *          It allows to request rendering states of the referenced scene on renderer side.
+        *          There can be only one instance of #ramses::SceneReference per scene ID in all
+        *          RamsesClients connected to a RamsesRenderer. Creating two instances in one RamsesClient
+        *          will result in an error, creating two instances in different RamsesClients results
+        *          in undefined behavior.
+        *
+        * @param[in] referencedScene A scene id of a scene known to the RamsesRenderer.
+        * @param[in] name The optional name of the created SceneReference.
+        * @return A pointer to the created SceneReference.
+        */
+        SceneReference* createSceneReference(sceneId_t referencedScene, const char* name = nullptr);
+
+        /**
+        * @brief Tell the RamsesRenderer to link a data provider to a data consumer across two scenes.
+        * @details Data provider and data consumer must be created via client scene API and their data type must match.
+        *          Linking data means that the consumer's data property will be overridden by provider's data property.
+        *          A consumer within a scene can be linked to exactly one provider.
+        *
+        *          A link between provider and consumer is possible, if they are either part of the this scene
+        *          or one of its scene references.
+        *
+        *          If the function returns StatusOK, #ramses::IClientEventHandler::dataLinked will be emitted after the link is
+        *          processed by renderer. The link will fail (reported via callback result argument) if either the data provider
+        *          or data consumer does not exist or their data type does not match.
+        *
+        *          Scene reference must be known to renderer side before attempting to make a data link. Make sure any involved
+        *          #ramses::SceneReference was reported to be in state Available or higher
+        *          (see #ramses::IClientEventHandler::sceneReferenceStateChanged).
+        *
+        *          Should one of the scene references of the data link go to state Unavailable while the data link is active, the link
+        *          will implicitly be destroyed and needs to be rerequested again.
+        *
+        *          If successful the operation can be assumed to be effective in the next frame consumer scene is rendered after flushed.
+        *          If the data consumer is already linked to a provider (data or offscreen buffer), the old link will be discarded,
+        *          however if the new link fails it is undefined whether previous link was discarded or not.
+        *
+        * @param providerReference A pointer to a SceneReference created by this scene, or nullptr to use this scene.
+        * @param providerId The id of the data provider within the providerScene or providerReference.
+        * @param consumerReference A pointer to the SceneReference which consumes the data, or nullptr to use this scene.
+        * @param consumerId The id of the data consumer within the consumerScene or consumerReference.
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t linkData(SceneReference* providerReference, dataProviderId_t providerId, SceneReference* consumerReference, dataConsumerId_t consumerId);
+
+        /**
+        * @brief   Removes an existing link between two scenes (see #ramses::Scene::linkData).
+        * @details If the function returns StatusOK, #ramses::IClientEventHandler::dataUnlinked will be emitted after it is
+        *          processed by renderer. If successful the operation can be assumed to be effective in the next frame consumer
+        *          scene is rendered after flushed.
+        *
+        * @param consumerReference The pointer to the SceneReference which consumes the data, or nullptr to use this scene.
+        * @param consumerId The id of the data consumer within the consumerReference.
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t unlinkData(SceneReference* consumerReference, dataConsumerId_t consumerId);
+
+        /**
+         * @brief Getter for #ramses::RamsesClient this Scene was created from
+         *
+         * @return the parent RamsesCLient
+         */
+        RamsesClient& getRamsesClient();
 
     protected:
         /**

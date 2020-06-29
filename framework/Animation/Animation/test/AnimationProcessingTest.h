@@ -26,10 +26,10 @@ namespace ramses_internal
         {
         }
 
-        virtual void init();
+        virtual void init() override;
 
     protected:
-        virtual SplineHandle initSpline(AnimationData& resMgr);
+        virtual SplineHandle initSpline(AnimationData& resMgr) override;
 
         SplineVec3 m_spline;
         SplineKeyIndex m_lastSplineKeyIndex;

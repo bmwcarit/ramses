@@ -8,4 +8,3 @@
 
 ADD_SUBDIRECTORY(ramses-test-client)
 ADD_SUBDIRECTORY(ramses-local-client-test)
-ADD_SUBDIRECTORY(ramses-bin-shader-test)

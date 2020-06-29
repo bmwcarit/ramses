@@ -25,7 +25,7 @@ namespace ramses
         */
         MipLevelData()
         : m_size(0)
-        , m_data(0)
+        , m_data(nullptr)
         {
         }
 
@@ -57,12 +57,12 @@ namespace ramses
         */
         CubeMipLevelData()
         : m_faceDataSize(0)
-        , m_dataPX(0)
-        , m_dataNX(0)
-        , m_dataPY(0)
-        , m_dataNY(0)
-        , m_dataPZ(0)
-        , m_dataNZ(0)
+        , m_dataPX(nullptr)
+        , m_dataNX(nullptr)
+        , m_dataPY(nullptr)
+        , m_dataNY(nullptr)
+        , m_dataPZ(nullptr)
+        , m_dataNZ(nullptr)
         {
         }
 

@@ -18,6 +18,8 @@
 #include "EmbeddedCompositor_Wayland/LinuxDmabufBuffer.h"
 #include "TextureUploadingAdapter_Wayland/LinuxDmabuf.h"
 #include "Utils/LogMacros.h"
+#include "Utils/Warnings.h"
+#include <assert.h>
 
 namespace ramses_internal
 {

@@ -37,11 +37,20 @@ namespace ramses
     struct rendererResourceId_t
     {
         /**
+        * @brief Default constructor constructs invalid value
+        */
+        constexpr rendererResourceId_t()
+            : lowPart(0)
+            , highPart(0)
+        {
+        }
+
+        /**
         * @brief The constructor
         * @param[in] low The low bits of the ID
         * @param[in] high The high bits of the ID
         */
-        rendererResourceId_t(uint64_t low = 0, uint64_t high = 0)
+        constexpr rendererResourceId_t(uint64_t low, uint64_t high)
             : lowPart(low)
             , highPart(high)
         {
@@ -52,7 +61,7 @@ namespace ramses
         * @param[in] rhs The instance to compare to
         * @return True if same, false otherwise
         */
-        bool operator==(const rendererResourceId_t& rhs) const
+        constexpr bool operator==(const rendererResourceId_t& rhs) const
         {
             return (lowPart == rhs.lowPart && highPart == rhs.highPart);
         }
@@ -60,7 +69,7 @@ namespace ramses
         /**
         * @copydoc operator==(const rendererResourceId_t& rhs) const
         */
-        bool operator!=(const rendererResourceId_t& rhs) const
+        constexpr bool operator!=(const rendererResourceId_t& rhs) const
         {
             return !(*this == rhs);
         }
@@ -80,7 +89,7 @@ namespace ramses
     *
     * Note: the value is not the same as on client if calling ramses::Resource::getResourceId()
     */
-    typedef rendererResourceId_t effectId_t;
+    using effectId_t = rendererResourceId_t;
 
     /**
     * @brief Specifies the result of the operation referred to by renderer event

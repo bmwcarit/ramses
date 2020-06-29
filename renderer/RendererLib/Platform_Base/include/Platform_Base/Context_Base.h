@@ -30,6 +30,10 @@ namespace ramses_internal
         // search terms "WGL extensions")
         static void ParseContextExtensionsHelper(const Char* extensionNativeString, StringSet& extensionsOut);
 
+        virtual bool swapBuffers() = 0;
+        virtual bool enable() = 0;
+        virtual bool disable() = 0;
+
     protected:
         void parseContextExtensions(const Char* extensionNativeString);
         Bool isContextExtensionAvailable(const String& extensionName) const;

@@ -9,54 +9,40 @@
 #ifndef RAMSES_RAMSES_STRINGOUTPUTSTREAM_H
 #define RAMSES_RAMSES_STRINGOUTPUTSTREAM_H
 
-#include "PlatformAbstraction/PlatformStringUtils.h"
-#include "Collections/Guid.h"
 #include "Collections/String.h"
-#include "Collections/Vector.h"
-#include "SceneAPI/ResourceContentHash.h"
 #include "Utils/StringUtils.h"
+#include <inttypes.h>
 
 namespace ramses_internal
 {
-    class Matrix22f;
-    class Matrix33f;
-    class Matrix44f;
-
     class StringOutputStream final
     {
     public:
-        enum EFloatingPointType
-        {
-            EFloatingPointType_Normal = 0,
-            EFloatingPointType_Fixed
-        };
-
-        enum EHexadecimalType
-        {
-            EHexadecimalType_NoHex = 0,
-            EHexadecimalType_HexNoLeadingZeros,
-            EHexadecimalType_HexLeadingZeros
-        };
-
         explicit StringOutputStream(UInt initialCapacity = 16);
+        explicit StringOutputStream(String initialContent);
+        explicit StringOutputStream(std::string initialContent);
 
-        StringOutputStream& operator<<(const Int32 value);
-        StringOutputStream& operator<<(const UInt32 value);
-        StringOutputStream& operator<<(const UInt64 value);
-        StringOutputStream& operator<<(const Int64 value);
-        StringOutputStream& operator<<(const String& value);
-        StringOutputStream& operator<<(const Bool value);
-        StringOutputStream& operator<<(const Float value);
+        StringOutputStream& operator<<(unsigned short value);
+        StringOutputStream& operator<<(unsigned int value);
+        StringOutputStream& operator<<(unsigned long value);
+        StringOutputStream& operator<<(unsigned long long value);
+        StringOutputStream& operator<<(signed short value);
+        StringOutputStream& operator<<(signed int value);
+        StringOutputStream& operator<<(signed long value);
+        StringOutputStream& operator<<(signed long long value);
+
+        StringOutputStream& operator<<(const bool value);
         StringOutputStream& operator<<(const Char* value);
         StringOutputStream& operator<<(const Char value);
         StringOutputStream& operator<<(const void* value);
-        StringOutputStream& operator<<(const UInt16 value);
-        StringOutputStream& operator<<(const Int16 value);
-        StringOutputStream& operator<<(const Guid& guid);
-        StringOutputStream& operator<<(const Matrix22f& value);
-        StringOutputStream& operator<<(const Matrix33f& value);
-        StringOutputStream& operator<<(const Matrix44f& value);
-        StringOutputStream& operator<<(const ResourceContentHash& value);
+
+        template <typename T, typename = decltype(::fmt::formatter<T>())>
+        StringOutputStream& operator<<(const T& value)
+        {
+            m_buffer.reserve(m_buffer.size() + fmt::formatted_size("{}", value));
+            fmt::format_to(std::back_inserter(m_buffer), "{}", value);
+            return *this;
+        }
 
         void clear();
 
@@ -64,217 +50,113 @@ namespace ramses_internal
         UInt capacity() const;
 
         const Char* c_str() const;
-        UInt32 length() const;
+        UInt32 size() const;
 
         String release();
+        const std::string& data() const;
 
-        void setFloatingPointType(EFloatingPointType type);
-        void setDecimalDigits(UInt32 digits);
-        void setHexadecimalOutputFormat(EHexadecimalType hexFormat);
+        template <typename T>
+        static String ToString(const T& value);
 
     private:
-        template <typename MatrixType>
-        StringOutputStream& outputMatrix(const MatrixType& matrix);
-        StringOutputStream& write(const char* data, uint32_t size);
-
-        String m_buffer;
-        EFloatingPointType m_floatingPointType;
-        EHexadecimalType m_hexadecimalFormat;
-        uint32_t m_decimalDigits;
+        std::string m_buffer;
     };
 
     inline
     StringOutputStream::StringOutputStream(UInt initialCapacity)
-        : m_floatingPointType(EFloatingPointType_Normal)
-        , m_hexadecimalFormat(EHexadecimalType_NoHex)
-        , m_decimalDigits(6)
     {
         m_buffer.reserve(initialCapacity);
     }
 
     inline
-    UInt32 StringOutputStream::length() const
+    StringOutputStream::StringOutputStream(String initialContent)
+        : m_buffer(std::move(initialContent.stdRef()))
     {
-        return static_cast<uint32_t>(m_buffer.getLength());
     }
 
-    inline StringOutputStream& StringOutputStream::operator<<(const Int32 value)
+    inline
+    StringOutputStream::StringOutputStream(std::string initialContent)
+        : m_buffer(std::move(initialContent))
     {
-        char buffer[12];
-
-        if(m_hexadecimalFormat != EHexadecimalType_NoHex)
-        {
-            uint32_t conv = static_cast<uint32_t>(value);
-            return operator<<(conv);
-        }
-        else
-        {
-            ramses_capu::StringUtils::Sprintf(buffer, sizeof(buffer), "%d", value);
-            return operator<<(buffer);
-        }
     }
 
-    inline StringOutputStream& StringOutputStream::operator<<(const Int64 value)
+    inline
+    UInt32 StringOutputStream::size() const
     {
-        char buffer[21];
-
-        if(m_hexadecimalFormat != EHexadecimalType_NoHex)
-        {
-            uint64_t conv = static_cast<uint64_t>(value);
-            return operator<<(conv);
-        }
-        else
-        {
-            ramses_capu::StringUtils::Sprintf(buffer, sizeof(buffer), "%lld", value);
-            return operator<<(buffer);
-        }
+        return static_cast<uint32_t>(m_buffer.size());
     }
 
-    inline StringOutputStream& StringOutputStream::operator<<(const UInt64 value)
+    inline StringOutputStream& StringOutputStream::operator<<(unsigned short value)
     {
-        char buffer[21];
-
-        switch(m_hexadecimalFormat)
-        {
-            case EHexadecimalType_HexNoLeadingZeros:
-                ramses_capu::StringUtils::Sprintf(buffer, sizeof(buffer), "0x%llX", value);
-                break;
-            case EHexadecimalType_HexLeadingZeros:
-                ramses_capu::StringUtils::Sprintf(buffer, sizeof(buffer), "0x%016llX", value);
-                break;
-            case EHexadecimalType_NoHex:
-            default:
-                ramses_capu::StringUtils::Sprintf(buffer, sizeof(buffer), "%llu", value);
-                break;
-        }
-
-        return operator<<(buffer);
+        fmt::format_to(std::back_inserter(m_buffer), "{}", value);
+        return *this;
     }
 
-    inline StringOutputStream& StringOutputStream::operator<<(const UInt32 value)
+    inline StringOutputStream& StringOutputStream::operator<<(unsigned int value)
     {
-        char buffer[11];
-
-        switch(m_hexadecimalFormat)
-        {
-            case EHexadecimalType_HexNoLeadingZeros:
-                ramses_capu::StringUtils::Sprintf(buffer, sizeof(buffer), "0x%X", value);
-                break;
-            case EHexadecimalType_HexLeadingZeros:
-                ramses_capu::StringUtils::Sprintf(buffer, sizeof(buffer), "0x%08X", value);
-                break;
-            case EHexadecimalType_NoHex:
-            default:
-                ramses_capu::StringUtils::Sprintf(buffer, sizeof(buffer), "%u", value);
-                break;
-        }
-
-        return operator<<(buffer);
+        fmt::format_to(std::back_inserter(m_buffer), "{}", value);
+        return *this;
     }
 
-    inline StringOutputStream& StringOutputStream::operator<<(const String& value)
+    inline StringOutputStream& StringOutputStream::operator<<(unsigned long value)
     {
-        return write(value.c_str(), static_cast<uint32_t>(value.getLength()));
+        fmt::format_to(std::back_inserter(m_buffer), "{}", value);
+        return *this;
+    }
+
+    inline StringOutputStream& StringOutputStream::operator<<(unsigned long long value)
+    {
+        fmt::format_to(std::back_inserter(m_buffer), "{}", value);
+        return *this;
+    }
+
+    inline StringOutputStream& StringOutputStream::operator<<(signed short value)
+    {
+        fmt::format_to(std::back_inserter(m_buffer), "{}", value);
+        return *this;
+    }
+
+    inline StringOutputStream& StringOutputStream::operator<<(signed int value)
+    {
+        fmt::format_to(std::back_inserter(m_buffer), "{}", value);
+        return *this;
+    }
+
+    inline StringOutputStream& StringOutputStream::operator<<(signed long value)
+    {
+        fmt::format_to(std::back_inserter(m_buffer), "{}", value);
+        return *this;
+    }
+
+    inline StringOutputStream& StringOutputStream::operator<<(signed long long value)
+    {
+        fmt::format_to(std::back_inserter(m_buffer), "{}", value);
+        return *this;
     }
 
     inline StringOutputStream& StringOutputStream::operator<<(const bool value)
     {
-        return *this << (value ? "true" : "false");
-    }
-
-    inline StringOutputStream& StringOutputStream::operator<<(const Float value)
-    {
-        /* Maximum length float value
-           biggest/smallest: ~ +/-1e38
-           closest to zero:  ~ 1e-38
-
-           required maximum buffer length
-           - 1 sign
-           - 38 digits left of .
-           - 1 for .
-           - 38 digits right of dot + maximum 7 more relevant digits
-           - 1 for terminating \0
-           => 1+38+1+38+7+1 = 86
-        */
-        char buffer[86];
-        switch(m_floatingPointType)
-        {
-        case EFloatingPointType_Normal:
-            ramses_capu::StringUtils::Sprintf(buffer, sizeof(buffer), "%.*f", m_decimalDigits, value);
-            break;
-        case EFloatingPointType_Fixed:
-            ramses_capu::StringUtils::Sprintf(buffer, sizeof(buffer), "%.4f", value);
-            break;
-        }
-
-        return operator<<(buffer);
+        fmt::format_to(std::back_inserter(m_buffer), "{}", value);
+        return *this;
     }
 
     inline StringOutputStream& StringOutputStream::operator<<(const Char* value)
     {
-        return write(value, static_cast<uint32_t>(ramses_capu::StringUtils::Strlen(value)));
+        if (value)
+            fmt::format_to(std::back_inserter(m_buffer), "{}", value);
+        return *this;
     }
 
     inline StringOutputStream& StringOutputStream::operator<<(const Char value)
     {
-        return write(&value, 1);
+        fmt::format_to(std::back_inserter(m_buffer), "{}", value);
+        return *this;
     }
 
     inline StringOutputStream& StringOutputStream::operator<<(const void* pointer)
     {
-        static const UInt32 BytesForNullTerminator = 1;
-        static const UInt32 BytesPerHexDigit = 2;
-        static const UInt32 TotalSizeOfString = sizeof(void*)*BytesPerHexDigit + BytesForNullTerminator;
-
-        Char buffer[TotalSizeOfString];
-        PlatformStringUtils::Sprintf(buffer, TotalSizeOfString, "%p", pointer);
-        return *this << buffer;
-    }
-
-    inline StringOutputStream& StringOutputStream::operator<<(const UInt16 value)
-    {
-        char buffer[7];
-        switch(m_hexadecimalFormat)
-        {
-            case EHexadecimalType_HexNoLeadingZeros:
-                ramses_capu::StringUtils::Sprintf(buffer, sizeof(buffer), "0x%hX", value);
-                break;
-            case EHexadecimalType_HexLeadingZeros:
-                ramses_capu::StringUtils::Sprintf(buffer, sizeof(buffer), "0x%04hX", value);
-                break;
-            case EHexadecimalType_NoHex:
-            default:
-                ramses_capu::StringUtils::Sprintf(buffer, sizeof(buffer), "%u", value);
-                break;
-        }
-
-        return operator<<(buffer);
-    }
-
-    inline StringOutputStream& StringOutputStream::operator<<(const Int16 value)
-    {
-        char buffer[7];
-
-        if(m_hexadecimalFormat != EHexadecimalType_NoHex)
-        {
-            uint16_t conv = static_cast<uint16_t>(value);
-            return operator<<(conv);
-        }
-        else
-        {
-            ramses_capu::StringUtils::Sprintf(buffer, sizeof(buffer), "%d", value);
-            return operator<<(buffer);
-        }
-    }
-
-    inline StringOutputStream& StringOutputStream::operator<<(const Guid& guid)
-    {
-        return operator<<(guid.toString());
-    }
-
-    inline StringOutputStream& StringOutputStream::operator<<(const ResourceContentHash& value)
-    {
-        return *this << StringUtils::HexFromResourceContentHash(value);
+        fmt::format_to(std::back_inserter(m_buffer), "{}", pointer);
+        return *this;
     }
 
     inline const Char* StringOutputStream::c_str() const
@@ -301,46 +183,25 @@ namespace ramses_internal
     }
 
     inline
-    void StringOutputStream::setFloatingPointType(EFloatingPointType type)
+    const std::string& StringOutputStream::data() const
     {
-        m_floatingPointType = type;
-    }
-
-    inline
-    void StringOutputStream::setHexadecimalOutputFormat(EHexadecimalType type)
-    {
-        m_hexadecimalFormat = type;
-    }
-
-    inline
-    void StringOutputStream::setDecimalDigits(UInt32 digits)
-    {
-        if (digits > 45)
-        {
-            // limit to maximum useful range for IEEE-754 single precision floats
-            m_decimalDigits = 45;
-        }
-        else
-        {
-            m_decimalDigits = digits;
-        }
-    }
-
-    inline
-    StringOutputStream& StringOutputStream::write(const char* data, uint32_t size)
-    {
-        const UInt writeIdx = m_buffer.getLength();
-        m_buffer.resize(m_buffer.getLength() + size);
-        ramses_capu::Memory::Copy(&m_buffer[writeIdx], data, size);
-        return *this;
+        return m_buffer;
     }
 
     inline
     String StringOutputStream::release()
     {
-        String tmp;
+        std::string tmp;
         tmp.swap(m_buffer);
-        return tmp;
+        return String(std::move(tmp));
+    }
+
+    template <typename T>
+    inline String StringOutputStream::ToString(const T& value)
+    {
+        StringOutputStream sos;
+        sos << value;
+        return sos.release();
     }
 }
 

@@ -9,8 +9,8 @@
 #ifndef RAMSES_PLATFORMMEMORY_H
 #define RAMSES_PLATFORMMEMORY_H
 
-#include <ramses-capu/os/Memory.h>
 #include <PlatformAbstraction/PlatformTypes.h>
+#include <cstring>
 
 namespace ramses_internal
 {
@@ -18,40 +18,33 @@ namespace ramses_internal
     {
     public:
 
-        static void* Set(void* dst, Int32 val, size_t size);
+        static void Set(void* dst, Int32 val, size_t size);
 
-        static void* Copy(void* dst, const void* src, UInt size);
-
-        static void* Move(void* dst, const void* src, UInt size);
+        static void Copy(void* dst, const void* src, UInt size);
 
         static Int32 Compare(const void* mem1, const void* mem2, UInt num);
     };
 
     inline
-    void* PlatformMemory::Set(void* dst, Int32 val, size_t size)
+    void PlatformMemory::Set(void* dst, Int32 val, size_t size)
     {
-        ramses_capu::Memory::Set(dst, val, size);
-        return dst;
+        if(size > 0)
+            std::memset(dst, val, size);
     }
 
     inline
-    void* PlatformMemory::Copy(void* dst, const void* src, UInt size)
+    void PlatformMemory::Copy(void* dst, const void* src, UInt size)
     {
-        ramses_capu::Memory::Copy(dst, src, size);
-        return dst;
-    }
-
-    inline
-    void* PlatformMemory::Move(void* dst, const void* src, UInt size)
-    {
-        ramses_capu::Memory::Move(dst, src, size);
-        return dst;
+        if(size > 0)
+            std::memcpy(dst, src, size);
     }
 
     inline
     Int32 PlatformMemory::Compare(const void* mem1, const void* mem2, UInt num)
     {
-        return ramses_capu::Memory::Compare(mem1, mem2, num);
+        if(num > 0)
+            return std::memcmp(mem1, mem2, num);
+        return 0;
     }
 }
 

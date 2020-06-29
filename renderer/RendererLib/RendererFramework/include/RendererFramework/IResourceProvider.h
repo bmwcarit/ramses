@@ -9,9 +9,9 @@
 #ifndef RAMSES_IRESOURCEPROVIDER_H
 #define RAMSES_IRESOURCEPROVIDER_H
 
-#include "Transfer/ResourceTypes.h"
 #include "Components/ManagedResource.h"
 #include "SceneAPI/SceneId.h"
+#include "Components/ResourceRequesterID.h"
 
 namespace ramses_internal
 {
@@ -20,9 +20,9 @@ namespace ramses_internal
     public:
         virtual ~IResourceProvider() {}
 
-        virtual void requestResourceAsyncronouslyFromFramework(const ResourceContentHashVector& ids, const RequesterID& requesterID, const SceneId& sceneId) = 0;
-        virtual void cancelResourceRequest(const ResourceContentHash& resourceHash, const RequesterID& requesterID) = 0;
-        virtual ManagedResourceVector popArrivedResources(const RequesterID& requesterID) = 0;
+        virtual void requestResourceAsyncronouslyFromFramework(const ResourceContentHashVector& ids, const ResourceRequesterID& requesterID, const SceneId& sceneId) = 0;
+        virtual void cancelResourceRequest(const ResourceContentHash& resourceHash, const ResourceRequesterID& requesterID) = 0;
+        virtual ManagedResourceVector popArrivedResources(const ResourceRequesterID& requesterID) = 0;
 
     };
 }

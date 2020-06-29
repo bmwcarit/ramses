@@ -155,10 +155,14 @@ namespace ramses_internal
 
         StatisticEntry<UInt32> statMessagesSent;
         StatisticEntry<UInt32> statMessagesReceived;
+        StatisticEntry<UInt32> statSendResourceMessagesReceived;
+        StatisticEntry<UInt32> statRequestResourceMessagesReceived;
         StatisticEntry<UInt32> statResourcesCreated;
         StatisticEntry<UInt32> statResourcesDestroyed;
         StatisticEntry<UInt32> statResourcesNumber; //updated by values of statResourcesCreated and statResourcesDestroyed
+        StatisticEntry<UInt32> statResourcesSentNumber;
         StatisticEntry<UInt32> statResourcesSentSize;
+        StatisticEntry<UInt32> statResourcesReceivedNumber;
         StatisticEntry<UInt32> statResourcesLoadedFromFileNumber;
         StatisticEntry<UInt32> statResourcesLoadedFromFileSize;
     };
@@ -175,6 +179,7 @@ namespace ramses_internal
         StatisticEntry<UInt32> statObjectsDestroyed;
         StatisticEntry<UInt32> statObjectsNumber; //updated by values of statObjectsCreated and statObjectsDestroyed
         StatisticEntry<UInt32> statSceneActionsSent;
+        StatisticEntry<UInt32> statSceneActionsSentSkipped;
         StatisticEntry<UInt32> statSceneActionsGenerated;
         StatisticEntry<UInt32> statSceneActionsGeneratedSize;
     };

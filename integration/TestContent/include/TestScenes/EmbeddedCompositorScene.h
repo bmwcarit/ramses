@@ -16,6 +16,7 @@
 namespace ramses
 {
     class Appearance;
+    class Vector2fArray;
 }
 
 namespace ramses_internal
@@ -28,6 +29,7 @@ namespace ramses_internal
         enum
         {
             SINGLE_STREAM_TEXTURE = 0,
+            SINGLE_STREAM_TEXTURE_WITH_TEXCOORDS_OFFSET,
             SINGLE_STREAM_TEXTURE_WITH_TEXEL_FETCH,
             TWO_STREAM_TEXTURES_WITH_SAME_SOURCE_ID_AND_DIFFERENT_FALLBACK_TEXTURES,
             TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SAME_FALLBACK_TEXTURE,
@@ -45,10 +47,12 @@ namespace ramses_internal
         void createQuad(float x, float y, float w, float h, ramses::Appearance& appearance);
         ramses::Appearance& createAppearanceWithStreamTexture(ramses::Scene& scene, ramses::streamSource_t sourceId, const ramses::Texture2D& fallbackTexture);
         const ramses::Effect& createTestEffect(UInt32 state);
+        const ramses::Vector2fArray& createTextureCoordinates(UInt32 state);
         void createQuadWithStreamTexture(float xPos, float yPos, float width, float height, ramses::streamSource_t sourceId, const ramses::Texture2D& fallbackTexture);
 
         static const StreamTextureSourceId EmbeddedSurfaceStreamTextureSourceId;
         const ramses::Effect& m_effect;
+        const ramses::Vector2fArray& m_textureCoords;
     };
 }
 

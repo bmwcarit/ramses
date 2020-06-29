@@ -30,75 +30,43 @@ namespace ramses_internal
             return &dltAdapter;
         }
 
-        virtual void logMessage(const LogMessage&) override {};
-
-        virtual void* registerContext(LogContext*, bool, ELogLevel) override
-        {
-            return nullptr;
-        };
-
-        virtual bool registerApplication(const String& id, const String& desc) override
-        {
-            if (id.getLength() < 1 || id.getLength() > 4)
-            {
-                return false;
-            }
-
-            m_appName = id;
-            m_appDesc = desc;
-            return true;
-        };
-
-        virtual void unregisterApplication() override
-        {
-            m_appName.truncate(0);
-            m_appDesc.truncate(0);
-        };
-
-        virtual void registerInjectionCallback(LogContext*, uint32_t, int(*)(uint32_t, void*, uint32_t)) override {};
-
-        virtual Bool transmitFile(LogContext&, const String&, Bool) override
+        static bool IsDummyAdapter()
         {
             return true;
         }
 
-        virtual void registerLogLevelChangeCallback(const std::function<void(const String&, int)>&) override
-        {
-        }
-
-        virtual const String& getApplicationName() override
-        {
-            return m_appName;
-        }
-
-        virtual const String& getApplicationDescription() override
-        {
-            return m_appDesc;
-        }
-
-        virtual bool isDltInitialized() override
+        virtual bool logMessage(const LogMessage&) override
         {
             return true;
         }
 
-        virtual EDltError getDltStatus() override
+        bool initialize(const String& /*id*/, const String& /*description*/, bool /*registerApplication*/,
+                        const std::function<void(const String&, int)>& /*logLevelChangeCallback*/,
+                        const std::vector<LogContext*>& /*contexts*/, bool /*pushLogLevelsToDaemon*/) override
         {
-            return EDltError_NO_ERROR;
+            return true;
+        }
+
+        void uninitialize() override {}
+
+        virtual bool registerInjectionCallback(LogContext*, uint32_t, int(*)(uint32_t, void*, uint32_t)) override
+        {
+            return true;
+        }
+
+        virtual bool transmitFile(LogContext&, const String&, bool) override
+        {
+            return true;
+        }
+
+        virtual bool isInitialized() override
+        {
+            return true;
         }
 
     private:
         DltAdapterDummy() {};
-        ~DltAdapterDummy() {};
-
-        /**
-        * Name of the application,4 char string
-        */
-        String m_appName;
-
-        /**
-        * More detailed description of the application
-        */
-        String m_appDesc;
+        virtual ~DltAdapterDummy() override {};
     };
 }
 #endif // RAMSES_DLTADAPTERDUMMY_H

@@ -14,15 +14,14 @@
 #include "EmbeddedCompositingTestMessages.h"
 #include "RendererAPI/IEmbeddedCompositingManager.h"
 #include "Utils/LogMacros.h"
+#include "Utils/BinaryOutputStream.h"
 
 namespace ramses_internal
 {
-    class BinaryOutputStream;
-
     class TestForkingController
     {
     public:
-        TestForkingController(const String& waylandSocket);
+        explicit TestForkingController(const String& waylandSocket);
         ~TestForkingController();
         TestForkingController(const TestForkingController&) = delete;
         TestForkingController& operator=(const TestForkingController&) = delete;

@@ -9,18 +9,18 @@
 #ifndef RAMSES_MATRIX33F_H
 #define RAMSES_MATRIX33F_H
 
-#include <PlatformAbstraction/PlatformTypes.h>
-#include <PlatformAbstraction/PlatformMemory.h>
-#include "Utils/Warnings.h"
-#include <Math3d/Vector3.h>
+#include "PlatformAbstraction/PlatformTypes.h"
+#include "Math3d/Vector3.h"
+#include "PlatformAbstraction/FmtBase.h"
+#include <cassert>
 
 namespace ramses_internal
 {
     class Matrix44f;
 
     /**
-        * Class for matrix33 computations
-        */
+     * Class for matrix33 computations
+     */
     class Matrix33f
     {
     public:
@@ -41,33 +41,23 @@ namespace ramses_internal
             Float data[9];
         };
 
-        /**
-        * Special Identity matrix
-        * 1 0 0
-        * 0 1 0
-        * 0 0 1
-        */
+        /// Identity matrix
         static const Matrix33f Identity;
 
-        /**
-            * Special Empty matrix
-            * 0 0 0
-            * 0 0 0
-            * 0 0 0
-            */
+        /// Zero matrix
         static const Matrix33f Empty;
 
         /**
         * Default constructor for matrix. Initializes with identity matrix
         */
-        Matrix33f();
+        constexpr Matrix33f();
 
         /**
             * Constructor for initialize matrix with 9 single values
             */
-        Matrix33f(  const Float _m11, const Float _m12, const Float _m13,
-                    const Float _m21, const Float _m22, const Float _m23,
-                    const Float _m31, const Float _m32, const Float _m33);
+        constexpr Matrix33f(const Float _m11, const Float _m12, const Float _m13,
+                            const Float _m21, const Float _m22, const Float _m23,
+                            const Float _m31, const Float _m32, const Float _m33);
 
         /**
          * Constructor initializing matrix33 from matrix44 (taking only 3x3)
@@ -80,65 +70,65 @@ namespace ramses_internal
          * @param v2 Vector3 for second row
          * @param v3 Vector3 for third row
          */
-        Matrix33f(const Vector3& v1, const Vector3& v2, const Vector3& v3);
+        constexpr Matrix33f(const Vector3& v1, const Vector3& v2, const Vector3& v3);
 
-        Matrix33f(const Matrix33f& other) = default;
-        Matrix33f(Matrix33f&& other) = default;
-        Matrix33f& operator=(const Matrix33f& other) = default;
-        Matrix33f& operator=(Matrix33f&& other) = default;
+        constexpr Matrix33f(const Matrix33f& other) = default;
+        constexpr Matrix33f(Matrix33f&& other) noexcept = default;
+        constexpr Matrix33f& operator=(const Matrix33f& other) = default;
+        constexpr Matrix33f& operator=(Matrix33f&& other) noexcept = default;
 
         /**
          * Sets matrix elements to the given values
          */
-        void set(   const Float _m11, const Float _m12, const Float _m13
+        constexpr void set(   const Float _m11, const Float _m12, const Float _m13
                     , const Float _m21, const Float _m22, const Float _m23
                     , const Float _m31, const Float _m32, const Float _m33);
 
         /**
          *  Sets all matrix elements to the given value
          */
-        void set(const Float val);
+        constexpr void set(const Float val);
 
         /**
          * Multiplies all elements of the matrix with given value
          * @param value to multiply the Matrix33f with
          * @return resulting Matrix33f
          */
-        Matrix33f operator*(const Float val) const;
+        constexpr Matrix33f operator*(const Float val) const;
 
         /**
          * Divides all elements of the matrix with given value
          * @param value to divide the Matrix33f with
          * @return resulting Matrix33f
          */
-        Matrix33f operator/(const Float val) const;
+        constexpr Matrix33f operator/(const Float val) const;
 
         /**
          * Multiplies the matrix with another matrix
          * @param mat Matrix33f to multiply with the matrix
          * @return the resulting Matrix33f
          */
-        Matrix33f operator*(const Matrix33f& mat) const;
+        constexpr Matrix33f operator*(const Matrix33f& mat) const;
 
         /**
          * Multiplies the matrix with another matrix and assigns the result
          * @param mat Matrix33f to multiply with the matrix
          */
-        void operator*=(const Matrix33f& mat);
+        constexpr void operator*=(const Matrix33f& mat);
 
         /**
          * Check if two matrices are equal
          * @param other Matrix33f to compare with
          * @return true if matrices are equal false otherwise
          */
-        Bool operator==(const Matrix33f& other) const;
+        constexpr bool operator==(const Matrix33f& other) const;
 
         /**
          * Check if two matrices are not equal
          * @param other Matrix33f to compare with
          * @return true if matrices are equal false otherwise
          */
-        Bool operator!=(const Matrix33f& other) const;
+        constexpr bool operator!=(const Matrix33f& other) const;
 
         /**
          * Multiplies the matrix with the given Vector
@@ -152,7 +142,7 @@ namespace ramses_internal
          * @param rotationXYZ vector to store angles
          * @return true if there is a unique solution
          */
-        Bool toRotationEulerXYZ(Vector3& rotationXYZ) const;
+        bool toRotationEulerXYZ(Vector3& rotationXYZ) const;
 
         /**
          * Extract XYZ-order Euler angles
@@ -161,7 +151,7 @@ namespace ramses_internal
          * @param z angle
          * @return true if there is a unique solution
          */
-        Bool toRotationEulerXYZ(Float& x, Float& y, Float& z) const;
+        bool toRotationEulerXYZ(Float& x, Float& y, Float& z) const;
 
         /**
          * Generate Matrix33f from Euler XYZ-order angles
@@ -175,7 +165,7 @@ namespace ramses_internal
         * @param rotationXYZ vector to store angles
         * @return true if there is a unique solution
         */
-        Bool toRotationEulerZYX(Vector3& rotationXYZ) const;
+        bool toRotationEulerZYX(Vector3& rotationXYZ) const;
 
         /**
         * Extract ZYX-order Euler angles
@@ -184,7 +174,7 @@ namespace ramses_internal
         * @param z angle
         * @return true if there is a unique solution
         */
-        Bool toRotationEulerZYX(Float& x, Float& y, Float& z) const;
+        bool toRotationEulerZYX(Float& x, Float& y, Float& z) const;
 
         /**
         * Generate Matrix33f from Euler ZYX-order angles
@@ -208,7 +198,7 @@ namespace ramses_internal
          * @param row for value
          * @return ref to the value at given row and column
          */
-        Float& m(UInt32 column, UInt32 row);
+        constexpr Float& m(UInt32 column, UInt32 row);
 
         /**
          * Returns the const ref value at given column (i) and row (j) index
@@ -216,21 +206,18 @@ namespace ramses_internal
          * @param row for value
          * @return const ref value at given row and column
          */
-        const Float& m(UInt32 column, UInt32 row) const;
-
-    protected:
-    private:
+        constexpr const Float& m(UInt32 column, UInt32 row) const;
     };
 
-    inline
+    constexpr inline
     Matrix33f::Matrix33f()
-    : m11(1.f), m21(0.f), m31(0.f)
-    , m12(0.f), m22(1.f), m32(0.f)
-    , m13(0.f), m23(0.f), m33(1.f)
+        : m11(1.f), m21(0.f), m31(0.f)
+        , m12(0.f), m22(1.f), m32(0.f)
+        , m13(0.f), m23(0.f), m33(1.f)
     {
     }
 
-    inline
+    constexpr inline
     Matrix33f::Matrix33f(const Float _m11, const Float _m12, const Float _m13
                         , const Float _m21, const Float _m22, const Float _m23
                         , const Float _m31, const Float _m32, const Float _m33)
@@ -241,21 +228,21 @@ namespace ramses_internal
     {
     }
 
-    inline
+    constexpr inline
     Matrix33f::Matrix33f(const Vector3& v1, const Vector3& v2, const Vector3& v3)
+        : m11(v1[0])
+        , m21(v2[0])
+        , m31(v3[0])
+        , m12(v1[1])
+        , m22(v2[1])
+        , m32(v3[1])
+        , m13(v1[2])
+        , m23(v2[2])
+        , m33(v3[2])
     {
-        m11 = v1[0];
-        m12 = v1[1];
-        m13 = v1[2];
-        m21 = v2[0];
-        m22 = v2[1];
-        m23 = v2[2];
-        m31 = v3[0];
-        m32 = v3[1];
-        m33 = v3[2];
     }
 
-    inline
+    constexpr inline
     void
     Matrix33f::set(const Float _m11, const Float _m12, const Float _m13
                 , const Float _m21, const Float _m22, const Float _m23
@@ -272,17 +259,17 @@ namespace ramses_internal
         m33 = _m33;
     }
 
-    inline
+    constexpr inline
     void
     Matrix33f::set(Float val)
     {
         m11 = m12 = m13
-        = m21 = m22 = m23
-        = m31 = m32 = m33
-        = val;
+            = m21 = m22 = m23
+            = m31 = m32 = m33
+            = val;
     }
 
-    inline
+    constexpr inline
     Matrix33f
     Matrix33f::operator*(const Float val) const
     {
@@ -291,7 +278,7 @@ namespace ramses_internal
                             m31 * val, m32 * val, m33 * val);
     }
 
-    inline
+    constexpr inline
     Matrix33f
     Matrix33f::operator/(const Float val) const
     {
@@ -300,7 +287,7 @@ namespace ramses_internal
                             m31 / val, m32 / val, m33 / val);
     }
 
-    inline
+    constexpr inline
     Matrix33f
     Matrix33f::operator*(const Matrix33f& mat) const
     {
@@ -309,12 +296,11 @@ namespace ramses_internal
                         , m31 * mat.m11 + m32 * mat.m21 + m33 * mat.m31, m31 * mat.m12 + m32 * mat.m22 + m33 * mat.m32, m31 * mat.m13 + m32 * mat.m23 + m33 * mat.m33);
     }
 
-    inline
+    constexpr inline
     void
     Matrix33f::operator*=(const Matrix33f& mat)
     {
-        const Matrix33f& result = operator*(mat);
-        PlatformMemory::Copy(&m11, &result.m11, 9 * sizeof(Float));
+        *this = operator*(mat);
     }
 
     inline
@@ -326,22 +312,57 @@ namespace ramses_internal
                         , m31 * vec.x + m32 * vec.y + m33 * vec.z);
     }
 
-    inline
+    constexpr inline
     Bool
     Matrix33f::operator==(const Matrix33f& other) const
     {
-        return PlatformMemory::Compare(&m11, &other.m11, 9 * sizeof(Float)) == 0;
+        return m11 == other.m11 &&
+            m12 == other.m12 &&
+            m13 == other.m13 &&
+            m21 == other.m21 &&
+            m22 == other.m22 &&
+            m23 == other.m23 &&
+            m31 == other.m31 &&
+            m32 == other.m32 &&
+            m33 == other.m33;
     }
 
-    inline
+    constexpr inline
     Bool
     Matrix33f::operator!=(const Matrix33f& other) const
     {
         return !operator==(other);
     }
 
-    static_assert(std::is_nothrow_move_constructible<Matrix33f>::value &&
-        std::is_nothrow_move_assignable<Matrix33f>::value, "Matrix33f must be movable");
+    constexpr inline Float& Matrix33f::m(UInt32 column, UInt32 row)
+    {
+        assert(row < 3);
+        assert(column < 3);
+        return *(&m11 + (row * 3) + column);
+    }
+
+    constexpr inline const ramses_internal::Float& Matrix33f::m(UInt32 column, UInt32 row) const
+    {
+        assert(row < 3);
+        assert(column < 3);
+        return *(&m11 + (row * 3) + column);
+    }
+
+    static_assert(std::is_nothrow_move_constructible<Matrix33f>::value, "Matrix33f must be movable");
+    static_assert(std::is_nothrow_move_assignable<Matrix33f>::value, "Matrix33f must be movable");
 }
+
+template <>
+struct fmt::formatter<ramses_internal::Matrix33f> : public ramses_internal::SimpleFormatterBase
+{
+    template<typename FormatContext>
+    auto format(const ramses_internal::Matrix33f& m, FormatContext& ctx)
+    {
+        return fmt::format_to(ctx.out(), "[{} {} {}; {} {} {}; {} {} {}]",
+                              m.data[0], m.data[3], m.data[6],
+                              m.data[1], m.data[4], m.data[7],
+                              m.data[2], m.data[5], m.data[8]);
+    }
+};
 
 #endif

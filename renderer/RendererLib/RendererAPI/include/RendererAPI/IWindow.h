@@ -20,7 +20,6 @@ namespace ramses_internal
 
         virtual Bool setFullscreen(Bool fullscreen) = 0;
         virtual Bool canRenderNewFrame() const = 0;
-        virtual Bool isOffscreen() const = 0;
         virtual void handleEvents() = 0;
         virtual void frameRendered() = 0;
         virtual UInt32 getWidth() const = 0;

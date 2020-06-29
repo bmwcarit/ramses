@@ -8,6 +8,7 @@
 
 #include "Device_GL/Device_GL_platform.h"
 #include "Device_GL/TypesConversion_GL.h"
+#include "PlatformAbstraction/Macros.h"
 
 namespace ramses_internal
 {
@@ -23,18 +24,12 @@ namespace ramses_internal
             uploadParams.type = GL_UNSIGNED_SHORT_4_4_4_4;
             uploadParams.byteAlignment = 2u;
             break;
-        case ETextureFormat_BGR8:
-            // Treat the same as RGB8, but swizzle input data
-            uploadParams.swizzleBGRXtoRGBX = true;
         case ETextureFormat_RGB8:
             uploadParams.sizedInternalFormat = GL_RGB8;
             uploadParams.baseInternalFormat = GL_RGB;
             uploadParams.type = GL_UNSIGNED_BYTE;
             uploadParams.byteAlignment = 1u;
             break;
-        case ETextureFormat_BGRA8:
-            // Treat the same as RGBA8, but swizzle input data
-            uploadParams.swizzleBGRXtoRGBX = true;
         case ETextureFormat_RGBA8:
             uploadParams.sizedInternalFormat = GL_RGBA8;
             uploadParams.baseInternalFormat = GL_RGBA;
@@ -254,6 +249,10 @@ namespace ramses_internal
             return GL_TRIANGLES;
         case EDrawMode::TriangleStrip:
             return GL_TRIANGLE_STRIP;
+        case EDrawMode::TriangleFan:
+            return GL_TRIANGLE_FAN;
+        case EDrawMode::LineStrip:
+            return GL_LINE_STRIP;
         default:
             assert(false && "Invalid draw mode");
             return GL_ZERO;
@@ -598,5 +597,28 @@ namespace ramses_internal
         default:
             return ETextureFormat_Invalid;
         }
+    }
+
+    GLenum TypesConversion_GL::GetGlColorFromTextureChannelColor(ETextureChannelColor color)
+    {
+        switch (color)
+        {
+        case ETextureChannelColor::Red:
+            return GL_RED;
+        case ETextureChannelColor::Green:
+            return GL_GREEN;
+        case ETextureChannelColor::Blue:
+            return GL_BLUE;
+        case ETextureChannelColor::Alpha:
+            return GL_ALPHA;
+        case ETextureChannelColor::One:
+            return GL_ONE;
+        case ETextureChannelColor::Zero:
+            return GL_ZERO;
+        case ETextureChannelColor::NUMBER_OF_ELEMENTS:
+            break;
+        }
+        assert(false && "Invalid texture channel color");
+        return GL_RED;
     }
 }

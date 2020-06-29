@@ -73,18 +73,10 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
         testFramework.publishAndFlushScene(consumerSceneId);
         testFramework.publishAndFlushScene(consumerOvrSceneId);
         testFramework.publishAndFlushScene(consAndProvSceneId);
-        testFramework.subscribeScene(providerSceneId);
-        testFramework.subscribeScene(consumerSceneId);
-        testFramework.subscribeScene(consumerOvrSceneId);
-        testFramework.subscribeScene(consAndProvSceneId);
-        testFramework.mapScene(providerSceneId, 0);
-        testFramework.mapScene(consumerSceneId, 0);
-        testFramework.mapScene(consumerOvrSceneId, 0);
-        testFramework.mapScene(consAndProvSceneId, 0);
-        testFramework.showScene(providerSceneId);
-        testFramework.showScene(consumerSceneId);
-        testFramework.showScene(consumerOvrSceneId);
-        testFramework.showScene(consAndProvSceneId);
+        testFramework.getSceneToRendered(providerSceneId);
+        testFramework.getSceneToRendered(consumerSceneId);
+        testFramework.getSceneToRendered(consumerOvrSceneId);
+        testFramework.getSceneToRendered(consAndProvSceneId);
         expectedImageName = "DataLinkTest_AllLinksDisabled";
         break;
     }
@@ -96,12 +88,8 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
             ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
         testFramework.publishAndFlushScene(providerSceneId);
         testFramework.publishAndFlushScene(consumerSceneId);
-        testFramework.subscribeScene(providerSceneId);
-        testFramework.subscribeScene(consumerSceneId);
-        testFramework.mapScene(providerSceneId, 0);
-        testFramework.mapScene(consumerSceneId, 0);
-        testFramework.showScene(providerSceneId);
-        testFramework.showScene(consumerSceneId);
+        testFramework.getSceneToRendered(providerSceneId);
+        testFramework.getSceneToRendered(consumerSceneId);
         testFramework.createDataLink(providerSceneId, TransformationLinkScene::transformProviderDataId, consumerSceneId, TransformationLinkScene::transformConsumerDataId);
         expectedImageName = "DataLinkTest_ConsumerLinkedToProvider";
         break;
@@ -114,12 +102,8 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
             ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
         testFramework.publishAndFlushScene(providerSceneId);
         testFramework.publishAndFlushScene(consumerOvrSceneId);
-        testFramework.subscribeScene(providerSceneId);
-        testFramework.subscribeScene(consumerOvrSceneId);
-        testFramework.mapScene(providerSceneId, 0);
-        testFramework.mapScene(consumerOvrSceneId, 0);
-        testFramework.showScene(providerSceneId);
-        testFramework.showScene(consumerOvrSceneId);
+        testFramework.getSceneToRendered(providerSceneId);
+        testFramework.getSceneToRendered(consumerOvrSceneId);
         testFramework.createDataLink(providerSceneId, TransformationLinkScene::transformProviderDataId, consumerOvrSceneId, TransformationLinkScene::transformConsumerDataId);
         expectedImageName = "DataLinkTest_LinkOverridesComsumerTransform";
         break;
@@ -132,12 +116,8 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
             ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
         testFramework.publishAndFlushScene(providerSceneId);
         testFramework.publishAndFlushScene(consumerSceneId);
-        testFramework.subscribeScene(providerSceneId);
-        testFramework.subscribeScene(consumerSceneId);
-        testFramework.mapScene(providerSceneId, 0);
-        testFramework.mapScene(consumerSceneId, 0);
-        testFramework.showScene(providerSceneId);
-        testFramework.showScene(consumerSceneId);
+        testFramework.getSceneToRendered(providerSceneId);
+        testFramework.getSceneToRendered(consumerSceneId);
         testFramework.createDataLink(providerSceneId, TransformationLinkScene::transformProviderDataId, consumerSceneId, TransformationLinkScene::transformConsumerDataId);
         testFramework.removeDataLink(consumerSceneId, TransformationLinkScene::transformConsumerDataId);
         expectedImageName = "DataLinkTest_LinkRemoved";
@@ -154,15 +134,9 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
         testFramework.publishAndFlushScene(providerSceneId);
         testFramework.publishAndFlushScene(consAndProvSceneId);
         testFramework.publishAndFlushScene(consumerSceneId);
-        testFramework.subscribeScene(providerSceneId);
-        testFramework.subscribeScene(consAndProvSceneId);
-        testFramework.subscribeScene(consumerSceneId);
-        testFramework.mapScene(providerSceneId, 0);
-        testFramework.mapScene(consAndProvSceneId, 0);
-        testFramework.mapScene(consumerSceneId, 0);
-        testFramework.showScene(providerSceneId);
-        testFramework.showScene(consAndProvSceneId);
-        testFramework.showScene(consumerSceneId);
+        testFramework.getSceneToRendered(providerSceneId);
+        testFramework.getSceneToRendered(consAndProvSceneId);
+        testFramework.getSceneToRendered(consumerSceneId);
         testFramework.createDataLink(providerSceneId, TransformationLinkScene::transformProviderDataId, consAndProvSceneId, TransformationLinkScene::transformConsumerDataId);
         testFramework.createDataLink(consAndProvSceneId, TransformationLinkScene::transformProviderDataId, consumerSceneId, TransformationLinkScene::transformConsumerDataId);
         expectedImageName = "DataLinkTest_ConsumerLinkedToProviderNested";
@@ -177,19 +151,15 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
             ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
         testFramework.publishAndFlushScene(providerSceneId);
         testFramework.publishAndFlushScene(consumerSceneId);
-        testFramework.subscribeScene(providerSceneId);
-        testFramework.subscribeScene(consumerSceneId);
-        testFramework.mapScene(providerSceneId, 0);
-        testFramework.mapScene(consumerSceneId, 0);
-        testFramework.showScene(providerSceneId);
-        testFramework.showScene(consumerSceneId);
+        testFramework.getSceneToRendered(providerSceneId);
+        testFramework.getSceneToRendered(consumerSceneId);
         testFramework.createDataLink(providerSceneId, TransformationLinkScene::transformProviderDataId, consumerSceneId, TransformationLinkScene::transformConsumerDataId);
 
         if (TransformationLinkTest_RemovedProviderFromScene == testCase.m_id)
         {
             ramses::Scene& scene = testFramework.getScenesRegistry().getScene(providerSceneId);
             ramses::RamsesObject* provider = scene.findObjectByName("transform provider");
-            assert(provider != NULL);
+            assert(provider != nullptr);
 
             scene.destroy(ramses::RamsesObjectTypeUtils::ConvertTo<ramses::SceneObject>(*provider));
             scene.flush();
@@ -198,7 +168,7 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
         {
             ramses::Scene& scene = testFramework.getScenesRegistry().getScene(consumerSceneId);
             ramses::RamsesObject* consumer = scene.findObjectByName("transform consumer");
-            assert(consumer != NULL);
+            assert(consumer != nullptr);
 
             scene.destroy(ramses::RamsesObjectTypeUtils::ConvertTo<ramses::SceneObject>(*consumer));
             scene.flush();
@@ -216,27 +186,18 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
         testFramework.publishAndFlushScene(m_sceneIdProvider);
         testFramework.publishAndFlushScene(m_sceneIdProviderConsumer);
         testFramework.publishAndFlushScene(m_sceneIdConsumer);
-
-        testFramework.subscribeScene(m_sceneIdProvider);
-        testFramework.subscribeScene(m_sceneIdProviderConsumer);
-        testFramework.subscribeScene(m_sceneIdConsumer);
-
-        testFramework.mapScene(m_sceneIdProvider);
-        testFramework.mapScene(m_sceneIdProviderConsumer);
-        testFramework.mapScene(m_sceneIdConsumer);
-
-        testFramework.showScene(m_sceneIdProvider);
-        testFramework.showScene(m_sceneIdProviderConsumer);
-        testFramework.showScene(m_sceneIdConsumer);
+        testFramework.getSceneToRendered(m_sceneIdProvider);
+        testFramework.getSceneToRendered(m_sceneIdProviderConsumer);
+        testFramework.getSceneToRendered(m_sceneIdConsumer);
 
         for (UInt32 rowId = MultiTransformationLinkScene::DataIdRowStart; rowId < MultiTransformationLinkScene::DataIdRowStart + 4u; ++rowId)
         {
-            testFramework.createDataLink(m_sceneIdProvider, rowId, m_sceneIdProviderConsumer, rowId);
+            testFramework.createDataLink(m_sceneIdProvider, ramses::dataProviderId_t{rowId}, m_sceneIdProviderConsumer, ramses::dataConsumerId_t{rowId});
         }
 
         for (UInt32 meshId = MultiTransformationLinkScene::DataIdMeshStart; meshId < MultiTransformationLinkScene::DataIdMeshStart + 16u; ++meshId)
         {
-            testFramework.createDataLink(m_sceneIdProviderConsumer, meshId, m_sceneIdConsumer, meshId);
+            testFramework.createDataLink(m_sceneIdProviderConsumer, ramses::dataProviderId_t{meshId}, m_sceneIdConsumer, ramses::dataConsumerId_t{meshId});
         }
 
         expectedImageName = "DataLinkTest_ConfidenceMultiLink";
@@ -362,12 +323,10 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
         }
 
         // unmapping scene will remove any links to it
-        testFramework.hideScene(m_sceneIdProviderConsumer);
-        testFramework.unmapScene(m_sceneIdProviderConsumer);
+        testFramework.getSceneToState(m_sceneIdProviderConsumer, ramses::RendererSceneState::Available);
 
         // when scene is mapped and shown again it should be in an initial state without links
-        testFramework.mapScene(m_sceneIdProviderConsumer);
-        testFramework.showScene(m_sceneIdProviderConsumer);
+        testFramework.getSceneToState(m_sceneIdProviderConsumer, ramses::RendererSceneState::Rendered);
 
         expectedImageName = "TextureLinkTest_NoLinks";
         break;

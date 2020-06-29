@@ -20,11 +20,11 @@ int main(int argc, char* argv[])
     /// [Minimal Example]
     // register at RAMSES daemon
     ramses::RamsesFramework framework(argc, argv);
-    ramses::RamsesClient ramses("ramses-example-minimal", framework);
+    ramses::RamsesClient& ramses(*framework.createClient("ramses-example-minimal"));
     framework.connect();
 
     // create a scene and register it at RAMSES daemon
-    ramses::Scene* scene = ramses.createScene(123u);
+    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u));
 
     // signal the scene it is in a state that can be rendered
     scene->flush();

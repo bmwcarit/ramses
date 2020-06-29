@@ -12,8 +12,8 @@ set(RendererTests-resources_MIXIN
 )
 
 RENDERER_MODULE_PER_CONFIG_STATIC(RenderingTests
-    TYPE                    TEST
-    TEST_SUFFIX             RNDSANDWICHTEST
+    TYPE                    BINARY
+    ENABLE_INSTALL          ON
 
     INCLUDE_BASE            RendererTestFramework
                             RenderingTests
@@ -30,8 +30,8 @@ RENDERER_MODULE_PER_CONFIG_STATIC(RenderingTests
 )
 
 RENDERER_MODULE_PER_CONFIG_STATIC(RendererLifecycleTests
-    TYPE                    TEST
-    TEST_SUFFIX             RNDSANDWICHTEST_SWRAST
+    TYPE                    BINARY
+    ENABLE_INSTALL          ON
 
     INCLUDE_BASE            RendererLifecycleTests
                             RendererTestFramework
@@ -83,7 +83,7 @@ ACME_MODULE(
 if(TARGET EmbeddedCompositingTests-wayland-ivi-egl-es-3-0)
     ACME_ADD_TEST(EmbeddedCompositingTests-wayland-ivi-egl-es-3-0
         RNDSANDWICHTEST_SWRAST
-        --filterOut ShowStreamTextureAfterChangingSurfaceSize
+         -lid 3 -wse wayland-100 -scc --filterOut ShowStreamTextureAfterChangingSurfaceSize -wsegn ramses-build
         )
 endif()
 
@@ -102,6 +102,14 @@ SET(GATE_PLATFORMS
 IF (ramses-sdk_BUILD_TESTS)
     FOREACH(TEST_PLATFORM ${RENDERER_CONFIG_LIST})
         IF(TARGET platform-${TEST_PLATFORM})
+            ACME_ADD_TEST(RenderingTests-${TEST_PLATFORM}
+                RNDSANDWICHTEST
+                -scc -lid 3
+            )
+            ACME_ADD_TEST(RendererLifecycleTests-${TEST_PLATFORM}
+                RNDSANDWICHTEST_SWRAST
+                -scc -lid 3
+            )
             # These tests don't work generally on emulated ES drivers
             #    MSAA and anisotropic filters are not strictly specified by OpenGL standard -> emulated driver don't support it
             #    ETC2 and ASTC compressed formats don't work with glTexSubImage()/glTexStorage() in the software emulated MESA drivers (reason: unknown, probably bug)
@@ -113,17 +121,17 @@ IF (ramses-sdk_BUILD_TESTS)
                 # A limited set of rendering tests executed in the gate (executing all tests takes too long)
                 ACME_ADD_TEST(RenderingTests-${TEST_PLATFORM}
                     RNDSANDWICHTEST_VALGRINDGATE
-                    --filterIn TextTest_AccurateText:TextureTest_Texture2D_AddressMode
+                    -scc -lid 3 --filterIn TextTest_AccurateText:TextureTest_Texture2D_AddressMode
                 )
                 # A limited set of renderer lifecycle tests executed in the gate (executing all tests takes too long)
                 ACME_ADD_TEST(RendererLifecycleTests-${TEST_PLATFORM}
                     RNDSANDWICHTEST_VALGRINDGATE
-                     --filterIn DestroyRenderer_ChangeScene_ThenRecreateRenderer:RecreateSceneWithSameId
+                     -scc -lid 3 --gtest_filter=*DestroyRenderer_ChangeScene_ThenRecreateRenderer*:*RecreateSceneWithSameId*
                 )
                 # A limited set of EC tests executed in the gate (executing all tests takes too long)
                 ACME_ADD_TEST(EmbeddedCompositingTests-${TEST_PLATFORM}
                     RNDSANDWICHTEST_VALGRINDGATE
-                     --filterIn ShowStreamTextureAfterRecreatingScene:Recreated:ClientCanBindMultipleTimes
+                     -scc -lid 3 -wse wayland-100 -wsegn ramses-build --filterIn ShowStreamTextureAfterRecreatingScene:Recreated:ClientCanBindMultipleTimes
                 )
             ENDIF()
 
@@ -131,7 +139,7 @@ IF (ramses-sdk_BUILD_TESTS)
             IF(NOT ${_INDEX} LESS 0)
                 ACME_ADD_TEST(RenderingTests-${TEST_PLATFORM}
                     RNDSANDWICHTEST_SWRAST
-                    --filterOut ${SW_EMULATION_FILTER}
+                    -scc -lid 3 --filterOut ${SW_EMULATION_FILTER}
                 )
             ENDIF()
         ENDIF()

@@ -6,14 +6,9 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-# ensure python3 can be found
-unset(PYTHONINTERP_FOUND CACHE)
-unset(PYTHON_EXECUTABLE CACHE)
-FIND_PACKAGE(PythonInterp 3)
-
-IF (PYTHONINTERP_FOUND)
+IF (ramses-sdk_PYTHON3)
     ADD_CUSTOM_TARGET(CHECK_CODE_STYLE
-        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/code_style_checker/check_all_styles.py ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMAND ${ramses-sdk_PYTHON3} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/code_style_checker/check_all_styles.py ${CMAKE_CURRENT_SOURCE_DIR}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/code_style_checker
         )
     SET_PROPERTY(TARGET CHECK_CODE_STYLE PROPERTY FOLDER "CMakePredefinedTargets")

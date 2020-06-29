@@ -17,10 +17,10 @@ namespace ramses_internal
     class WaylandClientMock : public IWaylandClient
     {
     public:
-        MOCK_METHOD3(getCredentials, void(pid_t& processId, uid_t& userId, gid_t& groupId));
-        MOCK_METHOD0(postNoMemory, void());
-        MOCK_METHOD3(resourceCreate, IWaylandResource*(const wl_interface* interface, int version, uint32_t id));
-        MOCK_METHOD3(callbackResourceCreate, WaylandCallbackResource*(const wl_interface* interface, int version, uint32_t id));
+        MOCK_METHOD(void, getCredentials, (pid_t& processId, uid_t& userId, gid_t& groupId), (override));
+        MOCK_METHOD(void, postNoMemory, (), (override));
+        MOCK_METHOD(IWaylandResource*, resourceCreate, (const wl_interface* interface, int version, uint32_t id), (override));
+        MOCK_METHOD(WaylandCallbackResource*, callbackResourceCreate, (const wl_interface* interface, int version, uint32_t id), (override));
     };
 }
 

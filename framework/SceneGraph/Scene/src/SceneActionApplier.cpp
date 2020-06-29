@@ -308,15 +308,6 @@ namespace ramses_internal
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocateRenderable(node, handle), handle);
             break;
         }
-        case ESceneActionId_SetRenderableEffect:
-        {
-            RenderableHandle renderable;
-            ResourceContentHash effectHash;
-            action.read(renderable);
-            action.read(effectHash);
-            scene.setRenderableEffect(renderable, effectHash);
-            break;
-        }
         case ESceneActionId_RemoveChildFromNode:
         {
             NodeHandle parent;
@@ -343,7 +334,9 @@ namespace ramses_internal
                 action.read(uintValue);
                 dataField.semantics = static_cast<EFixedSemantics>(uintValue);
             }
-            ALLOCATE_AND_ASSERT_HANDLE(scene.allocateDataLayout(dataFields, layoutHandle), layoutHandle);
+            ResourceContentHash effectHash;
+            action.read(effectHash);
+            ALLOCATE_AND_ASSERT_HANDLE(scene.allocateDataLayout(dataFields, effectHash, layoutHandle), layoutHandle);
             break;
         }
         case ESceneActionId_ReleaseDataLayout:
@@ -381,7 +374,7 @@ namespace ramses_internal
         case ESceneActionId_SetRenderableVisibility:
         {
             RenderableHandle renderable;
-            Bool visibility = true;
+            EVisibilityMode visibility = EVisibilityMode::Visible;
             action.read(renderable);
             action.read(visibility);
             scene.setRenderableVisibility(renderable, visibility);
@@ -405,6 +398,15 @@ namespace ramses_internal
             action.read(renderable);
             action.read(numInstances);
             scene.setRenderableInstanceCount(renderable, numInstances);
+            break;
+        }
+        case ESceneActionId_SetRenderableStartVertex:
+        {
+            RenderableHandle renderable;
+            UInt32 startVertex = 0;
+            action.read(renderable);
+            action.read(startVertex);
+            scene.setRenderableStartVertex(renderable, startVertex);
             break;
         }
         case ESceneActionId_AllocateRenderGroup:
@@ -507,7 +509,7 @@ namespace ramses_internal
         case ESceneActionId_SetForceFallback:
         {
             StreamTextureHandle handle;
-            Bool forceFallback;
+            bool forceFallback;
             action.read(handle);
             action.read(forceFallback);
             scene.setForceFallbackImage(handle, forceFallback);
@@ -728,7 +730,7 @@ namespace ramses_internal
         case ESceneActionId_SetRenderPassEnabled:
         {
             RenderPassHandle passHandle;
-            Bool isEnabled;
+            bool isEnabled;
             action.read(passHandle);
             action.read(isEnabled);
             scene.setRenderPassEnabled(passHandle, isEnabled);
@@ -737,7 +739,7 @@ namespace ramses_internal
         case ESceneActionId_SetRenderPassRenderOnce:
         {
             RenderPassHandle passHandle;
-            Bool enabled;
+            bool enabled;
             action.read(passHandle);
             action.read(enabled);
             scene.setRenderPassRenderOnce(passHandle, enabled);
@@ -770,6 +772,53 @@ namespace ramses_internal
             scene.removeRenderGroupFromRenderPass(passHandle, groupHandle);
             break;
         }
+        case ESceneActionId_AllocatePickableObject:
+        {
+            DataBufferHandle geometryHandle;
+            NodeHandle nodeHandle;
+            PickableObjectId id;
+            PickableObjectHandle pickableHandle;
+            action.read(geometryHandle);
+            action.read(nodeHandle);
+            action.read(id);
+            action.read(pickableHandle);
+            ALLOCATE_AND_ASSERT_HANDLE(scene.allocatePickableObject(geometryHandle, nodeHandle, id, pickableHandle), pickableHandle);
+            break;
+        }
+        case ESceneActionId_ReleasePickableObject:
+        {
+            PickableObjectHandle pickableHandle;
+            action.read(pickableHandle);
+            scene.releasePickableObject(pickableHandle);
+            break;
+        }
+        case ESceneActionId_SetPickableObjectId:
+        {
+            PickableObjectHandle pickableHandle;
+            PickableObjectId id;
+            action.read(pickableHandle);
+            action.read(id);
+            scene.setPickableObjectId(pickableHandle, id);
+            break;
+        }
+        case ESceneActionId_SetPickableObjectCamera:
+        {
+            PickableObjectHandle pickableHandle;
+            CameraHandle cameraHandle;
+            action.read(pickableHandle);
+            action.read(cameraHandle);
+            scene.setPickableObjectCamera(pickableHandle, cameraHandle);
+            break;
+        }
+        case ESceneActionId_SetPickableObjectEnabled:
+        {
+            PickableObjectHandle pickableHandle;
+            bool           isEnabled;
+            action.read(pickableHandle);
+            action.read(isEnabled);
+            scene.setPickableObjectEnabled(pickableHandle, isEnabled);
+            break;
+        }
         case ESceneActionId_AllocateBlitPass:
         {
             BlitPassHandle passHandle;
@@ -800,7 +849,7 @@ namespace ramses_internal
         case ESceneActionId_SetBlitPassEnabled:
         {
             BlitPassHandle passHandle;
-            Bool isEnabled;
+            bool isEnabled;
             action.read(passHandle);
             action.read(isEnabled);
             scene.setBlitPassEnabled(passHandle, isEnabled);
@@ -1039,6 +1088,49 @@ namespace ramses_internal
             scene.updateTextureBuffer(handle, mipLevel, x, y, width, height, data);
             break;
         }
+        case ESceneActionId_AllocateSceneReference:
+        {
+            SceneReferenceHandle handle;
+            SceneId sceneId;
+            action.read(handle);
+            action.read(sceneId);
+            ALLOCATE_AND_ASSERT_HANDLE(scene.allocateSceneReference(sceneId, handle), handle);
+            break;
+        }
+        case ESceneActionId_ReleaseSceneReference:
+        {
+            SceneReferenceHandle handle;
+            action.read(handle);
+            scene.releaseSceneReference(handle);
+            break;
+        }
+        case ESceneActionId_RequestSceneReferenceState:
+        {
+            SceneReferenceHandle handle;
+            RendererSceneState state;
+            action.read(handle);
+            action.read(state);
+            scene.requestSceneReferenceState(handle, state);
+            break;
+        }
+        case ESceneActionId_SetSceneReferenceRenderOrder:
+        {
+            SceneReferenceHandle handle;
+            int32_t renderOrder;
+            action.read(handle);
+            action.read(renderOrder);
+            scene.setSceneReferenceRenderOrder(handle, renderOrder);
+            break;
+        }
+        case ESceneActionId_RequestSceneReferenceFlushNotifications:
+        {
+            SceneReferenceHandle handle;
+            bool enable;
+            action.read(handle);
+            action.read(enable);
+            scene.requestSceneReferenceFlushNotifications(handle, enable);
+            break;
+        }
         case ESceneActionId_AddAnimationSystem:
         {
             AnimationSystemHandle animSystemHandle;
@@ -1184,7 +1276,7 @@ namespace ramses_internal
             action.read(splineHandle);
             SplineTimeStamp timeStamp;
             action.read(timeStamp);
-            Bool value;
+            bool value;
             action.read(value);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
@@ -1683,17 +1775,14 @@ namespace ramses_internal
         {
             RenderableHandle renderable;
             RenderStateHandle stateHandle;
-            ResourceContentHash effectHash;
             DataInstanceHandle uniformInstanceHandle;
 
             action.read(renderable);
             action.read(uniformInstanceHandle);
             action.read(stateHandle);
-            action.read(effectHash);
 
             scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Uniforms, uniformInstanceHandle);
             scene.setRenderableRenderState(renderable, stateHandle);
-            scene.setRenderableEffect(renderable, effectHash);
 
             break;
         }
@@ -1706,10 +1795,10 @@ namespace ramses_internal
             NodeHandle node;
             UInt32 startIndex;
             UInt32 indexCount;
-            ResourceContentHash effectHash;
             RenderStateHandle stateHandle;
-            Bool visible;
+            EVisibilityMode visible;
             UInt32 instanceCount;
+            UInt32 startVertex;
             DataInstanceHandle geoInstanceHandle;
             DataInstanceHandle uniformInstanceHandle;
 
@@ -1717,10 +1806,10 @@ namespace ramses_internal
             action.read(node);
             action.read(startIndex);
             action.read(indexCount);
-            action.read(effectHash);
             action.read(stateHandle);
             action.read(visible);
             action.read(instanceCount);
+            action.read(startVertex);
             action.read(geoInstanceHandle);
             action.read(uniformInstanceHandle);
 
@@ -1731,14 +1820,9 @@ namespace ramses_internal
                 scene.setRenderableStartIndex(renderable, startIndex);
             }
             scene.setRenderableIndexCount(renderable, indexCount);
-
-            if(effectHash.isValid())
-            {
-                scene.setRenderableEffect(renderable, effectHash);
-            }
             scene.setRenderableRenderState(renderable, stateHandle);
 
-            if(!visible)
+            if(visible != EVisibilityMode::Visible)
             {
                 scene.setRenderableVisibility(renderable, visible);
             }
@@ -1746,6 +1830,11 @@ namespace ramses_internal
             if(instanceCount != 1u)
             {
                 scene.setRenderableInstanceCount(renderable, instanceCount);
+            }
+
+            if (startVertex != 0u)
+            {
+                scene.setRenderableStartVertex(renderable, startVertex);
             }
 
             static_assert(ERenderableDataSlotType_MAX_SLOTS==2u
@@ -1864,42 +1953,26 @@ namespace ramses_internal
         }
     }
 
-    void SceneActionApplier::ApplyActionRangeOnScene(IScene& scene, const SceneActionCollection& actions, UInt startIdx, UInt endIdx, AnimationSystemFactory* animSystemFactory, ResourceVector* resources)
-    {
-        assert(startIdx <= endIdx);
-        assert(endIdx <= actions.numberOfActions());
-
-        for (UInt idx = startIdx; idx < endIdx; ++idx)
-        {
-            SceneActionCollection::SceneActionReader reader(actions[idx]);
-            ApplySingleActionOnScene(scene, reader, animSystemFactory, resources);
-        }
-    }
-
     void SceneActionApplier::ReadParameterForFlushAction(
         SceneActionCollection::SceneActionReader action,
         UInt64& flushIndex,
-        Bool& isSync,
-        Bool& hasSizeInfo,
+        bool& hasSizeInfo,
         SceneSizeInformation& sizeInfo,
         SceneResourceChanges& resourceChanges,
+        SceneReferenceActionVector& sceneReferenceActions,
         FlushTimeInformation& flushTimeInfo,
-        SceneVersionTag& versionTag,
-        TimeStampVector* timestamps)
+        SceneVersionTag& versionTag)
     {
         assert(action.type() == ESceneActionId_Flush);
         action.read(flushIndex);
         uint8_t flushFlags = 0u;
         action.read(flushFlags);
-        isSync = (flushFlags & ESceneActionFlushBits_Synchronous) != 0;
         hasSizeInfo = (flushFlags & ESceneActionFlushBits_HasSizeInfo) != 0;
-        const bool hasTimestamps = (flushFlags & ESceneActionFlushBits_HasTimestamps) != 0;
 
         if (hasSizeInfo)
-        {
             GetSceneSizeInformation(action, sizeInfo);
-        }
         resourceChanges.getFromSceneAction(action);
+        SceneReferenceActionUtils::ReadFromCollection(sceneReferenceActions, action);
 
         UInt64 tsVal = 0;
         action.read(tsVal);
@@ -1909,27 +1982,6 @@ namespace ramses_internal
 
         action.read(versionTag);
 
-        if (hasTimestamps)
-        {
-            UInt32 timestampCount = 0;
-            action.read(timestampCount);
-            assert(timestampCount > 0u);
-
-            if (timestamps)
-            {
-                timestamps->resize(timestampCount);
-                for (auto& ts : *timestamps)
-                {
-                    action.read(ts);
-                }
-            }
-            else
-            {
-                UInt64 dummyTs = 0;
-                for (UInt32 i = 0; i < timestampCount; ++i)
-                    action.read(dummyTs);
-            }
-        }
         assert(action.isFullyRead());
     }
 
@@ -1953,5 +2005,7 @@ namespace ramses_internal
         action.read(sizeInfo.dataBufferCount);
         action.read(sizeInfo.animationSystemCount);
         action.read(sizeInfo.textureBufferCount);
+        action.read(sizeInfo.pickableObjectCount);
+        action.read(sizeInfo.sceneReferenceCount);
     }
 }

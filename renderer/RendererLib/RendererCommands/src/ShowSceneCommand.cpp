@@ -84,7 +84,7 @@ namespace ramses_internal
 
         if (sceneState==ESceneState::Subscribed)
         {
-            m_renderer.getRendererCommandBuffer().mapSceneToDisplay(sceneId, DisplayHandle(displayId), 0);
+            m_renderer.getRendererCommandBuffer().mapSceneToDisplay(sceneId, DisplayHandle(displayId));
             sceneState=waitForSceneState(sceneId,ESceneState::Mapped);
             if (sceneState!=ESceneState::Mapped)
             {

@@ -11,17 +11,19 @@
 
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "PlatformAbstraction/PlatformMemory.h"
+#include "PlatformAbstraction/Macros.h"
 #include <memory>
 
 namespace ramses_internal
 {
-    template <typename T>
+    template <typename T, typename _uniqueId = void>
     class HeapArray
     {
         static_assert(std::is_integral<T>::value, "only integral types allowed");
 
     public:
         explicit HeapArray(UInt size = 0, const T* data = nullptr);
+        HeapArray(UInt size, HeapArray&& other);
 
         HeapArray(const HeapArray&) = delete;
         HeapArray& operator=(const HeapArray&) = delete;
@@ -40,9 +42,9 @@ namespace ramses_internal
         std::unique_ptr<T[]> m_data;
     };
 
-    template <typename T>
+    template <typename T, typename _uniqueId>
     inline
-    HeapArray<T>::HeapArray(UInt size, const T* data)
+    HeapArray<T, _uniqueId>::HeapArray(UInt size, const T* data)
         : m_size(size)
         , m_data(m_size > 0 ? new T[m_size] : nullptr)
     {
@@ -52,18 +54,29 @@ namespace ramses_internal
         }
     }
 
-    template <typename T>
+    template <typename T, typename _uniqueId>
     inline
-    HeapArray<T>::HeapArray(HeapArray&& o) noexcept
+    HeapArray<T, _uniqueId>::HeapArray(UInt size, HeapArray&& other)
+        : m_size(size)
+        , m_data(std::move(other.m_data))
+    {
+        static_assert(std::is_nothrow_move_constructible<HeapArray>::value, "HeapArray must be movable");
+        other.m_size = 0;
+    }
+
+    template <typename T, typename _uniqueId>
+    inline
+    HeapArray<T, _uniqueId>::HeapArray(HeapArray&& o) noexcept
         : m_size(o.m_size)
         , m_data(std::move(o.m_data))
     {
+        static_assert(std::is_nothrow_move_assignable<HeapArray>::value, "HeapArray must be movable");
         o.m_size = 0;
     }
 
-    template <typename T>
+    template <typename T, typename _uniqueId>
     inline
-    HeapArray<T>& HeapArray<T>::operator=(HeapArray&& o) noexcept
+    HeapArray<T, _uniqueId>& HeapArray<T, _uniqueId>::operator=(HeapArray&& o) noexcept
     {
         if (&o != this)
         {
@@ -74,30 +87,30 @@ namespace ramses_internal
         return *this;
     }
 
-    template <typename T>
+    template <typename T, typename _uniqueId>
     inline
-    UInt HeapArray<T>::size() const
+    UInt HeapArray<T, _uniqueId>::size() const
     {
         return m_size;
     }
 
-    template <typename T>
+    template <typename T, typename _uniqueId>
     inline
-    T* HeapArray<T>::data()
+    T* HeapArray<T, _uniqueId>::data()
     {
         return m_data.get();
     }
 
-    template <typename T>
+    template <typename T, typename _uniqueId>
     inline
-    const T* HeapArray<T>::data() const
+    const T* HeapArray<T, _uniqueId>::data() const
     {
         return m_data.get();
     }
 
-    template <typename T>
+    template <typename T, typename _uniqueId>
     inline
-    void HeapArray<T>::setZero()
+    void HeapArray<T, _uniqueId>::setZero()
     {
         if (m_data)
         {

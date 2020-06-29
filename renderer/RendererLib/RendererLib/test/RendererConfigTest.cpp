@@ -34,24 +34,24 @@ TEST(AInternalRendererConfig, canEnableSystemCompositorControl)
 TEST(AInternalRendererConfig, canGetSetWaylandSocketEmbedded)
 {
     ramses_internal::RendererConfig config;
-    config.setWaylandSocketEmbedded("wayland-11");
+    config.setWaylandEmbeddedCompositingSocketName("wayland-11");
     EXPECT_EQ(ramses_internal::String("wayland-11"), config.getWaylandSocketEmbedded());
 }
 
 TEST(AInternalRendererConfig, canGetSetWaylandSocketEmbeddedGroupName)
 {
     ramses_internal::RendererConfig config;
-    config.setWaylandSocketEmbeddedGroup("groupname1");
+    config.setWaylandEmbeddedCompositingSocketGroup("groupname1");
     EXPECT_EQ(ramses_internal::String("groupname1"), config.getWaylandSocketEmbeddedGroup());
 
-    config.setWaylandSocketEmbeddedGroup("group2");
+    config.setWaylandEmbeddedCompositingSocketGroup("group2");
     EXPECT_EQ(ramses_internal::String("group2"), config.getWaylandSocketEmbeddedGroup());
 }
 
 TEST(AInternalRendererConfig, canGetSetWaylandSocketEmbeddedFD)
 {
     ramses_internal::RendererConfig config;
-    config.setWaylandSocketEmbeddedFD(42);
+    config.setWaylandEmbeddedCompositingSocketFD(42);
     EXPECT_EQ(42, config.getWaylandSocketEmbeddedFD());
 }
 

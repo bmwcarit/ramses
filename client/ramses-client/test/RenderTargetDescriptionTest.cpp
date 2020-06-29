@@ -91,7 +91,7 @@ namespace ramses
         const RenderBuffer& colorRb = *m_scene.createRenderBuffer(1u, 1u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
         EXPECT_EQ(StatusOK, rtDesc.addRenderBuffer(colorRb));
 
-        Scene& otherScene = *client.createScene(666u);
+        Scene& otherScene = *client.createScene(sceneId_t(666u));
         const RenderBuffer& otherRb = *otherScene.createRenderBuffer(1u, 1u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
         EXPECT_NE(StatusOK, rtDesc.addRenderBuffer(otherRb));
 

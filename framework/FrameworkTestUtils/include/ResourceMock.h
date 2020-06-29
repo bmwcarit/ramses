@@ -11,7 +11,6 @@
 
 #include "Resource/IResource.h"
 #include "gmock/gmock.h"
-#include "Transfer/ResourceTypes.h"
 #include "Components/IManagedResourceDeleterCallback.h"
 
 namespace ramses_internal
@@ -24,27 +23,27 @@ namespace ramses_internal
         ResourceMock(ResourceContentHash hash, EResourceType typeId);
         virtual ~ResourceMock();
 
-        MOCK_CONST_METHOD0(getResourceData, const SceneResourceData&());
-        MOCK_CONST_METHOD0(getCompressedResourceData, const CompressedSceneResourceData&());
-        MOCK_CONST_METHOD0(getDecompressedDataSize, UInt32());
-        MOCK_CONST_METHOD0(getCompressedDataSize, UInt32());
-        MOCK_CONST_METHOD0(isCompressedAvailable, ramses_internal::Bool());
-        MOCK_CONST_METHOD0(isDeCompressedAvailable, ramses_internal::Bool());
-        MOCK_CONST_METHOD1(compress, void(CompressionLevel));
-        MOCK_CONST_METHOD0(decompress, void());
-        MOCK_METHOD2(setResourceData, void(const SceneResourceData&, const ResourceContentHash&));
-        MOCK_METHOD1(setResourceData, void(const SceneResourceData&));
-        MOCK_METHOD2(setCompressedResourceData, void(const CompressedSceneResourceData&, const ResourceContentHash&));
-        MOCK_CONST_METHOD1(serializeResourceMetadataToStream, void(IOutputStream& output));
-        MOCK_CONST_METHOD0(getCacheFlag, ResourceCacheFlag());
-        MOCK_CONST_METHOD0(getName, const String&());
+        MOCK_METHOD(const ResourceBlob&, getResourceData, (), (const, override));
+        MOCK_METHOD(const CompressedResouceBlob&, getCompressedResourceData, (), (const, override));
+        MOCK_METHOD(UInt32, getDecompressedDataSize, (), (const, override));
+        MOCK_METHOD(UInt32, getCompressedDataSize, (), (const, override));
+        MOCK_METHOD(bool, isCompressedAvailable, (), (const, override));
+        MOCK_METHOD(bool, isDeCompressedAvailable, (), (const, override));
+        MOCK_METHOD(void, compress, (CompressionLevel), (const, override));
+        MOCK_METHOD(void, decompress, (), (const, override));
+        MOCK_METHOD(void, setResourceData, (ResourceBlob, const ResourceContentHash&), (override));
+        MOCK_METHOD(void, setResourceData, (ResourceBlob), (override));
+        MOCK_METHOD(void, setCompressedResourceData, (CompressedResouceBlob, uint32_t uncompressedSize, const ResourceContentHash&), (override));
+        MOCK_METHOD(void, serializeResourceMetadataToStream, (IOutputStream& output), (const, override));
+        MOCK_METHOD(ResourceCacheFlag, getCacheFlag, (), (const, override));
+        MOCK_METHOD(const String&, getName, (), (const, override));
 
-        virtual const ResourceContentHash& getHash() const
+        virtual const ResourceContentHash& getHash() const override
         {
             return m_hash;
         }
 
-        virtual EResourceType getTypeID() const
+        virtual EResourceType getTypeID() const override
         {
             return m_typeId;
         }
@@ -56,7 +55,7 @@ namespace ramses_internal
     class ManagedResourceDeleterCallbackMock : public IManagedResourceDeleterCallback
     {
     public:
-        MOCK_METHOD1(managedResourceDeleted, void(const IResource&));
+        MOCK_METHOD(void, managedResourceDeleted, (const IResource&), (override));
     };
 
     class ResourceWithDestructorMock : public ResourceMock
@@ -67,7 +66,7 @@ namespace ramses_internal
         {
         }
 
-        MOCK_METHOD0(Die, void());
+        MOCK_METHOD(void, Die, ());
 
         virtual ~ResourceWithDestructorMock()
         {

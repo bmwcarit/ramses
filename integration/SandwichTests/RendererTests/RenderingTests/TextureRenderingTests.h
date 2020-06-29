@@ -29,12 +29,13 @@ private:
         TextureTest_Texture2D_Format_R8 = 0,
         TextureTest_Texture2D_Format_RG8,
         TextureTest_Texture2D_Format_RGB8,
+        TextureTest_Texture2D_Format_Swizzled_Luminance_Alpha,
         TextureTest_Texture2D_Format_RGB565,
         TextureTest_Texture2D_Format_RGBA8,
         TextureTest_Texture2D_Format_RGBA4,
         TextureTest_Texture2D_Format_RGBA5551,
-        TextureTest_Texture2D_Format_BGR8,
-        TextureTest_Texture2D_Format_BGRA8,
+        TextureTest_Texture2D_Format_Swizzled_BGR8,
+        TextureTest_Texture2D_Format_Swizzled_BGRA8,
         TextureTest_Texture2D_Format_ETC2RGB,
         TextureTest_Texture2D_Format_ETC2RGBA,
         TextureTest_Texture2D_Format_R16F,
@@ -66,6 +67,7 @@ private:
 
         TextureTest_Texture3D_RGBA8,
         TextureTest_CubeMap_RGBA8,
+        TextureTest_CubeMap_BGRA_Swizzled,
         TextureTest_CubeMap_Float,
         TextureTest_TextureCube_AnisotropicFilter,
 

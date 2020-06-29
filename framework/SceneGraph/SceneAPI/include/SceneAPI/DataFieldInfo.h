@@ -17,21 +17,21 @@ namespace ramses_internal
 {
     struct DataFieldInfo
     {
-        DataFieldInfo(EDataType dataType_ = EDataType_Invalid, UInt32 elementCount_ = 1u, EFixedSemantics semantics_ = EFixedSemantics_Invalid)
+        explicit DataFieldInfo(EDataType dataType_ = EDataType_Invalid, UInt32 elementCount_ = 1u, EFixedSemantics semantics_ = EFixedSemantics_Invalid)
             : dataType(dataType_)
             , elementCount(elementCount_)
             , semantics(semantics_)
         {
         }
 
-        Bool operator==(const DataFieldInfo& other) const
+        bool operator==(const DataFieldInfo& other) const
         {
             return dataType == other.dataType
                 && elementCount == other.elementCount
                 && semantics == other.semantics;
         }
 
-        Bool operator!=(const DataFieldInfo& other) const
+        bool operator!=(const DataFieldInfo& other) const
         {
             return !operator==(other);
         }

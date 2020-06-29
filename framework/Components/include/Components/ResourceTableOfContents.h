@@ -22,8 +22,8 @@ namespace ramses_internal
 {
     struct ResourceFileEntry
     {
-        UInt32 offsetInBytes;
-        UInt32 sizeInBytes;
+        UInt32 offsetInBytes = 0;
+        UInt32 sizeInBytes = 0;
         ResourceInfo resourceInfo;
     };
 
@@ -32,11 +32,11 @@ namespace ramses_internal
     class ResourceTableOfContents
     {
     public:
-        Bool containsResource(const ResourceContentHash& hash) const;
+        bool containsResource(const ResourceContentHash& hash) const;
         void registerContents(const ResourceInfo& info, UInt32 offsetInBytes, UInt32 sizeInBytes);
         const ResourceFileEntry& getEntryForHash(const ResourceContentHash& hash) const;
         const TableOfContentsMap& getFileContents() const;
-        Bool readTOCPosAndTOCFromStream(BinaryFileInputStream& instream);
+        bool readTOCPosAndTOCFromStream(BinaryFileInputStream& instream);
         void writeTOCToStream(IOutputStream& outstream);
 
     private:

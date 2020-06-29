@@ -11,7 +11,8 @@
 
 #include "RendererAPI/ELoopMode.h"
 #include "PlatformAbstraction/PlatformThread.h"
-#include "PlatformAbstraction/PlatformConditionVariable.h"
+#include <mutex>
+#include <condition_variable>
 
 namespace ramses_internal
 {
@@ -21,7 +22,7 @@ namespace ramses_internal
     class RendererLoopThreadController : public Runnable
     {
     public:
-        RendererLoopThreadController(WindowedRenderer& windowedRenderer, PlatformWatchdog& watchdog);
+        RendererLoopThreadController(WindowedRenderer& windowedRenderer, PlatformWatchdog& watchdog, std::chrono::milliseconds loopCountPeriod);
         ~RendererLoopThreadController();
 
         Bool startRendering();
@@ -35,20 +36,27 @@ namespace ramses_internal
 
     private:
         virtual void run() override;
+
+        void calculateLooptimeAverage(const std::chrono::microseconds loopDuration, const uint64_t loopEndTime);
+
         std::chrono::milliseconds sleepToControlFramerate(std::chrono::microseconds loopDuration, std::chrono::microseconds minimumFrameDuration);
 
         WindowedRenderer* m_windowedRenderer;
         PlatformWatchdog& m_watchdog;
         PlatformThread m_thread;
-        mutable PlatformLightweightLock m_lock;
-        PlatformConditionVariable m_sleepConditionVar;
+        mutable std::mutex m_lock;
+        std::condition_variable m_sleepConditionVar;
         Bool m_doRendering;
-        std::chrono::microseconds m_minimumFrameDuration;
+        std::chrono::microseconds m_targetMinimumFrameDuration;
         Bool m_threadStarted;
-        ELoopMode m_loopMode = ELoopMode_UpdateAndRender;
-        PlatformConditionVariable m_rendererDestroyedCondVar;
-
+        ELoopMode m_loopMode = ELoopMode::UpdateAndRender;
+        std::condition_variable m_rendererDestroyedCondVar;
         Bool m_destroyRenderer;
+        std::chrono::milliseconds m_loopCountPeriod;
+        uint64_t m_lastPeriodLoopCountReportingTimeMicroseconds{ 0 };
+        std::chrono::microseconds m_maximumLoopTimeInPeriod{ 0 };
+        uint64_t m_numberOfLoopsInPeriod{ 0 };
+        std::chrono::microseconds m_sumOfLoopTimeInPeriod{ 0 };
     };
 }
 

@@ -41,7 +41,7 @@ namespace ramses
         void unpublishScene()
         {
             EXPECT_CALL(sceneActionsCollector, handleScenesBecameUnavailable(
-                ramses_internal::SceneInfoVector(1, ramses_internal::SceneInfo(ramses_internal::SceneId(m_scene.impl.getSceneId()))), _));
+                ramses_internal::SceneInfoVector(1, ramses_internal::SceneInfo(ramses_internal::SceneId(m_scene.impl.getSceneId().getValue()))), _));
             EXPECT_EQ(StatusOK, m_scene.unpublish());
         }
 
@@ -69,13 +69,13 @@ namespace ramses
 
         void expectSceneOperationsSent()
         {
-            EXPECT_CALL(sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(m_scene.impl.getSceneId()), _, _, _));
+            EXPECT_CALL(sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(m_scene.impl.getSceneId().getValue()), _, _, _));
         }
 
         void expectSceneUnpublication()
         {
             EXPECT_CALL(sceneActionsCollector, handleScenesBecameUnavailable(
-                ramses_internal::SceneInfoVector(1, ramses_internal::SceneInfo(ramses_internal::SceneId(m_scene.impl.getSceneId()))), _));
+                ramses_internal::SceneInfoVector(1, ramses_internal::SceneInfo(ramses_internal::SceneId(m_scene.impl.getSceneId().getValue()))), _));
         }
 
     protected:
@@ -139,9 +139,8 @@ namespace ramses
     TEST_F(ADistributedScene, destroyingSceneCausesUnpublish)
     {
         const ramses_internal::SceneId sceneId(33u);
-        Scene* otherScene = client.createScene(sceneId.getValue());
+        Scene* otherScene = client.createScene(ramses::sceneId_t(sceneId.getValue()));
         ASSERT_TRUE(otherScene != nullptr);
-        const ramses_internal::SceneId sceneID(otherScene->impl.getSceneId());
         const ramses_internal::IScene& otherIScene = otherScene->impl.getIScene();
 
         ramses_internal::SceneInfo sceneInfo(sceneId, otherIScene.getName());
@@ -160,9 +159,8 @@ namespace ramses
         expectSceneOperationsSent();
         m_scene.flush();
         sceneActionsCollector.resetCollecting();
-        expectSceneOperationsSent();
         m_scene.flush();
-        EXPECT_EQ(1u, sceneActionsCollector.getNumReceivedActionLists());
+        EXPECT_EQ(0u, sceneActionsCollector.getNumReceivedActionLists());
         expectSceneUnpublication();
     }
 }

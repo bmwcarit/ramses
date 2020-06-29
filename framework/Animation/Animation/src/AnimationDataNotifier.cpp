@@ -48,7 +48,7 @@ namespace ramses_internal
         }
     }
 
-    void AnimationDataNotifier::notifyAnimationPauseChanged(AnimationHandle handle, Bool pause)
+    void AnimationDataNotifier::notifyAnimationPauseChanged(AnimationHandle handle, bool pause)
     {
         for (auto obs : m_observers)
         {

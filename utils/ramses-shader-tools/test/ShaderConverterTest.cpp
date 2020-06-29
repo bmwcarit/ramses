@@ -30,7 +30,7 @@ class AShaderConverter : public testing::Test
 protected:
     AShaderConverter()
         : framework()
-        , ramsesClient("shader-tool-test client", framework)
+        , ramsesClient(*framework.createClient("shader-tool-test client"))
     {
         cleanupOutputFiles();
     }
@@ -70,7 +70,7 @@ protected:
     ramses::AttributeInput attributeInput;
 
     ramses::RamsesFramework framework;
-    ramses::RamsesClient ramsesClient;
+    ramses::RamsesClient& ramsesClient;
 };
 
 TEST_F(AShaderConverter, canConvertShaderFromGlslShaderWithCompilerDefines)
@@ -83,7 +83,7 @@ TEST_F(AShaderConverter, canConvertShaderFromGlslShaderWithCompilerDefines)
         "-ov", OUTPUT_VERTEX_SHADER,
         "-of", OUTPUT_FRAGMENT_SHADER,
         "-ot", "client",
-        "-oe", OUTPUT_HASH, NULL };
+        "-oe", OUTPUT_HASH, nullptr };
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesShaderFromGLSLShaderArguments arguments;
@@ -92,7 +92,7 @@ TEST_F(AShaderConverter, canConvertShaderFromGlslShaderWithCompilerDefines)
     checkExistanceOfOutputFiles(true);
 
     ramses::Effect* fromOutputEffect = createEffectFromOutputFiles();
-    ASSERT_TRUE(fromOutputEffect != NULL);
+    ASSERT_TRUE(fromOutputEffect != nullptr);
 
     EXPECT_EQ(ramses::StatusOK, fromOutputEffect->findUniformInput("matrix44fInput", uniformInput));
     EXPECT_EQ(ramses::StatusOK, fromOutputEffect->findUniformInput("texture2dInput", uniformInput));
@@ -110,7 +110,7 @@ TEST_F(AShaderConverter, canConvertShaderFromGlslShaderWithoutCompilerDefines)
         "-ov", OUTPUT_VERTEX_SHADER,
         "-of", OUTPUT_FRAGMENT_SHADER,
         "-ot", "client",
-        "-oe", OUTPUT_HASH, NULL };
+        "-oe", OUTPUT_HASH, nullptr };
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesShaderFromGLSLShaderArguments arguments;
@@ -119,7 +119,7 @@ TEST_F(AShaderConverter, canConvertShaderFromGlslShaderWithoutCompilerDefines)
     checkExistanceOfOutputFiles(true);
 
     ramses::Effect* fromOutputEffect = createEffectFromOutputFiles();
-    ASSERT_TRUE(fromOutputEffect != NULL);
+    ASSERT_TRUE(fromOutputEffect != nullptr);
 
     EXPECT_EQ(ramses::StatusOK, fromOutputEffect->findAttributeInput("floatArrayInput", attributeInput));  // enabled by NOT providing define
 }
@@ -134,7 +134,7 @@ TEST_F(AShaderConverter, reportsErrorWhenConvertingInvalidShader)
         "-ov", OUTPUT_VERTEX_SHADER,
         "-of", OUTPUT_FRAGMENT_SHADER,
         "-ot", "client",
-        "-oe", OUTPUT_HASH, NULL };
+        "-oe", OUTPUT_HASH, nullptr };
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesShaderFromGLSLShaderArguments arguments;
@@ -153,7 +153,7 @@ TEST_F(AShaderConverter, generateHashFileWithLowLevelHash)
         "-ov", OUTPUT_VERTEX_SHADER,
         "-of", OUTPUT_FRAGMENT_SHADER,
         "-ot", "renderer",
-        "-oe", OUTPUT_HASH, NULL };
+        "-oe", OUTPUT_HASH, nullptr };
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesShaderFromGLSLShaderArguments arguments;
@@ -171,7 +171,7 @@ TEST_F(AShaderConverter, generateHashFileWithLowLevelHash)
     effectDesc.setUniformSemantic("texture2dInput", ramses::EEffectUniformSemantic_TextTexture);
     effectDesc.setAttributeSemantic("vec2fArrayInput", ramses::EEffectAttributeSemantic_TextPositions);
     ramses::Effect* fromOutputEffect = ramsesClient.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
-    ASSERT_TRUE(fromOutputEffect != NULL);
+    ASSERT_TRUE(fromOutputEffect != nullptr);
 
     ramses_internal::StringOutputStream llHashStream;
     llHashStream << fromOutputEffect->impl.getLowlevelResourceHash() << "\n";
@@ -189,7 +189,7 @@ TEST_F(AShaderConverter, generateHashFileWithHighLevelHash)
         "-ov", OUTPUT_VERTEX_SHADER,
         "-of", OUTPUT_FRAGMENT_SHADER,
         "-ot", "client",
-        "-oe", OUTPUT_HASH, NULL };
+        "-oe", OUTPUT_HASH, nullptr };
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesShaderFromGLSLShaderArguments arguments;
@@ -207,7 +207,7 @@ TEST_F(AShaderConverter, generateHashFileWithHighLevelHash)
     effectDesc.setUniformSemantic("texture2dInput", ramses::EEffectUniformSemantic_TextTexture);
     effectDesc.setAttributeSemantic("vec2fArrayInput", ramses::EEffectAttributeSemantic_TextPositions);
     ramses::Effect* fromOutputEffect = ramsesClient.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
-    ASSERT_TRUE(fromOutputEffect != NULL);
+    ASSERT_TRUE(fromOutputEffect != nullptr);
 
     ramses_internal::StringOutputStream hlHashStream;
     const auto effectId = fromOutputEffect->impl.getResourceId();
@@ -228,7 +228,7 @@ TEST_F(AShaderConverter, generateHashFileWithHighLevelHashWithCorrectEffectName)
         "-of", OUTPUT_FRAGMENT_SHADER,
         "-ot", "client",
         "-oe", OUTPUT_HASH,
-        "-on", "otherName", NULL };
+        "-on", "otherName", nullptr };
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesShaderFromGLSLShaderArguments arguments;
@@ -246,7 +246,7 @@ TEST_F(AShaderConverter, generateHashFileWithHighLevelHashWithCorrectEffectName)
     effectDesc.setUniformSemantic("texture2dInput", ramses::EEffectUniformSemantic_TextTexture);
     effectDesc.setAttributeSemantic("vec2fArrayInput", ramses::EEffectAttributeSemantic_TextPositions);
     ramses::Effect* fromOutputEffect = ramsesClient.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "otherName");
-    ASSERT_TRUE(fromOutputEffect != NULL);
+    ASSERT_TRUE(fromOutputEffect != nullptr);
 
     ramses_internal::StringOutputStream hlHashStream;
     const auto effectId = fromOutputEffect->impl.getResourceId();

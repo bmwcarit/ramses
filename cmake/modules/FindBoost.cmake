@@ -18,7 +18,7 @@ ELSE()
     # handle linux and windows separately, not much in common
     IF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         # boost path in container
-        SET(Boost_BASE_PATH /opt/boost/X86_${TARGET_BITNESS}/)
+        SET(Boost_BASE_PATH /opt/boost/ CACHE STRING "Path to boost prebuilt package")
 
         # try to find libs and includes
         FIND_LIBRARY(boost_system_LIBRARY

@@ -5,7 +5,6 @@
 #  License, v. 2.0. If a copy of the MPL was not distributed with this
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
-import time, re
 
 from ramses_test_framework import test_classes
 from ramses_test_framework import log
@@ -44,11 +43,11 @@ class TestMultipleIVILayers(test_classes.OnSelectedTargetsTest):
             self.ramsesDaemon = self.target.start_daemon()
             self.checkThatApplicationWasStarted(self.ramsesDaemon)
             self.addCleanup(self.target.kill_application, self.ramsesDaemon)
-            self.rendererLeft = self.target.start_default_renderer(nameExtension="left", args="--waylandIviLayerId {0} --waylandIviSurfaceID {1} --wayland-socket-embedded wayland-13 --disableAutoMapping -w 640".format(firstLayerIviId, self.firstSurfaceIviId))
+            self.rendererLeft = self.target.start_default_renderer(nameExtension="left", args="--waylandIviLayerId {0} --waylandIviSurfaceID {1} --wayland-socket-embedded wayland-13 -w 640".format(firstLayerIviId, self.firstSurfaceIviId))
             self.checkThatApplicationWasStarted(self.rendererLeft)
             self.addCleanup(self.target.kill_application, self.rendererLeft)
             self.rendererLeft.send_ramsh_command("skipUnmodifiedBuffers 0", waitForRendererConfirmation=True)
-            self.rendererRight = self.target.start_default_renderer(nameExtension="right", args="--waylandIviLayerId {0} --waylandIviSurfaceID {1} --wayland-socket-embedded wayland-15 --disableAutoMapping -w 640".format(secondLayerIviId, self.secondSurfaceIviId))
+            self.rendererRight = self.target.start_default_renderer(nameExtension="right", args="--waylandIviLayerId {0} --waylandIviSurfaceID {1} --wayland-socket-embedded wayland-15 -w 640".format(secondLayerIviId, self.secondSurfaceIviId))
             self.checkThatApplicationWasStarted(self.rendererRight)
             self.addCleanup(self.target.kill_application, self.rendererRight)
             self.rendererRight.send_ramsh_command("skipUnmodifiedBuffers 0", waitForRendererConfirmation=True)

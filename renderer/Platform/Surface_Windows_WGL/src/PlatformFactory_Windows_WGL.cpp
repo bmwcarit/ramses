@@ -7,10 +7,10 @@
 //  -------------------------------------------------------------------------
 
 #include "Surface_Windows_WGL/PlatformFactory_Windows_WGL.h"
-#include "Surface_Windows_WGL/Surface_Windows_WGL.h"
 #include "Context_WGL/Context_WGL.h"
 #include "Window_Windows/Window_Windows.h"
-#include "EmbeddedCompositor_Dummy/EmbeddedCompositor_Dummy.h"
+#include "Platform_Base/EmbeddedCompositor_Dummy.h"
+#include "Platform_Base/Surface_Base.h"
 
 namespace ramses_internal
 {
@@ -45,7 +45,7 @@ namespace ramses_internal
         Context_WGL* platformContext = getPlatformContext<Context_WGL>(context);
         assert(0 != platformWindow);
         assert(0 != platformContext);
-        Surface_Windows_WGL* surface = new Surface_Windows_WGL(*platformWindow, *platformContext);
+        Surface_Base* surface = new Surface_Base(*platformWindow, *platformContext);
         return addPlatformSurface(surface);
     }
 

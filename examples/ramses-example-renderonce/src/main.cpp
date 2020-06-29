@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 {
     // register at RAMSES daemon
     ramses::RamsesFramework framework(argc, argv);
-    ramses::RamsesClient ramses("ramses-example-renderonce", framework);
+    ramses::RamsesClient& ramses(*framework.createClient("ramses-example-renderonce"));
     framework.connect();
 
     // prepare triangle geometry: vertex position array and index array
@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
     quadEffectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
     const ramses::Effect* quadEffect = ramses.createEffect(quadEffectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
 
-    ramses::Scene* scene = ramses.createScene(123u, ramses::SceneConfig(), "basic rendertarget scene");
+    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic rendertarget scene");
 
     // every render pass needs a camera to define rendering parameters
     ramses::Node* cameraTranslate = scene->createNode();

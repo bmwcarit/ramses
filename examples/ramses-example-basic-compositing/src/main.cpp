@@ -21,14 +21,14 @@ int main(int argc, char* argv[])
 {
     // register at RAMSES daemon
     ramses::RamsesFramework framework(argc, argv);
-    ramses::RamsesClient ramses("ramses-example-basic-compositing", framework);
+    ramses::RamsesClient& ramses(*framework.createClient("ramses-example-basic-compositing"));
     framework.connect();
 
     const uint32_t streamId = 1u;
     printf("using stream-texture id: %u", streamId);
 
     // create a scene for distributing content
-    ramses::Scene* scene = ramses.createScene(123u);
+    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u));
 
     // every scene needs a render pass with camera
     ramses::Camera* camera = scene->createRemoteCamera("my camera");

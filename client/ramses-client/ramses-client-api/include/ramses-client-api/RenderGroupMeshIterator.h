@@ -30,7 +30,7 @@ namespace ramses
         *
         * @param[in] renderGroup RenderGroup whose MeshNodes to iterate through
         **/
-        RenderGroupMeshIterator(const RenderGroup& renderGroup);
+        explicit RenderGroupMeshIterator(const RenderGroup& renderGroup);
 
         /**
         * @brief Destructor
