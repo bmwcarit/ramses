@@ -28,4 +28,6 @@ ACME_MODULE(
                             Device_GL
                             EGL
                             wayland-egl
+                            libdrm
+                            wayland-zwp-linux-dmabuf-v1-extension
 )

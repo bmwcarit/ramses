@@ -194,6 +194,8 @@ ELSEIF()
     ACME_INFO("- automotive-dlt")
 ENDIF()
 
+FIND_PACKAGE(libdrm)
+FIND_PACKAGE(gbm)
 
 # try find wayland libs for following targets
 FIND_PACKAGE(wayland-client QUIET)
@@ -243,6 +245,50 @@ if (ramses-sdk_BUILD_IVI_TEST_APPS AND (wayland-ivi-extension_FOUND OR TARGET wa
                                 wayland-client
                                 wayland-egl
                                 wayland-ivi-extension
+    )
+endif()
+
+# wayland zwp-linux-dmabuf-v1 extension protocol
+FIND_PACKAGE(wayland-client QUIET)
+FIND_PACKAGE(wayland-server QUIET)
+IF (wayland-client_FOUND AND wayland-server_FOUND)
+    ACME_MODULE(
+        NAME                    wayland-zwp-linux-dmabuf-v1-extension
+        TYPE                    STATIC_LIBRARY
+        ENABLE_INSTALL          ${ramses-sdk_INSTALL_STATIC_LIBS}
+
+        INCLUDE_BASE            wayland-zwp-linux-dmabuf-v1-extension
+        FILES_PRIVATE_HEADER    wayland-zwp-linux-dmabuf-v1-extension/*.h
+        FILES_SOURCE            wayland-zwp-linux-dmabuf-v1-extension/*.c
+        )
+ENDIF()
+
+if (wayland-ivi-extension_FOUND OR TARGET wayland-ivi-extension)
+    # wayland ivi example/test application 2
+    ACME_MODULE(
+        #==========================================================================
+        # general module information
+        #==========================================================================
+        NAME                    ivi-simple-dmabuf-egl
+        TYPE                    BINARY
+        ENABLE_INSTALL          ON
+
+        #==========================================================================
+        # files of this module
+        #==========================================================================
+        FILES_SOURCE            wayland-ivi-example-client/simple-dmabuf-egl.c
+
+        #==========================================================================
+        # dependencies
+        #==========================================================================
+        DEPENDENCIES            EGL
+                                OpenGL
+                                wayland-client
+                                wayland-egl
+                                wayland-ivi-extension
+                                wayland-zwp-linux-dmabuf-v1-extension
+                                libdrm
+                                gbm
     )
 endif()
 

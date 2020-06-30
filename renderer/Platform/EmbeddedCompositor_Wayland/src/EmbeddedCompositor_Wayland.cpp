@@ -11,6 +11,8 @@
 #include "EmbeddedCompositor_Wayland/WaylandSurface.h"
 #include "EmbeddedCompositor_Wayland/WaylandBuffer.h"
 #include "EmbeddedCompositor_Wayland/WaylandBufferResource.h"
+#include "EmbeddedCompositor_Wayland/LinuxDmabufGlobal.h"
+#include "EmbeddedCompositor_Wayland/LinuxDmabufBuffer.h"
 #include "RendererLib/RendererConfig.h"
 #include "RendererLib/RendererLogContext.h"
 #include "Utils/LogMacros.h"
@@ -18,13 +20,16 @@
 #include "PlatformAbstraction/PlatformTime.h"
 #include <unistd.h>
 #include "TextureUploadingAdapter_Wayland/TextureUploadingAdapter_Wayland.h"
+#include "TextureUploadingAdapter_Wayland/LinuxDmabuf.h"
 
 namespace ramses_internal
 {
-    EmbeddedCompositor_Wayland::EmbeddedCompositor_Wayland(const RendererConfig& config)
+    EmbeddedCompositor_Wayland::EmbeddedCompositor_Wayland(const RendererConfig& config, IContext& context)
         : m_rendererConfig(&config)
+        , m_context(context)
         , m_compositorGlobal(*this)
         , m_iviApplicationGlobal(*this)
+        , m_linuxDmabufGlobal(*this)
     {
         LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::EmbeddedCompositor_Wayland(): Created EmbeddedCompositor_Wayland...(not initialized yet)");
     }
@@ -36,6 +41,7 @@ namespace ramses_internal
         m_compositorGlobal.destroy();
         m_shellGlobal.destroy();
         m_iviApplicationGlobal.destroy();
+        m_linuxDmabufGlobal.destroy();
     }
 
     Bool EmbeddedCompositor_Wayland::init()
@@ -60,6 +66,12 @@ namespace ramses_internal
         if (!m_iviApplicationGlobal.init(m_serverDisplay))
         {
             return false;
+        }
+
+        // Not all EGL implementations support the extensions necessary for dmabuf import
+        if (!m_linuxDmabufGlobal.init(m_serverDisplay, m_context))
+        {
+            LOG_WARN(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::init(): EGL_EXT_image_dma_buf_import not supported, skipping zwp_linux_dmabuf_v1.");
         }
 
         LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::init(): Embedded compositor created successfully!");
@@ -197,11 +209,16 @@ namespace ramses_internal
         WaylandBufferResource& waylandBufferResource = waylandBuffer->getResource();
 
         const UInt8* sharedMemoryBufferData = static_cast<const UInt8*>(waylandBufferResource.bufferGetSharedMemoryData());
+        LinuxDmabufBufferData* linuxDmabufBuffer = LinuxDmabufBuffer::fromWaylandBufferResource(waylandBufferResource);
 
         if (nullptr != sharedMemoryBufferData)
         {
             const TextureSwizzleArray swizzle = {ETextureChannelColor::Blue, ETextureChannelColor::Green, ETextureChannelColor::Red, ETextureChannelColor::Alpha};
             textureUploadingAdapter.uploadTexture2D(textureHandle, waylandBufferResource.bufferGetSharedMemoryWidth(), waylandBufferResource.bufferGetSharedMemoryHeight(), ETextureFormat_RGBA8, sharedMemoryBufferData, swizzle);
+        }
+        else if (nullptr != linuxDmabufBuffer)
+        {
+            static_cast<TextureUploadingAdapter_Wayland&>(textureUploadingAdapter).uploadTextureFromLinuxDmabuf(textureHandle, linuxDmabufBuffer);
         }
         else
         {

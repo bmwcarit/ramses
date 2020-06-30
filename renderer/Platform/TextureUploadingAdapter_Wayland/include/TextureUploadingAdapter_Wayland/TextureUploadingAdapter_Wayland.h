@@ -9,11 +9,15 @@
 #ifndef RAMSES_TEXTUREUPLOADINGADAPTER_WAYLAND_H
 #define RAMSES_TEXTUREUPLOADINGADAPTER_WAYLAND_H
 
+#include <unordered_map>
+
 #include "Platform_Base/TextureUploadingAdapter_Base.h"
 #include "WaylandEGLExtensionProcs.h"
 
 namespace ramses_internal
 {
+    class LinuxDmabufBufferData;
+
     class TextureUploadingAdapter_Wayland : public TextureUploadingAdapter_Base
     {
     public:
@@ -21,10 +25,33 @@ namespace ramses_internal
         ~TextureUploadingAdapter_Wayland();
 
         void uploadTextureFromWaylandResource(DeviceResourceHandle textureHandle, EGLClientBuffer bufferResource);
+        void uploadTextureFromLinuxDmabuf(DeviceResourceHandle textureHandle, LinuxDmabufBufferData* dmabuf);
 
     private:
+        class DmabufEglImage
+        {
+        public:
+            DmabufEglImage(TextureUploadingAdapter_Wayland& parent, EGLImage eglImage, GLenum textureTarget);
+            ~DmabufEglImage();
+
+            EGLImage getEglImage() const;
+            GLenum getTextureTarget() const;
+
+        private:
+            TextureUploadingAdapter_Wayland& m_parent;
+            EGLImage m_eglImage = EGL_NO_IMAGE;
+            GLenum m_textureTarget;
+        };
+
+        void handleDmabufDestroy(LinuxDmabufBufferData* dmabuf);
+
+        DmabufEglImage* importDmabufToEglImage(LinuxDmabufBufferData* dmabuf);
+
         const WaylandEGLExtensionProcs  m_waylandEglExtensionProcs;
         wl_display* const               m_embeddedCompositingDisplay;
+        std::unordered_map<LinuxDmabufBufferData*, DmabufEglImage*> m_dmabufEglImagesMap;
+
+        friend class DmabufEglImage;
     };
 }
 

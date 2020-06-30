@@ -29,6 +29,7 @@ namespace ramses_internal
     {
     public:
         explicit WaylandEGLExtensionProcs(wl_display* waylandWindowDisplay);
+        explicit WaylandEGLExtensionProcs(EGLDisplay eglDisplay);
 
         EGLImageKHR eglCreateImageKHR(EGLContext context, EGLenum target, EGLClientBuffer buffer, const EGLint* attributeList) const;
         EGLBoolean eglDestroyImageKHR(EGLImageKHR image) const;
@@ -37,8 +38,11 @@ namespace ramses_internal
         EGLBoolean eglUnbindWaylandDisplayWL(wl_display* waylandDisplay) const;
 
         bool areExtensionsSupported()const;
+        bool areDmabufExtensionsSupported()const;
 
     private:
+
+        void Init();
 
         static bool CheckExtensionAvailable(const ramses_internal::String& eglExtensions, const ramses_internal::String& extensionName);
 
@@ -51,6 +55,7 @@ namespace ramses_internal
         PFNEGLUNBINDWAYLANDDISPLAYWL m_eglUnbindWaylandDisplayWL;
 
         bool m_extensionsSupported;
+        bool m_dmabufExtensionsSupported;
     };
 }
 

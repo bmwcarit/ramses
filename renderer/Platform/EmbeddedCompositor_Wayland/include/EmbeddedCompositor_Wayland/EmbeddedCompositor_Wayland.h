@@ -16,11 +16,13 @@
 #include "EmbeddedCompositor_Wayland/WaylandIVIApplicationGlobal.h"
 #include "EmbeddedCompositor_Wayland/IEmbeddedCompositor_Wayland.h"
 #include "EmbeddedCompositor_Wayland/IWaylandResource.h"
+#include "EmbeddedCompositor_Wayland/LinuxDmabufGlobal.h"
 #include "Collections/HashMap.h"
 
 namespace ramses_internal
 {
     class RendererConfig;
+    class IContext;
     class IWaylandCompositorConnection;
     class IWaylandSurface;
     class IWaylandBuffer;
@@ -30,7 +32,7 @@ namespace ramses_internal
     class EmbeddedCompositor_Wayland: public IEmbeddedCompositor, public IEmbeddedCompositor_Wayland
     {
     public:
-        explicit EmbeddedCompositor_Wayland(const RendererConfig& config);
+        EmbeddedCompositor_Wayland(const RendererConfig& config, IContext& context);
         virtual ~EmbeddedCompositor_Wayland();
 
         Bool init();
@@ -86,10 +88,12 @@ namespace ramses_internal
         const RendererConfig* m_rendererConfig;
 
         WaylandDisplay              m_serverDisplay;
+        IContext&                   m_context;
 
         WaylandCompositorGlobal     m_compositorGlobal;
         WaylandShellGlobal          m_shellGlobal;
         WaylandIVIApplicationGlobal m_iviApplicationGlobal;
+        LinuxDmabufGlobal           m_linuxDmabufGlobal;
 
         typedef std::vector<IWaylandSurface*> WaylandSurfaces;
         WaylandSurfaces m_surfaces;

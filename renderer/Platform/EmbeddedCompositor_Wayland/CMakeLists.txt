@@ -27,8 +27,11 @@ ACME_MODULE(
     DEPENDENCIES            ramses-renderer-lib
                             wayland-server
                             wayland-ivi-extension
+                            wayland-zwp-linux-dmabuf-v1-extension
+                            libdrm
                             TextureUploadingAdapter_Wayland
                             WaylandUtilities
+                            Context_EGL
 )
 
 # For the test module see

@@ -98,7 +98,7 @@ namespace ramses_internal
             return nullptr;
         }
 
-        IEmbeddedCompositor* embeddedCompositor = createEmbeddedCompositor();
+        IEmbeddedCompositor* embeddedCompositor = createEmbeddedCompositor(*context);
 
         if (nullptr == embeddedCompositor)
         {
