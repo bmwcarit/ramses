@@ -70,6 +70,11 @@ ELSEIF("${ACME_TYPE}" STREQUAL "TEST")
         INSTALL(FILES $<TARGET_PDB_FILE:${ACME_NAME}> DESTINATION ${ACME_INSTALL_BINARY} CONFIGURATIONS Debug RelWithDebInfo)
     endif()
 
+
+    # attach environment variable for clang coverage
+    set_tests_properties(${ACME_NAME}_${ACME_TEST_SUFFIX} PROPERTIES
+        ENVIRONMENT LLVM_PROFILE_FILE=${ACME_NAME}_${ACME_TEST_SUFFIX}_%p.profraw)
+
     #==============================================================================================
 ELSEIF("${ACME_TYPE}" STREQUAL "SHARED_LIBRARY")
     #==============================================================================================

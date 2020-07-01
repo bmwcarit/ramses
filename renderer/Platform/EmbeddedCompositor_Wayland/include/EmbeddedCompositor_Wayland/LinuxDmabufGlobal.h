@@ -28,7 +28,7 @@ namespace ramses_internal
     class LinuxDmabufGlobal
     {
     public:
-        LinuxDmabufGlobal(IEmbeddedCompositor_Wayland& compositor);
+        explicit LinuxDmabufGlobal(IEmbeddedCompositor_Wayland& compositor);
         ~LinuxDmabufGlobal();
 
         bool init(WaylandDisplay& serverDisplay, IContext& context);

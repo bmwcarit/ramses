@@ -53,13 +53,14 @@ namespace ramses_internal
             pushToRendererEventQueue(std::move(event));
         }
 
-        void addReadPixelsEvent(ERendererEventType eventType, DisplayHandle displayHandle, UInt8Vector&& pixelData)
+        void addReadPixelsEvent(ERendererEventType eventType, DisplayHandle displayHandle, OffscreenBufferHandle offscreenBufferHandle, UInt8Vector&& pixelData)
         {
             LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " display=" << displayHandle);
 
             RendererEvent event(eventType);
             event.displayHandle = displayHandle;
             event.pixelData = std::move(pixelData);
+            event.offscreenBuffer = offscreenBufferHandle;
             pushToRendererEventQueue(std::move(event));
         }
 

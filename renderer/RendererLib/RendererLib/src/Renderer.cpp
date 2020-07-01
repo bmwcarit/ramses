@@ -65,6 +65,8 @@ namespace ramses_internal
         auto& displayInfo = m_displays[display];
         displayInfo.buffersSetup.unregisterDisplayBuffer(bufferDeviceHandle);
         m_statistics.untrackOffscreenBuffer(display, bufferDeviceHandle);
+
+        displayInfo.screenshots.erase(bufferDeviceHandle);
     }
 
     const IDisplayController& Renderer::getDisplayController(DisplayHandle display) const
@@ -110,7 +112,6 @@ namespace ramses_internal
         displayInfo.buffersSetup.registerDisplayBuffer(displayInfo.frameBufferDeviceHandle, { 0, 0, display.getDisplayWidth(), display.getDisplayHeight() }, DefaultClearColor, false, false);
         displayInfo.couldRenderLastFrame = true;
 
-        m_scheduledScreenshots.put(displayHandle, ScreenshotInfoVector());
         auto profileRenderer = new FrameProfileRenderer(display.getRenderBackend().getDevice(), display.getDisplayWidth(), display.getDisplayHeight());
         m_frameProfileRenderer.put(displayHandle, profileRenderer);
     }
@@ -162,8 +163,6 @@ namespace ramses_internal
         displayController.validateRenderingStatusHealthy();
 
         m_displays.erase(display);
-        m_scheduledScreenshots.remove(display);
-
         assert(m_frameProfileRenderer.contains(display));
         auto renderer = *m_frameProfileRenderer.get(display);
         delete renderer;
@@ -365,7 +364,7 @@ namespace ramses_internal
         auto profileRenderer = *m_frameProfileRenderer.get(displayHandle);
         profileRenderer->renderStatistics(m_profilerStatistics);
 
-        processScheduledScreenshots(displayHandle, display, activeDisplay);
+        processScheduledScreenshots(displayInfo.frameBufferDeviceHandle, display, activeDisplay);
 
         m_tempDisplaysToSwapBuffers.push_back(displayHandle);
         displayInfo.buffersSetup.setDisplayBufferToBeRerendered(displayInfo.frameBufferDeviceHandle, false);
@@ -406,6 +405,8 @@ namespace ramses_internal
                 for (auto sceneId : m_tempScenesRendered)
                     logStream << " " << sceneId;
             }));
+
+            processScheduledScreenshots(displayBuffer, display, activeDisplay);
 
             m_statistics.offscreenBufferSwapped(displayHandle, displayBuffer, false);
             displayInfo.buffersSetup.setDisplayBufferToBeRerendered(displayBuffer, false);
@@ -467,6 +468,8 @@ namespace ramses_internal
 
             if (m_rendererInterruptState.isInterrupted())
                 break;
+
+            processScheduledScreenshots(displayBuffer, display, activeDisplay);
 
             displayInfo.displayController->getRenderBackend().getDevice().swapDoubleBufferedRenderTarget(displayBuffer);
             m_statistics.offscreenBufferSwapped(displayHandle, displayBuffer, true);
@@ -742,41 +745,59 @@ namespace ramses_internal
         displayInfo.buffersSetup.setClearColor(bufferDeviceHandle, clearColor);
     }
 
-    void Renderer::scheduleScreenshot(const ScreenshotInfo& screenshot)
+    void Renderer::scheduleScreenshot(DisplayHandle display, DeviceResourceHandle renderTargetHandle, ScreenshotInfo&& screenshot)
     {
-        assert(hasDisplayController(screenshot.display));
-        assert(m_scheduledScreenshots.contains(screenshot.display));
+        assert(hasDisplayController(display));
+        auto& displayInfo = m_displays.find(display)->second;
 
-        m_scheduledScreenshots.get(screenshot.display)->push_back(screenshot);
+        if (displayInfo.screenshots.count(renderTargetHandle))
+            LOG_WARN(CONTEXT_RENDERER, "Renderer::scheduleScreenshot: will overwrite previous screenshot request that was not executed yet (display=" << display << ", buffer=" << renderTargetHandle << ")");
+
+        displayInfo.screenshots[renderTargetHandle] = std::move(screenshot);
 
         // re-render all buffers that the screenshot might depend on
-        auto& displayBufferSetup = m_displays.find(screenshot.display)->second.buffersSetup;
+        auto& displayBufferSetup = m_displays.find(display)->second.buffersSetup;
         for (const auto& buffer : displayBufferSetup.getDisplayBuffers())
             displayBufferSetup.setDisplayBufferToBeRerendered(buffer.first, true);
     }
 
-    void Renderer::processScheduledScreenshots(DisplayHandle display, IDisplayController& controller, DisplayHandle& activeDisplay)
+    void Renderer::processScheduledScreenshots(DeviceResourceHandle renderTargetHandle, IDisplayController& controller, DisplayHandle displayHandle)
     {
-        assert(m_scheduledScreenshots.contains(display));
+        assert(m_displays.count(displayHandle));
+        auto& displayInfo = m_displays[displayHandle];
+        auto it = displayInfo.screenshots.find(renderTargetHandle);
+        if (it == displayInfo.screenshots.end())
+            return;
 
-        ScreenshotInfoVector& displayScreenshots = *m_scheduledScreenshots.get(display);
-        if (!displayScreenshots.empty())
-            ActivateDisplayContext(display, activeDisplay, controller);
+        ScreenshotInfo& screenshot = it->second;
+        assert(screenshot.rectangle.width > 0u && screenshot.rectangle.height > 0u);
+        if (!screenshot.pixelData.empty())
+            return;
 
-        for(const auto& screenshot : displayScreenshots)
-        {
-            m_processedScreenshots.push_back(screenshot);
-            ScreenshotInfo& result = m_processedScreenshots.back();
-            result.success = controller.readPixels(result.rectangle.x, result.rectangle.y, result.rectangle.width, result.rectangle.height, result.pixelData);
-        }
-        // processed all screenshots for this display!
-        displayScreenshots.clear();
+        controller.readPixels(renderTargetHandle, screenshot.rectangle.x, screenshot.rectangle.y, screenshot.rectangle.width, screenshot.rectangle.height, screenshot.pixelData);
+        assert(!screenshot.pixelData.empty());
     }
 
-    void Renderer::dispatchProcessedScreenshots(ScreenshotInfoVector& screenshots)
+    std::vector<std::pair<DeviceResourceHandle, ScreenshotInfo>> Renderer::dispatchProcessedScreenshots(DisplayHandle display)
     {
-        assert(screenshots.empty());
-        screenshots.swap(m_processedScreenshots);
+        auto displayIt = m_displays.find(display);
+        if (displayIt == m_displays.end())
+            return {};
+        auto& displayInfo = displayIt->second;
+
+        std::vector<std::pair<DeviceResourceHandle, ScreenshotInfo>> result;
+        for (auto& it : displayInfo.screenshots)
+        {
+            const auto rtHandle = it.first;
+            auto& screenshot = it.second;
+            if (!screenshot.pixelData.empty())
+                result.emplace_back(rtHandle, std::move(screenshot));
+        }
+
+        for (const auto& it : result)
+            displayInfo.screenshots.erase(it.first);
+
+        return result;
     }
 
     Bool Renderer::hasAnyBufferWithInterruptedRendering() const

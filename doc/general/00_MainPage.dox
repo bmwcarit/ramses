@@ -27,6 +27,7 @@ relations, as well as API for rendering content from distributed sources.
 - @ref Examples
 - @ref ContentExpiration
 - @ref DCSMProtocol
+- @ref SceneReferencing
 
 # <b>RAMSES</b> - <b>R</b>endering <b>A</b>rchitecture for <b>M</b>ulti-<b>S</b>creen <b>E</b>nvironment<b>S</b>
 

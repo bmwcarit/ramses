@@ -52,12 +52,12 @@ namespace ramses_internal
         wl_resource_set_implementation(m_resource, implementation, data, destroy);
     }
 
-    void WaylandResource::addDestroyListener(WaylandListener* listener)
+    void WaylandResource::addDestroyListener(wl_listener* listener)
     {
         wl_resource_add_destroy_listener(m_resource, listener);
     }
 
-    WaylandNativeResource WaylandResource::getWaylandNativeResource()
+    void* WaylandResource::getWaylandNativeResource()
     {
         return m_resource;
     }

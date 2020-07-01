@@ -194,12 +194,6 @@ namespace ramses
             return nullptr;
         }
 
-        if (config.m_impl.getCategories().empty())
-        {
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Cannot instantiate DcsmContentControl, there is no DCSM category in given DcsmContentControlConfig. Without a category no content can be assigned.");
-            return nullptr;
-        }
-
         // DcsmContentControl operates on scene control API, the check above makes sure that it can be instantiated.
         // DcsmContentControl will be then the only active 'scene control' API for user, even though in fact RendererSceneControl is the actual API used internally - via DcsmContentControl.
         auto sceneControlAPI = getSceneControlAPI();
@@ -283,11 +277,21 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t RamsesRendererImpl::readPixels(displayId_t displayId, displayBufferId_t /*displayBuffer*/, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+    status_t RamsesRendererImpl::readPixels(displayId_t displayId, displayBufferId_t displayBuffer, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
     {
-        //TODO: implement read pixels from offscreen buffers
-        const ramses_internal::DisplayHandle displayHandle(displayId.getValue());
-        m_pendingRendererCommands.readPixels(displayHandle, "", false, x, y, width, height);
+        if (width == 0u || height == 0u)
+            return addErrorEntry("RamsesRenderer::readPixels failed: width and height must be greater than Zero");
+
+        const auto it = m_displayFramebuffers.find(displayId);
+        if (it == m_displayFramebuffers.cend())
+            return addErrorEntry("RendererSceneControl::setDisplayBufferClearColor failed: display does not exist.");
+
+        ramses_internal::OffscreenBufferHandle bufferHandle{ displayBuffer.getValue() };
+        // if buffer to read from is display's framebuffer pass invalid OB to internal renderer
+        if (displayBuffer == it->second)
+            bufferHandle = ramses_internal::OffscreenBufferHandle::Invalid();
+
+        m_pendingRendererCommands.readPixels(ramses_internal::DisplayHandle{ displayId.getValue() }, bufferHandle, "", false, x, y, width, height);
 
         return StatusOK;
     }
@@ -398,15 +402,17 @@ namespace ramses
                 rendererEventHandler.displayDestroyed(displayId_t{ event.displayHandle.asMemoryHandle() }, ERendererEventResult_FAIL);
                 break;
             case ramses_internal::ERendererEventType_ReadPixelsFromFramebuffer:
+            case ramses_internal::ERendererEventType_ReadPixelsFromFramebufferFailed:
             {
                 const ramses_internal::UInt8Vector& pixelData = event.pixelData;
-                assert(!pixelData.empty());
-                rendererEventHandler.framebufferPixelsRead(&pixelData.front(), static_cast<uint32_t>(pixelData.size()), displayId_t{ event.displayHandle.asMemoryHandle() }, getDisplayFramebuffer(displayId_t{ event.displayHandle.asMemoryHandle() }), ERendererEventResult_OK);
+                const displayId_t displayId{ event.displayHandle.asMemoryHandle() };
+                const ramses_internal::OffscreenBufferHandle obHandle = event.offscreenBuffer;
+                const displayBufferId_t displayBuffer(obHandle.isValid() ? obHandle.asMemoryHandle() : getDisplayFramebuffer(displayId).getValue());
+                const auto eventResult = (event.eventType == ramses_internal::ERendererEventType_ReadPixelsFromFramebuffer ? ERendererEventResult_OK : ERendererEventResult_FAIL);
+                assert((event.eventType == ramses_internal::ERendererEventType_ReadPixelsFromFramebuffer) ^ pixelData.empty());
+                rendererEventHandler.framebufferPixelsRead(pixelData.data(), static_cast<uint32_t>(pixelData.size()), displayId, displayBuffer, eventResult);
                 break;
             }
-            case ramses_internal::ERendererEventType_ReadPixelsFromFramebufferFailed:
-                rendererEventHandler.framebufferPixelsRead(nullptr, 0u, displayId_t{ event.displayHandle.asMemoryHandle() }, getDisplayFramebuffer(displayId_t{ event.displayHandle.asMemoryHandle() }), ERendererEventResult_FAIL);
-                break;
             case ramses_internal::ERendererEventType_WarpingDataUpdated:
                 rendererEventHandler.warpingMeshDataUpdated(displayId_t{ event.displayHandle.asMemoryHandle() }, ERendererEventResult_OK);
                 break;

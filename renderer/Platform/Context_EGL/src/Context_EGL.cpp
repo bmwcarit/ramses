@@ -209,9 +209,4 @@ namespace ramses_internal
     {
         return m_eglSurfaceData.eglDisplay;
     }
-
-    IContext::EType Context_EGL::getType() const
-    {
-        return EType_EGL;
-    }
 }

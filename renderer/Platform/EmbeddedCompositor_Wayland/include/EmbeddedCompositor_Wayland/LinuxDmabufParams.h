@@ -8,7 +8,6 @@
 
 #ifndef RAMSES_LINUXDMABUFPARAMS_H
 #define RAMSES_LINUXDMABUFPARAMS_H
-#include <memory>
 #include <stdint.h>
 
 #include "wayland-server.h"
@@ -43,9 +42,8 @@ namespace ramses_internal
 
         static struct zwp_linux_buffer_params_v1_interface const m_paramsInterface;
 
-        std::unique_ptr<IWaylandResource> m_resource;
-        std::unique_ptr<LinuxDmabufBufferData> m_data;
-        bool m_createInvoked = false;
+        IWaylandResource* m_resource = nullptr;
+        LinuxDmabufBufferData* m_data = nullptr;
 
     friend class LinuxDmabuf;
     };

@@ -179,33 +179,12 @@ namespace ramses_internal
             {
                 const ReadPixelsCommand& command = m_executedCommands.getCommandData<ReadPixelsCommand>(i);
                 LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " displayId " << command.displayHandle);
-                if (m_renderer.hasDisplayController(command.displayHandle))
-                {
-
-                    ScreenshotInfo screenshot;
-                    screenshot.rectangle = { command.x, command.y, command.width, command.height };
-                    screenshot.display = command.displayHandle;
-                    screenshot.filename = command.filename;
-                    screenshot.sendViaDLT = command.sendViaDLT;
-
-                    if (command.fullScreen)
-                    {
-                        const IDisplayController& displayController = m_renderer.getDisplayController(command.displayHandle);
-                        screenshot.rectangle = { 0u, 0u, displayController.getDisplayWidth(), displayController.getDisplayHeight() };
-                    }
-
-                    m_renderer.scheduleScreenshot(screenshot);
-                }
-                else
-                {
-                    if (command.filename.size() == 0u)
-                    {
-                        // only generate event when not saving pixels to file!
-                        m_rendererEventCollector.addReadPixelsEvent(ERendererEventType_ReadPixelsFromFramebufferFailed, command.displayHandle, {});
-                    }
-                    LOG_ERROR(CONTEXT_RENDERER, "RendererCommandExecutor::readPixels failed, unknown display " << command.displayHandle.asMemoryHandle());
-                }
-
+                ScreenshotInfo screenshot;
+                screenshot.rectangle = { command.x, command.y, command.width, command.height };
+                screenshot.filename = command.filename;
+                screenshot.sendViaDLT = command.sendViaDLT;
+                screenshot.fullScreen = command.fullScreen;
+                m_rendererSceneUpdater.handleReadPixels(command.displayHandle, command.offscreenBufferHandle, std::move(screenshot));
                 break;
             }
             case ERendererCommand_SetClearColor:

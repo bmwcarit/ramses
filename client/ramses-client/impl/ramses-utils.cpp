@@ -95,6 +95,17 @@ namespace ramses
         return ramsesClient.createTexture2D(width, height, ETextureFormat_RGBA8, 1, &mipLevelData, false, swizzle, ResourceCacheFlag_DoNotCache, name);
     }
 
+    bool RamsesUtils::SaveImageBufferToPng(const std::string& filePath, const std::vector<uint8_t>& imageData, uint32_t width, uint32_t height)
+    {
+        const unsigned int ret = lodepng::encode(filePath, imageData, width, height);
+        if (ret != 0)
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesUtils::SaveImageBufferToPng: Error while saving PNG file: " << filePath << " (error " << ret << ": " << lodepng_error_text(ret) << ")");
+            return false;
+        }
+        return true;
+    }
+
     bool IsPowerOfTwo(uint32_t val)
     {
         while (((val & 1) == 0) && val > 1)

@@ -59,6 +59,8 @@ bool OffscreenBufferLinkTests::run(RendererTestsFramework& testFramework, const 
         const ramses::displayBufferId_t offscreenBuffer = testFramework.createOffscreenBuffer(0, 256, 128, m_interruptibleBuffers);
         testFramework.assignSceneToDisplayBuffer(m_sceneIdProvider, offscreenBuffer);
         testFramework.createBufferDataLink(offscreenBuffer, m_sceneIdConsumer, TextureLinkScene::DataConsumerId);
+        if (!testFramework.renderAndCompareScreenshotOffscreenBuffer("OffscreenBufferLinkTest_Linked_OB_Content", 0u, offscreenBuffer, 256, 128))
+            return false;
 
         expectedImageName = "OffscreenBufferLinkTest_Linked";
         break;
@@ -73,6 +75,8 @@ bool OffscreenBufferLinkTests::run(RendererTestsFramework& testFramework, const 
         testFramework.assignSceneToDisplayBuffer(m_sceneIdProvider, offscreenBuffer);
         testFramework.assignSceneToDisplayBuffer(m_sceneIdProvider2, offscreenBuffer);
         testFramework.createBufferDataLink(offscreenBuffer, m_sceneIdConsumer, TextureLinkScene::DataConsumerId);
+        if (!testFramework.renderAndCompareScreenshotOffscreenBuffer("OffscreenBufferLinkTest_LinkedTwoScenes_OB_Content", 0u, offscreenBuffer, 256, 128))
+            return false;
 
         expectedImageName = "OffscreenBufferLinkTest_LinkedTwoScenes";
         break;
@@ -88,12 +92,18 @@ bool OffscreenBufferLinkTests::run(RendererTestsFramework& testFramework, const 
         testFramework.assignSceneToDisplayBuffer(m_sceneIdProvider, offscreenBuffer1);
         testFramework.assignSceneToDisplayBuffer(m_sceneIdProvider2, offscreenBuffer2);
         testFramework.createBufferDataLink(offscreenBuffer1, m_sceneIdConsumer, TextureLinkScene::DataConsumerId);
+        if (!testFramework.renderAndCompareScreenshotOffscreenBuffer("OffscreenBufferLinkTest_Linked_OB_Content", 0u, offscreenBuffer1, 256, 128))
+            return false;
+        if (!testFramework.renderAndCompareScreenshotOffscreenBuffer("OffscreenBufferLinkTest_Linked2_OB_Content", 0u, offscreenBuffer2, 256, 128))
+            return false;
 
         if (!renderAndCompareScreenshot(testFramework, "OffscreenBufferLinkTest_Linked", 0u))
             return false;
 
         // relink to another buffer
         testFramework.createBufferDataLink(offscreenBuffer2, m_sceneIdConsumer, TextureLinkScene::DataConsumerId);
+        if (!testFramework.renderAndCompareScreenshotOffscreenBuffer("OffscreenBufferLinkTest_Linked2_OB_Content", 0u, offscreenBuffer2, 256, 128))
+            return false;
 
         expectedImageName = "OffscreenBufferLinkTest_Linked2";
         break;
@@ -108,6 +118,8 @@ bool OffscreenBufferLinkTests::run(RendererTestsFramework& testFramework, const 
         testFramework.assignSceneToDisplayBuffer(m_sceneIdProvider, offscreenBuffer);
         testFramework.createBufferDataLink(offscreenBuffer, m_sceneIdConsumer, TextureLinkScene::DataConsumerId);
         testFramework.createBufferDataLink(offscreenBuffer, m_sceneIdConsumer2, TextureLinkScene::DataConsumerId);
+        if (!testFramework.renderAndCompareScreenshotOffscreenBuffer("OffscreenBufferLinkTest_LinkedTwoConsumers_OB_Content", 0u, offscreenBuffer, 256, 128))
+            return false;
 
         if (!renderAndCompareScreenshot(testFramework, "OffscreenBufferLinkTest_LinkedTwoConsumers", 0u))
         {

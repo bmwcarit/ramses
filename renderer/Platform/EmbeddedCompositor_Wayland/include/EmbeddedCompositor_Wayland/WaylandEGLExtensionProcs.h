@@ -22,6 +22,7 @@ WARNINGS_POP
 #include "EGL/eglext.h"
 
 #include "Collections/String.h"
+#include "Utils/StringUtils.h"
 
 namespace ramses_internal
 {
@@ -44,7 +45,7 @@ namespace ramses_internal
 
         void Init();
 
-        static bool CheckExtensionAvailable(const ramses_internal::String& eglExtensions, const ramses_internal::String& extensionName);
+        static bool CheckExtensionAvailable(const ramses_internal::StringSet& eglExtensions, const ramses_internal::String& extensionName);
 
         const EGLDisplay m_eglDisplay;
 

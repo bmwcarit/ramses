@@ -33,6 +33,7 @@ public:
     static void SaveScreenshotForDisplay(
         ramses::RamsesRenderer& renderer,
         ramses::displayId_t displayId,
+        ramses::displayBufferId_t displayBuffer,
         ramses_internal::UInt32 x,
         ramses_internal::UInt32 y,
         ramses_internal::UInt32 width,
@@ -42,6 +43,7 @@ public:
     static bool PerformScreenshotTestForDisplay(
         ramses::RamsesRenderer& renderer,
         ramses::displayId_t displayId,
+        ramses::displayBufferId_t displayBuffer,
         ramses_internal::UInt32 x,
         ramses_internal::UInt32 y,
         ramses_internal::UInt32 width,
@@ -53,6 +55,7 @@ public:
     static ramses_internal::Image ReadPixelData(
         ramses::RamsesRenderer& renderer,
         ramses::displayId_t displayId,
+        ramses::displayBufferId_t displayBuffer,
         ramses_internal::UInt32 x,
         ramses_internal::UInt32 y,
         ramses_internal::UInt32 width,

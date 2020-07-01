@@ -8,7 +8,6 @@
 
 #include "Components/ResourceTableOfContents.h"
 #include "SceneAPI/ResourceContentHash.h"
-#include "Components/InputStreamAdapter.h"
 #include "Utils/LogMacros.h"
 #include <algorithm>
 #include <array>

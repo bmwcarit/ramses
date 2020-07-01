@@ -10,7 +10,7 @@
 #include <unistd.h>
 
 #include "PlatformAbstraction/PlatformTypes.h"
-#include "TextureUploadingAdapter_Wayland/LinuxDmabuf.h"
+#include "EmbeddedCompositor_Wayland/LinuxDmabuf.h"
 
 namespace ramses_internal
 {
@@ -70,7 +70,7 @@ namespace ramses_internal
         setDestroyCallback(std::bind(&LinuxDmabufBufferData::noopDestroyCallback, this, std::placeholders::_1));
     }
 
-    void LinuxDmabufBufferData::setDestroyCallback(std::function<void(LinuxDmabufBufferData*)> func)
+    void LinuxDmabufBufferData::setDestroyCallback(const std::function<void(LinuxDmabufBufferData*)>& func)
     {
         m_destroyCallback = func;
     }

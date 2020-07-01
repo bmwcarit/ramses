@@ -294,6 +294,11 @@ namespace ramses
         * @details The color data from the provided rectangle coordinates
         *          will be read back and stored as RGBA8. If the coordinates
         *          lie outside the rendered region the result is undefined.
+        *
+        *          If a read pixels command is issued for a display buffer
+        *          while a previous read pixels command for the same buffer was not
+        *          yet executed only the last submitted read pixel command gets executed.
+        *
         *          The pixel data can be obtained as a renderer event after the asynchronous read back is finished,
         *          see RamsesRenderer::dispatchEvents for details.
         * @param[in] displayId id of display to read pixels from.
@@ -302,8 +307,8 @@ namespace ramses
         * @param[in] x The starting offset in the original image (i.e. left border) in pixels.
         * @param[in] y The starting offset in the original image (i.e. lower border) in pixels.
         *          The origin of the image is supposed to be in the lower left corner.
-        * @param[in] width The width of the read image in pixels.
-        * @param[in] height The height of the read image in pixels.
+        * @param[in] width The width of the read image in pixels. Must be greater than Zero.
+        * @param[in] height The height of the read image in pixels. Must be greater than Zero.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         *         StatusOK does not guarantee successful read back, the result event has its own status.

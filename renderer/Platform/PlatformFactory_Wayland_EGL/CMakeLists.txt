@@ -29,7 +29,6 @@ ACME_MODULE(
                             Window_Wayland
                             ramses-renderer-lib
                             EmbeddedCompositor_Wayland
-                            TextureUploadingAdapter_Wayland
 )
 
 # This module is tested in the renderer sandwich tests (<ramses>/integration/ramses-renderer-tests)

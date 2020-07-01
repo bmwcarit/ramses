@@ -54,6 +54,9 @@ namespace ramses_internal
         {
             std::unordered_set<SceneId> sceneReferences;
             SceneReferenceActionVector pendingActions;
+            std::unordered_set<SceneId> expiredSceneReferences;
+            bool reportedAsExpired = false;
+            bool destroyed = false;
         };
         std::unordered_map<SceneId, MasterSceneInfo> m_masterScenes;
 
@@ -64,8 +67,6 @@ namespace ramses_internal
         IRendererSceneControl& m_sceneControl;
 
         IRendererSceneEventSender& m_eventSender;
-        // ref->master mapping always kept in order to be able to send 'post-destruction' events
-        std::unordered_map<SceneId, SceneId> m_refSceneToMasterSceneMap;
     };
 }
 

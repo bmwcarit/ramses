@@ -71,8 +71,8 @@ namespace ramses_internal
         void removeDataLink(ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId);
 
         void updateWarpingMeshData(ramses::displayId_t displayId, const ramses::WarpingMeshData& warpingMeshData);
-        bool performScreenshotCheck(const ramses::displayId_t displayId, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const String& comparisonImageFile, float maxAveragePercentErrorPerPixel = RendererTestUtils::DefaultMaxAveragePercentPerPixel, bool readPixelsTwice = false);
-        void saveScreenshotForDisplay(const ramses::displayId_t displayId, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const String& imageFile);
+        bool performScreenshotCheck(const ramses::displayId_t displayId, ramses::displayBufferId_t bufferId, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const String& comparisonImageFile, float maxAveragePercentErrorPerPixel = RendererTestUtils::DefaultMaxAveragePercentPerPixel, bool readPixelsTwice = false);
+        void saveScreenshotForDisplay(const ramses::displayId_t displayId, ramses::displayBufferId_t bufferId, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const String& imageFile);
         void toggleRendererFrameProfiler();
         IEmbeddedCompositingManager& getEmbeddedCompositorManager(ramses::displayId_t displayId);
         void setSurfaceVisibility(WaylandIviSurfaceId surfaceId, bool visibility);

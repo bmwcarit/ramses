@@ -131,55 +131,59 @@ namespace ramses_internal
 
         for(const auto sceneId : knownSceneIds)
         {
-            const ESceneState sceneState = updater.m_sceneStateExecutor.getSceneState(sceneId);
-
-            String sceneName("N/A");
-            if (updater.m_rendererScenes.hasScene(sceneId))
-            {
-                RendererCachedScene& rendererScene = updater.m_rendererScenes.getScene(sceneId);
-                sceneName = rendererScene.getName();
-            }
-            const DisplayHandle displayHandle = updater.m_renderer.getDisplaySceneIsAssignedTo(sceneId);
-
             context << "Scene [id: " << sceneId.getValue() << "]" << RendererLogContext::NewLine;
             context.indent();
             {
-                context << "State:    " << EnumToString(sceneState) << RendererLogContext::NewLine;
-                if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
-                {
-                    context << "Name:     \"" << sceneName << "\"" << RendererLogContext::NewLine;
-                    if (displayHandle.isValid())
-                    {
-                        context << "Display:  " << displayHandle.asMemoryHandle() << RendererLogContext::NewLine;
-                        context << "Assigned to buffer (device handle): " << updater.m_renderer.getBufferSceneIsAssignedTo(sceneId) << RendererLogContext::NewLine;
-                    }
-                    else
-                    {
-                        context << "Display:  " << "N/A" << RendererLogContext::NewLine;
-                    }
-                }
+                const ESceneState sceneState = updater.m_sceneStateExecutor.getSceneState(sceneId);
+                context << "State:       " << EnumToString(sceneState) << RendererLogContext::NewLine;
 
-                if (updater.hasPendingFlushes(sceneId))
+                if (updater.m_rendererScenes.hasScene(sceneId))
                 {
                     const auto& stagingInfo = updater.m_rendererScenes.getStagingInfo(sceneId);
-                    const auto& pendingData = stagingInfo.pendingData;
-                    const auto& pendingFlushes = pendingData.pendingFlushes;
-                    context << "Pending flushes: " << pendingFlushes.size() << RendererLogContext::NewLine;
-                    context.indent();
-                    for (const auto& flushInfo : pendingFlushes)
+                    context << "Version tag: ";
+                    if (stagingInfo.lastAppliedVersionTag.isValid())
+                        context << stagingInfo.lastAppliedVersionTag;
+                    else
+                        context << "<none>";
+                    context << RendererLogContext::NewLine;
+
+                    if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
                     {
-                        context << "Flush " << flushInfo.flushIndex << RendererLogContext::NewLine;
-                        context << "[ sceneActions: " << flushInfo.sceneActions.numberOfActions() << " (" << flushInfo.sceneActions.collectionData().size() << " bytes) ]" << RendererLogContext::NewLine;
-                        context << "[ " << stagingInfo.sizeInformation.asString().c_str() << " ]" << RendererLogContext::NewLine;
+                        const auto& sceneName = updater.m_rendererScenes.getScene(sceneId).getName();
+                        context << "Name:     \"" << sceneName << "\"" << RendererLogContext::NewLine;
+                        const DisplayHandle displayHandle = updater.m_renderer.getDisplaySceneIsAssignedTo(sceneId);
+                        if (displayHandle.isValid())
+                        {
+                            context << "Display:  " << displayHandle.asMemoryHandle() << RendererLogContext::NewLine;
+                            context << "Assigned to buffer (device handle): " << updater.m_renderer.getBufferSceneIsAssignedTo(sceneId) << RendererLogContext::NewLine;
+                        }
+                        else
+                        {
+                            context << "Display:  " << "N/A" << RendererLogContext::NewLine;
+                        }
+                    }
+
+                    if (updater.hasPendingFlushes(sceneId))
+                    {
+                        const auto& pendingData = stagingInfo.pendingData;
+                        const auto& pendingFlushes = pendingData.pendingFlushes;
+                        context << "Pending flushes: " << pendingFlushes.size() << RendererLogContext::NewLine;
+                        context.indent();
+                        for (const auto& flushInfo : pendingFlushes)
+                        {
+                            context << "Flush " << flushInfo.flushIndex << RendererLogContext::NewLine;
+                            context << "[ sceneActions: " << flushInfo.sceneActions.numberOfActions() << " (" << flushInfo.sceneActions.collectionData().size() << " bytes) ]" << RendererLogContext::NewLine;
+                            context << "[ " << stagingInfo.sizeInformation.asString().c_str() << " ]" << RendererLogContext::NewLine;
+                            context << "] ]" << RendererLogContext::NewLine;
+                        }
+                        context << "[ needed resources (all pending flushes): " << pendingData.clientResourcesNeeded.size() << " : [";
+                        for (const auto& res : pendingData.clientResourcesNeeded)
+                        {
+                            context << " " << res;
+                        }
                         context << "] ]" << RendererLogContext::NewLine;
+                        context.unindent();
                     }
-                    context << "[ needed resources (all pending flushes): " << pendingData.clientResourcesNeeded.size() << " : [";
-                    for (const auto& res : pendingData.clientResourcesNeeded)
-                    {
-                        context << " " << res;
-                    }
-                    context << "] ]" << RendererLogContext::NewLine;
-                    context.unindent();
                 }
             }
             context << RendererLogContext::NewLine;
@@ -380,107 +384,102 @@ namespace ramses_internal
                 context.indent();
                 context << "Scene resources in scene " << sceneResRegistryIt.key << ":" << RendererLogContext::NewLine;
                 const RendererSceneResourceRegistry& resRegistry = sceneResRegistryIt.value;
-                const IScene& scene = updater.m_rendererScenes.getScene(sceneResRegistryIt.key);
+                const RendererCachedScene& scene = updater.m_rendererScenes.getScene(sceneResRegistryIt.key);
 
                 context.indent();
 
-                context << "Render buffers: " << scene.getRenderBufferCount() << RendererLogContext::NewLine;
+                const auto& renderBuffers = scene.getRenderBuffers();
+                const auto renderBufferCount = std::count_if(renderBuffers.cbegin(), renderBuffers.cend(), [](const auto&) {return true; });
+                context << "Render buffers: " << renderBufferCount << RendererLogContext::NewLine;
                 {
-                    RenderBufferHandleVector rbs;
-                    resRegistry.getAllRenderBuffers(rbs);
-                    std::sort(rbs.begin(), rbs.end());
                     UInt32 size = 0u;
                     context.indent();
-                    for (const auto rb : rbs)
+                    for (const auto& rb : renderBuffers)
                     {
-                        const RenderBuffer& rbDesc = scene.getRenderBuffer(rb);
+                        const RenderBuffer& rbDesc = *rb.second;
                         if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
                         {
-                            context << rb << " (deviceHandle " << resRegistry.getRenderBufferDeviceHandle(rb) << ") ";
+                            context << rb.first << " (deviceHandle " << resRegistry.getRenderBufferDeviceHandle(rb.first) << ") ";
                             context << "[" << rbDesc.width << "x" << rbDesc.height << "; " << EnumToString(rbDesc.type) << "; " << EnumToString(rbDesc.format) << "; " << EnumToString(rbDesc.accessMode) << "; " << rbDesc.sampleCount << " samples] ";
-                            context << resRegistry.getRenderBufferByteSize(rb) / 1024 << " KB";
+                            context << resRegistry.getRenderBufferByteSize(rb.first) / 1024 << " KB";
                             context << RendererLogContext::NewLine;
                         }
-                        size += resRegistry.getRenderBufferByteSize(rb);
+                        size += resRegistry.getRenderBufferByteSize(rb.first);
                     }
                     context << "Total KB: " << size / 1024 << RendererLogContext::NewLine;
                     context.unindent();
                 }
 
-                context << "Render targets: " << scene.getRenderTargetCount() << RendererLogContext::NewLine;
+                const auto& renderTargets = scene.getRenderTargets();
+                const auto renderTargetCount = std::count_if(renderTargets.cbegin(), renderTargets.cend(), [](const auto&) {return true; });
+                context << "Render targets: " << renderTargetCount << RendererLogContext::NewLine;
                 if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
                 {
-                    RenderTargetHandleVector rts;
-                    resRegistry.getAllRenderTargets(rts);
-                    std::sort(rts.begin(), rts.end());
                     context.indent();
-                    for (const auto rt : rts)
+                    for (const auto& rt : renderTargets)
                     {
-                        context << rt << " (deviceHandle " << resRegistry.getRenderTargetDeviceHandle(rt) << ") ";
+                        context << rt.first << " (deviceHandle " << resRegistry.getRenderTargetDeviceHandle(rt.first) << ") ";
                         context << "renderBuffer handles: [ ";
-                        for (UInt32 i = 0u; i < scene.getRenderTargetRenderBufferCount(rt); ++i)
-                            context << scene.getRenderTargetRenderBuffer(rt, i) << " ";
+                        for (UInt32 i = 0u; i < scene.getRenderTargetRenderBufferCount(rt.first); ++i)
+                            context << scene.getRenderTargetRenderBuffer(rt.first, i) << " ";
                         context << "]" << RendererLogContext::NewLine;
                     }
                     context.unindent();
                 }
 
-                context << "Blit passes: " << scene.getBlitPassCount() << RendererLogContext::NewLine;
+                const auto& blitPasses = scene.getBlitPasses();
+                const auto blitPassCount = std::count_if(blitPasses.cbegin(), blitPasses.cend(), [](const auto&) {return true; });
+                context << "Blit passes: " << blitPassCount << RendererLogContext::NewLine;
                 if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
                 {
-                    BlitPassHandleVector bps;
-                    resRegistry.getAllBlitPasses(bps);
-                    std::sort(bps.begin(), bps.end());
                     context.indent();
-                    for (const auto bp : bps)
+                    for (const auto& bp : blitPasses)
                     {
                         DeviceResourceHandle bpSrc;
                         DeviceResourceHandle bpDst;
-                        resRegistry.getBlitPassDeviceHandles(bp, bpSrc, bpDst);
-                        context << bp << " [renderBuffer deviceHandles: src " << bpSrc << " -> dst " << bpDst << "]";
+                        resRegistry.getBlitPassDeviceHandles(bp.first, bpSrc, bpDst);
+                        context << bp.first << " [renderBuffer deviceHandles: src " << bpSrc << " -> dst " << bpDst << "]";
                         context << RendererLogContext::NewLine;
                     }
                     context.unindent();
                 }
 
-                context << "Texture buffers: " << scene.getTextureBufferCount() << RendererLogContext::NewLine;
+                const auto& textureBuffers = scene.getTextureBuffers();
+                const auto textureBufferCount = std::count_if(textureBuffers.cbegin(), textureBuffers.cend(), [](const auto&) {return true; });
+                context << "Texture buffers: " << textureBufferCount << RendererLogContext::NewLine;
                 {
-                    TextureBufferHandleVector tbs;
-                    resRegistry.getAllTextureBuffers(tbs);
-                    std::sort(tbs.begin(), tbs.end());
                     UInt32 size = 0u;
                     context.indent();
-                    for (const auto tb : tbs)
+                    for (const auto& tb : textureBuffers)
                     {
-                        const TextureBuffer& tbDesc = scene.getTextureBuffer(tb);
+                        const TextureBuffer& tbDesc = *tb.second;
                         if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
                         {
-                            context << tb << " (deviceHandle " << resRegistry.getTextureBufferDeviceHandle(tb) << ") " << EnumToString(tbDesc.textureFormat);
+                            context << tb.first << " (deviceHandle " << resRegistry.getTextureBufferDeviceHandle(tb.first) << ") " << EnumToString(tbDesc.textureFormat);
                             context << " mips: ";
                             for (const auto& mip : tbDesc.mipMaps)
                                 context << "[" << mip.width << "x" << mip.height << "] ";
-                            context << resRegistry.getTextureBufferByteSize(tb) / 1024 << " KB";
+                            context << resRegistry.getTextureBufferByteSize(tb.first) / 1024 << " KB";
                             context << RendererLogContext::NewLine;
                         }
-                        size += resRegistry.getTextureBufferByteSize(tb);
+                        size += resRegistry.getTextureBufferByteSize(tb.first);
                     }
                     context << "Total KB: " << size / 1024 << RendererLogContext::NewLine;
                     context.unindent();
                 }
 
-                context << "Data buffers: " << scene.getDataBufferCount() << RendererLogContext::NewLine;
+                const auto& dataBuffers = scene.getDataBuffers();
+                const auto dataBufferCount = std::count_if(dataBuffers.cbegin(), dataBuffers.cend(), [](const auto&) {return true; });
+                context << "Data buffers: " << dataBufferCount << RendererLogContext::NewLine;
                 {
-                    DataBufferHandleVector dbs;
-                    resRegistry.getAllDataBuffers(dbs);
-                    std::sort(dbs.begin(), dbs.end());
                     UInt32 size = 0u;
                     context.indent();
-                    for (const auto db : dbs)
+                    for (const auto& db : dataBuffers)
                     {
-                        const GeometryDataBuffer& dbDesc = scene.getDataBuffer(db);
+                        const GeometryDataBuffer& dbDesc = *db.second;
                         if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
                         {
-                            context << db << " (deviceHandle " << resRegistry.getDataBufferDeviceHandle(db) << ") ";
+                            context << db.first << " (deviceHandle " << resRegistry.getDataBufferDeviceHandle(db.first) << ") ";
                             context << EnumToString(dbDesc.bufferType) << " " << EnumToString(dbDesc.dataType);
                             context << " size used/allocated in B: " << dbDesc.usedSize << "/" << dbDesc.data.size();
                             context << RendererLogContext::NewLine;
@@ -491,15 +490,14 @@ namespace ramses_internal
                     context.unindent();
                 }
 
-                context << "Stream textures: " << scene.getStreamTextureCount() << RendererLogContext::NewLine;
+                const auto& streamTextures = scene.getStreamTextures();
+                const auto streamTextureCount = std::count_if(streamTextures.cbegin(), streamTextures.cend(), [](const auto&) {return true; });
+                context << "Stream textures: " << streamTextureCount << RendererLogContext::NewLine;
                 if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
                 {
-                    StreamTextureHandleVector sts;
-                    resRegistry.getAllStreamTextures(sts);
-                    std::sort(sts.begin(), sts.end());
                     context.indent();
-                    for (const auto st : sts)
-                        context << st << " [sourceId " << resRegistry.getStreamTextureSourceId(st) << "]" << RendererLogContext::NewLine;
+                    for (const auto& st : streamTextures)
+                        context << st.first << " [sourceId " << st.second->source << "]" << RendererLogContext::NewLine;
                     context.unindent();
                 }
 
@@ -1155,7 +1153,11 @@ namespace ramses_internal
                         sos << " " << sceneId.getValue() << " " << EnumToString(sceneState);
                         if (updater.m_rendererScenes.hasScene(sceneId))
                         {
-                            const auto& pendingFlushes = updater.m_rendererScenes.getStagingInfo(sceneId).pendingData.pendingFlushes;
+                            const auto& stagingInfo = updater.m_rendererScenes.getStagingInfo(sceneId);
+                            if (stagingInfo.lastAppliedVersionTag.isValid())
+                                sos << " (versionTag " << stagingInfo.lastAppliedVersionTag << ")";
+
+                            const auto& pendingFlushes = stagingInfo.pendingData.pendingFlushes;
                             if (!pendingFlushes.empty())
                                 sos << " (" << pendingFlushes.size() << " pending flushes)";
                         }

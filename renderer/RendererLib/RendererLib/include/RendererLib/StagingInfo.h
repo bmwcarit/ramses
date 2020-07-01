@@ -65,6 +65,7 @@ namespace ramses_internal
         // client resources referenced by renderer scene (without pending flushes)
         ResourceContentHashVector clientResourcesInUse;
         PendingData               pendingData;
+        SceneVersionTag           lastAppliedVersionTag;
     };
 }
 

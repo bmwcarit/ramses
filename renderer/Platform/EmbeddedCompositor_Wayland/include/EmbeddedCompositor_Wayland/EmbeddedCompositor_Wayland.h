@@ -85,11 +85,12 @@ namespace ramses_internal
         Bool addSocketToDisplayWithName(const String& embeddedSocketName);
         IWaylandBuffer* findWaylandBuffer(WaylandBufferResource& bufferResource);
 
-        const RendererConfig* m_rendererConfig;
-
-        WaylandDisplay              m_serverDisplay;
+        const String                m_waylandEmbeddedSocketName;
+        const String                m_waylandEmbeddedSocketGroup;
+        const int                   m_waylandEmbeddedSocketFD;
         IContext&                   m_context;
 
+        WaylandDisplay              m_serverDisplay;
         WaylandCompositorGlobal     m_compositorGlobal;
         WaylandShellGlobal          m_shellGlobal;
         WaylandIVIApplicationGlobal m_iviApplicationGlobal;

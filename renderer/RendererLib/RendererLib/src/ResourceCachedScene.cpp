@@ -367,13 +367,14 @@ namespace ramses_internal
 
         const SceneId sceneId = getSceneId();
 
-        const UInt32 blitPassCount = getBlitPassCount();
-        for (BlitPassHandle handle(0u); handle < blitPassCount; ++handle)
+        const auto& blitPasses = getBlitPasses();
+        for (const auto& blitPassIt : blitPasses)
         {
+            const auto handle = blitPassIt.first;
             const UInt32 indexIntoCache = handle.asMemoryHandle() * 2u;
             DeviceResourceHandle& deviceHandleSrc = m_blitPassCache[indexIntoCache];
             DeviceResourceHandle& deviceHandleDst = m_blitPassCache[indexIntoCache + 1u];
-            if (isBlitPassAllocated(handle) && (!deviceHandleSrc.isValid() || !deviceHandleDst.isValid()))
+            if ((!deviceHandleSrc.isValid() || !deviceHandleDst.isValid()))
             {
                 resourceAccessor.getBlitPassRenderTargetsDeviceHandle(handle, sceneId, deviceHandleSrc, deviceHandleDst);
                 assert(deviceHandleSrc.isValid());
@@ -602,15 +603,12 @@ namespace ramses_internal
         LOG_DEBUG(CONTEXT_RENDERER, "ResourceCachedScene::setRenderableResourcesDirtyByStreamTexture(): state change for stream texture :" << streamTextureHandle.asMemoryHandle()
                   << " with source id :" << getStreamTexture(streamTextureHandle).source);
 
-        const UInt32 totalTextureSamplerCount = getTextureSamplerCount();
-        for (TextureSamplerHandle samplerHandle(0u); samplerHandle < totalTextureSamplerCount; ++samplerHandle)
+        const auto& textureSamplers = getTextureSamplers();
+        for (const auto& texSamplerIt : textureSamplers)
         {
-            if (isTextureSamplerAllocated(samplerHandle))
-            {
-                const TextureSampler& sampler = getTextureSampler(samplerHandle);
-                if (sampler.contentType == TextureSampler::ContentType::StreamTexture && streamTextureHandle.asMemoryHandle() == sampler.contentHandle)
-                    setRenderableResourcesDirtyByTextureSampler(samplerHandle);
-            }
+            const TextureSampler& sampler = *texSamplerIt.second;
+            if (sampler.contentType == TextureSampler::ContentType::StreamTexture && streamTextureHandle.asMemoryHandle() == sampler.contentHandle)
+                setRenderableResourcesDirtyByTextureSampler(texSamplerIt.first);
         }
     }
 
@@ -640,12 +638,10 @@ namespace ramses_internal
 
     void ResourceCachedScene::resetResourceCache()
     {
-        for (RenderableHandle renderable(0u); renderable < getRenderableCount(); ++renderable)
+        const auto& renderables = getRenderables();
+        for (const auto& renderableIt : renderables)
         {
-            if (isRenderableAllocated(renderable))
-            {
-                m_renderableResourcesDirty[renderable.asMemoryHandle()] = true;
-            }
+            m_renderableResourcesDirty[renderableIt.first.asMemoryHandle()] = true;
         }
 
         std::fill(m_effectDeviceHandleCache.begin(), m_effectDeviceHandleCache.end(), DeviceResourceHandle::Invalid());

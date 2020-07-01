@@ -53,7 +53,7 @@ namespace ramses_internal
 
         testing::AssertionResult checkScreenshot(ramses::displayId_t display, const char* screenshotFile)
         {
-            if (testRenderer.performScreenshotCheck(display, 0u, 0u, WindowWidth, WindowHeight, screenshotFile))
+            if (testRenderer.performScreenshotCheck(display, {}, 0u, 0u, WindowWidth, WindowHeight, screenshotFile))
                 return testing::AssertionSuccess();
 
 

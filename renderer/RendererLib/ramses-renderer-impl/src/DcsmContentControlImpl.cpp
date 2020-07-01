@@ -37,6 +37,50 @@ namespace ramses
         }
     }
 
+    status_t DcsmContentControlImpl::addContentCategory(Category category, DcsmContentControlConfig::CategoryInfo categoryInformation)
+    {
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl::addContentCategory: category:" << category << " display:" << categoryInformation.display << " size:" << categoryInformation.size.width << "x" << categoryInformation.size.height);
+        ramses_internal::CategoryInfo info;
+        info.setCategorySize(0, 0, categoryInformation.size.width, categoryInformation.size.height);
+        info.setRenderSize(categoryInformation.size.width, categoryInformation.size.height);
+        m_categories.insert({category, {info, categoryInformation.display, {} } });
+
+        auto it = m_offeredContentsForOtherCategories.begin();
+        while (it != m_offeredContentsForOtherCategories.end())
+        {
+            if (it->category == category)
+            {
+                // generate events now that these contents are relevant for new category
+                contentOffered(it->contentID, it->category);
+                // take out from list
+                it = m_offeredContentsForOtherCategories.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+        return StatusOK;
+    }
+
+    status_t DcsmContentControlImpl::removeContentCategory(Category category)
+    {
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl::removeContentCategory: category:" << category);
+
+        auto it = m_categories.find(category);
+        if (it != m_categories.end())
+        {
+            const auto copyOfAssignedScenes = it->second.assignedContentIds;
+            for (auto& assignedContent : copyOfAssignedScenes)
+            {
+                removeContent(assignedContent);
+                m_offeredContentsForOtherCategories.push_back({category, assignedContent});
+            }
+            m_categories.erase(it);
+        }
+        return StatusOK;
+    }
+
     status_t DcsmContentControlImpl::requestContentReady(ContentID contentID, uint64_t timeOut)
     {
         LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:requestContentReady: content " << contentID << " timeOut " << timeOut << " (timeNow=" << m_timeStampNow << ")");
@@ -150,7 +194,7 @@ namespace ramses
         LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:setCategorySize: category " << categoryId << ", " << categoryInfo << " timing <" << timingInfo.startTime << ";" << timingInfo.finishTime << ">");
         auto it = m_categories.find(categoryId);
         if (it == m_categories.end())
-            return addErrorEntry("DcsmContentControl: cannot set size of unknown category, make sure category is added to DcsmContentControlConfig at creation time");
+            return addErrorEntry("DcsmContentControl: cannot set size of unknown category");
 
         status_t combinedStat = StatusOK;
         for (const auto content : it->second.assignedContentIds)
@@ -319,7 +363,10 @@ namespace ramses
             m_dcsmConsumer.assignContentToConsumer(contentID, update);
         }
         else
+        {
             LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: not interested in content offer " << contentID << " for category " << category);
+            m_offeredContentsForOtherCategories.push_back({category, contentID});
+        }
     }
 
     void DcsmContentControlImpl::contentDescription(ContentID contentID, ETechnicalContentType contentType, TechnicalContentDescriptor contentDescriptor)
@@ -374,6 +421,11 @@ namespace ramses
         {
             // no need to confirm, because not assigned
             LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: content " << contentID << " not assigned, ignoring stopofferrequest.");
+            auto itEnd = std::remove_if(m_offeredContentsForOtherCategories.begin(), m_offeredContentsForOtherCategories.end(), [&](const OfferedContents& offer)
+            {
+                return (offer.contentID == contentID);
+            });
+            m_offeredContentsForOtherCategories.erase(itEnd, m_offeredContentsForOtherCategories.end());
         }
         else
             m_pendingEvents.push_back({ EventType::ContentStopOfferRequested, contentID, Category{0}, {}, {}, DcsmContentControlEventResult::OK });
@@ -386,6 +438,11 @@ namespace ramses
         if (contentIt == m_contents.end())
         {
             LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: content " << contentID << " not assigned, nothing to do.");
+            auto itEnd = std::remove_if(m_offeredContentsForOtherCategories.begin(), m_offeredContentsForOtherCategories.end(), [&](const OfferedContents& offer)
+                {
+                    return (offer.contentID == contentID);
+                });
+            m_offeredContentsForOtherCategories.erase(itEnd, m_offeredContentsForOtherCategories.end());
         }
         else
         {
@@ -1018,4 +1075,5 @@ namespace ramses
         else
             m_pendingEvents.push_back({EventType::ContentDisableFocusRequest, contentID, Category{0}, {}, {}, DcsmContentControlEventResult::OK, {}, {}, {}, {}, {}, {}, {}, {}, {},  focusRequest});
     }
+
 }

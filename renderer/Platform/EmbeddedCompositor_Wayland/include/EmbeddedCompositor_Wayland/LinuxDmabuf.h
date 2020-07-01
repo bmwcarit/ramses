@@ -24,7 +24,7 @@ namespace ramses_internal
         LinuxDmabufBufferData();
         ~LinuxDmabufBufferData();
 
-        void setDestroyCallback(std::function<void(LinuxDmabufBufferData*)> func);
+        void setDestroyCallback(const std::function<void(LinuxDmabufBufferData*)>& func);
         void clearDestroyCallback();
 
         unsigned int getNumPlanes();

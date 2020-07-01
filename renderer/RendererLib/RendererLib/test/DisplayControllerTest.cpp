@@ -134,7 +134,7 @@ namespace ramses_internal
         destroyDisplayController(displayController);
     }
 
-    TEST_F(ADisplayController, readsPixels)
+    TEST_F(ADisplayController, readsPixelsFromFramebuffer)
     {
         IDisplayController& displayController = createDisplayController();
 
@@ -147,28 +147,33 @@ namespace ramses_internal
         EXPECT_CALL(m_renderBackend.deviceMock, activateRenderTarget(DeviceMock::FakeFrameBufferRenderTargetDeviceHandle));
         EXPECT_CALL(m_renderBackend.deviceMock, readPixels(_, x, y, width, height));
         UInt8Vector pixels;
-        EXPECT_TRUE(displayController.readPixels(x, y, width, height, pixels));
+        displayController.readPixels(DeviceMock::FakeFrameBufferRenderTargetDeviceHandle, x, y, width, height, pixels);
 
         EXPECT_EQ(width * height * 4u, pixels.size());
 
         destroyDisplayController(displayController);
     }
 
-    TEST_F(ADisplayController, failsToReadsPixelsIfOutOfBoundaries)
+    TEST_F(ADisplayController, readsPixelsFromOffscreenBuffer)
     {
         IDisplayController& displayController = createDisplayController();
 
-        const UInt32 x = 10u;
-        const UInt32 y = 11u;
-        const UInt32 width = WindowMock::FakeWidth + 1u;
-        const UInt32 height = 13u;
+        const UInt32 x = 1u;
+        const UInt32 y = 2u;
+        const UInt32 width = WindowMock::FakeWidth - 2u;
+        const UInt32 height = WindowMock::FakeHeight - 3u;
 
+        const DeviceResourceHandle obRenderTargetDeviceHandle{ 7799u };
+        ASSERT_NE(obRenderTargetDeviceHandle, DeviceMock::FakeFrameBufferRenderTargetDeviceHandle);
+
+        InSequence seq;
+        EXPECT_CALL(m_renderBackend.deviceMock, activateRenderTarget(obRenderTargetDeviceHandle));
+        EXPECT_CALL(m_renderBackend.deviceMock, readPixels(_, x, y, width, height));
         UInt8Vector pixels;
-        EXPECT_FALSE(displayController.readPixels(x, y, width, height, pixels));
+        displayController.readPixels(obRenderTargetDeviceHandle, x, y, width, height, pixels);
 
-        EXPECT_TRUE(pixels.empty());
+        EXPECT_EQ(width * height * 4u, pixels.size());
 
         destroyDisplayController(displayController);
     }
-
 }

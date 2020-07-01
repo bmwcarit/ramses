@@ -9,7 +9,6 @@
 if((TARGET DemoRamsesJNIInterface) AND ANDROID_NDK)
     add_library(exampleNativeLib SHARED src/main/cpp/exampleNative.cpp)
 
-    include(../../../../cmake/ramses/adaptCompilerFlagsForExternals.cmake)
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
     add_library(native_app_glue STATIC
         ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)

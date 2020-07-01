@@ -65,4 +65,12 @@ add_custom_target(doc
     DEPENDS ${DOXYGEN_TARGET_DIR}/doxygen.stamp)
 set_property(TARGET doc PROPERTY FOLDER "doc")
 
+# attach sources for VS
+file(GLOB_RECURSE
+    DOC_SOURCES
+    LIST_DIRECTORIES FALSE
+    *.*)
+set_property(TARGET doc APPEND PROPERTY SOURCES ${DOC_SOURCES})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${DOC_SOURCES})
+
 message(STATUS "+ doc")

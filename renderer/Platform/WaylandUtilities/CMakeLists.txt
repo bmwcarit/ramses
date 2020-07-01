@@ -55,26 +55,3 @@ IF (${ramses-sdk_BUILD_TESTS})
                                 ramses-gmock
     )
 ENDIF()
-
-ACME_MODULE(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
-    NAME                    WaylandUtilities_Test
-    TYPE                    TEST
-    TEST_SUFFIX             RNDSANDWICHTEST_SWRAST
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_SOURCE            test/*.cpp
-                            test/*.h
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
-    DEPENDENCIES            WaylandTestUtils
-                            RendererTestUtils
-                            ramses-gmock-main
-)

@@ -184,39 +184,13 @@ namespace ramses_internal
         EXPECT_TRUE(this->m_window->init());
     }
 
-    TYPED_TEST_P(AWindowWayland, IfWaylandSocketIsWrongInitWillFail)
-    {
-        UnixDomainSocket socket = UnixDomainSocket("wayland-0", WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir));
-
-
-        // just set the environment variable to some value, without ever creating the
-        // socket
-        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, "33");
-        WaylandEnvironmentUtils::UnsetVariable(WaylandEnvironmentVariable::XDGRuntimeDir);
-
-        EXPECT_FALSE(this->m_window->init());
-    }
-
-    TYPED_TEST_P(AWindowWayland, IfWaylandSocketIsSetAndWaylandDisplayIsSetInitWillFail)
-    {
-        UnixDomainSocket socket = UnixDomainSocket("wayland-0", WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir));
-
-        String fileDescriptor = StringOutputStream::ToString(socket.createConnectedFileDescriptor(false));
-        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, fileDescriptor.c_str());
-        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandDisplay, "wayland-0");
-
-        EXPECT_FALSE(this->m_window->init());
-    }
-
     REGISTER_TYPED_TEST_SUITE_P(AWindowWayland,
             canInitAWindow,
             IfXdgRuntimeDirIsNotSetInitWillFail,
             IfXdgRuntimeDirIsNotCorrectInitWillFail,
             IfXdgRuntimeDirIsNotSetButWaylandSocketInitWillSucceed,
             IfWaylandDisplayIsNotCorrectInitWillFail,
-            IfXdgRuntimeDirIsSetAndWaylandSocketIsSetInitWillSucceed,
-            IfWaylandSocketIsWrongInitWillFail,
-            IfWaylandSocketIsSetAndWaylandDisplayIsSetInitWillFail
+            IfXdgRuntimeDirIsSetAndWaylandSocketIsSetInitWillSucceed
             );
 }
 

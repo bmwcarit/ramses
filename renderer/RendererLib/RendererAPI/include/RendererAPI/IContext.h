@@ -18,25 +18,12 @@ namespace ramses_internal
     class IContext
     {
     public:
-
-        enum EType
-        {
-            EType_EGL,      /// IContext instance is down-castable to ramses_internal::Context_EGL.
-            EType_Other,    /// No information about concrete type is available. Do no attempt to cast.
-        };
-
         virtual ~IContext(){}
 
         virtual DeviceResourceMapper& getResources() = 0;
 
         // TODO Violin this should be removed - provides access to platform-specific data
         virtual void* getProcAddress(const Char* name) const = 0;
-
-        // Poor-man's RTTI
-        virtual EType getType() const
-        {
-            return EType_Other;
-        }
     };
 }
 

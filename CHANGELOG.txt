@@ -1,3 +1,21 @@
+25.0.1
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Embedded Compositor supports Linux DMA buffers interface
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fix failure to connect to wayland display upon conflict between display config and related environment variables
+
+        API changes
+        ------------------------------------------------------------------------
+        - Added DcsmContentControl::addContentCategory and removeContentCategory for being able to add categories during
+          runtime. Added as static method for binary compatibility. Will be switched to normalized
+          API on next major version
+        - Added RamsesUtils::SaveImageBufferToPng
+
+
 25.0.0
 -------------------
         API changes

@@ -178,7 +178,7 @@ namespace ramses_internal
         m_windowClass.hInstance = GetModuleHandle(NULL);
         m_windowClass.lpfnWndProc = reinterpret_cast<WNDPROC>(Window_Windows::WindowProcedure);
         m_windowClass.hbrBackground = reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH));
-        m_windowClass.hCursor = 0;
+        m_windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
 
         const ATOM atom = RegisterClassA(&m_windowClass);
         if (0 == atom)

@@ -127,10 +127,10 @@ namespace ramses_internal
         m_commands.updateWarpingData(displayHandle, warpingData);
     }
 
-    void RendererCommandBuffer::readPixels(DisplayHandle displayHandle, const String& filename, Bool fullScreen, UInt32 x, UInt32 y, UInt32 width, UInt32 height, Bool sendViaDLT)
+    void RendererCommandBuffer::readPixels(DisplayHandle displayHandle, OffscreenBufferHandle obHandle, const String& filename, Bool fullScreen, UInt32 x, UInt32 y, UInt32 width, UInt32 height, Bool sendViaDLT)
     {
         PlatformGuard guard(m_lock);
-        m_commands.readPixels(displayHandle, filename, fullScreen, x, y, width, height, sendViaDLT);
+        m_commands.readPixels(displayHandle, obHandle, filename, fullScreen, x, y, width, height, sendViaDLT);
     }
 
     void RendererCommandBuffer::setClearColor(DisplayHandle displayHandle, OffscreenBufferHandle obHandle, const Vector4& color)
@@ -444,7 +444,7 @@ namespace ramses_internal
             case ERendererCommand_ReadPixels:
             {
                 const ReadPixelsCommand& cmd = commands.getCommandData<ReadPixelsCommand>(i);
-                m_commands.readPixels(cmd.displayHandle, cmd.filename, cmd.fullScreen, cmd.x, cmd.y, cmd.width, cmd.height, cmd.sendViaDLT);
+                m_commands.readPixels(cmd.displayHandle, cmd.offscreenBufferHandle, cmd.filename, cmd.fullScreen, cmd.x, cmd.y, cmd.width, cmd.height, cmd.sendViaDLT);
             }
             break;
             case ERendererCommand_LinkSceneData:

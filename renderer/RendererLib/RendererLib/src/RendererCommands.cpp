@@ -138,10 +138,11 @@ namespace ramses_internal
         m_commands.addCommand(ERendererCommand_UpdateWarpingData, cmd);
     }
 
-    void RendererCommands::readPixels(DisplayHandle displayHandle, const String& filename, Bool fullScreen, UInt32 x, UInt32 y, UInt32 width, UInt32 height, Bool sendViaDLT)
+    void RendererCommands::readPixels(DisplayHandle displayHandle, OffscreenBufferHandle obHandle, const String& filename, Bool fullScreen, UInt32 x, UInt32 y, UInt32 width, UInt32 height, Bool sendViaDLT)
     {
         ReadPixelsCommand cmd;
         cmd.displayHandle = displayHandle;
+        cmd.offscreenBufferHandle = obHandle;
         cmd.x = x;
         cmd.y = y;
         cmd.width = width;

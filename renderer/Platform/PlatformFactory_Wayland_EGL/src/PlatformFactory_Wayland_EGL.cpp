@@ -13,7 +13,7 @@
 #include "Window_Wayland/Window_Wayland.h"
 #include "Platform_Base/EmbeddedCompositor_Dummy.h"
 #include "EmbeddedCompositor_Wayland/EmbeddedCompositor_Wayland.h"
-#include "TextureUploadingAdapter_Wayland/TextureUploadingAdapter_Wayland.h"
+#include "EmbeddedCompositor_Wayland/TextureUploadingAdapter_Wayland.h"
 #include "Platform_Base/Surface_Base.h"
 #include "Utils/LogMacros.h"
 
@@ -86,7 +86,6 @@ namespace ramses_internal
 
     IEmbeddedCompositor* PlatformFactory_Wayland_EGL::createEmbeddedCompositor(IContext& context)
     {
-        UNUSED(context);
         //TODO Mohamed: remove use of EC dummy as soon as it is possible to create multiple displays on wayland
         if (!isCreatingWaylandEmbeddedCompositorRequired())
         {

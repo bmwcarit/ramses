@@ -51,6 +51,34 @@ TEST_F(ARendererSceneUpdater, generatesRendererEventForNamedFlush)
     EXPECT_EQ(version, events[0].sceneVersionTag);
 }
 
+TEST_F(ARendererSceneUpdater, lastAppliedFlushVersionTagIsTracked)
+{
+    createPublishAndSubscribeScene();
+    expectNoEvent();
+
+    EXPECT_FALSE(rendererScenes.getStagingInfo(getSceneId()).lastAppliedVersionTag.isValid());
+
+    SceneVersionTag version{ 15u };
+    performFlush(0u, version);
+    update();
+    EXPECT_EQ(version, rendererScenes.getStagingInfo(getSceneId()).lastAppliedVersionTag);
+
+    version = SceneVersionTag{ 1111u };
+    performFlush(0u, version);
+    update();
+    EXPECT_EQ(version, rendererScenes.getStagingInfo(getSceneId()).lastAppliedVersionTag);
+
+    // invalid version tag is also tracked
+    performFlush(0u, SceneVersionTag::Invalid());
+    update();
+    EXPECT_FALSE(rendererScenes.getStagingInfo(getSceneId()).lastAppliedVersionTag.isValid());
+
+    version = SceneVersionTag{ 2222u };
+    performFlush(0u, version);
+    update();
+    EXPECT_EQ(version, rendererScenes.getStagingInfo(getSceneId()).lastAppliedVersionTag);
+}
+
 TEST_F(ARendererSceneUpdater, preallocatesSceneForSizesProvidedInFlushInfo)
 {
     createPublishAndSubscribeScene();
@@ -640,6 +668,250 @@ TEST_F(ARendererSceneUpdater, doesNotSetClearColorIfOBSpecifiedButNotFound)
     destroyDisplay();
 }
 
+TEST_F(ARendererSceneUpdater, readPixelsFromDisplayFramebuffer)
+{
+    createDisplayAndExpectSuccess();
+
+    const UInt32 x = 1u;
+    const UInt32 y = 2u;
+    const UInt32 width = 3u;
+    const UInt32 height = 4u;
+    const Bool fullScreen = false;
+    const Bool sendViaDLT = false;
+    const String& filename = "";
+
+    readPixels(DisplayHandle1, {}, x, y, width, height, fullScreen, sendViaDLT, filename);
+    expectDisplayControllerReadPixels(DisplayHandle1, DisplayControllerMock::FakeFrameBufferHandle, x, y, width, height);
+    doRenderLoop();
+    rendererSceneUpdater->processScreenshotResults();
+    expectReadPixelsEvents({ {DisplayHandle1, {}, true} });
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, readPixelsFromOffscreenbuffer)
+{
+    createDisplayAndExpectSuccess();
+
+    const OffscreenBufferHandle buffer(1u);
+    expectContextEnable();
+    expectRenderTargetUploaded(DisplayHandle1, true);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 10u, 10u, false));
+
+    const UInt32 x = 1u;
+    const UInt32 y = 2u;
+    const UInt32 width = 3u;
+    const UInt32 height = 4u;
+    const Bool fullScreen = false;
+    const Bool sendViaDLT = false;
+    const String& filename = "";
+
+    readPixels(DisplayHandle1, buffer, x, y, width, height, fullScreen, sendViaDLT, filename);
+    expectDisplayControllerReadPixels(DisplayHandle1, DeviceMock::FakeRenderTargetDeviceHandle, x, y, width, height);
+    doRenderLoop();
+    rendererSceneUpdater->processScreenshotResults();
+    expectReadPixelsEvents({ {DisplayHandle1, buffer, true} });
+
+    expectRenderTargetDeleted();
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, createsReadPixelsFailedEventIfInvalidDisplay)
+{
+    createDisplayAndExpectSuccess();
+
+    const UInt32 x = 1u;
+    const UInt32 y = 2u;
+    const UInt32 width = 3u;
+    const UInt32 height = 4u;
+    const Bool fullScreen = false;
+    const Bool sendViaDLT = false;
+    const String& filename = "";
+
+    const DisplayHandle dummyDisplay(779u);
+    readPixels(dummyDisplay, {}, x, y, width, height, fullScreen, sendViaDLT, filename);
+
+    DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(DisplayHandle1);
+    EXPECT_CALL(*displayMock.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
+    doRenderLoop();
+
+    expectReadPixelsEvents({ {dummyDisplay, {}, false} });
+
+    rendererSceneUpdater->processScreenshotResults();
+    expectNoEvent();
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, createsReadPixelsFailedEventIfInvalidOffscreenBuffer)
+{
+    createDisplayAndExpectSuccess();
+
+    const OffscreenBufferHandle buffer(1u);
+
+    const UInt32 x = 1u;
+    const UInt32 y = 2u;
+    const UInt32 width = 3u;
+    const UInt32 height = 4u;
+    const Bool fullScreen = false;
+    const Bool sendViaDLT = false;
+    const String& filename = "";
+
+    readPixels(DisplayHandle1, buffer, x, y, width, height, fullScreen, sendViaDLT, filename);
+
+    DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(DisplayHandle1);
+    EXPECT_CALL(*displayMock.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
+    doRenderLoop();
+    expectReadPixelsEvents({ {DisplayHandle1, buffer, false} });
+
+    rendererSceneUpdater->processScreenshotResults();
+    expectNoEvent();
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, createsReadPixelsFailedEventIfRectangleIsOutOfDisplayBounds)
+{
+    const auto displayWidth = WindowMock::FakeWidth;
+    const auto displayHeight = WindowMock::FakeHeight;
+    DisplayConfig dispConfig;
+    dispConfig.setDesiredWindowWidth(displayWidth);
+    dispConfig.setDesiredWindowHeight(displayHeight);
+    createDisplayAndExpectSuccess(DisplayHandle1, dispConfig);
+
+    const Bool fullScreen = false;
+    const Bool sendViaDLT = false;
+    const String& filename = "";
+
+
+    readPixels(DisplayHandle1, {}, displayWidth, 0u, 1u, 1u, fullScreen, sendViaDLT, filename);
+    readPixels(DisplayHandle1, {}, 0u, displayHeight, 1u, 1u, fullScreen, sendViaDLT, filename);
+    readPixels(DisplayHandle1, {}, 0u, 0u, displayWidth + 1u, 1u, fullScreen, sendViaDLT, filename);
+    readPixels(DisplayHandle1, {}, 0u, 0u, 0u, displayHeight + 1u, fullScreen, sendViaDLT, filename);
+
+    DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(DisplayHandle1);
+    EXPECT_CALL(*displayMock.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
+    doRenderLoop();
+
+    expectReadPixelsEvents({ {DisplayHandle1, {}, false },
+                            {DisplayHandle1, {}, false },
+                            {DisplayHandle1, {}, false },
+                            {DisplayHandle1, {}, false } });
+
+    rendererSceneUpdater->processScreenshotResults();
+    expectNoEvent();
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, createsReadPixelsFailedEventIfRectangleIsOutOfOffscreenBufferBounds)
+{
+    createDisplayAndExpectSuccess();
+
+    const OffscreenBufferHandle buffer(1u);
+    expectContextEnable();
+    expectRenderTargetUploaded(DisplayHandle1, true);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 10u, 10u, false));
+
+    const Bool fullScreen = false;
+    const Bool sendViaDLT = false;
+    const String& filename = "";
+
+    readPixels(DisplayHandle1, buffer, 10, 0u, 1u, 1u, fullScreen, sendViaDLT, filename);
+    readPixels(DisplayHandle1, buffer, 0u, 10, 1u, 1u, fullScreen, sendViaDLT, filename);
+    readPixels(DisplayHandle1, buffer, 0u, 0u, 11u, 1u, fullScreen, sendViaDLT, filename);
+    readPixels(DisplayHandle1, buffer, 0u, 0u, 0u, 11u, fullScreen, sendViaDLT, filename);
+
+    DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(DisplayHandle1);
+    EXPECT_CALL(*displayMock.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
+    doRenderLoop();
+
+    expectReadPixelsEvents({ {DisplayHandle1, buffer, false },
+                            {DisplayHandle1, buffer, false },
+                            {DisplayHandle1, buffer, false },
+                            {DisplayHandle1, buffer, false } });
+
+    rendererSceneUpdater->processScreenshotResults();
+    expectNoEvent();
+
+    expectRenderTargetDeleted();
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, readPixelsFromDisplayAndSaveToFileWithoutGeneratingEvent)
+{
+    createDisplayAndExpectSuccess();
+
+    const UInt32 x = 1u;
+    const UInt32 y = 2u;
+    const UInt32 width = 3u;
+    const UInt32 height = 4u;
+    const Bool fullScreen = false;
+    const Bool sendViaDLT = false;
+    const String& filename = "testScreenshot";
+
+    readPixels(DisplayHandle1, {}, x, y, width, height, fullScreen, sendViaDLT, filename);
+    expectDisplayControllerReadPixels(DisplayHandle1, DisplayControllerMock::FakeFrameBufferHandle, x, y, width, height);
+    doRenderLoop();
+    expectNoEvent();
+
+    rendererSceneUpdater->processScreenshotResults();
+    expectNoEvent();
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, readPixelsFromDisplayFullscreen)
+{
+    const auto displayWidth = WindowMock::FakeWidth;
+    const auto displayHeight = WindowMock::FakeHeight;
+    DisplayConfig dispConfig;
+    dispConfig.setDesiredWindowWidth(displayWidth);
+    dispConfig.setDesiredWindowHeight(displayHeight);
+    createDisplayAndExpectSuccess(DisplayHandle1, dispConfig);
+
+    const UInt32 x = 1u;
+    const UInt32 y = 2u;
+    const UInt32 width = 3u;
+    const UInt32 height = 4u;
+    const Bool fullScreen = true;
+    const Bool sendViaDLT = false;
+    const String& filename = "";
+
+    readPixels(DisplayHandle1, {}, x, y, width, height, fullScreen, sendViaDLT, filename);
+    expectDisplayControllerReadPixels(DisplayHandle1, DisplayControllerMock::FakeFrameBufferHandle, 0, 0, WindowMock::FakeWidth, WindowMock::FakeHeight);
+    doRenderLoop();
+
+    rendererSceneUpdater->processScreenshotResults();
+    expectReadPixelsEvents({ {DisplayHandle1, {}, true} });
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, doesNotCreateReadPixelsFailedEventIfInvalidDisplayAndSavingToFile)
+{
+    createDisplayAndExpectSuccess();
+
+    const UInt32 x = 1u;
+    const UInt32 y = 2u;
+    const UInt32 width = 3u;
+    const UInt32 height = 4u;
+    const Bool fullScreen = false;
+    const Bool sendViaDLT = false;
+    const String& filename = "testScreenshot";
+
+    const DisplayHandle dummyDisplay(779u);
+    readPixels(dummyDisplay, {}, x, y, width, height, fullScreen, sendViaDLT, filename);
+
+    DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(DisplayHandle1);
+    EXPECT_CALL(*displayMock.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
+    doRenderLoop();
+
+    rendererSceneUpdater->processScreenshotResults();
+    expectNoEvent();
+
+    destroyDisplay();
+}
 
 ///////////////////////////
 // Data linking tests

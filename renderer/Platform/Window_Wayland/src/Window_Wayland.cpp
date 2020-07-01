@@ -26,14 +26,9 @@ namespace ramses_internal
     {
         LOG_DEBUG(CONTEXT_RENDERER, "Window_Wayland::init Opening Wayland window");
 
-        if (!WaylandEnvironmentUtils::IsEnvironmentInProperState())
-        {
-            LOG_ERROR(CONTEXT_RENDERER, "Window_Wayland::init failed. Environment is not properly configured");
-            return false;
-        }
-
+        WaylandEnvironmentUtils::LogEnvironmentState(m_waylandDisplay);
         m_wlContext.display = wl_display_connect(m_waylandDisplay.empty()? nullptr : m_waylandDisplay.c_str());
-        if (nullptr == m_wlContext.display)
+        if (!m_wlContext.display)
         {
             LOG_ERROR(CONTEXT_RENDERER, "Window_Wayland::init Could not connect to system compositor (compositor running and or correct socket set?)");
             return false;

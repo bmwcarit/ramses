@@ -80,7 +80,7 @@ namespace ramses_internal
         // TODO vaclav remove when legacy scene control gone
         // flag denoting if new scene control using internal logic is enabled
         // false means that new scene control is not active - either legacy is used or it was not used by user yet
-        bool m_sceneControlLogicActive = false;
+        std::atomic_bool m_sceneControlLogicActive{ false };
 
     private:
         void update();
@@ -90,7 +90,6 @@ namespace ramses_internal
 
         void updateSceneControlLogic();
         void updateWindowTitles();
-        void processScreenshotResults();
 
         RendererCommandBuffer&                      m_rendererCommandBuffer;
         FrameTimer                                  m_frameTimer;

@@ -62,6 +62,7 @@ namespace ramses_internal
         void createDisplayContext(const DisplayConfig& displayConfig, IResourceProvider& resourceProvider, IResourceUploader& resourceUploader, DisplayHandle handle);
         void destroyDisplayContext(DisplayHandle handle);
         void updateScenes();
+        void processScreenshotResults();
 
         // IRendererSceneControl
         virtual void handleSceneSubscriptionRequest     (SceneId sceneId) override;
@@ -81,6 +82,7 @@ namespace ramses_internal
         Bool handleBufferCreateRequest          (OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, Bool isDoubleBuffered);
         Bool handleBufferDestroyRequest         (OffscreenBufferHandle buffer, DisplayHandle display);
         void handleSetClearColor                (DisplayHandle display, OffscreenBufferHandle buffer, const Vector4& clearColor);
+        void handleReadPixels                   (DisplayHandle display, OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo);
         virtual void handlePickEvent            (SceneId sceneId, Vector2 coordsNormalizedToBufferSize);
 
         Bool hasPendingFlushes(SceneId sceneId) const;

@@ -55,6 +55,7 @@ TEST_F(ARendererCommandBuffer, parsesCommandsForScreenshotPrintingWithFilename)
     ASSERT_EQ(ERendererCommand_ReadPixels, commands.getCommandType(0));
     EXPECT_EQ(String("bla"), commands.getCommandData<ReadPixelsCommand>(0).filename);
     EXPECT_EQ(DisplayHandle(0u), commands.getCommandData<ReadPixelsCommand>(0).displayHandle);
+    EXPECT_FALSE(commands.getCommandData<ReadPixelsCommand>(0).offscreenBufferHandle.isValid());
 }
 
 TEST_F(ARendererCommandBuffer, parsesCommandsForScreenshotPrintingWithDisplayIDs)
@@ -111,7 +112,7 @@ TEST_F(ARendererCommandBuffer, canFetchAllTypesOfRendererCommands)
     queueToFetch.showScene(sceneId);
     queueToFetch.hideScene(sceneId);
     queueToFetch.updateWarpingData(displayHandle, warpingData);
-    queueToFetch.readPixels(displayHandle, "testImage", false, 0, 0, 64, 64);
+    queueToFetch.readPixels(displayHandle, obHandle, "testImage", false, 0, 0, 64, 64);
     queueToFetch.linkSceneData(providerSceneId, providerId, consumerSceneId, consumerId);
     queueToFetch.unlinkSceneData(consumerSceneId, consumerId);
     queueToFetch.moveView(Vector3(1.0f));

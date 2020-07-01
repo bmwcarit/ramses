@@ -139,10 +139,6 @@ namespace ramses_internal
         };
     }
 
-
-
-
-
     IPlatformFactory* PlatformFactory_Base::CreatePlatformFactory(const RendererConfig&)
     {
         return new ::testing::NiceMock<PlatformFactoryNiceMock>();
@@ -151,24 +147,21 @@ namespace ramses_internal
     class AEmbeddedCompositor_Wayland : public TestWithWaylandEnvironment
     {
     public:
-        AEmbeddedCompositor_Wayland()
+        bool init(const String& ecSocketName, const String& ecSocketGroup = "", int ecSocketFD = -1, bool xdgRuntimeDirSet = true)
         {
-            embeddedCompositor = new EmbeddedCompositor_Wayland(rendererConfig, context);
-        }
+            if(xdgRuntimeDirSet)
+                WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, m_initialValueOfXdgRuntimeDir);
+            else
+                WaylandEnvironmentUtils::UnsetVariable(WaylandEnvironmentVariable::XDGRuntimeDir);
 
-        void init()
-        {
-            WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, m_initialValueOfXdgRuntimeDir);
-            const String socketName("wayland-10");
-            rendererConfig.setWaylandEmbeddedCompositingSocketName(socketName);
-            EXPECT_TRUE(embeddedCompositor->init());
-        }
+            RendererConfig rendererConfig;
+            rendererConfig.setWaylandEmbeddedCompositingSocketName(ecSocketName);
+            rendererConfig.setWaylandEmbeddedCompositingSocketGroup(ecSocketGroup);
+            rendererConfig.setWaylandEmbeddedCompositingSocketFD(ecSocketFD);
 
-        virtual ~AEmbeddedCompositor_Wayland()
-        {
-            delete(embeddedCompositor);
+            embeddedCompositor.reset(new EmbeddedCompositor_Wayland(rendererConfig, context));
+            return embeddedCompositor->init();
         }
-
 
         Bool clientCanConnectViaSocket(const String& socketName)
         {
@@ -184,16 +177,11 @@ namespace ramses_internal
             return client.couldConnectToEmbeddedCompositor();
         }
 
-
-    protected:
-
-        ContextMock                 context;
-        RendererConfig              rendererConfig     = RendererConfig();
-        EmbeddedCompositor_Wayland* embeddedCompositor = nullptr;
-        UnixDomainSocket            socket             = UnixDomainSocket("testingSocket", m_initialValueOfXdgRuntimeDir);
+        ContextMock                                 context;
+        std::unique_ptr<EmbeddedCompositor_Wayland> embeddedCompositor;
+        UnixDomainSocket                            socket  = UnixDomainSocket("testingSocket", m_initialValueOfXdgRuntimeDir);
 
     private:
-
         void runClientAndWaitForThreadJoining(ConnectToDisplayRunnable& client)
         {
             PlatformThread clientThread("ClientApp");
@@ -212,20 +200,15 @@ namespace ramses_internal
         }
     };
 
-    TEST_F(AEmbeddedCompositor_Wayland, CanBeCreatedAndDestroyed)
-    {
-        EXPECT_NE(nullptr, embeddedCompositor);
-    }
-
     TEST_F(AEmbeddedCompositor_Wayland, DefaultRenderConfigCanNotInitialize)
     {
-        EXPECT_FALSE(embeddedCompositor->init());
+        EXPECT_FALSE(init(""));
         EXPECT_FALSE(clientCanConnectViaSocket("wayland-10"));
     }
 
     TEST_F(AEmbeddedCompositor_Wayland, InitializeWorksWithSocketNameSet_ClientConnectionTest)
     {
-        init();
+        EXPECT_TRUE(init("wayland-0"));
         EXPECT_TRUE(clientCanConnectViaSocket("wayland-10"));
     }
 
@@ -235,21 +218,14 @@ namespace ramses_internal
 
         const String socketName("wayland-10");
         const String groupName = getUserGroupName();
-        LOG_INFO(CONTEXT_RENDERER, "InitializeWorksWithSocketNameAndGroupSet groupName: " << groupName);
-        rendererConfig.setWaylandEmbeddedCompositingSocketName(socketName);
-        rendererConfig.setWaylandEmbeddedCompositingSocketGroup(groupName);
 
-        EXPECT_TRUE(embeddedCompositor->init());
-
+        EXPECT_TRUE(init(socketName, groupName));
         EXPECT_TRUE(clientCanConnectViaSocket(socketName));
     }
 
     TEST_F(AEmbeddedCompositor_Wayland, InitializeFailsWithSocketNameAndWrongGroupSet)
     {
-        const String socketName("wayland-10");
-        rendererConfig.setWaylandEmbeddedCompositingSocketName(socketName);
-        rendererConfig.setWaylandEmbeddedCompositingSocketGroup("notExistingGroupName");
-        EXPECT_FALSE(embeddedCompositor->init());
+        EXPECT_FALSE(init("wayland-10", "notExistingGroupName"));
     }
 
     TEST_F(AEmbeddedCompositor_Wayland, InitializeWorksWithSocketFDSet_ClientConnectionTest)
@@ -259,9 +235,7 @@ namespace ramses_internal
         ASSERT_TRUE(isSocket(socketFD));
         ASSERT_TRUE(isSocket(clientFD));
 
-        rendererConfig.setWaylandEmbeddedCompositingSocketFD(socketFD);
-        EXPECT_TRUE(embeddedCompositor->init());
-
+        EXPECT_TRUE(init("", "", socketFD));
         EXPECT_TRUE(clientCanConnectViaSocket(clientFD));
     }
 
@@ -269,9 +243,8 @@ namespace ramses_internal
     {
         const int nonExistentSocketFD = socket.createBoundFileDescriptor() + 3;
         ASSERT_FALSE(isSocket(nonExistentSocketFD));
-        rendererConfig.setWaylandEmbeddedCompositingSocketFD(nonExistentSocketFD);
 
-        EXPECT_FALSE(embeddedCompositor->init());
+        EXPECT_FALSE(init("", "", nonExistentSocketFD));
     }
 
     TEST_F(AEmbeddedCompositor_Wayland, CanNotInitializeWithBothSocketsConfigured)
@@ -280,19 +253,13 @@ namespace ramses_internal
         const int socketFD = socket.createBoundFileDescriptor();
         ASSERT_TRUE(isSocket(socketFD));
 
-        rendererConfig.setWaylandEmbeddedCompositingSocketName(socketName);
-        rendererConfig.setWaylandEmbeddedCompositingSocketFD(socketFD);
-        EXPECT_FALSE(embeddedCompositor->init());
+        EXPECT_FALSE(init(socketName, "", socketFD));
     }
 
     TEST_F(AEmbeddedCompositor_Wayland, CanNotInitializeWithSocketNameSetButXDGRuntimeDirNotSet)
     {
         const String socketName("wayland-10");
-        rendererConfig.setWaylandEmbeddedCompositingSocketName(socketName);
-
-        WaylandEnvironmentUtils::UnsetVariable(WaylandEnvironmentVariable::XDGRuntimeDir);
-
-        EXPECT_FALSE(embeddedCompositor->init());
+        EXPECT_FALSE(init(socketName, "", -1, false));
         EXPECT_FALSE(clientCanConnectViaSocket(socketName));
     }
 
@@ -303,10 +270,6 @@ namespace ramses_internal
         ASSERT_TRUE(isSocket(socketFD));
         ASSERT_TRUE(isSocket(clientFD));
 
-        // the SocketEmbeddedFD is the socket the EC is using for incomming
-        // connections from different clients
-        rendererConfig.setWaylandEmbeddedCompositingSocketFD(socketFD);
-
         UnixDomainSocket systemCompositorSocket("wayland-0", m_initialValueOfXdgRuntimeDir);
         StringOutputStream systemCompositorSocketFD;
         systemCompositorSocketFD << systemCompositorSocket.createConnectedFileDescriptor(false);
@@ -314,15 +277,17 @@ namespace ramses_internal
         // The EC needs to connect to the system compositor (it is no real server just acting as proxy)
         // So we need to configure the socket information to Wayland
         WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, systemCompositorSocketFD.c_str());
-        WaylandEnvironmentUtils::UnsetVariable(WaylandEnvironmentVariable::XDGRuntimeDir);
-        EXPECT_TRUE(embeddedCompositor->init());
+
+        // the SocketEmbeddedFD is the socket the EC is using for incomming
+        // connections from different clients
+        EXPECT_TRUE(init("", "", socketFD, false));
 
         EXPECT_TRUE(clientCanConnectViaSocket(clientFD));
     }
 
     TEST_F(AEmbeddedCompositor_Wayland, CanAddWaylandSurfaceWithCheckHasSurfaceForStreamTexture)
     {
-        init();
+        EXPECT_TRUE(init("wayland-10"));
 
         const WaylandIviSurfaceId surfaceIVIId(123);
 
@@ -335,7 +300,7 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, CanRemoveWaylandSurfaceWithCheckHasSurfaceForStreamTexture)
     {
-        init();
+        EXPECT_TRUE(init("wayland-10"));
 
         const WaylandIviSurfaceId surfaceIVIId(123);
 
@@ -349,7 +314,7 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, CanGetGetTitleOfWaylandIviSurface)
     {
-        init();
+        EXPECT_TRUE(init("wayland-10"));
 
         const WaylandIviSurfaceId surfaceIVIId(123);
         const String title = "someTitle";
@@ -365,7 +330,7 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, CallsSendFrameCallbacksInEndFrameWhenNotifyClientsFlagSet)
     {
-        init();
+        EXPECT_TRUE(init("wayland-10"));
 
         StrictMock<WaylandSurfaceMock> surface;
         embeddedCompositor->addWaylandSurface(surface);
@@ -377,8 +342,7 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, DoesNotCallSendFrameCallbacksInEndFrameWhenNotifyClientsFlagNotSet)
     {
-        init();
-
+        EXPECT_TRUE(init("wayland-10"));
 
         StrictMock<WaylandSurfaceMock> surface;
         embeddedCompositor->addWaylandSurface(surface);
@@ -387,7 +351,7 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, CanAddIdToUpdatedStreamTextureSourceIds)
     {
-        init();
+        EXPECT_TRUE(init("wayland-10"));
 
         const WaylandIviSurfaceId surfaceIVIId(123);
 
@@ -398,7 +362,7 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, CanRemoveIdFromUpdatedStreamTextureSourceIds)
     {
-        init();
+        EXPECT_TRUE(init("wayland-10"));
 
         const WaylandIviSurfaceId surfaceIVIId(123);
 
@@ -410,7 +374,7 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, CanDispatchUpdatedStreamTextureSourceIds)
     {
-        init();
+        EXPECT_TRUE(init("wayland-10"));
 
         const WaylandIviSurfaceId surfaceIVIId(123);
 
@@ -424,7 +388,7 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, CanGetTotalNumberOfCommitedFramesForWaylandIviSurface)
     {
-        init();
+        EXPECT_TRUE(init("wayland-10"));
 
         const WaylandIviSurfaceId surfaceIVIId(123);
         const UInt64              numberOfCommitedFrames = 456;
@@ -440,7 +404,7 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, ReturnsZeroForGetTotalNumberOfCommitedFramesForWaylandIviSurfaceWhenSurfaceDoesNotExist)
     {
-        init();
+        EXPECT_TRUE(init("wayland-10"));
 
         const WaylandIviSurfaceId surfaceIVIId(123);
         const WaylandIviSurfaceId secondSurfaceIVIId(124);
@@ -454,7 +418,7 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, IsBufferAttachedToWaylandIviSurfaceReturnsCorrectValueWhenSurfaceExists)
     {
-        init();
+        EXPECT_TRUE(init("wayland-10"));
 
         const WaylandIviSurfaceId surfaceIVIId(123);
 
@@ -472,7 +436,7 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, IsBufferAttachedToWaylandIviSurfaceReturnsCorrectValueWhenSurfaceDoesNotExist)
     {
-        init();
+        EXPECT_TRUE(init("wayland-10"));
 
         const WaylandIviSurfaceId surfaceIVIId(123);
         const WaylandIviSurfaceId secondSurfaceIVIId(124);
@@ -486,7 +450,7 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, IsContentAvailableForStreamTextureReturnsCorrectValueWhenSurfaceExists)
     {
-        init();
+        EXPECT_TRUE(init("wayland-10"));
 
         const WaylandIviSurfaceId surfaceIVIId(123);
 
@@ -505,7 +469,7 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, IsContentAvailableForStreamTextureReturnsCorrectValueWhenSurfaceDoesNotExist)
     {
-        init();
+        EXPECT_TRUE(init("wayland-10"));
 
         const WaylandIviSurfaceId surfaceIVIId(123);
         const WaylandIviSurfaceId secondSurfaceIVIId(124);
@@ -519,7 +483,7 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, CanAddWaylandCompositorConnection)
     {
-        init();
+        EXPECT_TRUE(init("wayland-10"));
 
         StrictMock<WaylandCompositorConnectionMock> compositorConnection;
 
@@ -530,7 +494,7 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, CanRemoveWaylandCompositorConnection)
     {
-        init();
+        EXPECT_TRUE(init("wayland-10"));
 
         StrictMock<WaylandCompositorConnectionMock> compositorConnection;
         embeddedCompositor->addWaylandCompositorConnection(compositorConnection);
@@ -541,7 +505,7 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, CanAddAndRemoveWaylandRegion)
     {
-        init();
+        EXPECT_TRUE(init("wayland-10"));
 
         StrictMock<WaylandRegionMock> region;
         embeddedCompositor->addWaylandRegion(region);
@@ -555,7 +519,7 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, CanLogInfos)
     {
-        init();
+        EXPECT_TRUE(init("wayland-10"));
 
         StrictMock<WaylandSurfaceMock> surface;
         embeddedCompositor->addWaylandSurface(surface);
@@ -571,7 +535,7 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, getOrCreateBufferCreatesNewBuffer)
     {
-        init();
+        EXPECT_TRUE(init("wayland-10"));
 
         StrictMock<WaylandBufferResourceMock> bufferResource;
         StrictMock<WaylandBufferResourceMock>* bufferResourceCloned = new StrictMock<WaylandBufferResourceMock>;
@@ -586,12 +550,12 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, getOrCreateBufferReturnsExistingBuffer)
     {
-        init();
+        EXPECT_TRUE(init("wayland-10"));
 
         StrictMock<WaylandBufferResourceMock>  bufferResource;
         StrictMock<WaylandBufferResourceMock>* bufferResourceCloned = new StrictMock<WaylandBufferResourceMock>;
 
-        WaylandNativeResource waylandNativeBufferResource(reinterpret_cast<WaylandNativeResource>(123));
+        void* waylandNativeBufferResource(reinterpret_cast<void*>(123));
 
         EXPECT_CALL(bufferResource, clone()).WillOnce(Return(bufferResourceCloned));
         EXPECT_CALL(*bufferResourceCloned, addDestroyListener(_));
@@ -607,7 +571,7 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, HandleBufferDestroyedCallsSurfaceBufferDestroyed)
     {
-        init();
+        EXPECT_TRUE(init("wayland-10"));
 
         StrictMock<WaylandBufferResourceMock>  bufferResource;
         StrictMock<WaylandBufferResourceMock>* bufferResourceCloned = new StrictMock<WaylandBufferResourceMock>;

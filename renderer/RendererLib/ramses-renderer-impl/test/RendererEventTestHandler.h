@@ -266,12 +266,13 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void framebufferPixelsRead(const uint8_t* /*pixelData*/, const uint32_t /*pixelDataSize*/, ramses::displayId_t displayId, ramses::displayBufferId_t /*displayBufferId*/, ramses::ERendererEventResult result) override
+    virtual void framebufferPixelsRead(const uint8_t* /*pixelData*/, const uint32_t /*pixelDataSize*/, ramses::displayId_t displayId, ramses::displayBufferId_t displayBufferId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_PixelsRead;
         event.result = result;
         event.displayId = displayId;
+        event.bufferId = displayBufferId;
         m_events.push_back(event);
     }
 

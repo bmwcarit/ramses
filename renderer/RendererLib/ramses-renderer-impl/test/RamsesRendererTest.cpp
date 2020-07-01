@@ -192,9 +192,9 @@ TEST_F(ARamsesRenderer, canCreateDcsmContentControlOnlyOnce)
     EXPECT_TRUE(renderer.createDcsmContentControl(m_dcsmContentControlConfig) == nullptr);
 }
 
-TEST_F(ARamsesRenderer, failsToCreateDcsmContentControlWithNoCategoryInConfig)
+TEST_F(ARamsesRenderer, canCreateDcsmContentControlWithNoCategoryInConfig)
 {
-    EXPECT_EQ(nullptr, renderer.createDcsmContentControl(ramses::DcsmContentControlConfig{}));
+    EXPECT_NE(nullptr, renderer.createDcsmContentControl(ramses::DcsmContentControlConfig{}));
 }
 
 /*
@@ -351,11 +351,45 @@ TEST_F(ARamsesRendererWithDisplay, failsToCreateOffscreenBufferWithUnsupportedRe
 /*
 * Read Pixels
 */
-TEST_F(ARamsesRendererWithDisplay, createsCommandForReadPixels)
+TEST_F(ARamsesRendererWithDisplay, createsCommandForReadPixels_FB)
 {
-    EXPECT_EQ(ramses::StatusOK, renderer.readPixels(displayId, {}, 0u, 0u, 40u, 40u));
+    EXPECT_EQ(ramses::StatusOK, renderer.readPixels(displayId, {}, 1u, 2u, 3u, 4u));
     checkForRendererCommandCount(1u);
     checkForRendererCommand(0u, ramses_internal::ERendererCommand_ReadPixels);
+    const auto& cmd = commandBuffer.getCommands().getCommandData<ramses_internal::ReadPixelsCommand>(0u);
+    EXPECT_EQ(displayId.getValue(), cmd.displayHandle.asMemoryHandle());
+    EXPECT_EQ(ramses_internal::OffscreenBufferHandle::Invalid(), cmd.offscreenBufferHandle);
+    EXPECT_EQ(1u, cmd.x);
+    EXPECT_EQ(2u, cmd.y);
+    EXPECT_EQ(3u, cmd.width);
+    EXPECT_EQ(4u, cmd.height);
+}
+
+TEST_F(ARamsesRendererWithDisplay, createsCommandForReadPixels_OB)
+{
+    ramses::displayBufferId_t bufferId{ 123u };
+    EXPECT_EQ(ramses::StatusOK, renderer.readPixels(displayId, bufferId, 1u, 2u, 3u, 4u));
+    checkForRendererCommandCount(1u);
+    checkForRendererCommand(0u, ramses_internal::ERendererCommand_ReadPixels);
+    const auto& cmd = commandBuffer.getCommands().getCommandData<ramses_internal::ReadPixelsCommand>(0u);
+    EXPECT_EQ(displayId.getValue(), cmd.displayHandle.asMemoryHandle());
+    EXPECT_EQ(ramses_internal::OffscreenBufferHandle{ bufferId.getValue() }, cmd.offscreenBufferHandle);
+    EXPECT_EQ(1u, cmd.x);
+    EXPECT_EQ(2u, cmd.y);
+    EXPECT_EQ(3u, cmd.width);
+    EXPECT_EQ(4u, cmd.height);
+}
+
+TEST_F(ARamsesRendererWithDisplay, reportsErrorIfReadingPixelsForUnknownDisplay)
+{
+    EXPECT_NE(ramses::StatusOK, renderer.readPixels(ramses::displayId_t{ 999u }, {}, 1u, 2u, 3u, 4u));
+}
+
+TEST_F(ARamsesRendererWithDisplay, createsNoCommandForEmptyReadPixels)
+{
+    EXPECT_NE(ramses::StatusOK, renderer.readPixels(displayId, {}, 0u, 0u, 10u, 0u));
+    EXPECT_NE(ramses::StatusOK, renderer.readPixels(displayId, {}, 0u, 0u, 0u, 10u));
+    checkForRendererCommandCount(0u);
 }
 
 /*

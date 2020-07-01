@@ -21,17 +21,10 @@ DisplayControllerMock::DisplayControllerMock()
     ON_CALL(*this, getDisplayHeight()).WillByDefault(Return(WindowMock::FakeHeight));
     ON_CALL(*this, getProjectionParams()).WillByDefault(ReturnRef(FakeProjectionParams));
     ON_CALL(*this, getViewMatrix()).WillByDefault(ReturnRef(Matrix44f::Identity));
-    ON_CALL(*this, readPixels(_, _, _, _, _)).WillByDefault(Invoke(ResizePixelBuffer));
     ON_CALL(*this, renderScene(_, _, _, _, _)).WillByDefault(Return(SceneRenderExecutionIterator()));
 }
 
 DisplayControllerMock::~DisplayControllerMock()
 {
-}
-
-bool DisplayControllerMock::ResizePixelBuffer(UInt32 x, UInt32 y, UInt32 width, UInt32 height, std::vector<UInt8>& dataOut)
-{
-    dataOut.resize((width - x) * (height - y) * 4u); // Assuming RGBA8 non multisampled
-    return true;
 }
 }

@@ -79,22 +79,17 @@ namespace ramses_internal
         m_device.clear(EClearFlags_All);
     }
 
-    Bool DisplayController::readPixels(UInt32 x, UInt32 y, UInt32 width, UInt32 height, std::vector<UInt8>& dataOut)
+    void DisplayController::readPixels(DeviceResourceHandle renderTargetHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height, std::vector<UInt8>& dataOut)
     {
-        if (x + width > getDisplayWidth() ||
-            y + height > getDisplayHeight())
-        {
-            LOG_ERROR(CONTEXT_RENDERER, "DisplayController::readPixels failed: requested area is out of display size boundaries!");
-            return false;
-        }
-
-        // read pixels should always read content of what is displayed, therefore we need to read from actual framebuffer
-        m_device.activateRenderTarget(m_postProcessing->getFramebuffer());
+        // if readPixels requested from display buffer we need to query actual framebuffer's device handle
+        if(renderTargetHandle == getDisplayBuffer())
+            // read from actual framebuffer where content is rendered after post-processing (not from the temporary render target on which post processing is applied)
+            m_device.activateRenderTarget(m_postProcessing->getFramebuffer());
+        else
+            m_device.activateRenderTarget(renderTargetHandle);
 
         dataOut.resize(width * height * 4u); // Assuming RGBA8 non multisampled
         m_device.readPixels(&dataOut[0], x, y, width, height);
-
-        return true;
     }
 
     void DisplayController::setProjectionParams(const ProjectionParams& params)

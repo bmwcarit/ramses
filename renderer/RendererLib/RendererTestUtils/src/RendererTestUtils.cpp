@@ -36,15 +36,15 @@ namespace
     const uint32_t firstIviSurfaceId = 10010;
 }
 
-void RendererTestUtils::SaveScreenshotForDisplay(ramses::RamsesRenderer& renderer, ramses::displayId_t displayId, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const String& screenshotFileName)
+void RendererTestUtils::SaveScreenshotForDisplay(ramses::RamsesRenderer& renderer, ramses::displayId_t displayId, ramses::displayBufferId_t displayBuffer, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const String& screenshotFileName)
 {
-    const Image screenshotBitmap = ReadPixelData(renderer, displayId, x, y, width, height);
+    const Image screenshotBitmap = ReadPixelData(renderer, displayId, displayBuffer, x, y, width, height);
     screenshotBitmap.saveToFilePNG("./res/" + screenshotFileName + ".PNG");
 }
 
-bool RendererTestUtils::PerformScreenshotTestForDisplay(ramses::RamsesRenderer& renderer, ramses::displayId_t displayId, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const String& screenshotFileName, float maxAveragePercentErrorPerPixel)
+bool RendererTestUtils::PerformScreenshotTestForDisplay(ramses::RamsesRenderer& renderer, ramses::displayId_t displayId, ramses::displayBufferId_t displayBuffer, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const String& screenshotFileName, float maxAveragePercentErrorPerPixel)
 {
-    const Image screenshotBitmap = ReadPixelData(renderer, displayId, x, y, width, height);
+    const Image screenshotBitmap = ReadPixelData(renderer, displayId, displayBuffer, x, y, width, height);
     return CompareBitmapToImageInFile(screenshotBitmap, screenshotFileName, maxAveragePercentErrorPerPixel);
 }
 
@@ -188,12 +188,13 @@ const ramses::WarpingMeshData& RendererTestUtils::CreateTestWarpingMesh()
 Image RendererTestUtils::ReadPixelData(
     ramses::RamsesRenderer& renderer,
     ramses::displayId_t displayId,
+    ramses::displayBufferId_t displayBuffer,
     ramses_internal::UInt32 x,
     ramses_internal::UInt32 y,
     ramses_internal::UInt32 width,
     ramses_internal::UInt32 height)
 {
-    const ramses::status_t status = renderer.readPixels(displayId, {}, x, y, width, height);
+    const ramses::status_t status = renderer.readPixels(displayId, displayBuffer, x, y, width, height);
     assert(status == ramses::StatusOK);
     UNUSED(status);
     renderer.flush();

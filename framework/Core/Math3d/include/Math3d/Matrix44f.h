@@ -56,8 +56,6 @@ namespace ramses_internal
 
         static constexpr Matrix44f Translation(const Vector3& translation);
         static constexpr Matrix44f Translation(const Float x, const Float y, const Float z);
-        static Matrix44f RotationEulerXYZ(const Vector3& rotationXYZ);
-        static Matrix44f RotationEulerXYZ(const Float x, const Float y, const Float z);
         static Matrix44f RotationEulerZYX(const Vector3& rotationXYZ);
         static Matrix44f RotationEulerZYX(const Float x, const Float y, const Float z);
         static constexpr Matrix44f Scaling(const Vector3& scaling);

@@ -502,8 +502,8 @@ namespace ramses_internal
         testRenderer.getSceneToState(sceneId2, ramses::RendererSceneState::Rendered);
 
         //take screenshots and perform check to make sure that the renderer created here does render the scenes on the system compositor's surfaces
-        bool testResult = testRenderer.performScreenshotCheck(displayHandle1, 0u, 0u, windowWidth, windowHeight, "ARendererInstance_Three_Triangles");
-        testResult &= testRenderer.performScreenshotCheck(displayHandle2, 0u, 0u, windowWidth, windowHeight, "ARendererInstance_Triangles_reordered");
+        bool testResult = testRenderer.performScreenshotCheck(displayHandle1, {}, 0u, 0u, windowWidth, windowHeight, "ARendererInstance_Three_Triangles");
+        testResult &= testRenderer.performScreenshotCheck(displayHandle2, {}, 0u, 0u, windowWidth, windowHeight, "ARendererInstance_Triangles_reordered");
 
         //cleanup
         testScenesAndRenderer.unpublish(sceneId1);

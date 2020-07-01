@@ -26,6 +26,20 @@ namespace ramses
 
     DcsmContentControl::~DcsmContentControl() = default;
 
+    status_t DcsmContentControl::addContentCategory(DcsmContentControl& control, Category category, DcsmContentControlConfig::CategoryInfo categoryInformation)
+    {
+        const auto status = control.m_impl.addContentCategory(category, categoryInformation);
+        LOG_HL_RENDERER_STATIC_API4(status, category, categoryInformation.display, categoryInformation.size.width, categoryInformation.size.height);
+        return status;
+    }
+
+    status_t DcsmContentControl::removeContentCategory(DcsmContentControl& control, Category category)
+    {
+        const auto status = control.m_impl.removeContentCategory(category);
+        LOG_HL_RENDERER_STATIC_API1(status, category);
+        return status;
+    }
+
     status_t DcsmContentControl::requestContentReady(ContentID contentID, uint64_t timeOut)
     {
         const auto status = m_impl.requestContentReady(contentID, timeOut);
@@ -109,4 +123,5 @@ namespace ramses
         LOG_HL_RENDERER_API2(status, timeStampNow, LOG_API_GENERIC_OBJECT_STRING(eventHandler));
         return status;
     }
+
 }

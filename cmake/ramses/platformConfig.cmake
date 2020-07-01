@@ -15,7 +15,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # set additional flags dependent on used compiler and version
 
 # interface library for all warning flags
-add_library(ramses-warnings-base INTERFACE)
+add_library(ramses-build-options-base INTERFACE)
 
 # helper function to add flags
 FUNCTION(ADD_FLAGS VAR)
@@ -51,12 +51,12 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQ
     ADD_FLAGS(RAMSES_RELEASE_FLAGS "-O2 -DNDEBUG -fstack-protector-strong -D_FORTIFY_SOURCE=2")
     ADD_FLAGS(RAMSES_DEBUG_INFO_FLAGS "-ggdb -fno-omit-frame-pointer")
 
-    target_compile_options(ramses-warnings-base INTERFACE
+    target_compile_options(ramses-build-options-base INTERFACE
         -Wall -Wextra -Wcast-align -Wshadow -Wformat -Wformat-security -Wvla -Wmissing-include-dirs
         -Wnon-virtual-dtor -Woverloaded-virtual -Wold-style-cast)
 
     if (ramses-sdk_WARNINGS_AS_ERRORS)
-        target_compile_options(ramses-warnings-base INTERFACE -Werror)
+        target_compile_options(ramses-build-options-base INTERFACE -Werror)
     endif()
 ENDIF()
 
@@ -73,20 +73,27 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     endif()
 
     # gcc specific warnings
-    target_compile_options(ramses-warnings-base INTERFACE -Wformat-signedness)
+    target_compile_options(ramses-build-options-base INTERFACE -Wformat-signedness)
 
     IF(NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)
         # disable unfixed warnings from gcc 7
-        target_compile_options(ramses-warnings-base INTERFACE -Wno-stringop-overflow -Wno-implicit-fallthrough)
+        target_compile_options(ramses-build-options-base INTERFACE -Wno-stringop-overflow -Wno-implicit-fallthrough)
 
         # enable more warnings on newer gcc
-        target_compile_options(ramses-warnings-base INTERFACE -Wformat-overflow -Wfree-nonheap-object)
+        target_compile_options(ramses-build-options-base INTERFACE -Wformat-overflow -Wfree-nonheap-object)
     ENDIF()
 
     # disable unfixed warnings from gcc 8
     IF(NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
-        target_compile_options(ramses-warnings-base INTERFACE -Wno-cast-function-type)
+        target_compile_options(ramses-build-options-base INTERFACE -Wno-cast-function-type)
     ENDIF()
+
+    # handle enable coverage
+    if (ramses-sdk_ENABLE_COVERAGE)
+        message(STATUS "+ gcov coverage enabled")
+        target_compile_options(ramses-build-options-base INTERFACE --coverage)
+        target_link_options(ramses-build-options-base INTERFACE --coverage)
+    endif()
 ENDIF()
 
 # clang specific
@@ -96,17 +103,25 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 
     IF(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 3.5)
         # suppress missing override keyword warning
-        target_compile_options(ramses-warnings-base INTERFACE -Winconsistent-missing-override -Wmove)
+        target_compile_options(ramses-build-options-base INTERFACE -Winconsistent-missing-override -Wmove)
     ENDIF()
+
+    # handle enable coverage
+    if (ramses-sdk_ENABLE_COVERAGE)
+        message(STATUS "+ clang source based coverage enabled")
+        target_compile_options(ramses-build-options-base INTERFACE -fprofile-instr-generate -fcoverage-mapping)
+        target_link_options(ramses-build-options-base INTERFACE -fprofile-instr-generate -fcoverage-mapping)
+    endif()
 ENDIF()
 
 # flags for integrity
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Integrity")
-    target_compile_options(ramses-warnings-base INTERFACE --diag_suppress=381,111,2008,620,82,1974,1932,1721,1704,540,68,991,177)
+    target_compile_options(ramses-build-options-base INTERFACE --diag_suppress=381,111,2008,620,82,1974,1932,1721,1704,540,68,991,177,174)
     ADD_FLAGS(CMAKE_EXE_LINKER_FLAGS "--c++14")
+    ADD_FLAGS(RAMSES_RELEASE_FLAGS "-DNDEBUG")
 
     if (ramses-sdk_WARNINGS_AS_ERRORS)
-        target_compile_options(ramses-warnings-base INTERFACE --quit_after_warnings)
+        target_compile_options(ramses-build-options-base INTERFACE --quit_after_warnings)
     endif()
 
     # integrity is an unknown system to the eglplatform.h header
@@ -120,14 +135,14 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
     ADD_FLAGS(RAMSES_C_CXX_FLAGS "/MP /DNOMINMAX")
     ADD_FLAGS(RAMSES_CXX_FLAGS "/std:c++14 /bigobj")
-    target_compile_options(ramses-warnings-base INTERFACE /W4 /wd4503 /wd4265 /wd4201 /wd4127 /wd4996)
+    target_compile_options(ramses-build-options-base INTERFACE /W4 /wd4503 /wd4265 /wd4201 /wd4127 /wd4996)
     ADD_FLAGS(RAMSES_RELEASE_FLAGS "/MD /O2 /Ob2 /DNDEBUG")
     ADD_FLAGS(RAMSES_DEBUG_FLAGS "/MDd /Zi /Od /D_DEBUG")
-    target_compile_options(ramses-warnings-base INTERFACE $<$<CONFIG:Debug>:/RTC1>)
+    target_compile_options(ramses-build-options-base INTERFACE $<$<CONFIG:Debug>:/RTC1>)
     ADD_FLAGS(RAMSES_DEBUG_INFO_FLAGS "/Zi")
 
     if (ramses-sdk_WARNINGS_AS_ERRORS)
-        target_compile_options(ramses-warnings-base INTERFACE /WX)
+        target_compile_options(ramses-build-options-base INTERFACE /WX)
     endif()
     ADD_DEFINITIONS("-D_WIN32_WINNT=0x0600" "-DWINVER=0x0600") # enable 'modern' windows APIs
 ENDIF()

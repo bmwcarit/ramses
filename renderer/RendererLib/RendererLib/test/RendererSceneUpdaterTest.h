@@ -321,6 +321,27 @@ protected:
         EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->surfaceMock, enable()).Times(times);
     }
 
+    void expectReadPixelsEvents(const std::initializer_list<std::tuple<DisplayHandle, OffscreenBufferHandle, bool /*success*/>>& expectedEvents)
+    {
+        RendererEventVector events;
+        RendererEventVector dummy;
+        rendererEventCollector.appendAndConsumePendingEvents(events, dummy);
+        ASSERT_EQ(events.size(), expectedEvents.size());
+
+        auto eventsIt = events.cbegin();
+        for (const auto& expectedEvent : expectedEvents)
+        {
+            const auto& event = *eventsIt;
+            EXPECT_EQ(event.displayHandle, std::get<0>(expectedEvent));
+            EXPECT_EQ(event.offscreenBuffer, std::get<1>(expectedEvent));
+            if (std::get<2>(expectedEvent))
+                EXPECT_EQ(event.eventType, ERendererEventType_ReadPixelsFromFramebuffer);
+            else
+                EXPECT_EQ(event.eventType, ERendererEventType_ReadPixelsFromFramebufferFailed);
+        }
+
+    }
+
     void performFlush(UInt32 sceneIndex = 0u, SceneVersionTag version = SceneVersionTag::Invalid(), const SceneSizeInformation* sizeInfo = nullptr, const FlushTimeInformation& timeInfo = {}, const SceneReferenceActionVector& sceneRefActions = {})
     {
         ActionCollectingScene& scene = *stagingScene[sceneIndex];
@@ -945,6 +966,30 @@ protected:
         EXPECT_CALL(*displayMock.m_displayController, renderScene(_, _, _, _, _)).Times(AnyNumber());
 
         renderer.doOneRenderLoop();
+    }
+
+    void readPixels(DisplayHandle display, OffscreenBufferHandle obHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height, Bool fullscreen, Bool sendViaDLT, const String& filename)
+    {
+        ScreenshotInfo screenshotInfo;
+        screenshotInfo.rectangle.x = x;
+        screenshotInfo.rectangle.y = y;
+        screenshotInfo.rectangle.width = width;
+        screenshotInfo.rectangle.height = height;
+        screenshotInfo.fullScreen = fullscreen;
+        screenshotInfo.sendViaDLT = sendViaDLT;
+        screenshotInfo.filename = filename;
+
+        rendererSceneUpdater->handleReadPixels(display, obHandle, std::move(screenshotInfo));
+    }
+
+    void expectDisplayControllerReadPixels(DisplayHandle display, DeviceResourceHandle deviceHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height)
+    {
+        DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(display);
+        EXPECT_CALL(*displayMock.m_displayController, readPixels(deviceHandle, x, y, width, height, _)).WillOnce(Invoke(
+            [](auto, auto, auto, auto w, auto h, auto& dataOut) {
+                dataOut.resize(w * h * 4);
+            }
+        ));
     }
 
     static const DisplayHandle DisplayHandle1;

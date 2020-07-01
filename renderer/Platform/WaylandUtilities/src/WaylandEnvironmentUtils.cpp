@@ -25,6 +25,53 @@ namespace ramses_internal
         };
 
         ENUM_TO_STRING(WaylandEnvironmentVariable, EnvironmentVariableNames, WaylandEnvironmentVariable::NUMBER_OF_ELEMENTS);
+
+        bool CheckXDGRuntimeDir()
+        {
+            String xdgPathEnvironmentVar;
+            const Bool xdgPathFoundInEnvironmentVars = PlatformEnvironmentVariables::get("XDG_RUNTIME_DIR", xdgPathEnvironmentVar);
+
+            if (!xdgPathFoundInEnvironmentVars)
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "WaylandEnvironmentUtils::LogEnvironmentState: XDG_RUNTIME_DIR environment variable not set.");
+                return false;
+            }
+
+            const File xdgDir(xdgPathEnvironmentVar);
+            if (!xdgDir.isDirectory())
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "WaylandEnvironmentUtils::LogEnvironmentState: XDG_RUNTIME_DIR does not point to a valid directory.");
+                return false;
+            }
+
+            LOG_INFO(CONTEXT_RENDERER, "WaylandEnvironmentUtils::LogEnvironmentState: XDG_RUNTIME_DIR is set correctly.");
+            return true;
+        }
+
+        void CheckSocketFileExists(const String& xdgRuntimeDir, const String& socketFilename)
+        {
+            const auto socketFullPath = (socketFilename.startsWith("/")? socketFilename : (xdgRuntimeDir + "/" + socketFilename));
+
+            if(!socketFilename.startsWith("/"))
+                if(!CheckXDGRuntimeDir())
+                    return;
+
+            const File socketFile(socketFullPath);
+            if (socketFile.exists())
+                LOG_INFO(CONTEXT_RENDERER, "WaylandEnvironmentUtils::LogEnvironmentState: Socket file " << socketFullPath << " exists.");
+            else
+                LOG_WARN(CONTEXT_RENDERER, "WaylandEnvironmentUtils::LogEnvironmentState: Socket file " << socketFullPath << " does not exist.");
+        }
+
+        bool CheckSocketFileDescritorExists(const String& socketFD)
+        {
+            if (UnixDomainSocket::IsFileDescriptorForValidSocket(atoi(socketFD.c_str())))
+                LOG_INFO(CONTEXT_RENDERER, "WaylandEnvironmentUtils::LogEnvironmentState: Environment variable WAYLAND_SOCKET contains a valid socket file descriptor.");
+            else
+                LOG_WARN(CONTEXT_RENDERER, "WaylandEnvironmentUtils::LogEnvironmentState: Environment variable WAYLAND_SOCKET does not contain a valid socket file descriptor.");
+
+            return true;
+        }
     }
 
     namespace WaylandEnvironmentUtils
@@ -46,59 +93,30 @@ namespace ramses_internal
             return variable;
         }
 
-        bool IsEnvironmentInProperState()
+        void LogEnvironmentState(const String& waylandDisplayName)
         {
-            String xdgPath;
-            String waylandDisplay;
-            String waylandSocket;
-            const bool xdgPathFound = PlatformEnvironmentVariables::get("XDG_RUNTIME_DIR", xdgPath);
-            const bool waylandDisplayFound = PlatformEnvironmentVariables::get("WAYLAND_DISPLAY", waylandDisplay);
-            const bool waylandSocketFound  = PlatformEnvironmentVariables::get("WAYLAND_SOCKET",  waylandSocket);
+            String xdgPathEnvironmentVar;
+            String waylandDisplayEnvironmentVar;
+            String waylandSocketEnvironmentVar;
+            PlatformEnvironmentVariables::get("XDG_RUNTIME_DIR", xdgPathEnvironmentVar);
+            const Bool waylandDisplayFoundInEnvironmentVars = PlatformEnvironmentVariables::get("WAYLAND_DISPLAY", waylandDisplayEnvironmentVar);
+            const Bool waylandSocketFoundInEnvironmentVars  = PlatformEnvironmentVariables::get("WAYLAND_SOCKET",  waylandSocketEnvironmentVar);
 
-            if (waylandSocketFound && waylandDisplayFound)
-            {
-                LOG_ERROR(CONTEXT_RENDERER, "WaylandEnvironmentUtils::IsEnvironmentInProperState Environment variables WAYLAND_DISPLAY and WAYLAND_SOCKET are both set.");
-                return false;
-            }
+            LOG_INFO(CONTEXT_RENDERER, "WaylandEnvironmentUtils::LogEnvironmentState: Wayland display set on display config=" << waylandDisplayName
+                      << ", XDG_RUNTIME_DIR=" << xdgPathEnvironmentVar
+                      << ", WAYLAND_DISPLAY=" << waylandDisplayEnvironmentVar
+                      << ", WAYLAND_SOCKET=" << waylandSocketEnvironmentVar);
 
-            if (waylandSocketFound)
-            {
-                if (UnixDomainSocket::IsFileDescriptorForValidSocket(atoi(waylandSocket.c_str())))
-                {
-                    return true;
-                }
-                else
-                {
-                    LOG_ERROR(CONTEXT_RENDERER, "WaylandEnvironmentUtils::IsEnvironmentInProperState Environment variable WAYLAND_SOCKET does not contain a valid socket file descriptor :" << waylandSocket);
-                    return false;
-                }
-            }
-
-            if (!xdgPathFound)
-            {
-                LOG_ERROR(CONTEXT_RENDERER, "WaylandEnvironmentUtils::IsEnvironmentInProperState XDG_RUNTIME_DIR environment variable not set.");
-                return false;
-            }
-
-            const File xdgDir(xdgPath);
-            if (!xdgDir.isDirectory())
-            {
-                LOG_ERROR(CONTEXT_RENDERER, "WaylandEnvironmentUtils::IsEnvironmentInProperState XDG_RUNTIME_DIR does not point to a valid directory.");
-                return false;
-            }
-
-
-            if (waylandDisplayFound)
-            {
-                const File socketFile(xdgPath + "/" + waylandDisplay);
-                if (!socketFile.exists())
-                {
-                    LOG_ERROR(CONTEXT_RENDERER, "Socket file " << waylandDisplay << " referenced by environment variable WAYLAND_DISPLAY does not exist.");
-                    return false;
-                }
-            }
-
-            return true;
+            if(!waylandDisplayName.empty())
+                CheckSocketFileExists(xdgPathEnvironmentVar, waylandDisplayName);
+            else if (waylandSocketFoundInEnvironmentVars && waylandDisplayFoundInEnvironmentVars)
+                LOG_ERROR(CONTEXT_RENDERER, "WaylandEnvironmentUtils::LogEnvironmentState: Environment variables WAYLAND_DISPLAY and WAYLAND_SOCKET are both set.");
+            else if (waylandSocketFoundInEnvironmentVars)
+                CheckSocketFileDescritorExists(waylandSocketEnvironmentVar);
+            else if (waylandDisplayFoundInEnvironmentVars)
+                CheckSocketFileExists(xdgPathEnvironmentVar, waylandDisplayEnvironmentVar);
+            else
+                CheckXDGRuntimeDir();
         }
     }
 }

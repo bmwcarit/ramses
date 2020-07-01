@@ -10,6 +10,7 @@
 #define RAMSES_MEMORYPOOLEXPLICIT_H
 
 #include "Common/TypedMemoryHandle.h"
+#include "Utils/MemoryPoolIterator.h"
 #include "Collections/Vector.h"
 #include <limits>
 
@@ -19,8 +20,11 @@ namespace ramses_internal
     class MemoryPoolExplicit final
     {
     public:
-        typedef OBJECTTYPE object_type;
-        typedef HANDLE handle_type;
+        using object_type       = OBJECTTYPE;
+        using handle_type       = HANDLE;
+
+        using iterator          = memory_pool_iterator<MemoryPoolExplicit>;
+        using const_iterator    = const_memory_pool_iterator<MemoryPoolExplicit>;
 
         explicit MemoryPoolExplicit(UInt32 size = 0);
 
@@ -37,6 +41,13 @@ namespace ramses_internal
         const OBJECTTYPE*               getMemory(HANDLE handle) const;
 
         void                            preallocateSize(UInt32 size);
+
+        iterator                        begin();
+        iterator                        end();
+        const_iterator                  begin() const;
+        const_iterator                  end() const;
+        const_iterator                  cbegin() const;
+        const_iterator                  cend() const;
 
         static_assert(std::is_move_constructible<OBJECTTYPE>::value && std::is_move_assignable<OBJECTTYPE>::value, "OBJECTTYPE must be movable");
     protected:
@@ -117,6 +128,48 @@ namespace ramses_internal
     inline UInt32 MemoryPoolExplicit<OBJECTTYPE, HANDLE>::getTotalCount() const
     {
         return static_cast<UInt32>(m_memoryPool.size());
+    }
+
+    template <typename OBJECTTYPE, typename HANDLE>
+    inline
+    typename MemoryPoolExplicit<OBJECTTYPE, HANDLE>::iterator MemoryPoolExplicit<OBJECTTYPE, HANDLE>::begin()
+    {
+        return iterator(*this, HANDLE(0u));
+    }
+
+    template <typename OBJECTTYPE, typename HANDLE>
+    inline
+    typename MemoryPoolExplicit<OBJECTTYPE, HANDLE>::iterator MemoryPoolExplicit<OBJECTTYPE, HANDLE>::end()
+    {
+        return iterator(*this, HANDLE(getTotalCount()));
+    }
+
+    template <typename OBJECTTYPE, typename HANDLE>
+    inline
+    typename MemoryPoolExplicit<OBJECTTYPE, HANDLE>::const_iterator MemoryPoolExplicit<OBJECTTYPE, HANDLE>::begin() const
+    {
+        return const_iterator(*this, HANDLE(0u));
+    }
+
+    template <typename OBJECTTYPE, typename HANDLE>
+    inline
+    typename MemoryPoolExplicit<OBJECTTYPE, HANDLE>::const_iterator MemoryPoolExplicit<OBJECTTYPE, HANDLE>::end() const
+    {
+        return const_iterator(*this, HANDLE(getTotalCount()));
+    }
+
+    template <typename OBJECTTYPE, typename HANDLE>
+    inline
+    typename MemoryPoolExplicit<OBJECTTYPE, HANDLE>::const_iterator MemoryPoolExplicit<OBJECTTYPE, HANDLE>::cbegin() const
+    {
+        return const_iterator(*this, HANDLE(0u));
+    }
+
+    template <typename OBJECTTYPE, typename HANDLE>
+    inline
+    typename MemoryPoolExplicit<OBJECTTYPE, HANDLE>::const_iterator MemoryPoolExplicit<OBJECTTYPE, HANDLE>::cend() const
+    {
+        return const_iterator(*this, HANDLE(getTotalCount()));
     }
 }
 

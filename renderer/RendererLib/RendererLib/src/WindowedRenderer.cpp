@@ -21,7 +21,6 @@
 #include "Utils/LogMacros.h"
 #include "RendererLib/RendererCachedScene.h"
 #include "Ramsh/Ramsh.h"
-#include "Utils/Image.h"
 #include "Utils/RamsesLogger.h"
 
 namespace ramses_internal
@@ -111,7 +110,7 @@ namespace ramses_internal
         }
 
         m_renderer.doOneRenderLoop();
-        processScreenshotResults();
+        m_rendererSceneUpdater.processScreenshotResults();
 
         LOG_TRACE(CONTEXT_PROFILING, "WindowedRenderer::render() end render section of frame");
     }
@@ -306,49 +305,6 @@ namespace ramses_internal
         std::lock_guard<std::mutex> g{ m_eventsLock };
         events.swap(m_sceneControlEvents);
         m_sceneControlEvents.clear();
-    }
-
-    void WindowedRenderer::processScreenshotResults()
-    {
-        ScreenshotInfoVector screenshots;
-        m_renderer.dispatchProcessedScreenshots(screenshots);
-
-        for(auto& screenshot : screenshots)
-        {
-            if (screenshot.filename.size() > 0u)
-            {
-                if (screenshot.success)
-                {
-                    // flip image vertically so that the layout read from frame buffer (bottom-up)
-                    // is converted to layout normally used in image files (top-down)
-                    const Image bitmap((screenshot.rectangle.width - screenshot.rectangle.x), (screenshot.rectangle.height - screenshot.rectangle.y), screenshot.pixelData.cbegin(), screenshot.pixelData.cend(), true);
-                    bitmap.saveToFilePNG(screenshot.filename);
-                    LOG_INFO(CONTEXT_RENDERER, "RamsesRenderer::processScreenshots: screenshot successfully saved to file: " << screenshot.filename);
-                    if (screenshot.sendViaDLT)
-                    {
-                        if (GetRamsesLogger().transmitFile(screenshot.filename, false))
-                        {
-                            LOG_INFO(CONTEXT_RENDERER, "RamsesRenderer::processScreenshots: screenshot file successfully send via dlt: " << screenshot.filename);
-                        }
-                        else
-                        {
-                            LOG_WARN(CONTEXT_RENDERER, "RamsesRenderer::processScreenshots: screenshot file could not send via dlt: " << screenshot.filename);
-                        }
-                    }
-                }
-                else
-                {
-                    LOG_ERROR(CONTEXT_RENDERER, "RamsesRenderer::processScreenshots: failed screenshot! Not saved to file: " << screenshot.filename);
-                }
-            }
-            else
-            {
-                if (screenshot.success)
-                    m_rendererEventCollector.addReadPixelsEvent(ERendererEventType_ReadPixelsFromFramebuffer, screenshot.display, std::move(screenshot.pixelData));
-                else
-                    m_rendererEventCollector.addReadPixelsEvent(ERendererEventType_ReadPixelsFromFramebufferFailed, screenshot.display, {});
-            }
-        }
     }
 
     void WindowedRenderer::fireLoopTimingReportRendererEvent(std::chrono::microseconds maximumLoopTimeInPeriod, std::chrono::microseconds renderthreadAverageLooptime)

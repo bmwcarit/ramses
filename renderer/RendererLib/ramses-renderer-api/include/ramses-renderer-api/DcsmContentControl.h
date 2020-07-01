@@ -12,6 +12,7 @@
 #include "ramses-framework-api/StatusObject.h"
 #include "ramses-framework-api/DcsmApiTypes.h"
 #include "ramses-framework-api/CategoryInfoUpdate.h"
+#include "DcsmContentControlConfig.h"
 
 namespace ramses
 {
@@ -69,6 +70,24 @@ namespace ramses
     class RAMSES_API DcsmContentControl : public StatusObject
     {
     public:
+        /** @brief Add a content category
+        * @details Adds a content category for receiving content offers
+        *
+        * @param control DcsmContentControl object to call function on. Added this way for binary backward compatibility.
+        * @param category Category to add
+        * @param categoryInformation information about the category being added
+        */
+        static status_t addContentCategory(DcsmContentControl& control, Category category, DcsmContentControlConfig::CategoryInfo categoryInformation);
+
+        /** @brief Remove a content category
+        * @details Removes a content category. No more offers will be received for this category, any content assigned to this category will
+        *          be dropped (Hide, Release)
+        *
+        * @param control DcsmContentControl object to call function on. Added this way for binary backward compatibility.
+        * @param category Category to remove
+        */
+        static status_t removeContentCategory(DcsmContentControl& control, Category category);
+
         /** @brief Requests that the provided content is ready to show.
         * @details This involves a corresponding Dcsm message sent to content provider and also request to map the content's scene to the display defined in its category.
         *          This call will fail right away (check return status) if transition is not valid (e.g. content is already shown).

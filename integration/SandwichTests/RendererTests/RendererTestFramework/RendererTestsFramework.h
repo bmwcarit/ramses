@@ -64,6 +64,7 @@ public:
     void publishAndFlushScene(ramses::sceneId_t sceneId);
     void flushRendererAndDoOneLoop();
     bool renderAndCompareScreenshot(const ramses_internal::String& expectedImageName, uint32_t testDisplayIdx = 0u, float maxAveragePercentErrorPerPixel = RendererTestUtils::DefaultMaxAveragePercentPerPixel, bool readPixelsTwice = false);
+    bool renderAndCompareScreenshotOffscreenBuffer(const ramses_internal::String& expectedImageName, uint32_t testDisplayIdx, ramses::displayBufferId_t bufferId, uint32_t width, uint32_t height, float maxAveragePercentErrorPerPixel = RendererTestUtils::DefaultMaxAveragePercentPerPixel);
     bool renderAndCompareScreenshotSubimage(const ramses_internal::String& expectedImageName, ramses_internal::UInt32 subimageX, ramses_internal::UInt32 subimageY, ramses_internal::UInt32 subimageWidth, ramses_internal::UInt32 subimageHeight, float maxAveragePercentErrorPerPixel = RendererTestUtils::DefaultMaxAveragePercentPerPixel, bool readPixelsTwice = false);
     void setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender);
     void filterTestCases(const ramses_internal::StringVector& filterIn, const ramses_internal::StringVector& filterOut);
@@ -98,6 +99,7 @@ private:
     bool compareScreenshotInternal(
         const ramses_internal::String& expectedImageName,
         ramses::displayId_t displayId,
+        ramses::displayBufferId_t bufferId,
         float maxAveragePercentErrorPerPixel,
         ramses_internal::UInt32 subimageX,
         ramses_internal::UInt32 subimageY,

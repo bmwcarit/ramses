@@ -23,8 +23,8 @@ namespace ramses_internal
         virtual void postError(uint32_t code, const String& message) override;
         virtual void* getUserData() override;
         virtual void setImplementation(const void* implementation, void* data, IWaylandResourceDestroyFuncT destroy) override;
-        virtual void addDestroyListener(WaylandListener* listener) override;
-        virtual WaylandNativeResource getWaylandNativeResource() override;
+        virtual void addDestroyListener(wl_listener* listener) override;
+        virtual void* getWaylandNativeResource() override;
         virtual void disownWaylandResource() override;
 
     protected:

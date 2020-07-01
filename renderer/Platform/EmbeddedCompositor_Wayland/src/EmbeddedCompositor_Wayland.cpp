@@ -13,19 +13,21 @@
 #include "EmbeddedCompositor_Wayland/WaylandBufferResource.h"
 #include "EmbeddedCompositor_Wayland/LinuxDmabufGlobal.h"
 #include "EmbeddedCompositor_Wayland/LinuxDmabufBuffer.h"
+#include "EmbeddedCompositor_Wayland/TextureUploadingAdapter_Wayland.h"
+#include "EmbeddedCompositor_Wayland/LinuxDmabuf.h"
 #include "RendererLib/RendererConfig.h"
 #include "RendererLib/RendererLogContext.h"
 #include "Utils/LogMacros.h"
 #include "Utils/Warnings.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include <unistd.h>
-#include "TextureUploadingAdapter_Wayland/TextureUploadingAdapter_Wayland.h"
-#include "TextureUploadingAdapter_Wayland/LinuxDmabuf.h"
 
 namespace ramses_internal
 {
     EmbeddedCompositor_Wayland::EmbeddedCompositor_Wayland(const RendererConfig& config, IContext& context)
-        : m_rendererConfig(&config)
+        : m_waylandEmbeddedSocketName(config.getWaylandSocketEmbedded())
+        , m_waylandEmbeddedSocketGroup(config.getWaylandSocketEmbeddedGroup())
+        , m_waylandEmbeddedSocketFD(config.getWaylandSocketEmbeddedFD())
         , m_context(context)
         , m_compositorGlobal(*this)
         , m_iviApplicationGlobal(*this)
@@ -46,9 +48,7 @@ namespace ramses_internal
 
     Bool EmbeddedCompositor_Wayland::init()
     {
-        if (!m_serverDisplay.init(m_rendererConfig->getWaylandSocketEmbedded(),
-                                  m_rendererConfig->getWaylandSocketEmbeddedGroup(),
-                                  m_rendererConfig->getWaylandSocketEmbeddedFD()))
+        if (!m_serverDisplay.init(m_waylandEmbeddedSocketName, m_waylandEmbeddedSocketGroup, m_waylandEmbeddedSocketFD))
         {
             return false;
         }

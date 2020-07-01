@@ -21,17 +21,6 @@ namespace ramses_internal
     public:
         MOCK_METHOD(void, pollWindowsTillAnyCanRender, (), (const, override));
     };
-
-    class WindowEventsPollingManagerMockWithDestructor : public WindowEventsPollingManagerMock
-    {
-    public:
-        ~WindowEventsPollingManagerMockWithDestructor()
-        {
-            Die();
-        }
-
-        MOCK_METHOD(void, Die, ());
-    };
 }
 
 #endif

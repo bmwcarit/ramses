@@ -66,8 +66,6 @@ namespace ramses_internal
 
         EGLDisplay getEglDisplay() const;
 
-        virtual EType getType() const override;
-
     private:
         EglSurfaceData m_eglSurfaceData;
         Generic_EGLNativeDisplayType m_nativeDisplay;

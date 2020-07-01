@@ -16,7 +16,7 @@
 #include "EmbeddedCompositor_Wayland/WaylandClient.h"
 #include "EmbeddedCompositor_Wayland/LinuxDmabufParams.h"
 #include "EmbeddedCompositor_Wayland/LinuxDmabufBuffer.h"
-#include "TextureUploadingAdapter_Wayland/LinuxDmabuf.h"
+#include "EmbeddedCompositor_Wayland/LinuxDmabuf.h"
 #include "Utils/LogMacros.h"
 #include "Utils/Warnings.h"
 #include <assert.h>
@@ -33,10 +33,10 @@ namespace ramses_internal
 
     LinuxDmabufParams::LinuxDmabufParams(IWaylandClient& client, uint32_t version, uint32_t id)
     {
-        m_data.reset(new LinuxDmabufBufferData());
-        m_resource.reset(client.resourceCreate(&zwp_linux_buffer_params_v1_interface, version, id));
+        m_data = new LinuxDmabufBufferData();
+        m_resource = client.resourceCreate(&zwp_linux_buffer_params_v1_interface, version, id);
 
-        if (m_resource)
+        if (nullptr != m_resource)
         {
             m_resource->setImplementation(&m_paramsInterface, this, ResourceDestroyedCallback);
         }
@@ -49,18 +49,19 @@ namespace ramses_internal
 
     LinuxDmabufParams::~LinuxDmabufParams()
     {
-        if (m_resource)
+        if (nullptr != m_resource)
         {
             // Remove ResourceDestroyedCallback
             m_resource->setImplementation(&m_paramsInterface, this, nullptr);
+            delete m_resource;
         }
+
+        delete m_data;
     }
 
     bool LinuxDmabufParams::wasSuccessfullyInitialized() const
     {
-        // This looks stupid, but the std::unique_ptr bool() operator won't directly convert
-        // to the return-value.
-        return m_resource ? true : false;
+        return nullptr != m_resource;
     }
 
     void LinuxDmabufParams::ResourceDestroyedCallback(wl_resource* dmabufParamsResource)
@@ -74,7 +75,7 @@ namespace ramses_internal
     void LinuxDmabufParams::resourceDestroyed()
     {
         LOG_TRACE(CONTEXT_RENDERER, "LinuxDmabufParams::resourceDestroyed");
-        assert(m_resource);
+        assert(nullptr != m_resource);
 
         // wl_resource is destroyed outside by the Wayland library, so our job here is to abandon
         // ownership of the Wayland resource so that we don't call wl_resource_destroy().
@@ -100,23 +101,19 @@ namespace ramses_internal
     {
         WaylandClient waylandClient(client);
         LinuxDmabufParams* params = static_cast<LinuxDmabufParams*>(wl_resource_get_user_data(dmabufParamsResource));
-
         params->createBuffer(waylandClient, 0 /* allocate an available wl_resource ID */, width, height, format, flags);
-        params->m_createInvoked = true;
     }
 
     void LinuxDmabufParams::DmabufParamsCreateImmedCallback(wl_client* client, wl_resource* dmabufParamsResource, uint32_t buffer_id, int32_t width, int32_t height, uint32_t format, uint32_t flags)
     {
         WaylandClient waylandClient(client);
         LinuxDmabufParams* params = static_cast<LinuxDmabufParams*>(wl_resource_get_user_data(dmabufParamsResource));
-
         params->createBuffer(waylandClient, buffer_id, width, height, format, flags);
-        params->m_createInvoked = true;
     }
 
     void LinuxDmabufParams::addPlane(int32_t fd, uint32_t index, uint32_t offset, uint32_t stride, uint32_t modifier_hi, uint32_t modifier_lo)
     {
-        if (m_createInvoked)
+        if (nullptr == m_data)
         {
             m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_ALREADY_USED, "params was already used to create a wl_buffer");
             ::close(fd);
@@ -166,15 +163,12 @@ namespace ramses_internal
 
     void LinuxDmabufParams::createBuffer(IWaylandClient& client, uint32_t bufferId, int32_t width, int32_t height, uint32_t format, uint32_t flags)
     {
-        if (m_createInvoked)
-        {
-            m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_ALREADY_USED, "params was already used to create a wl_buffer");
-            return;
-        }
-
         if (m_data->getNumPlanes() < 1)
         {
             m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INCOMPLETE, "no dmabuf has been added to the params");
+
+            delete m_data;
+            m_data = nullptr;
             return;
         }
 
@@ -185,6 +179,9 @@ namespace ramses_internal
                 StringOutputStream message;
                 message << "no dmabuf has been added for plane " << i;
                 m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INCOMPLETE, message.release());
+
+                delete m_data;
+                m_data = nullptr;
                 return;
             }
         }
@@ -199,6 +196,9 @@ namespace ramses_internal
             StringOutputStream message;
             message << "invalid width " << width << " or height " << height;
             m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_DIMENSIONS, message.release());
+
+            delete m_data;
+            m_data = nullptr;
             return;
         }
 
@@ -213,6 +213,9 @@ namespace ramses_internal
                 StringOutputStream message;
                 message << "size overflow for plane " << i;
                 m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS, message.release());
+
+                delete m_data;
+                m_data = nullptr;
                 return;
             }
 
@@ -221,6 +224,9 @@ namespace ramses_internal
                 StringOutputStream message;
                 message << "size overflow for plane " << i;
                 m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS, message.release());
+
+                delete m_data;
+                m_data = nullptr;
                 return;
             }
 
@@ -240,6 +246,9 @@ namespace ramses_internal
                 StringOutputStream message;
                 message << "invalid offset " << offset << " for plane " << i;
                 m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS, message.release());
+
+                delete m_data;
+                m_data = nullptr;
                 return;
             }
 
@@ -248,6 +257,9 @@ namespace ramses_internal
                 StringOutputStream message;
                 message << "invalid stride " << offset << " for plane " << i;
                 m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS, message.release());
+
+                delete m_data;
+                m_data = nullptr;
                 return;
             }
 
@@ -258,6 +270,9 @@ namespace ramses_internal
                 StringOutputStream message;
                 message << "invalid buffer stride or height for plane " << i;
                 m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS, message.release());
+
+                delete m_data;
+                m_data = nullptr;
                 return;
             }
         }
@@ -268,12 +283,16 @@ namespace ramses_internal
         {
             LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): Could not create wayland resource");
             client.postNoMemory();
+
+            delete m_data;
+            m_data = nullptr;
             return;
         }
 
         // Hand off ownership of the LinuxDmabufBufferData to the new wl_buffer
         wl_resource* bufferNativeWaylandResource = static_cast<wl_resource*>(bufferWaylandResource->getWaylandNativeResource());
-        bufferWaylandResource->setImplementation(&LinuxDmabufBuffer::m_bufferInterface, m_data.release(), BufferDestroyCallback);
+        bufferWaylandResource->setImplementation(&LinuxDmabufBuffer::m_bufferInterface, m_data, BufferDestroyCallback);
+        m_data = nullptr;
 
         // Announce the resulting buffer to the client
         if (0 == bufferId)

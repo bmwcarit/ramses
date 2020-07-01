@@ -24,7 +24,7 @@
 #include "RendererMock.h"
 #include "ComponentMocks.h"
 #include "TestSceneHelper.h"
-#include <map>
+#include "absl/algorithm/container.h"
 
 using namespace ramses_internal;
 
@@ -152,6 +152,16 @@ public:
         EXPECT_CALL(*displayMock.m_displayController, renderScene(Ref(rendererScenes.getScene(sceneId)), buffer, _, expectedRenderBegin, &renderer.FrameTimerInstance)).WillOnce(Return(stateToSimulate));
     }
 
+    void expectDisplayControllerReadPixels(DisplayHandle display, DeviceResourceHandle deviceHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height)
+    {
+        DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(display);
+        EXPECT_CALL(*displayMock.m_displayController, readPixels(deviceHandle, x, y, width, height, _)).WillOnce(Invoke(
+            [](auto, auto, auto, auto w, auto h, auto& dataOut) {
+                dataOut.resize(w * h * 4);
+            }
+        ));
+    }
+
     IScene& createScene(SceneId sceneId = SceneId())
     {
         rendererScenes.createScene(SceneInfo(sceneId));
@@ -209,6 +219,13 @@ public:
         {
             EXPECT_NE(FlushTime::InvalidTimestamp, expirationMonitor.getExpirationTimestampOfRenderedScene(sceneId));
         }
+    }
+
+    void scheduleScreenshot(const DisplayHandle displayHandle, const DeviceResourceHandle bufferHandle, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+    {
+        ScreenshotInfo screenshot;
+        screenshot.rectangle = { x, y, width, height };
+        renderer.scheduleScreenshot(displayHandle, bufferHandle, std::move(screenshot));
     }
 
 protected:
@@ -1000,40 +1017,89 @@ TEST_P(ARenderer, skipsFrameIfDisplayControllerCanNotRenderNewFrame)
     renderer.doOneRenderLoop();
 }
 
-TEST_P(ARenderer, canTakeASingleScreenshot)
+TEST_P(ARenderer, canTakeASingleScreenshot_Framebuffer)
 {
     const DisplayHandle displayHandle = addDisplayController();
     DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(displayHandle);
 
-    ScreenshotInfo screenshot;
-    screenshot.rectangle = { 20u, 30u, 100u, 100u };
-    screenshot.display = displayHandle;
-    screenshot.filename = "";
-    renderer.scheduleScreenshot(screenshot);
-    EXPECT_CALL(*displayMock.m_displayController, readPixels(20u, 30u, 100u, 100u, _));
+    scheduleScreenshot(displayHandle, DisplayControllerMock::FakeFrameBufferHandle, 20u, 30u, 100u, 100u);
+
+    expectDisplayControllerReadPixels(displayHandle, DisplayControllerMock::FakeFrameBufferHandle, 20u, 30u, 100u, 100u);
     expectFrameBufferRendered();
     expectSwapBuffers();
     doOneRendererLoop();
 
-    ScreenshotInfoVector screenshots;
-    renderer.dispatchProcessedScreenshots(screenshots);
+    auto screenshots = renderer.dispatchProcessedScreenshots(displayHandle);
     ASSERT_EQ(1u, screenshots.size());
-    EXPECT_TRUE(screenshots[0].success);
-    EXPECT_EQ(displayHandle, screenshots[0].display);
-    EXPECT_FALSE(screenshots[0].pixelData.empty());
-    EXPECT_EQ(80u * 70u * 4u, screenshots[0].pixelData.size());
+    EXPECT_EQ(DisplayControllerMock::FakeFrameBufferHandle, screenshots.begin()->first);
 
     // check that screenshot request got deleted
-    EXPECT_CALL(*displayMock.m_displayController, readPixels(_, _, _, _, _)).Times(0);
+    EXPECT_CALL(*displayMock.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
     expectFrameBufferRendered(displayHandle, false, false);
     doOneRendererLoop();
 
-    screenshots.clear();
-    renderer.dispatchProcessedScreenshots(screenshots);
+    screenshots = renderer.dispatchProcessedScreenshots(displayHandle);
     EXPECT_EQ(0u, screenshots.size());
 }
 
-TEST_P(ARenderer, canTakeMultipleScreenshotsForMultipleDisplays)
+TEST_P(ARenderer, canTakeASingleScreenshot_Offscreenbuffer)
+{
+    const DisplayHandle displayHandle = addDisplayController();
+    const DeviceResourceHandle obDeviceHandle{ 567u };
+    renderer.registerOffscreenBuffer(displayHandle, obDeviceHandle, 10u, 20u, false);
+    DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(displayHandle);
+
+    scheduleScreenshot(displayHandle, obDeviceHandle, 1u, 2u, 3u, 4u);
+
+    expectDisplayControllerReadPixels(displayHandle, obDeviceHandle, 1u, 2u, 3u, 4u);
+    expectOffscreenBufferRendered(displayHandle, { obDeviceHandle }, true);
+    expectFrameBufferRendered(displayHandle, false);
+    expectSwapBuffers();
+    doOneRendererLoop();
+
+    auto screenshots = renderer.dispatchProcessedScreenshots(displayHandle);
+    ASSERT_EQ(1u, screenshots.size());
+    EXPECT_EQ(obDeviceHandle, screenshots.begin()->first);
+
+    // check that screenshot request got deleted
+    EXPECT_CALL(*displayMock.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
+    expectFrameBufferRendered(displayHandle, false, false);
+    doOneRendererLoop();
+
+    screenshots = renderer.dispatchProcessedScreenshots(displayHandle);
+    EXPECT_EQ(0u, screenshots.size());
+}
+
+TEST_P(ARenderer, canTakeASingleScreenshot_InterruptibleOffscreenbuffer)
+{
+    const DisplayHandle displayHandle = addDisplayController();
+    const DeviceResourceHandle obDeviceHandle{ 567u };
+    renderer.registerOffscreenBuffer(displayHandle, obDeviceHandle, 10u, 20u, true);
+    DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(displayHandle);
+
+    scheduleScreenshot(displayHandle, obDeviceHandle, 1u, 2u, 3u, 4u);
+
+    expectDisplayControllerReadPixels(displayHandle, obDeviceHandle, 1u, 2u, 3u, 4u);
+    expectFrameBufferRendered(displayHandle, true);
+    expectInterruptibleOffscreenBufferRendered(displayHandle, { obDeviceHandle }, { {true, true} }, false);
+    expectSwapBuffers();
+    doOneRendererLoop();
+
+    auto screenshots = renderer.dispatchProcessedScreenshots(displayHandle);
+    ASSERT_EQ(1u, screenshots.size());
+    EXPECT_EQ(obDeviceHandle, screenshots.begin()->first);
+
+    // check that screenshot request got deleted
+    EXPECT_CALL(*displayMock.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
+    expectFrameBufferRendered(displayHandle);
+    expectSwapBuffers();
+    doOneRendererLoop();
+
+    screenshots = renderer.dispatchProcessedScreenshots(displayHandle);
+    EXPECT_EQ(0u, screenshots.size());
+}
+
+TEST_P(ARenderer, canTakeScreenshotsForMultipleDisplays)
 {
     const DisplayHandle displayHandle1 = addDisplayController();
     DisplayStrictMockInfo& displayMock1 = renderer.getDisplayMock(displayHandle1);
@@ -1041,123 +1107,161 @@ TEST_P(ARenderer, canTakeMultipleScreenshotsForMultipleDisplays)
     const DisplayHandle displayHandle2 = addDisplayController();
     DisplayStrictMockInfo& displayMock2 = renderer.getDisplayMock(displayHandle2);
 
-    ScreenshotInfo screenshot;
-    screenshot.filename = "";
+    scheduleScreenshot(displayHandle1, DisplayControllerMock::FakeFrameBufferHandle, 10u, 10u, 110u, 110u);
+    scheduleScreenshot(displayHandle2, DisplayControllerMock::FakeFrameBufferHandle, 20u, 20u, 120u, 120u);
 
-    screenshot.rectangle = { 10u, 10u, 110u, 110u };
-    screenshot.display = displayHandle1;
-    renderer.scheduleScreenshot(screenshot);
-
-    screenshot.rectangle = { 20u, 20u, 120u, 120u };
-    screenshot.display = displayHandle2;
-    renderer.scheduleScreenshot(screenshot);
-
-    screenshot.rectangle = { 30u, 30u, 130u, 130u };
-    screenshot.display = displayHandle1;
-    renderer.scheduleScreenshot(screenshot);
-
-    screenshot.rectangle = { 40u, 40u, 140u, 140u };
-    screenshot.display = displayHandle2;
-    renderer.scheduleScreenshot(screenshot);
-
-    screenshot.rectangle = { 50u, 50u, 150u, 150u };
-    screenshot.display = displayHandle1;
-    renderer.scheduleScreenshot(screenshot);
-
-    EXPECT_CALL(*displayMock1.m_displayController, readPixels(10u, 10u, 110u, 110u, _));
-    EXPECT_CALL(*displayMock2.m_displayController, readPixels(20u, 20u, 120u, 120u, _));
-    EXPECT_CALL(*displayMock1.m_displayController, readPixels(30u, 30u, 130u, 130u, _));
-    EXPECT_CALL(*displayMock2.m_displayController, readPixels(40u, 40u, 140u, 140u, _));
-    EXPECT_CALL(*displayMock1.m_displayController, readPixels(50u, 50u, 150u, 150u, _));
+    expectDisplayControllerReadPixels(displayHandle1, DisplayControllerMock::FakeFrameBufferHandle, 10u, 10u, 110u, 110u);
+    expectDisplayControllerReadPixels(displayHandle2, DisplayControllerMock::FakeFrameBufferHandle, 20u, 20u, 120u, 120u);
     expectFrameBufferRendered(displayHandle1);
     expectFrameBufferRendered(displayHandle2);
     expectSwapBuffers(displayHandle2);
     expectSwapBuffers(displayHandle1, true);
     doOneRendererLoop();
 
-    ScreenshotInfoVector screenshots;
-    renderer.dispatchProcessedScreenshots(screenshots);
-    ASSERT_EQ(5u, screenshots.size());
-    for (size_t i = 0; i < screenshots.size(); i++)
-    {
-        EXPECT_TRUE(screenshots[i].success);
-        EXPECT_TRUE(screenshots[i].display == displayHandle1 || screenshots[i].display == displayHandle2);
-        EXPECT_FALSE(screenshots[i].pixelData.empty());
-    }
+    auto screenshots1 = renderer.dispatchProcessedScreenshots(displayHandle1);
+    auto screenshots2 = renderer.dispatchProcessedScreenshots(displayHandle2);
+    ASSERT_EQ(1u, screenshots1.size());
+    ASSERT_EQ(1u, screenshots2.size());
+    const auto screenshots1FB = absl::c_find_if(screenshots1, [&](const auto& p) {return p.first == DisplayControllerMock::FakeFrameBufferHandle; });
+    const auto screenshots2FB = absl::c_find_if(screenshots2, [&](const auto& p) {return p.first == DisplayControllerMock::FakeFrameBufferHandle; });
+    ASSERT_NE(screenshots1.cend(), screenshots1FB);
+    ASSERT_NE(screenshots2.cend(), screenshots2FB);
 
     // check that screenshot request got deleted
-    EXPECT_CALL(*displayMock1.m_displayController, readPixels(_, _, _, _, _)).Times(0);
-    EXPECT_CALL(*displayMock2.m_displayController, readPixels(_, _, _, _, _)).Times(0);
+    EXPECT_CALL(*displayMock1.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
+    EXPECT_CALL(*displayMock2.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
     expectFrameBufferRendered(displayHandle1, false, false);
     expectFrameBufferRendered(displayHandle2, false, false);
     doOneRendererLoop();
 
-    screenshots.clear();
-    renderer.dispatchProcessedScreenshots(screenshots);
-    EXPECT_EQ(0u, screenshots.size());
+    screenshots1 = renderer.dispatchProcessedScreenshots(displayHandle1);
+    screenshots2 = renderer.dispatchProcessedScreenshots(displayHandle2);
+    ASSERT_EQ(0u, screenshots1.size());
+    ASSERT_EQ(0u, screenshots2.size());
 }
 
-TEST_P(ARenderer, failsToCreateScreenshot)
+TEST_P(ARenderer, takeMultipleScreenshotsOfADisplayOverritesPreviousScreenshot)
 {
-    const DisplayHandle displayHandle = addDisplayController();
-    DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(displayHandle);
+    const DisplayHandle displayHandle1 = addDisplayController();
+    DisplayStrictMockInfo& displayMock1 = renderer.getDisplayMock(displayHandle1);
 
-    ScreenshotInfo screenshot;
-    screenshot.rectangle = { 0u, 0u, 100u, 100u };
-    screenshot.display = displayHandle;
-    screenshot.filename = "";
+    scheduleScreenshot(displayHandle1, DisplayControllerMock::FakeFrameBufferHandle, 10u, 10u, 110u, 110u);
+    scheduleScreenshot(displayHandle1, DisplayControllerMock::FakeFrameBufferHandle, 30u, 30u, 130u, 130u);
 
-    renderer.scheduleScreenshot(screenshot);
-    EXPECT_CALL(*displayMock.m_displayController, readPixels(0u, 0u, 100u, 100u, _)).WillOnce(Return(false));
-    expectFrameBufferRendered();
-    expectSwapBuffers();
+    expectDisplayControllerReadPixels(displayHandle1, DisplayControllerMock::FakeFrameBufferHandle, 30u, 30u, 130u, 130u);
+    expectFrameBufferRendered(displayHandle1);
+    expectSwapBuffers(displayHandle1);
     doOneRendererLoop();
 
-    ScreenshotInfoVector screenshots;
-    renderer.dispatchProcessedScreenshots(screenshots);
-    EXPECT_EQ(1u, screenshots.size());
-    EXPECT_FALSE(screenshots[0].success);
-    EXPECT_EQ(displayHandle, screenshots[0].display);
-    EXPECT_TRUE(screenshots[0].pixelData.empty());
+    auto screenshots1 = renderer.dispatchProcessedScreenshots(displayHandle1);
+    ASSERT_EQ(1u, screenshots1.size());
+    const auto& screenshots1FB = absl::c_find_if(screenshots1, [&](const auto& p) {return p.first == DisplayControllerMock::FakeFrameBufferHandle; });
+    ASSERT_NE(screenshots1.cend(), screenshots1FB);
 
     // check that screenshot request got deleted
-    EXPECT_CALL(*displayMock.m_displayController, readPixels(_, _, _, _, _)).Times(0);
-    expectFrameBufferRendered(displayHandle, false, false);
+    EXPECT_CALL(*displayMock1.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
+    expectFrameBufferRendered(displayHandle1, false, false);
     doOneRendererLoop();
 
-    screenshots.clear();
-    renderer.dispatchProcessedScreenshots(screenshots);
-    EXPECT_EQ(0u, screenshots.size());
+    screenshots1 = renderer.dispatchProcessedScreenshots(displayHandle1);
+    ASSERT_EQ(0u, screenshots1.size());
+}
+
+TEST_P(ARenderer, canTakeMultipleScreenshotsForMultipleDisplaysFromFramebuffersAndOffscreenBuffers)
+{
+    const DisplayHandle displayHandle1 = addDisplayController();
+    DisplayStrictMockInfo& displayMock1 = renderer.getDisplayMock(displayHandle1);
+
+    const DisplayHandle displayHandle2 = addDisplayController();
+    DisplayStrictMockInfo& displayMock2 = renderer.getDisplayMock(displayHandle2);
+
+    const DeviceResourceHandle obDeviceHandle11{ 911u };
+    const DeviceResourceHandle obDeviceHandle12{ 912u };
+    const DeviceResourceHandle obDeviceHandle21{ 921u };
+    const DeviceResourceHandle obDeviceHandle22{ 922u };
+
+    renderer.registerOffscreenBuffer(displayHandle1, obDeviceHandle11, 10u, 20u, false);
+    renderer.registerOffscreenBuffer(displayHandle1, obDeviceHandle12, 10u, 20u, true);
+    renderer.registerOffscreenBuffer(displayHandle2, obDeviceHandle21, 10u, 20u, false);
+    renderer.registerOffscreenBuffer(displayHandle2, obDeviceHandle22, 10u, 20u, true);
+
+    scheduleScreenshot(displayHandle1, DisplayControllerMock::FakeFrameBufferHandle, 0u, 0u, 1u, 1u);
+    scheduleScreenshot(displayHandle1, obDeviceHandle11, 0u, 0u, 1u, 1u);
+    scheduleScreenshot(displayHandle1, obDeviceHandle12, 0u, 0u, 1u, 1u);
+    scheduleScreenshot(displayHandle2, DisplayControllerMock::FakeFrameBufferHandle, 0u, 0u, 1u, 1u);
+    scheduleScreenshot(displayHandle2, obDeviceHandle21, 0u, 0u, 1u, 1u);
+    scheduleScreenshot(displayHandle2, obDeviceHandle22, 0u, 0u, 1u, 1u);
+
+    expectDisplayControllerReadPixels(displayHandle1, obDeviceHandle11, 0u, 0u, 1u, 1u);
+    expectDisplayControllerReadPixels(displayHandle2, obDeviceHandle21, 0u, 0u, 1u, 1u);
+    expectDisplayControllerReadPixels(displayHandle1, DisplayControllerMock::FakeFrameBufferHandle, 0u, 0u, 1u, 1u);
+    expectDisplayControllerReadPixels(displayHandle2, DisplayControllerMock::FakeFrameBufferHandle, 0u, 0u, 1u, 1u);
+    expectDisplayControllerReadPixels(displayHandle2, obDeviceHandle22, 0u, 0u, 1u, 1u);
+    expectDisplayControllerReadPixels(displayHandle1, obDeviceHandle12, 0u, 0u, 1u, 1u);
+    expectOffscreenBufferRendered(displayHandle1, { obDeviceHandle11 }, true);
+    expectFrameBufferRendered(displayHandle1, false);
+    expectOffscreenBufferRendered(displayHandle2, { obDeviceHandle21 }, true);
+    expectFrameBufferRendered(displayHandle2, false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle1, { obDeviceHandle12 }, { {true, true } }, true);
+    expectInterruptibleOffscreenBufferRendered(displayHandle2, { obDeviceHandle22 }, { {true, true } }, true);
+    expectSwapBuffers(displayHandle2);
+    expectSwapBuffers(displayHandle1, true);
+    doOneRendererLoop();
+
+    auto screenshots1 = renderer.dispatchProcessedScreenshots(displayHandle1);
+    auto screenshots2 = renderer.dispatchProcessedScreenshots(displayHandle2);
+    ASSERT_EQ(3u, screenshots1.size());
+    ASSERT_EQ(3u, screenshots2.size());
+
+    auto checkScreenshot = [](const auto& screenshots, DeviceResourceHandle rtDeviceHandle) {
+        const auto it = absl::c_find_if(screenshots, [&](const auto& p) {return p.first == rtDeviceHandle; });
+        ASSERT_NE(screenshots.cend(), it);
+    };
+
+    checkScreenshot(screenshots1, obDeviceHandle11);
+    checkScreenshot(screenshots1, DisplayControllerMock::FakeFrameBufferHandle);
+    checkScreenshot(screenshots1, obDeviceHandle12);
+
+    checkScreenshot(screenshots2, obDeviceHandle21);
+    checkScreenshot(screenshots2, DisplayControllerMock::FakeFrameBufferHandle);
+    checkScreenshot(screenshots2, obDeviceHandle22);
+
+    // check that screenshot request got deleted
+    EXPECT_CALL(*displayMock1.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
+    EXPECT_CALL(*displayMock2.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
+    expectFrameBufferRendered(displayHandle1);
+    expectFrameBufferRendered(displayHandle2);
+    expectSwapBuffers(displayHandle2);
+    expectSwapBuffers(displayHandle1, true);
+    doOneRendererLoop();
+
+    screenshots1 = renderer.dispatchProcessedScreenshots(displayHandle1);
+    screenshots2 = renderer.dispatchProcessedScreenshots(displayHandle2);
+    ASSERT_EQ(0u, screenshots1.size());
+    ASSERT_EQ(0u, screenshots2.size());
 }
 
 TEST_P(ARenderer, willIgnoreScreenshotIfDisplayIsDestroyedAtTheSameTime)
 {
     const DisplayHandle displayHandle = addDisplayController();
 
-    ScreenshotInfo screenshot;
-    screenshot.rectangle = { 0u, 0u, 100u, 100u };
-    screenshot.display = displayHandle;
-    screenshot.filename = "";
-
-    renderer.scheduleScreenshot(screenshot);
+    scheduleScreenshot(displayHandle, DisplayControllerMock::FakeFrameBufferHandle, 0u, 0u, 100u, 100u);
     destroyDisplayController(displayHandle);
     doOneRendererLoop();
 
-    ScreenshotInfoVector screenshots;
-    renderer.dispatchProcessedScreenshots(screenshots);
+    auto screenshots = renderer.dispatchProcessedScreenshots(displayHandle);
     EXPECT_EQ(0u, screenshots.size());
 
     // ensure screenshot command is not cached
     const DisplayHandle displayHandle2 = addDisplayController();
     EXPECT_EQ(displayHandle, displayHandle2);
     DisplayStrictMockInfo& displayMock2 = renderer.getDisplayMock(displayHandle2);
-    EXPECT_CALL(*displayMock2.m_displayController, readPixels(_, _, _, _, _)).Times(0);
+    EXPECT_CALL(*displayMock2.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
     expectFrameBufferRendered();
     expectSwapBuffers();
     doOneRendererLoop();
 
-    screenshots.clear();
-    renderer.dispatchProcessedScreenshots(screenshots);
+    screenshots = renderer.dispatchProcessedScreenshots(displayHandle);
     EXPECT_EQ(0u, screenshots.size());
 }
 

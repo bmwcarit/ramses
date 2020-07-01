@@ -69,7 +69,7 @@ public:
         StrictMock<DisplayControllerMock>& displayControllerMock = getDisplayControllerMock(handle);
         EXPECT_CALL(displayControllerMock, getDisplayWidth()).Times(times);
         EXPECT_CALL(displayControllerMock, getDisplayHeight()).Times(times);
-        EXPECT_CALL(displayControllerMock, readPixels(_, _, _, _, _)).Times(times);
+        EXPECT_CALL(displayControllerMock, readPixels(_, _, _, _, _, _)).Times(times);
     }
 
     void expectReadPixelsInRenderLoop(DisplayHandle handle = DisplayHandle(0u))
@@ -404,7 +404,7 @@ TEST_P(ARendererCommandExecutor, readPixelsFromDisplay)
     const UInt32 width = 3u;
     const UInt32 height = 4u;
 
-    m_commandBuffer.readPixels(dummyDisplay, "", false, x, y, width, height);
+    m_commandBuffer.readPixels(dummyDisplay, {}, "", false, x, y, width, height);
     doCommandExecutorLoop();
 
     StrictMock<DisplayControllerMock>& displayControllerMock = getDisplayControllerMock(dummyDisplay);
@@ -412,96 +412,16 @@ TEST_P(ARendererCommandExecutor, readPixelsFromDisplay)
         EXPECT_CALL(m_platformFactoryMock.windowEventsPollingManagerMock, pollWindowsTillAnyCanRender());
     EXPECT_CALL(displayControllerMock, handleWindowEvents());
     EXPECT_CALL(displayControllerMock, canRenderNewFrame()).WillOnce(Return(true));
-    EXPECT_CALL(displayControllerMock, readPixels(x, y, width, height, _)).WillOnce(Return(true));
+    EXPECT_CALL(displayControllerMock, readPixels(DisplayControllerMock::FakeFrameBufferHandle, x, y, width, height, _)).WillOnce(Invoke(
+        [&](auto, auto, auto, auto, auto, auto& result) {
+            result.resize(width * height * 4);
+        }));
     expectReadPixelsInRenderLoop(); // needed overhead calls
     m_renderer.doOneRenderLoop();
 
     EXPECT_TRUE(consumeRendererEvents().empty()); // events are only added by the WindowedRenderer
 
     removeDisplayController(dummyDisplay);
-}
-
-TEST_P(ARendererCommandExecutor, createsReadPixelsFailedEventIfTryingToReadPixelsFromInvalidDisplay)
-{
-    const DisplayHandle dummyDisplay(1u);
-
-    const UInt32 x = 1u;
-    const UInt32 y = 2u;
-    const UInt32 width = 3u;
-    const UInt32 height = 4u;
-
-    m_commandBuffer.readPixels(dummyDisplay, "", false, x, y, width, height);
-    doCommandExecutorLoop();
-
-    const RendererEventVector events = consumeRendererEvents();
-    ASSERT_EQ(1u, events.size());
-    EXPECT_EQ(dummyDisplay, events.front().displayHandle);
-    EXPECT_EQ(ERendererEventType_ReadPixelsFromFramebufferFailed, events.front().eventType);
-}
-
-TEST_P(ARendererCommandExecutor, readAndSavePixelsFromDisplay)
-{
-    const DisplayHandle dummyDisplay = addDisplayController();
-
-    const UInt32 x = 1u;
-    const UInt32 y = 2u;
-    const UInt32 width = 3u;
-    const UInt32 height = 4u;
-
-    m_commandBuffer.readPixels(dummyDisplay, "testScreenshot", false, x, y, width, height);
-    doCommandExecutorLoop();
-
-    StrictMock<DisplayControllerMock>& displayControllerMock = getDisplayControllerMock(dummyDisplay);
-    if(GetParam())
-        EXPECT_CALL(m_platformFactoryMock.windowEventsPollingManagerMock, pollWindowsTillAnyCanRender());
-    EXPECT_CALL(displayControllerMock, handleWindowEvents());
-    EXPECT_CALL(displayControllerMock, canRenderNewFrame()).WillOnce(Return(true));
-    EXPECT_CALL(displayControllerMock, readPixels(x, y, width, height, _)).WillOnce(Return(true));
-    expectReadPixelsInRenderLoop(); // needed overhead calls
-    m_renderer.doOneRenderLoop();
-
-    EXPECT_TRUE(consumeRendererEvents().empty()); // events are only added by the WindowedRenderer
-
-    removeDisplayController(dummyDisplay);
-}
-
-TEST_P(ARendererCommandExecutor, readAndSaveFullscreenPixelsFromDisplay)
-{
-    const DisplayHandle dummyDisplay = addDisplayController();
-
-    StrictMock<DisplayControllerMock>& displayControllerMock = getDisplayControllerMock(dummyDisplay);
-
-    m_commandBuffer.readPixels(dummyDisplay, "testScreenshot", true, 2u, 33u, 201u, 4u);
-    EXPECT_CALL(displayControllerMock, getDisplayWidth());
-    EXPECT_CALL(displayControllerMock, getDisplayHeight());
-    doCommandExecutorLoop();
-
-    if(GetParam())
-        EXPECT_CALL(m_platformFactoryMock.windowEventsPollingManagerMock, pollWindowsTillAnyCanRender());
-    EXPECT_CALL(displayControllerMock, handleWindowEvents());
-    EXPECT_CALL(displayControllerMock, canRenderNewFrame()).WillOnce(Return(true));
-    EXPECT_CALL(displayControllerMock, readPixels(0u, 0u, WindowMock::FakeWidth, WindowMock::FakeHeight, _)).WillOnce(Return(true));
-    expectReadPixelsInRenderLoop(); // needed overhead calls
-    m_renderer.doOneRenderLoop();
-
-    EXPECT_TRUE(consumeRendererEvents().empty()); // events are only added by the WindowedRenderer
-
-    removeDisplayController(dummyDisplay);
-}
-
-TEST_P(ARendererCommandExecutor, createsNoReadPixelsFailedEventIfTryingToReadAndSavePixelsFromInvalidDisplay)
-{
-    const DisplayHandle dummyDisplay(1u);
-
-    const UInt32 x = 1u;
-    const UInt32 y = 2u;
-    const UInt32 width = 3u;
-    const UInt32 height = 4u;
-
-    m_commandBuffer.readPixels(dummyDisplay, "testScreenshot", false, x, y, width, height);
-    doCommandExecutorLoop();
-
-    EXPECT_TRUE(consumeRendererEvents().empty());
 }
 
 TEST_P(ARendererCommandExecutor, createOffscreenBufferAndGenerateEvent)

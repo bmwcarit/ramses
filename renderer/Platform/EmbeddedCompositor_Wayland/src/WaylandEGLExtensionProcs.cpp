@@ -6,7 +6,7 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "TextureUploadingAdapter_Wayland/WaylandEGLExtensionProcs.h"
+#include "EmbeddedCompositor_Wayland/WaylandEGLExtensionProcs.h"
 #include "Utils/LogMacros.h"
 #include <cassert>
 
@@ -41,8 +41,13 @@ namespace ramses_internal
 
     void WaylandEGLExtensionProcs::Init()
     {
-        ramses_internal::String eglExtensions(eglQueryString(m_eglDisplay, EGL_EXTENSIONS));
-        ramses_internal::String glExtensions(reinterpret_cast<const ramses_internal::Char*>(glGetString(GL_EXTENSIONS)));
+        ramses_internal::String eglExtensionsString(eglQueryString(m_eglDisplay, EGL_EXTENSIONS));
+        ramses_internal::String glExtensionsString(reinterpret_cast<const ramses_internal::Char*>(glGetString(GL_EXTENSIONS)));
+
+        StringSet eglExtensions;
+        StringSet glExtensions;
+        StringUtils::Tokenize(eglExtensionsString, eglExtensions);
+        StringUtils::Tokenize(glExtensionsString, glExtensions);
 
         if (CheckExtensionAvailable(glExtensions, "GL_OES_EGL_image") &&
             CheckExtensionAvailable(eglExtensions, "EGL_KHR_image_base") &&
@@ -74,9 +79,9 @@ namespace ramses_internal
         }
     }
 
-    bool WaylandEGLExtensionProcs::CheckExtensionAvailable(const ramses_internal::String& eglExtensions, const ramses_internal::String& extensionName)
+    bool WaylandEGLExtensionProcs::CheckExtensionAvailable(const ramses_internal::StringSet& eglExtensions, const ramses_internal::String& extensionName)
     {
-        if (eglExtensions.find(extensionName) >= 0)
+        if (eglExtensions.contains(extensionName))
         {
             return true;
         }

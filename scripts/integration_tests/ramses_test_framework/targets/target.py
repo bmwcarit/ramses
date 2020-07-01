@@ -59,7 +59,7 @@ class Target:
         self.embeddedCompositingSupported = False
         self.systemCompositorControllerSupported = False
         self.binaryShaderCompilerSupported = False
-        self.ltraceCommandSupported = False
+        self.externalSomeIPHUDaemon = False
         self.baseWorkingDirectory = self.ramsesInstallDir + "/bin"
         self.tmpDir = "/tmp"
         self.fixed_screenshot_prefix = 'ramsestlst_'

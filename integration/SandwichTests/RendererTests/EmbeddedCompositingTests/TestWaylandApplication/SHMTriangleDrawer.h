@@ -11,10 +11,11 @@
 
 #include "stdint.h"
 #include "ETriangleColor.h"
-class SHMBuffer;
 
 namespace ramses_internal
 {
+    class SHMBuffer;
+
     class SHMTriangleDrawer
     {
     public:

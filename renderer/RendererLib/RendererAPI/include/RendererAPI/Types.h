@@ -84,9 +84,8 @@ namespace ramses_internal
             UInt32 height;
         };
         Rectangle     rectangle;
-        DisplayHandle display;
         String        filename;
-        Bool          success;
+        Bool          fullScreen;
         Bool          sendViaDLT;
         UInt8Vector   pixelData;
     };

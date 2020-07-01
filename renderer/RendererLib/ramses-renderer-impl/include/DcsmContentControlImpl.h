@@ -34,6 +34,8 @@ namespace ramses
     public:
         DcsmContentControlImpl(const DcsmContentControlConfig& config, IDcsmConsumerImpl& dcsmConsumer, IRendererSceneControl& sceneControl);
 
+        status_t addContentCategory(Category category, DcsmContentControlConfig::CategoryInfo categoryInformation);
+        status_t removeContentCategory(Category category);
         status_t requestContentReady(ContentID contentID, uint64_t timeOut);
         status_t showContent(ContentID contentID, AnimationInformation timingInfo);
         status_t hideContent(ContentID contentID, AnimationInformation timingInfo);
@@ -110,6 +112,13 @@ namespace ramses
             uint64_t readyRequestTimeOut = std::numeric_limits<uint64_t>::max();
         };
         std::unordered_map<ContentID, ContentInfo> m_contents;
+
+        struct OfferedContents
+        {
+            Category category;
+            ContentID contentID;
+        };
+        std::vector<OfferedContents> m_offeredContentsForOtherCategories;
 
         struct SceneInfo
         {

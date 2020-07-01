@@ -18,6 +18,8 @@
 #include <memory.h>
 #include <array>
 #include "ramses-framework-api/CategoryInfoUpdate.h"
+#include "ramses-framework-api/RamsesFramework.h"
+#include "ramses-renderer-api/RamsesRenderer.h"
 
 using namespace ramses;
 using namespace testing;
@@ -75,6 +77,9 @@ public:
         m_CategoryInfoUpdate2.setCategorySize({ 0, 0, 32, 32});
         // when using initializer version on ContentControlConfig rendersize gets set by default to given category width/height
         m_CategoryInfoUpdate2.setRenderSize({ 32, 32 });
+
+        m_CategoryInfoUpdate3.setCategorySize({0, 0, 64, 64});
+        m_CategoryInfoUpdate3.setRenderSize({ 64, 64 });
     }
 
     virtual void TearDown() override
@@ -133,12 +138,16 @@ protected:
 
     const Category m_categoryID1{ 6 };
     const Category m_categoryID2{ 7 };
+    const Category m_categoryAddedLater{ 8 };
+    const Category m_categoryUninteresting{ 9 };
     const ContentID m_contentID1{ 321 };
     const ContentID m_contentID2{ 322 };
     const ContentID m_contentID3{ 323 };
+    const ContentID m_contentID4{ 324 };
     const displayId_t m_displayId{ 0 };
     CategoryInfoUpdate m_CategoryInfoUpdate1;
     CategoryInfoUpdate m_CategoryInfoUpdate2;
+    CategoryInfoUpdate m_CategoryInfoUpdate3;
 
     StrictMock<DcsmConsumerMock> m_dcsmConsumerMock;
     StrictMock<RendererSceneControlMock> m_sceneControlMock;
@@ -151,6 +160,15 @@ protected:
 
 constexpr sceneId_t ADcsmContentControl::SceneId1;
 constexpr sceneId_t ADcsmContentControl::SceneId2;
+
+TEST(DcsmContentControl, canAddAndRemoveCategories)
+{
+    ramses::RamsesFramework framework;
+    ramses::RamsesRenderer* renderer = framework.createRenderer({});
+    ramses::DcsmContentControl* dcc = renderer->createDcsmContentControl({});
+    EXPECT_EQ(StatusOK, DcsmContentControl::addContentCategory(*dcc, ramses::Category(1), { {20, 20},ramses::displayId_t(0)}));
+    EXPECT_EQ(StatusOK, DcsmContentControl::removeContentCategory(*dcc, ramses::Category(1)));
+}
 
 TEST_F(ADcsmContentControl, handlesDcsmOffered)
 {
@@ -211,6 +229,146 @@ TEST_F(ADcsmContentControl, handlesDcsmOfferedForMultipleContentsAndCategories)
     m_dcsmHandler.contentDescription(m_contentID1, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId1.getValue() });
     m_dcsmHandler.contentDescription(m_contentID2, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId1.getValue() });
     m_dcsmHandler.contentDescription(m_contentID3, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId1.getValue() });
+    update();
+}
+
+TEST_F(ADcsmContentControl, categoryAddedLater)
+{
+    m_dcsmHandler.contentOffered(m_contentID4, m_categoryUninteresting);
+    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater);
+    update();
+    Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
+
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID3, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate3, infoupdate);
+        return StatusOK;
+        });
+    m_dcsmContentControl.addContentCategory(m_categoryAddedLater,
+        { {m_CategoryInfoUpdate3.getCategorySize().width, m_CategoryInfoUpdate3.getCategorySize().height},m_displayId} );
+    update();
+}
+
+TEST_F(ADcsmContentControl, categoryAddedLater_OfferAfterThat)
+{
+    m_dcsmContentControl.addContentCategory(m_categoryAddedLater,
+        { {m_CategoryInfoUpdate3.getCategorySize().width, m_CategoryInfoUpdate3.getCategorySize().height},m_displayId} );
+    update();
+
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID3, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate3, infoupdate);
+        return StatusOK;
+        });
+    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater);
+    update();
+    Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
+}
+
+TEST_F(ADcsmContentControl, categoryAddedLater_MultipleOffersExistingBefore)
+{
+    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater);
+    m_dcsmHandler.contentOffered(m_contentID4, m_categoryAddedLater);
+    update();
+    Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
+
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID3, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate3, infoupdate);
+        return StatusOK;
+        });
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID4, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate3, infoupdate);
+        return StatusOK;
+        });
+    m_dcsmContentControl.addContentCategory(m_categoryAddedLater,
+        { {m_CategoryInfoUpdate3.getCategorySize().width, m_CategoryInfoUpdate3.getCategorySize().height},m_displayId });
+    update();
+}
+
+TEST_F(ADcsmContentControl, categoryAddedLater_reAddingCategoryGivesEventsAgain)
+{
+    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater);
+    update();
+    Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
+
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID3, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate3, infoupdate);
+        return StatusOK;
+        });
+    m_dcsmContentControl.addContentCategory(m_categoryAddedLater,
+        { {m_CategoryInfoUpdate3.getCategorySize().width, m_CategoryInfoUpdate3.getCategorySize().height},m_displayId });
+    update();
+
+    m_dcsmContentControl.removeContentCategory(m_categoryAddedLater);
+    update();
+
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID3, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate3, infoupdate);
+        return StatusOK;
+        });
+    m_dcsmContentControl.addContentCategory(m_categoryAddedLater,
+        { {m_CategoryInfoUpdate3.getCategorySize().width, m_CategoryInfoUpdate3.getCategorySize().height},m_displayId });
+    update();
+}
+
+TEST_F(ADcsmContentControl, categoryAddedLater_NoEventIfCategoryRemovedBeforeOffer)
+{
+    m_dcsmContentControl.addContentCategory(m_categoryAddedLater,
+        { {m_CategoryInfoUpdate3.getCategorySize().width, m_CategoryInfoUpdate3.getCategorySize().height},m_displayId });
+    update();
+
+    m_dcsmContentControl.removeContentCategory(m_categoryAddedLater);
+    update();
+
+    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater);
+    update();
+    Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
+}
+
+TEST_F(ADcsmContentControl, removeCategory_withContentsAssigned)
+{
+    m_dcsmContentControl.addContentCategory(m_categoryAddedLater,
+        { {m_CategoryInfoUpdate3.getCategorySize().width, m_CategoryInfoUpdate3.getCategorySize().height},m_displayId });
+    update();
+
+    // offer some contents
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID3, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate3, infoupdate);
+        return StatusOK;
+        });
+    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater);
+    update();
+    Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
+
+    m_dcsmContentControl.removeContentCategory(m_categoryAddedLater);
+    update();
+}
+
+TEST_F(ADcsmContentControl, categoryAddedLater_NoEventIfUnofferedBeforeAddingCategory)
+{
+    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater);
+    update();
+    Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
+
+    m_dcsmHandler.contentStopOfferRequest(m_contentID3);
+    update();
+    Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
+
+    m_dcsmContentControl.addContentCategory(m_categoryAddedLater,
+        { {m_CategoryInfoUpdate3.getCategorySize().width, m_CategoryInfoUpdate3.getCategorySize().height},m_displayId });
+    update();
+}
+
+TEST_F(ADcsmContentControl, categoryAddedLater_NoEventIfForceStoppedBeforeAddingCategory)
+{
+    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater);
+    update();
+    Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
+
+    m_dcsmHandler.forceContentOfferStopped(m_contentID3);
+    update();
+    Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
+
+    m_dcsmContentControl.addContentCategory(m_categoryAddedLater,
+        { {m_CategoryInfoUpdate3.getCategorySize().width, m_CategoryInfoUpdate3.getCategorySize().height},m_displayId });
     update();
 }
 

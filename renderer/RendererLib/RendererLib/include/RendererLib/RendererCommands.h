@@ -45,7 +45,7 @@ namespace ramses_internal
         void destroyDisplay(DisplayHandle handle);
 
         void updateWarpingData(DisplayHandle displayHandle, const WarpingMeshData& warpingData);
-        void readPixels(DisplayHandle displayHandle, const String& filename, Bool fullScreen, UInt32 x, UInt32 y, UInt32 width, UInt32 height, Bool sendViaDLT = false);
+        void readPixels(DisplayHandle displayHandle, OffscreenBufferHandle obHandle, const String& filename, Bool fullScreen, UInt32 x, UInt32 y, UInt32 width, UInt32 height, Bool sendViaDLT = false);
         void setClearColor(DisplayHandle displayHandle, OffscreenBufferHandle obHandle, const Vector4& color);
 
         void linkSceneData(const SceneId providerSceneId, DataSlotId providerDataSlotId, SceneId consumerSceneId, DataSlotId consumerDataSlotId);

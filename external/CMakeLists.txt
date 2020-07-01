@@ -37,15 +37,14 @@ target_compile_definitions(fmt PUBLIC "-DFMT_EXCEPTIONS=0")
 ACME_FOLDERIZE_TARGET(fmt)
 ACME_INFO("+ fmt")
 
-
-# these directories will be built with
-# modified compiler flags
-include(../cmake/ramses/adaptCompilerFlagsForExternals.cmake)
-
+# abseil library
 function(add_abseil_scope)
     set(BUILD_TESTING OFF)
     ACME_CURRENT_FOLDER_PATH(folder_base)
     set(ABSL_IDE_FOLDER "${folder_base}/Abseil")
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-anon-enum-enum-conversion")
+    endif()
     add_subdirectory(abseil)
     ACME_INFO("+ abseil")
 endfunction()
@@ -194,9 +193,6 @@ ELSEIF()
     ACME_INFO("- automotive-dlt")
 ENDIF()
 
-FIND_PACKAGE(libdrm)
-FIND_PACKAGE(gbm)
-
 # try find wayland libs for following targets
 FIND_PACKAGE(wayland-client QUIET)
 FIND_PACKAGE(wayland-server QUIET)
@@ -249,8 +245,6 @@ if (ramses-sdk_BUILD_IVI_TEST_APPS AND (wayland-ivi-extension_FOUND OR TARGET wa
 endif()
 
 # wayland zwp-linux-dmabuf-v1 extension protocol
-FIND_PACKAGE(wayland-client QUIET)
-FIND_PACKAGE(wayland-server QUIET)
 IF (wayland-client_FOUND AND wayland-server_FOUND)
     ACME_MODULE(
         NAME                    wayland-zwp-linux-dmabuf-v1-extension
@@ -262,35 +256,6 @@ IF (wayland-client_FOUND AND wayland-server_FOUND)
         FILES_SOURCE            wayland-zwp-linux-dmabuf-v1-extension/*.c
         )
 ENDIF()
-
-if (wayland-ivi-extension_FOUND OR TARGET wayland-ivi-extension)
-    # wayland ivi example/test application 2
-    ACME_MODULE(
-        #==========================================================================
-        # general module information
-        #==========================================================================
-        NAME                    ivi-simple-dmabuf-egl
-        TYPE                    BINARY
-        ENABLE_INSTALL          ON
-
-        #==========================================================================
-        # files of this module
-        #==========================================================================
-        FILES_SOURCE            wayland-ivi-example-client/simple-dmabuf-egl.c
-
-        #==========================================================================
-        # dependencies
-        #==========================================================================
-        DEPENDENCIES            EGL
-                                OpenGL
-                                wayland-client
-                                wayland-egl
-                                wayland-ivi-extension
-                                wayland-zwp-linux-dmabuf-v1-extension
-                                libdrm
-                                gbm
-    )
-endif()
 
 # LZ4 de-/compression library
 OPTION(ramses-sdk_ALLOW_PLATFORM_LZ4 "Enable to search for platform provided lz4" ON)

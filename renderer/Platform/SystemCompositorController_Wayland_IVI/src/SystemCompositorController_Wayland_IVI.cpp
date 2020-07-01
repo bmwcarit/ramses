@@ -68,16 +68,9 @@ namespace ramses_internal
     {
         LOG_INFO(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::init");
 
-        if (!WaylandEnvironmentUtils::IsEnvironmentInProperState())
-        {
-            LOG_ERROR(CONTEXT_RENDERER,
-                      "SystemCompositorController_Wayland_IVI::init Environment is not properly configured!");
-            return false;
-        }
-
+        WaylandEnvironmentUtils::LogEnvironmentState(m_waylandDisplay);
         m_display = wl_display_connect(m_waylandDisplay.empty()? nullptr : m_waylandDisplay.c_str());
-
-        if (nullptr == m_display)
+        if (!m_display)
         {
             LOG_ERROR(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::init wl_display_connect() failed!");
             return false;

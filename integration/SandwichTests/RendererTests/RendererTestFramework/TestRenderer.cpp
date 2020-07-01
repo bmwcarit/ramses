@@ -211,16 +211,17 @@ namespace ramses_internal
         m_renderer->flush();
     }
 
-    bool TestRenderer::performScreenshotCheck(ramses::displayId_t displayId, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const String& comparisonImageFile, float maxAveragePercentErrorPerPixel, bool readPixelsTwice)
+    bool TestRenderer::performScreenshotCheck(ramses::displayId_t displayId, ramses::displayBufferId_t bufferId, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const String& comparisonImageFile, float maxAveragePercentErrorPerPixel, bool readPixelsTwice)
     {
         // In some cases (interruptible OB) taking screenshot needs to be delayed to guarantee that the last state was rendered to framebuffer,
         // reading pixels twice before checking result guarantees that.
         if (readPixelsTwice)
-            RendererTestUtils::ReadPixelData(*m_renderer, displayId, x, y, width, height);
+            RendererTestUtils::ReadPixelData(*m_renderer, displayId, bufferId, x, y, width, height);
 
         return RendererTestUtils::PerformScreenshotTestForDisplay(
             *m_renderer,
             displayId,
+            bufferId,
             x,
             y,
             width,
@@ -229,11 +230,12 @@ namespace ramses_internal
             maxAveragePercentErrorPerPixel);
     }
 
-    void TestRenderer::saveScreenshotForDisplay(ramses::displayId_t displayId, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const String& imageFile)
+    void TestRenderer::saveScreenshotForDisplay(ramses::displayId_t displayId, ramses::displayBufferId_t bufferId, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const String& imageFile)
     {
         RendererTestUtils::SaveScreenshotForDisplay(
             *m_renderer,
             displayId,
+            bufferId,
             x,
             y,
             width,

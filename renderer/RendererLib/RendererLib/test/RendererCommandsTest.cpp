@@ -273,13 +273,14 @@ TEST_F(ARendererCommands, createsCommandForWarpingDataUpdate)
 TEST_F(ARendererCommands, createsCommandForReadPixels)
 {
     const DisplayHandle displayHandle(1u);
+    const OffscreenBufferHandle obHandle(12u);
     const UInt32 x = 2;
     const UInt32 y = 33;
     const UInt32 width = 201;
     const UInt32 height = 4;
     const String filename = "testPixels";
 
-    queue.readPixels(displayHandle, filename, false, x, y, width, height);
+    queue.readPixels(displayHandle, obHandle, filename, false, x, y, width, height);
 
     EXPECT_EQ(1u, queue.getCommands().getTotalCommandCount());
     EXPECT_EQ(ERendererCommand_ReadPixels, queue.getCommands().getCommandType(0u));
@@ -287,6 +288,7 @@ TEST_F(ARendererCommands, createsCommandForReadPixels)
     const ReadPixelsCommand& command = queue.getCommands().getCommandData<ReadPixelsCommand>(0u);
 
     EXPECT_EQ(displayHandle, command.displayHandle);
+    EXPECT_EQ(obHandle, command.offscreenBufferHandle);
     EXPECT_EQ(x, command.x);
     EXPECT_EQ(y, command.y);
     EXPECT_EQ(width, command.width);

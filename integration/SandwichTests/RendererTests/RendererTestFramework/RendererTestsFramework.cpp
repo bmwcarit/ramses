@@ -212,6 +212,7 @@ bool RendererTestsFramework::renderAndCompareScreenshot(const ramses_internal::S
     return compareScreenshotInternal(
         expectedImageName,
         displayId,
+        {},
         maxAveragePercentErrorPerPixel,
         0u,
         0u,
@@ -220,9 +221,26 @@ bool RendererTestsFramework::renderAndCompareScreenshot(const ramses_internal::S
         readPixelsTwice);
 }
 
+bool RendererTestsFramework::renderAndCompareScreenshotOffscreenBuffer(const ramses_internal::String& expectedImageName, uint32_t testDisplayIdx, ramses::displayBufferId_t displayBuffer, uint32_t width, uint32_t height, float maxAveragePercentErrorPerPixel)
+{
+    assert(testDisplayIdx < m_displays.size());
+    const ramses::displayId_t displayId = m_displays[testDisplayIdx].displayId;
+
+    return compareScreenshotInternal(
+        expectedImageName,
+        displayId,
+        displayBuffer,
+        maxAveragePercentErrorPerPixel,
+        0u,
+        0u,
+        width,
+        height,
+        false);
+}
+
 bool RendererTestsFramework::renderAndCompareScreenshotSubimage(const ramses_internal::String& expectedImageName, ramses_internal::UInt32 subimageX, ramses_internal::UInt32 subimageY, ramses_internal::UInt32 subimageWidth, ramses_internal::UInt32 subimageHeight, float maxAveragePercentErrorPerPixel, bool readPixelsTwice)
 {
-    return compareScreenshotInternal(expectedImageName, m_displays[0].displayId, maxAveragePercentErrorPerPixel, subimageX, subimageY, subimageWidth, subimageHeight, readPixelsTwice);
+    return compareScreenshotInternal(expectedImageName, m_displays[0].displayId, {}, maxAveragePercentErrorPerPixel, subimageX, subimageY, subimageWidth, subimageHeight, readPixelsTwice);
 }
 
 void RendererTestsFramework::setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender)
@@ -234,6 +252,7 @@ void RendererTestsFramework::setFrameTimerLimits(uint64_t limitForClientResource
 bool RendererTestsFramework::compareScreenshotInternal(
     const ramses_internal::String& expectedImageName,
     ramses::displayId_t displayId,
+    ramses::displayBufferId_t bufferId,
     float maxAveragePercentErrorPerPixel,
     ramses_internal::UInt32 subimageX,
     ramses_internal::UInt32 subimageY,
@@ -243,11 +262,11 @@ bool RendererTestsFramework::compareScreenshotInternal(
 {
     if (m_generateScreenshots)
     {
-        m_testRenderer.saveScreenshotForDisplay(displayId, subimageX, subimageY, subimageWidth, subimageHeight, expectedImageName);
+        m_testRenderer.saveScreenshotForDisplay(displayId, bufferId, subimageX, subimageY, subimageWidth, subimageHeight, expectedImageName);
         return true;
     }
 
-    bool comparisonResult = m_testRenderer.performScreenshotCheck(displayId, subimageX, subimageY, subimageWidth, subimageHeight, expectedImageName, maxAveragePercentErrorPerPixel, readPixelsTwice);
+    bool comparisonResult = m_testRenderer.performScreenshotCheck(displayId, bufferId, subimageX, subimageY, subimageWidth, subimageHeight, expectedImageName, maxAveragePercentErrorPerPixel, readPixelsTwice);
 
     if (!comparisonResult)
     {

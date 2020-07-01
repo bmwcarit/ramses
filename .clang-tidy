@@ -68,6 +68,8 @@ Checks:
     cert-msc32-c,
     cert-msc51-cpp,
     cert-oop11-cpp,
+    cert-dcl50-cpp,
+    cert-flp30-c,
     # TODO(tobias) false positives: cert-oop54-cpp,
 
     clang-analyzer-apiModeling.StdCLibraryFunctions,
@@ -145,6 +147,7 @@ Checks:
     google-readability-casting,
     # TODO google-readability-todo,
     google-runtime-operator,
+    google-build-explicit-make-pair,
 
     hicpp-avoid-goto,
     # TODO hicpp-multiway-paths-covered,
@@ -152,6 +155,7 @@ Checks:
     hicpp-no-assembler,
     hicpp-noexcept-move,
     # TODO hicpp-signed-bitwise,
+    hicpp-exception-baseclass,
 
     misc-redundant-expression,
     misc-unused-alias-decls,
@@ -163,6 +167,7 @@ Checks:
     misc-unused-alias-decls,
     misc-unused-parameters,
     misc-unused-using-decls,
+    misc-unconventional-assign-operator,
 
     modernize-use-nullptr,
 
@@ -205,6 +210,8 @@ Checks:
     readability-static-definition-in-anonymous-namespace,
     readability-string-compare,
     readability-uniqueptr-delete-release,
+    readability-misleading-indentation,
+    readability-misplaced-array-index,
 
     cppcoreguidelines-avoid-goto,
     cppcoreguidelines-c-copy-assignment-signature,

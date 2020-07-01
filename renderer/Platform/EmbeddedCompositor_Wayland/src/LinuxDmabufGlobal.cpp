@@ -22,7 +22,7 @@
 #include "EmbeddedCompositor_Wayland/WaylandDisplay.h"
 #include "EmbeddedCompositor_Wayland/LinuxDmabufGlobal.h"
 #include "EmbeddedCompositor_Wayland/LinuxDmabufConnection.h"
-#include "TextureUploadingAdapter_Wayland/WaylandEGLExtensionProcs.h"
+#include "EmbeddedCompositor_Wayland/WaylandEGLExtensionProcs.h"
 
 namespace ramses_internal
 {
@@ -40,13 +40,13 @@ namespace ramses_internal
     {
         EGLDisplay eglDisplay;
 
-        if (context.getType() != IContext::EType_EGL)
+        Context_EGL* contextEgl = dynamic_cast<Context_EGL*>(&context);
+
+        if (!contextEgl)
         {
             // Running in a test case
             return false;
         }
-
-        Context_EGL* contextEgl = static_cast<Context_EGL*>(&context);
 
         eglDisplay = contextEgl->getEglDisplay();
         assert(eglDisplay != EGL_NO_DISPLAY);

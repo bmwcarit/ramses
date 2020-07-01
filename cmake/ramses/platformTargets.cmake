@@ -25,4 +25,4 @@ elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
 endif()
 
 # add warning flags
-target_link_libraries(ramses-common-base INTERFACE ramses-warnings-base)
+target_link_libraries(ramses-common-base INTERFACE ramses-build-options-base)

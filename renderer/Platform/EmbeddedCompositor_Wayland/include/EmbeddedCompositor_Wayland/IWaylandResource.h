@@ -8,9 +8,11 @@
 #ifndef RAMSES_IWAYLANDRESOURCE_H
 #define RAMSES_IWAYLANDRESOURCE_H
 
+#include <cstdint>
+
 typedef void(*IWaylandResourceDestroyFuncT) (struct wl_resource *resource);
-typedef struct wl_listener WaylandListener;
-typedef void* WaylandNativeResource;
+
+struct wl_listener;
 
 namespace ramses_internal
 {
@@ -24,8 +26,8 @@ namespace ramses_internal
         virtual void postError(uint32_t code, const String& message) = 0;
         virtual void* getUserData() = 0;
         virtual void setImplementation(const void* implementation, void* data, IWaylandResourceDestroyFuncT destroy) = 0;
-        virtual void addDestroyListener(WaylandListener* listener) = 0;
-        virtual WaylandNativeResource getWaylandNativeResource() = 0;
+        virtual void addDestroyListener(wl_listener* listener) = 0;
+        virtual void* getWaylandNativeResource() = 0;
         virtual void disownWaylandResource() = 0;
     };
 }

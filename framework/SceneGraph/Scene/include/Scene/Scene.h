@@ -47,6 +47,27 @@ namespace ramses_internal
     class SceneT : public IScene
     {
     public:
+        using RenderableMemoryPool      = MEMORYPOOL<Renderable         , RenderableHandle>;
+        using StreamTextureMemoryPool   = MEMORYPOOL<StreamTexture      , StreamTextureHandle>;
+        using NodeMemoryPool            = MEMORYPOOL<TopologyNode       , NodeHandle>;
+        using CameraMemoryPool          = MEMORYPOOL<Camera             , CameraHandle>;
+        using RenderStateMemoryPool     = MEMORYPOOL<RenderState        , RenderStateHandle>;
+        using TransformMemoryPool       = MEMORYPOOL<TopologyTransform  , TransformHandle>;
+        using DataLayoutMemoryPool      = MEMORYPOOL<DataLayout         , DataLayoutHandle>;
+        using DataInstanceMemoryPool    = MEMORYPOOL<DataInstance       , DataInstanceHandle>;
+        using RenderGroupMemoryPool     = MEMORYPOOL<RenderGroup        , RenderGroupHandle>;
+        using RenderPassMemoryPool      = MEMORYPOOL<RenderPass         , RenderPassHandle>;
+        using BlitPassMemoryPool        = MEMORYPOOL<BlitPass           , BlitPassHandle>;
+        using PickableObjectMemoryPool  = MEMORYPOOL<PickableObject     , PickableObjectHandle>;
+        using RenderTargetMemoryPool    = MEMORYPOOL<RenderTarget       , RenderTargetHandle>;
+        using RenderBufferMemoryPool    = MEMORYPOOL<RenderBuffer       , RenderBufferHandle>;
+        using TextureSamplerMemoryPool  = MEMORYPOOL<TextureSampler     , TextureSamplerHandle>;
+        using DataBufferMemoryPool      = MEMORYPOOL<GeometryDataBuffer , DataBufferHandle>;
+        using TextureBufferMemoryPool   = MEMORYPOOL<TextureBuffer      , TextureBufferHandle>;
+        using DataSlotMemoryPool        = MEMORYPOOL<DataSlot           , DataSlotHandle>;
+        using SceneReferenceMemoryPool  = MEMORYPOOL<SceneReference     , SceneReferenceHandle>;
+        using AnimationSystemMemoryPool = MEMORYPOOL<IAnimationSystem*  , AnimationSystemHandle>;
+
         explicit SceneT(const SceneInfo& sceneInfo = SceneInfo());
         virtual ~SceneT();
 
@@ -68,6 +89,7 @@ namespace ramses_internal
         virtual void                        setRenderableInstanceCount      (RenderableHandle renderableHandle, UInt32 instanceCount) override;
         virtual void                        setRenderableStartVertex        (RenderableHandle renderableHandle, UInt32 startVertex) override;
         virtual const Renderable&           getRenderable                   (RenderableHandle renderableHandle) const override final;
+        const RenderableMemoryPool&         getRenderables                  () const;
 
         // Render state
         virtual RenderStateHandle           allocateRenderState             (RenderStateHandle stateHandle = RenderStateHandle::Invalid()) override;
@@ -85,6 +107,7 @@ namespace ramses_internal
         virtual void                        setRenderStateStencilOps        (RenderStateHandle stateHandle, EStencilOp sfail, EStencilOp dpfail, EStencilOp dppass) override;
         virtual void                        setRenderStateColorWriteMask    (RenderStateHandle stateHandle, ColorWriteMask colorMask) override;
         virtual const RenderState&          getRenderState                  (RenderStateHandle stateHandle) const override final;
+        const RenderStateMemoryPool&              getRenderStates                 () const;
 
         // Camera
         virtual CameraHandle                allocateCamera                  (ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle viewportDataInstance, CameraHandle handle = CameraHandle::Invalid()) override;
@@ -93,6 +116,7 @@ namespace ramses_internal
         virtual UInt32                      getCameraCount                  () const override final;
         virtual void                        setCameraFrustum                (CameraHandle cameraHandle, const Frustum& frustum) override;
         virtual const Camera&               getCamera                       (CameraHandle cameraHandle) const override final;
+        const CameraMemoryPool&             getCameras                      () const;
 
         // Nodes
         virtual NodeHandle                  allocateNode                    (UInt32 childrenCount = 0u, NodeHandle handle = NodeHandle::Invalid()) override;
@@ -104,6 +128,7 @@ namespace ramses_internal
         virtual void                        removeChildFromNode             (NodeHandle parent, NodeHandle child) override;
         virtual UInt32                      getChildCount                   (NodeHandle parent) const override final;
         virtual NodeHandle                  getChild                        (NodeHandle parent, UInt32 childNumber) const override final;
+        const NodeMemoryPool&                   getNodes                        () const;
 
         // Transformation
         virtual TransformHandle             allocateTransform               (NodeHandle nodeHandle, TransformHandle handle = TransformHandle::Invalid()) override;
@@ -117,19 +142,21 @@ namespace ramses_internal
         virtual void                        setTranslation                  (TransformHandle handle, const Vector3& translation) override;
         virtual void                        setRotation                     (TransformHandle handle, const Vector3& rotation) override;
         virtual void                        setScaling                      (TransformHandle handle, const Vector3& scaling) override;
+        const TransformMemoryPool&              getTransforms                   () const;
 
         virtual DataLayoutHandle            allocateDataLayout              (const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid()) override;
         virtual void                        releaseDataLayout               (DataLayoutHandle layoutHandle) override;
         virtual bool                        isDataLayoutAllocated           (DataLayoutHandle layoutHandle) const override final;
         virtual UInt32                      getDataLayoutCount              () const override final;
-
         virtual const DataLayout&           getDataLayout                   (DataLayoutHandle layoutHandle) const override final;
+        const DataLayoutMemoryPool&             getDataLayouts                  () const;
 
         virtual DataInstanceHandle          allocateDataInstance            (DataLayoutHandle finishedLayoutHandle, DataInstanceHandle instanceHandle = DataInstanceHandle::Invalid()) override;
         virtual void                        releaseDataInstance             (DataInstanceHandle containerHandle) override;
         virtual bool                        isDataInstanceAllocated         (DataInstanceHandle containerHandle) const override final;
         virtual UInt32                      getDataInstanceCount            () const override final;
         virtual DataLayoutHandle            getLayoutOfDataInstance         (DataInstanceHandle containerHandle) const override final;
+        const DataInstanceMemoryPool&           getDataInstances                () const;
 
         virtual const Float*                getDataFloatArray               (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
         virtual const Vector2*              getDataVector2fArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
@@ -192,14 +219,16 @@ namespace ramses_internal
         virtual bool                        isTextureSamplerAllocated       (TextureSamplerHandle handle) const override final;
         virtual UInt32                      getTextureSamplerCount          () const override final;
         virtual const TextureSampler&       getTextureSampler               (TextureSamplerHandle handle) const override final;
+        const TextureSamplerMemoryPool&         getTextureSamplers              () const;
 
         //Animation system
-        virtual AnimationSystemHandle   addAnimationSystem              (IAnimationSystem* animationSystem, AnimationSystemHandle externalHandle = AnimationSystemHandle::Invalid()) override;
-        virtual void                    removeAnimationSystem           (AnimationSystemHandle animSystemHandle) override;
-        virtual IAnimationSystem*       getAnimationSystem              (AnimationSystemHandle animSystemHandle) override final;
-        virtual const IAnimationSystem* getAnimationSystem              (AnimationSystemHandle animSystemHandle) const override final;
-        virtual bool                    isAnimationSystemAllocated      (AnimationSystemHandle animSystemHandle) const override final;
-        virtual UInt32                  getAnimationSystemCount         () const override final;
+        virtual AnimationSystemHandle       addAnimationSystem              (IAnimationSystem* animationSystem, AnimationSystemHandle externalHandle = AnimationSystemHandle::Invalid()) override;
+        virtual void                        removeAnimationSystem           (AnimationSystemHandle animSystemHandle) override;
+        virtual IAnimationSystem*           getAnimationSystem              (AnimationSystemHandle animSystemHandle) override final;
+        virtual const IAnimationSystem*     getAnimationSystem              (AnimationSystemHandle animSystemHandle) const override final;
+        virtual bool                        isAnimationSystemAllocated      (AnimationSystemHandle animSystemHandle) const override final;
+        virtual UInt32                      getAnimationSystemCount         () const override final;
+        const AnimationSystemMemoryPool&    getAnimationSystems             () const;
 
         // Render groups
         virtual RenderGroupHandle       allocateRenderGroup             (UInt32 renderableCount = 0u, UInt32 nestedGroupCount = 0u, RenderGroupHandle groupHandle = RenderGroupHandle::Invalid()) override;
@@ -211,6 +240,7 @@ namespace ramses_internal
         virtual void                    addRenderGroupToRenderGroup     (RenderGroupHandle groupHandleParent, RenderGroupHandle groupHandleChild, Int32 order) override;
         virtual void                    removeRenderGroupFromRenderGroup(RenderGroupHandle groupHandleParent, RenderGroupHandle groupHandleChild) override;
         virtual const RenderGroup&      getRenderGroup                  (RenderGroupHandle groupHandle) const override final;
+        const RenderGroupMemoryPool&    getRenderGroups                 () const;
 
         //Render pass
         virtual RenderPassHandle        allocateRenderPass              (UInt32 renderGroupCount = 0u, RenderPassHandle passHandle = RenderPassHandle::Invalid()) override;
@@ -228,6 +258,7 @@ namespace ramses_internal
         virtual void                    addRenderGroupToRenderPass      (RenderPassHandle passHandle, RenderGroupHandle groupHandle, Int32 order) override;
         virtual void                    removeRenderGroupFromRenderPass (RenderPassHandle passHandle, RenderGroupHandle groupHandle) override;
         virtual const RenderPass&       getRenderPass                   (RenderPassHandle passHandle) const override final;
+        const RenderPassMemoryPool&     getRenderPasses                 () const;
 
         //Blit pass
         virtual BlitPassHandle          allocateBlitPass                (RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle = BlitPassHandle::Invalid()) override;
@@ -238,6 +269,7 @@ namespace ramses_internal
         virtual void                    setBlitPassEnabled              (BlitPassHandle passHandle, bool isEnabled) override;
         virtual void                    setBlitPassRegions              (BlitPassHandle passHandle, const PixelRectangle& sourceRegion, const PixelRectangle& destinationRegion) override;
         virtual const BlitPass&         getBlitPass                     (BlitPassHandle passHandle) const override final;
+        const BlitPassMemoryPool&       getBlitPasses                   () const;
 
         //Pickable object
         virtual PickableObjectHandle    allocatePickableObject          (DataBufferHandle geometryHandle, NodeHandle nodeHandle, PickableObjectId id, PickableObjectHandle pickableHandle = PickableObjectHandle::Invalid()) override;
@@ -248,6 +280,7 @@ namespace ramses_internal
         virtual void                    setPickableObjectCamera         (PickableObjectHandle pickableHandle, CameraHandle cameraHandle) override;
         virtual void                    setPickableObjectEnabled        (PickableObjectHandle pickableHandel, bool isEnabled) override;
         virtual const PickableObject&   getPickableObject               (PickableObjectHandle pickableHandle) const override final;
+        const PickableObjectMemoryPool& getPickableObjects              () const;
 
         // Render targets
         virtual RenderTargetHandle      allocateRenderTarget            (RenderTargetHandle targetHandle = RenderTargetHandle::Invalid()) override;
@@ -257,6 +290,7 @@ namespace ramses_internal
         virtual void                    addRenderTargetRenderBuffer     (RenderTargetHandle targetHandle, RenderBufferHandle bufferHandle) override;
         virtual UInt32                  getRenderTargetRenderBufferCount(RenderTargetHandle targetHandle) const override final;
         virtual RenderBufferHandle      getRenderTargetRenderBuffer     (RenderTargetHandle targetHandle, UInt32 bufferIndex) const override final;
+        const RenderTargetMemoryPool&   getRenderTargets                () const;
 
         // Render buffers
         virtual RenderBufferHandle      allocateRenderBuffer            (const RenderBuffer& renderBuffer, RenderBufferHandle handle = RenderBufferHandle::Invalid()) override;
@@ -264,6 +298,7 @@ namespace ramses_internal
         virtual bool                    isRenderBufferAllocated         (RenderBufferHandle handle) const override final;
         virtual UInt32                  getRenderBufferCount            () const override final;
         virtual const RenderBuffer&     getRenderBuffer                 (RenderBufferHandle handle) const override final;
+        const RenderBufferMemoryPool&   getRenderBuffers                () const;
 
         // Stream textures
         virtual StreamTextureHandle     allocateStreamTexture           (uint32_t streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle = StreamTextureHandle::Invalid()) override;
@@ -272,6 +307,7 @@ namespace ramses_internal
         virtual UInt32                  getStreamTextureCount           () const override final;
         virtual void                    setForceFallbackImage           (StreamTextureHandle streamTextureHandle, bool forceFallbackImage) override;
         virtual const StreamTexture&    getStreamTexture                (StreamTextureHandle streamTextureHandle) const override final;
+        const StreamTextureMemoryPool&      getStreamTextures               () const;
 
         // Data buffers
         virtual DataBufferHandle        allocateDataBuffer              (EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle = DataBufferHandle::Invalid()) override;
@@ -280,6 +316,7 @@ namespace ramses_internal
         virtual void                    updateDataBuffer                (DataBufferHandle handle, UInt32 offsetInBytes, UInt32 dataSizeInBytes, const Byte* data) override;
         virtual bool                    isDataBufferAllocated           (DataBufferHandle handle) const override final;
         virtual const GeometryDataBuffer& getDataBuffer                 (DataBufferHandle handle) const override final;
+        const DataBufferMemoryPool&         getDataBuffers                  () const;
 
         //Texture buffers
         virtual TextureBufferHandle     allocateTextureBuffer           (ETextureFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle = TextureBufferHandle::Invalid()) override;
@@ -288,6 +325,7 @@ namespace ramses_internal
         virtual UInt32                  getTextureBufferCount           () const override final;
         virtual void                    updateTextureBuffer             (TextureBufferHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const Byte* data) override;
         virtual const TextureBuffer&    getTextureBuffer                (TextureBufferHandle handle) const override final;
+        const TextureBufferMemoryPool&      getTextureBuffers               () const;
 
         virtual DataSlotHandle          allocateDataSlot                (const DataSlot& dataSlot, DataSlotHandle handle = DataSlotHandle::Invalid()) override;
         virtual void                    releaseDataSlot                 (DataSlotHandle handle) override;
@@ -295,6 +333,7 @@ namespace ramses_internal
         virtual bool                    isDataSlotAllocated             (DataSlotHandle handle) const override final;
         virtual UInt32                  getDataSlotCount                () const override final;
         virtual const DataSlot&         getDataSlot                     (DataSlotHandle handle) const override final;
+        const DataSlotMemoryPool&       getDataSlots                    () const;
 
         virtual SceneReferenceHandle    allocateSceneReference          (SceneId sceneId, SceneReferenceHandle handle = {}) override;
         virtual void                    releaseSceneReference           (SceneReferenceHandle handle) override;
@@ -304,6 +343,7 @@ namespace ramses_internal
         virtual bool                    isSceneReferenceAllocated       (SceneReferenceHandle handle) const override final;
         virtual UInt32                  getSceneReferenceCount          () const override final;
         virtual const SceneReference&   getSceneReference               (SceneReferenceHandle handle) const override final;
+        const SceneReferenceMemoryPool& getSceneReferences              () const;
 
         virtual SceneSizeInformation    getSceneSizeInformation         () const final override;
 
@@ -319,65 +359,26 @@ namespace ramses_internal
         template <typename TYPE>
         void setInstanceDataInternal(DataInstanceHandle dataInstanceHandle, DataFieldHandle fieldId, UInt32 elementCount, const TYPE* newValue);
 
-        typedef MEMORYPOOL<TopologyNode, NodeHandle> NodeMemory;
-        NodeMemory                  m_nodes;
-
-        typedef MEMORYPOOL<Camera, CameraHandle> CameraMemoryType;
-        CameraMemoryType            m_cameras;
-
-        typedef MEMORYPOOL<Renderable, RenderableHandle> RenderableMemoryType;
-        RenderableMemoryType        m_renderables;
-
-        typedef MEMORYPOOL<RenderState, RenderStateHandle> StateMemoryType;
-        StateMemoryType             m_states;
-
-        typedef MEMORYPOOL<TopologyTransform, TransformHandle> TransformMemory;
-        TransformMemory             m_transforms;
-
-        typedef MEMORYPOOL<DataLayout, DataLayoutHandle> DataLayoutMemory;
-        DataLayoutMemory            m_dataLayoutMemory;
-
-        typedef MEMORYPOOL<DataInstance, DataInstanceHandle> DataInstanceMemory;
-        DataInstanceMemory          m_dataInstanceMemory;
-
-        typedef MEMORYPOOL<RenderGroup, RenderGroupHandle> RenderGroupMemoryType;
-        RenderGroupMemoryType       m_renderGroups;
-
-        typedef MEMORYPOOL<RenderPass, RenderPassHandle> RenderPassMemoryType;
-        RenderPassMemoryType        m_renderPasses;
-
-        typedef MEMORYPOOL<BlitPass, BlitPassHandle> BlitPassMemoryType;
-        BlitPassMemoryType          m_blitPasses;
-
-        typedef MEMORYPOOL<PickableObject, PickableObjectHandle> PickableObjectMemoryType;
-        PickableObjectMemoryType    m_pickableObjects;
-
-        typedef MEMORYPOOL<RenderTarget, RenderTargetHandle> RenderTargetMemoryType;
-        RenderTargetMemoryType      m_renderTargets;
-
-        typedef MEMORYPOOL<RenderBuffer, RenderBufferHandle> RenderBufferMemoryType;
-        RenderBufferMemoryType      m_renderBuffers;
-
-        typedef MEMORYPOOL<TextureSampler, TextureSamplerHandle> TextureSamplerMemory;
-        TextureSamplerMemory        m_textureSamplers;
-
-        typedef MEMORYPOOL<StreamTexture, StreamTextureHandle> StreamTextureMemory;
-        StreamTextureMemory         m_streamTextures;
-
-        typedef MEMORYPOOL<GeometryDataBuffer, DataBufferHandle> DataBufferMemory;
-        DataBufferMemory            m_dataBuffers;
-
-        typedef MEMORYPOOL<TextureBuffer, TextureBufferHandle> TextureBufferMemory;
-        TextureBufferMemory         m_textureBuffers;
-
-        typedef MEMORYPOOL<DataSlot, DataSlotHandle> DataSlotMemoryType;
-        DataSlotMemoryType          m_dataSlots;
-
-        typedef MEMORYPOOL<SceneReference, SceneReferenceHandle> SceneReferenceMemoryType;
-        SceneReferenceMemoryType    m_sceneReferences;
-
-        typedef MEMORYPOOL<IAnimationSystem*, AnimationSystemHandle> AnimationSystemMemoryType;
-        AnimationSystemMemoryType   m_animationSystems;
+        NodeMemoryPool              m_nodes;
+        CameraMemoryPool            m_cameras;
+        RenderableMemoryPool        m_renderables;
+        RenderStateMemoryPool       m_states;
+        TransformMemoryPool         m_transforms;
+        DataLayoutMemoryPool        m_dataLayoutMemory;
+        DataInstanceMemoryPool      m_dataInstanceMemory;
+        RenderGroupMemoryPool       m_renderGroups;
+        RenderPassMemoryPool        m_renderPasses;
+        BlitPassMemoryPool          m_blitPasses;
+        PickableObjectMemoryPool    m_pickableObjects;
+        RenderTargetMemoryPool      m_renderTargets;
+        RenderBufferMemoryPool      m_renderBuffers;
+        TextureSamplerMemoryPool    m_textureSamplers;
+        StreamTextureMemoryPool     m_streamTextures;
+        DataBufferMemoryPool        m_dataBuffers;
+        TextureBufferMemoryPool     m_textureBuffers;
+        DataSlotMemoryPool          m_dataSlots;
+        SceneReferenceMemoryPool    m_sceneReferences;
+        AnimationSystemMemoryPool   m_animationSystems;
 
         const String                m_name;
         const SceneId               m_sceneId;
@@ -546,6 +547,148 @@ namespace ramses_internal
     inline const DataLayout& SceneT<MEMORYPOOL>::getDataLayout(DataLayoutHandle layoutHandle) const
     {
         return *m_dataLayoutMemory.getMemory(layoutHandle);
+    }
+
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline
+    const typename SceneT<MEMORYPOOL>::RenderableMemoryPool& SceneT<MEMORYPOOL>::getRenderables() const
+    {
+        return m_renderables;
+    }
+
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline
+    const typename SceneT<MEMORYPOOL>::RenderStateMemoryPool& SceneT<MEMORYPOOL>::getRenderStates() const
+    {
+        return m_states;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline
+    const typename SceneT<MEMORYPOOL>::CameraMemoryPool& SceneT<MEMORYPOOL>::getCameras() const
+    {
+        return m_cameras;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline
+    const typename SceneT<MEMORYPOOL>::NodeMemoryPool& SceneT<MEMORYPOOL>::getNodes() const
+    {
+        return m_nodes;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline
+    const typename SceneT<MEMORYPOOL>::TransformMemoryPool& SceneT<MEMORYPOOL>::getTransforms() const
+    {
+        return m_transforms;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline
+    const typename SceneT<MEMORYPOOL>::DataLayoutMemoryPool& SceneT<MEMORYPOOL>::getDataLayouts() const
+    {
+        return m_dataLayoutMemory;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline
+    const typename SceneT<MEMORYPOOL>::DataInstanceMemoryPool& SceneT<MEMORYPOOL>::getDataInstances() const
+    {
+        return m_dataInstanceMemory;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline
+    const typename SceneT<MEMORYPOOL>::TextureSamplerMemoryPool& SceneT<MEMORYPOOL>::getTextureSamplers() const
+    {
+        return m_textureSamplers;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline
+    const typename SceneT<MEMORYPOOL>::AnimationSystemMemoryPool& SceneT<MEMORYPOOL>::getAnimationSystems() const
+    {
+        return m_animationSystems;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline
+    const typename SceneT<MEMORYPOOL>::RenderGroupMemoryPool& SceneT<MEMORYPOOL>::getRenderGroups() const
+    {
+        return m_renderGroups;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline
+    const typename SceneT<MEMORYPOOL>::RenderPassMemoryPool& SceneT<MEMORYPOOL>::getRenderPasses() const
+    {
+        return m_renderPasses;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline
+    const typename SceneT<MEMORYPOOL>::BlitPassMemoryPool& SceneT<MEMORYPOOL>::getBlitPasses() const
+    {
+        return m_blitPasses;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline
+    const typename SceneT<MEMORYPOOL>::PickableObjectMemoryPool& SceneT<MEMORYPOOL>::getPickableObjects() const
+    {
+        return m_pickableObjects;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline
+    const typename SceneT<MEMORYPOOL>::RenderTargetMemoryPool& SceneT<MEMORYPOOL>::getRenderTargets() const
+    {
+        return m_renderTargets;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline
+    const typename SceneT<MEMORYPOOL>::RenderBufferMemoryPool& SceneT<MEMORYPOOL>::getRenderBuffers() const
+    {
+        return m_renderBuffers;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline
+    const typename SceneT<MEMORYPOOL>::StreamTextureMemoryPool& SceneT<MEMORYPOOL>::getStreamTextures() const
+    {
+        return m_streamTextures;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline
+    const typename SceneT<MEMORYPOOL>::DataBufferMemoryPool& SceneT<MEMORYPOOL>::getDataBuffers() const
+    {
+        return m_dataBuffers;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline
+    const typename SceneT<MEMORYPOOL>::TextureBufferMemoryPool& SceneT<MEMORYPOOL>::getTextureBuffers() const
+    {
+        return m_textureBuffers;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline
+    const typename SceneT<MEMORYPOOL>::DataSlotMemoryPool& SceneT<MEMORYPOOL>::getDataSlots() const
+    {
+        return m_dataSlots;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline
+    const typename SceneT<MEMORYPOOL>::SceneReferenceMemoryPool& SceneT<MEMORYPOOL>::getSceneReferences() const
+    {
+        return m_sceneReferences;
     }
 }
 

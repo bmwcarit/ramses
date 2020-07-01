@@ -22,6 +22,7 @@
 #include "Collections/Vector.h"
 #include "Collections/HashMap.h"
 #include <map>
+#include <unordered_map>
 
 namespace ramses_internal
 {
@@ -75,8 +76,8 @@ namespace ramses_internal
         void                        setWarpingMeshData(DisplayHandle display, const WarpingMeshData& meshData);
 
         virtual void                setClearColor(DisplayHandle displayHandle, DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor);
-        void                        scheduleScreenshot(const ScreenshotInfo& screenshot);
-        void                        dispatchProcessedScreenshots(ScreenshotInfoVector& screenshots);
+        void                        scheduleScreenshot(DisplayHandle display, DeviceResourceHandle renderTargetHandle, ScreenshotInfo&& screenshot);
+        std::vector<std::pair<DeviceResourceHandle, ScreenshotInfo>> dispatchProcessedScreenshots(DisplayHandle display);
 
         Bool                        hasAnyBufferWithInterruptedRendering() const;
         void                        resetRenderInterruptState();
@@ -112,7 +113,7 @@ namespace ramses_internal
         void renderToOffscreenBuffers(DisplayHandle displayHandle, DisplayHandle& activeDisplay);
         void renderToInterruptibleOffscreenBuffers(DisplayHandle displayHandle, DisplayHandle& activeDisplay, Bool& interrupted);
         IDisplayController* createDisplayControllerFromConfig(const DisplayConfig& config, DisplayEventHandler& displayEventHandler);
-        void processScheduledScreenshots(DisplayHandle display, IDisplayController& controller, DisplayHandle& activeDisplay);
+        void processScheduledScreenshots(DeviceResourceHandle renderTargetHandle, IDisplayController& controller, DisplayHandle displayHandle);
         Bool hasAnyOffscreenBufferToRerender(DisplayHandle display, Bool interruptible) const;
         void onSceneWasRendered(const RendererCachedScene& scene);
 
@@ -125,6 +126,7 @@ namespace ramses_internal
             Bool                 couldRenderLastFrame;
             DeviceResourceHandle frameBufferDeviceHandle;
             DisplaySetup         buffersSetup;
+            std::unordered_map<DeviceResourceHandle, ScreenshotInfo> screenshots;
         };
         using Displays = std::map<DisplayHandle, DisplayInfo>;
 
@@ -145,9 +147,6 @@ namespace ramses_internal
         RendererInterruptState                 m_rendererInterruptState;
         const FrameTimer&                      m_frameTimer;
         SceneExpirationMonitor&                m_expirationMonitor;
-
-        HashMap<DisplayHandle, ScreenshotInfoVector> m_scheduledScreenshots;
-        ScreenshotInfoVector m_processedScreenshots;
 
         using FrameProfilerMap = HashMap<DisplayHandle, FrameProfileRenderer*>;
         FrameProfilerMap m_frameProfileRenderer;

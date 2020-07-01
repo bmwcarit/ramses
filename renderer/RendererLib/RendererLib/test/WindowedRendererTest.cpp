@@ -131,94 +131,18 @@ TEST_F(AWindowedRenderer, canCreateAndDestroyDisplayInSingleLoop)
     EXPECT_EQ(ERendererEventType_DisplayDestroyed, events[1].eventType);
 }
 
-TEST_F(AWindowedRendererWithDisplay, takeScreenshotGeneratesSuccessEvent)
+TEST_F(AWindowedRendererWithDisplay, canProcessScheduledScreenshots)
 {
-    m_commandBuffer.readPixels(displayHandle, "", false, 0u, 0u, WindowMock::FakeWidth, WindowMock::FakeHeight);
+    m_commandBuffer.readPixels(displayHandle, {}, "", false, 0u, 0u, WindowMock::FakeWidth, WindowMock::FakeHeight);
     updateAndRender();
 
     RendererEventVector events;
     m_renderer.dispatchRendererEvents(events);
     ASSERT_EQ(1u, events.size());
     EXPECT_EQ(displayHandle, events[0].displayHandle);
+    EXPECT_FALSE(events[0].offscreenBuffer.isValid());
     EXPECT_EQ(WindowMock::FakeWidth * WindowMock::FakeHeight * 4u, events[0].pixelData.size());
     EXPECT_EQ(ERendererEventType_ReadPixelsFromFramebuffer, events[0].eventType);
-}
-
-TEST_F(AWindowedRendererWithDisplay, takeScreenshotGeneratesFailEvent)
-{
-    // take screenshot bigger than display!
-    m_commandBuffer.readPixels(displayHandle, "", false, 0u, 0u, WindowMock::FakeWidth, WindowMock::FakeHeight + 1u);
-    updateAndRender();
-
-    RendererEventVector events;
-    m_renderer.dispatchRendererEvents(events);
-    ASSERT_EQ(1u, events.size());
-    EXPECT_EQ(displayHandle, events[0].displayHandle);
-    EXPECT_EQ(0u, events[0].pixelData.size());
-    EXPECT_EQ(ERendererEventType_ReadPixelsFromFramebufferFailed, events[0].eventType);
-}
-
-TEST_F(AWindowedRendererWithDisplay, saveScreenshotToFileWithFullscreenDoesNotGenerateEvent)
-{
-    const String filename = "testScreenshot.png";
-
-    m_commandBuffer.readPixels(displayHandle, filename, true, 0u, 0u, 1u, 1u);
-    updateAndRender();
-
-    // expect file has been written
-    File screenshotFile(filename);
-    EXPECT_TRUE(screenshotFile.exists());
-
-    // expect correct fullScreen size
-    {
-        Image bitmap;
-        bitmap.loadFromFilePNG(filename);
-        const UInt32 displayWidth = WindowMock::FakeWidth;
-        const UInt32 displayHeight = WindowMock::FakeHeight;
-        EXPECT_EQ(displayWidth, bitmap.getWidth());
-        EXPECT_EQ(displayHeight, bitmap.getHeight());
-    }
-    EXPECT_TRUE(screenshotFile.remove());
-
-    // Do not expect a renderer event
-    RendererEventVector events;
-    m_renderer.dispatchRendererEvents(events);
-    EXPECT_EQ(0u, events.size());
-}
-
-TEST_F(AWindowedRendererWithDisplay, saveScreenshotToFileOnNotExistentDisplayDoesNotGenerateEvent)
-{
-    const String filename = "failedTestScreenshot.png";
-
-    const DisplayHandle wrongDisplayHandle(23u);
-
-    m_commandBuffer.readPixels(wrongDisplayHandle, filename, false, 0u, 0u, WindowMock::FakeWidth, WindowMock::FakeHeight);
-    updateAndRender();
-
-    // expect no file has been written
-    File screenshotFile(filename);
-    EXPECT_FALSE(screenshotFile.exists());
-
-    RendererEventVector events;
-    m_renderer.dispatchRendererEvents(events);
-    EXPECT_EQ(0u, events.size());
-}
-
-TEST_F(AWindowedRendererWithDisplay, saveScreenshotToFileFailsAndDoesNotGenerateEvent)
-{
-    const String filename = "failedTestScreenshot.png";
-
-    m_commandBuffer.readPixels(displayHandle, filename, false, 0u, 0u, WindowMock::FakeWidth, WindowMock::FakeHeight + 1u);
-    updateAndRender();
-
-    // expect no file has been written
-    File screenshotFile(filename);
-    EXPECT_FALSE(screenshotFile.exists());
-
-    // Do not expect a renderer event
-    RendererEventVector events;
-    m_renderer.dispatchRendererEvents(events);
-    EXPECT_EQ(0u, events.size());
 }
 
 TEST_F(AWindowedRenderer, updatesSystemCompositorControllerInUpdate)

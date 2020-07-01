@@ -174,6 +174,7 @@ namespace ramses_internal
         DEFINE_COMMAND_TYPE(ReadPixelsCommand, ERendererCommandType_ReadPixels);
 
         DisplayHandle           displayHandle;
+        OffscreenBufferHandle   offscreenBufferHandle;
         UInt32                  x;
         UInt32                  y;
         UInt32                  width;

@@ -10,6 +10,7 @@
 #define RAMSES_MEMORYPOOL_H
 
 #include "Utils/HandlePool.h"
+#include "Utils/MemoryPoolIterator.h"
 #include <type_traits>
 #include <cassert>
 
@@ -19,8 +20,11 @@ namespace ramses_internal
     class MemoryPool final
     {
     public:
-        typedef OBJECTTYPE object_type;
-        typedef HANDLE handle_type;
+        using object_type       = OBJECTTYPE;
+        using handle_type       = HANDLE;
+
+        using iterator          = memory_pool_iterator<MemoryPool>;
+        using const_iterator    = const_memory_pool_iterator<MemoryPool>;
 
         explicit MemoryPool(UInt32 size = 0);
 
@@ -40,6 +44,13 @@ namespace ramses_internal
         void                            preallocateSize(UInt32 size);
 
         static HANDLE                   InvalidMemoryHandle();
+
+        iterator                        begin();
+        iterator                        end();
+        const_iterator                  begin() const;
+        const_iterator                  end() const;
+        const_iterator                  cbegin() const;
+        const_iterator                  cend() const;
 
         static_assert(std::is_move_constructible<OBJECTTYPE>::value && std::is_move_assignable<OBJECTTYPE>::value, "OBJECTTYPE must be movable");
     protected:
@@ -137,6 +148,48 @@ namespace ramses_internal
     bool MemoryPool<OBJECTTYPE, HANDLE>::isAllocated(HANDLE handle) const
     {
         return m_handlePool.isAcquired(handle);
+    }
+
+    template <typename OBJECTTYPE, typename HANDLE>
+    inline
+    typename MemoryPool<OBJECTTYPE, HANDLE>::iterator MemoryPool<OBJECTTYPE, HANDLE>::begin()
+    {
+        return iterator(*this, HANDLE(0u));
+    }
+
+    template <typename OBJECTTYPE, typename HANDLE>
+    inline
+    typename MemoryPool<OBJECTTYPE, HANDLE>::iterator MemoryPool<OBJECTTYPE, HANDLE>::end()
+    {
+        return iterator(*this, HANDLE(getTotalCount()));
+    }
+
+    template <typename OBJECTTYPE, typename HANDLE>
+    inline
+    typename MemoryPool<OBJECTTYPE, HANDLE>::const_iterator MemoryPool<OBJECTTYPE, HANDLE>::begin() const
+    {
+        return const_iterator(*this, HANDLE(0u));
+    }
+
+    template <typename OBJECTTYPE, typename HANDLE>
+    inline
+    typename MemoryPool<OBJECTTYPE, HANDLE>::const_iterator MemoryPool<OBJECTTYPE, HANDLE>::end() const
+    {
+        return const_iterator(*this, HANDLE(getTotalCount()));
+    }
+
+    template <typename OBJECTTYPE, typename HANDLE>
+    inline
+    typename MemoryPool<OBJECTTYPE, HANDLE>::const_iterator MemoryPool<OBJECTTYPE, HANDLE>::cbegin() const
+    {
+        return const_iterator(*this, HANDLE(0u));
+    }
+
+    template <typename OBJECTTYPE, typename HANDLE>
+    inline
+    typename MemoryPool<OBJECTTYPE, HANDLE>::const_iterator MemoryPool<OBJECTTYPE, HANDLE>::cend() const
+    {
+        return const_iterator(*this, HANDLE(getTotalCount()));
     }
 }
 

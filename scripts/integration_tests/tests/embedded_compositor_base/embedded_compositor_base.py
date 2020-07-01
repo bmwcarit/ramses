@@ -54,25 +54,32 @@ class EmbeddedCompositorBase(test_classes.OnAllDefaultTargetsTest):
         gearsArguments = "-I {} --still".format(iviID)
         if alternateColors:
             gearsArguments += " --alternateColors"
-        self.wlClient = self.target.start_application("ivi-gears", gearsArguments,
+        self.wlClientIviGears = self.target.start_application("ivi-gears", gearsArguments,
                                                       binaryDirectoryOnTarget=self.target.baseWorkingDirectory,
                                                       env={"WAYLAND_DISPLAY" : "wayland-10"})
-        self.checkThatApplicationWasStarted(self.wlClient)
-        self.addCleanup(self.target.kill_application, self.wlClient)
+        self.checkThatApplicationWasStarted(self.wlClientIviGears)
+        self.addCleanup(self.target.kill_application, self.wlClientIviGears)
         surfaceFound = self.renderer.wait_for_msg_in_stdout(self.watchSurfaceFound,
                                                             "embedded-compositing client surface found for existing streamtexture: {}".format(iviID))
         self.assertTrue(surfaceFound, msg="Surface was not found by renderer")
 
     def _killIviGears(self):
         self.watchSurfaceIsGone = self.renderer.start_watch_stdout()
-        self.target.kill_application(self.wlClient)
+        self.target.kill_application(self.wlClientIviGears)
+        surfaceIsGone = self.renderer.wait_for_msg_in_stdout(self.watchSurfaceIsGone,
+                                                            "embedded-compositing client surface destroyed")
+        self.assertTrue(surfaceIsGone, msg="Surface was not destroyed")
+
+    def _killDmaBufExample(self):
+        self.watchSurfaceIsGone = self.renderer.start_watch_stdout()
+        self.target.kill_application(self.wlClientDmaBuf)
         surfaceIsGone = self.renderer.wait_for_msg_in_stdout(self.watchSurfaceIsGone,
                                                             "embedded-compositing client surface destroyed")
         self.assertTrue(surfaceIsGone, msg="Surface was not destroyed")
 
     def _stopIviGears(self):
         self.watchSurfaceIsGone = self.renderer.start_watch_stdout()
-        self.target.execute_on_target("killall -SIGINT " + self.wlClient.name)
+        self.target.execute_on_target("killall -SIGINT " + self.wlClientIviGears.name)
         surfaceIsGone = self.renderer.wait_for_msg_in_stdout(self.watchSurfaceIsGone,
                                                             "embedded-compositing client surface destroyed")
         self.assertTrue(surfaceIsGone, msg="Surface was not destroyed")

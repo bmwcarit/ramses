@@ -77,21 +77,14 @@ namespace ramses_internal
         m_resource->disownWaylandResource();
     }
 
-    void LinuxDmabufConnection::DmabufDestroyCallback(wl_client* client, wl_resource* dmabufConnectionResource)
+    void LinuxDmabufConnection::DmabufDestroyCallback(wl_client* /*client*/, wl_resource* dmabufConnectionResource)
     {
-        UNUSED(client)
-
         LinuxDmabufConnection* connection = static_cast<LinuxDmabufConnection*>(wl_resource_get_user_data(dmabufConnectionResource));
         delete connection;
     }
 
-    void LinuxDmabufConnection::DmabufCreateParamsCallback(wl_client* client, wl_resource* dmabufConnectionResource, uint32_t id)
+    void LinuxDmabufConnection::DmabufCreateParamsCallback(wl_client* /*client*/, wl_resource* dmabufConnectionResource, uint32_t id)
     {
-        // TODO
-        UNUSED(client)
-        UNUSED(dmabufConnectionResource)
-        UNUSED(id)
-
         LinuxDmabufConnection* connection = static_cast<LinuxDmabufConnection*>(wl_resource_get_user_data(dmabufConnectionResource));
         connection->createParams(id);
     }

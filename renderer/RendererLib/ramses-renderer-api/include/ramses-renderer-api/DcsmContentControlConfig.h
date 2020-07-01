@@ -17,9 +17,8 @@ namespace ramses
     /**
     * @brief Container with parameters to use to instantiate #ramses::DcsmContentControl.
     *
-    * Dcsm categories are considered static within application session, DcsmContentControlConfig
-    * is the place to put all the valid categories that should be used.
-    * #ramses::DcsmContentControl will then accept Dcsm content offers for these categories (see #ramses::DcsmContentControl for more info).
+    * Dcsm categories may also be added at runtime via #ramses::DcsmContentControl
+    * #ramses::DcsmContentControl will then accept Dcsm content offers for categories from config or added later (see #ramses::DcsmContentControl for more info).
     *
     * Note: modifying/adding any parameter after instantiating #ramses::DcsmContentControl will have no effect.
     */

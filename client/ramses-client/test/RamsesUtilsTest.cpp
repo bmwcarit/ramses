@@ -128,6 +128,35 @@ namespace ramses
         EXPECT_TRUE(nullptr == texture);
     }
 
+    TEST_F(ARamsesUtilsTest, canSaveImageBufferToPng)
+    {
+        const std::string pngPath = "rgba8.png";
+        const uint32_t width = 2u;
+        const uint32_t height = 2u;
+        const std::vector<uint8_t> rgba8Data =
+        {
+            0xff, 0x00, 0x00, 0xff,
+            0x00, 0xff, 0x00, 0xff,
+            0x00, 0x00, 0xff, 0xff,
+            0xff, 0xff, 0xff, 0x7f
+        };
+        EXPECT_TRUE(RamsesUtils::SaveImageBufferToPng(pngPath, rgba8Data, width, height));
+
+        Texture2D* texture = RamsesUtils::CreateTextureResourceFromPng(pngPath.c_str(), client);
+
+        EXPECT_TRUE(texture);
+        EXPECT_EQ(width, texture->getWidth());
+        EXPECT_EQ(height, texture->getHeight());
+    }
+
+    TEST_F(ARamsesUtilsTest, failsSavingImageBufferToPng)
+    {
+        const std::vector<uint8_t> emptyTexureData;
+        const uint32_t wrongWidth = 5u;
+        const uint32_t wrongHeight = 3u;
+        EXPECT_FALSE(RamsesUtils::SaveImageBufferToPng("invalidTexture.png", emptyTexureData, wrongWidth, wrongHeight));
+    }
+
     TEST_F(ARamsesUtilsTest, generateMipMapsForTexture2D)
     {
         const uint8_t pixelSize = 1u;

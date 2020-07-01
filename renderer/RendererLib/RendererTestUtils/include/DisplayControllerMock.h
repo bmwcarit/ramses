@@ -38,7 +38,7 @@ public:
     MOCK_METHOD(SceneRenderExecutionIterator, renderScene, (const RendererCachedScene&, DeviceResourceHandle, const Viewport&, const SceneRenderExecutionIterator&, const FrameTimer*), (override));
     MOCK_METHOD(void, executePostProcessing, (), (override));
     MOCK_METHOD(DeviceResourceHandle, getDisplayBuffer, (), (const, override));
-    MOCK_METHOD(ramses_internal::Bool, readPixels, (UInt32 x, UInt32 y, UInt32 width, UInt32 height, std::vector<UInt8>& dataOut), (override));
+    MOCK_METHOD(void, readPixels, (DeviceResourceHandle framebufferHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height, std::vector<UInt8>& dataOut), (override));
     MOCK_METHOD(void, setProjectionParams, (const ProjectionParams& params), (override));
     MOCK_METHOD(bool, isWarpingEnabled, (), (const, override));
     MOCK_METHOD(void, setWarpingMeshData, (const WarpingMeshData& meshData), (override));
@@ -54,9 +54,6 @@ public:
     MOCK_METHOD(IRenderBackend&, getRenderBackend, (), (const, override));
     MOCK_METHOD(IEmbeddedCompositingManager&, getEmbeddedCompositingManager, (), (override));
     MOCK_METHOD(void, validateRenderingStatusHealthy, (), (const, override));
-
-private:
-    static ramses_internal::Bool ResizePixelBuffer(UInt32 x, UInt32 y, UInt32 width, UInt32 height, std::vector<UInt8>& dataOut);
 };
 }
 #endif

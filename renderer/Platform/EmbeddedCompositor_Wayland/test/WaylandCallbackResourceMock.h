@@ -21,7 +21,7 @@ namespace ramses_internal
         MOCK_METHOD(void, postError, (uint32_t code, const String& message), (override));
         MOCK_METHOD(void*, getUserData, (), (override));
         MOCK_METHOD(void, setImplementation, (const void* implementation, void* data, IWaylandResourceDestroyFuncT destroy), (override));
-        MOCK_METHOD(void, addDestroyListener, (WaylandListener* listener), (override));
+        MOCK_METHOD(void, addDestroyListener, (wl_listener* listener), (override));
         MOCK_METHOD(void*, getWaylandNativeResource, (), (override));
         MOCK_METHOD(void, callbackSendDone, (uint32_t time), (override));
         MOCK_METHOD(void, disownWaylandResource, (), (override));

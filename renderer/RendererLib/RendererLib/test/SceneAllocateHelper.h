@@ -50,11 +50,6 @@ namespace ramses_internal
         PickableObjectHandle        allocatePickableObject(DataBufferHandle geometryHandle, NodeHandle nodeHandle, PickableObjectId id, PickableObjectHandle pickableHandle = PickableObjectHandle::Invalid());
         SceneReferenceHandle        allocateSceneReference(SceneId sceneId, SceneReferenceHandle handle = {});
 
-        IScene& getScene()
-        {
-            return m_scene;
-        }
-
     private:
         template <typename HANDLE>
         HANDLE preallocateHandle(HANDLE handle);

@@ -34,6 +34,7 @@
 #include "RendererEventCollector.h"
 #include "Components/FlushTimeInformation.h"
 #include "Utils/LogMacros.h"
+#include "Utils/Image.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "PlatformAbstraction/Macros.h"
 
@@ -478,7 +479,7 @@ namespace ramses_internal
                     " with sceneVersionTag " << pendingFlush.versionTag);
                 m_rendererEventCollector.addSceneFlushEvent(ERendererEventType_SceneFlushed, sceneID, pendingFlush.versionTag, resourcesStatus);
             }
-
+            stagingInfo.lastAppliedVersionTag = pendingFlush.versionTag;
             m_expirationMonitor.onFlushApplied(sceneID, pendingFlush.timeInfo.expirationTimestamp, pendingFlush.versionTag, pendingFlush.flushIndex);
             m_renderer.getStatistics().flushApplied(sceneID);
 
@@ -1061,6 +1062,54 @@ namespace ramses_internal
         m_renderer.setClearColor(display, bufferDeviceHandle, clearColor);
     }
 
+    void RendererSceneUpdater::handleReadPixels(DisplayHandle display, OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo)
+    {
+        bool readPixelsFailed = false;
+        DeviceResourceHandle renderTargetHandle{};
+        if (m_renderer.hasDisplayController(display))
+        {
+            const auto& displayResourceManager = **m_displayResourceManagers.get(display);
+            const auto& displayController = m_renderer.getDisplayController(display);
+
+            if (buffer.isValid())
+                renderTargetHandle = displayResourceManager.getOffscreenBufferDeviceHandle(buffer);
+            else
+                renderTargetHandle = displayController.getDisplayBuffer();
+
+            if (renderTargetHandle.isValid())
+            {
+                const auto& bufferViewport = m_renderer.getDisplaySetup(display).getDisplayBuffer(renderTargetHandle).viewport;
+                if (screenshotInfo.fullScreen)
+                    screenshotInfo.rectangle = { 0u, 0u, bufferViewport.width, bufferViewport.height };
+                else if (screenshotInfo.rectangle.x + screenshotInfo.rectangle.width > bufferViewport.width
+                    || screenshotInfo.rectangle.y + screenshotInfo.rectangle.height > bufferViewport.height)
+                {
+                    LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::readPixels failed, requested area is out of offscreen display/buffer size boundaries!");
+                    readPixelsFailed = true;
+                }
+            }
+            else
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::readPixels failed, requested buffer does not exist : " << buffer << " !");
+                readPixelsFailed = true;
+            }
+        }
+        else
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::readPixels failed, unknown display " << display.asMemoryHandle());
+            readPixelsFailed = true;
+        }
+
+        if (readPixelsFailed)
+        {
+            if (screenshotInfo.filename.empty())
+                // only generate event when not saving pixels to file!
+                m_rendererEventCollector.addReadPixelsEvent(ERendererEventType_ReadPixelsFromFramebufferFailed, display, buffer, {});
+        }
+        else
+            m_renderer.scheduleScreenshot(display, renderTargetHandle, std::move(screenshotInfo));
+    }
+
     Bool RendererSceneUpdater::handleSceneDisplayBufferAssignmentRequest(SceneId sceneId, OffscreenBufferHandle buffer, Int32 sceneRenderOrder)
     {
         const DisplayHandle display = m_renderer.getDisplaySceneIsAssignedTo(sceneId);
@@ -1406,4 +1455,48 @@ namespace ramses_internal
             activeDisplay = displayToActivate;
         }
     }
+
+    void RendererSceneUpdater::processScreenshotResults()
+    {
+        for (const auto& resourceManagerIt : m_displayResourceManagers)
+        {
+            const DisplayHandle display = resourceManagerIt.key;
+            const IRendererResourceManager& resourceManager = *resourceManagerIt.value;
+
+            auto screenshots = m_renderer.dispatchProcessedScreenshots(display);
+
+            for (auto& bufferScreenshot : screenshots)
+            {
+                const DeviceResourceHandle renderTargetHandle = bufferScreenshot.first;
+                auto& screenshot = bufferScreenshot.second;
+
+                if (!screenshot.filename.empty())
+                {
+                    // flip image vertically so that the layout read from frame buffer (bottom-up)
+                    // is converted to layout normally used in image files (top-down)
+                    const Image bitmap(screenshot.rectangle.width, screenshot.rectangle.height, screenshot.pixelData.cbegin(), screenshot.pixelData.cend(), true);
+                    bitmap.saveToFilePNG(screenshot.filename);
+                    LOG_INFO(CONTEXT_RENDERER, "RendererSceneUpdater::processScreenshotResults: screenshot successfully saved to file: " << screenshot.filename);
+                    if (screenshot.sendViaDLT)
+                    {
+                        if (GetRamsesLogger().transmitFile(screenshot.filename, false))
+                        {
+                            LOG_INFO(CONTEXT_RENDERER, "RendererSceneUpdater::processScreenshotResults: screenshot file successfully send via dlt: " << screenshot.filename);
+                        }
+                        else
+                        {
+                            LOG_WARN(CONTEXT_RENDERER, "RendererSceneUpdater::processScreenshotResults: screenshot file could not send via dlt: " << screenshot.filename);
+                        }
+                    }
+                }
+                else
+                {
+                    const OffscreenBufferHandle obHandle = resourceManager.getOffscreenBufferHandle(renderTargetHandle);
+                    m_rendererEventCollector.addReadPixelsEvent(ERendererEventType_ReadPixelsFromFramebuffer, display, obHandle, std::move(screenshot.pixelData));
+                }
+            }
+
+        }
+    }
+
 }

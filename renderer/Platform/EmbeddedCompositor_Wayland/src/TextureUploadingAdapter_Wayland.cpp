@@ -6,14 +6,14 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
+#include "EmbeddedCompositor_Wayland/TextureUploadingAdapter_Wayland.h"
 #include <assert.h>
 #include <functional>
 
 #include <drm_fourcc.h>
 
 #include "linux-dmabuf-unstable-v1-server-protocol.h"
-#include "TextureUploadingAdapter_Wayland/TextureUploadingAdapter_Wayland.h"
-#include "TextureUploadingAdapter_Wayland/LinuxDmabuf.h"
+#include "EmbeddedCompositor_Wayland/LinuxDmabuf.h"
 #include "RendererAPI/IDevice.h"
 #include "Utils/LogMacros.h"
 #include "Utils/Warnings.h"
@@ -86,7 +86,11 @@ namespace ramses_internal
 
     TextureUploadingAdapter_Wayland::DmabufEglImage* TextureUploadingAdapter_Wayland::importDmabufToEglImage(LinuxDmabufBufferData* dmabuf)
     {
-        assert(m_waylandEglExtensionProcs.areDmabufExtensionsSupported());
+        if(!m_waylandEglExtensionProcs.areDmabufExtensionsSupported())
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "TextureUploadingAdapter_Wayland::importDmabufToEglImage: DMA buf extension no supported! Creating EGL image failed!");
+            return nullptr;
+        }
 
         // First, import the dmabuf if this is the first time that the given
         // wl_buffer has been attached to a surface.
@@ -95,11 +99,17 @@ namespace ramses_internal
         {
             PUSH_DISABLE_C_STYLE_CAST_WARNING
 
+            // TODO(Mohamed/Tobias) implement proper modifiers handling
             // If modifiers are used, check that EGL doesn't supports them. For now, we haven't
             // implemented that support.
-            if (dmabuf->getModifier(i) != DRM_FORMAT_MOD_INVALID)
+            const auto modifier = dmabuf->getModifier(i);
+            if (modifier != DRM_FORMAT_MOD_INVALID)
             {
-                return nullptr;
+                const auto modifierFormat = modifier & 0x00ffffffffffffffULL;
+                const auto modifierVendor = modifier >> 56;
+                LOG_WARN(CONTEXT_RENDERER, "TextureUploadingAdapter_Wayland::importDmabufToEglImage: DMA buf has unsupported modifier set (will be ignored)! modifier=" << modifier
+                         << ", vendor=" << modifierVendor
+                         << ", format=" << modifierFormat);
             }
 
             POP_DISABLE_C_STYLE_CAST_WARNING
@@ -107,6 +117,7 @@ namespace ramses_internal
             // Modifiers have to be the same across all planes
             if (dmabuf->getModifier(i) != dmabuf->getModifier(0))
             {
+                LOG_ERROR(CONTEXT_RENDERER, "TextureUploadingAdapter_Wayland::importDmabufToEglImage: DMA buf planes do not have same format! Creating EGL image failed!");
                 return nullptr;
             }
         }
@@ -115,6 +126,7 @@ namespace ramses_internal
         // we support is for inverting along the Y axis.
         if (dmabuf->getFlags() & ~ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT)
         {
+            LOG_ERROR(CONTEXT_RENDERER, "TextureUploadingAdapter_Wayland::importDmabufToEglImage: DMA buf has unsupported flags=" << dmabuf->getFlags() << "! Creating EGL image failed!");
             return nullptr;
         }
 
@@ -131,12 +143,6 @@ namespace ramses_internal
         PUSH_DISABLE_C_STYLE_CAST_WARNING
         bool hasModifier = dmabuf->getModifier(0) != DRM_FORMAT_MOD_INVALID;
         POP_DISABLE_C_STYLE_CAST_WARNING
-
-        // TODO: no support for dmabuf modifiers
-        if (hasModifier)
-        {
-            return nullptr;
-        }
 
         // First plane
         if (dmabuf->getNumPlanes() > 0)
@@ -216,7 +222,7 @@ namespace ramses_internal
 
         attribs[atti++] = EGL_NONE;
 
-        const EGLImage eglImage = m_waylandEglExtensionProcs.eglCreateImageKHR(NULL, EGL_LINUX_DMA_BUF_EXT, NULL, attribs);
+        const EGLImage eglImage = m_waylandEglExtensionProcs.eglCreateImageKHR(nullptr, EGL_LINUX_DMA_BUF_EXT, nullptr, attribs);
         assert(EGL_NO_IMAGE != eglImage);
         if (EGL_NO_IMAGE == eglImage)
         {
@@ -228,7 +234,6 @@ namespace ramses_internal
 
     void TextureUploadingAdapter_Wayland::uploadTextureFromLinuxDmabuf(DeviceResourceHandle textureHandle, LinuxDmabufBufferData* dmabuf)
     {
-        UNUSED(textureHandle)
 
         DmabufEglImage* image;
         auto iter = m_dmabufEglImagesMap.find(dmabuf);
