@@ -1,0 +1,4 @@
+<map id="ramses::ClientObject" name="ramses::ClientObject">
+<area shape="rect" id="node2" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework. " alt="" coords="5,80,165,107"/>
+<area shape="rect" id="node3" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling. " alt="" coords="11,5,160,32"/>
+</map>

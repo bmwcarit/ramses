@@ -1,0 +1,4 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classramses_1_1IRendererResourceCache.html" title="An interface used to implement a caching mechanism for resources used on the RamsesRenderer. Important: Please note that the resource ids in this context do not match client resource ids. " alt="" coords="5,5,192,47"/>
+<area shape="rect" id="node2" href="$classramses_1_1DefaultRendererResourceCache.html" title="The DefaultRendererResourceCache provides a simple example on how the IRendererResourceCache interfac..." alt="" coords="240,5,464,47"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="ramses::AnimatedProperty" name="ramses::AnimatedProperty">
+<area shape="rect" id="node2" href="$classramses_1_1AnimationObject.html" title="The AnimationObject is a base class for all client API objects owned by an AnimationSystem. " alt="" coords="9,304,179,331"/>
+<area shape="rect" id="node3" href="$classramses_1_1SceneObject.html" title="The SceneObject is a base class for all client API objects owned by a Scene. " alt="" coords="20,229,168,256"/>
+<area shape="rect" id="node4" href="$classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient. " alt="" coords="21,155,167,181"/>
+<area shape="rect" id="node5" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework. " alt="" coords="14,80,174,107"/>
+<area shape="rect" id="node6" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling. " alt="" coords="19,5,169,32"/>
+</map>

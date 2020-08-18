@@ -1,0 +1,8 @@
+<map id="ramses::SplineLinearVector2i" name="ramses::SplineLinearVector2i">
+<area shape="rect" id="node2" href="$classramses_1_1Spline.html" title="The Spline is a set of keys describing an animation. " alt="" coords="47,379,156,405"/>
+<area shape="rect" id="node3" href="$classramses_1_1AnimationObject.html" title="The AnimationObject is a base class for all client API objects owned by an AnimationSystem. " alt="" coords="17,304,186,331"/>
+<area shape="rect" id="node4" href="$classramses_1_1SceneObject.html" title="The SceneObject is a base class for all client API objects owned by a Scene. " alt="" coords="27,229,175,256"/>
+<area shape="rect" id="node5" href="$classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient. " alt="" coords="29,155,174,181"/>
+<area shape="rect" id="node6" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework. " alt="" coords="21,80,181,107"/>
+<area shape="rect" id="node7" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling. " alt="" coords="27,5,176,32"/>
+</map>

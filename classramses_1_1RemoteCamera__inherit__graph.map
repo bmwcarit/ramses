@@ -1,0 +1,8 @@
+<map id="ramses::RemoteCamera" name="ramses::RemoteCamera">
+<area shape="rect" id="node2" href="$classramses_1_1Camera.html" title="The Camera is part of a scene and defines a view into the scene. " alt="" coords="29,379,147,405"/>
+<area shape="rect" id="node3" href="$classramses_1_1Node.html" title="The Node is the base class of all nodes and provides scene graph functionality which propagates to it..." alt="" coords="36,304,140,331"/>
+<area shape="rect" id="node4" href="$classramses_1_1SceneObject.html" title="The SceneObject is a base class for all client API objects owned by a Scene. " alt="" coords="14,229,162,256"/>
+<area shape="rect" id="node5" href="$classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient. " alt="" coords="15,155,161,181"/>
+<area shape="rect" id="node6" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework. " alt="" coords="8,80,168,107"/>
+<area shape="rect" id="node7" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling. " alt="" coords="13,5,163,32"/>
+</map>

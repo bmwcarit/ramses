@@ -1,0 +1,6 @@
+<map id="ramses::VertexDataBuffer" name="ramses::VertexDataBuffer">
+<area shape="rect" id="node2" href="$classramses_1_1SceneObject.html" title="The SceneObject is a base class for all client API objects owned by a Scene. " alt="" coords="19,229,167,256"/>
+<area shape="rect" id="node3" href="$classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient. " alt="" coords="20,155,165,181"/>
+<area shape="rect" id="node4" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework. " alt="" coords="13,80,173,107"/>
+<area shape="rect" id="node5" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling. " alt="" coords="18,5,167,32"/>
+</map>

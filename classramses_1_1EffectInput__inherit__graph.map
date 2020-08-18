@@ -1,0 +1,5 @@
+<map id="ramses::EffectInput" name="ramses::EffectInput">
+<area shape="rect" id="node3" href="$classramses_1_1AttributeInput.html" title="The AttributeInput is a description of an attribute effect input. " alt="" coords="5,155,156,181"/>
+<area shape="rect" id="node4" href="$classramses_1_1UniformInput.html" title="The UniformInput is a description of an uniform effect input. " alt="" coords="180,155,328,181"/>
+<area shape="rect" id="node2" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling. " alt="" coords="93,5,242,32"/>
+</map>

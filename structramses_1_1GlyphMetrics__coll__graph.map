@@ -1,0 +1,5 @@
+<map id="ramses::GlyphMetrics" name="ramses::GlyphMetrics">
+<area shape="rect" id="node2" href="$structramses_1_1GlyphKey.html" title="GlyphKey identifies a glyph with a specific font instance. " alt="" coords="332,75,463,102"/>
+<area shape="rect" id="node3" href="$classramses_1_1StronglyTypedValue.html" title="ramses::StronglyTypedValue\l\&lt; uint32_t, std::numeric\l_limits\&lt; uint32_t \&gt;::max\l(), FontInstanceIdTag \&gt;" alt="" coords="5,5,196,76"/>
+<area shape="rect" id="node4" href="$classramses_1_1StronglyTypedValue.html" title="ramses::StronglyTypedValue\l\&lt; uint32_t, std::numeric\l_limits\&lt; uint32_t \&gt;::max\l(), GlyphIdTag \&gt;" alt="" coords="5,100,196,171"/>
+</map>
