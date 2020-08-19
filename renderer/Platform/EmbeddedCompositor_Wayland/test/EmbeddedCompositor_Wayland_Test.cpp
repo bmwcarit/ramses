@@ -159,7 +159,7 @@ namespace ramses_internal
             rendererConfig.setWaylandEmbeddedCompositingSocketGroup(ecSocketGroup);
             rendererConfig.setWaylandEmbeddedCompositingSocketFD(ecSocketFD);
 
-            embeddedCompositor.reset(new EmbeddedCompositor_Wayland(rendererConfig, context));
+            embeddedCompositor.reset(new EmbeddedCompositor_Wayland(rendererConfig, {}, context));
             return embeddedCompositor->init();
         }
 

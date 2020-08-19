@@ -1,5 +1,6 @@
 //  -------------------------------------------------------------------------
 //  Copyright (C) 2019-2019, Garmin International, Inc. and its affiliates.
+//  Copyright (C) 2020 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,10 +9,11 @@
 
 #ifndef RAMSES_LINUXDMABUFPARAMS_H
 #define RAMSES_LINUXDMABUFPARAMS_H
-#include <stdint.h>
 
-#include "wayland-server.h"
+#include "EmbeddedCompositor_Wayland/IWaylandClient.h"
 #include "linux-dmabuf-unstable-v1-server-protocol.h"
+#include "wayland-server.h"
+#include <stdint.h>
 
 namespace ramses_internal
 {
@@ -42,6 +44,7 @@ namespace ramses_internal
 
         static struct zwp_linux_buffer_params_v1_interface const m_paramsInterface;
 
+        const WaylandClientCredentials  m_clientCredentials;
         IWaylandResource* m_resource = nullptr;
         LinuxDmabufBufferData* m_data = nullptr;
 

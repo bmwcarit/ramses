@@ -685,12 +685,14 @@ namespace ramses
         /**
         * @brief Creates a new SceneReference object.
         * @details The SceneReference object references a scene, which might be unknown
-        *          to this RamsesClient, but is known to the RamsesRenderer rendering this scene.
-        *          It allows to request rendering states of the referenced scene on renderer side.
-        *          There can be only one instance of #ramses::SceneReference per scene ID in all
-        *          RamsesClients connected to a RamsesRenderer. Creating two instances in one RamsesClient
-        *          will result in an error, creating two instances in different RamsesClients results
-        *          in undefined behavior.
+        *          to this RamsesClient, but is or expected to be known to the RamsesRenderer subscribed to this scene.
+        *          It allows to remotely change limited set of states of the referenced scene on renderer side.
+        *          There can be only one instance of #ramses::SceneReference referring to a sceneId across all
+        *          RamsesClients connected to a RamsesRenderer. Creating more than one instance referring to the same sceneId
+        *          in one RamsesClient will result in an error, multiple instances referring to the same sceneId across
+        *          different RamsesClients results in undefined behavior.
+        *          #ramses::SceneReference can be destroyed and re-created but there are certain aspects to consider,
+        *          see #ramses::SceneReference for details.
         *
         * @param[in] referencedScene A scene id of a scene known to the RamsesRenderer.
         * @param[in] name The optional name of the created SceneReference.

@@ -20,19 +20,22 @@
 
 namespace ramses_internal
 {
-    WaylandSurface::WaylandSurface(IEmbeddedCompositor_Wayland& compositor, IWaylandClient& client, uint32_t version, uint32_t id)
+    WaylandSurface::WaylandSurface(IEmbeddedCompositor_Wayland& compositor, IWaylandClient& client, int version, uint32_t id)
     : m_compositor(compositor)
+    , m_clientCredentials(client.getCredentials())
     {
-        LOG_DEBUG(CONTEXT_RENDERER, "WaylandSurface::WaylandSurface");
+        LOG_DEBUG(CONTEXT_RENDERER, "WaylandSurface::WaylandSurface  " << m_clientCredentials);
 
         m_surfaceResource = client.resourceCreate(&wl_surface_interface, version, id);
         if (m_surfaceResource != nullptr)
         {
+            LOG_INFO(CONTEXT_RENDERER, "WaylandSurface::WaylandSurface: created successfully  " << m_clientCredentials);
+
             m_surfaceResource->setImplementation(&m_surfaceInterface, this, ResourceDestroyedCallback);
         }
         else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandSurface::WaylandSurface Could not create wayland resource!");
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandSurface::WaylandSurface Could not create wayland resource  " << m_clientCredentials);
             client.postNoMemory();
         }
 
@@ -41,7 +44,7 @@ namespace ramses_internal
 
     WaylandSurface::~WaylandSurface()
     {
-        LOG_DEBUG(CONTEXT_RENDERER, "WaylandSurface::~WaylandSurface");
+        LOG_INFO(CONTEXT_RENDERER, "WaylandSurface::~WaylandSurface: wayland surface destroyed  " << m_clientCredentials);
 
         unsetBufferFromSurface();
         m_compositor.removeWaylandSurface(*this);
@@ -141,7 +144,7 @@ namespace ramses_internal
         }
     }
 
-    UInt64 WaylandSurface::getNumberOfCommitedFrames() const
+    UInt32 WaylandSurface::getNumberOfCommitedFrames() const
     {
         return m_numberOfCommitedFrames;
     }
@@ -308,6 +311,11 @@ namespace ramses_internal
         UNUSED(y)
         UNUSED(width)
         UNUSED(height)
+    }
+
+    WaylandClientCredentials WaylandSurface::getClientCredentials() const
+    {
+        return m_clientCredentials;
     }
 
     void WaylandSurface::SurfaceDestroyCallback(wl_client* client, wl_resource* surfaceResource)

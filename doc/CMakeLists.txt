@@ -63,7 +63,7 @@ add_custom_command(OUTPUT ${DOXYGEN_TARGET_DIR}/doxygen.stamp
 add_custom_target(doc
     COMMENT "Generated documentation in: ${DOXYGEN_TARGET_DIR}" VERBATIM
     DEPENDS ${DOXYGEN_TARGET_DIR}/doxygen.stamp)
-set_property(TARGET doc PROPERTY FOLDER "doc")
+ACME_FOLDERIZE_TARGET(doc)
 
 # attach sources for VS
 file(GLOB_RECURSE

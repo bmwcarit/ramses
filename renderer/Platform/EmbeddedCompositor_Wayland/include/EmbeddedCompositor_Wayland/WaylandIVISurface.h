@@ -9,9 +9,10 @@
 #ifndef RAMSES_WAYLANDIVISURFACE_H
 #define RAMSES_WAYLANDIVISURFACE_H
 
-#include "wayland-server.h"
 #include "EmbeddedCompositor_Wayland/IWaylandIVISurface.h"
+#include "EmbeddedCompositor_Wayland/IWaylandClient.h"
 #include "ivi-application-server-protocol.h"
+#include "wayland-server.h"
 
 namespace ramses_internal
 {
@@ -19,7 +20,6 @@ namespace ramses_internal
     class EmbeddedCompositor_Wayland;
     class IWaylandResource;
     class IWaylandSurface;
-    class IWaylandClient;
 
     class WaylandIVISurface: public IWaylandIVISurface
     {
@@ -48,6 +48,7 @@ namespace ramses_internal
         IWaylandSurface* m_surface = nullptr;
         IWaylandResource* m_resource = nullptr;
         EmbeddedCompositor_Wayland& m_compositor;
+        const WaylandClientCredentials  m_clientCredentials;
     };
 }
 

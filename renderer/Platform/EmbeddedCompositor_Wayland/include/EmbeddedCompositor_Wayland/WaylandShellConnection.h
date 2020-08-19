@@ -8,10 +8,10 @@
 #ifndef RAMSES_WAYLANDSHELLCONNECTION_H
 #define RAMSES_WAYLANDSHELLCONNECTION_H
 
-#include "wayland-server.h"
-#include "ivi-application-server-protocol.h"
 #include "EmbeddedCompositor_Wayland/IWaylandShellConnection.h"
-#include "EmbeddedCompositor_Wayland/WaylandClient.h"
+#include "EmbeddedCompositor_Wayland/IWaylandClient.h"
+#include "ivi-application-server-protocol.h"
+#include "wayland-server.h"
 
 namespace ramses_internal
 {
@@ -29,6 +29,7 @@ namespace ramses_internal
         static void ResourceDestroyedCallback(wl_resource* shellConnectionResource);
         static void ShellGetShellSurfaceCallback(wl_client *client, wl_resource* shellConnectionResource, uint32_t id, wl_resource *surfaceResource);
 
+        const WaylandClientCredentials m_clientCredentials;
         IWaylandResource* m_resource = nullptr;
 
         const struct Shell_Interface : private wl_shell_interface

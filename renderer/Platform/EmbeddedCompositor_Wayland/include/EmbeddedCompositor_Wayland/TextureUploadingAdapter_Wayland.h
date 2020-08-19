@@ -9,10 +9,9 @@
 #ifndef RAMSES_TEXTUREUPLOADINGADAPTER_WAYLAND_H
 #define RAMSES_TEXTUREUPLOADINGADAPTER_WAYLAND_H
 
-#include <unordered_map>
-
 #include "Platform_Base/TextureUploadingAdapter_Base.h"
 #include "WaylandEGLExtensionProcs.h"
+#include <unordered_map>
 
 namespace ramses_internal
 {

@@ -33,12 +33,12 @@ namespace ramses_internal
     {
         updateReferencedScenes();
         cleanupDestroyedMasterScenes();
+        cleanupReleasedReferences();
         executePendingActions();
     }
 
     void SceneReferenceLogic::extractAndSendSceneReferenceEvents(RendererEventVector& events)
     {
-        std::vector<SceneId> mastersWithChangedExpiration;
         const auto it = std::remove_if(events.begin(), events.end(), [&](const auto& evt)
         {
             switch (evt.eventType)
@@ -48,11 +48,12 @@ namespace ramses_internal
                 const auto masterSceneId = findMasterSceneForReferencedScene(evt.sceneId);
                 if (masterSceneId.isValid())
                 {
+                    LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: sending event scene reference (master {} / ref {}) state changed to {}", masterSceneId, evt.sceneId, EnumToString(evt.state));
                     m_eventSender.sendSceneStateChanged(masterSceneId, evt.sceneId, evt.state);
                     if (evt.state == RendererSceneState::Unavailable)
                     {
                         m_masterScenes[masterSceneId].expiredSceneReferences.erase(evt.sceneId);
-                        mastersWithChangedExpiration.push_back(masterSceneId);
+                        m_masterScenesWithChangedExpirationState.push_back(masterSceneId);
                     }
                 }
                 return masterSceneId.isValid();
@@ -60,13 +61,10 @@ namespace ramses_internal
             case ERendererEventType_SceneFlushed:
             {
                 const auto masterSceneId = findMasterSceneForReferencedScene(evt.sceneId);
-                if (m_rendererScenes.hasScene(masterSceneId))
+                if (masterSceneId.isValid() && m_masterScenes[masterSceneId].sceneReferencesWithFlushNotification.count(evt.sceneId) != 0)
                 {
-                    const auto& masterScene = m_rendererScenes.getScene(masterSceneId);
-                    const auto& sceneRefs = masterScene.getSceneReferences();
-                    const auto sceneRefIt = std::find_if(sceneRefs.cbegin(), sceneRefs.cend(), [&evt](const auto& sr) { return sr.second->sceneId == evt.sceneId; });
-                    if (sceneRefIt != sceneRefs.cend() && sceneRefIt->second->flushNotifications)
-                        m_eventSender.sendSceneFlushed(masterSceneId, evt.sceneId, evt.sceneVersionTag);
+                    LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: sending event scene reference (master {} / ref {}) flushed with version {}", masterSceneId, evt.sceneId, evt.sceneVersionTag);
+                    m_eventSender.sendSceneFlushed(masterSceneId, evt.sceneId, evt.sceneVersionTag);
                 }
                 return masterSceneId.isValid();
             }
@@ -78,7 +76,12 @@ namespace ramses_internal
                 const auto masterSceneId2 = findMasterSceneForReferencedScene(evt.consumerSceneId);
                 const auto masterSceneId = (masterSceneId1.isValid() ? masterSceneId1 : masterSceneId2);
                 if (masterSceneId.isValid())
-                    m_eventSender.sendDataLinked(masterSceneId, evt.providerSceneId, evt.providerdataId, evt.consumerSceneId, evt.consumerdataId, (evt.eventType == ERendererEventType_SceneDataLinked));
+                {
+                    const bool status = (evt.eventType == ERendererEventType_SceneDataLinked);
+                    LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: sending event scene reference data linked to master {} (providerScene:dataId -> consumerSceneId:dataId) {}:{} -> {}:{} STATUS={}",
+                        masterSceneId, evt.providerSceneId, evt.providerdataId, evt.consumerSceneId, evt.consumerdataId, status);
+                    m_eventSender.sendDataLinked(masterSceneId, evt.providerSceneId, evt.providerdataId, evt.consumerSceneId, evt.consumerdataId, status);
+                }
                 return masterSceneId.isValid();
             }
             case ERendererEventType_SceneDataUnlinked:
@@ -89,7 +92,12 @@ namespace ramses_internal
                 const auto masterSceneId2 = findMasterSceneForReferencedScene(evt.consumerSceneId);
                 const auto masterSceneId = (masterSceneId1.isValid() ? masterSceneId1 : masterSceneId2);
                 if (masterSceneId.isValid())
-                    m_eventSender.sendDataUnlinked(masterSceneId, evt.consumerSceneId, evt.consumerdataId, (evt.eventType == ERendererEventType_SceneDataUnlinked));
+                {
+                    const bool status = (evt.eventType == ERendererEventType_SceneDataUnlinked);
+                    LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: sending event scene reference data unlinked to master {} consumerSceneId:dataId {}:{} STATUS={}",
+                        masterSceneId, evt.consumerSceneId, evt.consumerdataId, status);
+                    m_eventSender.sendDataUnlinked(masterSceneId, evt.consumerSceneId, evt.consumerdataId, status);
+                }
                 return masterSceneId.isValid();
             }
             case ERendererEventType_SceneExpired:
@@ -99,10 +107,16 @@ namespace ramses_internal
                 if (masterSceneId.isValid())
                 {
                     if (evt.eventType == ERendererEventType_SceneExpired)
+                    {
                         m_masterScenes[masterSceneId].expiredSceneReferences.insert(evt.sceneId);
+                        LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: received event scene reference (master {} / ref {}) expired", masterSceneId, evt.sceneId);
+                    }
                     else
+                    {
                         m_masterScenes[masterSceneId].expiredSceneReferences.erase(evt.sceneId);
-                    mastersWithChangedExpiration.push_back(masterSceneId);
+                        LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: received event scene reference (master {} / ref {}) recovered from expiration", masterSceneId, evt.sceneId);
+                    }
+                    m_masterScenesWithChangedExpirationState.push_back(masterSceneId);
                 }
                 return masterSceneId.isValid();
             }
@@ -125,20 +139,23 @@ namespace ramses_internal
         });
         events.erase(it, events.end());
 
-        for (const auto masterSceneId : mastersWithChangedExpiration)
+        for (const auto masterSceneId : m_masterScenesWithChangedExpirationState)
         {
             auto& masterInfo = m_masterScenes[masterSceneId];
             if (!masterInfo.reportedAsExpired && !masterInfo.expiredSceneReferences.empty())
             {
                 events.push_back({ ERendererEventType_SceneExpired, masterSceneId });
                 masterInfo.reportedAsExpired = true;
+                LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: reporting master scene {} as expired", masterSceneId);
             }
             else if (masterInfo.reportedAsExpired && masterInfo.expiredSceneReferences.empty())
             {
                 events.push_back({ ERendererEventType_SceneRecoveredFromExpiration, masterSceneId });
                 masterInfo.reportedAsExpired = false;
+                LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: reporting master scene {} as recovered from expiration", masterSceneId);
             }
         }
+        m_masterScenesWithChangedExpirationState.clear();
     }
 
     void SceneReferenceLogic::updateReferencedScenes()
@@ -166,7 +183,7 @@ namespace ramses_internal
 
                 const auto& refData = masterScene.getSceneReference(handle);
                 const auto refSceneId = refData.sceneId;
-                masterSceneInfo.sceneReferences.insert(refSceneId);
+                masterSceneInfo.sceneReferences[refSceneId] = handle;
                 RendererSceneState refTargetState;
                 DisplayHandle refDisplay;
                 OffscreenBufferHandle refOB;
@@ -182,14 +199,14 @@ namespace ramses_internal
 
                     if (refDisplay != masterDisplay)
                     {
-                        LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic::updateReferencedScenes: setting mapping and assignment/renderOrder (master {} / reffed {}) to display {}, buffer {}, renderOrder {}",
+                        LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic::updateReferencedScenes: setting mapping and assignment/renderOrder (master {} / ref {}) to display {}, buffer {}, renderOrder {}",
                             masterSceneId, refSceneId, masterDisplay, masterOB, toBeRequestedRefRenderOrder);
                         m_sceneLogic.setSceneMapping(refSceneId, masterDisplay);
                         m_sceneLogic.setSceneDisplayBufferAssignment(refSceneId, masterOB, toBeRequestedRefRenderOrder);
                     }
                     else if (refOB != masterOB || refRenderOrder != toBeRequestedRefRenderOrder)
                     {
-                        LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic::updateReferencedScenes: setting assignment/renderOrder (master {} / reffed {}) to buffer {}, renderOrder {}",
+                        LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic::updateReferencedScenes: setting assignment/renderOrder (master {} / ref {}) to buffer {}, renderOrder {}",
                             masterSceneId, refSceneId, masterOB, toBeRequestedRefRenderOrder);
                         m_sceneLogic.setSceneDisplayBufferAssignment(refSceneId, masterOB, toBeRequestedRefRenderOrder);
                     }
@@ -201,10 +218,33 @@ namespace ramses_internal
                     const auto stateToRequest = std::min(refData.requestedState, masterTargetState);
                     if (refTargetState != stateToRequest)
                     {
-                        LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic::updateReferencedScenes: setting state (master {} / reffed {}) to {}", masterSceneId, refSceneId, EnumToString(stateToRequest));
+                        LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic::updateReferencedScenes: setting state (master {} / ref {}) to {}", masterSceneId, refSceneId, EnumToString(stateToRequest));
                         m_sceneLogic.setSceneState(refSceneId, stateToRequest);
                     }
                 }
+
+                // send scene version tag if flush notification just enabled
+                // later version tag notifications are sent when processing events
+                if (refData.flushNotifications)
+                {
+                    if (masterSceneInfo.sceneReferencesWithFlushNotification.count(refSceneId) == 0)
+                    {
+                        masterSceneInfo.sceneReferencesWithFlushNotification.insert(refSceneId);
+
+                        // notifications were just enabled
+                        if (m_rendererScenes.hasScene(refSceneId))
+                        {
+                            const auto& refSceneStagingInfo = m_rendererScenes.getStagingInfo(refSceneId);
+                            if (refSceneStagingInfo.lastAppliedVersionTag.isValid())
+                            {
+                                LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: flush notifications enabled, sending last applied scene reference (master {} / ref {}) version {}", masterSceneId, refSceneId, refSceneStagingInfo.lastAppliedVersionTag);
+                                m_eventSender.sendSceneFlushed(masterSceneId, refSceneId, refSceneStagingInfo.lastAppliedVersionTag);
+                            }
+                        }
+                    }
+                }
+                else
+                    masterSceneInfo.sceneReferencesWithFlushNotification.erase(refSceneId);
             }
         }
     }
@@ -217,16 +257,70 @@ namespace ramses_internal
             auto& masterInfo = masterScene.second;
             if (!m_rendererScenes.hasScene(masterScene.first) && !masterInfo.destroyed)
             {
+                LOG_INFO(CONTEXT_RENDERER, "SceneReferenceLogic: master scene destroyed, cleaning up its referenced scenes");
                 // unsubscribe any scene referenced by destroyed master scene
-                for (const auto sceneRefId : masterInfo.sceneReferences)
+                for (const auto& sceneRefIt : masterInfo.sceneReferences)
                 {
+                    const auto sceneRefId = sceneRefIt.first;
                     if (m_rendererScenes.hasScene(sceneRefId))
-                        m_sceneLogic.setSceneState(sceneRefId, RendererSceneState::Unavailable);
+                    {
+                        const auto cleanupState = RendererSceneState::Unavailable;
+                        LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: cleaning up (master {} / ref {}) by setting state to {}", masterScene.first, sceneRefId, EnumToString(cleanupState));
+                        m_sceneLogic.setSceneState(sceneRefId, cleanupState);
+                    }
                 }
                 masterInfo.pendingActions.clear();
+                masterInfo.sceneReferencesWithFlushNotification.clear();
                 masterInfo.expiredSceneReferences.clear();
                 masterInfo.reportedAsExpired = false;
                 masterInfo.destroyed = true;
+            }
+        }
+    }
+
+    void SceneReferenceLogic::cleanupReleasedReferences()
+    {
+        // check for newly released references in master scenes
+        for (auto& masterInfoIt : m_masterScenes)
+        {
+            auto& masterInfo = masterInfoIt.second;
+            if (!masterInfo.destroyed)
+            {
+                const auto masterSceneId = masterInfoIt.first;
+                const auto& masterScene = m_rendererScenes.getScene(masterSceneId);
+                std::vector<std::pair<SceneId, SceneReferenceHandle>> releasedRefs;
+                for (const auto& sceneRefIt : masterInfo.sceneReferences)
+                    if (!masterScene.isSceneReferenceAllocated(sceneRefIt.second))
+                        releasedRefs.push_back({ sceneRefIt.first, sceneRefIt.second });
+
+                if (!releasedRefs.empty())
+                {
+                    for (const auto& releasedRef : releasedRefs)
+                    {
+                        const auto sceneRefId = releasedRef.first;
+                        LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: reference to scene (master {} / ref {}) released", masterSceneId, sceneRefId);
+
+                        // remove from master info lists
+                        masterInfo.sceneReferences.erase(sceneRefId);
+                        masterInfo.sceneReferencesWithFlushNotification.erase(sceneRefId);
+                        masterInfo.expiredSceneReferences.erase(sceneRefId);
+
+                        // remove actions for released reference
+                        const auto it = std::remove_if(masterInfo.pendingActions.begin(), masterInfo.pendingActions.end(), [&, refHandle = releasedRef.second](const auto& action)
+                        {
+                            if (action.providerScene == refHandle || action.consumerScene == refHandle)
+                            {
+                                LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: erasing pending scene reference action for released reference (master {} / ref {}) actionType={}", masterSceneId, sceneRefId, action.type);
+                                return true;
+                            }
+                            return false;
+                        });
+                        masterInfo.pendingActions.erase(it, masterInfo.pendingActions.end());
+                    }
+
+                    // trigger update of expiration state
+                    m_masterScenesWithChangedExpirationState.push_back(masterSceneId);
+                }
             }
         }
     }
@@ -249,14 +343,14 @@ namespace ramses_internal
                 {
                     const auto providerSceneId = (action.providerScene.isValid() ? masterScene.getSceneReference(action.providerScene).sceneId : masterSceneId);
                     const auto consumerSceneId = (action.consumerScene.isValid() ? masterScene.getSceneReference(action.consumerScene).sceneId : masterSceneId);
-                    LOG_INFO(CONTEXT_RENDERER, "SceneReferenceLogic: executing data link (providerScene:dataId -> consumerSceneId:dataId) " << providerSceneId << ":" << action.providerId << " -> " << consumerSceneId << ":" << action.consumerId);
+                    LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: executing data link for master scene {} (providerScene:dataId -> consumerSceneId:dataId) {}:{} -> {}:{}", masterSceneId, providerSceneId, action.providerId, consumerSceneId, action.consumerId);
                     m_sceneControl.handleSceneDataLinkRequest(providerSceneId, action.providerId, consumerSceneId, action.consumerId);
                     break;
                 }
                 case SceneReferenceActionType::UnlinkData:
                 {
                     const auto consumerSceneId = (action.consumerScene.isValid() ? masterScene.getSceneReference(action.consumerScene).sceneId : masterSceneId);
-                    LOG_INFO(CONTEXT_RENDERER, "SceneReferenceLogic: executing data unlink (consumerSceneId:dataId) " << consumerSceneId << ":" << action.consumerId);
+                    LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: executing data unlink for master scene {} (consumerSceneId:dataId) {}:{}", masterSceneId, consumerSceneId, action.consumerId);
                     m_sceneControl.handleDataUnlinkRequest(consumerSceneId, action.consumerId);
                     break;
                 }

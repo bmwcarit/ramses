@@ -80,6 +80,7 @@ typedef struct {
    struct wl_surface *focused_surface;
    struct ivi_application *ivi_app;
    struct ivi_controller *ivi_controller;
+   struct wl_output* output;
    int fd;
 } wayland_display_t;
 
@@ -102,6 +103,7 @@ static wayland_window_t window;
 
 static uint32_t ivi_surface_id = 0;
 static uint32_t ivi_layer_id = 0;
+static uint32_t requested_wl_output_version = 0;
 
 static int gettime(void)
 {
@@ -315,6 +317,56 @@ static void ivi_controller_handler_error(void*                  data,
     printf("ivi_controller_handler_error error_text: %s\n", error_text);
 }
 
+static void output_handle_geometry(void *data,
+         struct wl_output* output,
+         int32_t x,
+         int32_t y,
+         int32_t physical_width,
+         int32_t physical_height,
+         int32_t subpixel,
+         const char *make,
+         const char *model,
+         int32_t transform)
+{
+    UNUSED(data);
+    UNUSED(output);
+
+    printf("output_handle_geometry: x=%i, y=%i, physical_width=%i, physical_height=%i, subpixel_format=%i, make=\"%s\", model=\"%s\", transform=%i\n",
+           x, y, physical_width, physical_height, subpixel, make, model, transform);
+}
+
+static void output_handle_mode(void *data,
+         struct wl_output *output,
+         uint32_t flags,
+         int32_t width,
+         int32_t height,
+         int32_t refresh)
+{
+    UNUSED(data);
+    UNUSED(output);
+
+    printf("output_handle_mode: flags=%i, width=%i, height=%i, refresh=%i\n", flags, width, height, refresh);
+}
+
+static void output_handle_done(void *data,
+         struct wl_output *output)
+{
+    UNUSED(data);
+    UNUSED(output);
+
+    printf("output_handle_done: done received!\n");
+}
+
+static void output_handle_scale(void *data,
+          struct wl_output *output,
+          int32_t factor)
+{
+    UNUSED(data);
+    UNUSED(output);
+
+    printf("output_handle_scale: factor=%i\n", factor);
+}
+
 static void make_surface_visible()
 {
     if (ivi_layer_id > 0 && wayland.ivi_controller)
@@ -350,6 +402,13 @@ static const struct ivi_controller_listener controller_listener = {
     ivi_controller_handler_error
 };
 
+static const struct wl_output_listener output_listener = {
+    output_handle_geometry,
+    output_handle_mode,
+    output_handle_done,
+    output_handle_scale
+};
+
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
@@ -358,8 +417,9 @@ static void
 registry_handle_global(void *data, struct wl_registry *registry,
              uint32_t name, const char *interface, uint32_t version)
 {
-   UNUSED(version);
    wayland_display_t *d = data;
+
+   printf("registry_handle_global: name %u, interface %s, version %u\n", name, interface, version);
 
    if (strcmp(interface, "wl_compositor") == 0) {
       d->compositor =
@@ -378,7 +438,13 @@ registry_handle_global(void *data, struct wl_registry *registry,
   } else if (strcmp(interface, "ivi_controller") == 0) {
       d->ivi_controller = wl_registry_bind(registry, name, &ivi_controller_interface, 1);
       ivi_controller_add_listener(d->ivi_controller, &controller_listener, 0);
-  }
+   } else if (strcmp(interface, "wl_output") == 0) {
+        if(requested_wl_output_version > 0)
+            d->output = wl_registry_bind(registry, name, &wl_output_interface, requested_wl_output_version);
+        else
+            d->output = wl_registry_bind(registry, name, &wl_output_interface, version);
+        wl_output_add_listener(d->output, &output_listener, NULL);
+   }
 }
 
 static void
@@ -1744,7 +1810,7 @@ int main(int argc, char *argv[])
    unsigned int sleepTimeInMillis = 0;
    float fps = 1000.0f;
    int opt;
-   static const char opts[] = "g:i:I:L:qsh:at:f:";
+   static const char opts[] = "g:i:I:L:qsh:at:f:o:";
    static const struct option longopts[] = {
       { "geometry", 1, NULL, 'g' },
       { "interval", 1, NULL, 'i' },
@@ -1756,6 +1822,7 @@ int main(int argc, char *argv[])
       { "alternateColors", 0, NULL, 'a' },
       { "fps", 1, NULL, 'f' },
       { "sleepTimeInMillis", 1, NULL, 't' },
+      { "waylandOutputVersion", 1, NULL, 'o' },
       { NULL, 0, NULL, 0 }
    };
    int interval = 1;
@@ -1815,6 +1882,12 @@ int main(int argc, char *argv[])
           if (sscanf(optarg, "%u", &sleepTimeInMillis) != 1)
           {
              fprintf(stderr, "invalid sleep time: %s\n", optarg);
+          };
+          break;
+      case 'o':
+          if (sscanf(optarg, "%u", &requested_wl_output_version) != 1)
+          {
+             fprintf(stderr, "invalid wayland output protocol version: %s\n", optarg);
           };
           break;
       case 'h':

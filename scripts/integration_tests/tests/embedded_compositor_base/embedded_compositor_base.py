@@ -63,6 +63,20 @@ class EmbeddedCompositorBase(test_classes.OnAllDefaultTargetsTest):
                                                             "embedded-compositing client surface found for existing streamtexture: {}".format(iviID))
         self.assertTrue(surfaceFound, msg="Surface was not found by renderer")
 
+    def _startDmaBufExample(self, iviID, alternateColors = False):
+        self.watchSurfaceFound = self.renderer.start_watch_stdout()
+        dmaBufExampleArguments = "-I {} --still".format(iviID)
+        if alternateColors:
+            dmaBufExampleArguments += " --mandelbrot"
+        self.wlClientDmaBuf = self.target.start_application("ivi-simple-dmabuf-egl", dmaBufExampleArguments,
+                                                      binaryDirectoryOnTarget=self.target.baseWorkingDirectory,
+                                                      env={"WAYLAND_DISPLAY" : "wayland-10"})
+        self.checkThatApplicationWasStarted(self.wlClientDmaBuf)
+        self.addCleanup(self.target.kill_application, self.wlClientDmaBuf)
+        surfaceFound = self.renderer.wait_for_msg_in_stdout(self.watchSurfaceFound,
+                                                            "embedded-compositing client surface found for existing streamtexture: {}".format(iviID))
+        self.assertTrue(surfaceFound, msg="Surface was not found by renderer")
+
     def _killIviGears(self):
         self.watchSurfaceIsGone = self.renderer.start_watch_stdout()
         self.target.kill_application(self.wlClientIviGears)

@@ -11,7 +11,7 @@
 
 #include "EmbeddedCompositor_Wayland/IWaylandSurface.h"
 #include "RendererLib/RendererLogContext.h"
-
+#include "EmbeddedCompositor_Wayland/IWaylandClient.h"
 #include "wayland-server.h"
 
 namespace ramses_internal
@@ -19,15 +19,13 @@ namespace ramses_internal
     class IEmbeddedCompositor_Wayland;
     class IWaylandIVISurface;
     class IWaylandShellSurface;
-    class IWaylandClient;
-    class IWaylandResource;
     class WaylandCallbackResource;
     class IWaylandBuffer;
 
     class WaylandSurface: public IWaylandSurface
     {
     public:
-        WaylandSurface(IEmbeddedCompositor_Wayland& compositor, IWaylandClient& client, uint32_t version, uint32_t id);
+        WaylandSurface(IEmbeddedCompositor_Wayland& compositor, IWaylandClient& client, int version, uint32_t id);
         ~WaylandSurface();
 
         virtual IWaylandBuffer* getWaylandBuffer() const override;
@@ -38,7 +36,7 @@ namespace ramses_internal
         virtual void setIviSurface(IWaylandIVISurface* iviSurface) override;
         virtual bool hasIviSurface() const override;
         virtual WaylandIviSurfaceId getIviSurfaceId() const override;
-        virtual uint64_t getNumberOfCommitedFrames() const override;
+        virtual uint32_t getNumberOfCommitedFrames() const override;
         virtual void resetNumberOfCommitedFrames() override;
         virtual uint64_t getNumberOfCommitedFramesSinceBeginningOfTime() const override;
         virtual void sendFrameCallbacks(UInt32 time) override;
@@ -55,6 +53,7 @@ namespace ramses_internal
         virtual void surfaceSetBufferTransform(IWaylandClient& client, int32_t transform) override;
         virtual void surfaceSetBufferScale(IWaylandClient& client, int32_t scale) override;
         virtual void surfaceDamageBuffer(IWaylandClient& client, int32_t x, int32_t y, int32_t width, int32_t height) override;
+        virtual WaylandClientCredentials getClientCredentials() const override;
 
     private:
         void setBufferToSurface(IWaylandBuffer& buffer);
@@ -83,8 +82,9 @@ namespace ramses_internal
         IWaylandShellSurface* m_shellSurface = nullptr;
         bool m_removeBufferOnNextCommit = false;
         IEmbeddedCompositor_Wayland& m_compositor;
-        UInt64 m_numberOfCommitedFrames = 0;
+        UInt32 m_numberOfCommitedFrames = 0;
         UInt64 m_numberOfCommitedFramesSinceBeginningOfTime = 0;
+        const WaylandClientCredentials m_clientCredentials;
 
         const struct Surface_Interface : private wl_surface_interface
         {

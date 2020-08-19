@@ -46,14 +46,16 @@ namespace ramses_internal
     private:
         void updateReferencedScenes();
         void cleanupDestroyedMasterScenes();
+        void cleanupReleasedReferences();
         void executePendingActions();
 
         SceneId findMasterSceneForReferencedScene(SceneId sceneId) const;
 
         struct MasterSceneInfo
         {
-            std::unordered_set<SceneId> sceneReferences;
+            std::unordered_map<SceneId, SceneReferenceHandle> sceneReferences;
             SceneReferenceActionVector pendingActions;
+            std::unordered_set<SceneId> sceneReferencesWithFlushNotification;
             std::unordered_set<SceneId> expiredSceneReferences;
             bool reportedAsExpired = false;
             bool destroyed = false;
@@ -67,6 +69,8 @@ namespace ramses_internal
         IRendererSceneControl& m_sceneControl;
 
         IRendererSceneEventSender& m_eventSender;
+
+        std::vector<SceneId> m_masterScenesWithChangedExpirationState;
     };
 }
 

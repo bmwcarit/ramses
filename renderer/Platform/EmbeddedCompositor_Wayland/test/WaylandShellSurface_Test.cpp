@@ -7,11 +7,11 @@
 //  -------------------------------------------------------------------------
 
 #include "EmbeddedCompositor_Wayland/WaylandShellSurface.h"
-#include "gtest/gtest.h"
 
 #include "WaylandClientMock.h"
 #include "WaylandResourceMock.h"
 #include "WaylandSurfaceMock.h"
+#include "gtest/gtest.h"
 
 namespace ramses_internal
 {
@@ -120,106 +120,5 @@ namespace ramses_internal
         shellSurface.surfaceWasDeleted();
 
         EXPECT_CALL(*m_shellSurfaceResource, setImplementation(_,&shellSurface, nullptr));
-    }
-
-    TEST_F(AWaylandShellSurface, CanSetAndGetShellSurfaceTitle)
-    {
-        WaylandShellSurface* waylandShellSurface = createWaylandShellSurface();
-        waylandShellSurface->shellSurfaceSetTitle(m_client, "A Title");
-        EXPECT_EQ(waylandShellSurface->getTitle(), "A Title");
-
-        EXPECT_CALL(m_surface, setShellSurface(nullptr));
-        EXPECT_CALL(*m_shellSurfaceResource, setImplementation(_, waylandShellSurface, nullptr));
-        delete waylandShellSurface;
-    }
-
-    TEST_F(AWaylandShellSurface, CanShellSurfacePong)
-    {
-        WaylandShellSurface* waylandShellSurface = createWaylandShellSurface();
-        waylandShellSurface->surfaceWasDeleted();
-        waylandShellSurface->shellSurfacePong(m_client, 0);
-
-        EXPECT_CALL(*m_shellSurfaceResource, setImplementation(_, waylandShellSurface, nullptr));
-        delete waylandShellSurface;
-    }
-
-    TEST_F(AWaylandShellSurface, CanShellSurfaceMove)
-    {
-        WaylandShellSurface* waylandShellSurface = createWaylandShellSurface();
-        waylandShellSurface->surfaceWasDeleted();
-        waylandShellSurface->shellSurfaceMove(m_client, m_seatResource, 0);
-
-        EXPECT_CALL(*m_shellSurfaceResource, setImplementation(_, waylandShellSurface, nullptr));
-        delete waylandShellSurface;
-    }
-
-    TEST_F(AWaylandShellSurface, CanShellSurfaceResize)
-    {
-        WaylandShellSurface* waylandShellSurface = createWaylandShellSurface();
-        waylandShellSurface->surfaceWasDeleted();
-        waylandShellSurface->shellSurfaceResize(m_client, m_seatResource, 0, 0);
-
-        EXPECT_CALL(*m_shellSurfaceResource, setImplementation(_, waylandShellSurface, nullptr));
-        delete waylandShellSurface;
-    }
-
-    TEST_F(AWaylandShellSurface, CanShellSurfaceSetToplevel)
-    {
-        WaylandShellSurface* waylandShellSurface = createWaylandShellSurface();
-        waylandShellSurface->surfaceWasDeleted();
-        waylandShellSurface->shellSurfaceSetToplevel(m_client);
-
-        EXPECT_CALL(*m_shellSurfaceResource, setImplementation(_, waylandShellSurface, nullptr));
-        delete waylandShellSurface;
-    }
-
-    TEST_F(AWaylandShellSurface, CanShellSurfaceSetTransient)
-    {
-        WaylandShellSurface* waylandShellSurface = createWaylandShellSurface();
-        waylandShellSurface->surfaceWasDeleted();
-        waylandShellSurface->shellSurfaceSetTransient(m_client, m_surfaceResource, 0, 0, 0);
-
-        EXPECT_CALL(*m_shellSurfaceResource, setImplementation(_, waylandShellSurface, nullptr));
-        delete waylandShellSurface;
-    }
-
-    TEST_F(AWaylandShellSurface, CanShellSurfaceSetFullscreen)
-    {
-        WaylandShellSurface* waylandShellSurface = createWaylandShellSurface();
-        waylandShellSurface->surfaceWasDeleted();
-        waylandShellSurface->shellSurfaceSetFullscreen(m_client, 0, 60);
-
-        EXPECT_CALL(*m_shellSurfaceResource, setImplementation(_, waylandShellSurface, nullptr));
-        delete waylandShellSurface;
-    }
-
-    TEST_F(AWaylandShellSurface, CanShellSurfaceSetPopup)
-    {
-        WaylandShellSurface* waylandShellSurface = createWaylandShellSurface();
-        waylandShellSurface->surfaceWasDeleted();
-        waylandShellSurface->shellSurfaceSetPopup(m_client, m_seatResource, 0, m_surfaceResource, 0, 0, 0);
-
-        EXPECT_CALL(*m_shellSurfaceResource, setImplementation(_, waylandShellSurface, nullptr));
-        delete waylandShellSurface;
-    }
-
-    TEST_F(AWaylandShellSurface, CanShellSurfaceSetMaximized)
-    {
-        WaylandShellSurface* waylandShellSurface = createWaylandShellSurface();
-        waylandShellSurface->surfaceWasDeleted();
-        waylandShellSurface->shellSurfaceSetMaximized(m_client);
-
-        EXPECT_CALL(*m_shellSurfaceResource, setImplementation(_, waylandShellSurface, nullptr));
-        delete waylandShellSurface;
-    }
-
-    TEST_F(AWaylandShellSurface, CanShellSurfaceSetClass)
-    {
-        WaylandShellSurface* waylandShellSurface = createWaylandShellSurface();
-        waylandShellSurface->surfaceWasDeleted();
-        waylandShellSurface->shellSurfaceSetClass(m_client, "ClassName");
-
-        EXPECT_CALL(*m_shellSurfaceResource, setImplementation(_, waylandShellSurface, nullptr));
-        delete waylandShellSurface;
     }
 }

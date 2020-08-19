@@ -122,6 +122,15 @@ namespace ramses
         status_t setExclusiveBackground(bool state);
 
         /**
+         * @brief Set the streamID metadata entry. Requests to start/show specified stream.
+         *
+         * @param streamID identifier of stream to start/show
+         * @return StatusOK for success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        status_t setStreamID(int32_t streamID);
+
+        /**
          * @brief Deleted move constructor
          * @param other unused
          */

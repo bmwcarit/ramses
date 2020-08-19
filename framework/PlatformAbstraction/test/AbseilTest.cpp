@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "gtest/gtest.h"
-#include "absl/types/variant.h"
+#include "PlatformAbstraction/VariantWrapper.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "absl/strings/string_view.h"

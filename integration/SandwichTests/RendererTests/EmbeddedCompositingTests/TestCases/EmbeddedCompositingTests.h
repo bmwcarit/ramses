@@ -17,6 +17,7 @@
 #include "OffscreenBuffersWithStreamTexturesTests.h"
 #include "WaylandApplicationWithRamsesRendererTests.h"
 #include "EmbeddedCompositingTestsWithFD.h"
+#include "WaylandOutputTests.h"
 
 namespace ramses_internal
 {
@@ -36,6 +37,7 @@ namespace ramses_internal
             m_offscreenBuffersWithStreamTexturesTests.setUpEmbeddedCompositingTestCases(m_testFramework);
             m_waylandApplicationWithRamsesRendererTests.setUpEmbeddedCompositingTestCases(m_testFramework);
             m_embeddedCompositingTestsWithFD.setUpEmbeddedCompositingTestCases(m_testFramework);
+            m_waylandOutputTests.setUpEmbeddedCompositingTestCases(m_testFramework);
 
             m_testFramework.filterTestCases(filterIn, filterOut);
         }
@@ -61,6 +63,7 @@ namespace ramses_internal
         OffscreenBuffersWithStreamTexturesTests     m_offscreenBuffersWithStreamTexturesTests;
         WaylandApplicationWithRamsesRendererTests   m_waylandApplicationWithRamsesRendererTests;
         EmbeddedCompositingTestsWithFD              m_embeddedCompositingTestsWithFD;
+        WaylandOutputTests                          m_waylandOutputTests;
     };
 }
 

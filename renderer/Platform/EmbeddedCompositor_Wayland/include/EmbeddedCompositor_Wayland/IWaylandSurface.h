@@ -9,14 +9,13 @@
 #ifndef RAMSES_IWAYLANDSURFACE_H
 #define RAMSES_IWAYLANDSURFACE_H
 
+#include "EmbeddedCompositor_Wayland/IWaylandClient.h"
 #include "RendererAPI/Types.h"
 
 namespace ramses_internal
 {
-    class IWaylandClient;
     class IWaylandShellSurface;
     class WaylandBufferResource;
-    class IWaylandResource;
     class IWaylandBuffer;
     class IWaylandIVISurface;
     class RendererLogContext;
@@ -43,7 +42,7 @@ namespace ramses_internal
         virtual WaylandIviSurfaceId getIviSurfaceId() const = 0;
         virtual void sendFrameCallbacks(uint32_t time) = 0;
         virtual IWaylandBuffer* getWaylandBuffer() const = 0;
-        virtual uint64_t getNumberOfCommitedFrames() const = 0;
+        virtual uint32_t getNumberOfCommitedFrames() const = 0;
         virtual void resetNumberOfCommitedFrames() = 0;
         virtual uint64_t getNumberOfCommitedFramesSinceBeginningOfTime() const = 0;
         virtual bool hasPendingBuffer() const = 0;
@@ -51,6 +50,7 @@ namespace ramses_internal
         virtual void bufferDestroyed(IWaylandBuffer& buffer) = 0;
         virtual void setIviSurface(IWaylandIVISurface* iviSurface) = 0;
         virtual bool hasIviSurface() const = 0;
+        virtual WaylandClientCredentials getClientCredentials() const = 0;
     };
 }
 

@@ -310,6 +310,9 @@ class Target:
             #print some debug output
             renderer.send_ramsh_command("rinfo all -v")
 
+            if self.systemCompositorControllerSupported:
+                self.ivi_control.printCurrentState()
+
     def _take_system_compositor_screenshot(self, screenshotName, renderer):
         log.info("Make screenshot of screen using system compositor")
 

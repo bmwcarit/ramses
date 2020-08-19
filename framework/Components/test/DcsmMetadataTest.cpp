@@ -32,6 +32,7 @@ namespace ramses_internal
             filledDm.setCarModelView({ 1,2,3,4,5,6,7 }, {8,9});
             filledDm.setCarModelVisibility(true);
             filledDm.setExclusiveBackground(true);
+            filledDm.setStreamID(49);
         }
 
         DcsmMetadata serializeDeserialize(const DcsmMetadata& ref)
@@ -65,6 +66,7 @@ namespace ramses_internal
         EXPECT_FALSE(dm.hasCarModelView());
         EXPECT_FALSE(dm.hasCarModelVisibility());
         EXPECT_FALSE(dm.hasExclusiveBackground());
+        EXPECT_FALSE(dm.hasStreamID());
     }
 
     TEST_F(ADcsmMetadata, canSetGetPreviewImagePngHeader)
@@ -184,6 +186,14 @@ namespace ramses_internal
         dm.setExclusiveBackground(true);
         EXPECT_TRUE(dm.hasExclusiveBackground());
         EXPECT_TRUE(dm.getExclusiveBackground());
+    }
+
+    TEST_F(ADcsmMetadata, canSetGetStreamID)
+    {
+        DcsmMetadata dm;
+        dm.setStreamID(123);
+        EXPECT_TRUE(dm.hasStreamID());
+        EXPECT_EQ(123, dm.getStreamID());
     }
 
     TEST_F(ADcsmMetadata, canCompare)
@@ -463,6 +473,18 @@ namespace ramses_internal
         EXPECT_TRUE(dm.getExclusiveBackground());
     }
 
+    TEST_F(ADcsmMetadata, canUpdateStreamIDFromOther)
+    {
+        DcsmMetadata dm;
+        EXPECT_TRUE(dm.setStreamID(456));
+
+        DcsmMetadata otherDm;
+        EXPECT_TRUE(otherDm.setStreamID(1));
+
+        dm.updateFromOther(otherDm);
+        EXPECT_TRUE(dm.hasStreamID());
+        EXPECT_EQ(1, dm.getStreamID());
+    }
     TEST_F(ADcsmMetadata, canUpdateEmptyWithValues)
     {
         DcsmMetadata otherDm;
@@ -475,6 +497,7 @@ namespace ramses_internal
         EXPECT_TRUE(otherDm.setCarModelView({ 1,2,3,4,5,6,7 }, { 8,9 }));
         EXPECT_TRUE(otherDm.setCarModelVisibility(true));
         EXPECT_TRUE(otherDm.setExclusiveBackground(true));
+        EXPECT_TRUE(otherDm.setStreamID(45));
 
         DcsmMetadata dm;
         dm.updateFromOther(otherDm);
@@ -497,6 +520,8 @@ namespace ramses_internal
         EXPECT_TRUE(dm.getCarModelVisibility());
         EXPECT_TRUE(dm.hasExclusiveBackground());
         EXPECT_TRUE(dm.getExclusiveBackground());
+        EXPECT_TRUE(dm.hasStreamID());
+        EXPECT_EQ(45, dm.getStreamID());
     }
 
     TEST_F(ADcsmMetadata, canSkipDeserializeUnknownTypes)

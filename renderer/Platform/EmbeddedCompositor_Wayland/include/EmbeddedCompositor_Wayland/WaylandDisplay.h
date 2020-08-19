@@ -9,9 +9,9 @@
 #ifndef RAMSES_WAYLANDDISPLAY_H
 #define RAMSES_WAYLANDDISPLAY_H
 
-#include "wayland-server.h"
 #include "EmbeddedCompositor_Wayland/IWaylandDisplay.h"
 #include "Collections/String.h"
+#include "wayland-server.h"
 
 namespace ramses_internal
 {

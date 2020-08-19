@@ -200,7 +200,7 @@ IF(ramses-sdk_USE_LINUX_DEV_PTP)
     TARGET_COMPILE_DEFINITIONS(ramses-framework PUBLIC "-DRAMSES_LINUX_USE_DEV_PTP=1")
 ENDIF()
 
-if (ramses-sdk_CONSOLE_LOGLEVEL)
+if (DEFINED ramses-sdk_CONSOLE_LOGLEVEL AND NOT ramses-sdk_CONSOLE_LOGLEVEL STREQUAL "")
     target_compile_definitions(ramses-framework PRIVATE "-DRAMSES_CONSOLE_LOGLEVEL_DEFAULT=${ramses-sdk_CONSOLE_LOGLEVEL}")
 endif()
 
@@ -262,7 +262,6 @@ ACME_MODULE(
     INCLUDE_BASE            Core/Utils/test
     FILES_PRIVATE_HEADER    Core/Utils/test/*.h
     FILES_SOURCE            Core/Utils/test/*.cpp
-    FILES_RESOURCE          test/res/*
 
     INCLUDE_BASE            Core/Transfer/test
     FILES_PRIVATE_HEADER    Core/Transfer/test/*.h
@@ -332,6 +331,7 @@ ACME_MODULE(
     ${ramses-framework-test-TCP_MIXIN}
 
     FILES_SOURCE            test/main.cpp
+    RESOURCE_FOLDER         test/res
 
     DEPENDENCIES            ramses-framework
                             FrameworkTestUtils

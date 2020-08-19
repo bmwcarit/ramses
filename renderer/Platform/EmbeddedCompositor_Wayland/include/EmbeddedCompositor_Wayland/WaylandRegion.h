@@ -9,8 +9,8 @@
 #ifndef RAMSES_WAYLANDREGION_H
 #define RAMSES_WAYLANDREGION_H
 
-#include "RendererAPI/Types.h"
 #include "EmbeddedCompositor_Wayland/IWaylandRegion.h"
+#include "RendererAPI/Types.h"
 #include "RendererLib/RendererLogContext.h"
 
 #include "wayland-server.h"

@@ -12,7 +12,7 @@
 #include "ramses-framework-api/EValidationSeverity.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "Collections/String.h"
-#include "absl/types/variant.h"
+#include "PlatformAbstraction/VariantWrapper.h"
 #include <mutex>
 #include <vector>
 

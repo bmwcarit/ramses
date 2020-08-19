@@ -8,10 +8,10 @@
 #ifndef RAMSES_WAYLANDIVIAPPLICATIONCONNECTION_H
 #define RAMSES_WAYLANDIVIAPPLICATIONCONNECTION_H
 
-#include "wayland-server.h"
-#include "ivi-application-server-protocol.h"
 #include "EmbeddedCompositor_Wayland/IWaylandIVIApplicationConnection.h"
 #include "EmbeddedCompositor_Wayland/WaylandClient.h"
+#include "ivi-application-server-protocol.h"
+#include "wayland-server.h"
 
 namespace ramses_internal
 {
@@ -31,8 +31,9 @@ namespace ramses_internal
         static void ResourceDestroyedCallback(wl_resource* iviApplicationConnectionResource);
         static void IVIApplicationIVISurfaceCreateCallback(wl_client* client, wl_resource* iviApplicationConnectionResource, uint32_t iviId, wl_resource* surfaceResource, uint32_t id);
 
-        EmbeddedCompositor_Wayland& m_compositor;
-        IWaylandResource*           m_resource = nullptr;
+        EmbeddedCompositor_Wayland&     m_compositor;
+        const WaylandClientCredentials  m_clientCredentials;
+        IWaylandResource*               m_resource = nullptr;
 
         const struct IVIApplication_Interface : private ivi_application_interface
         {

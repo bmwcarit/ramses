@@ -55,7 +55,7 @@ namespace ramses_internal
         virtual IDevice*                     createDevice(IContext& context) = 0;
         virtual Bool                         destroyDevice(IDevice& device) = 0;
 
-        virtual IEmbeddedCompositor*         createEmbeddedCompositor(IContext& context) = 0;
+        virtual IEmbeddedCompositor*         createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context) = 0;
         virtual Bool                         destroyEmbeddedCompositor(IEmbeddedCompositor& compositor) = 0;
 
         virtual ITextureUploadingAdapter*    createTextureUploadingAdapter(IDevice& device, IEmbeddedCompositor& embeddedCompositor, IWindow& window) = 0;

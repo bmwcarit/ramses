@@ -10,5 +10,5 @@ RENDERER_MODULE_PER_CONFIG_DYNAMIC(ramses-example-local-viewport-link
     TYPE                BINARY
     ENABLE_INSTALL      ON
     FILES_SOURCE        src/*
-    FILES_RESOURCE      res/*
+    RESOURCE_FOLDER     res
 )

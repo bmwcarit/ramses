@@ -45,6 +45,7 @@ namespace ramses_internal
         bool setCarModelView(const ramses::CarModelViewMetadata& values, const AnimationInformation& timingInfo);
         bool setCarModelVisibility(bool visibility);
         bool setExclusiveBackground(bool state);
+        bool setStreamID(int32_t streamID);
 
         bool hasPreviewImagePng() const;
         bool hasPreviewDescription() const;
@@ -55,6 +56,7 @@ namespace ramses_internal
         bool hasCarModelView() const;
         bool hasCarModelVisibility() const;
         bool hasExclusiveBackground() const;
+        bool hasStreamID() const;
 
         std::vector<unsigned char> getPreviewImagePng() const;
         std::u32string getPreviewDescription() const;
@@ -66,6 +68,7 @@ namespace ramses_internal
         AnimationInformation getCarModelViewAnimationInfo() const;
         bool getCarModelVisibility() const;
         bool getExclusiveBackground() const;
+        int32_t getStreamID() const;
 
         bool operator==(const DcsmMetadata& other) const;
         bool operator!=(const DcsmMetadata& other) const;
@@ -81,6 +84,7 @@ namespace ramses_internal
         int32_t m_widgetBackgroundID = 0;
         int32_t m_widgetHUDLineID = 0;
         int32_t m_carModel = 0;
+        int32_t m_streamID = 0;
         ramses::CarModelViewMetadata m_carModelView = {};
         AnimationInformation m_carModelViewTiming = {};
         bool m_exclusiveBackground = false;
@@ -95,6 +99,7 @@ namespace ramses_internal
         bool m_hasCarModel = false;
         bool m_hasCarModelVisibility = false;
         bool m_hasExclusiveBackground = false;
+        bool m_hasStreamID = false;
     };
 
     static_assert(std::is_nothrow_move_constructible<DcsmMetadata>::value, "DcsmMetadata must be movable");

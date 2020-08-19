@@ -19,7 +19,6 @@
 
 SET(TARGET_CONTENT
     ${ACME_FILES_SOURCE}
-    ${ACME_FILES_RESOURCE}
 )
 
 IF (TARGET ${ACME_NAME})
@@ -29,6 +28,10 @@ ENDIF()
 IF("${TARGET_CONTENT}" STREQUAL "")
     ACME_ERROR("Target ${ACME_NAME} has no files")
 ENDIF()
+
+if (NOT "${ACME_FILES_RESOURCE}" STREQUAL "")
+    message(FATAL_ERROR "Replace use of FILES_RESOURCE in target '${ACME_NAME}' with RESOURCE_FOLDER")
+endif()
 
 #==============================================================================================
 IF("${ACME_TYPE}" STREQUAL "STATIC_LIBRARY")
@@ -70,10 +73,11 @@ ELSEIF("${ACME_TYPE}" STREQUAL "TEST")
         INSTALL(FILES $<TARGET_PDB_FILE:${ACME_NAME}> DESTINATION ${ACME_INSTALL_BINARY} CONFIGURATIONS Debug RelWithDebInfo)
     endif()
 
-
-    # attach environment variable for clang coverage
-    set_tests_properties(${ACME_NAME}_${ACME_TEST_SUFFIX} PROPERTIES
-        ENVIRONMENT LLVM_PROFILE_FILE=${ACME_NAME}_${ACME_TEST_SUFFIX}_%p.profraw)
+    if (${ACME_ENABLE_TEST_PROPERTIES})
+        # attach environment variable for clang coverage
+        set_tests_properties(${ACME_NAME}_${ACME_TEST_SUFFIX} PROPERTIES
+            ENVIRONMENT LLVM_PROFILE_FILE=${ACME_NAME}_${ACME_TEST_SUFFIX}_%p.profraw)
+    endif()
 
     #==============================================================================================
 ELSEIF("${ACME_TYPE}" STREQUAL "SHARED_LIBRARY")
@@ -100,69 +104,67 @@ ENDIF()
 SET_PROPERTY(TARGET ${ACME_NAME} PROPERTY LINKER_LANGUAGE     CXX)
 SET_PROPERTY(TARGET ${ACME_NAME} PROPERTY VERSION             ${ACME_VERSION})
 
-ACME_FOLDERIZE_TARGET(${ACME_NAME})
 
 #==============================================================================================
-IF(DEFINED ACME_FILES_RESOURCE)
+if(ACME_RESOURCE_FOLDER)
 #==============================================================================================
-    IF(${ACME_ENABLE_INSTALL} OR "${ACME_TYPE}" STREQUAL "TEST")
-        INSTALL(FILES ${ACME_FILES_RESOURCE} DESTINATION ${ACME_INSTALL_RESOURCE} COMPONENT "${ACME_PACKAGE_NAME}")
-    ENDIF()
-
-    SET(FILES_RESOURCE_BINARYDIR "")
-    SET(TARGETS_FOR_FILES_RESOURCE_BINARYDIR)
-
-    FOREACH(FILE_FROM_USER ${ACME_FILES_RESOURCE})
-        GET_FILENAME_COMPONENT(file "${FILE_FROM_USER}" ABSOLUTE)
-        GET_FILENAME_COMPONENT(ONLY_FILENAME "${file}" NAME)
-
-        # check if target already copied resource to this dir
-        set(MUST_ADD_COPY_COMMAND TRUE)
-        get_property(RESOURCE_NAMES_IN_DIRECTORY DIRECTORY "${PROJECT_BASE_DIR}" PROPERTY ACME_COPIED_RESOURCE_NAMES_TO_DIRECTORY)
-        list(FIND RESOURCE_NAMES_IN_DIRECTORY "${ONLY_FILENAME}" FOUND_RES_IDX)
-        if (NOT FOUND_RES_IDX EQUAL -1)
-            set(MUST_ADD_COPY_COMMAND FALSE)
-        endif()
-
-        SET(TARGET_FILEPATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/res/${ONLY_FILENAME}")
-        string(MD5 ONLY_FILENAME_HASH "${ONLY_FILENAME}")
-        SET(TARGET_NAME "copyres-${ONLY_FILENAME_HASH}")
-        if (MUST_ADD_COPY_COMMAND)
-            # no copy command yet, add one
-            set_property(DIRECTORY "${PROJECT_BASE_DIR}" APPEND PROPERTY ACME_COPIED_RESOURCE_NAMES_TO_DIRECTORY "${ONLY_FILENAME}")
-            set_property(DIRECTORY "${PROJECT_BASE_DIR}" APPEND PROPERTY ACME_COPIED_RESOURCE_PATHS_TO_DIRECTORY "${file}")
-
-            add_custom_command(
-                OUTPUT ${TARGET_FILEPATH}
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different "${file}" "${TARGET_FILEPATH}"
-                DEPENDS "${file}"
-                COMMENT "Copying ${file} -> ${TARGET_FILEPATH}"
-                )
-            add_custom_target(${TARGET_NAME} DEPENDS ${TARGET_FILEPATH})
-            SET_PROPERTY(TARGET ${TARGET_NAME} PROPERTY FOLDER "CMakePredefinedTargets/rescopy/all")
-        else()
-            # already copied, ensure it is the same full path and not a different file with same name
-            get_property(RESOURCE_PATHS_IN_DIRECTORY DIRECTORY "${PROJECT_BASE_DIR}" PROPERTY ACME_COPIED_RESOURCE_PATHS_TO_DIRECTORY)
-            list(FIND RESOURCE_PATHS_IN_DIRECTORY "${file}" FOUND_RES_IDX)
-            if (FOUND_RES_IDX EQUAL -1)
-                ACME_ERROR("Error: Trying to copy resource with name ${ONLY_FILENAME} from multiple different source pathes (seconds one is ${file})")
-            endif()
-        endif()
-
-        LIST(APPEND FILES_RESOURCE_BINARYDIR "${TARGET_FILEPATH}")
-        LIST(APPEND TARGETS_FOR_FILES_RESOURCE_BINARYDIR "${TARGET_NAME}")
-    ENDFOREACH()
-
-    if (TARGETS_FOR_FILES_RESOURCE_BINARYDIR)
-        # files are only copied if a target depends on them
-        add_custom_target(RESCOPY_${ACME_NAME} COMMENT "copy resource files to build folder (if changed)" )
-        if (TARGETS_FOR_FILES_RESOURCE_BINARYDIR)
-            ADD_DEPENDENCIES(RESCOPY_${ACME_NAME} ${TARGETS_FOR_FILES_RESOURCE_BINARYDIR})
-        endif()
-        ADD_DEPENDENCIES(${ACME_NAME} RESCOPY_${ACME_NAME})
-
-        SET_PROPERTY(TARGET RESCOPY_${ACME_NAME} PROPERTY FOLDER "CMakePredefinedTargets/rescopy")
+    # install directories
+    if(${ACME_ENABLE_INSTALL} OR "${ACME_TYPE}" STREQUAL "TEST")
+        foreach(user_dir ${ACME_RESOURCE_FOLDER})
+            install(DIRECTORY ${user_dir}/ DESTINATION ${ACME_INSTALL_RESOURCE} COMPONENT "${ACME_PACKAGE_NAME}")
+        endforeach()
     endif()
+
+    # create copy target for directories
+    foreach(user_dir ${ACME_RESOURCE_FOLDER})
+        get_filename_component(dir "${user_dir}" ABSOLUTE)
+
+        if (NOT IS_DIRECTORY "${dir}")
+            message(FATAL_ERROR "${ACME_NAME} has invalid RESOURCE_FOLDER ${user_dir}")
+        endif()
+
+        # generate dir target name
+        string(MD5 dir_hash "${dir}")
+        set(target_name "rescopy-${dir_hash}")
+
+        # collect files
+        set(output_dir_base "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/res")
+        file(GLOB_RECURSE dir_files_rel RELATIVE "${dir}" "${dir}/*")
+        set(dir_files_src)
+        set(dir_files_dst)
+        foreach (file ${dir_files_rel})
+            list(APPEND dir_files_src "${dir}/${file}")
+            list(APPEND dir_files_dst "${output_dir_base}/${file}")
+        endforeach()
+
+        # add files to target sources
+        target_sources(${ACME_NAME} PRIVATE ${dir_files_src})
+
+        # check if already copy target fir dir
+        get_property(dir_copy_target DIRECTORY "${PROJECT_BASE_DIR}" PROPERTY ACME_DIR_COPY_${dir_hash})
+        if (dir_copy_target)
+            add_dependencies(${ACME_NAME} ${dir_copy_target})
+        else()
+            # no copy target yet, create one
+            add_custom_command(
+                OUTPUT ${dir_files_dst}
+                COMMAND ${CMAKE_COMMAND} -E copy_directory "${dir}" "${output_dir_base}"
+                DEPENDS "${dir_files_src}"
+                COMMENT "Copying ${dir} -> ${output_dir_base}"
+                )
+
+            add_custom_target(${target_name} DEPENDS ${dir_files_dst})
+            set_property(TARGET ${target_name} PROPERTY FOLDER "CMakePredefinedTargets/rescopy")
+
+            add_dependencies(${ACME_NAME} ${target_name})
+
+            # store target name
+            set_property(DIRECTORY ${PROJECT_BASE_DIR} PROPERTY ACME_DIR_COPY_${dir_hash} ${target_name})
+        endif()
+
+        # TODO check uniqueness (?)
+
+    endforeach()
 ENDIF()
 
 #==============================================================================================
@@ -202,3 +204,8 @@ FOREACH(DEPENDENCY ${ACME_DEPENDENCIES})
     ENDIF()
 
 ENDFOREACH()
+
+#==============================================================================================
+# ensure VS IDE folder structure
+#==============================================================================================
+ACME_FOLDERIZE_TARGET(${ACME_NAME})

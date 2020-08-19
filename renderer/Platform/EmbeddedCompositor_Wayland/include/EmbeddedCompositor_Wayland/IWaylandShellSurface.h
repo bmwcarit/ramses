@@ -9,6 +9,8 @@
 #ifndef RAMSES_IWAYLANDSHELLSURFACE_H
 #define RAMSES_IWAYLANDSHELLSURFACE_H
 
+#include <cstdint>
+
 namespace ramses_internal
 {
     class IWaylandClient;

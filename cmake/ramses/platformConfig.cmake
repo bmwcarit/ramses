@@ -17,7 +17,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # interface library for all warning flags
 add_library(ramses-build-options-base INTERFACE)
 
-# helper function to add flags
+# helper function to add and remove flags
 FUNCTION(ADD_FLAGS VAR)
     SET(TMP "${${VAR}}")
     FOREACH(flags ${ARGN})
@@ -33,6 +33,14 @@ FUNCTION(REMOVE_FLAGS VAR)
     ENDFOREACH()
     SET(${VAR} ${TMP} PARENT_SCOPE)
 ENDFUNCTION()
+
+FUNCTION(REMOVE_FROM_FLAGS flags toRemoveList outVar)
+    string(REGEX REPLACE " +" ";" flags_LIST "${flags}")   # to list
+    list(REMOVE_ITEM flags_LIST ${toRemoveList})           # filter list
+    string(REPLACE ";" " " flags_filtered "${flags_LIST}") # to string
+    set(${outVar} "${flags_filtered}" PARENT_SCOPE)
+ENDFUNCTION()
+
 
 # variables to fill
 SET(RAMSES_C_CXX_FLAGS)
@@ -69,7 +77,7 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     ADD_FLAGS(RAMSES_C_CXX_FLAGS "-Wl,-z,relro,-z,now")
 
     if (ramses-sdk_BUILD_WITH_LTO)
-        ADD_FLAGS(RAMSES_C_CXX_FLAGS "-flto -Wodr -Wlto-type-mismatch")
+        target_compile_options(ramses-build-options-base INTERFACE -flto -Wodr -Wlto-type-mismatch)
     endif()
 
     # gcc specific warnings

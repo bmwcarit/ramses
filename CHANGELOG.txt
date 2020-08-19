@@ -1,3 +1,42 @@
+25.0.6
+-------------------
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fix possible crash when using EVisibilityMode::Off
+        - Fix oss build with vanilla abseil on MSVC
+
+        Documentation
+        ------------------------------------------------------------------------
+        - Published doxygen API docs at https://genivi.github.io/ramses (currently showing
+            only the RAMSES version released latest)
+
+25.0.5
+-------------------
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Embedded compositor supports older versions (version 1 and version 2) of wl_output protocol
+
+25.0.4
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Embedded Compositor supports wl_output interface
+            - Always reports Zero for physical width, physical height and refresh
+            - Always reports One for scale factor
+        - SceneReference's master scene can be changed by destroying the SceneReference in its original master scene
+          and creating a new SceneReference referencing same scene ID in another master scene
+
+        API changes
+        ------------------------------------------------------------------------
+        - Add DCSM metadata streamID
+
+25.0.2
+-------------------
+        API changes
+        ------------------------------------------------------------------------
+        - SceneReference::requestNotificationsForSceneVersionTags will trigger sending of last valid version tag applied
+          on the referenced scene
+
 25.0.1
 -------------------
         General changes
@@ -14,7 +53,6 @@
           runtime. Added as static method for binary compatibility. Will be switched to normalized
           API on next major version
         - Added RamsesUtils::SaveImageBufferToPng
-
 
 25.0.0
 -------------------

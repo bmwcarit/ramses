@@ -42,6 +42,7 @@ IndentWrappedFunctionNames: false
 MaxEmptyLinesToKeep: 2
 KeepEmptyLinesAtTheStartOfBlocks: false
 NamespaceIndentation: All
+FixNamespaceComments: false
 PointerAlignment: Left
 ReflowComments: true
 SpacesBeforeTrailingComments: 1

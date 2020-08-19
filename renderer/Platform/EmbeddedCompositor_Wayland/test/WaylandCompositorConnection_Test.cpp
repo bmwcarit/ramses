@@ -47,8 +47,6 @@ namespace ramses_internal
             m_waylandCompositorConnectionResource = new WaylandResourceMock;
 
             InSequence s;
-            EXPECT_CALL(m_client, getCredentials(_, _, _));
-
             EXPECT_CALL(m_client, resourceCreate(&wl_compositor_interface, interfaceVersion, id))
                 .WillOnce(Return(m_waylandCompositorConnectionResource));
 
@@ -76,8 +74,6 @@ namespace ramses_internal
         const uint32_t interfaceVersion = 4;
 
         InSequence s;
-        EXPECT_CALL(m_client, getCredentials(_, _, _));
-
         EXPECT_CALL(m_client, resourceCreate(&wl_compositor_interface, interfaceVersion, id))
             .WillOnce(Return(nullptr));
         EXPECT_CALL(m_client, postNoMemory());

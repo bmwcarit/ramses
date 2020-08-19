@@ -49,7 +49,7 @@ namespace ramses_internal
         MOCK_METHOD(Bool, destroyDevice, (IDevice&), (override));
         MOCK_METHOD(ISurface*, createSurface, (IWindow& window, IContext& context), (override));
         MOCK_METHOD(Bool, destroySurface, (ISurface& surface), (override));
-        MOCK_METHOD(IEmbeddedCompositor*, createEmbeddedCompositor,(IContext& context), (override));
+        MOCK_METHOD(IEmbeddedCompositor*, createEmbeddedCompositor,(const DisplayConfig& displayConfig, IContext& context), (override));
         MOCK_METHOD(Bool, destroyEmbeddedCompositor, (IEmbeddedCompositor& compositor), (override));
         MOCK_METHOD(ITextureUploadingAdapter*, createTextureUploadingAdapter, (IDevice& device, IEmbeddedCompositor& embeddedCompositor, IWindow& window), (override));
         MOCK_METHOD(Bool, destroyTextureUploadingAdapter, (ITextureUploadingAdapter& textureUploadingAdapter), (override));

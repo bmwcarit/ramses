@@ -62,7 +62,7 @@ ACME_MODULE(
     INCLUDE_BASE            test
     FILES_PRIVATE_HEADER    test/*.h
     FILES_SOURCE            test/*.cpp
-    FILES_RESOURCE          test/res/*
+    RESOURCE_FOLDER         test/res
 
     #==========================================================================
     # dependencies

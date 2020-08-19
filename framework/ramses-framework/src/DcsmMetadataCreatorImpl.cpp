@@ -77,6 +77,13 @@ namespace ramses
         return StatusOK;
     }
 
+    status_t DcsmMetadataCreatorImpl::setStreamID(int32_t streamID)
+    {
+        if (!m_metadata.setStreamID(streamID))
+            return addErrorEntry("DcsmMetadataCreatorImpl::setStreamID: input not valid");
+        return StatusOK;
+    }
+
     ramses_internal::DcsmMetadata DcsmMetadataCreatorImpl::getMetadata() const
     {
         return m_metadata;

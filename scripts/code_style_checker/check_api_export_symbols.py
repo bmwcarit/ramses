@@ -22,34 +22,40 @@ def check_api_export_symbols(filename, clean_file_contents):
 
     if is_api_header:
         # symbol_def_re matches following patterns:
-        #   (correct case) enum|class|struct RAMSES_API SymbolName { [...]
-        #   (correct case) enum|class|struct RAMSES_API SymbolName : [...]
-        #   (wrong case)   enum|class|struct SymbolName { [...]
-        #   (wrong case)   enum|class|struct SymbolName : [...]
-        # Groups (?<! is no group):  (x    )(0                )(1  )(2  )(3  )(4  )(5  )(6    )
-        symbol_def_re = re.compile(r'(?<!\w)(enum|class|struct)(\s+)(\w+)(\s+)(\w*)(\s*)(\{|\:)')
+        #   (correct case) class|struct RAMSES_API SymbolName { [...]
+        #   (correct case) class|struct RAMSES_API SymbolName : [...]
+        #   (correct case) enum|enum class SymbolName : [...]
+        #   (wrong case)   class|struct SymbolName { [...]
+        #   (wrong case)   class|struct SymbolName : [...]
+        symbol_def_re = re.compile(r'(template [^;]+?)?\s+(enum|class|struct|enum\s+class)(\s+)(\w+)(\s+)(\w*)(\s*)(\{|\:)')
 
         for symbol_match in re.finditer(symbol_def_re, clean_file_contents):
             line_number = clean_file_contents[:symbol_match.start()].count("\n")
 
             symbolNameGroups = symbol_match.groups()
-            isEnum     = symbolNameGroups[0].strip() == "enum"
-            isStruct   = symbolNameGroups[0].strip() == "struct"
-            firstWord  = symbolNameGroups[2].strip()
-            secondWord = symbolNameGroups[4].strip()
+            isTemplate = symbolNameGroups[0] is not None
+            isEnum     = symbolNameGroups[1].strip() == "enum"
+            isStruct   = symbolNameGroups[1].strip() == "struct"
+            isEnumClass = "enum " in symbolNameGroups[1].strip()
+            firstWord  = symbolNameGroups[3].strip()
+            secondWord = symbolNameGroups[5].strip()
 
+            # check special cases that should NOT have RAMSES_API
             if isEnum:
                 if firstWord == "RAMSES_API":
                     log_warning("check_api_export_symbols", filename, line_number + 1, "Enum exported as RAMSES_API: " + secondWord)
+            elif isEnumClass:
+                if firstWord == "RAMSES_API":
+                    log_warning("check_api_export_symbols", filename, line_number + 1, "Enum class exported as RAMSES_API: " + secondWord)
             elif isStruct:
                 if firstWord == "RAMSES_API":
                     log_warning("check_api_export_symbols", filename, line_number + 1, "Struct exported as RAMSES_API: " + secondWord)
+            elif isTemplate:
+                if firstWord == "RAMSES_API":
+                    log_warning("check_api_export_symbols", filename, line_number + 1, "Template exported as RAMSES_API: " + secondWord)
             else:
-                # Exceptions for the rule - these symbols are not supposed to be exported
-                # StronglyTypedValue  -  header only class
-                excludedSymbols = ["StronglyTypedValue"]
-
-                if firstWord != "RAMSES_API" and firstWord not in excludedSymbols:
+                # remaining cases should have RAMSES_API
+                if firstWord != "RAMSES_API":
                     log_warning("check_api_export_symbols", filename, line_number + 1, "Public symbol not exported as RAMSES_API: " + firstWord)
     else:
         # Will find occurances of RAMSES_API surrounded by space(s)

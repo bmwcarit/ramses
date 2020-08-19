@@ -1,16 +1,17 @@
 //  -------------------------------------------------------------------------
 //  Copyright (C) 2019-2019, Garmin International, Inc. and its affiliates.
+//  Copyright (C) 2020 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
+#include "EmbeddedCompositor_Wayland/LinuxDmabuf.h"
+#include "PlatformAbstraction/PlatformTypes.h"
+#include "Utils/LogMacros.h"
 #include <assert.h>
 #include <unistd.h>
-
-#include "PlatformAbstraction/PlatformTypes.h"
-#include "EmbeddedCompositor_Wayland/LinuxDmabuf.h"
 
 namespace ramses_internal
 {
@@ -131,6 +132,8 @@ namespace ramses_internal
         m_planeData[planeIndex].m_modifier = modifier;
 
         m_numPlanes++;
+
+        LOG_INFO(CONTEXT_RENDERER, "LinuxDmabufBufferData::setPlaneData(): plane data is set successfully, no. planes :" << m_numPlanes);
     }
 
     int32_t LinuxDmabufBufferData::getWidth()

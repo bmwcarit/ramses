@@ -28,6 +28,7 @@ namespace ramses_internal
             WidgetCarModelView = 7,
             WidgetCarModelVisibility = 8,
             WidgetExclusiveBackground = 9,
+            WidgetStreamID = 10,
         };
 
         constexpr const uint32_t CurrentMetadataVersion = 1;
@@ -48,7 +49,8 @@ namespace ramses_internal
             !m_hasCarModel &&
             !m_hasCarModelView &&
             !m_hasCarModelVisibility &&
-            !m_hasExclusiveBackground;
+            !m_hasExclusiveBackground &&
+            !m_hasStreamID;
     }
 
     std::vector<Byte> DcsmMetadata::toBinary() const
@@ -63,7 +65,8 @@ namespace ramses_internal
             (m_hasCarModel ? 1 : 0) +
             (m_hasCarModelView ? 1 : 0) +
             (m_hasCarModelVisibility ? 1 : 0) +
-            (m_hasExclusiveBackground ? 1 : 0) ;
+            (m_hasExclusiveBackground ? 1 : 0) +
+            (m_hasStreamID ? 1 : 0);
         os << CurrentMetadataVersion
            << numEntries;
 
@@ -144,6 +147,13 @@ namespace ramses_internal
             os << DcsmMetadataType::WidgetExclusiveBackground
                << size
                << state;
+        }
+        if (m_hasStreamID)
+        {
+            constexpr uint32_t size = static_cast<uint32_t>(sizeof(int32_t));
+            os << DcsmMetadataType::WidgetStreamID
+                << size
+                << static_cast<int32_t>(m_streamID);
         }
         return os.release();
     }
@@ -235,7 +245,12 @@ namespace ramses_internal
                 m_exclusiveBackground = (state == 0) ? false : true;
                 break;
             }
-
+            case DcsmMetadataType::WidgetStreamID:
+            {
+                m_hasStreamID = true;
+                is >> m_streamID;
+                break;
+            }
             default:
                 LOG_WARN(CONTEXT_DCSM, "DcsmMetadata::fromBinary: skip unknown type " << static_cast<uint32_t>(type) << ", size " << size);
                 is.skip(size);
@@ -293,6 +308,11 @@ namespace ramses_internal
         {
             m_hasExclusiveBackground = true;
             m_exclusiveBackground = other.m_exclusiveBackground;
+        }
+        if (other.m_hasStreamID)
+        {
+            m_hasStreamID = true;
+            m_streamID = other.m_streamID;
         }
     }
 
@@ -397,6 +417,15 @@ namespace ramses_internal
         return true;
     }
 
+    bool DcsmMetadata::setStreamID(int32_t streamID)
+    {
+        LOG_INFO(CONTEXT_DCSM, "DcsmMetadata::setStreamID: " << streamID);
+
+        m_streamID = streamID;
+        m_hasStreamID = true;
+        return true;
+    }
+
     bool DcsmMetadata::hasPreviewImagePng() const
     {
         return m_hasPreviewImagePng;
@@ -440,6 +469,11 @@ namespace ramses_internal
     bool DcsmMetadata::hasExclusiveBackground() const
     {
         return m_hasExclusiveBackground;
+    }
+
+    bool DcsmMetadata::hasStreamID() const
+    {
+        return m_hasStreamID;
     }
 
     std::vector<unsigned char> DcsmMetadata::getPreviewImagePng() const
@@ -492,6 +526,11 @@ namespace ramses_internal
         return m_exclusiveBackground;
     }
 
+    int32_t DcsmMetadata::getStreamID() const
+    {
+        return m_streamID;
+    }
+
     bool DcsmMetadata::operator==(const DcsmMetadata& other) const
     {
         return m_hasPreviewImagePng == other.m_hasPreviewImagePng &&
@@ -512,7 +551,9 @@ namespace ramses_internal
             m_hasCarModelVisibility == other.m_hasCarModelVisibility &&
             m_carModelVisibility == other.m_carModelVisibility &&
             m_hasExclusiveBackground == other.m_hasExclusiveBackground &&
-            m_exclusiveBackground == other.m_exclusiveBackground;
+            m_exclusiveBackground == other.m_exclusiveBackground &&
+            m_hasStreamID == other.m_hasStreamID &&
+            m_streamID == other.m_streamID;
     }
 
     bool DcsmMetadata::operator!=(const DcsmMetadata& other) const

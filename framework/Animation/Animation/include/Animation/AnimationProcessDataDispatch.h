@@ -15,7 +15,7 @@
 #include "Math3d/Vector2i.h"
 #include "Math3d/Vector3i.h"
 #include "Math3d/Vector4i.h"
-#include "absl/types/variant.h"
+#include "PlatformAbstraction/VariantWrapper.h"
 
 namespace ramses_internal
 {

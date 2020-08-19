@@ -8,13 +8,13 @@
 #ifndef RAMSES_WAYLANDCOMPOSITORCONNECTION_H
 #define RAMSES_WAYLANDCOMPOSITORCONNECTION_H
 
-#include "wayland-server.h"
 #include "EmbeddedCompositor_Wayland/IWaylandCompositorConnection.h"
+#include "EmbeddedCompositor_Wayland/IWaylandClient.h"
+#include "wayland-server.h"
 
 namespace ramses_internal
 {
     class IEmbeddedCompositor_Wayland;
-    class IWaylandResource;
 
     class WaylandCompositorConnection: public IWaylandCompositorConnection
     {
@@ -32,10 +32,10 @@ namespace ramses_internal
         static void CompositorCreateSurfaceCallback(wl_client* client, wl_resource* clientResource, uint32_t id);
         static void CompositorCreateRegionCallback(wl_client* client, wl_resource* clientResource, uint32_t id);
 
+        const WaylandClientCredentials  m_clientCredentials;
         IWaylandResource*           m_resource = nullptr;
         uint32_t                    m_version;
         IEmbeddedCompositor_Wayland& m_embeddedCompositor;
-        pid_t                       m_processId = 0;
 
         const struct Compositor_Interface : private wl_compositor_interface
         {

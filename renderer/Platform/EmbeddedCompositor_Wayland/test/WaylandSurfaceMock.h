@@ -9,12 +9,12 @@
 #ifndef RAMSES_WAYLANDSURFACEMOCK_H
 #define RAMSES_WAYLANDSURFACEMOCK_H
 
-#include "gmock/gmock.h"
 #include "EmbeddedCompositor_Wayland/IWaylandSurface.h"
 #include "EmbeddedCompositor_Wayland/WaylandBufferResource.h"
 #include "EmbeddedCompositor_Wayland/IWaylandBuffer.h"
 #include "EmbeddedCompositor_Wayland/IWaylandClient.h"
 #include "RendererLib/RendererLogContext.h"
+#include "gmock/gmock.h"
 
 namespace ramses_internal
 {
@@ -38,7 +38,7 @@ namespace ramses_internal
         MOCK_METHOD(WaylandIviSurfaceId, getIviSurfaceId, (), (const, override));
         MOCK_METHOD(void, sendFrameCallbacks, (UInt32 time), (override));
         MOCK_METHOD(IWaylandBuffer*, getWaylandBuffer, (), (const, override));
-        MOCK_METHOD(UInt64, getNumberOfCommitedFrames, (), (const, override));
+        MOCK_METHOD(UInt32, getNumberOfCommitedFrames, (), (const, override));
         MOCK_METHOD(void, resetNumberOfCommitedFrames, (), (override));
         MOCK_METHOD(UInt64, getNumberOfCommitedFramesSinceBeginningOfTime, (), (const, override));
         MOCK_METHOD(bool, hasPendingBuffer, (), (const, override));
@@ -46,6 +46,7 @@ namespace ramses_internal
         MOCK_METHOD(void, bufferDestroyed, (IWaylandBuffer& buffer), (override));
         MOCK_METHOD(void, setIviSurface, (IWaylandIVISurface* iviSurface), (override));
         MOCK_METHOD(bool, hasIviSurface, (), (const, override));
+        MOCK_METHOD(WaylandClientCredentials, getClientCredentials, (), (const override));
     };
 }
 

@@ -20,6 +20,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
 OPTION(ACME_CREATE_PACKAGE           "include CPack in order to create a 'package' target" ON)
+OPTION(ACME_ENABLE_TEST_PROPERTIES   "Enable use of test properties" ON)
 
 SET(ACME2_BASE_DIR   ${CMAKE_CURRENT_LIST_DIR})
 
@@ -93,11 +94,6 @@ MACRO(ACME2_PROJECT)
     IF(ACME_CREATE_PACKAGE)
         INCLUDE(${ACME2_BASE_DIR}/internal/create_package.cmake)
     ENDIF()
-
-    if (ACME_ENABLE_TESTCOVERAGE)
-        include(${ACME2_BASE_DIR}/internal/create_coverage_targets.cmake)
-    endif()
-
 ENDMACRO(ACME2_PROJECT)
 
 MACRO(ACME_MODULE)
@@ -136,7 +132,6 @@ MACRO(ACME_MODULE)
 
     # resolve file wildcards
     file(GLOB ACME_FILES_SOURCE LIST_DIRECTORIES false ${MODULE_FILES_SOURCE} ${MODULE_FILES_PRIVATE_HEADER})
-    file(GLOB ACME_FILES_RESOURCE LIST_DIRECTORIES false ${MODULE_FILES_RESOURCE})
 
     # use glob to make directories absolute
     file(GLOB ACME_INCLUDE_BASE ${MODULE_INCLUDE_BASE})
@@ -144,7 +139,7 @@ MACRO(ACME_MODULE)
     SET(ACME_PACKAGE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
 
     # check, if module contains files
-    IF ("${ACME_FILES_SOURCE}${ACME_FILES_RESOURCE}" STREQUAL "")
+    IF ("${ACME_FILES_SOURCE}" STREQUAL "")
         message(FATAL_ERROR "${ACME_NAME} does not have any files")
     ENDIF()
 

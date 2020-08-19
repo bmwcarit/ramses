@@ -1,5 +1,6 @@
 //  -------------------------------------------------------------------------
 //  Copyright (C) 2019-2019, Garmin International, Inc. and its affiliates.
+//  Copyright (C) 2020 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -30,22 +31,27 @@ namespace ramses_internal
     };
 
     LinuxDmabufConnection::LinuxDmabufConnection(IWaylandClient& client, uint32_t version, uint32_t id)
+        : m_clientCredentials(client.getCredentials())
     {
         m_resource = client.resourceCreate(&zwp_linux_dmabuf_v1_interface, version, id);
 
         if (m_resource)
         {
+            LOG_INFO(CONTEXT_RENDERER, "LinuxDmabufConnection::LinuxDmabufConnection(): DMA BUF interface is now provided  " << m_clientCredentials);
+
             m_resource->setImplementation(&m_dmabufInterface, this, ResourceDestroyedCallback);
         }
         else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufConnection::LinuxDmabufConnection(): Could not create wayland resource");
+            LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufConnection::LinuxDmabufConnection(): Could not create wayland resource  " << m_clientCredentials);
             client.postNoMemory();
         }
     }
 
     LinuxDmabufConnection::~LinuxDmabufConnection()
     {
+        LOG_INFO(CONTEXT_RENDERER, "LinuxDmabufConnection::~LinuxDmabufConnection(): Connection destroyed  " << m_clientCredentials);
+
         if (nullptr != m_resource)
         {
             // Remove ResourceDestroyedCallback

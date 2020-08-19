@@ -11,9 +11,11 @@ RAMSES is an abbreviation for "Rendering Architecture for Multi-Screen
 EnvironmentS". It implements a distributed system for rendering 3D content
 with focus on bandwidth and resource efficiency.
 
-For more details, see the Wiki pages or this showcase video:
+Have a look at our showcase video: [![RAMSES Distributed Rendering Engine Showcase Video](https://img.youtube.com/vi/tyzvEI25BMg/0.jpg)](https://www.youtube.com/watch?v=tyzvEI25BMg)
 
-[![RAMSES Distributed Rendering Engine Showcase](https://img.youtube.com/vi/tyzvEI25BMg/0.jpg)](https://www.youtube.com/watch?v=tyzvEI25BMg)
+You can find additional resources here:
+* [The Github wiki pages](https://github.com/GENIVI/ramses/wiki)
+* [The doxygen API docs](https://genivi.github.io/ramses)
 
 ## Obtaining the source code
 RAMSES can be cloned from its Genivi repository using git:

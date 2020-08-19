@@ -19,7 +19,8 @@
 #include "Math3d/Matrix22f.h"
 #include "Math3d/Matrix33f.h"
 #include "Math3d/Matrix44f.h"
-#include "absl/types/variant.h"
+
+#include "PlatformAbstraction/VariantWrapper.h"
 
 namespace ramses_internal
 {

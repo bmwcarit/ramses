@@ -23,6 +23,7 @@ namespace ramses_internal
 
     enum class ETestWaylandApplicationMessage
     {
+        InitializeTestApplication,
         StopApplication,
         CreateSurface,
         CreateShellSurface,
@@ -42,6 +43,8 @@ namespace ramses_internal
         GetNumberOfAllocatedSHMBuffer,
         RenderOneFrameToTwoSurfaces,
         GetIsBufferFree,
+        GetWaylandOutputParams,
+        SetRequiredWaylandOutputVersion,
         StartRamsesRendererAndRunRenderingTest,
     };
 }

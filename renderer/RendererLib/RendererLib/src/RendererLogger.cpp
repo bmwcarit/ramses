@@ -131,7 +131,7 @@ namespace ramses_internal
 
         for(const auto sceneId : knownSceneIds)
         {
-            context << "Scene [id: " << sceneId.getValue() << "]" << RendererLogContext::NewLine;
+            context << "Scene [id: " << sceneId << "]" << RendererLogContext::NewLine;
             context.indent();
             {
                 const ESceneState sceneState = updater.m_sceneStateExecutor.getSceneState(sceneId);

@@ -8,10 +8,10 @@
 #ifndef RAMSES_WAYLANDBUFFER_H
 #define RAMSES_WAYLANDBUFFER_H
 
-#include <wayland-server.h>
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "EmbeddedCompositor_Wayland/WaylandBufferResource.h"
 #include "EmbeddedCompositor_Wayland/IWaylandBuffer.h"
+#include <wayland-server.h>
 
 namespace ramses_internal
 {

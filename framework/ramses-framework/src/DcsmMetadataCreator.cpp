@@ -87,4 +87,11 @@ namespace ramses
         return status;
     }
 
+    status_t DcsmMetadataCreator::setStreamID(int32_t streamID)
+    {
+        const auto status = impl.setStreamID(streamID);
+        LOG_HL_CLIENT_API1(status, streamID);
+        return status;
+    }
+
 }

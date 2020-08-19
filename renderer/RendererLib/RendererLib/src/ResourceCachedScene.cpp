@@ -466,11 +466,11 @@ namespace ramses_internal
     {
         updateRenderablesResourcesDirtiness();
 
-        const UInt32 renderableCount = getRenderableCount();
-        for (RenderableHandle renderable(0); renderable < renderableCount; ++renderable)
+        for (const auto& renderableIt : getRenderables())
         {
+            const auto renderable = renderableIt.first;
             const UInt32 renderableAsIndex = renderable.asMemoryHandle();
-            if (isRenderableAllocated(renderable) && m_renderableResourcesDirty[renderableAsIndex])
+            if (m_renderableResourcesDirty[renderableAsIndex] && renderableIt.second->visibilityMode != EVisibilityMode::Off)
             {
                 if (checkAndUpdateRenderableResources(resourceAccessor, renderable) &&
                     checkAndUpdateTextureResources(resourceAccessor, embeddedCompositingManager, renderable) &&

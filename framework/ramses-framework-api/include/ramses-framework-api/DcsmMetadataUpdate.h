@@ -178,6 +178,21 @@ namespace ramses
         bool getExclusiveBackground() const;
 
         /**
+         * @brief Get streamID metadata entry.
+         *        Value is undefined when not hasStreamID().
+         *
+         * @return streamID
+         */
+        int32_t getStreamID() const;
+
+        /**
+         * @brief Check if object contains streamID metadata entry.
+         *
+         * @return true when has streamID metadata, false when not
+         */
+        bool hasStreamID() const;
+
+        /**
          * @brief Deleted default constructor
          */
         DcsmMetadataUpdate() = delete;

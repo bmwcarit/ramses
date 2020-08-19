@@ -51,6 +51,9 @@ namespace ramses
         bool hasExclusiveBackground() const;
         bool getExclusiveBackground() const;
 
+        bool hasStreamID() const;
+        int32_t getStreamID() const;
+
         void setMetadata(ramses_internal::DcsmMetadata metadata);
         ramses_internal::DcsmMetadata getMetadata() const;
     private:

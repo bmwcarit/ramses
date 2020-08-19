@@ -109,6 +109,16 @@ namespace ramses
         return m_metadata.getExclusiveBackground();
     }
 
+    bool DcsmMetadataUpdateImpl::hasStreamID() const
+    {
+        return m_metadata.hasStreamID();
+    }
+
+    int32_t DcsmMetadataUpdateImpl::getStreamID() const
+    {
+        return m_metadata.getStreamID();
+    }
+
     void DcsmMetadataUpdateImpl::setMetadata(ramses_internal::DcsmMetadata metadata)
     {
         m_metadata = std::move(metadata);

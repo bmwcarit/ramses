@@ -20,24 +20,27 @@ namespace ramses_internal
                                                                      uint32_t                    id,
                                                                      EmbeddedCompositor_Wayland& compositor)
         : m_compositor(compositor)
+        , m_clientCredentials(client.getCredentials())
     {
         LOG_DEBUG(CONTEXT_RENDERER, "WaylandIVIApplicationConnection::WaylandIVIApplicationConnection Connection created");
 
         m_resource = client.resourceCreate(&ivi_application_interface, version, id);
         if (m_resource)
         {
+            LOG_INFO(CONTEXT_RENDERER, "WaylandIVIApplicationConnection::WaylandIVIApplicationConnection(): ivi application interface is now provided  " << m_clientCredentials);
+
             m_resource->setImplementation(&m_iviApplicationInterface, this, ResourceDestroyedCallback);
         }
         else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandIVIApplicationConnection::WaylandIVIApplicationConnection(): Could not create wayland resource");
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandIVIApplicationConnection::WaylandIVIApplicationConnection(): Could not create wayland resource  " << m_clientCredentials);
             client.postNoMemory();
         }
     }
 
     WaylandIVIApplicationConnection::~WaylandIVIApplicationConnection()
     {
-        LOG_DEBUG(CONTEXT_RENDERER, "WaylandIVIApplicationConnection::~WaylandIVIApplicationConnection Connection destroyed");
+        LOG_INFO(CONTEXT_RENDERER, "WaylandIVIApplicationConnection::~WaylandIVIApplicationConnection Connection destroyed  " << m_clientCredentials);
 
         if (m_resource)
         {

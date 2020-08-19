@@ -9,8 +9,8 @@
 #ifndef RAMSES_WAYLANDRESOURCEMOCK_H
 #define RAMSES_WAYLANDRESOURCEMOCK_H
 
-#include "gmock/gmock.h"
 #include "EmbeddedCompositor_Wayland/IWaylandResource.h"
+#include "gmock/gmock.h"
 
 namespace ramses_internal
 {

@@ -9,11 +9,17 @@
 # determine target os and architecture
 
 # exclude unsupported platforms
-IF (${CMAKE_SYSTEM_NAME} MATCHES "Windows" AND MSVC)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Windows" AND MSVC)
     IF (NOT MSVC_VERSION GREATER 1909)  # VS2017 is 1910 - 1919
         MESSAGE(FATAL_ERROR "Visual Studio 2017 or later is required to build ramses")
     ENDIF()
-ENDIF()
+
+elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7)
+    message(FATAL_ERROR "GCC 7 or new required to build ramses")
+
+elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6)
+    message(FATAL_ERROR "Clang 6 or new required to build ramses")
+endif()
 
 # guess TARGET_OS
 IF ((CMAKE_SYSTEM_NAME STREQUAL "Windows") OR (CMAKE_SYSTEM_NAME STREQUAL "Linux") OR (CMAKE_SYSTEM_NAME STREQUAL "Integrity") OR (CMAKE_SYSTEM_NAME STREQUAL "Android"))

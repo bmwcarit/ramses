@@ -1,5 +1,6 @@
 //  -------------------------------------------------------------------------
 //  Copyright (C) 2019-2019, Garmin International, Inc. and its affiliates.
+//  Copyright (C) 2020 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,10 +10,9 @@
 #ifndef RAMSES_LINUXDMABUFGLOBAL_H
 #define RAMSES_LINUXDMABUFGLOBAL_H
 
-#include <stdint.h>
-
-#include "wayland-server.h"
 #include "linux-dmabuf-unstable-v1-server-protocol.h"
+#include "wayland-server.h"
+#include <stdint.h>
 
 namespace ramses_internal
 {

@@ -12,6 +12,7 @@
 #include "RendererLib/RendererLogContext.h"
 #include "RendererAPI/IEmbeddedCompositor.h"
 #include "PlatformAbstraction/PlatformMath.h"
+#include "wayland-server-protocol.h"
 #include <sstream>
 
 namespace ramses_internal

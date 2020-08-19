@@ -9,6 +9,8 @@
 #ifndef RAMSES_IWAYLANDSHELLGLOBAL_H
 #define RAMSES_IWAYLANDSHELLGLOBAL_H
 
+#include <cstdint>
+
 namespace ramses_internal
 {
     class IWaylandClient;

@@ -32,10 +32,14 @@ target_link_libraries(ramses-gmock-main INTERFACE gmock_main gtest)
 
 
 # fmt string formatting library
-add_subdirectory("fmt")
-target_compile_definitions(fmt PUBLIC "-DFMT_EXCEPTIONS=0")
-ACME_FOLDERIZE_TARGET(fmt)
-ACME_INFO("+ fmt")
+if (TARGET fmt)
+    ACME_INFO("+ fmt (existing target)")
+else()
+    add_subdirectory("fmt")
+    target_compile_definitions(fmt PUBLIC "-DFMT_EXCEPTIONS=0")
+    ACME_FOLDERIZE_TARGET(fmt)
+    ACME_INFO("+ fmt")
+endif()
 
 # abseil library
 function(add_abseil_scope)
@@ -46,6 +50,24 @@ function(add_abseil_scope)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-anon-enum-enum-conversion")
     endif()
     add_subdirectory(abseil)
+
+    # Remove wrongly included O2 options from internal Abseil targets on Windows in Debug builds
+    # The option conflicts with /RTC1 - added by VS by default
+    # This is fixed in more recent Abseil versions, but not in LTS yet
+    # Ramses doesn't even use these targets, but there is no way to disable them...
+    # Why remove O2/Ob2 instead of RTC1? Because RTC1 can't be easily disabled without affecting other targets
+    # TODO (Violin) remove this hack after an Abseil upgrade with fix included
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        get_target_property(randen_hwaes_CXX_FLAGS       absl_random_internal_randen_hwaes       COMPILE_OPTIONS)
+        get_target_property(randen_hwaes_impl_CXX_FLAGS  absl_random_internal_randen_hwaes_impl  COMPILE_OPTIONS)
+        list(REMOVE_ITEM randen_hwaes_CXX_FLAGS "/O2")
+        list(REMOVE_ITEM randen_hwaes_CXX_FLAGS "/Ob2")
+        list(REMOVE_ITEM randen_hwaes_impl_CXX_FLAGS "/O2")
+        list(REMOVE_ITEM randen_hwaes_impl_CXX_FLAGS "/Ob2")
+        set_target_properties(absl_random_internal_randen_hwaes PROPERTIES COMPILE_OPTIONS "${randen_hwaes_CXX_FLAGS}")
+        set_target_properties(absl_random_internal_randen_hwaes_impl PROPERTIES COMPILE_OPTIONS "${randen_hwaes_impl_CXX_FLAGS}")
+    endif()
+
     ACME_INFO("+ abseil")
 endfunction()
 add_abseil_scope()
@@ -119,12 +141,6 @@ IF (ramses-sdk_ALLOW_CUSTOM_FREETYPE AND NOT freetype_FOUND)
     # enable freetype in harfbuzz
     set(HB_HAVE_FREETYPE ON CACHE BOOL "Enable freetype interop helpers" FORCE)
 
-    # save c/cxx flags and remove -flto (freetype/harfbuzz should not be built with LTO)
-    set(OLD_CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    set(OLD_CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
-    REMOVE_FROM_FLAGS("${CMAKE_CXX_FLAGS}" "-flto" CMAKE_CXX_FLAGS)
-    REMOVE_FROM_FLAGS("${CMAKE_C_FLAGS}" "-flto" CMAKE_C_FLAGS)
-
     # save and restore module search path
     set(OLD_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
     set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_MODULE_PATH})
@@ -165,10 +181,6 @@ IF (ramses-sdk_ALLOW_CUSTOM_FREETYPE AND NOT freetype_FOUND)
     file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/FindHarfbuzz.cmake")
 
     target_include_directories(freetype INTERFACE "freetype/include")
-
-    # restore c/cxx flags
-    set(CMAKE_CXX_FLAGS "${OLD_CMAKE_CXX_FLAGS}")
-    set(CMAKE_C_FLAGS "${OLD_CMAKE_C_FLAGS}")
 
     ACME_FOLDERIZE_TARGETS(freetype harfbuzz)
     foreach (tgt dist harfbuzz-subset hb-ot-tag main test-buffer-serialize test-size-params test-size-params test-test test-unicode-ranges test-would-substitute)

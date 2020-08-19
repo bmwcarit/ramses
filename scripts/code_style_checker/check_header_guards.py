@@ -11,6 +11,9 @@
 import re
 from common_modules.common import *
 
+
+g_header_guard_string_map = {}
+
 def check_header_guards(filename, file_contents):
     """
     Check if a header files contains valid header guards:
@@ -84,6 +87,12 @@ def check_header_guards(filename, file_contents):
 
     if not check_good_name(ifndef_guard_name):
         return None
+
+    # check uniqueness
+    if ifndef_guard_name in g_header_guard_string_map:
+        log_warning("check_header_guards", filename, 1, f"Header guard name '{ifndef_guard_name}' already used in file {g_header_guard_string_map[ifndef_guard_name]}")
+        return None
+    g_header_guard_string_map[ifndef_guard_name] = filename
 
     file_contents = file_contents[ifndef_match.end():]
 

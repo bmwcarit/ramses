@@ -9,19 +9,21 @@
 #ifndef RAMSES_EMBEDDEDCOMPOSITOR_WAYLAND_H
 #define RAMSES_EMBEDDEDCOMPOSITOR_WAYLAND_H
 
-#include "RendererAPI/IEmbeddedCompositor.h"
 #include "EmbeddedCompositor_Wayland/WaylandCompositorGlobal.h"
 #include "EmbeddedCompositor_Wayland/WaylandShellGlobal.h"
+#include "EmbeddedCompositor_Wayland/WaylandOutputGlobal.h"
 #include "EmbeddedCompositor_Wayland/WaylandDisplay.h"
 #include "EmbeddedCompositor_Wayland/WaylandIVIApplicationGlobal.h"
 #include "EmbeddedCompositor_Wayland/IEmbeddedCompositor_Wayland.h"
 #include "EmbeddedCompositor_Wayland/IWaylandResource.h"
 #include "EmbeddedCompositor_Wayland/LinuxDmabufGlobal.h"
+#include "RendererAPI/IEmbeddedCompositor.h"
 #include "Collections/HashMap.h"
 
 namespace ramses_internal
 {
     class RendererConfig;
+    class DisplayConfig;
     class IContext;
     class IWaylandCompositorConnection;
     class IWaylandSurface;
@@ -32,7 +34,7 @@ namespace ramses_internal
     class EmbeddedCompositor_Wayland: public IEmbeddedCompositor, public IEmbeddedCompositor_Wayland
     {
     public:
-        EmbeddedCompositor_Wayland(const RendererConfig& config, IContext& context);
+        EmbeddedCompositor_Wayland(const RendererConfig& rendererConfig, const DisplayConfig& displayConfig, IContext& context);
         virtual ~EmbeddedCompositor_Wayland();
 
         Bool init();
@@ -52,6 +54,7 @@ namespace ramses_internal
         virtual Bool isBufferAttachedToWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const override;
         virtual UInt32 getNumberOfCompositorConnections() const override;
         virtual Bool hasSurfaceForStreamTexture(StreamTextureSourceId streamTextureSourceId) const override;
+        virtual const IWaylandSurface& findSurfaceForStreamTexture(StreamTextureSourceId streamTextureSourceId) const final;
         virtual String getTitleOfWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const override;
         virtual void logInfos(RendererLogContext& context) const override;
 
@@ -93,6 +96,7 @@ namespace ramses_internal
         WaylandDisplay              m_serverDisplay;
         WaylandCompositorGlobal     m_compositorGlobal;
         WaylandShellGlobal          m_shellGlobal;
+        WaylandOutputGlobal         m_waylandOutputGlobal;
         WaylandIVIApplicationGlobal m_iviApplicationGlobal;
         LinuxDmabufGlobal           m_linuxDmabufGlobal;
 

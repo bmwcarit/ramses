@@ -15,6 +15,7 @@
 #include "SHMBuffer.h"
 #include "TestApplicationSurfaceId.h"
 #include "TestApplicationShellSurfaceId.h"
+#include "WaylandOutputTestParams.h"
 #include "RendererAPI/Types.h"
 #include "Collections/HashMap.h"
 
@@ -49,6 +50,7 @@ namespace ramses_internal
         wl_pointer*      pointer         = nullptr;
         ivi_application* ivi_app         = nullptr;
         wl_shm*          shm             = nullptr;
+        wl_output*       output          = nullptr;
         int              fd              = 0;
     };
 
@@ -76,6 +78,7 @@ namespace ramses_internal
         bool initWithSharedDisplayConnection(WaylandHandler& handlerToShareDisplay);
         void deinit();
 
+        void setRequiredWaylandOutputVersion(uint32_t protocolVersion);
         bool createWindow(TestApplicationSurfaceId surfaceId, uint32_t windowWidth, uint32_t windowHeight, uint32_t swapInterval, bool useEGL);
         void createShellSurface(TestApplicationSurfaceId surfaceId, TestApplicationShellSurfaceId shellSurfaceId);
         void setShellSurfaceTitle(TestApplicationShellSurfaceId shellSurfaceId, const String& title);
@@ -99,9 +102,11 @@ namespace ramses_internal
         SHMBuffer* getFreeSHMBuffer(uint32_t width, uint32_t height);
         uint32_t getNumberOfAllocatedSHMBuffer() const;
         bool getIsSHMBufferFree(uint32_t buffer) const;
+        void getWaylandOutputTestParams(bool& errorsFound, WaylandOutputTestParams& waylandOutputParams) const;
 
     private:
         bool checkAndHandleEvents();
+        void addWaylandOutputListener();
 
         static void registry_handle_global(void *data, struct wl_registry *registry, uint32_t name, const char *interface, uint32_t version);
         static void registry_handle_global_remove(void* data, wl_registry* wl_registry, uint32_t name);
@@ -115,6 +120,31 @@ namespace ramses_internal
 
         void frameCallback(wl_callback* callback);
         static void FrameCallback(void* userData, wl_callback* callback, uint32_t);
+
+    static void wayland_output_handle_geometry(void *data,
+             struct wl_output *wl_output,
+             int32_t x,
+             int32_t y,
+             int32_t physical_width,
+             int32_t physical_height,
+             int32_t subpixel,
+             const char *make,
+             const char *model,
+             int32_t transform);
+
+    static void wayland_output_handle_mode(void *data,
+             struct wl_output *wl_output,
+             uint32_t flags,
+             int32_t width,
+             int32_t height,
+             int32_t refresh);
+
+    static void wayland_output_handle_done(void *data,
+             struct wl_output *wl_output);
+
+    static void wayland_output_handle_scale(void *data,
+              struct wl_output *wl_output,
+              int32_t factor);
 
         bool setupEGL();
         bool setupWayland();
@@ -156,6 +186,40 @@ namespace ramses_internal
                 done = FrameCallback;
             }
         } m_frameRenderingDoneCallbackListener;
+
+        const struct WaylandOutput_ListenerV1 : public wl_output_listener {
+            WaylandOutput_ListenerV1()
+            {
+                geometry    = wayland_output_handle_geometry;
+                mode        = wayland_output_handle_mode;
+                done        = nullptr;
+                scale       = nullptr;
+            }
+        } m_waylandOutputListenerV1;
+
+        const struct WaylandOutput_ListenerV2 : public wl_output_listener {
+            WaylandOutput_ListenerV2()
+            {
+                geometry    = wayland_output_handle_geometry;
+                mode        = wayland_output_handle_mode;
+                done        = wayland_output_handle_done;
+                scale       = wayland_output_handle_scale;
+            }
+        } m_waylandOutputListenerV2;
+
+        const struct WaylandOutput_ListenerV3 : public wl_output_listener {
+            WaylandOutput_ListenerV3()
+            {
+                geometry    = wayland_output_handle_geometry;
+                mode        = wayland_output_handle_mode;
+                done        = wayland_output_handle_done;
+                scale       = wayland_output_handle_scale;
+            }
+        } m_waylandOutputListenerV3;
+
+        uint32_t m_requiredWaylandOutputVersion = 0u;
+        bool m_errorFoundInWaylandOutput = false;
+        WaylandOutputTestParams m_waylandOutputParams;
     };
 }
 

@@ -142,6 +142,16 @@ namespace ramses_internal
             return;
         }
 
+        const ramses::RendererConfig rendererConfig(argc, argv);
+        auto renderer = framework.createRenderer(rendererConfig);
+        if (!renderer)
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Creation of renderer failed");
+            return;
+        }
+
+        framework.connect();
+
         auto loadedScene = loadSceneWithResources(*client, sceneFile, resFile);
         if (loadedScene == nullptr)
         {
@@ -163,15 +173,6 @@ namespace ramses_internal
             ramses::RamsesHMIUtils::DumpUnrequiredSceneObjectsToFile(*loadedScene, unrequObjsOfstream);
         }
         ramses::RamsesHMIUtils::DumpUnrequiredSceneObjects(*loadedScene);
-
-        const ramses::RendererConfig rendererConfig(argc, argv);
-        auto renderer = framework.createRenderer(rendererConfig);
-        if (!renderer)
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "Creation of renderer failed");
-            return;
-        }
-        framework.connect();
 
         const ramses::DisplayConfig displayConfig(argc, argv);
         const ramses::displayId_t displayId = renderer->createDisplay(displayConfig);

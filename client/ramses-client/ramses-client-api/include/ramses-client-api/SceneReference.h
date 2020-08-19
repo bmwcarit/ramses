@@ -17,8 +17,21 @@ namespace ramses
     /**
     * @brief The SceneReference object refers to another ramses scene using its sceneId.
     * @details The SceneReference object references a scene, which might be otherwise unknown
-    *          to this RamsesClient, but is known to a RamsesRenderer which is also subscribed to this scene.
-    *          The SceneReference allows to remotely request rendering state of the referenced scene on renderer side.
+    *          to this RamsesClient, but is or expected to be known to a RamsesRenderer subscribed to its master scene
+    *          (scene in which the reference was created using #ramses::Scene::createSceneReference).
+    *          The SceneReference allows to remotely change limited set of states of the referenced scene on renderer side,
+    *          results of those requests are reported asynchronously in form of event callbacks, see #ramses::IClientEventHandler.
+    *
+    *          There cannot be multiple instances of SceneReference referring to the same sceneId, however SceneReference
+    *          can be destroyed using #ramses::Scene::destroy and re-created with same sceneId in another scene,
+    *          i.e. change its 'master' scene.
+    *          It is recommended to get SceneReference to #ramses::RendererSceneState::Unavailable state and wait for confirmation
+    *          (#ramses::IClientEventHandler::sceneReferenceStateChanged) before destroying it, otherwise the scene remains on renderer
+    *          side with no owner, potentially consuming resources and causing undesired results if shown, also any pending requests, events
+    *          or actions will either fail or get lost (no master scene to report to).
+    *          Even though recommended, setting referenced scene to unavailable before destroying is not strictly required,
+    *          so it is possible to change its master scene regardless of its actual state on renderer side (even if actively rendered)
+    *          but this should be done only with extra caution and understanding of the consequences mentioned above.
     */
     class RAMSES_API SceneReference : public SceneObject
     {
@@ -62,8 +75,14 @@ namespace ramses
         sceneId_t getReferencedSceneId() const;
 
         /**
-        * @brief Request callbacks to be triggered whenever a flush with valid version tag (#ramses::Scene::flush)
-        *        has been applied to the referenced scene on the renderer.
+        * @brief Request callbacks (#ramses::IClientEventHandler::sceneReferenceFlushed) to be triggered whenever a flush
+        *        with valid version tag (#ramses::Scene::flush) has been applied to the referenced scene on the renderer.
+        *        Enabling notifications after they were previously disabled will also trigger said event once
+        *        with the last applied valid version tag (i.e. version tag last applied before notifications were enabled).
+        *        Note that in case there is flush with version applied and notifications enabled within the same renderer
+        *        update loop the #ramses::IClientEventHandler::sceneReferenceFlushed callback might be triggered twice
+        *        reporting the same version, however the order of reporting is always strictly kept and matching order
+        *        of flushes applied.
         *
         * @param[in] flag enable/disable notifications for this scene
         * @return StatusOK for success, otherwise the returned status can be used

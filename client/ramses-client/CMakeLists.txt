@@ -78,7 +78,7 @@ ACME_MODULE(
                             test/ClientCommands/*.h
     FILES_SOURCE            test/*.cpp
                             test/ClientCommands/*.cpp
-    FILES_RESOURCE          test/res/*
+    RESOURCE_FOLDER         test/res
 
     #==========================================================================
     # dependencies

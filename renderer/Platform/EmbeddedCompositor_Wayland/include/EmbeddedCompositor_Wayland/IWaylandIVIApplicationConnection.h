@@ -8,6 +8,8 @@
 #ifndef RAMSES_IWAYLANDIVIAPPLICATIONCONNECTION_H
 #define RAMSES_IWAYLANDIVIAPPLICATIONCONNECTION_H
 
+#include <cstdint>
+
 namespace ramses_internal
 {
     class IWaylandClient;

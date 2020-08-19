@@ -226,8 +226,12 @@ namespace ramses_internal
         assert(EGL_NO_IMAGE != eglImage);
         if (EGL_NO_IMAGE == eglImage)
         {
+            LOG_ERROR(CONTEXT_RENDERER, "TextureUploadingAdapter_Wayland::importDmabufToEglImage: Creating EGL image failed width egl error code : " << eglGetError());
             return nullptr;
         }
+
+        LOG_INFO(CONTEXT_RENDERER, "TextureUploadingAdapter_Wayland::importDmabufToEglImage: egl image [=" << eglImage
+                << "] created succesffully [W :" << dmabuf->getWidth() << ", H :" << dmabuf->getHeight() << "]");
 
         return new DmabufEglImage(*this, eglImage, GL_TEXTURE_EXTERNAL_OES);
     }
@@ -268,6 +272,7 @@ namespace ramses_internal
     {
         if (EGL_NO_IMAGE != m_eglImage)
         {
+            LOG_INFO(CONTEXT_RENDERER, "DmabufEglImage::~DmabufEglImage: destroying egl image [=" << m_eglImage << "]");
             m_parent.m_waylandEglExtensionProcs.eglDestroyImageKHR(m_eglImage);
         }
     }

@@ -78,6 +78,8 @@ namespace ramses
         * @brief This method will be called after a flush with version tag (#ramses::Scene::flush) has been applied
         *        and there is a #ramses::SceneReference with enabled version tag notifications
         *        (#ramses::SceneReference::requestNotificationsForSceneVersionTags).
+        *        It will also be called once right after enabling notifications (after they were previously disabled)
+        *        with the last applied valid version tag.
         * @param sceneRef Instance of #ramses::SceneReference that references the scene which the versioned flush belongs to
         * @param versionTag Version tag of the scene flush
         */

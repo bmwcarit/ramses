@@ -27,15 +27,26 @@ namespace ramses_internal
         TestSignalHandler::RegisterSignalHandlersForCurrentProcess("EmbeddedCompositingTestsFramework");
     }
 
-    void EmbeddedCompositingTestsFramework::startTestApplication()
+    void EmbeddedCompositingTestsFramework::startTestApplication(bool initialize)
     {
         m_testForkingController.startTestApplication();
+
+        if(initialize)
+            initializeTestApplication();
     }
 
     void EmbeddedCompositingTestsFramework::startTestApplicationAndWaitUntilConnected()
     {
         m_testForkingController.startTestApplication();
+        initializeTestApplication();
         waitUntilNumberOfCompositorConnections(1);
+    }
+
+    void EmbeddedCompositingTestsFramework::initializeTestApplication()
+    {
+        BinaryOutputStream bos;
+        bos << ETestWaylandApplicationMessage::InitializeTestApplication;
+        m_testForkingController.sendMessageToTestApplication(bos);
     }
 
     void EmbeddedCompositingTestsFramework::stopTestApplicationAndWaitUntilDisconnected()
@@ -397,6 +408,13 @@ namespace ramses_internal
         return testSucessResult;
     }
 
+    void EmbeddedCompositingTestsFramework::sendSetRequiredWaylandOutputVersion(uint32_t protocolVersion)
+    {
+        BinaryOutputStream bos;
+        bos << ETestWaylandApplicationMessage::SetRequiredWaylandOutputVersion << protocolVersion;
+        m_testForkingController.sendMessageToTestApplication(bos);
+    }
+
     void EmbeddedCompositingTestsFramework::killTestApplication()
     {
         m_testForkingController.killTestApplication();
@@ -434,4 +452,16 @@ namespace ramses_internal
         return isBufferFree;
     }
 
+    Bool EmbeddedCompositingTestsFramework::getWaylandOutputParamsFromTestApplication(WaylandOutputTestParams& resultWaylandOutputParams)
+    {
+        BinaryOutputStream bos;
+        bos << ETestWaylandApplicationMessage::GetWaylandOutputParams;
+        m_testForkingController.sendMessageToTestApplication(bos);
+
+        bool errorsFound = false;
+        m_testForkingController.getAnswerFromTestApplication(errorsFound, getEmbeddedCompositorManager());
+        m_testForkingController.getAnswerFromTestApplication(resultWaylandOutputParams, getEmbeddedCompositorManager());
+
+        return errorsFound;
+    }
 }

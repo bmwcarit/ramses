@@ -24,7 +24,7 @@ namespace ramses_internal
         IWindow*    createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override final;
         IContext*   createContext(IWindow& window) override final;
         ISurface*   createSurface(IWindow& window, IContext& context) override final;
-        IEmbeddedCompositor*    createEmbeddedCompositor(IContext& context) override;
+        IEmbeddedCompositor*    createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context) override;
 
         virtual void getContextAttributes(std::vector<EGLint>& attributes) const = 0;
         virtual void getSurfaceAttributes(UInt32 msaaSampleCount, std::vector<EGLint>& attributes) const = 0;

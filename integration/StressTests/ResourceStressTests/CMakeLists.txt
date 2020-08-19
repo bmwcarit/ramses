@@ -7,14 +7,13 @@
 #  -------------------------------------------------------------------------
 
 RENDERER_MODULE_PER_CONFIG_STATIC(ResourceStressTests
-    TYPE           TEST
-    TEST_SUFFIX    RNDSANDWICHTEST
+    TYPE            TEST
+    TEST_SUFFIX     RNDSANDWICHTEST
 
-    FILES_SOURCE   src/*.cpp
-                   src/*.h
+    FILES_SOURCE    src/*.cpp
+                    src/*.h
 
-    FILES_RESOURCE ../../TestContent/res/*.vert
-                   ../../TestContent/res/*.frag
+    RESOURCE_FOLDER  ../../TestContent/res
 
-    DEPENDENCIES   TestContent FrameworkTestUtils RendererTestUtils
+    DEPENDENCIES     TestContent FrameworkTestUtils RendererTestUtils
 )

@@ -45,7 +45,7 @@ namespace ramses_internal
         MOCK_METHOD(IContext*, createContext, (IWindow& window), (override));
         MOCK_METHOD(IDevice*, createDevice, (IContext& context), (override));
         MOCK_METHOD(ISurface*, createSurface, (IWindow& window, IContext& context), (override));
-        MOCK_METHOD(IEmbeddedCompositor*, createEmbeddedCompositor, (IContext& context), (override));
+        MOCK_METHOD(IEmbeddedCompositor*, createEmbeddedCompositor, (const DisplayConfig& displayConfig, IContext& context), (override));
         MOCK_METHOD(ITextureUploadingAdapter*, createTextureUploadingAdapter, (IDevice& device, IEmbeddedCompositor& embeddedCompositor, IWindow& window), (override));
 
         WindowMockWithDestructor*                     window                  = nullptr;
@@ -83,7 +83,7 @@ namespace ramses_internal
             return addPlatformSurface(surface);
         }
 
-        IEmbeddedCompositor* createEmbeddedCompositor_fake(IContext& /*context*/)
+        IEmbeddedCompositor* createEmbeddedCompositor_fake(const DisplayConfig&, IContext& /*context*/)
         {
             return addEmbeddedCompositor(embeddedCompositor);
         }

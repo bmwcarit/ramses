@@ -30,6 +30,7 @@ namespace ramses
         status_t setCarModelView(const CarModelViewMetadata& data, const AnimationInformation& timingInfo);
         status_t setCarModelVisibility(bool visibility);
         status_t setExclusiveBackground(bool state);
+        status_t setStreamID(int32_t streamID);
 
         ramses_internal::DcsmMetadata getMetadata() const;
     private:

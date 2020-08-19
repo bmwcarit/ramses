@@ -14,6 +14,7 @@
 #include "ETriangleColor.h"
 #include "TestApplicationSurfaceId.h"
 #include "TestApplicationShellSurfaceId.h"
+#include "WaylandOutputTestParams.h"
 
 namespace ramses_internal
 {
@@ -28,7 +29,8 @@ namespace ramses_internal
         EmbeddedCompositingTestsFramework(bool generateScreenshots, TestForkingController& testForkingController, const ramses::RamsesFrameworkConfig& config);
 
         //control test app lifecycle
-        void                            startTestApplication();
+        void                            startTestApplication(bool initialize = true);
+        void                            initializeTestApplication();
         void                            startTestApplicationAndWaitUntilConnected();
         void                            stopTestApplicationAndWaitUntilDisconnected();
         void                            killTestApplication();
@@ -66,10 +68,12 @@ namespace ramses_internal
         void                            sendSetSurfaceSizeToTestApplicaton(TestApplicationSurfaceId surfaceId, UInt32 width, UInt32 height);
         void                            sendSetTriangleColorToTestApplication(ETriangleColor color);
         bool                            sendStartRamsesRendererAndRunRenderingTest();
+        void                            sendSetRequiredWaylandOutputVersion(uint32_t protocolVersion);
 
         //get message from test app
         UInt32                          getNumberOfAllocatedSHMBufferFromTestApplication();
         Bool                            getIsBufferFreeFromTestApplication(UInt32 buffer);
+        Bool                            getWaylandOutputParamsFromTestApplication(WaylandOutputTestParams& resultWaylandOutputParams);
 
         //local renderer
         void                            renderOneFrame();

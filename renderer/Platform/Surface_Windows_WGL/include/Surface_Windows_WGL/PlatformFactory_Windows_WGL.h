@@ -22,7 +22,7 @@ namespace ramses_internal
         IWindow*    createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override;
         IContext*   createContext(IWindow& window) override;
         ISurface*   createSurface(IWindow& window, IContext& context) override;
-        IEmbeddedCompositor*    createEmbeddedCompositor(IContext& context) override;
+        IEmbeddedCompositor*    createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context) override;
 
         WglExtensions m_wglExtensions;
 

@@ -9,14 +9,14 @@
 #ifndef RAMSES_WAYLANDSHELLSURFACE_H
 #define RAMSES_WAYLANDSHELLSURFACE_H
 
-#include "wayland-server.h"
 #include "EmbeddedCompositor_Wayland/IWaylandSurface.h"
 #include "EmbeddedCompositor_Wayland/IWaylandShellSurface.h"
+#include "EmbeddedCompositor_Wayland/IWaylandClient.h"
 #include "Collections/String.h"
+#include "wayland-server.h"
 
 namespace ramses_internal
 {
-    class IWaylandResource;
     class WaylandShellSurface: public IWaylandShellSurface
     {
     public:
@@ -72,6 +72,7 @@ namespace ramses_internal
             }
         } m_shellSurfaceInterface;
 
+        const WaylandClientCredentials m_clientCredentials;
         IWaylandResource* m_resource = nullptr;
         IWaylandSurface* m_surface = nullptr;
         String m_title;

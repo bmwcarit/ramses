@@ -171,5 +171,4 @@ ACME2_PROJECT(
                                 # ON   test8
                                 ON   test10
                                 ON   test11
-                                ON   test_resources
 )

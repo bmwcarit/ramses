@@ -1039,7 +1039,23 @@ namespace ramses_internal
         expectRenderableResourcesClean(renderable2);
     }
 
-    TEST_F(AResourceCachedScene, willForceUpdateCacheIfRenderableVisibilityModeChangesToVisible)
+    TEST_F(AResourceCachedScene, willNotUpdateCacheIfRenderableVisibilityOff)
+    {
+        const auto renderable = sceneHelper.createRenderable();
+        const auto sampler = sceneHelper.createTextureSamplerWithFakeClientTexture();
+        sceneHelper.createAndAssignUniformDataInstance(renderable, sampler);
+        sceneHelper.createAndAssignVertexDataInstance(renderable);
+        sceneHelper.setResourcesToRenderable(renderable);
+        scene.setRenderableVisibility(renderable, EVisibilityMode::Off);
+
+        // no caching for OFF renderable
+        EXPECT_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(_)).Times(0);
+        scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        // renderable stays dirty
+        expectRenderableResourcesDirty(renderable);
+    }
+
+    TEST_F(AResourceCachedScene, willForceUpdateCacheIfRenderableVisibilityModeChangesFromOffToVisible)
     {
         const auto renderable = sceneHelper.createRenderable();
         const auto sampler = sceneHelper.createTextureSamplerWithFakeClientTexture();
@@ -1056,12 +1072,55 @@ namespace ramses_internal
         // Resource cache is currently not used by any active renderable and the resources can potentially be unloaded.
         // Cache must be updated if renderable using the same resources gets visible again.
 
-        // set invisible will trigger update of resources
+        // set visible will trigger update of resources
         scene.setRenderableVisibility(renderable, EVisibilityMode::Visible);
         expectRenderableResourcesDirty(renderable);
 
         // test upcoming calls explicitly
         Mock::VerifyAndClearExpectations(&sceneHelper.resourceManager);
+        EXPECT_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeEffectHash));
+        EXPECT_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeTextureHash));
+        EXPECT_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeIndexArrayHash));
+        EXPECT_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeVertArrayHash));
+        scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        expectRenderableResourcesClean(renderable);
+    }
+
+    TEST_F(AResourceCachedScene, willForceUpdateCacheIfRenderableVisibilityModeChangesFromOffToInvisibleOrVisible)
+    {
+        const auto renderable = sceneHelper.createRenderable();
+        const auto sampler = sceneHelper.createTextureSamplerWithFakeClientTexture();
+        sceneHelper.createAndAssignUniformDataInstance(renderable, sampler);
+        sceneHelper.createAndAssignVertexDataInstance(renderable);
+        sceneHelper.setResourcesToRenderable(renderable);
+        scene.setRenderableVisibility(renderable, EVisibilityMode::Off);
+
+        // test upcoming calls explicitly
+        Mock::VerifyAndClearExpectations(&sceneHelper.resourceManager);
+
+        // no caching for OFF renderable
+        EXPECT_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(_)).Times(0);
+        scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        // renderable stays dirty
+        expectRenderableResourcesDirty(renderable);
+
+        // set invisible will trigger update of resources
+        scene.setRenderableVisibility(renderable, EVisibilityMode::Invisible);
+        expectRenderableResourcesDirty(renderable);
+        EXPECT_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeEffectHash));
+        EXPECT_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeTextureHash));
+        EXPECT_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeIndexArrayHash));
+        EXPECT_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeVertArrayHash));
+        scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        expectRenderableResourcesClean(renderable);
+
+        // back to OFF
+        scene.setRenderableVisibility(renderable, EVisibilityMode::Off);
+        scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+
+        // set visible will trigger update of resources
+        scene.setRenderableVisibility(renderable, EVisibilityMode::Visible);
+        expectRenderableResourcesDirty(renderable);
         EXPECT_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeEffectHash));
         EXPECT_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeTextureHash));
         EXPECT_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeIndexArrayHash));

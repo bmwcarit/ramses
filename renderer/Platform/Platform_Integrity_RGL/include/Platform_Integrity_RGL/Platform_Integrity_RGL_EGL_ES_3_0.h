@@ -26,7 +26,7 @@ namespace ramses_internal
         IContext*   createContext(IWindow& window) final;
         IDevice*    createDevice(IContext& context) final;
         ISurface*   createSurface(IWindow& window, IContext& context) final;
-        IEmbeddedCompositor* createEmbeddedCompositor(IContext& context) final;
+        IEmbeddedCompositor* createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context) final;
 
     private:
         const EGLint* getContextAttributes() const;

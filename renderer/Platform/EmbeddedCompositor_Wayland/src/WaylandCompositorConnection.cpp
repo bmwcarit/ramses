@@ -18,25 +18,21 @@
 namespace ramses_internal
 {
     WaylandCompositorConnection::WaylandCompositorConnection(IWaylandClient& client, uint32_t version, uint32_t id, IEmbeddedCompositor_Wayland& embeddedCompositor)
-        : m_version(version)
+        : m_clientCredentials(client.getCredentials())
+        , m_version(version)
         , m_embeddedCompositor(embeddedCompositor)
     {
         LOG_DEBUG(CONTEXT_RENDERER, "WaylandCompositorConnection::WaylandCompositorConnection Connection created");
-
-        uid_t userId = 0;
-        gid_t groupId = 0;
-        client.getCredentials(m_processId, userId, groupId);
 
         m_resource = client.resourceCreate(&wl_compositor_interface, version, id);
         if (nullptr != m_resource)
         {
             m_resource->setImplementation(&m_compositorInterface, this, ResourceDestroyedCallback);
-            LOG_INFO(CONTEXT_RENDERER, "WaylandCompositorConnection::WaylandCompositorConnection(): Compositor interface is now provided to process with PID :" << m_processId);
+            LOG_INFO(CONTEXT_RENDERER, "WaylandCompositorConnection::WaylandCompositorConnection(): Compositor interface is now provided " << m_clientCredentials);
         }
         else
         {
-            //TODO Mohamed: enhance log message
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandCompositorConnection::WaylandCompositorConnection(): could not create wayland resource");
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandCompositorConnection::WaylandCompositorConnection(): could not create wayland resource " << m_clientCredentials);
             client.postNoMemory();
         }
     }
@@ -48,7 +44,7 @@ namespace ramses_internal
 
     WaylandCompositorConnection::~WaylandCompositorConnection()
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandCompositorConnection::~WaylandCompositorConnection Connection destroyed created by process with PID: " << m_processId);
+        LOG_INFO(CONTEXT_RENDERER, "WaylandCompositorConnection::~WaylandCompositorConnection Connection destroyed " << m_clientCredentials);
 
         m_embeddedCompositor.removeWaylandCompositorConnection(*this);
         if (nullptr != m_resource)

@@ -161,15 +161,11 @@ namespace ramses_internal
         wl_client* client = wl_client_create(m_display, serverFD);
         WaylandClient waylandClient(client);
 
-        pid_t processId;
-        uid_t userId;
-        gid_t groupId;
+        const auto clientCredentials = waylandClient.getCredentials();
 
-        waylandClient.getCredentials(processId, userId, groupId);
-
-        EXPECT_EQ(processId, getpid());
-        EXPECT_EQ(userId, getuid());
-        EXPECT_EQ(groupId, getgid());
+        EXPECT_EQ(clientCredentials.getProcessId(), getpid());
+        EXPECT_EQ(clientCredentials.getUserId(), getuid());
+        EXPECT_EQ(clientCredentials.getGroupId(), getgid());
 
         wl_client_destroy(client);
     }

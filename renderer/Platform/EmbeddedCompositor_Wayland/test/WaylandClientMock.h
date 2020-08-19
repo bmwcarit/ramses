@@ -9,15 +9,19 @@
 #ifndef RAMSES_WAYLANDCLIENTMOCK_H
 #define RAMSES_WAYLANDCLIENTMOCK_H
 
-#include "gmock/gmock.h"
 #include "EmbeddedCompositor_Wayland/IWaylandClient.h"
+#include "gmock/gmock.h"
 
 namespace ramses_internal
 {
     class WaylandClientMock : public IWaylandClient
     {
     public:
-        MOCK_METHOD(void, getCredentials, (pid_t& processId, uid_t& userId, gid_t& groupId), (override));
+        WaylandClientMock()
+        {
+            EXPECT_CALL(*this, getCredentials()).Times(::testing::AnyNumber());
+        }
+        MOCK_METHOD(WaylandClientCredentials, getCredentials, (), (const, override));
         MOCK_METHOD(void, postNoMemory, (), (override));
         MOCK_METHOD(IWaylandResource*, resourceCreate, (const wl_interface* interface, int version, uint32_t id), (override));
         MOCK_METHOD(WaylandCallbackResource*, callbackResourceCreate, (const wl_interface* interface, int version, uint32_t id), (override));

@@ -20,7 +20,6 @@ MODULE_WITH_SHARED_LIBRARY(
     #==========================================================================
     FILES_PRIVATE_HEADER    include/*.h
     FILES_SOURCE            src/*.cpp
-    FILES_RESOURCE          res/*
 
     DEPENDENCIES            AndroidSDK
 )

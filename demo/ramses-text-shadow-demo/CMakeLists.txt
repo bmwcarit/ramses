@@ -20,5 +20,5 @@ MODULE_WITH_SHARED_LIBRARY(
     #==========================================================================
     FILES_PRIVATE_HEADER    src/*.h
     FILES_SOURCE            src/*.cpp
-    FILES_RESOURCE          res/*
+    RESOURCE_FOLDER          res
 )

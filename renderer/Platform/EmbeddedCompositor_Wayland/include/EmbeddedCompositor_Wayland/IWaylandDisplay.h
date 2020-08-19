@@ -10,6 +10,7 @@
 #define RAMSES_IWAYLANDDISPLAY_H
 
 #include "Collections/String.h"
+#include "wayland-server.h"
 
 namespace ramses_internal
 {

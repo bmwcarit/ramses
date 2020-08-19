@@ -8,8 +8,8 @@
 #ifndef RAMSES_WAYLANDGLOBAL_H
 #define RAMSES_WAYLANDGLOBAL_H
 
-#include "wayland-server.h"
 #include "EmbeddedCompositor_Wayland/IWaylandGlobal.h"
+#include "wayland-server.h"
 
 namespace ramses_internal
 {

@@ -38,6 +38,7 @@ SET(ACME2_API
     FILES_PRIVATE_HEADER
     FILES_SOURCE
     FILES_RESOURCE
+    RESOURCE_FOLDER
 
     # dependencies
     DEPENDENCIES
@@ -78,6 +79,7 @@ SET(ACME2_DEFAULT_VALUES
     FILES_PRIVATE_HEADER    #src/*.h
     FILES_SOURCE            #src/*.h
     FILES_RESOURCE          #res/*
+    RESOURCE_FOLDER
 
     # dependencies
     DEPENDENCIES

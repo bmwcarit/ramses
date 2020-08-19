@@ -8,8 +8,10 @@
 #ifndef RAMSES_IWAYLANDCLIENT_H
 #define RAMSES_IWAYLANDCLIENT_H
 
-// For pid_t, uid_t, gid_t
-#include <unistd.h>
+#include "EmbeddedCompositor_Wayland/WaylandClientCredentials.h"
+#include <cstdint>
+
+struct wl_interface;
 
 namespace ramses_internal
 {
@@ -20,7 +22,7 @@ namespace ramses_internal
     {
     public:
         virtual ~IWaylandClient() {}
-        virtual void getCredentials(pid_t& processId, uid_t& userId, gid_t& groupId) = 0;
+        virtual WaylandClientCredentials getCredentials() const = 0;
         virtual void postNoMemory()                                                  = 0;
         virtual IWaylandResource* resourceCreate(const wl_interface* interface, int version, uint32_t id)       = 0;
         virtual WaylandCallbackResource* callbackResourceCreate(const wl_interface* interface, int version, uint32_t id) = 0;

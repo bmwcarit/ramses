@@ -9,8 +9,8 @@
 #ifndef RAMSES_WAYLANDIVIAPPLICATIONGLOBAL_H
 #define RAMSES_WAYLANDIVIAPPLICATIONGLOBAL_H
 
-#include "wayland-server.h"
 #include "EmbeddedCompositor_Wayland/IWaylandIVIApplicationGlobal.h"
+#include "wayland-server.h"
 
 namespace ramses_internal
 {

@@ -121,4 +121,13 @@ namespace ramses
         EXPECT_EQ(dm, dmf.impl.getMetadata());
     }
 
+    TEST_F(ADcsmMetadataCreator, canSetStreamID)
+    {
+        DcsmMetadataCreator dmf;
+        EXPECT_EQ(StatusOK, dmf.setStreamID(123));
+
+        ramses_internal::DcsmMetadata dm;
+        dm.setStreamID(123);
+        EXPECT_EQ(dm, dmf.impl.getMetadata());
+    }
 }

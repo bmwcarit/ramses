@@ -10,7 +10,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
 SET(RAMSES_VERSION_MAJOR 25)
 SET(RAMSES_VERSION_MINOR 0)
-SET(RAMSES_VERSION_PATCH 1)
+SET(RAMSES_VERSION_PATCH 6)
 SET(RAMSES_VERSION_POSTFIX "")
 
 CMAKE_POLICY(SET CMP0048 NEW)
@@ -23,13 +23,13 @@ SET(ramses-sdk_ROOT_CMAKE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 OPTION(ramses-sdk_WARNINGS_AS_ERRORS "Enable warnings as errors during build" OFF)
 
 include(cmake/ramses/setCmakePolicies.cmake NO_POLICY_SCOPE)  # we want to propagate policy settings out!
-include(cmake/ramses/removeFromFlags.cmake)
 include(cmake/ramses/platformDetection.cmake)
 include(cmake/ramses/platformConfig.cmake)
 include(cmake/ramses/getGitInformation.cmake)
 include(cmake/ramses/externaltools.cmake)
 include(cmake/ramses/tools.cmake)
 include(cmake/ramses/testConfig.cmake)
+include(cmake/ramses/buildConfig.cmake)
 
 SET(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}

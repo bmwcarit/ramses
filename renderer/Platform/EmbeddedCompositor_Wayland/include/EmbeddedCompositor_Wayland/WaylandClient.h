@@ -5,11 +5,13 @@
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
+
 #ifndef RAMSES_WAYLANDCLIENT_H
 #define RAMSES_WAYLANDCLIENT_H
 
-#include "wayland-server.h"
 #include "EmbeddedCompositor_Wayland/IWaylandClient.h"
+#include "wayland-server.h"
+#include <memory>
 
 namespace ramses_internal
 {
@@ -17,13 +19,17 @@ namespace ramses_internal
     {
     public:
         explicit WaylandClient(wl_client* client);
-        virtual void getCredentials(pid_t& processId, uid_t& userId, gid_t& groupId) override;
+        virtual WaylandClientCredentials getCredentials() const override;
         virtual void postNoMemory() override;
         virtual IWaylandResource* resourceCreate(const wl_interface *interface, int version, uint32_t id) override;
         virtual WaylandCallbackResource* callbackResourceCreate(const wl_interface* interface, int version, uint32_t id) override;
 
     private:
         wl_client* m_client;
+
+        // Due to current design drawback WaylandClient objects get created too often, therefore credentials
+        // are lazy-initialized when needed
+        mutable WaylandClientCredentials m_credentials;
     };
 }
 

@@ -11,7 +11,7 @@ RENDERER_MODULE_PER_CONFIG_STATIC(ramses-dcsm-scene-references-demo
     ENABLE_INSTALL          ON
 
     FILES_SOURCE            src/*
-    FILES_RESOURCE          res/*
+    RESOURCE_FOLDER         res
 
     DEPENDENCIES            ramses-client
                             ramses-renderer-lib

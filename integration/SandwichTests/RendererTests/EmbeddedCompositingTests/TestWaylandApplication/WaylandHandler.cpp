@@ -78,6 +78,22 @@ namespace ramses_internal
         deleteSHMBuffers();
         terminateEGL();
         closeWayland();
+
+        m_requiredWaylandOutputVersion = 0u;
+        m_errorFoundInWaylandOutput = false;
+        m_waylandOutputParams = {};
+    }
+
+    void WaylandHandler::setRequiredWaylandOutputVersion(uint32_t protocolVersion)
+    {
+        if(wayland.output)
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::setRequiredWaylandOutputVersion(): wl_output is already bound!");
+            assert(false);
+            return;
+        }
+
+        m_requiredWaylandOutputVersion = protocolVersion;
     }
 
     bool WaylandHandler::createWindow(TestApplicationSurfaceId surfaceId, uint32_t windowWidth, uint32_t windowHeight, uint32_t swapInterval, bool useEGL)
@@ -239,9 +255,9 @@ namespace ramses_internal
         return true;
     }
 
-    void WaylandHandler::registry_handle_global(void *data, struct wl_registry *registry, uint32_t name, const char *interface, uint32_t version)
+    void WaylandHandler::registry_handle_global(void *data, struct wl_registry *registry, uint32_t name, const char *interface, uint32_t versionProvidedByCompositor)
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): binding interface: " << interface << " version: " << version);
+        LOG_INFO(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): binding interface: " << interface << " version: " << versionProvidedByCompositor);
 
         WaylandHandler* waylandHandler = static_cast<WaylandHandler*>(data);
 
@@ -253,7 +269,7 @@ namespace ramses_internal
                 assert(false);
             }
 
-            waylandHandler->wayland.compositor = static_cast<wl_compositor*>(wl_registry_bind(registry, name, &wl_compositor_interface, version));
+            waylandHandler->wayland.compositor = static_cast<wl_compositor*>(wl_registry_bind(registry, name, &wl_compositor_interface, versionProvidedByCompositor));
         }
         else if (strcmp(interface, "wl_shell") == 0)
         {
@@ -263,7 +279,7 @@ namespace ramses_internal
                 assert(false);
             }
 
-            waylandHandler->wayland.shell = static_cast<wl_shell*>(wl_registry_bind(registry, name, &wl_shell_interface, version));
+            waylandHandler->wayland.shell = static_cast<wl_shell*>(wl_registry_bind(registry, name, &wl_shell_interface, versionProvidedByCompositor));
         }
         else if (strcmp(interface, "wl_seat") == 0)
         {
@@ -273,7 +289,7 @@ namespace ramses_internal
                 assert(false);
             }
 
-            waylandHandler->wayland.seat = static_cast<wl_seat*>(wl_registry_bind(registry, name, &wl_seat_interface, version));
+            waylandHandler->wayland.seat = static_cast<wl_seat*>(wl_registry_bind(registry, name, &wl_seat_interface, versionProvidedByCompositor));
         }
         else if (strcmp(interface, "ivi_application") == 0)
         {
@@ -283,7 +299,7 @@ namespace ramses_internal
                 assert(false);
             }
 
-            waylandHandler->wayland.ivi_app = static_cast<ivi_application*>(wl_registry_bind(registry, name, &ivi_application_interface, version));
+            waylandHandler->wayland.ivi_app = static_cast<ivi_application*>(wl_registry_bind(registry, name, &ivi_application_interface, versionProvidedByCompositor));
         }
         else if (strcmp(interface, "wl_shm") == 0)
         {
@@ -293,7 +309,29 @@ namespace ramses_internal
                 assert(false);
             }
 
-            waylandHandler->wayland.shm = static_cast<wl_shm*>(wl_registry_bind(registry, name, &wl_shm_interface, version));
+            waylandHandler->wayland.shm = static_cast<wl_shm*>(wl_registry_bind(registry, name, &wl_shm_interface, versionProvidedByCompositor));
+        }
+        else if (strcmp(interface, "wl_output") == 0)
+        {
+            if(waylandHandler->wayland.output)
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): interface: " << interface << " already bound!");
+                abort();
+            }
+
+            if(waylandHandler->m_requiredWaylandOutputVersion)
+            {
+                const uint32_t maximumExpectedProtocolVersion = 3u;
+                if(versionProvidedByCompositor > maximumExpectedProtocolVersion)
+                {
+                    LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): wl_output version provied by compositor: " << versionProvidedByCompositor
+                              << " while maximum expected version is: " << maximumExpectedProtocolVersion <<"!");
+                    abort();
+                }
+
+                waylandHandler->wayland.output = static_cast<wl_output*>(wl_registry_bind(registry, name, &wl_output_interface, waylandHandler->m_requiredWaylandOutputVersion));
+                waylandHandler->addWaylandOutputListener();
+            }
         }
         else if (strcmp(interface, "wl_drm") == 0)
         {
@@ -610,6 +648,108 @@ namespace ramses_internal
         waylandHandler->frameCallback(callback);
     }
 
+    void WaylandHandler::wayland_output_handle_geometry(void* data, wl_output*, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel, const char*, const char*, int32_t transform)
+    {
+        WaylandHandler* waylandHandler = static_cast<WaylandHandler*>(data);
+
+        if(waylandHandler->m_waylandOutputParams.m_waylandOutputReceivedFlags & WaylandOutputTestParams::WaylandOutput_DoneReceived)
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::wayland_output_handle_geometry: geometry is received AFTER done callback!");
+            waylandHandler->m_errorFoundInWaylandOutput = true;
+        }
+
+        if(waylandHandler->m_waylandOutputParams.m_waylandOutputReceivedFlags & WaylandOutputTestParams::WaylandOutput_GeometryReceived)
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::wayland_output_handle_geometry: geometry was already received!");
+            waylandHandler->m_errorFoundInWaylandOutput = true;
+        }
+
+        waylandHandler->m_waylandOutputParams.m_waylandOutputReceivedFlags |= WaylandOutputTestParams::WaylandOutput_GeometryReceived;
+
+        waylandHandler->m_waylandOutputParams.x = x;
+        waylandHandler->m_waylandOutputParams.y = y;
+        waylandHandler->m_waylandOutputParams.physicalWidth = physical_width;
+        waylandHandler->m_waylandOutputParams.physicalHeight = physical_height;
+        waylandHandler->m_waylandOutputParams.subpixel = subpixel;
+        waylandHandler->m_waylandOutputParams.transform = transform;
+    }
+
+    void WaylandHandler::wayland_output_handle_mode(void* data, wl_output*, uint32_t flags, int32_t width, int32_t height, int32_t refresh)
+    {
+        WaylandHandler* waylandHandler = static_cast<WaylandHandler*>(data);
+
+        if(waylandHandler->m_waylandOutputParams.m_waylandOutputReceivedFlags & WaylandOutputTestParams::WaylandOutput_DoneReceived)
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::wayland_output_handle_mode: mode is received AFTER done callback!");
+            waylandHandler->m_errorFoundInWaylandOutput = true;
+        }
+
+        if(waylandHandler->m_waylandOutputParams.m_waylandOutputReceivedFlags & WaylandOutputTestParams::WaylandOutput_ModeReceived)
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::wayland_output_handle_mode: mode was already received!");
+            waylandHandler->m_errorFoundInWaylandOutput = true;
+        }
+
+        waylandHandler->m_waylandOutputParams.m_waylandOutputReceivedFlags |= WaylandOutputTestParams::WaylandOutput_ModeReceived;
+
+        waylandHandler->m_waylandOutputParams.modeFlags = flags;
+        waylandHandler->m_waylandOutputParams.width = width;
+        waylandHandler->m_waylandOutputParams.height = height;
+        waylandHandler->m_waylandOutputParams.refreshRate = refresh;
+    }
+
+    void WaylandHandler::wayland_output_handle_done(void *data, wl_output*)
+    {
+        WaylandHandler* waylandHandler = static_cast<WaylandHandler*>(data);
+
+        if(waylandHandler->m_waylandOutputParams.m_waylandOutputReceivedFlags & WaylandOutputTestParams::WaylandOutput_DoneReceived)
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::wayland_output_handle_done: done was already received!");
+            waylandHandler->m_errorFoundInWaylandOutput = true;
+        }
+
+        if(!(waylandHandler->m_waylandOutputParams.m_waylandOutputReceivedFlags & WaylandOutputTestParams::WaylandOutput_GeometryReceived))
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::wayland_output_handle_done: geometry was NOT received!");
+            waylandHandler->m_errorFoundInWaylandOutput = true;
+        }
+
+        if(!(waylandHandler->m_waylandOutputParams.m_waylandOutputReceivedFlags & WaylandOutputTestParams::WaylandOutput_ModeReceived))
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::wayland_output_handle_done: mode was NOT received!");
+            waylandHandler->m_errorFoundInWaylandOutput = true;
+        }
+
+        if(!(waylandHandler->m_waylandOutputParams.m_waylandOutputReceivedFlags & WaylandOutputTestParams::WaylandOutput_ScaleReceived))
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::wayland_output_handle_done: scale was NOT received!");
+            waylandHandler->m_errorFoundInWaylandOutput = true;
+        }
+
+        waylandHandler->m_waylandOutputParams.m_waylandOutputReceivedFlags |= WaylandOutputTestParams::WaylandOutput_DoneReceived;
+    }
+
+    void WaylandHandler::wayland_output_handle_scale(void* data, wl_output*, int32_t factor)
+    {
+        WaylandHandler* waylandHandler = static_cast<WaylandHandler*>(data);
+
+        if(waylandHandler->m_waylandOutputParams.m_waylandOutputReceivedFlags & WaylandOutputTestParams::WaylandOutput_DoneReceived)
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::wayland_output_handle_scale: scale is received AFTER done callback!");
+            waylandHandler->m_errorFoundInWaylandOutput = true;
+        }
+
+        if(waylandHandler->m_waylandOutputParams.m_waylandOutputReceivedFlags & WaylandOutputTestParams::WaylandOutput_ScaleReceived)
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::wayland_output_handle_scale: scale was already received!");
+            waylandHandler->m_errorFoundInWaylandOutput = true;
+        }
+
+        waylandHandler->m_waylandOutputParams.m_waylandOutputReceivedFlags |= WaylandOutputTestParams::WaylandOutput_ScaleReceived;
+
+        waylandHandler->m_waylandOutputParams.factor = factor;
+    }
+
     bool WaylandHandler::getUseEGL(TestApplicationSurfaceId surfaceId) const
     {
         TestWaylandWindow& window = getWindow(surfaceId);
@@ -651,6 +791,31 @@ namespace ramses_internal
         }
     }
 
+    void WaylandHandler::addWaylandOutputListener()
+    {
+        if(!wayland.output)
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::addWaylandOutputListener: wl_output is not registered (yet)!");
+            abort();
+        }
+
+        switch(m_requiredWaylandOutputVersion)
+        {
+        case 1:
+            wl_output_add_listener(wayland.output, &m_waylandOutputListenerV1, this);
+            break;
+        case 2:
+            wl_output_add_listener(wayland.output, &m_waylandOutputListenerV2, this);
+            break;
+        case 3:
+            wl_output_add_listener(wayland.output, &m_waylandOutputListenerV3, this);
+            break;
+        default:
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::addWaylandOutputListener: unsupported protocol version :" << m_requiredWaylandOutputVersion);
+            abort();
+        }
+    }
+
     uint32_t WaylandHandler::getNumberOfAllocatedSHMBuffer() const
     {
         return static_cast<uint32_t>(m_shmBuffer.size());
@@ -666,6 +831,12 @@ namespace ramses_internal
         {
             return false;
         }
+    }
+
+    void WaylandHandler::getWaylandOutputTestParams(bool& errorsFound, WaylandOutputTestParams& waylandOutputParams) const
+    {
+        errorsFound = m_errorFoundInWaylandOutput;
+        waylandOutputParams = m_waylandOutputParams;
     }
 
     TestWaylandWindow& WaylandHandler::getWindow(TestApplicationSurfaceId surfaceId) const

@@ -10,6 +10,8 @@
 #define RAMSES_WAYLANDEGLEXTENSIONPROCS_H
 
 #include "Utils/Warnings.h"
+#include "Collections/String.h"
+#include "Utils/StringUtils.h"
 
 WARNINGS_PUSH
 WARNING_DISABLE_LINUX(-Wdeprecated-declarations)
@@ -20,9 +22,9 @@ WARNINGS_POP
 #include "GLES2/gl2ext.h"
 #include "EGL/egl.h"
 #include "EGL/eglext.h"
-
-#include "Collections/String.h"
-#include "Utils/StringUtils.h"
+#ifdef RAMSES_HAS_EGLMESAEXT
+#include "EGL/eglmesaext.h"
+#endif
 
 namespace ramses_internal
 {

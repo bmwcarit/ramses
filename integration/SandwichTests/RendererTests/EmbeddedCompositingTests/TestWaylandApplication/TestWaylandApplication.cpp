@@ -43,12 +43,6 @@ namespace ramses_internal
 
     Bool TestWaylandApplication::run()
     {
-        if (!initializeWayland())
-        {
-            LOG_ERROR(CONTEXT_RENDERER, "TestWaylandApplication::run(): failed initializing wayland");
-            return false;
-        }
-
         while(dispatchIncomingMessage())
         {
         }
@@ -113,6 +107,15 @@ namespace ramses_internal
 
         switch(message)
         {
+        case ETestWaylandApplicationMessage::InitializeTestApplication:
+        {
+            if (!initializeWayland())
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "TestWaylandApplication::dispatchIncomingMessage(): failed initializing wayland");
+                return false;
+            }
+            return true;
+        }
         case ETestWaylandApplicationMessage::StopApplication:
         {
             LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message stop application");
@@ -133,7 +136,7 @@ namespace ramses_internal
             bool bSuccess = m_waylandHandler.createWindow(surfaceId, width, height, swapInterval, useEGL);
             if (!bSuccess)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "TestWaylandApplication: Could not setup Wayland");
+                LOG_ERROR(CONTEXT_RENDERER, "TestWaylandApplication: Could not setup Wayland window");
             }
 
             return true;
@@ -322,6 +325,29 @@ namespace ramses_internal
                 LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "WaylandHandler::getIsSHMBufferFree buffer: " << buffer << " does not exist !");
                 return false;
             }
+
+            return true;
+        }
+        case ETestWaylandApplicationMessage::GetWaylandOutputParams:
+        {
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message get wayland output params");
+
+            bool errorsFound = false;
+            WaylandOutputTestParams waylandOutputParams = {};
+
+            m_waylandHandler.getWaylandOutputTestParams(errorsFound, waylandOutputParams);
+            sendAnswerToTestFramework(errorsFound);
+            sendAnswerToTestFramework(waylandOutputParams);
+
+            return true;
+        }
+        case ETestWaylandApplicationMessage::SetRequiredWaylandOutputVersion:
+        {
+            uint32_t protocolVersion = 0u;
+            bis >> protocolVersion;
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message set required wayland output version :" << protocolVersion);
+
+            m_waylandHandler.setRequiredWaylandOutputVersion(protocolVersion);
 
             return true;
         }

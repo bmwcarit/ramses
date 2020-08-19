@@ -7,8 +7,9 @@
 #  -------------------------------------------------------------------------
 
 set(RendererTests-resources_MIXIN
-    FILES_RESOURCE          ../../TestContent/res/*
-                            res/*
+    RESOURCE_FOLDER         ../../TestContent/res
+                            res
+
 )
 
 RENDERER_MODULE_PER_CONFIG_STATIC(RenderingTests

@@ -20,7 +20,7 @@ ACME_MODULE(
     #==========================================================================
     FILES_PRIVATE_HEADER    include/*.h
     FILES_SOURCE            src/*.cpp
-    FILES_RESOURCE          ../../TestContent/res/*
+    RESOURCE_FOLDER         ../../TestContent/res
 
     #==========================================================================
     # dependencies

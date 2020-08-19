@@ -366,7 +366,12 @@ namespace ramses
         RamsesFrameworkImpl* impl = new RamsesFrameworkImpl(config.impl, participantAddress);
         if (config.impl.m_periodicLogsEnabled)
         {
+            LOG_INFO_P(CONTEXT_FRAMEWORK, "RamsesFramework: periodic logs enabled with period of {}s", periodicLogTimeout);
             impl->m_periodicLogger.startLogging(periodicLogTimeout);
+        }
+        else
+        {
+            LOG_INFO_P(CONTEXT_FRAMEWORK, "RamsesFramework: periodic logs disabled");
         }
         return *impl;
     }

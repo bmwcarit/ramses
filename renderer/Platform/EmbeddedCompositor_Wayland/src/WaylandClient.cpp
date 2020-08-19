@@ -19,9 +19,18 @@ namespace ramses_internal
         assert(client != nullptr);
     }
 
-    void WaylandClient::getCredentials(pid_t& processId, uid_t& userId, gid_t& groupId)
+    WaylandClientCredentials WaylandClient::getCredentials() const
     {
-        wl_client_get_credentials(m_client, &processId, &userId, &groupId);
+        if(m_credentials.getProcessId() == -1)
+        {
+            pid_t processId;
+            uid_t userId;
+            gid_t groupId;
+            wl_client_get_credentials(m_client, &processId, &userId, &groupId);
+            m_credentials = WaylandClientCredentials(processId, userId, groupId);
+        }
+
+        return m_credentials;
     }
 
     void WaylandClient::postNoMemory()

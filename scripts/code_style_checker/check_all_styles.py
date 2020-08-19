@@ -33,6 +33,7 @@ from check_last_line_newline import check_last_line_newline
 from check_api_export_symbols import check_api_export_symbols
 from check_comments import check_doxygen_singleline_comments
 from check_deprecated import check_deprecated
+from check_file_attributes import check_file_attributes
 
 def main():
     sdk_root = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", ".."))
@@ -109,13 +110,8 @@ def main():
         check_doxygen_singleline_comments   (f, file_lines)
 
     shared_blacklist_non_src_files = shared_blacklist | {
-        # Externals allowed to have own formatting and license
+        # Externals allowed to have own formatting
         r'^external',
-        r'valgrind/suppressions$',
-        r'\.spdx$',
-        r'^CHANGELOG\.txt$', # Doesn't need a license
-        r'^LICENSE\.txt$',   # Contains license info, not related to code/content
-        r'^.lfsconfig$',     # Doesn't need a license
         # created by Android Studio
         r'.*/\.idea/',
         r'.*/gradle/wrapper',
@@ -172,6 +168,11 @@ def main():
         file_contents, file_lines = common_modules.common.read_file(f)
 
         check_license_for_file               (f, file_contents, sdk_root)
+
+
+    files_attribute_checking = common_modules.common.get_all_files_with_filter(sdk_root, path, {r'.*'}, {r'\.sh$', r'\.py$', r'/gradlew$', r'\.bat$'})
+    for f in files_attribute_checking:
+        check_file_attributes(f)
 
     print('checked {0} files'.format(len(set(src_files) | set(files_formatting) | set(files_license_header))))
 

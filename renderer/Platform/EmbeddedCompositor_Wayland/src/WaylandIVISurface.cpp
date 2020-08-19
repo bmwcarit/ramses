@@ -25,13 +25,15 @@ namespace ramses_internal
                                          EmbeddedCompositor_Wayland& compositor)
         : m_iviSurfaceId(iviSurfaceId)
         , m_compositor(compositor)
+        , m_clientCredentials(client.getCredentials())
     {
         LOG_INFO(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface");
 
         if (surface->hasIviSurface())
         {
-            // TODO (AI): Print out PID of process which created the new ivi-surface
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface The surface already has a ivi-surface attached!");
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface: failed creating ivi-surface : " << iviSurfaceId
+                    << ". The wayland surface already has an ivi-surface " << surface->getIviSurfaceId() << "attached!  " << m_clientCredentials);
+
             iviApplicationConnectionResource.postError(IVI_APPLICATION_ERROR_IVI_ID, "surface already has a ivi-surface");
         }
         else
@@ -41,6 +43,9 @@ namespace ramses_internal
                 m_resource = client.resourceCreate(&ivi_surface_interface, iviApplicationConnectionResource.getVersion(), id);
                 if (nullptr != m_resource)
                 {
+                    LOG_INFO(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface: created succesffully for ivi-surface : " << iviSurfaceId
+                            << "  " << m_clientCredentials);
+
                     m_resource->setImplementation(&m_iviSurfaceInterface, this, ResourceDestroyedCallback);
                     m_surface = surface;
                     m_surface->setIviSurface(this);
@@ -52,14 +57,20 @@ namespace ramses_internal
                 }
                 else
                 {
-                    LOG_ERROR(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface(): Could not create wayland resource!");
+                    LOG_ERROR(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface: failed creating ivi-surface : " << iviSurfaceId
+                            << ". Failed creating wayland resource  " << m_clientCredentials);
                     client.postNoMemory();
                 }
             }
             else
             {
-                // TODO (AI): Print out PID of process which created the ivi-surface with the given id, and also PID of process which created the new ivi-surface
-                LOG_ERROR(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface A surface with ivi-id " << iviSurfaceId.getValue() << " is already registered!");
+
+                const auto credentialsForOtherClient = m_compositor.findSurfaceForStreamTexture(iviSurfaceId).getClientCredentials();
+
+                LOG_ERROR(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface: failed creating ivi-surface : " << iviSurfaceId
+                        << " for  " << m_clientCredentials
+                        << ". A wayland surface already eixsts with same ivi-surface id for " << credentialsForOtherClient);
+
                 iviApplicationConnectionResource.postError(IVI_APPLICATION_ERROR_IVI_ID, "ivi-id is already in use");
             }
         }
@@ -72,7 +83,8 @@ namespace ramses_internal
 
     WaylandIVISurface::~WaylandIVISurface()
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandIVISurface::~WaylandIVISurface");
+        LOG_INFO(CONTEXT_RENDERER, "WaylandIVISurface::!WaylandIVISurface: wayland ivi sruface destroyed with ivi-id : " << m_iviSurfaceId
+                << "  " << m_clientCredentials);
 
         if (m_surface != nullptr)
         {

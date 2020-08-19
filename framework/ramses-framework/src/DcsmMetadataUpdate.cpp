@@ -119,4 +119,14 @@ namespace ramses
         return impl.getExclusiveBackground();
     }
 
+    bool DcsmMetadataUpdate::hasStreamID() const
+    {
+        return impl.hasStreamID();
+    }
+
+    int32_t DcsmMetadataUpdate::getStreamID() const
+    {
+        return impl.getStreamID();
+    }
+
 }

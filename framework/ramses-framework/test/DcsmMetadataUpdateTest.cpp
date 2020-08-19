@@ -39,6 +39,7 @@ namespace ramses
         EXPECT_FALSE(dmp.hasCarModelView());
         EXPECT_FALSE(dmp.hasCarModelVisibility());
         EXPECT_FALSE(dmp.hasExclusiveBackground());
+        EXPECT_FALSE(dmp.hasStreamID());
     }
 
     TEST_F(ADcsmMetadataUpdate, returnsPreviewImagePng)
@@ -120,4 +121,11 @@ namespace ramses
         EXPECT_TRUE(dmp.getExclusiveBackground());
     }
 
+    TEST_F(ADcsmMetadataUpdate, returnsStreamID)
+    {
+        EXPECT_TRUE(md.setStreamID(13));
+        dmp.impl.setMetadata(md);
+        EXPECT_TRUE(dmp.hasStreamID());
+        EXPECT_EQ(13, dmp.getStreamID());
+    }
 }

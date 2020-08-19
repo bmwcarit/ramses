@@ -64,8 +64,9 @@ namespace ramses_internal
         return addPlatformSurface(platformSurface);
     }
 
-    IEmbeddedCompositor* PlatformFactory_X11_EGL::createEmbeddedCompositor(IContext& context)
+    IEmbeddedCompositor* PlatformFactory_X11_EGL::createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context)
     {
+        UNUSED(displayConfig);
         UNUSED(context);
         EmbeddedCompositor_Dummy* compositor = new EmbeddedCompositor_Dummy();
         return addEmbeddedCompositor(compositor);

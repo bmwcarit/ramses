@@ -49,9 +49,11 @@ MACRO(ACME_ADD_TEST test_target test_suffix)
         WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         )
 
-    # attach environment variable for clang coverage
-    set_tests_properties(${test_target}_${test_suffix} PROPERTIES
-        ENVIRONMENT LLVM_PROFILE_FILE=${test_target}_${test_suffix}_%p.profraw)
+    if (${ACME_ENABLE_TEST_PROPERTIES})
+        # attach environment variable for clang coverage
+        set_tests_properties(${test_target}_${test_suffix} PROPERTIES
+            ENVIRONMENT LLVM_PROFILE_FILE=${test_target}_${test_suffix}_%p.profraw)
+    endif()
 ENDMACRO()
 
 #==============================================================================

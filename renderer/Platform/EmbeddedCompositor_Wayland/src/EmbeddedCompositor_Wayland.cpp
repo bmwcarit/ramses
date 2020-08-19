@@ -15,21 +15,25 @@
 #include "EmbeddedCompositor_Wayland/LinuxDmabufBuffer.h"
 #include "EmbeddedCompositor_Wayland/TextureUploadingAdapter_Wayland.h"
 #include "EmbeddedCompositor_Wayland/LinuxDmabuf.h"
+#include "EmbeddedCompositor_Wayland/WaylandOutputParams.h"
 #include "RendererLib/RendererConfig.h"
+#include "RendererLib/DisplayConfig.h"
 #include "RendererLib/RendererLogContext.h"
 #include "Utils/LogMacros.h"
 #include "Utils/Warnings.h"
 #include "PlatformAbstraction/PlatformTime.h"
+#include "absl/algorithm/container.h"
 #include <unistd.h>
 
 namespace ramses_internal
 {
-    EmbeddedCompositor_Wayland::EmbeddedCompositor_Wayland(const RendererConfig& config, IContext& context)
-        : m_waylandEmbeddedSocketName(config.getWaylandSocketEmbedded())
-        , m_waylandEmbeddedSocketGroup(config.getWaylandSocketEmbeddedGroup())
-        , m_waylandEmbeddedSocketFD(config.getWaylandSocketEmbeddedFD())
+    EmbeddedCompositor_Wayland::EmbeddedCompositor_Wayland(const RendererConfig& rendererConfig, const DisplayConfig& displayConfig, IContext& context)
+        : m_waylandEmbeddedSocketName(rendererConfig.getWaylandSocketEmbedded())
+        , m_waylandEmbeddedSocketGroup(rendererConfig.getWaylandSocketEmbeddedGroup())
+        , m_waylandEmbeddedSocketFD(rendererConfig.getWaylandSocketEmbeddedFD())
         , m_context(context)
         , m_compositorGlobal(*this)
+        , m_waylandOutputGlobal({ displayConfig.getDesiredWindowWidth(), displayConfig.getDesiredWindowHeight() })
         , m_iviApplicationGlobal(*this)
         , m_linuxDmabufGlobal(*this)
     {
@@ -42,6 +46,7 @@ namespace ramses_internal
 
         m_compositorGlobal.destroy();
         m_shellGlobal.destroy();
+        m_waylandOutputGlobal.destroy();
         m_iviApplicationGlobal.destroy();
         m_linuxDmabufGlobal.destroy();
     }
@@ -62,6 +67,9 @@ namespace ramses_internal
         {
             return false;
         }
+
+        if(!m_waylandOutputGlobal.init(m_serverDisplay))
+            return false;
 
         if (!m_iviApplicationGlobal.init(m_serverDisplay))
         {
@@ -132,13 +140,12 @@ namespace ramses_internal
     void EmbeddedCompositor_Wayland::addWaylandSurface(IWaylandSurface& waylandSurface)
     {
         m_surfaces.push_back(&waylandSurface);
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::addWaylandSurface: Client created surface. Count surfaces :" << m_surfaces.size());
     }
 
     void EmbeddedCompositor_Wayland::removeWaylandSurface(IWaylandSurface& waylandSurface)
     {
         LOG_INFO(CONTEXT_SMOKETEST, "embedded-compositing client surface destroyed");
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::removeWaylandSurface() Client destroyed surface, showing fallback texture for ivi surface " << waylandSurface.getIviSurfaceId().getValue());
-
         // It's safe to call remove even if surface has not been mapped and
         // therefore not been added into any list, since link got initialized at
         // construction in compositor_create_surface().
@@ -150,11 +157,15 @@ namespace ramses_internal
                 break;
             }
         }
+
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::removeWaylandSurface() Client destroyed surface, showing fallback texture for ivi surface " << waylandSurface.getIviSurfaceId()
+                 << ". Count surfaces :" << m_surfaces.size());
     }
 
     void EmbeddedCompositor_Wayland::addWaylandCompositorConnection(IWaylandCompositorConnection& waylandCompositorConnection)
     {
         m_compositorConnections.put(&waylandCompositorConnection);
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::addWaylandCompositorConnection: embedded-compositing connection created. Count connections :" << m_compositorConnections.size());
     }
 
     IWaylandSurface* EmbeddedCompositor_Wayland::findWaylandSurfaceByIviSurfaceId(WaylandIviSurfaceId iviSurfaceId) const
@@ -194,8 +205,8 @@ namespace ramses_internal
         IWaylandSurface* waylandClientSurface = findWaylandSurfaceByIviSurfaceId(streamTextureSourceId);
         assert(nullptr != waylandClientSurface);
 
-        LOG_DEBUG(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::uploadCompositingContentForStreamTexture(): Stream texture with source Id " << streamTextureSourceId.getValue());
-        LOG_INFO(CONTEXT_SMOKETEST, "embedded-compositing client surface found for existing streamtexture: " << streamTextureSourceId.getValue());
+        LOG_DEBUG(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::uploadCompositingContentForStreamTexture(): Stream texture with source Id " << streamTextureSourceId);
+        LOG_INFO(CONTEXT_SMOKETEST, "embedded-compositing client surface found for existing streamtexture: " << streamTextureSourceId);
 
         uploadCompositingContentForWaylandSurface(waylandClientSurface, textureHandle, textureUploadingAdapter);
         return waylandClientSurface->getNumberOfCommitedFrames();
@@ -281,6 +292,12 @@ namespace ramses_internal
         return false;
     }
 
+    const IWaylandSurface& EmbeddedCompositor_Wayland::findSurfaceForStreamTexture(StreamTextureSourceId streamTextureSourceId) const
+    {
+        const auto it = absl::c_find_if(m_surfaces, [&](const auto surface){ return surface->getIviSurfaceId() == streamTextureSourceId;});
+        return **it;
+    }
+
     String EmbeddedCompositor_Wayland::getTitleOfWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const
     {
         const IWaylandSurface* waylandClientSurface = findWaylandSurfaceByIviSurfaceId(waylandSurfaceId);
@@ -339,8 +356,10 @@ namespace ramses_internal
     void EmbeddedCompositor_Wayland::removeWaylandCompositorConnection(IWaylandCompositorConnection& waylandCompositorConnection)
     {
         const bool removed = m_compositorConnections.remove(&waylandCompositorConnection);
-        UNUSED(removed)
         assert(removed);
+
+        LOG_INFO(CONTEXT_SMOKETEST, "EmbeddedCompositor_Wayland::removeWaylandCompositorConnection: embedded-compositing connection removed. Count connections :"
+                 << m_compositorConnections.size() << ", was removed " << removed);
     }
 
     void EmbeddedCompositor_Wayland::removeFromUpdatedStreamTextureSourceIds(WaylandIviSurfaceId id)
@@ -360,7 +379,7 @@ namespace ramses_internal
 
     void EmbeddedCompositor_Wayland::addToUpdatedStreamTextureSourceIds(WaylandIviSurfaceId id)
     {
-        LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::addToUpdatedStreamTextureSourceIds: new texture data for stream texture with source id " << id.getValue());
+        LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::addToUpdatedStreamTextureSourceIds: new texture data for stream texture with source id " << id);
         m_updatedStreamTextureSourceIds.put(id);
 
         if(!m_knownStreamTextureSoruceIds.contains(id))

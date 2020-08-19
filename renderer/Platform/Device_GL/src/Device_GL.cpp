@@ -1279,40 +1279,49 @@ namespace ramses_internal
 
         GLint numCompressedTextureFormats(0);
         glGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS, &numCompressedTextureFormats);
-        std::vector<GLint> compressedTextureFormats(numCompressedTextureFormats);
-        glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, compressedTextureFormats.data());
-
-        for (GLint compressedGLTextureFormat : compressedTextureFormats)
+        if(0 != numCompressedTextureFormats)
         {
-            const ETextureFormat textureFormat = TypesConversion_GL::GetTextureFormatFromCompressedGLTextureFormat(compressedGLTextureFormat);
-            if (ETextureFormat_Invalid != textureFormat)
+            std::vector<GLint> compressedTextureFormats(numCompressedTextureFormats);
+            glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, compressedTextureFormats.data());
+
+            for (GLint compressedGLTextureFormat : compressedTextureFormats)
             {
-                m_limits.addTextureFormat(textureFormat);
+                const ETextureFormat textureFormat = TypesConversion_GL::GetTextureFormatFromCompressedGLTextureFormat(compressedGLTextureFormat);
+                if (ETextureFormat_Invalid != textureFormat)
+                {
+                    m_limits.addTextureFormat(textureFormat);
+                }
             }
         }
 
         GLint maxNumberOfBinaryFormats = 0;
         // binary shader formats
         glGetIntegerv(GL_NUM_SHADER_BINARY_FORMATS, &maxNumberOfBinaryFormats);
-        std::vector<GLint> suppportedBinaryShaderFormats(maxNumberOfBinaryFormats);
-        glGetIntegerv(GL_SHADER_BINARY_FORMATS, suppportedBinaryShaderFormats.data());
-        LOG_INFO_F(CONTEXT_RENDERER, ([&](StringOutputStream & sos)
+        if(0 != maxNumberOfBinaryFormats)
         {
-            sos << "Device_GL::queryDeviceDependentFeatures: supported binary shader formats (GL_SHADER_BINARY_FORMATS):";
-            for (GLint binaryShaderFormat : suppportedBinaryShaderFormats)
-                sos << "  " << binaryShaderFormat;
-        }));
+            std::vector<GLint> suppportedBinaryShaderFormats(maxNumberOfBinaryFormats);
+            glGetIntegerv(GL_SHADER_BINARY_FORMATS, suppportedBinaryShaderFormats.data());
+            LOG_INFO_F(CONTEXT_RENDERER, ([&](StringOutputStream & sos)
+            {
+                sos << "Device_GL::queryDeviceDependentFeatures: supported binary shader formats (GL_SHADER_BINARY_FORMATS):";
+                for (GLint binaryShaderFormat : suppportedBinaryShaderFormats)
+                    sos << "  " << binaryShaderFormat;
+            }));
+        }
 
         // binary program formats
         glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &maxNumberOfBinaryFormats);
-        m_supportedBinaryProgramFormats.resize(maxNumberOfBinaryFormats);
-        glGetIntegerv(GL_PROGRAM_BINARY_FORMATS, m_supportedBinaryProgramFormats.data());
-        LOG_INFO_F(CONTEXT_RENDERER, ([&](StringOutputStream & sos)
+        if(0 != maxNumberOfBinaryFormats)
         {
-            sos << "Device_GL::queryDeviceDependentFeatures: supported binary program formats (GL_PROGRAM_BINARY_FORMATS):";
-            for (GLint binaryProgramFormat : m_supportedBinaryProgramFormats)
-                sos << "  " << binaryProgramFormat;
-        }));
+            m_supportedBinaryProgramFormats.resize(maxNumberOfBinaryFormats);
+            glGetIntegerv(GL_PROGRAM_BINARY_FORMATS, m_supportedBinaryProgramFormats.data());
+            LOG_INFO_F(CONTEXT_RENDERER, ([&](StringOutputStream & sos)
+            {
+                sos << "Device_GL::queryDeviceDependentFeatures: supported binary program formats (GL_PROGRAM_BINARY_FORMATS):";
+                for (GLint binaryProgramFormat : m_supportedBinaryProgramFormats)
+                    sos << "  " << binaryProgramFormat;
+            }));
+        }
 
         if (isApiExtensionAvailable("GL_EXT_texture_filter_anisotropic"))
         {

@@ -23,7 +23,7 @@ ACME_MODULE(
                             include/*.h
     FILES_SOURCE            src/*.cpp
                             src/TextFake/*.cpp
-    FILES_RESOURCE          res/*
+    RESOURCE_FOLDER         res
 
     #==========================================================================
     # dependencies
