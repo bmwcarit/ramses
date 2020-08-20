@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.1</span>
+   &#160;<span id="projectnumber">25.0.6</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -130,6 +130,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a3ec94a650c07080b9990c8468de4405d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmMetadataCreator.html#a3ec94a650c07080b9990c8468de4405d">setExclusiveBackground</a> (bool state)</td></tr>
 <tr class="memdesc:a3ec94a650c07080b9990c8468de4405d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the exclusive background metadata entry. Requests to show widget exclusively without other overlapping content in background.  <a href="#a3ec94a650c07080b9990c8468de4405d">More...</a><br /></td></tr>
 <tr class="separator:a3ec94a650c07080b9990c8468de4405d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9f40c8c3cb2c2b0600b62830d49943d7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmMetadataCreator.html#a9f40c8c3cb2c2b0600b62830d49943d7">setStreamID</a> (int32_t streamID)</td></tr>
+<tr class="memdesc:a9f40c8c3cb2c2b0600b62830d49943d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the streamID metadata entry. Requests to start/show specified stream.  <a href="#a9f40c8c3cb2c2b0600b62830d49943d7">More...</a><br /></td></tr>
+<tr class="separator:a9f40c8c3cb2c2b0600b62830d49943d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aff525742f2d05e218a9d1090d8af7b87"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmMetadataCreator.html#aff525742f2d05e218a9d1090d8af7b87">DcsmMetadataCreator</a> (<a class="el" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a> &amp;&amp;other)=delete</td></tr>
 <tr class="memdesc:aff525742f2d05e218a9d1090d8af7b87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deleted move constructor.  <a href="#aff525742f2d05e218a9d1090d8af7b87">More...</a><br /></td></tr>
 <tr class="separator:aff525742f2d05e218a9d1090d8af7b87"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -546,6 +549,33 @@ Additional Inherited Members</h2></td></tr>
 </dl>
 </div>
 </div>
+<a id="a9f40c8c3cb2c2b0600b62830d49943d7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9f40c8c3cb2c2b0600b62830d49943d7">&#9670;&nbsp;</a></span>setStreamID()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::DcsmMetadataCreator::setStreamID </td>
+          <td>(</td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>streamID</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set the streamID metadata entry. Requests to start/show specified stream. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">streamID</td><td>identifier of stream to start/show </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
+
+</div>
+</div>
 <a id="a9c07ec1617e1602f5914ce88a149da01"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9c07ec1617e1602f5914ce88a149da01">&#9670;&nbsp;</a></span>setWidgetBackgroundID()</h2>
 
@@ -644,7 +674,7 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/home/ramses/dev/oss-ramses/framework/ramses-framework-api/include/ramses-framework-api/<a class="el" href="DcsmMetadataCreator_8h_source.html">DcsmMetadataCreator.h</a></li>
+<li>/home/q479079/sources/ramses-oss/framework/ramses-framework-api/include/ramses-framework-api/<a class="el" href="DcsmMetadataCreator_8h_source.html">DcsmMetadataCreator.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

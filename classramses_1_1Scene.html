@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.1</span>
+   &#160;<span id="projectnumber">25.0.6</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -1464,7 +1464,7 @@ Friends</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Creates a new <a class="el" href="classramses_1_1SceneReference.html" title="The SceneReference object refers to another ramses scene using its sceneId. ">SceneReference</a> object. </p>
-<p>The <a class="el" href="classramses_1_1SceneReference.html" title="The SceneReference object refers to another ramses scene using its sceneId. ">SceneReference</a> object references a scene, which might be unknown to this <a class="el" href="classramses_1_1RamsesClient.html" title="Entry point of RAMSES client API. ">RamsesClient</a>, but is known to the <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">RamsesRenderer</a> rendering this scene. It allows to request rendering states of the referenced scene on renderer side. There can be only one instance of <a class="el" href="classramses_1_1SceneReference.html" title="The SceneReference object refers to another ramses scene using its sceneId. ">ramses::SceneReference</a> per scene ID in all RamsesClients connected to a <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">RamsesRenderer</a>. Creating two instances in one <a class="el" href="classramses_1_1RamsesClient.html" title="Entry point of RAMSES client API. ">RamsesClient</a> will result in an error, creating two instances in different RamsesClients results in undefined behavior.</p>
+<p>The <a class="el" href="classramses_1_1SceneReference.html" title="The SceneReference object refers to another ramses scene using its sceneId. ">SceneReference</a> object references a scene, which might be unknown to this <a class="el" href="classramses_1_1RamsesClient.html" title="Entry point of RAMSES client API. ">RamsesClient</a>, but is or expected to be known to the <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">RamsesRenderer</a> subscribed to this scene. It allows to remotely change limited set of states of the referenced scene on renderer side. There can be only one instance of <a class="el" href="classramses_1_1SceneReference.html" title="The SceneReference object refers to another ramses scene using its sceneId. ">ramses::SceneReference</a> referring to a sceneId across all RamsesClients connected to a <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">RamsesRenderer</a>. Creating more than one instance referring to the same sceneId in one <a class="el" href="classramses_1_1RamsesClient.html" title="Entry point of RAMSES client API. ">RamsesClient</a> will result in an error, multiple instances referring to the same sceneId across different RamsesClients results in undefined behavior. <a class="el" href="classramses_1_1SceneReference.html" title="The SceneReference object refers to another ramses scene using its sceneId. ">ramses::SceneReference</a> can be destroyed and re-created but there are certain aspects to consider, see <a class="el" href="classramses_1_1SceneReference.html" title="The SceneReference object refers to another ramses scene using its sceneId. ">ramses::SceneReference</a> for details.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">referencedScene</td><td>A scene id of a scene known to the <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">RamsesRenderer</a>. </td></tr>
@@ -2684,7 +2684,7 @@ false, if scene is currently not published. </dd></dl>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/home/ramses/dev/oss-ramses/client/ramses-client/ramses-client-api/include/ramses-client-api/<a class="el" href="Scene_8h_source.html">Scene.h</a></li>
+<li>/home/q479079/sources/ramses-oss/client/ramses-client/ramses-client-api/include/ramses-client-api/<a class="el" href="Scene_8h_source.html">Scene.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

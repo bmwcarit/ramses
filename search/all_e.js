@@ -157,6 +157,7 @@ var searchData=
   ['getstenciloperation',['getStencilOperation',['../classramses_1_1Appearance.html#a062275fd21bbbbb622568c51f3a83e05',1,'ramses::Appearance']]],
   ['getstenciloperationstring',['getStencilOperationString',['../namespaceramses.html#a731978118aa9d708e745d0153605dfa0',1,'ramses']]],
   ['getstoptime',['getStopTime',['../classramses_1_1Animation.html#a7b4ed9f7581d1536e006f82672759309',1,'ramses::Animation']]],
+  ['getstreamid',['getStreamID',['../classramses_1_1DcsmMetadataUpdate.html#aa3bcd48aabb9e8813ad909cb7f88ccbd',1,'ramses::DcsmMetadataUpdate']]],
   ['getstreamsourceid',['getStreamSourceId',['../classramses_1_1StreamTexture.html#aa6b12a89754b4e250840afcd2b2c2789',1,'ramses::StreamTexture']]],
   ['getsystemcompositorwaylanddisplay',['getSystemCompositorWaylandDisplay',['../classramses_1_1RendererConfig.html#a0adaad0223efd371bc567298a93eb5d6',1,'ramses::RendererConfig']]],
   ['gettexelformat',['getTexelFormat',['../classramses_1_1Texture2DBuffer.html#a79084cd07c59287c7da580163b22a82e',1,'ramses::Texture2DBuffer']]],

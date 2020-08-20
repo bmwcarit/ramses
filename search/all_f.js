@@ -16,6 +16,7 @@ var searchData=
   ['hasrendersizeupdate',['hasRenderSizeUpdate',['../classramses_1_1CategoryInfoUpdate.html#a0e95f6ad00304a955cc7479607fe2d67',1,'ramses::CategoryInfoUpdate']]],
   ['hasresource',['hasResource',['../classramses_1_1DefaultRendererResourceCache.html#a822b91c587bab1728ec7bd10e875cf0e',1,'ramses::DefaultRendererResourceCache::hasResource()'],['../classramses_1_1IRendererResourceCache.html#aef70c65611641155a30b1eb234fbccc1',1,'ramses::IRendererResourceCache::hasResource()']]],
   ['hassafeareasizeupdate',['hasSafeAreaSizeUpdate',['../classramses_1_1CategoryInfoUpdate.html#aaa0f41a65cb89ded4c501d6bf8d4aadf',1,'ramses::CategoryInfoUpdate']]],
+  ['hasstreamid',['hasStreamID',['../classramses_1_1DcsmMetadataUpdate.html#afcd715f97afeccfd88a5257108015383',1,'ramses::DcsmMetadataUpdate']]],
   ['haswidgetbackgroundid',['hasWidgetBackgroundID',['../classramses_1_1DcsmMetadataUpdate.html#a9a697b1a2cd101df978070ab76996b42',1,'ramses::DcsmMetadataUpdate']]],
   ['haswidgethudlineid',['hasWidgetHUDLineID',['../classramses_1_1DcsmMetadataUpdate.html#a6c5a440e2e695987eb80d14be40d8665',1,'ramses::DcsmMetadataUpdate']]],
   ['haswidgetorder',['hasWidgetOrder',['../classramses_1_1DcsmMetadataUpdate.html#ad53678e3c52d768ef60a3a7ea1464506',1,'ramses::DcsmMetadataUpdate']]],

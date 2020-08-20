@@ -137,6 +137,7 @@ var searchData=
   ['setstartvertex',['setStartVertex',['../classramses_1_1MeshNode.html#aca0f99a6784e7d9dc5401d352e63a337',1,'ramses::MeshNode']]],
   ['setstencilfunction',['setStencilFunction',['../classramses_1_1Appearance.html#a746055cc4d469897a1c690d96aec4fa6',1,'ramses::Appearance']]],
   ['setstenciloperation',['setStencilOperation',['../classramses_1_1Appearance.html#ad5a4d46a8bca3a35c8b24fc936f5af1a',1,'ramses::Appearance']]],
+  ['setstreamid',['setStreamID',['../classramses_1_1DcsmMetadataCreator.html#a9f40c8c3cb2c2b0600b62830d49943d7',1,'ramses::DcsmMetadataCreator']]],
   ['setsurfaceopacity',['setSurfaceOpacity',['../classramses_1_1RamsesRenderer.html#a254d5d21f8685117aeea48cf4a26bde0',1,'ramses::RamsesRenderer']]],
   ['setsurfacerectangle',['setSurfaceRectangle',['../classramses_1_1RamsesRenderer.html#ad9354989524cb902ba736b2e897e5e82',1,'ramses::RamsesRenderer']]],
   ['setsurfacevisibility',['setSurfaceVisibility',['../classramses_1_1RamsesRenderer.html#a6732097772becc5818ba94f7aa845a10',1,'ramses::RamsesRenderer']]],
